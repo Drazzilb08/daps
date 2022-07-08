@@ -1,19 +1,35 @@
 #!/bin/bash
 
 #------------- DEFINE VARIABLES -------------#
+name='Script'
 # Set your script name, must be unique to any other script.
-name='Pictures'
+source='/boot/config/plugins/user.scripts/scripts/'
 # Set source directory
-source='/mnt/user/pictures/'
+destination='/mnt/user/backup/scripts/'
 # Set backup directory
-destination='/mnt/user/backup/pictures/'
-# Number of days to keep backup
 delete_after=2
-# Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
-    # Pigz package must be installed via NerdPack
+# Number of days to keep backup
 usePigz=yes
-# (yes/no) Unraid notification that the backup was performed
-notify=yes 
+# Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
+# Pigz package must be installed via NerdPack
+notify=yes
+#------------- DEFINE DISCORD VARIABLES -------------#
+# This portion requires discord.sh to be downloaded and placed somewhere in a location accessable by this script
+# You can find discord.sh ----> https://github.com/ChaoticWeg/discord.sh
+# Simply download or clone the repo and extract the discord.sh file to a loaction then define that location in the discordLoc variable
+
+# Use discord for notifications
+useDiscord=yes
+# Location for discord.sh, no trailing slash
+discordLoc='/mnt/user/data/scripts/discord-script'
+# Discord webhook
+webhook=""
+# Name your bot
+botName="Notification Bot"
+# Give a title name to your discord messages
+titleName="Server Notifications"
+# The bar color for discord notifications
+barColor="0xFFFFFF"
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 # Will not run again if currently running.
@@ -53,16 +69,40 @@ echo -e "\nRemoving backups older than " $delete_after "days...\n"
 find $destination* -mtime +$delete_after -exec rm -rfd {} \;
 
 end=$(date +%s)
+totalTime=$((end - start))
+seconds=$((totalTime % 60))
+minutes=$((totalTime / 60))
+hours=$((totalSeconds / 60 / 60 % 24))
+
+if (($minutes == 0 && $hours == 0)); then
+    echo "Script completed in $seconds seconds"
+    runOutput="Script completed in $seconds seconds"
+elif (($hours == 0)); then
+    echo "Script completed in $minutes minutes and $seconds seconds"
+    runOutput="Script completed in $minutes minutes and $seconds seconds"
+else
+    echo "Script completed in $hours hours $minutes minutes and $seconds seconds"
+    runOutput="Script completed in $hours hours $minutes minutes and $seconds seconds"
+fi
+
 #Finish
-echo -e "\nTotal time for backup: " $((end - start)) "seconds\n"
 if [ -d $dest/ ]; then
-    echo -e Total size of all backups: "$(du -sh $dest/)"
+    size=$(du -sh $dest | awk '{print $1}')
+    echo -e "\nTotal size of all backups: $size."
 fi
 
 # Removing temp file
 rm "/tmp/i.am.running.${name}"
 if [ $notify == yes ]; then
     /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "${name} Backup" -d "Backup completed: ${name} data has been backed up." -i "normal"
+fi
+if [ $useDiscord == yes ]; then
+    ${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
+        --title "${titleName}" \
+        --description "Backup completed: ${name} data has been backed up.\n$runOutput.\nTotal size of all backups: ${size}" \
+        --color "$barColor" \
+        --timestamp
+    echo -e "\nDiscord notification sent."
 fi
 echo -e '\nAll Done!\n'
 

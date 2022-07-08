@@ -72,7 +72,7 @@ if [ $fullbackup == no ]; then
 				
 				if [ $debug != true ]; then
 					tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-$(date +"%I_%M_%p").tar" "$source"
-                    # Complress tar into tar.gz file greatly reducing the size of the backup.
+                    # Compress tar into tar.gz file greatly reducing the size of the backup.
 				    pigz -9 "Full_Plex_Data_Backup-debug1-$(date +"%I_%M_%p").tar"
 				else
 					tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-debug1-$(date +"%I_%M_%p").tar" Preferences.xml

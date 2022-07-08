@@ -1,16 +1,17 @@
 #!/bin/bash
 
 #------------- DEFINE VARIABLES -------------#
-# Script name
-name='update-me'
-
+name='pictures'
+# Set your script name, must be unique to any other script.
+source='/mnt/user/pictures/'
 # Set source directory
-source='/path/to/source'
-
+destination='/mnt/user/backup/pictures/'
 # Set backup directory
-destination='/path/to/destination'
-# Set Number of Days to Keep Backups
 delete_after=2
+# Number of days to keep backup
+usePigz=yes
+# Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
+    # Pigz package must be installed via NerdPack
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 # Will not run again if currently running.
@@ -34,22 +35,31 @@ echo -e "\n\nCreating backup... please wait"
 mkdir -p "$dest/$dt"
 
 #Script Data Backup
-tar -cf "$dest/$dt/backup-$(date +"%I_%M_%p").tar" "$source"
-pigz -9 "$dest/$dt/backup-$(date +"%I_%M_%p").tar"
+if [ $usePigz == yes ]; then
+    echo -e "\n\nUsing pigz to create backup... this could take a while..."
+    tar -cf "$dest/$dt/backup-$(date +"%I_%M_%p").tar" "$source"
+    pigz -9 "$dest/$dt/backup-$(date +"%I_%M_%p").tar"
+else
+    tar -cf "$dest/$dt/backup-$(date +"%I_%M_%p").tar" "$source"
+fi
 
 sleep 2
 chmod -R 777 "$dest"
 
 #Cleanup Old Backups
-echo -e "\n\nRemoving backups older than " $delete_after "days... please wait\n\n"
+echo -e "\n\nRemoving backups older than " $delete_after "days... please wait\n"
 find $destination* -mtime +$delete_after -exec rm -rfd {} \;
 
 end=$(date +%s)
 #Finish
 echo -e "\nTotal time for backup: " $((end - start)) "seconds\n"
-echo -e '\nAll Done!\n'
 if [ -d $dest/ ]; then
     echo -e Total size of all backups: "$(du -sh $dest/)"
 fi
+
+# Removing temp file
 rm "/tmp/i.am.running.${name}"
+
+echo -e '\nAll Done!\n'
+
 exit

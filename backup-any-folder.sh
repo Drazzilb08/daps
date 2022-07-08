@@ -2,7 +2,7 @@
 
 #------------- DEFINE VARIABLES -------------#
 # Script name
-name='updateme'
+name='update-me'
 
 # Set source directory
 source='/path/to/source'

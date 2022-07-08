@@ -1,7 +1,6 @@
 #!/bin/bash
 
-# 	-- USER CONFIGURATION --	#
-
+#------------- DEFINE VARIABLES -------------#
 source="/mnt/user/appdata/plex"			# path to your plex appdata location
 destination="/mnt/user/backup/plex"     # path to your backup folder
 notify=yes							    # (yes/no) Unraid notification that the backup was performed
@@ -13,6 +12,26 @@ force_full_backup=7						# create a full backup every (#) number of days, in add
 									        # this will create an essential backup and then a full backup separately
 									        # this setting is ignored if fullbackup = yes
 keep_full=2							    # number of full backups to keep - these can be very large
+usePigz=no								# Due to the size of full backups if you're using a full backup and would like to really compress your backups down as much as possible use pigz
+											# Pigz package must be installed via NerdPack
+#------------- DEFINE DISCORD VARIABLES -------------#
+# This section is not required
+# This portion requires discord.sh to be downloaded and placed somewhere in a location accessable by this script
+# You can find discord.sh ----> https://github.com/ChaoticWeg/discord.sh
+# Simply download or clone the repo and extract the discord.sh file to a loaction then define that location in the discordLoc variable
+
+# Use discord for notifications
+useDiscord=no
+# Location for discord.sh, no trailing slash
+discordLoc=''
+# Discord webhook
+webhook=''
+# Name your bot
+botName='Notification Bot'
+# Give a title name to your discord messages
+titleName='Server Notifications'
+# The bar color for discord notifications, must be Hexcode
+barColor='0xE5A00D'
 									
 #	-- END USER CONFIGURATION --	#
 
@@ -73,7 +92,9 @@ if [ $fullbackup == no ]; then
 				if [ $debug != true ]; then
 					tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-$(date +"%I_%M_%p").tar" "$source"
                     # Compress tar into tar.gz file greatly reducing the size of the backup.
-				    pigz -9 "Full_Plex_Data_Backup-debug1-$(date +"%I_%M_%p").tar"
+					if [ usePigz == yes ]; then
+				    	pigz -9 "Full_Plex_Data_Backup-debug1-$(date +"%I_%M_%p").tar"
+					fi
 				else
 					tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-debug1-$(date +"%I_%M_%p").tar" Preferences.xml
 				fi
@@ -111,34 +132,75 @@ if [ -d "$destination/Full" ]; then
 	echo -e  "Removing Full backups older than " $old "days... please wait\n\n\n"
 	find $destination/Full* -mtime +$old -exec rm -rfd {} \;
 fi
+end=`date +%s`
+# Runtime
+totalTime=$((end - start))
+seconds=$((totalTime % 60))
+minutes=$((totalTime / 60))
+hours=$((totalSeconds / 60 / 60 % 24))
 
+if (($minutes == 0 && $hours == 0)); then
+    echo "Plex backup completed in $seconds seconds"
+    runOutput="Plex backup completed in $seconds seconds"
+elif (($hours == 0)); then
+    echo "Plex backup completed in $minutes minutes and $seconds seconds"
+    runOutput="Plex backup completed in $minutes minutes and $seconds seconds"
+else
+    echo "Plex backup completed in $hours hours $minutes minutes and $seconds seconds"
+    runOutput="Plex backup completed in $hours hours $minutes minutes and $seconds seconds"
+fi
+
+essentialsize=$(du -sh $dest/Essential/$dt/ | awk '{print $1}')
+fullsize=$(du -sh $dest/Full/$dt/ | awk '{print $1}')
+#unRaid notificaitons
 if [ $notify == yes ]; then
 	if [ $fullbackup == no ]; then
 			if [ $cf = false ]; then
 				/usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Plex Backup" -d "Essential Plex data has been backed up." -i "normal"
-				echo -e  Essential backup: "$(du -sh $dest/Essential/$dt/)\n"
+				echo -e  "Essential backup: $essentialsize\n"
 			else
 				/usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Plex Backup" -d "Essential & Full Plex data has been backed up." -i "normal"
-				echo -e  Essential backup: "$(du -sh $dest/Essential/$dt/)\n"
-				echo -e  Full backup: "$(du -sh $dest/Full/$dt/)\n"
+				echo -e  "Essential backup: $essentialsize\n"
+				echo -e  "Full backup: $fullsize\n"
 			fi
 	else
 		/usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Plex Backup" -d "Complete Plex data has been backed up." -i "normal"
-		echo -e  Full backup: "$(du -sh $dest/Full/$dt/)\n"
+		echo -e  "Full backup: $fullsize\n"
 	fi
 fi
-
-
-end=`date +%s`
-echo -e  "\nTotal time for backup: " $((end-start)) "seconds\n"
-echo -e  '\nAll Done!\n'
-if [ -d $dest/Essential/ ]; then
-	echo -e  Total size of all Essential backups: "$(du -sh $dest/Essential/)"
+# Discord Notifications
+if [ $useDiscord == yes ]; then
+	if [ $fullbackup == no ]; then
+		if [ $cf = false ]; then
+			${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
+				--title "Plex Backup" \
+				--description "Essential Plex data has been backed up.\n$runOutput.\nEssential backup: $essentialsize" \
+				--color "$barColor" \
+				--timestamp
+			echo -e "\nDiscord notification sent."
+		else
+			${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
+				--title "Plex Backup" \
+				--description "Essential & Full Plex data has been backed up.\n$runOutput.\nEssential backup: $essentialsize.\nFull backup: $fullsize" \
+				--color "$barColor" \
+				--timestamp
+			echo -e "\nDiscord notification sent."
+		fi
+	else
+		${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
+			--title "Plex Backup" \
+			--description "Full Plex data has been backed up.\n$runOutput.\nFull backup: $fullsize" \
+			--color "$barColor" \
+			--timestamp
+		echo -e "\nDiscord notification sent."
+	fi
+fi
+	echo -e  "Total size of all Essential backups: $essentialsize"
 fi
 if [ -d $dest/Full/ ]; then
-	echo -e  Total size of all Full backups: "$(du -sh $dest/Full/)"
+	echo -e  "Total size of all Full backups: $fullsize"
 fi
-
+echo -e  '\nAll Done!\n'
 rm "/tmp/i.am.running"
 
 exit

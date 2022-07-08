@@ -22,7 +22,7 @@ usePigz=no								# Due to the size of full backups if you're using a full backu
 
 # Use discord for notifications
 useDiscord=no
-# Location for discord.sh, no trailing slash
+# The folder containing discord.sh, no trailing slash
 discordLoc=''
 # Discord webhook
 webhook=''
@@ -149,24 +149,34 @@ else
     echo "Plex backup completed in $hours hours $minutes minutes and $seconds seconds"
     runOutput="Plex backup completed in $hours hours $minutes minutes and $seconds seconds"
 fi
-
-essentialsize=$(du -sh $dest/Essential/$dt/ | awk '{print $1}')
-fullsize=$(du -sh $dest/Full/$dt/ | awk '{print $1}')
 #unRaid notificaitons
 if [ $notify == yes ]; then
 	if [ $fullbackup == no ]; then
 			if [ $cf = false ]; then
+				essentialsize=$(du -sh $dest/Essential/$dt/ | awk '{print $1}')
 				/usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Plex Backup" -d "Essential Plex data has been backed up." -i "normal"
-				echo -e  "Essential backup: $essentialsize\n"
+				echo -e  "Essential backup: $essentialsize"
 			else
+				essentialsize=$(du -sh $dest/Essential/$dt/ | awk '{print $1}')
+				fullsize=$(du -sh $dest/Full/$dt/ | awk '{print $1}')
 				/usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Plex Backup" -d "Essential & Full Plex data has been backed up." -i "normal"
-				echo -e  "Essential backup: $essentialsize\n"
-				echo -e  "Full backup: $fullsize\n"
+				echo -e  "Essential backup: $essentialsize"
+				echo -e  "Full Backup: $fullsize"
 			fi
 	else
+		essentialsize=$(du -sh $dest/Essential/$dt/ | awk '{print $1}')
+		fullsize=$(du -sh $dest/Full/$dt/ | awk '{print $1}')
 		/usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Plex Backup" -d "Complete Plex data has been backed up." -i "normal"
-		echo -e  "Full backup: $fullsize\n"
+		echo -e  "Full Backup: $fullsize"
 	fi
+fi
+if [ -d $dest/Essential/ ]; then
+	totalessential=$(du -sh $dest/Essential/ | awk '{print $1}')
+	echo -e  "Total size of all Essential backups: $totalessential"
+fi
+if [ -d $dest/Full/ ]; then
+	totalfull=$(du -sh $dest/Full/ | awk '{print $1}')
+	echo -e  "Total size of all Full backups: $totalfull)"
 fi
 # Discord Notifications
 if [ $useDiscord == yes ]; then
@@ -174,14 +184,14 @@ if [ $useDiscord == yes ]; then
 		if [ $cf = false ]; then
 			${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
 				--title "Plex Backup" \
-				--description "Essential Plex data has been backed up.\n$runOutput.\nEssential backup: $essentialsize" \
+				--description "Essential Plex data has been backed up.\n$runOutput.\nThis essential backup size: $essentialsize\nTotal size of all Essential backups: $totalessential" \
 				--color "$barColor" \
 				--timestamp
 			echo -e "\nDiscord notification sent."
 		else
 			${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
 				--title "Plex Backup" \
-				--description "Essential & Full Plex data has been backed up.\n$runOutput.\nEssential backup: $essentialsize.\nFull backup: $fullsize" \
+				--description "Essential & Full Plex data has been backed up.\n$runOutput\nThis essential backup size: $essentialsize\nThis full Backup: $fullsize\nTotal size of all Essential backups: $totalessential\nTotal size of all Full backups: $totalfull" \
 				--color "$barColor" \
 				--timestamp
 			echo -e "\nDiscord notification sent."
@@ -189,18 +199,15 @@ if [ $useDiscord == yes ]; then
 	else
 		${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
 			--title "Plex Backup" \
-			--description "Full Plex data has been backed up.\n$runOutput.\nFull backup: $fullsize" \
+			--description "Full Plex data has been backed up.\n$runOutput.\nThis full Backup: $fullsize\nTotal size of all Full backups: $totalfull" \
 			--color "$barColor" \
 			--timestamp
 		echo -e "\nDiscord notification sent."
 	fi
 fi
-	echo -e  "Total size of all Essential backups: $essentialsize"
-fi
-if [ -d $dest/Full/ ]; then
-	echo -e  "Total size of all Full backups: $fullsize"
-fi
+
 echo -e  '\nAll Done!\n'
+# Remove lock file
 rm "/tmp/i.am.running"
 
 exit

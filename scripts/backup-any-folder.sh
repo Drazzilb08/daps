@@ -1,19 +1,21 @@
 #!/bin/bash
 
 #------------- DEFINE VARIABLES -------------#
-name='Script'
 # Set your script name, must be unique to any other script.
-source='/boot/config/plugins/user.scripts/scripts/'
+name=''
 # Set source directory
-destination='/mnt/user/backup/scripts/'
+source=''
 # Set backup directory
-delete_after=2
+destination=''
 # Number of days to keep backup
-usePigz=yes
+delete_after=2
 # Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
 # Pigz package must be installed via NerdPack
+usePigz=yes
+# Use unRAID's built in notification system
 notify=yes
 #------------- DEFINE DISCORD VARIABLES -------------#
+# This section is not required
 # This portion requires discord.sh to be downloaded and placed somewhere in a location accessable by this script
 # You can find discord.sh ----> https://github.com/ChaoticWeg/discord.sh
 # Simply download or clone the repo and extract the discord.sh file to a loaction then define that location in the discordLoc variable
@@ -21,15 +23,15 @@ notify=yes
 # Use discord for notifications
 useDiscord=yes
 # Location for discord.sh, no trailing slash
-discordLoc='/mnt/user/data/scripts/discord-script'
+discordLoc=''
 # Discord webhook
-webhook=""
+webhook=''
 # Name your bot
-botName="Notification Bot"
+botName='Notification Bot'
 # Give a title name to your discord messages
-titleName="Server Notifications"
-# The bar color for discord notifications
-barColor="0xFFFFFF"
+titleName='Server Notifications'
+# The bar color for discord notifications, must be Hexcode
+barColor='0xFFFFFF'
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 # Will not run again if currently running.
@@ -69,6 +71,7 @@ echo -e "\nRemoving backups older than " $delete_after "days...\n"
 find $destination* -mtime +$delete_after -exec rm -rfd {} \;
 
 end=$(date +%s)
+# Runtime
 totalTime=$((end - start))
 seconds=$((totalTime % 60))
 minutes=$((totalTime / 60))
@@ -93,6 +96,8 @@ fi
 
 # Removing temp file
 rm "/tmp/i.am.running.${name}"
+
+# Notifications
 if [ $notify == yes ]; then
     /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "${name} Backup" -d "Backup completed: ${name} data has been backed up." -i "normal"
 fi

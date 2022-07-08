@@ -54,13 +54,11 @@ mkdir -p "$dest"
 echo -e "\nCreating backup..."
 mkdir -p "$dest/$dt"
 
-#Script Data Backup
+# Data Backup
+tar -cf "$dest/$dt/backup-$(date +"%I_%M_%p").tar" "$source"
 if [ $usePigz == yes ]; then
     echo -e "\nUsing pigz to create backup... this could take a while..."
-    tar -cf "$dest/$dt/backup-$(date +"%I_%M_%p").tar" "$source"
     pigz -9 "$dest/$dt/backup-$(date +"%I_%M_%p").tar"
-else
-    tar -cf "$dest/$dt/backup-$(date +"%I_%M_%p").tar" "$source"
 fi
 
 sleep 2

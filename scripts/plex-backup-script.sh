@@ -68,7 +68,7 @@ debug=false	#testing only
 
 # create the backup directory if it doesn't exist - error handling - will not create backup file it path does not exist
 mkdir -p "$dest"
-now="$(date +"%I_%M_%p)"
+now=$(date +"%I_%M_%p")
 
 # create tar file of essential databases and preferences -- The Plug-in Support preferences will keep settings of any plug-ins, even though they will need to be reinstalled.
 if [ $fullbackup == no ]; then

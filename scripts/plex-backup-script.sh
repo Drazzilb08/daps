@@ -15,10 +15,10 @@ keep_full=2							    # number of full backups to keep - these can be very large
 usePigz=no								# Due to the size of full backups if you're using a full backup and would like to really compress your backups down as much as possible use pigz
 											# Pigz package must be installed via NerdPack
 pigzCompression=9						# Define compression level to use with pigz. Numbers are 0-9 only!
-										# 0 = No compression
-										# 1 = Least compression/Fastest
-										# 6 = Default compression/Default Speed
-										# 9 = Maximum Compression/Slowest
+											# 0 = No compression
+											# 1 = Least compression/Fastest
+											# 6 = Default compression/Default Speed
+											# 9 = Maximum Compression/Slowest
 #------------- DEFINE DISCORD VARIABLES -------------#
 # This section is not required
 # This portion requires discord.sh to be downloaded and placed somewhere in a location accessable by this script
@@ -36,7 +36,7 @@ botName='Notification Bot'
 # Give a title name to your discord messages
 titleName='Server Notifications'
 # The bar color for discord notifications, must be Hexcode
-barColor='0xE5A00D'
+barColor='E5A00D'
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 
@@ -186,14 +186,14 @@ if [ $useDiscord == yes ]; then
 			${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
 				--title "Plex Backup" \
 				--description "Essential Plex data has been backed up.\n$runOutput.\nThis Essential backup size: $essentialsize\nTotal size of all Essential backups: $totalessential" \
-				--color "$barColor" \
+				--color "0x$barColor" \
 				--timestamp
 			echo -e "\nDiscord notification sent."
 		else
 			${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
 				--title "Plex Backup" \
 				--description "Essential & Full Plex data has been backed up.\n$runOutput\nThis Essential backup size: $essentialsize\nThis Full Backup: $fullsize\nTotal size of all Essential backups: $totalessential\nTotal size of all Full backups: $totalfull" \
-				--color "$barColor" \
+				--color "0x$barColor" \
 				--timestamp
 			echo -e "\nDiscord notification sent."
 		fi
@@ -201,7 +201,7 @@ if [ $useDiscord == yes ]; then
 		${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
 			--title "Plex Backup" \
 			--description "Full Plex data has been backed up.\n$runOutput.\nThis Full Backup: $fullsize\nTotal size of all Full backups: $totalfull" \
-			--color "$barColor" \
+			--color "0x$barColor" \
 			--timestamp
 		echo -e "\nDiscord notification sent."
 	fi

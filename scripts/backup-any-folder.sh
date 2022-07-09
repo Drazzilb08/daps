@@ -54,7 +54,7 @@ mkdir -p "$dest"
 echo -e "\nCreating backup..."
 mkdir -p "$dest/$dt"
 
-now="$(date +"%Y-%m-%d"@%H.%M)"
+now="$(date +"%I_%M_%p)"
 # Data Backup
 tar -cf "$dest/$dt/backup-"$now".tar" "$source"
 if [ $usePigz == yes ]; then

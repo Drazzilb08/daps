@@ -57,9 +57,11 @@ mkdir -p "$dest/$dt"
 now=$(date +"%I_%M_%p")
 # Data Backup
 tar -cf "$dest/$dt/backup-"$now".tar" "$source"
+runsize=$(du -sh $dest/$dt/backup-"$now".tar | awk '{print $1}') #Set runsize information
 if [ $usePigz == yes ]; then
-    echo -e "\nUsing pigz to create backup... this could take a while..."
+    echo -e "\nUsing pigz to compress backup... this could take a while..."
     pigz -9 "$dest/$dt/backup-"$now".tar"
+    runsize=$(du -sh $dest/$dt/backup-"$now".tar.gz | awk '{print $1}')
 fi
 
 sleep 2
@@ -88,8 +90,7 @@ else
 fi
 
 # Gather size information
-runsize=$(du -sh $dest/$dt/ | awk '{print $1}')
-echo -e "This backup's size: $runzie"
+echo -e "This backup's size: $runsize"
 if [ -d $dest/ ]; then
     totalsize=$(du -sh $dest | awk '{print $1}')
     echo -e "\nTotal size of all backups: $totalsize"

@@ -64,11 +64,12 @@ cd "$(realpath -s $source)"
 # set the destination directory and a date
 dest=$(realpath -s $destination)/
 dt=$(date +"%m-%d-%Y")
+now=$(date +"%I_%M_%p")
+
 debug=false	#testing only
 
 # create the backup directory if it doesn't exist - error handling - will not create backup file it path does not exist
 mkdir -p "$dest"
-now=$(date +"%I_%M_%p")
 
 # create tar file of essential databases and preferences -- The Plug-in Support preferences will keep settings of any plug-ins, even though they will need to be reinstalled.
 if [ $fullbackup == no ]; then
@@ -77,6 +78,7 @@ if [ $fullbackup == no ]; then
 	
 	if [ $debug != true ]; then
 		tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup-"$now".tar" "Plug-in Support/Databases" "Plug-in Support/Preferences" Preferences.xml
+		essentialsize=$(du -sh $dest/Essential/$dt/Essential_Plex_Data_Backup-"$now".tar | awk '{print $1}')
 	else
 		tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0-"$now".tar" Preferences.xml
 	fi
@@ -92,9 +94,11 @@ if [ $fullbackup == no ]; then
 				
 				if [ $debug != true ]; then
 					tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-"$now".tar" "$source"
+					fullsize=$(du -sh $dest/Full/$dt/Full_Plex_Data_Backup-"$now".tar | awk '{print $1}')
                     # Compress tar into tar.gz file greatly reducing the size of the backup.
 					if [ usePigz == yes ]; then
 				    	pigz -9 "Full_Plex_Data_Backup-"$now".tar"
+						fullsize=$(du -sh $dest/Full/$dt/Full_Plex_Data_Backup-"$now".tar.gz | awk '{print $1}')
 					fi
 				else
 					tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-debug1-"$now".tar" Preferences.xml
@@ -154,19 +158,14 @@ fi
 if [ $notify == yes ]; then
 	if [ $fullbackup == no ]; then
 			if [ $cf = false ]; then
-				essentialsize=$(du -sh $dest/Essential/$dt/ | awk '{print $1}')
 				/usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Plex Backup" -d "Essential Plex data has been backed up." -i "normal"
 				echo -e  "Essential backup: $essentialsize"
 			else
-				essentialsize=$(du -sh $dest/Essential/$dt/ | awk '{print $1}')
-				fullsize=$(du -sh $dest/Full/$dt/ | awk '{print $1}')
 				/usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Plex Backup" -d "Essential & Full Plex data has been backed up." -i "normal"
 				echo -e  "Essential backup: $essentialsize"
 				echo -e  "Full Backup: $fullsize"
 			fi
 	else
-		essentialsize=$(du -sh $dest/Essential/$dt/ | awk '{print $1}')
-		fullsize=$(du -sh $dest/Full/$dt/ | awk '{print $1}')
 		/usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Plex Backup" -d "Complete Plex data has been backed up." -i "normal"
 		echo -e  "Full Backup: $fullsize"
 	fi

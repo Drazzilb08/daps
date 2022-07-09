@@ -25,18 +25,13 @@ pigzCompression=9						# Define compression level to use with pigz. Numbers are 
 # You can find discord.sh ----> https://github.com/ChaoticWeg/discord.sh
 # Simply download or clone the repo and extract the discord.sh file to a loaction then define that location in the discordLoc variable
 
-# Use discord for notifications
-useDiscord=no
-# The folder containing discord.sh, no trailing slash
-discordLoc=''
-# Discord webhook
-webhook=''
-# Name your bot
-botName='Notification Bot'
-# Give a title name to your discord messages
-titleName='Server Notifications'
-# The bar color for discord notifications, must be Hexcode
-barColor='E5A00D'
+useDiscord=no							# Use discord for notifications
+discordLoc=''							# The folder containing discord.sh, no trailing slash
+webhook=''								# Discord webhook
+botName='Notification Bot'				# Name your bot
+titleName='Server Notifications'		# Give a title name to your discord messages
+barColor='E5A00D'						# The bar color for discord notifications, must be Hexcode
+avatarUrl=''							# Url for the avatar you want your bot to have
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 
@@ -185,23 +180,43 @@ if [ $useDiscord == yes ]; then
 		if [ $cf = false ]; then
 			${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
 				--title "Plex Backup" \
-				--description "Essential Plex data has been backed up.\n$runOutput.\nThis Essential backup size: $essentialsize\nTotal size of all Essential backups: $totalessential" \
+				--avatar "$avatarUrl" \
+				--description "Essential Plex data has been backed up." \
+				--field "Runtime; $runOutput.;false" \
+				--field "This Essential backup size:;$essentialsize;false" \
+				--field "Total size of all Essential backups:;$totalessential;false" \
 				--color "0x$barColor" \
+				--footer "Powered by: Drazzilb" \
+        		--footer-icon "https://i.imgur.com/r69iYhr.png" \
 				--timestamp
 			echo -e "\nDiscord notification sent."
 		else
 			${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
 				--title "Plex Backup" \
-				--description "Essential & Full Plex data has been backed up.\n$runOutput\nThis Essential backup size: $essentialsize\nThis Full Backup: $fullsize\nTotal size of all Essential backups: $totalessential\nTotal size of all Full backups: $totalfull" \
+				--avatar "$avatarUrl" \
+				--description "Essential & Full Plex data has been backed up."
+				--field "Runtime;$runOutput;false" \
+				--field "This Essential backup size:;$essentialsize;false" \
+				--field "This Full Backup:;$fullsize;false" \
+				--field "Total size of all Essential backups:;$totalessential;false" \
+				--field "Total size of all Full backups:; $totalfull;false" \
 				--color "0x$barColor" \
+				--footer "Powered by: Drazzilb" \
+        		--footer-icon "https://i.imgur.com/r69iYhr.png" \
 				--timestamp
 			echo -e "\nDiscord notification sent."
 		fi
 	else
 		${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
 			--title "Plex Backup" \
-			--description "Full Plex data has been backed up.\n$runOutput.\nThis Full Backup: $fullsize\nTotal size of all Full backups: $totalfull" \
+			--avatar "$avatarUrl" \
+			--description "Full Plex data has been backed up." \
+			--field "Runtime;$runOutput;false" \
+			--field "This Full Backup:;$fullsize;false" \
+			--field "Total size of all Full backups:;$totalfull;false" \
 			--color "0x$barColor" \
+			--footer "Powered by: Drazzilb" \
+			--footer-icon "https://i.imgur.com/r69iYhr.png" \
 			--timestamp
 		echo -e "\nDiscord notification sent."
 	fi

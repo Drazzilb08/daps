@@ -1,41 +1,30 @@
 #!/bin/bash
 
 #------------- DEFINE VARIABLES -------------#
-# Set your script name, must be unique to any other script.
-name=''
-# Set source directory
-source=''
-# Set backup directory
-destination=''
-# Number of days to keep backup
-delete_after=2
-# Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
-# Pigz package must be installed via NerdPack
-usePigz=yes
+name=''                                 # Set your script name, must be unique to any other script.
+source=''                               # Set source directory
+destination=''                          # Set backup directory
+delete_after=2                          # Number of days to keep backup
+usePigz=yes                             # Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
+                                            # Pigz package must be installed via NerdPack
 pigzCompression=9						# Define compression level to use with pigz
-										# 0 = No compression
-										# 6 = Default compression
-										# 9 = Maximum Compression
-# Use unRAID's built in notification system
-notify=yes
+                                            # 0 = No compression
+                                            # 1 = Least compression/Fastest
+                                            # 6 = Default compression/Default Speed
+                                            # 9 = Maximum Compression/Slowest
+notify=yes                              # Use unRAID's built in notification system
 #------------- DEFINE DISCORD VARIABLES -------------#
 # This section is not required
 # This portion requires discord.sh to be downloaded and placed somewhere in a location accessable by this script
 # You can find discord.sh ----> https://github.com/ChaoticWeg/discord.sh
 # Simply download or clone the repo and extract the discord.sh file to a loaction then define that location in the discordLoc variable
 
-# Use discord for notifications
-useDiscord=yes
-# Location for discord.sh, no trailing slash
-discordLoc=''
-# Discord webhook
-webhook=''
-# Name your bot
-botName='Notification Bot'
-# Give a title name to your discord messages
-titleName='Server Notifications'
-# The bar color for discord notifications, must be Hexcode
-barColor='0xFFFFFF'
+useDiscord=yes                          # Use discord for notifications
+discordLoc=''                           # Location for discord.sh, no trailing slash
+webhook=''                              # Discord webhook
+botName='Notification Bot'              # Name your bot
+titleName='Server Notifications'        # Give a title name to your discord messages
+barColor='FFFFFF'                       # The bar color for discord notifications, must be Hexcode
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 # Will not run again if currently running.
@@ -110,7 +99,7 @@ if [ "$useDiscord" == "yes" ]; then
     ${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
         --title "${titleName}" \
         --description "Backup completed: ${name} data has been backed up.\n$runOutput.\nThis backup's size: $runsize\nTotal size of all backups: ${totalsize}" \
-        --color "$barColor" \
+        --color "0x$barColor" \
         --timestamp
     echo -e "\nDiscord notification sent."
 fi

@@ -74,7 +74,7 @@ mkdir -p "$dest"
 
 # create tar file of essential databases and preferences -- The Plug-in Support preferences will keep settings of any plug-ins, even though they will need to be reinstalled.
 if [ $fullbackup == no ]; then
-	echo -e  "\n\nCreating essential backup... please wait"
+	echo -e  "\n\nCreating Essential backup... please wait"
 	mkdir -p "$dest/Essential/$dt"
 	
 	if [ $debug != true ]; then
@@ -90,7 +90,7 @@ if [ $fullbackup == no ]; then
 		if [[ $days -gt $force_full_backup ]] || [[ $lastbackup == 0 ]]
 			then
 				cf=true	# created full backup
-				echo -e  "\nCreating full backup now... please wait\n"
+				echo -e  "\nCreating Full backup now... please wait\n"
 				mkdir -p "$dest/Full/$dt"
 				
 				if [ $debug != true ]; then
@@ -108,12 +108,12 @@ if [ $fullbackup == no ]; then
 				date > /boot/config/plugins/user.scripts/scripts/last_plex_backup
 			else
 				cf=false
-				echo -e  "\nLast full backup created " $days " ago... skipping\n"
+				echo -e  "\nLast Full backup created " $days " ago... skipping\n"
 		fi
 	fi
     
 else
-	echo -e  "\nCreating full backup... please wait\n"
+	echo -e  "\nCreating Full backup... please wait\n"
 	mkdir -p "$dest/Full/$dt"
 			
 	if [ $debug != true ]
@@ -185,14 +185,14 @@ if [ $useDiscord == yes ]; then
 		if [ $cf = false ]; then
 			${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
 				--title "Plex Backup" \
-				--description "Essential Plex data has been backed up.\n$runOutput.\nThis essential backup size: $essentialsize\nTotal size of all Essential backups: $totalessential" \
+				--description "Essential Plex data has been backed up.\n$runOutput.\nThis Essential backup size: $essentialsize\nTotal size of all Essential backups: $totalessential" \
 				--color "$barColor" \
 				--timestamp
 			echo -e "\nDiscord notification sent."
 		else
 			${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
 				--title "Plex Backup" \
-				--description "Essential & Full Plex data has been backed up.\n$runOutput\nThis essential backup size: $essentialsize\nThis full Backup: $fullsize\nTotal size of all Essential backups: $totalessential\nTotal size of all Full backups: $totalfull" \
+				--description "Essential & Full Plex data has been backed up.\n$runOutput\nThis Essential backup size: $essentialsize\nThis Full Backup: $fullsize\nTotal size of all Essential backups: $totalessential\nTotal size of all Full backups: $totalfull" \
 				--color "$barColor" \
 				--timestamp
 			echo -e "\nDiscord notification sent."
@@ -200,7 +200,7 @@ if [ $useDiscord == yes ]; then
 	else
 		${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
 			--title "Plex Backup" \
-			--description "Full Plex data has been backed up.\n$runOutput.\nThis full Backup: $fullsize\nTotal size of all Full backups: $totalfull" \
+			--description "Full Plex data has been backed up.\n$runOutput.\nThis Full Backup: $fullsize\nTotal size of all Full backups: $totalfull" \
 			--color "$barColor" \
 			--timestamp
 		echo -e "\nDiscord notification sent."

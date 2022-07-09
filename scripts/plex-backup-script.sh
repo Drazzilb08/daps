@@ -14,6 +14,11 @@ force_full_backup=7						# create a full backup every (#) number of days, in add
 keep_full=2							    # number of full backups to keep - these can be very large
 usePigz=no								# Due to the size of full backups if you're using a full backup and would like to really compress your backups down as much as possible use pigz
 											# Pigz package must be installed via NerdPack
+pigzCompression=9						# Define compression level to use with pigz. Numbers are 0-9 only!
+										# 0 = No compression
+										# 1 = Least compression/Fastest
+										# 6 = Default compression/Default Speed
+										# 9 = Maximum Compression/Slowest
 #------------- DEFINE DISCORD VARIABLES -------------#
 # This section is not required
 # This portion requires discord.sh to be downloaded and placed somewhere in a location accessable by this script
@@ -32,12 +37,8 @@ botName='Notification Bot'
 titleName='Server Notifications'
 # The bar color for discord notifications, must be Hexcode
 barColor='0xE5A00D'
-									
-#	-- END USER CONFIGURATION --	#
 
-
-#       DO NOT MODIFY BELOW THIS LINE
-#-------------------------------------------------------------------------------------------------------
+#------------- DO NOT MODIFY BELOW THIS LINE -------------#
 
 if [ -e "/tmp/i.am.running" ]; then
     echo "Another instance of the script is running. Aborting."
@@ -97,7 +98,7 @@ if [ $fullbackup == no ]; then
 					fullsize=$(du -sh $dest/Full/$dt/Full_Plex_Data_Backup-"$now".tar | awk '{print $1}')
                     # Compress tar into tar.gz file greatly reducing the size of the backup.
 					if [ usePigz == yes ]; then
-				    	pigz -9 "Full_Plex_Data_Backup-"$now".tar"
+				    	pigz -$pigzCompression "Full_Plex_Data_Backup-"$now".tar"
 						fullsize=$(du -sh $dest/Full/$dt/Full_Plex_Data_Backup-"$now".tar.gz | awk '{print $1}')
 					fi
 				else

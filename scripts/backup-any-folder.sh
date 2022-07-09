@@ -12,6 +12,10 @@ delete_after=2
 # Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
 # Pigz package must be installed via NerdPack
 usePigz=yes
+pigzCompression=9						# Define compression level to use with pigz
+										# 0 = No compression
+										# 6 = Default compression
+										# 9 = Maximum Compression
 # Use unRAID's built in notification system
 notify=yes
 #------------- DEFINE DISCORD VARIABLES -------------#
@@ -60,7 +64,7 @@ tar -cf "$dest/$dt/backup-"$now".tar" "$source"
 runsize=$(du -sh $dest/$dt/backup-"$now".tar | awk '{print $1}') #Set runsize information
 if [ $usePigz == yes ]; then
     echo -e "\nUsing pigz to compress backup... this could take a while..."
-    pigz -9 "$dest/$dt/backup-"$now".tar"
+    pigz -$pigzCompression "$dest/$dt/backup-"$now".tar"
     runsize=$(du -sh $dest/$dt/backup-"$now".tar.gz | awk '{print $1}')
 fi
 

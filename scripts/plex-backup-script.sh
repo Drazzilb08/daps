@@ -68,6 +68,7 @@ debug=false	#testing only
 
 # create the backup directory if it doesn't exist - error handling - will not create backup file it path does not exist
 mkdir -p "$dest"
+now="$(date +"%Y-%m-%d"@%H.%M)"
 
 # create tar file of essential databases and preferences -- The Plug-in Support preferences will keep settings of any plug-ins, even though they will need to be reinstalled.
 if [ $fullbackup == no ]; then
@@ -75,9 +76,9 @@ if [ $fullbackup == no ]; then
 	mkdir -p "$dest/Essential/$dt"
 	
 	if [ $debug != true ]; then
-		tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup-$(date +"%I_%M_%p").tar" "Plug-in Support/Databases" "Plug-in Support/Preferences" Preferences.xml
+		tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup-"$now".tar" "Plug-in Support/Databases" "Plug-in Support/Preferences" Preferences.xml
 	else
-		tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0-$(date +"%I_%M_%p").tar" Preferences.xml
+		tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0-"$now".tar" Preferences.xml
 	fi
 
 	if [ $force_full_backup != 0 ]; then
@@ -90,13 +91,13 @@ if [ $fullbackup == no ]; then
 				mkdir -p "$dest/Full/$dt"
 				
 				if [ $debug != true ]; then
-					tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-$(date +"%I_%M_%p").tar" "$source"
+					tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-"$now".tar" "$source"
                     # Compress tar into tar.gz file greatly reducing the size of the backup.
 					if [ usePigz == yes ]; then
-				    	pigz -9 "Full_Plex_Data_Backup-debug1-$(date +"%I_%M_%p").tar"
+				    	pigz -9 "Full_Plex_Data_Backup-"$now".tar"
 					fi
 				else
-					tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-debug1-$(date +"%I_%M_%p").tar" Preferences.xml
+					tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-debug1-"$now".tar" Preferences.xml
 				fi
 				# save the date of the full backup
 				date > /boot/config/plugins/user.scripts/scripts/last_plex_backup
@@ -112,9 +113,9 @@ else
 			
 	if [ $debug != true ]
 		then
-			tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-$(date +"%I_%M_%p").tar" "$source"
+			tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-"$now".tar" "$source"
 		else
-			tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-debug2-$(date +"%I_%M_%p").tar" Preferences.xml
+			tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-debug2-"$now".tar" Preferences.xml
 	fi
 	
 	# save the date of the full backup
@@ -136,8 +137,8 @@ end=`date +%s`
 # Runtime
 totalTime=$((end - start))
 seconds=$((totalTime % 60))
-minutes=$((totalTime / 60))
-hours=$((totalSeconds / 60 / 60 % 24))
+minutes=$((totalTime % 3600 / 60))
+hours=$((totalTime / 3600))
 
 if (($minutes == 0 && $hours == 0)); then
     echo "Plex backup completed in $seconds seconds"

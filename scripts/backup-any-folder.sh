@@ -25,6 +25,7 @@ webhook=''                              # Discord webhook
 botName='Notification Bot'              # Name your bot
 titleName='Server Notifications'        # Give a title name to your discord messages
 barColor='FFFFFF'                       # The bar color for discord notifications, must be Hexcode
+avatarUrl=''                            # Url for the avatar you want your bot to have
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 # Will not run again if currently running.
@@ -98,8 +99,14 @@ fi
 if [ "$useDiscord" == "yes" ]; then
     ${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
         --title "${titleName}" \
-        --description "Backup completed: ${name} data has been backed up.\n$runOutput.\nThis backup's size: $runsize\nTotal size of all backups: ${totalsize}" \
+        --avatar "$avatarUrl" \
+        --description "Backup completed: ${name} data has been backed up.\n" \
+        --field "Runtime; $runOutput.;false" \
+        --field "This backup's size:; $runsize;false" \
+        --field "Total size of all backups:; ${totalsize};false" \
         --color "0x$barColor" \
+        --footer "Powered by: Drazzilb" \
+        --footer-icon "https://i.imgur.com/r69iYhr.png" \
         --timestamp
     echo -e "\nDiscord notification sent."
 fi

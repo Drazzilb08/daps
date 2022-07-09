@@ -54,7 +54,7 @@ mkdir -p "$dest"
 echo -e "\nCreating backup..."
 mkdir -p "$dest/$dt"
 
-now="$(date +"%I_%M_%p)"
+now=$(date +"%I_%M_%p")
 # Data Backup
 tar -cf "$dest/$dt/backup-"$now".tar" "$source"
 if [ $usePigz == yes ]; then
@@ -87,12 +87,13 @@ else
     runOutput="Script completed in $hours hours $minutes minutes and $seconds seconds"
 fi
 
-#Finish
+# Gather size information
+runsize=$(du -sh $dest/$dt/ | awk '{print $1}')
+echo -e "This backup's size: $runzie"
 if [ -d $dest/ ]; then
-    size=$(du -sh $dest | awk '{print $1}')
-    echo -e "\nTotal size of all backups: $size."
+    totalsize=$(du -sh $dest | awk '{print $1}')
+    echo -e "\nTotal size of all backups: $totalsize"
 fi
-
 # Removing temp file
 rm "/tmp/i.am.running.${name}"
 
@@ -103,7 +104,7 @@ fi
 if [ "$useDiscord" == "yes" ]; then
     ${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
         --title "${titleName}" \
-        --description "Backup completed: ${name} data has been backed up.\n$runOutput.\nTotal size of all backups: ${size}" \
+        --description "Backup completed: ${name} data has been backed up.\n$runOutput.\nThis backup's size: $runsize\nTotal size of all backups: ${totalsize}" \
         --color "$barColor" \
         --timestamp
     echo -e "\nDiscord notification sent."

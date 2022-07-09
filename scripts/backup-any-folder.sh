@@ -54,11 +54,12 @@ mkdir -p "$dest"
 echo -e "\nCreating backup..."
 mkdir -p "$dest/$dt"
 
+now="$(date +"%Y-%m-%d"@%H.%M)"
 # Data Backup
-tar -cf "$dest/$dt/backup-$(date +"%I_%M_%p").tar" "$source"
+tar -cf "$dest/$dt/backup-"$now".tar" "$source"
 if [ $usePigz == yes ]; then
     echo -e "\nUsing pigz to create backup... this could take a while..."
-    pigz -9 "$dest/$dt/backup-$(date +"%I_%M_%p").tar"
+    pigz -9 "$dest/$dt/backup-"$now".tar"
 fi
 
 sleep 2
@@ -72,13 +73,13 @@ end=$(date +%s)
 # Runtime
 totalTime=$((end - start))
 seconds=$((totalTime % 60))
-minutes=$((totalTime / 60))
-hours=$((totalSeconds / 60 / 60 % 24))
+minutes=$((totalTime % 3600 / 60))
+hours=$((totalTime / 3600))
 
-if (($minutes == 0 && $hours == 0)); then
+if (("$minutes" == "0" && "$hours" == "0")); then
     echo "Script completed in $seconds seconds"
     runOutput="Script completed in $seconds seconds"
-elif (($hours == 0)); then
+elif (("$hours" == "0")); then
     echo "Script completed in $minutes minutes and $seconds seconds"
     runOutput="Script completed in $minutes minutes and $seconds seconds"
 else
@@ -96,10 +97,10 @@ fi
 rm "/tmp/i.am.running.${name}"
 
 # Notifications
-if [ $notify == yes ]; then
+if [ "$notify" == "yes" ]; then
     /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "${name} Backup" -d "Backup completed: ${name} data has been backed up." -i "normal"
 fi
-if [ $useDiscord == yes ]; then
+if [ "$useDiscord" == "yes" ]; then
     ${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
         --title "${titleName}" \
         --description "Backup completed: ${name} data has been backed up.\n$runOutput.\nTotal size of all backups: ${size}" \

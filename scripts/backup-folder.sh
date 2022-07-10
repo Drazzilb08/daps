@@ -36,11 +36,12 @@ else
     touch "/tmp/i.am.running.${name}"
 fi
 
-start=$(date +%s) # start time of script for statistics
+#Set variables
+start=$(date +%s)                   #Sets start time for runtime information
 cd "$(realpath -s $source)"
-
 dest=$(realpath -s $destination)/
 dt=$(date +"%m-%d-%Y")
+now=$(date +"%I_%M_%p")
 
 # create the backup directory if it doesn't exist - error handling - will not create backup file it path does not exist
 mkdir -p "$dest"
@@ -48,7 +49,6 @@ mkdir -p "$dest"
 echo -e "\nCreating backup..."
 mkdir -p "$dest/$dt"
 
-now=$(date +"%I_%M_%p")
 # Data Backup
 tar -cf "$dest/$dt/backup-"$now".tar" "$source"
 runsize=$(du -sh $dest/$dt/backup-"$now".tar | awk '{print $1}') #Set runsize information
@@ -100,7 +100,7 @@ if [ "$useDiscord" == "yes" ]; then
     ${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
         --title "${titleName}" \
         --avatar "$avatarUrl" \
-        --description "Backup completed: ${name} data has been backed up.\n" \
+        --description "Backup completed: ${name} data has been backed up." \
         --field "Runtime; $runOutput.;false" \
         --field "This backup's size:; $runsize;false" \
         --field "Total size of all backups:; ${totalsize};false" \

@@ -26,7 +26,8 @@ pigzCompression=9						# Define compression level to use with pigz. Numbers are 
 # Simply download or clone the repo and extract the discord.sh file to a loaction then define that location in the discordLoc variable
 
 useDiscord=no							# Use discord for notifications
-discordLoc=''							# The folder containing discord.sh, no trailing slash
+discordLoc=''                           # Full location to discord.sh
+											# Eg. '/mnt/user/data/scripts/discord.sh'
 webhook=''								# Discord webhook
 botName='Notification Bot'				# Name your bot
 titleName='Server Notifications'		# Give a title name to your discord messages
@@ -77,6 +78,7 @@ if [ $fullbackup == no ]; then
 		essentialsize=$(du -sh $dest/Essential/$dt/Essential_Plex_Data_Backup-"$now".tar | awk '{print $1}')
 	else
 		tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0-"$now".tar" Preferences.xml
+		essentialsize=$(du -sh $dest/Essential/$dt/Essential_Plex_Data_Backup-debug0-"$now".tar | awk '{print $1}')
 	fi
 
 	if [ $force_full_backup != 0 ]; then
@@ -98,6 +100,11 @@ if [ $fullbackup == no ]; then
 					fi
 				else
 					tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-debug1-"$now".tar" Preferences.xml
+					fullsize=$(du -sh $dest/Full/$dt/Full_Plex_Data_Backup-debug1-"$now".tar | awk '{print $1}')
+					if [ usePigz == yes ]; then
+				    	pigz -$pigzCompression "Full_Plex_Data_Backup-"$now".tar"
+						fullsize=$(du -sh $dest/Full/$dt/Full_Plex_Data_Backup-debug1-"$now".tar.gz | awk '{print $1}')
+					fi
 				fi
 				# save the date of the full backup
 				date > /boot/config/plugins/user.scripts/scripts/last_plex_backup
@@ -114,8 +121,16 @@ else
 	if [ $debug != true ]
 		then
 			tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-"$now".tar" "$source"
+			fullsize=$(du -sh $dest/Full/$dt/Full_Plex_Data_Backup-"$now".tar | awk '{print $1}')
+			# Compress tar into tar.gz file greatly reducing the size of the backup.
+			if [ usePigz == yes ]; then
+				pigz -$pigzCompression "Full_Plex_Data_Backup-"$now".tar"
+				fullsize=$(du -sh $dest/Full/$dt/Full_Plex_Data_Backup-"$now".tar.gz | awk '{print $1}')
+			fi
 		else
 			tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-debug2-"$now".tar" Preferences.xml
+			fullsize=$(du -sh $dest/Full/$dt/ -"$now".tar | awk '{print $1}')
+
 	fi
 	
 	# save the date of the full backup
@@ -175,10 +190,11 @@ if [ -d $dest/Full/ ]; then
 	echo -e  "Total size of all Full backups: $totalfull)"
 fi
 # Discord Notifications
+
 if [ $useDiscord == yes ]; then
 	if [ $fullbackup == no ]; then
 		if [ $cf = false ]; then
-			${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
+			${discordLoc} --webhook-url="$webhook" --username "${botName}" \
 				--title "Plex Backup" \
 				--avatar "$avatarUrl" \
 				--description "Essential Plex data has been backed up." \
@@ -191,7 +207,7 @@ if [ $useDiscord == yes ]; then
 				--timestamp
 			echo -e "\nDiscord notification sent."
 		else
-			${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
+			${discordLoc} --webhook-url="$webhook" --username "${botName}" \
 				--title "Plex Backup" \
 				--avatar "$avatarUrl" \
 				--description "Essential & Full Plex data has been backed up."
@@ -207,7 +223,7 @@ if [ $useDiscord == yes ]; then
 			echo -e "\nDiscord notification sent."
 		fi
 	else
-		${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
+		${discordLoc} --webhook-url="$webhook" --username "${botName}" \
 			--title "Plex Backup" \
 			--avatar "$avatarUrl" \
 			--description "Full Plex data has been backed up." \

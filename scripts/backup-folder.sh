@@ -20,7 +20,8 @@ notify=yes                              # Use unRAID's built in notification sys
 # Simply download or clone the repo and extract the discord.sh file to a loaction then define that location in the discordLoc variable
 
 useDiscord=yes                          # Use discord for notifications
-discordLoc=''                           # Location for discord.sh, no trailing slash
+discordLoc=''                           # Full location to discord.sh
+											# Eg. '/mnt/user/data/scripts/discord.sh'
 webhook=''                              # Discord webhook
 botName='Notification Bot'              # Name your bot
 titleName='Server Notifications'        # Give a title name to your discord messages
@@ -97,7 +98,7 @@ if [ "$notify" == "yes" ]; then
     /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "${name} Backup" -d "Backup completed: ${name} data has been backed up." -i "normal"
 fi
 if [ "$useDiscord" == "yes" ]; then
-    ${discordLoc}/discord.sh --webhook-url="$webhook" --username "${botName}" \
+    ${discordLoc} --webhook-url="$webhook" --username "${botName}" \
         --title "${titleName}" \
         --avatar "$avatarUrl" \
         --description "Backup completed: ${name} data has been backed up." \

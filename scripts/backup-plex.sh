@@ -1,5 +1,14 @@
 #!/bin/bash
 
+#       ____             _                  _____  _           
+#      |  _ \           | |                |  __ \| |          
+#      | |_) | __ _  ___| | ___   _ _ __   | |__) | | _____  __
+#      |  _ < / _` |/ __| |/ / | | | '_ \  |  ___/| |/ _ \ \/ /
+#      | |_) | (_| | (__|   <| |_| | |_) | | |    | |  __/>  < 
+#      |____/ \__,_|\___|_|\_\\__,_| .__/  |_|    |_|\___/_/\_\
+#                                  | |                         
+#                                  |_|                         
+
 #------------- DEFINE VARIABLES -------------#
 source="/mnt/user/appdata/plex"			# path to your plex appdata location
 destination="/mnt/user/backup/plex"     # path to your backup folder

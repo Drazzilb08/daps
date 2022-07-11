@@ -18,7 +18,7 @@ source='/mnt/user/appdata/'             # Set appdata directory, this is to help
                                         # However, if you want to type out the whole thing, (say if you have config information in seperate locations) you still can enter the information, just don't use $source
 destination='/mnt/user/backup/appdata/' # Set backup directory
 delete_after=2                          # Number of days to keep backup
-usePigz=yes                             # Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
+usePigz=no                             # Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
                                             # Pigz package must be installed via NerdPack
 pigzCompression=9						# Define compression level to use with pigz
                                             # 0 = No compression
@@ -35,7 +35,7 @@ notify=no                              # Use unRAID's built in notification syst
 useDiscord=yes                          # Use discord for notifications
                                         # Note, there is a limititation of 20 containers per list and list_no_stop if you're going to use discord
 
-discordLoc='/mnt/user/data/scripts/discord-script/discord.sh'                           # Full location to discord.sh
+discordLoc=''                           # Full location to discord.sh
                                                                                         # Eg. '/mnt/user/data/scripts/discord.sh'
 webhook=''                              # Discord webhook
 botName='Notification Bot'              # Name your bot
@@ -47,54 +47,13 @@ avatarUrl=''                            # Url for the avatar you want your bot t
                                             # Format: <container name> <$source/container_config_dir>
                                             # Eg. tautulli $appdata/tautulli>
 list=(
-    pmm-anime $source/plex-meta-manager/pmm-anime
-    pmm-movies $source/plex-meta-manager/pmm-movies
-    pmm-series $source/plex-meta-manager/pmm-series
-    wrapperr $source/wrapperr
-    tautulli $source/tautulli
-    plex-auto-languages $source/plex-auto-languages
-    homarr $source/homarr
-    heimdall $source/heimdall
-    binhex-krusader $source/binhex-krusader
-    code-server $source/code-server
-    thelounge $source/thelounge
-    mariadb $source/mariadb
-    mongodb $source/mongodb
-    icloudpd1 $source/icloudpd/jonathon/
-    icloudpd2 $source/icloudpd/ashli/
-    speedtesttracker $source/speedtesttracker
-    cloudflared-2 $source/cloudflared-2
-    cloudflared $source/cloudflared
-    radarr $source/radarr
-    sonarr $source/sonarr
-    sonarr-anime $source/sonarr-anime
-    lidarr $source/lidarr
-    readarr $source/readarr
-    calibre $source/calibre
-    filebrowser $source/filebrowser
-    xbackbone $source/xbackbone
-    petio $source/petio
-    ghost $source/ghost
-    ghost-2 $source/ghost-2
-    organizrv2 $source/organizrv2
-    calibre-web $source/calibre-web
+    
 )
                                         # List containers and associated config directory to back up without stopping
                                             # Format: <container name> <$source/container_config_dir>
                                             # Eg. tautulli $appdata/tautulli>
 list_no_stop=(
-    qbittorrent-vpn-movies $source/qbittorrent-vpn-movies
-    qbittorrent-vpn-series $source/qbittorrent-vpn-series
-    qbittorrent-vpn-music $source/qbittorrent-vpn-music
-    qbittorrent-vpn-books $source/qbittorrent-vpn-books
-    qbittorrent-vpn-games $source/qbittorrent-vpn-games
-    prowlarr $source/prowlarr
-    notifiarr $source/notifiarr
-    cross-seed-movies $source/cross-seed-movies
-    cross-seed-series $source/cross-seed-series
-    autobrr $source/autobrr
-    qbit-manage-movies $source/qbit-manage
-    nginxproxymanager $source/nginxproxymanager
+
 )
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
@@ -156,9 +115,7 @@ do
     # If container is running
     if echo $cRunning | grep -iqF $name; then
         echo -e "Stopping $name"
-        if [ "$debug" != "yes" ]; then
-            docker stop -t 60 "$name" > /dev/null 2>&1 # Stops container without output 
-        fi
+        docker stop -t 60 "$name" > /dev/null 2>&1 # Stops container without output 
         echo -e "Creating backup of $name"
         if [ "$debug" == "yes" ]; then
             tar -cf "$dest/$dt/$name-"$now"-debug.tar" -T /dev/null

@@ -1,15 +1,15 @@
 #!/bin/bash
+#                                 _       _          ____             _                
+#           /\                   | |     | |        |  _ \           | |               
+#          /  \   _ __  _ __   __| | __ _| |_ __ _  | |_) | __ _  ___| | ___   _ _ __  
+#         / /\ \ | '_ \| '_ \ / _` |/ _` | __/ _` | |  _ < / _` |/ __| |/ / | | | '_ \ 
+#        / ____ \| |_) | |_) | (_| | (_| | || (_| | | |_) | (_| | (__|   <| |_| | |_) |
+#       /_/    \_\ .__/| .__/ \__,_|\__,_|\__\__,_| |____/ \__,_|\___|_|\_\\__,_| .__/ 
+#                | |   | |                                                      | |    
+#                |_|   |_|                                                      |_|    
 
-#       ____             _                                           _       _        
-#      |  _ \           | |                    /\                   | |     | |       
-#      | |_) | __ _  ___| | ___   _ _ __      /  \   _ __  _ __   __| | __ _| |_ __ _ 
-#      |  _ < / _` |/ __| |/ / | | | '_ \    / /\ \ | '_ \| '_ \ / _` |/ _` | __/ _` |
-#      | |_) | (_| | (__|   <| |_| | |_) |  / ____ \| |_) | |_) | (_| | (_| | || (_| |
-#      |____/ \__,_|\___|_|\_\\__,_| .__/  /_/    \_\ .__/| .__/ \__,_|\__,_|\__\__,_|
-#                                  | |              | |   | |                         
-#                                  |_|              |_|   |_|                          
-
-# This script creates an invididual tar file for each docker appdata directory that you define (needs both container name and path to it's appdata). Furthermore, it stops and restarts each container before and after backup if the container was running at the time of the backup
+# This script creates an invididual tar file for each docker appdata directory that you define (needs both container name and path to it's appdata). 
+# Furthermore, it stops and restarts each container before and after backup if the container was running at the time of the backup
 
 #------------- DEFINE VARIABLES -------------#
 source='/mnt/user/appdata/'             # Set appdata directory, this is to help with easily adding directories
@@ -18,7 +18,7 @@ source='/mnt/user/appdata/'             # Set appdata directory, this is to help
                                         # However, if you want to type out the whole thing, (say if you have config information in seperate locations) you still can enter the information, just don't use $source
 destination='/mnt/user/backup/appdata/' # Set backup directory
 delete_after=2                          # Number of days to keep backup
-usePigz=no                             # Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
+usePigz=yes                             # Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
                                             # Pigz package must be installed via NerdPack
 pigzCompression=9						# Define compression level to use with pigz
                                             # 0 = No compression
@@ -35,7 +35,7 @@ notify=no                              # Use unRAID's built in notification syst
 useDiscord=yes                          # Use discord for notifications
                                         # Note, there is a limititation of 20 containers per list and list_no_stop if you're going to use discord
 
-discordLoc=''                           # Full location to discord.sh
+discordLoc='/mnt/user/data/scripts/discord-script/discord.sh'                           # Full location to discord.sh
                                                                                         # Eg. '/mnt/user/data/scripts/discord.sh'
 webhook=''                              # Discord webhook
 botName='Notification Bot'              # Name your bot
@@ -97,12 +97,6 @@ list_no_stop=(
     nginxproxymanager $source/nginxproxymanager
 )
 
-
-#<-----------TO DO------------->#
-# SQUASH BUGS
-    # Discord will only take 20 lines per field, Require splitting
-#<-----------TO DO------------->#
-
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 # Will not run again if currently running.
 if [ -e "/tmp/i.am.running.appdata" ]; then
@@ -125,7 +119,7 @@ now=$(date +"%I_%M_%p")
 mkdir -p "$dest"
 # Creating backup of directory
 mkdir -p "$dest/$dt"
-debug=yes           # Add additional log information
+debug=no           # Add additional log information
                     # Also does not remove tmp files
 delete_files=yes    #option to save or remove files during debug
 # Data Backup
@@ -138,7 +132,6 @@ do
     name=${list[i]} path=${list[i+1]}
     # Error handling container || path exists or does not exists
     if [ $( docker ps -a -f name=$name | wc -l ) -ge 2 ]; then
-        error=1
         if [ ! -d "$path" ]; then
             echo -e "\nERROR: $name exists but the directory $path does not exist\n"
             errorlog="Container \`$name\` exists but the directory $path does not exist"
@@ -163,38 +156,63 @@ do
     # If container is running
     if echo $cRunning | grep -iqF $name; then
         echo -e "Stopping $name"
-        docker stop -t 60 "$name" > /dev/null 2>&1 # Stops container without output 
+        if [ "$debug" != "yes" ]; then
+            docker stop -t 60 "$name" > /dev/null 2>&1 # Stops container without output 
+        fi
         echo -e "Creating backup of $name"
-        tar cWfC "$dest/$dt/$name-"$now".tar" "$(dirname "$path")" "$(basename "$path")"    
+        if [ "$debug" == "yes" ]; then
+            tar -cf "$dest/$dt/$name-"$now"-debug.tar" -T /dev/null
+        else
+            tar cWfC "$dest/$dt/$name-"$now".tar" "$(dirname "$path")" "$(basename "$path")"    
+        fi
         echo -e "Starting $name"
         docker start "$name" > /dev/null 2>&1
         if [ $usePigz == yes ]; then
             echo -e "Compressing $name..."
-            pigz -$pigzCompression "$dest/$dt/$name-"$now".tar"
+            if [ "$debug" == "yes" ]; then
+                pigz -$pigzCompression "$dest/$dt/$name-"$now"-debug.tar"
+            else
+                pigz -$pigzCompression "$dest/$dt/$name-"$now".tar"
+            fi
         fi
     # If container is stopped
     else
         echo -e "$name is already stopped"
         echo -e "Creating backup of $name"
-        tar cWfC "$dest/$dt/$name-"$now".tar" "$(dirname "$path")" "$(basename "$path")"
+        if [ "$debug" == "yes" ]; then
+            tar -cf "$dest/$dt/$name-"$now"-debug.tar" -T /dev/null
+        else
+            tar cWfC "$dest/$dt/$name-"$now".tar" "$(dirname "$path")" "$(basename "$path")"
+        fi
         if [ $usePigz == yes ]; then
             echo -e "Compressing $name..."
-            pigz -$pigzCompression "$dest/$dt/$name-"$now".tar"
+            if [ "$debug" == "yes" ]; then
+                pigz -$pigzCompression "$dest/$dt/$name-"$now"-debug.tar"
+            else
+                pigz -$pigzCompression "$dest/$dt/$name-"$now".tar"
+            fi
         fi
         echo -e "$name was stopped before backup, ignoring startup"
     fi
     # Information Gathering
     if [ $usePigz == yes ]; then
-        containersize=$(du -sh $dest/$dt/$name-"$now".tar.gz | awk '{print $1}')
+        if [ "$debug" == "yes" ]; then
+            containersize=$(du -sh $dest/$dt/$name-"$now"-debug.tar.gz | awk '{print $1}')
+        else
+            containersize=$(du -sh $dest/$dt/$name-"$now".tar.gz | awk '{print $1}')
+        fi
         echo "Container: $name has been backed up & compressed: $containersize"
         containerinfo="Container: \`$name\` has been backed up & compressed: $containersize"
     else
-        containersize=$(du -sh $dest/$dt/$name-"$now".tar | awk '{print $1}')
+        if [ "$debug" == "yes" ]; then
+            containersize=$(du -sh $dest/$dt/$name-"$now"-debug.tar | awk '{print $1}')
+        else
+            containersize=$(du -sh $dest/$dt/$name-"$now".tar | awk '{print $1}')
+        fi
         echo "Container: $name has been backed up: $containersize"
         containerinfo="Container: \`$name\` has been backed up: $containersize"
     fi
     echo $containerinfo >> /tmp/appdata.tmp
-    stopped=1
     echo -e "-----------------------"
 done
 # Backup containers without stopping them
@@ -207,24 +225,39 @@ do
     name=${list_no_stop[i]} path=${list_no_stop[i+1]}
 
     echo -e "Creating backup of $name"
-    tar cWfC "$dest/$dt/$name-"$now".tar" "$(dirname "$path")" "$(basename "$path")"
+    if [ "$debug" == "yes" ]; then
+        tar -cf "$dest/$dt/$name-"$now"-debug.tar" -T /dev/null
+    else
+        tar cWfC "$dest/$dt/$name-"$now".tar" "$(dirname "$path")" "$(basename "$path")"
+    fi
     if [ $usePigz == yes ]; then
             echo -e "Compressing $name..."
-            pigz -$pigzCompression "$dest/$dt/$name-"$now".tar"
+            if [ "$debug" == "yes" ]; then
+                pigz -$pigzCompression "$dest/$dt/$name-"$now"-debug.tar"
+            else
+                pigz -$pigzCompression "$dest/$dt/$name-"$now".tar"
+            fi
         fi
     echo "Finished backup for $name"
     # Information Gathering
     if [ $usePigz == yes ]; then
-        containersize=$(du -sh $dest/$dt/$name-"$now".tar.gz | awk '{print $1}')
+        if [ "$debug" == "yes" ]; then
+            containersize=$(du -sh $dest/$dt/$name-"$now"-debug.tar.gz | awk '{print $1}')
+        else
+            containersize=$(du -sh $dest/$dt/$name-"$now".tar.gz | awk '{print $1}')
+        fi
         echo "Container: $name has been backed up & compressed: $containersize"
         containerinfo="Container: \`$name\` has been backed up & compressed: $containersize"
     else
-        containersize=$(du -sh $dest/$dt/$name-"$now".tar | awk '{print $1}')
+        if [ "$debug" == "yes" ]; then
+            containersize=$(du -sh $dest/$dt/$name-"$now"-debug.tar | awk '{print $1}')
+        else
+            containersize=$(du -sh $dest/$dt/$name-"$now".tar | awk '{print $1}')
+        fi
         echo "Container: $name has been backed up: $containersize"
         containerinfo="Container: \`$name\` has been backed up: $containersize"
     fi
     echo $containerinfo >> /tmp/appdata_nostop.tmp
-    nostop=1
     echo -e "-----------------------"
 done
 
@@ -265,15 +298,14 @@ if [ "$notify" == "yes" ]; then
 fi
 # Discord notifications
 if [ "$useDiscord" == "yes" ]; then
-    if [ "$error" == 1 ]; then
-        ${discordLoc} --webhook-url="$webhook" --username "${botName}" \
-            --title "${titleName}" \
-            --avatar "$avatarUrl" \
-            --description "Error Log" \
+    if [ $(< "/tmp/appdata_error.tmp" wc -l) -ge 1 ]; then
+        ${discordLoc} --webhook-url="$webhook" --username "Appdata Error Bot" \
+            --title "Error notificaitons" \
+            --avatar "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png" \
+            --thumbnail "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-1024.png" \
             --field "Errors; $(cat /tmp/appdata_error.tmp | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev);false" \
-            --field "Please check your config" \
             --color "0xFF0000" \
-            --footer "Powered by: Drazzilb" \
+            --footer "Powered by: Drazzilb | Ignore double slash in file path." \
             --footer-icon "https://i.imgur.com/r69iYhr.png" \
             --timestamp
         echo -e "\nDiscord error notification sent."
@@ -318,7 +350,6 @@ if [ "$useDiscord" == "yes" ]; then
         fi
         # If appdata is greater than 20 lines AND appdata_nostop is less than or equal to 20 lines
         if [ $(< "/tmp/appdata.tmp" wc -l) -gt 20 ] && [ $(< "/tmp/appdata_nostop.tmp" wc -l) -le 20 ]; then
-            echo "appdata.tmp is greater than 20"
             if [ $(< "/tmp/appdata_nostop.tmp" wc -l) -eq 0 ]; then
                 echo "appdata.tmp is greater than 20 but appdata_nostop.tmp is equal to 0"
                 ${discordLoc} --webhook-url="$webhook" --username "${botName}" \
@@ -373,7 +404,7 @@ if [ "$useDiscord" == "yes" ]; then
         fi
     else 
         #If both are below 20 lines
-        if [ "$nostop" == 1 ] && [ "$stopped" == 1 ];then
+        if [ $(< "/tmp/appdata_nostop.tmp" wc -l) -ge 1 ] && [ $(< "/tmp/appdata.tmp" wc -l) -ge 1 ]; then
             ${discordLoc} --webhook-url="$webhook" --username "${botName}" \
                 --title "${titleName}" \
                 --avatar "$avatarUrl" \
@@ -387,7 +418,7 @@ if [ "$useDiscord" == "yes" ]; then
                 --footer "Powered by: Drazzilb" \
                 --footer-icon "https://i.imgur.com/r69iYhr.png" \
                 --timestamp
-        elif [ "$nostop" == 1 ]; then
+        elif [ $(< "/tmp/appdata_nostop.tmp" wc -l) -ge 1 ]; then
             ${discordLoc} --webhook-url="$webhook" --username "${botName}" \
                 --title "${titleName}" \
                 --avatar "$avatarUrl" \
@@ -400,7 +431,7 @@ if [ "$useDiscord" == "yes" ]; then
                 --footer "Powered by: Drazzilb" \
                 --footer-icon "https://i.imgur.com/r69iYhr.png" \
                 --timestamp
-        elif [ "$stopped" == 1 ]; then
+        elif [ $(< "/tmp/appdata_nostop.tmp" wc -l) -ge 1 ]; then
             ${discordLoc} --webhook-url="$webhook" --username "${botName}" \
                 --title "${titleName}" \
                 --avatar "$avatarUrl" \
@@ -418,26 +449,26 @@ if [ "$useDiscord" == "yes" ]; then
     echo -e "\nDiscord notification sent."
 fi
 echo -e '\nAll Done!\n'
-# Remove temp files
+# Debug output
 if [ "$debug" == "yes" ]; then
     echo -e "Script has ended with debug set to ${debug}"
-    echo -e "\nnostop = $nostop\nstopped = $stopped"
-    echo -e "Errors = $errors."
-    echo -e "Line count for appdata.tmp:" wc -l /tmp/appdata.tmp
-    echo -e "Line count for appdata_nostop.tmp\:" wc -l /tmp/appdata_nostop.tmp
-    if [ "$delete_files" == "yes"]; then
+    echo -e "line count for appdata_error.tmp  = $(wc -l < /tmp/appdata_error.tmp)"
+    echo -e "Line count for appdata.tmp        = $(wc -l < /tmp/appdata.tmp)"
+    echo -e "Line count for appdata_nostop.tmp = $(wc -l < /tmp/appdata_nostop.tmp)"
+    if [ "$delete_files" == "yes" ]; then
         echo -e "Files are being removed"
         rm "/tmp/appdata_error.tmp"
         rm "/tmp/appdata_nostop.tmp"
         rm "/tmp/appdata.tmp"
     else
-        echo -e "Files need to removed located at:\n/tmp/i.am.running.appdata\n/tmp/appdata_error.tmp\n/tmp/appdata_nostop.tmp\n/tmp/appdata.tmp"
+        echo -e "Files need to removed located at: rm /tmp/appdata_error.tmp /tmp/appdata_nostop.tmp /tmp/appdata.tmp"
         # Copy the next line minus the pound/hashtag sign and paste it into your terminal
         # rm /tmp/appdata_error.tmp /tmp/appdata_nostop.tmp /tmp/appdata.tmp
     fi
     rm "/tmp/i.am.running.appdata"
     exit
 fi
+# Remove temp files
 rm "/tmp/i.am.running.appdata"
 rm "/tmp/appdata_error.tmp"
 rm "/tmp/appdata_nostop.tmp"

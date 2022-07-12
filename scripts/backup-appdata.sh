@@ -45,13 +45,13 @@ avatarUrl=''                            # Url for the avatar you want your bot t
 
                                         # List containers and assiciated config directory to stop and backup
                                             # Format: <container name> <$source/container_config_dir>
-                                            # Eg. tautulli $appdata/tautulli>
+                                            # Eg. tautulli $source/tautulli>
 list=(
 
 )
                                         # List containers and associated config directory to back up without stopping
                                             # Format: <container name> <$source/container_config_dir>
-                                            # Eg. tautulli $appdata/tautulli>
+                                            # Eg. tautulli $source/tautulli>
 list_no_stop=(
 
 )

@@ -10,13 +10,12 @@ The plex backup script is a modified version of this script
 https://github.com/rcodehub/unraid-plex-script
 
 Features:
-* All scripts feature a locking file that is placed in the `/tmp` dir this prevents any script from being run twice (useful if you're compressing a large tar archive)
-* All scripts come with optional pigz compression
+* All backup scripts feature a locking file that is placed in the `/tmp` dir this prevents any script from being run twice (useful if you're compressing a large tar archive)
+* All backup scripts come with optional pigz compression
   * Scripts also come with variable to easily change pigz compression
 * All Scripts feature discord intigration
   * Requires download of discord.sh found [here](https://github.com/chaoticweg/discord.sh/releases/tag/v1.6.1)
   * `discordLoc` variable is the location that you placed the discord.sh file
-    * Eg. `/mnt/user/data/scripts/discord-script/` <-- Must include trailing slash `/`
 
 Future plans: <br>
 

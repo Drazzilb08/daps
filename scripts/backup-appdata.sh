@@ -18,7 +18,7 @@ source='/mnt/user/appdata/'             # Set appdata directory, this is to help
                                         # However, if you want to type out the whole thing, (say if you have config information in seperate locations) you still can enter the information, just don't use $source
 destination='/mnt/user/backup/appdata/' # Set backup directory
 delete_after=2                          # Number of days to keep backup
-usePigz=no                             # Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
+usePigz=yes                             # Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
                                             # Pigz package must be installed via NerdPack
 pigzCompression=9						# Define compression level to use with pigz
                                             # 0 = No compression
@@ -36,7 +36,7 @@ useDiscord=yes                          # Use discord for notifications
                                         # Note, there is a limititation of 20 containers per list and list_no_stop if you're going to use discord
 
 discordLoc=''                           # Full location to discord.sh
-                                                                                        # Eg. '/mnt/user/data/scripts/discord.sh'
+                                            # Eg. '/mnt/user/data/scripts/discord.sh'
 webhook=''                              # Discord webhook
 botName='Notification Bot'              # Name your bot
 titleName='Server Notifications'        # Give a title name to your discord messages
@@ -47,7 +47,7 @@ avatarUrl=''                            # Url for the avatar you want your bot t
                                             # Format: <container name> <$source/container_config_dir>
                                             # Eg. tautulli $appdata/tautulli>
 list=(
-    
+
 )
                                         # List containers and associated config directory to back up without stopping
                                             # Format: <container name> <$source/container_config_dir>
@@ -60,13 +60,12 @@ list_no_stop=(
 # Will not run again if currently running.
 if [ -e "/tmp/i.am.running.appdata" ]; then
     echo "Another instance of the script is running. Aborting."
+    echo "Please use rm /tmp/i.am/running.appdata in your terminal to remove the locking file"
     exit
 else
     touch "/tmp/i.am.running.appdata"
 fi
-touch "/tmp/appdata.tmp"
 touch "/tmp/appdata_error.tmp"
-touch "/tmp/appdata_nostop.tmp"
 #Set variables
 start=$(date +%s)                   #Sets start time for runtime information
 cd "$(realpath -s $source)"
@@ -81,6 +80,8 @@ mkdir -p "$dest/$dt"
 debug=no           # Add additional log information
                     # Also does not remove tmp files
 delete_files=yes    #option to save or remove files during debug
+counter=0
+nostop_counter=0
 # Data Backup
 if [ "$debug" == "yes" ]; then
     echo -e "Starting stop container loop"
@@ -98,7 +99,6 @@ do
             continue
         fi
     else
-        error=1
         if [ ! -d "$path" ]; then
             echo -e "\nERROR: Container $name does not exit and $path does not exist\n"
             errorlog="Container \`$name\` does not exit and $path does not exist"
@@ -115,7 +115,9 @@ do
     # If container is running
     if echo $cRunning | grep -iqF $name; then
         echo -e "Stopping $name"
-        docker stop -t 60 "$name" > /dev/null 2>&1 # Stops container without output 
+        if [ "$debug" != "yes" ]; then
+            docker stop -t 60 "$name" > /dev/null 2>&1 # Stops container without output 
+        fi
         echo -e "Creating backup of $name"
         if [ "$debug" == "yes" ]; then
             tar -cf "$dest/$dt/$name-"$now"-debug.tar" -T /dev/null
@@ -159,7 +161,6 @@ do
             containersize=$(du -sh $dest/$dt/$name-"$now".tar.gz | awk '{print $1}')
         fi
         echo "Container: $name has been backed up & compressed: $containersize"
-        containerinfo="Container: \`$name\` has been backed up & compressed: $containersize"
     else
         if [ "$debug" == "yes" ]; then
             containersize=$(du -sh $dest/$dt/$name-"$now"-debug.tar | awk '{print $1}')
@@ -167,9 +168,11 @@ do
             containersize=$(du -sh $dest/$dt/$name-"$now".tar | awk '{print $1}')
         fi
         echo "Container: $name has been backed up: $containersize"
-        containerinfo="Container: \`$name\` has been backed up: $containersize"
     fi
-    echo $containerinfo >> /tmp/appdata.tmp
+    counter=$((counter+1))
+    if [ "$ebug" == "yes" ];then
+        echo "Backup counter: $counter"
+    fi
     echo -e "-----------------------"
 done
 # Backup containers without stopping them
@@ -204,7 +207,6 @@ do
             containersize=$(du -sh $dest/$dt/$name-"$now".tar.gz | awk '{print $1}')
         fi
         echo "Container: $name has been backed up & compressed: $containersize"
-        containerinfo="Container: \`$name\` has been backed up & compressed: $containersize"
     else
         if [ "$debug" == "yes" ]; then
             containersize=$(du -sh $dest/$dt/$name-"$now"-debug.tar | awk '{print $1}')
@@ -212,10 +214,10 @@ do
             containersize=$(du -sh $dest/$dt/$name-"$now".tar | awk '{print $1}')
         fi
         echo "Container: $name has been backed up: $containersize"
-        containerinfo="Container: \`$name\` has been backed up: $containersize"
     fi
     echo $containerinfo >> /tmp/appdata_nostop.tmp
     echo -e "-----------------------"
+    nostop_counter=$((nostop_counter+1))
 done
 
 sleep 2
@@ -267,141 +269,48 @@ if [ "$useDiscord" == "yes" ]; then
             --timestamp
         echo -e "\nDiscord error notification sent."
     fi
-    #Appdata OR Appdata_nostop are greater than 20 lines
-    if [ $(< "/tmp/appdata_nostop.tmp" wc -l) -gt 20 ] || [ $(< "/tmp/appdata.tmp" wc -l) -gt 20 ]; then
-        # If appdata_nostop is greater than 20 lines AND appdata is less than or equal to 20 lines
-        if [ $(< "/tmp/appdata_nostop.tmp" wc -l) -gt 20 ] && [ $(< "/tmp/appdata.tmp" wc -l) -le 20 ]; then
-            echo "appdata_nostop.tmp is greater than 20"
-            if [ $(< "/tmp/appdata.tmp" wc -l) -eq 0 ]; then
-                echo "appdata_nostop.tmp is greater than 20 but appdata.tmp is equal to 0"
-                ${discordLoc} --webhook-url="$webhook" --username "${botName}" \
-                    --title "${titleName}" \
-                    --avatar "$avatarUrl" \
-                    --description "Appdata Backup Complete." \
-                    --field "Runtime; $runOutput.;false" \
-                    --field "Containers not stopped but backed up; $(cat /tmp/appdata_nostop.tmp | sed -n "1,20p" | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev);false" \
-                    --field "Containers not stopped but backed up; $(cat /tmp/appdata_nostop.tmp | sed -n "21,40p" | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev);false" \
-                    --field "This backup's size:; $runsize;false" \
-                    --field "Total size of all backups:; ${totalsize};false" \
-                    --color "0x$barColor" \
-                    --footer "Powered by: Drazzilb" \
-                    --footer-icon "https://i.imgur.com/r69iYhr.png" \
-                    --timestamp
-            else
-                echo "appdata_nostop.tmp is greater than 20 but appdata.tmp is greater than 0 but less than 20"
-                ${discordLoc} --webhook-url="$webhook" --username "${botName}" \
-                    --title "${titleName}" \
-                    --avatar "$avatarUrl" \
-                    --description "Appdata Backup Complete." \
-                    --field "Runtime; $runOutput.;false" \
-                    --field "Containers stopped & backed up; $(cat /tmp/appdata.tmp | sed -n "1,20p" | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev);false" \
-                    --field "Containers not stopped but backed up; $(cat /tmp/appdata_nostop.tmp | sed -n "1,20p" | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev);false" \
-                    --field "Containers not stopped but backed up; $(cat /tmp/appdata_nostop.tmp | sed -n "21,40p" | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev);false" \
-                    --field "This backup's size:; $runsize;false" \
-                    --field "Total size of all backups:; ${totalsize};false" \
-                    --color "0x$barColor" \
-                    --footer "Powered by: Drazzilb" \
-                    --footer-icon "https://i.imgur.com/r69iYhr.png" \
-                    --timestamp
-            fi
-        fi
-        # If appdata is greater than 20 lines AND appdata_nostop is less than or equal to 20 lines
-        if [ $(< "/tmp/appdata.tmp" wc -l) -gt 20 ] && [ $(< "/tmp/appdata_nostop.tmp" wc -l) -le 20 ]; then
-            if [ $(< "/tmp/appdata_nostop.tmp" wc -l) -eq 0 ]; then
-                echo "appdata.tmp is greater than 20 but appdata_nostop.tmp is equal to 0"
-                ${discordLoc} --webhook-url="$webhook" --username "${botName}" \
-                    --title "${titleName}" \
-                    --avatar "$avatarUrl" \
-                    --description "Appdata Backup Complete." \
-                    --field "Runtime; $runOutput.;false" \
-                    --field "Containers stopped & backed up; $(cat /tmp/appdata.tmp | sed -n "1,20p" | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev);false" \
-                    --field "Containers stopped & backed up; $(cat /tmp/appdata.tmp | sed -n "21,40p" | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev);false" \
-                    --field "This backup's size:; $runsize;false" \
-                    --field "Total size of all backups:; ${totalsize};false" \
-                    --color "0x$barColor" \
-                    --footer "Powered by: Drazzilb" \
-                    --footer-icon "https://i.imgur.com/r69iYhr.png" \
-                    --timestamp
-            else
-                echo "appdata.tmp is greater than 20 but appdata_nostop.tmp is greater than 0 but less than 20"
-                ${discordLoc} --webhook-url="$webhook" --username "${botName}" \
-                    --title "${titleName}" \
-                    --avatar "$avatarUrl" \
-                    --description "Appdata Backup Complete." \
-                    --field "Runtime; $runOutput.;false" \
-                    --field "Containers stopped & backed up; $(cat /tmp/appdata.tmp | sed -n "1,20p" | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev);false" \
-                    --field "Containers stopped & backed up; $(cat /tmp/appdata.tmp | sed -n "21,40p" | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev);false" \
-                    --field "Containers not stopped but backed up; $(cat /tmp/appdata_nostop.tmp | sed -n "1,20p" | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev);false" \
-                    --field "This backup's size:; $runsize;false" \
-                    --field "Total size of all backups:; ${totalsize};false" \
-                    --color "0x$barColor" \
-                    --footer "Powered by: Drazzilb" \
-                    --footer-icon "https://i.imgur.com/r69iYhr.png" \
-                    --timestamp
-            fi
-        fi
-        # If appdata_nostop AND appdata are both greater than 20 lines
-        if [ $(< "/tmp/appdata_nostop.tmp" wc -l) -gt 20 ] && [ $(< "/tmp/appdata.tmp" wc -l) -gt 20 ]; then
-            echo "appdata_nostop.tmp is greater than 20 && appdata.tmp is greater than 20"
-            ${discordLoc} --webhook-url="$webhook" --username "${botName}" \
-                --title "${titleName}" \
-                --avatar "$avatarUrl" \
-                --description "Appdata Backup Complete." \
-                --field "Runtime; $runOutput.;false" \
-                --field "Containers stopped & backed up; $(cat /tmp/appdata.tmp | sed -n "1,20p" | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev);false" \
-                --field "Containers stopped & backed up; $(cat /tmp/appdata.tmp | sed -n "21,40p" | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev);false" \
-                --field "Containers not stopped but backed up; $(cat /tmp/appdata_nostop.tmp | sed -n "1,20p" | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev);false" \
-                --field "Containers not stopped but backed up; $(cat /tmp/appdata_nostop.tmp | sed -n "21,40p" | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev);false" \
-                --field "This backup's size:; $runsize;false" \
-                --field "Total size of all backups:; ${totalsize};false" \
-                --color "0x$barColor" \
-                --footer "Powered by: Drazzilb" \
-                --footer-icon "https://i.imgur.com/r69iYhr.png" \
-                --timestamp
-        fi
-    else 
-        #If both are below 20 lines
-        if [ $(< "/tmp/appdata_nostop.tmp" wc -l) -ge 1 ] && [ $(< "/tmp/appdata.tmp" wc -l) -ge 1 ]; then
-            ${discordLoc} --webhook-url="$webhook" --username "${botName}" \
-                --title "${titleName}" \
-                --avatar "$avatarUrl" \
-                --description "Appdata Backup Complete." \
-                --field "Runtime; $runOutput.;false" \
-                --field "Containers stopped & backed up; $(cat /tmp/appdata.tmp | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev);false" \
-                --field "Containers not stopped but backed up; $(cat /tmp/appdata_nostop.tmp | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev);false" \
-                --field "This backup's size:; $runsize;false" \
-                --field "Total size of all backups:; ${totalsize};false" \
-                --color "0x$barColor" \
-                --footer "Powered by: Drazzilb" \
-                --footer-icon "https://i.imgur.com/r69iYhr.png" \
-                --timestamp
-        elif [ $(< "/tmp/appdata_nostop.tmp" wc -l) -ge 1 ]; then
-            ${discordLoc} --webhook-url="$webhook" --username "${botName}" \
-                --title "${titleName}" \
-                --avatar "$avatarUrl" \
-                --description "Appdata Backup Complete." \
-                --field "Runtime; $runOutput.;false" \
-                --field "Containers not stopped but backed up; $(cat /tmp/appdata_nostop.tmp | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev);false" \
-                --field "This backup's size:; $runsize;false" \
-                --field "Total size of all backups:; ${totalsize};false" \
-                --color "0x$barColor" \
-                --footer "Powered by: Drazzilb" \
-                --footer-icon "https://i.imgur.com/r69iYhr.png" \
-                --timestamp
-        elif [ $(< "/tmp/appdata_nostop.tmp" wc -l) -ge 1 ]; then
-            ${discordLoc} --webhook-url="$webhook" --username "${botName}" \
-                --title "${titleName}" \
-                --avatar "$avatarUrl" \
-                --description "Appdata Backup Complete." \
-                --field "Runtime; $runOutput.;false" \
-                --field "Containers stopped & backed up; $(cat /tmp/appdata.tmp | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev);false" \
-                --field "This backup's size:; $runsize;false" \
-                --field "Total size of all backups:; ${totalsize};false" \
-                --color "0x$barColor" \
-                --footer "Powered by: Drazzilb" \
-                --footer-icon "https://i.imgur.com/r69iYhr.png" \
-                --timestamp
-        fi
+    if [ "$counter" -ge "1" ] && [ "$nostop_counter" -eq "0" ]; then
+        ${discordLoc} --webhook-url="$webhook" --username "${botName}" \
+            --title "${titleName}" \
+            --avatar "$avatarUrl" \
+            --description "Appdata Backup Complete." \
+            --field "Runtime; $runOutput.;false" \
+            --field "Containers stopped & backed up; $counter;false" \
+            --field "This backup's size:; $runsize;false" \
+            --field "Total size of all backups:; ${totalsize};false" \
+            --color "0x$barColor" \
+            --footer "Powered by: Drazzilb" \
+            --footer-icon "https://i.imgur.com/r69iYhr.png" \
+            --timestamp
+    fi
+    if  [ "$nostop_counter" -ge "1" ] && [ "$counter" -eq "0" ]; then
+        ${discordLoc} --webhook-url="$webhook" --username "${botName}" \
+            --title "${titleName}" \
+            --avatar "$avatarUrl" \
+            --description "Appdata Backup Complete." \
+            --field "Runtime; $runOutput.;false" \
+            --field "Containers backed up without stopping; $nostop_counter;false" \
+            --field "This backup's size:; $runsize;false" \
+            --field "Total size of all backups:; ${totalsize};false" \
+            --color "0x$barColor" \
+            --footer "Powered by: Drazzilb" \
+            --footer-icon "https://i.imgur.com/r69iYhr.png" \
+            --timestamp
+    fi
+    if  [ "$nostop_counter" -ge "1" ] && [ "$counter" -ge "1" ]; then
+        ${discordLoc} --webhook-url="$webhook" --username "${botName}" \
+            --title "${titleName}" \
+            --avatar "$avatarUrl" \
+            --description "Appdata Backup Complete." \
+            --field "Runtime; $runOutput.;false" \
+            --field "Containers stopped & backed up; ${counter};false" \
+            --field "Containers backed up without stopping; $nostop_counter;false" \
+            --field "This backup's size:; $runsize;false" \
+            --field "Total size of all backups:; ${totalsize};false" \
+            --color "0x$barColor" \
+            --footer "Powered by: Drazzilb" \
+            --footer-icon "https://i.imgur.com/r69iYhr.png" \
+            --timestamp
     fi
     echo -e "\nDiscord notification sent."
 fi
@@ -410,13 +319,11 @@ echo -e '\nAll Done!\n'
 if [ "$debug" == "yes" ]; then
     echo -e "Script has ended with debug set to ${debug}"
     echo -e "line count for appdata_error.tmp  = $(wc -l < /tmp/appdata_error.tmp)"
-    echo -e "Line count for appdata.tmp        = $(wc -l < /tmp/appdata.tmp)"
-    echo -e "Line count for appdata_nostop.tmp = $(wc -l < /tmp/appdata_nostop.tmp)"
+    echo -e "Counter = ${counter}"
+    echo -e "nostop_counter = ${nostop_counter}"
     if [ "$delete_files" == "yes" ]; then
         echo -e "Files are being removed"
         rm "/tmp/appdata_error.tmp"
-        rm "/tmp/appdata_nostop.tmp"
-        rm "/tmp/appdata.tmp"
     else
         echo -e "Files need to removed located at: rm /tmp/appdata_error.tmp /tmp/appdata_nostop.tmp /tmp/appdata.tmp"
         # Copy the next line minus the pound/hashtag sign and paste it into your terminal
@@ -428,6 +335,4 @@ fi
 # Remove temp files
 rm "/tmp/i.am.running.appdata"
 rm "/tmp/appdata_error.tmp"
-rm "/tmp/appdata_nostop.tmp"
-rm "/tmp/appdata.tmp"
 exit 

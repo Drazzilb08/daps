@@ -8,6 +8,7 @@
 #      |____/ \__,_|\___|_|\_\\__,_| .__/  |_|  \___/|_|\__,_|\___|_|   
 #                                  | |                                  
 #                                  |_|                                  
+# v1.0.1
 
 #------------- DEFINE VARIABLES -------------#
 name=''                                 # Set your script name, must be unique to any other script.
@@ -41,9 +42,28 @@ avatarUrl=''                            # Url for the avatar you want your bot t
 # Will not run again if currently running.
 if [ -e "/tmp/i.am.running.${name}" ]; then
     echo "Another instance of the script is running. Aborting."
+    echo "Please use rm /tmp/i.am.running.${name} in your terminal to remove the locking file"
     exit
 else
     touch "/tmp/i.am.running.${name}"
+fi
+if [ ! -d "$source" ]; then
+	echo "ERROR: Your source directory does not exist, please check your configuration"
+	exit
+fi
+if [ -z "$source" ]; then
+    echo "ERROR: Your source directory is not set , please check your configuration"
+	exit
+fi
+if [ "$useDiscord" == "yes" ] && [ ! -f "$discordLoc" ] || [ -z "$discordLoc" ]; then
+	echo "ERROR: You're attempting to use the Discord integration but discord.sh is not found at ${discordLoc} or not set"
+	exit
+fi
+if [ command -v pigz &> /dev/null ] && [ "$usePigz" == "yes"]; then 
+    echo "pigz could not be found."
+    echo "Please install pigz and rerun."
+    echo "If on unRaid, pigz can be found through the NerdPack which is found in the appstore"
+    exit
 fi
 
 #Set variables

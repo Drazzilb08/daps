@@ -7,6 +7,7 @@
 #       /_/    \_\ .__/| .__/ \__,_|\__,_|\__\__,_| |____/ \__,_|\___|_|\_\\__,_| .__/ 
 #                | |   | |                                                      | |    
 #                |_|   |_|                                                      |_|    
+# v1.0.1
 
 # This script creates an invididual tar file for each docker appdata directory that you define (needs both container name and path to it's appdata). 
 # Furthermore, it stops and restarts each container before and after backup if the container was running at the time of the backup
@@ -45,13 +46,13 @@ avatarUrl=''                            # Url for the avatar you want your bot t
 
                                         # List containers and assiciated config directory to stop and backup
                                             # Format: <container name> <$source/container_config_dir>
-                                            # Eg. tautulli $source/tautulli>
+                                            # Eg. tautulli $source/tautulli
 list=(
 
 )
                                         # List containers and associated config directory to back up without stopping
                                             # Format: <container name> <$source/container_config_dir>
-                                            # Eg. tautulli $source/tautulli>
+                                            # Eg. tautulli $source/tautulli
 list_no_stop=(
 
 )
@@ -60,10 +61,28 @@ list_no_stop=(
 # Will not run again if currently running.
 if [ -e "/tmp/i.am.running.appdata" ]; then
     echo "Another instance of the script is running. Aborting."
-    echo "Please use rm /tmp/i.am/running.appdata in your terminal to remove the locking file"
+    echo "Please use rm /tmp/i.am.running.appdata in your terminal to remove the locking file"
     exit
 else
     touch "/tmp/i.am.running.appdata"
+fi
+if [ ! -d "$source" ]; then
+	echo "ERROR: Your source directory does not exist, please check your configuration"
+	exit
+fi
+if [ -z "$source" ]; then
+    echo "ERROR: Your source directory is not set , please check your configuration"
+	exit
+fi
+if [ "$useDiscord" == "yes" ] && [ ! -f "$discordLoc" ] || [ -z "$discordLoc" ]; then
+	echo "ERROR: You're attempting to use the Discord integration but discord.sh is not found at ${discordLoc} or not set"
+	exit
+fi
+if [ command -v pigz &> /dev/null ] && [ "$usePigz" == "yes"]; then 
+    echo "pigz could not be found."
+    echo "Please install pigz and rerun."
+    echo "If on unRaid, pigz can be found through the NerdPack which is found in the appstore"
+    exit
 fi
 touch "/tmp/appdata_error.tmp"
 #Set variables
@@ -74,7 +93,10 @@ dt=$(date +"%m-%d-%Y")
 now=$(date +"%I_%M_%p")
 
 # create the backup directory if it doesn't exist - error handling - will not create backup file if path does not exist
-mkdir -p "$dest"
+if [ ! -d "$dest" ]; then
+    echo "Making directory at ${dest}"
+    mkdir -p "$dest"
+fi
 # Creating backup of directory
 mkdir -p "$dest/$dt"
 debug=no           # Add additional log information

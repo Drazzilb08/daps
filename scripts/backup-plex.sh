@@ -8,6 +8,7 @@
 #      |____/ \__,_|\___|_|\_\\__,_| .__/  |_|    |_|\___/_/\_\
 #                                  | |                         
 #                                  |_|                         
+# v1.0.1
 
 #------------- DEFINE VARIABLES -------------#
 source="/mnt/user/appdata/plex"			# path to your plex appdata location
@@ -47,11 +48,30 @@ avatarUrl=''							# Url for the avatar you want your bot to have
 
 if [ -e "/tmp/i.am.running" ]; then
     echo "Another instance of the script is running. Aborting."
+    echo "Please use rm /tmp/i.am.running in your terminal to remove the locking file"
     exit
 else
     touch  "/tmp/i.am.running"
 fi
-
+if [ ! -d "$source" ]; then
+	echo "ERROR: Your source directory does not exist, please check your configuration"
+	exit
+fi
+if [ -z "$source" ]; then
+    echo "ERROR: Your source directory is not set , please check your configuration"
+	exit
+fi
+if [ "$useDiscord" == "yes" ] && [ ! -f "$discordLoc" ] || [ -z "$discordLoc" ]; then
+	echo "ERROR: You're attempting to use the Discord integration but discord.sh is not found at ${discordLoc} or not set"
+	exit
+fi
+if [ command -v pigz &> /dev/null ] && [ "$usePigz" == "yes"]; then 
+    echo "pigz could not be found."
+    echo "Please install pigz and rerun."
+    echo "If on unRaid, pigz can be found through the NerdPack which is found in the appstore"
+    exit
+fi
+	
 start=`date +%s`	# start time of script for statistics
 
 # Read timestamp of the last full backup, if any
@@ -200,7 +220,7 @@ if [ -d $dest/Full/ ]; then
 fi
 # Discord Notifications
 
-if [ $useDiscord == yes ]; then
+if [ "$useDiscord" == "yes" ]; then
 	if [ $fullbackup == no ]; then
 		if [ $cf = false ]; then
 			${discordLoc} --webhook-url="$webhook" --username "${botName}" \

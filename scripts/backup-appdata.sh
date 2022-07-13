@@ -59,13 +59,6 @@ list_no_stop=(
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 # Will not run again if currently running.
-if [ -e "/tmp/i.am.running.appdata" ]; then
-    echo "Another instance of the script is running. Aborting."
-    echo "Please use rm /tmp/i.am.running.appdata in your terminal to remove the locking file"
-    exit
-else
-    touch "/tmp/i.am.running.appdata"
-fi
 if [ ! -d "$source" ]; then
 	echo "ERROR: Your source directory does not exist, please check your configuration"
 	exit
@@ -84,6 +77,14 @@ if [ command -v pigz &> /dev/null ] && [ "$usePigz" == "yes"]; then
     echo "If on unRaid, pigz can be found through the NerdPack which is found in the appstore"
     exit
 fi
+if [ -e "/tmp/i.am.running.appdata" ]; then
+    echo "Another instance of the script is running. Aborting."
+    echo "Please use rm /tmp/i.am.running.appdata in your terminal to remove the locking file"
+    exit
+else
+    touch "/tmp/i.am.running.appdata"
+fi
+
 touch "/tmp/appdata_error.tmp"
 #Set variables
 start=$(date +%s)                   #Sets start time for runtime information

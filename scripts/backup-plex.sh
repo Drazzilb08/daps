@@ -46,13 +46,6 @@ avatarUrl=''							# Url for the avatar you want your bot to have
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 
-if [ -e "/tmp/i.am.running" ]; then
-    echo "Another instance of the script is running. Aborting."
-    echo "Please use rm /tmp/i.am.running in your terminal to remove the locking file"
-    exit
-else
-    touch  "/tmp/i.am.running"
-fi
 if [ ! -d "$source" ]; then
 	echo "ERROR: Your source directory does not exist, please check your configuration"
 	exit
@@ -71,6 +64,14 @@ if [ command -v pigz &> /dev/null ] && [ "$usePigz" == "yes"]; then
     echo "If on unRaid, pigz can be found through the NerdPack which is found in the appstore"
     exit
 fi
+if [ -e "/tmp/i.am.running" ]; then
+    echo "Another instance of the script is running. Aborting."
+    echo "Please use rm /tmp/i.am.running in your terminal to remove the locking file"
+    exit
+else
+    touch  "/tmp/i.am.running"
+fi
+
 	
 start=`date +%s`	# start time of script for statistics
 

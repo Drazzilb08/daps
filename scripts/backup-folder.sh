@@ -8,7 +8,7 @@
 #      |____/ \__,_|\___|_|\_\\__,_| .__/  |_|  \___/|_|\__,_|\___|_|   
 #                                  | |                                  
 #                                  |_|                                  
-# v1.0.1
+
 
 #------------- DEFINE VARIABLES -------------#
 name=''                                 # Set your script name, must be unique to any other script.
@@ -143,3 +143,5 @@ fi
 echo -e '\nAll Done!\n'
 
 exit
+#  
+# v1.0.2

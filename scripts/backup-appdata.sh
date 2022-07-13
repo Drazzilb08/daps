@@ -7,7 +7,6 @@
 #       /_/    \_\ .__/| .__/ \__,_|\__,_|\__\__,_| |____/ \__,_|\___|_|\_\\__,_| .__/ 
 #                | |   | |                                                      | |    
 #                |_|   |_|                                                      |_|    
-# v1.0.1
 
 # This script creates an invididual tar file for each docker appdata directory that you define (needs both container name and path to it's appdata). 
 # Furthermore, it stops and restarts each container before and after backup if the container was running at the time of the backup
@@ -359,3 +358,5 @@ fi
 rm "/tmp/i.am.running.appdata"
 rm "/tmp/appdata_error.tmp"
 exit 
+#  
+# v1.0.2

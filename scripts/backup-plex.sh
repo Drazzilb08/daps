@@ -8,7 +8,6 @@
 #      |____/ \__,_|\___|_|\_\\__,_| .__/  |_|    |_|\___/_/\_\
 #                                  | |                         
 #                                  |_|                         
-# v1.0.1
 
 #------------- DEFINE VARIABLES -------------#
 source="/mnt/user/appdata/plex"			# path to your plex appdata location
@@ -273,3 +272,5 @@ echo -e  '\nAll Done!\n'
 rm "/tmp/i.am.running"
 
 exit
+#  
+# v1.0.2

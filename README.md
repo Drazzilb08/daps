@@ -9,7 +9,7 @@ Simply copy from the new script from <br>
 to the bottom then paste that information over what you have in your script
 
 ## Versioning
-I've started to put version numbers on each of my scripts, you can find the verfsion at the very bottom of every script.
+I've started to put version numbers on each of my scripts, you can find the version at the very bottom of every script.
 
 ## Submitting Pull Requests
 I have no problem adding features or fixing issues with these scripts. However if you're going to submit a PR to correct my code **PLEASE** add detailed notes as to why this change needs to be made. I'm not a coder but wish to learn what I can. This will help me grow and make better content in the futre.

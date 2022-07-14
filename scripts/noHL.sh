@@ -86,16 +86,20 @@ found=$(wc -l < /tmp/nohl.tmp)
 echo -e "\nSearch complete. $found items not hardlinked\n"
 # Send information to Discord
 if [ "$useDiscord" == "yes" ]; then
-    ${discordLoc} --webhook-url="$webhook" --username "${botName}" \
-        --title "${titleName}" \
-        --avatar "$avatarUrl" \
-        --field "Number of items not hardlinked:; ${found} items; false" \
-        --field "List of media files that are not hardlinked.; \`\`\`$(cat /tmp/nohl.tmp | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev)\`\`\`;false" \
-        --color "0x$barColor" \
-        --footer "Powered by: Drazzilb" \
-        --footer-icon "https://i.imgur.com/r69iYhr.png" \
-        --timestamp
-    echo -e "\nDiscord notification sent."
+    if [ $(wc -l < /tmp/nohl.tmp) -ge 1 ]; then
+        ${discordLoc} --webhook-url="$webhook" --username "${botName}" \
+            --title "${titleName}" \
+            --avatar "$avatarUrl" \
+            --field "Number of items not hardlinked:; ${found} items; false" \
+            --field "List of media files that are not hardlinked.; \`\`\`$(cat /tmp/nohl.tmp | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev)\`\`\`;false" \
+            --color "0x$barColor" \
+            --footer "Powered by: Drazzilb" \
+            --footer-icon "https://i.imgur.com/r69iYhr.png" \
+            --timestamp
+        echo -e "\nDiscord notification sent."
+    else
+        echo -e "No results found...\n Great job everything is hardlinked and seeding"
+    fi
 fi
 echo "Removing temp files"
 rm "/tmp/nohl.tmp"

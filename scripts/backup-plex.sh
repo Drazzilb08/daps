@@ -10,18 +10,18 @@
 #                                  |_|
 
 #------------- DEFINE VARIABLES -------------#
-source=""     # path to your plex appdata location
-destination="" # path to your backup folder
+source='/mnt/user/appdata/plex'     # path to your plex appdata location
+destination=''                      # path to your backup folder
 notify=yes                          # (yes/no) Unraid notification that the backup was performed
 delete_after=7                      # number of days to keep backups
-full_backup=yes                      # (yes/no) creation of entire Plex backup (yes) or essential data only (no)
+full_backup=no                      # (yes/no) creation of entire Plex backup (yes) or essential data only (no)
                                         # Yes will significantly increase the amount of time and size to create a backup
                                         # as all metadata (potentially hundreds of thousands of files) is included in the backup.
 force_full_backup=7                 # create a full backup every (#) number of days, in addition to regular essential data (0 to disable)
                                         # this will create an essential backup and then a full backup separately
                                         # this setting is ignored if full_backup = yes
 keep_full=2                         # number of full backups to keep - these can be very large
-use_pigz=no                         # Due to the size of full backups if you're using a full backup and would like to really compress your backups down as much as possible use pigz
+use_pigz=yes                         # Due to the size of full backups if you're using a full backup and would like to really compress your backups down as much as possible use pigz
                                         # Pigz package must be installed via NerdPack
 pigz_compression=9                  # Define compression level to use with pigz. Numbers are 0-9 only!
                                         # 0 = No compression
@@ -128,7 +128,6 @@ if [ $full_backup == no ]; then
             fi
             # save the date of the full backup
             date >/boot/config/plugins/user.scripts/scripts/last_plex_backup
-            days=0
         else
             cf=false
             echo -e "\nLast Full backup created " $days " ago... skipping\n"
@@ -230,4 +229,4 @@ rm "/tmp/i.am.running.plex.tmp"
 
 exit
 #
-# v1.1.2
+# v1.1.3

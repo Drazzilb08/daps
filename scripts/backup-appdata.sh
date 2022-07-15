@@ -12,26 +12,26 @@
 # Furthermore, it stops and restarts each container before and after backup if the container was running at the time of the backup
 
 #------------- DEFINE VARIABLES -------------#
-source='' # Set appdata directory, this is to help with easily adding directories
-# Example: $source/radarr
-# This is the same as typing out /mnt/user/appdata/radarr (keeping things simple)
-# However, if you want to type out the whole thing, (say if you have config information in seperate locations) you still can enter the information, just don't use $source
-destination='' # Set backup directory
+source=''                               # Set appdata directory, this is to help with easily adding directories
+                                            # Example: $source/radarr
+                                            # This is the same as typing out /mnt/user/appdata/radarr (keeping things simple)
+                                            # However, if you want to type out the whole thing, (say if you have config information in seperate locations) you still can enter the information, just don't use $source
+destination=''                          # Set backup directory
 delete_after=2                          # Number of days to keep backup
-use_pigz=yes                             # Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
-# Pigz package must be installed via NerdPack
+use_pigz=yes                            # Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
+                                            # Pigz package must be installed via NerdPack
 pigz_compression=9 # Define compression level to use with pigz
-# 0 = No compression
-# 1 = Least compression/Fastest
-# 6 = Default compression/Default Speed
-# 9 = Maximum Compression/Slowest
-notify=no # Use unRAID's built in notification system
+                                            # 0 = No compression
+                                            # 1 = Least compression/Fastest
+                                            # 6 = Default compression/Default Speed
+                                            # 9 = Maximum Compression/Slowest
+notify=no                               # Use unRAID's built in notification system
 #------------- DEFINE DISCORD VARIABLES -------------#
 # This section is not required
-use_discord=yes                                                                                                                    # Use discord for notifications
-webhook='' # Discord webhook
-bot_name='Notification Bot'                                                                                                        # Name your bot
-bar_color='16724991'                                                                                                               # The bar color for discord notifications, must be decimal code -> https://www.mathsisfun.com/hexadecimal-decimal-colors.html
+use_discord=yes                         # Use discord for notifications
+webhook=''                              # Discord webhook
+bot_name='Notification Bot'             # Name your bot
+bar_color='16724991'                    # The bar color for discord notifications, must be decimal code -> https://www.mathsisfun.com/hexadecimal-decimal-colors.html
 
 # List containers and assiciated config directory to stop and backup
 # Format: <container name> <$source/container_config_dir>

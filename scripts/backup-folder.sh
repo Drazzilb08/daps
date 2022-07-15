@@ -23,9 +23,10 @@ pigz_compression=9                                  # Define compression level t
                                                         # 9 = Maximum Compression/Slowest
 notify=yes                                          # Use unRAID's built in notification system
 #------------- DEFINE DISCORD VARIABLES -------------#
-                                                    # This section is not required
+# This section is not required
+
 use_discord=yes                                     # Use discord for notifications
-webhook='' # Discord webhook
+webhook=''                                          # Discord webhook
 bot_name='Notification Bot'                         # Name your bot
 bar_color='3036236'                                 # The bar color for discord notifications, must be decimal -> https://www.mathsisfun.com/hexadecimal-decimal-colors.html
 
@@ -117,7 +118,7 @@ if [ "$notify" == "yes" ]; then
     /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "${name} Backup" -d "Backup completed: ${name} data has been backed up." -i "normal"
 fi
 if [ "$use_discord" == "yes" ]; then
-    curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete","description": "Backup completed: Pictures data has been backed up.","fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"}],"footer": {"text": "Powered by: Drazzilb | What if there were no hypothetical questions?","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
+    curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "'"${name} Backup Complete"'","description": "'"Backup completed: ${name} data has been backed up."'","fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"}],"footer": {"text": "Powered by: Drazzilb | What if there were no hypothetical questions?","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
     echo -e "\nDiscord notification sent."
 fi
 echo -e '\nAll Done!\n'

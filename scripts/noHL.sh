@@ -16,7 +16,7 @@
 # a place w/in my media directory. I then download another version to. ensure I'm seeding the best as I can for 100% of my library
 
 source=''        #No trailing slash/Your media directory
-destination='' #No trailing slash/Where you want your tmp file to be saved
+destination='' #No trailing slash/Where you want your log file to be saved
                                         #I saved this in a location just in case I want to see the full file
                                         # NOT REQUIRED
 
@@ -67,7 +67,7 @@ if [ -z "${destination}" ];then                                 #If source is NU
     touch "/tmp/nohl.tmp" 
 else
     echo "Destination set to ${destination} a log file of this run will be located there."
-    rm "${destination}/nohl.tmp"                                #Remove previous run's tmp file
+    rm "${destination}/nohl.log"                                #Remove previous run's tmp file
     touch "/tmp/nohl.tmp" "${destination}/nohl.tmp"
     echo "Below is a list of all files from your $source directory that do not have hardlinks" | tee -a "${destination}/nohl.tmp" >/dev/null
 fi

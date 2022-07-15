@@ -128,6 +128,7 @@ if [ $full_backup == no ]; then
             fi
             # save the date of the full backup
             date >/boot/config/plugins/user.scripts/scripts/last_plex_backup
+            days=0
         else
             cf=false
             echo -e "\nLast Full backup created " $days " ago... skipping\n"

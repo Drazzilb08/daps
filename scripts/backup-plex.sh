@@ -10,8 +10,8 @@
 #                                  |_|
 
 #------------- DEFINE VARIABLES -------------#
-source="/mnt/user/appdata/plex"     # path to your plex appdata location
-destination="/mnt/user/backup/test-dir" # path to your backup folder
+source=""     # path to your plex appdata location
+destination="" # path to your backup folder
 notify=yes                          # (yes/no) Unraid notification that the backup was performed
 delete_after=7                      # number of days to keep backups
 full_backup=yes                      # (yes/no) creation of entire Plex backup (yes) or essential data only (no)
@@ -32,7 +32,7 @@ pigz_compression=9                  # Define compression level to use with pigz.
 # This section is not required
 
 use_discord=yes                      # Use discord for notifications
-webhook='https://discord.com/api/webhooks/997092209289613312/G5cbjjE-fkC3HPjkn_775nb30Ye0NYJ3yZ2ukRVFT7NE4mJi8VMe5zhg1-3JMMtYtRM1'                          # Discord webhook
+webhook=''                          # Discord webhook
 bot_name='Notification Bot'         # Name your bot
 bar_color='15048717'                  # The bar color for discord notifications, must be Hexcode
 

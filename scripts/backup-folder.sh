@@ -58,7 +58,7 @@ else
 fi
 
 #Set variables
-start=$(date +%s)
+start=$(date +%s) #Sets start time for runtime information
 cd "$(realpath -s $source)"
 dest=$(realpath -s $destination)/
 dt=$(date +"%m-%d-%Y")
@@ -117,7 +117,7 @@ if [ "$notify" == "yes" ]; then
     /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "${name} Backup" -d "Backup completed: ${name} data has been backed up." -i "normal"
 fi
 if [ "$use_discord" == "yes" ]; then
-    curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete","description": "Backup completed: Pictures data has been backed up.","fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"}],"footer": {"text": "Powered by: Drazzilb | Could he be more heartless?","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
+    curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete","description": "Backup completed: Pictures data has been backed up.","fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"}],"footer": {"text": "Powered by: Drazzilb | What if there were no hypothetical questions?","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
     echo -e "\nDiscord notification sent."
 fi
 echo -e '\nAll Done!\n'
@@ -125,4 +125,4 @@ echo -e '\nAll Done!\n'
 rm "/tmp/i.am.running.${name}.tmp"
 exit
 #
-# v1.1.2
+# v1.1.3

@@ -107,15 +107,15 @@ for ((i = 0; i < ${#list[@]}; i += 2)); do
     # Error handling container || path exists or does not exists
     if [ $(docker ps -a -f name=$name | wc -l) -ge 2 ]; then
         if [ ! -d "$path" ]; then
-            echo -e "Container $name exists but the directory $path does not exist" >>"${appdata_error}"
+            echo -e "Container $name exists but the directory $path does not exist" >> "${appdata_error}"
             continue
         fi
     else
         if [ ! -d "$path" ]; then
-            echo -e "Container $name does not exit and $path does not exist" >>"${appdata_error}"
+            echo -e "Container $name does not exit and $path does not exist" >> "${appdata_error}"
             continue
         else
-            echo -e "Container $name does not exist but the directory $path exists" >>"${appdata_error}"
+            echo -e "Container $name does not exist but the directory $path exists" >> "${appdata_error}"
             continue
         fi
     fi
@@ -168,14 +168,14 @@ for ((i = 0; i < ${#list[@]}; i += 2)); do
         else
             container_size=$(du -sh $dest/$dt/$name-"$now".tar.gz | awk '{print $1}')
         fi
-        echo "Container: $name Size: $container_size" >>"$appdata_stop"
+        echo "Container: $name Size: $container_size" >> "$appdata_stop"
     else
         if [ "$debug" == "yes" ]; then
             container_size=$(du -sh $dest/$dt/$name-"$now"-debug.tar | awk '{print $1}')
         else
             container_size=$(du -sh $dest/$dt/$name-"$now".tar | awk '{print $1}')
         fi
-        echo "Container: $name Size: $container_size" >>"$appdata_stop"
+        echo "Container: $name Size: $container_size" >> "$appdata_stop"
     fi
     stop_counter=$((stop_counter + 1))
     if [ "$ebug" == "yes" ]; then
@@ -213,14 +213,14 @@ for ((i = 0; i < ${#list_no_stop[@]}; i += 2)); do
         else
             container_size=$(du -sh $dest/$dt/$name-"$now".tar.gz | awk '{print $1}')
         fi
-        echo "Container: $name Size: $container_size" >>"${appdata_nostop}"
+        echo "Container: $name Size: $container_size" >> "${appdata_nostop}"
     else
         if [ "$debug" == "yes" ]; then
             container_size=$(du -sh $dest/$dt/$name-"$now"-debug.tar | awk '{print $1}')
         else
             container_size=$(du -sh $dest/$dt/$name-"$now".tar | awk '{print $1}')
         fi
-        echo "Container: $name Size: $container_size" >>"${appdata_stop}"
+        echo "Container: $name Size: $container_size" >> "${appdata_stop}"
     fi
     echo -e "-----------------------"
     nostop_counter=$((nostop_counter + 1))
@@ -261,17 +261,17 @@ fi
 # Discord notifications
 if [ "$use_discord" == "yes" ]; then
     if [ $(wc <"$appdata_error" -l) -ge 1 ]; then
-        curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","avatar_url": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png", "embeds": [{"thumbnail": {"url": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-1024.png"}, "title": "Error notificaitons", "fields": [{"name": "Errors:","value": "'"$(cat $appdata_error | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | Could he be more heartless?","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "16711680","timestamp": "'"${get_ts}"'"}]}' "$webhook"
+        curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","avatar_url": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png", "embeds": [{"thumbnail": {"url": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-1024.png"}, "title": "Error notificaitons", "fields": [{"name": "Errors:","value": "'"$(cat $appdata_error | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | Adam & Eve were the first ones to ignore the Apple terms and conditions.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "16711680","timestamp": "'"${get_ts}"'"}]}' "$webhook"
         echo -e "\nDiscord error notification sent."
     fi
     if [ $(wc <"$appdata_stop" -l) -ge 1 ] && [ $(wc <"$appdata_nostop" -l) -eq 0 ]; then
         curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete", "fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"},{"name": "'"Containers stopped & backed up: ${stop_counter}"'","value": "'"$(cat ${appdata_stop} | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | Could he be more heartless?","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
     fi
     if [ $(wc <"$appdata_stop" -l) -eq 0 ] && [ $(wc <"$appdata_nostop" -l) -ge 1 ]; then
-        curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete", "fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"},{"name": "'"Containers not stopped but backed up: ${nostop_counter}"'","value": "'"$(cat ${appdata_nostop} | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | Could he be more heartless?","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
+        curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete", "fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"},{"name": "'"Containers not stopped but backed up: ${nostop_counter}"'","value": "'"$(cat ${appdata_nostop} | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | I threw a boomerang a couple years ago; I know live in constant fear.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
     fi
     if [ $(wc <"$appdata_stop" -l) -ge 1 ] && [ $(wc <"$appdata_nostop" -l) -ge 1 ]; then
-        curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete", "fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"},{"name": "'"Containers stopped & backed up: ${stop_counter}"'","value": "'"$(cat ${appdata_stop} | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev)"'"},{"name": "'"Containers not stopped but backed up: ${nostop_counter}"'","value": "'"$(cat ${appdata_nostop} | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | Could he be more heartless?","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
+        curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete", "fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"},{"name": "'"Containers stopped & backed up: ${stop_counter}"'","value": "'"$(cat ${appdata_stop} | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev)"'"},{"name": "'"Containers not stopped but backed up: ${nostop_counter}"'","value": "'"$(cat ${appdata_nostop} | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | The man who invented knock-knock jokes should get a no bell prize.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
     fi
     # fi
     echo -e "\nDiscord notification sent."
@@ -291,4 +291,4 @@ rm $appdata_nostop
 rm $appdata_error
 exit
 #
-# v1.1.2
+# v1.1.3

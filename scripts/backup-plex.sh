@@ -84,7 +84,7 @@ dt=$(date +"%m-%d-%Y")
 now=$(date +"%I_%M_%p")
 get_ts=$(date -u -Iseconds)
 
-debug=true #testing only
+debug=false #testing only
 
 # create the backup directory if it doesn't exist - error handling - will not create backup file it path does not exist
 mkdir -p "$dest"

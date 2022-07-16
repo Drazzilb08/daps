@@ -10,8 +10,8 @@
 #                                  |_|
 
 #------------- DEFINE VARIABLES -------------#
-source='/mnt/user/appdata/plex'     # path to your plex appdata location
-destination=''                      # path to your backup folder
+source=''     # path to your plex appdata location
+destination='' # path to your backup folder
 notify=yes                          # (yes/no) Unraid notification that the backup was performed
 delete_after=7                      # number of days to keep backups
 full_backup=no                      # (yes/no) creation of entire Plex backup (yes) or essential data only (no)
@@ -50,15 +50,12 @@ if [ "$use_discord" == "yes" ] && [ -z "$webhook" ]; then
     echo "ERROR: You're attempting to use the Discord integration but did not enter the webhook url."
     exit
 fi
-if [ command -v pigz ] &>/dev/null && [ "$use_pigz" == "yes"]; then
-    echo "pigz could not be found."
-    echo "Please install pigz and rerun."
-    echo "If on unRaid, pigz can be found through the NerdPack which is found in the appstore"
-    exit
-fi
+
+command -v pigz >/dev/null 2>&1 || { echo -e >&2 "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore"; exit 1; }
+
 if [ -e "/tmp/i.am.running.plex.tmp" ]; then
     echo "Another instance of the script is running. Aborting."
-    echo "Please use rm /tmp/i.am.running.${name}.tmp in your terminal to remove the locking file"
+    echo "Please use rm /tmp/i.am.running.plex.tmp in your terminal to remove the locking file"
     exit
 else
     touch "/tmp/i.am.running.plex.tmp"
@@ -76,13 +73,14 @@ else
 fi
 
 # $(realpath -s $source) takes care of the presence or absense of a trailing slash (/) on the source path - error handling
-cd "$(realpath -s $source)"
+cd "$(realpath -s "$source")" || exit
 
 # set the destination directory and a date
-dest=$(realpath -s $destination)/
+dest=$(realpath -s "$destination")/
 dt=$(date +"%m-%d-%Y")
 now=$(date +"%I_%M_%p")
 get_ts=$(date -u -Iseconds)
+date=$(date)
 
 debug=false #testing only
 
@@ -95,11 +93,11 @@ if [ $full_backup == no ]; then
     mkdir -p "$dest/Essential/$dt"
 
     if [ $debug != true ]; then
-        tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup-"$now".tar" "Plug-in Support/Databases" "Plug-in Support/Preferences" Preferences.xml
-        essential_size=$(du -sh $dest/Essential/$dt/Essential_Plex_Data_Backup-"$now".tar | awk '{print $1}')
+        tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup-$now.tar" "Plug-in Support/Databases" "Plug-in Support/Preferences" Preferences.xml
+        essential_size=$(du -sh "$dest/Essential/$dt/Essential_Plex_Data_Backup-$now.tar" | awk '{print $1}')
     else
-        tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0-"$now".tar" -T /dev/null
-        essential_size=$(du -sh $dest/Essential/$dt/Essential_Plex_Data_Backup-debug0-"$now".tar | awk '{print $1}')
+        tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0-$now.tar" -T /dev/null
+        essential_size=$(du -sh "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0-$now.tar" | awk '{print $1}')
     fi
 
     if [ $force_full_backup != 0 ]; then
@@ -111,19 +109,19 @@ if [ $full_backup == no ]; then
             mkdir -p "$dest/Full/$dt"
 
             if [ $debug != true ]; then
-                tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-"$now".tar" "$source"
-                full_size=$(du -sh $dest/Full/$dt/Full_Plex_Data_Backup-"$now".tar | awk '{print $1}')
+                tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" "$source"
+                full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" | awk '{print $1}')
                 # Compress tar into tar.gz file greatly reducing the size of the backup.
-                if [ use_pigz == yes ]; then
-                    pigz -$pigz_compression "Full_Plex_Data_Backup-"$now".tar" 
-                    full_size=$(du -sh $dest/Full/$dt/Full_Plex_Data_Backup-"$now".tar.gz | awk '{print $1}')
+                if [ $use_pigz == yes ]; then
+                    pigz -$pigz_compression "Full_Plex_Data_Backup-$now.tar" 
+                    full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar.gz" | awk '{print $1}')
                 fi
             else
-                tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-debug1-"$now".tar" -T /dev/null
-                full_size=$(du -sh $dest/Full/$dt/Full_Plex_Data_Backup-debug1-"$now".tar | awk '{print $1}')
-                if [ use_pigz == yes ]; then
-                    pigz -$pigz_compression "Full_Plex_Data_Backup-"$now".tar"
-                    full_size=$(du -sh $dest/Full/$dt/Full_Plex_Data_Backup-debug1-"$now".tar.gz | awk '{print $1}')
+                tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-debug1-$now.tar" -T /dev/null
+                full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-debug1-$now.tar" | awk '{print $1}')
+                if [ $use_pigz == yes ]; then
+                    pigz -$pigz_compression "Full_Plex_Data_Backup-$now.tar"
+                    full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-debug1-$now.tar.gz" | awk '{print $1}')
                 fi
             fi
             # save the date of the full backup
@@ -139,16 +137,16 @@ else
     mkdir -p "$dest/Full/$dt"
 
     if [ $debug != true ]; then
-        tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-"$now".tar" "$source"
-        full_size=$(du -sh $dest/Full/$dt/Full_Plex_Data_Backup-"$now".tar | awk '{print $1}')
+        tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" "$source"
+        full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" | awk '{print $1}')
         # Compress tar into tar.gz file greatly reducing the size of the backup.
-        if [ use_pigz == yes ]; then
-            pigz -$pigz_compression "$dest/Full/$dt/Full_Plex_Data_Backup-"$now".tar"
-            full_size=$(du -sh $dest/Full/$dt/Full_Plex_Data_Backup-"$now".tar.gz | awk '{print $1}')
+        if [ $use_pigz == yes ]; then
+            pigz -$pigz_compression "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar"
+            full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar.gz" | awk '{print $1}')
         fi
     else
-        tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-debug2-"$now".tar" -T /dev/null
-        full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-debug2-"$now".tar" | awk '{print $1}')
+        tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-debug2-$now.tar" -T /dev/null
+        full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-debug2-$now.tar" | awk '{print $1}')
 
     fi
 
@@ -161,12 +159,12 @@ sleep 2
 chmod -R 777 "$dest"
 
 echo -e "\n\nRemoving Essential backups older than " $delete_after "days... please wait\n\n"
-find $destination/Essential* -mtime +$delete_after -exec rm -rfd {} \;
+find "$destination"/Essential* -mtime +$delete_after -exec rm -rfd {} \;
 
-old=$(($force_full_backup * $keep_full))
+old=$((force_full_backup * keep_full))
 if [ -d "$destination/Full" ]; then
     echo -e "Removing Full backups older than " $old "days... please wait\n\n\n"
-    find $destination/Full* -mtime +$old -exec rm -rfd {} \;
+    find "$destination"/Full* -mtime +$old -exec rm -rfd {} \;
 fi
 end=$(date +%s)
 # Runtime
@@ -175,13 +173,14 @@ seconds=$((total_time % 60))
 minutes=$((total_time % 3600 / 60))
 hours=$((total_time / 3600))
 
-if (($minutes == 0 && $hours == 0)); then
-    run_output=$(echo "Plex backup completed in $seconds seconds")
-elif (($hours == 0)); then
-    run_output=$(echo "Plex backup completed in $minutes minutes and $seconds seconds")
+if ((minutes == 0 && hours == 0)); then
+    run_output="Plex backup completed in $seconds seconds"
+elif ((hours == 0)); then
+    run_output="Plex backup completed in $minutes minutes and $seconds seconds"
 else
-    run_output=$(echo "Plex backup completed in $hours hours $minutes minutes and $seconds seconds")
+    run_output="Plex backup completed in $hours hours $minutes minutes and $seconds seconds"
 fi
+echo "$run_output"
 #unRaid notificaitons
 if [ $notify == yes ]; then
     if [ $full_backup == no ]; then
@@ -198,27 +197,25 @@ if [ $notify == yes ]; then
         echo -e "Full Backup: $full_size"
     fi
 fi
-if [ -d $dest/Essential/ ]; then
-    # total_essential=$(du -sh $dest/Essential/ | awk '{print $1}')
-    echo -e "Total size of all Essential backups: $(du -sh $dest/Essential/ | awk '{print $1}')"
+if [ -d "$dest/Essential/" ]; then
+    echo -e "Total size of all Essential backups: $(du -sh "$dest/Essential/" | awk '{print $1}')"
 fi
-if [ -d $dest/Full/ ]; then
-    # total_full=$(du -sh $dest/Full/ | awk '{print $1}')
-    echo -e "Total size of all Full backups: $(du -sh $dest/Full/ | awk '{print $1}')"
+if [ -d "$dest/Full/" ]; then
+    echo -e "Total size of all Full backups: $(du -sh "$dest/Full/" | awk '{print $1}')"
 fi
 # Discord Notifications
 
 if [ "$use_discord" == "yes" ]; then
     if [ $full_backup == no ]; then
         if [ $cf = false ]; then
-            curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Plex Backup","description": "Essential Plex data has been backed up.","fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Essential backup size:"'","value": "'"${essential_size}"'"},{"name": "Total size of all Essential backups:","value": "'"$(du -sh $dest/Essential/ | awk '{print $1}')"'"},{"name": "Days since last Full backup","value": "'"${days}"'"}],"footer": {"text": "Powered by: Drazzilb | Blunt pencils are really pointless.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
+            curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Plex Backup","description": "Essential Plex data has been backed up.","fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Essential backup size:"'","value": "'"${essential_size}"'"},{"name": "Total size of all Essential backups:","value": "'"$(du -sh "$dest/Essential/" | awk '{print $1}')"'"},{"name": "Days since last Full backup","value": "'"${days}"'"}],"footer": {"text": "Powered by: Drazzilb | Blunt pencils are really pointless.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
             echo -e "\nDiscord notification sent."
         else
-            curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Plex Backup","description": "Essential & Full Plex data has been backed up.","fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Essential backup size:"'","value": "'"${essential_size}"'"},{"name": "'"This Full Backup:"'","value": "'"${full_size}"'"},{"name": "Total size of all Essential backups:","value": "'"$(du -sh $dest/Essential/ | awk '{print $1}')"'"},{"name": "'"Total size of all Full backups:"'","value": "'"$(du -sh $dest/Full/ | awk '{print $1}')"'"},{"name": "Days since last Full backup","value": "'"${days}"'"}],"footer": {"text": "Powered by: Drazzilb | Fighting for peace is like screwing for virginity.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
+            curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Plex Backup","description": "Essential & Full Plex data has been backed up.","fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Essential backup size:"'","value": "'"${essential_size}"'"},{"name": "'"This Full Backup:"'","value": "'"${full_size}"'"},{"name": "Total size of all Essential backups:","value": "'"$(du -sh "$dest/Essential/" | awk '{print $1}')"'"},{"name": "'"Total size of all Full backups:"'","value": "'"$(du -sh "$dest/Full/" | awk '{print $1}')"'"},{"name": "Days since last Full backup","value": "'"${days}"'"}],"footer": {"text": "Powered by: Drazzilb | Fighting for peace is like screwing for virginity.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
             echo -e "\nDiscord notification sent."
         fi
     else
-        curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Plex Backup","description": "Full Plex data has been backed up.","fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Full Backup:"'","value": "'"${full_size}"'"},{"name": "'"Total size of all Full backups:"'","value": "'"$(du -sh $dest/Full/ | awk '{print $1}')"'"},{"name": "Days since last Full backup","value": "'"${days}"'"}],"footer": {"text": "Powered by: Drazzilb | I buy all my guns from a guy called T-Rex. He’s a small arms dealer.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
+        curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Plex Backup","description": "Full Plex data has been backed up.","fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Full Backup:"'","value": "'"${full_size}"'"},{"name": "'"Total size of all Full backups:"'","value": "'"$(du -sh "$dest/Full/" | awk '{print $1}')"'"},{"name": "Days since last Full backup","value": "'"${days}"'"}],"footer": {"text": "'"Powered by: Drazzilb | I buy all my guns from a guy called T-Rex. He's a small arms dealer."'","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
         echo -e "\nDiscord notification sent."
     fi
 fi
@@ -229,4 +226,4 @@ rm "/tmp/i.am.running.plex.tmp"
 
 exit
 #
-# v1.1.3
+# v1.1.4

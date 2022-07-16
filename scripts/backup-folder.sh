@@ -10,58 +10,55 @@
 #                                  |_|
 
 #------------- DEFINE VARIABLES -------------#
-name=''                                             # Set your script name, must be unique to any other script.
+name=''                                       # Set your script name, must be unique to any other script.
 source=''                                           # Set source directory
 destination=''                                      # Set backup directory
 delete_after=2                                      # Number of days to keep backup
 use_pigz=yes                                        # Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
-                                                        # Pigz package must be installed via NerdPack
-pigz_compression=9                                  # Define compression level to use with pigz
-                                                        # 0 = No compression
-                                                        # 1 = Least compression/Fastest
-                                                        # 6 = Default compression/Default Speed
-                                                        # 9 = Maximum Compression/Slowest
-notify=yes                                          # Use unRAID's built in notification system
+# Pigz package must be installed via NerdPack
+pigz_compression=9 # Define compression level to use with pigz
+# 0 = No compression
+# 1 = Least compression/Fastest
+# 6 = Default compression/Default Speed
+# 9 = Maximum Compression/Slowest
+notify=yes # Use unRAID's built in notification system
 #------------- DEFINE DISCORD VARIABLES -------------#
 # This section is not required
 
-use_discord=yes                                     # Use discord for notifications
-webhook=''                                          # Discord webhook
-bot_name='Notification Bot'                         # Name your bot
-bar_color='3036236'                                 # The bar color for discord notifications, must be decimal -> https://www.mathsisfun.com/hexadecimal-decimal-colors.html
+use_discord=yes                                                                                                                    # Use discord for notifications
+webhook='' # Discord webhook
+bot_name='Notification Bot'                                                                                                        # Name your bot
+bar_color='3036236'                                                                                                                # The bar color for discord notifications, must be decimal -> https://www.mathsisfun.com/hexadecimal-decimal-colors.html
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 # Will not run again if currently running.
 if [ ! -d "$source" ]; then
     echo "ERROR: Your source directory does not exist, please check your configuration"
-    exit
+    exit 2
 fi
 if [ -z "$source" ]; then
     echo "ERROR: Your source directory is not set, please check your configuration."
-    exit
+    exit 2
 fi
 if [ "$use_discord" == "yes" ] && [ -z "$webhook" ]; then
     echo "ERROR: You're attempting to use the Discord integration but did not enter the webhook url."
-    exit
+    exit 1
 fi
-if [ command -v pigz ] &>/dev/null && [ "$use_pigz" == "yes"]; then
-    echo "pigz could not be found."
-    echo "Please install pigz and rerun."
-    echo "If on unRaid, pigz can be found through the NerdPack which is found in the appstore"
-    exit
-fi
+
+command -v pigz >/dev/null 2>&1 || { echo -e >&2 "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore"; exit 1; }
+
 if [ -e "/tmp/i.am.running.${name}.tmp" ]; then
     echo "Another instance of the script is running. Aborting."
     echo "Please use rm /tmp/i.am.running.${name}.tmp in your terminal to remove the locking file"
-    exit
+    exit 1
 else
     touch "/tmp/i.am.running.${name}.tmp"
 fi
 
 #Set variables
 start=$(date +%s) #Sets start time for runtime information
-cd "$(realpath -s $source)"
-dest=$(realpath -s $destination)/
+cd "$(realpath -s "$source")" || exit
+dest=$(realpath -s "$destination")/
 dt=$(date +"%m-%d-%Y")
 now=$(date +"%I_%M_%p")
 get_ts=$(date -u -Iseconds)
@@ -73,12 +70,12 @@ echo -e "\nCreating backup..."
 mkdir -p "$dest/$dt"
 
 # Data Backup
-tar -cf "$dest/$dt/backup-"$now".tar" "$source"
-run_size=$(du -sh $dest/$dt/backup-"$now".tar | awk '{print $1}') #Set run_size information
+tar -cf "$dest/$dt/backup-$now.tar" "$source"
+run_size=$(du -sh "$dest"/"$dt"/backup-"$now".tar | awk '{print $1}') #Set run_size information
 if [ $use_pigz == yes ]; then
     echo -e "\nUsing pigz to compress backup... this could take a while..."
-    pigz -$pigz_compression "$dest/$dt/backup-"$now".tar"
-    run_size=$(du -sh $dest/$dt/backup-"$now".tar.gz | awk '{print $1}')
+    pigz -$pigz_compression "$dest/$dt/backup-$now.tar"
+    run_size=$(du -sh "$dest/$dt/backup-$now.tar.gz" | awk '{print $1}')
 fi
 
 sleep 2
@@ -86,7 +83,7 @@ chmod -R 777 "$dest"
 
 #Cleanup Old Backups
 echo -e "\nRemoving backups older than " $delete_after "days...\n"
-find $destination* -mtime +$delete_after -exec rm -rfd {} \;
+find "$destination"* -mtime +$delete_after -exec rm -rfd {} \;
 
 end=$(date +%s)
 # Runtime
@@ -95,21 +92,18 @@ seconds=$((total_time % 60))
 minutes=$((total_time % 3600 / 60))
 hours=$((total_time / 3600))
 
-if (("$minutes" == "0" && "$hours" == "0")); then
-    echo "Script completed in $seconds seconds"
+if ((minutes == 0 && hours == 0)); then
     run_output="Script completed in $seconds seconds"
-elif (("$hours" == "0")); then
-    echo "Script completed in $minutes minutes and $seconds seconds"
+elif ((hours == 0)); then
     run_output="Script completed in $minutes minutes and $seconds seconds"
 else
-    echo "Script completed in $hours hours $minutes minutes and $seconds seconds"
     run_output="Script completed in $hours hours $minutes minutes and $seconds seconds"
 fi
-
+echo "$run_output"
 # Gather size information
 echo -e "This backup's size: $run_size"
-if [ -d $dest/ ]; then
-    total_size=$(du -sh $dest | awk '{print $1}')
+if [ -d "$dest"/ ]; then
+    total_size=$(du -sh "$dest" | awk '{print $1}')
     echo -e "\nTotal size of all backups: $total_size"
 fi
 
@@ -124,6 +118,6 @@ fi
 echo -e '\nAll Done!\n'
 # Removing temp file
 rm "/tmp/i.am.running.${name}.tmp"
-exit
+exit 0
 #
-# v1.1.3
+# v1.1.4

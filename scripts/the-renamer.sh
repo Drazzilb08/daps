@@ -29,18 +29,16 @@ move_files=yes #Move files manually or use the destination folders
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 
-# Rename all movies that contain an underscore and replace with nothing
-echo -e "Processing...\n"
-if [ ! -z "$movies_source" ]; then
-    if [ ! -z "$(ls -A $movies_source)" ]; then
+if [ -n "$movies_source" ]; then
+    if [ -n "$(ls -A $movies_source)" ]; then
         echo "Processing Movies"
-        cd $movies_source
-        rename -v "_" "" * 2>/dev/null
+        find "$movies_source" -regex ".*_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \;
         if [ "$move_files" = "yes" ]; then
             echo -e "Moving assets\n"
-            mv -v $movies_source/* $movies_destination/ /dev/null 2>&1
+            mv "$movies_source"/* "$movies_destination" 2>/dev/null
+            echo -e "Assets moved\n"
         else
-            echo "Movies Processed but files were not moved.\n"
+            echo -e "Movies Processed but files were not moved.\n"
         fi
     else
         echo -e "Movies directory empty.\n"
@@ -48,27 +46,26 @@ if [ ! -z "$movies_source" ]; then
 else
     echo -e "Movies directory not set.\n"
 fi
-if [ ! -z "$series_source" ]; then
-    if [ ! -z "$(ls -A $series_source)" ]; then
-        if [ $(find $series_source -regex ".*_Season.*" | wc -l) -eq 0 ]; then
+if [ -n "$series_source" ]; then
+    if [ -n "$(ls -A $series_source)" ]; then
+        if [ "$(find $series_source -regex ".*_Season.*" | wc -l)" -eq 0 ]; then
             echo "Processing Series"
-            cd $series_source
-            echo -e "Removing underscores from files"
-            rename -v "_" "" * /dev/null 2>&1
-            rename -v " - Specials" "_Season00" * 2>/dev/null
-            if [ $(find . -regex ".*[1-9][0-9]\.[^.]+$" | wc -l) -ge 1 ]; then
-                rename -v " - Season" "_Season" * 2>/dev/null
+            find "$series_source" -regex ".*_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \; #Removing all underscores from string
+            find "$series_source" -regex ".* - Specials.*" -exec rename -v " - Specials" "_Season00" {} \; #Replace " - Speicials" to "_Season00"
+            find "$series_source" -regex ".* [1-9]\.[^.]+$" -exec rename -v " - Season " "_Season0" {} \; | sort -d #Replace " - Season " to "_Season0" for Seasons 1 through 9
+
+            if [ "$(find "$series_source" -regex ".*[1-9][0-9]\.[^.]+$" | wc -l)" -ge 1 ]; then 
+                find "$series_source" -regex ".*[1-9][0-9]\.[^.]+$" -exec rename -v ' - Season ' '_Season' {} \; | sort -d #Find season that are 10 and greater and rename them 
             fi
-            rename -v " - Season " "_Season0" * 2>/dev/null
             if [ "$move_files" = "yes" ]; then
                 echo -e "Moving assets\n"
-                mv -v $series_source/* $series_destination/ /dev/null 2>&1
+                mv "$series_source"/* "$series_destination" 2>/dev/null
             else
-                echo "Series Processed but files were not moved.\n"
+                echo -e "Series Processed but files were not moved.\n"
             fi
         else
-            echo -e "Warning: There are files that have been processed before.\nPlease remove them and rerun."
-            echo -e "$(find $series_source -regex ".*_Season.*" -printf "%f\n")\n"
+            echo -e "Found files previously processed\nMoving those files....\n"\
+            find $series_source -regex ".*_Season.*" -exec mv -v -t "$series_destination" {} +
         fi
     else
         echo -e "Series directory empty.\n"
@@ -76,16 +73,16 @@ if [ ! -z "$series_source" ]; then
 else
     echo -e "Series directory not set.\n"
 fi
-if [ ! -z "$anime_movies_source" ]; then
-    if [ ! -z "$(ls -A $anime_movies_source)" ]; then
-        echo "Processing Anime Movies"
-        cd $anime_movies_source
-        rename -v "_" "" * 2>/dev/null
-        if [ "$anime_move_files" = "yes" ]; then
+if [ -n "$anime_movies_source" ]; then
+    if [ -n "$(ls -A $anime_movies_source)" ]; then
+        echo "Processing Movies"
+        find "$anime_movies_source" -regex ".*_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \;
+        if [ "$move_files" = "yes" ]; then
             echo -e "Moving assets\n"
-            mv -v $anime_movies_source/* $anime_movies_destination/ /dev/null 2>&1
+            mv "$anime_movies_source"/* "$anime_movies_destination" 2>/dev/null
+            echo -e "Assets moved\n"
         else
-            echo "Anime Movies Processed but files were not moved.\n"
+            echo -e "Movies Processed but files were not moved.\n"
         fi
     else
         echo -e "Anime Movies directory empty.\n"
@@ -93,27 +90,26 @@ if [ ! -z "$anime_movies_source" ]; then
 else
     echo -e "Anime Movies directory not set.\n"
 fi
-if [ ! -z "$anime_series_source" ]; then
-    if [ ! -z "$(ls -A $anime_series_source)" ]; then
-        if [ $(find $anime_series_source -regex ".*_Season.*" | wc -l) -eq 0 ]; then
-            echo "Processing Anime Series"
-            cd $anime_series_source
-            echo -e "Removing underscores from files"
-            rename -v "_" "" * /dev/null 2>&1
-            rename -v " - Specials" "_Season00" * 2>/dev/null
-            if [ $(find . -regex ".*[1-9][0-9]\.[^.]+$" | wc -l) -ge 1 ]; then
-                rename -v " - Season" "_Season" * 2>/dev/null
+if [ -n "$anime_series_source" ]; then
+    if [ -n "$(ls -A $anime_series_source)" ]; then
+        if [ "$(find $anime_series_source -regex ".*_Season.*" | wc -l)" -eq 0 ]; then
+            echo "Processing Series"
+            find "$anime_series_source" -regex ".*_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \;
+            find "$anime_series_source" -regex ".* - Specials.*" -exec rename -v " - Specials" "_Season00" {} \;
+            find "$anime_series_source" -regex ".* [1-9]\.[^.]+$" -exec rename -v " - Season " "_Season0" {} \; | sort -d
+
+            if [ "$(find "$anime_series_source" -regex ".*[1-9][0-9]\.[^.]+$" | wc -l)" -ge 1 ]; then
+                find "$anime_series_source" -regex ".*[1-9][0-9]\.[^.]+$" -exec rename -v ' - Season ' '_Season' {} \; | sort -d
             fi
-            rename -v " - Season " "_Season0" * 2>/dev/null
-            if [ "$anime_series_files" = "yes" ]; then
+            if [ "$move_files" = "yes" ]; then
                 echo -e "Moving assets\n"
-                mv -v $anime_series_source/* $anime_series_destination/ /dev/null 2>&1
+                mv "$anime_series_source"/* "$anime_series_destination" 2>/dev/null
             else
-                echo "Anime Series Processed but files were not moved.\n"
+                echo -e "Series Processed but files were not moved.\n"
             fi
         else
-            echo -e "Warning: There are files that have been processed before\nPlease remove them and rerun."
-            echo -e "$(find $anime_series_source -regex ".*_Season.*" -printf "%f\n")\n"
+            echo -e "Found files previously processed\nMoving those files....\n"
+            find $anime_series_source -regex ".*_Season.*" -exec mv -v -t "$anime_series_destination" {} +
         fi
     else
         echo -e "Anime Series directory empty.\n"
@@ -124,4 +120,4 @@ fi
 echo -e "\nAll Done\n"
 exit
 #
-# v1.0.0
+# v1.1.1

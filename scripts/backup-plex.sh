@@ -88,39 +88,39 @@ debug=false #testing only
 mkdir -p "$dest"
 
 # create tar file of essential databases and preferences -- The Plug-in Support preferences will keep settings of any plug-ins, even though they will need to be reinstalled.
-if [ $full_backup == no ]; then
+if [ "$full_backup" == "no" ]; then
     echo -e "\n\nCreating Essential backup... please wait"
     mkdir -p "$dest/Essential/$dt"
 
-    if [ $debug != true ]; then
+    if [ "$debug" != true ]; then
         tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup-$now.tar" "Plug-in Support/Databases" "Plug-in Support/Preferences" Preferences.xml
         essential_size=$(du -sh "$dest/Essential/$dt/Essential_Plex_Data_Backup-$now.tar" | awk '{print $1}')
-        if [ $use_pigz == yes ]; then
+        if [ "$use_pigz" == yes ]; then
             pigz -$pigz_compression "$dest/Essential/$dt/Essential_Plex_Data_Backup-$now.tar" 
             full_size=$(du -sh "$dest/Essential/$dt/Essential_Plex_Data_Backup-$now.tar.gz" | awk '{print $1}')
         fi
     else
         tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0-$now.tar" -T /dev/null
         essential_size=$(du -sh "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0-$now.tar" | awk '{print $1}')
-        if [ $use_pigz == yes ]; then
+        if [ "$use_pigz" == yes ]; then
             pigz -$pigz_compression "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0-$now.tar" 
             full_size=$(du -sh "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0-$now.tar.gz" | awk '{print $1}')
         fi
     fi
 
-    if [ $force_full_backup != 0 ]; then
+    if [ "$force_full_backup" != 0 ]; then
         days=$((($(date --date="$date" +%s) - $(date --date="$lastbackup" +%s)) / (60 * 60 * 24)))
 
-        if [[ $days -gt $force_full_backup ]] || [[ $lastbackup == 0 ]]; then
+        if [[ "$days" -gt $force_full_backup ]] || [[ "$lastbackup" == 0 ]]; then
             cf=true # created full backup
             echo -e "\nCreating Full backup now... please wait\n"
             mkdir -p "$dest/Full/$dt"
 
-            if [ $debug != true ]; then
+            if [ "$debug" != true ]; then
                 tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" "$source"
                 full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" | awk '{print $1}')
                 # Compress tar into tar.gz file greatly reducing the size of the backup.
-                if [ $use_pigz == yes ]; then
+                if [ "$use_pigz" == yes ]; then
                     pigz -$pigz_compression "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" 
                     full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar.gz" | awk '{print $1}')
                 fi
@@ -128,7 +128,7 @@ if [ $full_backup == no ]; then
                 tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-debug1-$now.tar" -T /dev/null
                 full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-debug1-$now.tar" | awk '{print $1}')
 
-                if [ $use_pigz == yes ]; then
+                if [ "$use_pigz" == yes ]; then
                     pigz -$pigz_compression "$dest/Full/$dt/Full_Plex_Data_Backup-debug1-$now.tar"
                     full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-debug1-$now.tar.gz" | awk '{print $1}')
                 fi
@@ -145,18 +145,18 @@ else
     echo -e "\nCreating Full backup... please wait\n"
     mkdir -p "$dest/Full/$dt"
 
-    if [ $debug != true ]; then
+    if [ "$debug" != true ]; then
         tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" "$source"
         full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" | awk '{print $1}')
         # Compress tar into tar.gz file greatly reducing the size of the backup.
-        if [ $use_pigz == yes ]; then
+        if [ "$use_pigz" == "yes" ]; then
             pigz -$pigz_compression "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar"
             full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar.gz" | awk '{print $1}')
         fi
     else
         tar -cf "$dest/Full/$dt/Full_Plex_Data_Backup-debug2-$now.tar" -T /dev/null
         full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-debug2-$now.tar" | awk '{print $1}')
-        if [ $use_pigz == yes ]; then
+        if [ "$use_pigz" == yes ]; then
             pigz -$pigz_compression "$dest/Full/$dt/Full_Plex_Data_Backup-debug2-$now.tar"
             full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-debug2-$now.tar.gz" | awk '{print $1}')
         fi
@@ -194,9 +194,9 @@ else
 fi
 echo "$run_output"
 #unRaid notificaitons
-if [ $notify == yes ]; then
-    if [ $full_backup == no ]; then
-        if [ $cf = false ]; then
+if [ "$notify" == yes ]; then
+    if [ "$full_backup" == "no" ]; then
+        if [ "$cf" = false ]; then
             /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Plex Backup" -d "Essential Plex data has been backed up." -i "normal"
             echo -e "Essential backup: $essential_size"
         else
@@ -218,8 +218,8 @@ fi
 # Discord Notifications
 
 if [ "$use_discord" == "yes" ]; then
-    if [ $full_backup == no ]; then
-        if [ $cf = false ]; then
+    if [ "$full_backup" == "no" ]; then
+        if [ "$cf" = false ]; then
             curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Plex Backup","description": "Essential Plex data has been backed up.","fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Essential backup size:"'","value": "'"${essential_size}"'"},{"name": "Total size of all Essential backups:","value": "'"$(du -sh "$dest/Essential/" | awk '{print $1}')"'"},{"name": "Days since last Full backup","value": "'"${days}"'"}],"footer": {"text": "Powered by: Drazzilb | Blunt pencils are really pointless.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
             echo -e "\nDiscord notification sent."
         else
@@ -238,4 +238,4 @@ rm "/tmp/i.am.running.plex.tmp"
 
 exit
 #
-# v1.1.4
+# v1.1.5

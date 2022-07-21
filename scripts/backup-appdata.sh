@@ -12,10 +12,10 @@
 # Furthermore, it stops and restarts each container before and after backup if the container was running at the time of the backup
 
 #------------- DEFINE VARIABLES -------------#
-source='' # Set appdata directory, this is to help with easily adding directories
-# Example: $source/radarr
+appdata='' # Set appdata directory, this is to help with easily adding directories
+# Example: $appdata/radarr
 # This is the same as typing out /mnt/user/appdata/radarr (keeping things simple)
-# However, if you want to type out the whole thing, (say if you have config information in seperate locations) you still can enter the information, just don't use $source
+# However, if you want to type out the whole thing, (say if you have config information in seperate locations) you still can enter the information, just don't use $appdata
 destination='' # Set backup directory
 delete_after=2                          # Number of days to keep backup
 use_pigz=yes                             # Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
@@ -34,13 +34,15 @@ bot_name='Notification Bot'                                                     
 bar_color='16724991'                                                                                                               # The bar color for discord notifications, must be decimal code -> https://www.mathsisfun.com/hexadecimal-decimal-colors.html
 
 # List containers and assiciated config directory to stop and backup
-# Format: <container name> <"$source"/container_config_dir>
+# To get a list of containers and it's names you need to enter in  simply use
+# docker ps --format "{{.Names}}" in your terminal
+# Format: <container name> <"$appdata"/container_config_dir>
 # Eg. tautulli $appdata/tautulli>
 list=(
 
 )
 # List containers and associated config directory to back up without stopping
-# Format: <container name> <"$source"/container_config_dir>
+# Format: <container name> <"$appdata"/container_config_dir>
 # Eg. tautulli $appdata/tautulli>
 list_no_stop=(
 
@@ -48,12 +50,12 @@ list_no_stop=(
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 # Will not run again if currently running.
-if [ ! -d "$source" ]; then
-    echo "ERROR: Your source directory does not exist, please check your configuration"
+if [ ! -d "$appdata" ]; then
+    echo "ERROR: Your appdata directory does not exist, please check your configuration"
     exit 1
 fi
-if [ -z "$source" ]; then
-    echo "ERROR: Your source directory is not set, please check your configuration."
+if [ -z "$appdata" ]; then
+    echo "ERROR: Your appdata directory is not set, please check your configuration."
     exit 1
 fi
 if [ "$use_discord" == "yes" ] && [ -z "$webhook" ]; then
@@ -72,7 +74,7 @@ fi
 
 #Set variables
 start=$(date +%s) #Sets start time for runtime information
-cd "$(realpath -s "$source")" || exit
+cd "$(realpath -s "$appdata")" || exit
 dest=$(realpath -s "$destination")
 dt=$(date +"%m-%d-%Y")
 now=$(date +"%I_%M_%p")
@@ -287,4 +289,4 @@ rm "$appdata_nostop"
 rm "$appdata_error"
 exit 0
 #
-# v1.1.4
+# v1.1.5

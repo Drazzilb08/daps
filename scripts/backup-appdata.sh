@@ -37,13 +37,13 @@ bar_color='16724991'                                                            
 # To get a list of containers and it's names you need to enter in  simply use
 # docker ps --format "{{.Names}}" in your terminal
 # Format: <container name> <"$appdata"/container_config_dir>
-# Eg. tautulli $appdata/tautulli>
+# Eg. tautulli "$appdata"/tautulli>
 list=(
 
 )
 # List containers and associated config directory to back up without stopping
 # Format: <container name> <"$appdata"/container_config_dir>
-# Eg. tautulli $appdata/tautulli>
+# Eg. tautulli "$appdata"/tautulli>
 list_no_stop=(
 
 )

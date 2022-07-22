@@ -16,7 +16,7 @@ appdata='' # Set appdata directory, this is to help with easily adding directori
 # Example: $appdata/radarr
 # This is the same as typing out /mnt/user/appdata/radarr (keeping things simple)
 # However, if you want to type out the whole thing, (say if you have config information in seperate locations) you still can enter the information, just don't use $appdata
-destination='' # Set backup directory
+destination=''                           # Set backup directory
 delete_after=2                          # Number of days to keep backup
 use_pigz=yes                             # Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
 # Pigz package must be installed via NerdPack
@@ -26,9 +26,12 @@ pigz_compression=9 # Define compression level to use with pigz
 # 6 = Default compression/Default Speed
 # 9 = Maximum Compression/Slowest
 notify=no # Use unRAID's built in notification system
+# Backup naming convention
+#date format
 #------------- DEFINE DISCORD VARIABLES -------------#
 # This section is not required
 use_discord=yes                                                                                                                    # Use discord for notifications
+use_summary=yes                                                                                                                    # Summarize the run (no = full output)
 webhook=''                                                                                                                         # Discord webhook
 bot_name='Notification Bot'                                                                                                        # Name your bot
 bar_color='16724991'                                                                                                               # The bar color for discord notifications, must be decimal code -> https://www.mathsisfun.com/hexadecimal-decimal-colors.html
@@ -39,13 +42,12 @@ bar_color='16724991'                                                            
 # Format: <container name> <"$appdata"/container_config_dir>
 # Eg. tautulli "$appdata"/tautulli>
 list=(
-
 )
 # List containers and associated config directory to back up without stopping
 # Format: <container name> <"$appdata"/container_config_dir>
 # Eg. tautulli "$appdata"/tautulli>
 list_no_stop=(
-
+   
 )
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
@@ -76,7 +78,7 @@ fi
 start=$(date +%s) #Sets start time for runtime information
 cd "$(realpath -s "$appdata")" || exit
 dest=$(realpath -s "$destination")
-dt=$(date +"%m-%d-%Y")
+dt=$(date +"%Y-%m-%d")
 now=$(date +"%I_%M_%p")
 get_ts=$(date -u -Iseconds)
 appdata_error=$(mktemp)
@@ -219,8 +221,11 @@ for ((i = 0; i < ${#list_no_stop[@]}; i += 2)); do
         fi
         echo "Container: $name Size: $container_size" >> "${appdata_stop}"
     fi
-    echo -e "-----------------------"
     nostop_counter=$((nostop_counter + 1))
+    if [ "$debug" == "yes" ]; then
+        echo "Backup stop_counter: $nostop_counter"
+    fi
+    echo -e "-----------------------"
 done
 
 sleep 2
@@ -229,7 +234,6 @@ chmod -R 777 "$dest"
 #Cleanup Old Backups
 echo -e "\nRemoving backups older than " $delete_after "days...\n"
 find "$destination"* -mtime +$delete_after -exec rm -rfd {} \;
-#find $destination* -type f -size 1k --include "*.tar.gz" -exec rm -rfld '{}' \;
 
 end=$(date +%s)
 run_size=$(du -sh "$dest/$dt/" | awk '{print $1}') #Set run_size information
@@ -262,14 +266,18 @@ if [ "$use_discord" == "yes" ]; then
         curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","avatar_url": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png", "embeds": [{"thumbnail": {"url": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-1024.png"}, "title": "Error notificaitons", "fields": [{"name": "Errors:","value": "'"$(jq -Rs '.' "${appdata_error}" | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | Adam & Eve were the first ones to ignore the Apple terms and conditions.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "16711680","timestamp": "'"${get_ts}"'"}]}' "$webhook"
         echo -e "\nDiscord error notification sent."
     fi
-    if [ "$(wc <"$appdata_stop" -l) " -ge 1 ] && [ "$(wc <"$appdata_nostop" -l)" -eq 0 ]; then
-        curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete", "fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"},{"name": "'"Containers stopped & backed up: ${stop_counter}"'","value": "'"$(jq -Rs '.' "${appdata_stop}" | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | Could he be more heartless?","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
-    fi
-    if [ "$(wc <"$appdata_stop" -l) " -eq 0 ] && [ "$(wc <"$appdata_nostop" -l)" -ge 1 ]; then
-        curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete", "fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"},{"name": "'"Containers not stopped but backed up: ${nostop_counter}"'","value": "'"$(jq -Rs '.' "${appdata_nostop}" | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | I threw a boomerang a couple years ago; I know live in constant fear.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
-    fi
-    if [ "$(wc <"$appdata_stop" -l) " -ge 1 ] && [ "$(wc <"$appdata_nostop" -l)" -ge 1 ]; then
-        curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete", "fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"},{"name": "'"Containers stopped & backed up: ${stop_counter}"'","value": "'"$(jq -Rs '.' "${appdata_stop}" | cut -c 2- | rev | cut -c 2- | rev)"'"},{"name": "'"Containers not stopped but backed up: ${nostop_counter}"'","value": "'"$(jq -Rs '.' "${appdata_nostop}" | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | The man who invented knock-knock jokes should get a no bell prize.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
+    if [ "$use_summary" == "yes" ]; then
+        curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete", "fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"}],"footer": {"text": "Powered by: Drazzilb | Could he be more heartless?","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
+    else
+        if [ "$(wc <"$appdata_stop" -l) " -ge 1 ] && [ "$(wc <"$appdata_nostop" -l)" -eq 0 ]; then
+            curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete", "fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"},{"name": "'"Containers stopped & backed up: ${stop_counter}"'","value": "'"$(jq -Rs '.' "${appdata_stop}" | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | Could he be more heartless?","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
+        fi
+        if [ "$(wc <"$appdata_stop" -l) " -eq 0 ] && [ "$(wc <"$appdata_nostop" -l)" -ge 1 ]; then
+            curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete", "fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"},{"name": "'"Containers not stopped but backed up: ${nostop_counter}"'","value": "'"$(jq -Rs '.' "${appdata_nostop}" | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | I threw a boomerang a couple years ago; I know live in constant fear.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
+        fi
+        if [ "$(wc <"$appdata_stop" -l) " -ge 1 ] && [ "$(wc <"$appdata_nostop" -l)" -ge 1 ]; then
+            curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete", "fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"},{"name": "'"Containers stopped & backed up: ${stop_counter}"'","value": "'"$(jq -Rs '.' "${appdata_stop}" | cut -c 2- | rev | cut -c 2- | rev)"'"},{"name": "'"Containers not stopped but backed up: ${nostop_counter}"'","value": "'"$(jq -Rs '.' "${appdata_nostop}" | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | The man who invented knock-knock jokes should get a no bell prize.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
+        fi
     fi
     # fi
     echo -e "\nDiscord notification sent."
@@ -289,4 +297,4 @@ rm "$appdata_nostop"
 rm "$appdata_error"
 exit 0
 #
-# v1.1.5
+# v1.1.6

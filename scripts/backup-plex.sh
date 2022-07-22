@@ -77,7 +77,7 @@ cd "$(realpath -s "$source")" || exit
 
 # set the destination directory and a date
 dest=$(realpath -s "$destination")/
-dt=$(date +"%m-%d-%Y")
+dt=$(date +"%Y-%m-%d")
 now=$(date +"%I_%M_%p")
 get_ts=$(date -u -Iseconds)
 date=$(date)
@@ -238,4 +238,4 @@ rm "/tmp/i.am.running.plex.tmp"
 
 exit
 #
-# v1.1.5
+# v1.1.6

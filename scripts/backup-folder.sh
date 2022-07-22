@@ -59,7 +59,7 @@ fi
 start=$(date +%s) #Sets start time for runtime information
 cd "$(realpath -s "$source")" || exit
 dest=$(realpath -s "$destination")/
-dt=$(date +"%m-%d-%Y")
+dt=$(date +"%Y-%m-%d")
 now=$(date +"%I_%M_%p")
 get_ts=$(date -u -Iseconds)
 
@@ -120,4 +120,4 @@ echo -e '\nAll Done!\n'
 rm "/tmp/i.am.running.${name}.tmp"
 exit 0
 #
-# v1.1.4
+# v1.1.5

@@ -22,6 +22,9 @@ pigz_compression=9 # Define compression level to use with pigz
 # 6 = Default compression/Default Speed
 # 9 = Maximum Compression/Slowest
 notify=yes # Use unRAID's built in notification system
+alternate_format=no   #This option will remove the time from the file and move it over to the directory structure.
+                        #Yes = /path/to/source/yyyy-mm-dd@00.01_AM/<container_name>.tar.gz
+                        #No = /path/to/source/yyyy-mm-dd/<container_name>-12_01_AM.tar.gz
 #------------- DEFINE DISCORD VARIABLES -------------#
 # This section is not required
 
@@ -59,9 +62,12 @@ fi
 start=$(date +%s) #Sets start time for runtime information
 cd "$(realpath -s "$source")" || exit
 dest=$(realpath -s "$destination")/
-dt=$(date +"%Y-%m-%d")
-now=$(date +"%I_%M_%p")
-get_ts=$(date -u -Iseconds)
+if [ "$alternate_format" == "yes" ]; then
+    dt=$(date +"%Y-%m-%d"@%H.%M)
+else
+    dt=$(date +"%Y-%m-%d")
+    now=$(date +"%H.%M")
+fi
 
 # create the backup directory if it doesn't exist - error handling - will not create backup file it path does not exist
 mkdir -p "$dest"
@@ -70,12 +76,22 @@ echo -e "\nCreating backup..."
 mkdir -p "$dest/$dt"
 
 # Data Backup
-tar -cf "$dest/$dt/backup-$now.tar" "$source"
-run_size=$(du -sh "$dest"/"$dt"/backup-"$now".tar | awk '{print $1}') #Set run_size information
-if [ $use_pigz == yes ]; then
-    echo -e "\nUsing pigz to compress backup... this could take a while..."
-    pigz -$pigz_compression "$dest/$dt/backup-$now.tar"
-    run_size=$(du -sh "$dest/$dt/backup-$now.tar.gz" | awk '{print $1}')
+if [ "$alternate_format" != "yes" ]; then
+    tar -cf "$dest/$dt/backup-$now.tar" "$source"
+    run_size=$(du -sh "$dest/$dt/backup-$now.tar" | awk '{print $1}') #Set run_size information
+    if [ $use_pigz == yes ]; then
+        echo -e "\nUsing pigz to compress backup... this could take a while..."
+        pigz -$pigz_compression "$dest/$dt/backup-$now.tar"
+        run_size=$(du -sh "$dest/$dt/backup-$now.tar.gz" | awk '{print $1}')
+    fi
+else
+    tar -cf "$dest/$dt/backup-$now.tar" "$source"
+    run_size=$(du -sh "$dest/$dt/backup.tar" | awk '{print $1}') #Set run_size information
+    if [ $use_pigz == yes ]; then
+        echo -e "\nUsing pigz to compress backup... this could take a while..."
+        pigz -$pigz_compression "$dest/$dt/backup.tar"
+        run_size=$(du -sh "$dest/$dt/backup.tar.gz" | awk '{print $1}')
+    fi
 fi
 
 sleep 2
@@ -109,6 +125,7 @@ fi
 
 # Notifications
 if [ "$notify" == "yes" ]; then
+    get_ts=$(date -u -Iseconds)
     /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "${name} Backup" -d "Backup completed: ${name} data has been backed up." -i "normal"
 fi
 if [ "$use_discord" == "yes" ]; then
@@ -116,8 +133,8 @@ if [ "$use_discord" == "yes" ]; then
     echo -e "\nDiscord notification sent."
 fi
 echo -e '\nAll Done!\n'
-# Removing temp file
+# Removing temp \file
 rm "/tmp/i.am.running.${name}.tmp"
 exit 0
 #
-# v1.1.5
+# v1.2.5

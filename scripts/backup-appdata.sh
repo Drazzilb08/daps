@@ -9,7 +9,11 @@
 #                |_|   |_|                                                      |_|
 
 # This script creates an invididual tar file for each docker appdata directory that you define (needs both container name and path to it's appdata).
-# Furthermore, it stops and restarts each container before and after backup if the container was running at the time of the backup
+# Features:
+    # Stops containers if not stopped
+    # Does not start containers that were previously started
+    # Can define list of containers to not stop during backup
+    # Can define list of directories not associated with a container to backup within your appdata directory
 
 #------------- DEFINE VARIABLES -------------#
 appdata='' # Set appdata directory, this is to help with easily adding directories
@@ -26,19 +30,27 @@ pigz_compression=9 # Define compression level to use with pigz
 # 6 = Default compression/Default Speed
 # 9 = Maximum Compression/Slowest
 unraid_notify=no # Use unRAID's built in notification system
-# Backup naming convention
-#date format
+alternate_format=no   
+                        # This option will remove the time from the file and move it over to the directory structure.
+                            # Yes = /path/to/source/yyyy-mm-dd@00.01_AM/<container_name>.tar.gz
+                            # No = /path/to/source/yyyy-mm-dd/<container_name>-12_01_AM.tar.gz
+exclude_file='/mnt/user/data/scripts/userScripts/scripts/exclude-file.txt'       
+                        # Location of an exclude file, this file is to exclude certain files/folders from being backed up.
+                            # Example of files that would be excluded: zip files, log files/directories just to name a few
+                            # Please not that these excludes can be global depending on how you have it all set up
+                            # This must be full path to the file: Eg '/mnt/user/data/exclude-file.txt'
 #------------- DEFINE DISCORD VARIABLES -------------#
 # This section is not required
 use_discord=yes                                                                                                                    # Use discord for notifications
-use_summary=no                                                                                                                 # Summarize the run (no = full output)
+use_summary=yes                                                                                                                 # Summarize the run (no = full output)
 webhook=''                                                                                                                         # Discord webhook
 bot_name='Notification Bot'                                                                                                        # Name your bot
 bar_color='16724991'                                                                                                               # The bar color for discord notifications, must be decimal code -> https://www.mathsisfun.com/hexadecimal-decimal-colors.html
 
 # List containers and assiciated config directory to stop and backup
+    # Backups will go in order listed
 # To get a list of containers and it's names you need to enter in  simply use
-# docker ps --format "{{.Names}}" in your terminal
+    # docker ps --format "{{.Names}}" in your terminal
 # Format: <container name> <"$appdata"/container_config_dir>
 # Eg. tautulli "$appdata"/tautulli>
 list=(
@@ -56,13 +68,17 @@ list_no_container=(
 )
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
-# Will not run again if currently running.
+debug=no # Testing Only
 
 if [ "$use_discord" == "yes" ] && [ -z "$webhook" ]; then
     echo "ERROR: You're attempting to use the Discord integration but did not enter the webhook url."
     exit 1
 fi
 command -v pigz >/dev/null 2>&1 || { echo -e >&2 "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore"; exit 1; }
+if ! [ -f "$exclude_file" ] && [ -n "$exclude_file" ]; then
+    echo "You have set the exclude file but it does not exist."
+    exit 1
+fi
 
 if [ -e "/tmp/i.am.running.appdata.tmp" ]; then
     echo "Another instance of the script is running. Aborting."
@@ -72,13 +88,17 @@ else
     touch "/tmp/i.am.running.appdata.tmp"
 fi
 
-#Set variables
+#Non-User variables
 start=$(date +%s) #Sets start time for runtime information
 cd "$(realpath -s "$appdata")" || exit
+if [ "$alternate_format" == "yes" ]; then
+    dt=$(date +"%Y-%m-%d"@%H.%M)
+    now=""
+else
+    dt=$(date +"%Y-%m-%d")
+    now=$(date +"%H.%M")
+fi
 dest=$(realpath -s "$destination")
-dt=$(date +"%Y-%m-%d")
-now=$(date +"%I_%M_%p")
-get_ts=$(date -u -Iseconds)
 appdata_error=$(mktemp)
 appdata_stop=$(mktemp)
 appdata_nostop=$(mktemp)
@@ -91,7 +111,6 @@ if [ ! -d "$dest" ]; then
 fi
 # Creating backup of directory
 mkdir -p "$dest/$dt"
-debug=no # Add additional log information
 # Also does not remove tmp files
 stop_counter=0
 nostop_counter=0
@@ -126,9 +145,25 @@ if [ ${#list[@]} -ge 1 ]; then
             fi
             echo -e "Creating backup of $name"
             if [ "$debug" == "yes" ]; then
-                tar -cf "$dest/$dt/$name-$now-debug.tar" -T /dev/null
+                if [ "$alternate_format" != "yes" ]; then
+                    tar -cf "$dest/$dt/$name-$now-debug.tar" -T /dev/null
+                else
+                    tar -cf "$dest/$dt/$name-debug.tar" -T /dev/null
+                fi
             else
-                tar cWfC "$dest/$dt/$name-$now.tar" "$(dirname "$path")" "$(basename "$path")"
+                if [ "$alternate_format" != "yes" ]; then
+                    if [ -n "$exclude_file" ]; then
+                        tar cWfC "$dest/$dt/$name-$now.tar" "$(dirname "$path")" -X "$exclude_file" "$(basename "$path")" 
+                    else
+                        tar cWfC "$dest/$dt/$name-$now.tar" "$(dirname "$path")" "$(basename "$path")"
+                    fi
+                else
+                    if [ -n "$exclude_file" ]; then
+                        tar cWfC "$dest/$dt/$name.tar" "$(dirname "$path")" -X "$exclude_file" "$(basename "$path")" 
+                    else
+                        tar cWfC "$dest/$dt/$name.tar" "$(dirname "$path")" "$(basename "$path")"
+                    fi
+                fi
             fi
             echo -e "Starting $name"
             docker start "$name" >/dev/null 2>&1
@@ -137,9 +172,25 @@ if [ ${#list[@]} -ge 1 ]; then
             echo -e "$name is already stopped"
             echo -e "Creating backup of $name"
             if [ "$debug" == "yes" ]; then
-                tar -cf "$dest/$dt/$name-$now-debug.tar" -T /dev/null
+                if [ "$alternate_format" != "yes" ]; then
+                    tar -cf "$dest/$dt/$name-$now-debug.tar" -T /dev/null
+                else
+                    tar -cf "$dest/$dt/$name-debug.tar" -T /dev/null
+                fi
             else
-                tar cWfC "$dest/$dt/$name-$now.tar" "$(dirname "$path")" "$(basename "$path")"
+                if [ "$alternate_format" != "yes" ]; then
+                    if [ -n "$exclude_file" ]; then
+                        tar cWfC "$dest/$dt/$name-$now.tar" "$(dirname "$path")" -X "$exclude_file" "$(basename "$path")"
+                    else
+                        tar cWfC "$dest/$dt/$name-$now.tar" "$(dirname "$path")" "$(basename "$path")"
+                    fi
+                else
+                    if [ -n "$exclude_file" ]; then
+                        tar cWfC "$dest/$dt/$name.tar" "$(dirname "$path")" -X "$exclude_file" "$(basename "$path")"
+                    else
+                        tar cWfC "$dest/$dt/$name.tar" "$(dirname "$path")" "$(basename "$path")"
+                    fi
+                fi
             fi
             echo -e "$name was stopped before backup, ignoring startup"
         fi
@@ -147,24 +198,48 @@ if [ ${#list[@]} -ge 1 ]; then
         if [ $use_pigz == yes ]; then
             echo -e "Compressing $name..."
             if [ "$debug" == "yes" ]; then
-                pigz -$pigz_compression "$dest/$dt/$name-$now-debug.tar"
+                if [ "$alternate_format" != "yes" ]; then
+                    pigz -$pigz_compression "$dest/$dt/$name-$now-debug.tar"
+                else
+                    pigz -$pigz_compression "$dest/$dt/$name-debug.tar"
+                fi
             else
-                pigz -$pigz_compression "$dest/$dt/$name-$now.tar"
+                if [ "$alternate_format" != "yes" ]; then
+                    pigz -$pigz_compression "$dest/$dt/$name-$now.tar"
+                else
+                    pigz -$pigz_compression "$dest/$dt/$name.tar"
+                fi
             fi
         fi
         # Information Gathering
         if [ $use_pigz == yes ]; then
             if [ "$debug" == "yes" ]; then
-                container_size=$(du -sh "$dest/$dt/$name-$now-debug.tar.gz" | awk '{print $1}')
+                if [ "$alternate_format" != "yes" ]; then
+                    container_size=$(du -sh "$dest/$dt/$name-$now-debug.tar.gz" | awk '{print $1}')
+                else
+                    container_size=$(du -sh "$dest/$dt/$name-debug.tar.gz" | awk '{print $1}')
+                fi
             else
-                container_size=$(du -sh "$dest/$dt/$name-$now.tar.gz" | awk '{print $1}')
+                if [ "$alternate_format" != "yes" ]; then
+                    container_size=$(du -sh "$dest/$dt/$name-$now.tar.gz" | awk '{print $1}')
+                else
+                    container_size=$(du -sh "$dest/$dt/$name.tar.gz" | awk '{print $1}')
+                fi
             fi
             echo "Container: $name Size: $container_size" | tee -a "$appdata_stop"
         else
             if [ "$debug" == "yes" ]; then
-                container_size=$(du -sh "$dest/$dt/$name-$now-debug.ta"r | awk '{print $1}')
+                if [ "$alternate_format" != "yes" ]; then
+                    container_size=$(du -sh "$dest/$dt/$name-$now-debug.tar" | awk '{print $1}')
+                else
+                    container_size=$(du -sh "$dest/$dt/$name-debug.tar" | awk '{print $1}')
+                fi
             else
-                container_size=$(du -sh "$dest/$dt/$name-$now.tar" | awk '{print $1}')
+                if [ "$alternate_format" != "yes" ]; then
+                    container_size=$(du -sh "$dest/$dt/$name-$now.tar" | awk '{print $1}')
+                else
+                    container_size=$(du -sh "$dest/$dt/$name.tar" | awk '{print $1}')
+                fi
             fi
             echo "Container: $name Size: $container_size" | tee -a "$appdata_stop"
         fi
@@ -201,32 +276,72 @@ if [ ${#list_no_stop[@]} -ge 1 ]; then
 
         echo -e "Creating backup of $name"
         if [ "$debug" == "yes" ]; then
-            tar -cf "$dest/$dt/$name-$now-debug.tar" -T /dev/null
+            if [ "$alternate_format" != "yes" ]; then
+                tar -cf "$dest/$dt/$name-$now-debug.tar" -T /dev/null
+            else
+                tar -cf "$dest/$dt/$name-debug.tar" -T /dev/null
+            fi
         else
-            tar cWfC "$dest/$dt/$name-$now.tar" "$(dirname "$path")" "$(basename "$path")"
+            if [ "$alternate_format" != "yes" ]; then
+                if [ -n "$exclude_file" ]; then
+                    tar cWfC "$dest/$dt/$name-$now.tar" "$(dirname "$path")" -X "$exclude_file" "$(basename "$path")"
+                else
+                    tar cWfC "$dest/$dt/$name-$now.tar" "$(dirname "$path")" "$(basename "$path")"
+                fi
+            else
+                if [ -n "$exclude_file" ]; then
+                    tar cWfC "$dest/$dt/$name.tar" "$(dirname "$path")" -X "$exclude_file" "$(basename "$path")"
+                else
+                    tar cWfC "$dest/$dt/$name.tar" "$(dirname "$path")" "$(basename "$path")"
+                fi
+            fi
         fi
         if [ $use_pigz == yes ]; then
             echo -e "Compressing $name..."
             if [ "$debug" == "yes" ]; then
-                pigz -$pigz_compression "$dest/$dt/$name-$now-debug.tar"
+                if [ "$alternate_format" != "yes" ]; then
+                    pigz -$pigz_compression "$dest/$dt/$name-$now-debug.tar"
+                else
+                    pigz -$pigz_compression "$dest/$dt/$name-debug.tar"
+                fi
             else
-                pigz -$pigz_compression "$dest/$dt/$name-$now.tar"
+                if [ "$alternate_format" != "yes" ]; then
+                    pigz -$pigz_compression "$dest/$dt/$name-$now.tar"
+                else
+                    pigz -$pigz_compression "$dest/$dt/$name.tar"
+                fi
             fi
         fi
         echo "Finished backup for $name"
         # Information Gathering
         if [ $use_pigz == yes ]; then
             if [ "$debug" == "yes" ]; then
-                container_size=$(du -sh "$dest/$dt/$name-$now-debug.tar.gz" | awk '{print $1}')
+                if [ "$alternate_format" != "yes" ]; then
+                    container_size=$(du -sh "$dest/$dt/$name-$now-debug.tar.gz" | awk '{print $1}')
+                else
+                    container_size=$(du -sh "$dest/$dt/$name-debug.tar.gz" | awk '{print $1}')
+                fi
             else
-                container_size=$(du -sh "$dest/$dt/$name-$now.tar.gz" | awk '{print $1}')
+                if [ "$alternate_format" != "yes" ]; then
+                    container_size=$(du -sh "$dest/$dt/$name-$now.tar.gz" | awk '{print $1}')
+                else
+                    container_size=$(du -sh "$dest/$dt/$name.tar.gz" | awk '{print $1}')
+                fi
             fi
             echo "Container: $name Size: $container_size" | tee -a "${appdata_nostop}"
         else
             if [ "$debug" == "yes" ]; then
-                container_size=$(du -sh $"$dest/$dt/$name-$now-debug.tar" | awk '{print $1}')
+                if [ "$alternate_format" != "yes" ]; then
+                    container_size=$(du -sh $"$dest/$dt/$name-$now-debug.tar" | awk '{print $1}')
+                else
+                    container_size=$(du -sh $"$dest/$dt/$name-debug.tar" | awk '{print $1}')
+                fi
             else
-                container_size=$(du -sh "$dest/$dt/$name-$now.tar" | awk '{print $1}')
+                if [ "$alternate_format" != "yes" ]; then
+                    container_size=$(du -sh "$dest/$dt/$name-$now.tar" | awk '{print $1}')
+                else
+                    container_size=$(du -sh "$dest/$dt/$name.tar" | awk '{print $1}')
+                fi
             fi
             echo "Container: $name Size: $container_size" | tee -a "${appdata_stop}"
         fi
@@ -252,16 +367,40 @@ if [ ${#list_no_container[@]} -ge 1 ]; then
                 continue
         fi
         if [ "$debug" == "yes" ]; then
-            tar -cf "$dest/$dt/$name-$now-debug.tar" -T /dev/null
+            if [ "$alternate_format" != "yes" ]; then
+                tar -cf "$dest/$dt/$name-$now-debug.tar" -T /dev/null
+            else
+                tar -cf "$dest/$dt/$name-debug.tar" -T /dev/null
+            fi
         else
-            tar cWfC "$dest/$dt/$name-$now.tar" "$(dirname "$path")" "$(basename "$path")"
+            if [ "$alternate_format" != "yes" ]; then
+                if [ -n "$exclude_file" ]; then
+                    tar cWfC "$dest/$dt/$name-$now.tar" "$(dirname "$path")" -X "$exclude_file" "$(basename "$path")" 
+                else
+                    tar cWfC "$dest/$dt/$name-$now.tar" "$(dirname "$path")" "$(basename "$path")"
+                fi
+            else
+                if [ -n "$exclude_file" ]; then
+                    tar cWfC "$dest/$dt/$name.tar" "$(dirname "$path")" -X "$exclude_file" "$(basename "$path")" 
+                else
+                    tar cWfC "$dest/$dt/$name.tar" "$(dirname "$path")" "$(basename "$path")"
+                fi
+            fi
         fi
         if [ $use_pigz == yes ]; then
             echo -e "Compressing $name..."
             if [ "$debug" == "yes" ]; then
-                pigz -$pigz_compression "$dest/$dt/$name-$now-debug.tar"
+                if [ "$alternate_format" != "yes" ]; then
+                    pigz -$pigz_compression "$dest/$dt/$name-$now-debug.tar"
+                else
+                    pigz -$pigz_compression "$dest/$dt/$name-debug.tar"
+                fi
             else
-                pigz -$pigz_compression "$dest/$dt/$name-$now.tar"
+                if [ "$alternate_format" != "yes" ]; then
+                    pigz -$pigz_compression "$dest/$dt/$name-$now.tar"
+                else
+                    pigz -$pigz_compression "$dest/$dt/$name.tar"
+                fi
             fi
         fi
         no_container_counter=$((no_container_counter + 1))
@@ -269,16 +408,32 @@ if [ ${#list_no_container[@]} -ge 1 ]; then
         # Information Gathering
         if [ $use_pigz == "yes" ]; then
             if [ "$debug" == "yes" ]; then
-                container_size=$(du -sh "$dest/$dt/$name-$now-debug.tar.gz" | awk '{print $1}')
+                if [ "$alternate_format" != "yes" ]; then
+                    container_size=$(du -sh "$dest/$dt/$name-$now-debug.tar.gz" | awk '{print $1}')
+                else
+                    container_size=$(du -sh "$dest/$dt/$name-debug.tar.gz" | awk '{print $1}')
+                fi
             else
-                container_size=$(du -sh "$dest/$dt/$name-$now.tar.gz" | awk '{print $1}')
+                if [ "$alternate_format" != "yes" ]; then
+                    container_size=$(du -sh "$dest/$dt/$name-$now.tar.gz" | awk '{print $1}')
+                else
+                    container_size=$(du -sh "$dest/$dt/$name.tar.gz" | awk '{print $1}')
+                fi
             fi
             echo "Directory name: $name Size: $container_size" | tee -a "${appdata_no_container}"
         else
             if [ "$debug" == "yes" ]; then
-                container_size=$(du -sh $"$dest/$dt/$name-$now-debug.tar" | awk '{print $1}')
+                if [ "$alternate_format" != "yes" ]; then
+                    container_size=$(du -sh $"$dest/$dt/$name-$now-debug.tar" | awk '{print $1}')
+                else
+                    container_size=$(du -sh $"$dest/$dt/$name-debug.tar" | awk '{print $1}')
+                fi
             else
-                container_size=$(du -sh "$dest/$dt/$name-$now.tar" | awk '{print $1}')
+                if [ "$alternate_format" != "yes" ]; then
+                    container_size=$(du -sh "$dest/$dt/$name-$now.tar" | awk '{print $1}')
+                else
+                    container_size=$(du -sh "$dest/$dt/$name.tar" | awk '{print $1}')
+                fi
             fi
             echo "Directory name: $name Size: $container_size" | tee -a "${appdata_no_container}"
         fi
@@ -324,6 +479,7 @@ if [ "$unraid_notify" == "yes" ]; then
 fi
 # Discord notifications
 if [ "$use_discord" == "yes" ]; then
+    get_ts=$(date -u -Iseconds)
     if [ "$(wc <"$appdata_error" -l)" -ge 1 ]; then
         curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","avatar_url": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png", "embeds": [{"thumbnail": {"url": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-1024.png"}, "title": "Error notificaitons", "fields": [{"name": "Errors:","value": "'"$(jq -Rs '.' "${appdata_error}" | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | Adam & Eve were the first ones to ignore the Apple terms and conditions.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "16711680","timestamp": "'"${get_ts}"'"}]}' "$webhook"
         echo -e "\nDiscord error notification sent."
@@ -331,24 +487,24 @@ if [ "$use_discord" == "yes" ]; then
     if [ "$use_summary" == "yes" ]; then
         curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete", "fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"}],"footer": {"text": "Powered by: Drazzilb | Could he be more heartless?","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
     else
-        if [ "$(wc <"$appdata_no_container" -l) " -ge 1 ]; then
-            if [ "$(wc <"$appdata_stop" -l) " -ge 1 ] && [ "$(wc <"$appdata_nostop" -l)" -eq 0 ]; then
+        if [ "$(wc <"$appdata_no_container" -l)" -ge 1 ]; then
+            if [ "$(wc <"$appdata_stop" -l)" -ge 1 ] && [ "$(wc <"$appdata_nostop" -l)" -eq 0 ]; then
                 curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete", "fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"},{"name": "'"Containers stopped & backed up: ${stop_counter}"'","value": "'"$(jq -Rs '.' "${appdata_stop}" | cut -c 2- | rev | cut -c 2- | rev)"'"},{"name": "'"Folders without containers backed up: ${no_container_counter}"'","value": "'"$(jq -Rs '.' "${appdata_no_container}" | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | Could he be more heartless?","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
             fi
-            if [ "$(wc <"$appdata_stop" -l) " -eq 0 ] && [ "$(wc <"$appdata_nostop" -l)" -ge 1 ]; then
+            if [ "$(wc <"$appdata_stop" -l)" -eq 0 ] && [ "$(wc <"$appdata_nostop" -l)" -ge 1 ]; then
                 curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete", "fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"},{"name": "'"Containers not stopped but backed up: ${nostop_counter}"'","value": "'"$(jq -Rs '.' "${appdata_nostop}" | cut -c 2- | rev | cut -c 2- | rev)"'"},{"name": "'"Folders without containers backed up: ${no_container_counter}"'","value": "'"$(jq -Rs '.' "${appdata_no_container}" | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | I threw a boomerang a couple years ago; I know live in constant fear.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
             fi
-            if [ "$(wc <"$appdata_stop" -l) " -ge 1 ] && [ "$(wc <"$appdata_nostop" -l)" -ge 1 ]; then
+            if [ "$(wc <"$appdata_stop" -l)" -ge 1 ] && [ "$(wc <"$appdata_nostop" -l)" -ge 1 ]; then
                 curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete", "fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"},{"name": "'"Containers stopped & backed up: ${stop_counter}"'","value": "'"$(jq -Rs '.' "${appdata_stop}" | cut -c 2- | rev | cut -c 2- | rev)"'"},{"name": "'"Containers not stopped but backed up: ${nostop_counter}"'","value": "'"$(jq -Rs '.' "${appdata_nostop}" | cut -c 2- | rev | cut -c 2- | rev)"'"},{"name": "'"Folders without containers backed up: ${no_container_counter}"'","value": "'"$(jq -Rs '.' "${appdata_no_container}" | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | The man who invented knock-knock jokes should get a no bell prize.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
             fi
         else
-            if [ "$(wc <"$appdata_stop" -l) " -ge 1 ] && [ "$(wc <"$appdata_nostop" -l)" -eq 0 ]; then
+            if [ "$(wc <"$appdata_stop" -l)" -ge 1 ] && [ "$(wc <"$appdata_nostop" -l)" -eq 0 ]; then
                 curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete", "fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"},{"name": "'"Containers stopped & backed up: ${stop_counter}"'","value": "'"$(jq -Rs '.' "${appdata_stop}" | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | Could he be more heartless?","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
             fi
-            if [ "$(wc <"$appdata_stop" -l) " -eq 0 ] && [ "$(wc <"$appdata_nostop" -l)" -ge 1 ]; then
+            if [ "$(wc <"$appdata_stop" -l)" -eq 0 ] && [ "$(wc <"$appdata_nostop" -l)" -ge 1 ]; then
                 curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete", "fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"},{"name": "'"Containers not stopped but backed up: ${nostop_counter}"'","value": "'"$(jq -Rs '.' "${appdata_nostop}" | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | I threw a boomerang a couple years ago; I know live in constant fear.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
             fi
-            if [ "$(wc <"$appdata_stop" -l) " -ge 1 ] && [ "$(wc <"$appdata_nostop" -l)" -ge 1 ]; then
+            if [ "$(wc <"$appdata_stop" -l)" -ge 1 ] && [ "$(wc <"$appdata_nostop" -l)" -ge 1 ]; then
                 curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Appdata Backup Complete", "fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"},{"name": "'"Containers stopped & backed up: ${stop_counter}"'","value": "'"$(jq -Rs '.' "${appdata_stop}" | cut -c 2- | rev | cut -c 2- | rev)"'"},{"name": "'"Containers not stopped but backed up: ${nostop_counter}"'","value": "'"$(jq -Rs '.' "${appdata_nostop}" | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | The man who invented knock-knock jokes should get a no bell prize.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
             fi
         fi
@@ -373,4 +529,4 @@ rm "$appdata_error"
 rm "$appdata_no_container"
 exit 0
 #
-# v1.2.6
+# v1.3.6

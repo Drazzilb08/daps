@@ -3,6 +3,9 @@ Collection of unRAID userscripts
 ## Installation
 These scripts were designed to work on unRAID, however there shouldn't be any reason it wouldn't work on any Unix based system. <br>
 However, on unRAID simply ensure you have `UserScripts` installed from the appstore > navigate to the `UserScripts` location within `Settings`> create a new script and then set your cron interval.
+> Note: Most backup scripts use PIGZ for compression <br>
+>   If you'd like to use pigz you'll need to download it using NerdPack, which is also in the appstore
+
 ## Updating
 Simply copy from the new script from <br>
 `#------------- DO NOT MODIFY BELOW THIS LINE -------------#`<br>

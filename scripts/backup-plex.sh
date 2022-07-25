@@ -238,13 +238,15 @@ sleep 2
 chmod -R 777 "$dest"
 if [ -d "$destination"/Essential ]; then
     echo -e "\nRemoving Essential backups older than " $delete_after "days... please wait"
-    find "$destination"/Essential* -mtime +$delete_after -exec rm -rfd {} \;
+    find "$destination"/Essential* -mtime +$delete_after -delete -print
+    echo "Done"
 fi
 
 old=$((force_full_backup * keep_full))
 if [ -d "$destination/Full" ]; then
     echo -e "\nRemoving Full backups older than " $old "days... please wait"
-    find "$destination"/Full* -mtime +$old -exec rm -rfd {} \;
+    find "$destination"/Full* -mtime +$old -delete -print
+    echo "Done"
 fi
 end=$(date +%s)
 # Runtime
@@ -306,4 +308,4 @@ rm "/tmp/i.am.running.plex.tmp"
 
 exit
 #
-# v1.2.6
+# v1.2.7

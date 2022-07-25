@@ -121,8 +121,8 @@ stop_counter=0
 nostop_counter=0
 no_container_counter=0
 # Data Backup
-echo -e "Backing up containers with stopping them."
-echo -e "-----------------------"
+echo -e "Backing up containers that require stopping"
+echo -e "----------------------------------------------"
 if [ ${#list[@]} -ge 1 ]; then
     for ((i = 0; i < ${#list[@]}; i += 2)); do
         name=${list[i]} path=${list[i + 1]}
@@ -252,13 +252,13 @@ if [ ${#list[@]} -ge 1 ]; then
         if [ "$debug" == "yes" ]; then
             echo "Backup stop_counter: $stop_counter"
         fi
-        echo -e "-----------------------"
+        echo -e "----------------------------------------------"
     done
 else
     echo -e "No containers were stopped and backed up due to list being empty\n" 
 fi
 echo -e "Backing up containers without stopping them."
-echo -e "-----------------------"
+echo -e "----------------------------------------------"
 # Backup containers without stopping them
 if [ ${#list_no_stop[@]} -ge 1 ]; then
     for ((i = 0; i < ${#list_no_stop[@]}; i += 2)); do
@@ -354,14 +354,14 @@ if [ ${#list_no_stop[@]} -ge 1 ]; then
         if [ "$debug" == "yes" ]; then
             echo "Backup stop_counter: $nostop_counter"
         fi
-        echo -e "-----------------------"
+        echo -e "----------------------------------------------"
     done
 else
     echo -e "No containers were backed without stopping up due to list_no_stop being empty\n"
 fi
 # Backing up appdata folder w/o a container
 echo -e "Backing up directories without containers"
-echo -e "-----------------------"
+echo -e "----------------------------------------------"
 if [ ${#list_no_container[@]} -ge 1 ]; then
     for i in "${list_no_container[@]}"; do
         path=$i
@@ -445,7 +445,7 @@ if [ ${#list_no_container[@]} -ge 1 ]; then
         if [ "$debug" == "yes" ]; then
             echo "Backup no_container_counter: $no_container_counter"
         fi
-        echo -e "-----------------------"
+        echo -e "----------------------------------------------"
     done
 else
     echo -e "No directories without containers were backed up due to list_no_container being empty\n"
@@ -455,7 +455,8 @@ chmod -R 777 "$dest"
 
 #Cleanup Old Backups
 echo -e "\nRemoving backups older than " $delete_after "days...\n"
-find "$destination"* -mtime +$delete_after -exec rm -rfd {} \;
+find "$destination"* -mtime +$delete_after -delete -print
+echo "Done"
 
 end=$(date +%s)
 run_size=$(du -sh "$dest/$dt/" | awk '{print $1}') #Set run_size information
@@ -534,4 +535,4 @@ rm "$appdata_error"
 rm "$appdata_no_container"
 exit 0
 #
-# v1.3.7
+# v1.3.8

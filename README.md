@@ -10,6 +10,10 @@ to the bottom then paste that information over what you have in your script
 
 ## Versioning
 I've started to put version numbers on each of my scripts, you can find the version at the very bottom of every script.
+I do my best to keep up with everything
+1. 0.0.X versions are bug fixes
+2. 0.X.0 versions are minor changes
+3. X.0.0 versions are major changes
 
 ## Submitting Pull Requests
 I have no problem adding features or fixing issues with these scripts. However if you're going to submit a PR to correct my code **PLEASE** add detailed notes as to why this change needs to be made (ELI5 or Explain Like I'm 5). I'm not a coder but wish to learn what I can to make my life a bit easier. This will help me grow and make better content in the futre.

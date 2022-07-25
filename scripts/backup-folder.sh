@@ -21,7 +21,7 @@ pigz_compression=9 # Define compression level to use with pigz
 # 1 = Least compression/Fastest
 # 6 = Default compression/Default Speed
 # 9 = Maximum Compression/Slowest
-notify=yes # Use unRAID's built in notification system
+unraid_notify=yes # Use unRAID's built in notification system
 alternate_format=no   #This option will remove the time from the file and move it over to the directory structure.
                         #Yes = /path/to/source/yyyy-mm-dd@00.01_AM/<container_name>.tar.gz
                         #No = /path/to/source/yyyy-mm-dd/<container_name>-12_01_AM.tar.gz
@@ -124,7 +124,7 @@ if [ -d "$dest"/ ]; then
 fi
 
 # Notifications
-if [ "$notify" == "yes" ]; then
+if [ "$unraid_notify" == "yes" ]; then
     get_ts=$(date -u -Iseconds)
     /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "${name} Backup" -d "Backup completed: ${name} data has been backed up." -i "normal"
 fi

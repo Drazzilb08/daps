@@ -12,7 +12,7 @@
 #------------- DEFINE VARIABLES -------------#
 source=''                          # path to your plex appdata location
 destination=''                     # path to your backup folder
-notify=no                          # (yes/no) Unraid notification that the backup was performed
+unraid_notify=no                          # (yes/no) Unraid notification that the backup was performed
 delete_after=7                      # number of days to keep backups
 full_backup=no                      # (yes/no) creation of entire Plex backup (yes) or essential data only (no)
                                         # Yes will significantly increase the amount of time and size to create a backup
@@ -259,7 +259,7 @@ else
 fi
 echo "$run_output"
 #unRaid notificaitons
-if [ "$notify" == yes ]; then
+if [ "$unraid_notify" == yes ]; then
     if [ "$full_backup" == "no" ]; then
         if [ "$cf" = false ]; then
             /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Plex Backup" -d "Essential Plex data has been backed up." -i "normal"

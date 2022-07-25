@@ -102,7 +102,9 @@ chmod -R 777 "$dest"
 
 #Cleanup Old Backups
 echo -e "\nRemoving backups older than " $delete_after "days...\n"
-find "$destination"* -mtime +$delete_after -exec rm -rfd {} \;
+find "$destination"* -mtime +$delete_after -delete -print
+echo "Done"
+
 
 end=$(date +%s)
 # Runtime
@@ -140,4 +142,4 @@ echo -e '\nAll Done!\n'
 rm "/tmp/i.am.running.${name}.tmp"
 exit 0
 #
-# v1.2.5
+# v1.2.6

@@ -96,4 +96,4 @@ rm "/tmp/nohl.tmp"
 echo -e "\nAll done!\n"
 exit
 #
-# v 1.1.3
+# v 1.1.4

@@ -308,4 +308,4 @@ rm "/tmp/i.am.running.plex.tmp"
 
 exit
 #
-# v1.2.6
+# v1.2.7

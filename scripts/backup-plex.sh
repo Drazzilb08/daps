@@ -146,7 +146,7 @@ if [ "$full_backup" == "no" ]; then
 
             if [ "$debug" != true ]; then
                 if [ "$alternate_format" != "yes" ]; then
-                    tar --exclude="$source/Cache/Transcode" --exclude"$source/Codecs/" --exclude="$source/Cache/PhotoTranscoder" -cf "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" "$source"
+                    tar --exclude="$source/Cache" --exclude"$source/Codecs" -cf "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" "$source"
                     full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" | awk '{print $1}')
                     # Compress tar into tar.gz file greatly reducing the size of the backup.
                     if [ "$use_pigz" == yes ]; then
@@ -195,7 +195,7 @@ else
 
     if [ "$debug" != true ]; then
         if [ "$alternate_format" != "yes" ]; then
-            tar --exclude="$source/Cache/Transcode" --exclude"$source/Codecs/" --exclude="$source/Cache/PhotoTranscoder" -cf "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" "$source"
+            tar --exclude="$source/Cache" --exclude"$source/Codecs" -cf "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" "$source"
             full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" | awk '{print $1}')
             # Compress tar into tar.gz file greatly reducing the size of the backup.
             if [ "$use_pigz" == "yes" ]; then

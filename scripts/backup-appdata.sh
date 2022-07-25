@@ -34,15 +34,15 @@ alternate_format=no
                         # This option will remove the time from the file and move it over to the directory structure.
                             # Yes = /path/to/source/yyyy-mm-dd@00.01_AM/<container_name>.tar.gz
                             # No = /path/to/source/yyyy-mm-dd/<container_name>-12_01_AM.tar.gz
-exclude_file='/mnt/user/data/scripts/userScripts/scripts/exclude-file.txt'       
+exclude_file=''       
                         # Location of an exclude file, this file is to exclude certain files/folders from being backed up.
                             # Example of files that would be excluded: zip files, log files/directories just to name a few
                             # Please not that these excludes can be global depending on how you have it all set up
                             # This must be full path to the file: Eg '/mnt/user/data/exclude-file.txt'
 #------------- DEFINE DISCORD VARIABLES -------------#
 # This section is not required
-use_discord=yes                                                                                                                    # Use discord for notifications
-use_summary=yes                                                                                                                 # Summarize the run (no = full output)
+use_discord=no                                                                                                                    # Use discord for notifications
+use_summary=no                                                                                                                 # Summarize the run (no = full output)
 webhook=''                                                                                                                         # Discord webhook
 bot_name='Notification Bot'                                                                                                        # Name your bot
 bar_color='16724991'                                                                                                               # The bar color for discord notifications, must be decimal code -> https://www.mathsisfun.com/hexadecimal-decimal-colors.html
@@ -74,7 +74,12 @@ if [ "$use_discord" == "yes" ] && [ -z "$webhook" ]; then
     echo "ERROR: You're attempting to use the Discord integration but did not enter the webhook url."
     exit 1
 fi
-command -v pigz >/dev/null 2>&1 || { echo -e >&2 "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore"; exit 1; }
+
+command -v pigz >/dev/null 2>&1 || { 
+    echo -e >&2 "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore"; 
+    exit 1; 
+    }
+
 if ! [ -f "$exclude_file" ] && [ -n "$exclude_file" ]; then
     echo "You have set the exclude file but it does not exist."
     exit 1

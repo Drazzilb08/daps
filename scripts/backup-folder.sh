@@ -48,7 +48,10 @@ if [ "$use_discord" == "yes" ] && [ -z "$webhook" ]; then
     exit 1
 fi
 
-command -v pigz >/dev/null 2>&1 || { echo -e >&2 "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore"; exit 1; }
+command -v pigz >/dev/null 2>&1 || { 
+    echo -e >&2 "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore"; 
+    exit 1; 
+    }
 
 if [ -e "/tmp/i.am.running.${name}.tmp" ]; then
     echo "Another instance of the script is running. Aborting."

@@ -47,7 +47,7 @@ webhook=''                                                                      
 bot_name='Notification Bot'                                                                                                        # Name your bot
 bar_color='16724991'                                                                                                               # The bar color for discord notifications, must be decimal code -> https://www.mathsisfun.com/hexadecimal-decimal-colors.html
 
-# List containers and assiciated config directory to stop and backup
+# List containers and associated config directory to stop and backup
     # Backups will go in order listed
 # To get a list of containers and it's names you need to enter in  simply use
     # docker ps --format "{{.Names}}" in your terminal
@@ -129,7 +129,7 @@ if [ ${#list[@]} -ge 1 ]; then
             fi
         else
             if [ ! -d "$path" ]; then
-                echo -e "Container $name does not exit and $path does not exist... Skipping" | tee -a "${appdata_error}"
+                echo -e "Container $name does not exist and $path does not exist... Skipping" | tee -a "${appdata_error}"
                 continue
             else
                 echo -e "Container $name does not exist but the directory $path exists... Skipping" | tee -a "${appdata_error}"
@@ -257,6 +257,7 @@ echo -e "-----------------------"
 # Backup containers without stopping them
 if [ ${#list_no_stop[@]} -ge 1 ]; then
     for ((i = 0; i < ${#list_no_stop[@]}; i += 2)); do
+        name=${list_no_stop[i]} path=${list_no_stop[i + 1]}
         # Error handling container || path exists or does not exists
         if [ "$(docker ps -a -f name="$name" | wc -l)" -ge 2 ]; then
             if [ ! -d "$path" ]; then
@@ -265,14 +266,13 @@ if [ ${#list_no_stop[@]} -ge 1 ]; then
             fi
         else
             if [ ! -d "$path" ]; then
-                echo -e "Container $name does not exit and $path does not exist... Skipping" | tee -a "${appdata_error}"
+                echo -e "Container $name does not exist and $path does not exist... Skipping" | tee -a "${appdata_error}"
                 continue
             else
                 echo -e "Container $name does not exist but the directory $path exists... Skipping" | tee -a "${appdata_error}"
                 continue
             fi
         fi
-        name=${list_no_stop[i]} path=${list_no_stop[i + 1]}
 
         echo -e "Creating backup of $name"
         if [ "$debug" == "yes" ]; then
@@ -529,4 +529,4 @@ rm "$appdata_error"
 rm "$appdata_no_container"
 exit 0
 #
-# v1.3.6
+# v1.3.7

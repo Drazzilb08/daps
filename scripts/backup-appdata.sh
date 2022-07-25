@@ -64,7 +64,7 @@ list_no_stop=(
 )
 # You can backup directories in your appdata directory that do not have a container associated to it.
 list_no_container=(
-
+    
 )
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
@@ -475,7 +475,7 @@ if [ -d "$dest"/ ]; then
 fi
 # Notifications
 if [ "$unraid_notify" == "yes" ]; then
-    /usr/local/emhttp/plugins/dynamix/scripts/unraid_notify -s "AppData Backup" -d "Backup of ALL Appdata complete."
+    /usr/local/emhttp/plugins/dynamix/scripts/notify -s "AppData Backup" -d "Backup of ALL Appdata complete."
 fi
 # Discord notifications
 if [ "$use_discord" == "yes" ]; then

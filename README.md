@@ -40,3 +40,10 @@ Future plans: <br>
 Finally I'm **not a coder**, this was simply me playing around and killing time at work. I know very little about bash about 90% of this was googled and probably is the worst way to go about this process, if you want to clean up the code and make it more presentable or add a feature please make a Pull Request.
 
 Thanks
+
+## Neat scripts I've found
+1. [Automatic-Preroll](https://github.com/TheHumanRobot/Automatic-Preroll) This script has been depreciated but I still use it. The new version has a GUI. 
+2. bullmoose20 has some amazing scripts he writes, most importantly the plex-bloat-fix.py script [here](https://github.com/bullmoose20/Plex-Stuff) I find especially useful.
+3. You can't have a list of scripts to use without including [JBOPS](https://github.com/blacktwin/JBOPS). I specifically use the Inactive User script and the kill stream script.
+  
+  If you think there are some other neat ones I should include or try out please let me know.

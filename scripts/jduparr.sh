@@ -27,6 +27,11 @@ bot_name='Notification Bot'         # Name your bot
 bar_color='16776960'                # The bar color for discord notifications, must be decimal
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
+command -v jdupes >/dev/null 2>&1 || { 
+    echo -e >&2 "jdupes is not installed.\nPlease install jdupes and rerun.\nIf on unRaid, jdupes can be found through the NerdPack which is found in the appstore"; 
+    exit 1; 
+}
+
 if [ "$use_discord" == "yes" ] && [ -z "$webhook" ]; then
     echo "ERROR: You're attempting to use the Discord integration but did not enter the webhook url."
     exit

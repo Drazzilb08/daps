@@ -8,11 +8,17 @@
 #      |____/ \__,_|\___|_|\_\\__,_| .__/  |_|    |_|\___/_/\_\
 #                                  | |
 #                                  |_|
+# Purpose:
+# This script is designed to backup your Essential Plex data on a cron schedule as well as perform a Full backup ever so many days.
+# Full backups can be set to run on every cron job or after so many days via the force_full_backup variable
+# Full backups will backup everything within the defined source variable except for the Cache and Codecs folders
+# Essential backups will back up only Plug-in Support/Database, Plug-in Support/Preferences directories as well as Preferences.xml file
+# No metadata is backed up during an Essential backup.
 
 #------------- DEFINE VARIABLES -------------#
-source=''                          # path to your plex appdata location
-destination=''                     # path to your backup folder
-unraid_notify=no                          # (yes/no) Unraid notification that the backup was performed
+source=''                           # path to your plex appdata location
+destination=''                      # path to your backup folder
+unraid_notify=no                        # (yes/no) Unraid notification that the backup was performed
 delete_after=7                      # number of days to keep backups
 full_backup=no                      # (yes/no) creation of entire Plex backup (yes) or essential data only (no)
                                         # Yes will significantly increase the amount of time and size to create a backup
@@ -28,17 +34,16 @@ pigz_compression=9                  # Define compression level to use with pigz.
                                         # 1 = Least compression/Fastest
                                         # 6 = Default compression/Default Speed
                                         # 9 = Maximum Compression/Slowest
-alternate_format=no   # This option will remove the time from the file and move it over to the directory structure.
-                        # Yes = /path/to/source/yyyy-mm-dd@18.00_AM/<Essential/Full>_Plex_Data_Backup.tar.gz
-                        # No = /path/to/source/yyyy-mm-dd/<Essential/Full>_Plex_Data_Backup-18_00_AM.tar.gz
-                        # Times are in 24 hour clock
+alternate_format=no                 # This option will remove the time from the file and move it over to the directory structure.
+                                        # Yes = /path/to/source/yyyy-mm-dd@18.00_AM/<Essential/Full>_Plex_Data_Backup.tar.gz
+                                        # No = /path/to/source/yyyy-mm-dd/<Essential/Full>_Plex_Data_Backup-18_00_AM.tar.gz
+                                        # Times are in 24 hour clock
 #------------- DEFINE DISCORD VARIABLES -------------#
 # This section is not required
-
-use_discord=yes                      # Use discord for notifications
+use_discord=yes                     # Use discord for notifications
 webhook=''                          # Discord webhook
 bot_name='Notification Bot'         # Name your bot
-bar_color='15048717'                  # The bar color for discord notifications, must be Hexcode
+bar_color='15048717'                # The bar color for discord notifications, must be Decimal code
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 debug=false #testing only

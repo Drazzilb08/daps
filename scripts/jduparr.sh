@@ -10,17 +10,17 @@
 #  |__/                                          
 #
 
+# Purpose:
 # This script is inteded to go through your media in a more methodical way and ensure things are properly linked together.
 # Note: Running this script through userscripts will produce no output. The program still runs as inteded.
 # Note: jdupes is required for this script to run, please install jdupes via the NerdPack from the available in the appstore
 # This script was purly for schlitz giggles and can be 100% replaced with simply running the jdupes command in terminal.
 
-downloads_dir=''        # Where you place your downloads        
-media_dir=''            # Where you place your media
+downloads_dir=''                    # Where you place your downloads        
+media_dir=''                        # Where you place your media
 
 #------------- DEFINE DISCORD VARIABLES -------------#
 # This section is not required
-
 use_discord=yes                     # Use discord for notifications
 webhook=''                          # Discord webhook
 bot_name='Notification Bot'         # Name your bot

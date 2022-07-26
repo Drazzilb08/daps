@@ -8,7 +8,7 @@
 #  |_| |_|\___/|_|  |_|______| |______|_|___/\__\___|_|   
 
 #------------- DEFINE VARIABLES -------------#
-# Purpose
+# Purpose:
 # The purpose of this script is to monitor your media directory for media that isn't hardlinked
 # I take great pride in seeding my entire media directory as best as I can. I wrote this to notify me if something
 # has been removed from a tracker and thus removed from my client and has left something w/in my media dir
@@ -16,12 +16,11 @@
 # a place w/in my media directory. I then download another version to ensure I'm seeding the best as I can for 100% of my library
 # Please not that for this to work as well as it is intended to work. It requires your files to be named in accordance to TRaSH's guides. https://trash-guides.info
 # However this will still work without the discord output with any naming scheme if you use the log_file option
-source=''       # Where your media top directory is located. Eg: '/mnt/user/data/media/'
-log_file=''     # Place to put your log file (not required).
-                    # This can be useful if you have a large list of items that aren't linked and not all show up on Discord.
 
-                                        # List directories to include in search no slashes
-include=(
+source=''                               # Where your media top directory is located. Eg: '/mnt/user/data/media/'
+log_file=''                             # Place to put your log file (not required).
+                                            # This can be useful if you have a large list of items that aren't linked and not all show up on Discord.
+include=(                               # List directories to include in search no slashes
     "movies"
     "4k movies"
     "tv shows"

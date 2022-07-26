@@ -16,53 +16,49 @@
     # Can define list of directories not associated with a container to backup within your appdata directory
 
 #------------- DEFINE VARIABLES -------------#
-appdata='' # Set appdata directory, this is to help with easily adding directories
-# Example: $appdata/radarr
-# This is the same as typing out /mnt/user/appdata/radarr (keeping things simple)
-# However, if you want to type out the whole thing, (say if you have config information in seperate locations) you still can enter the information, just don't use $appdata
-destination=''                           # Set backup directory
+appdata=''                              # Set appdata directory, this is to help with easily adding directories
+                                            # Example: $appdata/radarr
+                                            # This is the same as typing out /mnt/user/appdata/radarr (keeping things simple)
+                                            # However, if you want to type out the whole thing, (say if you have config information in seperate locations) you still can enter the information, just don't use $appdata
+destination=''                          # Set backup directory
 delete_after=2                          # Number of days to keep backup
-use_pigz=yes                             # Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
-# Pigz package must be installed via NerdPack
-pigz_compression=9 # Define compression level to use with pigz
-# 0 = No compression
-# 1 = Least compression/Fastest
-# 6 = Default compression/Default Speed
-# 9 = Maximum Compression/Slowest
-unraid_notify=no # Use unRAID's built in notification system
-alternate_format=no   
-                        # This option will remove the time from the file and move it over to the directory structure.
-                            # Yes = /path/to/source/yyyy-mm-dd@00.01_AM/<container_name>.tar.gz
-                            # No = /path/to/source/yyyy-mm-dd/<container_name>-12_01_AM.tar.gz
-exclude_file=''       
-                        # Location of an exclude file, this file is to exclude certain files/folders from being backed up.
-                            # Example of files that would be excluded: zip files, log files/directories just to name a few
-                            # Please not that these excludes can be global depending on how you have it all set up
-                            # This must be full path to the file: Eg '/mnt/user/data/exclude-file.txt'
+use_pigz=yes                            # Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
+pigz_compression=9                      # Define compression level to use with pigz
+                                            # 0 = No compression
+                                            # 1 = Least compression/Fastest
+                                            # 6 = Default compression/Default Speed
+                                            # 9 = Maximum Compression/Slowest
+unraid_notify=no                        # Use unRAID's built in notification system (does not effect Discord notifcations)
+alternate_format=no                     # This option will remove the time from the file and move it over to the directory structure.
+                                            # Yes = /path/to/source/yyyy-mm-dd@00.01_AM/<container_name>.tar.gz
+                                            # No = /path/to/source/yyyy-mm-dd/<container_name>-12_01_AM.tar.gz
+exclude_file=''                         # Location of an exclude file, this file is to exclude certain files/folders from being backed up.
+                                            # Example of files that would be excluded: zip files, log files/directories just to name a few
+                                            # Please not that these excludes can be global depending on how you have it all set up
+                                            # This must be full path to the file: Eg '/mnt/user/data/exclude-file.txt'
 #------------- DEFINE DISCORD VARIABLES -------------#
-# This section is not required
-use_discord=no                                                                                                                    # Use discord for notifications
-use_summary=no                                                                                                                 # Summarize the run (no = full output)
-webhook=''                                                                                                                         # Discord webhook
-bot_name='Notification Bot'                                                                                                        # Name your bot
-bar_color='16724991'                                                                                                               # The bar color for discord notifications, must be decimal code -> https://www.mathsisfun.com/hexadecimal-decimal-colors.html
+use_discord=yes                         # Use discord for notifications
+use_summary=no                          # Sumarize output information
+webhook=''                              # Discord webhook
+bot_name='Notification Bot'             # Name your bot
+bar_color='15048717'                    # The bar color for discord notifications, must be Decimal code                                                                                                             # The bar color for discord notifications, must be decimal code -> https://www.mathsisfun.com/hexadecimal-decimal-colors.html
 
-# List containers and associated config directory to stop and backup
-    # Backups will go in order listed
-# To get a list of containers and it's names you need to enter in  simply use
-    # docker ps --format "{{.Names}}" in your terminal
-# Format: <container name> <"$appdata"/container_config_dir>
-# Eg. tautulli "$appdata"/tautulli>
+                                        # List containers and associated config directory to stop and backup
+                                            # Backups will go in order listed
+                                        # To get a list of containers and it's names you need to enter in  simply use
+                                            # docker ps --format "{{.Names}}" in your terminal
+                                        # Format: <container name> <"$appdata"/container_config_dir>
+                                        # Eg. tautulli "$appdata"/tautulli>
 list=(
 
 )
-# List containers and associated config directory to back up without stopping
-# Format: <container name> <"$appdata"/container_config_dir>
-# Eg. tautulli "$appdata"/tautulli>
+                                        # List containers and associated config directory to back up without stopping
+                                            # Format: <container name> <"$appdata"/container_config_dir>
+                                            # Eg. tautulli "$appdata"/tautulli>
 list_no_stop=(
 
 )
-# You can backup directories in your appdata directory that do not have a container associated to it.
+                                        # You can backup directories in your appdata directory that do not have a container associated to it.
 list_no_container=(
     
 )

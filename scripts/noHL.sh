@@ -13,13 +13,14 @@
 # I take great pride in seeding my entire media directory as best as I can. I wrote this to notify me if something
 # has been removed from a tracker and thus removed from my client and has left something w/in my media dir
 # without a hardlink. If the tracker thought what was there was worth deleting, then I think that it doesn't deserve
-# a place w/in my media directory. I then download another version to. ensure I'm seeding the best as I can for 100% of my library
+# a place w/in my media directory. I then download another version to ensure I'm seeding the best as I can for 100% of my library
 # Please not that for this to work as well as it is intended to work. It requires your files to be named in accordance to TRaSH's guides. https://trash-guides.info
 # However this will still work without the discord output with any naming scheme if you use the log_file option
-source=''           
-log_file=''    #Place to put your log file (not required)
+source=''       # Where your media top directory is located. Eg: '/mnt/user/data/media/'
+log_file=''     # Place to put your log file (not required).
+                    # This can be useful if you have a large list of items that aren't linked and not all show up on Discord.
 
-                                        #List directories to include in search no slashes
+                                        # List directories to include in search no slashes
 include=(
     "movies"
     "4k movies"
@@ -29,11 +30,10 @@ include=(
 
 #------------- DEFINE DISCORD VARIABLES -------------#
 # This section is not required
-
-use_discord=yes                      # Use discord for notifications
-webhook=''                          # Discord webhook
-bot_name='Notification Bot'         # Name your bot
-bar_color='16776960'                  # The bar color for discord notifications, must be decimal
+use_discord=yes                         # Use discord for notifications
+webhook=''                              # Discord webhook
+bot_name='Notification Bot'             # Name your bot
+bar_color='16776960'                    # The bar color for discord notifications, must be decimal
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 # Improper configuration handling
@@ -53,14 +53,14 @@ if [ "$use_discord" == "yes" ] && [ -z "$webhook" ]; then
     echo "ERROR: You're attempting to use the Discord integration but did not enter the webhook url."
     exit
 fi
-if [ -z "${log_file}" ];then                                 #If source is NULL 
+if [ -z "${log_file}" ];then # If source is NULL 
     echo "log_file not set Using only tmp directory, tmp file will be removed after run."
     touch "/tmp/nohl.tmp" 
 else
     echo "log_file set to ${log_file} a log file of this run will be located there."
     if [ -f "$log_file/nohl.log" ]; then 
-        rm "${log_file}/nohl.log"
-    fi                                                #Remove previous run's tmp file
+        rm "${log_file}/nohl.log" # Remove previous run's tmp file
+    fi                                                
     touch "/tmp/nohl.tmp" "${log_file}/nohl.tmp"
     echo "Below is a list of all files from your $source directory that do not have hardlinks" | tee -a "${log_file}/nohl.tmp" >/dev/null
 fi
@@ -79,7 +79,6 @@ for ((i = 0; i < ${#include[@]}; i++)); do
     fi
 done
 echo -e "\nSearch complete. $(sed '/^\s*$/d' /tmp/nohl.tmp | wc -l) items not hardlinked\n"
-# cat ./nohl.tmp | sed $'s/[1-9] - .*//g'
 sed 's/[0-9] - [A-Za-z].*//g'
 # Send information to Discord
 if [ "$use_discord" == "yes" ]; then

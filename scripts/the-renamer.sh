@@ -33,6 +33,7 @@ if [ -n "$movies_source" ]; then
     if [ -n "$(ls -A $movies_source)" ]; then
         echo "Processing Movies"
         find "$movies_source" -regex ".*_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \;
+        find "$movies_source" -regex ".*\b- .*" -exec bash -c 'mv -v "$0" "${0//-/}"' {} \;
         if [ "$move_files" = "yes" ]; then
             echo -e "Moving assets\n"
             mv "$movies_source"/* "$movies_destination" 2>/dev/null
@@ -120,4 +121,4 @@ fi
 echo -e "\nAll Done\n"
 exit
 #
-# v1.1.1
+# v1.2.1

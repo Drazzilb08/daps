@@ -32,8 +32,11 @@ move_files=yes #Move files manually or use the destination folders
 if [ -n "$movies_source" ]; then
     if [ -n "$(ls -A $movies_source)" ]; then
         echo "Processing Movies"
-        find "$movies_source" -regex ".*_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \;
-        find "$movies_source" -regex ".*\b- .*" -exec bash -c 'mv -v "$0" "${0//-/}"' {} \;
+        find "$movies_source" -regex ".*[^ ] _ [^ ].*" -exec rename -v ' _ ' ' ' {} \;
+        find "$movies_source" -regex ".*[^ ]_  .*" -exec rename -v '_  ' ' ' {} \;
+        find "$movies_source" -regex ".*[^ ]_ \b.*" -exec rename -v '_ ' ' ' {} \;
+        find "$movies_source" -regex ".*[^ ]- \b.*" -exec rename -v '- ' ' ' {} \;
+
         if [ "$move_files" = "yes" ]; then
             echo -e "Moving assets\n"
             mv "$movies_source"/* "$movies_destination" 2>/dev/null
@@ -51,7 +54,7 @@ if [ -n "$series_source" ]; then
     if [ -n "$(ls -A $series_source)" ]; then
         if [ "$(find $series_source -regex ".*_Season.*" | wc -l)" -eq 0 ]; then
             echo "Processing Series"
-            find "$series_source" -regex ".*_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \; #Removing all underscores from string
+            find "$series_source" -regex ".*[^ ]_ \b.*" -exec rename -v -- '_ ' ' ' {} \;  #Removing all underscores from string
             find "$series_source" -regex ".* - Specials.*" -exec rename -v " - Specials" "_Season00" {} \; #Replace " - Speicials" to "_Season00"
             find "$series_source" -regex ".* [1-9]\.[^.]+$" -exec rename -v " - Season " "_Season0" {} \; | sort -d #Replace " - Season " to "_Season0" for Seasons 1 through 9
 
@@ -77,7 +80,10 @@ fi
 if [ -n "$anime_movies_source" ]; then
     if [ -n "$(ls -A $anime_movies_source)" ]; then
         echo "Processing Movies"
-        find "$anime_movies_source" -regex ".*_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \;
+            find "$anime_movies_source" -regex ".*[^ ] _ [^ ].*" -exec rename -v ' _ ' ' ' {} \;
+            find "$anime_movies_source" -regex ".*[^ ]_  .*" -exec rename -v '_  ' ' ' {} \;
+            find "$anime_movies_source" -regex ".*[^ ]_ \b.*" -exec rename -v '_ ' ' ' {} \;
+            find "$anime_movies_source" -regex ".*[^ ]- \b.*" -exec rename -v '- ' ' ' {} \;
         if [ "$move_files" = "yes" ]; then
             echo -e "Moving assets\n"
             mv "$anime_movies_source"/* "$anime_movies_destination" 2>/dev/null
@@ -95,7 +101,7 @@ if [ -n "$anime_series_source" ]; then
     if [ -n "$(ls -A $anime_series_source)" ]; then
         if [ "$(find $anime_series_source -regex ".*_Season.*" | wc -l)" -eq 0 ]; then
             echo "Processing Series"
-            find "$anime_series_source" -regex ".*_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \;
+            find "$anime_series_source" -regex ".*[^ ]_ \b.*" -exec rename -v -- '_ ' ' ' {} \;
             find "$anime_series_source" -regex ".* - Specials.*" -exec rename -v " - Specials" "_Season00" {} \;
             find "$anime_series_source" -regex ".* [1-9]\.[^.]+$" -exec rename -v " - Season " "_Season0" {} \; | sort -d
 
@@ -121,4 +127,4 @@ fi
 echo -e "\nAll Done\n"
 exit
 #
-# v1.2.1
+# v1.3.1

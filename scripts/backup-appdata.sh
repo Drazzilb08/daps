@@ -531,4 +531,4 @@ rm "$appdata_error"
 rm "$appdata_no_container"
 exit 0
 #
-# v1.3.8
+# v1.3.9

@@ -146,4 +146,4 @@ echo -e '\nAll Done!\n'
 rm "/tmp/i.am.running.${name}.tmp"
 exit 0
 #
-# v1.2.6
+# v1.2.7

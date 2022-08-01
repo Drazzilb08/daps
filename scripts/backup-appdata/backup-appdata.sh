@@ -7,89 +7,18 @@
 #       /_/    \_\ .__/| .__/ \__,_|\__,_|\__\__,_| |____/ \__,_|\___|_|\_\\__,_| .__/
 #                | |   | |                                                      | |
 #                |_|   |_|                                                      |_|
+#
+# v2.4.10
 
-# This script creates an invididual tar file for each docker appdata directory that you define (needs both container name and path to it's appdata).
-# Features:
-    # Stops containers if not stopped
-    # Does not start containers that were previously started
-    # Can define list of containers to not stop during backup
-    # Can define list of directories not associated with a container to backup within your appdata directory
-
-#------------- DEFINE VARIABLES -------------#
-appdata=''                              # Set appdata directory, this is to help with easily adding directories
-                                            # Example: $appdata/radarr
-                                            # This is the same as typing out /mnt/user/appdata/radarr (keeping things simple)
-                                            # However, if you want to type out the whole thing, (say if you have config information in seperate locations) you still can enter the information, just don't use $appdata
-destination=''                          # Set backup directory
-delete_after=2                          # Number of days to keep backup
-use_pigz=yes                            # Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
-pigz_compression=9                      # Define compression level to use with pigz
-                                            # 0 = No compression
-                                            # 1 = Least compression/Fastest
-                                            # 6 = Default compression/Default Speed
-                                            # 9 = Maximum Compression/Slowest
-unraid_notify=no                        # Use unRAID's built in notification system (does not effect Discord notifcations)
-alternate_format=no                     # This option will remove the time from the file and move it over to the directory structure.
-                                            # Yes = /path/to/source/yyyy-mm-dd@00.01_AM/<container_name>.tar.gz
-                                            # No = /path/to/source/yyyy-mm-dd/<container_name>-12_01_AM.tar.gz
-exclude_file=''                         # Location of an exclude file, this file is to exclude certain files/folders from being backed up.
-                                            # Example of files that would be excluded: zip files, log files/directories just to name a few
-                                            # Please not that these excludes can be global depending on how you have it all set up
-                                            # This must be full path to the file: Eg '/mnt/user/data/exclude-file.txt'
-#------------- DEFINE DISCORD VARIABLES -------------#
-use_discord=yes                         # Use discord for notifications
-use_summary=no                          # Sumarize output information
-webhook=''                              # Discord webhook
-bot_name='Notification Bot'             # Name your bot
-bar_color='15048717'                    # The bar color for discord notifications, must be Decimal code                                                                                                             # The bar color for discord notifications, must be decimal code -> https://www.mathsisfun.com/hexadecimal-decimal-colors.html
-
-                                        # List containers and associated config directory to stop and backup
-                                            # Backups will go in order listed
-                                        # To get a list of containers and it's names you need to enter in  simply use
-                                            # docker ps --format "{{.Names}}" in your terminal
-                                        # Format: <container name> <"$appdata"/container_config_dir>
-                                        # Eg. tautulli "$appdata"/tautulli>
-list=(
-
-)
-                                        # List containers and associated config directory to back up without stopping
-                                            # Format: <container name> <"$appdata"/container_config_dir>
-                                            # Eg. tautulli "$appdata"/tautulli>
-list_no_stop=(
-
-)
-                                        # You can backup directories in your appdata directory that do not have a container associated to it.
-list_no_container=(
-    
-)
+# Define where your config file is located
+config_file='/mnt/user/data/scripts/backup-appdata.conf' 
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
-debug=no # Testing Only
+debug=yes # Testing Only
+# shellcheck source=backup-appdata.conf
+source "$config_file"
 
-if [ "$use_discord" == "yes" ] && [ -z "$webhook" ]; then
-    echo "ERROR: You're attempting to use the Discord integration but did not enter the webhook url."
-    exit 1
-fi
-
-command -v pigz >/dev/null 2>&1 || { 
-    echo -e >&2 "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore"; 
-    exit 1; 
-    }
-
-if ! [ -f "$exclude_file" ] && [ -n "$exclude_file" ]; then
-    echo "You have set the exclude file but it does not exist."
-    exit 1
-fi
-
-if [ -e "/tmp/i.am.running.appdata.tmp" ]; then
-    echo "Another instance of the script is running. Aborting."
-    echo "Please use rm /tmp/i.am.running.appdata.tmp in your terminal to remove the locking file"
-    exit 1
-else
-    touch "/tmp/i.am.running.appdata.tmp"
-fi
-
-#Non-User variables
+# Start Script
 start=$(date +%s) #Sets start time for runtime information
 cd "$(realpath -s "$appdata")" || exit
 if [ "$alternate_format" == "yes" ]; then
@@ -104,22 +33,35 @@ appdata_error=$(mktemp)
 appdata_stop=$(mktemp)
 appdata_nostop=$(mktemp)
 appdata_no_container=$(mktemp)
-
-# create the backup directory if it doesn't exist - error handling - will not create backup file if path does not exist
-if [ ! -d "$dest" ]; then
-    echo "Making directory at ${dest}"
-    mkdir -p "$dest"
-fi
-# Creating backup of directory
-mkdir -p "$dest/$dt"
-# Also does not remove tmp files
 stop_counter=0
 nostop_counter=0
 no_container_counter=0
-# Data Backup
 
-# Function definition
+# Functions
+user_config_function(){
+    if [ "$use_discord" == "yes" ] && [ -z "$webhook" ]; then
+        echo "ERROR: You're attempting to use the Discord integration but did not enter the webhook url."
+        exit 1
+    fi
 
+    command -v pigz >/dev/null 2>&1 || { 
+        echo -e >&2 "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore"; 
+        exit 1; 
+        }
+
+    if ! [ -f "$exclude_file" ] && [ -n "$exclude_file" ]; then
+        echo "You have set the exclude file but it does not exist."
+        exit 1
+    fi
+
+    if [ -e "/tmp/i.am.running.appdata.tmp" ]; then
+        echo "Another instance of the script is running. Aborting."
+        echo "Please use rm /tmp/i.am.running.appdata.tmp in your terminal to remove the locking file"
+        exit 1
+    else
+        touch "/tmp/i.am.running.appdata.tmp"
+    fi
+}
 backup_function(){
     if [ "$debug" == "yes" ]; then
         if [ "$alternate_format" != "yes" ]; then
@@ -247,41 +189,35 @@ container_error_function(){
     fi
 }
 
-# Script Main Body
-echo -e "Stopping and backing up containers..."
-echo -e "----------------------------------------------"
-if [ ${#list[@]} -ge 1 ]; then
+backup_stop_function(){
+    echo -e "Stopping and backing up containers..."
+    echo -e "----------------------------------------------"
     for ((i = 0; i < ${#list[@]}; i += 2)); do
         name=${list[i]} path=${list[i + 1]}
-        # Error handling container || path exists or does not exists
         container_error_function
         if [ $? == 1 ]; then
             echo -e "----------------------------------------------"
             continue
         fi
         cRunning="$(docker ps -a --format '{{.Names}}' -f status=running)"
-        # If container is running
         if echo "$cRunning" | grep -iqF "$name"; then
             echo -e "Stopping $name"
             if [ "$debug" != "yes" ]; then
-                docker stop -t 60 "$name" >/dev/null 2>&1 # Stops container without output
+                docker stop -t 60 "$name" >/dev/null 2>&1
             fi
             echo -e "Creating backup of $name"
             backup_function
             echo -e "Starting $name"
             docker start "$name" >/dev/null 2>&1
-        # If container is stopped
         else
             echo -e "$name is already stopped"
             echo -e "Creating backup of $name"
             backup_function
             echo -e "$name was stopped before backup, ignoring startup"
         fi
-        # Compressing backup
         if [ $use_pigz == yes ]; then
             pigz_function
         fi
-        # Information Gathering
         info_function "$appdata_stop"
         stop_counter=$((stop_counter + 1))
         if [ "$debug" == "yes" ]; then
@@ -289,17 +225,13 @@ if [ ${#list[@]} -ge 1 ]; then
         fi
         echo -e "----------------------------------------------"
     done
-else
-    echo -e "No containers were stopped and backed up due to list being empty\n" 
-fi
+}
 
-echo -e "Backing up containers without stopping them..."
-echo -e "----------------------------------------------"
-# Backup containers without stopping them
-if [ ${#list_no_stop[@]} -ge 1 ]; then
+backup_nostop_function(){
+    echo -e "Backing up containers without stopping them..."
+    echo -e "----------------------------------------------"
     for ((i = 0; i < ${#list_no_stop[@]}; i += 2)); do
         name=${list_no_stop[i]} path=${list_no_stop[i + 1]}
-        # Error handling container || path exists or does not exists
         container_error_function
         if [ $? == 1 ]; then
             echo -e "----------------------------------------------"
@@ -311,7 +243,6 @@ if [ ${#list_no_stop[@]} -ge 1 ]; then
             pigz_function
         fi
         echo "Finished backup for $name"
-        # Information Gathering
         info_function "$appdata_nostop"
         nostop_counter=$((nostop_counter + 1))
         if [ "$debug" == "yes" ]; then
@@ -319,13 +250,11 @@ if [ ${#list_no_stop[@]} -ge 1 ]; then
         fi
         echo -e "----------------------------------------------"
     done
-else
-    echo -e "No containers were backed without stopping up due to list_no_stop being empty\n"
-fi
-# Backing up appdata folder w/o a container
-echo -e "Backing up directories without containers"
-echo -e "----------------------------------------------"
-if [ ${#list_no_container[@]} -ge 1 ]; then
+}
+
+backup_no_container_function(){
+    echo -e "Backing up directories without containers"
+    echo -e "----------------------------------------------"
     for i in "${list_no_container[@]}"; do
         path=$i
         name=$(basename "${i}")
@@ -342,66 +271,90 @@ if [ ${#list_no_container[@]} -ge 1 ]; then
         echo "Finished backup for $name"
         # Information Gathering
         info_function "$appdata_no_container"
-        if [ "$debug" == "yes" ]; then
-            echo "Backup no_container_counter: $no_container_counter"
-        fi
         echo -e "----------------------------------------------"
     done
-else
-    echo -e "No directories without containers were backed up due to list_no_container being empty\n"
-fi
-sleep 2
-chmod -R 777 "$dest"
+}
 
-#Cleanup Old Backups
-echo -e "\nRemoving backups older than " $delete_after "days...\n"
-find "$destination"* -mtime +"$delete_after" -type d -exec rm -rf {} \;
-echo "Done"
+cleanup_function(){
+    #Cleanup Old Backups
+    echo -e "\nRemoving backups older than " $delete_after "days...\n"
+    find "$destination"* -mtime +"$delete_after" -type d -exec rm -rf {} \;
+    echo "Done"
+}
 
-end=$(date +%s)
-run_size=$(du -sh "$dest/$dt/" | awk '{print $1}') #Set run_size information
-# Runtime
-total_time=$((end - start))
-seconds=$((total_time % 60))
-minutes=$((total_time % 3600 / 60))
-hours=$((total_time / 3600))
+runtime_function(){
+    end=$(date +%s)
+    run_size=$(du -sh "$dest/$dt/" | awk '{print $1}')
+    total_time=$((end - start))
+    seconds=$((total_time % 60))
+    minutes=$((total_time % 3600 / 60))
+    hours=$((total_time / 3600))
 
-if ((minutes == 0 && hours == 0)); then
-    run_output="Appdata completed in $seconds seconds"
-elif ((hours == 0)); then
-    run_output="Appdata completed in $minutes minutes and $seconds seconds"
-else
-    run_output="Appdata completed in $hours hours $minutes minutes and $seconds seconds"
-fi
-echo "$run_output"
-echo -e "\nThis backup's size: $run_size"
-if [ -d "$dest"/ ]; then
-    total_size=$(du -sh "$dest" | awk '{print $1}')
-    echo -e "Total size of all backups: $total_size"
-fi
-# Notifications
-if [ "$unraid_notify" == "yes" ]; then
-    /usr/local/emhttp/plugins/dynamix/scripts/notify -s "AppData Backup" -d "Backup of ALL Appdata complete."
-fi
-# Discord notifications
-if [ "$use_discord" == "yes" ]; then
-    discord_function
-fi
-echo -e '\nAll Done!\n'
-# Debug output
-if [ "$debug" == "yes" ]; then
+    if ((minutes == 0 && hours == 0)); then
+        run_output="Appdata completed in $seconds seconds"
+    elif ((hours == 0)); then
+        run_output="Appdata completed in $minutes minutes and $seconds seconds"
+    else
+        run_output="Appdata completed in $hours hours $minutes minutes and $seconds seconds"
+    fi
+    echo "$run_output"
+    echo -e "\nThis backup's size: $run_size"
+    if [ -d "$dest"/ ]; then
+        total_size=$(du -sh "$dest" | awk '{print $1}')
+        echo -e "Total size of all backups: $total_size"
+    fi
+}
+debug_output_function(){
     echo -e "Script has ended with debug set to ${debug}"
     echo -e "line count for appdata_error.tmp  = $(wc -l <"$appdata_error")"
     echo -e "stop_counter = $(wc -l <"$appdata_stop")"
     echo -e "nostop_counter = $(wc -l <"$appdata_nostop")"
     echo -e "no_container_counter" = "$(wc -l <"$appdata_no_container")" 
-fi
-# Remove temp files
-rm '/tmp/i.am.running.appdata.tmp'
-rm "$appdata_stop"
-rm "$appdata_nostop"
-rm "$appdata_error"
-rm "$appdata_no_container"
-exit 0
-#
-# v2.3.10
+}
+
+clean_files_function(){
+    rm '/tmp/i.am.running.appdata.tmp'
+    rm "$appdata_stop"
+    rm "$appdata_nostop"
+    rm "$appdata_error"
+    rm "$appdata_no_container"
+}
+
+main(){
+    user_config_function
+    if [ ! -d "$dest" ]; then
+        echo "Making directory at ${dest}"
+        mkdir -p "$dest"
+    fi
+    mkdir -p "$dest/$dt"
+    if [ ${#list[@]} -ge 1 ]; then
+        backup_stop_function
+    else
+        echo -e "No containers were stopped and backed up due to list being empty\n" 
+    fi
+    if [ ${#list_no_stop[@]} -ge 1 ]; then
+        backup_nostop_function
+    else
+        echo -e "No containers were backed without stopping up due to list_no_stop being empty\n"
+    fi
+    if [ ${#list_no_container[@]} -ge 1 ]; then
+        backup_no_container_function
+    else
+        echo -e "No directories without containers were backed up due to list_no_container being empty\n"
+    fi
+    sleep 2
+    chmod -R 777 "$dest"
+    cleanup_function
+    if [ "$unraid_notify" == "yes" ]; then
+        /usr/local/emhttp/plugins/dynamix/scripts/notify -s "AppData Backup" -d "Backup of ALL Appdata complete."
+    fi
+    if [ "$use_discord" == "yes" ]; then
+        discord_function
+    fi
+    if [ "$debug" == "yes" ]; then
+        debug_output_function
+    fi
+    clean_files_function
+    echo -e '\nAll Done!\n'
+}
+main

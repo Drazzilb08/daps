@@ -8,34 +8,20 @@
 #           | |   | |                                                      | |                        | |
 #           |_|   |_|                                                      |_|                        |_|
 #
-# v2.4.10
+# v2.4.11
 
 # Define where your config file is located
-config_file='/mnt/user/data/scripts/backup-appdata.conf'
+config_file=''
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 debug=yes # Testing Only
 # shellcheck source=backup-appdata.conf
-source "$config_file"
-
-# Start Script
-start=$(date +%s) #Sets start time for runtime information
-cd "$(realpath -s "$appdata")" || exit
-if [ "$alternate_format" == "yes" ]; then
-    dt=$(date +"%Y-%m-%d"@%H.%M)
-    now=""
+if [ -z "$config_file" ]; then
+    echo -e "Config file location not defined... Looking in root directory..."
+    source "backup-appdata.conf"
 else
-    dt=$(date +"%Y-%m-%d")
-    now=$(date +"%H.%M")
+    source "$config_file"
 fi
-dest=$(realpath -s "$destination")
-appdata_error=$(mktemp)
-appdata_stop=$(mktemp)
-appdata_nostop=$(mktemp)
-appdata_no_container=$(mktemp)
-stop_counter=0
-nostop_counter=0
-no_container_counter=0
 
 # Functions
 user_config_function() {
@@ -306,6 +292,13 @@ runtime_function() {
 }
 debug_output_function() {
     echo -e "Script has ended with debug set to ${debug}"
+    echo -e "Bot name $bot_name"
+    echo -e "Runetime: $run_output"
+    echo -e "Runsize: $run_size"
+    echo -e "Total Size: $total_size"
+    echo -e "Barcolor: $bar_color"
+    echo -e "get_ts: $get_ts"
+    echo -e "Webhook: $webhook"
     echo -e "line count for appdata_error.tmp  = $(wc -l <"$appdata_error")"
     echo -e "stop_counter = $(wc -l <"$appdata_stop")"
     echo -e "nostop_counter = $(wc -l <"$appdata_nostop")"
@@ -320,8 +313,29 @@ clean_files_function() {
     rm "$appdata_no_container"
 }
 
-main() {
+global_variables_function() {
+    start=$(date +%s) #Sets start time for runtime information
+    cd "$(realpath -s "$appdata")" || exit
+    if [ "$alternate_format" == "yes" ]; then
+        dt=$(date +"%Y-%m-%d"@%H.%M)
+        now=""
+    else
+        dt=$(date +"%Y-%m-%d")
+        now=$(date +"%H.%M")
+    fi
+    dest=$(realpath -s "$destination")
+    appdata_error=$(mktemp)
+    appdata_stop=$(mktemp)
+    appdata_nostop=$(mktemp)
+    appdata_no_container=$(mktemp)
+    stop_counter=0
+    nostop_counter=0
+    no_container_counter=0
     user_config_function
+}
+
+main() {
+    global_variables_function
     if [ ! -d "$dest" ]; then
         echo "Making directory at ${dest}"
         mkdir -p "$dest"
@@ -345,6 +359,7 @@ main() {
     sleep 2
     chmod -R 777 "$dest"
     cleanup_function
+    runtime_function
     if [ "$unraid_notify" == "yes" ]; then
         /usr/local/emhttp/plugins/dynamix/scripts/notify -s "AppData Backup" -d "Backup of ALL Appdata complete."
     fi

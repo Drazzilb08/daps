@@ -14,7 +14,7 @@
 config_file=''
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
-debug=yes # Testing Only
+debug=no # Testing Only
 # shellcheck source=backup-appdata.conf
 if [ -z "$config_file" ]; then
     echo -e "Config file location not defined... Looking in root directory..."

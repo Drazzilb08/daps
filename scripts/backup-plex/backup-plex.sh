@@ -112,7 +112,7 @@ backup_function() {
         if [ "$force_full_backup" != 0 ]; then
             days=$((($(date --date="$date" +%s) - $(date --date="$lastbackup" +%s)) / (60 * 60 * 24)))
             if [[ "$days" -gt $force_full_backup ]] || [[ "$lastbackup" == 0 ]]; then
-                cf=true 
+                cf=true
                 echo -e "\nCreating Full backup now... please wait"
                 mkdir -p "$dest/Full/$dt"
                 if [ "$debug" != yes ]; then
@@ -261,7 +261,7 @@ discord_function() {
         echo -e "\nDiscord notification sent."
     fi
 }
-debug_output_function(){
+debug_output_function() {
     echo -e "Script has ended with debug set to ${debug}"
     echo -e "Bot name $bot_name"
     echo -e "Runetime: $run_output"

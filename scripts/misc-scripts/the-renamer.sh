@@ -57,25 +57,25 @@ fi
 }
 series_function () {
 echo "Processing Series"
-if [ "$(find "$series_source" -regex ".*[^ ]_ .*" | wc -l)" -eq 0 ] && [ "$(find "$series_source" -regex ".* - Specials.*" | wc -l)" -eq 0 ] && [ "$(find "$series_source" -regex ".* [1-9]\.[^.]+$" | wc -l)" -eq 0 ] && [ "$(find "$series_source" -regex ".*[1-9][0-9]\.[^.]+$" | wc -l)" -eq 0 ]; then
+if [ "$(find "$1" -regex ".*[^ ]_ .*" | wc -l)" -eq 0 ] && [ "$(find "$1" -regex ".* - Specials.*" | wc -l)" -eq 0 ] && [ "$(find "$1" -regex ".* [1-9]\.[^.]+$" | wc -l)" -eq 0 ] && [ "$(find "$1" -regex ".*[1-9][0-9]\.[^.]+$" | wc -l)" -eq 0 ]; then
     echo -e "Files found but nothing needs to be renamed...\n"
     if [ "$move_files" = "yes" ]; then
         echo -e "Moving assets\n"
-        mv "$series_source"/* "$series_destination" 2>/dev/null
+        mv "$1"/* "$2" 2>/dev/null
     else
         echo -e "Series Processed but files were not moved.\n"
     fi
 else
-    find "$series_source" -regex ".*[^ ]_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \;                   #Removing all underscores from string
-    find "$series_source" -regex ".* - Specials.*" -exec rename -v " - Specials" "_Season00" {} \;          #Replace " - Speicials" to "_Season00"
-    find "$series_source" -regex ".* [1-9]\.[^.]+$" -exec rename -v " - Season " "_Season0" {} \; | sort -d #Replace " - Season " to "_Season0" for Seasons 1 through 9
+    find "$1" -regex ".*[^ ]_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \;                   #Removing all underscores from string
+    find "$1" -regex ".* - Specials.*" -exec rename -v " - Specials" "_Season00" {} \;          #Replace " - Speicials" to "_Season00"
+    find "$1" -regex ".* [1-9]\.[^.]+$" -exec rename -v " - Season " "_Season0" {} \; | sort -d #Replace " - Season " to "_Season0" for Seasons 1 through 9
 
-    if [ "$(find "$series_source" -regex "" | wc -l)" -ge 1 ]; then
-        find "$series_source" -regex ".*[1-9][0-9]\.[^.]+$" -exec rename -v ' - Season ' '_Season' {} \; | sort -d #Find season that are 10 and greater and rename them
+    if [ "$(find "$1" -regex "" | wc -l)" -ge 1 ]; then
+        find "$1" -regex ".*[1-9][0-9]\.[^.]+$" -exec rename -v ' - Season ' '_Season' {} \; | sort -d #Find season that are 10 and greater and rename them
     fi
     if [ "$move_files" = "yes" ]; then
         echo -e "Moving assets\n"
-        mv "$series_source"/* "$series_destination" 2>/dev/null
+        mv "$1"/* "$2" 2>/dev/null
     else
         echo -e "Series Processed but files were not moved.\n"
     fi

@@ -28,13 +28,18 @@ anime_series_destination='/mnt/user/appdata/plex-meta-manager/pmm-anime/assets/a
 move_files=no #Move files manually or use the destination folders
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
-#add echo if nothing is renamed 
-
 if [ -n "$movies_source" ]; then
     if [ -n "$(ls -A $movies_source)" ]; then
         echo "Processing Movies"
         if [ "$(find "$movies_source" -regex ".*[^ ] _ [^ ].*" | wc -l)" -eq 0 ] && [ "$(find "$movies_source" -regex ".*[^ ]_  .*" | wc -l)" -eq 0 ] && [ "$(find "$movies_source" -regex ".*[^ ]_ \b.*" | wc -l)" -eq 0 ] && [ "$(find "$movies_source" -regex ".*[^ ]- \b.*" | wc -l)" -eq 0 ]; then
             echo -e "Files found but nothing needs to be renamed...\n"
+            if [ "$move_files" = "yes" ]; then
+                echo -e "Moving assets\n"
+                mv "$movies_source"/* "$movies_destination" 2>/dev/null
+                echo -e "Assets moved\n"
+            else
+                echo -e "Movies Processed but files were not moved.\n"
+            fi
         else
             find "$movies_source" -regex ".*[^ ] _ [^ ].*" -exec rename -v '_ ' '' {} \;
             find "$movies_source" -regex ".*[^ ]_  .*" -exec rename -v '_ ' '' {} \;
@@ -61,6 +66,12 @@ if [ -n "$series_source" ]; then
         echo "Processing Series"
         if [ "$(find "$series_source" -regex ".*[^ ]_ .*" | wc -l)" -eq 0 ] && [ "$(find "$series_source" -regex ".* - Specials.*" | wc -l)" -eq 0 ] && [ "$(find "$series_source" -regex ".* [1-9]\.[^.]+$" | wc -l)" -eq 0 ] && [ "$(find "$series_source" -regex ".*[1-9][0-9]\.[^.]+$" | wc -l)" -eq 0 ]; then
             echo -e "Files found but nothing needs to be renamed...\n"
+            if [ "$move_files" = "yes" ]; then
+                echo -e "Moving assets\n"
+                mv "$series_source"/* "$series_destination" 2>/dev/null
+            else
+                echo -e "Series Processed but files were not moved.\n"
+            fi
         else
             find "$series_source" -regex ".*[^ ]_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \;                   #Removing all underscores from string
             find "$series_source" -regex ".* - Specials.*" -exec rename -v " - Specials" "_Season00" {} \;          #Replace " - Speicials" to "_Season00"
@@ -88,6 +99,13 @@ if [ -n "$anime_movies_source" ]; then
         echo "Processing Movies"
         if [ "$(find "$anime_movies_source" -regex ".*[^ ] _ [^ ].*" | wc -l)" -eq 0 ] && [ "$(find "$anime_movies_source" -regex ".*[^ ]_  .*" | wc -l)" -eq 0 ] && [ "$(find "$anime_movies_source" -regex ".*[^ ]_ \b.*" | wc -l)" -eq 0 ] && [ "$(find "$anime_movies_source" -regex ".*[^ ]- \b.*" | wc -l)" -eq 0 ]; then
             echo -e "Files found but nothing needs to be renamed...\n"
+            if [ "$move_files" = "yes" ]; then
+                echo -e "Moving assets\n"
+                mv "$anime_movies_source"/* "$anime_movies_destination" 2>/dev/null
+                echo -e "Assets moved\n"
+            else
+                echo -e "Movies Processed but files were not moved.\n"
+            fi
         else
             find "$anime_movies_source" -regex ".*[^ ] _ [^ ].*" -exec rename -v ' _ ' ' ' {} \;
             find "$anime_movies_source" -regex ".*[^ ]_  .*" -exec rename -v '_  ' ' ' {} \;
@@ -113,6 +131,12 @@ if [ -n "$anime_series_source" ]; then
         echo "Processing Series"
         if [ "$(find "$anime_series_source" -regex ".*[^ ]_ .*" | wc -l)" -eq 0 ] && [ "$(find "$anime_series_source" -regex ".* - Specials.*" | wc -l)" -eq 0 ] && [ "$(find "$anime_series_source" -regex ".* [1-9]\.[^.]+$" | wc -l)" -eq 0 ] && [ "$(find "$anime_series_source" -regex ".*[1-9][0-9]\.[^.]+$" | wc -l)" -eq 0 ]; then
             echo -e "Files found but nothing needs to be renamed...\n"
+            if [ "$move_files" = "yes" ]; then
+                echo -e "Moving assets\n"
+                mv "$anime_series_source"/* "$anime_series_destination" 2>/dev/null
+            else
+                echo -e "Series Processed but files were not moved.\n"
+            fi
         else
             find "$anime_series_source" -regex ".*[^ ]_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \;                   #Removing all underscores from string
             find "$anime_series_source" -regex ".* - Specials.*" -exec rename -v " - Specials" "_Season00" {} \;          #Replace " - Speicials" to "_Season00"
@@ -138,4 +162,4 @@ fi
 echo -e "\nAll Done\n"
 exit
 #
-# v1.4.1
+# v1.4.2

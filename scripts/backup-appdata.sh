@@ -230,26 +230,34 @@ discord_function(){
     echo -e "\nDiscord notification sent."
 }
 
+container_error_function(){
+    if [ "$(docker ps -a -f name="$name" | wc -l)" -ge 2 ]; then
+        if [ ! -d "$path" ]; then
+            echo -e "Container $name exists but the directory $path does not exist... Skipping" | tee -a "${appdata_error}"
+            return 1
+        fi
+    else
+        if [ ! -d "$path" ]; then
+            echo -e "Container $name does not exist and $path does not exist... Skipping" | tee -a "${appdata_error}"
+            return 1
+        else
+            echo -e "Container $name does not exist but the directory $path exists... Skipping" | tee -a "${appdata_error}"
+            return 1
+        fi
+    fi
+}
+
 # Script Main Body
-echo -e "Backing up containers that require stopping"
+echo -e "Stopping and backing up containers..."
 echo -e "----------------------------------------------"
 if [ ${#list[@]} -ge 1 ]; then
     for ((i = 0; i < ${#list[@]}; i += 2)); do
         name=${list[i]} path=${list[i + 1]}
         # Error handling container || path exists or does not exists
-        if [ "$(docker ps -a -f name="$name" | wc -l)" -ge 2 ]; then
-            if [ ! -d "$path" ]; then
-                echo -e "Container $name exists but the directory $path does not exist... Skipping" | tee -a "${appdata_error}"
-                continue
-            fi
-        else
-            if [ ! -d "$path" ]; then
-                echo -e "Container $name does not exist and $path does not exist... Skipping" | tee -a "${appdata_error}"
-                continue
-            else
-                echo -e "Container $name does not exist but the directory $path exists... Skipping" | tee -a "${appdata_error}"
-                continue
-            fi
+        container_error_function
+        if [ $? == 1 ]; then
+            echo -e "----------------------------------------------"
+            continue
         fi
         cRunning="$(docker ps -a --format '{{.Names}}' -f status=running)"
         # If container is running
@@ -284,28 +292,19 @@ if [ ${#list[@]} -ge 1 ]; then
 else
     echo -e "No containers were stopped and backed up due to list being empty\n" 
 fi
-echo -e "Backing up containers without stopping them."
+
+echo -e "Backing up containers without stopping them..."
 echo -e "----------------------------------------------"
 # Backup containers without stopping them
 if [ ${#list_no_stop[@]} -ge 1 ]; then
     for ((i = 0; i < ${#list_no_stop[@]}; i += 2)); do
         name=${list_no_stop[i]} path=${list_no_stop[i + 1]}
         # Error handling container || path exists or does not exists
-        if [ "$(docker ps -a -f name="$name" | wc -l)" -ge 2 ]; then
-            if [ ! -d "$path" ]; then
-                echo -e "Container $name exists but the directory $path does not exist... Skipping" | tee -a "${appdata_error}"
-                continue
-            fi
-        else
-            if [ ! -d "$path" ]; then
-                echo -e "Container $name does not exist and $path does not exist... Skipping" | tee -a "${appdata_error}"
-                continue
-            else
-                echo -e "Container $name does not exist but the directory $path exists... Skipping" | tee -a "${appdata_error}"
-                continue
-            fi
+        container_error_function
+        if [ $? == 1 ]; then
+            echo -e "----------------------------------------------"
+            continue
         fi
-
         echo -e "Creating backup of $name"
         backup_function
         if [ $use_pigz == yes ]; then
@@ -331,7 +330,7 @@ if [ ${#list_no_container[@]} -ge 1 ]; then
         path=$i
         name=$(basename "${i}")
         if [ ! -d "$path" ]; then
-            echo -e "Path name $path does not exist... Skipping" | tee -a "${appdata_error}"
+            echo -e "Path name $path does not exist... Skipping" | tee -a "$appdata_error"
             continue
         fi
         echo -e "Creating backup of $name"

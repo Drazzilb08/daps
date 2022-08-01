@@ -34,7 +34,7 @@ if [ -n "$movies_source" ]; then
     if [ -n "$(ls -A $movies_source)" ]; then
         echo "Processing Movies"
         if [ "$(find "$movies_source" -regex ".*[^ ] _ [^ ].*" | wc -l)" -eq 0 ] && [ "$(find "$movies_source" -regex ".*[^ ]_  .*" | wc -l)" -eq 0 ] && [ "$(find "$movies_source" -regex ".*[^ ]_ \b.*" | wc -l)" -eq 0 ] && [ "$(find "$movies_source" -regex ".*[^ ]- \b.*" | wc -l)" -eq 0 ]; then
-            echo -e "Files found but nothing needs to be renamed..."
+            echo -e "Files found but nothing needs to be renamed...\n"
         else
             find "$movies_source" -regex ".*[^ ] _ [^ ].*" -exec rename -v '_ ' '' {} \;
             find "$movies_source" -regex ".*[^ ]_  .*" -exec rename -v '_ ' '' {} \;
@@ -60,7 +60,7 @@ if [ -n "$series_source" ]; then
     if [ -n "$(ls -A $series_source)" ]; then
         echo "Processing Series"
         if [ "$(find "$series_source" -regex ".*[^ ]_ .*" | wc -l)" -eq 0 ] && [ "$(find "$series_source" -regex ".* - Specials.*" | wc -l)" -eq 0 ] && [ "$(find "$series_source" -regex ".* [1-9]\.[^.]+$" | wc -l)" -eq 0 ] && [ "$(find "$series_source" -regex ".*[1-9][0-9]\.[^.]+$" | wc -l)" -eq 0 ]; then
-            echo -e "Files found but nothing needs to be renamed..."
+            echo -e "Files found but nothing needs to be renamed...\n"
         else
             find "$series_source" -regex ".*[^ ]_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \;                   #Removing all underscores from string
             find "$series_source" -regex ".* - Specials.*" -exec rename -v " - Specials" "_Season00" {} \;          #Replace " - Speicials" to "_Season00"
@@ -87,7 +87,7 @@ if [ -n "$anime_movies_source" ]; then
     if [ -n "$(ls -A $anime_movies_source)" ]; then
         echo "Processing Movies"
         if [ "$(find "$anime_movies_source" -regex ".*[^ ] _ [^ ].*" | wc -l)" -eq 0 ] && [ "$(find "$anime_movies_source" -regex ".*[^ ]_  .*" | wc -l)" -eq 0 ] && [ "$(find "$anime_movies_source" -regex ".*[^ ]_ \b.*" | wc -l)" -eq 0 ] && [ "$(find "$anime_movies_source" -regex ".*[^ ]- \b.*" | wc -l)" -eq 0 ]; then
-            echo -e "Files found but nothing needs to be renamed..."
+            echo -e "Files found but nothing needs to be renamed...\n"
         else
             find "$anime_movies_source" -regex ".*[^ ] _ [^ ].*" -exec rename -v ' _ ' ' ' {} \;
             find "$anime_movies_source" -regex ".*[^ ]_  .*" -exec rename -v '_  ' ' ' {} \;
@@ -112,7 +112,7 @@ if [ -n "$anime_series_source" ]; then
     if [ -n "$(ls -A $anime_series_source)" ]; then
         echo "Processing Series"
         if [ "$(find "$anime_series_source" -regex ".*[^ ]_ .*" | wc -l)" -eq 0 ] && [ "$(find "$anime_series_source" -regex ".* - Specials.*" | wc -l)" -eq 0 ] && [ "$(find "$anime_series_source" -regex ".* [1-9]\.[^.]+$" | wc -l)" -eq 0 ] && [ "$(find "$anime_series_source" -regex ".*[1-9][0-9]\.[^.]+$" | wc -l)" -eq 0 ]; then
-            echo -e "Files found but nothing needs to be renamed..."
+            echo -e "Files found but nothing needs to be renamed...\n"
         else
             find "$anime_series_source" -regex ".*[^ ]_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \;                   #Removing all underscores from string
             find "$anime_series_source" -regex ".* - Specials.*" -exec rename -v " - Specials" "_Season00" {} \;          #Replace " - Speicials" to "_Season00"

@@ -1,13 +1,13 @@
 #!/bin/bash
 
-#     _ _____  _    _ _____        _____  _____  
-#    (_)  __ \| |  | |  __ \ /\   |  __ \|  __ \ 
+#     _ _____  _    _ _____        _____  _____
+#    (_)  __ \| |  | |  __ \ /\   |  __ \|  __ \
 #     _| |  | | |  | | |__) /  \  | |__) | |__) |
-#    | | |  | | |  | |  ___/ /\ \ |  _  /|  _  / 
-#    | | |__| | |__| | |  / ____ \| | \ \| | \ \ 
+#    | | |  | | |  | |  ___/ /\ \ |  _  /|  _  /
+#    | | |__| | |__| | |  / ____ \| | \ \| | \ \
 #    | |_____/ \____/|_| /_/    \_\_|  \_\_|  \_\
-#   _/ |                                         
-#  |__/                                          
+#   _/ |
+#  |__/
 #
 
 # Purpose:
@@ -16,20 +16,20 @@
 # Note: jdupes is required for this script to run, please install jdupes via the NerdPack from the available in the appstore
 # This script was purly for schlitz giggles and can be 100% replaced with simply running the jdupes command in terminal.
 
-downloads_dir=''                    # Where you place your downloads        
-media_dir=''                        # Where you place your media
+downloads_dir='' # Where you place your downloads
+media_dir=''     # Where you place your media
 
 #------------- DEFINE DISCORD VARIABLES -------------#
 # This section is not required
-use_discord=yes                     # Use discord for notifications
-webhook=''                          # Discord webhook
-bot_name='Notification Bot'         # Name your bot
-bar_color='16776960'                # The bar color for discord notifications, must be decimal
+use_discord=yes             # Use discord for notifications
+webhook=''                  # Discord webhook
+bot_name='Notification Bot' # Name your bot
+bar_color='16776960'        # The bar color for discord notifications, must be decimal
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
-command -v jdupes >/dev/null 2>&1 || { 
-    echo -e >&2 "jdupes is not installed.\nPlease install jdupes and rerun.\nIf on unRaid, jdupes can be found through the NerdPack which is found in the appstore"; 
-    exit 1; 
+command -v jdupes >/dev/null 2>&1 || {
+    echo -e "jdupes is not installed.\nPlease install jdupes and rerun.\nIf on unRaid, jdupes can be found through the NerdPack which is found in the appstore" >&2
+    exit 1
 }
 
 if [ "$use_discord" == "yes" ] && [ -z "$webhook" ]; then
@@ -45,7 +45,7 @@ else
 fi
 
 get_ts=$(date -u -Iseconds) # Get time stamp
-start=$(date +%s) # start time of script for statistics
+start=$(date +%s)           # start time of script for statistics
 jdupes -r -L -A -X onlyext:mp4,mkv,avi "${downloads_dir}" "${media_dir}"
 end=$(date +%s)
 

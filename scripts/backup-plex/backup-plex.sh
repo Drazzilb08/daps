@@ -16,34 +16,34 @@
 # No metadata is backed up during an Essential backup.
 
 #------------- DEFINE VARIABLES -------------#
-source=''                           # path to your plex appdata location
-destination=''                      # path to your backup folder
-unraid_notify=no                        # (yes/no) Unraid notification that the backup was performed
-delete_after=7                      # number of days to keep backups
-full_backup=no                      # (yes/no) creation of entire Plex backup (yes) or essential data only (no)
-                                        # Yes will significantly increase the amount of time and size to create a backup
-                                        # as all metadata (potentially hundreds of thousands of files) is included in the backup.
-force_full_backup=7                 # create a full backup every (#) number of days, in addition to regular essential data (0 to disable)
-                                        # this will create an essential backup and then a full backup separately
-                                        # this setting is ignored if full_backup = yes
-keep_full=2                         # number of full backups to keep - these can be very large
-use_pigz=yes                         # Due to the size of full backups if you're using a full backup and would like to really compress your backups down as much as possible use pigz
-                                        # Pigz package must be installed via NerdPack
-pigz_compression=9                  # Define compression level to use with pigz. Numbers are 0-9 only!
-                                        # 0 = No compression
-                                        # 1 = Least compression/Fastest
-                                        # 6 = Default compression/Default Speed
-                                        # 9 = Maximum Compression/Slowest
-alternate_format=no                 # This option will remove the time from the file and move it over to the directory structure.
-                                        # Yes = /path/to/source/yyyy-mm-dd@18.00_AM/<Essential/Full>_Plex_Data_Backup.tar.gz
-                                        # No = /path/to/source/yyyy-mm-dd/<Essential/Full>_Plex_Data_Backup-18_00_AM.tar.gz
-                                        # Times are in 24 hour clock
+source=''        # path to your plex appdata location
+destination=''   # path to your backup folder
+unraid_notify=no # (yes/no) Unraid notification that the backup was performed
+delete_after=7   # number of days to keep backups
+full_backup=no   # (yes/no) creation of entire Plex backup (yes) or essential data only (no)
+# Yes will significantly increase the amount of time and size to create a backup
+# as all metadata (potentially hundreds of thousands of files) is included in the backup.
+force_full_backup=7 # create a full backup every (#) number of days, in addition to regular essential data (0 to disable)
+# this will create an essential backup and then a full backup separately
+# this setting is ignored if full_backup = yes
+keep_full=2  # number of full backups to keep - these can be very large
+use_pigz=yes # Due to the size of full backups if you're using a full backup and would like to really compress your backups down as much as possible use pigz
+# Pigz package must be installed via NerdPack
+pigz_compression=9 # Define compression level to use with pigz. Numbers are 0-9 only!
+# 0 = No compression
+# 1 = Least compression/Fastest
+# 6 = Default compression/Default Speed
+# 9 = Maximum Compression/Slowest
+alternate_format=no # This option will remove the time from the file and move it over to the directory structure.
+# Yes = /path/to/source/yyyy-mm-dd@18.00_AM/<Essential/Full>_Plex_Data_Backup.tar.gz
+# No = /path/to/source/yyyy-mm-dd/<Essential/Full>_Plex_Data_Backup-18_00_AM.tar.gz
+# Times are in 24 hour clock
 #------------- DEFINE DISCORD VARIABLES -------------#
 # This section is not required
-use_discord=yes                     # Use discord for notifications
-webhook=''                          # Discord webhook
-bot_name='Notification Bot'         # Name your bot
-bar_color='15048717'                # The bar color for discord notifications, must be Decimal code
+use_discord=yes             # Use discord for notifications
+webhook=''                  # Discord webhook
+bot_name='Notification Bot' # Name your bot
+bar_color='15048717'        # The bar color for discord notifications, must be Decimal code
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 debug=false #testing only
@@ -60,10 +60,10 @@ if [ "$use_discord" == "yes" ] && [ -z "$webhook" ]; then
     exit
 fi
 
-command -v pigz >/dev/null 2>&1 || { 
-    echo -e >&2 "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore"; 
-    exit 1; 
-    }
+command -v pigz >/dev/null 2>&1 || {
+    echo -e "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore" >&2
+    exit 1
+}
 
 if [ -e "/tmp/i.am.running.plex.tmp" ]; then
     echo "Another instance of the script is running. Aborting."
@@ -97,8 +97,6 @@ else
 fi
 date=$(date)
 
-
-
 # create the backup directory if it doesn't exist - error handling - will not create backup file it path does not exist
 mkdir -p "$dest"
 
@@ -112,14 +110,14 @@ if [ "$full_backup" == "no" ]; then
             tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup-$now.tar" "Plug-in Support/Databases" "Plug-in Support/Preferences" Preferences.xml
             essential_size=$(du -sh "$dest/Essential/$dt/Essential_Plex_Data_Backup-$now.tar" | awk '{print $1}')
             if [ "$use_pigz" == yes ]; then
-                pigz -$pigz_compression "$dest/Essential/$dt/Essential_Plex_Data_Backup-$now.tar" 
+                pigz -$pigz_compression "$dest/Essential/$dt/Essential_Plex_Data_Backup-$now.tar"
                 full_size=$(du -sh "$dest/Essential/$dt/Essential_Plex_Data_Backup-$now.tar.gz" | awk '{print $1}')
             fi
         else
             tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup.tar" "Plug-in Support/Databases" "Plug-in Support/Preferences" Preferences.xml
             essential_size=$(du -sh "$dest/Essential/$dt/Essential_Plex_Data_Backup.tar" | awk '{print $1}')
             if [ "$use_pigz" == yes ]; then
-                pigz -$pigz_compression "$dest/Essential/$dt/Essential_Plex_Data_Backup.tar" 
+                pigz -$pigz_compression "$dest/Essential/$dt/Essential_Plex_Data_Backup.tar"
                 full_size=$(du -sh "$dest/Essential/$dt/Essential_Plex_Data_Backup.tar.gz" | awk '{print $1}')
             fi
         fi
@@ -128,14 +126,14 @@ if [ "$full_backup" == "no" ]; then
             tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0-$now.tar" -T /dev/null
             essential_size=$(du -sh "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0-$now.tar" | awk '{print $1}')
             if [ "$use_pigz" == yes ]; then
-                pigz -$pigz_compression "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0-$now.tar" 
+                pigz -$pigz_compression "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0-$now.tar"
                 full_size=$(du -sh "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0-$now.tar.gz" | awk '{print $1}')
             fi
         else
             tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0.tar" -T /dev/null
             essential_size=$(du -sh "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0.tar" | awk '{print $1}')
             if [ "$use_pigz" == yes ]; then
-                pigz -$pigz_compression "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0.tar" 
+                pigz -$pigz_compression "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0.tar"
                 full_size=$(du -sh "$dest/Essential/$dt/Essential_Plex_Data_Backup-debug0.tar.gz" | awk '{print $1}')
             fi
         fi
@@ -155,7 +153,7 @@ if [ "$full_backup" == "no" ]; then
                     full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" | awk '{print $1}')
                     # Compress tar into tar.gz file greatly reducing the size of the backup.
                     if [ "$use_pigz" == yes ]; then
-                        pigz -$pigz_compression "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" 
+                        pigz -$pigz_compression "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar"
                         full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar.gz" | awk '{print $1}')
                     fi
                 else
@@ -163,9 +161,9 @@ if [ "$full_backup" == "no" ]; then
                     full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup.tar" | awk '{print $1}')
                     # Compress tar into tar.gz file greatly reducing the size of the backup.
                     if [ "$use_pigz" == yes ]; then
-                        pigz -$pigz_compression "$dest/Full/$dt/Full_Plex_Data_Backup.tar" 
+                        pigz -$pigz_compression "$dest/Full/$dt/Full_Plex_Data_Backup.tar"
                         full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup.tar.gz" | awk '{print $1}')
-                    fi 
+                    fi
                 fi
             else
                 if [ "$alternate_format" != "yes" ]; then
@@ -173,7 +171,7 @@ if [ "$full_backup" == "no" ]; then
                     full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-debug1-$now.tar" | awk '{print $1}')
 
                     if [ "$use_pigz" == yes ]; then
-                        pigz -$pigz_compression "$dest/Full/$dt/Full_Plex_Data_Backup-debug1-$now.tar" 
+                        pigz -$pigz_compression "$dest/Full/$dt/Full_Plex_Data_Backup-debug1-$now.tar"
                         full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-debug1-$now.tar.gz" | awk '{print $1}')
                     fi
                 else
@@ -181,7 +179,7 @@ if [ "$full_backup" == "no" ]; then
                     full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-debug1.tar" | awk '{print $1}')
 
                     if [ "$use_pigz" == yes ]; then
-                        pigz -$pigz_compression "$dest/Full/$dt/Full_Plex_Data_Backup-debug1.tar" 
+                        pigz -$pigz_compression "$dest/Full/$dt/Full_Plex_Data_Backup-debug1.tar"
                         full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup-debug1.tar.gz" | awk '{print $1}')
                     fi
                 fi
@@ -214,7 +212,7 @@ else
             if [ "$use_pigz" == "yes" ]; then
                 pigz -$pigz_compression "$dest/Full/$dt/Full_Plex_Data_Backup.tar"
                 full_size=$(du -sh "$dest/Full/$dt/Full_Plex_Data_Backup.tar.gz" | awk '{print $1}')
-            fi 
+            fi
         fi
     else
         if [ "$alternate_format" != "yes" ]; then

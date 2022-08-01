@@ -54,12 +54,12 @@ fi
 if [ -n "$series_source" ]; then
     if [ -n "$(ls -A $series_source)" ]; then
         echo "Processing Series"
-        find "$series_source" -regex ".*[^ ]_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \;  #Removing all underscores from string
-        find "$series_source" -regex ".* - Specials.*" -exec rename -v " - Specials" "_Season00" {} \; #Replace " - Speicials" to "_Season00"
+        find "$series_source" -regex ".*[^ ]_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \;                   #Removing all underscores from string
+        find "$series_source" -regex ".* - Specials.*" -exec rename -v " - Specials" "_Season00" {} \;          #Replace " - Speicials" to "_Season00"
         find "$series_source" -regex ".* [1-9]\.[^.]+$" -exec rename -v " - Season " "_Season0" {} \; | sort -d #Replace " - Season " to "_Season0" for Seasons 1 through 9
 
-        if [ "$(find "$series_source" -regex ".*[1-9][0-9]\.[^.]+$" | wc -l)" -ge 1 ]; then 
-            find "$series_source" -regex ".*[1-9][0-9]\.[^.]+$" -exec rename -v ' - Season ' '_Season' {} \; | sort -d #Find season that are 10 and greater and rename them 
+        if [ "$(find "$series_source" -regex ".*[1-9][0-9]\.[^.]+$" | wc -l)" -ge 1 ]; then
+            find "$series_source" -regex ".*[1-9][0-9]\.[^.]+$" -exec rename -v ' - Season ' '_Season' {} \; | sort -d #Find season that are 10 and greater and rename them
         fi
         if [ "$move_files" = "yes" ]; then
             echo -e "Moving assets\n"
@@ -77,10 +77,10 @@ fi
 if [ -n "$anime_movies_source" ]; then
     if [ -n "$(ls -A $anime_movies_source)" ]; then
         echo "Processing Movies"
-            find "$anime_movies_source" -regex ".*[^ ] _ [^ ].*" -exec rename -v ' _ ' ' ' {} \;
-            find "$anime_movies_source" -regex ".*[^ ]_  .*" -exec rename -v '_  ' ' ' {} \;
-            find "$anime_movies_source" -regex ".*[^ ]_ \b.*" -exec rename -v '_ ' ' ' {} \;
-            find "$anime_movies_source" -regex ".*[^ ]- \b.*" -exec rename -v '- ' ' ' {} \;
+        find "$anime_movies_source" -regex ".*[^ ] _ [^ ].*" -exec rename -v ' _ ' ' ' {} \;
+        find "$anime_movies_source" -regex ".*[^ ]_  .*" -exec rename -v '_  ' ' ' {} \;
+        find "$anime_movies_source" -regex ".*[^ ]_ \b.*" -exec rename -v '_ ' ' ' {} \;
+        find "$anime_movies_source" -regex ".*[^ ]- \b.*" -exec rename -v '- ' ' ' {} \;
         if [ "$move_files" = "yes" ]; then
             echo -e "Moving assets\n"
             mv "$anime_movies_source"/* "$anime_movies_destination" 2>/dev/null
@@ -98,12 +98,12 @@ fi
 if [ -n "$anime_series_source" ]; then
     if [ -n "$(ls -A $anime_series_source)" ]; then
         echo "Processing Series"
-        find "$anime_series_source" -regex ".*[^ ]_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \;  #Removing all underscores from string
-        find "$anime_series_source" -regex ".* - Specials.*" -exec rename -v " - Specials" "_Season00" {} \; #Replace " - Speicials" to "_Season00"
+        find "$anime_series_source" -regex ".*[^ ]_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \;                   #Removing all underscores from string
+        find "$anime_series_source" -regex ".* - Specials.*" -exec rename -v " - Specials" "_Season00" {} \;          #Replace " - Speicials" to "_Season00"
         find "$anime_series_source" -regex ".* [1-9]\.[^.]+$" -exec rename -v " - Season " "_Season0" {} \; | sort -d #Replace " - Season " to "_Season0" for Seasons 1 through 9
 
-        if [ "$(find "$anime_series_source" -regex ".*[1-9][0-9]\.[^.]+$" | wc -l)" -ge 1 ]; then 
-            find "$anime_series_source" -regex ".*[1-9][0-9]\.[^.]+$" -exec rename -v ' - Season ' '_Season' {} \; | sort -d #Find season that are 10 and greater and rename them 
+        if [ "$(find "$anime_series_source" -regex ".*[1-9][0-9]\.[^.]+$" | wc -l)" -ge 1 ]; then
+            find "$anime_series_source" -regex ".*[1-9][0-9]\.[^.]+$" -exec rename -v ' - Season ' '_Season' {} \; | sort -d #Find season that are 10 and greater and rename them
         fi
         if [ "$move_files" = "yes" ]; then
             echo -e "Moving assets\n"

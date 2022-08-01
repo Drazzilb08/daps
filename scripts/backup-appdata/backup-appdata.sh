@@ -1,17 +1,17 @@
 #!/bin/bash
-#                            _       _          ____             _                   _____           _       _   
-#      /\                   | |     | |        |  _ \           | |                 / ____|         (_)     | |  
-#     /  \   _ __  _ __   __| | __ _| |_ __ _  | |_) | __ _  ___| | ___   _ _ __   | (___   ___ _ __ _ _ __ | |_ 
+#                            _       _          ____             _                   _____           _       _
+#      /\                   | |     | |        |  _ \           | |                 / ____|         (_)     | |
+#     /  \   _ __  _ __   __| | __ _| |_ __ _  | |_) | __ _  ___| | ___   _ _ __   | (___   ___ _ __ _ _ __ | |_
 #    / /\ \ | '_ \| '_ \ / _` |/ _` | __/ _` | |  _ < / _` |/ __| |/ / | | | '_ \   \___ \ / __| '__| | '_ \| __|
-#   / ____ \| |_) | |_) | (_| | (_| | || (_| | | |_) | (_| | (__|   <| |_| | |_) |  ____) | (__| |  | | |_) | |_ 
+#   / ____ \| |_) | |_) | (_| | (_| | || (_| | | |_) | (_| | (__|   <| |_| | |_) |  ____) | (__| |  | | |_) | |_
 #  /_/    \_\ .__/| .__/ \__,_|\__,_|\__\__,_| |____/ \__,_|\___|_|\_\\__,_| .__/  |_____/ \___|_|  |_| .__/ \__|
-#           | |   | |                                                      | |                        | |        
-#           |_|   |_|                                                      |_|                        |_|        
+#           | |   | |                                                      | |                        | |
+#           |_|   |_|                                                      |_|                        |_|
 #
 # v2.4.10
 
 # Define where your config file is located
-config_file='/mnt/user/data/scripts/backup-appdata.conf' 
+config_file='/mnt/user/data/scripts/backup-appdata.conf'
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 debug=yes # Testing Only
@@ -38,16 +38,16 @@ nostop_counter=0
 no_container_counter=0
 
 # Functions
-user_config_function(){
+user_config_function() {
     if [ "$use_discord" == "yes" ] && [ -z "$webhook" ]; then
         echo "ERROR: You're attempting to use the Discord integration but did not enter the webhook url."
         exit 1
     fi
 
-    command -v pigz >/dev/null 2>&1 || { 
-        echo -e >&2 "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore"; 
-        exit 1; 
-        }
+    command -v pigz >/dev/null 2>&1 || {
+        echo -e "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore" >&2
+        exit 1
+    }
 
     if ! [ -f "$exclude_file" ] && [ -n "$exclude_file" ]; then
         echo "You have set the exclude file but it does not exist."
@@ -62,7 +62,7 @@ user_config_function(){
         touch "/tmp/i.am.running.appdata.tmp"
     fi
 }
-backup_function(){
+backup_function() {
     if [ "$debug" == "yes" ]; then
         if [ "$alternate_format" != "yes" ]; then
             tar -cf "$dest/$dt/$name-$now-debug.tar" -T /dev/null
@@ -86,7 +86,7 @@ backup_function(){
     fi
 }
 
-pigz_function(){
+pigz_function() {
     echo -e "Compressing $name..."
     if [ "$debug" == "yes" ]; then
         if [ "$alternate_format" != "yes" ]; then
@@ -100,10 +100,10 @@ pigz_function(){
         else
             pigz -$pigz_compression "$dest/$dt/$name.tar"
         fi
-    fi  
+    fi
 }
 
-info_function(){
+info_function() {
     if [ $use_pigz == yes ]; then
         if [ "$debug" == "yes" ]; then
             if [ "$alternate_format" != "yes" ]; then
@@ -137,7 +137,7 @@ info_function(){
     fi
 }
 
-discord_function(){
+discord_function() {
     get_ts=$(date -u -Iseconds)
     if [ "$(wc <"$appdata_error" -l)" -ge 1 ]; then
         curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","avatar_url": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png", "embeds": [{"thumbnail": {"url": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-1024.png"}, "title": "Error notificaitons", "fields": [{"name": "Errors:","value": "'"$(jq -Rs '.' "${appdata_error}" | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | Adam & Eve were the first ones to ignore the Apple terms and conditions.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "16711680","timestamp": "'"${get_ts}"'"}]}' "$webhook"
@@ -172,7 +172,7 @@ discord_function(){
     echo -e "\nDiscord notification sent."
 }
 
-container_error_function(){
+container_error_function() {
     if [ "$(docker ps -a -f name="$name" | wc -l)" -ge 2 ]; then
         if [ ! -d "$path" ]; then
             echo -e "Container $name exists but the directory $path does not exist... Skipping" | tee -a "${appdata_error}"
@@ -189,7 +189,7 @@ container_error_function(){
     fi
 }
 
-backup_stop_function(){
+backup_stop_function() {
     echo -e "Stopping and backing up containers..."
     echo -e "----------------------------------------------"
     for ((i = 0; i < ${#list[@]}; i += 2)); do
@@ -227,7 +227,7 @@ backup_stop_function(){
     done
 }
 
-backup_nostop_function(){
+backup_nostop_function() {
     echo -e "Backing up containers without stopping them..."
     echo -e "----------------------------------------------"
     for ((i = 0; i < ${#list_no_stop[@]}; i += 2)); do
@@ -252,7 +252,7 @@ backup_nostop_function(){
     done
 }
 
-backup_no_container_function(){
+backup_no_container_function() {
     echo -e "Backing up directories without containers"
     echo -e "----------------------------------------------"
     for i in "${list_no_container[@]}"; do
@@ -275,14 +275,14 @@ backup_no_container_function(){
     done
 }
 
-cleanup_function(){
+cleanup_function() {
     #Cleanup Old Backups
     echo -e "\nRemoving backups older than " $delete_after "days...\n"
     find "$destination"* -mtime +"$delete_after" -type d -exec rm -rf {} \;
     echo "Done"
 }
 
-runtime_function(){
+runtime_function() {
     end=$(date +%s)
     run_size=$(du -sh "$dest/$dt/" | awk '{print $1}')
     total_time=$((end - start))
@@ -304,15 +304,15 @@ runtime_function(){
         echo -e "Total size of all backups: $total_size"
     fi
 }
-debug_output_function(){
+debug_output_function() {
     echo -e "Script has ended with debug set to ${debug}"
     echo -e "line count for appdata_error.tmp  = $(wc -l <"$appdata_error")"
     echo -e "stop_counter = $(wc -l <"$appdata_stop")"
     echo -e "nostop_counter = $(wc -l <"$appdata_nostop")"
-    echo -e "no_container_counter" = "$(wc -l <"$appdata_no_container")" 
+    echo -e "no_container_counter" = "$(wc -l <"$appdata_no_container")"
 }
 
-clean_files_function(){
+clean_files_function() {
     rm '/tmp/i.am.running.appdata.tmp'
     rm "$appdata_stop"
     rm "$appdata_nostop"
@@ -320,7 +320,7 @@ clean_files_function(){
     rm "$appdata_no_container"
 }
 
-main(){
+main() {
     user_config_function
     if [ ! -d "$dest" ]; then
         echo "Making directory at ${dest}"
@@ -330,7 +330,7 @@ main(){
     if [ ${#list[@]} -ge 1 ]; then
         backup_stop_function
     else
-        echo -e "No containers were stopped and backed up due to list being empty\n" 
+        echo -e "No containers were stopped and backed up due to list being empty\n"
     fi
     if [ ${#list_no_stop[@]} -ge 1 ]; then
         backup_nostop_function

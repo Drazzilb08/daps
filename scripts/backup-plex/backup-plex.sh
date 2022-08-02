@@ -92,10 +92,8 @@ backup_function() {
     if [ "$debug" != yes ]; then
         if [ "$alternate_format" != "yes" ]; then
             if [ "$cf" == false ]; then
-                echo "use me 1"
                 tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup-$now.tar" "$source_basename/Plug-in Support/Databases" "$source_basename/Plug-in Support/Preferences" "$source_basename/Preferences.xml"
             else
-                echo "use me 2"
                 tar --exclude="$source_basename"/Cache --exclude="$source_basename"/Codecs -cf "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" "$source_basename"
             fi
             size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup-$now.tar" | awk '{print $1}')
@@ -105,10 +103,8 @@ backup_function() {
             fi
         else
             if [ "$cf" == false ]; then
-                echo "use me 3"
                 tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup.tar" "Plug-in Support/Databases" "Plug-in Support/Preferences" "Preferences.xml"
             else
-                echo "use me 4"
                 tar --exclude="$source_basename"/Cache --exclude="$source_basename"/Codecs -cf "$dest/Full/$dt/Full_Plex_Data_Backup.tar $source_basename" "$source_basename"
             fi
             size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup.tar" | awk '{print $1}')

@@ -165,7 +165,7 @@ statistics_function() {
         echo -e "Total size of all Full backups: $(du -sh "$dest/Full/" | awk '{print $1}')"
     fi
 }
-unraid_noitification_function() {
+unraid_notification_function() {
     #unRaid notificaitons
     if [ "$full_backup" == "no" ]; then
         if [ "$cf" = false ]; then
@@ -253,7 +253,7 @@ main() {
     end=$(date +%s)
     statistics_function
     if [ "$unraid_notify" == yes ]; then
-        unraid_noitification_function
+        unraid_notification_function
     fi
     if [ "$use_discord" == "yes" ]; then
         discord_function

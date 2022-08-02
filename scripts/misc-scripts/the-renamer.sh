@@ -25,7 +25,7 @@ anime_movies_source='/mnt/user/data/posters/input-anime-movies'
 anime_movies_destination='/mnt/user/appdata/plex-meta-manager/pmm-anime/assets/anime-movies'
 anime_series_source='/mnt/user/data/posters/input-anime-series'
 anime_series_destination='/mnt/user/appdata/plex-meta-manager/pmm-anime/assets/anime-series'
-move_files=no #Move files manually or use the destination folders
+move_files=yes #Move files manually or use the destination folders
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 
@@ -96,10 +96,10 @@ if [ -n "$anime_movies_source" ]; then
     if [ -n "$(ls -A $anime_movies_source)" ]; then
         movies_function "$anime_movies_source" "$anime_movies_destination"
     else
-        echo -e "Movies directory empty. Skipping...\n"
+        echo -e "Anime Movies directory empty. Skipping...\n"
     fi
 else
-    echo -e "Movies directory not set. Skipping...\n"
+    echo -e "Anime Movies directory not set. Skipping...\n"
 fi
 if [ -n "$series_source" ]; then
     if [ -n "$(ls -A $series_source)" ]; then
@@ -114,10 +114,10 @@ if [ -n "$anime_series_source" ]; then
     if [ -n "$(ls -A $anime_series_source)" ]; then
         series_function "$anime_series_source" "$anime_series_destination"
     else
-        echo -e "Series directory empty.\n"
+        echo -e "Anime Series directory empty.\n"
     fi
 else
-    echo -e "Series directory not set.\n"
+    echo -e "Anime Series directory not set.\n"
 fi
 echo -e "\nAll Done\n"
 }

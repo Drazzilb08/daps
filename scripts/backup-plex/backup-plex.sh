@@ -8,7 +8,7 @@
 #  |_|    |_|\___/_/\_\ |____/ \__,_|\___|_|\_\\__,_| .__/  |_____/ \___|_|  |_| .__/ \__|
 #                                                   | |                        | |
 #                                                   |_|                        |_|
-# v2.3.14
+# v2.3.15
 
 # Define where your config file is located
 config_file=''
@@ -84,6 +84,8 @@ script_setup_function() {
     date=$(date)
     # create the backup directory if it doesn't exist - error handling - will not create backup file it path does not exist
     mkdir -p "$dest"
+    cf=false
+    days=$((($(date --date="$date" +%s) - $(date --date="$lastbackup" +%s)) / (60 * 60 * 24)))
 }
 backup_function() {
     # create tar file of essential databases and preferences -- The Plug-in Support preferences will keep settings of any plug-ins, even though they will need to be reinstalled.
@@ -96,10 +98,13 @@ backup_function() {
             else
                 tar --exclude="$source_basename"/Cache --exclude="$source_basename"/Codecs -cf "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" "$source_basename"
             fi
+            echo -e "Backup Complete\n"
             size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup-$now.tar" | awk '{print $1}')
             if [ "$use_pigz" == yes ]; then
+                echo -e "Compressing Backup\n"
                 pigz -$pigz_compression "$dest/$1/$dt/$1_Plex_Data_Backup-$now.tar"
                 size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup-$now.tar.gz" | awk '{print $1}')
+                echo -e "Compression Complete\n"
             fi
         else
             if [ "$cf" == false ]; then
@@ -107,10 +112,13 @@ backup_function() {
             else
                 tar --exclude="$source_basename"/Cache --exclude="$source_basename"/Codecs -cf "$dest/Full/$dt/Full_Plex_Data_Backup.tar $source_basename" "$source_basename"
             fi
+            echo -e "Backup Complete\n"
             size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup.tar" | awk '{print $1}')
             if [ "$use_pigz" == yes ]; then
+                echo -e "Compressing Backup\n"
                 pigz -$pigz_compression "$dest/$1/$dt/$1_Plex_Data_Backup.tar"
                 size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup.tar.gz" | awk '{print $1}')
+                echo -e "Compression Complete\n"
             fi
         fi
     else
@@ -130,18 +138,17 @@ backup_function() {
             fi
         fi
     fi
-    echo -e "Done\n"
 }
 cleanup_function() {
     if [ -d "$destination"/Essential ]; then
         echo -e "Removing Essential backups older than " $delete_after "days... please wait"
-        find "$destination"/Essential* -mtime +"$delete_after" -type d -exec rm -rf {} \;
+        find "$destination"/Essential* -mtime +"$delete_after" -type d -exec rm -vrf {} \;
         echo -e "Done\n"
     fi
     old=$((force_full_backup * keep_full))
     if [ -d "$destination/Full" ]; then
         echo -e "Removing Full backups older than " $old "days... please wait"
-        find "$destination"/Full* -mtime +"$old" -type d -exec rm -rf {} \;
+        find "$destination"/Full* -mtime +"$old" -type d -exec rm -vrf {} \;
         echo -e "Done\n"
     fi
 }
@@ -166,7 +173,6 @@ statistics_function() {
     fi
 }
 unraid_notification_function() {
-    #unRaid notificaitons
     if [ "$full_backup" == "no" ]; then
         if [ "$cf" = false ]; then
             /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Plex Backup" -d "Essential Plex data has been backed up." -i "normal"
@@ -181,6 +187,7 @@ unraid_notification_function() {
         echo -e "Full Backup: $full_size"
     fi
 }
+
 discord_function() {
     get_ts=$(date -u -Iseconds)
     if [ "$full_backup" == "no" ]; then
@@ -218,8 +225,6 @@ main() {
     start=$(date +%s) # start time of script for statistics
     error_handling_function
     script_setup_function
-    cf=false
-    days=$((($(date --date="$date" +%s) - $(date --date="$lastbackup" +%s)) / (60 * 60 * 24)))
     if [ "$full_backup" == "no" ]; then
         # Essential Backup
         backup_function "Essential"

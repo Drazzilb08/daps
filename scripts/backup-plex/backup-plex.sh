@@ -8,7 +8,7 @@
 #  |_|    |_|\___/_/\_\ |____/ \__,_|\___|_|\_\\__,_| .__/  |_____/ \___|_|  |_| .__/ \__|
 #                                                   | |                        | |
 #                                                   |_|                        |_|
-# v2.3.10
+# v2.3.11
 
 # Define where your config file is located
 config_file='backup-plex.conf'
@@ -203,7 +203,7 @@ main() {
     script_setup_function
     if [ "$full_backup" == "no" ]; then
         # Essential Backup
-        backup_function "tar -cf $dest/Essential/$dt/Essential_Plex_Data_Backup-$now.tar Plug-in Support/Databases Plug-in Support/Preferences Preferences.xml" "tar -cf $dest/Essential/$dt/Essential_Plex_Data_Backup.tar Plug-in Support/Databases Plug-in Support/Preferences Preferences.xml" "Essential"
+        backup_function "tar -cf $dest/Essential/$dt/Essential_Plex_Data_Backup-$now.tar "Plug-in Support/Databases" "Plug-in Support/Preferences" Preferences.xml" "tar -cf $dest/Essential/$dt/Essential_Plex_Data_Backup.tar "Plug-in Support/Databases" "Plug-in Support/Preferences" Preferences.xml" "Essential"
         essential_size=$size
         if [ "$force_full_backup" != 0 ]; then
             days=$((($(date --date="$date" +%s) - $(date --date="$lastbackup" +%s)) / (60 * 60 * 24)))

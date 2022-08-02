@@ -8,7 +8,7 @@
 #  |_|    |_|\___/_/\_\ |____/ \__,_|\___|_|\_\\__,_| .__/  |_____/ \___|_|  |_| .__/ \__|
 #                                                   | |                        | |
 #                                                   |_|                        |_|
-# v2.3.11
+# v2.3.12
 
 # Define where your config file is located
 config_file=''
@@ -186,14 +186,15 @@ discord_function() {
     if [ "$full_backup" == "no" ]; then
         if [ "$cf" == false ]; then
             curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Plex Backup","description": "Essential Plex data has been backed up.","fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Essential backup size:"'","value": "'"${essential_size}"'"},{"name": "Total size of all Essential backups:","value": "'"$(du -sh "$dest/Essential/" | awk '{print $1}')"'"},{"name": "Days since last Full backup","value": "'"${days}"'"}],"footer": {"text": "Powered by: Drazzilb | Blunt pencils are really pointless.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
-            echo -e "Discord notification sent.1\n"
-        else
-            curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Plex Backup","description": "Essential & Full Plex data has been backed up.","fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Essential backup size:"'","value": "'"${essential_size}"'"},{"name": "'"This Full Backup:"'","value": "'"${full_size}"'"},{"name": "Total size of all Essential backups:","value": "'"$(du -sh "$dest/Essential/" | awk '{print $1}')"'"},{"name": "'"Total size of all Full backups:"'","value": "'"$(du -sh "$dest/Full/" | awk '{print $1}')"'"},{"name": "Days since last Full backup","value": "'"${days}"'"}],"footer": {"text": "Powered by: Drazzilb | Fighting for peace is like screwing for virginity.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
-            echo -e "Discord notification sent.2\n"
+            echo -e "Discord notification sent.\n"
+            if [ "$force_full_backup" != 0 ]; then
+                curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Plex Backup","description": "Essential & Full Plex data has been backed up.","fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Essential backup size:"'","value": "'"${essential_size}"'"},{"name": "'"This Full Backup:"'","value": "'"${full_size}"'"},{"name": "Total size of all Essential backups:","value": "'"$(du -sh "$dest/Essential/" | awk '{print $1}')"'"},{"name": "'"Total size of all Full backups:"'","value": "'"$(du -sh "$dest/Full/" | awk '{print $1}')"'"},{"name": "Days since last Full backup","value": "'"${days}"'"}],"footer": {"text": "Powered by: Drazzilb | Fighting for peace is like screwing for virginity.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
+                echo -e "Discord notification sent.\n"
+            fi
         fi
     else
         curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "Plex Backup","description": "Full Plex data has been backed up.","fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Full Backup:"'","value": "'"${full_size}"'"},{"name": "'"Total size of all Full backups:"'","value": "'"$(du -sh "$dest/Full/" | awk '{print $1}')"'"},{"name": "Days since last Full backup","value": "'"${days}"'"}],"footer": {"text": "'"Powered by: Drazzilb | I buy all my guns from a guy called T-Rex. He's a small arms dealer."'","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
-        echo -e "Discord notification sent.3\n"
+        echo -e "Discord notification sent.\n"
     fi
 }
 debug_output_function() {
@@ -214,8 +215,8 @@ main() {
     error_handling_function
     script_setup_function
     cf=false
+    days=$((($(date --date="$date" +%s) - $(date --date="$lastbackup" +%s)) / (60 * 60 * 24)))
     if [ "$full_backup" == "no" ]; then
-        days=$((($(date --date="$date" +%s) - $(date --date="$lastbackup" +%s)) / (60 * 60 * 24)))
         # Essential Backup
         backup_function "Essential"
         essential_size=$size
@@ -224,6 +225,7 @@ main() {
             if [[ "$days" -gt $force_full_backup ]] || [[ "$lastbackup" == 0 ]]; then
                 cf=true # True == Full && Essential / cf == create full
                 backup_function "Full"
+                days=0
                 full_size=$size
                 if [ $debug == yes ]; then
                     date >"$cwd"/tmp_last_backup.tmp

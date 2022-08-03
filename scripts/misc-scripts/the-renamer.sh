@@ -67,10 +67,11 @@ if [ "$(find "$1" -regex ".*[^ ]_ .*" | wc -l)" -eq 0 ] && [ "$(find "$1" -regex
     fi
 else
     find "$1" -regex ".*[^ ]_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \;                   #Removing all underscores from string
+    find "$1" -regex ".*[^ ]-  .*" -exec rename -v '- ' '' {} \;
     find "$1" -regex ".* - Specials.*" -exec rename -v " - Specials" "_Season00" {} \;          #Replace " - Speicials" to "_Season00"
     find "$1" -regex ".* [1-9]\.[^.]+$" -exec rename -v " - Season " "_Season0" {} \; | sort -d #Replace " - Season " to "_Season0" for Seasons 1 through 9
 
-    if [ "$(find "$1" -regex "" | wc -l)" -ge 1 ]; then
+    if [ "$(find "$1" -regex ".*[1-9][0-9]\.[^.]+$" | wc -l)" -ge 1 ]; then
         find "$1" -regex ".*[1-9][0-9]\.[^.]+$" -exec rename -v ' - Season ' '_Season' {} \; | sort -d #Find season that are 10 and greater and rename them
     fi
     if [ "$move_files" = "yes" ]; then
@@ -125,4 +126,4 @@ echo -e "\nAll Done\n"
 main
 exit
 #
-# v2.4.2
+# v2.4.3

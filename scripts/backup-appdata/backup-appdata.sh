@@ -8,7 +8,7 @@
 #           | |   | |                                                      | |                        | |
 #           |_|   |_|                                                      |_|                        |_|
 #
-# v2.4.11
+# v2.4.12
 
 # Define where your config file is located
 config_file=''
@@ -30,10 +30,12 @@ user_config_function() {
         exit 1
     fi
 
-    command -v pigz >/dev/null 2>&1 || {
-        echo -e "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore" >&2
-        exit 1
-    }
+    if [ "$use_pigz" == "yes" ]; then
+        command -v pigz >/dev/null 2>&1 || {
+            echo -e "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore" >&2
+            exit 1
+        }
+    fi
 
     if ! [ -f "$exclude_file" ] && [ -n "$exclude_file" ]; then
         echo "You have set the exclude file but it does not exist."

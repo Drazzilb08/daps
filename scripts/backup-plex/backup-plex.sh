@@ -8,13 +8,13 @@
 #  |_|    |_|\___/_/\_\ |____/ \__,_|\___|_|\_\\__,_| .__/  |_____/ \___|_|  |_| .__/ \__|
 #                                                   | |                        | |
 #                                                   |_|                        |_|
-# v2.3.15
+# v2.3.16
 
 # Define where your config file is located
 config_file=''
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
-debug=no # Testing Only
+debug=yes # Testing Only
 # shellcheck source=backup-plex.conf
 error_handling_function() {
     if [ -z "$config_file" ]; then
@@ -35,10 +35,12 @@ error_handling_function() {
         echo "ERROR: You're attempting to use the Discord integration but did not enter the webhook url."
         exit
     fi
-    command -v pigz >/dev/null 2>&1 || {
-        echo -e "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore" >&2
-        exit 1
-    }
+    if [ "$use_pigz" == "yes" ]; then
+        command -v pigz >/dev/null 2>&1 || {
+            echo -e "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore" >&2
+            exit 1
+        }
+    fi
     if [ -e "/tmp/i.am.running.plex.tmp" ]; then
         echo "Another instance of the script is running. Aborting."
         echo "Please use rm /tmp/i.am.running.plex.tmp in your terminal to remove the locking file"
@@ -245,8 +247,9 @@ main() {
                 cf=false # Full backup is within force_full_backup days && last backup != 0
                 echo -e "Last Full backup created $days days ago... skipping\n"
             fi
+        else
+            cf=false
         fi
-        cf=false
     else # full_backup == yes, Creates full backup regardless, no essential backup created
         cf=true
         backup_function "Full"

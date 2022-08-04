@@ -14,7 +14,7 @@
 config_file=''
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
-debug=yes # Testing Only
+debug=no # Testing Only
 # shellcheck source=backup-plex.conf
 error_handling_function() {
     if [ -z "$config_file" ]; then

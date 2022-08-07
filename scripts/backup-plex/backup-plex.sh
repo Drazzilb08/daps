@@ -222,6 +222,7 @@ debug_output_function() {
     echo -e "Webhook: $webhook"
     echo -e "lastbackup: $lastbackup"
     echo -e "basename: $source_basename"
+    echo -e "parrent dir: $parentdir"
 }
 main() {
     start=$(date +%s) # start time of script for statistics

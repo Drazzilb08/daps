@@ -8,7 +8,7 @@
 #  |_|    |_|\___/_/\_\ |____/ \__,_|\___|_|\_\\__,_| .__/  |_____/ \___|_|  |_| .__/ \__|
 #                                                   | |                        | |
 #                                                   |_|                        |_|
-# v2.3.16
+# v2.3.17
 
 # Define where your config file is located
 config_file=''
@@ -110,7 +110,7 @@ backup_function() {
             fi
         else
             if [ "$cf" == false ]; then
-                tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup.tar" "Plug-in Support/Databases" "Plug-in Support/Preferences" "Preferences.xml"
+                tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup.tar" "$source_basename/Plug-in Support/Databases" "$source_basename/Plug-in Support/Preferences" "Preferences.xml"
             else
                 tar --exclude="$source_basename"/Cache --exclude="$source_basename"/Codecs -cf "$dest/Full/$dt/Full_Plex_Data_Backup.tar $source_basename" "$source_basename"
             fi

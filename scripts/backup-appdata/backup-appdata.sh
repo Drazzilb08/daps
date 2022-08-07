@@ -8,7 +8,7 @@
 #           | |   | |                                                      | |                        | |
 #           |_|   |_|                                                      |_|                        |_|
 #
-# v2.4.12
+# v2.4.13
 
 # Define where your config file is located
 config_file=''
@@ -16,15 +16,16 @@ config_file=''
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 debug=no # Testing Only
 # shellcheck source=backup-appdata.conf
-if [ -z "$config_file" ]; then
-    echo -e "Config file location not defined... Looking in root directory..."
-    source "backup-appdata.conf"
-else
-    source "$config_file"
-fi
 
-# Functions
-user_config_function() {
+error_handling_function() {
+    script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+    if [ -z "$config_file" ]; then
+        echo -e "Config file location not defined... Looking in root directory..."
+        source "$script_dir/backup-plex.conf"
+    else
+        source "$config_file"
+    fi
+
     if [ "$use_discord" == "yes" ] && [ -z "$webhook" ]; then
         echo "ERROR: You're attempting to use the Discord integration but did not enter the webhook url."
         exit 1
@@ -333,7 +334,7 @@ global_variables_function() {
     stop_counter=0
     nostop_counter=0
     no_container_counter=0
-    user_config_function
+    error_handling_function
 }
 
 main() {

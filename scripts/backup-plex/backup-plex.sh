@@ -8,7 +8,7 @@
 #  |_|    |_|\___/_/\_\ |____/ \__,_|\___|_|\_\\__,_| .__/  |_____/ \___|_|  |_| .__/ \__|
 #                                                   | |                        | |
 #                                                   |_|                        |_|
-# v2.3.18
+# v2.3.19
 
 # Define where your config file is located
 config_file=''
@@ -17,12 +17,14 @@ config_file=''
 debug=no # Testing Only
 # shellcheck source=backup-plex.conf
 error_handling_function() {
+    script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
     if [ -z "$config_file" ]; then
         echo -e "Config file location not defined... Looking in root directory..."
-        source "backup-plex.conf"
+        source "$script_dir/backup-plex.conf"
     else
         source "$config_file"
     fi
+
     if [ ! -d "$source" ]; then
         echo "ERROR: Your source directory does not exist, please check your configuration"
         exit

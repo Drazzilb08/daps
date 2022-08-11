@@ -38,7 +38,7 @@ if [ "$(find "$1" -regex ".*[^ ] _ [^ ].*" | wc -l)" -eq 0 ] && [ "$(find "$1" -
         mv "$1"/* "$2" 2>/dev/null
         echo -e "Assets moved\n"
     else
-        echo -e "Movies Processed but files were not moved.\n"
+        echo -e "$3 Processed but files were not moved.\n"
     fi
 else
     find "$1" -regex ".*[^ ] _ [^ ].*" -exec rename -v '_ ' '' {} \;
@@ -51,7 +51,7 @@ else
         mv "$1"/* "$2" 2>/dev/null
         echo -e "Assets moved\n"
     else
-        echo -e "Movies Processed but files were not moved.\n"
+        echo -e "$3 Processed but files were not moved.\n"
     fi
 fi
 }
@@ -63,7 +63,7 @@ if [ "$(find "$1" -regex ".*[^ ]_ .*" | wc -l)" -eq 0 ] && [ "$(find "$1" -regex
         echo -e "Moving assets\n"
         mv "$1"/* "$2" 2>/dev/null
     else
-        echo -e "Series Processed but files were not moved.\n"
+        echo -e "$3 Processed but files were not moved.\n"
     fi
 else
     find "$1" -regex ".*[^ ]_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \;                   #Removing all underscores from string
@@ -78,7 +78,7 @@ else
         echo -e "Moving assets\n"
         mv "$1"/* "$2" 2>/dev/null
     else
-        echo -e "Series Processed but files were not moved.\n"
+        echo -e "$3 Processed but files were not moved.\n"
     fi
 fi
 }
@@ -86,7 +86,7 @@ fi
 main () {
 if [ -n "$movies_source" ]; then
     if [ -n "$(ls -A $movies_source)" ]; then
-        movies_function "$movies_source" "$movies_destination"
+        movies_function "$movies_source" "$movies_destination" "Movies"
     else
         echo -e "Movies directory empty. Skipping...\n"
     fi
@@ -95,7 +95,7 @@ else
 fi
 if [ -n "$anime_movies_source" ]; then
     if [ -n "$(ls -A $anime_movies_source)" ]; then
-        movies_function "$anime_movies_source" "$anime_movies_destination"
+        movies_function "$anime_movies_source" "$anime_movies_destination" "Anime Movies"
     else
         echo -e "Anime Movies directory empty. Skipping...\n"
     fi
@@ -104,7 +104,7 @@ else
 fi
 if [ -n "$series_source" ]; then
     if [ -n "$(ls -A $series_source)" ]; then
-        series_function "$series_source" "$series_destination"
+        series_function "$series_source" "$series_destination" "Series"
     else
         echo -e "Series directory empty.\n"
     fi
@@ -113,7 +113,7 @@ else
 fi
 if [ -n "$anime_series_source" ]; then
     if [ -n "$(ls -A $anime_series_source)" ]; then
-        series_function "$anime_series_source" "$anime_series_destination"
+        series_function "$anime_series_source" "$anime_series_destination" "Anime Series"
     else
         echo -e "Anime Series directory empty.\n"
     fi
@@ -126,4 +126,4 @@ echo -e "\nAll Done\n"
 main
 exit
 #
-# v2.4.5
+# v2.4.6

@@ -8,7 +8,7 @@
 #  |_|    |_|\___/_/\_\ |____/ \__,_|\___|_|\_\\__,_| .__/  |_____/ \___|_|  |_| .__/ \__|
 #                                                   | |                        | |
 #                                                   |_|                        |_|
-# v2.3.19
+# v2.3.20
 
 # Define where your config file is located
 config_file=''
@@ -16,12 +16,13 @@ config_file=''
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 debug=no # Testing Only
 # shellcheck source=backup-plex.conf
+script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 error_handling_function() {
-    script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
     if [ -z "$config_file" ]; then
         echo -e "Config file location not defined... Looking in root directory..."
         source "$script_dir/backup-plex.conf"
     else
+        # shellcheck source=/dev/null
         source "$config_file"
     fi
 
@@ -54,12 +55,12 @@ error_handling_function() {
 
 script_setup_function() {
     # Read timestamp of the last full backup, if any
-    cwd=$(pwd)
+
     if [ $debug == "yes" ]; then
-        if [ -f "$cwd"/tmp_last_backup.tmp ]; then
+        if [ -f "$script_dir/tmp_last_backup.tmp" ]; then
             while IFS= read -r line; do
                 lastbackup=$line
-            done <"$cwd"/tmp_last_backup.tmp
+            done <"$script_dir"/tmp_last_backup.tmp
         else
             lastbackup=0
         fi
@@ -225,6 +226,8 @@ debug_output_function() {
     echo -e "lastbackup: $lastbackup"
     echo -e "basename: $source_basename"
     echo -e "parrent dir: $parentdir"
+    echo -e "script dir: $script_dir"
+    echo -e "force_full_backup: $force_full_backup"
 }
 main() {
     start=$(date +%s) # start time of script for statistics
@@ -242,7 +245,7 @@ main() {
                 days=0
                 full_size=$size
                 if [ $debug == yes ]; then
-                    date >"$cwd"/tmp_last_backup.tmp
+                    date >"$script_dir"/tmp_last_backup.tmp
                 else
                     date >/boot/config/plugins/user.scripts/scripts/last_plex_backup
                 fi
@@ -258,7 +261,7 @@ main() {
         backup_function "Full"
         full_size=$size
         if [ $debug == yes ]; then
-            date >"$cwd"/tmp_last_backup.tmp
+            date >"$script_dir"/tmp_last_backup.tmp
         else
             date >/boot/config/plugins/user.scripts/scripts/last_plex_backup
         fi

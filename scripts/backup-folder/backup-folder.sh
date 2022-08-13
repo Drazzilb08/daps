@@ -8,30 +8,34 @@
 #      |____/ \__,_|\___|_|\_\\__,_| .__/  |_|  \___/|_|\__,_|\___|_|
 #                                  | |
 #                                  |_|
-
+# Purpose:
+# The purpose of this script is to backup a defined folder to another folder using tar archiving and pigz compression
+# This can be useful if you have folders that are vital to keep and wish to back them up to another location
+# Eg: I back up my Pictures directory to a backup share, then backup that share offsite so that way I always have at least 3 copies
+# at all times of a particular picture. Backups are deleted at intervals as new ones become available. The offsite backup is kept in sync
+# with the backup share.
+# There are many different ways to achieve this functionality I wrote this to suite my needs.
 #------------- DEFINE VARIABLES -------------#
-name=''                                       # Set your script name, must be unique to any other script.
-source=''                                           # Set source directory
-destination=''                                      # Set backup directory
-delete_after=2                                      # Number of days to keep backup
-use_pigz=yes                                        # Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
-# Pigz package must be installed via NerdPack
+name=''            # Set your script name, must be unique to any other script.
+source=''          # Set source directory
+destination=''     # Set backup directory
+delete_after=2     # Number of days to keep backup
+use_pigz=yes       # Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
 pigz_compression=9 # Define compression level to use with pigz
 # 0 = No compression
 # 1 = Least compression/Fastest
 # 6 = Default compression/Default Speed
 # 9 = Maximum Compression/Slowest
-unraid_notify=yes # Use unRAID's built in notification system
-alternate_format=no   #This option will remove the time from the file and move it over to the directory structure.
-                        #Yes = /path/to/source/yyyy-mm-dd@00.01_AM/<container_name>.tar.gz
-                        #No = /path/to/source/yyyy-mm-dd/<container_name>-12_01_AM.tar.gz
+unraid_notify=yes   # Use unRAID's built in notification system
+alternate_format=no #This option will remove the time from the file and move it over to the directory structure.
+#Yes = /path/to/source/yyyy-mm-dd@00.01_AM/<container_name>.tar.gz
+#No = /path/to/source/yyyy-mm-dd/<container_name>-12_01_AM.tar.gz
 #------------- DEFINE DISCORD VARIABLES -------------#
 # This section is not required
-
-use_discord=yes                                                                                                                    # Use discord for notifications
-webhook='' # Discord webhook
-bot_name='Notification Bot'                                                                                                        # Name your bot
-bar_color='3036236'                                                                                                                # The bar color for discord notifications, must be decimal -> https://www.mathsisfun.com/hexadecimal-decimal-colors.html
+use_discord=yes             # Use discord for notifications
+webhook=''                  # Discord webhook
+bot_name='Notification Bot' # Name your bot
+bar_color='15048717'        # The bar color for discord notifications, must be Decimal code                                                                                                        # The bar color for discord notifications, must be decimal -> https://www.mathsisfun.com/hexadecimal-decimal-colors.html
 
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 # Will not run again if currently running.
@@ -48,10 +52,10 @@ if [ "$use_discord" == "yes" ] && [ -z "$webhook" ]; then
     exit 1
 fi
 
-command -v pigz >/dev/null 2>&1 || { 
-    echo -e >&2 "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore"; 
-    exit 1; 
-    }
+command -v pigz >/dev/null 2>&1 || {
+    echo -e "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore" >&2
+    exit 1
+}
 
 if [ -e "/tmp/i.am.running.${name}.tmp" ]; then
     echo "Another instance of the script is running. Aborting."
@@ -102,9 +106,8 @@ chmod -R 777 "$dest"
 
 #Cleanup Old Backups
 echo -e "\nRemoving backups older than " $delete_after "days...\n"
-find "$destination"* -mtime +$delete_after -delete -print
+find "$destination"* -mtime +"$delete_after" -type d -exec rm -rf {} \;
 echo "Done"
-
 
 end=$(date +%s)
 # Runtime
@@ -142,4 +145,4 @@ echo -e '\nAll Done!\n'
 rm "/tmp/i.am.running.${name}.tmp"
 exit 0
 #
-# v1.2.6
+# v1.2.8

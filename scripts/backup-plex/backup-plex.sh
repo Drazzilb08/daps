@@ -8,7 +8,7 @@
 #  |_|    |_|\___/_/\_\ |____/ \__,_|\___|_|\_\\__,_| .__/  |_____/ \___|_|  |_| .__/ \__|
 #                                                   | |                        | |
 #                                                   |_|                        |_|
-# v2.3.20
+# v2.3.21
 
 # Define where your config file is located
 config_file=''
@@ -86,11 +86,13 @@ script_setup_function() {
         dt=$(date +"%Y-%m-%d")
         now=$(date +"%H.%M")
     fi
-    date=$(date)
+    # date=$(date)
+    date=$(date +"%m/%d/%y")
     # create the backup directory if it doesn't exist - error handling - will not create backup file it path does not exist
     mkdir -p "$dest"
     cf=false
     days=$((($(date --date="$date" +%s) - $(date --date="$lastbackup" +%s)) / (60 * 60 * 24)))
+
 }
 backup_function() {
     # create tar file of essential databases and preferences -- The Plug-in Support preferences will keep settings of any plug-ins, even though they will need to be reinstalled.

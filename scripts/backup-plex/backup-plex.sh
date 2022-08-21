@@ -8,7 +8,7 @@
 #  |_|    |_|\___/_/\_\ |____/ \__,_|\___|_|\_\\__,_| .__/  |_____/ \___|_|  |_| .__/ \__|
 #                                                   | |                        | |
 #                                                   |_|                        |_|
-# v2.3.19
+# v2.3.20
 
 # Define where your config file is located
 config_file=''
@@ -236,7 +236,7 @@ main() {
         essential_size=$size
         if [ "$force_full_backup" != 0 ]; then
             # If days is greater than force full backup time OR  last backup hasn't happened
-            if [[ "$days" -gt $force_full_backup ]] || [[ "$lastbackup" == 0 ]]; then
+            if [[ "$days" -ge $force_full_backup ]] || [[ "$lastbackup" == 0 ]]; then
                 cf=true # True == Full && Essential / cf == create full
                 backup_function "Full"
                 days=0

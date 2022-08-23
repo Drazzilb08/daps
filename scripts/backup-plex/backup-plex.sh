@@ -8,7 +8,7 @@
 #  |_|    |_|\___/_/\_\ |____/ \__,_|\___|_|\_\\__,_| .__/  |_____/ \___|_|  |_| .__/ \__|
 #                                                   | |                        | |
 #                                                   |_|                        |_|
-# v2.3.21
+# v2.3.22
 
 # Define where your config file is located
 config_file=''
@@ -86,12 +86,11 @@ script_setup_function() {
         dt=$(date +"%Y-%m-%d")
         now=$(date +"%H.%M")
     fi
-    # date=$(date)
-    date=$(date +"%m/%d/%y")
+    current_date=$(date +"%m/%d/%y")
     # create the backup directory if it doesn't exist - error handling - will not create backup file it path does not exist
     mkdir -p "$dest"
     cf=false
-    days=$((($(date --date="$date" +%s) - $(date --date="$lastbackup" +%s)) / (60 * 60 * 24)))
+    days=$((($(date --date="$current_date" +%s) - $(date --date="$lastbackup" +%s)) / (60 * 60 * 24)))
 
 }
 backup_function() {
@@ -247,9 +246,9 @@ main() {
                 days=0
                 full_size=$size
                 if [ $debug == yes ]; then
-                    date >"$script_dir"/tmp_last_backup.tmp
+                    echo "$current_date" > "$script_dir"/tmp_last_backup.tmp
                 else
-                    date >/boot/config/plugins/user.scripts/scripts/last_plex_backup
+                    echo "$current_date" > /boot/config/plugins/user.scripts/scripts/last_plex_backup
                 fi
             else
                 cf=false # Full backup is within force_full_backup days && last backup != 0
@@ -263,9 +262,9 @@ main() {
         backup_function "Full"
         full_size=$size
         if [ $debug == yes ]; then
-            date >"$script_dir"/tmp_last_backup.tmp
+            echo "$current_date" > "$script_dir"/tmp_last_backup.tmp
         else
-            date >/boot/config/plugins/user.scripts/scripts/last_plex_backup
+            echo "$current_date" > /boot/config/plugins/user.scripts/scripts/last_plex_backup
         fi
         days=0
     fi

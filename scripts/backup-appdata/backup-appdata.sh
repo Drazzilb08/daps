@@ -8,7 +8,7 @@
 #           | |   | |                                                      | |                        | |
 #           |_|   |_|                                                      |_|                        |_|
 #
-# v2.4.13
+# v2.4.14
 
 # Define where your config file is located
 config_file=''
@@ -21,7 +21,7 @@ error_handling_function() {
     script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
     if [ -z "$config_file" ]; then
         echo -e "Config file location not defined... Looking in root directory..."
-        source "$script_dir/backup-plex.conf"
+        source "$script_dir/backup-appdata.conf"
     else
         source "$config_file"
     fi

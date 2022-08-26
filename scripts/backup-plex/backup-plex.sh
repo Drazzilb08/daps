@@ -16,7 +16,7 @@ config_file=''
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 debug=no # Testing Only
 # shellcheck source=backup-plex.conf
-script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 error_handling_function() {
     if [ -z "$config_file" ]; then
         echo -e "Config file location not defined... Looking in root directory..."
@@ -246,9 +246,9 @@ main() {
                 days=0
                 full_size=$size
                 if [ $debug == yes ]; then
-                    echo "$current_date" > "$script_dir"/tmp_last_backup.tmp
+                    echo "$current_date" >"$script_dir"/tmp_last_backup.tmp
                 else
-                    echo "$current_date" > /boot/config/plugins/user.scripts/scripts/last_plex_backup
+                    echo "$current_date" >/boot/config/plugins/user.scripts/scripts/last_plex_backup
                 fi
             else
                 cf=false # Full backup is within force_full_backup days && last backup != 0
@@ -262,9 +262,9 @@ main() {
         backup_function "Full"
         full_size=$size
         if [ $debug == yes ]; then
-            echo "$current_date" > "$script_dir"/tmp_last_backup.tmp
+            echo "$current_date" >"$script_dir"/tmp_last_backup.tmp
         else
-            echo "$current_date" > /boot/config/plugins/user.scripts/scripts/last_plex_backup
+            echo "$current_date" >/boot/config/plugins/user.scripts/scripts/last_plex_backup
         fi
         days=0
     fi

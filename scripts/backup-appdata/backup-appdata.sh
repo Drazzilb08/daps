@@ -8,7 +8,7 @@
 #           | |   | |                                                      | |                        | |
 #           |_|   |_|                                                      |_|                        |_|
 #
-# v2.4.14
+# v2.4.15
 
 # Define where your config file is located
 config_file=''
@@ -16,13 +16,13 @@ config_file=''
 #------------- DO NOT MODIFY BELOW THIS LINE -------------#
 debug=no # Testing Only
 # shellcheck source=backup-appdata.conf
-
+script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
 error_handling_function() {
-    script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
     if [ -z "$config_file" ]; then
         echo -e "Config file location not defined... Looking in root directory..."
         source "$script_dir/backup-appdata.conf"
     else
+        # shellcheck source=/dev/null
         source "$config_file"
     fi
 
@@ -306,6 +306,8 @@ debug_output_function() {
     echo -e "stop_counter = $(wc -l <"$appdata_stop")"
     echo -e "nostop_counter = $(wc -l <"$appdata_nostop")"
     echo -e "no_container_counter" = "$(wc -l <"$appdata_no_container")"
+    echo -e "Source = $appdata"
+    echo -e "Destination = $destination"
 }
 
 clean_files_function() {
@@ -334,10 +336,10 @@ global_variables_function() {
     stop_counter=0
     nostop_counter=0
     no_container_counter=0
-    error_handling_function
 }
 
 main() {
+    error_handling_function
     global_variables_function
     if [ ! -d "$dest" ]; then
         echo "Making directory at ${dest}"

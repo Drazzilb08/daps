@@ -8,6 +8,12 @@ However, on unRAID simply ensure you have `UserScripts` installed from the appst
 > Note: Most backup scripts use PIGZ for compression <br>
 > If you'd like to use pigz you'll need to download it using NerdPack, which is also in the appstore
 
+Nerdpack has been [depreciated](https://forums.unraid.net/topic/35866-unraid-6-nerdpack-cli-tools-iftop-iotop-screen-kbd-etc/?do=findComment&comment=1159381):
+
+Alternativly you can install nerdpack manually using this link 
+<br>
+`https://raw.githubusercontent.com/dmacias72/unRAID-NerdPack/master/plugin/NerdPack.plg`
+
 ## Updating
 
 Simply copy from the new script from <br>

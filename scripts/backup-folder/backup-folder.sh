@@ -19,7 +19,7 @@
 name=''            # Set your script name, must be unique to any other script.
 source=''          # Set source directory
 destination=''     # Set backup directory
-delete_after=2     # Number of days to keep backup
+keep_backup=2     # Number of backups to keep 
 use_pigz=yes       # Use pigz to further compress your backup (yes) will use pigz to further compress, (no) will not use pigz
 pigz_compression=9 # Define compression level to use with pigz
 # 0 = No compression
@@ -105,8 +105,12 @@ sleep 2
 chmod -R 777 "$dest"
 
 #Cleanup Old Backups
-echo -e "\nRemoving backups older than " $delete_after "days...\n"
-find "$destination"* -mtime +"$delete_after" -type d -exec rm -rf {} \;
+cd "$destination" || exit
+# echo -e "\nRemoving backups older than " "$delete_after" "days...\n"
+# find "$destination"* -mtime +"$delete_after" -type d -exec rm -rf {} \;
+echo -e "Removing all but the last " $keep_backup "backups... please wait"
+ls -1tr | head -n -$keep_backup | xargs -d '\n' rm -Rfd --
+
 echo "Done"
 
 end=$(date +%s)
@@ -145,4 +149,4 @@ echo -e '\nAll Done!\n'
 rm "/tmp/i.am.running.${name}.tmp"
 exit 0
 #
-# v1.2.8
+# v1.3.8

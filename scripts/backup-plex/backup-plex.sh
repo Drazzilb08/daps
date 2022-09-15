@@ -8,7 +8,7 @@
 #  |_|    |_|\___/_/\_\ |____/ \__,_|\___|_|\_\\__,_| .__/  |_____/ \___|_|  |_| .__/ \__|
 #                                                   | |                        | |
 #                                                   |_|                        |_|
-# v2.3.22
+# v2.4.22
 
 # Define where your config file is located
 config_file=''
@@ -147,14 +147,20 @@ backup_function() {
 }
 cleanup_function() {
     if [ -d "$destination"/Essential ]; then
-        echo -e "Removing Essential backups older than " $delete_after "days... please wait"
-        find "$destination"/Essential* -mtime +"$delete_after" -type d -exec rm -vrf {} \;
+        # echo -e "Removing Essential backups older than " $delete_after "days... please wait"
+        # find "$destination"/Essential* -mtime +"$delete_after" -type d -exec rm -vrf {} \;
+        cd "$destination"/Essential || exit
+        echo -e "Removing all but the last " $keep_essential "essential backups... please wait"
+        ls -1tr | head -n -"$keep_essential" | xargs -d '\n' rm -Rfd --
         echo -e "Done\n"
     fi
-    old=$((force_full_backup * keep_full))
+    # old=$((force_full_backup * keep_full))
     if [ -d "$destination/Full" ]; then
-        echo -e "Removing Full backups older than " $old "days... please wait"
-        find "$destination"/Full* -mtime +"$old" -type d -exec rm -vrf {} \;
+        # echo -e "Removing Full backups older than " $old "days... please wait"
+        # find "$destination"/Full* -mtime +"$old" -type d -exec rm -vrf {} \;
+        cd "$destination"/Full || exit
+        echo -e "Removing all but the last " $keep_full "full backups... please wait"
+        ls -1tr | head -n -$keep_full | xargs -d '\n' rm -Rfd --
         echo -e "Done\n"
     fi
 }

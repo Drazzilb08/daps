@@ -8,7 +8,7 @@
 #           | |   | |                                                      | |                        | |
 #           |_|   |_|                                                      |_|                        |_|
 #
-# v2.4.15
+# v2.5.15
 
 # Define where your config file is located
 config_file=''
@@ -266,8 +266,12 @@ backup_no_container_function() {
 
 cleanup_function() {
     #Cleanup Old Backups
-    echo -e "\nRemoving backups older than " $delete_after "days...\n"
-    find "$destination"* -mtime +"$delete_after" -type d -exec rm -rf {} \;
+    # echo -e "\nRemoving backups older than " $delete_after "days...\n"
+    # find "$destination"* -mtime +"$delete_after" -type d -exec rm -rf {} \;
+    cd "$destination" || exit
+    echo -e "Removing all but the last " $keep_backup "backups... please wait"
+    ls -1tr | head -n -$keep_backup | xargs -d '\n' rm -rfd --
+
     echo "Done"
 }
 

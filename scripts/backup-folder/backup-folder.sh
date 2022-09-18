@@ -137,10 +137,10 @@ fi
 
 # Notifications
 if [ "$unraid_notify" == "yes" ]; then
-    get_ts=$(date -u -Iseconds)
     /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "${name} Backup" -d "Backup completed: ${name} data has been backed up." -i "normal"
 fi
 if [ "$use_discord" == "yes" ]; then
+    get_ts=$(date -u -Iseconds)
     curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","embeds": [{"title": "'"${name} Backup Complete"'","description": "'"Backup completed: ${name} data has been backed up."'","fields": [{"name": "Runtime:","value": "'"${run_output}"'"},{"name": "'"This Backup's size:"'","value": "'"${run_size}"'"},{"name": "Total size of all backups:","value": "'"${total_size}"'"}],"footer": {"text": "Powered by: Drazzilb | What if there were no hypothetical questions?","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "'"${bar_color}"'","timestamp": "'"${get_ts}"'"}]}' "$webhook"
     echo -e "\nDiscord notification sent."
 fi

@@ -129,7 +129,7 @@ info_function() {
 discord_function() {
     get_ts=$(date -u -Iseconds)
     if [ "$(wc <"$appdata_error" -l)" -ge 1 ]; then
-        curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","avatar_url": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png", "embeds": [{"thumbnail": {"url": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-1024.png"}, "title": "Error notificaitons", "fields": [{"name": "Errors:","value": "'"$(jq -Rs '.' "${appdata_error}" | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | Adam & Eve were the first ones to ignore the Apple terms and conditions.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "16711680","timestamp": "'"${get_ts}"'"}]}' "$webhook"
+        curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","avatar_url": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png", "embeds": [{"thumbnail": {"url": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-1024.png"}, "title": "Error notifications", "fields": [{"name": "Errors:","value": "'"$(jq -Rs '.' "${appdata_error}" | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | Adam & Eve were the first ones to ignore the Apple terms and conditions.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "16711680","timestamp": "'"${get_ts}"'"}]}' "$webhook"
         echo -e "\nDiscord error notification sent."
     fi
     if [ "$use_summary" == "yes" ]; then

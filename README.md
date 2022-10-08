@@ -5,7 +5,7 @@ Collection of unRAID userscripts
 Note: 
  - if you're using my backup scripts and update to 6.11.1 of unraid, the script will be broken. This is due to Pigz not being a package for slackware 15.  I'll be updating my scripts on the repo over the next couple of days/week. 
  - If you do not use pigz for your backup compression with the script then pay no attention to this as the script will still work.
- - I'll be using rar for the new compression mechanic
+ - I'll be using 7zip for the new compression mechanic
  - NerdPack is obsolete and will no longer work with unraid 6.11.1 the new package manager is NerdTools which can be found in the app store.
 
 Cheers.

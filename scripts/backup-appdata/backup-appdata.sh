@@ -8,7 +8,7 @@
 #           | |   | |                                                      | |                        | |
 #           |_|   |_|                                                      |_|                        |_|
 #
-# v2.5.15
+# v3.5.15
 
 # Define where your config file is located
 config_file=''
@@ -31,9 +31,9 @@ error_handling_function() {
         exit 1
     fi
 
-    if [ "$use_pigz" == "yes" ]; then
-        command -v pigz >/dev/null 2>&1 || {
-            echo -e "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore" >&2
+    if [ "$compress" == "yes" ]; then
+        command -v 7z >/dev/null 2>&1 || {
+            echo -e "7Zip is not installed.\nPlease install 7Zip and rerun.\nIf on unRaid, 7Zip can be found through the NerdTools which is found in the appstore" >&2
             exit 1
         }
     fi
@@ -52,59 +52,70 @@ error_handling_function() {
     fi
 }
 backup_function() {
-    if [ "$debug" == "yes" ]; then
-        if [ "$alternate_format" != "yes" ]; then
-            tar -cf "$dest/$dt/$name-$now-debug.tar" -T /dev/null
-        else
-            tar -cf "$dest/$dt/$name-debug.tar" -T /dev/null
-        fi
-    else
-        if [ "$alternate_format" != "yes" ]; then
-            if [ -n "$exclude_file" ]; then
-                tar cWfC "$dest/$dt/$name-$now.tar" "$(dirname "$path")" -X "$exclude_file" "$(basename "$path")"
+    if [ "$compress" == "yes" ]; then
+        echo -e "Compressing $name..."
+        if [ "$debug" == "yes" ]; then
+            if [ "$alternate_format" != "yes" ]; then
+                7z a "$dest/$dt/$name-$now-debug.7z" "$path"
             else
-                tar cWfC "$dest/$dt/$name-$now.tar" "$(dirname "$path")" "$(basename "$path")"
+                7z a "$dest/$dt/$name-debug.7z" "$path"
             fi
         else
-            if [ -n "$exclude_file" ]; then
-                tar cWfC "$dest/$dt/$name.tar" "$(dirname "$path")" -X "$exclude_file" "$(basename "$path")"
+            if [ "$alternate_format" != "yes" ]; then
+                if [ -n "$exclude_file" ]; then
+                    7z a "$dest/$dt/$name-$now.7z" -xr@"$exclude_file" "$path" -m0=lzma2 -mx=9 -aoa
+                else
+                    7z a "$dest/$dt/$name-$now.7z" "$path" -m0=lzma2 -mx=9 -aoa
+                fi
             else
-                tar cWfC "$dest/$dt/$name.tar" "$(dirname "$path")" "$(basename "$path")"
+                if [ -n "$exclude_file" ]; then
+                    7z a "$dest/$dt/$name.7z" -xr@"$exclude_file" "$path" -m0=lzma2 -mx=9 -aoa
+                else
+                    7z a "$dest/$dt/$name.7z" "$path" -m0=lzma2 -mx=9 -aoa
+                fi
             fi
         fi
-    fi
-}
-
-pigz_function() {
-    echo -e "Compressing $name..."
-    if [ "$debug" == "yes" ]; then
-        if [ "$alternate_format" != "yes" ]; then
-            pigz -$pigz_compression "$dest/$dt/$name-$now-debug.tar"
-        else
-            pigz -$pigz_compression "$dest/$dt/$name-debug.tar"
-        fi
+        echo -e "Compression of $name complete"
     else
-        if [ "$alternate_format" != "yes" ]; then
-            pigz -$pigz_compression "$dest/$dt/$name-$now.tar"
+        echo -e "Archiving $name"
+        if [ "$debug" == "yes" ]; then
+            if [ "$alternate_format" != "yes" ]; then
+                tar -cf "$dest/$dt/$name-$now-debug.tar" -T /dev/null
+            else
+                tar -cf "$dest/$dt/$name-debug.tar" -T /dev/null
+            fi
         else
-            pigz -$pigz_compression "$dest/$dt/$name.tar"
+            if [ "$alternate_format" != "yes" ]; then
+                if [ -n "$exclude_file" ]; then
+                    tar cWfC "$dest/$dt/$name-$now.tar" "$(dirname "$path")" -X "$exclude_file" "$(basename "$path")"
+                else
+                    tar cWfC "$dest/$dt/$name-$now.tar" "$(dirname "$path")" "$(basename "$path")"
+                fi
+            else
+                if [ -n "$exclude_file" ]; then
+                    tar cWfC "$dest/$dt/$name.tar" "$(dirname "$path")" -X "$exclude_file" "$(basename "$path")"
+                else
+                    tar cWfC "$dest/$dt/$name.tar" "$(dirname "$path")" "$(basename "$path")"
+                fi
+            fi
         fi
+        echo -e "Archiving $name complete"
     fi
 }
 
 info_function() {
-    if [ $use_pigz == yes ]; then
+    if [ "$compress" == yes ]; then
         if [ "$debug" == "yes" ]; then
             if [ "$alternate_format" != "yes" ]; then
-                container_size=$(du -sh "$dest/$dt/$name-$now-debug.tar.gz" | awk '{print $1}')
+                container_size=$(du -sh "$dest/$dt/$name-$now-debug.7z" | awk '{print $1}')
             else
-                container_size=$(du -sh "$dest/$dt/$name-debug.tar.gz" | awk '{print $1}')
+                container_size=$(du -sh "$dest/$dt/$name-debug.7z" | awk '{print $1}')
             fi
         else
             if [ "$alternate_format" != "yes" ]; then
-                container_size=$(du -sh "$dest/$dt/$name-$now.tar.gz" | awk '{print $1}')
+                container_size=$(du -sh "$dest/$dt/$name-$now.7z" | awk '{print $1}')
             else
-                container_size=$(du -sh "$dest/$dt/$name.tar.gz" | awk '{print $1}')
+                container_size=$(du -sh "$dest/$dt/$name.7z" | awk '{print $1}')
             fi
         fi
         echo "Container: $name Size: $container_size" | tee -a "$1"
@@ -129,7 +140,7 @@ info_function() {
 discord_function() {
     get_ts=$(date -u -Iseconds)
     if [ "$(wc <"$appdata_error" -l)" -ge 1 ]; then
-        curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","avatar_url": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png", "embeds": [{"thumbnail": {"url": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-1024.png"}, "title": "Error notifications", "fields": [{"name": "Errors:","value": "'"$(jq -Rs '.' "${appdata_error}" | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | Adam & Eve were the first ones to ignore the Apple terms and conditions.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "16711680","timestamp": "'"${get_ts}"'"}]}' "$webhook"
+        curl -s -H "Content-Type: application/json" -X POST -d '{"username": "'"${bot_name}"'","avatar_url": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-128.png", "embeds": [{"thumbnail": {"url": "https://cdn0.iconfinder.com/data/icons/shift-free/32/Error-1024.png"}, "title": "Error notificaitons", "fields": [{"name": "Errors:","value": "'"$(jq -Rs '.' "${appdata_error}" | cut -c 2- | rev | cut -c 2- | rev)"'"}],"footer": {"text": "Powered by: Drazzilb | Adam & Eve were the first ones to ignore the Apple terms and conditions.","icon_url": "https://i.imgur.com/r69iYhr.png"},"color": "16711680","timestamp": "'"${get_ts}"'"}]}' "$webhook"
         echo -e "\nDiscord error notification sent."
     fi
     if [ "$use_summary" == "yes" ]; then
@@ -194,18 +205,13 @@ backup_stop_function() {
             if [ "$debug" != "yes" ]; then
                 docker stop -t 60 "$name" >/dev/null 2>&1
             fi
-            echo -e "Creating backup of $name"
             backup_function
             echo -e "Starting $name"
             docker start "$name" >/dev/null 2>&1
         else
             echo -e "$name is already stopped"
-            echo -e "Creating backup of $name"
             backup_function
             echo -e "$name was stopped before backup, ignoring startup"
-        fi
-        if [ $use_pigz == yes ]; then
-            pigz_function
         fi
         info_function "$appdata_stop"
         stop_counter=$((stop_counter + 1))
@@ -226,11 +232,7 @@ backup_nostop_function() {
             echo -e "----------------------------------------------"
             continue
         fi
-        echo -e "Creating backup of $name"
         backup_function
-        if [ $use_pigz == yes ]; then
-            pigz_function
-        fi
         echo "Finished backup for $name"
         info_function "$appdata_nostop"
         nostop_counter=$((nostop_counter + 1))
@@ -251,11 +253,7 @@ backup_no_container_function() {
             echo -e "Path name $path does not exist... Skipping" | tee -a "$appdata_error"
             continue
         fi
-        echo -e "Creating backup of $name"
         backup_function
-        if [ $use_pigz == yes ]; then
-            pigz_function
-        fi
         no_container_counter=$((no_container_counter + 1))
         echo "Finished backup for $name"
         # Information Gathering
@@ -265,9 +263,6 @@ backup_no_container_function() {
 }
 
 cleanup_function() {
-    #Cleanup Old Backups
-    # echo -e "\nRemoving backups older than " $delete_after "days...\n"
-    # find "$destination"* -mtime +"$delete_after" -type d -exec rm -rf {} \;
     cd "$destination" || exit
     echo -e "Removing all but the last " $keep_backup "backups... please wait"
     ls -1tr | head -n -$keep_backup | xargs -d '\n' rm -rfd --

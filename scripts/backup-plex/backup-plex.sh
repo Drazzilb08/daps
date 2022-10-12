@@ -8,7 +8,7 @@
 #  |_|    |_|\___/_/\_\ |____/ \__,_|\___|_|\_\\__,_| .__/  |_____/ \___|_|  |_| .__/ \__|
 #                                                   | |                        | |
 #                                                   |_|                        |_|
-# v2.4.22
+# v3.4.22
 
 # Define where your config file is located
 config_file=''
@@ -38,9 +38,9 @@ error_handling_function() {
         echo "ERROR: You're attempting to use the Discord integration but did not enter the webhook url."
         exit
     fi
-    if [ "$use_pigz" == "yes" ]; then
-        command -v pigz >/dev/null 2>&1 || {
-            echo -e "pigz is not installed.\nPlease install pigz and rerun.\nIf on unRaid, pigz can be found through the NerdPack which is found in the appstore" >&2
+    if [ "$compress" == "yes" ]; then
+        command -v 7z >/dev/null 2>&1 || {
+            echo -e "7Zip is not installed.\nPlease install 7Zip and rerun.\nIf on unRaid, 7Zip can be found through the NerdTools which is found in the appstore" >&2
             exit 1
         }
     fi
@@ -97,50 +97,60 @@ backup_function() {
     # create tar file of essential databases and preferences -- The Plug-in Support preferences will keep settings of any plug-ins, even though they will need to be reinstalled.
     echo -e "Creating $1 backup... please wait"
     mkdir -p "$dest/$1/$dt"
-    if [ "$debug" != yes ]; then
-        if [ "$alternate_format" != "yes" ]; then
-            if [ "$cf" == false ]; then
-                tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup-$now.tar" "$source_basename/Plug-in Support/Databases" "$source_basename/Plug-in Support/Preferences" "$source_basename/Preferences.xml"
+    if [ "$compress" == "yes" ]; then
+        if [ "$debug" != yes ]; then
+            if [ "$alternate_format" != "yes" ]; then
+                if [ "$cf" == false ]; then
+                    7z a "$dest/Essential/$dt/Essential_Plex_Data_Backup-$now.7z" "$source_basename/Plug-in Support/Databases" "$source_basename/Plug-in Support/Preferences" "$source_basename/Preferences.xml" -m0=lzma2 -mx=9 -aoa
+                else
+                    7z a "$dest/Full/$dt/Full_Plex_Data_Backup-$now.7z" -xr!"$source_basename"/Cache -xr!"$source_basename"/Codecs "$source_basename" -m0=lzma2 -mx=9 -aoa
+                fi
+                echo -e "Backup Complete\n"
+                size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup-$now.7z" | awk '{print $1}')
             else
-                tar --exclude="$source_basename"/Cache --exclude="$source_basename"/Codecs -cf "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" "$source_basename"
-            fi
-            echo -e "Backup Complete\n"
-            size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup-$now.tar" | awk '{print $1}')
-            if [ "$use_pigz" == yes ]; then
-                echo -e "Compressing Backup\n"
-                pigz -$pigz_compression "$dest/$1/$dt/$1_Plex_Data_Backup-$now.tar"
-                size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup-$now.tar.gz" | awk '{print $1}')
-                echo -e "Compression Complete\n"
+                if [ "$cf" == false ]; then
+                    7z a "$dest/Essential/$dt/Essential_Plex_Data_Backup.7z" "$source_basename/Plug-in Support/Databases" "$source_basename/Plug-in Support/Preferences" "$source_basename/Preferences.xml" -m0=lzma2 -mx=9 -aoa
+                else
+                    7z a "$dest/Full/$dt/Full_Plex_Data_Backup.7z" -xr!"$source_basename"/Cache -xr!"$source_basename"/Codecs "$source_basename" -m0=lzma2 -mx=9 -aoa
+                fi
+                echo -e "Backup Complete\n"
+                size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup.7z" | awk '{print $1}')
             fi
         else
-            if [ "$cf" == false ]; then
-                tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup.tar" "$source_basename/Plug-in Support/Databases" "$source_basename/Plug-in Support/Preferences" "$source_basename/Preferences.xml"
+            if [ "$alternate_format" != "yes" ]; then
+                tar -cf "$dest/$1/$dt/$1_Plex_Data_Backup-debug0-$now.tar" -T /dev/null
+                size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup-debug0-$now.tar" | awk '{print $1}')
             else
-                tar --exclude="$source_basename"/Cache --exclude="$source_basename"/Codecs -cf "$dest/Full/$dt/Full_Plex_Data_Backup.tar" "$source_basename"
-            fi
-            echo -e "Backup Complete\n"
-            size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup.tar" | awk '{print $1}')
-            if [ "$use_pigz" == yes ]; then
-                echo -e "Compressing Backup\n"
-                pigz -$pigz_compression "$dest/$1/$dt/$1_Plex_Data_Backup.tar"
-                size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup.tar.gz" | awk '{print $1}')
-                echo -e "Compression Complete\n"
+                tar -cf "$dest/$1/$dt/$1_Plex_Data_Backup-debug0.tar" -T /dev/null
+                size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup-debug0.tar" | awk '{print $1}')
             fi
         fi
     else
-        if [ "$alternate_format" != "yes" ]; then
-            tar -cf "$dest/$1/$dt/$1_Plex_Data_Backup-debug0-$now.tar" -T /dev/null
-            size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup-debug0-$now.tar" | awk '{print $1}')
-            if [ "$use_pigz" == yes ]; then
-                pigz -$pigz_compression "$dest/$1/$dt/$1_Plex_Data_Backup-debug0-$now.tar"
-                size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup-debug0-$now.tar.gz" | awk '{print $1}')
+        if [ "$debug" != yes ]; then
+            if [ "$alternate_format" != "yes" ]; then
+                if [ "$cf" == false ]; then
+                    tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup-$now.tar" "$source_basename/Plug-in Support/Databases" "$source_basename/Plug-in Support/Preferences" "$source_basename/Preferences.xml"
+                else
+                    tar --exclude="$source_basename"/Cache --exclude="$source_basename"/Codecs -cf "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar" "$source_basename"
+                fi
+                echo -e "Backup Complete\n"
+                size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup-$now.tar" | awk '{print $1}')
+            else
+                if [ "$cf" == false ]; then
+                    tar -cf "$dest/Essential/$dt/Essential_Plex_Data_Backup.tar" "$source_basename/Plug-in Support/Databases" "$source_basename/Plug-in Support/Preferences" "$source_basename/Preferences.xml"
+                else
+                    tar --exclude="$source_basename"/Cache --exclude="$source_basename"/Codecs -cf "$dest/Full/$dt/Full_Plex_Data_Backup.tar" "$source_basename"
+                fi
+                echo -e "Backup Complete\n"
+                size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup.tar" | awk '{print $1}')
             fi
         else
-            tar -cf "$dest/$1/$dt/$1_Plex_Data_Backup-debug0.tar" -T /dev/null
-            size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup-debug0.tar" | awk '{print $1}')
-            if [ "$use_pigz" == yes ]; then
-                pigz -$pigz_compression "$dest/$1/$dt/$1_Plex_Data_Backup-debug0.tar"
-                size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup-debug0.tar.gz" | awk '{print $1}')
+            if [ "$alternate_format" != "yes" ]; then
+                tar -cf "$dest/$1/$dt/$1_Plex_Data_Backup-debug0-$now.tar" -T /dev/null
+                size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup-debug0-$now.tar" | awk '{print $1}')
+            else
+                tar -cf "$dest/$1/$dt/$1_Plex_Data_Backup-debug0.tar" -T /dev/null
+                size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup-debug0.tar" | awk '{print $1}')
             fi
         fi
     fi
@@ -150,7 +160,7 @@ cleanup_function() {
         # echo -e "Removing Essential backups older than " $delete_after "days... please wait"
         # find "$destination"/Essential* -mtime +"$delete_after" -type d -exec rm -vrf {} \;
         cd "$destination"/Essential || exit
-        echo -e "Removing all but the last " $keep_essential "essential backups... please wait"
+        echo -e "Removing all but the last" $keep_essential "essential backups... please wait"
         ls -1tr | head -n -"$keep_essential" | xargs -d '\n' rm -Rfd --
         echo -e "Done\n"
     fi

@@ -56,22 +56,24 @@ backup_function() {
         echo -e "Compressing $name..."
         if [ "$debug" == "yes" ]; then
             if [ "$alternate_format" != "yes" ]; then
-                7z a "$dest/$dt/$name-$now-debug.7z" "$path"
+                tar cf - "$path" -T /dev/null | 7z a -si -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on "$dest/$dt/$name-$now.tar.7z"
             else
-                7z a "$dest/$dt/$name-debug.7z" "$path"
+                tar cf - "$path" -T /dev/null | 7z a -si -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on "$dest/$dt/$name.tar.7z"
             fi
         else
             if [ "$alternate_format" != "yes" ]; then
                 if [ -n "$exclude_file" ]; then
-                    7z a "$dest/$dt/$name-$now.7z" -xr@"$exclude_file" "$path" -m0=lzma2 -mx=9 -aoa
+                    tar cf - --exclude-from="$exclude_file" "$path" | 7z a -si -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on "$dest/$dt/$name-$now.tar.7z"
                 else
-                    7z a "$dest/$dt/$name-$now.7z" "$path" -m0=lzma2 -mx=9 -aoa
+                    tar cf - "$path" | 7z a -si -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on "$dest/$dt/$name-$now.tar.7z"
                 fi
             else
                 if [ -n "$exclude_file" ]; then
-                    7z a "$dest/$dt/$name.7z" -xr@"$exclude_file" "$path" -m0=lzma2 -mx=9 -aoa
+                    tar cf - --exclude-from="$exclude_file" "$path" | 7z a -si -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on "$dest/$dt/$name.tar.7z"
+
                 else
-                    7z a "$dest/$dt/$name.7z" "$path" -m0=lzma2 -mx=9 -aoa
+                    tar cf - "$path" | 7z a -si -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on "$dest/$dt/$name.tar.7z"
+
                 fi
             fi
         fi
@@ -107,15 +109,15 @@ info_function() {
     if [ "$compress" == yes ]; then
         if [ "$debug" == "yes" ]; then
             if [ "$alternate_format" != "yes" ]; then
-                container_size=$(du -sh "$dest/$dt/$name-$now-debug.7z" | awk '{print $1}')
+                container_size=$(du -sh "$dest/$dt/$name-$now-debug.tar.7z" | awk '{print $1}')
             else
-                container_size=$(du -sh "$dest/$dt/$name-debug.7z" | awk '{print $1}')
+                container_size=$(du -sh "$dest/$dt/$name-debug.tar.7z" | awk '{print $1}')
             fi
         else
             if [ "$alternate_format" != "yes" ]; then
-                container_size=$(du -sh "$dest/$dt/$name-$now.7z" | awk '{print $1}')
+                container_size=$(du -sh "$dest/$dt/$name-$now.tar.7z" | awk '{print $1}')
             else
-                container_size=$(du -sh "$dest/$dt/$name.7z" | awk '{print $1}')
+                container_size=$(du -sh "$dest/$dt/$name.tar.7z" | awk '{print $1}')
             fi
         fi
         echo "Container: $name Size: $container_size" | tee -a "$1"

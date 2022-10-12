@@ -101,27 +101,31 @@ backup_function() {
         if [ "$debug" != yes ]; then
             if [ "$alternate_format" != "yes" ]; then
                 if [ "$cf" == false ]; then
-                    7z a "$dest/Essential/$dt/Essential_Plex_Data_Backup-$now.7z" "$source_basename/Plug-in Support/Databases" "$source_basename/Plug-in Support/Preferences" "$source_basename/Preferences.xml" -m0=lzma2 -mx=9 -aoa
+                    # 7z a "$dest/Essential/$dt/Essential_Plex_Data_Backup-$now.7z" "$source_basename/Plug-in Support/Databases" "$source_basename/Plug-in Support/Preferences" "$source_basename/Preferences.xml" -m0=lzma2 -mx=9 -aoa
+                    tar cf - "$source_basename/Plug-in Support/Databases" "$source_basename/Plug-in Support/Preferences" "$source_basename/Preferences.xml" | 7z a -si -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on "$dest/Essential/$dt/Essential_Plex_Data_Backup-$now.tar.7z"
                 else
-                    7z a "$dest/Full/$dt/Full_Plex_Data_Backup-$now.7z" -xr!"$source_basename"/Cache -xr!"$source_basename"/Codecs "$source_basename" -m0=lzma2 -mx=9 -aoa
+                    # 7z a "$dest/Full/$dt/Full_Plex_Data_Backup-$now.7z" -xr!"$source_basename"/Cache -xr!"$source_basename"/Codecs "$source_basename" -m0=lzma2 -mx=9 -aoa
+                    tar cf - --exclude="$source_basename"/Cache --exclude="$source_basename"/Codecs "$source_basename" | 7z a -si -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on "$dest/Full/$dt/Full_Plex_Data_Backup-$now.tar.7z"
                 fi
                 echo -e "Backup Complete\n"
-                size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup-$now.7z" | awk '{print $1}')
+                size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup-$now.tar.7z" | awk '{print $1}')
             else
                 if [ "$cf" == false ]; then
-                    7z a "$dest/Essential/$dt/Essential_Plex_Data_Backup.7z" "$source_basename/Plug-in Support/Databases" "$source_basename/Plug-in Support/Preferences" "$source_basename/Preferences.xml" -m0=lzma2 -mx=9 -aoa
+                    # 7z a "$dest/Essential/$dt/Essential_Plex_Data_Backup.7z" "$source_basename/Plug-in Support/Databases" "$source_basename/Plug-in Support/Preferences" "$source_basename/Preferences.xml" -m0=lzma2 -mx=9 -aoa
+                    tar cf - "$source_basename/Plug-in Support/Databases" "$source_basename/Plug-in Support/Preferences" "$source_basename/Preferences.xml" | 7z a -si -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on "$dest/Essential/$dt/Essential_Plex_Data_Backup.tar.7z"
                 else
-                    7z a "$dest/Full/$dt/Full_Plex_Data_Backup.7z" -xr!"$source_basename"/Cache -xr!"$source_basename"/Codecs "$source_basename" -m0=lzma2 -mx=9 -aoa
+                    # 7z a "$dest/Full/$dt/Full_Plex_Data_Backup.7z" -xr!"$source_basename"/Cache -xr!"$source_basename"/Codecs "$source_basename" -m0=lzma2 -mx=9 -aoa
+                    tar cf - --exclude="$source_basename"/Cache --exclude="$source_basename"/Codecs "$source_basename" | 7z a -si -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on "$dest/Full/$dt/Full_Plex_Data_Backup.tar.7z"
                 fi
                 echo -e "Backup Complete\n"
-                size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup.7z" | awk '{print $1}')
+                size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup.tar.7z" | awk '{print $1}')
             fi
         else
             if [ "$alternate_format" != "yes" ]; then
-                tar -cf "$dest/$1/$dt/$1_Plex_Data_Backup-debug0-$now.tar" -T /dev/null
+                tar -cf "$source_basename" -T /dev/null | 7z a -si -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on "$dest/$1/$dt/$1_Plex_Data_Backup-debug0-$now.tar.7z"
                 size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup-debug0-$now.tar" | awk '{print $1}')
             else
-                tar -cf "$dest/$1/$dt/$1_Plex_Data_Backup-debug0.tar" -T /dev/null
+                tar -cf "$source_basename" -T /dev/null | 7z a -si -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on "$dest/$1/$dt/$1_Plex_Data_Backup-debug0.tar.7z"
                 size=$(du -sh "$dest/$1/$dt/$1_Plex_Data_Backup-debug0.tar" | awk '{print $1}')
             fi
         fi

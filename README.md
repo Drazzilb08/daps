@@ -1,5 +1,6 @@
 Collection of unRAID userscripts
 
+
 !!!Warning!!!
 ```
 Note: 
@@ -15,14 +16,8 @@ Cheers.
 These scripts were designed to work on unRAID, however there shouldn't be any reason it wouldn't work on any Unix based system. <br>
 However, on unRAID simply ensure you have `UserScripts` installed from the appstore > navigate to the `UserScripts` location within `Settings`> create a new script and then set your cron interval.
 
-> Note: Most backup scripts use PIGZ for compression <br>
-> If you'd like to use pigz you'll need to download it using NerdPack, which is also in the appstore
-
-Nerdpack has been [depreciated](https://forums.unraid.net/topic/35866-unraid-6-nerdpack-cli-tools-iftop-iotop-screen-kbd-etc/?do=findComment&comment=1159381):
-
-Alternativly you can install nerdpack manually using this link 
-<br>
-`https://raw.githubusercontent.com/dmacias72/unRAID-NerdPack/master/plugin/NerdPack.plg`
+> Note: Most backup scripts use 7Zip for compression <br>
+> If you'd like to use 7Zip you'll need to download it using NerdTools, which is also in the appstore
 
 ## Updating
 
@@ -55,15 +50,15 @@ https://github.com/rcodehub/unraid-plex-script
 Features:
 
 - All backup scripts feature a locking file that is placed in the `/tmp` dir this prevents any script from being run twice (useful if you're compressing a large tar archive)
-- All backup scripts come with optional pigz compression
-  - Scripts also come with variable to easily change pigz compression
+- All backup scripts come with optional 7Zip compression
+  - Scripts also come with variable to easily change 7Zip compression
 - Most sripts feature discord intigration
 
 Future plans: <br>
 
 1. ~~Add discord notifications to plex script via this [repo](https://github.com/ChaoticWeg/discord.sh).~~
 2. ~~Update appdata script to be "better" script based upon this [repo](https://github.com/SpartacusIam/unraid-scripts).~~
-3. Notifiarr integration with passthrough?
+3. ~~Notifiarr integration with passthrough?~~ <- Not implemented
 4. Better documentation to readme
 
 Finally I'm **not a coder**, this was simply me playing around and killing time at work. I know very little about bash about 90% of this was googled and probably is the worst way to go about this process, if you want to clean up the code and make it more presentable or add a feature please make a Pull Request.

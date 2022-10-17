@@ -1,16 +1,5 @@
 Collection of unRAID userscripts
 
-
-!!!Warning!!!
-```
-Note: 
- - if you're using my backup scripts and update to 6.11.1 of unraid, the script will be broken. This is due to Pigz not being a package for slackware 15.  I'll be updating my scripts on the repo over the next couple of days/week. 
- - If you do not use pigz for your backup compression with the script then pay no attention to this as the script will still work.
- - I'll be using 7zip for the new compression mechanic
- - NerdPack is obsolete and will no longer work with unraid 6.11.1 the new package manager is NerdTools which can be found in the app store.
-
-Cheers.
-```
 ## Installation
 
 These scripts were designed to work on unRAID, however there shouldn't be any reason it wouldn't work on any Unix based system. <br>
@@ -58,7 +47,7 @@ Future plans: <br>
 
 1. ~~Add discord notifications to plex script via this [repo](https://github.com/ChaoticWeg/discord.sh).~~
 2. ~~Update appdata script to be "better" script based upon this [repo](https://github.com/SpartacusIam/unraid-scripts).~~
-3. ~~Notifiarr integration with passthrough?~~ <- Not implemented
+3. ~~Notifiarr integration with passthrough?~~ <- Not going to be implemented, unless highly requested 
 4. Better documentation to readme
 
 Finally I'm **not a coder**, this was simply me playing around and killing time at work. I know very little about bash about 90% of this was googled and probably is the worst way to go about this process, if you want to clean up the code and make it more presentable or add a feature please make a Pull Request.

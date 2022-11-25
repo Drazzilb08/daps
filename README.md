@@ -8,12 +8,6 @@ However, on unRAID simply ensure you have `UserScripts` installed from the appst
 > Note: Most backup scripts use 7Zip for compression <br>
 > If you'd like to use 7Zip you'll need to download it using NerdTools, which is also in the appstore
 
-## Updating
-
-Simply copy from the new script from <br>
-`#------------- DO NOT MODIFY BELOW THIS LINE -------------#`<br>
-to the bottom then paste that information over what you have in your script
-
 ## Versioning
 
 I've started to put version numbers on each of my scripts, you can find the version at the very bottom of every script.

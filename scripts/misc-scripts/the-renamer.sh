@@ -17,7 +17,7 @@
 # The script is used to rename and potentially move files in a specified directory. The script takes in two optional command line arguments:
 
 # define the source and destination directories
-source_dir="/mnt/user/data/posters"
+source_dir="/mnt/user/data/posters/source"
 destination_dir="/mnt/user/appdata/plex-meta-manager/assets/"
 log_dir="/mnt/user/data/posters/logs"
 characters_to_remove=(">" "<" "," ";" ":" "|" "~" "?" "@" "%" "^" "*" "=" "_")
@@ -51,38 +51,42 @@ remove_characters() {
 rename_files() {
     log_file="$log_dir/$(date +%Y-%m-%d_%H-%M-%S).log"
     touch "$log_file"
-    for file in "$source_dir"/*.*; do
-        old_name=$(basename "$file")
-        new_name=$(remove_characters "$old_name")
-        # replace " - Specials" with "_Season00"
-        new_name=${new_name//" - Specials"/"_Season00"}
+    for file in "$source_dir"/*; do
+        if [ -f "$file" ]; then
+            old_name=$(basename "$file")
+            new_name=$(remove_characters "$old_name")
+            # replace " - Specials" with "_Season00"
+            new_name=${new_name//" - Specials"/"_Season00"}
 
-        if [[ $new_name =~ " - Season "([0-9]+)\s* ]]; then
-            season_number="${BASH_REMATCH[1]}"
-            if [ "$season_number" -le 9 ]; then
-                new_name=${new_name//" - Season "$season_number/"_Season0"$season_number}
-            else
-                new_name=${new_name//" - Season "$season_number/"_Season"$season_number}
-            fi
-        fi
-
-        if [[ "$new_name" != "$old_name" ]]; then
-            echo "$old_name -> $new_name"
-            if ! $dry_run; then
-                if $move && ! $no_move; then
-                    echo "Moving $old_name to $destination_dir/$new_name" >>"$log_file"
-                    mv "$file" "$destination_dir/$new_name"
+            if [[ $new_name =~ " - Season "([0-9]+)\s* ]]; then
+                season_number="${BASH_REMATCH[1]}"
+                if [ "$season_number" -le 9 ]; then
+                    new_name=${new_name//" - Season "$season_number/"_Season0"$season_number}
                 else
-                    echo "Renaming $old_name to $new_name" >>"$log_file"
-                    mv "$file" "$source_dir/$new_name"
+                    new_name=${new_name//" - Season "$season_number/"_Season"$season_number}
+                fi
+            fi
+
+            if [[ "$new_name" != "$old_name" ]]; then
+                echo "$old_name -> $new_name"
+                if ! $dry_run; then
+                    if $move && ! $no_move; then
+                        echo "Moving $old_name to $destination_dir/$new_name" >>"$log_file"
+                        mv "$file" "$destination_dir/$new_name"
+                    else
+                        echo "Renaming $old_name to $new_name" >>"$log_file"
+                                                mv "$file" "$source_dir/$new_name"
+                    fi
                 fi
             fi
         fi
     done
     if $move && ! $no_move; then
         for file in "$source_dir"/*; do
-            echo "Moving $file to $destination_dir" >>"$log_file"
-            mv "$file" "$destination_dir"/
+            if [ -f "$file" ]; then
+                echo "Moving $file to $destination_dir" >>"$log_file"
+                mv "$file" "$destination_dir"/
+            fi
         done
     fi
 }
@@ -139,4 +143,4 @@ rename_files
 rotate_logs
 
 #
-# v.3.0.0
+# v.3.0.1

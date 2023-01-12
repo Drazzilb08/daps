@@ -16,16 +16,6 @@
 
 # The script is used to rename and potentially move files in a specified directory. The script takes in two optional command line arguments:
 
-# The script performs the following actions:
-
-# It defines the source and destination directories, and a log directory where log files will be stored.
-# It defines an array of characters that need to be removed from the file names.
-# It defines a function remove_characters that takes the current file name and removes characters from the characters_to_remove array, and also replaces any ampersand with the word "and". It also keeps any underscores that are immediately followed by the letter "S" and removes all other underscores.
-# It defines a function rename_files that loops through all files in the source directory, renames them according to the remove_characters function, and then moves them to the destination directory if the --move argument is passed, or renames the files in place if the --no-move argument is passed.
-# It defines a function rotate_logs that checks if there are already 6 logs in the log directory, and if so, finds the oldest log and deletes it.
-# It handles command line arguments passed to the script, and sets the dry-run, move, and no-move variables accordingly.
-# It creates the log directory if it doesn't exist, creates the log file name, and calls the rename_files and rotate_logs functions.
-
 # define the source and destination directories
 source_dir="/mnt/user/data/posters"
 destination_dir="/mnt/user/appdata/plex-meta-manager/assets/"

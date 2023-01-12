@@ -7,82 +7,146 @@
 #     | |  | | | |  __/ | \ \  __/ | | | (_| | | | | | |  __/ |
 #     |_|  |_| |_|\___|_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|
 
-# Purpose
-# I'm writing a script to rename and move files from one directory to another
-# (useful for me as I download all my posters from TPDB and they don't follow TMDB naming (close though) )
-# I'm having it rename the files to what I've noticed to be the naming differences between the two..
+# Usage: bash renamer.sh [options]
+# Options:
+# --dry-run  Perform a dry-run of the renaming process without modifying the files
+# --move     Move the files after renaming them to the destination folder
+# --no-move  Rename files but don't move them
+# --help     Show this help message
 
-# Eg.
-# TPDB uses _ instead of : where Radarr removes the : and replaces with nothing
-# TPDB uses Specials for their Season 00 but more importantly PMM needs the file to be name TV SERIES_Season01 where TPDB does TV SERIES - Season 01
+# The script is used to rename and potentially move files in a specified directory. The script takes in two optional command line arguments:
 
-#------------- DEFINE VARIABLES -------------#
-source='/mnt/user/data/posters/'
-destination='/mnt/user/data/posters/test'
+# The script performs the following actions:
 
-move_files=yes #Move files manually or use the destination folders
+# It defines the source and destination directories, and a log directory where log files will be stored.
+# It defines an array of characters that need to be removed from the file names.
+# It defines a function remove_characters that takes the current file name and removes characters from the characters_to_remove array, and also replaces any ampersand with the word "and". It also keeps any underscores that are immediately followed by the letter "S" and removes all other underscores.
+# It defines a function rename_files that loops through all files in the source directory, renames them according to the remove_characters function, and then moves them to the destination directory if the --move argument is passed, or renames the files in place if the --no-move argument is passed.
+# It defines a function rotate_logs that checks if there are already 6 logs in the log directory, and if so, finds the oldest log and deletes it.
+# It handles command line arguments passed to the script, and sets the dry-run, move, and no-move variables accordingly.
+# It creates the log directory if it doesn't exist, creates the log file name, and calls the rename_files and rotate_logs functions.
 
-#------------- DO NOT MODIFY BELOW THIS LINE -------------#
+# define the source and destination directories
+source_dir="/mnt/user/data/posters"
+destination_dir="/mnt/user/appdata/plex-meta-manager/assets/"
+log_dir="/mnt/user/data/posters/logs"
+characters_to_remove=(">" "<" "," ";" ":" "|" "~" "?" "@" "%" "^" "*" "=" "_")
 
-rename_function () {
-    echo "Processing Posters..."
-        find "$1" -regex ".*[^ ] _ [^ ].*" -exec rename -v '_ ' '' {} \;
-        find "$1" -regex ".*[^ ]_  .*" -exec rename -v '_ ' '' {} \;
-        find "$1" -regex ".*[^ ]_ \b.*" -exec rename -v '_' '' {} \;
-        find "$1" -regex ".*[^ ]- \b.*" -exec rename -v -- '- ' ' ' {} \;
+# Default dry-run to false
+dry_run=false
+move=false
+no_move=false
 
-        if [ "$move_files" = "yes" ]; then
-            echo -e "Moving assets\n"
-            mv "$1"/* "$2" 2>/dev/null
-            echo -e "Assets moved\n"
-        else
-            echo -e "$3 Processed but files were not moved.\n"
+# function to remove characters
+remove_characters() {
+    local old_name=$1
+    local new_name=$1
+    # Replacing all characters in characters_to_remove list with nothing
+    for character in "${characters_to_remove[@]}"; do
+        new_name=${new_name//"$character"/}
+    done
+    new_name=${new_name//&/and}
+    # Using regular expression to check if an underscore is immediately followed by the letter "S"
+    if [[ $new_name =~ _(?=S) ]]; then
+        # Keeping all underscores that are immediately followed by the letter "S"
+        true
+    else
+        # Removing all underscores
+        new_name=${new_name//_/}
+    fi
+    echo "$new_name"
+}
+
+# function to handle file renaming
+rename_files() {
+    log_file="$log_dir/$(date +%Y-%m-%d_%H-%M-%S).log"
+    touch "$log_file"
+    for file in "$source_dir"/*.*; do
+        old_name=$(basename "$file")
+        new_name=$(remove_characters "$old_name")
+        # replace " - Specials" with "_Season00"
+        new_name=${new_name//" - Specials"/"_Season00"}
+
+        if [[ $new_name =~ " - Season "([0-9]+)\s* ]]; then
+            season_number="${BASH_REMATCH[1]}"
+            if [ "$season_number" -le 9 ]; then
+                new_name=${new_name//" - Season "$season_number/"_Season0"$season_number}
+            else
+                new_name=${new_name//" - Season "$season_number/"_Season"$season_number}
+            fi
         fi
+
+        if [[ "$new_name" != "$old_name" ]]; then
+            echo "$old_name -> $new_name"
+            if ! $dry_run; then
+                if $move && ! $no_move; then
+                    echo "Moving $old_name to $destination_dir/$new_name" >>"$log_file"
+                    mv "$file" "$destination_dir/$new_name"
+                else
+                    echo "Renaming $old_name to $new_name" >>"$log_file"
+                    mv "$file" "$source_dir/$new_name"
+                fi
+            fi
+        fi
+    done
+    if $move && ! $no_move; then
+        for file in "$source_dir"/*; do
+            echo "Moving $file to $destination_dir" >>"$log_file"
+            mv "$file" "$destination_dir"/
+        done
     fi
 }
-series_function () {
-echo "Processing Series"
-if [ "$(find "$1" -regex ".*[^ ]_ .*" | wc -l)" -eq 0 ] && [ "$(find "$1" -regex ".* - Specials.*" | wc -l)" -eq 0 ] && [ "$(find "$1" -regex ".* [1-9]\.[^.]+$" | wc -l)" -eq 0 ] && [ "$(find "$1" -regex ".*[1-9][0-9]\.[^.]+$" | wc -l)" -eq 0 ]; then
-    echo -e "Files found but nothing needs to be renamed...\n"
-    if [ "$move_files" = "yes" ]; then
-        echo -e "Moving assets\n"
-        mv "$1"/* "$2" 2>/dev/null
-    else
-        echo -e "$3 Processed but files were not moved.\n"
-    fi
-else
-    find "$1" -regex ".*[^ ]_ .*" -exec bash -c 'mv -v "$0" "${0//_/}"' {} \;                   #Removing all underscores from string
-    find "$1" -regex ".*[^ ]- \b.*" -exec rename -v -- '- ' ' ' {} \;                           # Replace "Show- (year).jpg" -> "Show (year).jpg"
-    find "$1" -regex ".* - Specials.*" -exec rename -v " - Specials" "_Season00" {} \;          #Replace " - Speicials" to "_Season00"
-    find "$1" -regex ".* [1-9]\.[^.]+$" -exec rename -v " - Season " "_Season0" {} \; | sort -d #Replace " - Season " to "_Season0" for Seasons 1 through 9
 
-    if [ "$(find "$1" -regex ".*[1-9][0-9]\.[^.]+$" | wc -l)" -ge 1 ]; then
-        find "$1" -regex ".*[1-9][0-9]\.[^.]+$" -exec rename -v ' - Season ' '_Season' {} \; | sort -d #Find season that are 10 and greater and rename them
+
+# function to handle log rotation
+rotate_logs() {
+    # check if there are already 6 logs
+    if [[ "$(find $log_dir -type f -name "*.log" | wc -l)" -ge 6 ]]; then
+        # find the oldest log and delete it
+        oldest_log=$(find $log_dir -type f -printf '%T+ %p\n' | sort -r | tail -1 | awk '{print $2}')
+        rm "$oldest_log"
     fi
-    if [ "$move_files" = "yes" ]; then
-        echo -e "Moving assets\n"
-        mv "$1"/* "$2" 2>/dev/null
-    else
-        echo -e "$3 Processed but files were not moved.\n"
-    fi
+}
+
+# handle command line arguments
+if [[ "$#" -eq 0 ]]; then
+    echo "No arguments passed"
+    echo "Type --help to see a list of commands"
+    exit 1
 fi
-}
 
-main () {
-if [ -n "$source" ]; then
-    if [ -n "$(ls -A $source)" ]; then
-        rename_function "$source" "$destination" "Movies"
-    else
-        echo -e "Directory empty. Skipping...\n"
-    fi
-else
-    echo -e "Directory not set. Skipping...\n"
+if [[ "$#" -gt 1 ]]; then
+    echo "Too many arguments passed. Only one argument is allowed"
+    echo "Type --help to see a list of commands"
+    exit 1
 fi
 
-echo -e "\nAll Done\n"
-}
+case $1 in
+    --dry-run)
+        dry_run=true
+        ;;
+    --move)
+        move=true
+        ;;
+    --no-move)
+        no_move=true
+        ;;
+    --help)
+        echo "Usage: script.sh [--dry-run] [--move] [--no-move] [--help]"
+        echo " --dry-run   : dry run mode, shows changes but doesn't make them"
+        echo " --move      : move files to destination folder"
+        echo " --no-move   : rename files but don't move them"
+        echo " --help      : shows this help menu"
+        exit 0
+        ;;
+    *)
+        echo "Invalid argument $1"
+        exit 1
+        ;;
+esac
 
-main
-exit
+rename_files
+rotate_logs
+
 #
-# v2.4.6
+# v.3.0.0

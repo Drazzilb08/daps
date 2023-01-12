@@ -17,7 +17,7 @@
 # The script is used to rename and potentially move files in a specified directory. The script takes in two optional command line arguments:
 
 # define the source and destination directories
-source_dir="/mnt/user/data/posters/source"
+source_dir="/mnt/user/data/posters"
 destination_dir="/mnt/user/appdata/plex-meta-manager/assets/"
 log_dir="/mnt/user/data/posters/logs"
 characters_to_remove=(">" "<" "," ";" ":" "|" "~" "?" "@" "%" "^" "*" "=" "_")
@@ -29,12 +29,14 @@ no_move=false
 
 # function to remove characters
 remove_characters() {
-    local old_name=$1
-    local new_name=$1
-    # Replacing all characters in characters_to_remove list with nothing
+    # Get the current file name passed as an argument
+    old_name="$1"
+    new_name="$old_name"
+    # Loop through the characters_to_remove array and replace each character with nothing
     for character in "${characters_to_remove[@]}"; do
         new_name=${new_name//"$character"/}
     done
+    # replace any ampersand with the word "and"
     new_name=${new_name//&/and}
     # Using regular expression to check if an underscore is immediately followed by the letter "S"
     if [[ $new_name =~ _(?=S) ]]; then
@@ -44,8 +46,13 @@ remove_characters() {
         # Removing all underscores
         new_name=${new_name//_/}
     fi
+    # Removing apostrophes if it is an 's'
+    if [[ $new_name == *\'s* ]]; then
+        new_name=${new_name//\'/}
+    fi
     echo "$new_name"
 }
+
 
 # function to handle file renaming
 rename_files() {
@@ -143,4 +150,4 @@ rename_files
 rotate_logs
 
 #
-# v.3.0.1
+# v.3.0.2

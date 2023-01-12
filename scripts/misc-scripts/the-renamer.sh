@@ -34,7 +34,14 @@ remove_characters() {
     new_name="$old_name"
     # Loop through the characters_to_remove array and replace each character with nothing
     for character in "${characters_to_remove[@]}"; do
-        new_name=${new_name//"$character"/}
+        if [ "$character" != "-" ]; then
+            new_name=${new_name//"$character"/}
+        else
+            # Using regular expression to check if hyphen is in the middle of the name
+            if [[ ! $new_name =~ ^.*-.*$|^.*-$|^-.*$ ]]; then
+                new_name=${new_name//"$character"/}
+            fi
+        fi
     done
     # replace any ampersand with the word "and"
     new_name=${new_name//&/and}
@@ -52,7 +59,6 @@ remove_characters() {
     fi
     echo "$new_name"
 }
-
 
 # function to handle file renaming
 rename_files() {
@@ -150,4 +156,4 @@ rename_files
 rotate_logs
 
 #
-# v.3.0.2
+# v.3.0.3

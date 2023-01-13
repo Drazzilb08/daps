@@ -36,7 +36,7 @@ Usage:
 /path/to/script nohl.sh --use-discord
 ```
 ```
-/path/to/script nohl.sh --use-discord --bar-color 000000 --bot-name Botty Mc Botterson
+/path/to/script nohl.sh --use-discord --bar-color 000000 --bot-name Botty_Mc_Botterson
 ```
 
 * Defines variables for the source directory, log file, files to include in the search, Discord webhook URL, Discord bar color, and Discord bot name

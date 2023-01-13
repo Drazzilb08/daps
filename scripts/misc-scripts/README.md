@@ -12,3 +12,15 @@ It defines an array of characters that need to be removed from the file names.
 * It also has a check for --no-move argument, if passed it will rename the files but won't move them. Also, the move option will only take effect when --no-move is not passed.
 * The rename_files function is updated to move all files at the end of renaming them one by one.
 * A log file is created on every run of the script and it is rotated as soon as 6 logs are accumulated.
+
+#noHL:
+
+The script performs the following actions:
+
+* Defines variables for the source directory, log file, files to include in the search, Discord webhook URL, Discord bar color, and Discord bot name
+* Provides command line options to set the bot name, Discord embed bar color, use Discord notifications, and display help
+* Converts hex color codes to decimal
+* Parses command line arguments to update the values of the variables
+* Checks for proper configuration of the source directory, log file directory and existence of the log file before each run
+* Search for hardlinks in the source directory and saves the results to the log file
+* The script prompts the user to enter a webhook URL if the variable is empty, and updates the value of the webhook variable in the script file itself

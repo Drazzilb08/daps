@@ -2,6 +2,14 @@
 
 The script performs the following actions:
 
+Usage:
+```
+/path/to/script renamer.sh --dry-run
+```
+```
+/path/to/script renamer.sh --move
+```
+
 * The script defines the source and destination directories, and a log directory where log files will be stored.
 It defines an array of characters that need to be removed from the file names.
 * It defines a function remove_characters that takes the current file name and removes characters from the characters_to_remove array, and also replaces any ampersand with the word "and". It also keeps any underscores that are immediately followed by the letter "S".
@@ -16,6 +24,14 @@ It defines an array of characters that need to be removed from the file names.
 #noHL:
 
 The script performs the following actions:
+
+Usage:
+```
+/path/to/script nohl.sh --use-discord
+```
+```
+/path/to/script nohl.sh --use-discord --bar-color 000000 --bot-name Botty Mc Botterson
+```
 
 * Defines variables for the source directory, log file, files to include in the search, Discord webhook URL, Discord bar color, and Discord bot name
 * Provides command line options to set the bot name, Discord embed bar color, use Discord notifications, and display help

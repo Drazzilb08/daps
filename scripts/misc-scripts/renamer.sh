@@ -1,11 +1,11 @@
 #!/bin/bash
 
-#   _______ _          _____
-#  |__   __| |        |  __ \
-#     | |  | |__   ___| |__) |___ _ __   __ _ _ __ ___   ___ _ __
-#     | |  | '_ \ / _ \  _  // _ \ '_ \ / _` | '_ ` _ \ / _ \ '__|
-#     | |  | | | |  __/ | \ \  __/ | | | (_| | | | | | |  __/ |
-#     |_|  |_| |_|\___|_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|
+#    _____
+#  `|  __ \
+#   | |__) |___ _ __   __ _ _ __ ___   ___ _ __
+#   |  _  // _ \ '_ \ / _` | '_ ` _ \ / _ \ '__|
+#   | | \ \  __/ | | | (_| | | | | | |  __/ |
+#   |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|
 
 # Usage: bash renamer.sh [options]
 # Options:
@@ -17,9 +17,9 @@
 # The script is used to rename and potentially move files in a specified directory. The script takes in two optional command line arguments:
 
 # define the source and destination directories
-source_dir="/path/to/source"
-destination_dir="/path/to/destination"
-log_dir="/path/to/log/directory"
+source_dir='/mnt/user/data/posters'
+destination_dir='/mnt/user/appdata/plex-meta-manager/assets'
+log_dir=/mnt/user/data/posters/logs
 
 # Default dry-run to false
 dry_run=false
@@ -36,12 +36,24 @@ remove_characters() {
     new_name=${new_name///?/!}
 
     # Using regular expression to check if an underscore is immediately followed by the letter "S"
-    if [[ $new_name =~ _(?=S) ]]; then
+    if [[ $new_name =~ _(Season) ]]; then
         # Keeping all underscores that are immediately followed by the letter "S"
         true
     else
         # Removing all underscores
+
         new_name=${new_name//_/}
+    fi
+
+    # using regular expression to check if a hyphen space is followed by the word "Season"
+    if [[ $new_name =~ \ -\ (Season) ]]; then
+        # Keeping all hyphen spaces that are followed by the word "Season"
+        echo "ME1"
+        true
+    else
+        # Removing all hyphen spaces
+        echo "ME2"
+        new_name=${new_name//" - "/" "}
     fi
 
     echo "$new_name"
@@ -104,6 +116,13 @@ rotate_logs() {
         rm "$oldest_log"
     fi
 }
+display_help(){
+    echo "Usage: $0 [--dry-run] [--move] [--no-move] [--help]"
+    echo " --dry-run   : Dry run mode, shows changes but doesn't make them"
+    echo " --move      : Move files to destination directory after being renamed"
+    echo " --no-move   : Rename files but don't move them to the destination directory"
+    echo " --help      : Shows this help menu"
+}
 
 # handle command line arguments
 if [[ "$#" -eq 0 ]]; then
@@ -129,11 +148,7 @@ case $1 in
     no_move=true
     ;;
 --help)
-    echo "Usage: script.sh [--dry-run] [--move] [--no-move] [--help]"
-    echo " --dry-run   : dry run mode, shows changes but doesn't make them"
-    echo " --move      : move files to destination folder"
-    echo " --no-move   : rename files but don't move them"
-    echo " --help      : shows this help menu"
+    display_help
     exit 0
     ;;
 *)
@@ -146,4 +161,4 @@ rename_files
 rotate_logs
 
 #
-# v.3.1.0
+# v.3.1.4

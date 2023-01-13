@@ -21,6 +21,12 @@ It defines an array of characters that need to be removed from the file names.
 * The rename_files function is updated to move all files at the end of renaming them one by one.
 * A log file is created on every run of the script and it is rotated as soon as 6 logs are accumulated.
 
+Known Issues:
+```
+The script doesn't log if you're using --dry-run. It's kind of expected that if you're using dry-run that you're activly monitoring what's going on. Logs are for when you're not monitoring it activly and want ot check on it from time to time.
+
+I'll eventually fix this:tm:
+```
 #noHL:
 
 The script performs the following actions:

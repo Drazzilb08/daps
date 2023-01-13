@@ -17,10 +17,9 @@
 # The script is used to rename and potentially move files in a specified directory. The script takes in two optional command line arguments:
 
 # define the source and destination directories
-source_dir="/mnt/user/data/posters"
-destination_dir="/mnt/user/appdata/plex-meta-manager/assets/"
-log_dir="/mnt/user/data/posters/logs"
-characters_to_remove=(">" "<" "," ";" ":" "|" "~" "?" "@" "%" "^" "*" "=" "_")
+source_dir="/path/to/source"
+destination_dir="/path/to/destination"
+log_dir="/path/to/log/directory"
 
 # Default dry-run to false
 dry_run=false
@@ -32,19 +31,10 @@ remove_characters() {
     # Get the current file name passed as an argument
     old_name="$1"
     new_name="$old_name"
-    # Loop through the characters_to_remove array and replace each character with nothing
-    for character in "${characters_to_remove[@]}"; do
-        if [ "$character" != "-" ]; then
-            new_name=${new_name//"$character"/}
-        else
-            # Using regular expression to check if hyphen is in the middle of the name
-            if [[ ! $new_name =~ ^.*-.*$|^.*-$|^-.*$ ]]; then
-                new_name=${new_name//"$character"/}
-            fi
-        fi
-    done
-    # replace any ampersand with the word "and"
-    new_name=${new_name//&/and}
+
+    # replace any question mark with the word an exclimation point
+    new_name=${new_name///?/!}
+
     # Using regular expression to check if an underscore is immediately followed by the letter "S"
     if [[ $new_name =~ _(?=S) ]]; then
         # Keeping all underscores that are immediately followed by the letter "S"
@@ -53,15 +43,16 @@ remove_characters() {
         # Removing all underscores
         new_name=${new_name//_/}
     fi
-    # Removing apostrophes if it is an 's'
-    if [[ $new_name == *\'s* ]]; then
-        new_name=${new_name//\'/}
-    fi
+
     echo "$new_name"
 }
 
 # function to handle file renaming
 rename_files() {
+    # Check if log_dir exists, create it if it doesn't
+    if [ ! -d "$log_dir" ]; then
+        mkdir -p "$log_dir"
+    fi
     log_file="$log_dir/$(date +%Y-%m-%d_%H-%M-%S).log"
     touch "$log_file"
     for file in "$source_dir"/*; do
@@ -88,7 +79,7 @@ rename_files() {
                         mv "$file" "$destination_dir/$new_name"
                     else
                         echo "Renaming $old_name to $new_name" >>"$log_file"
-                                                mv "$file" "$source_dir/$new_name"
+                        mv "$file" "$source_dir/$new_name"
                     fi
                 fi
             fi
@@ -103,7 +94,6 @@ rename_files() {
         done
     fi
 }
-
 
 # function to handle log rotation
 rotate_logs() {
@@ -129,31 +119,31 @@ if [[ "$#" -gt 1 ]]; then
 fi
 
 case $1 in
-    --dry-run)
-        dry_run=true
-        ;;
-    --move)
-        move=true
-        ;;
-    --no-move)
-        no_move=true
-        ;;
-    --help)
-        echo "Usage: script.sh [--dry-run] [--move] [--no-move] [--help]"
-        echo " --dry-run   : dry run mode, shows changes but doesn't make them"
-        echo " --move      : move files to destination folder"
-        echo " --no-move   : rename files but don't move them"
-        echo " --help      : shows this help menu"
-        exit 0
-        ;;
-    *)
-        echo "Invalid argument $1"
-        exit 1
-        ;;
+--dry-run)
+    dry_run=true
+    ;;
+--move)
+    move=true
+    ;;
+--no-move)
+    no_move=true
+    ;;
+--help)
+    echo "Usage: script.sh [--dry-run] [--move] [--no-move] [--help]"
+    echo " --dry-run   : dry run mode, shows changes but doesn't make them"
+    echo " --move      : move files to destination folder"
+    echo " --no-move   : rename files but don't move them"
+    echo " --help      : shows this help menu"
+    exit 0
+    ;;
+*)
+    echo "Invalid argument $1"
+    exit 1
+    ;;
 esac
 
 rename_files
 rotate_logs
 
 #
-# v.3.0.3
+# v.3.1.0

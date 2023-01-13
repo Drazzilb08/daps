@@ -16,24 +16,13 @@
 # --help          : Show this help message
 
 # Define variables
-source='/mnt/user/data/media'
-log_file='/mnt/user/data/scripts/logs/'
+source=''
+log_file=''
 include=(
-    "anime series"
-    "anime movies"
-    "animated series"
-    "daily series"
-    "documentary movies"
-    "documentary series"
-    "french movies"
-    "french series"
-    "reality series"
-    "series"
-    "movies"
-    "childrens series"
+
 )
 use_discord=false
-webhook='https://discord.com/api/webhooks/994818363169722418/e_Zd3ViJpuHMpbq7Chm5MJE585T_rr0Iue04xksI1Glb28d1UlU-7aqG6-3wXGMVXbci'
+webhook=''
 bar_color=16776960
 bot_name='Notification Bot'
 
@@ -118,7 +107,7 @@ check_config() {
             echo "ERROR: No webhook provided, please enter a valid webhook url"
             exit 1
         else
-            sed -i "s|webhook='https://discord.com/api/webhooks/994818363169722418/e_Zd3ViJpuHMpbq7Chm5MJE585T_rr0Iue04xksI1Glb28d1UlU-7aqG6-3wXGMVXbci'|webhook='$webhook'|" "$0"
+            sed -i "s|webhook=''|webhook='$webhook'|" "$0"
         fi
     fi
 }

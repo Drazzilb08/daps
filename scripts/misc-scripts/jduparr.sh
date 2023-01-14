@@ -15,6 +15,11 @@ media_dir='/path/to/media'
 
 include=(
     # "Add a folder that is further down in your media dir"
+    # "Use this if you have your downlaods inside the same parrent directory as your media"
+    # "Such as ../media/downloads"
+    # "Such as ../media/movies"
+    # "Such as ../media/shows"
+    # "This should account for that"
 )
 
 use_discord=false

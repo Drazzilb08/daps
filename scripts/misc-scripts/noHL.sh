@@ -125,7 +125,7 @@ check_hardlinks() {
 
 # Function to send discord notification
 
-send_discord_notification() {
+send_notification() {
     joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/dev/jokes.txt | shuf -n 1)
     get_ts=$(date -u -Iseconds)
     if [ "$use_discord" == true ]; then
@@ -233,7 +233,7 @@ generate_payload() {
 main() {
     check_config
     check_hardlinks
-    send_discord_notification
+    send_notification
 }
 
 # Call main function

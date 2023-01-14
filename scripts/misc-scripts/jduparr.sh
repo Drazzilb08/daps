@@ -112,7 +112,7 @@ calculate_runtime() {
     fi
 }
 
-send_discord_notification() {
+send_notification() {
     get_ts=$(date -u -Iseconds)
     joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/dev/jokes.txt | shuf -n 1)
     echo "$run_output"
@@ -179,7 +179,7 @@ main() {
     check_config
     find_duplicates
     calculate_runtime
-    send_discord_notification
+    send_notification
     cleanup
 }
 

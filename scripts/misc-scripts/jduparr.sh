@@ -87,7 +87,7 @@ check_config() {
 
 find_duplicates() {
     start=$(date +%s)
-    if [ -z "$include" ]; then
+    if [ ${#include[@]} -eq 0 ]; then
         jdupes -r -L -A -X onlyext:mp4,mkv,avi "${downloads_dir}" "${media_dir}"
     else
         for ((i = 0; i < ${#include[@]}; i++)); do

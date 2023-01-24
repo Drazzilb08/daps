@@ -17,7 +17,7 @@ config_file=""
 config_file() {
     if [ -z "$config_file" ]; then
         script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
-        config_file="$script_dir/backup-plex.conf"
+        config_file="$script_dir/backup-appdata.conf"
     fi
 
     # Check if config file exists

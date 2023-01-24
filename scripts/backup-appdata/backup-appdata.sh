@@ -86,7 +86,7 @@ find_new_containers() {
                 awk -i inplace -v new_container="$new_container" '
   /^stop_list=\(/ {
     print;
-    printf("  %s\n", new_container);
+    printf("    %s\n", new_container);
     next;
   }
   {
@@ -101,7 +101,7 @@ find_new_containers() {
                 awk -i inplace -v new_container="$new_container" '
   /^no_stop_list=\(/ {
     print;
-    printf("  %s\n", new_container);
+    printf("    %s\n", new_container);
     next;
   }
   {
@@ -113,7 +113,7 @@ find_new_containers() {
         # Send notification to discord
         printf "New containers found:\n"
         for new_container in "${new_containers[@]}"; do
-            printf "  %s\n" "$new_container" | tee -a "$new_container_error"
+            printf "    %s\n" "$new_container" | tee -a "$new_container_error"
         done
         printf "Please update your stop_list or no_stop_list\n"
     fi

@@ -46,7 +46,7 @@ check_config() {
         exit 2
     fi
     # Check if webhook is set and in the correct format
-    if [ -z "$webhook" ]; then
+    if [ -n "$webhook" ]; then
         if [[ ! $webhook =~ ^https://discord\.com/api/webhooks/ ]] && [[ ! $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
             echo "ERROR: Invalid webhook provided please enter a valid webhook url in the format https://discord.com/api/webhooks/ or https://notifiarr.com/api/v1/notification/passthrough"
             exit 1
@@ -124,7 +124,7 @@ send_notification() {
     if [[ $webhook =~ ^https://discord\.com/api/webhooks/ ]]; then
         # Call the discord_payload function to construct the payload
         discord_common_fields
-        discord_payload
+        payload
         # Send the payload to the discord webhook URL
         curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
     fi
@@ -264,7 +264,7 @@ main() {
     handle_options "$@"
     check_config
     check_hardlinks
-    if [ -z "$webhook" ]; then
+    if [ -n "$webhook" ]; then
         send_notification
     fi
 }

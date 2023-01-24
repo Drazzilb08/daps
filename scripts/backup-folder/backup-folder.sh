@@ -52,7 +52,7 @@ check_config() {
         }
     fi
     # Check if webhook is set and in the correct format
-    if [ -z "$webhook" ]; then
+    if [ -n "$webhook" ]; then
         if [[ ! $webhook =~ ^https://discord\.com/api/webhooks/ ]] && [[ ! $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
             echo "ERROR: Invalid webhook provided please enter a valid webhook url in the format https://discord.com/api/webhooks/ or https://notifiarr.com/api/v1/notification/passthrough"
             exit 1
@@ -113,22 +113,23 @@ create_backup() {
     # Create the backup directory in the destination directory with the name of the source directory and the current date
     cd "$source_dir"/.. || exit
     folder_name=$(basename "$source_dir")
-    backup_path="$dest/$(basename "$source_dir")/$(date +%F)/"
+    backup_path="$dest/$(date +%F)"
+    backup_name="$(basename "$source_dir")"
     mkdir -p "$backup_path"
     now="$(date +"%H.%M")"
 
     # Check if the compress variable is true
     if [ "$compress" == "true" ]; then
         # Use tar and 7z to create a compressed archive of the source directory and save it to the backup directory
-        tar -cf - "$folder_name" 2>/dev/null | 7z a -si -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on "$backup_path/backup-$now.tar.7z"
-        backup_size=$(du -sh "$backup_path/backup-$now.tar.7z" | awk '{print $1}')
+        tar -cf - "$folder_name" 2>/dev/null | 7z a -si -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on "$backup_path/$backup_name-$now.tar.7z"
+        backup_size=$(du -sh "$backup_path/$backup_name-$now.tar.7z" | awk '{print $1}')
     else
         # Use tar to create an archive of the source directory and save it to the backup directory
-        tar -cf "$backup_path/backup-$now.tar" "$folder_name" 2>/dev/null
-        backup_size=$(du -sh "$backup_path/backup-$now.tar" | awk '{print $1}')
+        tar -cf "$backup_path/$backup_name-$now.tar" "$folder_name" 2>/dev/null
+        backup_size=$(du -sh "$backup_path/$backup_name-$now.tar" | awk '{print $1}')
     fi
     # Get the total size of the backup folder
-    total_size=$(du -sh "$dest/$(basename "$source_dir")" | awk '{print $1}')
+    total_size=$(du -sh "$backup_path" | awk '{print $1}')
     # Get the end timestamp
     end=$(date +%s)
     # Calculate the runtime of the backup process
@@ -154,15 +155,15 @@ calculate_runtime() {
     # Check if minutes and hours are 0
     if ((minutes == 0 && hours == 0)); then
         # Set the output string indicating that the backup completed in seconds
-        run_output="Plex backup completed in $seconds seconds"
+        run_output="$backup_name backup completed in $seconds seconds"
     # Check if hours is 0 but minutes isn't
     elif ((hours == 0)); then
         # Set the output string indicating that the backup completed in minutes and seconds
-        run_output="Plex backup completed in $minutes minutes and $seconds seconds"
+        run_output="$backup_name backup completed in $minutes minutes and $seconds seconds"
     # If minutes and hours are not 0
     else
         # Set the output string indicating that the backup completed in hours, minutes and seconds
-        run_output="Plex backup completed in $hours hours $minutes minutes and $seconds seconds"
+        run_output="$backup_name backup completed in $hours hours $minutes minutes and $seconds seconds"
     fi
 }
 
@@ -172,23 +173,23 @@ send_notification() {
     get_ts=$(date -u -Iseconds)
     # Get a random joke from the specified file
     joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/dev/jokes.txt | shuf -n 1)
-    if [ "$unraid_notify" == "true" ]; then
-        /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "$(basename "$source_dir") Backup" -d "Backup completed: $(basename "$source_dir") data has been backed up" -i "normal"
+    # Check if the webhook is for discord
+    if [[ $webhook =~ ^https://discord\.com/api/webhooks/ ]]; then
+        # Call the discord_payload function to construct the payload
+        discord_payload
+        # Send the payload to the discord webhook URL
+        curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
     fi
-        # Check if the webhook is for discord
-        if [[ $webhook =~ ^https://discord\.com/api/webhooks/ ]]; then
-            # Call the discord_payload function to construct the payload
-            discord_payload
-            # Send the payload to the discord webhook URL
-            curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
-        fi
-        # Check if the webhook is for notifiarr
-        if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
-            # Call the notifarr_payload function to construct the payload
-            notifarr_payload
-            # Send the payload to the notifiarr webhook URL
-            curl -s -H "Content-Type: application/json" -X POST -d "'$payload'" "$webhook" >/dev/null
-        fi
+    # Check if the webhook is for notifiarr
+    if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
+        # Call the notifarr_payload function to construct the payload
+        notifarr_payload
+        # Send the payload to the notifiarr webhook URL
+        curl -s -H "Content-Type: application/json" -X POST -d "'$payload'" "$webhook" >/dev/null
+    fi
+}
+unraid_notify() {
+    /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "$backup_name Backup has completed" -i "normal"
 }
 
 # Function to generate Notifiarr JSON payload
@@ -314,8 +315,11 @@ main() {
     handle_options "$@"
     check_config
     create_backup
-    if [ -z "$webhook" ]; then
+    if [ -n "$webhook" ]; then
         send_notification
+    fi
+    if [ $unraid_notify == true ]; then
+        unraid_notify
     fi
     cleanup
 }

@@ -11,15 +11,17 @@
 # v4.0.0
 
 # Please see the config file for more information
+config_file=""
 
 # <----- Do not edit below this point ----->
-debug=true # Only use if you want to see the final output of every variable.
+debug=false # Only use if you want to see the final output of every variable.
 
 config_file() {
     if [ -z "$config_file" ]; then
-        config_file="$(dirname "$0")/-backup-plex
-        .conf"
+        current_directory="$(pwd)"
+        config_file="$current_directory/backup-plex.conf"
     fi
+
     # Check if config file exists
     if [ -f "$config_file" ]; then
         # Read config file
@@ -223,7 +225,7 @@ send_notification() {
     fi
 }
 
-notifiarr_common_fields(){
+notifiarr_common_fields() {
     title="title"
     text="text"
     # Extract common fields for the payload
@@ -239,7 +241,7 @@ notifiarr_common_fields(){
             "footer": "'"Powered by: Drazzilb | $joke"'"},
             "ids": {"channel": "'"$channel"'"}}}'
 }
-discord_common_fields(){
+discord_common_fields() {
     title="name"
     text="value"
     # Extract common fields for the payload
@@ -366,6 +368,7 @@ payload() {
 }
 
 check_space() {
+    verbose_output "Checking space requirements... Please wait..."
     available_space=$(df -P "$destination_dir" | awk 'NR==2 {print $4}')
     if [ "$compress" = "true" ]; then
         # Calculate backup size in bytes
@@ -385,6 +388,7 @@ check_space() {
             exit 1
         fi
     fi
+    verbose_output "Checking space requirements complete..."
 }
 create_backup() {
     # Get the type of backup (Essential or Full) from the first argument
@@ -451,6 +455,7 @@ main() {
     # Check if config file is defined in command line arguments
     config_file
     handle_options "$@"
+    echo "Config file: $config_file"
     # Check for --config= argument in command line options and assign the value to config_file variable
     for arg in "$@"; do
         if [[ $arg == --config=* ]]; then

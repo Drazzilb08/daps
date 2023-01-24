@@ -78,13 +78,31 @@ check_config() {
         echo "ERROR: Your media directory does not exist, please check your configuration"
         exit
     fi
-    if [ "$webhook" == true ]; then
-        if [ -z "$webhook" ]; then
-            read -p "Please enter your Discord webhook url: " webhook
-            if [[ ! $webhook =~ ^https://discord\.com/api/webhooks/ ]]; then
-                echo "ERROR: Invalid webhook provided, please enter a valid webhook url in the format https://discord.com/api/webhooks/"
-                exit 1
-            fi
+    # Check if webhook is set and in the correct format
+    if [ -n "$webhook" ]; then
+        if [[ ! $webhook =~ ^https://discord\.com/api/webhooks/ ]] && [[ ! $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
+            echo "ERROR: Invalid webhook provided please enter a valid webhook url in the format https://discord.com/api/webhooks/ or https://notifiarr.com/api/v1/notification/passthrough"
+            exit 1
+        fi
+        # Check if channel is set if using Notifiarr
+        if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]] && [ -z "$channel" ]; then
+            echo "ERROR: It appears you're trying to use Notifiarr as your notification agent but haven't set a channel. How will the bot know where to send the notification?"
+            echo "Please use the -C or --channel argument to set the channel ID used for this notification"
+        fi
+
+        # Check if channel is not set if using discord webhook
+        if [[ ! $webhook =~ ^https://discord\.com/api/webhooks/ ]] && [ -z "$channel" ]; then
+            echo "ERROR: It appears you're using the discord webhook and using the channel argument"
+            echo "Please not the channel argument is only for Notifiarr"
+        fi
+        # Check if webhook returns valid response code
+        response_code=$(curl --write-out "%{response_code}" --silent --output /dev/null "$webhook")
+        if [ "$response_code" -ge 200 ] && [ "$response_code" -lt 400 ]; then
+            # Print message if quiet option is not set
+            echo "Webhook is valid"
+        else
+            echo "Webhook is not valid"
+            echo "Backup will be created without a notification being sent"
         fi
     fi
 }
@@ -93,9 +111,11 @@ find_duplicates() {
     start=$(date +%s)
     if [ ${#include[@]} -eq 0 ]; then
         jdupes -r -L -A -X onlyext:mp4,mkv,avi "${downloads_dir}" "${media_dir}"
+        true
     else
         for ((i = 0; i < ${#include[@]}; i++)); do
             jdupes -r -L -A -X onlyext:mp4,mkv,avi "${downloads_dir}" "${media_dir}/${include[$i]}"
+            true
         done
     fi
     end=$(date +%s)
@@ -136,15 +156,15 @@ hex_to_decimal() {
 send_notification() {
     get_ts=$(date -u -Iseconds)
     joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/dev/jokes.txt | shuf -n 1)
-    if [ -z "$webhook" ]; then
+    if [ -n "$webhook" ]; then
         if [[ "$webhook" =~ ^https://discord\.com/api/webhooks/ ]]; then
             discord_common_fields
-            generate_payload
+            payload
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
         fi
         if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
             notifiarr_common_fields
-            generate_payload
+            payload
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
         fi
     else
@@ -152,7 +172,7 @@ send_notification() {
     fi
 }
 
-generate_payload() {
+payload() {
     payload=''"$common_fields"'
                 "description": "'"jDupes has finished it's run."'",
                 "fields": 
@@ -212,7 +232,7 @@ main() {
     hex_to_decimal
     find_duplicates
     calculate_runtime
-    if [ -z "$webhook" ]; then
+    if [ -n "$webhook" ]; then
         send_notification
     fi
     cleanup
@@ -266,5 +286,3 @@ if [ -n "$1" ]; then
 fi
 
 main
-
-# v2.0.0

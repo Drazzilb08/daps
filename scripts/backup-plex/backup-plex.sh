@@ -17,9 +17,10 @@ config_file=""
 debug=false # Only use if you want to see the final output of every variable.
 
 config_file() {
+
     if [ -z "$config_file" ]; then
-        current_directory="$(pwd)"
-        config_file="$current_directory/backup-plex.conf"
+        script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+        config_file="$script_dir/backup-plex.conf"
     fi
 
     # Check if config file exists

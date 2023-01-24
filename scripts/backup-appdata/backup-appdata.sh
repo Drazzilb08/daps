@@ -13,6 +13,25 @@
 config_file=""
 
 # <----- Do not edit below this point ----->
+
+config_file() {
+    if [ -z "$config_file" ]; then
+        script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
+        config_file="$script_dir/backup-plex.conf"
+    fi
+
+    # Check if config file exists
+    if [ -f "$config_file" ]; then
+        # Read config file
+        # shellcheck source=backup-appdata.conf
+        . "$config_file"
+    else
+        # Use command line arguments
+        # handle_options "$@"
+        verbose_output "no config file found"
+    fi
+}
+
 check_space() {
     # Print message about checking space requirements
     verbose_output "Checking space requirements... Please wait..."
@@ -350,24 +369,6 @@ backup_prep() {
         done
         # Prompt the user to update their config file
         printf "Please update your config file if these were typos\n"
-    fi
-}
-
-config_file() {
-    if [ -z "$config_file" ]; then
-        current_directory="$(pwd)"
-        config_file="$current_directory/backup-appdata.conf"
-    fi
-
-    # Check if config file exists
-    if [ -f "$config_file" ]; then
-        # Read config file
-        # shellcheck source=backup-appdata.conf
-        . "$config_file"
-    else
-        # Use command line arguments
-        # handle_options "$@"
-        verbose_output "no config file found"
     fi
 }
 
@@ -711,8 +712,8 @@ main() {
     create_tmp_files
     start=$(date +%s)
     config_file
+    echo "Config file: $config_file"
     check_config
-    echo "Bar Color: $bar_color"
     hex_to_decimal "$bar_color"
     find_new_containers
     config_file

@@ -368,7 +368,9 @@ payload() {
 }
 
 check_space() {
+    # Print message about checking space requirements
     verbose_output "Checking space requirements... Please wait..."
+    # Get the available space in the destination directory
     available_space=$(df -P "$destination_dir" | awk 'NR==2 {print $4}')
     if [ "$compress" = "true" ]; then
         # Calculate backup size in bytes
@@ -378,18 +380,23 @@ check_space() {
         backup_size_mb=$(echo "$backup_size"/1024/1024 | awk '{printf "%.2f", $0}')
 
         if [ "$backup_size" -gt "$available_space" ]; then
+            # Print error message and exit if not enough space available
             echo "Error: Not enough disk space on $destination_dir. Available: $available_space_mb MB, Required: $backup_size_mb MB"
             exit 1
         fi
     else
+        # Calculate backup size in bytes
         backup_size=$(du -s "$source_dir" | awk '{print $1}')
         if [ "$backup_size" -gt "$available_space" ]; then
+            # Print error message and exit if not enough space available
             echo "Error: Not enough disk space on $destination_dir."
             exit 1
         fi
     fi
+    # Print message that space check is complete
     verbose_output "Checking space requirements complete..."
 }
+
 create_backup() {
     # Get the type of backup (Essential or Full) from the first argument
     local folder_type=$1
@@ -399,12 +406,13 @@ create_backup() {
     # Get absolute path of the destination directory
     dest=$(realpath -s "$destination_dir")
     # Create directory with backup type and current date in the destination directory
-
     backup_path="$dest/$folder_type/$(date +%F)"
     mkdir -p "$backup_path"
+    # Change to the parent directory of the source directory
     cd "$source_dir"/.. || exit
     folder_name=$(basename "$source_dir")
     now="$(date +"%H.%M")"
+    # Set the backup source and exclude directories based on the type of backup
     if [ "$folder_type" == "Essential" ]; then
         backup_source=(
             "$folder_name/Plug-in Support/Databases"
@@ -419,6 +427,7 @@ create_backup() {
             "--exclude=$source_dir/Codecs"
         )
     fi
+    # Check if the compress flag is set, and create the archive accordingly
     if [ "$compress" == "true" ]; then
         if [ "$dry_run" == true ]; then
             extension="tar.7z.dry_run"
@@ -426,6 +435,7 @@ create_backup() {
             touch "$backup_path/plex_backup-$now.tar.7z.dry_run"
         else
             extension="tar.7z"
+            # Compress the backup using 7z
             tar --checkpoint=500 --checkpoint-action=dot -cf "$backup_path/plex_backup-$now.tar" "${backup_source[@]}" "${exclude[@]}" | 7z a -bsp1 -si -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on "$backup_path/plex_backup-$now.tar.7z" 2>/dev/null
         fi
     else
@@ -438,6 +448,7 @@ create_backup() {
             tar --checkpoint=500 --checkpoint-action=dot -cf "$backup_path/plex_backup-$now.tar" "${backup_source[@]}" "${exclude[@]}" 2>/dev/null
         fi
     fi
+    # Store the size of the backup in a variable
     if [ "$folder_type" == "Essential" ]; then
         essential_backup_size=$(du -sh "$backup_path/plex_backup-$now.$extension" | awk '{print $1}')
     # If backup is not of "Essential" type, assign the size to the "full" key
@@ -481,6 +492,7 @@ main() {
     # check if full_backup is set to false
     if [ "$full_backup" == "false" ]; then
         check_space
+        # create essential backup
         create_backup "Essential"
         backup_type="essential"
         verbose_output ""
@@ -490,6 +502,7 @@ main() {
             # check if number of days since last full backup is greater than or equal to force_full_backup or lastbackup is 0
             if [[ "$days" -ge $force_full_backup ]] || [[ "$lastbackup" == 0 ]]; then
                 check_space
+                #create full backup
                 create_backup "Full"
                 backup_type="both"
                 days="0"
@@ -503,6 +516,7 @@ main() {
         fi
     else
         check_space
+        #create full backup
         create_backup "Full"
         backup_type="full"
         echo "$current_date" >"$(dirname "$0")"/last_plex_backup.tmp

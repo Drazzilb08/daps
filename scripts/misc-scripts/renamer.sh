@@ -1,164 +1,277 @@
 #!/bin/bash
-
-#    _____
-#  `|  __ \
-#   | |__) |___ _ __   __ _ _ __ ___   ___ _ __
-#   |  _  // _ \ '_ \ / _` | '_ ` _ \ / _ \ '__|
-#   | | \ \  __/ | | | (_| | | | | | |  __/ |
-#   |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|
-
-# Usage: bash renamer.sh [options]
-# Options:
-# --dry-run  Perform a dry-run of the renaming process without modifying the files
-# --move     Move the files after renaming them to the destination folder
-# --no-move  Rename files but don't move them
-# --help     Show this help message
-
-# The script is used to rename and potentially move files in a specified directory. The script takes in two optional command line arguments:
+#  _____
+# |  __ \
+# | |__) |___ _ __   __ _ _ __ ___   ___ _ __
+# |  _  // _ \ '_ \ / _` | '_ ` _ \ / _ \ '__|
+# | | \ \  __/ | | | (_| | | | | | |  __/ |
+# |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|
+# v.3.0.0
 
 # define the source and destination directories
-source_dir='/mnt/user/data/posters'
-destination_dir='/mnt/user/appdata/plex-meta-manager/assets'
-log_dir=/mnt/user/data/posters/logs
+source_dir='/path/to/posters'
+destination_dir='/path/to/where/posters/will/go'
+log_dir='/path/to/logs/'
 
-# Default dry-run to false
+# Global variables
 dry_run=false
 move=false
 no_move=false
 
-# function to remove characters
-remove_characters() {
-    # Get the current file name passed as an argument
-    old_name="$1"
-    new_name="$old_name"
+# <----- Do not edit below this point ----->
 
-    # replace any question mark with the word an exclimation point
-    new_name=${new_name///?/!}
+check_duplicate_script() {
+    script_name=${0##*/}
+    lockfile="/tmp/${script_name}.lock"
 
-    # Using regular expression to check if an underscore is immediately followed by the letter "S"
-    if [[ $new_name =~ _(Season) ]]; then
-        # Keeping all underscores that are immediately followed by the letter "S"
-        true
-    else
-        # Removing all underscores
-
-        new_name=${new_name//_/}
+    # Check if lockfile exists
+    if [ -e "$lockfile" ]; then
+        # Check if process listed in lockfile is still running
+        pid=$(cat "$lockfile")
+        if [ -d "/proc/$pid" ]; then
+            # If process is still running, exit script
+            echo "Another instance of the script is already running"
+            exit
+        else
+            # If process is not running, remove stale lockfile
+            rm -f "$lockfile"
+        fi
     fi
 
-    # using regular expression to check if a hyphen space is followed by the word "Season"
-    if [[ $new_name =~ \ -\ (Season) ]]; then
-        # Keeping all hyphen spaces that are followed by the word "Season"
-        echo "ME1"
-        true
-    else
-        # Removing all hyphen spaces
-        echo "ME2"
-        new_name=${new_name//" - "/" "}
-    fi
-
-    echo "$new_name"
+    # Create lockfile with current process ID
+    echo $$ >"$lockfile"
 }
 
-# function to handle file renaming
-rename_files() {
-    # Check if log_dir exists, create it if it doesn't
-    if [ ! -d "$log_dir" ]; then
-        mkdir -p "$log_dir"
+# Function to display help
+display_help() {
+    echo "Usage: $0 [ -n | --bot-name ] [ -b | --bar-color ] [ -w | --webhook ] [ -h | --help ]"
+    echo "This script monitors your media directory for media that isn't hardlinked"
+    echo "Options:"
+    echo " -w    --webhook         : Use webhook notifications for backup status (default: false)"
+    echo " -b    --bot-name        : Set the bot name for notifications (default: Notification Bot)"
+    echo " -b    --bar-color       : Set the bar color for notifications supports Hex or Decimal colors (default: 16776960)"
+    echo " -h    --help            : Show this help message"
+}
+
+check_config() {
+    if [ -z "$downloads_dir" ]; then
+        echo "ERROR: Your download directory is not set, please check your configuration"
+        exit
     fi
-    log_file="$log_dir/$(date +%Y-%m-%d_%H-%M-%S).log"
-    touch "$log_file"
-    for file in "$source_dir"/*; do
-        if [ -f "$file" ]; then
-            old_name=$(basename "$file")
-            new_name=$(remove_characters "$old_name")
-            # replace " - Specials" with "_Season00"
-            new_name=${new_name//" - Specials"/"_Season00"}
-
-            if [[ $new_name =~ " - Season "([0-9]+)\s* ]]; then
-                season_number="${BASH_REMATCH[1]}"
-                if [ "$season_number" -le 9 ]; then
-                    new_name=${new_name//" - Season "$season_number/"_Season0"$season_number}
-                else
-                    new_name=${new_name//" - Season "$season_number/"_Season"$season_number}
-                fi
-            fi
-
-            if [[ "$new_name" != "$old_name" ]]; then
-                echo "$old_name -> $new_name"
-                if ! $dry_run; then
-                    if $move && ! $no_move; then
-                        echo "Moving $old_name to $destination_dir/$new_name" >>"$log_file"
-                        mv "$file" "$destination_dir/$new_name"
-                    else
-                        echo "Renaming $old_name to $new_name" >>"$log_file"
-                        mv "$file" "$source_dir/$new_name"
-                    fi
-                fi
-            fi
+    if [ ! -d "$downloads_dir" ]; then
+        echo "ERROR: Your download directory does not exist, please check your configuration"
+        exit
+    fi
+    if [ -z "$media_dir" ]; then
+        echo "ERROR: Your media directory is not set, please check your configuration"
+        exit
+    fi
+    if [ ! -d "$media_dir" ]; then
+        echo "ERROR: Your media directory does not exist, please check your configuration"
+        exit
+    fi
+    # Check if webhook is set and in the correct format
+    if [ -z "$webhook" ]; then
+        if [[ ! $webhook =~ ^https://discord\.com/api/webhooks/ ]] && [[ ! $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
+            echo "ERROR: Invalid webhook provided please enter a valid webhook url in the format https://discord.com/api/webhooks/ or https://notifiarr.com/api/v1/notification/passthrough"
+            exit 1
         fi
-    done
-    if $move && ! $no_move; then
-        for file in "$source_dir"/*; do
-            if [ -f "$file" ]; then
-                echo "Moving $file to $destination_dir" >>"$log_file"
-                mv "$file" "$destination_dir"/
-            fi
+        # Check if channel is set if using Notifiarr
+        if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]] && [ -z "$channel" ]; then
+            echo "ERROR: It appears you're trying to use Notifiarr as your notification agent but haven't set a channel. How will the bot know where to send the notification?"
+            echo "Please use the -C or --channel argument to set the channel ID used for this notification"
+        fi
+
+        # Check if channel is not set if using discord webhook
+        if [[ ! $webhook =~ ^https://discord\.com/api/webhooks/ ]] && [ -z "$channel" ]; then
+            echo "ERROR: It appears you're using the discord webhook and using the channel argument"
+            echo "Please not the channel argument is only for Notifiarr"
+        fi
+        # Check if webhook returns valid response code
+        response_code=$(curl --write-out "%{response_code}" --silent --output /dev/null "$webhook")
+        if [ "$response_code" -ge 200 ] && [ "$response_code" -lt 400 ]; then
+            # Print message if quiet option is not set
+            echo "Webhook is valid"
+        else
+            echo "Webhook is not valid"
+            echo "Backup will be created without a notification being sent"
+        fi
+    fi
+}
+
+find_duplicates() {
+    start=$(date +%s)
+    if [ ${#include[@]} -eq 0 ]; then
+        jdupes -r -L -A -X onlyext:mp4,mkv,avi "${downloads_dir}" "${media_dir}"
+    else
+        for ((i = 0; i < ${#include[@]}; i++)); do
+            jdupes -r -L -A -X onlyext:mp4,mkv,avi "${downloads_dir}" "${media_dir}/${include[$i]}"
         done
     fi
+    end=$(date +%s)
 }
 
-# function to handle log rotation
-rotate_logs() {
-    # check if there are already 6 logs
-    if [[ "$(find $log_dir -type f -name "*.log" | wc -l)" -ge 6 ]]; then
-        # find the oldest log and delete it
-        oldest_log=$(find $log_dir -type f -printf '%T+ %p\n' | sort -r | tail -1 | awk '{print $2}')
-        rm "$oldest_log"
+calculate_runtime() {
+    total_time=$((end - start))
+    seconds=$((total_time % 60))
+    minutes=$((total_time % 3600 / 60))
+    hours=$((total_time / 3600))
+
+    if ((minutes == 0 && hours == 0)); then
+        run_output="jDupes completed in $seconds seconds"
+    elif ((hours == 0)); then
+        run_output="jDupes completed in $minutes minutes and $seconds seconds"
+    else
+        run_output="jDupes completed in $hours hours $minutes minutes and $seconds seconds"
     fi
 }
-display_help(){
-    echo "Usage: $0 [--dry-run] [--move] [--no-move] [--help]"
-    echo " --dry-run   : Dry run mode, shows changes but doesn't make them"
-    echo " --move      : Move files to destination directory after being renamed"
-    echo " --no-move   : Rename files but don't move them to the destination directory"
-    echo " --help      : Shows this help menu"
+
+hex_to_decimal() {
+    # Check if input is a valid 6-digit hex color code with or withoutt '#'
+    if [[ $bar_color =~ ^\#[0-9A-Fa-f]{6}$ ]]; then
+        # Strip off '#' if present
+        hex_bar_color=${bar_color:1}
+        # Convert hex to decimal
+        decimal_bar_color=$((0x${bar_color:1}))
+    elif [[ $bar_color =~ ^[0-9A-Fa-f]{6}$ ]]; then
+        hex_bar_color=$bar_color
+        decimal_bar_color=$((0x$bar_color))
+    else
+        echo "Bar color: $bar_color"
+        echo -e "Invalid color format. Please provide a valid 6-digit hex color code (e.g. ff0000 for red)"
+        exit 1
+    fi
 }
 
-# handle command line arguments
-if [[ "$#" -eq 0 ]]; then
-    echo "No arguments passed"
-    echo "Type --help to see a list of commands"
-    exit 1
-fi
+send_notification() {
+    get_ts=$(date -u -Iseconds)
+    joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/dev/jokes.txt | shuf -n 1)
+    if [ -z "$webhook" ]; then
+        if [[ "$webhook" =~ ^https://discord\.com/api/webhooks/ ]]; then
+            discord_common_fields
+            payload
+            curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
+        fi
+        if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
+            notifiarr_common_fields
+            payload
+            curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
+        fi
+    else
+        echo "$run_output"
+    fi
+}
 
-if [[ "$#" -gt 1 ]]; then
-    echo "Too many arguments passed. Only one argument is allowed"
-    echo "Type --help to see a list of commands"
-    exit 1
-fi
+payload() {
+    payload=''"$common_fields"'
+                "description": "'"jDupes has finished it's run."'",
+                "fields": 
+                [
+                    {
+                        "'"$title"'": "Runtime:",
+                        "'"$text"'": "'"${run_output}"'"
+                    }
+                ]'"$common_fields2"''
+}
 
-case $1 in
---dry-run)
-    dry_run=true
-    ;;
---move)
-    move=true
-    ;;
---no-move)
-    no_move=true
-    ;;
---help)
+notifiarr_common_fields() {
+    title="title"
+    text="text"
+    common_fields='
+    {"notification": 
+    {"update": false,"name": "jDuparr","event": ""},
+    "discord": 
+    {"color": "'"$hex_bar_color"'",
+        "ping": {"pingUser": 0,"pingRole": 0},
+        "images": {"thumbnail": "","image": ""},
+        "text": {"title": "jDuparr",'
+    common_fields2='
+            "footer": "'"Powered by: Drazzilb | $joke"'"},
+            "ids": {"channel": "'"$channel"'"}}}'
+}
+discord_common_fields() {
+    title="name"
+    text="value"
+    common_fields='{
+                "username": "'"${bot_name}"'",
+                "embeds": 
+                [
+                    {
+                        "title": "jDuparr",'
+    common_fields2=',
+                        "footer": 
+                        {
+                            "text": "'"Powered by: Drazzilb | $joke"'"
+                        },
+                        "color": "'"${decimal_bar_color}"'",
+                        "timestamp": "'"${get_ts}"'"
+                    }
+                ]
+            }'
+}
+
+cleanup() {
+    rm -f "${lockfile}"
+    exit
+}
+
+main() {
+
+    check_duplicate_script
+    check_config
+    hex_to_decimal
+    find_duplicates
+    calculate_runtime
+    if [ -z "$webhook" ]; then
+        send_notification
+    fi
+    cleanup
+}
+
+# Parse command line arguments
+TEMP=$(getopt -o w:b:n:h --long webhook:,bar-color:,bot-name:,help -n "$0" -- "$@")
+eval set -- "$TEMP"
+
+while true; do
+    case "$1" in
+    -w | --webhook)
+        webhook="$2"
+        shift 2
+        ;;
+    -b | --bar-color)
+        hex_to_decimal "$2"
+        shift 2
+        ;;
+    -n | --bot-name)
+        bot_name=$2
+        shift 2
+        ;;
+    -h | --help)
+        display_help
+        exit 0
+        ;;
+    --)
+        shift
+        break
+        ;;
+    *)
+        echo "Internal error!"
+        exit 1
+        ;;
+    esac
+done
+
+# Check for any remaining arguments
+if [ -n "$1" ]; then
+    echo "Invalid argument: $1" >&2
     display_help
-    exit 0
-    ;;
-*)
-    echo "Invalid argument $1"
     exit 1
-    ;;
-esac
+fi
 
-rename_files
-rotate_logs
+# Check for any remaining arguments
+if [ -n "$1" ]; then
+    echo "Invalid argument: $1" >&2
+    display_help
+    exit 1
+fi
 
-#
-# v.3.1.4
+main

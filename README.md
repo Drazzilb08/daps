@@ -41,8 +41,8 @@ Future plans: <br>
 
 1. ~~Add discord notifications to plex script via this [repo](https://github.com/ChaoticWeg/discord.sh).~~
 2. ~~Update appdata script to be "better" script based upon this [repo](https://github.com/SpartacusIam/unraid-scripts).~~
-3. ~~Notifiarr integration with passthrough?~~ <- Not going to be implemented, unless highly requested 
-4. Better documentation to readme
+3. ~~Notifiarr integration with passthrough?~~ 
+4. Better documentation to readme <-- Always a work in progress...
 
 Finally I'm **not a coder**, this was simply me playing around and killing time at work. I know very little about bash about 90% of this was googled and probably is the worst way to go about this process, if you want to clean up the code and make it more presentable or add a feature please make a Pull Request.
 

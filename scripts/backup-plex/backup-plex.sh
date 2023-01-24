@@ -577,7 +577,7 @@ display_help() {
     echo "  -q    --quiet                      : Quiet mode"
     echo "  -w    --webhook <url>              : Webhook url (Notifarr and Discord Supported)"
     echo "  -C    --channel <channel ID>       : Channel ID for discord noticiations (used with Notifiarr)"
-    echo "  -b    --bar-color <hex|decimal>    : Discord bar color"
+    echo "  -b    --bar-color <hex>            : Discord bar color"
     echo "  -n    --bot-name <name>            : Discord bot name"
     echo "  -r    --dry-run                    : Run script without backing up any fils (for testing)"
     echo "  -x    --config-file                : Set config file location, with config file if command arguments are used they will take precedence"

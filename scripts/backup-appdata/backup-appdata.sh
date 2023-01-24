@@ -221,8 +221,8 @@ check_container_exists() {
 # Send unraid notificaiton
 unraid_notification() {
     # Initialize a message variable as an empty string
-    # Send a notification to the user with the title "Unraid Server Notice", a subject "Plex Backup", the message containing the backup status and an icon "normal"
-    /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Plex Backup" -d "Appdata backup complete" -i "normal"
+    # Send a notification to the user with the title "Unraid Server Notice", a subject "Appdata Backup", the message containing the backup status and an icon "normal"
+    /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Appdata Backup" -d "Appdata backup complete" -i "normal"
 }
 
 # Function to stop and start a container
@@ -273,14 +273,21 @@ stop_start_container() {
 
 # Function to get config and appdata paths for a container
 get_paths() {
-    # Get the container ID using the container name
-    container_id=$(docker ps -aqf "name=$1")
+    # Get the container name
+    container_name=$1
     # Get the config path of the container
-    config_path=$(docker inspect -f '{{json .Mounts}}' "$container_id" | jq -r '.[] | select(.Destination | test("^/config")) | .Source' | head -n1)
+    config_path=$(docker inspect -f '{{json .Mounts}}' "$container_name" | jq -r '.[] | select(.Destination | test("^/config")) | .Source' | head -n1)
     # Check if config path is empty
     if [ -z "$config_path" ]; then
         # Get the appdata path of the container
-        appdata_path=$(docker inspect -f '{{json .Mounts}}' "$container_id" | jq -r '.[] | select(.Source | test("^'"$appdata_dir1"'|^'"$appdata_dir2"'")) | .Source' | grep -o -e "^$appdata_dir1/[^/]*" -e "^$appdata_dir2/[^/]*" | head -n1)
+        appdata_path=$(docker inspect -f '{{json .Mounts}}' "$container_name" | jq -r '.[] | select(.Source | test("^'"$appdata_dir1"'|^'"$appdata_dir2"'")) | .Source' | grep -o -e "^$appdata_dir1/[^/]*" -e "^$appdata_dir2/[^/]*" | head -n1)
+        # Check if appdata path is empty
+        if [ -z "$appdata_path" ]; then
+            # Skip over the container if it does not use appdata
+            echo "Container $1 does not use appdata, skipping over."
+            verbose_output "-----------------------------------"
+            return
+        fi
         # Set the source directory to the appdata path
         source_dir="$appdata_path"
     else
@@ -309,6 +316,9 @@ backup_prep() {
             valid_stop_list+=("$stop_container")
             # Get the paths of the container
             get_paths "$stop_container"
+            if [ -z "$source_dir" ]; then
+                continue
+            fi
             # Stop the container
             stop_start_container "$stop_container"
         else
@@ -341,6 +351,11 @@ backup_prep() {
             valid_no_stop_list+=("$no_stop_container")
             # Get the paths of the container
             get_paths "$no_stop_container"
+            if [ -z "$source_dir" ]; then
+                continue
+            fi
+            # check the space
+            check_space
             # Create a backup of the container
             create_backup "$no_stop_container"
             # Print information about the container
@@ -405,7 +420,7 @@ send_notification() {
         discord_common_fields
         bot_name="Notification Bot"
         # Call the discord_payload function to construct the payload
-        if [ "$(wc <"$container_stop_list" -l)" -ge 1 ] || [ "$(wc <"$container_no_stop_list" -l)" -eq 1 ]; then
+        if [ "$(wc <"$new_container_error" -l)" -ge 1 ]; then
             new_container_notification
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
         fi
@@ -421,7 +436,7 @@ send_notification() {
     if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
         notifiarr_common_fields
         # Call the notifarr_payload function to construct the payload
-        if [ "$(wc <"$container_stop_list" -l)" -ge 1 ] || [ "$(wc <"$container_no_stop_list" -l)" -eq 1 ]; then
+        if [ "$(wc <"$new_container_error" -l)" -ge 1 ]; then
             new_container_notification
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
         fi
@@ -429,7 +444,7 @@ send_notification() {
             removed_container_notification
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
         fi
-        notifarr_payload
+        payload
         # Send the payload to the notifiarr webhook URL
         curl -s -H "Content-Type: application/json" -X POST -d "'$payload'" "$webhook" >/dev/null
     fi

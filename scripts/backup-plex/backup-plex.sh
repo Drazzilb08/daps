@@ -191,9 +191,11 @@ unraid_notification() {
     # Check the value of the "full_backup" variable
     if [ "$backup_type" == "essential" ]; then
         message="Essential Plex data has been backed up"
-    elif [ "$backup_type" == "full" ]; then
+    fi
+    if [ "$backup_type" == "full" ]; then
         message="Full Plex data has been backed up"
-    else
+    fi
+    if [ "$backup_type" == "both" ]; then 
         message="Essential & Full Plex data has been backed up"
     fi
     # Send a notification to the user with the title "Unraid Server Notice", a subject "Plex Backup", the message containing the backup status and an icon "normal"
@@ -435,7 +437,7 @@ create_backup() {
         else
             extension="tar.7z"
             # Compress the backup using 7z
-            tar --checkpoint=500 --checkpoint-action=dot -cf "$backup_path/plex_backup-$now.tar" "${backup_source[@]}" "${exclude[@]}" | 7z a -bsp1 -si -t7z -m0=lzma -mx=9 -mfb=64 -md=32m -ms=on "$backup_path/plex_backup-$now.tar.7z" 2>/dev/null
+            tar cf - "${exclude[@]}" "${backup_source[@]}" | 7z a -si -t7z -m0=lzma2 -mx=1 -md=32m -mfb=64 -mmt=on -ms=off "$backup_path/plex_backup-$now.tar.7z" "$backup_path/plex_backup-$now.tar"
         fi
     else
         if [ "$dry_run" == true ]; then
@@ -444,7 +446,7 @@ create_backup() {
             touch "$backup_path/plex_backup-$now.tar.dry_run"
         else
             extension="tar"
-            tar --checkpoint=500 --checkpoint-action=dot -cf "$backup_path/plex_backup-$now.tar" "${backup_source[@]}" "${exclude[@]}" 2>/dev/null
+            tar cf --checkpoint=500 --checkpoint-action=dot  "${exclude[@]}" --file="$backup_path/plex_backup-$now.tar" "${backup_source[@]}"
         fi
     fi
     # Store the size of the backup in a variable

@@ -274,7 +274,7 @@ stop_start_container() {
 # Function to get config and appdata paths for a container
 get_paths() {
     # Get the container name
-    container_name=$1
+    container_name="$1"
     # Get the config path of the container
     config_path=$(docker inspect -f '{{json .Mounts}}' "$container_name" | jq -r '.[] | select(.Destination | test("^/config")) | .Source' | head -n1)
     # Check if config path is empty
@@ -284,7 +284,20 @@ get_paths() {
         # Check if appdata path is empty
         if [ -z "$appdata_path" ]; then
             # Skip over the container if it does not use appdata
-            echo "Container $1 does not use appdata, skipping over."
+            echo "Container $container_name does not use appdata, skipping over."
+            # Remove the container's entry from the config file
+            sed -i "/^[[:space:]]*$container_name$/d" "$config_file"
+            # Add the container's name to the exclusion list
+            awk -i inplace -v new_container="$container_name" '
+            /^exclusion_list=\(/ {
+                print;
+                printf("    %s        # Container automatically added here due to no appdata dir\n", new_container);
+                next;
+            }
+            {
+                print;
+            }
+            ' "$config_file"
             verbose_output "-----------------------------------"
             return
         fi

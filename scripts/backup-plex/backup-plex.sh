@@ -62,7 +62,7 @@ check_config() {
         }
     fi
     # Check if webhook is set and in the correct format
-    if [ -z "$webhook" ]; then
+    if [ -n "$webhook" ]; then
         if [[ ! $webhook =~ ^https://discord\.com/api/webhooks/ ]] && [[ ! $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
             echo "ERROR: Invalid webhook provided please enter a valid webhook url in the format https://discord.com/api/webhooks/ or https://notifiarr.com/api/v1/notification/passthrough"
             exit 1
@@ -210,7 +210,7 @@ send_notification() {
         bot_name="Notification Bot"
         # Call the discord_payload function to construct the payload
         discord_common_fields
-        discord_payload
+        payload
         # Send the payload to the discord webhook URL
         curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
     fi
@@ -250,7 +250,7 @@ discord_common_fields() {
                 [
                     {
                         "title": "Plex Backup",'
-    common_fields2=',
+    common_fields2='
                         "footer": 
                         {
                             "text": "'"Powered by: Drazzilb | $joke"'"
@@ -490,7 +490,9 @@ main() {
     start=$(date +%s)
     # check if full_backup is set to false
     if [ "$full_backup" == "false" ]; then
-        check_space
+        if [ "$dry_run" == false ]; then
+            check_space
+        fi
         # create essential backup
         create_backup "Essential"
         backup_type="essential"
@@ -500,7 +502,9 @@ main() {
         if [ "$force_full_backup" != 0 ]; then
             # check if number of days since last full backup is greater than or equal to force_full_backup or lastbackup is 0
             if [[ "$days" -ge $force_full_backup ]] || [[ "$lastbackup" == 0 ]]; then
-                check_space
+                if [ "$dry_run" == false ]; then
+                    check_space
+                fi
                 #create full backup
                 create_backup "Full"
                 backup_type="both"
@@ -514,7 +518,9 @@ main() {
             fi
         fi
     else
-        check_space
+        if [ "$dry_run" == false ]; then
+            check_space
+        fi
         #create full backup
         create_backup "Full"
         backup_type="full"
@@ -539,7 +545,7 @@ main() {
         unraid_notification
     fi
     # check if webhook is set to true and call send_notification function
-    if [ -z "$webhook" ]; then
+    if [ -n "$webhook" ]; then
         send_notification
     fi
     # check if debug is set to true and call debug_output_function

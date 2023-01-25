@@ -171,14 +171,16 @@ create_backup() {
             # check if exclude_file is set
             if [ -n "$exclude_file" ]; then
                 # if yes use it to exclude files from backup
-                tar --checkpoint=500 --checkpoint-action=dot -cf "$backup_file.$extension" "$source_dir" -X "$exclude_file" 2>/dev/null
+                echo "Exclude file $exclude_file"
+                echo "backup file: $backup_file.$extension"
+                tar c --checkpoint=500 --checkpoint-action=dot -X "$exclude_file" --file="$backup_file.$extension" "$source_dir"
             else
                 # if not just backup the source_dir
-                tar --checkpoint=500 --checkpoint-action=dot -cf "$backup_file.$extension" "$source_dir" 2>/dev/null
+                tar c --checkpoint=500 --checkpoint-action=dot --file="$backup_file.$extension" "$source_dir" 2>/dev/null
             fi
         fi
         # print message that backup is complete
-        verbose_output "Backup of $container_name complete"
+        verbose_output "\nBackup of $container_name complete"
     fi
 }
 
@@ -233,14 +235,16 @@ stop_start_container() {
     container_status=$(docker inspect -f '{{.State.Running}}' "$container_name")
     # Check if the container is running
     if [ "$container_status" == "true" ]; then
+        if [ "$dry_run" == "false" ]; then
+            # check the space
+            check_space
+        fi
         verbose_output "Stopping container, $container_name before creating backup"
         # Check if dry_run is set to false
         if [ "$dry_run" == "false" ]; then
             # Stop the container
             docker stop "$container_name"
         fi
-        # check the space
-        check_space
         # create backup
         create_backup "$container_name"
         # print information about the container

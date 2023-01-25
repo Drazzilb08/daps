@@ -122,8 +122,6 @@ find_new_containers() {
 create_backup() {
     # Get the container name
     local container_name="$1"
-    # Get the current time
-    now="$(date +"%H.%M")"
     # Create the backup path
     backup_path="$(realpath -s "$destination_dir")/$(date +%F)/"
     # Create the backup path directory
@@ -134,7 +132,7 @@ create_backup() {
     cd "$source_dir"/.. || exit
     # Get the name of the source directory
     source_dir=$(basename "$source_dir")
-
+    
     if [ "$compress" == "true" ]; then
         # If compress option is set to true
         verbose_output "Backing up and compressing $container_name..."
@@ -311,6 +309,7 @@ get_paths() {
         # Set the source directory to the config path
         source_dir="$config_path"
     fi
+    echo "Source Direcotry: $source_dir"
 }
 
 # backup_prep() is a function that takes in two arrays: stop_list and no_stop_list
@@ -741,12 +740,14 @@ create_tmp_files() {
 }
 
 main() {
+    # Get the current time
+    now="$(date +"%H.%M")"
     create_tmp_files
     start=$(date +%s)
     config_file
     echo "Config file: $config_file"
     check_config
-    hex_to_decimal "$bar_color"
+    hex_to_decimal "$bar_color"77 
     find_new_containers
     config_file
     backup_prep
@@ -758,6 +759,7 @@ main() {
     if [ "$unraid_notify" == "true" ]; then
         unraid_notification
     fi
+    chmod -R 777 "$backup_path"
     cleanup
 }
 

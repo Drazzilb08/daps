@@ -527,12 +527,12 @@ send_notification() {
         if [ ${#new_container[@]} -gt 0 ]; then
             joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/dev/jokes.txt | shuf -n 1)
             new_container_notification
-            curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
+            curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook" >/dev/null
         fi
         if [ ${#removed_containers[@]} -gt 0 ]; then
             joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/dev/jokes.txt | shuf -n 1)
             removed_container_notification
-            curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
+            curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook" >/dev/null
         fi
         payload
         # Send the payload to the notifiarr webhook URL
@@ -586,7 +586,8 @@ field_builder() {
     field_builder='
     {
         "'"$title"'": "'"$title_text"':",
-        "'"$text"'": "'"$text_value"'"
+        "'"$text"'": "'"$text_value"'",
+        "inline": false
     }'
 
     # Check if fields is not empty and add a comma if it is not
@@ -863,11 +864,6 @@ check_config() {
         if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]] && [ -z "$channel" ]; then
             echo "ERROR: It appears you're trying to use Notifiarr as your notification agent but haven't set a channel. How will the bot know where to send the notification?"
         fi
-        #check if botname is set and using notifiarr
-        if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]] && [ -n "$bot_name" ]; then
-            echo "ERROR: It appears you're using the Notifarr webhook and setting the bot name to $bot_name. Notifiarr does not support this"
-            echo "Please do not set the bot name while using Notifiarr"
-        fi
         # Check if channel is not set if using discord webhook
         if [[ ! $webhook =~ ^https://discord\.com/api/webhooks/ ]] && [ -z "$channel" ]; then
             echo "ERROR: It appears you're using the discord webhook and using the channel argument"
@@ -896,7 +892,6 @@ main() {
     container_no_stop_list=()
     secondary_container_no_stop_list=()
     now="$(date +"%H.%M")"
-    create_tmp_files
     start=$(date +%s)
     config_file
     echo "Config file: $config_file"
@@ -939,7 +934,6 @@ main() {
         # Prompt the user to update their config file
         printf "Please update your config file if these were typos\n"
     fi
-
 }
 
 main

@@ -132,6 +132,7 @@ cleanup_function() {
 
     if [ -d "$directory" ]; then
         find_command="find $directory -printf '%T@ %p\n' | sort -n | tail -n +$keep_backups + 1 | cut -f2- | xargs -d '\n'"
+        #ls -1tr $directory | head -n -"$keep_essential" | xargs -d '\n
         if [ "$dry_run" == true ]; then
             find_command="$find_command echo"
         else

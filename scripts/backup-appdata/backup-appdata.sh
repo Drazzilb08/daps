@@ -882,8 +882,10 @@ check_config() {
 
 cleanup() {
     # find all folders in the destination folder that are older than the specified number of days
-    find "$destination_dir" -type d -mtime +"$keep_backup" -exec rm -r {} \;
+    # find "$destination_dir" -type d -mtime +"$keep_backup" -exec rm -r {} \;
+    ls -1tr "$destination_dir" | head -n -"$keep_backup" | xargs -d '\n' rm -rfd --
 }
+
 
 main() {
     # Get the current time

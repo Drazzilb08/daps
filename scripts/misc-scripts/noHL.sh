@@ -169,7 +169,7 @@ discord_common_fields(){
                             },
                         {
                             "name": "Warning:",
-                            "value": "'"You have $number_of_issues.\n\nSince you have so many and Discord only allows so many lines to be sent at once, the normal list has been removed.\n\nPlease refer to your logfile to determine what files nolonger have hardlinks"'"
+                            "value": "'"You have $number_of_issues files that have no hardlinks to them.\nSince you have so many and Discord only allows so many lines to be sent at once, the normal list has been removed.\n\nPlease refer to your logfile to determine what files nolonger have hardlinks"'"
                         }
                     ]'"$common_fields2"''
     fi

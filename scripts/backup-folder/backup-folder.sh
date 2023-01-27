@@ -17,7 +17,7 @@ compress=false
 unraid_notify=false
 quiet=false
 bot_name='Notification Bot'
-bar_color='ff00ff'
+bar_color='FF00FF'
 channel="0"
 
 # <----- Do not edit below this point ----->
@@ -80,6 +80,36 @@ check_config() {
             echo "Backup will be created without a notification being sent"
         fi
     fi
+}
+
+check_space() {
+    # Print message about checking space requirements
+    verbose_output "Checking space requirements... Please wait..."
+    # Get the available space in the destination directory
+    available_space=$(df -P "$destination_dir" | awk 'NR==2 {print $4}')
+    if [ "$compress" = "true" ]; then
+        # Calculate backup size in bytes
+        backup_size=$(du -s "$source_dir" | awk '{print $1}')
+        # Convert byte values to MB or GB
+        available_space_mb=$(echo "$available_space"/1024/1024 | awk '{printf "%.2f", $0}')
+        backup_size_mb=$(echo "$backup_size"/1024/1024 | awk '{printf "%.2f", $0}')
+
+        if [ "$backup_size" -gt "$available_space" ]; then
+            # Print error message and exit if not enough space available
+            echo "Error: Not enough disk space on $destination_dir. Available: $available_space_mb MB, Required: $backup_size_mb MB"
+            exit 1
+        fi
+    else
+        # Calculate backup size in bytes
+        backup_size=$(du -s "$source_dir" | awk '{print $1}')
+        if [ "$backup_size" -gt "$available_space" ]; then
+            # Print error message and exit if not enough space available
+            echo "Error: Not enough disk space on $destination_dir."
+            exit 1
+        fi
+    fi
+    # Print message that space check is complete
+    verbose_output "Checking space requirements complete..."
 }
 
 # Function to display help
@@ -307,13 +337,14 @@ verbose_output() {
 cleanup() {
     # Remove oldest backups
     verbose_output "Keeping $keep_backup backups, removing the rest"
-    find "$destination_dir" -type f \( -name '*.tar' -o -name '*.tar.7z' \) -printf '%T+ %p\n' | sort -r | tail -n +$((keep_backup + 1)) | cut -d' ' -f2- | xargs rm -rf
+    ls -1tr "$destination_dir" | head -n -"$keep_backup" | xargs -d '\n' rm -rfd --
 }
 
 # Main function
 main() {
     handle_options "$@"
     check_config
+    check_space
     create_backup
     if [ -n "$webhook" ]; then
         send_notification

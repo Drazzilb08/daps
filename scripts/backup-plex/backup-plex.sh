@@ -68,7 +68,7 @@ check_config() {
             exit 1
         fi
         # Check if channel is set if using Notifiarr
-        if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]] && [ -z "$channel" ]; then
+        if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]] && [ -n "$channel" ]; then
             echo "ERROR: It appears you're trying to use Notifiarr as your notification agent but haven't set a channel. How will the bot know where to send the notification?"
             echo "Please use the -C or --channel argument to set the channel ID used for this notification"
         fi
@@ -186,20 +186,16 @@ calculate_runtime() {
 }
 
 unraid_notification() {
-    # Initialize a message variable as an empty string
-    local message=''
     # Check the value of the "full_backup" variable
     if [ "$backup_type" == "essential" ]; then
-        message="Essential Plex data has been backed up"
+        /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Plex Backup" -d "Essential Plex data has been backed up" -i "normal"
     fi
     if [ "$backup_type" == "full" ]; then
-        message="Full Plex data has been backed up"
+        /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Plex Backup" -d "Full Plex data has been backed up" -i "normal"
     fi
-    if [ "$backup_type" == "both" ]; then 
-        message="Essential & Full Plex data has been backed up"
+    if [ "$backup_type" == "both" ]; then
+    /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Plex Backup" -d "Essential & Full Plex data has been backed up" -i "normal"
     fi
-    # Send a notification to the user with the title "Unraid Server Notice", a subject "Plex Backup", the message containing the backup status and an icon "normal"
-    /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Plex Backup" -d "$message" -i "normal"
 }
 
 send_notification() {
@@ -220,9 +216,9 @@ send_notification() {
     if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
         # Call the notifarr_payload function to construct the payload
         notifiarr_common_fields
-        notifarr_payload
+        payload
         # Send the payload to the notifiarr webhook URL
-        curl -s -H "Content-Type: application/json" -X POST -d "'$payload'" "$webhook" >/dev/null
+        curl -s -H "Content-Type: application/json" -X POST -d "'$payload'" "$webhook" #>/dev/null
     fi
 }
 
@@ -263,107 +259,77 @@ discord_common_fields() {
                 ]
             }'
 }
+field_builder() {
+    local field_builder
+    local title_text="$1"
+    local text_value="$2"
+    local reset="$3"
+    if [ "$reset" == "true" ]; then
+        fields=""
+    fi
+    field_builder='
+    {
+        "'"$title"'": "'"$title_text"':",
+        "'"$text"'": "'"$text_value"'",
+        "inline": false
+    }'
+
+    # Check if fields is not empty and add a comma if it is not
+    if [ -n "$fields" ]; then
+        field_builder=","$field_builder
+    fi
+
+    fields="$fields""$field_builder"
+}
 
 payload() {
     # Check the type of backup that was created
     if [ "$backup_type" == "essential" ]; then
+        field_builder "Runtime" "$run_output" "true"
+        field_builder "This Essential backup size" "$essential_backup_size" "false"
+        field_builder "Total size of all Essential backups" "$(du -sh "$dest/Essential/" | awk '{print $1}')" "false"
         payload=''"$common_fields"'
-    "description": "Essential Plex data has been backed up",
-    "fields": 
-    [
-        {
-            "'"$title"'": "Runtime",
-            "'"$text"'": "'"${run_output}"'",
-            "inline": false
-        }, 
-        {
-            "'"$title"'": "This Essential backup size:",
-            "'"$text"'": "'"${essential_backup_size}"'",
-            "inline": false
-        },
-        {
-            "'"$title"'": "Total size of all Essential backups:",
-            "'"$text"'": "'"$(du -sh "$dest/Essential/" | awk '{print $1}')"'",
-            "inline": false
-        }
-    ],'"$common_fields2"''
+                    "description": "Essential Plex data has been backed up",
+                    "fields": 
+                    [
+                        '"$fields"'
+                    ],
+                    '"$common_fields2"''
     elif [ "$backup_type" == "full" ]; then
+        field_builder "Runtime" "$run_output" "true"
+        field_builder "This Full backup size" "$full_backup_size" "false"
+        field_builder "Total size of all Full backups" "$(du -sh "$dest/Full/" | awk '{print $1}')" "false"
         payload=''"$common_fields"'
                 "description": "Essential Plex data has been backed up",
                 "fields": 
                 [
-                    {
-                        "'"$title"'": "Runtime",
-                        "'"$text"'": "'"${run_output}"'",
-                        "inline": false
-                    }, 
-                    {
-                        "'"$title"'": "This Full backup size:",
-                        "'"$text"'": "'"${full_backup_size}"'",
-                        "inline": false
-                    },
-                    {
-                        "'"$title"'": "Total size of all Full backups:",
-                        "'"$text"'": "'"$(du -sh "$dest/Full/" | awk '{print $1}')"'",
-                        "inline": false
-                    }
-                ],'"$common_fields2"''
+                    '"$fields"'
+                ],
+                '"$common_fields2"''
     elif [ "$backup_type" == "essential_no_full" ]; then
+        field_builder "Runtime" "$run_output" "true"
+        field_builder "This Essential backup size" "$essential_backup_size" "false"
+        field_builder "Total size of all Essential backups" "$(du -sh "$dest/Essential/" | awk '{print $1}')" "false"
+        field_builder "Days since last Full backup" "$days" "false"
         payload=''"$common_fields"'
                 "description": "Essential Plex data has been backed up",
                 "fields": 
                 [
-                    {
-                        "'"$title"'": "Runtime",
-                        "'"$text"'": "'"${run_output}"'",
-                        "inline": false
-                    }, 
-                    {
-                        "'"$title"'": "This Essential backup size:",
-                        "'"$text"'": "'"${essential_backup_size}"'",
-                        "inline": false
-                    },
-                    {
-                        "'"$title"'": "Total size of all Essential backups:",
-                        "'"$text"'": "'"$(du -sh "$dest/Essential/" | awk '{print $1}')"'",
-                        "inline": false
-                    },
-                    {
-                        "'"$title"'": "Days since last Full backup",
-                        "'"$text"'": "'"${days}"'",
-                        "inline": false
-                    }
-                ],'"$common_fields2"''
+                    '"$fields"'
+                ],
+                '"$common_fields2"''
     else
+        field_builder "Runtime" "$run_output" "true"
+        field_builder "This Essential backup size" "$essential_backup_size" "false"
+        field_builder "This Full backup size" "$full_backup_size" "false"
+        field_builder "Total size of all Essential backups" "$(du -sh "$dest/Essential/" | awk '{print $1}')" "false"
+        field_builder "Total size of all Full backups" "$(du -sh "$dest/Full/" | awk '{print $1}')" "false"
+        field_builder "Days since last Full backup" "$days" "false"
         payload=''"$common_fields"'
                 "description": "Both Full & Essential Plex data has been backed up",
                 "fields": 
                 [
-                    {
-                        "'"$title"'": "Runtime",
-                        "'"$text"'": "'"${run_output}"'",
-                        "inline": false
-                    }, 
-                    {
-                        "'"$title"'": "This Essential backup size:",
-                        "'"$text"'": "'"${full_backup_size}"'",
-                        "inline": false
-                    }, 
-                    {
-                        "'"$title"'": "This Full backup size:",
-                        "'"$text"'": "'"${full_backup_size}"'",
-                        "inline": false
-                    },
-                    {
-                        "'"$title"'": "Total size of all Essential backups:",
-                        "'"$text"'": "'"$(du -sh "$dest/Essential/" | awk '{print $1}')"'",
-                        "inline": false
-                    },
-                    {
-                        "'"$title"'": "Total size of all Full backups:",
-                        "'"$text"'": "'"$(du -sh "$dest/Full/" | awk '{print $1}')"'",
-                        "inline": false
-                    }
+                    '"$fields"'
                 ],'"$common_fields2"''
     fi
 }
@@ -446,7 +412,7 @@ create_backup() {
             touch "$backup_path/plex_backup-$now.tar.dry_run"
         else
             extension="tar"
-            tar cf --checkpoint=500 --checkpoint-action=dot  "${exclude[@]}" --file="$backup_path/plex_backup-$now.tar" "${backup_source[@]}"
+            tar cf --checkpoint=500 --checkpoint-action=dot "${exclude[@]}" --file="$backup_path/plex_backup-$now.tar" "${backup_source[@]}"
         fi
     fi
     # Store the size of the backup in a variable

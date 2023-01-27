@@ -161,7 +161,7 @@ create_backup() {
     # Create the backup path directory
     mkdir -p "$backup_path"
     # Create the backup file name
-    backup_file="$(realpath -s "$destination_dir")/$(date +%F)/$container_name-$now"
+    backup_file="$(realpath -s "$destination_dir")/$(date +%F)@$now/$container_name"
     # Go to the source directory
     cd "$source_dir"/.. || exit
     # Get the name of the source directory

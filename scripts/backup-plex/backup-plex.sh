@@ -124,28 +124,27 @@ cleanup_function() {
     local no_files_found=true
     # Function to clean up old backups in a specific directory
     cleanup_directory() {
-        # Get the directory path and number of days to keep backups from the arguments
-        local directory="$1"
-        local keep_days="$2"
-        local files_to_remove
-        local find_command
-        # Check if the directory exists
-        if [ -d "$directory" ]; then
-            # Create a find command to find files with specific extension and older than the specified number of days
-            find_command="find $directory -type f \( -name '*.tar' -o -name '*.tar.7z' -o -name '*.tar.7z.dry_run' -o -name '*.tar.dry_run' \) -mtime +$keep_days -delete"
-            # If dry_run is true, change the find command to print the files instead of deleting them
-            if [ "$dry_run" == true ]; then
-                find_command="$find_command -print"
-            fi
-            files_to_remove=$(eval "$find_command")
-            if [ -n "$files_to_remove" ]; then
-                verbose_output "Removing backups older than $keep_days days... please wait"
-                verbose_output "Done"
-                # Update the flag indicating if files were found
-                no_files_found=false
-            fi
+    local directory="$1"
+    local keep_backups="$2"
+    local dry_run="$3"
+    local files_to_remove
+    local find_command
+
+    if [ -d "$directory" ]; then
+        find_command="find $directory -printf '%T@ %p\n' | sort -n | tail -n +$(($keep_backups + 1)) | cut -f2- | xargs -d '\n'"
+        if [ "$dry_run" == true ]; then
+            find_command="$find_command echo"
+        else
+            find_command="$find_command rm -Rfd --"
         fi
-    }
+        files_to_remove=$(eval "$find_command")
+        if [ -n "$files_to_remove" ]; then
+            verbose_output "Removing backups older than $keep_backups backups... please wait"
+            verbose_output "Done"
+            no_files_found=false
+        fi
+    fi
+}
     # If dry_run is true, call the cleanup_directory function with the "Essential" and "Full" directories
     if [ "$dry_run" == true ]; then
         cleanup_directory "$destination_dir/Essential" "$keep_essential"
@@ -160,6 +159,8 @@ cleanup_function() {
         verbose_output "No files found to remove"
     fi
 }
+
+
 
 calculate_runtime() {
     # Calculate total time taken for the backup process
@@ -194,7 +195,7 @@ unraid_notification() {
         /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Plex Backup" -d "Full Plex data has been backed up" -i "normal"
     fi
     if [ "$backup_type" == "both" ]; then
-    /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Plex Backup" -d "Essential & Full Plex data has been backed up" -i "normal"
+        /usr/local/emhttp/webGui/scripts/notify -e "Unraid Server Notice" -s "Plex Backup" -d "Essential & Full Plex data has been backed up" -i "normal"
     fi
 }
 
@@ -372,13 +373,13 @@ create_backup() {
     start=$(date +%s)
     # Get absolute path of the destination directory
     dest=$(realpath -s "$destination_dir")
-    # Create directory with backup type and current date in the destination directory
-    backup_path="$dest/$folder_type/$(date +%F)"
-    mkdir -p "$backup_path"
     # Change to the parent directory of the source directory
     cd "$source_dir"/.. || exit
     folder_name=$(basename "$source_dir")
     now="$(date +"%H.%M")"
+    # Create directory with backup type and current date in the destination directory
+    backup_path="$dest/$folder_type/$(date +%F)@$now"
+    mkdir -p "$backup_path"
     # Set the backup source and exclude directories based on the type of backup
     if [ "$folder_type" == "Essential" ]; then
         backup_source=(
@@ -398,29 +399,29 @@ create_backup() {
     if [ "$compress" == "true" ]; then
         if [ "$dry_run" == true ]; then
             extension="tar.7z.dry_run"
-            echo "Dry run: Would create $backup_path/plex_backup-$now.tar.7z"
-            touch "$backup_path/plex_backup-$now.tar.7z.dry_run"
+            echo "Dry run: Would create $backup_path/$folder_type-plex_backup.tar.7z"
+            touch "$backup_path/$folder_type-plex_backup.tar.7z.dry_run"
         else
             extension="tar.7z"
             # Compress the backup using 7z
-            tar cf - "${exclude[@]}" "${backup_source[@]}" | 7z a -si -t7z -m0=lzma2 -mx=1 -md=32m -mfb=64 -mmt=on -ms=off "$backup_path/plex_backup-$now.tar.7z" "$backup_path/plex_backup-$now.tar"
+            tar cf - "${exclude[@]}" "${backup_source[@]}" | 7z a -si -t7z -m0=lzma2 -mx=1 -md=32m -mfb=64 -mmt=on -ms=off "$backup_path/$folder_type-plex_backup.tar.7z" "$backup_path/$folder_type-plex_backup.tar"
         fi
     else
         if [ "$dry_run" == true ]; then
             extension="tar.dry_run"
-            echo "Dry run: Would create $backup_path/plex_backup-$now.tar"
-            touch "$backup_path/plex_backup-$now.tar.dry_run"
+            echo "Dry run: Would create $backup_path/$folder_type-plex_backup.tar"
+            touch "$backup_path/$folder_type-plex_backup.tar.dry_run"
         else
             extension="tar"
-            tar cf --checkpoint=500 --checkpoint-action=dot "${exclude[@]}" --file="$backup_path/plex_backup-$now.tar" "${backup_source[@]}"
+            tar cf --checkpoint=500 --checkpoint-action=dot "${exclude[@]}" --file="$backup_path/$folder_type-plex_backup.tar" "${backup_source[@]}"
         fi
     fi
     # Store the size of the backup in a variable
     if [ "$folder_type" == "Essential" ]; then
-        essential_backup_size=$(du -sh "$backup_path/plex_backup-$now.$extension" | awk '{print $1}')
+        essential_backup_size=$(du -sh "$backup_path/$folder_type-plex_backup.$extension" | awk '{print $1}')
     # If backup is not of "Essential" type, assign the size to the "full" key
     else
-        full_backup_size=$(du -sh "$backup_path/plex_backup-$now.$extension" | awk '{print $1}')
+        full_backup_size=$(du -sh "$backup_path/$folder_type-plex_backup.$extension" | awk '{print $1}')
     fi
     # Set the end time
     end=$(date +%s)

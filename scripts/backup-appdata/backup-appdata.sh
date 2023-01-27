@@ -157,7 +157,7 @@ create_backup() {
     # Get the container name
     local container_name="$1"
     # Create the backup path
-    backup_path="$(realpath -s "$destination_dir")/$(date +%F)/"
+    backup_path="$(realpath -s "$destination_dir")/$(date +%F)@$now/"
     # Create the backup path directory
     mkdir -p "$backup_path"
     # Create the backup file name
@@ -174,7 +174,7 @@ create_backup() {
         if [ "$dry_run" == "true" ]; then
             # if yes set extension to tar.7z.dry_run
             extension="tar.7z.dry_run"
-            dry_run
+            dry_run 
         else
             # if dry_run is set to false
             extension="tar.7z"

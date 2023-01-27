@@ -131,7 +131,7 @@ cleanup_function() {
     local find_command
 
     if [ -d "$directory" ]; then
-        find_command="find $directory -printf '%T@ %p\n' | sort -n | tail -n +$(($keep_backups + 1)) | cut -f2- | xargs -d '\n'"
+        find_command="find $directory -printf '%T@ %p\n' | sort -n | tail -n +$keep_backups + 1 | cut -f2- | xargs -d '\n'"
         if [ "$dry_run" == true ]; then
             find_command="$find_command echo"
         else
@@ -147,12 +147,12 @@ cleanup_function() {
 }
     # If dry_run is true, call the cleanup_directory function with the "Essential" and "Full" directories
     if [ "$dry_run" == true ]; then
-        cleanup_directory "$destination_dir/Essential" "$keep_essential"
-        cleanup_directory "$destination_dir/Full" "$keep_full"
+        cleanup_directory "$destination_dir/Essential" "$keep_essential" "$dry_run"
+        cleanup_directory "$destination_dir/Full" "$keep_full" "$dry_run"
     # If dry_run is false, call the cleanup_directory function with the "Essential" and "Full" directories
     else
-        cleanup_directory "$destination_dir/Essential" "$keep_essential"
-        cleanup_directory "$destination_dir/Full" "$keep_full"
+        cleanup_directory "$destination_dir/Essential" "$keep_essential" "$dry_run"
+        cleanup_directory "$destination_dir/Full" "$keep_full" "$dry_run"
     fi
     # If no files were found, print a message
     if [ $no_files_found == true ]; then

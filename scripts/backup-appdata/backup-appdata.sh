@@ -611,7 +611,7 @@ payload() {
     json_no_stop_string_2="\`\`\`$(jq -Rs '.' <<<"$secondary_container_no_stop_list_string" | sed -e 's/^"//' -e 's/"$//')\`\`\`"
 
     if [ "$use_summary" == "true" ]; then
-        field_builder "runtime" "$run_output" "true"
+        field_builder "Runtime" "$run_output" "true"
         field_builder "Total size of all appdata backups today" "$run_size" "false"
         field_builder "Total size of all appdata backups" "$full_size" "false"
         payload=''"$common_fields"'
@@ -623,7 +623,7 @@ payload() {
         if [ ${#secondary_container_stop_list[@]} -gt 0 ] || [ ${#secondary_container_no_stop_list[@]} -gt 0 ]; then
             # Containers stopped and backed up x2, containers backed up without stopping them 0x
             if [ ${#secondary_container_stop_list[@]} -gt 0 ] && [ ${#container_no_stop_list[@]} -eq 0 ]; then
-                field_builder "runtime" "$run_output" "true"
+                field_builder "Runtime" "$run_output" "true"
                 field_builder "Containers stopped and backed up" "$json_stop_string" "false"
                 field_builder "Containers stopped and backed up" "$json_stop_string_2" "false"
                 field_builder "Total size of all appdata backups today" "$run_size" "false"
@@ -635,7 +635,7 @@ payload() {
                     ]'"$common_fields2"''
             # Containers stopped and backed up x0, containers backed up without stopping them 2x
             elif [ ${#container_stop_list[@]} -eq 0 ] && [ ${#secondary_container_no_stop_list[@]} -gt 0 ]; then
-                field_builder "runtime" "$run_output" "true"
+                field_builder "Runtime" "$run_output" "true"
                 field_builder "Containers backed up without stopping them" "$json_no_stop_string" "false"
                 field_builder "Containers backed up without stopping them" "$json_no_stop_string_2" "false"
                 field_builder "Total size of all appdata backups today" "$run_size" "false"
@@ -647,7 +647,7 @@ payload() {
                     ]'"$common_fields2"''
             # Containers stopped and backed up x2, containers stopped and backed up 1x
             elif [ ${#secondary_container_stop_list[@]} -gt 0 ] && [ ${#container_no_stop_list[@]} -gt 0 ] && [ ${#secondary_container_no_stop_list[@]} -eq 0 ]; then
-                field_builder "runtime" "$run_output" "true"
+                field_builder "Runtime" "$run_output" "true"
                 field_builder "Containers stopped and backed up" "$json_stop_string" "false"
                 field_builder "Containers stopped and backed up" "$json_stop_string_2" "false"
                 field_builder "Containers backed up without stopping them" "$json_no_stop_string" "false"
@@ -660,7 +660,7 @@ payload() {
                     ]'"$common_fields2"''
             # Containers stopped and backed up x1, containers stopped and backed up 2x
             elif [ ${#secondary_container_no_stop_list[@]} -gt 0 ] && [ ${#container_stop_list[@]} -gt 0 ] && [ ${#secondary_container_stop_list[@]} -eq 0 ]; then
-                field_builder "runtime" "$run_output" "true"
+                field_builder "Runtime" "$run_output" "true"
                 field_builder "Containers stopped and backed up" "$json_stop_string" "false"
                 field_builder "Containers backed up without stopping them" "$json_no_stop_string" "false"
                 field_builder "Containers backed up without stopping them" "$json_no_stop_string_2" "false"
@@ -673,7 +673,7 @@ payload() {
                     ]'"$common_fields2"''
             # Containers stopped and backed up x2, containers stopped and backed up 2x
             else
-                field_builder "runtime" "$run_output" "true"
+                field_builder "Runtime" "$run_output" "true"
                 field_builder "Containers stopped and backed up" "$json_stop_string" "false"
                 field_builder "Containers stopped and backed up" "$json_stop_string_2" "false"
                 field_builder "Containers backed up without stopping them" "$json_no_stop_string" "false"
@@ -689,7 +689,7 @@ payload() {
         else
             # Containers stopped and backed up x1, containers stopped and backed up 1x
             if [ ${#container_stop_list[@]} -gt 0 ] && [ ${#container_no_stop_list[@]} -gt 0 ]; then
-                field_builder "runtime" "$run_output" "true"
+                field_builder "Runtime" "$run_output" "true"
                 field_builder "Containers stopped and backed up" "$json_stop_string" "false"
                 field_builder "Containers backed up without stopping them" "$json_no_stop_string" "false"
                 field_builder "Total size of all appdata backups today" "$run_size" "false"
@@ -701,7 +701,7 @@ payload() {
                     ]'"$common_fields2"''
             # Containers stopped and backed up x1, containers stopped and backed up 0x
             elif [ ${#container_stop_list[@]} -gt 0 ] && [ ${#container_no_stop_list[@]} -eq 0 ]; then
-                field_builder "runtime" "$run_output" "true"
+                field_builder "Runtime" "$run_output" "true"
                 field_builder "Containers stopped and backed up" "$json_stop_string" "false"
                 field_builder "Total size of all appdata backups today" "$run_size" "false"
                 field_builder "Total size of all appdata backups" "$full_size" "false"
@@ -712,7 +712,7 @@ payload() {
                     ]'"$common_fields2"''
             # Containers stopped and backed up x0, containers stopped and backed up 1x
             elif [ ${#container_stop_list[@]} -eq 0 ] && [ ${#container_no_stop_list[@]} -gt 0 ]; then
-                field_builder "runtime" "$run_output" "true"
+                field_builder "Runtime" "$run_output" "true"
                 field_builder "Containers backed up without stopping them" "$json_no_stop_string" "false"
                 field_builder "Total size of all appdata backups today" "$run_size" "false"
                 field_builder "Total size of all appdata backups" "$full_size" "false"

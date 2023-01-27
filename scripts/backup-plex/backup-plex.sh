@@ -405,7 +405,7 @@ create_backup() {
         else
             extension="tar.7z"
             # Compress the backup using 7z
-            tar cf - "${exclude[@]}" "${backup_source[@]}" | 7z a -si -t7z -m0=lzma2 -mx=1 -md=32m -mfb=64 -mmt=on -ms=off "$backup_path/$folder_type-plex_backup.tar.7z" "$backup_path/$folder_type-plex_backup.tar"
+            tar --ignore-failed-read cf - "${exclude[@]}" "${backup_source[@]}" | 7z a -si -t7z -m0=lzma2 -mx=1 -md=32m -mfb=64 -mmt=on -ms=off "$backup_path/$folder_type-plex_backup.tar.7z" "$backup_path/$folder_type-plex_backup.tar"
         fi
     else
         if [ "$dry_run" == true ]; then
@@ -414,7 +414,7 @@ create_backup() {
             touch "$backup_path/$folder_type-plex_backup.tar.dry_run"
         else
             extension="tar"
-            tar cf --checkpoint=500 --checkpoint-action=dot "${exclude[@]}" --file="$backup_path/$folder_type-plex_backup.tar" "${backup_source[@]}"
+            tar --ignore-failed-read cf --checkpoint=500 --checkpoint-action=dot "${exclude[@]}" --file="$backup_path/$folder_type-plex_backup.tar" "${backup_source[@]}"
         fi
     fi
     # Store the size of the backup in a variable

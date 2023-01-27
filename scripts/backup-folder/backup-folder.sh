@@ -151,11 +151,11 @@ create_backup() {
     # Check if the compress variable is true
     if [ "$compress" == "true" ]; then
         # Use tar and 7z to create a compressed archive of the source directory and save it to the backup directory
-        tar -cf - "$folder_name" 2>/dev/null | 7z a -si -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on "$backup_path/$backup_name-$now.tar.7z"
+        tar --ignore-failed-read -cf - "$folder_name" | 7z a -si -t7z -m0=lzma2 -mx=1 -md=32m -mfb=64 -mmt=on -ms=off "$backup_path/$backup_name-$now.tar.7z"
         backup_size=$(du -sh "$backup_path/$backup_name-$now.tar.7z" | awk '{print $1}')
     else
         # Use tar to create an archive of the source directory and save it to the backup directory
-        tar -cf "$backup_path/$backup_name-$now.tar" "$folder_name" 2>/dev/null
+        tar --ignore-failed-read -cf "$backup_path/$backup_name-$now.tar" "$folder_name"
         backup_size=$(du -sh "$backup_path/$backup_name-$now.tar" | awk '{print $1}')
     fi
     # Get the total size of the backup folder

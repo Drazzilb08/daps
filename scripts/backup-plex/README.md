@@ -65,3 +65,7 @@ The difference is this script allows for the seperation of an "Essential" back a
   * Everything except for:
     * Cache directory
     * Codecs directory
+
+### In the CLI I get Noticiations such as this:  file changed as we read it
+* This means simply the file was being written to at the time of backing up. It is always best practice to have Plex turned off prior to running the script. 
+* Please note that this is a limitation of tar and that if you do run against this, that the archive may not be 100% complete. 

@@ -181,10 +181,10 @@ create_backup() {
             # check if exclude_file is set
             if [ -n "$exclude_file" ]; then
                 # if yes use it to exclude files from backup
-                tar --ignore-failed-read cf - --exclude-from="$exclude_file" "$source_dir" | 7z a -si -t7z -m0=lzma2 -mx=1 -md=32m -mfb=64 -mmt=on -ms=off "$backup_file.$extension"
+                tar --ignore-failed-read -cf - --exclude-from="$exclude_file" "$source_dir" | 7z a -si -t7z -m0=lzma2 -mx=1 -md=32m -mfb=64 -mmt=on -ms=off "$backup_file.$extension"
             else
                 # if not just backup the source_dir
-                tar --ignore-failed-read cf - "$source_dir" | 7z a -si -t7z -m0=lzma2 -mx=1 -md=32m -mfb=64 -mmt=on -ms=off "$backup_file.$extension"
+                tar --ignore-failed-read -cf - "$source_dir" | 7z a -si -t7z -m0=lzma2 -mx=1 -md=32m -mfb=64 -mmt=on -ms=off "$backup_file.$extension"
             fi
         fi
         # print message that compression is complete

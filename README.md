@@ -1,5 +1,11 @@
 Collection of unRAID userscripts
 
+## Note to users
+As of version:<br>
+4.0.0 Plex backup<br>
+4.0.0 Appdata backup<br>
+The config files of both these scripts have been reworked and must be redownloaded and updated. If there is any issues with the files let meknow
+
 ## Installation
 
 These scripts were designed to work on unRAID, however there shouldn't be any reason it wouldn't work on any Unix based system. <br>

@@ -1,0 +1,3 @@
+requests==2.24.0
+Levenshtein==0.12.0
+fuzzywuzzy==0.18.0

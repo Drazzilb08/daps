@@ -350,13 +350,9 @@ def validate_input(source_dir, destination_dir, radarr_url, sonarr_url, sonarr_u
     if not os.path.isdir(destination_dir):
         raise ValueError("The destination_dir {} is not a valid directory.".format(destination_dir))
     if not radarr_url and not sonarr_url:
-        raise ValueError("Radarr or Sonarr URL not set")
+        raise ValueError("Both Radarr and Sonarr URLs are not set")
     if type(dry_run) != bool:
         raise ValueError("dry_run must be either True or False")
-    if not os.path.isdir(source_dir):
-        raise ValueError("Source directory does not exist.")
-    if not os.path.isdir(destination_dir):
-        raise ValueError("Destination directory does not exist.")
     if radarr_url:
         if not (radarr_url.startswith("http://") or radarr_url.startswith("https://")):
             raise ValueError("Radarr URL must start with 'http://' or 'https://'.")
@@ -370,9 +366,7 @@ def validate_input(source_dir, destination_dir, radarr_url, sonarr_url, sonarr_u
         raise ValueError("Invalid log level. Must be one of 'DEBUG', 'INFO', 'CRITICAL'.")
 
 def main():
-    # logger = setup_logger(log_level)
     validate_input(source_dir, destination_dir, radarr_url, sonarr_url, sonarr_url_1, dry_run, log_level)
-    # Log the start of the log with the current time
 
     # Check if dry_run is set to True
     if dry_run:
@@ -466,7 +460,7 @@ def main():
         # Log a header indicating the end of connecting to Sonarr 2
         logger.info("********************************")
         # Loop through all the files in the source directory
-        for file in os.listdir(source_dir):
+        for file in tqdm(file_list, desc='Processing files', total=len(file_list)):
             # Skip files that don't contain "(" or ")" in their names
             if '(' not in file or ')' not in file:
                 continue
@@ -527,8 +521,6 @@ def setup_logger(log_level):
     logger.addHandler(console_handler)
 
     return logger
-
-
 
 if __name__ == '__main__':
     # Call the function to setup the logger and pass the log level

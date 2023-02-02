@@ -132,11 +132,12 @@ cleanup_function() {
 
     if [ -d "$directory" ]; then
         # find_command="find $directory -printf '%T@ %p\n' | sort -n | tail -n +$((keep_backups + 1)) | cut -f2- | xargs -d '\n'"
-        find_command="ls -1tr $directory | head -n -$keep_essential | xargs -d '\n'"
+        # find_command="ls -1tr $directory | head -n -$keep_essential | xargs -d '\n'"
+        find_command="ls -1tr $directory | head -n -$keep_backups"
         if [ "$dry_run" == true ]; then
             find_command="$find_command echo"
         else
-            find_command="$find_command rm -Rfd --"
+            find_command="$find_command  | xargs rm -rf"
         fi
         files_to_remove=$(eval "$find_command")
         if [ -n "$files_to_remove" ]; then

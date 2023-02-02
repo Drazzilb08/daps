@@ -43,6 +43,8 @@ movies_threshold=99
 series_threshold=99
 collection_threshold=99
 
+file_list = sorted(os.listdir(source_dir))
+
 def get_INFO(INFO_type):
     # Define headers with Content-Type and Radarr API Key
     headers = {'Content-Type': 'application/json', }
@@ -393,7 +395,7 @@ def main():
         collection = get_INFO("collections")
         logger.info("********************************")
         # Iterate through files in source_dir
-        for file in sorted(os.listdir(source_dir)):
+        for file in tqdm(file_list, desc='Processing files', total=len(file_list)):
             # Check if the file name contains "(" or ")"
             if not re.search(r'\(\d{4}\).', file):
                 # If collections are available
@@ -435,7 +437,7 @@ def main():
         # Log a header indicating the end of connecting to Sonarr
         logger.info("********************************")
         # Loop through all the files in the source directory
-        for file in sorted(os.listdir(source_dir)):
+        for file in tqdm(file_list, desc='Processing files', total=len(file_list)):
             # Skip files that don't contain "(" or ")" in their names
             if not re.search(r'\(\d{4}\).', file):
                 continue

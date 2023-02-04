@@ -131,13 +131,11 @@ cleanup_function() {
     local find_command
 
     if [ -d "$directory" ]; then
-        # find_command="find $directory -printf '%T@ %p\n' | sort -n | tail -n +$((keep_backups + 1)) | cut -f2- | xargs -d '\n'"
-        # find_command="ls -1tr $directory | head -n -$keep_essential | xargs -d '\n'"
-        find_command="ls -1tr $directory | head -n -$keep_backups"
+        find_command="find $destination_dir -mindepth 1 -maxdepth 1 -type d | sort -r | tail -n +$(( keep_backups + 1 ))"
         if [ "$dry_run" == true ]; then
             find_command="$find_command echo"
         else
-            find_command="$find_command  | xargs rm -rf"
+            find_command="$find_command | xargs -I {} rm -rf {}"
         fi
         files_to_remove=$(eval "$find_command")
         if [ -n "$files_to_remove" ]; then

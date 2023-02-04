@@ -880,12 +880,8 @@ check_config() {
     fi
 }
 
-
 cleanup() {
-    # find all folders in the destination folder that are older than the specified number of days
-    # find "$destination_dir" -type d -mtime +"$keep_backup" -exec rm -r {} \;
-    # ls -1tr "$destination_dir" | head -n -"$keep_backup" | xargs -d '\n' rm -rfd --
-    ls -1tr "$destination_dir" | head -n -"$keep_backup" | xargs rm -rf
+    find "$destination_dir" -mindepth 1 -maxdepth 1 -type d | sort -r | tail -n +"$(( $keep_backup + 1 ))" | xargs -I {} rm -rf {}
 }
 
 
@@ -900,7 +896,7 @@ main() {
     config_file
     echo "Config file: $config_file"
     check_config
-    hex_to_decimal "$bar_color"77
+    hex_to_decimal "$bar_color"
     find_new_containers
     config_file
     backup_prep

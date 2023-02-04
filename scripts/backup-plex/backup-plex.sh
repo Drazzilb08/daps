@@ -120,47 +120,17 @@ verbose_output() {
 }
 
 cleanup_function() {
-    # Set a flag to indicate if no files were found
-    local no_files_found=true
-    # Function to clean up old backups in a specific directory
-    cleanup_directory() {
-    local directory="$1"
-    local keep_backups="$2"
-    local dry_run="$3"
-    local files_to_remove
-    local find_command
-
-    if [ -d "$directory" ]; then
-        find_command="find $destination_dir -mindepth 1 -maxdepth 1 -type d | sort -r | tail -n +$(( keep_backups + 1 ))"
-        if [ "$dry_run" == true ]; then
-            find_command="$find_command echo"
-        else
-            find_command="$find_command | xargs -I {} rm -rf {}"
-        fi
-        files_to_remove=$(eval "$find_command")
-        if [ -n "$files_to_remove" ]; then
-            verbose_output "Removing backups older than $keep_backups backups... please wait"
-            verbose_output "Done"
-            no_files_found=false
-        fi
+    if [ -d "$destination_dir"/Essential ]; then
+        echo -e "Removing all but the last" "$keep_essential" "essential backups... please wait"
+        find "$destination_dir" -mindepth 1 -maxdepth 1 -type d | sort -r | tail -n +$(( keep_essential + 1 )) | xargs -I {} rm -rf {}
+        echo -e "Done\n"
+    fi
+    if [ -d "$destination_dir"/Full ]; then
+        echo -e "Removing all but the last " "$keep_full" "full backups... please wait"
+        find "$destination_dir" -mindepth 1 -maxdepth 1 -type d | sort -r | tail -n +$(( keep_full + 1 )) | xargs -I {} rm -rf {}
+        echo -e "Done\n"
     fi
 }
-    # If dry_run is true, call the cleanup_directory function with the "Essential" and "Full" directories
-    if [ "$dry_run" == true ]; then
-        cleanup_directory "$destination_dir/Essential" "$keep_essential" "$dry_run"
-        cleanup_directory "$destination_dir/Full" "$keep_full" "$dry_run"
-    # If dry_run is false, call the cleanup_directory function with the "Essential" and "Full" directories
-    else
-        cleanup_directory "$destination_dir/Essential" "$keep_essential" "$dry_run"
-        cleanup_directory "$destination_dir/Full" "$keep_full" "$dry_run"
-    fi
-    # If no files were found, print a message
-    if [ $no_files_found == true ]; then
-        verbose_output "No files found to remove"
-    fi
-}
-
-
 
 calculate_runtime() {
     # Calculate total time taken for the backup process

@@ -32,6 +32,7 @@ config_file() {
         verbose_output "no config file found"
     fi
 }
+
 check_config() {
     # If config file is not defined in command line arguments, look for it in the same directory as the script
     # Check if source directory exists
@@ -120,14 +121,15 @@ verbose_output() {
 }
 
 cleanup_function() {
-    if [ -d "$destination_dir"/Essential ]; then
+    destination_dir=$(realpath -s "$destination_dir")
+    if [ -d "$destination_dir/Essential" ]; then
         echo -e "Removing all but the last" "$keep_essential" "essential backups... please wait"
-        find "$destination_dir" -mindepth 1 -maxdepth 1 -type d | sort -r | tail -n +$(( keep_essential + 1 )) | xargs -I {} rm -rf {}
+        find "$destination_dir/Essential" -mindepth 1 -maxdepth 1 -type d | sort -r | tail -n +$(( keep_essential + 1 )) | xargs -I {} rm -rf {}
         echo -e "Done\n"
     fi
     if [ -d "$destination_dir"/Full ]; then
         echo -e "Removing all but the last " "$keep_full" "full backups... please wait"
-        find "$destination_dir" -mindepth 1 -maxdepth 1 -type d | sort -r | tail -n +$(( keep_full + 1 )) | xargs -I {} rm -rf {}
+        find "$destination_dir/Full" -mindepth 1 -maxdepth 1 -type d | sort -r | tail -n +$(( keep_full + 1 )) | xargs -I {} rm -rf {}
         echo -e "Done\n"
     fi
 }
@@ -209,6 +211,7 @@ notifiarr_common_fields() {
             "footer": "'"Powered by: Drazzilb | $joke"'"},
             "ids": {"channel": "'"$channel"'"}}}'
 }
+
 discord_common_fields() {
     title="name"
     text="value"
@@ -230,6 +233,7 @@ discord_common_fields() {
                 ]
             }'
 }
+
 field_builder() {
     local field_builder
     local title_text="$1"
@@ -316,7 +320,6 @@ check_space() {
         # Convert byte values to MB or GB
         available_space_mb=$(echo "$available_space"/1024/1024 | awk '{printf "%.2f", $0}')
         backup_size_mb=$(echo "$backup_size"/1024/1024 | awk '{printf "%.2f", $0}')
-
         if [ "$backup_size" -gt "$available_space" ]; then
             # Print error message and exit if not enough space available
             echo "Error: Not enough disk space on $destination_dir. Available: $available_space_mb MB, Required: $backup_size_mb MB"
@@ -377,7 +380,6 @@ create_backup() {
             # tar --ignore-failed-read cf - "${exclude[@]}" "${backup_source[@]}" | 7z a -si -t7z -m0=lzma2 -mx=1 -md=32m -mfb=64 -mmt=on -ms=off "$backup_path/$folder_type-plex_backup.tar.7z" "$backup_path/$folder_type-plex_backup.tar"
             # tar --ignore-failed-read -cf - "${exclude[@]}" "${backup_source[@]}" | 7z a -si -t7z -m0=lzma2 -mx=1 -md=32m -mfb=64 -mmt=on -ms=off "$backup_path/$folder_type-plex_backup.tar.7z" "$backup_path/$folder_type-plex_backup.tar"
             tar --ignore-failed-read -cf - "${exclude[@]}" "${backup_source[@]}" | 7z a -si -t7z -m0=lzma2 -mx=1 -md=32m -mfb=64 -mmt=on -ms=off "$backup_path/$folder_type-plex_backup.tar.7z" 
-
         fi
     else
         if [ "$dry_run" == true ]; then

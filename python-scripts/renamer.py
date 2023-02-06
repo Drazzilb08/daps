@@ -28,19 +28,24 @@ radarr_api_key = 'RADARR_API'
 sonarr_api_key = 'SONARR_API'
 sonarr_api_key_1 = 'SONARR_1_API'
 
+# Plex info used for collections all must be filled to use Plex integration
+plex_url = "http://IP_ADDRESS:32400"
+token = "PLEX_TOKEN"
+library_name = "LIBRARY_NAME"
+
 # Input directory containing the files to be renamed/moved
 source_dir = '/mnt/user/data/posters/'
 
 # Output directory to move the renamed files to
 destination_dir = '/mnt/user/appdata/plex-meta-manager/assets/'
 
-dry_run = False # If you'd like to see how things look prior to actually renaming/moving them
-log_level = 'CRITICAL' # Log levels: CRITICAL, INFO, DEBUG: Debug being the most verbose, and CRITICAL being the least
+dry_run = True # If you'd like to see how things look prior to actually renaming/moving them
+log_level = 'INFO' # Log levels: CRITICAL, INFO, DEBUG: Debug being the most verbose, and CRITICAL being the least
 
 # How much of a match a movie/show title needs to be before it is considered a "Match"
 # Adjust these numbers 0-100 if you're getting false negatives or posatives. 0 being everythig goes, 100 exact match
-movies_threshold=99
-series_threshold=99
+movies_threshold=87
+series_threshold=87
 collection_threshold=99
 
 file_list = sorted(os.listdir(source_dir))
@@ -51,14 +56,11 @@ def get_info(info_type):
     headers['x-api-key'] = radarr_api_key
     # Get information about collections or movies, depending on info_type
     try:
-        if info_type == "collections":
-            response = requests.get(radarr_url + '/api/v3/collection', headers=headers)
-        elif info_type == "movies":
-            response = requests.get(radarr_url + '/api/v3/movie', headers=headers)
+        response = requests.get(radarr_url + '/api/v3/movie', headers=headers)
         # Raise error if the status is not successful
         response.raise_for_status()
         # Log the success of connecting to Radarr and getting informationrmation
-        logger.critical(f"Connected to Radarr.. Getting informationrmation about: {info_type}")
+        logger.critical(f"Connected to Radarr.. Gathering informationrmation...")
         # Return the response in JSON format
         return response.json()
     except requests.exceptions.RequestException as err:
@@ -76,7 +78,7 @@ def get_series_info(sonarr_api_key, sonarr_url):
         # Raise error if the status is not successful
         response.raise_for_status()
         # Log the success of connecting to Sonarr and getting series information
-        logger.critical(f"Connected to Sonarr.. Getting series information...")
+        logger.critical(f"Connected to Sonarr.. Getting information...")
         # Return the response in JSON format
         return response.json()
     except requests.exceptions.RequestException as err:
@@ -91,17 +93,57 @@ def get_series_info(sonarr_api_key, sonarr_url):
             logger.critical(f"Error connecting to Sonarr: {err}")
         return None
 
-def get_collections(baseurl, token, library_name):
-    plex = plexapi.PlexServer(baseurl, token)
-    library = plex.library.section(library_name)
-    collections = library.all()
-    collection_names = [collection.title for collection in collections]
+def get_collections(plex_url, token, library_name):
+    # Get the list of all libraries
+    try:
+        response = requests.get(f"{plex_url}/library/sections", headers={
+            "X-Plex-Token": token
+        })
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print("An error occurred while getting the list of libraries:", e)
+        return []
+    try:
+        xml = etree.fromstring(response.content)
+    except etree.ParseError as e:
+        print("An error occurred while parsing the response:", e)
+        return []
+    libraries = xml.findall(".//Directory")
+    # Find the library with the given name
+    target_library = None
+    for library in libraries:
+        if library.get("title") == library_name:
+            target_library = library
+            break
+    if target_library is None:
+        print(f"Library with name {library_name} not found")
+        return []
+    library_id = target_library.get("key")
+    # Make a GET request to the /library/sections/{library_id}/all endpoint to retrieve a list of all collections in the library
+    try:
+        response = requests.get(f"{plex_url}/library/sections/{library_id}/all", headers={
+            "X-Plex-Token": token
+        })
+        response.raise_for_status()
+    except requests.exceptions.RequestException as e:
+        print("An error occurred while getting the collections:", e)
+        return []
+    try:
+        xml = etree.fromstring(response.content)
+    except etree.ParseError as e:
+        print("An error occurred while parsing the response:", e)
+        return []
+    collections = xml.findall(".//Collection")
+    # Extract the names of the collections
+    logger.critical(f"Connected to Plex.. Gathering informationrmation...")
+    collection_names = [collection.get("tag") for collection in collections]
     return collection_names
 
 def match_series(series, file):
     # Get the matched_series's name and year from the file
+    year = None
     file_name = file.split("(")[0].rstrip()
-    year = file.split("(")[1].split(")")[0]
+    year_match = re.search(r'\((\d{4})\)', file)
     year = str(year)
     best_match = None
     closest_match = None
@@ -152,8 +194,9 @@ def match_series(series, file):
 
 def match_movies(movies, file):
     # Split the file name and year from the file
+    year = None
     file_name = file.split("(")[0].rstrip()
-    year = file.split("(")[1].split(")")[0]
+    year_match = re.search(r'\((\d{4})\)', file)
     year = str(year)
     best_match = None
     closest_match = None
@@ -181,32 +224,29 @@ def match_movies(movies, file):
     else:
         return None, None
 
-def match_collection(collection, file):
+def match_collection(plex_collections, file):
     # Split the file name and extension and get the file name only
     file_name = os.path.splitext(file)[0]
     logger.debug(f'file_name: {file_name}')
-    # Check if the file name contains the word "Season" or "Special", return None and "Show" if true
-    if "Season" in file_name or "Special" in file_name:
-        return None, "Show"
-    # Check if there are other files in the directory with the same name and the word "Season", return None and "Show" if true
-    elif any(f.startswith(file_name) and "Season" in f for f in os.listdir(source_dir)):
-        return None, "Show"
+    best_match = None
+    closest_match = None
+    closest_score = 0
+    best_distance = collection_threshold
+    # Check for a match in the plex_collections list first
+    for plex_collection in plex_collections:
+        plex_collection_match = fuzz.token_sort_ratio(file_name, plex_collection)
+        if plex_collection_match >= collection_threshold:
+            return plex_collection, None
+        elif plex_collection_match >= (collection_threshold - 5):
+                if closest_score < plex_collection_match:
+                        closest_match = plex_collection
+                        closest_score = plex_collection_match
+    if best_match:
+        return best_match, None
+    elif closest_match:
+        return None, f"No match found, closest match for {file} was {closest_match} with a score of {closest_score}"
     else:
-        best_match = None
-        best_distance = collection_threshold
-        # Loop through the collection
-        for matched_collection in collection:
-            matched_collection_name = matched_collection['title']
-            # Get the ratio of similarity between the file name and the matched collection name
-            matched_collection_name_match = fuzz.token_sort_ratio(file_name, matched_collection_name)
-            # If the ratio of similarity is higher than or equal to the collection threshold
-            if matched_collection_name_match >= collection_threshold:
-                best_distance = matched_collection_name_match
-                best_match = matched_collection
-        if best_match:
-            return best_match, None
-        elif not re.search(r'\(\d{4}\).', file):
-            return None, "No match found"
+        return None, None
 
 def rename_movies(matched_movie, file, destination_dir, source_dir):
     # Get the matched_movie's folder name and the file extension
@@ -228,7 +268,6 @@ def rename_movies(matched_movie, file, destination_dir, source_dir):
             shutil.move(source, destination)
             logger.critical(f"{file} -> {matched_movie_folder}")
             return
-    
     # Check if the file name is the same as the matched_movie's folder name
     if os.path.basename(file) == matched_movie_folder:
         if dry_run:
@@ -296,8 +335,7 @@ def remove_illegal_chars(string):
     return illegal_characters.sub("", string)
 
 def rename_collections(matched_collection, file, destination_dir, source_dir):
-    # Get the title of the matched collection
-    matched_collection_title = matched_collection['title']
+    matched_collection_title = matched_collection
     logger.debug(f"matched_collection_title: {matched_collection_title}")
     # Get the file extension of the file
     file_extension = os.path.basename(file).split(".")[-1]
@@ -364,23 +402,22 @@ def main():
         logger.critical("*************************************")
         # Log a warning message that no changes will be made
         logger.critical("*******NO CHANGES WILL BE MADE*******")
-
     # Log the destination directory
     logger.critical(f"Destination folder: {destination_dir}")
     # Check if both radarr_api_key and radarr_url are set
     if radarr_api_key and radarr_url:
         # Get movie and collection information from Radarr
         movies = get_info("movies")
-        collection = get_info("collections")
-        # collections = get_collections(baseurl, token, library_name)
+        if plex_url and token and library_name:
+            plex_collections=get_collections(plex_url, token, library_name)
         # Iterate through files in source_dir
         for file in tqdm(file_list, desc='Processing files', total=len(file_list)):
             # Check if the file name contains "(" or ")"
             if not re.search(r'\(\d{4}\).', file):
                 # If collections are available
-                if collection is not None:
+                if plex_collections is not None:
                     # Try to match the file with a collection in the Radarr library
-                    matched_collection, reason = match_collection(collection, file)
+                    matched_collection, reason = match_collection(plex_collections, file)
                     # If a match is found, rename the file
                     if matched_collection:
                         rename_collections(matched_collection, file, destination_dir, source_dir)
@@ -427,7 +464,7 @@ def main():
         # Loop through all the files in the source directory
         for file in tqdm(file_list, desc='Processing files', total=len(file_list)):
             # Skip files that don't contain "(" or ")" in their names
-            if '(' not in file or ')' not in file:
+            if not re.search(r'\(\d{4}\).', file):
                 continue
             else:
                 # Try to match the file with a series in the Sonarr 2 library

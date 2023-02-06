@@ -303,7 +303,10 @@ stop_start_container() {
         # if container not running
         verbose_output "Container $container_name is not running"
         # check the space
-        check_space
+        if [ "$dry_run" == "false" ]; then
+            # check the space
+            check_space
+        fi
         # create backup
         create_backup "$container_name"
         # print information about the container
@@ -436,7 +439,10 @@ backup_prep() {
                 continue
             fi
             # check the space
+            if [ "$dry_run" == "false" ]; then
+            # check the space
             check_space
+            fi
             # Create a backup of the container
             create_backup "$no_stop_container"
             # Print information about the container

@@ -1,4 +1,5 @@
 #!/bin/bash
+#!/bin/bash
 #                            _       _          ____             _
 #      /\                   | |     | |        |  _ \           | |
 #     /  \   _ __  _ __   __| | __ _| |_ __ _  | |_) | __ _  ___| | ___   _ _ __
@@ -10,6 +11,7 @@
 #
 # v4.0.0
 
+# Path to config file such as "/path/to/config/config_file.txt"
 config_file=""
 
 # <----- Do not edit below this point ----->

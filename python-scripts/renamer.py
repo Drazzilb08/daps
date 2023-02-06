@@ -31,16 +31,16 @@ sonarr_api_key_1 = 'SONARR_1_API'
 # Plex info used for collections all must be filled to use Plex integration
 plex_url = "http://IP_ADDRESS:32400"
 token = "PLEX_TOKEN"
-library_name = "LIBRARY_NAME"
+library_names = ['library_name', 'library_name']
 
 # Input directory containing the files to be renamed/moved
-source_dir = '/mnt/user/data/posters/'
+source_dir = '/path/to/posters'
 
 # Output directory to move the renamed files to
-destination_dir = '/mnt/user/appdata/plex-meta-manager/assets/'
+destination_dir = '/path/to/plex-meta-manager/assets'
 
-dry_run = True # If you'd like to see how things look prior to actually renaming/moving them
-log_level = 'INFO' # Log levels: CRITICAL, INFO, DEBUG: Debug being the most verbose, and CRITICAL being the least
+dry_run = False # If you'd like to see how things look prior to actually renaming/moving them
+log_level = 'CRITICAL' # Log levels: CRITICAL, INFO, DEBUG: Debug being the most verbose, and CRITICAL being the least
 
 # How much of a match a movie/show title needs to be before it is considered a "Match"
 # Adjust these numbers 0-100 if you're getting false negatives or posatives. 0 being everythig goes, 100 exact match
@@ -78,7 +78,7 @@ def get_series_info(sonarr_api_key, sonarr_url):
         # Raise error if the status is not successful
         response.raise_for_status()
         # Log the success of connecting to Sonarr and getting series information
-        logger.critical(f"Connected to Sonarr.. Getting information...")
+        logger.critical(f"Connected to Sonarr.. Gathering information...")
         # Return the response in JSON format
         return response.json()
     except requests.exceptions.RequestException as err:
@@ -93,61 +93,69 @@ def get_series_info(sonarr_api_key, sonarr_url):
             logger.critical(f"Error connecting to Sonarr: {err}")
         return None
 
-def get_collections(plex_url, token, library_name):
-    # Get the list of all libraries
+def get_collections(plex_url, token, library_names):
+    # Make a GET request to the /library/sections endpoint to retrieve a list of all libraries
     try:
         response = requests.get(f"{plex_url}/library/sections", headers={
             "X-Plex-Token": token
         })
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        print("An error occurred while getting the list of libraries:", e)
+        print("An error occurred while getting the libraries:", e)
         return []
     try:
         xml = etree.fromstring(response.content)
     except etree.ParseError as e:
         print("An error occurred while parsing the response:", e)
         return []
-    libraries = xml.findall(".//Directory")
-    # Find the library with the given name
-    target_library = None
-    for library in libraries:
-        if library.get("title") == library_name:
-            target_library = library
-            break
-    if target_library is None:
-        print(f"Library with name {library_name} not found")
-        return []
-    library_id = target_library.get("key")
-    # Make a GET request to the /library/sections/{library_id}/all endpoint to retrieve a list of all collections in the library
-    try:
-        response = requests.get(f"{plex_url}/library/sections/{library_id}/all", headers={
-            "X-Plex-Token": token
-        })
-        response.raise_for_status()
-    except requests.exceptions.RequestException as e:
-        print("An error occurred while getting the collections:", e)
-        return []
-    try:
-        xml = etree.fromstring(response.content)
-    except etree.ParseError as e:
-        print("An error occurred while parsing the response:", e)
-        return []
-    collections = xml.findall(".//Collection")
-    # Extract the names of the collections
+    libraries = xml.findall(".//Directory[@type='movie']")
+    collections = []
+    for library_name in library_names:
+        target_library = None
+        for library in libraries:
+            if library.get("title") == library_name:
+                target_library = library
+                break
+        if target_library is None:
+            print(f"Library with name {library_name} not found")
+            continue
+        library_id = target_library.get("key")
+        # Make a GET request to the /library/sections/{library_id}/all endpoint to retrieve a list of all collections in the library
+        try:
+            response = requests.get(f"{plex_url}/library/sections/{library_id}/all", headers={
+                "X-Plex-Token": token
+            })
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            print("An error occurred while getting the collections:", e)
+            continue
+        try:
+            xml = etree.fromstring(response.content)
+        except etree.ParseError as e:
+            print("An error occurred while parsing the response:", e)
+            continue
+        library_collections = xml.findall(".//Collection")
+        library_collection_names = [collection.get("tag") for collection in library_collections]
+        collections.extend(library_collection_names)
     logger.critical(f"Connected to Plex.. Gathering informationrmation...")
-    collection_names = [collection.get("tag") for collection in collections]
-    return collection_names
+    return collections
 
 def match_series(series, file):
     # Get the matched_series's name and year from the file
     year = None
-    file_name = file.split("(")[0].rstrip()
-    year_match = re.search(r'\((\d{4})\)', file)
-    year = str(year)
     best_match = None
     closest_match = None
     closest_score = 0
+    logger.debug(f'File Name: {file}')
+    file_name = file.split("(")[0].rstrip()
+    logger.debug(f'Series Name: {file_name}')
+    year_match = re.search(r'\((\d{4})\)', file)
+    if year_match:
+        year = year_match.group(1)
+        logger.debug(f'Year: {year}')
+    else:
+        logger.debug("Year not found")
+    year = str(year)
     # loop through the series list
     for matched_series in series:
         matched_series_name = matched_series['title']
@@ -195,12 +203,19 @@ def match_series(series, file):
 def match_movies(movies, file):
     # Split the file name and year from the file
     year = None
-    file_name = file.split("(")[0].rstrip()
-    year_match = re.search(r'\((\d{4})\)', file)
-    year = str(year)
     best_match = None
     closest_match = None
     closest_score = 0
+    logger.debug(f'File Name: {file}')
+    file_name = file.split("(")[0].rstrip()
+    logger.debug(f'Movie Name: {file_name}')
+    year_match = re.search(r'\((\d{4})\)', file)
+    if year_match:
+        year = year_match.group(1)
+        logger.debug(f'Year: {year}')
+    else:
+        logger.debug("Year not found")
+    year = str(year)
     for matched_movie in movies:
         matched_movie_name = matched_movie['title']
         matched_movie_name = remove_illegal_chars(matched_movie_name)
@@ -408,8 +423,8 @@ def main():
     if radarr_api_key and radarr_url:
         # Get movie and collection information from Radarr
         movies = get_info("movies")
-        if plex_url and token and library_name:
-            plex_collections=get_collections(plex_url, token, library_name)
+        if plex_url and token and library_names:
+            plex_collections=get_collections(plex_url, token, library_names)
         # Iterate through files in source_dir
         for file in tqdm(file_list, desc='Processing files', total=len(file_list)):
             # Check if the file name contains "(" or ")"

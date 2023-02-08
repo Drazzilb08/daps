@@ -1,0 +1,1 @@
+This is a tampermonkey styled script to download all posters from the feeds page of TPDB. This is a simple script that clicks the download button every 0.5 seconds and stops when it has hit all the downloads.

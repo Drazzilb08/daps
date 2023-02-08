@@ -15,8 +15,10 @@ import Levenshtein
 import time
 import re
 import logging
+import xml.etree.ElementTree as etree
 from logging.handlers import RotatingFileHandler
 from fuzzywuzzy import fuzz
+from tqdm import tqdm
 
 # Radarr/Sonarr URL; Must begin with HTTP or HTTPS
 radarr_url = 'http://IP_ADDRESS:PORT'
@@ -518,7 +520,7 @@ def setup_logger(log_level):
     # Set the formatter for the file handler
     formatter = logging.Formatter(fmt='%(asctime)s %(levelname)s: %(message)s', datefmt='%I:%M %p')
     # Add a TimedRotatingFileHandler to the logger, to log to a file that rotates daily
-    handler = logging.handlers.TimedRotatingFileHandler(log_file, when='midnight', interval=1, backupCount=5)
+    handler = logging.handlers.TimedRotatingFileHandler(log_file, when='midnight', interval=1, backupCount=3)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     # Set the formatter for the console handler

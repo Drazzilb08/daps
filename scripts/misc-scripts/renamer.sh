@@ -1,30 +1,21 @@
 #!/bin/bash
+#  _____
+# |  __ \
+# | |__) |___ _ __   __ _ _ __ ___   ___ _ __
+# |  _  // _ \ '_ \ / _` | '_ ` _ \ / _ \ '__|
+# | | \ \  __/ | | | (_| | | | | | |  __/ |
+# |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|
+# v.3.0.0
 
-#     _ _____  _    _ _____        _____  _____  
-#    (_)  __ \| |  | |  __ \ /\   |  __ \|  __ \ 
-#     _| |  | | |  | | |__) /  \  | |__) | |__) |
-#    | | |  | | |  | |  ___/ /\ \ |  _  /|  _  / 
-#    | | |__| | |__| | |  / ____ \| | \ \| | \ \ 
-#    | |_____/ \____/|_| /_/    \_\_|  \_\_|  \_\
-#   _/ |                                         
-#  |__/                                          
-#
+# define the source and destination directories
+source_dir='/path/to/posters'
+destination_dir='/path/to/where/posters/will/go'
+log_dir='/path/to/logs/'
 
-downloads_dir='/path/to/downloads'
-media_dir='/path/to/media'
-webhook=''
-bot_name='Notification Bot'
-bar_color='FF00FF'
-channel=''
-
-include=(
-    # "Add a folder that is further down in your media dir"
-    # "Use this if you have your downlaods inside the same parrent directory as your media"
-    # "Such as ../media/downloads"
-    # "Such as ../media/movies"
-    # "Such as ../media/shows"
-    # "This should account for that"
-)
+# Global variables
+dry_run=false
+move=false
+no_move=false
 
 # <----- Do not edit below this point ----->
 
@@ -79,7 +70,7 @@ check_config() {
         exit
     fi
     # Check if webhook is set and in the correct format
-    if [ -n "$webhook" ]; then
+    if [ -z "$webhook" ]; then
         if [[ ! $webhook =~ ^https://discord\.com/api/webhooks/ ]] && [[ ! $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
             echo "ERROR: Invalid webhook provided please enter a valid webhook url in the format https://discord.com/api/webhooks/ or https://notifiarr.com/api/v1/notification/passthrough"
             exit 1
@@ -111,11 +102,9 @@ find_duplicates() {
     start=$(date +%s)
     if [ ${#include[@]} -eq 0 ]; then
         jdupes -r -L -A -X onlyext:mp4,mkv,avi "${downloads_dir}" "${media_dir}"
-        true
     else
         for ((i = 0; i < ${#include[@]}; i++)); do
             jdupes -r -L -A -X onlyext:mp4,mkv,avi "${downloads_dir}" "${media_dir}/${include[$i]}"
-            true
         done
     fi
     end=$(date +%s)
@@ -156,7 +145,7 @@ hex_to_decimal() {
 send_notification() {
     get_ts=$(date -u -Iseconds)
     joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/dev/jokes.txt | shuf -n 1)
-    if [ -n "$webhook" ]; then
+    if [ -z "$webhook" ]; then
         if [[ "$webhook" =~ ^https://discord\.com/api/webhooks/ ]]; then
             discord_common_fields
             payload
@@ -232,7 +221,7 @@ main() {
     hex_to_decimal
     find_duplicates
     calculate_runtime
-    if [ -n "$webhook" ]; then
+    if [ -z "$webhook" ]; then
         send_notification
     fi
     cleanup

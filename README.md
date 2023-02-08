@@ -4,7 +4,7 @@ Collection of unRAID userscripts
 As of version:<br>
 4.0.0 Plex backup<br>
 4.0.0 Appdata backup<br>
-The config files of both these scripts have been reworked and must be redownloaded and updated. If there is any issues with the files let meknow
+The config files of both these scripts have been reworked and must be redownloaded and updated. If there is any issues with the files let me know
 
 ## Installation
 

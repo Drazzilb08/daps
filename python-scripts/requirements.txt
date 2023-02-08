@@ -1,4 +1,5 @@
-requests==2.24.0
-Levenshtein==0.12.0
-fuzzywuzzy==0.18.0
-tqdm==4.64.1
+Levenshtein
+fuzzywuzzy
+requests
+tqdm
+xml.etree.ElementTree

@@ -6,7 +6,7 @@
 #  |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|  |_|    \__, |
 #                                                     __/ |
 #                                                    |___/ 
-# v.1.0.1
+# v.1.0.2
 
 import os
 import requests
@@ -111,7 +111,7 @@ def get_collections(plex_url, token, library_names):
         print("An error occurred while parsing the response:", e)
         return []
     libraries = xml.findall(".//Directory[@type='movie']")
-    collections = []
+    collections = set()
     for library_name in library_names:
         target_library = None
         for library in libraries:
@@ -122,9 +122,9 @@ def get_collections(plex_url, token, library_names):
             print(f"Library with name {library_name} not found")
             continue
         library_id = target_library.get("key")
-        # Make a GET request to the /library/sections/{library_id}/all endpoint to retrieve a list of all collections in the library
+        # Make a GET request to the /library/sections/{library_id}/collections endpoint to retrieve a list of all collections in the library
         try:
-            response = requests.get(f"{plex_url}/library/sections/{library_id}/all", headers={
+            response = requests.get(f"{plex_url}/library/sections/{library_id}/collections", headers={
                 "X-Plex-Token": token
             })
             response.raise_for_status()
@@ -136,9 +136,11 @@ def get_collections(plex_url, token, library_names):
         except etree.ParseError as e:
             print("An error occurred while parsing the response:", e)
             continue
-        library_collections = xml.findall(".//Collection")
-        library_collection_names = [collection.get("tag") for collection in library_collections]
-        collections.extend(library_collection_names)
+        library_collections = xml.findall(".//Directory")
+        library_collection_names = [collection.get("title") for collection in library_collections if collection.get("smart") != "1"]
+        for collection_name in library_collection_names:
+            if collection_name not in collections:
+                collections.add((collection_name))
     logger.critical(f"Connected to Plex.. Gathering informationrmation...")
     return collections
 

@@ -4,6 +4,20 @@ import re
 from collections import defaultdict
 import xml.etree.ElementTree as etree
 
+plex_url = "http://IP_ADDRESS:32400"
+token = "PLEX_TOKEN"
+library_names = ['library_name', 'library_name']
+assets_path = '/mnt/user/appdata/plex-meta-manager/assets/'
+media_paths =   [ 
+                '/mnt/user/data/media/anime movies/',
+                '/mnt/user/data/media/documentary movies/',
+                '/mnt/user/data/media/movies/',
+                '/mnt/user/data/media/anime series/',
+                '/mnt/user/data/media/animated series',
+                '/mnt/user/data/media/documentary series',
+                '/mnt/user/data/media/series/'
+                ]
+
 
 def get_assets_files(assets_path):
     return [f for f in os.listdir(assets_path) if os.path.isfile(os.path.join(assets_path, f))]
@@ -126,19 +140,6 @@ def get_collections(plex_url, token, library_names):
 
 
 def main():
-    plex_url = "http://192.168.1.200:32400"
-    token = "PLEX_TOKEN"
-    library_names = ['library_name', 'library_name']
-    assets_path = '/mnt/user/appdata/plex-meta-manager/assets/'
-    media_paths =   [ 
-                    '/mnt/user/data/media/anime movies/',
-                    '/mnt/user/data/media/documentary movies/',
-                    '/mnt/user/data/media/movies/',
-                    '/mnt/user/data/media/anime series/',
-                    '/mnt/user/data/media/animated series',
-                    '/mnt/user/data/media/documentary series',
-                    '/mnt/user/data/media/series/'
-                    ]
     assets_files = get_assets_files(assets_path)
     media_folders = get_media_folders(media_paths)
     no_match_folders = get_unmatched_folders(assets_files, media_folders)

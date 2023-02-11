@@ -6,7 +6,7 @@
 #  |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|  |_|    \__, |
 #                                                     __/ |
 #                                                    |___/ 
-# v.1.0.0
+# v.1.0.1
 
 import os
 import requests
@@ -534,6 +534,11 @@ def setup_logger(log_level):
     elif log_level == 'critical':
         console_handler.setLevel(logging.CRITICAL)
     logger.addHandler(console_handler)
+    # Delete the old log files
+    log_files = [f for f in os.listdir(log_dir) if os.path.isfile(os.path.join(log_dir, f)) and f.startswith("renamer_")]
+    log_files.sort(key=lambda x: os.path.getmtime(os.path.join(log_dir, x)), reverse=True)
+    for file in log_files[3:]:
+        os.remove(os.path.join(log_dir, file))
     return logger
 
 if __name__ == '__main__':

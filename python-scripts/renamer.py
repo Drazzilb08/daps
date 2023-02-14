@@ -6,7 +6,7 @@
 #  |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|  |_|    \__, |
 #                                                     __/ |
 #                                                    |___/ 
-# v.1.0.0
+# v.1.0.3
 
 import os
 import requests
@@ -111,7 +111,7 @@ def get_collections(plex_url, token, library_names):
         print("An error occurred while parsing the response:", e)
         return []
     libraries = xml.findall(".//Directory[@type='movie']")
-    collections = []
+    collections = set()
     for library_name in library_names:
         target_library = None
         for library in libraries:
@@ -122,9 +122,9 @@ def get_collections(plex_url, token, library_names):
             print(f"Library with name {library_name} not found")
             continue
         library_id = target_library.get("key")
-        # Make a GET request to the /library/sections/{library_id}/all endpoint to retrieve a list of all collections in the library
+        # Make a GET request to the /library/sections/{library_id}/collections endpoint to retrieve a list of all collections in the library
         try:
-            response = requests.get(f"{plex_url}/library/sections/{library_id}/all", headers={
+            response = requests.get(f"{plex_url}/library/sections/{library_id}/collections", headers={
                 "X-Plex-Token": token
             })
             response.raise_for_status()
@@ -136,9 +136,11 @@ def get_collections(plex_url, token, library_names):
         except etree.ParseError as e:
             print("An error occurred while parsing the response:", e)
             continue
-        library_collections = xml.findall(".//Collection")
-        library_collection_names = [collection.get("tag") for collection in library_collections]
-        collections.extend(library_collection_names)
+        library_collections = xml.findall(".//Directory")
+        library_collection_names = [collection.get("title") for collection in library_collections if collection.get("smart") != "1"]
+        for collection_name in library_collection_names:
+            if collection_name not in collections:
+                collections.add((collection_name))
     logger.critical(f"Connected to Plex.. Gathering informationrmation...")
     return collections
 
@@ -160,7 +162,11 @@ def match_series(series, file):
     year = str(year)
     # loop through the series list
     for matched_series in series:
-        matched_series_name = matched_series['title']
+        year_in_title = re.search(r'\((\d{4})\)', matched_series['title'])
+        if year_in_title:
+            matched_series_name = matched_series['title'].split("(")[0].rstrip()
+        else:
+            matched_series_name = matched_series['title']
         matched_series_name = remove_illegal_chars(matched_series_name)
         matched_series_year = matched_series['year']
         matched_series_year = str(matched_series_year)
@@ -176,31 +182,13 @@ def match_series(series, file):
                         closest_match = matched_series
                         closest_year = matched_series_year
                         closest_score = matched_series_name_match
+        # if a best_match was found in the second loop
     if best_match:
         return best_match, None
+    elif closest_match:
+        return None, f"No match found, closest match for {file} was {closest_match['title']} ({closest_year}) with a score of {closest_score}"
     else:
-        file_name_with_year = f"{file_name} ({year})"
-        matched_series_year = matched_series['year']
-        for matched_series in series:
-            matched_series_name = matched_series['title']
-            matched_series_name_match = fuzz.token_sort_ratio(file_name_with_year, matched_series_name)
-            if matched_series_name_match >= series_threshold:
-                if year == matched_series_year:
-                    best_match = matched_series
-                break
-            elif matched_series_name_match >= (series_threshold - 5):
-                if year == matched_series_year:
-                    if closest_score < matched_series_name_match:
-                            closest_match = matched_series
-                            closest_year = matched_series_year
-                            closest_score = matched_series_name_match
-        # if a best_match was found in the second loop
-        if best_match:
-            return best_match, None
-        elif closest_match:
-            return None, f"No match found, closest match for {file} was {closest_match['title']} ({closest_year}) with a score of {closest_score}"
-        else:
-            return None, None
+        return None, None
 
 def match_movies(movies, file):
     # Split the file name and year from the file
@@ -534,6 +522,11 @@ def setup_logger(log_level):
     elif log_level == 'critical':
         console_handler.setLevel(logging.CRITICAL)
     logger.addHandler(console_handler)
+    # Delete the old log files
+    log_files = [f for f in os.listdir(log_dir) if os.path.isfile(os.path.join(log_dir, f)) and f.startswith("renamer_")]
+    log_files.sort(key=lambda x: os.path.getmtime(os.path.join(log_dir, x)), reverse=True)
+    for file in log_files[3:]:
+        os.remove(os.path.join(log_dir, file))
     return logger
 
 if __name__ == '__main__':

@@ -6,7 +6,7 @@
 #  |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|  |_|    \__, |
 #                                                     __/ |
 #                                                    |___/ 
-# v.1.0.2
+# v.1.0.3
 
 import os
 import requests
@@ -162,7 +162,11 @@ def match_series(series, file):
     year = str(year)
     # loop through the series list
     for matched_series in series:
-        matched_series_name = matched_series['title']
+        year_in_title = re.search(r'\((\d{4})\)', matched_series['title'])
+        if year_in_title:
+            matched_series_name = matched_series['title'].split("(")[0].rstrip()
+        else:
+            matched_series_name = matched_series['title']
         matched_series_name = remove_illegal_chars(matched_series_name)
         matched_series_year = matched_series['year']
         matched_series_year = str(matched_series_year)
@@ -178,31 +182,13 @@ def match_series(series, file):
                         closest_match = matched_series
                         closest_year = matched_series_year
                         closest_score = matched_series_name_match
+        # if a best_match was found in the second loop
     if best_match:
         return best_match, None
+    elif closest_match:
+        return None, f"No match found, closest match for {file} was {closest_match['title']} ({closest_year}) with a score of {closest_score}"
     else:
-        file_name_with_year = f"{file_name} ({year})"
-        matched_series_year = matched_series['year']
-        for matched_series in series:
-            matched_series_name = matched_series['title']
-            matched_series_name_match = fuzz.token_sort_ratio(file_name_with_year, matched_series_name)
-            if matched_series_name_match >= series_threshold:
-                if year == matched_series_year:
-                    best_match = matched_series
-                break
-            elif matched_series_name_match >= (series_threshold - 5):
-                if year == matched_series_year:
-                    if closest_score < matched_series_name_match:
-                            closest_match = matched_series
-                            closest_year = matched_series_year
-                            closest_score = matched_series_name_match
-        # if a best_match was found in the second loop
-        if best_match:
-            return best_match, None
-        elif closest_match:
-            return None, f"No match found, closest match for {file} was {closest_match['title']} ({closest_year}) with a score of {closest_score}"
-        else:
-            return None, None
+        return None, None
 
 def match_movies(movies, file):
     # Split the file name and year from the file

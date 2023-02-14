@@ -22,6 +22,7 @@ To run the script, you need to provide the following arguments:
 --radarr-apis: (optional) List of API keys for Radarr instances.
 --radarr-check: (optional) Number of movies to check.
 ```
+Note: Sonarr/Radarr URLs/APIs are optional but without them the script will not run. You need at least one pair.
 ## Usage
 Example usage:
 ```

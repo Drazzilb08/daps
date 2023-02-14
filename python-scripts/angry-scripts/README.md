@@ -1,6 +1,7 @@
 # Renameinatorr
 <br>
-Credit: This script was originally written in powershell by AngryCuban13 from his repo [here](https://github.com/angrycuban13/Just-A-Bunch-Of-Starr-Scripts)<br>
+Credit: This script was originally written in powershell by AngryCuban13 from his repo [Here](https://github.com/angrycuban13/Just-A-Bunch-Of-Starr-Scripts)
+<br>
 Thanks to him and others who have helped me in making this script a thing.
 <br>
 ## Description

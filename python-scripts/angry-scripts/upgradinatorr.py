@@ -7,6 +7,7 @@
 #         | |     __/ |                                                        __/ |
 #         |_|    |___/                                                        |___/ 
 # V 1.0.0
+
 import configparser
 import requests
 import json
@@ -509,8 +510,6 @@ def main():
                     for radarr in radarr_instances:
                         tagged_count = 0
                         untagged_count = 0
-                        movies_checked = 0
-                        logger.debug(f'Movies Checked: {movies_checked}')
                         radarr_tag_id = radarr.check_and_create_tag(tag_name, dry_run, logger)
                         all_movies = radarr.get_movies()
                         logger.debug(f"Length of all_movies for {str(radarr)}: {len(all_movies)}")
@@ -522,7 +521,6 @@ def main():
                             logger.info(f'All of {section_name} has been tagged with {tag_name} skipping.')
                             continue
                         if all_radarr_tagged is False:
-                            movies_checked = 0
                             untagged_movies = [m for m in all_movies if radarr_tag_id not in m['tags'] and m['monitored'] == monitored and m['status'] == status]
                             movies_to_process = untagged_movies[:count]
                             for movies in movies_to_process:
@@ -551,8 +549,6 @@ def main():
                     for sonarr in sonarr_instances:
                         tagged_count = 0
                         untagged_count = 0
-                        series_checked = 0
-                        logger.debug(f'Movies Checked: {series_checked}')
                         sonarr_tag_id = sonarr.check_and_create_tag(tag_name, dry_run, logger)
                         all_series = sonarr.get_series()
                         logger.debug(f"Length of all_series for {str(sonarr)}: {len(all_series)}")
@@ -564,7 +560,6 @@ def main():
                             logger.info(f'All of {section_name} has been tagged with {tag_name} skipping.')
                             break
                         if all_sonarr_tagged is False:
-                            series_checked = 0
                             untagged_series = [m for m in all_series if sonarr_tag_id not in m['tags'] and m['monitored'] == monitored and m['status'] == status]
                             series_to_process = untagged_series[:count]
                             for series in series_to_process:

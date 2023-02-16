@@ -1,2 +1,2 @@
-argparse
+pyyaml
 requests

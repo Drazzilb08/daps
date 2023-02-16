@@ -8,12 +8,11 @@
 #         |_|    |___/                                                        |___/ 
 # V 1.0.0
 
-import configparser
 import requests
 import json
 import os
 import time
-import argparse
+import yaml
 import sys
 from logging.handlers import RotatingFileHandler
 import logging
@@ -54,7 +53,6 @@ class SonarrInstance:
         response = self.session.get(url)
         response.raise_for_status()
         return response.json()
-
         
     def get_all_tags(self):
         """
@@ -222,6 +220,7 @@ class RadarrInstance():
             logger.debug(f"\nConnected to {app_name} (v{app_version}) at {self.url}")
         except (requests.exceptions.RequestException, ValueError) as e:
             raise ValueError(f"Failed to connect to Radarr instance at {self.url}: {e}")
+
     def __str__(self):
         return f"RadarrInstance(url={self.url})"
 
@@ -388,125 +387,127 @@ def check_all_tagged(all_media, tag_id):
 def discord_notification(discord_webhook):
     pass
 
-def validate_input(section_name, url, api_key, dry_run, unattended, count, monitored, status, tag_name, logger):
+def validate_input(instance_name, url, api_key, dry_run, unattended, count, monitored, status, tag_name, logger):
     if not (url.startswith("http://") or url.startswith("https://")):
-        raise ValueError(f"{section_name}' URL must start with 'http://' or 'https://://")
+        raise ValueError(f'\'{instance_name}\' URL must start with \'http://\' or \'https://://\'')
     if url.startswith("http://") or url.startswith("https://"):
         if not api_key:
-            raise ValueError(f"API key is required for {section_name}")
+            raise ValueError(f'API key is required for \'{instance_name}\'')
         if dry_run is not True and dry_run is not False:
-            logger.warning(f'Error: {dry_run} in {section_name} must be either True or False. Defaulting to False')
-            dry_run = False
+            logger.warning(f'Error: \'dry_run: {dry_run}\' in \'{instance_name}\' must be either True or False. Defaulting to True')
+            dry_run = True
         if unattended is not True and unattended is not False:
-            logger.warning(f'Error: {unattended} in {section_name} must be either True or False. Defaulting to False')
+            logger.warning(f'Error: \'unattended: {unattended}\' in \'{instance_name}\' must be either True or False. Defaulting to False')
             unattended = False
-        if (section_name.startswith("Radarr")):
+        if (instance_name.startswith("radarr")):
             if status not in ("tba", "announced", "incinemas", "released", "deleted"):
-                logger.warning(f'Error: {status} in {section_name} is not one of the defined status types: tba, announced, inCinemas, released, deleted')
-                logger.warning("Setting setting status to released as default 'released'")
+                logger.warning(f'Error: \'status: {status}\' in \'{instance_name}\' is not one of the defined status types: tba, announced, inCinemas, released, deleted')
+                logger.warning("Setting setting status to: 'released'")
                 status = "released"
-        elif (section_name.startswith("Sonarr")):
+        elif (instance_name.startswith("sonarr")):
             if status not in ("continuing", "ended", "upcoming", "deleted"):
-                logger.warning(f'Error: {status} in {section_name} is not one of the defined status types: continuing, ended, upcoming, deleted')
-                logger.warning("Setting setting status to released as default 'continuing'")
+                logger.warning(f'Error: \'status: {status}\' in \'{instance_name}\' is not one of the defined status types: continuing, ended, upcoming, deleted')
+                logger.warning("Setting setting status to: 'continuing'")
                 status = "continuing"
-        try:
-            count = int(count)
-            if count <= 0:
-                logger.warning(f'Error: {count} in {section_name} is not a valid count. Setting count to default value of 1')
+        if count is None:
+            logger.warning(f'Error: \'count: \' is empty in \'{instance_name}\': Setting count to default value of 1')
+            count = 1
+        else:
+            if not isinstance(count, int):
+                logger.warning(f'Error: \'count: {count}\' in \'{instance_name}\' is not a valid count. Setting count to default value of 1')
                 count = 1
-        except ValueError:
-            logger.warning(f'Error: {count} in {section_name} is not a valid count. Setting count to default value of 1')
+            else:
+                count = int(count)
+        if count <= 0:
+            logger.warning(f'Error: \'count: {count}\' in \'{instance_name}\' is not a valid count. Setting count to default value of 1')
             count = 1
         if monitored is not True and monitored is not False:
-            logger.warning(f'Error: {monitored} in {section_name} must be either True or False. Setting monitored to default value of True')
+            logger.warning(f'Error: \'monitored: {monitored}\' in \'{instance_name}\' must be either True or False. Setting monitored to default value of True')
             monitored = True
-        if tag_name == "":
-            raise ValueError(f'Tag name in {section_name} is empty. This must be set')
+        if tag_name == None:
+            raise ValueError(f'\'tag_name: \' in {instance_name} is empty. This must be set')
         return dry_run, unattended, count, monitored, status
 
 
 def main():
-    # Initialize a ConfigParser object
-    config = configparser.ConfigParser()
-    # Read the config.ini file
-    config.read('config.ini')
-
-    # Define a mapping of section names to classes
-    class_map = {
-        'Radarr': RadarrInstance,
-        'Sonarr': SonarrInstance,
-    }
-    # Loop through all the sections in the config.ini file
-
-    for section_name in config.sections():
-        # Get the class corresponding to this section
-        if section_name.startswith("General"):
-            discord_webhook = config.get(section_name,'discord_webhook')
-            dry_run = config.getboolean(section_name, 'dry_run')
-            log_level = config.get(section_name, 'log_level')
-            log_level = log_level.upper()
-            logger = setup_logger(log_level)
-            
-            if dry_run:
-            # If dry_run is activated, print a message indicating so and the status of other variables.
-                logger.debug('*' * 40)
-                logger.debug(f'* {"Dry_run Activated":^36} *')
-                logger.debug('*' * 40)
-                logger.debug(f'* {" NO CHANGES WILL BE MADE ":^36} *')
-                logger.debug('*' * 40)
-                logger.debug('')
-            logger.debug('*' * 40)
-            logger.debug(f'* {section_name:^36} *')
-            logger.debug('*' * 40)
-            logger.debug('')
-            logger.debug(f'{" Settings ":*^40}')
-            logger.debug(f'Discord Webhook: {discord_webhook}')
-            logger.debug(f'Dry_run: {dry_run}')
-            logger.debug(f'*' * 40 )
-            logger.debug('')
-        elif section_name.startswith("Sonarr") or section_name.startswith("Radarr"):
-            try:
-                section_class = class_map.get(section_name.split('_')[0])
-                if not section_class:
+        # Load the config file
+    with open('config.yml') as f:
+        config = yaml.safe_load(f)
+        
+    upgradinatorr = config.get('upgradinatorr', {})
+    log_level = upgradinatorr.get('log_level').upper()
+    dry_run = upgradinatorr.get('dry_run')
+    discord_webhook = upgradinatorr.get('discord_webhook', '')
+    
+    logger = setup_logger(log_level)
+    
+    if dry_run:
+    # If dry_run is activated, print a message indicating so and the status of other variables.
+        logger.info('*' * 40)
+        logger.info(f'* {"Dry_run Activated":^36} *')
+        logger.info('*' * 40)
+        logger.info(f'* {" NO CHANGES WILL BE MADE ":^36} *')
+        logger.info('*' * 40)
+        logger.info('')
+    logger.debug(f'{" Script Settings ":*^40}')
+    logger.debug(f'Dry_run: {dry_run}')
+    logger.debug(f"Log Level: {log_level}")
+    logger.debug(f"Discord Webhook URL: {discord_webhook}")
+    logger.debug(f'*' * 40 )
+    logger.debug('')
+    for instance, instance_settings in upgradinatorr.items():
+        if instance in ['log_level', 'dry_run', 'discord_webhook']:
+            continue
+        for instance_setting in instance_settings:
+            instance_name = instance_setting['name']
+            instance_global_settings = None
+            for global_settings in config['global'][instance]:
+                if global_settings['name'] == instance_name:
+                    instance_global_settings = global_settings
+                    break
+            if instance_global_settings is not None:
+                url = instance_global_settings['url']
+                api_key = instance_global_settings['api']
+                if url is None and api_key is None:
                     continue
-                # Get the values for the current section_name
-                url = config.get(section_name, 'url')
-                api_key = config.get(section_name, 'api_key')
-                count = config.get(section_name, 'count')
-                monitored = config.getboolean(section_name, 'monitored')
-                status = config.get(section_name, 'status')
-                tag_name = config.get(section_name, 'tag_name')
-                unattended = config.getboolean(section_name, 'unattended')
-                status = status.lower()
+                count = instance_setting.get('count')
+                monitored = instance_setting.get('monitored')
+                status = instance_setting.get('status')
+                tag_name = instance_setting.get('tag_name')
+                unattended = instance_setting.get('unattended')
+                dry_run, unattended, count, monitored, status = validate_input(instance_name, url, api_key, dry_run, unattended, count, monitored, status, tag_name, logger)
+                logger.debug(f'{" Settings ":*^40}')
+                logger.debug(f"Section Name: {instance_name}")
+                logger.debug(f"URL: {url}")
+                logger.debug(f"API Key: {'<redacted>' if api_key else 'None'}") 
+                logger.debug(f"Count: {count}")
+                logger.debug(f"Monitored: {monitored}")
+                logger.debug(f"status: {status}")
+                logger.debug(f"Tag_name: {tag_name}")
+                logger.debug(f"Unattended: {unattended}")
+                logger.debug(f'*' * 40 )
+                logger.debug('')
+
+            try:
                 if url:
                     logger.info('*' * 40)
-                    logger.info(f'* {section_name:^36} *')
+                    logger.info(f'* {instance_name:^36} *')
                     logger.info('*' * 40)
                     logger.info('')
-                    dry_run, unattended, count, monitored, status = validate_input(section_name, url, api_key, dry_run, unattended, count, monitored, status, tag_name, logger)
-                
-                    logger.debug(f'{" Settings ":*^40}')
-                    logger.debug(f"Section Name: {section_name}")
-                    logger.debug(f"Dry_run: {dry_run}")
-                    logger.debug(f"Unattended: {unattended}")
-                    logger.debug(f"Count: {count}")
-                    logger.debug(f"URL: {url}")
-                    logger.debug(f"API Key: {'<redacted>' if api_key else 'None'}")
-                    logger.debug(f"Monitored: {monitored}")
-                    logger.debug(f"Status: {status}")
-                    logger.debug(f"Tag_name: {tag_name}")
-                    logger.debug(f"Unattended: {unattended}")
-                    logger.debug(f'*' * 40 )
-                    logger.debug('')
+            
                 if not url and not api_key:
                     continue
                 # Instantiate the class for this section
-                instance = section_class(url, api_key, logger)
+                class_map = {
+                    'Radarr': RadarrInstance,
+                    'Sonarr': SonarrInstance,
+                }
+                section_class = class_map.get(instance_name.split('_')[0].capitalize())
+                arr_instance = section_class(url, api_key, logger)
                 # Add the instance to the appropriate list
                 if section_class == RadarrInstance:
                     radarr_instances = []
-                    radarr_instances.append(instance)
+                    radarr_instances.append(arr_instance)
                     for radarr in radarr_instances:
                         tagged_count = 0
                         untagged_count = 0
@@ -518,7 +519,7 @@ def main():
                             all_radarr_tagged = radarr.remove_tags(all_movies, radarr_tag_id, tag_name)
                         elif all_radarr_tagged is True and unattended is False:
                             radarr_all_tagged = True
-                            logger.info(f'All of {section_name} has been tagged with {tag_name} skipping.')
+                            logger.info(f'All of {instance_name} has been tagged with {tag_name} skipping.')
                             continue
                         if all_radarr_tagged is False:
                             untagged_movies = [m for m in all_movies if radarr_tag_id not in m['tags'] and m['monitored'] == monitored and m['status'] == status]
@@ -528,9 +529,9 @@ def main():
                                 if dry_run == False:
                                     radarr.search_movies(movie_id, logger)
                                     radarr.add_tag(movie_id, radarr_tag_id)
-                                    logger.info(f"Search request for the Movie: {movies["title"]} has been sent to {section_name} and has been tagged with '{tag_name}'.")
+                                    logger.info(f'Search request for the Movie: \'{movies["title"]}\' has been sent to \'{instance_name}\' and has been tagged with \'{tag_name}\'.')
                                 elif dry_run == True:
-                                    logger.info(f"Search request for the Movie: {movies["title"]} would have been sent to {section_name} and would have been tagged with {tag_name}.")
+                                    logger.info(f'Search request for the Movie: \'{movies["title"]}\' would have been sent to \'{instance_name}\' and would have been tagged with \'{tag_name}\'.')
                             for movies in all_movies:
                                 if (radarr_tag_id in movies["tags"]):
                                     tagged_count += 1
@@ -545,7 +546,7 @@ def main():
 
                 elif section_class == SonarrInstance:
                     sonarr_instances = []
-                    sonarr_instances.append(instance)
+                    sonarr_instances.append(arr_instance)
                     for sonarr in sonarr_instances:
                         tagged_count = 0
                         untagged_count = 0
@@ -557,8 +558,9 @@ def main():
                             all_sonarr_tagged = sonarr.remove_tags(all_series, sonarr_tag_id, tag_name)
                         elif all_sonarr_tagged is True and unattended is False:
                             sonarr_all_tagged = True
-                            logger.info(f'All of {section_name} has been tagged with {tag_name} skipping.')
+                            logger.info(f'All of {instance_name} has been tagged with {tag_name} skipping.')
                             break
+                        
                         if all_sonarr_tagged is False:
                             untagged_series = [m for m in all_series if sonarr_tag_id not in m['tags'] and m['monitored'] == monitored and m['status'] == status]
                             series_to_process = untagged_series[:count]
@@ -567,9 +569,9 @@ def main():
                                 if dry_run == False:
                                     sonarr.search_series(series_id, logger)
                                     sonarr.add_tag(series_id, sonarr_tag_id)
-                                    logger.info(f'Search request for the Series: {series["title"]} has been sent to {section_name} and has been tagged with {tag_name}.')
+                                    logger.info(f'Search request for the Series: \'{series["title"]}\' has been sent to \'{instance_name}\' and has been tagged with \'{tag_name}\'.')
                                 elif dry_run == True:
-                                    logger.info(f'Search request for the Series: {series["title"]} would have been sent to {section_name} and would have been tagged with {tag_name}.')
+                                    logger.info(f'Search request for the Series: \'{series["title"]}\' would have been sent to \'{instance_name}\' and would have been tagged with \'{tag_name}\'.')
                         for series in all_series:
                             if (sonarr_tag_id in series["tags"]):
                                 tagged_count += 1
@@ -582,7 +584,7 @@ def main():
 
                         logger.info(f'Total Series: {total_count}, Tagged Series: {tagged_count} ({tagged_percent:.2f}%), Untagged Series: {untagged_count} ({untagged_percent:.2f}%)\n')
             except ValueError as e:
-                logger.info(f"Skipping section {section_name}: {e}")
+                logger.info(f"Skipping section {instance_name}: {e}")
 
 def setup_logger(log_level):
     # Create a directory to store logs, if it doesn't exist
@@ -624,7 +626,7 @@ def setup_logger(log_level):
         console_handler.setLevel(logging.CRITICAL)
     logger.addHandler(console_handler)
     # Delete the old log files
-    log_files = [f for f in os.listdir(log_dir) if os.path.isfile(os.path.join(log_dir, f)) and f.startswith("renamer_")]
+    log_files = [f for f in os.listdir(log_dir) if os.path.isfile(os.path.join(log_dir, f)) and f.startswith("upgradinatorr_")]
     log_files.sort(key=lambda x: os.path.getmtime(os.path.join(log_dir, x)), reverse=True)
     for file in log_files[3:]:
         os.remove(os.path.join(log_dir, file))

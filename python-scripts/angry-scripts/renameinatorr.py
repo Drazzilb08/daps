@@ -12,17 +12,21 @@ import requests
 import json
 import os
 import time
-import argparse
+import yaml
 import sys
+from logging.handlers import RotatingFileHandler
+import logging
 
 class SonarrInstance:
-    def __init__(self, url, api_key):
+    def __init__(self, url, api_key, logger):
         """
+
         Initialize the SonarrInstance object
         Arguments:
             - url: the URL of the Sonarr API endpoint
             - api_key: the API key used to authenticate with the API
         """
+        self.url = url.rstrip("/")
         self.url = url
         self.api_key = api_key
         self.headers = {
@@ -30,6 +34,25 @@ class SonarrInstance:
         }
         self.session = requests.Session()
         self.session.headers.update({"X-Api-Key": self.api_key})
+        
+        try:
+            status = self.get_system_status()
+            app_name = status.get("appName")
+            app_version = status.get("version")
+            if not app_name.startswith("Sonarr"):
+                raise ValueError("URL does not point to a valid Sonarr instance.")
+            logger.debug(f"\nConnected to {app_name} (v{app_version}) at {self.url}")
+        except (requests.exceptions.RequestException, ValueError) as e:
+            raise ValueError(f"Failed to connect to Sonarr instance at {self.url}: {e}")
+
+    def __str__(self):
+        return f"SonarrInstance(url={self.url})"
+
+    def get_system_status(self):
+        url = f"{self.url}/api/v3/system/status"
+        response = self.session.get(url)
+        response.raise_for_status()
+        return response.json()
 
     def get_all_tags(self):
         """
@@ -43,39 +66,43 @@ class SonarrInstance:
         return response.json()
 
 
-    def check_and_create_tag(self):
+    def check_and_create_tag(self, tag_name, dry_run, logger):
         """
-        Check if a "renamed" tag exists in Sonarr, and if not, create it.
-        Returns the ID of the "renamed" tag.
+        Check if a the desired tag exists in Sonarr, and if not, create it.
+        Returns the ID of the desired tag.
         """
         # Get all existing tags in Sonarr
         all_tags = self.get_all_tags()
-        # Initialize the variable to hold the ID of the "renamed" tag
-        renamed_tag_id = None
+        # Initialize the variable to hold the ID of the desired tag
+        tag_id = None
         # Iterate over the list of existing tags
         for tag in all_tags:
-            # Check if a tag with the label "renamed" exists
-            if tag["label"] == "renamed":
-                # Store the ID of the "renamed" tag
-                renamed_tag_id = tag["id"]
+            # Check if a tag with the label desired exists
+            if tag["label"] == tag_name:
+                # Store the ID of the desired tag
+                tag_id = tag["id"]
                 # Break out of the loop
+                logger.debug(f'Tag Name: {tag_name} exists with tagId: {tag_id}')
                 break
-        # If the "renamed" tag doesn't exist
-        if renamed_tag_id is None:
-            # Call the `create_tag` function to create the "renamed" tag
-            self.create_tag("renamed")
-            # Get all tags again to retrieve the newly created tag's ID
-            all_tags = self.get_all_tags()
-            # Iterate over the list of existing tags
-            for tag in all_tags:
-                # Check if a tag with the label "renamed" exists
-                if tag["label"] == "renamed":
-                    # Store the ID of the "renamed" tag
-                    renamed_tag_id = tag["id"]
-                    # Break out of the loop
-                    break
-        # Return the ID of the "renamed" tag
-        return renamed_tag_id
+        # If the desired tag doesn't exist
+        if tag_id is None:
+            if dry_run == False:
+                # Call the `create_tag` function to create the desired tag
+                self.create_tag(tag_name, logger)
+                # Get all tags again to retrieve the newly created tag's ID
+                all_tags = self.get_all_tags()
+                # Iterate over the list of existing tags
+                for tag in all_tags:
+                    # Check if a tag with the label "desired exists
+                    if tag["label"] == tag_name:
+                        # Store the ID of the desired tag
+                        tag_id = tag["id"]
+                        # Break out of the loop
+                        break
+            else:
+                logger.info(f'Tag Name: {tag_name} would have been created.')
+        # Return the ID of the desired tag
+        return tag_id
 
     def create_tag(self, label):
         """
@@ -95,7 +122,7 @@ class SonarrInstance:
         if create_tag_response.status_code != 201:
             raise Exception(f"Failed to create tag: {create_tag_response.text}")
         else:
-            print(f"Tag '{label}' created successfully.")
+            logger.info(f"Tag '{label}' created successfully.")
 
     def get_series(self):
         """
@@ -148,7 +175,7 @@ class SonarrInstance:
             if task_status["status"] == "completed":
                 task_complete = True
             else:
-                print(f'Sleeping for 5 seconds until all episodes have been renamed')
+                logger.info(f'Sleeping for 5 seconds until all episodes have been renamed')
                 time.sleep(5)
         return True
 
@@ -179,7 +206,7 @@ class SonarrInstance:
             if task_status["status"] == "completed":
                 task_complete = True
             else:
-                print(f'Sleeping for 5 seconds until all episodes have been renamed')
+                logger.info(f'Sleeping for 5 seconds until all episodes have been renamed')
                 time.sleep(5)
         return True
 
@@ -199,14 +226,42 @@ class SonarrInstance:
         add_tag_response = self.session.put(endpoint, json=data)
         add_tag_response.raise_for_status()
 
-class RadarrInstance():
-    def __init__(self, url, api_key):
+    def remove_tags(self, all_series, tag_id):
         """
+        Remove a specific tag from a list of series.
+
+        Parameters:
+            all_series (list): a list of series dictionaries, each containing information about a series.
+            tag_id (int): the ID of the tag to be removed.
+
+        Returns:
+            False: always returns False, since this function only updates the tags of serise and does not return any data.
+        """
+        endpoint = f"{self.url}/api/v3/series/editor"
+        for movie in all_series:
+            if tag_id in series["tags"]:
+                series_id = series["id"]
+                data = {
+                    "movieIds": [series_id],
+                    "tags": [tag_id],
+                    "applyTags": "remove"
+                }
+                response = self.session.put(endpoint, json=data)
+                if response.status_code != 202:
+                    logger.critical(f"Failed to remove tag with ID {tag_id} from series with ID {series_id}.")
+                else:
+                    logger.info(f'Successfully removed {tag_id} (Renamed) from {movie["title"]}.')
+
+class RadarrInstance():
+    def __init__(self, url, api_key, logger):
+        """
+
         Initialize the RadarrInstance object
         Arguments:
             - url: the URL of the Radarr API endpoint
             - api_key: the API key used to authenticate with the API
         """
+        self.url = url.rstrip("/")
         self.url = url
         self.api_key = api_key
         self.headers = {
@@ -214,6 +269,25 @@ class RadarrInstance():
         }
         self.session = requests.Session()
         self.session.headers.update({"X-Api-Key": self.api_key})
+        
+        try:
+            status = self.get_system_status()
+            app_name = status.get("appName")
+            app_version = status.get("version")
+            if not app_name.startswith("Radarr"):
+                raise ValueError("URL does not point to a valid Radarr instance.")
+            logger.debug(f"\nConnected to {app_name} (v{app_version}) at {self.url}")
+        except (requests.exceptions.RequestException, ValueError) as e:
+            raise ValueError(f"Failed to connect to Radarr instance at {self.url}: {e}")
+
+    def __str__(self):
+        return f"RadarrInstance(url={self.url})"
+
+    def get_system_status(self):
+        url = f"{self.url}/api/v3/system/status"
+        response = self.session.get(url)
+        response.raise_for_status()
+        return response.json()
 
     def get_all_tags(self):
         """
@@ -226,39 +300,43 @@ class RadarrInstance():
         response = requests.get(endpoint, headers=self.headers)
         return response.json()
 
-    def check_and_create_tag(self):
+    def check_and_create_tag(self, tag_name, dry_run, logger):
         """
-        Check if a "renamed" tag exists in Radarr, and if not, create it.
-        Returns the ID of the "renamed" tag.
+        Check if a the desired tag exists in Radarr, and if not, create it.
+        Returns the ID of the desired tag.
         """
-        # Get all existing tags in Sonarr
+        # Get all existing tags in Radarr
         all_tags = self.get_all_tags()
-        # Initialize the variable to hold the ID of the "renamed" tag
-        renamed_tag_id = None
+        # Initialize the variable to hold the ID of the desired tag
+        tag_id = None
         # Iterate over the list of existing tags
         for tag in all_tags:
-            # Check if a tag with the label "renamed" exists
-            if tag["label"] == "renamed":
-                # Store the ID of the "renamed" tag
-                renamed_tag_id = tag["id"]
+            # Check if a tag with the label desired exists
+            if tag["label"] == tag_name:
+                # Store the ID of the desired tag
+                tag_id = tag["id"]
                 # Break out of the loop
+                logger.debug(f'Tag Name: {tag_name} exists with tagId: {tag_id}')
                 break
-        # If the "renamed" tag doesn't exist
-        if renamed_tag_id is None:
-            # Call the `create_tag` function to create the "renamed" tag
-            self.create_tag("renamed")
-            # Get all tags again to retrieve the newly created tag's ID
-            all_tags = self.get_all_tags()
-            # Iterate over the list of existing tags
-            for tag in all_tags:
-                # Check if a tag with the label "renamed" exists
-                if tag["label"] == "renamed":
-                    # Store the ID of the "renamed" tag
-                    renamed_tag_id = tag["id"]
-                    # Break out of the loop
-                    break
-        # Return the ID of the "renamed" tag
-        return renamed_tag_id
+        # If the desired tag doesn't exist
+        if tag_id is None:
+            if dry_run == False:
+                # Call the `create_tag` function to create the desired tag
+                self.create_tag(tag_name, logger)
+                # Get all tags again to retrieve the newly created tag's ID
+                all_tags = self.get_all_tags()
+                # Iterate over the list of existing tags
+                for tag in all_tags:
+                    # Check if a tag with the label "desired exists
+                    if tag["label"] == tag_name:
+                        # Store the ID of the desired tag
+                        tag_id = tag["id"]
+                        # Break out of the loop
+                        break  
+            else:
+                logger.info(f'Tag Name: {tag_name} would have been created.')
+        # Return the ID of the desired tag
+        return tag_id
 
     def create_tag(self, label):
         """
@@ -278,7 +356,7 @@ class RadarrInstance():
         if create_tag_response.status_code != 201:
             raise Exception(f"Failed to create tag: {create_tag_response.text}")
         else:
-            print(f"Tag '{label}' created successfully.")
+            logger.info(f"Tag '{label}' created successfully.")
 
     def get_movies(self):
         """
@@ -353,10 +431,9 @@ class RadarrInstance():
                 }
                 response = self.session.put(endpoint, json=data)
                 if response.status_code != 202:
-                    print(f"Failed to remove tag with ID {tag_id} from movie with ID {movie_id}.")
+                    logger.critical(f"Failed to remove tag with ID {tag_id} from movie with ID {movie_id}.")
                 else:
-                    print(f'Successfully removed {tag_id} (Renamed) from {movie["title"]}.')
-        return False
+                    logger.info(f'Successfully removed {tag_id} (Renamed) from {movie["title"]}.')
 
     def add_tag(self, movie_id, tag_id):
         """Add a tag to a movie with given movie_id
@@ -379,7 +456,7 @@ class RadarrInstance():
         # Raise an error if the API response is not 202 (Accepted)
         add_tag_response.raise_for_status()
 
-def check_all_renamed(all_media, tag_id):
+def check_all_tagged(all_media, tag_id):
     """
         Check if all the media in the `all_media` list has the `tag_id` tag applied.
     Parameters:
@@ -393,7 +470,7 @@ def check_all_renamed(all_media, tag_id):
             return False
     return True
 
-def print_format(media, to_rename, type, dry_run):
+def print_format(media, to_rename, type, dry_run, logger):
     """
         Prints the output in a formatted manner for the given media type and dry_run status.
     Parameters:
@@ -410,7 +487,7 @@ def print_format(media, to_rename, type, dry_run):
         tagged = "has been tagged"
     if type == "sonarr":
         series_title = media["title"]
-        print(f"Series Title: {series_title} {tagged}.")
+        logger.info(f"Series Title: {series_title} {tagged}.")
         current_season = None
         for episode in to_rename:
             episode_number = episode["episodeNumbers"][0]
@@ -419,247 +496,275 @@ def print_format(media, to_rename, type, dry_run):
             new_path = episode["newPath"]
             if current_season != season_number:
                 current_season = season_number
-                print(f"\tSeason {season_number:02d}:")
-            print(f"\t\t{existing_path.split('/')[-1]} renamed to {new_path.split('/')[-1]}")
+                logger.info(f"\tSeason {season_number:02d}:")
+            logger.info(f"\t\t{existing_path.split('/')[-1]} renamed to {new_path.split('/')[-1]}")
     if type == "radarr":
         for file in to_rename:
             existing_path = file["existingPath"]
             new_path = file["newPath"]
             movie_title = media["title"]
-            print(f"Movie Title: {movie_title} {tagged}.")
-            print(f"\t{existing_path.split('/')[-1]} renamed to {new_path.split('/')[-1]}")
+            logger.info(f"Movie Title: {movie_title} {tagged}.")
+            logger.info(f"\t{existing_path.split('/')[-1]} renamed to {new_path.split('/')[-1]}")
 
-def main(series_to_check, movies_to_check, sonarr_urls, sonarr_apis, radarr_urls, radarr_apis, dry_run, cycle, reset):
-    # Initialize lists for Sonarr and Radarr instances
-    sonarr_instances = []
-    radarr_instances = []
-    # Set default values for arguments
-    # If `movies_to_check` is not provided, default to 1
-    movies_to_check = movies_to_check if movies_to_check else 1
-    # If `series_to_check` is not provided, default to 1
-    series_to_check = series_to_check if series_to_check else 1
-    # If `dry_run` is not provided, default to False
-    dry_run = dry_run if dry_run else False
-    # If `reset` is not provided, default to False
-    reset = reset if reset else False
-    # If `cycle` is not provided, default to False
-    cycle = cycle if cycle else False
-    # If `reset` is not provided, default to False
-    reset = reset if reset else False
-    # Initialize flags to track if all series or movies are tagged
-    radarr_all_tagged = False
-    sonarr_all_tagged = False
-    # If Sonarr URLs and API keys are provided, create Sonarr instances
-    if sonarr_urls is not None and sonarr_apis is not None:
-        # If the number of Sonarr URLs and API keys do not match, raise an error
-        if len(sonarr_urls) != len(sonarr_apis):
-            raise ValueError('The number of Sonarr URLs and API keys must be equal.')
-        for i in range(len(sonarr_urls)):
-            # If both URL and API key are provided for this instance, add it to the list
-            if sonarr_urls[i] and sonarr_apis[i]:
-                sonarr_instances.append(SonarrInstance(sonarr_urls[i], sonarr_apis[i]))
-    # If Radarr URLs and API keys are provided, create Radarr instances
-    if radarr_urls is not None and radarr_apis is not None:
-        # If the number of Radarr URLs and API keys do not match, raise an error
-        if len(radarr_urls) != len(radarr_apis):
-            raise ValueError('The number of Radarr URLs and API keys must be equal.')
-        for i in range(len(radarr_urls)):
-            # If both URL and API key are provided for this instance, add it to the list
-            if radarr_urls[i] and radarr_apis[i]:
-                radarr_instances.append(RadarrInstance(radarr_urls[i], radarr_apis[i]))
-    # If no valid Radarr instances were provided, print a message
-    if not radarr_instances:
-        print("No valid radarr instances were provided")
-    # If no valid Sonarr instances were provided, print a message
-    if not sonarr_instances:
-        print("No valid sonarr instances were provided")
-    if not sonarr_instances and not radarr_instances:
-        # If there are no radarr or sonarr instances provided, print message and exit the program.
-        print("You have not provided any radarr or sonarr instances for me to check. exiting...")
-        sys.exit(0)
+def validate_input(instance_name, url, api_key, dry_run, unattended, count, tag_name, logger):
+    if not (url.startswith("http://") or url.startswith("https://")):
+        raise ValueError(f"{instance_name}' URL must start with 'http://' or 'https://")
+    if url.startswith("http://") or url.startswith("https://"):
+        if not api_key:
+            raise ValueError(f"API key is required for {instance_name}")
+        if dry_run is not True and dry_run is not False:
+            logger.warning(f'Error: {dry_run} in {instance_name} must be either True or False. Defaulting to False')
+            dry_run = False
+        if unattended is not True and unattended is not False:
+            logger.warning(f'Error: {unattended} in {instance_name} must be either True or False. Defaulting to False')
+            unattended = False
+        try:
+            count = int(count)
+            if count <= 0:
+                logger.warning(f'Error: {count} in {instance_name} is not a valid count. Setting count to default value of 1')
+                count = 1
+        except ValueError:
+            logger.warning(f'Error: {count} in {instance_name} is not a valid count. Setting count to default value of 1')
+            count = 1
+        if tag_name == "":
+            raise ValueError(f'Tag name in {instance_name} is empty. This must be set')
+        return dry_run, unattended, count
+def setup_logger(log_level):
+    # Create a directory to store logs, if it doesn't exist
+    log_dir = os.path.dirname(os.path.realpath(__file__)) + "/logs"
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    # Get the current date in YYYY-MM-DD format
+    today = time.strftime("%Y-%m-%d")
+    # Create a log file with the current date in its name
+    log_file = f"{log_dir}/renameinator_{today}.log"
+    # Set up the logger
+    logger = logging.getLogger()
+    # Convert the log level string to upper case and set the logging level accordingly
+    log_level = log_level.upper()
+    if log_level == 'DEBUG':
+        logger.setLevel(logging.DEBUG)
+    elif log_level == 'INFO':
+        logger.setLevel(logging.INFO)
+    elif log_level == 'CRITICAL':
+        logger.setLevel(logging.CRITICAL)
+    else:
+        logger.critical(f"Invalid log level '{log_level}', defaulting to 'INFO'")
+        logger.setLevel(logging.INFO)
+    # Set the formatter for the file handler
+    formatter = logging.Formatter(fmt='%(asctime)s %(levelname)s: %(message)s', datefmt='%I:%M %p')
+    # Add a TimedRotatingFileHandler to the logger, to log to a file that rotates daily
+    handler = logging.handlers.TimedRotatingFileHandler(log_file, when='midnight', interval=1, backupCount=3)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    # Set the formatter for the console handler
+    formatter = logging.Formatter()
+        # Add a StreamHandler to the logger, to log to the console
+    console_handler = logging.StreamHandler()
+    if log_level == 'debug':
+        console_handler.setLevel(logging.DEBUG)
+    elif log_level == 'info':
+        console_handler.setLevel(logging.info)
+    elif log_level == 'critical':
+        console_handler.setLevel(logging.CRITICAL)
+    logger.addHandler(console_handler)
+    # Delete the old log files
+    log_files = [f for f in os.listdir(log_dir) if os.path.isfile(os.path.join(log_dir, f)) and f.startswith("renamer_")]
+    log_files.sort(key=lambda x: os.path.getmtime(os.path.join(log_dir, x)), reverse=True)
+    for file in log_files[3:]:
+        os.remove(os.path.join(log_dir, file))
+    return logger
+
+def main():
+    # Load the config file
+    with open('config.yml') as f:
+        config = yaml.safe_load(f)
+        
+    renameinator = config.get('renameinator', {})
+    log_level = renameinator.get('log_level').upper()
+    dry_run = renameinator.get('dry_run')
+    discord_webhook = renameinator.get('discord_webhook', '')
+    
+    logger = setup_logger(log_level)
+    
     if dry_run:
     # If dry_run is activated, print a message indicating so and the status of other variables.
-        print("*************************************")
-        print("*         Dry_run Activated         *")
-        print("*************************************")
-        print("*******NO CHANGES WILL BE MADE*******")
-        print(f"Dry_run: {dry_run}")
-        print(f"Cycle: {cycle}")
-        print(f"Reset: {reset}")
-        print(f"Dry_run: {dry_run}")
-        print(f"Movies to Check: {movies_to_check}")
-        print(f"Series to Check: {series_to_check}")
-    all_tagged = 0
-    if sonarr_instances:
-        # Loop through each Sonarr instance
-        for sonarr in sonarr_instances:
-            # Check if the tag exists, and create it if it doesn't
-            sonarr_tag_id = sonarr.check_and_create_tag()
-            # Get a list of all the series in this Sonarr instance
-            all_series = sonarr.get_series()
-            # Check if all series in this instance have already been tagged
-            all_sonarr_tagged = check_all_renamed(all_series, sonarr_tag_id)
-            # If all series are tagged, and the "cycle" argument is set to True, or "reset" is set to True, remove the tag from all series
-            if all_sonarr_tagged is True and cycle is True or reset is True:
-                all_sonarr_tagged = sonarr.remove_tags(all_series, sonarr_tag_id)
-            # If all series are tagged and the "cycle" argument is set to False, set "sonarr_all_tagged" to True
-            elif all_sonarr_tagged is True and cycle is False:
-                sonarr_all_tagged = True
-                break
-            # If not all series are tagged
-            if all_sonarr_tagged is False:
-                # Initialize the counter for checked series
-                series_checked = 0
-                # Initialize the flag for whether a series has been renamed or not
-                renamed = False
-                # If the number of series to check is set to "Max", set it to the number of all series
-                if series_to_check == "Max":
-                    series_to_check = len(all_series)
-                # Loop through each series
-                for series in all_series:
-                    # If the number of checked series has reached the limit, break the loop
-                    if series_checked >= series_to_check:
-                        break
-                    # Get the series ID
-                    series_id = series["id"]
-                    # Get a list of episodes to rename for this series
-                    episodes_to_rename = sonarr.get_rename_list(series_id)
-                    # Get a list of episode file IDs for this series
-                    episode_file_ids = [episode["episodeFileId"] for episode in episodes_to_rename]
-                    # If this series has already been tagged, skip to the next series
-                    if sonarr_tag_id in series["tags"]:
+        logger.debug('*' * 40)
+        logger.debug(f'* {"Dry_run Activated":^36} *')
+        logger.debug('*' * 40)
+        logger.debug(f'* {" NO CHANGES WILL BE MADE ":^36} *')
+        logger.debug('*' * 40)
+        logger.debug('')
+    logger.debug(f'{" Script Settings ":*^40}')
+    logger.debug(f'Dry_run: {dry_run}')
+    logger.debug(f"Log Level: {log_level}")
+    logger.debug(f"Discord Webhook URL: {discord_webhook}")
+    logger.debug(f'*' * 40 )
+    logger.debug('')
+    for instance, instance_settings in renameinator.items():
+        if instance in ['log_level', 'dry_run', 'discord_webhook']:
+            continue
+        for instance_setting in instance_settings:
+            instance_name = instance_setting['name']
+            instance_global_settings = None
+            for global_settings in config['global'][instance]:
+                if global_settings['name'] == instance_name:
+                    instance_global_settings = global_settings
+                    break
+            if instance_global_settings is not None:
+                url = instance_global_settings['url']
+                api_key = instance_global_settings['api']
+                count = instance_setting.get('count')
+                tag_name = instance_setting.get('tag_name')
+                unattended = instance_setting.get('unattended')
+                reset = instance_setting.get('reset')
+                
+                logger.debug(f'{" Settings ":*^40}')
+                logger.debug(f"Section Name: {instance_name}")
+                logger.debug(f"Unattended: {unattended}")
+                logger.debug(f"Count: {count}")
+                logger.debug(f"URL: {url}")
+                logger.debug(f"API Key: {api_key}") #{'<redacted>' if api_key else 'None'}"
+                logger.debug(f"Tag_name: {tag_name}")
+                logger.debug(f"Reset: {reset}")
+                logger.debug(f"Unattended: {unattended}")
+                logger.debug(f'*' * 40 )
+                logger.debug('')
+
+        try:
+            if url:
+                logger.info('*' * 40)
+                logger.info(f'* {instance_name:^36} *')
+                logger.info('*' * 40)
+                logger.info('')
+                dry_run, unattended, count = validate_input(instance_name, url, api_key, dry_run, unattended, count, tag_name, logger)
+            
+            if not url and not api_key:
+                continue
+            # Instantiate the class for this section
+            class_map = {
+                'Radarr': RadarrInstance,
+                'Sonarr': SonarrInstance,
+            }
+            # instance_name = instance_name.capitalize()
+            section_class = class_map.get(instance_name.split('_')[0].capitalize())
+            instance = section_class(url, api_key, logger)
+            radarr_all_tagged, sonarr_all_tagged = False, False
+            # Add the instance to the appropriate list
+            if section_class == RadarrInstance:
+                radarr_instances = []
+                radarr_instances.append(instance)
+                # Loop through all radarr instances
+                for radarr in radarr_instances:
+                    tagged_count = 0
+                    untagged_count = 0
+                    # Get the radarr tag id and create the tag if it does not exist
+                    radarr_tag_id = radarr.check_and_create_tag(tag_name, dry_run, logger)
+                    # Get all the movies from the radarr instance
+                    all_movies = radarr.get_movies()
+                    logger.debug(f"Length of all_movies for {str(radarr)}: {len(all_movies)}")
+                    # Check if all the movies are tagged with the radarr tag id
+                    all_radarr_tagged = check_all_tagged(all_movies, radarr_tag_id)
+                    # If all the movies are tagged and cycle is True or reset is True, remove the tags from all movies
+                    if all_radarr_tagged is True and cycle is True or reset is True:
+                        radarr.remove_tags(all_movies, radarr_tag_id, tag_name)
+                        logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
+                    # If all the movies are tagged and cycle is False, set radarr_all_tagged to True
+                    elif all_radarr_tagged is True and cycle is False:
+                        logger.info(f'All of {instance_name} has been tagged with {tag_name} skipping.')
+                        radarr_all_tagged = True
                         continue
-                    else:
-                        # If there are episode files to rename
-                        if episode_file_ids:
-                            # If the "dry_run" argument is set to True, print the series and episodes to be renamed
-                            if dry_run == True:
-                                print_format(series, episodes_to_rename, "sonarr", dry_run)
-                                renamed = True
-                            # If the "dry_run" argument is set to False, print the series and episodes to be renamed, and rename the files
-                            elif dry_run == False:
-                                # print the details of the series to be renamed
-                                print_format(series, episodes_to_rename, "sonarr", dry_run)
-                                # rename the episodes in the series and store the result in the `renamed` variable
-                                renamed = sonarr.rename_files(series_id, episode_file_ids)
-                        # If `renamed` is False, meaning movie files could not be renamed
-                        if renamed == False:    
-                            if dry_run == False:
-                                # if the renaming was unsuccessful, print a message and tag the series
-                                print(f'Series: {series["title"]} has been tagged')
-                                sonarr.add_tag(series_id, sonarr_tag_id)
-                            if dry_run == True:
-                                # if dry run is True, print a message indicating the series would have been tagged
-                                print(f'No series to rename: Series: {series["title"]} would have been been tagged.')
-                        series_checked += 1
-    # Check if there are any radarr instances
-    if radarr_instances:
-        # Loop through all radarr instances
-        for radarr in radarr_instances:
-            # Get the radarr tag id and create the tag if it does not exist
-            radarr_tag_id = radarr.check_and_create_tag()
-            # Get all the movies from the radarr instance
-            all_movies = radarr.get_movies()
-            # Check if all the movies are tagged with the radarr tag id
-            all_radarr_tagged = check_all_renamed(all_movies, radarr_tag_id)
-            # If all the movies are tagged and cycle is True or reset is True, remove the tags from all movies
-            if all_radarr_tagged is True and cycle is True or reset is True:
-                all_radarr_tagged = radarr.remove_tags(all_movies, radarr_tag_id)
-            # If all the movies are tagged and cycle is False, set radarr_all_tagged to True
-            elif all_radarr_tagged is True and cycle is False:
-                radarr_all_tagged = True
-                break
-            if all_radarr_tagged is False:
-                # get a list of all movies from the radarr instance
-                all_movies = radarr.get_movies()
-                # counter for the number of movies checked
-                movies_checked = 0
-                # boolean variable to keep track if renaming was successful
-                renamed = False
-                # if movies to check is set to "Max", set it to the total number of movies
-                if movies_to_check == "Max":
-                    movies_to_check = len(all_series)
-                # loop through each movie in the list
-                for movies in all_movies:
-                    # if the number of movies checked is equal to or greater than the limit, break the loop
-                    if movies_checked >= movies_to_check:
-                        break
-                    # get the movie id and path for each movie
-                    movie_id = movies["id"]
-                    movie_path = movies["path"]
-                    # get a list of files that need to be renamed for the movie
-                    file_to_rename = radarr.get_rename_list(movie_id)
-                    # get a list of movie file ids that need to be renamed
-                    movie_file_ids = [file["movieFileId"] for file in file_to_rename]
-                    if radarr_tag_id in movies["tags"]:
-                        # Skip the iteration if the movie has already been tagged with the radarr_tag_id
+                    if all_radarr_tagged is False:
+                        untagged_movies = [m for m in all_movies if radarr_tag_id not in m['tags']]
+                        movies_to_process = untagged_movies[:count]
+                        renamed = False
+                        for movies in movies_to_process:
+                            movie_id = movies["id"]
+                            file_to_rename = radarr.get_rename_list(movie_id)
+                            movie_file_ids = [file["movieFileId"] for file in file_to_rename]
+                            if movie_file_ids:
+                                if dry_run == True:
+                                    print_format(movies, file_to_rename, "radarr", dry_run, logger)
+                                    renamed = True
+                                elif dry_run == False:
+                                    print_format(movies, file_to_rename, "radarr", dry_run, logger)
+                                    renamed = radarr.rename_files(movie_id, movie_file_ids)
+                            if renamed == False:
+                                if dry_run == False:
+                                    logger.info(f'Movie: \'{movies["title"]}\' has been tagged with \'{tag_name}\'.')
+                                    radarr.add_tag(movie_id, radarr_tag_id)
+                                if dry_run == True:
+                                    logger.info(f'Movie file: \'{movies["title"]}\' doesn\'t require renaming it would have been been tagged with \'{tag_name}\'.')
+                        for movies in all_movies:
+                            if (radarr_tag_id in movies["tags"]):
+                                tagged_count += 1
+                            elif (radarr_tag_id not in movies["tags"]):
+                                untagged_count += 1
+                    total_count = 0
+                    total_count = tagged_count + untagged_count
+                    tagged_percent = (tagged_count / total_count) * 100
+                    untagged_percent = (untagged_count / total_count) * 100
+                    logger.info(f'Total Movies: {total_count}, Tagged Movies: {tagged_count} ({tagged_percent:.2f}%), Untagged Movies: {untagged_count} ({untagged_percent:.2f}%)\n')               
+            elif section_class == SonarrInstance:
+                sonarr_instances = []
+                sonarr_instances.append(instance)
+                for sonarr in sonarr_instances:
+                    tagged_count = 0
+                    untagged_count = 0
+                    sonarr_tag_id = sonarr.check_and_create_tag(tag_name, dry_run, logger)
+                    all_series = sonarr.get_series()
+                    logger.debug(f"Length of all_series for {str(sonarr)}: {len(all_series)}")
+                    all_sonarr_tagged = check_all_tagged(all_series, sonarr_tag_id)
+                    if all_sonarr_tagged is True and cycle is True or reset is True:
+                        sonarr.remove_tags(all_series, sonarr_tag_id, tag_name)
+                        logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
+                    elif all_sonarr_tagged is True and cycle is False:
+                        logger.info(f'All of {instance_name} has been tagged with {tag_name} skipping.')
+                        sonarr_all_tagged = True
                         continue
-                    else:
-                        # Check if movie_file_ids is not empty
-                        if movie_file_ids:
-                            # If dry run is True, print the movie details and file names that would be renamed
-                            if dry_run == True:
-                                print_format(movies, file_to_rename, "radarr", dry_run)
-                                renamed = True
-                            # If dry run is False, call the `radarr.rename_files` method to actually rename the movie files
-                            elif dry_run == False:
-                                # print the details of the movies to be renamed
-                                print_format(movies, file_to_rename, "radarr", dry_run)
-                                # rename the movie in the movues and store the result in the `renamed` variable
-                                renamed = radarr.rename_files(movie_id, movie_file_ids)
-                        # If `renamed` is False, meaning movie files could not be renamed
-                        if renamed == False:
-                            # If dry run is False, add the tag to the movie
-                            if dry_run == False:
-                                print(f'Movie: {movies["title"]} has been tagged')
-                                radarr.add_tag(movie_id, radarr_tag_id)
-                            # If dry run is True, print a message saying the movie would have been tagged
-                            if dry_run == True:
-                                print(f'No movie to rename: Movie: {movies["title"]} would have been been tagged.')
-                        # Increment the number of movies checked
-                        movies_checked += 1
-    # Printing final messages based on if all series and/or movies in both Sonarr and Radarr have been renamed.                                    
-    if radarr_all_tagged == True:
-        # If all movies have been tagged and renamed.
-        print('All movies in Radarr have been tagged renamed.')
-    if sonarr_all_tagged == True:
-        # If all series have been tagged and renamed.
-        print('All series in Sonarr have been tagged renamed.')
-    if radarr_all_tagged == True and sonarr_all_tagged == True:
-        # If all series and movies have been tagged and renamed.
-        print(f'All series and movies in both Sonarr and Radarr have been renamed.')
-        # Running this unmonitored by setting the cycle variable to True
-        print(f'Please set the `cycle` variable to True if you\'d like to run this unmonitored') 
-        # Alternatively, removing all tags by setting the reset variable to True
-        print(f'Alternatively you can set the `reset` variable to True if you\'d like to remove all Tags')
+                    if all_sonarr_tagged is False:
+                        renamed = False
+                        untagged_series = [m for m in all_series if sonarr_tag_id not in m['tags']]
+                        series_to_process = untagged_series[:count]
+                        for series in series_to_process:
+                            series_id = series["id"]
+                            episodes_to_rename = sonarr.get_rename_list(series_id)
+                            episode_file_ids = [episode["episodeFileId"] for episode in episodes_to_rename]
+                            if episode_file_ids:
+                                if dry_run == True:
+                                    print_format(series, episodes_to_rename, "sonarr", dry_run, logger)
+                                    renamed = True
+                                elif dry_run == False:
+                                    print_format(series, episodes_to_rename, "sonarr", dry_run, logger)
+                                    renamed = sonarr.rename_files(series_id, episode_file_ids)
+                            if renamed == False:    
+                                if dry_run == False:
+                                    logger.info(f'Series: \'{series["title"]}\' has been tagged with \'{tag_name}\'.')
+                                    sonarr.add_tag(series_id, sonarr_tag_id)
+                                if dry_run == True:
+                                    logger.info(f'Series: \'{series["title"]}\' doesn\'t have any episodes that require renaming, the series would have been been tagged with \'{tag_name}\'.') 
+                    for series in all_series:
+                        if (sonarr_tag_id in series["tags"]):
+                            tagged_count += 1
+                        elif (sonarr_tag_id not in series["tags"]):
+                            untagged_count += 1
+                    total_count = 0
+                    total_count = tagged_count + untagged_count
+                    tagged_percent = (tagged_count / total_count) * 100
+                    untagged_percent = (untagged_count / total_count) * 100
+                    logger.info(f'Total Series: {total_count}, Tagged Series: {tagged_count} ({tagged_percent:.2f}%), Untagged Series: {untagged_count} ({untagged_percent:.2f}%)\n')
+
+            if radarr_all_tagged == True and sonarr_all_tagged == True:
+                # If all series and movies have been tagged and renamed.
+                logger.info(f'All series and movies in both Sonarr and Radarr have been renamed.')
+                # Running this unmonitored by setting the cycle variable to True
+                logger.info(f'Please set the `cycle` variable to True if you\'d like to run this unmonitored') 
+                # Alternatively, removing all tags by setting the reset variable to True
+                logger.info(f'Alternatively you can set the `reset` variable to True if you\'d like to remove all Tags')
+        except ValueError as e:
+            logger.info(f"Skipping section {section_name}: {e}")
+
 
 if __name__ == "__main__":
-    # Create an ArgumentParser object to handle command line arguments
-    parser = argparse.ArgumentParser(description='Rename files for unlimited number of sonarr/radarr instances.', formatter_class=argparse.RawTextHelpFormatter,
-    epilog='Example:\n\npython script.py --sonarr-urls http://localhost:8989 http://localhost:9090 --sonarr-apis abcdefghijklmnopqrstuvwxyz abc3efgh4jklmnopq5stuvwxyz --radarr-urls http://localhost:7878 --radarr-apis abcdefghijklmnopqrstuvwxyz')
-    # Add a dry-run argument which will run the script without making any changes
-    parser.add_argument('--dry-run', type=bool, help='Run Script without enacting any changes. (Default: False)\n', required=False)
-    # Add a cycle argument which will cycle through the program until all movies/shows have been tagged
-    parser.add_argument('--cycle', type=bool, help='When all movies/shows have been tagged cycle back through continously. (Default: False)\n', required=False)
-    # Add a reset argument which will reset all tags for connected Sonarr/Radarr instances
-    parser.add_argument('--reset', type=bool, help='Reset all tags for any connected Radarr/Sonarr instances. (Default: False)\n')
-    # Create a group for Sonarr arguments
-    sonarr_group = parser.add_argument_group(title='Sonarr Arguments', description='If using Sonarr please provide at least one sonarr URL and API Key pair')
-    # Add a sonarr-urls argument which takes one or more Sonarr URLs
-    sonarr_group.add_argument('--sonarr-urls', nargs='+', help='Sonarr URL(s)\n', required=False)
-    # Add a sonarr-apis argument which takes one or more Sonarr API keys
-    sonarr_group.add_argument('--sonarr-apis', nargs='+', help='Sonarr API Key(s)\n', required=False)
-    # Add a sonarr-check argument which specifies the number of series to check
-    sonarr_group.add_argument('--sonarr-check', type=int, help='Number of series to check. (Default: 1)', required=False)
-    # Create a group for Radarr arguments
-    radarr_group = parser.add_argument_group(title='Radarr Arguments', description='If using Radarr please provide at least one radarr URL and API Key pair')
-    # Add a radarr-urls argument which takes one or more Radarr URLs
-    radarr_group.add_argument('--radarr-urls', nargs='+', help='Radarr URL(s)\n', required=False)
-    # Add a radarr-apis argument which takes one or more Radarr API keys
-    radarr_group.add_argument('--radarr-apis', nargs='+', help='Radarr API Key(s)\n', required=False)
-    # Add a radarr-check argument which specifies the number of movies to check
-    radarr_group.add_argument('--radarr-check', type=int, help='Number of movies to check. (Default: 1)', required=False)
-    # Parsing the command line arguments
-    args = parser.parse_args()
-    # Call the main function with the parsed arguments
-    main(args.sonarr_check, args.radarr_check, args.sonarr_urls, args.sonarr_apis, args.radarr_urls, args.radarr_apis, args.dry_run, args.cycle, args.reset)
+    main()
+    

@@ -10,23 +10,12 @@ This is a script for renaming media files for unlimited number of Sonarr and/or 
 
 In order to use the script, you need to provide the URLs and API keys for your Sonarr and/or Radarr instances. The script will then connect to each instance, retrieve the list of movies or series, and rename the media files accordingly.
 
-## Help Menu
-To run the script, you need to provide the following arguments:
-```
---dry-run: (optional) Run the script in dry-run mode to preview changes without enacting any changes.
---cycle: (optional) Run the script in cycle mode to continuously cycle through all movies and series after they have all been tagged and renamed.
---reset: (optional) Reset all tags for any connected Sonarr/Radarr instances.
---sonarr-urls: (optional) List of URLs for Sonarr instances.
---sonarr-apis: (optional) List of API keys for Sonarr instances.
---sonarr-check: (optional) Number of series to check.
---radarr-urls: (optional) List of URLs for Radarr instances.
---radarr-apis: (optional) List of API keys for Radarr instances.
---radarr-check: (optional) Number of movies to check.
-```
-Note: Sonarr/Radarr URLs/APIs are optional but without them the script will not run. You need at least one pair.
-## Usage
-Example usage:
-```
-python script.py --sonarr-urls http://localhost:8989 http://localhost:9090 --sonarr-apis abcdefghijklmnopqrstuvwxyz abc3efgh4jklmnopq5stuvwxyz --radarr-urls http://localhost:7878 --radarr-apis abcdefghijklmnopqrstuvwxyz
-```
-This script can be used to manage multiple Sonarr and Radarr instances from a single location, saving time and effort in renaming and tagging media files.
+# Upgradinatorr
+
+## Description
+
+Description goes here
+# Config File
+Example config goes here
+## Overview
+Overview of config file goes here

@@ -508,26 +508,30 @@ def print_format(media, to_rename, type, dry_run, logger):
 
 def validate_input(instance_name, url, api_key, dry_run, unattended, count, tag_name, logger):
     if not (url.startswith("http://") or url.startswith("https://")):
-        raise ValueError(f"{instance_name}' URL must start with 'http://' or 'https://")
+        raise ValueError(f'\'{instance_name}\' URL must start with \'http://\' or \'https://://\'')
     if url.startswith("http://") or url.startswith("https://"):
         if not api_key:
-            raise ValueError(f"API key is required for {instance_name}")
+            raise ValueError(f'API key is required for \'{instance_name}\'')
         if dry_run is not True and dry_run is not False:
-            logger.warning(f'Error: {dry_run} in {instance_name} must be either True or False. Defaulting to False')
-            dry_run = False
+            logger.warning(f'Error: \'unattended: {unattended}\' in \'{instance_name}\' must be either True or False. Defaulting to False')
+            dry_run = True
         if unattended is not True and unattended is not False:
             logger.warning(f'Error: {unattended} in {instance_name} must be either True or False. Defaulting to False')
             unattended = False
-        try:
-            count = int(count)
-            if count <= 0:
-                logger.warning(f'Error: {count} in {instance_name} is not a valid count. Setting count to default value of 1')
+        if count is None:
+            logger.warning(f'Error: \'count: \' is empty: Setting count to default value of 1')
+            count = 1
+        else:
+            if not isinstance(count, int):
+                logger.warning(f'Error: \'count: {count}\' in \'{instance_name}\' is not a valid count. Setting count to default value of 1')
                 count = 1
-        except ValueError:
-            logger.warning(f'Error: {count} in {instance_name} is not a valid count. Setting count to default value of 1')
+            else:
+                count = int(count)
+        if count <= 0:
+            logger.warning(f'Error: \'count: {count}\' in \'{instance_name}\' is not a valid count. Setting count to default value of 1')
             count = 1
         if tag_name == "":
-            raise ValueError(f'Tag name in {instance_name} is empty. This must be set')
+            raise ValueError(f'\'tag_name: \' in {instance_name} is empty. This must be set')
         return dry_run, unattended, count
 def setup_logger(log_level):
     # Create a directory to store logs, if it doesn't exist
@@ -569,15 +573,19 @@ def setup_logger(log_level):
         console_handler.setLevel(logging.CRITICAL)
     logger.addHandler(console_handler)
     # Delete the old log files
-    log_files = [f for f in os.listdir(log_dir) if os.path.isfile(os.path.join(log_dir, f)) and f.startswith("renamer_")]
+    log_files = [f for f in os.listdir(log_dir) if os.path.isfile(os.path.join(log_dir, f)) and f.startswith("renameinatorr_")]
     log_files.sort(key=lambda x: os.path.getmtime(os.path.join(log_dir, x)), reverse=True)
     for file in log_files[3:]:
         os.remove(os.path.join(log_dir, file))
     return logger
 
 def main():
+    # Construct the path to the config file based on the script file's path
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    config_file_path = os.path.join(script_dir, 'config.yml')
+
     # Load the config file
-    with open('config.yml') as f:
+    with open(config_file_path) as f:
         config = yaml.safe_load(f)
         
     renameinator = config.get('renameinator', {})
@@ -589,12 +597,12 @@ def main():
     
     if dry_run:
     # If dry_run is activated, print a message indicating so and the status of other variables.
-        logger.debug('*' * 40)
-        logger.debug(f'* {"Dry_run Activated":^36} *')
-        logger.debug('*' * 40)
-        logger.debug(f'* {" NO CHANGES WILL BE MADE ":^36} *')
-        logger.debug('*' * 40)
-        logger.debug('')
+        logger.info('*' * 40)
+        logger.info(f'* {"Dry_run Activated":^36} *')
+        logger.info('*' * 40)
+        logger.info(f'* {" NO CHANGES WILL BE MADE ":^36} *')
+        logger.info('*' * 40)
+        logger.info('')
     logger.debug(f'{" Script Settings ":*^40}')
     logger.debug(f'Dry_run: {dry_run}')
     logger.debug(f"Log Level: {log_level}")
@@ -618,16 +626,15 @@ def main():
                 tag_name = instance_setting.get('tag_name')
                 unattended = instance_setting.get('unattended')
                 reset = instance_setting.get('reset')
-                
+                dry_run, unattended, count = validate_input(instance_name, url, api_key, dry_run, unattended, count, tag_name, logger)
                 logger.debug(f'{" Settings ":*^40}')
                 logger.debug(f"Section Name: {instance_name}")
-                logger.debug(f"Unattended: {unattended}")
-                logger.debug(f"Count: {count}")
                 logger.debug(f"URL: {url}")
-                logger.debug(f"API Key: {api_key}") #{'<redacted>' if api_key else 'None'}"
+                logger.debug(f"API Key: {'<redacted>' if api_key else 'None'}")
+                logger.debug(f"Count: {count}")
                 logger.debug(f"Tag_name: {tag_name}")
-                logger.debug(f"Reset: {reset}")
                 logger.debug(f"Unattended: {unattended}")
+                logger.debug(f"Reset: {reset}")
                 logger.debug(f'*' * 40 )
                 logger.debug('')
 
@@ -637,7 +644,6 @@ def main():
                 logger.info(f'* {instance_name:^36} *')
                 logger.info('*' * 40)
                 logger.info('')
-                dry_run, unattended, count = validate_input(instance_name, url, api_key, dry_run, unattended, count, tag_name, logger)
             
             if not url and not api_key:
                 continue
@@ -646,14 +652,13 @@ def main():
                 'Radarr': RadarrInstance,
                 'Sonarr': SonarrInstance,
             }
-            # instance_name = instance_name.capitalize()
             section_class = class_map.get(instance_name.split('_')[0].capitalize())
-            instance = section_class(url, api_key, logger)
+            arr_instance = section_class(url, api_key, logger)
             radarr_all_tagged, sonarr_all_tagged = False, False
             # Add the instance to the appropriate list
             if section_class == RadarrInstance:
                 radarr_instances = []
-                radarr_instances.append(instance)
+                radarr_instances.append(arr_instance)
                 # Loop through all radarr instances
                 for radarr in radarr_instances:
                     tagged_count = 0
@@ -707,7 +712,7 @@ def main():
                     logger.info(f'Total Movies: {total_count}, Tagged Movies: {tagged_count} ({tagged_percent:.2f}%), Untagged Movies: {untagged_count} ({untagged_percent:.2f}%)\n')               
             elif section_class == SonarrInstance:
                 sonarr_instances = []
-                sonarr_instances.append(instance)
+                sonarr_instances.append(arr_instance)
                 for sonarr in sonarr_instances:
                     tagged_count = 0
                     untagged_count = 0

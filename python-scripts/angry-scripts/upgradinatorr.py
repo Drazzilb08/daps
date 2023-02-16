@@ -430,8 +430,12 @@ def validate_input(instance_name, url, api_key, dry_run, unattended, count, moni
 
 
 def main():
-        # Load the config file
-    with open('config.yml') as f:
+    # Construct the path to the config file based on the script file's path
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    config_file_path = os.path.join(script_dir, 'config.yml')
+
+    # Load the config file
+    with open(config_file_path) as f:
         config = yaml.safe_load(f)
         
     upgradinatorr = config.get('upgradinatorr', {})

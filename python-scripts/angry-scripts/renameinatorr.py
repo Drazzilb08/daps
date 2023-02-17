@@ -62,49 +62,10 @@ class SonarrInstance:
             A list of dictionaries representing all tags in Sonarr.
         """
         endpoint = f"{self.url}/api/v3/tag"
-        response = requests.get(endpoint, headers=self.headers)
+        response = self.session.get(endpoint, headers=self.headers)
         return response.json()
 
-
-    def check_and_create_tag(self, tag_name, dry_run, logger):
-        """
-        Check if a the desired tag exists in Sonarr, and if not, create it.
-        Returns the ID of the desired tag.
-        """
-        # Get all existing tags in Sonarr
-        all_tags = self.get_all_tags()
-        # Initialize the variable to hold the ID of the desired tag
-        tag_id = None
-        # Iterate over the list of existing tags
-        for tag in all_tags:
-            # Check if a tag with the label desired exists
-            if tag["label"] == tag_name:
-                # Store the ID of the desired tag
-                tag_id = tag["id"]
-                # Break out of the loop
-                logger.debug(f'Tag Name: {tag_name} exists with tagId: {tag_id}')
-                break
-        # If the desired tag doesn't exist
-        if tag_id is None:
-            if dry_run == False:
-                # Call the `create_tag` function to create the desired tag
-                self.create_tag(tag_name, logger)
-                # Get all tags again to retrieve the newly created tag's ID
-                all_tags = self.get_all_tags()
-                # Iterate over the list of existing tags
-                for tag in all_tags:
-                    # Check if a tag with the label "desired exists
-                    if tag["label"] == tag_name:
-                        # Store the ID of the desired tag
-                        tag_id = tag["id"]
-                        # Break out of the loop
-                        break
-            else:
-                logger.info(f'Tag Name: {tag_name} would have been created.')
-        # Return the ID of the desired tag
-        return tag_id
-
-    def create_tag(self, label):
+    def create_tag(self, label, logger):
         """
         Create a new tag with the specified label
         Args:
@@ -114,15 +75,18 @@ class SonarrInstance:
         Raises:
             Exception: If the API call to create the tag fails
         """
-        # Create the data for the API request to create the tag
-        tag_data = {"label": label}
-        # Make a POST request to the API to create the tag
-        create_tag_response = self.session.post(f"{self.url}/api/v3/tag", json=tag_data)
-        # Check if the API call was successful
-        if create_tag_response.status_code != 201:
-            raise Exception(f"Failed to create tag: {create_tag_response.text}")
+        payload = {
+            "label": label
+        }
+        endpoint = f"{self.url}/api/v3/tag"
+        response = self.session.post(endpoint, json=payload)
+        if response.status_code == requests.codes.created:
+            tag_data = response.json()
+            tag_id = tag_data.get("id")
+            logger.debug(f'Tag "{label}" created with ID {tag_id}.')
         else:
-            logger.info(f"Tag '{label}' created successfully.")
+            logger.error(f"Failed to create tag: {response.text}")
+            raise Exception(f"Failed to create tag: {label}")
 
     def get_series(self):
         """
@@ -130,85 +94,13 @@ class SonarrInstance:
         Returns:
             list: A list of dictionaries representing all series in Sonarr.
         """
-        # Send a GET request to the /api/v3/series endpoint to retrieve information about all series
-        all_series = requests.get(f"{self.url}/api/v3/series", headers=self.headers)
-        # Convert the JSON response to a Python list of dictionaries
-        all_series = all_series.json()
-        return all_series
-
-    def get_rename_list(self, series_id):
-        """
-        This method retrieves the list of episodes to be renamed for the specified series ID.
-        :param series_id: The ID of the series to retrieve the rename list for.
-        :return: A list of episodes to be renamed.
-        """
-        # Get the list of episodes to be renamed
-        episodes_to_rename = requests.get(f"{self.url}/api/v3/rename?seriesId={series_id}", headers=self.headers)
-        # Convert the response to a list of episodes to be renamed
-        episodes_to_rename = episodes_to_rename.json()
-        return episodes_to_rename
-
-    def rename_files(self, series_id, episode_file_ids):
-        """
-        Sends a request to rename a list of episode files
-        Parameters:
-            series_id (int): ID of the series the episode files belong to
-            episode_file_ids (List[int]): List of IDs of episode files to be renamed
-            Returns:
-        bool: Returns `True` if the episode files were renamed successfully
-        """
-        # Create the payload data for the API request
-        payload = {
-            "name": "RenameFiles",
-            "seriesId": series_id,
-            "files": episode_file_ids
-        }
-        # Send the API request to rename the episode files
-        rename_response = requests.post(f"{self.url}/api/v3/command", headers=self.headers, json=payload)
-        # Get the task ID for the rename operation
-        task_id = rename_response.json()["id"]
-        # Check the status of the rename task until it's completed
-        task_complete = False
-        while not task_complete:
-            task_status = requests.get(f"{self.url}/api/v3/command/{task_id}", headers=self.headers)
-            task_status = task_status.json()
-            if task_status["status"] == "completed":
-                task_complete = True
-            else:
-                logger.info(f'Sleeping for 5 seconds until all episodes have been renamed')
-                time.sleep(5)
-        return True
-
-    def rename_files(self, series_id, episode_file_ids):
-        """
-        Sends a request to rename a list of episode files
-        Parameters:
-            series_id (int): ID of the series the episode files belong to
-            episode_file_ids (List[int]): List of IDs of episode files to be renamed
-        Returns:
-            bool: Returns `True` if the episode files were renamed successfully
-        """
-        # Create the payload data for the API request
-        payload = {
-            "name": "RenameFiles",
-            "seriesId": series_id,
-            "files": episode_file_ids
-        }
-        # Send the API request to rename the episode files
-        rename_response = requests.post(f"{self.url}/api/v3/command", headers=self.headers, json=payload)
-        # Get the task ID for the rename operation
-        task_id = rename_response.json()["id"]
-        # Check the status of the rename task until it's completed
-        task_complete = False
-        while not task_complete:
-            task_status = requests.get(f"{self.url}/api/v3/command/{task_id}", headers=self.headers)
-            task_status = task_status.json()
-            if task_status["status"] == "completed":
-                task_complete = True
-            else:
-                logger.info(f'Sleeping for 5 seconds until all episodes have been renamed')
-                time.sleep(5)
-        return True
+        endpoint = f"{self.url}/api/v3/series"
+        response = self.session.get(endpoint, headers=self.headers)
+        if response.status_code in [requests.codes.ok, 201]:
+            all_series = response.json()
+            return all_series
+        else:
+            raise ValueError(f"Failed to get series with status code {response.status_code}")
 
     def add_tag(self, series_id, tag_id):
         """
@@ -217,40 +109,126 @@ class SonarrInstance:
         :param tag_id: The ID of the tag to be added to the series.
         :return: None
         """
-        endpoint = f"{self.url}/api/v3/series/editor"
-        data = {
+        payload = {
             "seriesIds": [series_id],
             "tags": [tag_id],
             "applyTags": "add"
         }
-        add_tag_response = self.session.put(endpoint, json=data)
-        add_tag_response.raise_for_status()
+        endpoint = f"{self.url}/api/v3/series/editor"
+        response = self.session.put(endpoint, json=payload)
+        response.raise_for_status()
 
-    def remove_tags(self, all_series, tag_id):
+    def check_and_create_tag(self, tag_name, dry_run, logger):
+            """
+            Check if a the desired tag exists in Sonarr, and if not, create it.
+            Returns the ID of the desired tag.
+            """
+            all_tags = self.get_all_tags()
+            tag_id = None
+            for tag in all_tags:
+                if tag["label"] == tag_name:
+                    tag_id = tag["id"]
+                    logger.debug(f'Tag Name: {tag_name} exists with tagId: {tag_id}')
+                    break
+            if tag_id is None:
+                if dry_run == False:
+                    self.create_tag(tag_name, logger)
+                    all_tags = self.get_all_tags()
+                    for tag in all_tags:
+                        if tag["label"] == tag_name:
+                            tag_id = tag["id"]
+                            break
+                else:
+                    logger.info(f'Tag Name: {tag_name} would have been created.')
+            return tag_id
+
+    def remove_tags(self, all_series, tag_id, tag_name, logger):
         """
         Remove a specific tag from a list of series.
-
         Parameters:
             all_series (list): a list of series dictionaries, each containing information about a series.
             tag_id (int): the ID of the tag to be removed.
-
         Returns:
             False: always returns False, since this function only updates the tags of serise and does not return any data.
         """
-        endpoint = f"{self.url}/api/v3/series/editor"
-        for movie in all_series:
+        series_ids = []
+        for series in all_series:
             if tag_id in series["tags"]:
-                series_id = series["id"]
-                data = {
-                    "movieIds": [series_id],
-                    "tags": [tag_id],
-                    "applyTags": "remove"
-                }
-                response = self.session.put(endpoint, json=data)
-                if response.status_code != 202:
-                    logger.critical(f"Failed to remove tag with ID {tag_id} from series with ID {series_id}.")
+                series_ids.append(series["id"])
+        if not series_ids:
+            return false
+        endpoint = f"{self.url}/api/v3/series/editor"
+        payload = {
+            "seriesIds": series_id,
+            "tags": [tag_id],
+            "applyTags": "remove"
+        }
+        endpoint = f"{self.url}/api/v3/series/editor"
+        response = self.session.put(endpoint, json=data)
+        if response.status_code == 202:
+            logger.debug(f"Successfully removed tag: {tag_name} with ID {tag_id} from {len(series_ids)} series.")
+        else:
+            logger.debug(f"Failed to remove tag: {tag_name} with ID {tag_id} from {len(series_ids)} series. Response status code: {response.status_code}")
+        return False
+
+    def get_rename_list(self, series_id):
+        """
+        This method retrieves the list of episodes to be renamed for the specified series ID.
+        :param series_id: The ID of the series to retrieve the rename list for.
+        :return: A list of episodes to be renamed.
+        """
+        # Get the list of episodes to be renamed
+        endpoint = f"{self.url}/api/v3/rename?seriesId={series_id}"
+        response = self.session.get(endpoint, headers=self.headers)
+        response.raise_for_status()
+        episodes_to_rename = response.json()
+        return episodes_to_rename
+
+    def rename_files(self, series_id, episode_file_ids, logger):
+        """
+        Sends a request to rename a list of episode files
+        Parameters:
+            series_id (int): ID of the series the episode files belong to
+            episode_file_ids (List[int]): List of IDs of episode files to be renamed
+            max_retries (int): Maximum number of retries for checking task status (default=10)
+        Returns:
+        bool: Returns `True` if the episode files were renamed successfully
+        """
+        max_retries=10
+        payload = {
+            "name": "RenameFiles",
+            "seriesIds": series_id,
+            "files": episode_file_ids
+        }
+        endpoint = f"{self.url}/api/v3/command"
+        try:
+            response = requests.post(endpoint, headers=self.headers, json=payload)
+            response.raise_for_status()
+            task_id = response.json()["id"]
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to rename files: {e}")
+            return False
+        task_complete = False
+        retries = 0
+        while not task_complete and retries < max_retries:
+            endpoint = f"{self.url}/api/v3/command/{task_id}"
+            try:
+                response = self.session.get(endpoint, headers=self.headers)
+                response.raise_for_status()
+                task_status = response.json()
+                if task_status["status"] == "completed":
+                    task_complete = True
                 else:
-                    logger.info(f'Successfully removed {tag_id} (Renamed) from {movie["title"]}.')
+                    logger.info(f'Sleeping for 5 seconds until all episodes have been renamed')
+                    time.sleep(5)
+            except requests.exceptions.RequestException as e:
+                logger.warning(f"Failed to check task status: {e}")
+                retries += 1
+                time.sleep(5)
+        if not task_complete:
+            logger.error(f"Failed to rename files: task did not complete after {max_retries} retries")
+            return False
+        return True
 
 class RadarrInstance():
     def __init__(self, url, api_key, logger):
@@ -297,143 +275,44 @@ class RadarrInstance():
             A list of dictionaries representing all tags in Radarr.
         """
         endpoint = f"{self.url}/api/v3/tag"
-        response = requests.get(endpoint, headers=self.headers)
+        response = self.session.get(endpoint, headers=self.headers)
         return response.json()
 
-    def check_and_create_tag(self, tag_name, dry_run, logger):
-        """
-        Check if a the desired tag exists in Radarr, and if not, create it.
-        Returns the ID of the desired tag.
-        """
-        # Get all existing tags in Radarr
-        all_tags = self.get_all_tags()
-        # Initialize the variable to hold the ID of the desired tag
-        tag_id = None
-        # Iterate over the list of existing tags
-        for tag in all_tags:
-            # Check if a tag with the label desired exists
-            if tag["label"] == tag_name:
-                # Store the ID of the desired tag
-                tag_id = tag["id"]
-                # Break out of the loop
-                logger.debug(f'Tag Name: {tag_name} exists with tagId: {tag_id}')
-                break
-        # If the desired tag doesn't exist
-        if tag_id is None:
-            if dry_run == False:
-                # Call the `create_tag` function to create the desired tag
-                self.create_tag(tag_name, logger)
-                # Get all tags again to retrieve the newly created tag's ID
-                all_tags = self.get_all_tags()
-                # Iterate over the list of existing tags
-                for tag in all_tags:
-                    # Check if a tag with the label "desired exists
-                    if tag["label"] == tag_name:
-                        # Store the ID of the desired tag
-                        tag_id = tag["id"]
-                        # Break out of the loop
-                        break  
-            else:
-                logger.info(f'Tag Name: {tag_name} would have been created.')
-        # Return the ID of the desired tag
-        return tag_id
-
-    def create_tag(self, label):
+    def create_tag(self, label, logger):
         """
         Create a new tag with the specified label
-        Args:
+        Parameters:
             label (str): The label for the new tag
-        Returns:
-            None
+            logger (logging.Logger): a logger object for logging debug messages.
         Raises:
             Exception: If the API call to create the tag fails
         """
-        # Create the data for the API request to create the tag
-        tag_data = {"label": label}
-        # Make a POST request to the API to create the tag
-        create_tag_response = self.session.post(f"{self.url}/api/v3/tag", json=tag_data)
-        # Check if the API call was successful
-        if create_tag_response.status_code != 201:
-            raise Exception(f"Failed to create tag: {create_tag_response.text}")
+        payload = {
+            "label": label
+        }
+        endpoint = f"{self.url}/api/v3/tag"
+        response = self.session.post(endpoint, json=payload)
+        if response.status_code == requests.codes.created:
+            tag_data = response.json()
+            tag_id = tag_data.get("id")
+            logger.debug(f'Tag "{label}" created with ID {tag_id}.')
         else:
-            logger.info(f"Tag '{label}' created successfully.")
+            logger.error(f"Failed to create tag: {response.text}")
+            raise Exception(f"Failed to create tag: {label}")
 
     def get_movies(self):
         """
-        Get a list of all series in Sonarr.
+        Get a list of all movies in Radarr.
         Returns:
-            list: A list of dictionaries representing all series in Sonarr.
+            list: A list of dictionaries representing all movie in Radarr.
         """
-        # Send a GET request to the /api/v3/movie endpoint to retrieve information about all movies
-        all_movies = requests.get(f"{self.url}/api/v3/movie", headers=self.headers)
-        # Convert the JSON response to a Python list of dictionaries
-        all_movies = all_movies.json()
-        return all_movies
-
-    def get_rename_list(self, movie_id):
-        """
-        This method retrieves the list of episodes to be renamed for the specified series ID.
-
-        :param series_id: The ID of the series to retrieve the rename list for.
-        :return: A list of episodes to be renamed.
-        """
-        # Get the list of episodes to be renamed
-        movie_to_rename = requests.get(f"{self.url}/api/v3/rename?movieId={movie_id}", headers=self.headers)
-        # Convert the response to a list of movies to be renamed
-        movie_to_rename = movie_to_rename.json()
-        return movie_to_rename
-
-    def rename_files(self, movie_id, movie_file_id):
-        """
-        Renames movie files.
-
-        Parameters:
-            movie_id (int): The ID of the movie to be renamed.
-            movie_file_id (list of ints): The ID(s) of the file(s) to be renamed.
-
-        Returns:
-            bool: Returns True if the files were successfully renamed.
-        """
-        payload = {
-            "name": "RenameFiles",
-            "movieId": movie_id,
-            "files": movie_file_id
-        }
-        rename_response = requests.post(f"{self.url}/api/v3/command", headers=self.headers, json=payload)
-        task_id = rename_response.json()["id"]
-        task_complete = False
-        while not task_complete:
-            task_status = requests.get(f"{self.url}/api/v3/command/{task_id}", headers=self.headers)
-            task_status = task_status.json()
-            if task_status["status"] == "completed":
-                task_complete = True
-        return True
-
-    def remove_tags(self, all_movies, tag_id):
-        """
-        Remove a specific tag from a list of movies.
-
-        Parameters:
-            all_movies (list): a list of movie dictionaries, each containing information about a movie.
-            tag_id (int): the ID of the tag to be removed.
-
-        Returns:
-            False: always returns False, since this function only updates the tags of movies and does not return any data.
-        """
-        endpoint = f"{self.url}/api/v3/movie/editor"
-        for movie in all_movies:
-            if tag_id in movie["tags"]:
-                movie_id = movie["id"]
-                data = {
-                    "movieIds": [movie_id],
-                    "tags": [tag_id],
-                    "applyTags": "remove"
-                }
-                response = self.session.put(endpoint, json=data)
-                if response.status_code != 202:
-                    logger.critical(f"Failed to remove tag with ID {tag_id} from movie with ID {movie_id}.")
-                else:
-                    logger.info(f'Successfully removed {tag_id} (Renamed) from {movie["title"]}.')
+        endpoint = f"{self.url}/api/v3/movie"
+        response = self.session.get(endpoint, headers=self.headers)
+        if response.status_code in [requests.codes.ok, 201]:
+            all_movies = response.json()
+            return all_movies
+        else:
+            raise ValueError(f"Failed to get movies with status code {response.status_code}")
 
     def add_tag(self, movie_id, tag_id):
         """Add a tag to a movie with given movie_id
@@ -443,18 +322,129 @@ class RadarrInstance():
         Raises:
             requests.exceptions.HTTPError: if the response from the API is not a 202 (Accepted) status code
         """
-        # Endpoint for adding tags to a movie
-        endpoint = f"{self.url}/api/v3/movie/editor"
-        # Data to be sent in the API request
-        data = {
+        payload = {
             "movieIds": [movie_id],
             "tags": [tag_id],
             "applyTags": "add"
         }
-        # Make the API request to add the tag
-        add_tag_response = self.session.put(endpoint, json=data)
-        # Raise an error if the API response is not 202 (Accepted)
-        add_tag_response.raise_for_status()
+        endpoint = f"{self.url}/api/v3/movie/editor"
+        response = self.session.put(endpoint, json=payload)
+        response.raise_for_status()
+
+    def check_and_create_tag(self, tag_name, dry_run, logger):
+        """
+        Check if a the desired tag exists in Radarr, and if not, create it.
+        Returns the ID of the desired tag.
+        """
+        all_tags = self.get_all_tags()
+        tag_id = None
+        for tag in all_tags:
+            if tag["label"] == tag_name:
+                tag_id = tag["id"]
+                logger.debug(f'Tag Name: {tag_name} exists with tagId: {tag_id}')
+                break
+        if tag_id is None:
+            if dry_run == False:
+                self.create_tag(tag_name, logger)
+                all_tags = self.get_all_tags()
+                for tag in all_tags:
+                    if tag["label"] == tag_name:
+                        tag_id = tag["id"]
+                        # Break out of the loop
+                        break  
+            else:
+                logger.info(f'Tag Name: {tag_name} would have been created.')
+        return tag_id
+
+    def remove_tags(self, all_movies, tag_id, tag_name, logger):
+        """
+        Remove a specific tag from a list of movies.
+        Parameters:
+            all_movies (list): a list of movie dictionaries, each containing information about a movie.
+            tag_id (int): the ID of the tag to be removed.
+            tag_name (str): the name of the tag to be removed.
+            logger (logging.Logger): a logger object for logging debug messages.
+        Returns:
+            False: always returns False, since this function only updates the tags of movies and does not return any data.
+        """
+        movie_ids = []
+        for movie in all_movies:
+            if tag_id in movie["tags"]:
+                movie_ids.append(movie["id"])
+        if not movie_ids:
+            return False
+        payload = {
+            "movieIds": movie_ids,
+            "tags": [tag_id],
+            "applyTags": "remove"
+        }
+        endpoint = f"{self.url}/api/v3/movie/editor"
+        response = self.session.put(endpoint, json=payload)
+        if response.status_code == 202:
+            logger.debug(f"Successfully removed tag: {tag_name} with ID {tag_id} from {len(movie_ids)} movies.")
+        else:
+            logger.debug(f"Failed to remove tag: {tag_name} with ID {tag_id} from {len(movie_ids)} movies. Response status code: {response.status_code}")
+        return False
+
+    def get_rename_list(self, movie_id):
+        """
+        This method retrieves the list of episodes to be renamed for the specified movie ID.
+
+        :param movie_id: The ID of the movie to retrieve the rename list for.
+        :return: A list of movies to be renamed.
+        """
+        # Get the list of movies to be renamed
+        endpoint = f"{self.url}/api/v3/rename?movieId={movie_id}"
+        response = requests.get(endpoint, headers=self.headers)
+        # Convert the response to a list of movies to be renamed
+        movies_to_rename = response.json()
+        return movies_to_rename
+
+    def rename_files(self, movie_id, movies_to_rename, logger):
+        """
+        Sends a request to rename a list of movie files
+        Parameters:
+            movie_id (int): ID of the movies the movie files belong to
+            movies_to_rename (List[int]): List of IDs of movie files to be renamed
+            max_retries (int): Maximum number of retries for checking task status (default=10)
+        Returns:
+        bool: Returns `True` if the movie files were renamed successfully
+        """
+        max_retries=10
+        payload = {
+            "name": "RenameFiles",
+            "movieId": movie_id,
+            "files": movies_to_rename
+        }
+        endpoint = f"{self.url}/api/v3/command"
+        try:
+            response = requests.post(endpoint, headers=self.headers, json=payload)
+            response.raise_for_status()
+            task_id = response.json()["id"]
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to rename files: {e}")
+            return False
+        task_complete = False
+        retries = 0
+        while not task_complete and retries < max_retries:
+            endpoint = f"{self.url}/api/v3/command/{task_id}"
+            try:
+                response = self.session.get(endpoint, headers=self.headers)
+                response.raise_for_status()
+                task_status = response.json()
+                if task_status["status"] == "completed":
+                    task_complete = True
+                else:
+                    logger.info(f'Sleeping for 5 seconds until all movies have been renamed')
+                    time.sleep(5)
+            except requests.exceptions.RequestException as e:
+                logger.warning(f"Failed to check task status: {e}")
+                retries += 1
+                time.sleep(5)
+        if not task_complete:
+            logger.error(f"Failed to rename files: task did not complete after {max_retries} retries")
+            return False
+        return True
 
 def check_all_tagged(all_media, tag_id):
     """
@@ -533,6 +523,7 @@ def validate_input(instance_name, url, api_key, dry_run, unattended, count, tag_
         if tag_name == "":
             raise ValueError(f'\'tag_name: \' in {instance_name} is empty. This must be set')
         return dry_run, unattended, count
+
 def setup_logger(log_level):
     # Create a directory to store logs, if it doesn't exist
     log_dir = os.path.dirname(os.path.realpath(__file__)) + "/logs"
@@ -622,6 +613,8 @@ def main():
             if instance_global_settings is not None:
                 url = instance_global_settings['url']
                 api_key = instance_global_settings['api']
+                if url is None and api_key is None:
+                    continue
                 count = instance_setting.get('count')
                 tag_name = instance_setting.get('tag_name')
                 unattended = instance_setting.get('unattended')
@@ -671,8 +664,13 @@ def main():
                     # Check if all the movies are tagged with the radarr tag id
                     all_radarr_tagged = check_all_tagged(all_movies, radarr_tag_id)
                     # If all the movies are tagged and cycle is True or reset is True, remove the tags from all movies
-                    if all_radarr_tagged is True and cycle is True or reset is True:
-                        radarr.remove_tags(all_movies, radarr_tag_id, tag_name)
+                    if reset is True:
+                        radarr.remove_tags(all_movies, radarr_tag_id, tag_name, logger)
+                        logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
+                        logger.info ("Exiting...")
+                        sys.exit(0)
+                    elif all_radarr_tagged is True and cycle is True:
+                        radarr.remove_tags(all_movies, radarr_tag_id, tag_name, logger)
                         logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
                     # If all the movies are tagged and cycle is False, set radarr_all_tagged to True
                     elif all_radarr_tagged is True and cycle is False:
@@ -682,22 +680,19 @@ def main():
                     if all_radarr_tagged is False:
                         untagged_movies = [m for m in all_movies if radarr_tag_id not in m['tags']]
                         movies_to_process = untagged_movies[:count]
-                        renamed = False
+                        checked = True
                         for movies in movies_to_process:
                             movie_id = movies["id"]
                             file_to_rename = radarr.get_rename_list(movie_id)
-                            movie_file_ids = [file["movieFileId"] for file in file_to_rename]
-                            if movie_file_ids:
-                                if dry_run == True:
-                                    print_format(movies, file_to_rename, "radarr", dry_run, logger)
-                                    renamed = True
-                                elif dry_run == False:
-                                    print_format(movies, file_to_rename, "radarr", dry_run, logger)
-                                    renamed = radarr.rename_files(movie_id, movie_file_ids)
-                            if renamed == False:
+                            movies_to_rename = [file["movieFileId"] for file in file_to_rename]
+                            if movies_to_rename:
                                 if dry_run == False:
-                                    logger.info(f'Movie: \'{movies["title"]}\' has been tagged with \'{tag_name}\'.')
+                                    checked = radarr.rename_files(movie_id, movies_to_rename, logger)
+                                print_format(movies, file_to_rename, "radarr", dry_run, logger)
+                            if checked == True:
+                                if dry_run == False:
                                     radarr.add_tag(movie_id, radarr_tag_id)
+                                    logger.info(f'Movie: \'{movies["title"]}\' has been tagged with \'{tag_name}\'.')
                                 if dry_run == True:
                                     logger.info(f'Movie file: \'{movies["title"]}\' doesn\'t require renaming it would have been been tagged with \'{tag_name}\'.')
                         for movies in all_movies:
@@ -720,29 +715,31 @@ def main():
                     all_series = sonarr.get_series()
                     logger.debug(f"Length of all_series for {str(sonarr)}: {len(all_series)}")
                     all_sonarr_tagged = check_all_tagged(all_series, sonarr_tag_id)
-                    if all_sonarr_tagged is True and cycle is True or reset is True:
-                        sonarr.remove_tags(all_series, sonarr_tag_id, tag_name)
+                    if reset is True:
+                        sonarr.remove_tags(all_series, sonarr_tag_id, tag_name, logger)
+                        logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
+                        logger.info ("Exiting...")
+                        sys.exit(0)
+                    elif all_sonarr_tagged is True and cycle is True:
+                        sonarr.remove_tags(all_series, sonarr_tag_id, tag_name, logger)
                         logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
                     elif all_sonarr_tagged is True and cycle is False:
                         logger.info(f'All of {instance_name} has been tagged with {tag_name} skipping.')
                         sonarr_all_tagged = True
                         continue
                     if all_sonarr_tagged is False:
-                        renamed = False
-                        untagged_series = [m for m in all_series if sonarr_tag_id not in m['tags']]
+                        untagged_series = [s for s in all_series if sonarr_tag_id not in s['tags']]
                         series_to_process = untagged_series[:count]
+                        checked = True
                         for series in series_to_process:
                             series_id = series["id"]
                             episodes_to_rename = sonarr.get_rename_list(series_id)
                             episode_file_ids = [episode["episodeFileId"] for episode in episodes_to_rename]
                             if episode_file_ids:
-                                if dry_run == True:
-                                    print_format(series, episodes_to_rename, "sonarr", dry_run, logger)
-                                    renamed = True
-                                elif dry_run == False:
-                                    print_format(series, episodes_to_rename, "sonarr", dry_run, logger)
-                                    renamed = sonarr.rename_files(series_id, episode_file_ids)
-                            if renamed == False:    
+                                if dry_run == False:
+                                    checked = sonarr.rename_files(series_id, episode_file_ids)
+                                print_format(series, episodes_to_rename, "sonarr", dry_run, logger)
+                            if checked == True:    
                                 if dry_run == False:
                                     logger.info(f'Series: \'{series["title"]}\' has been tagged with \'{tag_name}\'.')
                                     sonarr.add_tag(series_id, sonarr_tag_id)

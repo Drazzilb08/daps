@@ -53,37 +53,39 @@ class SonarrInstance:
         response = self.session.get(url)
         response.raise_for_status()
         return response.json()
-        
+
     def get_all_tags(self):
         """
-        Get a list of all tags in Radarr.
+        Get a list of all tags in Sonarr.
         
         Returns:
-            A list of dictionaries representing all tags in Radarr.
+            A list of dictionaries representing all tags in Sonarr.
         """
         endpoint = f"{self.url}/api/v3/tag"
-        response = requests.get(endpoint, headers=self.headers)
+        response = self.session.get(endpoint, headers=self.headers)
         return response.json()
-    
+
     def create_tag(self, label, logger):
         """
         Create a new tag with the specified label
-        Args:
+        Parameters:
             label (str): The label for the new tag
-        Returns:
-            None
+            logger (logging.Logger): a logger object for logging debug messages.
         Raises:
             Exception: If the API call to create the tag fails
         """
-        # Create the data for the API request to create the tag
-        tag_data = {"label": label}
-        # Make a POST request to the API to create the tag
-        create_tag_response = self.session.post(f"{self.url}/api/v3/tag", json=tag_data)
-        # Check if the API call was successful
-        if create_tag_response.status_code == 201:
-            logger.debug(f'Tag Name: {tag_name} created with tagId: {tag_id}')
+        payload = {
+            "label": label
+        }
+        endpoint = f"{self.url}/api/v3/tag"
+        response = self.session.post(endpoint, json=payload)
+        if response.status_code == requests.codes.created:
+            tag_data = response.json()
+            tag_id = tag_data.get("id")
+            logger.debug(f'Tag "{label}" created with ID {tag_id}.')
         else:
-            raise Exception(f"Failed to create tag: {create_tag_response.text}")
+            logger.error(f"Failed to create tag: {response.text}")
+            raise Exception(f"Failed to create tag: {label}")
 
     def get_series(self):
         """
@@ -91,11 +93,14 @@ class SonarrInstance:
         Returns:
             list: A list of dictionaries representing all series in Sonarr.
         """
-        # Send a GET request to the /api/v3/series endpoint to retrieve information about all series
-        all_series = requests.get(f"{self.url}/api/v3/series", headers=self.headers)
-        # Convert the JSON response to a Python list of dictionaries
-        all_series = all_series.json()
-        return all_series
+        endpoint = f"{self.url}/api/v3/series"
+        response = self.session.get(endpoint, headers=self.headers)
+        if response.status_code in [requests.codes.ok, 201]:
+            all_series = response.json()
+            return all_series
+        else:
+            raise ValueError(f"Failed to get series with status code {response.status_code}")
+
     def add_tag(self, series_id, tag_id):
         """
         This function adds a tag with the given ID to a series with the given series ID.
@@ -103,51 +108,37 @@ class SonarrInstance:
         :param tag_id: The ID of the tag to be added to the series.
         :return: None
         """
-        endpoint = f"{self.url}/api/v3/series/editor"
-        data = {
-            "seriesIds": [series_id],
+        payload = {
+            "seriesIds": series_id,
             "tags": [tag_id],
             "applyTags": "add"
         }
-        add_tag_response = self.session.put(endpoint, json=data)
-        add_tag_response.raise_for_status()
+        endpoint = f"{self.url}/api/v3/series/editor"
+        response = self.session.put(endpoint, json=payload)
+        response.raise_for_status()
 
     def check_and_create_tag(self, tag_name, dry_run, logger):
         """
         Check if a the desired tag exists in Sonarr, and if not, create it.
         Returns the ID of the desired tag.
         """
-        # Get all existing tags in Sonarr
         all_tags = self.get_all_tags()
-        # Initialize the variable to hold the ID of the desired tag
         tag_id = None
-        # Iterate over the list of existing tags
         for tag in all_tags:
-            # Check if a tag with the label desired exists
             if tag["label"] == tag_name:
-                # Store the ID of the desired tag
                 tag_id = tag["id"]
-                # Break out of the loop
                 logger.debug(f'Tag Name: {tag_name} exists with tagId: {tag_id}')
                 break
-        # If the desired tag doesn't exist
         if tag_id is None:
             if dry_run == False:
-                # Call the `create_tag` function to create the desired tag
                 self.create_tag(tag_name, logger)
-                # Get all tags again to retrieve the newly created tag's ID
                 all_tags = self.get_all_tags()
-                # Iterate over the list of existing tags
                 for tag in all_tags:
-                    # Check if a tag with the label "desired exists
                     if tag["label"] == tag_name:
-                        # Store the ID of the desired tag
                         tag_id = tag["id"]
-                        # Break out of the loop
                         break
             else:
                 logger.info(f'Tag Name: {tag_name} would have been created.')
-        # Return the ID of the desired tag
         return tag_id
 
     def remove_tags(self, all_series, tag_id, tag_name):
@@ -159,44 +150,39 @@ class SonarrInstance:
         Returns:
             False: always returns False, since this function only updates the tags of serise and does not return any data.
         """
-        endpoint = f"{self.url}/api/v3/series/editor"
+        series_ids = []
         for series in all_series:
             if tag_id in series["tags"]:
-                series_id = series["id"]
-                data = {
-                    "movieIds": [series_id],
-                    "tags": [tag_id],
-                    "applyTags": "remove"
-                }
-                response = self.session.put(endpoint, json=data)
-                if response.status_code != 202:
-                    logger.debug(f"Failed to remove tag: {tag_name} with ID {tag_id} from series with ID {series_id}.")
-                else:
-                    logger.debug(f'Successfully removed {tag_id} ({tag_name}) from {series["title"]}.')
+                series_ids.append(series["id"])
+        if not series_ids:
+            return false
+        endpoint = f"{self.url}/api/v3/series/editor"
+        payload = {
+            "seriesIds": series_id,
+            "tags": [tag_id],
+            "applyTags": "remove"
+        }
+        endpoint = f"{self.url}/api/v3/series/editor"
+        response = self.session.put(endpoint, json=data)
+        if response.status_code == 202:
+            logger.debug(f"Successfully removed tag: {tag_name} with ID {tag_id} from {len(movie_ids)} movies.")
+        else:
+            logger.debug(f"Failed to remove tag: {tag_name} with ID {tag_id} from {len(movie_ids)} movies. Response status code: {response.status_code}")
         return False
 
-    def search_series(self, series_id, logger):
+    def search_series(self, series_id):
         # Create the payload data for the API request
         payload = {
             "name": "SeriesSearch",
-            "seriesId": series_id,
+            "seriesIds": series_id
         }
-        # Send the API request to search series
-        search_response = requests.post(f"{self.url}/api/v3/command", headers=self.headers, json=payload)
-        # Get the task ID for the search operation
-        task_id = search_response.json()["id"]
-        # Check the status of the search task until it's completed
-        task_complete = False
-        while not task_complete:
-            task_status = requests.get(f"{self.url}/api/v3/command/{task_id}", headers=self.headers)
-            task_status = task_status.json()
-            if task_status["status"] == "completed":
-                task_complete = True
+        endpoint = f"{self.url}/api/v3/command"
+        response = self.session.post(endpoint, json=payload)
+        response.raise_for_status() 
 
 class RadarrInstance():
     def __init__(self, url, api_key, logger):
         """
-
         Initialize the RadarrInstance object
         Arguments:
             - url: the URL of the Radarr API endpoint
@@ -210,7 +196,6 @@ class RadarrInstance():
         }
         self.session = requests.Session()
         self.session.headers.update({"X-Api-Key": self.api_key})
-        
         try:
             status = self.get_system_status()
             app_name = status.get("appName")
@@ -225,8 +210,8 @@ class RadarrInstance():
         return f"RadarrInstance(url={self.url})"
 
     def get_system_status(self):
-        url = f"{self.url}/api/v3/system/status"
-        response = self.session.get(url)
+        endpoint = f"{self.url}/api/v3/system/status"
+        response = self.session.get(endpoint)
         response.raise_for_status()
         return response.json()
 
@@ -238,39 +223,44 @@ class RadarrInstance():
             A list of dictionaries representing all tags in Radarr.
         """
         endpoint = f"{self.url}/api/v3/tag"
-        response = requests.get(endpoint, headers=self.headers)
+        response = self.session.get(endpoint, headers=self.headers)
         return response.json()
+
     def create_tag(self, label, logger):
         """
         Create a new tag with the specified label
-        Args:
+        Parameters:
             label (str): The label for the new tag
-        Returns:
-            None
+            logger (logging.Logger): a logger object for logging debug messages.
         Raises:
             Exception: If the API call to create the tag fails
         """
-        # Create the data for the API request to create the tag
-        tag_data = {"label": label}
-        # Make a POST request to the API to create the tag
-        create_tag_response = self.session.post(f"{self.url}/api/v3/tag", json=tag_data)
-        # Check if the API call was successful
-        if create_tag_response.status_code == 201:
-            logger.debug(f'Tag Name: {tag_name} created with tagId: {tag_id}')
+        payload = {
+            "label": label
+        }
+        endpoint = f"{self.url}/api/v3/tag"
+        response = self.session.post(endpoint, json=payload)
+        if response.status_code == requests.codes.created:
+            tag_data = response.json()
+            tag_id = tag_data.get("id")
+            logger.debug(f'Tag "{label}" created with ID {tag_id}.')
         else:
-            raise Exception(f"Failed to create tag: {create_tag_response.text}")
-        
+            logger.error(f"Failed to create tag: {response.text}")
+            raise Exception(f"Failed to create tag: {label}")
+
     def get_movies(self):
         """
         Get a list of all movies in Radarr.
         Returns:
             list: A list of dictionaries representing all series in Radarr.
         """
-        # Send a GET request to the /api/v3/movie endpoint to retrieve information about all movies
-        all_movies = requests.get(f"{self.url}/api/v3/movie", headers=self.headers)
-        # Convert the JSON response to a Python list of dictionaries
-        all_movies = all_movies.json()
-        return all_movies
+        endpoint = f"{self.url}/api/v3/movie"
+        response = self.session.get(endpoint, headers=self.headers)
+        if response.status_code in [requests.codes.ok, 201]:
+            all_movies = response.json()
+            return all_movies
+        else:
+            raise ValueError(f"Failed to get movies with status code {response.status_code}")
 
     def add_tag(self, movie_id, tag_id):
         """Add a tag to a movie with given movie_id
@@ -280,95 +270,78 @@ class RadarrInstance():
         Raises:
             requests.exceptions.HTTPError: if the response from the API is not a 202 (Accepted) status code
         """
-        # Endpoint for adding tags to a movie
-        endpoint = f"{self.url}/api/v3/movie/editor"
-        # Data to be sent in the API request
-        data = {
-            "movieIds": [movie_id],
+        payload = {
+            "movieIds": movie_id,
             "tags": [tag_id],
             "applyTags": "add"
         }
-        # Make the API request to add the tag
-        add_tag_response = self.session.put(endpoint, json=data)
-        # Raise an error if the API response is not 202 (Accepted)
-        add_tag_response.raise_for_status()
+        endpoint = f"{self.url}/api/v3/movie/editor"
+        response = self.session.put(endpoint, json=payload)
+        response.raise_for_status()
 
     def check_and_create_tag(self, tag_name, dry_run, logger):
         """
         Check if a the desired tag exists in Radarr, and if not, create it.
         Returns the ID of the desired tag.
         """
-        # Get all existing tags in Radarr
         all_tags = self.get_all_tags()
-        # Initialize the variable to hold the ID of the desired tag
         tag_id = None
-        # Iterate over the list of existing tags
         for tag in all_tags:
-            # Check if a tag with the label desired exists
             if tag["label"] == tag_name:
-                # Store the ID of the desired tag
                 tag_id = tag["id"]
-                # Break out of the loop
                 logger.debug(f'Tag Name: {tag_name} exists with tagId: {tag_id}')
                 break
-        # If the desired tag doesn't exist
         if tag_id is None:
             if dry_run == False:
-                # Call the `create_tag` function to create the desired tag
                 self.create_tag(tag_name, logger)
-                # Get all tags again to retrieve the newly created tag's ID
                 all_tags = self.get_all_tags()
-                # Iterate over the list of existing tags
                 for tag in all_tags:
-                    # Check if a tag with the label "desired exists
                     if tag["label"] == tag_name:
-                        # Store the ID of the desired tag
                         tag_id = tag["id"]
                         # Break out of the loop
                         break  
             else:
                 logger.info(f'Tag Name: {tag_name} would have been created.')
-        # Return the ID of the desired tag
         return tag_id
 
-    def remove_tags(self, all_movies, tag_id, tag_name):
+    def remove_tags(self, all_movies, tag_id, tag_name, logger):
         """
         Remove a specific tag from a list of movies.
-
         Parameters:
             all_movies (list): a list of movie dictionaries, each containing information about a movie.
             tag_id (int): the ID of the tag to be removed.
-
+            tag_name (str): the name of the tag to be removed.
+            logger (logging.Logger): a logger object for logging debug messages.
         Returns:
             False: always returns False, since this function only updates the tags of movies and does not return any data.
         """
-        endpoint = f"{self.url}/api/v3/movie/editor"
+        movie_ids = []
         for movie in all_movies:
             if tag_id in movie["tags"]:
-                movie_id = movie["id"]
-                data = {
-                    "movieIds": [movie_id],
-                    "tags": [tag_id],
-                    "applyTags": "remove"
-                }
-                response = self.session.put(endpoint, json=data)
-                if response.status_code != 202:
-                    logger.debug(f"Failed to remove tag: {tag_name} with ID {tag_id} from movie with ID {movie_id}.")
-                else:
-                    logger.debug(f'Successfully removed {tag_id} ({tag_name}) from {movie["title"]}.')
-                    
+                movie_ids.append(movie["id"])
+        if not movie_ids:
+            return False
+        payload = {
+            "movieIds": movie_ids,
+            "tags": [tag_id],
+            "applyTags": "remove"
+        }
+        endpoint = f"{self.url}/api/v3/movie/editor"
+        response = self.session.put(endpoint, json=payload)
+        if response.status_code == 202:
+            logger.debug(f"Successfully removed tag: {tag_name} with ID {tag_id} from {len(movie_ids)} movies.")
+        else:
+            logger.debug(f"Failed to remove tag: {tag_name} with ID {tag_id} from {len(movie_ids)} movies. Response status code: {response.status_code}")
         return False
 
-    def search_movies(self, movie_id, logger):
-        # Create the payload data for the API request
+    def search_movies(self, movie_id):
         payload = {
             "name": "MoviesSearch",
-            "movieId": movie_id,
+            "movieIds": movie_id
         }
-        # Send the API request to search movie
-        search_response = requests.post(f"{self.url}/api/v3/command", headers=self.headers, json=payload)
-        # Get the task ID for the search operation
-
+        endpoint = f"{self.url}/api/v3/command"
+        response = self.session.post(endpoint, json=payload)
+        response.raise_for_status() 
 
 def check_all_tagged(all_media, tag_id):
     """
@@ -427,7 +400,6 @@ def validate_input(instance_name, url, api_key, dry_run, unattended, count, moni
         if tag_name == None:
             raise ValueError(f'\'tag_name: \' in {instance_name} is empty. This must be set')
         return dry_run, unattended, count, monitored, status
-
 
 def main():
     # Construct the path to the config file based on the script file's path
@@ -491,7 +463,6 @@ def main():
                 logger.debug(f"Unattended: {unattended}")
                 logger.debug(f'*' * 40 )
                 logger.debug('')
-
             try:
                 if url:
                     logger.info('*' * 40)
@@ -529,12 +500,12 @@ def main():
                             untagged_movies = [m for m in all_movies if radarr_tag_id not in m['tags'] and m['monitored'] == monitored and m['status'] == status]
                             movies_to_process = untagged_movies[:count]
                             for movies in movies_to_process:
-                                movie_id = movies['id']
+                                movie_id = [int(m['id']) for m in movies_to_process]
                                 if dry_run == False:
-                                    radarr.search_movies(movie_id, logger)
+                                    radarr.search_movies(movie_id)
                                     radarr.add_tag(movie_id, radarr_tag_id)
                                     logger.info(f'Search request for the Movie: \'{movies["title"]}\' has been sent to \'{instance_name}\' and has been tagged with \'{tag_name}\'.')
-                                elif dry_run == True:
+                                else:
                                     logger.info(f'Search request for the Movie: \'{movies["title"]}\' would have been sent to \'{instance_name}\' and would have been tagged with \'{tag_name}\'.')
                             for movies in all_movies:
                                 if (radarr_tag_id in movies["tags"]):
@@ -545,9 +516,7 @@ def main():
                         total_count = tagged_count + untagged_count
                         tagged_percent = (tagged_count / total_count) * 100
                         untagged_percent = (untagged_count / total_count) * 100
-
                         logger.info(f'Total Movies: {total_count}, Tagged Movies: {tagged_count} ({tagged_percent:.2f}%), Untagged Movies: {untagged_count} ({untagged_percent:.2f}%)\n')               
-
                 elif section_class == SonarrInstance:
                     sonarr_instances = []
                     sonarr_instances.append(arr_instance)
@@ -564,17 +533,16 @@ def main():
                             sonarr_all_tagged = True
                             logger.info(f'All of {instance_name} has been tagged with {tag_name} skipping.')
                             break
-                        
                         if all_sonarr_tagged is False:
-                            untagged_series = [m for m in all_series if sonarr_tag_id not in m['tags'] and m['monitored'] == monitored and m['status'] == status]
+                            untagged_series = [s for s in all_series if sonarr_tag_id not in s['tags'] and s['monitored'] == monitored and s['status'] == status]
                             series_to_process = untagged_series[:count]
                             for series in series_to_process:
-                                series_id = series['id']
+                                series_id = [int(s['id']) for s in series_to_process]
                                 if dry_run == False:
                                     sonarr.search_series(series_id, logger)
                                     sonarr.add_tag(series_id, sonarr_tag_id)
                                     logger.info(f'Search request for the Series: \'{series["title"]}\' has been sent to \'{instance_name}\' and has been tagged with \'{tag_name}\'.')
-                                elif dry_run == True:
+                                else:
                                     logger.info(f'Search request for the Series: \'{series["title"]}\' would have been sent to \'{instance_name}\' and would have been tagged with \'{tag_name}\'.')
                         for series in all_series:
                             if (sonarr_tag_id in series["tags"]):
@@ -585,7 +553,6 @@ def main():
                         total_count = tagged_count + untagged_count
                         tagged_percent = (tagged_count / total_count) * 100
                         untagged_percent = (untagged_count / total_count) * 100
-
                         logger.info(f'Total Series: {total_count}, Tagged Series: {tagged_count} ({tagged_percent:.2f}%), Untagged Series: {untagged_count} ({untagged_percent:.2f}%)\n')
             except ValueError as e:
                 logger.info(f"Skipping section {instance_name}: {e}")

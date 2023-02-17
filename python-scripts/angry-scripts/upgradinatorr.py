@@ -539,7 +539,7 @@ def main():
                             for series in series_to_process:
                                 series_id = [int(s['id']) for s in series_to_process]
                                 if dry_run == False:
-                                    sonarr.search_series(series_id, logger)
+                                    sonarr.search_series(series_id)
                                     sonarr.add_tag(series_id, sonarr_tag_id)
                                     logger.info(f'Search request for the Series: \'{series["title"]}\' has been sent to \'{instance_name}\' and has been tagged with \'{tag_name}\'.')
                                 else:

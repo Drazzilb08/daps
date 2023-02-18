@@ -337,7 +337,7 @@ verbose_output() {
 cleanup() {
     # Remove oldest backups
     verbose_output "Keeping $keep_backup backups, removing the rest"
-    ls -1tr "$destination_dir" | head -n -"$keep_backup" | xargs -d '\n' rm -rfd --
+    find "$destination_dir" -mindepth 1 -maxdepth 1 -type d | sort -r | tail -n +"$(( $keep_backup + 1 ))" | xargs -I {} rm -rf {}
 }
 
 # Main function

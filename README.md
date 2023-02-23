@@ -5,6 +5,11 @@ As of version:<br>
 4.0.0 Plex backup<br>
 4.0.0 Appdata backup<br>
 The config files of both these scripts have been reworked and must be redownloaded and updated. If there is any issues with the files let me know
+Also jq is a requirement for discord notifications. If you don't have it installed:
+```
+sudo apt-get update
+sudo apt-get install jq
+```
 
 ## Installation
 

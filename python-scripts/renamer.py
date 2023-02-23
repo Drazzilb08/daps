@@ -6,7 +6,7 @@
 #  |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|  |_|    \__, |
 #                                                     __/ |
 #                                                    |___/ 
-# v.1.0.3
+# v.1.0.4
 
 import os
 import requests
@@ -191,6 +191,8 @@ def match_series(series, file):
         return None, None
 
 def match_movies(movies, file):
+    if "Season" in file or "Special" in file:
+        return None, f"File {file} ignored because it contains 'Season' or 'Special'"
     # Split the file name and year from the file
     year = None
     best_match = None
@@ -207,7 +209,11 @@ def match_movies(movies, file):
         logger.debug("Year not found")
     year = str(year)
     for matched_movie in movies:
-        matched_movie_name = matched_movie['title']
+        year_in_title = re.search(r'\((\d{4})\)', matched_movie['title'])
+        if year_in_title:
+            matched_movie_name = matched_movie['title'].split("(")[0].rstrip()
+        else:
+            matched_movie_name = matched_movie['title']
         matched_movie_name = remove_illegal_chars(matched_movie_name)
         matched_movie_year = matched_movie['year']
         matched_movie_year = str(matched_movie_year)
@@ -482,6 +488,7 @@ def main():
                     logger.info(f"{file} was skipped because: {reason}")
     permissions = 0o777
     os.chmod(destination_dir, permissions)
+    os.chmod(source_dir, permissions)
 
 def setup_logger(log_level):
     # Create a directory to store logs, if it doesn't exist

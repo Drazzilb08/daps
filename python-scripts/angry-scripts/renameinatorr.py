@@ -197,7 +197,7 @@ class SonarrInstance:
         max_retries=10
         payload = {
             "name": "RenameFiles",
-            "seriesIds": series_id,
+            "seriesId": series_id,
             "files": episode_file_ids
         }
         endpoint = f"{self.url}/api/v3/command"
@@ -219,7 +219,7 @@ class SonarrInstance:
                 if task_status["status"] == "completed":
                     task_complete = True
                 else:
-                    logger.info(f'Sleeping for 5 seconds until all episodes have been renamed')
+                    logger.debug(f'Sleeping for 5 seconds until all episodes have been renamed')
                     time.sleep(5)
             except requests.exceptions.RequestException as e:
                 logger.warning(f"Failed to check task status: {e}")
@@ -435,7 +435,8 @@ class RadarrInstance():
                 if task_status["status"] == "completed":
                     task_complete = True
                 else:
-                    logger.info(f'Sleeping for 5 seconds until all movies have been renamed')
+                            
+                    logger.debug(f'Sleeping for 5 seconds until all movies have been renamed')
                     time.sleep(5)
             except requests.exceptions.RequestException as e:
                 logger.warning(f"Failed to check task status: {e}")
@@ -737,7 +738,7 @@ def main():
                             episode_file_ids = [episode["episodeFileId"] for episode in episodes_to_rename]
                             if episode_file_ids:
                                 if dry_run == False:
-                                    checked = sonarr.rename_files(series_id, episode_file_ids)
+                                    checked = sonarr.rename_files(series_id, episode_file_ids, logger)
                                 print_format(series, episodes_to_rename, "sonarr", dry_run, logger)
                             if checked == True:    
                                 if dry_run == False:

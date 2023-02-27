@@ -159,12 +159,12 @@ class SonarrInstance:
             return false
         endpoint = f"{self.url}/api/v3/series/editor"
         payload = {
-            "seriesIds": series_id,
+            "seriesIds": series_ids,
             "tags": [tag_id],
             "applyTags": "remove"
         }
         endpoint = f"{self.url}/api/v3/series/editor"
-        response = self.session.put(endpoint, json=data)
+        response = self.session.put(endpoint, json=payload)
         if response.status_code == 202:
             logger.debug(f"Successfully removed tag: {tag_name} with ID {tag_id} from {len(series_ids)} series.")
         else:
@@ -533,7 +533,7 @@ def setup_logger(log_level):
     # Get the current date in YYYY-MM-DD format
     today = time.strftime("%Y-%m-%d")
     # Create a log file with the current date in its name
-    log_file = f"{log_dir}/renameinator_{today}.log"
+    log_file = f"{log_dir}/renameinatorr_{today}.log"
     # Set up the logger
     logger = logging.getLogger()
     # Convert the log level string to upper case and set the logging level accordingly
@@ -664,17 +664,17 @@ def main():
                     logger.debug(f"Length of all_movies for {str(radarr)}: {len(all_movies)}")
                     # Check if all the movies are tagged with the radarr tag id
                     all_radarr_tagged = check_all_tagged(all_movies, radarr_tag_id)
-                    # If all the movies are tagged and cycle is True or reset is True, remove the tags from all movies
+                    # If all the movies are tagged and unattended is True or reset is True, remove the tags from all movies
                     if reset is True:
                         radarr.remove_tags(all_movies, radarr_tag_id, tag_name, logger)
                         logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
-                        logger.info ("Exiting...")
-                        sys.exit(0)
-                    elif all_radarr_tagged is True and cycle is True:
+                        logger.info ("Skipping...")
+                        continue
+                    elif all_radarr_tagged is True and unattended is True:
                         radarr.remove_tags(all_movies, radarr_tag_id, tag_name, logger)
                         logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
-                    # If all the movies are tagged and cycle is False, set radarr_all_tagged to True
-                    elif all_radarr_tagged is True and cycle is False:
+                    # If all the movies are tagged and unattended is False, set radarr_all_tagged to True
+                    elif all_radarr_tagged is True and unattended is False:
                         logger.info(f'All of {instance_name} has been tagged with {tag_name} skipping.')
                         radarr_all_tagged = True
                         continue
@@ -719,12 +719,12 @@ def main():
                     if reset is True:
                         sonarr.remove_tags(all_series, sonarr_tag_id, tag_name, logger)
                         logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
-                        logger.info ("Exiting...")
-                        sys.exit(0)
-                    elif all_sonarr_tagged is True and cycle is True:
+                        logger.info ("Skipping...")
+                        continue
+                    elif all_sonarr_tagged is True and unattended is True:
                         sonarr.remove_tags(all_series, sonarr_tag_id, tag_name, logger)
                         logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
-                    elif all_sonarr_tagged is True and cycle is False:
+                    elif all_sonarr_tagged is True and unattended is False:
                         logger.info(f'All of {instance_name} has been tagged with {tag_name} skipping.')
                         sonarr_all_tagged = True
                         continue
@@ -760,8 +760,8 @@ def main():
             if radarr_all_tagged == True and sonarr_all_tagged == True:
                 # If all series and movies have been tagged and renamed.
                 logger.info(f'All series and movies in both Sonarr and Radarr have been renamed.')
-                # Running this unmonitored by setting the cycle variable to True
-                logger.info(f'Please set the `cycle` variable to True if you\'d like to run this unmonitored') 
+                # Running this unmonitored by setting the unattended variable to True
+                logger.info(f'Please set the `unattended` variable to True if you\'d like to run this unmonitored') 
                 # Alternatively, removing all tags by setting the reset variable to True
                 logger.info(f'Alternatively you can set the `reset` variable to True if you\'d like to remove all Tags')
         except ValueError as e:

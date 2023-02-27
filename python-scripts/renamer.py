@@ -42,7 +42,7 @@ source_dir = '/path/to/posters'
 destination_dir = '/path/to/plex-meta-manager/assets'
 
 dry_run = False # If you'd like to see how things look prior to actually renaming/moving them
-log_level = 'CRITICAL' # Log levels: CRITICAL, INFO, DEBUG: Debug being the most verbose, and CRITICAL being the least
+log_level = 'INFO' # Log levels: CRITICAL, INFO, DEBUG: Debug being the most verbose, and INFO being the least
 
 # How much of a match a movie/show title needs to be before it is considered a "Match"
 # Adjust these numbers 0-100 if you're getting false negatives or posatives. 0 being everythig goes, 100 exact match
@@ -308,9 +308,14 @@ def rename_series(matched_series, file, destination_dir, source_dir):
     else:
         if "Season" in file:
             season_info = file.split("Season ")[1].split(".")[0]
-            if int(season_info) < 10:
+            try:
+                season_number = int(season_info)
+            except ValueError:
+                logger.error(f"Error: Cannot convert {season_info} to an integer in file {file}")
+                return
+            if season_number < 10:
                 matched_series_folder = matched_series_folder + "_Season0" + season_info + "." + file_extension
-            elif int(season_info) >= 10:
+            elif season_number >= 10:
                 matched_series_folder = matched_series_folder + "_Season" + season_info + "." + file_extension
         elif "Specials" in file:
             matched_series_folder = matched_series_folder + "_Season00." + file_extension
@@ -337,7 +342,8 @@ def rename_series(matched_series, file, destination_dir, source_dir):
         else:
             shutil.move(source, destination)
             logger.critical(f"{file} -->> {matched_series_folder}")
-            return 
+            return
+
 
 def remove_illegal_chars(string):
     # Define a regular expression pattern to match illegal characters
@@ -510,8 +516,8 @@ def setup_logger(log_level):
     elif log_level == 'CRITICAL':
         logger.setLevel(logging.CRITICAL)
     else:
-        print(f"Invalid log level '{log_level}', defaulting to 'CRITICAL'")
-        logger.setLevel(logging.CRITICAL)
+        logger.critical(f"Invalid log level '{log_level}', defaulting to 'INFO'")
+        logger.setLevel(logging.INFO)
     # Set the formatter for the file handler
     formatter = logging.Formatter(fmt='%(asctime)s %(levelname)s: %(message)s', datefmt='%I:%M %p')
     # Add a TimedRotatingFileHandler to the logger, to log to a file that rotates daily

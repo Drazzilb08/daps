@@ -158,12 +158,12 @@ class SonarrInstance:
             return false
         endpoint = f"{self.url}/api/v3/series/editor"
         payload = {
-            "seriesIds": series_id,
+            "seriesIds": series_ids,
             "tags": [tag_id],
             "applyTags": "remove"
         }
         endpoint = f"{self.url}/api/v3/series/editor"
-        response = self.session.put(endpoint, json=data)
+        response = self.session.put(endpoint, json=payload)
         if response.status_code == 202:
             logger.debug(f"Successfully removed tag: {tag_name} with ID {tag_id} from {len(movie_ids)} movies.")
         else:

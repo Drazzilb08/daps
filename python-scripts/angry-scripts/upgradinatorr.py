@@ -109,7 +109,7 @@ class SonarrInstance:
         :return: None
         """
         payload = {
-            "seriesIds": series_id,
+            "seriesIds": [series_id],
             "tags": [tag_id],
             "applyTags": "add"
         }
@@ -141,7 +141,7 @@ class SonarrInstance:
                 logger.info(f'Tag Name: {tag_name} would have been created.')
         return tag_id
 
-    def remove_tags(self, all_series, tag_id, tag_name):
+    def remove_tags(self, all_series, tag_id, tag_name, logger):
         """
         Remove a specific tag from a list of series.
         Parameters:
@@ -165,9 +165,9 @@ class SonarrInstance:
         endpoint = f"{self.url}/api/v3/series/editor"
         response = self.session.put(endpoint, json=payload)
         if response.status_code == 202:
-            logger.debug(f"Successfully removed tag: {tag_name} with ID {tag_id} from {len(movie_ids)} movies.")
+            logger.debug(f"Successfully removed tag: {tag_name} with ID {tag_id} from {len(series_ids)} series.")
         else:
-            logger.debug(f"Failed to remove tag: {tag_name} with ID {tag_id} from {len(movie_ids)} movies. Response status code: {response.status_code}")
+            logger.debug(f"Failed to remove tag: {tag_name} with ID {tag_id} from {len(series_ids)} series. Response status code: {response.status_code}")
         return False
 
     def search_series(self, series_id):
@@ -252,7 +252,7 @@ class RadarrInstance():
         """
         Get a list of all movies in Radarr.
         Returns:
-            list: A list of dictionaries representing all series in Radarr.
+            list: A list of dictionaries representing all movies in Radarr.
         """
         endpoint = f"{self.url}/api/v3/movie"
         response = self.session.get(endpoint, headers=self.headers)
@@ -271,7 +271,7 @@ class RadarrInstance():
             requests.exceptions.HTTPError: if the response from the API is not a 202 (Accepted) status code
         """
         payload = {
-            "movieIds": movie_id,
+            "movieIds": [movie_id],
             "tags": [tag_id],
             "applyTags": "add"
         }
@@ -401,6 +401,52 @@ def validate_input(instance_name, url, api_key, dry_run, unattended, count, moni
             raise ValueError(f'\'tag_name: \' in {instance_name} is empty. This must be set')
         return dry_run, unattended, count, monitored, status
 
+def setup_logger(log_level):
+    # Create a directory to store logs, if it doesn't exist
+    log_dir = os.path.dirname(os.path.realpath(__file__)) + "/logs"
+    if not os.path.exists(log_dir):
+        os.makedirs(log_dir)
+    # Get the current date in YYYY-MM-DD format
+    today = time.strftime("%Y-%m-%d")
+    # Create a log file with the current date in its name
+    log_file = f"{log_dir}/upgradinatorr_{today}.log"
+    # Set up the logger
+    logger = logging.getLogger()
+    # Convert the log level string to upper case and set the logging level accordingly
+    log_level = log_level.upper()
+    if log_level == 'DEBUG':
+        logger.setLevel(logging.DEBUG)
+    elif log_level == 'INFO':
+        logger.setLevel(logging.INFO)
+    elif log_level == 'CRITICAL':
+        logger.setLevel(logging.CRITICAL)
+    else:
+        logger.critical(f"Invalid log level '{log_level}', defaulting to 'INFO'")
+        logger.setLevel(logging.INFO)
+    # Set the formatter for the file handler
+    formatter = logging.Formatter(fmt='%(asctime)s %(levelname)s: %(message)s', datefmt='%I:%M %p')
+    # Add a TimedRotatingFileHandler to the logger, to log to a file that rotates daily
+    handler = logging.handlers.TimedRotatingFileHandler(log_file, when='midnight', interval=1, backupCount=3)
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    # Set the formatter for the console handler
+    formatter = logging.Formatter()
+        # Add a StreamHandler to the logger, to log to the console
+    console_handler = logging.StreamHandler()
+    if log_level == 'debug':
+        console_handler.setLevel(logging.DEBUG)
+    elif log_level == 'info':
+        console_handler.setLevel(logging.info)
+    elif log_level == 'critical':
+        console_handler.setLevel(logging.CRITICAL)
+    logger.addHandler(console_handler)
+    # Delete the old log files
+    log_files = [f for f in os.listdir(log_dir) if os.path.isfile(os.path.join(log_dir, f)) and f.startswith("upgradinatorr_")]
+    log_files.sort(key=lambda x: os.path.getmtime(os.path.join(log_dir, x)), reverse=True)
+    for file in log_files[3:]:
+        os.remove(os.path.join(log_dir, file))
+    return logger
+
 def main():
     # Construct the path to the config file based on the script file's path
     script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -455,7 +501,7 @@ def main():
                 logger.debug(f'{" Settings ":*^40}')
                 logger.debug(f"Section Name: {instance_name}")
                 logger.debug(f"URL: {url}")
-                logger.debug(f"API Key: {'<redacted>' if api_key else 'None'}") 
+                logger.debug(f"API Key: {'<redacted>' if api_key else 'None'}")
                 logger.debug(f"Count: {count}")
                 logger.debug(f"Monitored: {monitored}")
                 logger.debug(f"status: {status}")
@@ -469,7 +515,6 @@ def main():
                     logger.info(f'* {instance_name:^36} *')
                     logger.info('*' * 40)
                     logger.info('')
-            
                 if not url and not api_key:
                     continue
                 # Instantiate the class for this section
@@ -557,51 +602,6 @@ def main():
             except ValueError as e:
                 logger.info(f"Skipping section {instance_name}: {e}")
 
-def setup_logger(log_level):
-    # Create a directory to store logs, if it doesn't exist
-    log_dir = os.path.dirname(os.path.realpath(__file__)) + "/logs"
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-    # Get the current date in YYYY-MM-DD format
-    today = time.strftime("%Y-%m-%d")
-    # Create a log file with the current date in its name
-    log_file = f"{log_dir}/upgradinatorr_{today}.log"
-    # Set up the logger
-    logger = logging.getLogger()
-    # Convert the log level string to upper case and set the logging level accordingly
-    log_level = log_level.upper()
-    if log_level == 'DEBUG':
-        logger.setLevel(logging.DEBUG)
-    elif log_level == 'INFO':
-        logger.setLevel(logging.INFO)
-    elif log_level == 'CRITICAL':
-        logger.setLevel(logging.CRITICAL)
-    else:
-        logger.critical(f"Invalid log level '{log_level}', defaulting to 'INFO'")
-        logger.setLevel(logging.INFO)
-    # Set the formatter for the file handler
-    formatter = logging.Formatter(fmt='%(asctime)s %(levelname)s: %(message)s', datefmt='%I:%M %p')
-    # Add a TimedRotatingFileHandler to the logger, to log to a file that rotates daily
-    handler = logging.handlers.TimedRotatingFileHandler(log_file, when='midnight', interval=1, backupCount=3)
-    handler.setFormatter(formatter)
-    logger.addHandler(handler)
-    # Set the formatter for the console handler
-    formatter = logging.Formatter()
-        # Add a StreamHandler to the logger, to log to the console
-    console_handler = logging.StreamHandler()
-    if log_level == 'debug':
-        console_handler.setLevel(logging.DEBUG)
-    elif log_level == 'info':
-        console_handler.setLevel(logging.info)
-    elif log_level == 'critical':
-        console_handler.setLevel(logging.CRITICAL)
-    logger.addHandler(console_handler)
-    # Delete the old log files
-    log_files = [f for f in os.listdir(log_dir) if os.path.isfile(os.path.join(log_dir, f)) and f.startswith("upgradinatorr_")]
-    log_files.sort(key=lambda x: os.path.getmtime(os.path.join(log_dir, x)), reverse=True)
-    for file in log_files[3:]:
-        os.remove(os.path.join(log_dir, file))
-    return logger
 
 if __name__ == '__main__':
     # Call the main function

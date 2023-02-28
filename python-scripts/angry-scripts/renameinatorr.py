@@ -68,10 +68,9 @@ class SonarrInstance:
     def create_tag(self, label, logger):
         """
         Create a new tag with the specified label
-        Args:
+        Parameters:
             label (str): The label for the new tag
-        Returns:
-            None
+            logger (logging.Logger): a logger object for logging debug messages.
         Raises:
             Exception: If the API call to create the tag fails
         """
@@ -119,28 +118,28 @@ class SonarrInstance:
         response.raise_for_status()
 
     def check_and_create_tag(self, tag_name, dry_run, logger):
-            """
-            Check if a the desired tag exists in Sonarr, and if not, create it.
-            Returns the ID of the desired tag.
-            """
-            all_tags = self.get_all_tags()
-            tag_id = None
-            for tag in all_tags:
-                if tag["label"] == tag_name:
-                    tag_id = tag["id"]
-                    logger.debug(f'Tag Name: {tag_name} exists with tagId: {tag_id}')
-                    break
-            if tag_id is None:
-                if dry_run == False:
-                    self.create_tag(tag_name, logger)
-                    all_tags = self.get_all_tags()
-                    for tag in all_tags:
-                        if tag["label"] == tag_name:
-                            tag_id = tag["id"]
-                            break
-                else:
-                    logger.info(f'Tag Name: {tag_name} would have been created.')
-            return tag_id
+        """
+        Check if a the desired tag exists in Sonarr, and if not, create it.
+        Returns the ID of the desired tag.
+        """
+        all_tags = self.get_all_tags()
+        tag_id = None
+        for tag in all_tags:
+            if tag["label"] == tag_name:
+                tag_id = tag["id"]
+                logger.debug(f'Tag Name: {tag_name} exists with tagId: {tag_id}')
+                break
+        if tag_id is None:
+            if dry_run == False:
+                self.create_tag(tag_name, logger)
+                all_tags = self.get_all_tags()
+                for tag in all_tags:
+                    if tag["label"] == tag_name:
+                        tag_id = tag["id"]
+                        break
+            else:
+                logger.info(f'Tag Name: {tag_name} would have been created.')
+        return tag_id
 
     def remove_tags(self, all_series, tag_id, tag_name, logger):
         """
@@ -233,7 +232,6 @@ class SonarrInstance:
 class RadarrInstance():
     def __init__(self, url, api_key, logger):
         """
-
         Initialize the RadarrInstance object
         Arguments:
             - url: the URL of the Radarr API endpoint
@@ -247,7 +245,6 @@ class RadarrInstance():
         }
         self.session = requests.Session()
         self.session.headers.update({"X-Api-Key": self.api_key})
-        
         try:
             status = self.get_system_status()
             app_name = status.get("appName")
@@ -262,8 +259,8 @@ class RadarrInstance():
         return f"RadarrInstance(url={self.url})"
 
     def get_system_status(self):
-        url = f"{self.url}/api/v3/system/status"
-        response = self.session.get(url)
+        endpoint = f"{self.url}/api/v3/system/status"
+        response = self.session.get(endpoint)
         response.raise_for_status()
         return response.json()
 
@@ -304,7 +301,7 @@ class RadarrInstance():
         """
         Get a list of all movies in Radarr.
         Returns:
-            list: A list of dictionaries representing all movie in Radarr.
+            list: A list of dictionaries representing all movies in Radarr.
         """
         endpoint = f"{self.url}/api/v3/movie"
         response = self.session.get(endpoint, headers=self.headers)
@@ -631,141 +628,134 @@ def main():
                 logger.debug(f"Reset: {reset}")
                 logger.debug(f'*' * 40 )
                 logger.debug('')
-
-        try:
-            if url:
-                logger.info('*' * 40)
-                logger.info(f'* {instance_name:^36} *')
-                logger.info('*' * 40)
-                logger.info('')
-            
-            if not url and not api_key:
-                continue
-            # Instantiate the class for this section
-            class_map = {
-                'Radarr': RadarrInstance,
-                'Sonarr': SonarrInstance,
-            }
-            section_class = class_map.get(instance_name.split('_')[0].capitalize())
-            arr_instance = section_class(url, api_key, logger)
-            radarr_all_tagged, sonarr_all_tagged = False, False
-            # Add the instance to the appropriate list
-            if section_class == RadarrInstance:
-                radarr_instances = []
-                radarr_instances.append(arr_instance)
-                # Loop through all radarr instances
-                for radarr in radarr_instances:
-                    tagged_count = 0
-                    untagged_count = 0
-                    # Get the radarr tag id and create the tag if it does not exist
-                    radarr_tag_id = radarr.check_and_create_tag(tag_name, dry_run, logger)
-                    # Get all the movies from the radarr instance
-                    all_movies = radarr.get_movies()
-                    logger.debug(f"Length of all_movies for {str(radarr)}: {len(all_movies)}")
-                    # Check if all the movies are tagged with the radarr tag id
-                    all_radarr_tagged = check_all_tagged(all_movies, radarr_tag_id)
-                    # If all the movies are tagged and unattended is True or reset is True, remove the tags from all movies
-                    if reset is True:
-                        radarr.remove_tags(all_movies, radarr_tag_id, tag_name, logger)
-                        logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
-                        logger.info ("Skipping...")
-                        continue
-                    elif all_radarr_tagged is True and unattended is True:
-                        radarr.remove_tags(all_movies, radarr_tag_id, tag_name, logger)
-                        logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
-                    # If all the movies are tagged and unattended is False, set radarr_all_tagged to True
-                    elif all_radarr_tagged is True and unattended is False:
-                        logger.info(f'All of {instance_name} has been tagged with {tag_name} skipping.')
-                        radarr_all_tagged = True
-                        continue
-                    if all_radarr_tagged is False:
-                        untagged_movies = [m for m in all_movies if radarr_tag_id not in m['tags']]
-                        movies_to_process = untagged_movies[:count]
-                        checked = True
-                        for movies in movies_to_process:
-                            movie_id = movies["id"]
-                            file_to_rename = radarr.get_rename_list(movie_id)
-                            movies_to_rename = [file["movieFileId"] for file in file_to_rename]
-                            if movies_to_rename:
-                                if dry_run == False:
-                                    checked = radarr.rename_files(movie_id, movies_to_rename, logger)
-                                print_format(movies, file_to_rename, "radarr", dry_run, logger)
-                            if checked == True:
-                                if dry_run == False:
-                                    radarr.add_tag(movie_id, radarr_tag_id)
-                                    logger.info(f'Movie: \'{movies["title"]}\' has been tagged with \'{tag_name}\'.')
-                                if dry_run == True:
-                                    logger.info(f'Movie file: \'{movies["title"]}\' doesn\'t require renaming it would have been been tagged with \'{tag_name}\'.')
-                        for movies in all_movies:
-                            if (radarr_tag_id in movies["tags"]):
+            try:
+                if url:
+                    logger.info('*' * 40)
+                    logger.info(f'* {instance_name:^36} *')
+                    logger.info('*' * 40)
+                    logger.info('')
+                if not url and not api_key:
+                    continue
+                # Instantiate the class for this section
+                class_map = {
+                    'Radarr': RadarrInstance,
+                    'Sonarr': SonarrInstance,
+                }
+                section_class = class_map.get(instance_name.split('_')[0].capitalize())
+                arr_instance = section_class(url, api_key, logger)
+                radarr_all_tagged, sonarr_all_tagged = False, False
+                # Add the instance to the appropriate list
+                if section_class == RadarrInstance:
+                    radarr_instances = []
+                    radarr_instances.append(arr_instance)
+                    for radarr in radarr_instances:
+                        tagged_count = 0
+                        untagged_count = 0
+                        radarr_tag_id = radarr.check_and_create_tag(tag_name, dry_run, logger)
+                        all_movies = radarr.get_movies()
+                        logger.debug(f"Length of all_movies for {str(radarr)}: {len(all_movies)}")
+                        all_radarr_tagged = check_all_tagged(all_movies, radarr_tag_id)
+                        if reset is True:
+                            radarr.remove_tags(all_movies, radarr_tag_id, tag_name, logger)
+                            logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
+                            logger.info ("Skipping...")
+                            continue
+                        elif all_radarr_tagged is True and unattended is True:
+                            radarr.remove_tags(all_movies, radarr_tag_id, tag_name, logger)
+                            logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
+                        # If all the movies are tagged and unattended is False, set radarr_all_tagged to True
+                        elif all_radarr_tagged is True and unattended is False:
+                            logger.info(f'All of {instance_name} has been tagged with {tag_name} skipping.')
+                            radarr_all_tagged = True
+                            continue
+                        if all_radarr_tagged is False:
+                            untagged_movies = [m for m in all_movies if radarr_tag_id not in m['tags']]
+                            movies_to_process = untagged_movies[:count]
+                            checked = True
+                            for movies in movies_to_process:
+                                movie_id = movies["id"]
+                                file_to_rename = radarr.get_rename_list(movie_id)
+                                movies_to_rename = [file["movieFileId"] for file in file_to_rename]
+                                if movies_to_rename:
+                                    if dry_run == False:
+                                        checked = radarr.rename_files(movie_id, movies_to_rename, logger)
+                                    print_format(movies, file_to_rename, "radarr", dry_run, logger)
+                                if checked == True:
+                                    if dry_run == False:
+                                        radarr.add_tag(movie_id, radarr_tag_id)
+                                        logger.info(f'Movie: \'{movies["title"]}\' has been tagged with \'{tag_name}\'.')
+                                    if dry_run == True:
+                                        logger.info(f'Movie file: \'{movies["title"]}\' doesn\'t require renaming it would have been been tagged with \'{tag_name}\'.')
+                            for movies in all_movies:
+                                if (radarr_tag_id in movies["tags"]):
+                                    tagged_count += 1
+                                elif (radarr_tag_id not in movies["tags"]):
+                                    untagged_count += 1
+                        total_count = 0
+                        total_count = tagged_count + untagged_count
+                        tagged_percent = (tagged_count / total_count) * 100
+                        untagged_percent = (untagged_count / total_count) * 100
+                        logger.info(f'Total Movies: {total_count}, Tagged Movies: {tagged_count} ({tagged_percent:.2f}%), Untagged Movies: {untagged_count} ({untagged_percent:.2f}%)\n')               
+                elif section_class == SonarrInstance:
+                    sonarr_instances = []
+                    sonarr_instances.append(arr_instance)
+                    for sonarr in sonarr_instances:
+                        tagged_count = 0
+                        untagged_count = 0
+                        sonarr_tag_id = sonarr.check_and_create_tag(tag_name, dry_run, logger)
+                        all_series = sonarr.get_series()
+                        logger.debug(f"Length of all_series for {str(sonarr)}: {len(all_series)}")
+                        all_sonarr_tagged = check_all_tagged(all_series, sonarr_tag_id)
+                        if reset is True:
+                            sonarr.remove_tags(all_series, sonarr_tag_id, tag_name, logger)
+                            logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
+                            logger.info ("Skipping...")
+                            continue
+                        elif all_sonarr_tagged is True and unattended is True:
+                            sonarr.remove_tags(all_series, sonarr_tag_id, tag_name, logger)
+                            logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
+                        elif all_sonarr_tagged is True and unattended is False:
+                            logger.info(f'All of {instance_name} has been tagged with {tag_name} skipping.')
+                            sonarr_all_tagged = True
+                            continue
+                        if all_sonarr_tagged is False:
+                            untagged_series = [s for s in all_series if sonarr_tag_id not in s['tags']]
+                            series_to_process = untagged_series[:count]
+                            checked = True
+                            for series in series_to_process:
+                                series_id = series["id"]
+                                episodes_to_rename = sonarr.get_rename_list(series_id)
+                                episode_file_ids = [episode["episodeFileId"] for episode in episodes_to_rename]
+                                if episode_file_ids:
+                                    if dry_run == False:
+                                        checked = sonarr.rename_files(series_id, episode_file_ids, logger)
+                                    print_format(series, episodes_to_rename, "sonarr", dry_run, logger)
+                                if checked == True:    
+                                    if dry_run == False:
+                                        logger.info(f'Series: \'{series["title"]}\' has been tagged with \'{tag_name}\'.')
+                                        sonarr.add_tag(series_id, sonarr_tag_id)
+                                    if dry_run == True:
+                                        logger.info(f'Series: \'{series["title"]}\' doesn\'t have any episodes that require renaming, the series would have been been tagged with \'{tag_name}\'.') 
+                        for series in all_series:
+                            if (sonarr_tag_id in series["tags"]):
                                 tagged_count += 1
-                            elif (radarr_tag_id not in movies["tags"]):
+                            elif (sonarr_tag_id not in series["tags"]):
                                 untagged_count += 1
-                    total_count = 0
-                    total_count = tagged_count + untagged_count
-                    tagged_percent = (tagged_count / total_count) * 100
-                    untagged_percent = (untagged_count / total_count) * 100
-                    logger.info(f'Total Movies: {total_count}, Tagged Movies: {tagged_count} ({tagged_percent:.2f}%), Untagged Movies: {untagged_count} ({untagged_percent:.2f}%)\n')               
-            elif section_class == SonarrInstance:
-                sonarr_instances = []
-                sonarr_instances.append(arr_instance)
-                for sonarr in sonarr_instances:
-                    tagged_count = 0
-                    untagged_count = 0
-                    sonarr_tag_id = sonarr.check_and_create_tag(tag_name, dry_run, logger)
-                    all_series = sonarr.get_series()
-                    logger.debug(f"Length of all_series for {str(sonarr)}: {len(all_series)}")
-                    all_sonarr_tagged = check_all_tagged(all_series, sonarr_tag_id)
-                    if reset is True:
-                        sonarr.remove_tags(all_series, sonarr_tag_id, tag_name, logger)
-                        logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
-                        logger.info ("Skipping...")
-                        continue
-                    elif all_sonarr_tagged is True and unattended is True:
-                        sonarr.remove_tags(all_series, sonarr_tag_id, tag_name, logger)
-                        logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
-                    elif all_sonarr_tagged is True and unattended is False:
-                        logger.info(f'All of {instance_name} has been tagged with {tag_name} skipping.')
-                        sonarr_all_tagged = True
-                        continue
-                    if all_sonarr_tagged is False:
-                        untagged_series = [s for s in all_series if sonarr_tag_id not in s['tags']]
-                        series_to_process = untagged_series[:count]
-                        checked = True
-                        for series in series_to_process:
-                            series_id = series["id"]
-                            episodes_to_rename = sonarr.get_rename_list(series_id)
-                            episode_file_ids = [episode["episodeFileId"] for episode in episodes_to_rename]
-                            if episode_file_ids:
-                                if dry_run == False:
-                                    checked = sonarr.rename_files(series_id, episode_file_ids, logger)
-                                print_format(series, episodes_to_rename, "sonarr", dry_run, logger)
-                            if checked == True:    
-                                if dry_run == False:
-                                    logger.info(f'Series: \'{series["title"]}\' has been tagged with \'{tag_name}\'.')
-                                    sonarr.add_tag(series_id, sonarr_tag_id)
-                                if dry_run == True:
-                                    logger.info(f'Series: \'{series["title"]}\' doesn\'t have any episodes that require renaming, the series would have been been tagged with \'{tag_name}\'.') 
-                    for series in all_series:
-                        if (sonarr_tag_id in series["tags"]):
-                            tagged_count += 1
-                        elif (sonarr_tag_id not in series["tags"]):
-                            untagged_count += 1
-                    total_count = 0
-                    total_count = tagged_count + untagged_count
-                    tagged_percent = (tagged_count / total_count) * 100
-                    untagged_percent = (untagged_count / total_count) * 100
-                    logger.info(f'Total Series: {total_count}, Tagged Series: {tagged_count} ({tagged_percent:.2f}%), Untagged Series: {untagged_count} ({untagged_percent:.2f}%)\n')
+                        total_count = 0
+                        total_count = tagged_count + untagged_count
+                        tagged_percent = (tagged_count / total_count) * 100
+                        untagged_percent = (untagged_count / total_count) * 100
+                        logger.info(f'Total Series: {total_count}, Tagged Series: {tagged_count} ({tagged_percent:.2f}%), Untagged Series: {untagged_count} ({untagged_percent:.2f}%)\n')
 
-            if radarr_all_tagged == True and sonarr_all_tagged == True:
-                # If all series and movies have been tagged and renamed.
-                logger.info(f'All series and movies in both Sonarr and Radarr have been renamed.')
-                # Running this unmonitored by setting the unattended variable to True
-                logger.info(f'Please set the `unattended` variable to True if you\'d like to run this unmonitored') 
-                # Alternatively, removing all tags by setting the reset variable to True
-                logger.info(f'Alternatively you can set the `reset` variable to True if you\'d like to remove all Tags')
-        except ValueError as e:
-            logger.info(f"Skipping section {section_name}: {e}")
+                if radarr_all_tagged == True and sonarr_all_tagged == True:
+                    # If all series and movies have been tagged and renamed.
+                    logger.info(f'All series and movies in both Sonarr and Radarr have been renamed.')
+                    # Running this unmonitored by setting the unattended variable to True
+                    logger.info(f'Please set the `unattended` variable to True if you\'d like to run this unmonitored') 
+                    # Alternatively, removing all tags by setting the reset variable to True
+                    logger.info(f'Alternatively you can set the `reset` variable to True if you\'d like to remove all Tags')
+            except ValueError as e:
+                logger.info(f"Skipping section {section_name}: {e}")
 
 
 if __name__ == "__main__":

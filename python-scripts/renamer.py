@@ -67,7 +67,7 @@ def get_info(info_type):
         return response.json()
     except requests.exceptions.RequestException as err:
         # Log the error while connecting to Radarr
-        logger.critical(f"Error connecting to Radarr ({info_type}): ", err)
+        logger.debug(f"Error connecting to Radarr ({info_type}): ", err)
         return None
 
 def get_series_info(sonarr_api_key, sonarr_url):
@@ -80,7 +80,7 @@ def get_series_info(sonarr_api_key, sonarr_url):
         # Raise error if the status is not successful
         response.raise_for_status()
         # Log the success of connecting to Sonarr and getting series information
-        logger.critical(f"Connected to Sonarr.. Gathering information...")
+        logger.debug(f"Connected to Sonarr.. Gathering information...")
         # Return the response in JSON format
         return response.json()
     except requests.exceptions.RequestException as err:
@@ -141,7 +141,7 @@ def get_collections(plex_url, token, library_names):
         for collection_name in library_collection_names:
             if collection_name not in collections:
                 collections.add((collection_name))
-    logger.critical(f"Connected to Plex.. Gathering informationrmation...")
+    logger.info(f"Connected to Plex.. Gathering informationrmation...")
     return collections
 
 def match_series(series, file):
@@ -272,22 +272,22 @@ def rename_movies(matched_movie, file, destination_dir, source_dir):
     # Check if the file name is different from the matched_movie's folder name
     if os.path.basename(file) != matched_movie_folder:
         if dry_run:
-            logger.critical(f"{file} -> {matched_movie_folder}")
+            logger.info(f"{file} -> {matched_movie_folder}")
             return
         else:
             # Move the file to the destination folder
             shutil.move(source, destination)
-            logger.critical(f"{file} -> {matched_movie_folder}")
+            logger.info(f"{file} -> {matched_movie_folder}")
             return
     # Check if the file name is the same as the matched_movie's folder name
     if os.path.basename(file) == matched_movie_folder:
         if dry_run:
-            logger.critical(f"{file} -->> {matched_movie_folder}")
+            logger.info(f"{file} -->> {matched_movie_folder}")
             return
         else:
             # Move the file to the destination folder
             shutil.move(source, destination)
-            logger.critical(f"{file} -->> {matched_movie_folder}")
+            logger.info(f"{file} -->> {matched_movie_folder}")
             return
 
 def rename_series(matched_series, file, destination_dir, source_dir):
@@ -328,20 +328,20 @@ def rename_series(matched_series, file, destination_dir, source_dir):
     # If the file name is not equal to the matched series folder name, then rename the file
     if os.path.basename(file) != matched_series_folder:
         if dry_run:
-            logger.critical(f"{file} -> {matched_series_folder}")
+            logger.info(f"{file} -> {matched_series_folder}")
             return
         else:
-            logger.critical(f"{file} -> {matched_series_folder}")
+            logger.info(f"{file} -> {matched_series_folder}")
             shutil.move(source, destination)
             return
     # If the file name is equal to the matched series folder name, then move the file to the destination folder
     if os.path.basename(file) == matched_series_folder:
         if dry_run:
-            logger.critical(f"{file} -->> {matched_series_folder}")
+            logger.info(f"{file} -->> {matched_series_folder}")
             return
         else:
             shutil.move(source, destination)
-            logger.critical(f"{file} -->> {matched_series_folder}")
+            logger.info(f"{file} -->> {matched_series_folder}")
             return
 
 
@@ -368,23 +368,23 @@ def rename_collections(matched_collection, file, destination_dir, source_dir):
     if os.path.basename(file) != matched_collection_title:
         # If the code is in dry run mode, log the intended file rename operation
         if dry_run:
-            logger.critical(f"{file} -> {matched_collection_title}")
+            logger.info(f"{file} -> {matched_collection_title}")
             return
         # If the code is not in dry run mode, perform the file rename operation and log it
         else:
             shutil.move(source, destination)
-            logger.critical(f"{file} -> {matched_collection_title}")
+            logger.info(f"{file} -> {matched_collection_title}")
             return
     # If the current file name is the same as the new file name
     if os.path.basename(file) == matched_collection_title:
         # If the code is in dry run mode, log the intended file rename operation
         if dry_run:
-            logger.critical(f"{file} -->> {matched_collection_title}")
+            logger.info(f"{file} -->> {matched_collection_title}")
             return
         # If the code is not in dry run mode, perform the file rename operation and log it
         else:
             shutil.move(source, destination)
-            logger.critical(f"{file} -->> {matched_collection_title}")
+            logger.info(f"{file} -->> {matched_collection_title}")
             return
 
 def validate_input(source_dir, destination_dir, radarr_url, sonarr_url, sonarr_url_1, dry_run, log_level):
@@ -414,13 +414,13 @@ def main():
     validate_input(source_dir, destination_dir, radarr_url, sonarr_url, sonarr_url_1, dry_run, log_level)
     # Check if dry_run is set to True
     if dry_run:
-        logger.critical("*************************************")
-        logger.critical("*         Dry_run Activated         *")
-        logger.critical("*************************************")
+        logger.info("*************************************")
+        logger.info("*         Dry_run Activated         *")
+        logger.info("*************************************")
         # Log a warning message that no changes will be made
-        logger.critical("*******NO CHANGES WILL BE MADE*******")
+        logger.info("*******NO CHANGES WILL BE MADE*******")
     # Log the destination directory
-    logger.critical(f"Destination folder: {destination_dir}")
+    logger.info(f"Destination folder: {destination_dir}")
     # Check if both radarr_api_key and radarr_url are set
     if radarr_api_key and radarr_url:
         # Get movie and collection information from Radarr
@@ -440,7 +440,7 @@ def main():
                         rename_collections(matched_collection, file, destination_dir, source_dir)
                     # If a reason is given for not finding a match, log it
                     elif reason:
-                        logger.info(f"{file} was skipped because: {reason}")
+                        logger.debug(f"{file} was skipped because: {reason}")
                         continue
             else:
                 # If movies are available
@@ -452,7 +452,7 @@ def main():
                         rename_movies(matched_movie, file, destination_dir, source_dir)
                     # If a reason is given for not finding a match, log it
                     elif reason:
-                        logger.info(f"{file} was skipped because: {reason}")
+                        logger.debug(f"{file} was skipped because: {reason}")
     # Check if sonarr_api_key and sonarr_url are both present
     if sonarr_api_key and sonarr_url:
         # Log a header indicating the start of connecting to Sonarr
@@ -472,7 +472,7 @@ def main():
                     rename_series(matched_series, file, destination_dir, source_dir)
                 # If the file was skipped for a reason, log the reason
                 elif reason:
-                    logger.info(f"{file} was skipped because: {reason}")
+                    logger.debug(f"{file} was skipped because: {reason}")
 
 # Check if sonarr_api_key_1 and sonarr_url_1 are both present
     if sonarr_api_key_1 and sonarr_url_1:
@@ -491,7 +491,7 @@ def main():
                     rename_series(matched_series, file, destination_dir, source_dir)
                 # If the file was skipped for a reason, log the reason
                 elif reason:
-                    logger.info(f"{file} was skipped because: {reason}")
+                    logger.debug(f"{file} was skipped because: {reason}")
     permissions = 0o777
     os.chmod(destination_dir, permissions)
     os.chmod(source_dir, permissions)

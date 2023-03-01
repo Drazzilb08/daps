@@ -604,7 +604,13 @@ def main():
         for instance_setting in instance_settings:
             instance_name = instance_setting['name']
             instance_global_settings = None
-            for global_settings in config['global'][instance]:
+            global_settings_list = config['global'].get(instance)
+            if global_settings_list is None:
+                continue
+            # Check if instance_name exists in global_settings_list
+            if not any(setting['name'] == instance_name for setting in global_settings_list):
+                continue
+            for global_settings in global_settings_list:
                 if global_settings['name'] == instance_name:
                     instance_global_settings = global_settings
                     break

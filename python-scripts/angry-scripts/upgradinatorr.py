@@ -109,7 +109,7 @@ class SonarrInstance:
         :return: None
         """
         payload = {
-            "seriesIds": [series_id],
+            "seriesIds": series_id,
             "tags": [tag_id],
             "applyTags": "add"
         }
@@ -271,7 +271,7 @@ class RadarrInstance():
             requests.exceptions.HTTPError: if the response from the API is not a 202 (Accepted) status code
         """
         payload = {
-            "movieIds": [movie_id],
+            "movieIds": movie_id,
             "tags": [tag_id],
             "applyTags": "add"
         }
@@ -343,16 +343,12 @@ class RadarrInstance():
         response = self.session.post(endpoint, json=payload)
         response.raise_for_status() 
 
-def check_all_tagged(all_media, tag_id):
-    """
-        Check if all the media in the `all_media` list has the `tag_id` tag applied.
-    Parameters:
-        all_media (list): A list of dictionaries containing media information.
-        tag_id (int): The ID of the tag to check.
-    Returns:
-        bool: True if all media in the list has the tag applied, False otherwise.
-    """
+def check_all_tagged(all_media, tag_id, status, monitored):
     for media in all_media:
+        if monitored != media['monitored']:
+            continue
+        if status != "all" and status != media['status']:
+            continue
         if tag_id not in media['tags']:
             return False
     return True
@@ -372,13 +368,14 @@ def validate_input(instance_name, url, api_key, dry_run, unattended, count, moni
         if unattended is not True and unattended is not False:
             logger.warning(f'Error: \'unattended: {unattended}\' in \'{instance_name}\' must be either True or False. Defaulting to False')
             unattended = False
+        status = status.lower()
         if (instance_name.startswith("radarr")):
-            if status not in ("tba", "announced", "incinemas", "released", "deleted"):
+            if status not in ("tba", "announced", "incinemas", "released", "deleted", "all"):
                 logger.warning(f'Error: \'status: {status}\' in \'{instance_name}\' is not one of the defined status types: tba, announced, inCinemas, released, deleted')
                 logger.warning("Setting setting status to: 'released'")
                 status = "released"
         elif (instance_name.startswith("sonarr")):
-            if status not in ("continuing", "ended", "upcoming", "deleted"):
+            if status not in ("continuing", "ended", "upcoming", "deleted", "all"):
                 logger.warning(f'Error: \'status: {status}\' in \'{instance_name}\' is not one of the defined status types: continuing, ended, upcoming, deleted')
                 logger.warning("Setting setting status to: 'continuing'")
                 status = "continuing"
@@ -483,7 +480,13 @@ def main():
         for instance_setting in instance_settings:
             instance_name = instance_setting['name']
             instance_global_settings = None
-            for global_settings in config['global'][instance]:
+            global_settings_list = config['global'].get(instance)
+            if global_settings_list is None:
+                continue
+            # Check if instance_name exists in global_settings_list
+            if not any(setting['name'] == instance_name for setting in global_settings_list):
+                continue
+            for global_settings in global_settings_list:
                 if global_settings['name'] == instance_name:
                     instance_global_settings = global_settings
                     break
@@ -509,6 +512,7 @@ def main():
                 logger.debug(f"Unattended: {unattended}")
                 logger.debug(f'*' * 40 )
                 logger.debug('')
+                
             try:
                 if url:
                     logger.info('*' * 40)
@@ -534,15 +538,15 @@ def main():
                         radarr_tag_id = radarr.check_and_create_tag(tag_name, dry_run, logger)
                         all_movies = radarr.get_movies()
                         logger.debug(f"Length of all_movies for {str(radarr)}: {len(all_movies)}")
-                        all_radarr_tagged = check_all_tagged(all_movies, radarr_tag_id)
+                        all_radarr_tagged = check_all_tagged(all_movies, radarr_tag_id, status, monitored)
                         if all_radarr_tagged is True and unattended is True:
-                            all_radarr_tagged = radarr.remove_tags(all_movies, radarr_tag_id, tag_name)
+                            all_radarr_tagged = radarr.remove_tags(all_movies, radarr_tag_id, tag_name, logger)
                         elif all_radarr_tagged is True and unattended is False:
                             radarr_all_tagged = True
                             logger.info(f'All of {instance_name} has been tagged with {tag_name} skipping.')
                             continue
                         if all_radarr_tagged is False:
-                            untagged_movies = [m for m in all_movies if radarr_tag_id not in m['tags'] and m['monitored'] == monitored and m['status'] == status]
+                            untagged_movies = [m for m in all_movies if radarr_tag_id not in m['tags'] and m['monitored'] == monitored and (status == 'all' or m['status'] == status)]
                             movies_to_process = untagged_movies[:count]
                             for movies in movies_to_process:
                                 movie_id = [int(m['id']) for m in movies_to_process]
@@ -571,15 +575,15 @@ def main():
                         sonarr_tag_id = sonarr.check_and_create_tag(tag_name, dry_run, logger)
                         all_series = sonarr.get_series()
                         logger.debug(f"Length of all_series for {str(sonarr)}: {len(all_series)}")
-                        all_sonarr_tagged = check_all_tagged(all_series, sonarr_tag_id)
+                        all_sonarr_tagged = check_all_tagged(all_series, sonarr_tag_id, status, monitored)
                         if all_sonarr_tagged is True and unattended is True:
-                            all_sonarr_tagged = sonarr.remove_tags(all_series, sonarr_tag_id, tag_name)
+                            all_sonarr_tagged = sonarr.remove_tags(all_series, sonarr_tag_id, tag_name, logger)
                         elif all_sonarr_tagged is True and unattended is False:
                             sonarr_all_tagged = True
                             logger.info(f'All of {instance_name} has been tagged with {tag_name} skipping.')
                             break
                         if all_sonarr_tagged is False:
-                            untagged_series = [s for s in all_series if sonarr_tag_id not in s['tags'] and s['monitored'] == monitored and s['status'] == status]
+                            untagged_series = [s for s in all_series if sonarr_tag_id not in s['tags'] and s['monitored'] == monitored and (status == 'all' or s['status'] == status)]
                             series_to_process = untagged_series[:count]
                             for series in series_to_process:
                                 series_id = [int(s['id']) for s in series_to_process]

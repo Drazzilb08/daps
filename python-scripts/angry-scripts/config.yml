@@ -51,14 +51,12 @@ renameinator:
   radarr:
     - name: radarr_1
       count: 1
-      tag_name: rename
+      tag_name: renamed
       unattended: false
       reset: false
-      dry_run: true
   sonarr:
     - name: sonarr_1
       count: 1
-      tag_name: rename
+      tag_name: renamed
       unattended: false
       reset: false
-      dry_run: true

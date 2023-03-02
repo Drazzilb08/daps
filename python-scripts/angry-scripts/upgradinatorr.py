@@ -353,9 +353,6 @@ def check_all_tagged(all_media, tag_id, status, monitored):
             return False
     return True
 
-def discord_notification(discord_webhook):
-    pass
-
 def validate_input(instance_name, url, api_key, dry_run, unattended, count, monitored, status, tag_name, logger):
     if not (url.startswith("http://") or url.startswith("https://")):
         raise ValueError(f'\'{instance_name}\' URL must start with \'http://\' or \'https://://\'')
@@ -456,7 +453,6 @@ def main():
     upgradinatorr = config.get('upgradinatorr', {})
     log_level = upgradinatorr.get('log_level').upper()
     dry_run = upgradinatorr.get('dry_run')
-    discord_webhook = upgradinatorr.get('discord_webhook', '')
     
     logger = setup_logger(log_level)
     
@@ -471,11 +467,10 @@ def main():
     logger.debug(f'{" Script Settings ":*^40}')
     logger.debug(f'Dry_run: {dry_run}')
     logger.debug(f"Log Level: {log_level}")
-    logger.debug(f"Discord Webhook URL: {discord_webhook}")
     logger.debug(f'*' * 40 )
     logger.debug('')
     for instance, instance_settings in upgradinatorr.items():
-        if instance in ['log_level', 'dry_run', 'discord_webhook']:
+        if instance in ['log_level', 'dry_run']:
             continue
         for instance_setting in instance_settings:
             instance_name = instance_setting['name']

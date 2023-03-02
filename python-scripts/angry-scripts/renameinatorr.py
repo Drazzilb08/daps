@@ -580,7 +580,6 @@ def main():
     renameinator = config.get('renameinator', {})
     log_level = renameinator.get('log_level').upper()
     dry_run = renameinator.get('dry_run')
-    discord_webhook = renameinator.get('discord_webhook', '')
     
     logger = setup_logger(log_level)
     
@@ -595,11 +594,10 @@ def main():
     logger.debug(f'{" Script Settings ":*^40}')
     logger.debug(f'Dry_run: {dry_run}')
     logger.debug(f"Log Level: {log_level}")
-    logger.debug(f"Discord Webhook URL: {discord_webhook}")
     logger.debug(f'*' * 40 )
     logger.debug('')
     for instance, instance_settings in renameinator.items():
-        if instance in ['log_level', 'dry_run', 'discord_webhook']:
+        if instance in ['log_level', 'dry_run']:
             continue
         for instance_setting in instance_settings:
             instance_name = instance_setting['name']

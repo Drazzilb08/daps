@@ -2,7 +2,7 @@
 ## Overview
 These are simple scripts that do not require much. Renamer hooks into your Radarr instance for Movie's names, Sonarr for your TV Show names and Plex for your collection names. 
 
-The script will then parse over a list of posters that you download from sites such as (TPDb)[http://www.theposterdb.com]. The script will then use a bit of fuzzy matching to determine which file matches to which movie (this is done through the file's name and the movie title). If a match is found that is above the threshold it will then rename the file if needed or move the file to an assets directory. The intent of this script is to be used with the assets directory of Plex Meta Manager as the file's need to be named a certain way for it to pick them up.
+The script will then parse over a list of posters that you download from sites such as [TPDb](http://www.theposterdb.com). The script will then use a bit of fuzzy matching to determine which file matches to which movie (this is done through the file's name and the movie title). If a match is found that is above the threshold it will then rename the file if needed or move the file to an assets directory. The intent of this script is to be used with the assets directory of Plex Meta Manager as the file's need to be named a certain way for it to pick them up.
 
 I have ran this extensivly on a batch of over 5000 movies and a poster catalog of over 16,000 posters with very very few false posatives with the default thresholds (only 1 that I found to be exact). However your milage my vary,
 
@@ -35,4 +35,4 @@ Here is an example of what a run would look like:
 ## Overview
 This is a super simple script that takes your assets directory from PMM and bumps it against your media directory to check what assets your missing. I like to have complete sets of all my posters and have them all matching. This is very helpful to see what all I'm missing.
 
-Note: This will not do collections, in order to do that it would require access to the Plex API, which I did not feel like making. However if somebody requests it i'll seriously consider it.
+This script will also do Collections, however to accomplish this the script needs access to your plex's API just fill out that portion of the script and it will output what collections do not have custom assets in the assets dir of Plex-Meta-Manager

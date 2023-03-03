@@ -1,5 +1,8 @@
 # Misc Scripts
-## Renamer:
+## Renamer (Depreciated):
+
+### Depreciated
+ This script has been depreciated by [this](https://github.com/Drazzilb08/userScripts/tree/dev/python-scripts) python script which is much more advanced.
 
 ### Usage:
 1. Open a terminal and navigate to the directory where the script is located.

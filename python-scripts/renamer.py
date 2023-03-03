@@ -6,7 +6,7 @@
 #  |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|  |_|    \__, |
 #                                                     __/ |
 #                                                    |___/ 
-# v.1.0.3
+# v.1.0.4
 
 import os
 import requests
@@ -42,7 +42,7 @@ source_dir = '/path/to/posters'
 destination_dir = '/path/to/plex-meta-manager/assets'
 
 dry_run = False # If you'd like to see how things look prior to actually renaming/moving them
-log_level = 'CRITICAL' # Log levels: CRITICAL, INFO, DEBUG: Debug being the most verbose, and CRITICAL being the least
+log_level = 'INFO' # Log levels: CRITICAL, INFO, DEBUG: Debug being the most verbose, and INFO being the least
 
 # How much of a match a movie/show title needs to be before it is considered a "Match"
 # Adjust these numbers 0-100 if you're getting false negatives or posatives. 0 being everythig goes, 100 exact match
@@ -67,7 +67,7 @@ def get_info(info_type):
         return response.json()
     except requests.exceptions.RequestException as err:
         # Log the error while connecting to Radarr
-        logger.critical(f"Error connecting to Radarr ({info_type}): ", err)
+        logger.debug(f"Error connecting to Radarr ({info_type}): ", err)
         return None
 
 def get_series_info(sonarr_api_key, sonarr_url):
@@ -80,7 +80,7 @@ def get_series_info(sonarr_api_key, sonarr_url):
         # Raise error if the status is not successful
         response.raise_for_status()
         # Log the success of connecting to Sonarr and getting series information
-        logger.critical(f"Connected to Sonarr.. Gathering information...")
+        logger.debug(f"Connected to Sonarr.. Gathering information...")
         # Return the response in JSON format
         return response.json()
     except requests.exceptions.RequestException as err:
@@ -141,7 +141,7 @@ def get_collections(plex_url, token, library_names):
         for collection_name in library_collection_names:
             if collection_name not in collections:
                 collections.add((collection_name))
-    logger.critical(f"Connected to Plex.. Gathering informationrmation...")
+    logger.info(f"Connected to Plex.. Gathering informationrmation...")
     return collections
 
 def match_series(series, file):
@@ -191,6 +191,8 @@ def match_series(series, file):
         return None, None
 
 def match_movies(movies, file):
+    if "Season" in file or "Special" in file:
+        return None, f"File {file} ignored because it contains 'Season' or 'Special'"
     # Split the file name and year from the file
     year = None
     best_match = None
@@ -207,7 +209,11 @@ def match_movies(movies, file):
         logger.debug("Year not found")
     year = str(year)
     for matched_movie in movies:
-        matched_movie_name = matched_movie['title']
+        year_in_title = re.search(r'\((\d{4})\)', matched_movie['title'])
+        if year_in_title:
+            matched_movie_name = matched_movie['title'].split("(")[0].rstrip()
+        else:
+            matched_movie_name = matched_movie['title']
         matched_movie_name = remove_illegal_chars(matched_movie_name)
         matched_movie_year = matched_movie['year']
         matched_movie_year = str(matched_movie_year)
@@ -266,22 +272,22 @@ def rename_movies(matched_movie, file, destination_dir, source_dir):
     # Check if the file name is different from the matched_movie's folder name
     if os.path.basename(file) != matched_movie_folder:
         if dry_run:
-            logger.critical(f"{file} -> {matched_movie_folder}")
+            logger.info(f"{file} -> {matched_movie_folder}")
             return
         else:
             # Move the file to the destination folder
             shutil.move(source, destination)
-            logger.critical(f"{file} -> {matched_movie_folder}")
+            logger.info(f"{file} -> {matched_movie_folder}")
             return
     # Check if the file name is the same as the matched_movie's folder name
     if os.path.basename(file) == matched_movie_folder:
         if dry_run:
-            logger.critical(f"{file} -->> {matched_movie_folder}")
+            logger.info(f"{file} -->> {matched_movie_folder}")
             return
         else:
             # Move the file to the destination folder
             shutil.move(source, destination)
-            logger.critical(f"{file} -->> {matched_movie_folder}")
+            logger.info(f"{file} -->> {matched_movie_folder}")
             return
 
 def rename_series(matched_series, file, destination_dir, source_dir):
@@ -302,9 +308,14 @@ def rename_series(matched_series, file, destination_dir, source_dir):
     else:
         if "Season" in file:
             season_info = file.split("Season ")[1].split(".")[0]
-            if int(season_info) < 10:
+            try:
+                season_number = int(season_info)
+            except ValueError:
+                logger.error(f"Error: Cannot convert {season_info} to an integer in file {file}")
+                return
+            if season_number < 10:
                 matched_series_folder = matched_series_folder + "_Season0" + season_info + "." + file_extension
-            elif int(season_info) >= 10:
+            elif season_number >= 10:
                 matched_series_folder = matched_series_folder + "_Season" + season_info + "." + file_extension
         elif "Specials" in file:
             matched_series_folder = matched_series_folder + "_Season00." + file_extension
@@ -317,21 +328,22 @@ def rename_series(matched_series, file, destination_dir, source_dir):
     # If the file name is not equal to the matched series folder name, then rename the file
     if os.path.basename(file) != matched_series_folder:
         if dry_run:
-            logger.critical(f"{file} -> {matched_series_folder}")
+            logger.info(f"{file} -> {matched_series_folder}")
             return
         else:
-            logger.critical(f"{file} -> {matched_series_folder}")
+            logger.info(f"{file} -> {matched_series_folder}")
             shutil.move(source, destination)
             return
     # If the file name is equal to the matched series folder name, then move the file to the destination folder
     if os.path.basename(file) == matched_series_folder:
         if dry_run:
-            logger.critical(f"{file} -->> {matched_series_folder}")
+            logger.info(f"{file} -->> {matched_series_folder}")
             return
         else:
             shutil.move(source, destination)
-            logger.critical(f"{file} -->> {matched_series_folder}")
-            return 
+            logger.info(f"{file} -->> {matched_series_folder}")
+            return
+
 
 def remove_illegal_chars(string):
     # Define a regular expression pattern to match illegal characters
@@ -356,23 +368,23 @@ def rename_collections(matched_collection, file, destination_dir, source_dir):
     if os.path.basename(file) != matched_collection_title:
         # If the code is in dry run mode, log the intended file rename operation
         if dry_run:
-            logger.critical(f"{file} -> {matched_collection_title}")
+            logger.info(f"{file} -> {matched_collection_title}")
             return
         # If the code is not in dry run mode, perform the file rename operation and log it
         else:
             shutil.move(source, destination)
-            logger.critical(f"{file} -> {matched_collection_title}")
+            logger.info(f"{file} -> {matched_collection_title}")
             return
     # If the current file name is the same as the new file name
     if os.path.basename(file) == matched_collection_title:
         # If the code is in dry run mode, log the intended file rename operation
         if dry_run:
-            logger.critical(f"{file} -->> {matched_collection_title}")
+            logger.info(f"{file} -->> {matched_collection_title}")
             return
         # If the code is not in dry run mode, perform the file rename operation and log it
         else:
             shutil.move(source, destination)
-            logger.critical(f"{file} -->> {matched_collection_title}")
+            logger.info(f"{file} -->> {matched_collection_title}")
             return
 
 def validate_input(source_dir, destination_dir, radarr_url, sonarr_url, sonarr_url_1, dry_run, log_level):
@@ -402,13 +414,13 @@ def main():
     validate_input(source_dir, destination_dir, radarr_url, sonarr_url, sonarr_url_1, dry_run, log_level)
     # Check if dry_run is set to True
     if dry_run:
-        logger.critical("*************************************")
-        logger.critical("*         Dry_run Activated         *")
-        logger.critical("*************************************")
+        logger.info("*************************************")
+        logger.info("*         Dry_run Activated         *")
+        logger.info("*************************************")
         # Log a warning message that no changes will be made
-        logger.critical("*******NO CHANGES WILL BE MADE*******")
+        logger.info("*******NO CHANGES WILL BE MADE*******")
     # Log the destination directory
-    logger.critical(f"Destination folder: {destination_dir}")
+    logger.info(f"Destination folder: {destination_dir}")
     # Check if both radarr_api_key and radarr_url are set
     if radarr_api_key and radarr_url:
         # Get movie and collection information from Radarr
@@ -428,7 +440,7 @@ def main():
                         rename_collections(matched_collection, file, destination_dir, source_dir)
                     # If a reason is given for not finding a match, log it
                     elif reason:
-                        logger.info(f"{file} was skipped because: {reason}")
+                        logger.debug(f"{file} was skipped because: {reason}")
                         continue
             else:
                 # If movies are available
@@ -440,7 +452,7 @@ def main():
                         rename_movies(matched_movie, file, destination_dir, source_dir)
                     # If a reason is given for not finding a match, log it
                     elif reason:
-                        logger.info(f"{file} was skipped because: {reason}")
+                        logger.debug(f"{file} was skipped because: {reason}")
     # Check if sonarr_api_key and sonarr_url are both present
     if sonarr_api_key and sonarr_url:
         # Log a header indicating the start of connecting to Sonarr
@@ -460,7 +472,7 @@ def main():
                     rename_series(matched_series, file, destination_dir, source_dir)
                 # If the file was skipped for a reason, log the reason
                 elif reason:
-                    logger.info(f"{file} was skipped because: {reason}")
+                    logger.debug(f"{file} was skipped because: {reason}")
 
 # Check if sonarr_api_key_1 and sonarr_url_1 are both present
     if sonarr_api_key_1 and sonarr_url_1:
@@ -479,9 +491,10 @@ def main():
                     rename_series(matched_series, file, destination_dir, source_dir)
                 # If the file was skipped for a reason, log the reason
                 elif reason:
-                    logger.info(f"{file} was skipped because: {reason}")
+                    logger.debug(f"{file} was skipped because: {reason}")
     permissions = 0o777
     os.chmod(destination_dir, permissions)
+    os.chmod(source_dir, permissions)
 
 def setup_logger(log_level):
     # Create a directory to store logs, if it doesn't exist
@@ -503,8 +516,8 @@ def setup_logger(log_level):
     elif log_level == 'CRITICAL':
         logger.setLevel(logging.CRITICAL)
     else:
-        print(f"Invalid log level '{log_level}', defaulting to 'CRITICAL'")
-        logger.setLevel(logging.CRITICAL)
+        logger.critical(f"Invalid log level '{log_level}', defaulting to 'INFO'")
+        logger.setLevel(logging.INFO)
     # Set the formatter for the file handler
     formatter = logging.Formatter(fmt='%(asctime)s %(levelname)s: %(message)s', datefmt='%I:%M %p')
     # Add a TimedRotatingFileHandler to the logger, to log to a file that rotates daily

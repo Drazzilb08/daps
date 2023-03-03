@@ -8,7 +8,7 @@
 #  |_|    |_|\___/_/\_\ |____/ \__,_|\___|_|\_\\__,_| .__/  |_____/ \___|_|  |_| .__/ \__|
 #                                                   | |                        | |
 #                                                   |_|                        |_|
-# v4.0.0
+# v4.0.1
 
 # Please see the config file for more information
 config_file=""
@@ -377,8 +377,6 @@ create_backup() {
         else
             extension="tar.7z"
             # Compress the backup using 7z
-            # tar --ignore-failed-read cf - "${exclude[@]}" "${backup_source[@]}" | 7z a -si -t7z -m0=lzma2 -mx=1 -md=32m -mfb=64 -mmt=on -ms=off "$backup_path/$folder_type-plex_backup.tar.7z" "$backup_path/$folder_type-plex_backup.tar"
-            # tar --ignore-failed-read -cf - "${exclude[@]}" "${backup_source[@]}" | 7z a -si -t7z -m0=lzma2 -mx=1 -md=32m -mfb=64 -mmt=on -ms=off "$backup_path/$folder_type-plex_backup.tar.7z" "$backup_path/$folder_type-plex_backup.tar"
             tar --ignore-failed-read -cf - "${exclude[@]}" "${backup_source[@]}" | 7z a -si -t7z -m0=lzma2 -mx=1 -md=32m -mfb=64 -mmt=on -ms=off "$backup_path/$folder_type-plex_backup.tar.7z" 
         fi
     else
@@ -388,7 +386,8 @@ create_backup() {
             touch "$backup_path/$folder_type-plex_backup.tar.dry_run"
         else
             extension="tar"
-            tar --ignore-failed-read -cf --checkpoint=500 --checkpoint-action=dot "${exclude[@]}" --file="$backup_path/$folder_type-plex_backup.tar" "${backup_source[@]}"
+            tar --ignore-failed-read -cf "$backup_path/$folder_type-plex_backup.tar" --checkpoint=500 --checkpoint-action=dot "${exclude[@]}" "${backup_source[@]}"
+
         fi
     fi
     # Store the size of the backup in a variable
@@ -434,9 +433,6 @@ main() {
     start=$(date +%s)
     # check if full_backup is set to false
     if [ "$full_backup" == "false" ]; then
-        if [ "$dry_run" == false ]; then
-            check_space
-        fi
         # create essential backup
         create_backup "Essential"
         backup_type="essential"
@@ -446,9 +442,7 @@ main() {
         if [ "$force_full_backup" != 0 ]; then
             # check if number of days since last full backup is greater than or equal to force_full_backup or lastbackup is 0
             if [[ "$days" -ge $force_full_backup ]] || [[ "$lastbackup" == 0 ]]; then
-                if [ "$dry_run" == false ]; then
-                    check_space
-                fi
+ 
                 #create full backup
                 create_backup "Full"
                 backup_type="both"
@@ -462,9 +456,6 @@ main() {
             fi
         fi
     else
-        if [ "$dry_run" == false ]; then
-            check_space
-        fi
         #create full backup
         create_backup "Full"
         backup_type="full"

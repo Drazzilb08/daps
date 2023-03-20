@@ -2,3 +2,4 @@ test.sh
 test.txt
 .DS_Store
 dev/
+python-scripts/angry-scripts/test.py

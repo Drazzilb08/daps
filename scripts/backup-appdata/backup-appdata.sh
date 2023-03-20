@@ -1,5 +1,4 @@
 #!/bin/bash
-#!/bin/bash
 #                            _       _          ____             _
 #      /\                   | |     | |        |  _ \           | |
 #     /  \   _ __  _ __   __| | __ _| |_ __ _  | |_) | __ _  ___| | ___   _ _ __
@@ -9,7 +8,7 @@
 #           | |   | |                                                      | |
 #           |_|   |_|                                                      |_|
 #
-# v4.0.0
+# v4.0.1
 
 # Path to config file such as "/path/to/config/config_file.txt"
 config_file=""
@@ -165,7 +164,7 @@ create_backup() {
     # Create the backup file name
     backup_file="$(realpath -s "$destination_dir")/$(date +%F)@$now/$container_name"
     # Go to the source directory
-    cd "$source_dir"/.. || exit
+    cd "$source_dir"/.. || return 
     # Get the name of the source directory
     source_dir=$(basename "$source_dir")
 
@@ -442,8 +441,8 @@ backup_prep() {
             fi
             # check the space
             if [ "$dry_run" == "false" ]; then
-            # check the space
-            check_space
+                # check the space
+                check_space
             fi
             # Create a backup of the container
             create_backup "$no_stop_container"

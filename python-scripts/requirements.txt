@@ -2,4 +2,3 @@ Levenshtein
 fuzzywuzzy
 requests
 tqdm
-xml.etree.ElementTree

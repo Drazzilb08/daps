@@ -6,7 +6,7 @@
 #  |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|  |_|    \__, |
 #                                                     __/ |
 #                                                    |___/ 
-# v.1.0.4
+# v.1.0.5
 
 import os
 import requests
@@ -262,6 +262,8 @@ def match_collection(plex_collections, file):
 def rename_movies(matched_movie, file, destination_dir, source_dir):
     # Get the matched_movie's folder name and the file extension
     folder_path = matched_movie['folderName']
+    if folder_path.endswith('/'):
+        folder_path = folder_path[:-1]
     matched_movie_folder = os.path.basename(folder_path)
     logger.debug(f"matched_movie_folder: {matched_movie_folder}")
     file_extension = os.path.basename(file).split(".")[-1]
@@ -293,6 +295,8 @@ def rename_movies(matched_movie, file, destination_dir, source_dir):
 def rename_series(matched_series, file, destination_dir, source_dir):
     # Get the folder path and name of the matched series
     folder_path = matched_series['path']
+    if folder_path.endswith('/'):
+        folder_path = folder_path[:-1]
     logger.debug(f"folder_path: {folder_path}")
     matched_series_folder = os.path.basename(folder_path)
     logger.debug(f"matched_series_folder: {matched_series_folder}")

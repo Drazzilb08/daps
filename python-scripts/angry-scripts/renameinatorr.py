@@ -1,12 +1,12 @@
-#   _____                                 _             _                  _____       
-#  |  __ \                               (_)           | |                |  __ \      
-#  | |__) |___ _ __   __ _ _ __ ___   ___ _ _ __   __ _| |_ ___  _ __ _ __| |__) |   _ 
+#   _____                                 _             _                  _____
+#  |  __ \                               (_)           | |                |  __ \
+#  | |__) |___ _ __   __ _ _ __ ___   ___ _ _ __   __ _| |_ ___  _ __ _ __| |__) |   _
 #  |  _  // _ \ '_ \ / _` | '_ ` _ \ / _ \ | '_ \ / _` | __/ _ \| '__| '__|  ___/ | | |
 #  | | \ \  __/ | | | (_| | | | | | |  __/ | | | | (_| | || (_) | |  | |_ | |   | |_| |
 #  |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|_| |_|\__,_|\__\___/|_|  |_(_)|_|    \__, |
 #                                                                                 __/ |
-#                                                                                |___/ 
-# V 1.0.0
+#                                                                                |___/
+# v.1.1.0
 
 import requests
 import json
@@ -16,6 +16,7 @@ import yaml
 import sys
 from logging.handlers import RotatingFileHandler
 import logging
+
 
 class SonarrInstance:
     def __init__(self, url, api_key, logger):
@@ -34,16 +35,19 @@ class SonarrInstance:
         }
         self.session = requests.Session()
         self.session.headers.update({"X-Api-Key": self.api_key})
-        
+
         try:
             status = self.get_system_status()
             app_name = status.get("appName")
             app_version = status.get("version")
             if not app_name.startswith("Sonarr"):
-                raise ValueError("URL does not point to a valid Sonarr instance.")
-            logger.debug(f"\nConnected to {app_name} (v{app_version}) at {self.url}")
+                raise ValueError(
+                    "URL does not point to a valid Sonarr instance.")
+            logger.debug(
+                f"\nConnected to {app_name} (v{app_version}) at {self.url}")
         except (requests.exceptions.RequestException, ValueError) as e:
-            raise ValueError(f"Failed to connect to Sonarr instance at {self.url}: {e}")
+            raise ValueError(
+                f"Failed to connect to Sonarr instance at {self.url}: {e}")
 
     def __str__(self):
         return f"SonarrInstance(url={self.url})"
@@ -99,7 +103,8 @@ class SonarrInstance:
             all_series = response.json()
             return all_series
         else:
-            raise ValueError(f"Failed to get series with status code {response.status_code}")
+            raise ValueError(
+                f"Failed to get series with status code {response.status_code}")
 
     def add_tag(self, series_id, tag_id):
         """
@@ -127,7 +132,8 @@ class SonarrInstance:
         for tag in all_tags:
             if tag["label"] == tag_name:
                 tag_id = tag["id"]
-                logger.debug(f'Tag Name: {tag_name} exists with tagId: {tag_id}')
+                logger.debug(
+                    f'Tag Name: {tag_name} exists with tagId: {tag_id}')
                 break
         if tag_id is None:
             if dry_run == False:
@@ -165,9 +171,11 @@ class SonarrInstance:
         endpoint = f"{self.url}/api/v3/series/editor"
         response = self.session.put(endpoint, json=payload)
         if response.status_code == 202:
-            logger.debug(f"Successfully removed tag: {tag_name} with ID {tag_id} from {len(series_ids)} series.")
+            logger.debug(
+                f"Successfully removed tag: {tag_name} with ID {tag_id} from {len(series_ids)} series.")
         else:
-            logger.debug(f"Failed to remove tag: {tag_name} with ID {tag_id} from {len(series_ids)} series. Response status code: {response.status_code}")
+            logger.debug(
+                f"Failed to remove tag: {tag_name} with ID {tag_id} from {len(series_ids)} series. Response status code: {response.status_code}")
         return False
 
     def get_rename_list(self, series_id):
@@ -193,7 +201,7 @@ class SonarrInstance:
         Returns:
         bool: Returns `True` if the episode files were renamed successfully
         """
-        max_retries=10
+        max_retries = 10
         payload = {
             "name": "RenameFiles",
             "seriesId": series_id,
@@ -201,7 +209,8 @@ class SonarrInstance:
         }
         endpoint = f"{self.url}/api/v3/command"
         try:
-            response = requests.post(endpoint, headers=self.headers, json=payload)
+            response = requests.post(
+                endpoint, headers=self.headers, json=payload)
             response.raise_for_status()
             task_id = response.json()["id"]
         except requests.exceptions.RequestException as e:
@@ -218,16 +227,39 @@ class SonarrInstance:
                 if task_status["status"] == "completed":
                     task_complete = True
                 else:
-                    logger.debug(f'Sleeping for 5 seconds until all episodes have been renamed')
+                    logger.debug(
+                        f'Sleeping for 5 seconds until all episodes have been renamed')
                     time.sleep(5)
             except requests.exceptions.RequestException as e:
                 logger.warning(f"Failed to check task status: {e}")
                 retries += 1
                 time.sleep(5)
         if not task_complete:
-            logger.error(f"Failed to rename files: task did not complete after {max_retries} retries")
+            logger.error(
+                f"Failed to rename files: task did not complete after {max_retries} retries")
             return False
         return True
+    # Send command to refresh all series
+
+    def refresh_series(self, logger):
+        """
+        Sends a request to refresh all series
+        Returns:
+        bool: Returns `True` if the series were refreshed successfully
+        """
+        payload = {
+            "name": "RefreshSeries"
+        }
+        endpoint = f"{self.url}/api/v3/command"
+        try:
+            response = requests.post(
+                endpoint, headers=self.headers, json=payload)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to refresh series: {e}")
+            return False
+        return True
+
 
 class RadarrInstance():
     def __init__(self, url, api_key, logger):
@@ -250,10 +282,13 @@ class RadarrInstance():
             app_name = status.get("appName")
             app_version = status.get("version")
             if not app_name.startswith("Radarr"):
-                raise ValueError("URL does not point to a valid Radarr instance.")
-            logger.debug(f"\nConnected to {app_name} (v{app_version}) at {self.url}")
+                raise ValueError(
+                    "URL does not point to a valid Radarr instance.")
+            logger.debug(
+                f"\nConnected to {app_name} (v{app_version}) at {self.url}")
         except (requests.exceptions.RequestException, ValueError) as e:
-            raise ValueError(f"Failed to connect to Radarr instance at {self.url}: {e}")
+            raise ValueError(
+                f"Failed to connect to Radarr instance at {self.url}: {e}")
 
     def __str__(self):
         return f"RadarrInstance(url={self.url})"
@@ -309,7 +344,8 @@ class RadarrInstance():
             all_movies = response.json()
             return all_movies
         else:
-            raise ValueError(f"Failed to get movies with status code {response.status_code}")
+            raise ValueError(
+                f"Failed to get movies with status code {response.status_code}")
 
     def add_tag(self, movie_id, tag_id):
         """Add a tag to a movie with given movie_id
@@ -338,7 +374,8 @@ class RadarrInstance():
         for tag in all_tags:
             if tag["label"] == tag_name:
                 tag_id = tag["id"]
-                logger.debug(f'Tag Name: {tag_name} exists with tagId: {tag_id}')
+                logger.debug(
+                    f'Tag Name: {tag_name} exists with tagId: {tag_id}')
                 break
         if tag_id is None:
             if dry_run == False:
@@ -348,7 +385,7 @@ class RadarrInstance():
                     if tag["label"] == tag_name:
                         tag_id = tag["id"]
                         # Break out of the loop
-                        break  
+                        break
             else:
                 logger.info(f'Tag Name: {tag_name} would have been created.')
         return tag_id
@@ -378,9 +415,11 @@ class RadarrInstance():
         endpoint = f"{self.url}/api/v3/movie/editor"
         response = self.session.put(endpoint, json=payload)
         if response.status_code == 202:
-            logger.debug(f"Successfully removed tag: {tag_name} with ID {tag_id} from {len(movie_ids)} movies.")
+            logger.debug(
+                f"Successfully removed tag: {tag_name} with ID {tag_id} from {len(movie_ids)} movies.")
         else:
-            logger.debug(f"Failed to remove tag: {tag_name} with ID {tag_id} from {len(movie_ids)} movies. Response status code: {response.status_code}")
+            logger.debug(
+                f"Failed to remove tag: {tag_name} with ID {tag_id} from {len(movie_ids)} movies. Response status code: {response.status_code}")
         return False
 
     def get_rename_list(self, movie_id):
@@ -407,7 +446,7 @@ class RadarrInstance():
         Returns:
         bool: Returns `True` if the movie files were renamed successfully
         """
-        max_retries=10
+        max_retries = 10
         payload = {
             "name": "RenameFiles",
             "movieId": movie_id,
@@ -415,7 +454,8 @@ class RadarrInstance():
         }
         endpoint = f"{self.url}/api/v3/command"
         try:
-            response = requests.post(endpoint, headers=self.headers, json=payload)
+            response = requests.post(
+                endpoint, headers=self.headers, json=payload)
             response.raise_for_status()
             task_id = response.json()["id"]
         except requests.exceptions.RequestException as e:
@@ -432,17 +472,41 @@ class RadarrInstance():
                 if task_status["status"] == "completed":
                     task_complete = True
                 else:
-                            
-                    logger.debug(f'Sleeping for 5 seconds until all movies have been renamed')
+
+                    logger.debug(
+                        f'Sleeping for 5 seconds until all movies have been renamed')
                     time.sleep(5)
             except requests.exceptions.RequestException as e:
                 logger.warning(f"Failed to check task status: {e}")
                 retries += 1
                 time.sleep(5)
         if not task_complete:
-            logger.error(f"Failed to rename files: task did not complete after {max_retries} retries")
+            logger.error(
+                f"Failed to rename files: task did not complete after {max_retries} retries")
             return False
         return True
+    # Send command to refresh movies
+
+    def refresh_movies(self, logger):
+        """
+        Sends a request to refresh a list of movies
+        Returns:
+        bool: Returns `True` if the movies were refreshed successfully
+        """
+        payload = {
+            "name": "RefreshMovie"
+        }
+        endpoint = f"{self.url}/api/v3/command"
+        try:
+            response = requests.post(
+                endpoint, headers=self.headers, json=payload)
+            response.raise_for_status()
+            task_id = response.json()["id"]
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to refresh movies: {e}")
+            return False
+        return True
+
 
 def check_all_tagged(all_media, tag_id):
     """
@@ -457,6 +521,7 @@ def check_all_tagged(all_media, tag_id):
         if tag_id not in media['tags']:
             return False
     return True
+
 
 def print_format(media, to_rename, type, dry_run, logger):
     """
@@ -485,42 +550,53 @@ def print_format(media, to_rename, type, dry_run, logger):
             if current_season != season_number:
                 current_season = season_number
                 logger.info(f"\tSeason {season_number:02d}:")
-            logger.info(f"\t\t{existing_path.split('/')[-1]} renamed to {new_path.split('/')[-1]}")
+            logger.info(
+                f"\t\t{existing_path.split('/')[-1]} renamed to {new_path.split('/')[-1]}")
     if type == "radarr":
         for file in to_rename:
             existing_path = file["existingPath"]
             new_path = file["newPath"]
             movie_title = media["title"]
             logger.info(f"Movie Title: {movie_title} {tagged}.")
-            logger.info(f"\t{existing_path.split('/')[-1]} renamed to {new_path.split('/')[-1]}")
+            logger.info(
+                f"\t{existing_path.split('/')[-1]} renamed to {new_path.split('/')[-1]}")
+
 
 def validate_input(instance_name, url, api_key, dry_run, unattended, count, tag_name, logger):
     if not (url.startswith("http://") or url.startswith("https://")):
-        raise ValueError(f'\'{instance_name}\' URL must start with \'http://\' or \'https://://\'')
+        raise ValueError(
+            f'\'{instance_name}\' URL must start with \'http://\' or \'https://://\'')
     if url.startswith("http://") or url.startswith("https://"):
         if not api_key:
             raise ValueError(f'API key is required for \'{instance_name}\'')
         if dry_run is not True and dry_run is not False:
-            logger.warning(f'Error: \'unattended: {unattended}\' in \'{instance_name}\' must be either True or False. Defaulting to False')
+            logger.warning(
+                f'Error: \'unattended: {unattended}\' in \'{instance_name}\' must be either True or False. Defaulting to False')
             dry_run = True
         if unattended is not True and unattended is not False:
-            logger.warning(f'Error: {unattended} in {instance_name} must be either True or False. Defaulting to False')
+            logger.warning(
+                f'Error: {unattended} in {instance_name} must be either True or False. Defaulting to False')
             unattended = False
         if count is None:
-            logger.warning(f'Error: \'count: \' is empty: Setting count to default value of 1')
+            logger.warning(
+                f'Error: \'count: \' is empty: Setting count to default value of 1')
             count = 1
         else:
             if not isinstance(count, int):
-                logger.warning(f'Error: \'count: {count}\' in \'{instance_name}\' is not a valid count. Setting count to default value of 1')
+                logger.warning(
+                    f'Error: \'count: {count}\' in \'{instance_name}\' is not a valid count. Setting count to default value of 1')
                 count = 1
             else:
                 count = int(count)
         if count <= 0:
-            logger.warning(f'Error: \'count: {count}\' in \'{instance_name}\' is not a valid count. Setting count to default value of 1')
+            logger.warning(
+                f'Error: \'count: {count}\' in \'{instance_name}\' is not a valid count. Setting count to default value of 1')
             count = 1
         if tag_name == "":
-            raise ValueError(f'\'tag_name: \' in {instance_name} is empty. This must be set')
+            raise ValueError(
+                f'\'tag_name: \' in {instance_name} is empty. This must be set')
         return dry_run, unattended, count
+
 
 def setup_logger(log_level):
     # Create a directory to store logs, if it doesn't exist
@@ -542,17 +618,20 @@ def setup_logger(log_level):
     elif log_level == 'CRITICAL':
         logger.setLevel(logging.CRITICAL)
     else:
-        logger.critical(f"Invalid log level '{log_level}', defaulting to 'INFO'")
+        logger.critical(
+            f"Invalid log level '{log_level}', defaulting to 'INFO'")
         logger.setLevel(logging.INFO)
     # Set the formatter for the file handler
-    formatter = logging.Formatter(fmt='%(asctime)s %(levelname)s: %(message)s', datefmt='%I:%M %p')
+    formatter = logging.Formatter(
+        fmt='%(asctime)s %(levelname)s: %(message)s', datefmt='%I:%M %p')
     # Add a TimedRotatingFileHandler to the logger, to log to a file that rotates daily
-    handler = logging.handlers.TimedRotatingFileHandler(log_file, when='midnight', interval=1, backupCount=3)
+    handler = logging.handlers.TimedRotatingFileHandler(
+        log_file, when='midnight', interval=1, backupCount=3)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
     # Set the formatter for the console handler
     formatter = logging.Formatter()
-        # Add a StreamHandler to the logger, to log to the console
+    # Add a StreamHandler to the logger, to log to the console
     console_handler = logging.StreamHandler()
     if log_level == 'debug':
         console_handler.setLevel(logging.DEBUG)
@@ -562,11 +641,14 @@ def setup_logger(log_level):
         console_handler.setLevel(logging.CRITICAL)
     logger.addHandler(console_handler)
     # Delete the old log files
-    log_files = [f for f in os.listdir(log_dir) if os.path.isfile(os.path.join(log_dir, f)) and f.startswith("renameinatorr_")]
-    log_files.sort(key=lambda x: os.path.getmtime(os.path.join(log_dir, x)), reverse=True)
+    log_files = [f for f in os.listdir(log_dir) if os.path.isfile(
+        os.path.join(log_dir, f)) and f.startswith("renameinatorr_")]
+    log_files.sort(key=lambda x: os.path.getmtime(
+        os.path.join(log_dir, x)), reverse=True)
     for file in log_files[3:]:
         os.remove(os.path.join(log_dir, file))
     return logger
+
 
 def main():
     # Construct the path to the config file based on the script file's path
@@ -576,15 +658,15 @@ def main():
     # Load the config file
     with open(config_file_path) as f:
         config = yaml.safe_load(f)
-        
+
     renameinator = config.get('renameinator', {})
     log_level = renameinator.get('log_level').upper()
     dry_run = renameinator.get('dry_run')
-    
+
     logger = setup_logger(log_level)
-    
+
     if dry_run:
-    # If dry_run is activated, print a message indicating so and the status of other variables.
+        # If dry_run is activated, print a message indicating so and the status of other variables.
         logger.info('*' * 40)
         logger.info(f'* {"Dry_run Activated":^36} *')
         logger.info('*' * 40)
@@ -594,7 +676,7 @@ def main():
     logger.debug(f'{" Script Settings ":*^40}')
     logger.debug(f'Dry_run: {dry_run}')
     logger.debug(f"Log Level: {log_level}")
-    logger.debug(f'*' * 40 )
+    logger.debug(f'*' * 40)
     logger.debug('')
     for instance, instance_settings in renameinator.items():
         if instance in ['log_level', 'dry_run']:
@@ -621,7 +703,8 @@ def main():
                 tag_name = instance_setting.get('tag_name')
                 unattended = instance_setting.get('unattended')
                 reset = instance_setting.get('reset')
-                dry_run, unattended, count = validate_input(instance_name, url, api_key, dry_run, unattended, count, tag_name, logger)
+                dry_run, unattended, count = validate_input(
+                    instance_name, url, api_key, dry_run, unattended, count, tag_name, logger)
                 logger.debug(f'{" Settings ":*^40}')
                 logger.debug(f"Section Name: {instance_name}")
                 logger.debug(f"URL: {url}")
@@ -630,7 +713,7 @@ def main():
                 logger.debug(f"Tag_name: {tag_name}")
                 logger.debug(f"Unattended: {unattended}")
                 logger.debug(f"Reset: {reset}")
-                logger.debug(f'*' * 40 )
+                logger.debug(f'*' * 40)
                 logger.debug('')
             try:
                 if url:
@@ -645,7 +728,8 @@ def main():
                     'Radarr': RadarrInstance,
                     'Sonarr': SonarrInstance,
                 }
-                section_class = class_map.get(instance_name.split('_')[0].capitalize())
+                section_class = class_map.get(
+                    instance_name.split('_')[0].capitalize())
                 arr_instance = section_class(url, api_key, logger)
                 radarr_all_tagged, sonarr_all_tagged = False, False
                 # Add the instance to the appropriate list
@@ -655,41 +739,57 @@ def main():
                     for radarr in radarr_instances:
                         tagged_count = 0
                         untagged_count = 0
-                        radarr_tag_id = radarr.check_and_create_tag(tag_name, dry_run, logger)
+                        radarr_tag_id = radarr.check_and_create_tag(
+                            tag_name, dry_run, logger)
                         all_movies = radarr.get_movies()
-                        logger.debug(f"Length of all_movies for {str(radarr)}: {len(all_movies)}")
-                        all_radarr_tagged = check_all_tagged(all_movies, radarr_tag_id)
+                        logger.debug(
+                            f"Length of all_movies for {str(radarr)}: {len(all_movies)}")
+                        all_radarr_tagged = check_all_tagged(
+                            all_movies, radarr_tag_id)
                         if reset is True:
-                            radarr.remove_tags(all_movies, radarr_tag_id, tag_name, logger)
-                            logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
-                            logger.info ("Skipping...")
+                            radarr.remove_tags(
+                                all_movies, radarr_tag_id, tag_name, logger)
+                            logger.info(
+                                f'All of {instance_name} have had the tag {tag_name} removed.')
+                            logger.info("Skipping...")
                             continue
                         elif all_radarr_tagged is True and unattended is True:
-                            radarr.remove_tags(all_movies, radarr_tag_id, tag_name, logger)
-                            logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
+                            radarr.remove_tags(
+                                all_movies, radarr_tag_id, tag_name, logger)
+                            logger.info(
+                                f'All of {instance_name} have had the tag {tag_name} removed.')
                         # If all the movies are tagged and unattended is False, set radarr_all_tagged to True
                         elif all_radarr_tagged is True and unattended is False:
-                            logger.info(f'All of {instance_name} has been tagged with {tag_name} skipping.')
+                            logger.info(
+                                f'All of {instance_name} has been tagged with {tag_name} skipping.')
                             radarr_all_tagged = True
                             continue
                         if all_radarr_tagged is False:
-                            untagged_movies = [m for m in all_movies if radarr_tag_id not in m['tags']]
+                            untagged_movies = [
+                                m for m in all_movies if radarr_tag_id not in m['tags']]
                             movies_to_process = untagged_movies[:count]
                             checked = True
                             for movies in movies_to_process:
                                 movie_id = movies["id"]
-                                file_to_rename = radarr.get_rename_list(movie_id)
-                                movies_to_rename = [file["movieFileId"] for file in file_to_rename]
+                                file_to_rename = radarr.get_rename_list(
+                                    movie_id)
+                                movies_to_rename = [file["movieFileId"]
+                                                    for file in file_to_rename]
                                 if movies_to_rename:
                                     if dry_run == False:
-                                        checked = radarr.rename_files(movie_id, movies_to_rename, logger)
-                                    print_format(movies, file_to_rename, "radarr", dry_run, logger)
+                                        checked = radarr.rename_files(
+                                            movie_id, movies_to_rename, logger)
+                                    print_format(
+                                        movies, file_to_rename, "radarr", dry_run, logger)
                                 if checked == True:
                                     if dry_run == False:
                                         radarr.add_tag(movie_id, radarr_tag_id)
-                                        logger.info(f'Movie: \'{movies["title"]}\' has been tagged with \'{tag_name}\'.')
+                                        logger.info(
+                                            f'Movie: \'{movies["title"]}\' has been tagged with \'{tag_name}\'.')
+                                        radarr.refresh_movies(logger)
                                     if dry_run == True:
-                                        logger.info(f'Movie file: \'{movies["title"]}\' doesn\'t require renaming it would have been been tagged with \'{tag_name}\'.')
+                                        logger.info(
+                                            f'Movie file: \'{movies["title"]}\' doesn\'t require renaming it would have been been tagged with \'{tag_name}\'.')
                             for movies in all_movies:
                                 if (radarr_tag_id in movies["tags"]):
                                     tagged_count += 1
@@ -699,47 +799,66 @@ def main():
                         total_count = tagged_count + untagged_count
                         tagged_percent = (tagged_count / total_count) * 100
                         untagged_percent = (untagged_count / total_count) * 100
-                        logger.info(f'Total Movies: {total_count}, Tagged Movies: {tagged_count} ({tagged_percent:.2f}%), Untagged Movies: {untagged_count} ({untagged_percent:.2f}%)\n')               
+                        logger.info(
+                            f'Total Movies: {total_count}, Tagged Movies: {tagged_count} ({tagged_percent:.2f}%), Untagged Movies: {untagged_count} ({untagged_percent:.2f}%)\n')
                 elif section_class == SonarrInstance:
                     sonarr_instances = []
                     sonarr_instances.append(arr_instance)
                     for sonarr in sonarr_instances:
                         tagged_count = 0
                         untagged_count = 0
-                        sonarr_tag_id = sonarr.check_and_create_tag(tag_name, dry_run, logger)
+                        sonarr_tag_id = sonarr.check_and_create_tag(
+                            tag_name, dry_run, logger)
                         all_series = sonarr.get_series()
-                        logger.debug(f"Length of all_series for {str(sonarr)}: {len(all_series)}")
-                        all_sonarr_tagged = check_all_tagged(all_series, sonarr_tag_id)
+                        logger.debug(
+                            f"Length of all_series for {str(sonarr)}: {len(all_series)}")
+                        all_sonarr_tagged = check_all_tagged(
+                            all_series, sonarr_tag_id)
                         if reset is True:
-                            sonarr.remove_tags(all_series, sonarr_tag_id, tag_name, logger)
-                            logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
-                            logger.info ("Skipping...")
+                            sonarr.remove_tags(
+                                all_series, sonarr_tag_id, tag_name, logger)
+                            logger.info(
+                                f'All of {instance_name} have had the tag {tag_name} removed.')
+                            logger.info("Skipping...")
                             continue
                         elif all_sonarr_tagged is True and unattended is True:
-                            sonarr.remove_tags(all_series, sonarr_tag_id, tag_name, logger)
-                            logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
+                            sonarr.remove_tags(
+                                all_series, sonarr_tag_id, tag_name, logger)
+                            logger.info(
+                                f'All of {instance_name} have had the tag {tag_name} removed.')
                         elif all_sonarr_tagged is True and unattended is False:
-                            logger.info(f'All of {instance_name} has been tagged with {tag_name} skipping.')
+                            logger.info(
+                                f'All of {instance_name} has been tagged with {tag_name} skipping.')
                             sonarr_all_tagged = True
                             continue
                         if all_sonarr_tagged is False:
-                            untagged_series = [s for s in all_series if sonarr_tag_id not in s['tags']]
+                            untagged_series = [
+                                s for s in all_series if sonarr_tag_id not in s['tags']]
                             series_to_process = untagged_series[:count]
                             checked = True
                             for series in series_to_process:
                                 series_id = series["id"]
-                                episodes_to_rename = sonarr.get_rename_list(series_id)
-                                episode_file_ids = [episode["episodeFileId"] for episode in episodes_to_rename]
+                                episodes_to_rename = sonarr.get_rename_list(
+                                    series_id)
+                                episode_file_ids = [
+                                    episode["episodeFileId"] for episode in episodes_to_rename]
                                 if episode_file_ids:
                                     if dry_run == False:
-                                        checked = sonarr.rename_files(series_id, episode_file_ids, logger)
-                                    print_format(series, episodes_to_rename, "sonarr", dry_run, logger)
-                                if checked == True:    
+                                        checked = sonarr.rename_files(
+                                            series_id, episode_file_ids, logger)
+                                    print_format(
+                                        series, episodes_to_rename, "sonarr", dry_run, logger)
+                                if checked == True:
                                     if dry_run == False:
-                                        logger.info(f'Series: \'{series["title"]}\' has been tagged with \'{tag_name}\'.')
-                                        sonarr.add_tag(series_id, sonarr_tag_id)
+                                        logger.info(
+                                            f'Series: \'{series["title"]}\' has been tagged with \'{tag_name}\'.')
+                                        sonarr.add_tag(
+                                            series_id, sonarr_tag_id)
+                                        # Refresh all series
+                                        sonarr.refresh_series(logger)
                                     if dry_run == True:
-                                        logger.info(f'Series: \'{series["title"]}\' doesn\'t have any episodes that require renaming, the series would have been been tagged with \'{tag_name}\'.') 
+                                        logger.info(
+                                            f'Series: \'{series["title"]}\' doesn\'t have any episodes that require renaming, the series would have been been tagged with \'{tag_name}\'.')
                         for series in all_series:
                             if (sonarr_tag_id in series["tags"]):
                                 tagged_count += 1
@@ -749,19 +868,22 @@ def main():
                         total_count = tagged_count + untagged_count
                         tagged_percent = (tagged_count / total_count) * 100
                         untagged_percent = (untagged_count / total_count) * 100
-                        logger.info(f'Total Series: {total_count}, Tagged Series: {tagged_count} ({tagged_percent:.2f}%), Untagged Series: {untagged_count} ({untagged_percent:.2f}%)\n')
-
+                        logger.info(
+                            f'Total Series: {total_count}, Tagged Series: {tagged_count} ({tagged_percent:.2f}%), Untagged Series: {untagged_count} ({untagged_percent:.2f}%)\n')
                 if radarr_all_tagged == True and sonarr_all_tagged == True:
                     # If all series and movies have been tagged and renamed.
-                    logger.info(f'All series and movies in both Sonarr and Radarr have been renamed.')
+                    logger.info(
+                        f'All series and movies in both Sonarr and Radarr have been renamed.')
                     # Running this unmonitored by setting the unattended variable to True
-                    logger.info(f'Please set the `unattended` variable to True if you\'d like to run this unmonitored') 
+                    logger.info(
+                        f'Please set the `unattended` variable to True if you\'d like to run this unmonitored')
                     # Alternatively, removing all tags by setting the reset variable to True
-                    logger.info(f'Alternatively you can set the `reset` variable to True if you\'d like to remove all Tags')
+                    logger.info(
+                        f'Alternatively you can set the `reset` variable to True if you\'d like to remove all Tags')
             except ValueError as e:
-                logger.info(f"Skipping section {section_name}: {e}")
+                logger.info(
+                    f"Skipping section {instance_name} due to error: {e}")
 
 
 if __name__ == "__main__":
     main()
-    

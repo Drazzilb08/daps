@@ -11,7 +11,6 @@
 import os
 import requests
 import shutil
-import Levenshtein
 import time
 import re
 import logging
@@ -19,6 +18,7 @@ import xml.etree.ElementTree as etree
 from logging.handlers import RotatingFileHandler
 from fuzzywuzzy import fuzz
 from tqdm import tqdm
+import filecmp
 
 # Radarr/Sonarr URL; Must begin with HTTP or HTTPS
 radarr_url = 'http://IP_ADDRESS:PORT'
@@ -61,8 +61,8 @@ def get_info(info_type):
         response = requests.get(radarr_url + '/api/v3/movie', headers=headers)
         # Raise error if the status is not successful
         response.raise_for_status()
-        # Log the success of connecting to Radarr and getting informationrmation
-        logger.critical(f"Connected to Radarr.. Gathering informationrmation...")
+        # Log the success of connecting to Radarr and getting information
+        logger.critical(f"Connected to Radarr.. Gathering information...")
         # Return the response in JSON format
         return response.json()
     except requests.exceptions.RequestException as err:
@@ -141,7 +141,7 @@ def get_collections(plex_url, token, library_names):
         for collection_name in library_collection_names:
             if collection_name not in collections:
                 collections.add((collection_name))
-    logger.info(f"Connected to Plex.. Gathering informationrmation...")
+    logger.info(f"Connected to Plex.. Gathering information...")
     return collections
 
 def match_series(series, file):
@@ -262,6 +262,7 @@ def match_collection(plex_collections, file):
 def rename_movies(matched_movie, file, destination_dir, source_dir):
     # Get the matched_movie's folder name and the file extension
     folder_path = matched_movie['folderName']
+    # Removes trailing slash in the folder_path
     if folder_path.endswith('/'):
         folder_path = folder_path[:-1]
     matched_movie_folder = os.path.basename(folder_path)
@@ -271,26 +272,30 @@ def rename_movies(matched_movie, file, destination_dir, source_dir):
     # Create the full path to the destination folder
     destination = os.path.join(destination_dir, matched_movie_folder)
     source = os.path.join(source_dir, file)
-    # Check if the file name is different from the matched_movie's folder name
-    if os.path.basename(file) != matched_movie_folder:
-        if dry_run:
-            logger.info(f"{file} -> {matched_movie_folder}")
-            return
-        else:
-            # Move the file to the destination folder
-            shutil.move(source, destination)
-            logger.info(f"{file} -> {matched_movie_folder}")
-            return
-    # Check if the file name is the same as the matched_movie's folder name
-    if os.path.basename(file) == matched_movie_folder:
-        if dry_run:
-            logger.info(f"{file} -->> {matched_movie_folder}")
-            return
-        else:
-            # Move the file to the destination folder
-            shutil.move(source, destination)
-            logger.info(f"{file} -->> {matched_movie_folder}")
-            return
+    # Checks if the file already exists in the destination folder and if it's the same file as the source
+    if os.path.exists(destination) and filecmp.cmp(source, destination):
+        return
+    else:
+        # Check if the file name is different from the matched_movie's folder name
+        if os.path.basename(file) != matched_movie_folder:
+            if dry_run:
+                logger.info(f"{file} -> {matched_movie_folder}")
+                return
+            else:
+                # Move the file to the destination folder
+                shutil.copy(source, destination)
+                logger.info(f"{file} -> {matched_movie_folder}")
+                return
+        # Check if the file name is the same as the matched_movie's folder name
+        if os.path.basename(file) == matched_movie_folder:
+            if dry_run:
+                logger.debug(f"{file} -->> {matched_movie_folder}")
+                return
+            else:
+                # Move the file to the destination folder
+                shutil.copy(source, destination)
+                logger.debug(f"{file} -->> {matched_movie_folder}")
+                return
 
 def rename_series(matched_series, file, destination_dir, source_dir):
     # Get the folder path and name of the matched series
@@ -298,6 +303,9 @@ def rename_series(matched_series, file, destination_dir, source_dir):
     if folder_path.endswith('/'):
         folder_path = folder_path[:-1]
     logger.debug(f"folder_path: {folder_path}")
+    # Removes trailing slash in the folder_path
+    if folder_path.endswith('/'):
+        folder_path = folder_path[:-1]
     matched_series_folder = os.path.basename(folder_path)
     logger.debug(f"matched_series_folder: {matched_series_folder}")
     # Get the file extension of the input file
@@ -329,24 +337,28 @@ def rename_series(matched_series, file, destination_dir, source_dir):
     destination = os.path.join(destination_dir, matched_series_folder)
     # Set the source path for the file
     source = os.path.join(source_dir, file)
-    # If the file name is not equal to the matched series folder name, then rename the file
-    if os.path.basename(file) != matched_series_folder:
-        if dry_run:
-            logger.info(f"{file} -> {matched_series_folder}")
-            return
-        else:
-            logger.info(f"{file} -> {matched_series_folder}")
-            shutil.move(source, destination)
-            return
-    # If the file name is equal to the matched series folder name, then move the file to the destination folder
-    if os.path.basename(file) == matched_series_folder:
-        if dry_run:
-            logger.info(f"{file} -->> {matched_series_folder}")
-            return
-        else:
-            shutil.move(source, destination)
-            logger.info(f"{file} -->> {matched_series_folder}")
-            return
+    # Checks if the file already exists in the destination folder and if it's the same file as the source
+    if os.path.exists(destination) and filecmp.cmp(source, destination):
+        return
+    else:
+        # If the file name is not equal to the matched series folder name, then rename the file
+        if os.path.basename(file) != matched_series_folder:
+            if dry_run:
+                logger.info(f"{file} -> {matched_series_folder}")
+                return
+            else:
+                logger.info(f"{file} -> {matched_series_folder}")
+                shutil.copy(source, destination)
+                return
+        # If the file name is equal to the matched series folder name, then move the file to the destination folder
+        if os.path.basename(file) == matched_series_folder:
+            if dry_run:
+                # logger.info(f"{file} -->> {matched_series_folder}")
+                return
+            else:
+                shutil.copy(source, destination)
+                # logger.info(f"{file} -->> {matched_series_folder}")
+                return
 
 
 def remove_illegal_chars(string):
@@ -368,28 +380,32 @@ def rename_collections(matched_collection, file, destination_dir, source_dir):
     destination = os.path.join(destination_dir, matched_collection_title)
     # Get the source path for the current file
     source = os.path.join(source_dir, file)
-    # If the current file name is not the same as the new file name
-    if os.path.basename(file) != matched_collection_title:
-        # If the code is in dry run mode, log the intended file rename operation
-        if dry_run:
-            logger.info(f"{file} -> {matched_collection_title}")
-            return
-        # If the code is not in dry run mode, perform the file rename operation and log it
-        else:
-            shutil.move(source, destination)
-            logger.info(f"{file} -> {matched_collection_title}")
-            return
-    # If the current file name is the same as the new file name
-    if os.path.basename(file) == matched_collection_title:
-        # If the code is in dry run mode, log the intended file rename operation
-        if dry_run:
-            logger.info(f"{file} -->> {matched_collection_title}")
-            return
-        # If the code is not in dry run mode, perform the file rename operation and log it
-        else:
-            shutil.move(source, destination)
-            logger.info(f"{file} -->> {matched_collection_title}")
-            return
+    # Checks if the file already exists in the destination folder and if it's the same file as the source
+    if os.path.exists(destination) and filecmp.cmp(source, destination):
+        return
+    else:
+        # If the current file name is not the same as the new file name
+        if os.path.basename(file) != matched_collection_title:
+            # If the code is in dry run mode, log the intended file rename operation
+            if dry_run:
+                logger.info(f"{file} -> {matched_collection_title}")
+                return
+            # If the code is not in dry run mode, perform the file rename operation and log it
+            else:
+                shutil.copy(source, destination)
+                logger.info(f"{file} -> {matched_collection_title}")
+                return
+        # If the current file name is the same as the new file name
+        if os.path.basename(file) == matched_collection_title:
+            # If the code is in dry run mode, log the intended file rename operation
+            if dry_run:
+                # logger.info(f"{file} -->> {matched_collection_title}")
+                return
+            # If the code is not in dry run mode, perform the file rename operation and log it
+            else:
+                shutil.copy(source, destination)
+                # logger.info(f"{file} -->> {matched_collection_title}")
+                return
 
 def validate_input(source_dir, destination_dir, radarr_url, sonarr_url, sonarr_url_1, dry_run, log_level):
     if not source_dir:

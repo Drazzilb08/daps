@@ -3,4 +3,7 @@ test.txt
 .DS_Store
 dev/
 python-scripts/angry-scripts/test.py
+.vscode
+.venv
+logs
 *.tmp

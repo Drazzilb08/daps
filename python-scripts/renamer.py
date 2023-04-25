@@ -6,7 +6,7 @@
 #  |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|  |_|    \__, |
 #                                                     __/ |
 #                                                    |___/ 
-# v.1.0.4
+# v.1.0.5
 
 import os
 import requests
@@ -300,6 +300,8 @@ def rename_movies(matched_movie, file, destination_dir, source_dir):
 def rename_series(matched_series, file, destination_dir, source_dir):
     # Get the folder path and name of the matched series
     folder_path = matched_series['path']
+    if folder_path.endswith('/'):
+        folder_path = folder_path[:-1]
     logger.debug(f"folder_path: {folder_path}")
     # Removes trailing slash in the folder_path
     if folder_path.endswith('/'):

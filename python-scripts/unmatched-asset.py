@@ -6,6 +6,7 @@ import xml.etree.ElementTree as etree
 
 plex_url = "http://IP_ADDRESS:32400"
 token = "PLEX_TOKEN"
+# library_names is only used for collections, ideally for Movies
 library_names = ['library_name', 'library_name']
 assets_path = '/mnt/user/appdata/plex-meta-manager/assets/'
 media_paths =   [ 
@@ -29,7 +30,8 @@ def get_media_folders(media_paths):
     return media_folders
 
 def get_unmatched_folders(assets_files, media_folders):
-    return [folder for folder in media_folders if folder + ".jpg" not in assets_files]
+    collection_files = [file.strip(".jpg").strip(".png").strip(".jpeg") for file in os.listdir(assets_path) if file.endswith(".jpg") or file.endswith(".png") or file.endswith(".jpeg")]
+    return [folder for folder in media_folders if folder + ".jpg" not in collection_files and folder + ".png" not in collection_files and folder + ".jpeg" not in collection_files]
 
 def save_output_to_file(media_paths, no_match_folders):
     output_file = "logs/output.txt"
@@ -67,7 +69,7 @@ def print_output(media_paths, no_match_folders):
 
 def compare_collections(collections, assets_path):
     no_match_collections = []
-    collection_files = [file.strip(".jpg") for file in os.listdir(assets_path) if file.endswith(".jpg")]
+    collection_files = [file.strip(".jpg").strip(".png").strip(".jpeg") for file in os.listdir(assets_path) if file.endswith(".jpg") or file.endswith(".png") or file.endswith(".jpeg")]
     for collection in collections:
         collection_name = re.sub(r'[:\/\\]', '', collection[1])
         if collection_name not in collection_files:

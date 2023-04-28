@@ -5,6 +5,7 @@
 import requests
 import json
 
+# Set these variables to match your setup.
 RADARR_URL = "http://localhost:7878"
 RADARR_API_KEY = "radarr_api_key_here"
 

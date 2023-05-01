@@ -51,8 +51,10 @@ def main():
     movies_without_tags = [movie for movie in movies if not any(tag['label'] in ignore_tags for tag in tags if tag['id'] in movie['tags'])]
     # Create directory if not exists
     quality_profiles = getQualityProfiles()
-    os.makedirs('logs', exist_ok=True)
-    with open('logs/scored_movies.txt', 'w') as f:
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    logs_dir = os.path.join(script_dir, 'logs')
+    os.makedirs(logs_dir, exist_ok=True)
+    with open(os.path.join(logs_dir, 'scored_movies.txt'), 'w') as f:
         below_cutoff_count = 0
         for profile in quality_profiles:
             if profile['name'] == quality_profile:
@@ -86,8 +88,7 @@ def main():
                 for movie in movies_to_print:
                     movie_title = movie['title']
                     print(f"\tMovie: {movie_title} has a total score of " + RED + f"{movie_score}" + RESET)
-                    print(f"{movie_title} has a total score of {movie_score}\n", file=f)
-                    print(movie_title, file=f)
+                    print(f"{movie_title} has a total score of {movie_score}", file=f)
         print(f"Total movies below cutoff score: {below_cutoff_count}")
 
 if __name__ == '__main__':

@@ -8,9 +8,10 @@
 #           | |   | |                                                      | |
 #           |_|   |_|                                                      |_|
 #
-# v4.0.1
+# v4.1.1
 
 # Path to config file such as "/path/to/config/config_file.txt"
+# Only use if config file is not in the same location as the script.
 config_file=""
 
 # <----- Do not edit below this point ----->
@@ -900,6 +901,10 @@ main() {
     secondary_container_no_stop_list=()
     now="$(date +"%H.%M")"
     start=$(date +%s)
+    if ! pgrep dockerd >/dev/null; then
+        echo "Docker daemon is not running. Please start it first." >&2
+        exit 1
+    fi
     config_file
     echo "Config file: $config_file"
     check_config

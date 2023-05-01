@@ -1,13 +1,18 @@
-# BHD Tagger for Radarr
-# This script will tag all movies in your Radarr library that have the release group "BHDStudio" with the tag "bhdstudio".
-# This is useful for sorting your movies and seeing what hasn't been released by BHDStudio.
+# Author: Drazzilb
+# Date: 2023-04-27
+# Description: This script will tag all movies in your Radarr library that have the release group "BHDStudio" with the tag "bhdstudio".
+#              This is useful for sorting your movies and seeing what hasn't been released by BHDStudio.
+# Usage: python3 bhd-tagger.py
+# Requirements: Python 3, requests
+# Version: 1.0
+# License: MIT License
 
 import requests
 import json
 
 # Set these variables to match your setup.
 RADARR_URL = "http://localhost:7878"
-RADARR_API_KEY = "radarr_api_key_here"
+RADARR_API_KEY = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
 # Set dry_run to True to see what would happen without actually tagging anything.
 dry_run = False

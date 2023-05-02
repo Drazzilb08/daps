@@ -487,14 +487,14 @@ def main():
         config = yaml.safe_load(f)
 
     global_data = config['global']
-    renameinatorr_data = config['upgradinatorr']
+    upgradinatorr_data = config['upgradinatorr']
 
     # Pull global data
     radarr_data = global_data['radarr']
     sonarr_data = global_data['sonarr']
 
-    log_level = renameinatorr_data['log_level'].upper()
-    dry_run = renameinatorr_data['dry_run']
+    log_level = upgradinatorr_data['log_level'].upper()
+    dry_run = upgradinatorr_data['dry_run']
     logger = setup_logger(log_level)
 
     if dry_run:
@@ -517,18 +517,18 @@ def main():
                 logger.info(f'* {instance_name:^36} *')
                 logger.info('*' * 40)
                 logger.info('')
-            # Check if this instance is defined in renameinatorr
-            renameinatorr_instance = next(
-                (r for r in renameinatorr_data.get(
+            # Check if this instance is defined in upgradinatorr
+            upgradinatorr_instance = next(
+                (r for r in upgradinatorr_data.get(
                     instance_type.lower(), []) if r['name'] == instance_name),
                 None
             )
-            if renameinatorr_instance:
-                count = renameinatorr_instance.get('count')
-                tag_name = renameinatorr_instance.get('tag_name')
-                unattended = renameinatorr_instance.get('unattended')
-                monitored = renameinatorr_instance.get('monitored')
-                status = renameinatorr_instance.get('status')
+            if upgradinatorr_instance:
+                count = upgradinatorr_instance.get('count')
+                tag_name = upgradinatorr_instance.get('tag_name')
+                unattended = upgradinatorr_instance.get('unattended')
+                monitored = upgradinatorr_instance.get('monitored')
+                status = upgradinatorr_instance.get('status')
 
                 dry_run, unattended, count, monitored, status = validate_input(
                     instance_name, url, api_key, dry_run, unattended, count, monitored, status, tag_name, logger)

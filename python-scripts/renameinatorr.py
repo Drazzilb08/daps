@@ -6,7 +6,7 @@
 #  |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|_| |_|\__,_|\__\___/|_|  |_(_)|_|    \__, |
 #                                                                                 __/ |
 #                                                                                |___/
-# v.1.2.0
+# v.1.2.1
 
 import requests
 import json
@@ -687,10 +687,10 @@ def main():
             api_key = instance.get('api', '')
             url = instance.get('url', '')
             if url:
-                    logger.info('*' * 40)
-                    logger.info(f'* {instance_name:^36} *')
-                    logger.info('*' * 40)
-                    logger.info('')
+                logger.info('*' * 40)
+                logger.info(f'* {instance_name:^36} *')
+                logger.info('*' * 40)
+                logger.info('')
             if not url and not api_key:
                 continue
             # Check if this instance is defined in renameinatorr
@@ -705,7 +705,8 @@ def main():
                 unattended = renameinatorr_instance.get('unattended')
                 reset = renameinatorr_instance.get('reset')
 
-                dry_run, unattended, count = validate_input(instance_name, url, api_key, dry_run, unattended, count, tag_name, logger)
+                dry_run, unattended, count = validate_input(
+                    instance_name, url, api_key, dry_run, unattended, count, tag_name, logger)
                 logger.debug(f'{" Script Settings ":*^40}')
                 logger.debug(f'Dry_run: {dry_run}')
                 logger.debug(f"Log Level: {log_level}")
@@ -785,8 +786,9 @@ def main():
                                         radarr.add_tag(movie_id, radarr_tag_id)
                                         logger.info(
                                             f'Movie: \'{movies["title"]}\' has been tagged with \'{tag_name}\'.')
-                                        radarr.refresh_movies(
-                                            logger, movies_to_rename)
+                                        if movies_to_rename:
+                                            radarr.refresh_movies(
+                                                logger, movies_to_rename)
                                     if dry_run == True:
                                         logger.info(
                                             f'Movie file: \'{movies["title"]}\' doesn\'t require renaming it would have been been tagged with \'{tag_name}\'.')
@@ -855,7 +857,9 @@ def main():
                                         sonarr.add_tag(
                                             series_id, sonarr_tag_id)
                                         # Refresh all series
-                                        sonarr.refresh_series(logger, series_id)
+                                        if episodes_to_rename:
+                                            sonarr.refresh_series(
+                                                logger, series_id)
                                     if dry_run == True:
                                         logger.info(
                                             f'Series: \'{series["title"]}\' doesn\'t have any episodes that require renaming, the series would have been been tagged with \'{tag_name}\'.')

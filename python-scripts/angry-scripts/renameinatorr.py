@@ -6,7 +6,7 @@
 #  |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|_| |_|\__,_|\__\___/|_|  |_(_)|_|    \__, |
 #                                                                                 __/ |
 #                                                                                |___/
-# v.1.1.0
+# v.1.2.0
 
 import requests
 import json
@@ -239,22 +239,24 @@ class SonarrInstance:
                 f"Failed to rename files: task did not complete after {max_retries} retries")
             return False
         return True
-    # Send command to refresh all series
+    # Send command to refresh renamed series
 
-    def refresh_series(self, logger):
+    def refresh_series(self, logger, series_id):
         """
-        Sends a request to refresh all series
+        Sends a request to refresh series with renamed assets
         Returns:
         bool: Returns `True` if the series were refreshed successfully
         """
         payload = {
-            "name": "RefreshSeries"
+            "name": "RefreshSeries",
+            "seriesIds": [series_id]
         }
         endpoint = f"{self.url}/api/v3/command"
         try:
             response = requests.post(
                 endpoint, headers=self.headers, json=payload)
             response.raise_for_status()
+            task_id = response.json()["id"]
         except requests.exceptions.RequestException as e:
             logger.error(f"Failed to refresh series: {e}")
             return False
@@ -424,7 +426,7 @@ class RadarrInstance():
 
     def get_rename_list(self, movie_id):
         """
-        This method retrieves the list of episodes to be renamed for the specified movie ID.
+        This method retrieves the list of movie to be renamed for the specified movie ID.
 
         :param movie_id: The ID of the movie to retrieve the rename list for.
         :return: A list of movies to be renamed.
@@ -487,14 +489,15 @@ class RadarrInstance():
         return True
     # Send command to refresh movies
 
-    def refresh_movies(self, logger):
+    def refresh_movies(self, logger, movies_to_rename):
         """
-        Sends a request to refresh a list of movies
+        Sends a request to refresh a movies with renamed assets
         Returns:
         bool: Returns `True` if the movies were refreshed successfully
         """
         payload = {
-            "name": "RefreshMovie"
+            "name": "RefreshMovie",
+            "movieIds": movies_to_rename
         }
         endpoint = f"{self.url}/api/v3/command"
         try:
@@ -659,12 +662,17 @@ def main():
     with open(config_file_path) as f:
         config = yaml.safe_load(f)
 
-    renameinator = config.get('renameinator', {})
-    log_level = renameinator.get('log_level').upper()
-    dry_run = renameinator.get('dry_run')
+    global_data = config['global']
+    renameinatorr_data = config['renameinatorr']
 
+    # Pull global data
+    radarr_data = global_data['radarr']
+    sonarr_data = global_data['sonarr']
+
+    # Pull renameinatorr data
+    log_level = renameinatorr_data['log_level'].upper()
+    dry_run = renameinatorr_data['dry_run']
     logger = setup_logger(log_level)
-
     if dry_run:
         # If dry_run is activated, print a message indicating so and the status of other variables.
         logger.info('*' * 40)
@@ -673,38 +681,36 @@ def main():
         logger.info(f'* {" NO CHANGES WILL BE MADE ":^36} *')
         logger.info('*' * 40)
         logger.info('')
-    logger.debug(f'{" Script Settings ":*^40}')
-    logger.debug(f'Dry_run: {dry_run}')
-    logger.debug(f"Log Level: {log_level}")
-    logger.debug(f'*' * 40)
-    logger.debug('')
-    for instance, instance_settings in renameinator.items():
-        if instance in ['log_level', 'dry_run']:
-            continue
-        for instance_setting in instance_settings:
-            instance_name = instance_setting['name']
-            instance_global_settings = None
-            global_settings_list = config['global'].get(instance)
-            if global_settings_list is None:
+    for instance_type, instance_data in [('Radarr', radarr_data), ('Sonarr', sonarr_data)]:
+        for instance in instance_data:
+            instance_name = instance['name']
+            api_key = instance.get('api', '')
+            url = instance.get('url', '')
+            if url:
+                    logger.info('*' * 40)
+                    logger.info(f'* {instance_name:^36} *')
+                    logger.info('*' * 40)
+                    logger.info('')
+            if not url and not api_key:
                 continue
-            # Check if instance_name exists in global_settings_list
-            if not any(setting['name'] == instance_name for setting in global_settings_list):
-                continue
-            for global_settings in global_settings_list:
-                if global_settings['name'] == instance_name:
-                    instance_global_settings = global_settings
-                    break
-            if instance_global_settings is not None:
-                url = instance_global_settings['url']
-                api_key = instance_global_settings['api']
-                if url is None and api_key is None:
-                    continue
-                count = instance_setting.get('count')
-                tag_name = instance_setting.get('tag_name')
-                unattended = instance_setting.get('unattended')
-                reset = instance_setting.get('reset')
-                dry_run, unattended, count = validate_input(
-                    instance_name, url, api_key, dry_run, unattended, count, tag_name, logger)
+            # Check if this instance is defined in renameinatorr
+            renameinatorr_instance = next(
+                (r for r in renameinatorr_data.get(
+                    instance_type.lower(), []) if r['name'] == instance_name),
+                None
+            )
+            if renameinatorr_instance:
+                count = renameinatorr_instance.get('count')
+                tag_name = renameinatorr_instance.get('tag_name')
+                unattended = renameinatorr_instance.get('unattended')
+                reset = renameinatorr_instance.get('reset')
+
+                dry_run, unattended, count = validate_input(instance_name, url, api_key, dry_run, unattended, count, tag_name, logger)
+                logger.debug(f'{" Script Settings ":*^40}')
+                logger.debug(f'Dry_run: {dry_run}')
+                logger.debug(f"Log Level: {log_level}")
+                logger.debug(f'*' * 40)
+                logger.debug('')
                 logger.debug(f'{" Settings ":*^40}')
                 logger.debug(f"Section Name: {instance_name}")
                 logger.debug(f"URL: {url}")
@@ -716,13 +722,6 @@ def main():
                 logger.debug(f'*' * 40)
                 logger.debug('')
             try:
-                if url:
-                    logger.info('*' * 40)
-                    logger.info(f'* {instance_name:^36} *')
-                    logger.info('*' * 40)
-                    logger.info('')
-                if not url and not api_key:
-                    continue
                 # Instantiate the class for this section
                 class_map = {
                     'Radarr': RadarrInstance,
@@ -786,7 +785,8 @@ def main():
                                         radarr.add_tag(movie_id, radarr_tag_id)
                                         logger.info(
                                             f'Movie: \'{movies["title"]}\' has been tagged with \'{tag_name}\'.')
-                                        radarr.refresh_movies(logger)
+                                        radarr.refresh_movies(
+                                            logger, movies_to_rename)
                                     if dry_run == True:
                                         logger.info(
                                             f'Movie file: \'{movies["title"]}\' doesn\'t require renaming it would have been been tagged with \'{tag_name}\'.')

@@ -1,0 +1,96 @@
+global:
+  radarr:
+    - name: radarr_1
+      api: abcdefghijlmnop
+      url: http://192.168.1.200:7878
+    - name: radarr_2
+      api: abcdefghijklmnop
+      url: http://localhost:1212
+  sonarr:
+    - name: sonarr_1
+      api: abcdefghijlmnop
+      url: http://192.168.1.200:8989
+    - name: sonarr_2
+      api: abcdefghijlmnop
+      url: http://192.168.1.200:9090
+
+upgradinatorr:
+  log_level: info
+  dry_run: true
+  radarr:
+    - name: radarr_1
+      count:
+      monitored: true
+      status: released
+      tag_name:
+      unattended: false
+    - name: radarr_2
+      count:
+      monitored: true
+      status: released
+      tag_name:
+      unattended: false
+  sonarr:
+    - name: sonarr_1
+      count:
+      monitored: true
+      status: released
+      tag_name:
+      unattended: false
+    - name: sonarr_2
+      count:
+      monitored: true
+      status: released
+      tag_name:
+      unattended: false
+      dry_run: false
+
+renameinator:
+  log_level: info
+  dry_run: true
+  radarr:
+    - name: radarr_1
+      count: 1
+      tag_name: renamed
+      unattended: false
+      reset: false
+  sonarr:
+    - name: sonarr_1
+      count: 1
+      tag_name: renamed
+      unattended: false
+      reset: false
+
+renamer:
+    # Script Note: --> is a copy/move & rename / -->> is a copy/move w/o rename
+    log_level: debug
+    # Options are 'true' or 'false'
+    dry_run: false
+    # Options are 'Copy' or 'Move'
+    action_type: move
+    # Plex is only used if you're trying to match collections
+    plex_url: http://localhost:32400
+    token: plex_token
+    # Library names are used to match collections posters to the collections listed w/in Plex. Typically Movie Libraries are used
+    library_names:
+      - Movies
+      - Anime Movies
+    # Where your ingest movies folder is (THe source and destination should not be the same directory)
+    source_dir: /path/to/posters/
+    # Where your posters are going to go. In my usecase I use Plex-Meta-Manager. This is the /config/assets dir for PMM for me.
+    destination_dir: /path/to/poster/destination
+    # The thresholds are used to consider what is a "Match", As with any automation there is never a 100% guarantee of accuracy. There will be times the script will mess up.
+    # If however you see it messing up more often on things you can restrict the threshold.
+    # 0 = Anything goes, 100 = Must be exact match
+    # The default numbers here are based upon what I've seen to be the most effective, I've had one-offs where I had to manually fix things. 
+    # Eg. Hanna vs Anna, One letter difference and in the case I had the years were the same too.
+    movies_threshold: 87
+    series_threshold: 87
+    collection_threshold: 99
+    # Decide which radarr instance you will be using for renamer, this is useful if you have for example: A Sonarr/Sonarr-Anime and/or Radarr/Radarr-Anime
+    # If you however duplicate entries between a Radarr/Radarr4K for example. this won't help and will only double the work for the script for no gain.
+    radarr:
+      - name: radarr_1
+    sonarr:
+      - name: sonarr_1
+      - name: sonarr_2

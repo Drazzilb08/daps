@@ -2,4 +2,4 @@ Levenshtein
 fuzzywuzzy
 requests
 tqdm
-
+pyyaml

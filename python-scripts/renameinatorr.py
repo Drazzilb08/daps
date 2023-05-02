@@ -855,7 +855,7 @@ def main():
                                         sonarr.add_tag(
                                             series_id, sonarr_tag_id)
                                         # Refresh all series
-                                        sonarr.refresh_series(logger)
+                                        sonarr.refresh_series(logger, series_id)
                                     if dry_run == True:
                                         logger.info(
                                             f'Series: \'{series["title"]}\' doesn\'t have any episodes that require renaming, the series would have been been tagged with \'{tag_name}\'.')

@@ -1,12 +1,12 @@
-#   _____                                      _____       
-#  |  __ \                                    |  __ \      
-#  | |__) |___ _ __   __ _ _ __ ___   ___ _ __| |__) |   _ 
+#   _____                                      _____
+#  |  __ \                                    |  __ \
+#  | |__) |___ _ __   __ _ _ __ ___   ___ _ __| |__) |   _
 #  |  _  // _ \ '_ \ / _` | '_ ` _ \ / _ \ '__|  ___/ | | |
 #  | | \ \  __/ | | | (_| | | | | | |  __/ |  | |   | |_| |
 #  |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|  |_|    \__, |
 #                                                     __/ |
-#                                                    |___/ 
-# v.2.0.5
+#                                                    |___/
+# v.2.0.6
 
 import os
 import requests
@@ -20,6 +20,7 @@ import xml.etree.ElementTree as etree
 from logging.handlers import RotatingFileHandler
 from fuzzywuzzy import fuzz
 from tqdm import tqdm
+
 
 class SonarrInstance:
     def __init__(self, url, api_key, logger):
@@ -37,16 +38,19 @@ class SonarrInstance:
         }
         self.session = requests.Session()
         self.session.headers.update({"X-Api-Key": self.api_key})
-        
+
         try:
             status = self.get_system_status()
             app_name = status.get("appName")
             app_version = status.get("version")
             if not app_name.startswith("Sonarr"):
-                raise ValueError("URL does not point to a valid Sonarr instance.")
-            logger.debug(f"\nConnected to {app_name} (v{app_version}) at {self.url}")
+                raise ValueError(
+                    "URL does not point to a valid Sonarr instance.")
+            logger.debug(
+                f"\nConnected to {app_name} (v{app_version}) at {self.url}")
         except (requests.exceptions.RequestException, ValueError) as e:
-            raise ValueError(f"Failed to connect to Sonarr instance at {self.url}: {e}")
+            raise ValueError(
+                f"Failed to connect to Sonarr instance at {self.url}: {e}")
 
     def __str__(self):
         return f"SonarrInstance(url={self.url})"
@@ -69,7 +73,9 @@ class SonarrInstance:
             all_series = response.json()
             return all_series
         else:
-            raise ValueError(f"Failed to get series with status code {response.status_code}")
+            raise ValueError(
+                f"Failed to get series with status code {response.status_code}")
+
 
 class RadarrInstance:
     def __init__(self, url, api_key, logger):
@@ -92,10 +98,13 @@ class RadarrInstance:
             app_name = status.get("appName")
             app_version = status.get("version")
             if not app_name.startswith("Radarr"):
-                raise ValueError("URL does not point to a valid Radarr instance.")
-            logger.debug(f"\nConnected to {app_name} (v{app_version}) at {self.url}")
+                raise ValueError(
+                    "URL does not point to a valid Radarr instance.")
+            logger.debug(
+                f"\nConnected to {app_name} (v{app_version}) at {self.url}")
         except (requests.exceptions.RequestException, ValueError) as e:
-            raise ValueError(f"Failed to connect to Radarr instance at {self.url}: {e}")
+            raise ValueError(
+                f"Failed to connect to Radarr instance at {self.url}: {e}")
 
     def __str__(self):
         return f"RadarrInstance(url={self.url})"
@@ -118,7 +127,9 @@ class RadarrInstance:
             all_movies = response.json()
             return all_movies
         else:
-            raise ValueError(f"Failed to get movies with status code {response.status_code}")
+            raise ValueError(
+                f"Failed to get movies with status code {response.status_code}")
+
 
 def get_collections(plex_url, token, library_names, logger):
     try:
@@ -160,12 +171,14 @@ def get_collections(plex_url, token, library_names, logger):
             print("An error occurred while parsing the response:", e)
             continue
         library_collections = xml.findall(".//Directory")
-        library_collection_names = [collection.get("title") for collection in library_collections if collection.get("smart") != "1"]
+        library_collection_names = [collection.get(
+            "title") for collection in library_collections if collection.get("smart") != "1"]
         for collection_name in library_collection_names:
             if collection_name not in collections:
                 collections.add((collection_name))
     logger.info(f"Connected to Plex.. Gathering informationrmation...")
     return collections
+
 
 def match_series(series, file, logger, series_threshold):
     year = None
@@ -185,14 +198,16 @@ def match_series(series, file, logger, series_threshold):
     for matched_series in series:
         year_in_title = re.search(r'\((\d{4})\)', matched_series['title'])
         if year_in_title:
-            matched_series_name = matched_series['title'].split("(")[0].rstrip()
+            matched_series_name = matched_series['title'].split("(")[
+                0].rstrip()
         else:
             matched_series_name = matched_series['title']
         matched_series_name = remove_illegal_chars(matched_series_name)
         matched_series_year = matched_series['year']
         matched_series_year = str(matched_series_year)
-        
-        matched_series_name_match = fuzz.token_sort_ratio(file_name, matched_series_name)
+
+        matched_series_name_match = fuzz.token_sort_ratio(
+            file_name, matched_series_name)
         if matched_series_name_match >= series_threshold:
             if year == matched_series_year:
                 best_match = matched_series
@@ -200,15 +215,16 @@ def match_series(series, file, logger, series_threshold):
         elif matched_series_name_match >= (series_threshold - 5):
             if year == matched_series_year:
                 if closest_score < matched_series_name_match:
-                        closest_match = matched_series
-                        closest_year = matched_series_year
-                        closest_score = matched_series_name_match
+                    closest_match = matched_series
+                    closest_year = matched_series_year
+                    closest_score = matched_series_name_match
     if best_match:
         return best_match, None
     elif closest_match:
         return None, f"No match found, closest match for {file} was {closest_match['title']} ({closest_year}) with a score of {closest_score}"
     else:
         return None, None
+
 
 def match_movies(movies, file, logger, movies_threshold):
     if " - Season" in file or " - Special" in file:
@@ -236,7 +252,8 @@ def match_movies(movies, file, logger, movies_threshold):
         matched_movie_name = remove_illegal_chars(matched_movie_name)
         matched_movie_year = matched_movie['year']
         matched_movie_year = str(matched_movie_year)
-        matched_movie_name_match = fuzz.token_sort_ratio(file_name, matched_movie_name)
+        matched_movie_name_match = fuzz.token_sort_ratio(
+            file_name, matched_movie_name)
         if matched_movie_name_match >= movies_threshold:
             if year == matched_movie_year:
                 best_match = matched_movie
@@ -244,15 +261,16 @@ def match_movies(movies, file, logger, movies_threshold):
         elif matched_movie_name_match >= (movies_threshold - 5):
             if year == matched_movie_year:
                 if closest_score < matched_movie_name_match:
-                        closest_match = matched_movie
-                        closest_year = matched_movie_year
-                        closest_score = matched_movie_name_match
+                    closest_match = matched_movie
+                    closest_year = matched_movie_year
+                    closest_score = matched_movie_name_match
     if best_match:
         return best_match, None
     elif closest_match:
         return None, f"No match found, closest match for {file} was {closest_match['title']} ({closest_year}) with a score of {closest_score}"
     else:
         return None, None
+
 
 def match_collection(plex_collections, file, logger, collection_threshold):
     file_name = os.path.splitext(file)[0]
@@ -262,19 +280,21 @@ def match_collection(plex_collections, file, logger, collection_threshold):
     closest_score = 0
     best_distance = collection_threshold
     for plex_collection in plex_collections:
-        plex_collection_match = fuzz.token_sort_ratio(file_name, plex_collection)
+        plex_collection_match = fuzz.token_sort_ratio(
+            file_name, plex_collection)
         if plex_collection_match >= collection_threshold:
             return plex_collection, None
         elif plex_collection_match >= (collection_threshold - 5):
-                if closest_score < plex_collection_match:
-                        closest_match = plex_collection
-                        closest_score = plex_collection_match
+            if closest_score < plex_collection_match:
+                closest_match = plex_collection
+                closest_score = plex_collection_match
     if best_match:
         return best_match, None
     elif closest_match:
         return None, f"No match found, closest match for {file} was {closest_match} with a score of {closest_score}"
     else:
         return None, None
+
 
 def rename_movies(matched_movie, file, destination_dir, source_dir, dry_run, logger, action_type):
     folder_path = matched_movie['folderName']
@@ -307,6 +327,7 @@ def rename_movies(matched_movie, file, destination_dir, source_dir, dry_run, log
             logger.info(f"{file} -->> {matched_movie_folder}")
             return
 
+
 def rename_series(matched_series, file, destination_dir, source_dir, dry_run, logger, action_type):
     folder_path = matched_series['path']
     logger.debug(f"folder_path: {folder_path}")
@@ -325,12 +346,15 @@ def rename_series(matched_series, file, destination_dir, source_dir, dry_run, lo
             try:
                 season_number = int(season_info)
             except ValueError:
-                logger.error(f"Error: Cannot convert {season_info} to an integer in file {file}")
+                logger.error(
+                    f"Error: Cannot convert {season_info} to an integer in file {file}")
                 return
             if season_number < 10:
-                matched_series_folder = matched_series_folder + "_Season0" + season_info + "." + file_extension
+                matched_series_folder = matched_series_folder + \
+                    "_Season0" + season_info + "." + file_extension
             elif season_number >= 10:
-                matched_series_folder = matched_series_folder + "_Season" + season_info + "." + file_extension
+                matched_series_folder = matched_series_folder + \
+                    "_Season" + season_info + "." + file_extension
         elif "Specials" in file:
             matched_series_folder = matched_series_folder + "_Season00." + file_extension
         else:
@@ -360,9 +384,11 @@ def rename_series(matched_series, file, destination_dir, source_dir, dry_run, lo
             logger.info(f"{file} -->> {matched_series_folder}")
             return
 
+
 def remove_illegal_chars(string):
     illegal_characters = re.compile(r'[\\/:*?"<>|\0]')
     return illegal_characters.sub("", string)
+
 
 def rename_collections(matched_collection, file, destination_dir, source_dir, dry_run, logger, action_type):
     matched_collection_title = matched_collection
@@ -394,6 +420,7 @@ def rename_collections(matched_collection, file, destination_dir, source_dir, dr
                 shutil.copy(source, destination)
             logger.info(f"{file} -->> {matched_collection_title}")
             return
+
 
 def validate_input(instance_name, url, api_key, log_level, dry_run, plex_url, token, source_dir, library_names, destination_dir, movies_threshold, series_threshold, collection_threshold, action_type, logger):
     if not (url.startswith("http://") or url.startswith("https://")):
@@ -432,7 +459,8 @@ def validate_input(instance_name, url, api_key, log_level, dry_run, plex_url, to
                 raise ValueError(
                     f'\'{instance_name}\' movies_threshold must be an integer.')
         if not series_threshold:
-            raise ValueError(f'\'{instance_name}\' series_threshold is required.')
+            raise ValueError(
+                f'\'{instance_name}\' series_threshold is required.')
         if series_threshold:
             try:
                 int(series_threshold)
@@ -440,7 +468,8 @@ def validate_input(instance_name, url, api_key, log_level, dry_run, plex_url, to
                 raise ValueError(
                     f'\'{instance_name}\' series_threshold must be an integer.')
         if not collection_threshold:
-            raise ValueError(f'\'{instance_name}\' collection_threshold is required.')
+            raise ValueError(
+                f'\'{instance_name}\' collection_threshold is required.')
         if collection_threshold:
             try:
                 int(collection_threshold)
@@ -453,6 +482,7 @@ def validate_input(instance_name, url, api_key, log_level, dry_run, plex_url, to
             raise ValueError(
                 f'\'{instance_name}\' action_type must be either \'move\' or \'copy\'.')
     return log_level, dry_run
+
 
 def setup_logger(log_level):
     # Create a directory to store logs, if it doesn't exist
@@ -505,28 +535,36 @@ def setup_logger(log_level):
         os.remove(os.path.join(log_dir, file))
     return logger
 
+
 def main():
+    cycle_count = 0
     script_dir = os.path.dirname(os.path.abspath(__file__))
     config_file_path = os.path.join(script_dir, 'config.yml')
-    
+
     with open(config_file_path) as f:
         config = yaml.safe_load(f)
-    renamer = config.get('renamer', {})
-    log_level = renamer.get('log_level').upper()
-    dry_run = renamer.get('dry_run')
-    plex_url = renamer.get('plex_url')
-    token = renamer.get('token')
-    source_dir = renamer.get('source_dir')
-    library_names = renamer.get('library_names')
-    destination_dir = renamer.get('destination_dir')
-    movies_threshold = renamer.get('movies_threshold')
-    series_threshold = renamer.get('series_threshold')
-    collection_threshold = renamer.get('collection_threshold')
-    action_type = renamer.get('action_type')
-    logger = setup_logger(log_level)
+    
+    global_data = config['global']
+    renameinatorr_data = config['renamer']
+
+    # Pull global data
+    radarr_data = global_data['radarr']
+    sonarr_data = global_data['sonarr']
+
+    log_level = renameinatorr_data['log_level'].upper()
+    dry_run = renameinatorr_data['dry_run']
+    plex_url = renameinatorr_data['plex_url']
+    token = renameinatorr_data['token']
+    library_names = renameinatorr_data['library_names']
+    source_dir = renameinatorr_data['source_dir']
+    destination_dir = renameinatorr_data['destination_dir']
+    movies_threshold = renameinatorr_data['movies_threshold']
+    series_threshold = renameinatorr_data['series_threshold']
+    collection_threshold = renameinatorr_data['collection_threshold']
+    action_type = renameinatorr_data['action_type']
 
     file_list = sorted(os.listdir(source_dir))
-
+    logger = setup_logger(log_level)
     if dry_run:
         logger.info('*' * 40)
         logger.info(f'* {"Dry_run Activated":^36} *')
@@ -534,57 +572,58 @@ def main():
         logger.info(f'* {" NO CHANGES WILL BE MADE ":^36} *')
         logger.info('*' * 40)
         logger.info('')
-    logger.debug(f'{" Script Settings ":*^40}')
-    logger.debug(f'Dry_run: {dry_run}')
-    logger.debug(f"Log Level: {log_level}")
-    logger.debug(f"plex_url: {plex_url}")
-    logger.debug(f"token: {'<redacted>' if token else 'None'}")
-    logger.debug(f"library_names: {library_names}")
-    logger.debug(f"source_dir: {source_dir}")
-    logger.debug(f"destination_dir: {destination_dir}")
-    logger.debug(f"movies_threshold: {movies_threshold}")
-    logger.debug(f"series_threshold: {series_threshold}")
-    logger.debug(f"collection_threshold: {collection_threshold}")
-    logger.debug(f"action_type: {action_type}")
-    logger.debug(f'*' * 40)
-    logger.debug('')
-    for instance, instance_settings in renamer.items():
-        if instance in ['log_level', 'dry_run', 'plex_url', 'token', 'library_names', 'source_dir', 'destination_dir', 'movies_threshold', 'series_threshold', 'collection_threshold', 'action_type']:
-            continue
-        for instance_setting in instance_settings:
-            instance_name = instance_setting['name']
-            instance_global_settings = None
-            global_settings_list = config['global'].get(instance)
-            for global_settings in global_settings_list:
-                if global_settings['name'] == instance_name:
-                    instance_global_settings = global_settings
-                    break
-            if instance_global_settings is not None:
-                url = instance_global_settings['url']
-                api_key = instance_global_settings['api']
-                if url is None and api_key is None:
-                    continue 
-                logger.debug(f'{" Settings ":*^40}')
-                logger.debug(f"Instance Name: {instance_name}")
-                logger.debug(f"URL: {url}")
-                logger.debug(f"API Key: {'<redacted>' if api_key else 'None'}")
-                log_level, dry_run = validate_input(instance_name, url, api_key, log_level, dry_run, plex_url, token, source_dir, library_names, destination_dir, movies_threshold, series_threshold, collection_threshold, action_type, logger)
-            try:
-                if url:
+
+    for instance_type, instance_data in [('Radarr', radarr_data), ('Sonarr', sonarr_data)]:
+        for instance in instance_data:
+            instance_name = instance['name']
+            api_key = instance.get('api', '')
+            url = instance.get('url', '')
+            if url:
                     logger.info('*' * 40)
                     logger.info(f'* {instance_name:^36} *')
                     logger.info('*' * 40)
                     logger.info('')
-                if not url and not api_key:
-                    continue
+            if not url and not api_key:
+                continue
+            # Check if this instance is defined in renameinatorr
+            renameinatorr_instance = next(
+                (r for r in renameinatorr_data.get(
+                    instance_type.lower(), []) if r['name'] == instance_name),
+                None
+            )
+            if renameinatorr_instance:
+                log_level, dry_run = validate_input(instance_name, url, api_key, log_level, dry_run, plex_url, token, source_dir,library_names, destination_dir, movies_threshold, series_threshold, collection_threshold, action_type, logger)
+                if cycle_count < 1:
+                    logger.debug(f'{" Script Settings ":*^40}')
+                    logger.debug(f'Dry_run: {dry_run}')
+                    logger.debug(f"Log Level: {log_level}")
+                    logger.debug(f"plex_url: {plex_url}")
+                    logger.debug(f"token: {'<redacted>' if token else 'None'}")
+                    logger.debug(f"library_names: {library_names}")
+                    logger.debug(f"source_dir: {source_dir}")
+                    logger.debug(f"destination_dir: {destination_dir}")
+                    logger.debug(f"movies_threshold: {movies_threshold}")
+                    logger.debug(f"series_threshold: {series_threshold}")
+                    logger.debug(f"collection_threshold: {collection_threshold}")
+                    logger.debug(f"action_type: {action_type}")
+                    logger.debug(f'*' * 40)
+                    logger.debug('')
+                    cycle_count += 1
+                logger.debug(f'{" Settings ":*^40}')
+                logger.debug(f"Instance Name: {instance_name}")
+                logger.debug(f"URL: {url}")
+                logger.debug(f"API Key: {'<redacted>' if api_key else 'None'}")
+            try:
                 class_map = {
                     'Radarr': RadarrInstance,
                     'Sonarr': SonarrInstance,
                 }
-                section_class = class_map.get((instance_name.split('_')[0]).capitalize())
+                section_class = class_map.get(
+                    (instance_name.split('_')[0]).capitalize())
                 arr_instance = section_class(url, api_key, logger)
                 if plex_url and token and library_names:
-                    plex_collections=get_collections(plex_url, token, library_names, logger)
+                    plex_collections = get_collections(
+                        plex_url, token, library_names, logger)
                 if section_class == RadarrInstance:
                     radarr_instances = []
                     radarr_instances.append(arr_instance)
@@ -593,19 +632,25 @@ def main():
                         for file in tqdm(file_list, desc='Processing files', total=len(file_list)):
                             if not re.search(r'\(\d{4}\).', file):
                                 if plex_collections is not None:
-                                    matched_collection, reason = match_collection(plex_collections, file, logger, collection_threshold)
+                                    matched_collection, reason = match_collection(
+                                        plex_collections, file, logger, collection_threshold)
                                     if matched_collection:
-                                        rename_collections(matched_collection, file, destination_dir, source_dir, dry_run, logger, action_type)
+                                        rename_collections(
+                                            matched_collection, file, destination_dir, source_dir, dry_run, logger, action_type)
                                     elif reason:
-                                        logger.debug(f"{file} was skipped because: {reason}")
+                                        logger.debug(
+                                            f"{file} was skipped because: {reason}")
                                         continue
                             else:
                                 if movies is not None:
-                                    matched_movie, reason = match_movies(movies, file, logger, movies_threshold)
+                                    matched_movie, reason = match_movies(
+                                        movies, file, logger, movies_threshold)
                                     if matched_movie:
-                                        rename_movies(matched_movie, file, destination_dir, source_dir, dry_run, logger, action_type)
+                                        rename_movies(
+                                            matched_movie, file, destination_dir, source_dir, dry_run, logger, action_type)
                                     elif reason:
-                                        logger.debug(f"{file} was skipped because: {reason}")
+                                        logger.debug(
+                                            f"{file} was skipped because: {reason}")
                                         continue
                 elif section_class == SonarrInstance:
                     sonarr_instances = []
@@ -618,19 +663,23 @@ def main():
                                 continue
                             else:
                                 # Try to match the file with a series in the Sonarr library
-                                matched_series, reason = match_series(series, file, logger, series_threshold)
+                                matched_series, reason = match_series(
+                                    series, file, logger, series_threshold)
                                 # If a match is found, rename the file
                                 if matched_series:
-                                    rename_series(matched_series, file, destination_dir, source_dir, dry_run, logger, action_type)
+                                    rename_series(
+                                        matched_series, file, destination_dir, source_dir, dry_run, logger, action_type)
                                 # If the file was skipped for a reason, log the reason
                                 elif reason:
-                                    logger.debug(f"{file} was skipped because: {reason}")
+                                    logger.debug(
+                                        f"{file} was skipped because: {reason}")
             except ValueError as e:
                 logger.info(
                     f"An error occured while processing {instance_name}. Please check the logs for more details.")
                 permissions = 0o777
                 os.chmod(destination_dir, permissions)
                 os.chmod(source_dir, permissions)
+
 
 if __name__ == '__main__':
     main()

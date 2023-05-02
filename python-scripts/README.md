@@ -4,7 +4,9 @@ These are simple scripts that do not require much. Renamer hooks into your Radar
 
 The script will then parse over a list of posters that you download from sites such as [TPDb](http://www.theposterdb.com). The script will then use a bit of fuzzy matching to determine which file matches to which movie (this is done through the file's name and the movie title). If a match is found that is above the threshold it will then rename the file if needed or move the file to an assets directory. The intent of this script is to be used with the assets directory of Plex Meta Manager as the file's need to be named a certain way for it to pick them up.
 
-I have ran this extensivly on a batch of over 5000 movies and a poster catalog of over 16,000 posters with very very few false posatives with the default thresholds (only 1 that I found to be exact). However your milage my vary,
+I have ran this extensivly on a batch of over 5000 movies and a poster catalog of over 16,000 posters with very very few false posatives with the default thresholds (only 1 that I found to be exact). However your milage my vary.
+
+**See config file for config settings**
 
 Few notes: 
 1. Please run in dry mode prior to any run to make sure you're not getting any false posatives. 

@@ -545,23 +545,23 @@ def main():
         config = yaml.safe_load(f)
     
     global_data = config['global']
-    renameinatorr_data = config['renamer']
+    renamer_data = config['renamer']
 
     # Pull global data
     radarr_data = global_data['radarr']
     sonarr_data = global_data['sonarr']
 
-    log_level = renameinatorr_data['log_level'].upper()
-    dry_run = renameinatorr_data['dry_run']
-    plex_url = renameinatorr_data['plex_url']
-    token = renameinatorr_data['token']
-    library_names = renameinatorr_data['library_names']
-    source_dir = renameinatorr_data['source_dir']
-    destination_dir = renameinatorr_data['destination_dir']
-    movies_threshold = renameinatorr_data['movies_threshold']
-    series_threshold = renameinatorr_data['series_threshold']
-    collection_threshold = renameinatorr_data['collection_threshold']
-    action_type = renameinatorr_data['action_type']
+    log_level = renamer_data['log_level'].upper()
+    dry_run = renamer_data['dry_run']
+    plex_url = renamer_data['plex_url']
+    token = renamer_data['token']
+    library_names = renamer_data['library_names']
+    source_dir = renamer_data['source_dir']
+    destination_dir = renamer_data['destination_dir']
+    movies_threshold = renamer_data['movies_threshold']
+    series_threshold = renamer_data['series_threshold']
+    collection_threshold = renamer_data['collection_threshold']
+    action_type = renamer_data['action_type']
 
     file_list = sorted(os.listdir(source_dir))
     logger = setup_logger(log_level)
@@ -585,13 +585,13 @@ def main():
                     logger.info('')
             if not url and not api_key:
                 continue
-            # Check if this instance is defined in renameinatorr
-            renameinatorr_instance = next(
-                (r for r in renameinatorr_data.get(
+            # Check if this instance is defined in renamer
+            renamer_instance = next(
+                (r for r in renamer_data.get(
                     instance_type.lower(), []) if r['name'] == instance_name),
                 None
             )
-            if renameinatorr_instance:
+            if renamer_instance:
                 log_level, dry_run = validate_input(instance_name, url, api_key, log_level, dry_run, plex_url, token, source_dir,library_names, destination_dir, movies_threshold, series_threshold, collection_threshold, action_type, logger)
                 if cycle_count < 1:
                     logger.debug(f'{" Script Settings ":*^40}')

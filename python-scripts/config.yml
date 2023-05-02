@@ -43,9 +43,8 @@ upgradinatorr:
       status: released
       tag_name:
       unattended: false
-      dry_run: false
 
-renameinator:
+renameinatorr:
   log_level: info
   dry_run: true
   radarr:

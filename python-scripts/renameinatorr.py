@@ -6,14 +6,13 @@
 #  |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|_| |_|\__,_|\__\___/|_|  |_(_)|_|    \__, |
 #                                                                                 __/ |
 #                                                                                |___/
-# v.1.2.1
+# v.1.2.2
 
 import requests
 import json
 import os
 import time
 import yaml
-import sys
 from logging.handlers import RotatingFileHandler
 import logging
 
@@ -161,7 +160,7 @@ class SonarrInstance:
             if tag_id in series["tags"]:
                 series_ids.append(series["id"])
         if not series_ids:
-            return false
+            return False
         endpoint = f"{self.url}/api/v3/series/editor"
         payload = {
             "seriesIds": series_ids,

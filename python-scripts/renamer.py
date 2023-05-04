@@ -6,7 +6,7 @@
 #  |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|  |_|    \__, |
 #                                                     __/ |
 #                                                    |___/
-# v.2.0.6
+# v.2.1.6
 
 import os
 import requests
@@ -138,12 +138,12 @@ def get_collections(plex_url, token, library_names, logger):
         })
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
-        print("An error occurred while getting the libraries:", e)
+        logger.error("An error occurred while getting the libraries:", e)
         return []
     try:
         xml = etree.fromstring(response.content)
     except etree.ParseError as e:
-        print("An error occurred while parsing the response:", e)
+        logger.error("An error occurred while parsing the response:", e)
         return []
     libraries = xml.findall(".//Directory[@type='movie']")
     collections = set()
@@ -154,7 +154,7 @@ def get_collections(plex_url, token, library_names, logger):
                 target_library = library
                 break
         if target_library is None:
-            print(f"Library with name {library_name} not found")
+            logger.error(f"Library with name {library_name} not found")
             continue
         library_id = target_library.get("key")
         try:
@@ -163,12 +163,12 @@ def get_collections(plex_url, token, library_names, logger):
             })
             response.raise_for_status()
         except requests.exceptions.RequestException as e:
-            print("An error occurred while getting the collections:", e)
+            logger.error("an error occurred while getting the collections:", e)
             continue
         try:
             xml = etree.fromstring(response.content)
         except etree.ParseError as e:
-            print("An error occurred while parsing the response:", e)
+            logger.error("An error occurred while parsing the response:", e)
             continue
         library_collections = xml.findall(".//Directory")
         library_collection_names = [collection.get(
@@ -515,17 +515,9 @@ def setup_logger(log_level):
         log_file, when='midnight', interval=1, backupCount=3)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    # Set the formatter for the console handler
-    formatter = logging.Formatter()
-    # Add a StreamHandler to the logger, to log to the console
-    console_handler = logging.StreamHandler()
-    if log_level == 'debug':
-        console_handler.setLevel(logging.DEBUG)
-    elif log_level == 'info':
-        console_handler.setLevel(logging.info)
-    elif log_level == 'critical':
-        console_handler.setLevel(logging.CRITICAL)
-    logger.addHandler(console_handler)
+    # Add a custom handler to the logger, to capture all log messages in a list
+    list_handler = ListHandler()
+    logger.addHandler(list_handler)
     # Delete the old log files
     log_files = [f for f in os.listdir(log_dir) if os.path.isfile(
         os.path.join(log_dir, f)) and f.startswith("renamer")]
@@ -533,7 +525,16 @@ def setup_logger(log_level):
         os.path.join(log_dir, x)), reverse=True)
     for file in log_files[3:]:
         os.remove(os.path.join(log_dir, file))
-    return logger
+    return logger, list_handler.messages
+
+
+class ListHandler(logging.Handler):
+    def __init__(self):
+        logging.Handler.__init__(self)
+        self.messages = []
+
+    def emit(self, record):
+        self.messages.append(self.format(record))
 
 
 def main():
@@ -543,7 +544,7 @@ def main():
 
     with open(config_file_path) as f:
         config = yaml.safe_load(f)
-    
+
     global_data = config['global']
     renamer_data = config['renamer']
 
@@ -564,7 +565,10 @@ def main():
     action_type = renamer_data['action_type']
 
     file_list = sorted(os.listdir(source_dir))
-    logger = setup_logger(log_level)
+    logger, messages = setup_logger(log_level)
+    list_handler = ListHandler()
+    logger.addHandler(list_handler)
+
     if dry_run:
         logger.info('*' * 40)
         logger.info(f'* {"Dry_run Activated":^36} *')
@@ -572,17 +576,17 @@ def main():
         logger.info(f'* {" NO CHANGES WILL BE MADE ":^36} *')
         logger.info('*' * 40)
         logger.info('')
-
+    plex_executed = False
     for instance_type, instance_data in [('Radarr', radarr_data), ('Sonarr', sonarr_data)]:
         for instance in instance_data:
             instance_name = instance['name']
             api_key = instance.get('api', '')
             url = instance.get('url', '')
             if url:
-                    logger.info('*' * 40)
-                    logger.info(f'* {instance_name:^36} *')
-                    logger.info('*' * 40)
-                    logger.info('')
+                logger.info('*' * 40)
+                logger.info(f'* {instance_name:^36} *')
+                logger.info('*' * 40)
+                logger.info('')
             if not url and not api_key:
                 continue
             # Check if this instance is defined in renamer
@@ -592,7 +596,8 @@ def main():
                 None
             )
             if renamer_instance:
-                log_level, dry_run = validate_input(instance_name, url, api_key, log_level, dry_run, plex_url, token, source_dir,library_names, destination_dir, movies_threshold, series_threshold, collection_threshold, action_type, logger)
+                log_level, dry_run = validate_input(instance_name, url, api_key, log_level, dry_run, plex_url, token, source_dir,
+                                                    library_names, destination_dir, movies_threshold, series_threshold, collection_threshold, action_type, logger)
                 if cycle_count < 1:
                     logger.debug(f'{" Script Settings ":*^40}')
                     logger.debug(f'Dry_run: {dry_run}')
@@ -604,7 +609,8 @@ def main():
                     logger.debug(f"destination_dir: {destination_dir}")
                     logger.debug(f"movies_threshold: {movies_threshold}")
                     logger.debug(f"series_threshold: {series_threshold}")
-                    logger.debug(f"collection_threshold: {collection_threshold}")
+                    logger.debug(
+                        f"collection_threshold: {collection_threshold}")
                     logger.debug(f"action_type: {action_type}")
                     logger.debug(f'*' * 40)
                     logger.debug('')
@@ -621,15 +627,11 @@ def main():
                 section_class = class_map.get(
                     (instance_name.split('_')[0]).capitalize())
                 arr_instance = section_class(url, api_key, logger)
-                if plex_url and token and library_names:
-                    plex_collections = get_collections(
-                        plex_url, token, library_names, logger)
-                if section_class == RadarrInstance:
-                    radarr_instances = []
-                    radarr_instances.append(arr_instance)
-                    for radarr in radarr_instances:
-                        movies = radarr.get_movies()
-                        for file in tqdm(file_list, desc='Processing files', total=len(file_list)):
+                if plex_executed is False:
+                    if plex_url and token and library_names:
+                        plex_collections = get_collections(
+                            plex_url, token, library_names, logger)
+                        for file in tqdm(file_list, desc='Processing Plex Collections', total=len(file_list)):
                             if not re.search(r'\(\d{4}\).', file):
                                 if plex_collections is not None:
                                     matched_collection, reason = match_collection(
@@ -642,22 +644,33 @@ def main():
                                             f"{file} was skipped because: {reason}")
                                         continue
                             else:
-                                if movies is not None:
-                                    matched_movie, reason = match_movies(
-                                        movies, file, logger, movies_threshold)
-                                    if matched_movie:
-                                        rename_movies(
-                                            matched_movie, file, destination_dir, source_dir, dry_run, logger, action_type)
-                                    elif reason:
-                                        logger.debug(
-                                            f"{file} was skipped because: {reason}")
-                                        continue
+                                continue
+                        plex_executed = True
+                    else:
+                        logger.debug(
+                            'Plex URL, Token, or Library Names not defined. Skipping Plex Collection renaming.')
+                if section_class == RadarrInstance:
+                    radarr_instances = []
+                    radarr_instances.append(arr_instance)
+                    for radarr in radarr_instances:
+                        movies = radarr.get_movies()
+                        for file in tqdm(file_list, desc=f"Processing {instance_name}", total=len(file_list)):
+                            if movies is not None:
+                                matched_movie, reason = match_movies(
+                                    movies, file, logger, movies_threshold)
+                                if matched_movie:
+                                    rename_movies(
+                                        matched_movie, file, destination_dir, source_dir, dry_run, logger, action_type)
+                                elif reason:
+                                    logger.debug(
+                                        f"{file} was skipped because: {reason}")
+                                    continue
                 elif section_class == SonarrInstance:
                     sonarr_instances = []
                     sonarr_instances.append(arr_instance)
                     for sonarr in sonarr_instances:
                         series = sonarr.get_series()
-                        for file in tqdm(file_list, desc='Processing files', total=len(file_list)):
+                        for file in tqdm(file_list, desc=f"Processing {instance_name}", total=len(file_list)):
                             # Skip files that don't contain "(" or ")" in their names
                             if not re.search(r'\(\d{4}\).', file):
                                 continue
@@ -674,11 +687,14 @@ def main():
                                     logger.debug(
                                         f"{file} was skipped because: {reason}")
             except ValueError as e:
-                logger.info(
+                logger.error(
                     f"An error occured while processing {instance_name}. Please check the logs for more details.")
                 permissions = 0o777
                 os.chmod(destination_dir, permissions)
                 os.chmod(source_dir, permissions)
+    messages = list_handler.messages
+    for message in messages:
+        print(message)
 
 
 if __name__ == '__main__':

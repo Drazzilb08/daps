@@ -6,7 +6,7 @@
 #   \____/| .__/ \__, |_|  \__,_|\__,_|_|_| |_|\__,_|\__\___/|_|  |_(_)|_|    \__, |
 #         | |     __/ |                                                        __/ |
 #         |_|    |___/                                                        |___/
-# v1.0.1
+# v1.0.2
 
 import requests
 import json
@@ -161,7 +161,7 @@ class SonarrInstance:
             if tag_id in series["tags"]:
                 series_ids.append(series["id"])
         if not series_ids:
-            return false
+            return False
         endpoint = f"{self.url}/api/v3/series/editor"
         payload = {
             "seriesIds": series_ids,

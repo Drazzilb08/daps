@@ -7,3 +7,4 @@ python-scripts/angry-scripts/test.py
 .venv
 logs
 *.tmp
+test.py

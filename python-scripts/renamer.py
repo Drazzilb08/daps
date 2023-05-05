@@ -6,7 +6,15 @@
 #  |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|  |_|    \__, |
 #                                                     __/ |
 #                                                    |___/
-# v.2.1.6
+# ===================================================================================================
+# Author: Drazzilb
+# Description: This script will check for unmatched assets in your Plex library.
+#              It will output the results to a file in the logs folder.
+# Usage: python3 unmatched-asset.py
+# Requirements: requests, tqdm
+# Version: 2.2.6
+# License: MIT License
+# ===================================================================================================
 
 import os
 import requests
@@ -23,12 +31,18 @@ from tqdm import tqdm
 
 
 class SonarrInstance:
+    """
+    A class representing a Sonarr instance.
+    """
     def __init__(self, url, api_key, logger):
         """
-        Initialize the SonarrInstance object
-        Arguments:
-            - url: the URL of the Sonarr API endpoint
-            - api_key: the API key used to authenticate with the API
+        nitialize a SonarrInstance object.
+        Parameters:
+            url (str): The URL of the Sonarr instance.
+            api_key (str): The API key to use to connect to the Sonarr instance.
+            logger (logging.Logger): a logger object for logging debug messages.
+        Raises:
+            ValueError: If the URL does not point to a valid Sonarr instance.
         """
         self.url = url.rstrip("/")
         self.url = url
@@ -53,9 +67,19 @@ class SonarrInstance:
                 f"Failed to connect to Sonarr instance at {self.url}: {e}")
 
     def __str__(self):
+        """
+        Return a string representation of the SonarrInstance object.
+        Returns:
+            A string representation of the SonarrInstance object.
+        """
         return f"SonarrInstance(url={self.url})"
 
     def get_system_status(self):
+        """
+        Get the system status of the Sonarr instance.
+        Returns:
+            dict: A dictionary representing the system status of the Sonarr instance.
+        """
         url = f"{self.url}/api/v3/system/status"
         response = self.session.get(url)
         response.raise_for_status()
@@ -80,10 +104,13 @@ class SonarrInstance:
 class RadarrInstance:
     def __init__(self, url, api_key, logger):
         """
-        Initialize the RadarrInstance object
-        Arguments:
-            - url: the URL of the Radarr API endpoint
-            - api_key: the API key used to authenticate with the API
+        Initialize a RadarrInstance object.
+        Parameters:
+            url (str): The URL of the Radarr instance.
+            api_key (str): The API key to use to connect to the Radarr instance.
+            logger (logging.Logger): a logger object for logging debug messages.
+        Raises:
+            ValueError: If the URL does not point to a valid Radarr instance.
         """
         self.url = url.rstrip("/")
         self.url = url
@@ -107,6 +134,11 @@ class RadarrInstance:
                 f"Failed to connect to Radarr instance at {self.url}: {e}")
 
     def __str__(self):
+        """
+        Return a string representation of the RadarrInstance object.
+        Returns:
+            A string representation of the RadarrInstance object.
+        """
         return f"RadarrInstance(url={self.url})"
 
     def get_system_status(self):
@@ -132,6 +164,16 @@ class RadarrInstance:
 
 
 def get_collections(plex_url, token, library_names, logger):
+    """
+    Get a list of collections in Plex.
+    Parameters:
+        plex_url (str): The URL of the Plex instance.
+        token (str): The Plex authentication token.
+        library_names (list): A list of library names to get collections from.
+        logger (logging.Logger): a logger object for logging debug messages.
+    Returns:
+        list: A list of dictionaries representing all collections in Plex.
+    """
     try:
         response = requests.get(f"{plex_url}/library/sections", headers={
             "X-Plex-Token": token
@@ -181,6 +223,16 @@ def get_collections(plex_url, token, library_names, logger):
 
 
 def match_series(series, file, logger, series_threshold):
+    """
+    Match a file to a series in Radarr.
+    Parameters:
+        series (list): A list of dictionaries representing all series in Radarr.
+        file (str): The file name to match.
+        logger (logging.Logger): a logger object for logging debug messages.
+        series_threshold (int): The minimum score for a series to be considered a match.
+    Returns:
+        dict: A dictionary representing the matched series, or None if no match was found.
+    """
     year = None
     best_match = None
     closest_match = None
@@ -227,6 +279,16 @@ def match_series(series, file, logger, series_threshold):
 
 
 def match_movies(movies, file, logger, movies_threshold):
+    """
+    Match a file to a movie in Radarr.
+    Parameters:
+        movies (list): A list of dictionaries representing all movies in Radarr.
+        file (str): The file name to match.
+        logger (logging.Logger): a logger object for logging debug messages.
+        movies_threshold (int): The minimum score for a movie to be considered a match.
+    Returns:
+        dict: A dictionary representing the matched movie, or None if no match was found.
+    """
     if " - Season" in file or " - Special" in file:
         return None, f"File {file} ignored because it contains 'Season' or 'Special'"
     year = None
@@ -273,6 +335,16 @@ def match_movies(movies, file, logger, movies_threshold):
 
 
 def match_collection(plex_collections, file, logger, collection_threshold):
+    """
+    Match a file to a collection in Radarr.
+    Parameters:
+        plex_collections (list): A list of strings representing all collections in Plex.
+        file (str): The file name to match.
+        logger (logging.Logger): a logger object for logging debug messages.
+        collection_threshold (int): The minimum score for a collection to be considered a match.
+    Returns:
+        str: A string representing the matched collection, or None if no match was found.
+    """
     file_name = os.path.splitext(file)[0]
     logger.debug(f'file_name: {file_name}')
     best_match = None
@@ -296,7 +368,21 @@ def match_collection(plex_collections, file, logger, collection_threshold):
         return None, None
 
 
-def rename_movies(matched_movie, file, destination_dir, source_dir, dry_run, logger, action_type):
+def rename_movies(matched_movie, file, destination_dir, source_dir, dry_run, logger, action_type, print_only_renames):
+    """
+    Rename a file to match the movie in Radarr.
+    Parameters:
+        matched_movie (dict): A dictionary representing the matched movie.
+        file (str): The file name to rename.
+        destination_dir (str): The directory to move the file to.
+        source_dir (str): The directory the file is currently in.
+        dry_run (bool): Whether or not to actually rename the file.
+        logger (logging.Logger): a logger object for logging debug messages.
+        action_type (str): Whether to move or copy the file.
+        print_only_renames (bool): Whether to print only the rename or not.
+    Returns:
+        None
+    """
     folder_path = matched_movie['folderName']
     matched_movie_folder = os.path.basename(folder_path)
     logger.debug(f"matched_movie_folder: {matched_movie_folder}")
@@ -315,20 +401,35 @@ def rename_movies(matched_movie, file, destination_dir, source_dir, dry_run, log
                 shutil.copy(source, destination)
             logger.info(f"{file} -> {matched_movie_folder}")
             return
-    if os.path.basename(file) == matched_movie_folder:
-        if dry_run:
-            logger.info(f"{file} -->> {matched_movie_folder}")
-            return
-        else:
-            if action_type == "move":
-                shutil.move(source, destination)
-            elif action_type == "copy":
-                shutil.copy(source, destination)
-            logger.info(f"{file} -->> {matched_movie_folder}")
-            return
+    if print_only_renames == False:
+        if os.path.basename(file) == matched_movie_folder:
+            if dry_run:
+                logger.info(f"{file} -->> {matched_movie_folder}")
+                return
+            else:
+                if action_type == "move":
+                    shutil.move(source, destination)
+                elif action_type == "copy":
+                    shutil.copy(source, destination)
+                logger.info(f"{file} -->> {matched_movie_folder}")
+                return
 
 
-def rename_series(matched_series, file, destination_dir, source_dir, dry_run, logger, action_type):
+def rename_series(matched_series, file, destination_dir, source_dir, dry_run, logger, action_type, print_only_renames):
+    """
+    Rename a file to match the series in Sonarr.
+    Parameters:
+        matched_series (dict): A dictionary representing the matched series.
+        file (str): The file name to rename.
+        destination_dir (str): The directory to move the file to.
+        source_dir (str): The directory the file is currently in.
+        dry_run (bool): Whether or not to actually rename the file.
+        logger (logging.Logger): a logger object for logging debug messages.
+        action_type (str): Whether to move or copy the file.
+        print_only_renames (bool): Whether to print only the rename or not.
+    Returns:
+        None
+    """
     folder_path = matched_series['path']
     logger.debug(f"folder_path: {folder_path}")
     matched_series_folder = os.path.basename(folder_path)
@@ -372,25 +473,47 @@ def rename_series(matched_series, file, destination_dir, source_dir, dry_run, lo
                 shutil.copy(source, destination)
             logger.info(f"{file} -> {matched_series_folder}")
             return
-    if os.path.basename(file) == matched_series_folder:
-        if dry_run:
-            logger.info(f"{file} -->> {matched_series_folder}")
-            return
-        else:
-            if action_type == "move":
-                shutil.move(source, destination)
-            elif action_type == "copy":
-                shutil.copy(source, destination)
-            logger.info(f"{file} -->> {matched_series_folder}")
-            return
+    if print_only_renames == False:
+        if os.path.basename(file) == matched_series_folder:
+            if dry_run:
+                logger.info(f"{file} -->> {matched_series_folder}")
+                return
+            else:
+                if action_type == "move":
+                    shutil.move(source, destination)
+                elif action_type == "copy":
+                    shutil.copy(source, destination)
+                logger.info(f"{file} -->> {matched_series_folder}")
+                return
 
 
 def remove_illegal_chars(string):
+    """
+    Remove illegal characters from a string.
+    Parameters:
+        string (str): The string to remove illegal characters from.
+    Returns:
+        string (str): The string with illegal characters removed.
+    """
     illegal_characters = re.compile(r'[\\/:*?"<>|\0]')
     return illegal_characters.sub("", string)
 
 
-def rename_collections(matched_collection, file, destination_dir, source_dir, dry_run, logger, action_type):
+def rename_collections(matched_collection, file, destination_dir, source_dir, dry_run, logger, action_type, print_only_renames):
+    """
+    Rename a file to match the collection in Radarr.
+    Parameters:
+        matched_collection (dict): A dictionary representing the matched collection.
+        file (str): The file name to rename.
+        destination_dir (str): The directory to move the file to.
+        source_dir (str): The directory the file is currently in.
+        dry_run (bool): Whether or not to actually rename the file.
+        logger (logging.Logger): a logger object for logging debug messages.
+        action_type (str): Whether to move or copy the file.
+        print_only_renames (bool): Whether to print only the rename or not.
+    Returns:
+        None
+    """
     matched_collection_title = matched_collection
     logger.debug(f"matched_collection_title: {matched_collection_title}")
     file_extension = os.path.basename(file).split(".")[-1]
@@ -409,20 +532,43 @@ def rename_collections(matched_collection, file, destination_dir, source_dir, dr
                 shutil.copy(source, destination)
             logger.info(f"{file} -> {matched_collection_title}")
             return
-    if os.path.basename(file) == matched_collection_title:
-        if dry_run:
-            logger.info(f"{file} -->> {matched_collection_title}")
-            return
-        else:
-            if action_type == "move":
-                shutil.move(source, destination)
-            elif action_type == "copy":
-                shutil.copy(source, destination)
-            logger.info(f"{file} -->> {matched_collection_title}")
-            return
+    if print_only_renames == False:
+        if os.path.basename(file) == matched_collection_title:
+            if dry_run:
+                logger.info(f"{file} -->> {matched_collection_title}")
+                return
+            else:
+                if action_type == "move":
+                    shutil.move(source, destination)
+                elif action_type == "copy":
+                    shutil.copy(source, destination)
+                logger.info(f"{file} -->> {matched_collection_title}")
+                return
 
 
-def validate_input(instance_name, url, api_key, log_level, dry_run, plex_url, token, source_dir, library_names, destination_dir, movies_threshold, series_threshold, collection_threshold, action_type, logger):
+def validate_input(instance_name, url, api_key, log_level, dry_run, plex_url, token, source_dir, library_names, destination_dir, movies_threshold, series_threshold, collection_threshold, action_type, logger, print_only_renames):
+    """
+    Validate the input from the config file.
+    Parameters:
+        instance_name (str): The name of the instance.
+        url (str): The URL of the instance.
+        api_key (str): The API key of the instance.
+        log_level (str): The log level of the instance.
+        dry_run (bool): Whether or not to actually rename the file.
+        plex_url (str): The URL of the Plex instance.
+        token (str): The token of the Plex instance.
+        source_dir (str): The directory to move files from.
+        library_names (list): A list of library names to rename files from.
+        destination_dir (str): The directory to move files to.
+        movies_threshold (int): The number of movies in a collection to rename files from.
+        series_threshold (int): The number of series in a collection to rename files from.
+        collection_threshold (int): The number of collections to rename files from.
+        action_type (str): Whether to move or copy the file.
+        logger (logging.Logger): a logger object for logging debug messages.
+        print_only_renames (bool): Whether to print only the rename or not.
+    Returns:
+        None
+    """
     if not (url.startswith("http://") or url.startswith("https://")):
         raise ValueError(
             f'\'{instance_name}\' URL must start with \'http://\' or \'https://://\'')
@@ -481,21 +627,27 @@ def validate_input(instance_name, url, api_key, log_level, dry_run, plex_url, to
         if action_type not in ['move', 'copy']:
             raise ValueError(
                 f'\'{instance_name}\' action_type must be either \'move\' or \'copy\'.')
+        if print_only_renames not in [True, False]:
+            print_only_renames = False
+            raise ValueError(
+                f'\'print_only_renames must be either True or False')
     return log_level, dry_run
 
 
 def setup_logger(log_level):
-    # Create a directory to store logs, if it doesn't exist
+    """
+    Setup the logger.
+    Parameters:
+        log_level (str): The log level of the instance.
+    Returns:
+        None
+    """
     log_dir = os.path.dirname(os.path.realpath(__file__)) + "/logs"
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    # Get the current date in YYYY-MM-DD format
     today = time.strftime("%Y-%m-%d")
-    # Create a log file with the current date in its name
     log_file = f"{log_dir}/renamer_{today}.log"
-    # Set up the logger
     logger = logging.getLogger()
-    # Convert the log level string to upper case and set the logging level accordingly
     log_level = log_level.upper()
     if log_level == 'DEBUG':
         logger.setLevel(logging.DEBUG)
@@ -507,18 +659,14 @@ def setup_logger(log_level):
         logger.critical(
             f"Invalid log level '{log_level}', defaulting to 'INFO'")
         logger.setLevel(logging.INFO)
-    # Set the formatter for the file handler
     formatter = logging.Formatter(
         fmt='%(asctime)s %(levelname)s: %(message)s', datefmt='%I:%M %p')
-    # Add a TimedRotatingFileHandler to the logger, to log to a file that rotates daily
     handler = logging.handlers.TimedRotatingFileHandler(
         log_file, when='midnight', interval=1, backupCount=3)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    # Add a custom handler to the logger, to capture all log messages in a list
     list_handler = ListHandler()
     logger.addHandler(list_handler)
-    # Delete the old log files
     log_files = [f for f in os.listdir(log_dir) if os.path.isfile(
         os.path.join(log_dir, f)) and f.startswith("renamer")]
     log_files.sort(key=lambda x: os.path.getmtime(
@@ -529,15 +677,30 @@ def setup_logger(log_level):
 
 
 class ListHandler(logging.Handler):
+    """
+    A logging handler that appends messages to a list.
+    """
     def __init__(self):
+        """
+        Initialize the handler.
+        """
         logging.Handler.__init__(self)
         self.messages = []
 
     def emit(self, record):
+        """
+        Emit a record.
+        Parameters:
+            record (str): The record to emit.
+        Returns:
+        """
         self.messages.append(self.format(record))
 
 
 def main():
+    """
+    Main function.
+    """
     cycle_count = 0
     script_dir = os.path.dirname(os.path.abspath(__file__))
     config_file_path = os.path.join(script_dir, 'config.yml')
@@ -548,7 +711,6 @@ def main():
     global_data = config['global']
     renamer_data = config['renamer']
 
-    # Pull global data
     radarr_data = global_data['radarr']
     sonarr_data = global_data['sonarr']
 
@@ -563,6 +725,7 @@ def main():
     series_threshold = renamer_data['series_threshold']
     collection_threshold = renamer_data['collection_threshold']
     action_type = renamer_data['action_type']
+    print_only_renames = renamer_data['print_only_renames']
 
     file_list = sorted(os.listdir(source_dir))
     logger, messages = setup_logger(log_level)
@@ -589,7 +752,6 @@ def main():
                 logger.info('')
             if not url and not api_key:
                 continue
-            # Check if this instance is defined in renamer
             renamer_instance = next(
                 (r for r in renamer_data.get(
                     instance_type.lower(), []) if r['name'] == instance_name),
@@ -638,7 +800,7 @@ def main():
                                         plex_collections, file, logger, collection_threshold)
                                     if matched_collection:
                                         rename_collections(
-                                            matched_collection, file, destination_dir, source_dir, dry_run, logger, action_type)
+                                            matched_collection, file, destination_dir, source_dir, dry_run, logger, action_type, print_only_renames)
                                     elif reason:
                                         logger.debug(
                                             f"{file} was skipped because: {reason}")
@@ -660,7 +822,7 @@ def main():
                                     movies, file, logger, movies_threshold)
                                 if matched_movie:
                                     rename_movies(
-                                        matched_movie, file, destination_dir, source_dir, dry_run, logger, action_type)
+                                        matched_movie, file, destination_dir, source_dir, dry_run, logger, action_type, print_only_renames)
                                 elif reason:
                                     logger.debug(
                                         f"{file} was skipped because: {reason}")
@@ -671,18 +833,14 @@ def main():
                     for sonarr in sonarr_instances:
                         series = sonarr.get_series()
                         for file in tqdm(file_list, desc=f"Processing {instance_name}", total=len(file_list)):
-                            # Skip files that don't contain "(" or ")" in their names
                             if not re.search(r'\(\d{4}\).', file):
                                 continue
                             else:
-                                # Try to match the file with a series in the Sonarr library
                                 matched_series, reason = match_series(
                                     series, file, logger, series_threshold)
-                                # If a match is found, rename the file
                                 if matched_series:
                                     rename_series(
-                                        matched_series, file, destination_dir, source_dir, dry_run, logger, action_type)
-                                # If the file was skipped for a reason, log the reason
+                                        matched_series, file, destination_dir, source_dir, dry_run, logger, action_type, print_only_renames)
                                 elif reason:
                                     logger.debug(
                                         f"{file} was skipped because: {reason}")
@@ -698,4 +856,7 @@ def main():
 
 
 if __name__ == '__main__':
+    """
+    Main entry point for the script.
+    """
     main()

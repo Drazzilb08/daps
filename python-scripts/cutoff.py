@@ -1,11 +1,22 @@
+#    _____      _         __  __             
+#   / ____|    | |       / _|/ _|            
+#  | |    _   _| |_ ___ | |_| |_ _ __  _   _ 
+#  | |   | | | | __/ _ \|  _|  _| '_ \| | | |
+#  | |___| |_| | || (_) | | | |_| |_) | |_| |
+#   \_____\__,_|\__\___/|_| |_(_) .__/ \__, |
+#                               | |     __/ |
+#                               |_|    |___/ 
+# ===================================================================================================
 # Author: Drazzilb
-# Date: 2023-04-30
-# Description: Script to check Radarr for movies that are below a certain cutoff score and tag them as such
-# Description: The script also allows you to print out a list of movies that are below the cutoff score
+# Description: This script will print a list of movies that are below the cutoff score for a given
+#              cutoff custom format score.  It will also optionally tag the movies that are below the cutoff
+#              score with a tag of your choosing.  This script is useful for finding movies that are below
+#              the cutoff score that you may want to upgrade to a better quality.
 # Usage: python3 cutoff.py
-# Requirements: Python 3, requests
-# Version: 2.0
+# Requirements: requests, tqdm
+# Version: 2.0.0
 # License: MIT License
+# ===================================================================================================
 
 import requests
 import json
@@ -32,26 +43,55 @@ RED = '\033[31m'
 RESET = '\033[0m'
 
 def getMovies():
+    """
+    Get list of movies from Radarr
+    Returns:
+        list: List of movies
+    """
     movies = requests.get(radarr_url + "/api/v3/movie",
                           headers={"X-Api-Key": radarr_api}).json()
     return movies
 
 def getMovieFile(movie_id):
+    """
+    Get movie file from Radarr
+    Parameters:
+        movie_id (int): ID of movie
+    Returns:
+        dict: Movie file
+    """
     moviefile = requests.get(
         radarr_url + f"/api/v3/moviefile?movieId={movie_id}", headers={"X-Api-Key": radarr_api}).json()
     return moviefile
 
 def getQualityProfiles():
+    """
+    Get list of quality profiles from Radarr
+    Returns:
+        list: List of quality profiles
+    """
     quality_profiles = requests.get(
         radarr_url + "/api/v3/qualityprofile", headers={"X-Api-Key": radarr_api}).json()
     return quality_profiles
 
 def getTags():
+    """
+    Get list of tags from Radarr
+    Returns:
+        list: List of tags
+    """
     tags = requests.get(radarr_url + "/api/v3/tag",
                         headers={"X-Api-Key": radarr_api}).json()
     return tags
 
 def get_tag_id(tag_name):
+    """
+    Get tag ID from Radarr
+    Parameters:
+        tag_name (str): Name of tag
+    Returns:
+        int: Tag ID
+    """
     response = requests.get(radarr_url + "/api/v3/tag",
                             headers={"X-Api-Key": radarr_api})
     response.raise_for_status()
@@ -62,24 +102,44 @@ def get_tag_id(tag_name):
 
 
 def add_tag(tag_name):
+    """
+    Add tag to Radarr
+    Parameters:
+        tag_name (str): Name of tag
+    """
     response = requests.post(radarr_url + "/api/v3/tag",
                              headers={"X-Api-Key": radarr_api}, json={"label": tag_name})
     response.raise_for_status()
 
 
 def tag_movie(movie_id, tag_id):
+    """
+    Tag movie in Radarr
+    Parameters:
+        movie_id (int): ID of movie
+        tag_id (int): ID of tag
+    """
     response = requests.put(radarr_url + f"/api/v3/movie/editor", headers={
                             "X-Api-Key": radarr_api}, json={"movieIds": [movie_id], "tags": [tag_id], "applyTags": "add"})
     response.raise_for_status()
 
 
 def untag_movie(movie_id, tag_id):
+    """
+    Untag movie in Radarr
+    Parameters:
+        movie_id (int): ID of movie
+        tag_id (int): ID of tag
+    """
     response = requests.put(radarr_url + f"/api/v3/movie/editor", headers={"X-Api-Key": radarr_api}, json={
                             "movieIds": [movie_id], "tags": [tag_id], "applyTags": "remove"})
     response.raise_for_status()
 
 
 def main():
+    """
+    Main function for the script.
+    """
     movies_printed = 0
     untagged_movies = 0
     tagged_movies = 0
@@ -99,14 +159,10 @@ def main():
         if tag_id:
             print(f"Tag ID for {tag_name} is {tag_id}")
 
-    # Get list of movies
     movies = getMovies()
-    # Get list of tags
     tags = getTags()
-    # Create list of movies without the ignore tags
     movies_without_tags = [movie for movie in movies if not any(
         tag['label'] in ignore_tags for tag in tags if tag['id'] in movie['tags'])]
-    # Create directory if not exists
     quality_profiles = getQualityProfiles()
     script_dir = os.path.dirname(os.path.abspath(__file__))
     logs_dir = os.path.join(script_dir, 'logs')
@@ -118,7 +174,6 @@ def main():
                 name_score_dict = {}
                 for format in profile['formatItems']:
                     name_score_dict[format['name']] = format['score']
-                # iterate over movies and calculate total score
                 movies_to_print = []
                 if requesting == 'Yes':
                     for movie in tqdm(movies_without_tags, desc="Processing Movies to print..."):
@@ -138,7 +193,6 @@ def main():
                                                 f"\tFormat: {format_name} Score: {name_score_dict[format_name]}")
                                         movie_score += name_score_dict[format_name]
                             if movie_score <= cutoff_score:
-                                # Add movie to the list of movies to print
                                 movies_to_print.append(
                                     (
                                         movie['title'],
@@ -233,4 +287,7 @@ def main():
 
 
 if __name__ == '__main__':
+    """
+    Main entry point for the script.
+    """
     main()

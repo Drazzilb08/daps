@@ -6,25 +6,40 @@
 #  |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|_| |_|\__,_|\__\___/|_|  |_(_)|_|    \__, |
 #                                                                                 __/ |
 #                                                                                |___/
-# v.1.2.2
+# ===================================================================================================
+# Author: Drazzilb
+# Description: This script will rename all series in Sonarr/Radarr to match the naming scheme of the
+#              Naming Convention within Radarr/Sonarr. It will also add a tag to the series so that it can be easily
+#              identified as having been renamed.
+# Usage: python3 /path/to/renameinatorr.py
+# Requirements: requests, yaml, logging
+# Version: 1.2.2
+# License: MIT License
+# ===================================================================================================
 
 import requests
 import json
 import os
 import time
 import yaml
+import sys
 from logging.handlers import RotatingFileHandler
 import logging
 
 
 class SonarrInstance:
+    """
+    A class representing a Sonarr instance.
+    """
     def __init__(self, url, api_key, logger):
         """
-
-        Initialize the SonarrInstance object
-        Arguments:
-            - url: the URL of the Sonarr API endpoint
-            - api_key: the API key used to authenticate with the API
+        Initialize a SonarrInstance object.
+        Parameters:
+            url (str): The URL of the Sonarr instance.
+            api_key (str): The API key to use to connect to the Sonarr instance.
+            logger (logging.Logger): a logger object for logging debug messages.
+            Raises:
+            ValueError: If the URL does not point to a valid Sonarr instance.
         """
         self.url = url.rstrip("/")
         self.url = url
@@ -49,18 +64,27 @@ class SonarrInstance:
                 f"Failed to connect to Sonarr instance at {self.url}: {e}")
 
     def __str__(self):
+        """
+        Return a string representation of the SonarrInstance object.
+        Returns:
+            A string representation of the SonarrInstance object.
+        """
         return f"SonarrInstance(url={self.url})"
 
     def get_system_status(self):
+        """
+        Get the status of the Sonarr instance.
+        Returns:
+            A dictionary representing the status of the Sonarr instance.
+        """
         url = f"{self.url}/api/v3/system/status"
         response = self.session.get(url)
         response.raise_for_status()
         return response.json()
 
     def get_all_tags(self):
-        """
+        """ 
         Get a list of all tags in Sonarr.
-        
         Returns:
             A list of dictionaries representing all tags in Sonarr.
         """
@@ -107,10 +131,12 @@ class SonarrInstance:
 
     def add_tag(self, series_id, tag_id):
         """
-        This function adds a tag with the given ID to a series with the given series ID.
-        :param series_id: The ID of the series to which the tag will be added.
-        :param tag_id: The ID of the tag to be added to the series.
-        :return: None
+        Add a tag to a series.
+        Parameters:
+            series_id (int): The ID of the series to add the tag to 
+            tag_id (int): The ID of the tag to add to the series
+        Raises:
+            Exception: If the API call to add the tag fails
         """
         payload = {
             "seriesIds": [series_id],
@@ -123,8 +149,13 @@ class SonarrInstance:
 
     def check_and_create_tag(self, tag_name, dry_run, logger):
         """
-        Check if a the desired tag exists in Sonarr, and if not, create it.
-        Returns the ID of the desired tag.
+        Check if a tag exists and create it if it doesn't.
+        Parameters:
+            tag_name (str): The name of the tag to check for
+            dry_run (bool): If True, don't actually create the tag
+            logger (logging.Logger): a logger object for logging debug messages.
+        Returns:
+            int: The ID of the tag
         """
         all_tags = self.get_all_tags()
         tag_id = None
@@ -148,12 +179,14 @@ class SonarrInstance:
 
     def remove_tags(self, all_series, tag_id, tag_name, logger):
         """
-        Remove a specific tag from a list of series.
+        Remove a tag from all series that have it.
         Parameters:
-            all_series (list): a list of series dictionaries, each containing information about a series.
-            tag_id (int): the ID of the tag to be removed.
+            all_series (list): A list of dictionaries representing all series in Sonarr.
+            tag_id (int): The ID of the tag to remove
+            tag_name (str): The name of the tag to remove
+            logger (logging.Logger): a logger object for logging debug messages.
         Returns:
-            False: always returns False, since this function only updates the tags of serise and does not return any data.
+            bool: True if the tag was removed from at least one series, False otherwise
         """
         series_ids = []
         for series in all_series:
@@ -179,9 +212,11 @@ class SonarrInstance:
 
     def get_rename_list(self, series_id):
         """
-        This method retrieves the list of episodes to be renamed for the specified series ID.
-        :param series_id: The ID of the series to retrieve the rename list for.
-        :return: A list of episodes to be renamed.
+        Get the list of episodes to be renamed for a series.
+        Parameters:
+            series_id (int): The ID of the series to get the rename list for
+        Returns:
+            list: A list of dictionaries representing the episodes to be renamed
         """
         # Get the list of episodes to be renamed
         endpoint = f"{self.url}/api/v3/rename?seriesId={series_id}"
@@ -192,13 +227,13 @@ class SonarrInstance:
 
     def rename_files(self, series_id, episode_file_ids, logger):
         """
-        Sends a request to rename a list of episode files
+        Rename the files for a series.
         Parameters:
-            series_id (int): ID of the series the episode files belong to
-            episode_file_ids (List[int]): List of IDs of episode files to be renamed
-            max_retries (int): Maximum number of retries for checking task status (default=10)
+            series_id (int): The ID of the series to rename
+            episode_file_ids (list): A list of episode file IDs to rename
+            logger (logging.Logger): a logger object for logging debug messages.
         Returns:
-        bool: Returns `True` if the episode files were renamed successfully
+            bool: True if the files were renamed successfully, False otherwise
         """
         max_retries = 10
         payload = {
@@ -242,9 +277,12 @@ class SonarrInstance:
 
     def refresh_series(self, logger, series_id):
         """
-        Sends a request to refresh series with renamed assets
+        Refresh a series.
+        Parameters:
+            logger (logging.Logger): a logger object for logging debug messages.
+            series_id (int): The ID of the series to refresh
         Returns:
-        bool: Returns `True` if the series were refreshed successfully
+            bool: True if the series was refreshed successfully, False otherwise
         """
         payload = {
             "name": "RefreshSeries",
@@ -263,12 +301,16 @@ class SonarrInstance:
 
 
 class RadarrInstance():
+    """
+    A class representing a Radarr instance.
+    """
     def __init__(self, url, api_key, logger):
         """
-        Initialize the RadarrInstance object
-        Arguments:
-            - url: the URL of the Radarr API endpoint
-            - api_key: the API key used to authenticate with the API
+        Initialize a RadarrInstance object.
+        Parameters:
+            url (str): The URL of the Radarr instance
+            api_key (str): The API key to use when connecting to the Radarr instance
+            logger (logging.Logger): a logger object for logging debug messages.
         """
         self.url = url.rstrip("/")
         self.url = url
@@ -292,9 +334,17 @@ class RadarrInstance():
                 f"Failed to connect to Radarr instance at {self.url}: {e}")
 
     def __str__(self):
+        """
+        Return a string representation of the RadarrInstance object.
+        """
         return f"RadarrInstance(url={self.url})"
 
     def get_system_status(self):
+        """
+        Get the system status of the Radarr instance.
+        Returns:
+            dict: A dictionary containing the system status of the Radarr instance
+        """
         endpoint = f"{self.url}/api/v3/system/status"
         response = self.session.get(endpoint)
         response.raise_for_status()
@@ -302,10 +352,9 @@ class RadarrInstance():
 
     def get_all_tags(self):
         """
-        Get a list of all tags in Radarr.
-        
+        Get all tags from the Radarr instance.
         Returns:
-            A list of dictionaries representing all tags in Radarr.
+            dict: A dictionary containing all tags from the Radarr instance
         """
         endpoint = f"{self.url}/api/v3/tag"
         response = self.session.get(endpoint, headers=self.headers)
@@ -313,12 +362,10 @@ class RadarrInstance():
 
     def create_tag(self, label, logger):
         """
-        Create a new tag with the specified label
+        Create a tag in the Radarr instance.
         Parameters:
-            label (str): The label for the new tag
+            label (str): The label of the tag to create
             logger (logging.Logger): a logger object for logging debug messages.
-        Raises:
-            Exception: If the API call to create the tag fails
         """
         payload = {
             "label": label
@@ -335,9 +382,9 @@ class RadarrInstance():
 
     def get_movies(self):
         """
-        Get a list of all movies in Radarr.
+        Get all movies from the Radarr instance.
         Returns:
-            list: A list of dictionaries representing all movies in Radarr.
+            dict: A dictionary containing all movies from the Radarr instance
         """
         endpoint = f"{self.url}/api/v3/movie"
         response = self.session.get(endpoint, headers=self.headers)
@@ -349,12 +396,11 @@ class RadarrInstance():
                 f"Failed to get movies with status code {response.status_code}")
 
     def add_tag(self, movie_id, tag_id):
-        """Add a tag to a movie with given movie_id
-        Args:
-            movie_id (int): the id of the movie to add the tag to
-            tag_id (int): the id of the tag to add
-        Raises:
-            requests.exceptions.HTTPError: if the response from the API is not a 202 (Accepted) status code
+        """
+        Add a tag to a movie in the Radarr instance.
+        Parameters:
+            movie_id (int): The ID of the movie to add the tag to
+            tag_id (int): The ID of the tag to add to the movie
         """
         payload = {
             "movieIds": [movie_id],
@@ -367,8 +413,13 @@ class RadarrInstance():
 
     def check_and_create_tag(self, tag_name, dry_run, logger):
         """
-        Check if a the desired tag exists in Radarr, and if not, create it.
-        Returns the ID of the desired tag.
+        Check if a tag exists in the Radarr instance, and create it if it doesn't.
+        Parameters:
+            tag_name (str): The name of the tag to check
+            dry_run (bool): Whether or not to actually create the tag
+            logger (logging.Logger): a logger object for logging debug messages.
+        Returns:
+            int: The ID of the tag
         """
         all_tags = self.get_all_tags()
         tag_id = None
@@ -393,14 +444,14 @@ class RadarrInstance():
 
     def remove_tags(self, all_movies, tag_id, tag_name, logger):
         """
-        Remove a specific tag from a list of movies.
+        Remove a tag from all movies in the Radarr instance.
         Parameters:
-            all_movies (list): a list of movie dictionaries, each containing information about a movie.
-            tag_id (int): the ID of the tag to be removed.
-            tag_name (str): the name of the tag to be removed.
+            all_movies (dict): A dictionary containing all movies from the Radarr instance
+            tag_id (int): The ID of the tag to remove
+            tag_name (str): The name of the tag to remove
             logger (logging.Logger): a logger object for logging debug messages.
         Returns:
-            False: always returns False, since this function only updates the tags of movies and does not return any data.
+            bool: Whether or not the tag was removed from any movies
         """
         movie_ids = []
         for movie in all_movies:
@@ -425,10 +476,11 @@ class RadarrInstance():
 
     def get_rename_list(self, movie_id):
         """
-        This method retrieves the list of movie to be renamed for the specified movie ID.
-
-        :param movie_id: The ID of the movie to retrieve the rename list for.
-        :return: A list of movies to be renamed.
+        Get the list of movies to be renamed.
+        Parameters:
+            movie_id (int): The ID of the movie to get the rename list for
+        Returns:
+            list: A list of movies to be renamed
         """
         # Get the list of movies to be renamed
         endpoint = f"{self.url}/api/v3/rename?movieId={movie_id}"
@@ -439,13 +491,13 @@ class RadarrInstance():
 
     def rename_files(self, movie_id, movies_to_rename, logger):
         """
-        Sends a request to rename a list of movie files
+        Rename the files for a movie in the Radarr instance.
         Parameters:
-            movie_id (int): ID of the movies the movie files belong to
-            movies_to_rename (List[int]): List of IDs of movie files to be renamed
-            max_retries (int): Maximum number of retries for checking task status (default=10)
+            movie_id (int): The ID of the movie to rename
+            movies_to_rename (list): A list of movies to be renamed
+            logger (logging.Logger): a logger object for logging debug messages.
         Returns:
-        bool: Returns `True` if the movie files were renamed successfully
+            bool: Whether or not the files were renamed
         """
         max_retries = 10
         payload = {
@@ -490,9 +542,12 @@ class RadarrInstance():
 
     def refresh_movies(self, logger, movies_to_rename):
         """
-        Sends a request to refresh a movies with renamed assets
+        Refresh the movies in the Radarr instance.
+        Parameters:
+            logger (logging.Logger): a logger object for logging debug messages.
+            movies_to_rename (list): A list of movies to be renamed
         Returns:
-        bool: Returns `True` if the movies were refreshed successfully
+            bool: Whether or not the movies were refreshed
         """
         payload = {
             "name": "RefreshMovie",
@@ -512,12 +567,12 @@ class RadarrInstance():
 
 def check_all_tagged(all_media, tag_id):
     """
-        Check if all the media in the `all_media` list has the `tag_id` tag applied.
+    Check if all media is tagged with the specified tag.
     Parameters:
-        all_media (list): A list of dictionaries containing media information.
-        tag_id (int): The ID of the tag to check.
+        all_media (list): A list of all media in the Plex instance
+        tag_id (int): The ID of the tag to check for
     Returns:
-        bool: True if all media in the list has the tag applied, False otherwise.
+        bool: Whether or not all media is tagged with the specified tag
     """
     for media in all_media:
         if tag_id not in media['tags']:
@@ -527,12 +582,13 @@ def check_all_tagged(all_media, tag_id):
 
 def print_format(media, to_rename, type, dry_run, logger):
     """
-        Prints the output in a formatted manner for the given media type and dry_run status.
+    Print the format of the rename list.
     Parameters:
-        media (dict): The media information for the TV series/movie.
-        to_rename (list): The list of files that have been renamed.
-        type (str): The media type - "sonarr" or "radarr".
-        dry_run (bool): Indicates if it's a dry run (True) or actual run (False).
+        media (dict): The media to be renamed
+        to_rename (list): A list of media to be renamed
+        type (str): The type of media to be renamed
+        dry_run (bool): Whether or not this is a dry run
+        logger (logging.Logger): a logger object for logging debug messages.
     Returns:
         None
     """
@@ -565,6 +621,20 @@ def print_format(media, to_rename, type, dry_run, logger):
 
 
 def validate_input(instance_name, url, api_key, dry_run, unattended, count, tag_name, logger):
+    """
+    Validate the input for the specified instance.
+    Parameters:
+        instance_name (str): The name of the instance
+        url (str): The URL of the instance
+        api_key (str): The API key of the instance
+        dry_run (bool): Whether or not this is a dry run
+        unattended (bool): Whether or not this is an unattended run
+        count (int): The number of media to be renamed
+        tag_name (str): The name of the tag to be used
+        logger (logging.Logger): a logger object for logging debug messages.
+    Returns:
+        None
+    """
     if not (url.startswith("http://") or url.startswith("https://")):
         raise ValueError(
             f'\'{instance_name}\' URL must start with \'http://\' or \'https://://\'')
@@ -601,17 +671,19 @@ def validate_input(instance_name, url, api_key, dry_run, unattended, count, tag_
 
 
 def setup_logger(log_level):
-    # Create a directory to store logs, if it doesn't exist
+    """
+    Setup the logger.
+    Parameters:
+        log_level (str): The log level to use
+    Returns:
+        None
+    """
     log_dir = os.path.dirname(os.path.realpath(__file__)) + "/logs"
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    # Get the current date in YYYY-MM-DD format
     today = time.strftime("%Y-%m-%d")
-    # Create a log file with the current date in its name
     log_file = f"{log_dir}/renameinatorr_{today}.log"
-    # Set up the logger
     logger = logging.getLogger()
-    # Convert the log level string to upper case and set the logging level accordingly
     log_level = log_level.upper()
     if log_level == 'DEBUG':
         logger.setLevel(logging.DEBUG)
@@ -623,17 +695,13 @@ def setup_logger(log_level):
         logger.critical(
             f"Invalid log level '{log_level}', defaulting to 'INFO'")
         logger.setLevel(logging.INFO)
-    # Set the formatter for the file handler
     formatter = logging.Formatter(
         fmt='%(asctime)s %(levelname)s: %(message)s', datefmt='%I:%M %p')
-    # Add a TimedRotatingFileHandler to the logger, to log to a file that rotates daily
     handler = logging.handlers.TimedRotatingFileHandler(
         log_file, when='midnight', interval=1, backupCount=3)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    # Set the formatter for the console handler
     formatter = logging.Formatter()
-    # Add a StreamHandler to the logger, to log to the console
     console_handler = logging.StreamHandler()
     if log_level == 'debug':
         console_handler.setLevel(logging.DEBUG)
@@ -642,7 +710,6 @@ def setup_logger(log_level):
     elif log_level == 'critical':
         console_handler.setLevel(logging.CRITICAL)
     logger.addHandler(console_handler)
-    # Delete the old log files
     log_files = [f for f in os.listdir(log_dir) if os.path.isfile(
         os.path.join(log_dir, f)) and f.startswith("renameinatorr_")]
     log_files.sort(key=lambda x: os.path.getmtime(
@@ -653,27 +720,26 @@ def setup_logger(log_level):
 
 
 def main():
-    # Construct the path to the config file based on the script file's path
+    """
+    Main function for the script.
+    """
+
     script_dir = os.path.dirname(os.path.abspath(__file__))
     config_file_path = os.path.join(script_dir, 'config.yml')
 
-    # Load the config file
     with open(config_file_path) as f:
         config = yaml.safe_load(f)
 
     global_data = config['global']
     renameinatorr_data = config['renameinatorr']
 
-    # Pull global data
     radarr_data = global_data['radarr']
     sonarr_data = global_data['sonarr']
 
-    # Pull renameinatorr data
     log_level = renameinatorr_data['log_level'].upper()
     dry_run = renameinatorr_data['dry_run']
     logger = setup_logger(log_level)
     if dry_run:
-        # If dry_run is activated, print a message indicating so and the status of other variables.
         logger.info('*' * 40)
         logger.info(f'* {"Dry_run Activated":^36} *')
         logger.info('*' * 40)
@@ -692,7 +758,6 @@ def main():
                 logger.info('')
             if not url and not api_key:
                 continue
-            # Check if this instance is defined in renameinatorr
             renameinatorr_instance = next(
                 (r for r in renameinatorr_data.get(
                     instance_type.lower(), []) if r['name'] == instance_name),
@@ -722,7 +787,6 @@ def main():
                 logger.debug(f'*' * 40)
                 logger.debug('')
             try:
-                # Instantiate the class for this section
                 class_map = {
                     'Radarr': RadarrInstance,
                     'Sonarr': SonarrInstance,
@@ -731,7 +795,6 @@ def main():
                     instance_name.split('_')[0].capitalize())
                 arr_instance = section_class(url, api_key, logger)
                 radarr_all_tagged, sonarr_all_tagged = False, False
-                # Add the instance to the appropriate list
                 if section_class == RadarrInstance:
                     radarr_instances = []
                     radarr_instances.append(arr_instance)
@@ -757,7 +820,6 @@ def main():
                                 all_movies, radarr_tag_id, tag_name, logger)
                             logger.info(
                                 f'All of {instance_name} have had the tag {tag_name} removed.')
-                        # If all the movies are tagged and unattended is False, set radarr_all_tagged to True
                         elif all_radarr_tagged is True and unattended is False:
                             logger.info(
                                 f'All of {instance_name} has been tagged with {tag_name} skipping.')
@@ -855,7 +917,6 @@ def main():
                                             f'Series: \'{series["title"]}\' has been tagged with \'{tag_name}\'.')
                                         sonarr.add_tag(
                                             series_id, sonarr_tag_id)
-                                        # Refresh all series
                                         if episodes_to_rename:
                                             sonarr.refresh_series(
                                                 logger, series_id)
@@ -874,13 +935,10 @@ def main():
                         logger.info(
                             f'Total Series: {total_count}, Tagged Series: {tagged_count} ({tagged_percent:.2f}%), Untagged Series: {untagged_count} ({untagged_percent:.2f}%)\n')
                 if radarr_all_tagged == True and sonarr_all_tagged == True:
-                    # If all series and movies have been tagged and renamed.
                     logger.info(
                         f'All series and movies in both Sonarr and Radarr have been renamed.')
-                    # Running this unmonitored by setting the unattended variable to True
                     logger.info(
                         f'Please set the `unattended` variable to True if you\'d like to run this unmonitored')
-                    # Alternatively, removing all tags by setting the reset variable to True
                     logger.info(
                         f'Alternatively you can set the `reset` variable to True if you\'d like to remove all Tags')
             except ValueError as e:
@@ -889,4 +947,7 @@ def main():
 
 
 if __name__ == "__main__":
+    """
+    Main entry point for the script.
+    """
     main()

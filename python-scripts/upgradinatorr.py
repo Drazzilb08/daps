@@ -6,7 +6,14 @@
 #   \____/| .__/ \__, |_|  \__,_|\__,_|_|_| |_|\__,_|\__\___/|_|  |_(_)|_|    \__, |
 #         | |     __/ |                                                        __/ |
 #         |_|    |___/                                                        |___/
-# v1.0.2
+# ===================================================================================================
+# Author: Drazzilb
+# Description: A script to upgrade Sonarr/Radarr libraries to the keep in line with trash-guides
+# Usage: python3 /path/to/upgradinatorr.py
+# Requirements: requests, yaml, logging
+# Version: 1.0.1
+# License: MIT License
+# ===================================================================================================
 
 import requests
 import json
@@ -17,15 +24,19 @@ import sys
 from logging.handlers import RotatingFileHandler
 import logging
 
-
 class SonarrInstance:
+    """
+    A class representing a Sonarr instance.
+    """
     def __init__(self, url, api_key, logger):
         """
-
-        Initialize the SonarrInstance object
-        Arguments:
-            - url: the URL of the Sonarr API endpoint
-            - api_key: the API key used to authenticate with the API
+        Initialize a SonarrInstance object.
+        Parameters:
+            url (str): The URL of the Sonarr instance.
+            api_key (str): The API key to use to connect to the Sonarr instance.
+            logger (logging.Logger): a logger object for logging debug messages.
+        Raises:
+            ValueError: If the URL does not point to a valid Sonarr instance.
         """
         self.url = url.rstrip("/")
         self.url = url
@@ -50,9 +61,19 @@ class SonarrInstance:
                 f"Failed to connect to Sonarr instance at {self.url}: {e}")
 
     def __str__(self):
+        """
+        Return a string representation of the SonarrInstance object.
+        Returns:
+            A string representation of the SonarrInstance object.
+        """
         return f"SonarrInstance(url={self.url})"
 
     def get_system_status(self):
+        """
+        Get the status of the Sonarr instance.
+        Returns:
+            A dictionary representing the status of the Sonarr instance.
+        """
         url = f"{self.url}/api/v3/system/status"
         response = self.session.get(url)
         response.raise_for_status()
@@ -61,7 +82,6 @@ class SonarrInstance:
     def get_all_tags(self):
         """
         Get a list of all tags in Sonarr.
-        
         Returns:
             A list of dictionaries representing all tags in Sonarr.
         """
@@ -108,10 +128,12 @@ class SonarrInstance:
 
     def add_tag(self, series_id, tag_id):
         """
-        This function adds a tag with the given ID to a series with the given series ID.
-        :param series_id: The ID of the series to which the tag will be added.
-        :param tag_id: The ID of the tag to be added to the series.
-        :return: None
+        Add a tag to a series.
+        Parameters:
+            series_id (int): The ID of the series to add the tag to 
+            tag_id (int): The ID of the tag to add to the series
+        Raises:
+            Exception: If the API call to add the tag fails
         """
         payload = {
             "seriesIds": series_id,
@@ -124,8 +146,13 @@ class SonarrInstance:
 
     def check_and_create_tag(self, tag_name, dry_run, logger):
         """
-        Check if a the desired tag exists in Sonarr, and if not, create it.
-        Returns the ID of the desired tag.
+        Check if a tag exists and create it if it doesn't.
+        Parameters:
+            tag_name (str): The name of the tag to check for
+            dry_run (bool): If True, don't actually create the tag
+            logger (logging.Logger): a logger object for logging debug messages.
+        Returns:
+            int: The ID of the tag
         """
         all_tags = self.get_all_tags()
         tag_id = None
@@ -149,12 +176,14 @@ class SonarrInstance:
 
     def remove_tags(self, all_series, tag_id, tag_name, logger):
         """
-        Remove a specific tag from a list of series.
+        Remove a tag from all series that have it.
         Parameters:
-            all_series (list): a list of series dictionaries, each containing information about a series.
-            tag_id (int): the ID of the tag to be removed.
+            all_series (list): A list of dictionaries representing all series in Sonarr.
+            tag_id (int): The ID of the tag to remove
+            tag_name (str): The name of the tag to remove
+            logger (logging.Logger): a logger object for logging debug messages.
         Returns:
-            False: always returns False, since this function only updates the tags of serise and does not return any data.
+            bool: True if the tag was removed from at least one series, False otherwise
         """
         series_ids = []
         for series in all_series:
@@ -179,7 +208,13 @@ class SonarrInstance:
         return False
 
     def search_series(self, series_id):
-        # Create the payload data for the API request
+        """
+        Search for a series by ID.
+        Parameters:
+            series_id (int): The ID of the series to search for
+            Raises:
+                Exception: If the API call to search for the series fails
+        """
         payload = {
             "name": "SeriesSearch",
             "seriesIds": series_id
@@ -190,12 +225,18 @@ class SonarrInstance:
 
 
 class RadarrInstance():
+    """
+    A class representing a Radarr instance.
+    """
     def __init__(self, url, api_key, logger):
         """
-        Initialize the RadarrInstance object
-        Arguments:
-            - url: the URL of the Radarr API endpoint
-            - api_key: the API key used to authenticate with the API
+        Initialize a RadarrInstance object.
+        Parameters:
+            url (str): The URL of the Radarr instance
+            api_key (str): The API key to use to connect to the Radarr instance
+            logger (logging.Logger): a logger object for logging debug messages.
+        Raises:
+            ValueError: If the URL does not point to a valid Radarr instance
         """
         self.url = url.rstrip("/")
         self.url = url
@@ -219,9 +260,17 @@ class RadarrInstance():
                 f"Failed to connect to Radarr instance at {self.url}: {e}")
 
     def __str__(self):
+        """
+        Return a string representation of the RadarrInstance object.
+        """
         return f"RadarrInstance(url={self.url})"
 
     def get_system_status(self):
+        """
+        Get the system status of the Radarr instance.
+        Returns:
+            A dictionary representing the system status of the Radarr instance.
+        """
         endpoint = f"{self.url}/api/v3/system/status"
         response = self.session.get(endpoint)
         response.raise_for_status()
@@ -229,10 +278,9 @@ class RadarrInstance():
 
     def get_all_tags(self):
         """
-        Get a list of all tags in Radarr.
-        
+        Get all tags in the Radarr instance.
         Returns:
-            A list of dictionaries representing all tags in Radarr.
+            A list of dictionaries representing all tags in the Radarr instance.
         """
         endpoint = f"{self.url}/api/v3/tag"
         response = self.session.get(endpoint, headers=self.headers)
@@ -240,9 +288,9 @@ class RadarrInstance():
 
     def create_tag(self, label, logger):
         """
-        Create a new tag with the specified label
+        Create a tag in the Radarr instance.
         Parameters:
-            label (str): The label for the new tag
+            label (str): The label of the tag to create
             logger (logging.Logger): a logger object for logging debug messages.
         Raises:
             Exception: If the API call to create the tag fails
@@ -262,9 +310,10 @@ class RadarrInstance():
 
     def get_movies(self):
         """
-        Get a list of all movies in Radarr.
+        Get all movies in the Radarr instance.
         Returns:
-            list: A list of dictionaries representing all movies in Radarr.
+            A list of dictionaries representing all movies in the Radarr instance.
+        
         """
         endpoint = f"{self.url}/api/v3/movie"
         response = self.session.get(endpoint, headers=self.headers)
@@ -276,12 +325,13 @@ class RadarrInstance():
                 f"Failed to get movies with status code {response.status_code}")
 
     def add_tag(self, movie_id, tag_id):
-        """Add a tag to a movie with given movie_id
-        Args:
-            movie_id (int): the id of the movie to add the tag to
-            tag_id (int): the id of the tag to add
+        """
+        Add a tag to a movie.
+        Parameters:
+            movie_id (int): The ID of the movie to add the tag to
+            tag_id (int): The ID of the tag to add to the movie
         Raises:
-            requests.exceptions.HTTPError: if the response from the API is not a 202 (Accepted) status code
+            Exception: If the API call to add the tag to the movie fails
         """
         payload = {
             "movieIds": movie_id,
@@ -294,8 +344,13 @@ class RadarrInstance():
 
     def check_and_create_tag(self, tag_name, dry_run, logger):
         """
-        Check if a the desired tag exists in Radarr, and if not, create it.
-        Returns the ID of the desired tag.
+        Check if a tag exists in the Radarr instance and create it if it does not.
+        Parameters:
+            tag_name (str): The name of the tag to check for
+            dry_run (bool): Whether or not to perform a dry run
+            logger (logging.Logger): a logger object for logging debug messages.
+        Returns:
+            The ID of the tag
         """
         all_tags = self.get_all_tags()
         tag_id = None
@@ -312,7 +367,6 @@ class RadarrInstance():
                 for tag in all_tags:
                     if tag["label"] == tag_name:
                         tag_id = tag["id"]
-                        # Break out of the loop
                         break
             else:
                 logger.info(f'Tag Name: {tag_name} would have been created.')
@@ -320,14 +374,14 @@ class RadarrInstance():
 
     def remove_tags(self, all_movies, tag_id, tag_name, logger):
         """
-        Remove a specific tag from a list of movies.
+        Remove a tag from all movies in the Radarr instance.
         Parameters:
-            all_movies (list): a list of movie dictionaries, each containing information about a movie.
-            tag_id (int): the ID of the tag to be removed.
-            tag_name (str): the name of the tag to be removed.
+            all_movies (list): A list of dictionaries representing all movies in the Radarr instance.
+            tag_id (int): The ID of the tag to remove from all movies
+            tag_name (str): The name of the tag to remove from all movies
             logger (logging.Logger): a logger object for logging debug messages.
         Returns:
-            False: always returns False, since this function only updates the tags of movies and does not return any data.
+            True if the tag was removed from at least one movie, False otherwise.
         """
         movie_ids = []
         for movie in all_movies:
@@ -351,6 +405,13 @@ class RadarrInstance():
         return False
 
     def search_movies(self, movie_id):
+        """
+        Search for a movie in the Radarr instance.
+        Parameters:
+            movie_id (int): The ID of the movie to search for
+        Raises:
+            Exception: If the API call to search for the movie fails
+        """
         payload = {
             "name": "MoviesSearch",
             "movieIds": movie_id
@@ -361,6 +422,16 @@ class RadarrInstance():
 
 
 def check_all_tagged(all_media, tag_id, status, monitored):
+    """
+    Check if all media with a given tag is in a given status and monitored state.
+    Parameters:
+        all_media (list): A list of dictionaries representing all media in the Radarr instance.
+        tag_id (int): The ID of the tag to check for
+        status (str): The status to check for
+        monitored (bool): Whether or not to check for monitored media
+    Returns:
+        True if all media with the given tag is in the given status and monitored state, False otherwise.
+    """
     for media in all_media:
         if monitored != media['monitored']:
             continue
@@ -372,6 +443,29 @@ def check_all_tagged(all_media, tag_id, status, monitored):
 
 
 def validate_input(instance_name, url, api_key, dry_run, unattended, count, monitored, status, tag_name, logger):
+    """
+    Validate the input for a given instance.
+    Parameters:
+        instance_name (str): The name of the instance to validate
+        url (str): The URL of the instance to validate
+        api_key (str): The API key of the instance to validate
+        dry_run (bool): Whether or not to perform a dry run
+        unattended (bool): Whether or not to run unattended
+        count (int): The number of movies to process
+        monitored (bool): Whether or not to process monitored movies
+        status (str): The status to process
+        tag_name (str): The name of the tag to process
+        logger (logging.Logger): a logger object for logging debug messages.
+    Raises:
+        ValueError: If the URL does not start with 'http://' or 'https://'
+        ValueError: If the API key is not provided
+        ValueError: If the dry run value is not True or False
+        ValueError: If the unattended value is not True or False
+        ValueError: If the status value is not 'all', 'released', 'missing', 'announced', 'cinemas', 'inCinemas', 'preDB', 'inCinemasPreDB', or 'releasedPreDB'
+        ValueError: If the tag name is not provided
+    Returns:
+        True if the input is valid, False otherwise.
+    """
     if not (url.startswith("http://") or url.startswith("https://")):
         raise ValueError(
             f'\'{instance_name}\' URL must start with \'http://\' or \'https://://\'')
@@ -425,17 +519,19 @@ def validate_input(instance_name, url, api_key, dry_run, unattended, count, moni
 
 
 def setup_logger(log_level):
-    # Create a directory to store logs, if it doesn't exist
+    """
+    Setup the logger.
+    Parameters:
+        log_level (str): The log level to use
+    Returns:
+        A logger object for logging messages.
+    """
     log_dir = os.path.dirname(os.path.realpath(__file__)) + "/logs"
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    # Get the current date in YYYY-MM-DD format
     today = time.strftime("%Y-%m-%d")
-    # Create a log file with the current date in its name
     log_file = f"{log_dir}/upgradinatorr_{today}.log"
-    # Set up the logger
     logger = logging.getLogger()
-    # Convert the log level string to upper case and set the logging level accordingly
     log_level = log_level.upper()
     if log_level == 'DEBUG':
         logger.setLevel(logging.DEBUG)
@@ -447,17 +543,13 @@ def setup_logger(log_level):
         logger.critical(
             f"Invalid log level '{log_level}', defaulting to 'INFO'")
         logger.setLevel(logging.INFO)
-    # Set the formatter for the file handler
     formatter = logging.Formatter(
         fmt='%(asctime)s %(levelname)s: %(message)s', datefmt='%I:%M %p')
-    # Add a TimedRotatingFileHandler to the logger, to log to a file that rotates daily
     handler = logging.handlers.TimedRotatingFileHandler(
         log_file, when='midnight', interval=1, backupCount=3)
     handler.setFormatter(formatter)
     logger.addHandler(handler)
-    # Set the formatter for the console handler
     formatter = logging.Formatter()
-    # Add a StreamHandler to the logger, to log to the console
     console_handler = logging.StreamHandler()
     if log_level == 'debug':
         console_handler.setLevel(logging.DEBUG)
@@ -466,7 +558,6 @@ def setup_logger(log_level):
     elif log_level == 'critical':
         console_handler.setLevel(logging.CRITICAL)
     logger.addHandler(console_handler)
-    # Delete the old log files
     log_files = [f for f in os.listdir(log_dir) if os.path.isfile(
         os.path.join(log_dir, f)) and f.startswith("upgradinatorr_")]
     log_files.sort(key=lambda x: os.path.getmtime(
@@ -475,21 +566,20 @@ def setup_logger(log_level):
         os.remove(os.path.join(log_dir, file))
     return logger
 
-
 def main():
+    """
+    Main function for the script.
+    """
     cycle_count = 0
-    # Construct the path to the config file based on the script file's path
     script_dir = os.path.dirname(os.path.abspath(__file__))
     config_file_path = os.path.join(script_dir, 'config.yml')
 
-    # Load the config file
     with open(config_file_path) as f:
         config = yaml.safe_load(f)
 
     global_data = config['global']
     upgradinatorr_data = config['upgradinatorr']
 
-    # Pull global data
     radarr_data = global_data['radarr']
     sonarr_data = global_data['sonarr']
 
@@ -498,7 +588,6 @@ def main():
     logger = setup_logger(log_level)
 
     if dry_run:
-        # If dry_run is activated, print a message indicating so and the status of other variables.
         logger.info('*' * 40)
         logger.info(f'* {"Dry_run Activated":^36} *')
         logger.info('*' * 40)
@@ -517,7 +606,6 @@ def main():
                 logger.info(f'* {instance_name:^36} *')
                 logger.info('*' * 40)
                 logger.info('')
-            # Check if this instance is defined in upgradinatorr
             upgradinatorr_instance = next(
                 (r for r in upgradinatorr_data.get(
                     instance_type.lower(), []) if r['name'] == instance_name),
@@ -551,8 +639,6 @@ def main():
                 logger.debug(f'*' * 40)
                 logger.debug('')
             try:
-
-                # Instantiate the class for this section
                 class_map = {
                     'Radarr': RadarrInstance,
                     'Sonarr': SonarrInstance,
@@ -560,7 +646,6 @@ def main():
                 section_class = class_map.get(
                     instance_name.split('_')[0].capitalize())
                 arr_instance = section_class(url, api_key, logger)
-                # Add the instance to the appropriate list
                 if section_class == RadarrInstance:
                     radarr_instances = []
                     radarr_instances.append(arr_instance)
@@ -660,5 +745,7 @@ def main():
 
 
 if __name__ == '__main__':
-    # Call the main function
+    """
+    Main entry point for the script.
+    """
     main()

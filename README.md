@@ -5,19 +5,6 @@ As of version:<br>
 4.0.0 Plex backup<br>
 4.0.0 Appdata backup<br>
 The config files of both these scripts have been reworked and must be redownloaded and updated. If there is any issues with the files let me know
-Also jq is a requirement for discord notifications. If you don't have it installed:
-```
-sudo apt-get update
-sudo apt-get install jq
-```
-
-## Installation
-
-These scripts were designed to work on unRAID, however there shouldn't be any reason it wouldn't work on any Unix based system. <br>
-However, on unRAID simply ensure you have `UserScripts` installed from the appstore > navigate to the `UserScripts` location within `Settings`> create a new script and then set your cron interval.
-
-> Note: Most backup scripts use 7Zip for compression <br>
-> If you'd like to use 7Zip you'll need to download it using NerdTools, which is also in the appstore
 
 ## Versioning
 

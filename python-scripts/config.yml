@@ -67,6 +67,7 @@ renamer:
   dry_run: false
   # Options are 'Copy' or 'Move'
   action_type: move
+  print_only_renames: true
   # Plex is only used if you're trying to match collections
   plex_url: http://localhost:32400
   token: plex_token

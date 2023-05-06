@@ -12,7 +12,7 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 unmatched-asset.py
 # Requirements: requests, tqdm
-# Version: 2.2.6
+# Version: 2.2.7
 # License: MIT License
 # ===================================================================================================
 
@@ -390,6 +390,8 @@ def rename_movies(matched_movie, file, destination_dir, source_dir, dry_run, log
     matched_movie_folder = matched_movie_folder + "." + file_extension
     destination = os.path.join(destination_dir, matched_movie_folder)
     source = os.path.join(source_dir, file)
+    if folder_path.endswith('/'):
+        folder_path = folder_path[:-1]
     if os.path.basename(file) != matched_movie_folder:
         if dry_run:
             logger.info(f"{file} -> {matched_movie_folder}")
@@ -435,6 +437,8 @@ def rename_series(matched_series, file, destination_dir, source_dir, dry_run, lo
     matched_series_folder = os.path.basename(folder_path)
     logger.debug(f"matched_series_folder: {matched_series_folder}")
     file_extension = os.path.basename(file).split(".")[-1]
+    if folder_path.endswith('/'):
+        folder_path = folder_path[:-1]
     if "_Season" in file:
         show_name, season_info = file.split("_Season")
         if show_name == matched_series_folder:
@@ -758,8 +762,7 @@ def main():
                 None
             )
             if renamer_instance:
-                log_level, dry_run = validate_input(instance_name, url, api_key, log_level, dry_run, plex_url, token, source_dir,
-                                                    library_names, destination_dir, movies_threshold, series_threshold, collection_threshold, action_type, logger)
+                log_level, dry_run = validate_input(instance_name, url, api_key, log_level, dry_run, plex_url, token, source_dir, library_names, destination_dir, movies_threshold, series_threshold, collection_threshold, action_type, logger, print_only_renames)
                 if cycle_count < 1:
                     logger.debug(f'{" Script Settings ":*^40}')
                     logger.debug(f'Dry_run: {dry_run}')

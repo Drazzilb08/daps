@@ -12,7 +12,7 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 unmatched-asset.py
 # Requirements: requests, tqdm
-# Version: 2.2.7
+# Version: 2.2.8
 # License: MIT License
 # ===================================================================================================
 
@@ -24,6 +24,7 @@ import time
 import re
 import logging
 import yaml
+import filecmp
 import xml.etree.ElementTree as etree
 from logging.handlers import RotatingFileHandler
 from fuzzywuzzy import fuzz
@@ -384,37 +385,41 @@ def rename_movies(matched_movie, file, destination_dir, source_dir, dry_run, log
         None
     """
     folder_path = matched_movie['folderName']
+    if folder_path.endswith('/'):
+        folder_path = folder_path[:-1]
     matched_movie_folder = os.path.basename(folder_path)
     logger.debug(f"matched_movie_folder: {matched_movie_folder}")
     file_extension = os.path.basename(file).split(".")[-1]
     matched_movie_folder = matched_movie_folder + "." + file_extension
     destination = os.path.join(destination_dir, matched_movie_folder)
     source = os.path.join(source_dir, file)
-    if folder_path.endswith('/'):
-        folder_path = folder_path[:-1]
-    if os.path.basename(file) != matched_movie_folder:
-        if dry_run:
-            logger.info(f"{file} -> {matched_movie_folder}")
-            return
-        else:
-            if action_type == "move":
-                shutil.move(source, destination)
-            elif action_type == "copy":
-                shutil.copy(source, destination)
-            logger.info(f"{file} -> {matched_movie_folder}")
-            return
-    if print_only_renames == False:
-        if os.path.basename(file) == matched_movie_folder:
+    # Checks if the file already exists in the destination folder and if it's the same file as the source
+    if os.path.exists(destination) and filecmp.cmp(source, destination):
+        return
+    else:
+        if os.path.basename(file) != matched_movie_folder:
             if dry_run:
-                logger.info(f"{file} -->> {matched_movie_folder}")
+                logger.info(f"{file} -> {matched_movie_folder}")
                 return
             else:
                 if action_type == "move":
                     shutil.move(source, destination)
                 elif action_type == "copy":
                     shutil.copy(source, destination)
-                logger.info(f"{file} -->> {matched_movie_folder}")
+                logger.info(f"{file} -> {matched_movie_folder}")
                 return
+        if print_only_renames == False:
+            if os.path.basename(file) == matched_movie_folder:
+                if dry_run:
+                    logger.info(f"{file} -->> {matched_movie_folder}")
+                    return
+                else:
+                    if action_type == "move":
+                        shutil.move(source, destination)
+                    elif action_type == "copy":
+                        shutil.copy(source, destination)
+                    logger.info(f"{file} -->> {matched_movie_folder}")
+                    return
 
 
 def rename_series(matched_series, file, destination_dir, source_dir, dry_run, logger, action_type, print_only_renames):
@@ -433,12 +438,12 @@ def rename_series(matched_series, file, destination_dir, source_dir, dry_run, lo
         None
     """
     folder_path = matched_series['path']
+    if folder_path.endswith('/'):
+        folder_path = folder_path[:-1]
     logger.debug(f"folder_path: {folder_path}")
     matched_series_folder = os.path.basename(folder_path)
     logger.debug(f"matched_series_folder: {matched_series_folder}")
     file_extension = os.path.basename(file).split(".")[-1]
-    if folder_path.endswith('/'):
-        folder_path = folder_path[:-1]
     if "_Season" in file:
         show_name, season_info = file.split("_Season")
         if show_name == matched_series_folder:
@@ -466,29 +471,32 @@ def rename_series(matched_series, file, destination_dir, source_dir, dry_run, lo
             matched_series_folder = matched_series_folder + "." + file_extension
     destination = os.path.join(destination_dir, matched_series_folder)
     source = os.path.join(source_dir, file)
-    if os.path.basename(file) != matched_series_folder:
-        if dry_run:
-            logger.info(f"{file} -> {matched_series_folder}")
-            return
-        else:
-            if action_type == "move":
-                shutil.move(source, destination)
-            elif action_type == "copy":
-                shutil.copy(source, destination)
-            logger.info(f"{file} -> {matched_series_folder}")
-            return
-    if print_only_renames == False:
-        if os.path.basename(file) == matched_series_folder:
+    if os.path.exists(destination) and filecmp.cmp(source, destination):
+        return
+    else:
+        if os.path.basename(file) != matched_series_folder:
             if dry_run:
-                logger.info(f"{file} -->> {matched_series_folder}")
+                logger.info(f"{file} -> {matched_series_folder}")
                 return
             else:
                 if action_type == "move":
                     shutil.move(source, destination)
                 elif action_type == "copy":
                     shutil.copy(source, destination)
-                logger.info(f"{file} -->> {matched_series_folder}")
+                logger.info(f"{file} -> {matched_series_folder}")
                 return
+        if print_only_renames == False:
+            if os.path.basename(file) == matched_series_folder:
+                if dry_run:
+                    logger.info(f"{file} -->> {matched_series_folder}")
+                    return
+                else:
+                    if action_type == "move":
+                        shutil.move(source, destination)
+                    elif action_type == "copy":
+                        shutil.copy(source, destination)
+                    logger.info(f"{file} -->> {matched_series_folder}")
+                    return
 
 
 def remove_illegal_chars(string):
@@ -525,29 +533,32 @@ def rename_collections(matched_collection, file, destination_dir, source_dir, dr
     matched_collection_title = remove_illegal_chars(matched_collection_title)
     destination = os.path.join(destination_dir, matched_collection_title)
     source = os.path.join(source_dir, file)
-    if os.path.basename(file) != matched_collection_title:
-        if dry_run:
-            logger.info(f"{file} -> {matched_collection_title}")
-            return
-        else:
-            if action_type == "move":
-                shutil.move(source, destination)
-            elif action_type == "copy":
-                shutil.copy(source, destination)
-            logger.info(f"{file} -> {matched_collection_title}")
-            return
-    if print_only_renames == False:
-        if os.path.basename(file) == matched_collection_title:
+    if os.path.exists(destination) and filecmp.cmp(source, destination):
+        return
+    else:
+        if os.path.basename(file) != matched_collection_title:
             if dry_run:
-                logger.info(f"{file} -->> {matched_collection_title}")
+                logger.info(f"{file} -> {matched_collection_title}")
                 return
             else:
                 if action_type == "move":
                     shutil.move(source, destination)
                 elif action_type == "copy":
                     shutil.copy(source, destination)
-                logger.info(f"{file} -->> {matched_collection_title}")
+                logger.info(f"{file} -> {matched_collection_title}")
                 return
+        if print_only_renames == False:
+            if os.path.basename(file) == matched_collection_title:
+                if dry_run:
+                    logger.info(f"{file} -->> {matched_collection_title}")
+                    return
+                else:
+                    if action_type == "move":
+                        shutil.move(source, destination)
+                    elif action_type == "copy":
+                        shutil.copy(source, destination)
+                    logger.info(f"{file} -->> {matched_collection_title}")
+                    return
 
 
 def validate_input(instance_name, url, api_key, log_level, dry_run, plex_url, token, source_dir, library_names, destination_dir, movies_threshold, series_threshold, collection_threshold, action_type, logger, print_only_renames):

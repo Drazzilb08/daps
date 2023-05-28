@@ -668,8 +668,7 @@ def main():
                                 f'All of {instance_name} has been tagged with {tag_name} skipping.')
                             continue
                         if all_radarr_tagged is False:
-                            untagged_movies = [m for m in all_movies if radarr_tag_id not in m['tags']
-                                               and m['monitored'] == monitored and (status == 'all' or m['status'] == status)]
+                            untagged_movies = [m for m in all_movies if radarr_tag_id not in m['tags'] and m['monitored'] == monitored and (status == 'all' or m['status'] == status)]
                             movies_to_process = untagged_movies[:count]
                             for movies in movies_to_process:
                                 movie_id = [int(m['id'])
@@ -715,12 +714,10 @@ def main():
                                 f'All of {instance_name} has been tagged with {tag_name} skipping.')
                             break
                         if all_sonarr_tagged is False:
-                            untagged_series = [s for s in all_series if sonarr_tag_id not in s['tags']
-                                               and s['monitored'] == monitored and (status == 'all' or s['status'] == status)]
+                            untagged_series = [s for s in all_series if sonarr_tag_id not in s['tags'] and s['monitored'] == monitored and (status == 'all' or s['status'] == status)]
                             series_to_process = untagged_series[:count]
                             for series in series_to_process:
-                                series_id = [int(s['id'])
-                                             for s in series_to_process]
+                                series_id = [int(s['id']) for s in series_to_process]
                                 if dry_run == False:
                                     sonarr.search_series(series_id)
                                     sonarr.add_tag(series_id, sonarr_tag_id)

@@ -1,5 +1,5 @@
-Levenshtein
 fuzzywuzzy
 requests
 tqdm
 pyyaml
+python-Levenshtein 

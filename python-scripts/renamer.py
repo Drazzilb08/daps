@@ -233,7 +233,7 @@ def rename_series(matched_series, file, destination_dir, source_dir, dry_run, lo
                 matched_series = matched_series + \
                     "_Season" + season_info + "." + file_extension
         elif "Specials" in file:
-            matched_series = matched_series + "_Season00." + file_extension
+            matched_series = matched_series + "_Season00" + "." + file_extension
         else:
             matched_series = matched_series + "." + file_extension
     destination = os.path.join(destination_dir, matched_series)
@@ -289,7 +289,7 @@ def process_instance(instance_type,instance_name, url, api_key, logger, config, 
         elif instance_type == "Sonarr":
             matched_series, reason = match_series(series, file, logger, config.series_threshold)
         if matched_collection:
-            message = rename_collections(matched_collection, file, config.destination_dir, config.source_dir, config.dry_run, logger, config.action_type, config.print_only_renames, destination_file_list)
+            message = rename_collections(matched_collection, file, config.destination_dir, config.source_dir, config.dry_run, config.action_type, config.print_only_renames, destination_file_list)
             final_output.append(message)
         elif matched_movie:
             message = rename_movies(matched_movie, file, config.destination_dir, config.source_dir, config.dry_run, logger, config.action_type, config.print_only_renames, destination_file_list)

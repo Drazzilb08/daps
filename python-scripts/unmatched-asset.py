@@ -166,9 +166,9 @@ def print_output(unmatched_movies, unmatched_series, unmatched_collections, medi
     unmatched_collections_total = 0
     unmatched_seasons = 0
     total_movies = len(media_movies)
-    total_series = sum([len(series[0]) for series in media_series])
-    total_seasons = sum([len(series[2]) for series in media_series])
-    total_collections = sum([len(collection[1]) for collection in plex_collections])
+    total_series = len(media_series)
+    total_seasons = len([season for series in media_series for season in series[2]])
+    total_collections = len(plex_collections)
     if unmatched_movies:
         logger.info("Unmatched Movies:")
         previous_path = None

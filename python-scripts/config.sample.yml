@@ -13,6 +13,10 @@ global:
     - name: sonarr_2
       api: abcdefghijlmnop
       url: http://localhost:9090
+  plex:
+    - name: plex
+      api: abcdefghijlmnop
+      url: http://localhost:32400
 
 upgradinatorr:
   log_level: info
@@ -68,9 +72,6 @@ renamer:
   # Options are 'Copy' or 'Move'
   action_type: move
   print_only_renames: true
-  # Plex is only used if you're trying to match collections
-  plex_url: http://localhost:32400
-  token: plex_token
   # Library names are used to match collections posters to the collections listed w/in Plex. Typically Movie Libraries are used
   library_names:
     - Movies

@@ -12,7 +12,7 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py
 # Requirements: requests, tqdm
-# Version: 3.0.0
+# Version: 3.0.1
 # License: MIT License
 # ===================================================================================================
 
@@ -31,7 +31,7 @@ import shutil
 config = Config(script_name="renamer")
 logger = Logger(config.log_level, "renamer")
 
-def match_collection(plex_collections, file, logger, collection_threshold):
+def match_collection(plex_collections, file, collection_threshold):
     file_name = os.path.splitext(file)[0]
     logger.debug(f'file_name: {file_name}')
     closest_match = None
@@ -85,7 +85,7 @@ def remove_illegal_chars(string):
     illegal_characters = re.compile(r'[\\/:*?"<>|\0]')
     return illegal_characters.sub("", string)
 
-def match_movies(movies, file, logger, movies_threshold):
+def match_movies(movies, file, movies_threshold):
     if " - Season" in file or " - Special" in file:
         return None, f"File {file} ignored because it contains 'Season' or 'Special'"
     year = None
@@ -129,8 +129,9 @@ def match_movies(movies, file, logger, movies_threshold):
     else:
         return None, None
 
-def rename_movies(matched_movie, file, destination_dir, source_dir, dry_run, logger, action_type, print_only_renames, destination_file_list):
+def rename_movies(matched_movie, file, destination_dir, source_dir, dry_run, action_type, print_only_renames, destination_file_list):
     folder_path = matched_movie['folderName']
+    file = file.replace("_", "")
     if folder_path.endswith('/'):
         folder_path = folder_path[:-1]
     matched_movie = os.path.basename(folder_path)
@@ -163,11 +164,12 @@ def rename_movies(matched_movie, file, destination_dir, source_dir, dry_run, log
                 message = f"{file} -->> {matched_movie}"
                 return message
             
-def match_series(series, file, logger, series_threshold):
+def match_series(series, file, series_threshold):
     year = None
     best_match = None
     closest_match = None
     closest_score = 0
+    file = file.replace("_", "")
     logger.debug(f'File Name: {file}')
     file_name = re.split(r'\(\d{4}\)', file)[0].rstrip()
     logger.debug(f'Series Name: {file_name}')
@@ -205,7 +207,7 @@ def match_series(series, file, logger, series_threshold):
     else:
         return None, None
     
-def rename_series(matched_series, file, destination_dir, source_dir, dry_run, logger, action_type, print_only_renames, destination_file_list):
+def rename_series(matched_series, file, destination_dir, source_dir, dry_run, action_type, print_only_renames, destination_file_list):
     folder_path = matched_series['path']
     if folder_path.endswith('/'):
         folder_path = folder_path[:-1]
@@ -263,16 +265,19 @@ def rename_series(matched_series, file, destination_dir, source_dir, dry_run, lo
                 message = f"{file} -->> {matched_series}"
                 return message
             
-def process_instance(instance_type,instance_name, url, api_key, logger, config, source_file_list, destination_file_list, final_output):
+def process_instance(instance_type,instance_name, url, api_key, config, destination_file_list, final_output, asset_series, asset_collections, asset_movies):
     matched_collection = None
     matched_movie = None
     matched_series = None
     if instance_type == "Plex":
-        app = PlexInstance(url, api_key, logger)
+        app = PlexInstance(url, api_key)
+        source_file_list = asset_collections
     elif instance_type == "Radarr":
-        app = RadarrInstance(url, api_key, logger)
+        app = RadarrInstance(url, api_key)
+        source_file_list = asset_movies
     elif instance_type == "Sonarr":
-        app = SonarrInstance(url, api_key, logger)
+        app = SonarrInstance(url, api_key)
+        source_file_list = asset_series
     if instance_type == "Plex":
         collections = app.get_collections(config.library_names)
     elif instance_type == "Radarr":
@@ -283,25 +288,59 @@ def process_instance(instance_type,instance_name, url, api_key, logger, config, 
         if file in destination_file_list:
             continue
         if instance_type == "Plex":
-            matched_collection, reason = match_collection(collections, file, logger, config.collection_threshold)
+            matched_collection, reason = match_collection(collections, file, config.collection_threshold)
         elif instance_type == "Radarr":
-            matched_movie, reason = match_movies(movies, file, logger, config.movies_threshold)
+            matched_movie, reason = match_movies(movies, file, config.movies_threshold)
         elif instance_type == "Sonarr":
-            matched_series, reason = match_series(series, file, logger, config.series_threshold)
+            matched_series, reason = match_series(series, file, config.series_threshold)
         if matched_collection:
             message = rename_collections(matched_collection, file, config.destination_dir, config.source_dir, config.dry_run, config.action_type, config.print_only_renames, destination_file_list)
             final_output.append(message)
         elif matched_movie:
-            message = rename_movies(matched_movie, file, config.destination_dir, config.source_dir, config.dry_run, logger, config.action_type, config.print_only_renames, destination_file_list)
+            message = rename_movies(matched_movie, file, config.destination_dir, config.source_dir, config.dry_run, config.action_type, config.print_only_renames, destination_file_list)
             final_output.append(message)
         elif matched_series:
-            message = rename_series(matched_series, file, config.destination_dir, config.source_dir, config.dry_run, logger, config.action_type, config.print_only_renames, destination_file_list)
+            message = rename_series(matched_series, file, config.destination_dir, config.source_dir, config.dry_run, config.action_type, config.print_only_renames, destination_file_list)
             final_output.append(message)
     return final_output
 
+def get_assets_files(assets_path):
+    """
+    Gets the files from the assets folder and sorts them into series, movies, and collections.
+    
+    Parameters:
+        assets_path (str): The path to the assets folder.
+    
+    Returns:
+        series (list): A list of series.
+        collections (list): A list of collections.
+        movies (list): A list of movies.
+    """
+    series = set()
+    movies = set()
+    collections = set()
+
+    print("Getting assets files..., this may take a while.")
+    for file in assets_path:
+        lowercase_file_name = file.lower()
+        if not re.search(r'\(\d{4}\)', lowercase_file_name):
+            collections.add(file)
+        else:
+            if any(lowercase_file_name in f.lower() and (" - season" in f.lower() or "specials" in f.lower()) for f in assets_path):
+                series.add(file)
+            elif re.search(r' - season\d{2}|specials', lowercase_file_name):
+                series.add(file)
+            else:
+                movies.add(file)
+    
+    series = sorted(series)
+    collections = sorted(collections)
+    movies = sorted(movies)
+    return list(series), list(collections), list(movies)
+
 def main():
     final_output = []
-    validate_input = ValidateInput(config.log_level, config.dry_run, logger, config.source_dir, config.library_names, config.destination_dir, config.movies_threshold, config.series_threshold, config.collection_threshold, config.action_type, config.print_only_renames)
+    validate_input = ValidateInput(config.log_level, config.dry_run, config.source_dir, config.library_names, config.destination_dir, config.movies_threshold, config.series_threshold, config.collection_threshold, config.action_type, config.print_only_renames)
     config.log_level, config.dry_run = validate_input.validate_script(script_name = "renamer")
     source_file_list = sorted(os.listdir(config.source_dir), key=lambda x: x.lower())
     destination_file_list = sorted(os.listdir(config.destination_dir), key=lambda x: x.lower())
@@ -329,6 +368,7 @@ def main():
         logger.info(f'* {" NO CHANGES WILL BE MADE ":^36} *')
         logger.info('*' * 40)
         logger.info('')
+    asset_series, asset_collections, asset_movies = get_assets_files(source_file_list)
     for instance_type, instance_data in [ ('Plex', config.plex_data), ('Radarr', config.radarr_data), ('Sonarr', config.sonarr_data)]:
         for instance in instance_data:
             instance_name = instance['name']
@@ -349,7 +389,7 @@ def main():
             logger.debug(f"Instance Name: {instance_name}")
             logger.debug(f"URL: {url}")
             logger.debug(f"API Key: {'<redacted>' if api_key else 'None'}")
-            final_output = process_instance(instance_type,instance_name, url, api_key, logger, config, source_file_list, destination_file_list, final_output)
+            final_output = process_instance(instance_type,instance_name, url, api_key, config, destination_file_list, final_output, asset_series, asset_collections, asset_movies)
             permissions = 0o777
             os.chmod(config.destination_dir, permissions)
             os.chmod(config.source_dir, permissions)

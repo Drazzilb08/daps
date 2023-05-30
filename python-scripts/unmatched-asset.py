@@ -13,7 +13,7 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 unmatched-asset.py
 # Requirements: requests
-# Version: 3.0.0
+# Version: 3.0.1
 # License: MIT License
 # ===================================================================================================
 
@@ -126,8 +126,13 @@ def unmatched(asset_series, asset_movies, media_movies, media_series, plex_colle
                 for season in series_seasons:
                     season = season.replace(" ", "")
                     season_with_series = f"{series_name}_{season}"
+                    if season == "Specials":
+                        season_with_series = f"{series_name}_Season00"
                     if season_with_series not in asset_series:
-                        season = season.replace("Season", "Season ")
+                        if season == "Season00":
+                            season = "Specials"
+                        else:
+                            season = season.replace("Season", "Season ")
                         missing_seasons.append(season)
                         flag = True
                 if missing_seasons:

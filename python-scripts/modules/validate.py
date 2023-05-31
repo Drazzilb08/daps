@@ -18,7 +18,7 @@ class ValidateInput():
                 ):
         self.log_level = log_level
         self.dry_run = dry_run
-        self.logger = logger
+        logger = logger
         self.source_dir = source_dir
         self.library_names = library_names
         self.destination_dir = destination_dir
@@ -38,22 +38,22 @@ class ValidateInput():
             if url.startswith("http://") or url.startswith("https://"):
                 if not api_key:
                     raise ValueError(f'API key is required for \'{instance_name}\'')
-    def validate_script(self, script_name):
+    def validate_script(self, logger):
         if self.dry_run not in [True, False]:
             self.dry_run = True
             raise ValueError(f'\'dry_run must be either True or False')
         if self.log_level not in ['debug', 'info', 'critical']:
-            self.logger.warning(f"{formatter.color('ERROR', 'red')}: \'log_level: {self.log_level}\' must be either \'DEBUG\', \'INFO\', or \'CRITICAL\'. Defaulting to \'INFO\'")
+            logger.warning(f"{formatter.color('ERROR', 'red')}: \'log_level: {self.log_level}\' must be either \'DEBUG\', \'INFO\', or \'CRITICAL\'. Defaulting to \'INFO\'")
             self.log_level = 'INFO'
             if not self.source_dir:
                 raise ValueError(f'\'source_dir is required.')
             if not os.path.exists(self.source_dir):
-                self.logger.error(f"Source directory does not exist: {self.source_dir}")
+                logger.error(f"Source directory does not exist: {self.source_dir}")
                 sys.exit(1)
             if not self.destination_dir:
                 raise ValueError(f'\'destination_dir is required.')
             if not os.path.exists(self.destination_dir):
-                self.logger.error(f"Destination directory does not exist: {self.destination_dir}")
+                logger.error(f"Destination directory does not exist: {self.destination_dir}")
                 sys.exit(1)
             if not self.movies_threshold:
                 raise ValueError(f'\'movies_threshold is required.')
@@ -89,5 +89,5 @@ class ValidateInput():
             if self.print_only_renames not in [True, False]:
                 self.print_only_renames = False
                 raise ValueError(f'\'print_only_renames must be either True or False')
-        self.logger.debug("Validated input")
+        logger.debug("Validated input")
         return self.log_level, self.dry_run

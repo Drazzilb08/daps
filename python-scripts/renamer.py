@@ -12,7 +12,7 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py
 # Requirements: requests, tqdm
-# Version: 3.0.1
+# Version: 3.0.2
 # License: MIT License
 # ===================================================================================================
 
@@ -270,13 +270,13 @@ def process_instance(instance_type,instance_name, url, api_key, config, destinat
     matched_movie = None
     matched_series = None
     if instance_type == "Plex":
-        app = PlexInstance(url, api_key)
+        app = PlexInstance(url, api_key, logger)
         source_file_list = asset_collections
     elif instance_type == "Radarr":
-        app = RadarrInstance(url, api_key)
+        app = RadarrInstance(url, api_key, logger)
         source_file_list = asset_movies
     elif instance_type == "Sonarr":
-        app = SonarrInstance(url, api_key)
+        app = SonarrInstance(url, api_key,)
         source_file_list = asset_series
     if instance_type == "Plex":
         collections = app.get_collections(config.library_names)
@@ -340,8 +340,8 @@ def get_assets_files(assets_path):
 
 def main():
     final_output = []
-    validate_input = ValidateInput(config.log_level, config.dry_run, config.source_dir, config.library_names, config.destination_dir, config.movies_threshold, config.series_threshold, config.collection_threshold, config.action_type, config.print_only_renames)
-    config.log_level, config.dry_run = validate_input.validate_script(script_name = "renamer")
+    validate_input = ValidateInput(config.log_level, config.dry_run, config.source_dir, config.library_names, config.destination_dir, config.movies_threshold, config.series_threshold, config.collection_threshold, config.action_type, config.print_only_renames, logger)
+    config.log_level, config.dry_run = validate_input.validate_script(logger)
     source_file_list = sorted(os.listdir(config.source_dir), key=lambda x: x.lower())
     destination_file_list = sorted(os.listdir(config.destination_dir), key=lambda x: x.lower())
     logger.debug('*' * 40)

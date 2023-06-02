@@ -13,7 +13,7 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 unmatched-asset.py
 # Requirements: requests
-# Version: 3.0.1
+# Version: 3.0.2
 # License: MIT License
 # ===================================================================================================
 
@@ -51,13 +51,16 @@ def get_assets_files(assets_path):
         if not re.search(r'\(\d{4}\)', lowercase_file_name):
             collections.add(file_name)
         else:
-            if any(lowercase_file_name in f.lower() and ("_season" in f.lower() or "specials" in f.lower()) for f in files):
+            if any((
+                lowercase_file_name == f.lower() or 
+                f.lower().startswith(lowercase_file_name + "_season") or 
+                f.lower().startswith(lowercase_file_name + " specials"
+                )) for f in files):
                 series.add(file_name)
             elif re.search(r'_season\d{2}|specials', lowercase_file_name):
                 series.add(file_name)
             else:
                 movies.add(file_name)
-    
     series = sorted(series)
     collections = sorted(collections)
     movies = sorted(movies)
@@ -91,6 +94,7 @@ def get_media_folders(media_paths):
                     media_series.append((media_path, subfolder.name, sub_sub_folder_contents))
                 else:
                     media_movies.append((media_path, subfolder.name))
+            
     return media_movies, media_series
 
 def unmatched(asset_series, asset_movies, media_movies, media_series, plex_collections, asset_collections):

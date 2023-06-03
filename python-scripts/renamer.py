@@ -11,7 +11,7 @@
 # Description: This script will check for unmatched assets in your Plex library.
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py
-# Requirements: requests, tqdm, fuzzywuzzy
+# Requirements: requests, tqdm, fuzzywuzzy, pyyaml
 # Version: 3.0.2
 # License: MIT License
 # ===================================================================================================
@@ -166,7 +166,7 @@ def get_assets_files(assets_path):
     movies = sorted(movies)
     return list(series), list(collections), list(movies)
 
-def process_instance(instance_type, instance_name, url, api_key, config, destination_file_list, final_output, asset_series, asset_collections, asset_movies):
+def process_instance(instance_type, instance_name, url, api_key, destination_file_list, final_output, asset_series, asset_collections, asset_movies):
     if instance_type == "Plex":
         if config.library_names:
             app = PlexInstance(url, api_key, logger)
@@ -236,27 +236,35 @@ def main():
         logger.info('*' * 40)
         logger.info('')
     asset_series, asset_collections, asset_movies = get_assets_files(config.source_dir)
-    for instance_type, instance_data in [ ('Plex', config.plex_data), ('Radarr', config.radarr_data), ('Sonarr', config.sonarr_data)]:
-        for instance in instance_data:
-            instance_name = instance['name']
-            try:
-                if (instance_type == "Radarr" and config.radarr is not None and {'name': instance_name} in config.radarr) or (instance_type == "Sonarr" and config.sonarr is not None and {'name': instance_name} in config.sonarr) or (instance_type != "Radarr" and instance_type != "Sonarr" and config.plex_data is not None):
-                    url = instance['url']
-                    api_key = instance['api']
-                else:
-                    continue
-            except TypeError as e:
-                logger.error("An error occurred:", e)
-                continue
-            validate_input.validate_global(url, api_key, instance_name, instance_type)
+    instance_data = {
+        'Radarr': {},
+        'Sonarr': {}
+    }
+    if config.radarr is not None:
+        for instance in config.radarr_data:
+            instance_data['Radarr'][instance['name']] = {
+                'url': instance['url'],
+                'api': instance['api']
+            }
+    if config.sonarr is not None:
+        for instance in config.sonarr_data:
+            instance_data['Sonarr'][instance['name']] = {
+                'url': instance['url'],
+                'api': instance['api']
+            }
+    for instance_type, instances in instance_data.items():
+        for instance_name, script_variables in instances.items():
+            url = script_variables['url']
+            api = script_variables['api']
+            validate_input.validate_global(url, api, instance_name, instance_type)
             final_output.append('*' * 40)
             final_output.append(f'* {instance_name:^36} *')
             final_output.append('*' * 40)
             logger.debug(f'{" Settings ":*^40}')
             logger.debug(f"Instance Name: {instance_name}")
             logger.debug(f"URL: {url}")
-            logger.debug(f"API Key: {'<redacted>' if api_key else 'None'}")
-            final_output = process_instance(instance_type, instance_name, url, api_key, config, destination_file_list, final_output, asset_series, asset_collections, asset_movies)
+            logger.debug(f"API Key: {'<redacted>' if api else 'None'}")
+            final_output = process_instance(instance_type, instance_name, url, api, destination_file_list, final_output, asset_series, asset_collections, asset_movies)
             permissions = 0o777
             os.chmod(config.destination_dir, permissions)
             os.chmod(config.source_dir, permissions)

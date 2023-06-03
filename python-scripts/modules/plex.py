@@ -2,12 +2,27 @@ import xml.etree.ElementTree as ET
 import requests
 
 class PlexInstance:
+    """
+    A class that represents a Plex instance.
+    """
     def __init__(self, url, api_key, logger):
+        """
+        :param url: The URL of the Plex instance
+        :param api_key: The API key to use for authentication
+        :param logger: The logger to use for logging
+        """
         self.url = url
         self.api_key = api_key
         self.logger = logger
 
     def get_collections(self, library_names):
+        """
+        Get the collections from the specified libraries.
+        
+        :param library_names: The names of the libraries to get the collections from
+        
+        :return: A set of collection names
+        """
         if isinstance(library_names, str):
             library_names = [library_names]  # Convert to list with a single element
     

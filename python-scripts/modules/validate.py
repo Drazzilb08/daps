@@ -3,6 +3,9 @@ import sys
 from modules import formatter
 
 class ValidateInput():
+    """
+    Validate input from the config file
+    """
     def __init__(self, 
                 log_level, 
                 dry_run,
@@ -16,6 +19,19 @@ class ValidateInput():
                 action_type = None,  
                 print_only_renames = None,
                 ):
+        """
+        :param log_level: The log level to use (DEBUG, INFO, WARNING, ERROR, CRITICAL)
+        :param dry_run: Whether or not to perform the actions or just print them
+        :param logger: The logger object to use
+        :param source_dir: The source directory to use
+        :param library_names: The library names to use
+        :param destination_dir: The destination directory to use
+        :param movies_threshold: The movies threshold to use
+        :param series_threshold: The series threshold to use
+        :param collection_threshold: The collection threshold to use
+        :param action_type: The action type to use
+        :param print_only_renames: Whether or not to only print renames
+        """
         self.log_level = log_level
         self.dry_run = dry_run
         logger = logger
@@ -29,6 +45,16 @@ class ValidateInput():
         self.print_only_renames = print_only_renames
 
     def validate_global(self, url, api_key, instance_name, instance_type):
+        """
+        Validate global config options
+
+        :param url: The URL to validate
+        :param api_key: The API key to validate
+        :param instance_name: The instance name to validate
+        :param instance_type: The instance type to validate
+        
+        :raises ValueError: If the URL or API key is invalid
+        """
         if instance_type == "Radarr" or instance_type == "Sonarr" or instance_type == "Plex":
             if not (url.startswith("http://") or url.startswith("https://")):
                 raise ValueError(

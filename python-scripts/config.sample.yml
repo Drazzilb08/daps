@@ -1,23 +1,46 @@
+# This is a sample config file for the python scripts
+# You can copy this file and rename it to config.yml
+# You can also rename the scripts to whatever you want, just make sure to update the config file to match
+# The config file is broken up into sections, each section is a script
+# Each script has a log_level and dry_run option
+# log_level can be debug, info, warning, error, critical
+# dry_run can be true or false
+# The rest of the options are script specific
 global:
   radarr:
+    # name is the name of the radarr instance, this is used to reference the instance in other scripts
     - name: radarr_1
+    # api is the api key for the radarr instance
       api: abcdefghijlmnop
+    # url is the url for the radarr instance
       url: http://localhost:7878
     - name: radarr_2
       api: abcdefghijklmnop
       url: http://localhost:1212
   sonarr:
+    # name is the name of the sonarr instance, this is used to reference the instance in other scripts
     - name: sonarr_1
+    # api is the api key for the sonarr instance
       api: abcdefghijlmnop
+    # url is the url for the sonarr instance
       url: http://localhost:8989
+    # name is the name of the second sonarr instance, this is used to reference the instance in other scripts, names must match
     - name: sonarr_2
       api: abcdefghijlmnop
       url: http://localhost:9090
   plex:
+    # name is the name of the plex instance, this is used to reference the instance in other scripts
     - name: plex
+    # api is the token key for the plex instance, if you don't know your token please see https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/
       api: abcdefghijlmnop
+    # url is the url for the plex instance
       url: http://localhost:32400
 
+# The upgradinatorr script is used to upgrade movies and tv shows, it can be used to upgrade all movies and tv shows or just a subset.
+# WARNING: This script can caues havoc with your usenet provider or torrent tracker if you are not careful.
+# I am not responsible for any issues that may arise from using this script.
+# Please use this script at your own risk.
+# Best practice is to keep the count variable low, 1-5 is a good number.
 upgradinatorr:
   log_level: info
   dry_run: true
@@ -48,6 +71,8 @@ upgradinatorr:
       tag_name:
       unattended: false
 
+# The renameinatorr script is used to rename movies and tv shows, it can be used to rename all movies and tv shows or just a subset.
+# This script is meant to keep your library clean and tidy, it will rename your movies and tv shows to match criteria set in Media Management tag of Radarr/Sonarr.
 renameinatorr:
   log_level: info
   dry_run: true
@@ -64,6 +89,8 @@ renameinatorr:
       unattended: false
       reset: false
 
+# The renamer script is used to rename your posters to match your Plex Collections and Media Folder names for Movies and TV Shows
+# This script is meant to be used in conjuction with Plex-Meta-Manager, however it can be used on it's own.
 renamer:
   # Script Note: --> is a copy/move & rename / -->> is a copy/move w/o rename
   log_level: debug

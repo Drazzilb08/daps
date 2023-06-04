@@ -11,7 +11,7 @@
 # Description: A script to upgrade Sonarr/Radarr libraries to the keep in line with trash-guides
 # Usage: python3 /path/to/upgradinatorr.py
 # Requirements: requests, pyyaml
-# Version: 2.0.0
+# Version: 2.0.1
 # License: MIT License
 # ===================================================================================================
 
@@ -116,51 +116,43 @@ def main():
         logger.info('*' * 40)
         logger.info('')
     instance_data = {
-        'Radarr': {},
-        'Sonarr': {}
+        'Radarr': config.radarr_data,
+        'Sonarr': config.sonarr_data
     }
-    if config.radarr is not None:
-        for instance in config.radarr_data:
-            instance_data['Radarr'][instance['name']] = {
-                'count': config.radarr[0]['count'],
-                'tag_name': config.radarr[0]['tag_name'],
-                'unattended': config.radarr[0]['unattended'],
-                'status': config.radarr[0]['status'],
-                'monitored': config.radarr[0]['monitored'],
-                'reset': config.radarr[0]['reset'],
-                'url': instance['url'],
-                'api': instance['api']
-            }
-    if config.sonarr is not None:
-        for instance in config.sonarr_data:
-            instance_data['Sonarr'][instance['name']] = {
-                'count': config.sonarr[0]['count'],
-                'tag_name': config.sonarr[0]['tag_name'],
-                'unattended': config.sonarr[0]['unattended'],
-                'status': config.sonarr[0]['status'],
-                'monitored': config.sonarr[0]['monitored'],
-                'reset': config.sonarr[0]['reset'],
-                'url': instance['url'],
-                'api': instance['api']
-            }
+
     for instance_type, instances in instance_data.items():
-        for instance_name, script_variables in instances.items():
-            count = script_variables['count']
-            tag_name = script_variables['tag_name']
-            unattended = script_variables['unattended']
-            status = script_variables['status']
-            monitored = script_variables['monitored']
-            reset = script_variables['reset']
-            url = script_variables['url']
-            api = script_variables['api']
-            logger.info('*' * 40)
-            logger.info(f'* {instance_name:^36} *')
-            logger.info('*' * 40)
-            logger.debug(f'{" Settings ":*^40}')
-            logger.debug(f"Instance Name: {instance_name}")
-            logger.debug(f"URL: {url}")
-            logger.debug(f"API Key: {'<redacted>' if api else 'None'}")
-            process_instance(instance_type, instance_name, count, tag_name, unattended, status, monitored, url, api, config.dry_run, reset)
+        for instance in instances:
+            instance_name = instance['name']
+            url = instance['url']
+            api = instance['api']
+            script_name = None
+            if instance_type == "Radarr" and config.radarr:
+                data = next((data for data in config.radarr if data['name'] == instance_name), None)
+                if data:
+                    script_name = data['name']
+                    count = data['count']
+                    tag_name = data['tag_name']
+                    reset = data['reset']
+                    unattended = data['unattended']
+                    monitored = data['monitored']
+                    status = data['status']
+            elif instance_type == "Sonarr" and config.sonarr:
+                data = next((data for data in config.sonarr if data['name'] == instance_name), None)
+                if data:
+                    script_name = data['name']
+                    count = data['count']
+                    tag_name = data['tag_name']
+                    reset = data['reset']
+                    unattended = data['unattended']
+            if script_name and instance_name == script_name:
+                logger.info('*' * 40)
+                logger.info(f'* {instance_name:^36} *')
+                logger.info('*' * 40)
+                logger.debug(f'{" Settings ":*^40}')
+                logger.debug(f"Instance Name: {instance_name}")
+                logger.debug(f"URL: {url}")
+                logger.debug(f"API Key: {'<redacted>' if api else 'None'}")
+                process_instance(instance_type, instance_name, count, tag_name, unattended, status, monitored, url, api, config.dry_run, reset)
 
 if __name__ == '__main__':
     """

@@ -61,13 +61,13 @@ upgradinatorr:
     - name: sonarr_1
       count:
       monitored: true
-      status: released
+      status: continuing
       tag_name:
       unattended: false
     - name: sonarr_2
       count:
       monitored: true
-      status: released
+      status: continuing
       tag_name:
       unattended: false
 
@@ -93,9 +93,9 @@ renameinatorr:
 # This script is meant to be used in conjuction with Plex-Meta-Manager, however it can be used on it's own.
 renamer:
   # Script Note: --> is a copy/move & rename / -->> is a copy/move w/o rename
-  log_level: debug
+  log_level: info
   # Options are 'true' or 'false'
-  dry_run: false
+  dry_run: true
   # Options are 'Copy' or 'Move'
   action_type: move
   print_only_renames: true

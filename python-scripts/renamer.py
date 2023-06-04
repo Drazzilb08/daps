@@ -12,7 +12,7 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 3.0.2
+# Version: 3.0.3
 # License: MIT License
 # ===================================================================================================
 
@@ -237,37 +237,40 @@ def main():
         logger.info('')
     asset_series, asset_collections, asset_movies = get_assets_files(config.source_dir)
     instance_data = {
-        'Radarr': {},
-        'Sonarr': {}
+        'Plex': config.plex_data,
+        'Radarr': config.radarr_data,
+        'Sonarr': config.sonarr_data
     }
-    if config.radarr is not None:
-        for instance in config.radarr_data:
-            instance_data['Radarr'][instance['name']] = {
-                'url': instance['url'],
-                'api': instance['api']
-            }
-    if config.sonarr is not None:
-        for instance in config.sonarr_data:
-            instance_data['Sonarr'][instance['name']] = {
-                'url': instance['url'],
-                'api': instance['api']
-            }
+
     for instance_type, instances in instance_data.items():
-        for instance_name, script_variables in instances.items():
-            url = script_variables['url']
-            api = script_variables['api']
-            validate_input.validate_global(url, api, instance_name, instance_type)
-            final_output.append('*' * 40)
-            final_output.append(f'* {instance_name:^36} *')
-            final_output.append('*' * 40)
-            logger.debug(f'{" Settings ":*^40}')
-            logger.debug(f"Instance Name: {instance_name}")
-            logger.debug(f"URL: {url}")
-            logger.debug(f"API Key: {'<redacted>' if api else 'None'}")
-            final_output = process_instance(instance_type, instance_name, url, api, destination_file_list, final_output, asset_series, asset_collections, asset_movies)
-            permissions = 0o777
-            os.chmod(config.destination_dir, permissions)
-            os.chmod(config.source_dir, permissions)
+        for instance in instances:
+            instance_name = instance['name']
+            url = instance['url']
+            api = instance['api']
+            script_name = None
+            if instance_type == "Radarr" and config.radarr:
+                data = next((data for data in config.radarr if data['name'] == instance_name), None)
+                if data:
+                    script_name = data['name']
+            elif instance_type == "Sonarr" and config.sonarr:
+                data = next((data for data in config.sonarr if data['name'] == instance_name), None)
+                if data:
+                    script_name = data['name']
+            elif instance_type == "Plex":
+                script_name = instance_name
+            if script_name and instance_name == script_name:
+                validate_input.validate_global(url, api, instance_name, instance_type)
+                final_output.append('*' * 40)
+                final_output.append(f'* {instance_name:^36} *')
+                final_output.append('*' * 40)
+                logger.debug(f'{" Settings ":*^40}')
+                logger.debug(f"Instance Name: {instance_name}")
+                logger.debug(f"URL: {url}")
+                logger.debug(f"API Key: {'<redacted>' if api else 'None'}")
+                final_output = process_instance(instance_type, instance_name, url, api, destination_file_list, final_output, asset_series, asset_collections, asset_movies)
+                permissions = 0o777
+                os.chmod(config.destination_dir, permissions)
+                os.chmod(config.source_dir, permissions)
     for message in final_output:
         if message == None:
             continue

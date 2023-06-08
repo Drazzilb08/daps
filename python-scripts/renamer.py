@@ -12,7 +12,7 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 3.0.3
+# Version: 3.0.4
 # License: MIT License
 # ===================================================================================================
 
@@ -83,7 +83,7 @@ def rename_file(matched_name, file, destination_dir, source_dir, dry_run, action
     matched_name = matched_name + "." + file_extension
     destination = os.path.join(destination_dir, matched_name)
     source = os.path.join(source_dir, file)
-    if matched_name in destination_file_list:
+    if matched_name in destination_file_list and action_type == "copy":
         return None
     if file != matched_name:
         if dry_run:
@@ -185,7 +185,7 @@ def process_instance(instance_type, instance_name, url, api_key, destination_fil
         source_file_list = asset_series
         series = app.get_series()
     for file in tqdm(source_file_list, desc=f'Processing {instance_name}', total=len(source_file_list)):
-        if file in destination_file_list:
+        if file in destination_file_list and config.action_type == "copy":
             continue
         matched_collection = None
         matched_movie = None

@@ -13,7 +13,7 @@
 #              identified as having been renamed.
 # Usage: python3 /path/to/renameinatorr.py
 # Requirements: requests, pyyaml
-# Version: 2.0.1
+# Version: 2.0.2
 # License: MIT License
 # ===================================================================================================
 
@@ -156,7 +156,7 @@ def process_instance(instance_type, instance_name, url, api, tag_name, count, dr
                 if not dry_run:
                     app.add_tag(media_id, arr_tag_id)
                     new_tag += 1
-                    app.refresh_media(logger, media_id, item['title'])
+                    app.refresh_media(logger, media_id)
                 items.append(item)
         for m in media:
             if (arr_tag_id in m["tags"]):

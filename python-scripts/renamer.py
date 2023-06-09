@@ -12,7 +12,7 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 3.0.7
+# Version: 3.0.8
 # License: MIT License
 # ===================================================================================================
 
@@ -26,11 +26,12 @@ from fuzzywuzzy import fuzz
 from tqdm import tqdm
 import re
 import shutil
+import json
 
 config = Config(script_name="renamer")
 logger = Logger(config.log_level, "renamer")
 year_regex = re.compile(r"\((19|20)\d{2}\)")
-illegal_chars_regex = re.compile(r"[^\w\s\-\(\).]+")
+illegal_chars_regex = re.compile(r"[^\w\s\-\(\)/.]+")
 
 def match_collection(plex_collections, file, collection_threshold):
     file_name = os.path.splitext(file)[0]
@@ -60,6 +61,7 @@ def match_media(media, file, threshold):
     closest_score = 0
     closest_year = None
     for matched_media in media:
+        print(f"matched_media: {matched_media['title']}")
         year_in_title = year_regex.search(matched_media['title'])
         matched_media_name = year_regex.sub("", matched_media['title']) if year_in_title else matched_media['title']
         matched_media_name = illegal_chars_regex.sub("", matched_media_name)

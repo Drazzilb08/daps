@@ -61,7 +61,6 @@ def match_media(media, file, threshold):
     closest_score = 0
     closest_year = None
     for matched_media in media:
-        print(f"matched_media: {matched_media['title']}")
         year_in_title = year_regex.search(matched_media['title'])
         matched_media_name = year_regex.sub("", matched_media['title']) if year_in_title else matched_media['title']
         matched_media_name = illegal_chars_regex.sub("", matched_media_name)

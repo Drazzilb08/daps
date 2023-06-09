@@ -123,13 +123,21 @@ def process_instance(instance_type, instance_name, url, api, tag_name, count, dr
     logger.debug(f"Length of Media for {str(app)}: {len(media)}")
     all_tagged = check_all_tagged(media, arr_tag_id)
     if reset:
-        app.remove_tags(media, arr_tag_id, tag_name)
-        logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
-        all_tagged = False 
+        if not dry_run:
+            app.remove_tags(media, arr_tag_id, tag_name)
+            logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
+            all_tagged = False 
+        else:
+            logger.info(f'All of {instance_name} would have had the tag {tag_name} removed.')
+            all_tagged = False
     elif all_tagged and unattended:
-        app.remove_tags(media, arr_tag_id, tag_name)
-        logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
-        all_tagged = False
+        if not dry_run:
+            app.remove_tags(media, arr_tag_id, tag_name)
+            logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
+            all_tagged = False
+        else:
+            logger.info(f'All of {instance_name} would have had the tag {tag_name} removed.')
+            all_tagged = False
     elif all_tagged and not unattended:
         logger.info(f'All of {instance_name} has been tagged with {tag_name}')
         logger.info("If you would like to remove the tag and re-run the script, please set reset to True or set unattended to True.")

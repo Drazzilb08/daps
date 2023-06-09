@@ -157,3 +157,4 @@ output/
 logs/
 *test*
 *config.yml
+*archives*

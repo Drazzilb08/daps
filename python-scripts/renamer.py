@@ -198,15 +198,15 @@ def process_instance(instance_type, instance_name, url, api_key, destination_fil
         if matched_collection:
             message = rename_file(matched_collection, file, config.destination_dir, config.source_dir, config.dry_run, config.action_type, config.print_only_renames, destination_file_list)
             final_output.append(message)
-            source_file_list.remove(file)
+            source_file_list[source_file_list.index(file)] = ""
         elif matched_movie:
             message = rename_movies(matched_movie, file, config.destination_dir, config.source_dir, config.dry_run, config.action_type, config.print_only_renames, destination_file_list)
             final_output.append(message)
-            source_file_list.remove(file)
+            source_file_list[source_file_list.index(file)] = ""
         elif matched_series:
             message = rename_series(matched_series, file, config.destination_dir, config.source_dir, config.dry_run, config.action_type, config.print_only_renames, destination_file_list)
             final_output.append(message)
-            source_file_list.remove(file)
+            source_file_list[source_file_list.index(file)] = ""
     return final_output
 
 def main():

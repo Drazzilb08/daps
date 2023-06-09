@@ -12,7 +12,7 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 3.0.4
+# Version: 3.0.5
 # License: MIT License
 # ===================================================================================================
 
@@ -30,8 +30,8 @@ import shutil
 
 config = Config(script_name="renamer")
 logger = Logger(config.log_level, "renamer")
-year_regex = re.compile(r"\b(19|20)\d{2}\b")
-illegal_chars_regex = re.compile(r"[^\w\s\-\(\)]+")
+year_regex = re.compile(r"\((19|20)\d{2}\)")
+illegal_chars_regex = re.compile(r"[^\w\s\-\(\).]+")
 
 def match_collection(plex_collections, file, collection_threshold):
     file_name = os.path.splitext(file)[0]
@@ -119,7 +119,6 @@ def rename_series(matched_series, file, destination_dir, source_dir, dry_run, ac
     if folder_path.endswith('/'):
         folder_path = folder_path[:-1]
     matched_series = os.path.basename(folder_path)
-    file_extension = os.path.splitext(file)[-1].lstrip('.')
     if "Season" in file:
         season_info = file.split("Season ")[1].split(".")[0]
         try:
@@ -199,12 +198,15 @@ def process_instance(instance_type, instance_name, url, api_key, destination_fil
         if matched_collection:
             message = rename_file(matched_collection, file, config.destination_dir, config.source_dir, config.dry_run, config.action_type, config.print_only_renames, destination_file_list)
             final_output.append(message)
+            source_file_list.remove(file)
         elif matched_movie:
             message = rename_movies(matched_movie, file, config.destination_dir, config.source_dir, config.dry_run, config.action_type, config.print_only_renames, destination_file_list)
             final_output.append(message)
+            source_file_list.remove(file)
         elif matched_series:
             message = rename_series(matched_series, file, config.destination_dir, config.source_dir, config.dry_run, config.action_type, config.print_only_renames, destination_file_list)
             final_output.append(message)
+            source_file_list.remove(file)
     return final_output
 
 def main():

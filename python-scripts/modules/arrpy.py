@@ -275,7 +275,7 @@ class StARR:
             rename_endpoint = "seriesId"
         elif self.instance_type == 'Radarr':
             rename_endpoint = "movieId"
-        endpoint = f"{self.url}/api/v3/rename/?{rename_endpoint}={media_id}"
+        endpoint = f"{self.url}/api/v3/rename?{rename_endpoint}={media_id}"
         response = self.make_get_request(endpoint, headers=self.headers)
         return response
     

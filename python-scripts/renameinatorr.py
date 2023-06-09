@@ -13,14 +13,13 @@
 #              identified as having been renamed.
 # Usage: python3 /path/to/renameinatorr.py
 # Requirements: requests, pyyaml
-# Version: 2.0.2
+# Version: 2.0.3
 # License: MIT License
 # ===================================================================================================
 
 from modules.config import Config
 from modules.logger import Logger
-from modules.sonarr import SonarrInstance
-from modules.radarr import RadarrInstance
+from modules.arrpy import StARR
 from modules.validate import ValidateInput
 
 config = Config(script_name="renameinatorr")
@@ -111,25 +110,24 @@ def process_instance(instance_type, instance_name, url, api, tag_name, count, dr
     untagged_count = 0
     total_count = 0
     new_tag = 0
+    library_item_to_rename = []
+    app = StARR(url, api, logger)
+    media = app.get_media()
     if instance_type == "Radarr":
-        app = RadarrInstance(url, api, logger)
-        media = app.get_movies()
         media_type = "Movies"
         file_id = "movieFileId"
     elif instance_type == "Sonarr":
-        app = SonarrInstance(url, api, logger)
-        media = app.get_series()
         media_type = "Series"
         file_id = "episodeFileId"
-    arr_tag_id = app.check_and_create_tag(tag_name, dry_run, logger)
+    arr_tag_id = app.check_and_create_tag(tag_name, dry_run)
     logger.debug(f"Length of Media for {str(app)}: {len(media)}")
     all_tagged = check_all_tagged(media, arr_tag_id)
     if reset:
-        app.remove_tags(media, arr_tag_id, tag_name, logger)
+        app.remove_tags(media, arr_tag_id, tag_name)
         logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
         all_tagged = False 
     elif all_tagged and unattended:
-        app.remove_tags(media, arr_tag_id, tag_name, logger)
+        app.remove_tags(media, arr_tag_id, tag_name)
         logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
         all_tagged = False
     elif all_tagged and not unattended:
@@ -149,14 +147,14 @@ def process_instance(instance_type, instance_name, url, api, tag_name, count, dr
             files_to_rename = [file[file_id]for file in library_item_to_rename]
             if not dry_run:
                 if instance_type == "Radarr":
-                    checked = app.rename_files(media_id, logger, library_item_to_rename)
+                    checked = app.rename_media(media_id, library_item_to_rename)
                 elif instance_type == "Sonarr": 
-                    checked = app.rename_files(media_id, logger, files_to_rename)
+                    checked = app.rename_media(media_id, files_to_rename)
             if checked:
                 if not dry_run:
                     app.add_tag(media_id, arr_tag_id)
                     new_tag += 1
-                    app.refresh_media(logger, media_id)
+                    app.refresh_media(media_id)
                 items.append(item)
         for m in media:
             if (arr_tag_id in m["tags"]):

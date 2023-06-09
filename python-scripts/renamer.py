@@ -12,7 +12,7 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 3.0.5
+# Version: 3.0.7
 # License: MIT License
 # ===================================================================================================
 
@@ -20,8 +20,7 @@ from modules.config import Config
 from modules.logger import Logger
 from modules.plex import PlexInstance
 from modules.validate import ValidateInput
-from modules.radarr import RadarrInstance
-from modules.sonarr import SonarrInstance
+from modules.arrpy import StARR
 import os
 from fuzzywuzzy import fuzz
 from tqdm import tqdm
@@ -89,22 +88,28 @@ def rename_file(matched_name, file, destination_dir, source_dir, dry_run, action
         if dry_run:
             message = f"{file} -> {matched_name}"
         else:
-            if action_type == "move":
-                shutil.move(source, destination)
-            elif action_type == "copy":
-                shutil.copy(source, destination)
-            message = f"{file} -> {matched_name}"
+            try:
+                if action_type == "move":
+                    shutil.move(source, destination)
+                elif action_type == "copy":
+                    shutil.copy(source, destination)
+                message = f"{file} -> {matched_name}"
+            except Exception as e:
+                message = f"Error: {e}"
         return message
     else:
         if not print_only_renames:
             if dry_run:
                 message = f"{file} -->> {matched_name}"
             else:
-                if action_type == "move":
-                    shutil.move(source, destination)
-                elif action_type == "copy":
-                    shutil.copy(source, destination)
-                message = f"{file} -->> {matched_name}"
+                try:
+                    if action_type == "move":
+                        shutil.move(source, destination)
+                    elif action_type == "copy":
+                        shutil.copy(source, destination)
+                    message = f"{file} -->> {matched_name}"
+                except Exception as e:
+                    message = f"Error: {e}"
             return message
 
 def rename_movies(matched_movie, file, destination_dir, source_dir, dry_run, action_type, print_only_renames, destination_file_list):
@@ -120,7 +125,7 @@ def rename_series(matched_series, file, destination_dir, source_dir, dry_run, ac
         folder_path = folder_path[:-1]
     matched_series = os.path.basename(folder_path)
     if "Season" in file:
-        season_info = file.split("Season ")[1].split(".")[0]
+        season_info = file.split("Season")[1].split(".")[0]
         try:
             season_number = int(season_info)
         except ValueError:
@@ -150,11 +155,16 @@ def get_assets_files(assets_path):
             if any((
                 lowercase_base_name == f.lower() or 
                 f.lower().startswith(lowercase_base_name + " - season") or 
-                f.lower().startswith(lowercase_base_name + " - specials"
-                ))for f in files):
+                f.lower().startswith(lowercase_base_name + " - specials") or 
+                lowercase_base_name == f.lower() or 
+                f.lower().startswith(lowercase_base_name + "_season")
+                ) for f in files):
                 base_name = base_name + extension
                 series.add(base_name)
             elif re.search(r' - season| - specials', lowercase_base_name):
+                base_name = base_name + extension
+                series.add(base_name)
+            elif re.search(r'_season', lowercase_base_name):
                 base_name = base_name + extension
                 series.add(base_name)
             else:
@@ -165,24 +175,24 @@ def get_assets_files(assets_path):
     movies = sorted(movies)
     return list(series), list(collections), list(movies)
 
-def process_instance(instance_type, instance_name, url, api_key, destination_file_list, final_output, asset_series, asset_collections, asset_movies):
+def process_instance(instance_type, instance_name, url, api, destination_file_list, final_output, asset_series, asset_collections, asset_movies):
     if instance_type == "Plex":
         if config.library_names:
-            app = PlexInstance(url, api_key, logger)
+            app = PlexInstance(url, api, logger)
             source_file_list = asset_collections
             collections = app.get_collections(config.library_names)
         else:
             message = f"Error: No library names specified for {instance_name}"
             final_output.append(message)
             return final_output
-    elif instance_type == "Radarr":
-        app = RadarrInstance(url, api_key, logger)
-        source_file_list = asset_movies
-        movies = app.get_movies()
-    elif instance_type == "Sonarr":
-        app = SonarrInstance(url, api_key, logger)
-        source_file_list = asset_series
-        series = app.get_series()
+    else: 
+        app = StARR(url, api, logger)
+        media = app.get_media()
+        if instance_type == "Radarr":
+            source_file_list = asset_movies
+        elif instance_type == "Sonarr":
+            source_file_list = asset_series
+    
     for file in tqdm(source_file_list, desc=f'Processing {instance_name}', total=len(source_file_list)):
         if file in destination_file_list and config.action_type == "copy":
             continue
@@ -192,9 +202,9 @@ def process_instance(instance_type, instance_name, url, api_key, destination_fil
         if instance_type == "Plex":
             matched_collection, reason = match_collection(collections, file, config.collection_threshold)
         elif instance_type == "Radarr":
-            matched_movie, reason = match_media(movies, file, config.movies_threshold)
+            matched_movie, reason = match_media(media, file, config.movies_threshold)
         elif instance_type == "Sonarr":
-            matched_series, reason = match_media(series, file, config.series_threshold)
+            matched_series, reason = match_media(media, file, config.series_threshold)
         if matched_collection:
             message = rename_file(matched_collection, file, config.destination_dir, config.source_dir, config.dry_run, config.action_type, config.print_only_renames, destination_file_list)
             final_output.append(message)

@@ -11,14 +11,13 @@
 # Description: A script to upgrade Sonarr/Radarr libraries to the keep in line with trash-guides
 # Usage: python3 /path/to/upgradinatorr.py
 # Requirements: requests, pyyaml
-# Version: 2.0.1
+# Version: 2.0.2
 # License: MIT License
 # ===================================================================================================
 
 from modules.config import Config
 from modules.logger import Logger
-from modules.sonarr import SonarrInstance
-from modules.radarr import RadarrInstance
+from modules.arrpy import StARR
 from modules.validate import ValidateInput
 
 config = Config(script_name="upgradinatorr")
@@ -48,24 +47,30 @@ def process_instance(instance_type, instance_name, count, tag_name, unattended, 
     tagged_count = 0
     untagged_count = 0
     total_count = 0
+    app = StARR(url, api, logger)
+    media = app.get_media()
     if instance_type == "Radarr":
-        app = RadarrInstance(url, api, logger)
-        media = app.get_movies()
         media_type = "Movies"
     elif instance_type == "Sonarr":
-        app = SonarrInstance(url, api, logger)
-        media = app.get_series()
         media_type = "Series"
-    arr_tag_id = app.check_and_create_tag(tag_name, dry_run, logger)
+    arr_tag_id = app.check_and_create_tag(tag_name, dry_run)
     all_tagged = check_all_tagged(media, arr_tag_id, status, monitored)
     if reset:
-        app.remove_tags(media, arr_tag_id, tag_name, logger)
-        logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
-        all_tagged = False 
+        if not dry_run:
+            app.remove_tags(media, arr_tag_id, tag_name)
+            logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
+            all_tagged = False 
+        else:
+            logger.info(f'All of {instance_name} would have had the tag {tag_name} removed.')
+            all_tagged = False
     elif all_tagged and unattended:
-        app.remove_tags(media, arr_tag_id, tag_name, logger)
-        logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
-        all_tagged = False
+        if not dry_run:
+            app.remove_tags(media, arr_tag_id, tag_name)
+            logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
+            all_tagged = False
+        else:
+            logger.info(f'All of {instance_name} would have had the tag {tag_name} removed.')
+            all_tagged = False
     elif all_tagged and not unattended:
         logger.info(f'All of {instance_name} has been tagged with {tag_name}')
         logger.info("If you would like to remove the tag and re-run the script, please set reset to True or set unattended to True.")
@@ -144,6 +149,7 @@ def main():
                     tag_name = data['tag_name']
                     reset = data['reset']
                     unattended = data['unattended']
+                    status = data['status']
             if script_name and instance_name == script_name:
                 logger.info('*' * 40)
                 logger.info(f'* {instance_name:^36} *')

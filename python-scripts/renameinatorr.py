@@ -13,17 +13,17 @@
 #              identified as having been renamed.
 # Usage: python3 /path/to/renameinatorr.py
 # Requirements: requests, pyyaml
-# Version: 2.0.3
+# Version: 2.0.4
 # License: MIT License
 # ===================================================================================================
 
 from modules.config import Config
-from modules.logger import Logger
+from modules.logger import setup_logger
 from modules.arrpy import StARR
 from modules.validate import ValidateInput
 
 config = Config(script_name="renameinatorr")
-logger = Logger(config.log_level, "renameinatorr")
+logger = setup_logger(config.log_level, "renameinatorr")
 
 def check_all_tagged(all_media, tag_id):
     """
@@ -63,7 +63,6 @@ def print_format(items, library_item_to_rename, instance_type, dry_run, total_co
     else:
         tagged = "has been tagged"
         renamed = "renamed to"
-    print()
     for item in items:
         if instance_type == "sonarr":
             series_title = item["title"]

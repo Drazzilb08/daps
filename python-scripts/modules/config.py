@@ -49,7 +49,3 @@ class Config:
         # unmatched-assets variables
         self.assets_path = self.script_data.get('assets_path', '') # Use empty string as default value for assets_path if not provided
         self.media_paths = self.script_data.get('media_paths', []) # Use empty list as default value for media_paths if not provided
-
-        # nohl
-        self.movies = self.script_data.get('movies', False)  # Use False as default value for movies if not provided
-        self.series = self.script_data.get('series', False)  # Use False as default value for tv_shows if not provided

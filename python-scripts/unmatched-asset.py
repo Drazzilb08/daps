@@ -12,8 +12,8 @@
 #              It will also check your collections against your assets folder to see if there are any collections that do not have a matching asset.
 #              It will output the results to a file in the logs folder.
 # Usage: python3 unmatched-asset.py
-# Requirements: requests, pyyaml
-# Version: 3.0.3
+# Requirements: requests
+# Version: 3.0.2
 # License: MIT License
 # ===================================================================================================
 
@@ -21,11 +21,11 @@ import os
 import re
 from pathlib import Path
 from modules.plex import PlexInstance
-from modules.logger import setup_logger
+from modules.logger import Logger
 from modules.config import Config
 
 config = Config(script_name="unmatched-assets")
-logger = setup_logger(config.log_level, "unmatched-assets")
+logger = Logger(config.log_level, "unmatched-assets")
 
 def get_assets_files(assets_path):
     """

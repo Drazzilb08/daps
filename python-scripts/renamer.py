@@ -12,12 +12,12 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 3.0.8
+# Version: 3.0.9
 # License: MIT License
 # ===================================================================================================
 
 from modules.config import Config
-from modules.logger import Logger
+from modules.logger import setup_logger
 from modules.plex import PlexInstance
 from modules.validate import ValidateInput
 from modules.arrpy import StARR
@@ -26,10 +26,9 @@ from fuzzywuzzy import fuzz
 from tqdm import tqdm
 import re
 import shutil
-import json
 
 config = Config(script_name="renamer")
-logger = Logger(config.log_level, "renamer")
+logger = setup_logger(config.log_level, "renamer")
 year_regex = re.compile(r"\((19|20)\d{2}\)")
 illegal_chars_regex = re.compile(r"[^\w\s\-\(\)/.]+")
 

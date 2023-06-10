@@ -11,17 +11,17 @@
 # Description: A script to upgrade Sonarr/Radarr libraries to the keep in line with trash-guides
 # Usage: python3 /path/to/upgradinatorr.py
 # Requirements: requests, pyyaml
-# Version: 2.0.2
+# Version: 2.0.3
 # License: MIT License
 # ===================================================================================================
 
 from modules.config import Config
-from modules.logger import Logger
+from modules.logger import setup_logger
 from modules.arrpy import StARR
 from modules.validate import ValidateInput
 
 config = Config(script_name="upgradinatorr")
-logger = Logger(config.log_level, "upgradinatorr")
+logger = setup_logger(config.log_level, "upgradinatorr")
 
 def check_all_tagged(all_media, tag_id, status, monitored):
     """

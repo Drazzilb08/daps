@@ -1,6 +1,6 @@
 import sys
 import requests
-
+import json
 class StARR:
     def __init__(self, url, api, logger):
         """
@@ -18,7 +18,9 @@ class StARR:
         self.url = url
         self.api = api
         self.headers = {
-            "x-api-key": api
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            "X-Api-Key": api
         }
         self.session = requests.Session()
         self.session.headers.update({"X-Api-Key": self.api})
@@ -114,7 +116,7 @@ class StARR:
         self.logger.error(f'PUT request failed after {self.max_retries} retries, exiting script')
         sys.exit(1)
 
-    def make_delete_request(self, endpoint, headers=None):
+    def make_delete_request(self, endpoint, json=None, headers=None):
         """
         Make a DELETE request to the ARR instance.
         Parameters:
@@ -128,13 +130,30 @@ class StARR:
         response = None
         for i in range(self.max_retries):
             try:
-                response = self.session.delete(endpoint, headers=headers, timeout=self.timeout)
+                response = self.session.delete(endpoint, headers=headers, json=json, timeout=self.timeout)
                 response.raise_for_status()
-                return response.json()
+                return response
             except (requests.exceptions.Timeout, requests.exceptions.HTTPError) as ex:
                 self.logger.warning(f'DELETE request failed ({ex}), retrying ({i+1}/{self.max_retries})...')
         self.logger.error(f'DELETE request failed after {self.max_retries} retries, exiting script')
         sys.exit(1)
+    
+    def get_movie_fileid(self, movie_id):
+        """
+        Get the file for a movie.
+        Parameters:
+            movie_id (int): The ID of the movie.
+        Returns:
+            dict: The JSON response from the GET request.
+        """
+        endpoint = f"{self.url}/api/v3/moviefile/{movie_id}"
+        response = self.make_get_request(endpoint)
+        print(json.dumps(response, indent=4))
+        for r in response:
+            if r['movieId'] == movie_id:
+                print(f"Found file ID {r['id']} for movie ID {movie_id}")
+                exit()
+                return r['id']
 
     def get_media(self):
         """
@@ -368,11 +387,9 @@ class StARR:
         """
         payload = {
             "name": "SeasonSearch",
-            "body": {
-                "seriesId": media_id,
-                "SeasonNumber": season_number
+            "seriesId": media_id,
+            "SeasonNumber": season_number
             }
-        }
         endpoint = f"{self.url}/api/v3/command"
         response = self.make_post_request(endpoint, json=payload)
         if response:
@@ -396,27 +413,35 @@ class StARR:
         else:
             self.logger.error(f"Failed to get data for series with ID {media_id}")
             return False
-    
-    def delete_media_files(self, media_id):
+
+    def delete_episode_files(self, media_id):
+        """
+        Delete all episode files for a series.
+        Parameters:
+            media_id (int): The ID of the series to delete episode files for
+        """
+        if isinstance(media_id, int):
+            media_id = [media_id]
+        payload = {
+            "episodeFileIds": media_id
+        }
+        endpoint = f"{self.url}/api/v3/episodefile/bulk"
+        response = self.make_delete_request(endpoint, payload)
+        if response.status_code == 200:
+            return True
+        else:
+            self.logger.error(f"Failed to delete episode files for series with ID {media_id}")
+            return False
+
+    def delete_movie_file(self, media_id):
         """
         Delete a media item.
         Parameters:
             media_id (int): The ID of the media item to delete.
         """
-        if isinstance(media_id, int):
-            media_id = [media_id]
-        if self.instance_type == 'Sonarr':
-            bulk_endpoint = "episodefile"
-            type_id = "episodeFileIds"
-        if self.instance_type == 'Radarr':  
-            type_id = "movieFileIds"
-            bulk_endpoint = "moviefile"
-        payload = {
-            type_id: media_id
-        }
-        endpoint = f"{self.url}/api/v3/{bulk_endpoint}/bulk"
-        response = self.make_post_request(endpoint, json=payload)
-        if response:
+        endpoint = f"{self.url}/api/v3/moviefile/{media_id}"
+        response = self.make_delete_request(endpoint)
+        if response.status_code == 200:
             return True
         else:
             self.logger.error(f"Failed to delete media item with ID {media_id}")
@@ -436,4 +461,23 @@ class StARR:
             return response["name"]
         else:
             self.logger.error(f"Failed to get quality profile name for ID {profile_id}")
+            return False
+    
+    def search_episodes(self, episode_ids):
+        """
+        Search for an episode.
+        Parameters:
+            media_id (int): The ID of the series to search for
+            fileIds (int): The episode number to search for
+        """
+        endpoint = f"{self.url}/api/v3/command"
+        payload = {
+            "name": "EpisodeSearch",
+            "episodeIds": episode_ids
+        }
+        response = self.make_post_request(endpoint, json=payload)
+        if response:
+            return True
+        else:
+            self.logger.error(f"Failed to search for episode with ID {episode_ids}")
             return False

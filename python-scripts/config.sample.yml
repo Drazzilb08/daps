@@ -157,3 +157,34 @@ unmatched-assets:
   media_paths:
     - /path/to/media/folders/movies
     - /path/to/media/folders/tv-shows
+
+# Paths should be the same paths that you use for your radarr/sonarr instance but should be full paths, not the ones you use if using docker
+# Eg. /mnt/user/data/media/movies/ or /mnt/user/data/media/tv-shows/
+# Include/Exclude profiles are used to filter out movies/tv shows that you don't want to be considered for the script
+# You can leave them blank if you want to include all profiles
+# Exclude series is used to exclude series that you don't want to be considered for the script
+nohl:
+  dry_run: false
+  maximum_searches: 10
+  radarr:
+    - name: radarr_1
+      paths: 
+        - 
+      exclude_profiles:
+      include_profiles:
+        - Any
+  sonarr:
+    - name: sonarr_1
+      paths:
+        - 
+      exclude_profiles:
+      include_profiles:
+        - 
+      exclude_series:
+    - name: sonarr_2
+      paths:
+        - 
+      exclude_profiles:
+      include_profiles:
+        - 
+      exclude_series:

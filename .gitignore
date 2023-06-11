@@ -158,3 +158,4 @@ logs/
 *test*
 *config.yml
 *archives*
+tmp/

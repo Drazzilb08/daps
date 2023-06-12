@@ -12,7 +12,7 @@
 #              and Sonarr. This script is meant to be run after a Plex library scan.
 # Usage: python3 nohl.py
 # Requirements: Python 3.8+, requests
-# Version: 0.0.1
+# Version: 0.0.2
 # License: MIT License
 # ===================================================================================================
 
@@ -22,6 +22,7 @@ import re
 import sys
 import time
 import json
+import re
 from modules.config import Config
 from modules.logger import setup_logger
 from modules.arrpy import StARR
@@ -29,6 +30,7 @@ from modules.arrpy import StARR
 config = Config(script_name="nohl")
 logger = setup_logger(config.log_level, "nohl")
 
+illegal_chars_regex = re.compile(r"[^\w\s\-\(\)/.]+")
 season_regex = r"(?:S|s)(\d{1,2})"
 episode_regex = r"(?:E|e)(\d{1,2})"
 series_title_regex = title_regex = r"/([^/]+)/Season \d+/\1"
@@ -100,6 +102,7 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
             quality_profile_id = None
             quality_profile_name = None
             media_title = m['title']
+            media_title = illegal_chars_regex.sub("", media_title)
             media_year = m['year']
             media_id = m['id']
             monitored = m['monitored']
@@ -200,6 +203,7 @@ def final_step(app, results, instance_type, dry_run):
                         app.delete_episode_files(episode_file_id)
                         app.refresh_media(media_id)
                         app.search_season(media_id, season_number)
+                        logger.info(f"Deleted episode file for {title} Season {season_number}, and the entire season was searched for a replacement")
                     else:
                         logger.info(f"Would have deleted episode file for {title} Season {season_number}, and the entire season would have been searched for a replacement")
                 elif not season_pack:
@@ -210,16 +214,17 @@ def final_step(app, results, instance_type, dry_run):
                         app.delete_episode_files(episode_file_id)
                         app.refresh_media(media_id)
                         app.search_episodes(episode_ids)
+                        logger.info(f"Deleted episode file for {title} Season {season_number}, and the individual episodes {episode_numbers} were searched for a replacement")
                     else:
                         logger.info(f"Would have deleted episode file for {title} Season {season_number}, and the individual episodes {episode_numbers} would have been searched for a replacement")
                 search_count += 1  
         elif instance_type == 'Radarr':
             file_ids = result['file_ids']
             if not dry_run:
-                
                 app.delete_movie_file(file_ids)
                 app.refresh_media(media_id)
                 app.search_media(media_id)
+                logger.info(f"Deleted movie file for {title}, and the movie was searched for a replacement")
             else:
                 logger.info(f"Would have deleted movie file for {title}, and the movie would have been searched for a replacement")
             search_count += 1   

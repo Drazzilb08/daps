@@ -295,6 +295,8 @@ def main():
         for instance in instances:
             instance_name = instance['name']
             instance_type = instance_type.capitalize()
+            if instance_type == "Qbittorrent":
+                continue
             url = instance['url']
             api = instance['api']
             for _instance in instances_to_run:

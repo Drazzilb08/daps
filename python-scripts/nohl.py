@@ -12,7 +12,7 @@
 #              and Sonarr. This script is meant to be run after a Plex library scan.
 # Usage: python3 nohl.py
 # Requirements: Python 3.8+, requests
-# Version: 0.0.2
+# Version: 0.0.3
 # License: MIT License
 # ===================================================================================================
 
@@ -68,19 +68,25 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
     if instance_type == 'Radarr':
         logger.info("Processing Radarr")
         for file in nohl_files:
-            title = re.search(movie_title_regex, file).group(1)
-            year = int(re.search(year_regex, title).group(1))
-            title = re.sub(r"\(\d{4}\)", "", title).strip()
+            try:
+                title = re.search(movie_title_regex, file).group(1)
+                year = int(re.search(year_regex, title).group(1))
+                title = re.sub(r"\(\d{4}\)", "", title).strip()
+            except Exception as e:
+                logger.warning(f"Error processing file: {file}. Error: {e}")
             labled_data = {'title': title, 'year': year}
             media_data.append(labled_data)
     if instance_type == 'Sonarr':
         logger.info("Processing Sonarr")
         for file in nohl_files:
-            season_number = re.search(season_regex, file).group(1)
-            title = re.search(series_title_regex, file).group(1)
-            year = int(re.search(year_regex, title).group(1))
-            title = re.sub(r"\(\d{4}\)", "", title).strip()
-            episode = int(re.search(episode_regex, file).group(1))
+            try:
+                season_number = re.search(season_regex, file).group(1)
+                title = re.search(series_title_regex, file).group(1)
+                year = int(re.search(year_regex, title).group(1))
+                title = re.sub(r"\(\d{4}\)", "", title).strip()
+                episode = int(re.search(episode_regex, file).group(1))
+            except Exception as e:
+                logger.warning(f"Error processing file: {file}. Error: {e}")
             if season_number:
                 season_number_modified = int(season_number.lstrip('0'))
             existing_dict = next((d for d in media_data if d['title'] == title and d['year'] == year), None)

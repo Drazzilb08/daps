@@ -12,7 +12,7 @@
 #              and Sonarr. This script is meant to be run after a Plex library scan.
 # Usage: python3 nohl.py
 # Requirements: Python 3.8+, requests
-# Version: 0.0.3
+# Version: 0.0.4
 # License: MIT License
 # ===================================================================================================
 
@@ -26,17 +26,15 @@ import re
 from modules.config import Config
 from modules.logger import setup_logger
 from modules.arrpy import StARR
+from unidecode import unidecode
 
 config = Config(script_name="nohl")
 logger = setup_logger(config.log_level, "nohl")
 
 illegal_chars_regex = re.compile(r"[^\w\s\-\(\)/.]+")
-season_regex = r"(?:S|s)(\d{1,2})"
+season_regex = r"(?i)S(\d{2})E"
 episode_regex = r"(?:E|e)(\d{1,2})"
-series_title_regex = title_regex = r"/([^/]+)/Season \d+/\1"
-movie_title_regex = r"/([^/]+)/\1"
-regex_pattern = re.compile(f"{series_title_regex}|{movie_title_regex}")
-year_regex = r"(\d{4})"
+title_regex = r"^.*/([^/]+)\s\((\d{4})\)/.*$"
 
 def find_no_hl_files(media_paths):
     no_hl_files = []
@@ -69,9 +67,8 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
         logger.info("Processing Radarr")
         for file in nohl_files:
             try:
-                title = re.search(movie_title_regex, file).group(1)
-                year = int(re.search(year_regex, title).group(1))
-                title = re.sub(r"\(\d{4}\)", "", title).strip()
+                title = re.match(title_regex, file).group(1)
+                year = int(re.match(title_regex, file).group(2))
             except Exception as e:
                 logger.warning(f"Error processing file: {file}. Error: {e}")
             labled_data = {'title': title, 'year': year}
@@ -79,16 +76,12 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
     if instance_type == 'Sonarr':
         logger.info("Processing Sonarr")
         for file in nohl_files:
-            try:
-                season_number = re.search(season_regex, file).group(1)
-                title = re.search(series_title_regex, file).group(1)
-                year = int(re.search(year_regex, title).group(1))
-                title = re.sub(r"\(\d{4}\)", "", title).strip()
-                episode = int(re.search(episode_regex, file).group(1))
-            except Exception as e:
-                logger.warning(f"Error processing file: {file}. Error: {e}")
+            season_number = re.search(season_regex, file).group(1)
+            title = re.match(title_regex, file).group(1)
+            year = int(re.match(title_regex, file).group(2))
+            episode = int(re.search(episode_regex, file).group(1))
             if season_number:
-                season_number_modified = int(season_number.lstrip('0'))
+                season_number_modified = int(season_number.replace('0', '', 1))
             existing_dict = next((d for d in media_data if d['title'] == title and d['year'] == year), None)
             if existing_dict:
                 for season_info in existing_dict['season_info']:
@@ -98,16 +91,19 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
                 else:
                     existing_dict['season_info'].append({'season_number': season_number_modified, 'episodes': [episode]})
             else:
-                media_data.append({'title': title, 'year': year, 'season_info': [{'season_number': season_number_modified, 'episodes': [episode]}]})
+                try:
+                    media_data.append({'title': title, 'year': year, 'season_info': [{'season_number': season_number_modified, 'episodes': [episode]}]})
+                except Exception as e:
+                    logger.warning(f"Error processing file: {file}. Error: {e}")
     results = []
     file_ids = []
     for data in media_data:
-        title = data['title']
+        title = unidecode(data['title'])
         year = data['year']
         for m in media:
             quality_profile_id = None
             quality_profile_name = None
-            media_title = m['title']
+            media_title = unidecode(m['title'])
             media_title = illegal_chars_regex.sub("", media_title)
             media_year = m['year']
             media_id = m['id']
@@ -193,7 +189,7 @@ def final_step(app, results, instance_type, dry_run):
         last_search_time = current_time
     for result in results:
         if search_count >= searches:
-            print('Maximum number of searches reached, cannot perform search')
+            logger.warning('Maximum number of searches reached, cannot perform search')
             break
         media_id = result['media_id']
         title = result['title']
@@ -276,7 +272,7 @@ def main():
             paths.extend(sonarr_config['paths'])
             monitored_paths.append(sonarr_config['paths'])
     for i in monitored_paths:
-        print(f"Monitoring:" +i[0])
+        logger.info(f"Monitoring:" +i[0])
     # while True:
     nohl_files = find_no_hl_files(paths)
     if nohl_files:

@@ -1,6 +1,13 @@
 import sys
 import requests
 import json
+import logging
+
+
+logging.getLogger("qbittorrentapi").setLevel(logging.WARNING)
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger('urllib3').setLevel(logging.CRITICAL)
+
 class StARR:
     def __init__(self, url, api, logger):
         """
@@ -32,7 +39,7 @@ class StARR:
                 self.instance_type = 'Radarr'
             elif app_name == 'Sonarr':
                 self.instance_type = 'Sonarr'
-            logger.debug(f"Connected to {app_name} v{app_version} at {self.url}")
+            self.logger.debug(f"Connected to {app_name} v{app_version} at {self.url}")
         except requests.exceptions.ConnectionError as e:
             self.logger.error(f"Could not connect to {self.url}: {e}")
             self.logger.error("Exiting script")
@@ -446,23 +453,7 @@ class StARR:
         else:
             self.logger.error(f"Failed to delete media item with ID {media_id}")
             return False
-        
-    def get_quality_profile_name(self, profile_id):
-        """
-        Get the name of a quality profile.
-        Parameters:
-            profile_id (int): The ID of the quality profile.
-        Returns:
-            str: The name of the quality profile.
-        """
-        endpoint = f"{self.url}/api/v3/qualityprofile/{profile_id}"
-        response = self.make_get_request(endpoint, headers=self.headers)
-        if response:
-            return response["name"]
-        else:
-            self.logger.error(f"Failed to get quality profile name for ID {profile_id}")
-            return False
-    
+
     def search_episodes(self, episode_ids):
         """
         Search for an episode.
@@ -481,3 +472,27 @@ class StARR:
         else:
             self.logger.error(f"Failed to search for episode with ID {episode_ids}")
             return False
+        
+    def get_queue(self):
+        """
+        Get the queue.
+        """
+        endpoint = f"{self.url}/api/v3/queue"
+        response = self.make_get_request(endpoint, headers=self.headers)
+        if response:
+            return response
+        else:
+            self.logger.error(f"Failed to get queue")
+            return False
+    
+    def get_quality_profile_names(self):
+        """
+        Get the names of all quality profiles.
+        """
+        dict_of_names_and_ids = {}
+        endpoint = f"{self.url}/api/v3/qualityprofile"
+        response = self.make_get_request(endpoint, headers=self.headers)
+        if response:
+            for profile in response:
+                dict_of_names_and_ids[profile["name"]] = profile["id"]
+            return dict_of_names_and_ids

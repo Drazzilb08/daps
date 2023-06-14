@@ -12,7 +12,7 @@
 #              and Sonarr. This script is meant to be run after a Plex library scan.
 # Usage: python3 nohl.py
 # Requirements: Python 3.8+, requests
-# Version: 0.0.4
+# Version: 0.0.5
 # License: MIT License
 # ===================================================================================================
 
@@ -41,12 +41,14 @@ def find_no_hl_files(media_paths):
     while True:
         for dir in media_paths:
             try:
+                logger.debug(f"Processing directory: {dir}")
                 for root, dirs, files in os.walk(dir):
                     for file in files:
                         try:
                             if file.endswith(".mkv") or file.endswith(".mp4"):
                                 file_path = os.path.join(root, file)
                                 if (os.path.isfile(file_path) and os.stat(file_path).st_nlink == 1):
+                                    logger.debug(f"Found no hardlink file: {file_path}")
                                     no_hl_files.append(file_path)
                         except Exception as e:
                             logger.warning(f"Error processing file: {file}. Error: {e}")
@@ -54,6 +56,7 @@ def find_no_hl_files(media_paths):
                 logger.warning(f"Error processing directory: {dir}. Error: {e}")
         if no_hl_files:
             break
+        logger.debug("No non-hardlink files found. Sleeping for 60 seconds.")
         time.sleep(60)
     return no_hl_files
 
@@ -69,6 +72,7 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
             try:
                 title = re.match(title_regex, file).group(1)
                 year = int(re.match(title_regex, file).group(2))
+                logger.debug(f"Processing file: {file}, Title: {title}, Year: {year}")
             except Exception as e:
                 logger.warning(f"Error processing file: {file}. Error: {e}")
             labled_data = {'title': title, 'year': year}
@@ -80,6 +84,7 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
             title = re.match(title_regex, file).group(1)
             year = int(re.match(title_regex, file).group(2))
             episode = int(re.search(episode_regex, file).group(1))
+            logger.debug(f"Processing file: {file}, Title: {title}, Year: {year}, Season: {season_number}, Episode: {episode}")
             if season_number:
                 season_number_modified = int(season_number.replace('0', '', 1))
             existing_dict = next((d for d in media_data if d['title'] == title and d['year'] == year), None)
@@ -95,6 +100,7 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
                     media_data.append({'title': title, 'year': year, 'season_info': [{'season_number': season_number_modified, 'episodes': [episode]}]})
                 except Exception as e:
                     logger.warning(f"Error processing file: {file}. Error: {e}")
+    logger.debug(f"Media Data: {media_data}")
     results = []
     file_ids = []
     for data in media_data:
@@ -112,12 +118,14 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
                 continue
             quality_profile_id = m['qualityProfileId']
             quality_profile_name = app.get_quality_profile_name(quality_profile_id)
+            logger.debug(f"Comparing media: {media_title}, {media_year}, {media_id}, Monitored: {monitored}, Quality Profile: {quality_profile_name}")
             if title == media_title and year == media_year:
                 if (quality_profile_name in include_profiles if include_profiles else True) and (quality_profile_name not in exclude_profiles if exclude_profiles else True):
                     if instance_type == 'Radarr':
                         if monitored == True:
                             try:
                                 file_ids = (m['movieFile']['id'])
+                                logger.debug(f"Found match: {media_title}, Media ID: {media_id}, File IDs: {file_ids}")
                                 results.append({'title': media_title, 'media_id': media_id, 'file_ids': file_ids})
                             except:
                                 continue
@@ -168,9 +176,8 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
                                                 episode_numbers.append(season_data_item['episodeNumber'])
                                 episode_info.append({'episode_file_id': episode_file_id, 'episode_ids': episode_ids, 'episode_numbers': episode_numbers})
                             results.append({'title': media_title, 'media_id': media_id, 'seasons': season_info})
+    logger.debug(f"Results: {results}")
     final_step(app, results, instance_type, dry_run)
-    
-                                
 
 def final_step(app, results, instance_type, dry_run):
     searches = config.maximum_searches
@@ -201,6 +208,7 @@ def final_step(app, results, instance_type, dry_run):
                 episode_info = season['episode_info']
                 if season_pack:
                     episode_file_id = episode_info[0]['episode_file_id']
+                    logger.debug(f"Processing {instance_type} - Deleting episode file for {title} Season {season_number}, Season Pack: {season_pack}")
                     if not dry_run:
                         app.delete_episode_files(episode_file_id)
                         app.refresh_media(media_id)
@@ -212,29 +220,29 @@ def final_step(app, results, instance_type, dry_run):
                     episode_file_id = episode_info[0]['episode_file_id']
                     episode_ids = episode_info[0]['episode_ids']
                     episode_numbers = episode_info[0]['episode_numbers']
+                    logger.debug(f"Processing {instance_type} - Deleting episode file for {title} Season {season_number}, Season Pack: {season_pack}")
                     if not dry_run:
                         app.delete_episode_files(episode_file_id)
                         app.refresh_media(media_id)
                         app.search_episodes(episode_ids)
+                        search_count += 1  
                         logger.info(f"Deleted episode file for {title} Season {season_number}, and the individual episodes {episode_numbers} were searched for a replacement")
                     else:
                         logger.info(f"Would have deleted episode file for {title} Season {season_number}, and the individual episodes {episode_numbers} would have been searched for a replacement")
-                search_count += 1  
         elif instance_type == 'Radarr':
             file_ids = result['file_ids']
+            logger.debug(f"Processing {instance_type} - Deleting movie file for {title}")
             if not dry_run:
                 app.delete_movie_file(file_ids)
                 app.refresh_media(media_id)
                 app.search_media(media_id)
                 logger.info(f"Deleted movie file for {title}, and the movie was searched for a replacement")
+                search_count += 1
             else:
-                logger.info(f"Would have deleted movie file for {title}, and the movie would have been searched for a replacement")
-            search_count += 1   
+                logger.info(f"Would have deleted movie file for {title}, and the movie would have been searched for a replacement")   
     with open(tmp_file_path, 'w') as f:
         f.write(f'{search_count}\n{last_search_time}')
     logger.info("Done!")
-                    
-
 
 def main():
     dry_run = config.dry_run
@@ -247,7 +255,7 @@ def main():
         logger.info('')
     search = config.maximum_searches
     if search >= 20:
-        logger.error(f"Maximum searches set to {search}. This can cause devistating issues with your trackers. I will not be held responsible for any issues that arise from this. Please set this to a lower number.")
+        logger.error(f"Maximum searches set to {search}. This can cause devastating issues with your trackers. I will not be held responsible for any issues that arise from this. Please set this to a lower number.")
         logger.error(f"Exiting...")
         sys.exit()
     elif search >= 10:
@@ -272,28 +280,37 @@ def main():
             paths.extend(sonarr_config['paths'])
             monitored_paths.append(sonarr_config['paths'])
     for i in monitored_paths:
-        logger.info(f"Monitoring:" +i[0])
-    # while True:
+        logger.info(f"Monitoring: {i[0]}")
     nohl_files = find_no_hl_files(paths)
     if nohl_files:
         instances_to_run = []
-        if config.script_data['radarr']:
-            for radarr_config in config.script_data['radarr']:
-                if any(nohl_path.startswith(radarr_path) for nohl_path in nohl_files for radarr_path in radarr_config['paths']):
-                    instances_to_run.append({'instance_name': radarr_config['name'], 'files_to_process':[]})
-                    for nohl_file in nohl_files:
-                        for radarr_path in radarr_config['paths']:
-                            if nohl_file.startswith(radarr_path):
-                                instances_to_run[-1]['files_to_process'].append(nohl_file)
-        if config.script_data['sonarr']:
-            for sonarr_config in config.script_data['sonarr']:
-                if any(nohl_path.startswith(sonarr_path) for nohl_path in nohl_files for sonarr_path in sonarr_config['paths']):
-                    instances_to_run.append({'instance_name': sonarr_config['name'], 'files_to_process':[]})
-                    for nohl_file in nohl_files:
-                        for sonarr_path in sonarr_config['paths']:
-                            if nohl_file.startswith(sonarr_path):
-                                instances_to_run[-1]['files_to_process'].append(nohl_file)
-    for instance_type, instances in config.global_data.items():
+        try:
+            if config.script_data['radarr']:
+                for radarr_config in config.script_data['radarr']:
+                    if any(nohl_path.startswith(radarr_path) for nohl_path in nohl_files for radarr_path in radarr_config['paths']):
+                        instances_to_run.append({'instance_name': radarr_config['name'], 'files_to_process':[]})
+                        for nohl_file in nohl_files:
+                            for radarr_path in radarr_config['paths']:
+                                if nohl_file.startswith(radarr_path):
+                                    instances_to_run[-1]['files_to_process'].append(nohl_file)
+        except KeyError:
+            logger.warning("No Radarr instances found in script_data")
+        try:
+            if config.script_data['sonarr']:
+                for sonarr_config in config.script_data['sonarr']:
+                    if any(nohl_path.startswith(sonarr_path) for nohl_path in nohl_files for sonarr_path in sonarr_config['paths']):
+                        instances_to_run.append({'instance_name': sonarr_config['name'], 'files_to_process':[]})
+                        for nohl_file in nohl_files:
+                            for sonarr_path in sonarr_config['paths']:
+                                if nohl_file.startswith(sonarr_path):
+                                    instances_to_run[-1]['files_to_process'].append(nohl_file)
+        except KeyError:
+            logger.warning("No Sonarr instances found in script_data")
+    instance_data = {
+        'Radarr': config.radarr_data,
+        'Sonarr': config.sonarr_data
+    }
+    for instance_type, instances in instance_data.items():
         for instance in instances:
             instance_name = instance['name']
             instance_type = instance_type.capitalize()
@@ -304,24 +321,37 @@ def main():
             for _instance in instances_to_run:
                 if instance_name == _instance['instance_name']:
                     if instance_type == "Radarr":
-                        print(f"Running {instance_type} instance {instance_name}")
+                        logger.debug(f"Running {instance_type} instance {instance_name}")
                         data = next((data for data in config.radarr if data['name'] == instance_name), None)
                         if data:
-                            include_profiles = data['include_profiles']
-                            exclude_profiles = data['exclude_profiles']
-                            nohl_files = _instance['files_to_process']
-                            print(f"Processing {len(nohl_files)} files")
-                            process_instances(instance_type, url, api, nohl_files, include_profiles, exclude_profiles, dry_run, exclude_series=None)
+                            try:
+                                include_profiles = data['include_profiles']
+                                exclude_profiles = data['exclude_profiles']
+                                nohl_files = _instance['files_to_process']
+                            except KeyError:
+                                logger.error(f"Missing include_profiles, exclude_profiles, or both in {instance_name} config. Please check your config.")
+                                logger.error(f"Exiting...")
+                                sys.exit()
+                            logger.debug(f"Processing {len(nohl_files)} files")
                     elif instance_type == "Sonarr":
-                        print(f"Running {instance_type} instance {instance_name}")
+                        logger.debug(f"Running {instance_type} instance {instance_name}")
                         data = next((data for data in config.sonarr if data['name'] == instance_name), None)
                         if data:
-                            include_profiles = data['include_profiles']
-                            exclude_profiles = data['exclude_profiles']
-                            exclude_series = data['exclude_series']
+                            try:
+                                include_profiles = data['include_profiles']
+                                exclude_profiles = data['exclude_profiles']
+                                exclude_series = data['exclude_series']
+                            except KeyError:
+                                logger.error(f"Missing include_profiles, exclude_profiles, or both in {instance_name} config. Please check your config.")
+                                logger.error(f"Exiting...")
+                                sys.exit()
                             nohl_files = _instance['files_to_process']
-                            print(f"Processing {len(nohl_files)} files")
-                            process_instances(instance_type, url, api, nohl_files, include_profiles, exclude_profiles, dry_run, exclude_series)
+                            logger.debug(f"Processing {len(nohl_files)} files")
+                    logger.debug(f"Including profiles: {include_profiles}")
+                    logger.debug(f"Excluding profiles: {exclude_profiles}")
+                    if instance_type == "Sonarr":
+                        logger.debug(f"Exclude series: {exclude_series}")
+                    process_instances(instance_type, url, api, nohl_files, include_profiles, exclude_profiles, dry_run, exclude_series=None)
         time.sleep(5)
 
 if __name__ == "__main__":

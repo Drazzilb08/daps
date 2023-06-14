@@ -27,9 +27,9 @@ from modules.config import Config
 from modules.logger import setup_logger
 from modules.arrpy import StARR
 from unidecode import unidecode
-
 config = Config(script_name="nohl")
 logger = setup_logger(config.log_level, "nohl")
+
 
 illegal_chars_regex = re.compile(r"[^\w\s\-\(\)/.]+")
 season_regex = r"(?i)S(\d{2})E"
@@ -80,10 +80,22 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
     if instance_type == 'Sonarr':
         logger.info("Processing Sonarr")
         for file in nohl_files:
-            season_number = re.search(season_regex, file).group(1)
-            title = re.match(title_regex, file).group(1)
-            year = int(re.match(title_regex, file).group(2))
-            episode = int(re.search(episode_regex, file).group(1))
+            try:
+                season_number = re.search(season_regex, file).group(1)
+            except Exception as e:
+                logger.warning(f"Error processing file: {file}. Error: {e}")
+            try:
+                title = re.match(title_regex, file).group(1)
+            except Exception as e:
+                logger.warning(f"Error processing file: {file}. Error: {e}")
+            try:
+                year = int(re.match(title_regex, file).group(2))
+            except Exception as e:
+                logger.warning(f"Error processing file: {file}. Error: {e}")
+            try:
+                episode = int(re.search(episode_regex, file).group(1))
+            except Exception as e:
+                logger.warning(f"Error processing file: {file}. Error: {e}")
             logger.debug(f"Processing file: {file}, Title: {title}, Year: {year}, Season: {season_number}, Episode: {episode}")
             if season_number:
                 season_number_modified = int(season_number.replace('0', '', 1))
@@ -103,6 +115,8 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
     logger.debug(f"Media Data: {media_data}")
     results = []
     file_ids = []
+    quality_profiles = []
+    quality_profiles = app.get_quality_profile_names()
     for data in media_data:
         title = unidecode(data['title'])
         year = data['year']
@@ -117,12 +131,13 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
             if media_title in exclude_series if exclude_series else False:
                 continue
             quality_profile_id = m['qualityProfileId']
-            quality_profile_name = app.get_quality_profile_name(quality_profile_id)
-            logger.debug(f"Comparing media: {media_title}, {media_year}, {media_id}, Monitored: {monitored}, Quality Profile: {quality_profile_name}")
             if title == media_title and year == media_year:
+                quality_profile_name = next(key for key, value in quality_profiles.items() if value == quality_profile_id)
                 if (quality_profile_name in include_profiles if include_profiles else True) and (quality_profile_name not in exclude_profiles if exclude_profiles else True):
                     if instance_type == 'Radarr':
                         if monitored == True:
+                            if exclude_profiles is not None and quality_profile_name in exclude_profiles:
+                                continue
                             try:
                                 file_ids = (m['movieFile']['id'])
                                 logger.debug(f"Found match: {media_title}, Media ID: {media_id}, File IDs: {file_ids}")
@@ -271,38 +286,34 @@ def main():
         sys.exit()
     paths = [] 
     monitored_paths = []
-    if config.radarr:
-        for radarr_config in config.radarr: 
-            paths.extend(radarr_config['paths'])
-            monitored_paths.append(radarr_config['paths'])
-    if config.sonarr:
-        for sonarr_config in config.sonarr: 
-            paths.extend(sonarr_config['paths'])
-            monitored_paths.append(sonarr_config['paths'])
+    for config_item in [config.radarr, config.sonarr]:
+        for item in config_item or []:
+            paths.extend([item['paths']] if isinstance(item['paths'], str) else item['paths'])
+            monitored_paths.extend([item['paths']] if isinstance(item['paths'], str) else item['paths'])
     for i in monitored_paths:
-        logger.info(f"Monitoring: {i[0]}")
+        logger.info(f"Monitoring: {i}")
     nohl_files = find_no_hl_files(paths)
     if nohl_files:
         instances_to_run = []
         try:
             if config.script_data['radarr']:
                 for radarr_config in config.script_data['radarr']:
-                    if any(nohl_path.startswith(radarr_path) for nohl_path in nohl_files for radarr_path in radarr_config['paths']):
-                        instances_to_run.append({'instance_name': radarr_config['name'], 'files_to_process':[]})
-                        for nohl_file in nohl_files:
-                            for radarr_path in radarr_config['paths']:
-                                if nohl_file.startswith(radarr_path):
+                    for radarr_path in ([radarr_config['paths']] if isinstance(radarr_config['paths'], str) else radarr_config['paths']):
+                        if any(nohl_path.startswith(radarr_path) for nohl_path in nohl_files):
+                            instances_to_run.append({'instance_name': radarr_config['name'], 'files_to_process':[]})
+                            for nohl_file in nohl_files:
+                                if any(nohl_file.startswith(radarr_path) for radarr_path in ([radarr_path] if isinstance(radarr_path, str) else radarr_path)):
                                     instances_to_run[-1]['files_to_process'].append(nohl_file)
         except KeyError:
             logger.warning("No Radarr instances found in script_data")
         try:
             if config.script_data['sonarr']:
                 for sonarr_config in config.script_data['sonarr']:
-                    if any(nohl_path.startswith(sonarr_path) for nohl_path in nohl_files for sonarr_path in sonarr_config['paths']):
-                        instances_to_run.append({'instance_name': sonarr_config['name'], 'files_to_process':[]})
-                        for nohl_file in nohl_files:
-                            for sonarr_path in sonarr_config['paths']:
-                                if nohl_file.startswith(sonarr_path):
+                    for sonarr_path in ([sonarr_config['paths']] if isinstance(sonarr_config['paths'], str) else sonarr_config['paths']):
+                        if any(nohl_path.startswith(sonarr_path) for nohl_path in nohl_files):
+                            instances_to_run.append({'instance_name': sonarr_config['name'], 'files_to_process':[]})
+                            for nohl_file in nohl_files:
+                                if any(nohl_file.startswith(sonarr_path) for sonarr_path in ([sonarr_path] if isinstance(sonarr_path, str) else sonarr_path)):
                                     instances_to_run[-1]['files_to_process'].append(nohl_file)
         except KeyError:
             logger.warning("No Sonarr instances found in script_data")
@@ -311,11 +322,10 @@ def main():
         'Sonarr': config.sonarr_data
     }
     for instance_type, instances in instance_data.items():
+        print(f"instance_type: {instance_type}")
         for instance in instances:
             instance_name = instance['name']
             instance_type = instance_type.capitalize()
-            if instance_type == "Qbittorrent":
-                continue
             url = instance['url']
             api = instance['api']
             for _instance in instances_to_run:

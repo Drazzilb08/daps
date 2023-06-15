@@ -496,3 +496,17 @@ class StARR:
             for profile in response:
                 dict_of_names_and_ids[profile["name"]] = profile["id"]
             return dict_of_names_and_ids
+    def refresh_queue(self):
+        """
+        Refresh the queue.
+        """
+        endpoint = f"{self.url}/api/v3/command"
+        payload = {
+            "name": "RefreshMonitoredDownloads"
+        }
+        response = self.make_post_request(endpoint, json=payload)
+        if response:
+            return True
+        else:
+            self.logger.error(f"Failed to refresh queue")
+            return False

@@ -11,7 +11,7 @@
 # Description: A script to upgrade Sonarr/Radarr libraries to the keep in line with trash-guides
 # Usage: python3 /path/to/upgradinatorr.py
 # Requirements: requests, pyyaml
-# Version: 2.0.3
+# Version: 2.0.4
 # License: MIT License
 # ===================================================================================================
 
@@ -77,8 +77,7 @@ def process_instance(instance_type, instance_name, count, tag_name, unattended, 
         logger.info(f"Skipping {instance_name}...")
         return
     if not all_tagged:
-        untagged_media = [
-            m for m in media if arr_tag_id not in m['tags']]
+        untagged_media = [m for m in media if arr_tag_id not in m['tags'] and m['monitored'] == monitored and (status == "all" or status == m['status'])]
         media_to_process = untagged_media[:count]
         media_ids_to_process = [item["id"] for item in media_to_process]
         if not dry_run:

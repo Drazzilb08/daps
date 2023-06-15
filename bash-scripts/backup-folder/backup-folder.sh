@@ -7,7 +7,7 @@
 # |____/ \__,_|\___|_|\_\\__,_| .__/  |_|  \___/|_|\__,_|\___|_|
 #                             | |
 #                             |_|
-# v3.0.0
+# v3.0.1
 
 source_dir=''
 destination_dir=''
@@ -321,6 +321,7 @@ hex_to_decimal() {
         hex_bar_color=$bar_color
         decimal_bar_color=$((0x$bar_color))
     else
+        echo "Bar color: $bar_color"
         echo -e "Invalid color format. Please provide a valid 6-digit hex color code (e.g. ff0000 for red)"
         exit 1
     fi
@@ -343,6 +344,7 @@ cleanup() {
 # Main function
 main() {
     handle_options "$@"
+    hex_to_decimal "$bar_color"
     check_config
     check_space
     create_backup

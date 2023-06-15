@@ -237,6 +237,8 @@ def process_instance(instance_type, instance_name, url, api, destination_file_li
         return final_output
     except Exception as e:
         final_output.append(f"Error processing {instance_name}: {e}")
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        final_output.append(f"Error: {exc_type}, {exc_tb.tb_lineno}")
         return final_output
 
 def main():

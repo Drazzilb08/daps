@@ -41,7 +41,7 @@ def match_collection(plex_collections, file, collection_threshold):
             plex_collection_match = fuzz.token_sort_ratio(
                 file_name, plex_collection)
             if plex_collection_match >= collection_threshold:
-                return plex_collection, None
+                return plex_collection
         return None
     except Exception as e:
         logger.error(f"Error: {e}")

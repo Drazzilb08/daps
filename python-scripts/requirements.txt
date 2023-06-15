@@ -3,3 +3,4 @@ requests
 tqdm
 pyyaml
 python-Levenshtein 
+unidecode

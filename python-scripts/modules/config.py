@@ -24,6 +24,7 @@ class Config:
         # Global variables
         self.radarr_data = self.global_data.get('radarr', {})  # Use empty dict if radarr data is not found
         self.sonarr_data = self.global_data.get('sonarr', {})  # Use empty dict if sonarr data is not found
+        self.qbit_data = self.global_data.get('qbittorrent', {})  # Use empty dict if qbit data is not found
         self.plex_data = self.global_data.get('plex', {})  # Use empty dict if plex data is not found
 
         # Typical variables
@@ -31,6 +32,7 @@ class Config:
         self.dry_run = self.script_data.get('dry_run', False)  # Use False as default value for dry_run if not provided
         self.radarr = self.script_data.get('radarr', False)  # Use False as default value for radarr if not provided')
         self.sonarr = self.script_data.get('sonarr', False)  # Use False as default value for sonarr if not provided')
+        self.qbit = self.script_data.get('qbittorrent', False)  # Use False as default value for qbit if not provided')
 
         # Plex variables
         self.library_names = self.script_data.get('library_names', [])  # Use empty list as default value for library_names if not provided

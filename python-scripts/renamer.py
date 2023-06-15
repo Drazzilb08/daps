@@ -12,7 +12,7 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 3.0.9
+# Version: 3.0.10
 # License: MIT License
 # ===================================================================================================
 
@@ -45,6 +45,8 @@ def match_collection(plex_collections, file, collection_threshold):
         return None
     except Exception as e:
         logger.error(f"Error: {e}")
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        logger.error(f"Error: {exc_type}, {exc_tb.tb_lineno}")
         return None
 
 def match_media(media, file, threshold):
@@ -64,6 +66,8 @@ def match_media(media, file, threshold):
         return None
     except Exception as e:
         logger.error(f"Error: {e}")
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        logger.error(f"Error: {exc_type}, {exc_tb.tb_lineno}")
         return
 
 def rename_file(matched_name, file, destination_dir, source_dir, dry_run, action_type, print_only_renames, destination_file_list):
@@ -85,6 +89,8 @@ def rename_file(matched_name, file, destination_dir, source_dir, dry_run, action
                 message = f"{file} -> {matched_name}"
             except Exception as e:
                 logger.error(f"Error: {e}")
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                logger.error(f"Error: {exc_type}, {exc_tb.tb_lineno}")
         return message
     else:
         if not print_only_renames:
@@ -99,6 +105,8 @@ def rename_file(matched_name, file, destination_dir, source_dir, dry_run, action
                     message = f"{file} -->> {matched_name}"
                 except Exception as e:
                     logger.error(f"Error: {e}")
+                    exc_type, exc_obj, exc_tb = sys.exc_info()
+                    logger.error(f"Error: {exc_type}, {exc_tb.tb_lineno}")
             return message
 
 def rename_movies(matched_movie, file, destination_dir, source_dir, dry_run, action_type, print_only_renames, destination_file_list):
@@ -110,6 +118,8 @@ def rename_movies(matched_movie, file, destination_dir, source_dir, dry_run, act
         return rename_file(matched_movie, file, destination_dir, source_dir, dry_run, action_type, print_only_renames, destination_file_list)
     except Exception as e:
         logger.error(f"Error: {e}")
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        logger.error(f"Error: {exc_type}, {exc_tb.tb_lineno}")
 
 def rename_series(matched_series, file, destination_dir, source_dir, dry_run, action_type, print_only_renames, destination_file_list):
     try:
@@ -124,6 +134,8 @@ def rename_series(matched_series, file, destination_dir, source_dir, dry_run, ac
             except ValueError as e:
                 logger.error(
                     f"Error: Cannot convert {season_info} to an integer in file {file}. {e}")
+                exc_type, exc_obj, exc_tb = sys.exc_info()
+                logger.error(f"Error: {exc_type}, {exc_tb.tb_lineno}")
                 return
             season_info = f"{season_number:02d}"
             matched_series = matched_series + "_Season" + season_info
@@ -132,6 +144,8 @@ def rename_series(matched_series, file, destination_dir, source_dir, dry_run, ac
         return rename_file(matched_series, file, destination_dir, source_dir, dry_run, action_type, print_only_renames, destination_file_list)
     except Exception as e:
         logger.error(f"Error: {e}")
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        logger.error(f"Error: {exc_type}, {exc_tb.tb_lineno}")
 
 def get_assets_files(assets_path):
     series = set()
@@ -143,6 +157,8 @@ def get_assets_files(assets_path):
         files = os.listdir(assets_path)
     except FileNotFoundError:
         logger.error(f"Error: {assets_path} not found.")
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        logger.error(f"Error: {exc_type}, {exc_tb.tb_lineno}")
         sys.exit(1)
 
     for file in tqdm(files, desc=f'Sorting assets', total=len(files)):

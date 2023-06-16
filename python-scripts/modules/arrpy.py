@@ -510,3 +510,33 @@ class StARR:
         else:
             self.logger.error(f"Failed to refresh queue")
             return False
+
+    def get_health(self):
+        """
+        Get the health status.
+        """
+        endpoint = f"{self.url}/api/v3/health"
+        response = self.make_get_request(endpoint, headers=self.headers)
+        if response:
+            return response
+        else:
+            self.logger.error(f"Failed to get health status")
+            return False
+    
+    def delete_media(self, media_id, instance_type):
+        """
+        Delete a media item.
+        Parameters:
+            media_id (int): The ID of the media item to delete.
+        """
+        if instance_type == 'Sonarr':
+            endpoint = f"{self.url}/api/v3/series/{media_id}"
+        elif instance_type == 'Radarr':
+            endpoint = f"{self.url}/api/v3/movie/{media_id}"
+
+        response = self.make_delete_request(endpoint)
+        if response.status_code == 200:
+            return True
+        else:
+            self.logger.error(f"Failed to delete media item with ID {media_id}")
+            return False

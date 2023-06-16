@@ -188,3 +188,22 @@ nohl:
       include_profiles:
         - 
       exclude_series:
+  
+queinatorr:
+  log_level: info
+  dry_run: false
+  qbittorrent:
+  - name: qbittorrent_1
+    starr_app: 
+    move_category: 
+      radarr_1: completed-movies
+  - name: qbittorrent_2
+    starr_app: 
+      - sonarr_1
+      - sonarr_2
+    move_category: 
+      sonarr_1: completed-series
+      sonarr_2: completed-anime
+    move_missing:
+      sonarr_1: series
+      sonarr_2: anime

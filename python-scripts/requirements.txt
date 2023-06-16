@@ -4,3 +4,4 @@ tqdm
 pyyaml
 python-Levenshtein 
 unidecode
+qbittorrent-api

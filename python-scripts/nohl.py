@@ -9,7 +9,8 @@
 # ===================================================================================================
 # Author: Drazzilb
 # Description: This script will find all files that are not hardlinked and will process them in Radarr
-#              and Sonarr. This script is meant to be run after a Plex library scan.
+#              and Sonarr. This is useful for finding files that are not hardlinked and wish to have 100%
+#              hardlinks seeding.
 # Usage: python3 nohl.py
 # Requirements: Python 3.8+, requests
 # Version: 0.0.5

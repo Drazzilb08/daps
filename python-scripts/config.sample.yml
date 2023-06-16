@@ -207,3 +207,7 @@ queinatorr:
     move_missing:
       sonarr_1: series
       sonarr_2: anime
+
+movie-deletarr:
+  log_level: debug
+  dry_run: true

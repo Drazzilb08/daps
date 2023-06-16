@@ -21,8 +21,8 @@ from modules.arrpy import StARR
 import json
 import re
 
-config = Config(script_name="movie-deleter")
-logger = setup_logger(config.log_level, "movie-deleter")
+config = Config(script_name="movie-deletarr")
+logger = setup_logger(config.log_level, "movie-deletarr")
 # health_1 =    [
 #                 {
 #                     "source": "RemovedMovieCheck",

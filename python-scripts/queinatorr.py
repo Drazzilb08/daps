@@ -11,7 +11,7 @@
 #              in a queue due to a missing file or not being an upgrade for existing episode file(s).
 # Usage: python3 queinatorr.py
 # Requirements: requests, qbittorrentapi
-# Version: 0.0.2
+# Version: 0.0.3
 # License: MIT License
 # ===================================================================================================
 
@@ -48,20 +48,15 @@ def handle_qbit(title_list, url, username, password, move_category, dry_run, mov
         logger.error(f"Category {move_category} does not exist. Please create it in qBittorrent")
         return
     for torrent in torrents:
-        if move_missing:
-            if torrent['category'] in move_missing and torrent['state'] == 'missingFiles':
-                category = torrent['category']
-                name = torrent['name']
-                hash = torrent['hash']
-                dict_torrent_hash_name_category[name] = {'hash': hash, 'category': category}
-                logger.info(f"Adding {name} to the list of torrents to move from {category} to {move_category} due to it missing files, chances are it's a cross-seed")
         torrent_name = torrent['name']
+        hash = torrent['hash']
+        category = torrent['category']
+        if move_missing:
+            if category in move_missing and torrent['state'] == 'missingFiles':
+                dict_torrent_hash_name_category[name] = {'hash': hash, 'category': category}
+                logger.info(f"Adding {torrent_name} to the list of torrents to move from {category} to {move_category} due to it missing files, chances are it's a cross-seed")
         if any(isinstance(title, str) and (title and torrent_name and title.lower() in str(torrent_name).lower() or title and isinstance(torrent_name, str) and '.' in torrent_name and title.lower() in torrent_name.rsplit('.', 1)[0].lower()) for title in title_list):
             try:
-                category = torrent['category']
-                name = torrent['name']
-                hash = torrent['hash']
-                # logger.debug(f"Found {name} in {category}")
                 if category != move_category:
                     dict_torrent_hash_name_category[name] = {'hash': hash, 'category': category}
             except KeyError:
@@ -76,7 +71,6 @@ def handle_qbit(title_list, url, username, password, move_category, dry_run, mov
                 try:
                     qb.torrents_set_category(torrent_hashes=hash, category=move_category)
                     logger.info(f"Moving {torrent} from {category} to {move_category}")
-                    # break # add this line to move only one torrent
                 except Exception as e:
                     logger.error(f"Could not move {torrent} from {category} to {move_category}")
                     logger.error(e)
@@ -99,7 +93,7 @@ def handle_queued_items(queue):
                 if messages:
                     if any(queue_item in msg for msg in messages for queue_item in queue_list):
                         if title and messages:
-                            logger.debug(f"Found {title} with {messages}")
+                            logger.info(f"Found {title} with {messages}")
                             title_list.append(title)
         try:
             if record['errorMessage']:
@@ -108,7 +102,7 @@ def handle_queued_items(queue):
                 if error_message:
                     if error_message in queue_list:
                         if title and error_message:
-                            logger.debug(f"Found {title} with {error_message}....")
+                            logger.info(f"Found {title} with {error_message}....")
                             title_list.append(title)
         except KeyError:
             pass

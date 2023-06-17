@@ -13,7 +13,7 @@
 #              hardlinks seeding.
 # Usage: python3 nohl.py
 # Requirements: Python 3.8+, requests
-# Version: 0.0.5
+# Version: 0.0.6
 # License: MIT License
 # ===================================================================================================
 
@@ -32,7 +32,7 @@ config = Config(script_name="nohl")
 logger = setup_logger(config.log_level, "nohl")
 
 
-illegal_chars_regex = re.compile(r"[^\w\s\-\(\)/.]+")
+illegal_chars_regex = re.compile(r"[^\w\s\-\(\)/.'’]+")
 season_regex = r"(?i)S(\d{2})E"
 episode_regex = r"(?:E|e)(\d{1,2})"
 title_regex = r"^.*/([^/]+)\s\((\d{4})\)/.*$"
@@ -68,7 +68,6 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
     app = StARR(url, api, logger)
     media = app.get_media()
     if instance_type == 'Radarr':
-        logger.info("Processing Radarr")
         for file in nohl_files:
             try:
                 title = re.match(title_regex, file).group(1)
@@ -79,7 +78,6 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
             labled_data = {'title': title, 'year': year}
             media_data.append(labled_data)
     if instance_type == 'Sonarr':
-        logger.info("Processing Sonarr")
         for file in nohl_files:
             try:
                 season_number = re.search(season_regex, file).group(1)
@@ -113,64 +111,69 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
                     media_data.append({'title': title, 'year': year, 'season_info': [{'season_number': season_number_modified, 'episodes': [episode]}]})
                 except Exception as e:
                     logger.warning(f"Error processing file: {file}. Error: {e}")
-    logger.debug(f"Media Data: {media_data}")
+    logger.debug(f"Media Data: {json.dumps(media_data, indent=4)}")
     results = []
     file_ids = []
     quality_profiles = []
     quality_profiles = app.get_quality_profile_names()
-    for data in media_data:
-        title = unidecode(data['title'])
-        year = data['year']
-        for m in media:
+    for media_data_item in media_data:
+        media_data_item_title = media_data_item['title']
+        media_data_item_title_modified = unidecode(media_data_item['title'])
+        media_data_item_title_modified = illegal_chars_regex.sub("", media_data_item_title_modified)
+        media_data_item_year = media_data_item['year']
+        logger.debug(f"Processing title: {media_data_item_title}, Year: {media_data_item_year}")
+
+        for media_item in media:
             quality_profile_id = None
             quality_profile_name = None
-            media_title = unidecode(m['title'])
-            media_title = illegal_chars_regex.sub("", media_title)
-            media_year = m['year']
-            media_id = m['id']
-            monitored = m['monitored']
-            if media_title in exclude_series if exclude_series else False:
-                continue
-            quality_profile_id = m['qualityProfileId']
-            if title == media_title and year == media_year:
+            media_item_title = media_item['title']
+            media_item_title_modified = unidecode(media_item['title'])
+            media_item_title_modified = illegal_chars_regex.sub("", media_item_title_modified)
+            media_item_year = media_item['year']
+            media_item_id = media_item['id']
+            media_item_monitored = media_item['monitored']
+
+            quality_profile_id = media_item['qualityProfileId']
+
+            if media_data_item_title_modified == media_item_title_modified and media_data_item_year == media_item_year:
+                if media_item_title in exclude_series if exclude_series else False:
+                    logger.info(f"Skipping {media_item_title} because it is in the exclude list.")
+                    continue
                 quality_profile_name = next(key for key, value in quality_profiles.items() if value == quality_profile_id)
+
                 if (quality_profile_name in include_profiles if include_profiles else True) and (quality_profile_name not in exclude_profiles if exclude_profiles else True):
                     if instance_type == 'Radarr':
-                        if monitored == True:
-                            if exclude_profiles is not None and quality_profile_name in exclude_profiles:
-                                continue
+                        if media_item_monitored:
                             try:
-                                file_ids = (m['movieFile']['id'])
-                                logger.debug(f"Found match: {media_title}, Media ID: {media_id}, File IDs: {file_ids}")
-                                results.append({'title': media_title, 'media_id': media_id, 'file_ids': file_ids})
+                                file_ids = media_item['movieFile']['id']
+                                logger.debug(f"Found match: {media_item_title}, Media ID: {media_item_title}, File IDs: {file_ids}")
+                                results.append({'title': media_item_title_modified, 'media_id': media_item_id, 'file_ids': file_ids})
                             except:
                                 continue
-                    if instance_type == 'Sonarr':
-                        if exclude_profiles != None and quality_profile_name in exclude_profiles:
-                            continue
+                    elif instance_type == 'Sonarr':
                         monitored_seasons = []
-                        media_data_seasons = [season['season_number'] for season in data['season_info']]
-                        media_seasons = m['seasons']
+                        media_data_seasons = [season['season_number'] for season in media_data_item['season_info']]
+                        media_seasons = media_item['seasons']
                         episode_info = []
-                        if monitored == True:
+
+                        if media_item_monitored:
                             for s in media_seasons:
                                 season_monitored = s['monitored']
-                                if season_monitored == True:
+                                if season_monitored:
                                     monitored_seasons.append(s['seasonNumber'])
                             common_seasons = list(set(monitored_seasons) & set(media_data_seasons))
                             season_info = []
+
                             for item in media_seasons:
                                 if item['seasonNumber'] in common_seasons:
                                     stats = item['statistics']
                                     episodeCount = stats['episodeFileCount']
                                     totalEpisodeCount = stats['totalEpisodeCount']
-                                    if episodeCount == totalEpisodeCount:
-                                        season_pack = True
-                                    else:
-                                        season_pack = False
-                                    season_info.append({'season_number': item['seasonNumber'], 'season_pack': season_pack, 'episode_info': []})  
-                                
-                            season_data = app.get_season_data(media_id)
+                                    season_pack = episodeCount == totalEpisodeCount
+                                    season_info.append({'season_number': item['seasonNumber'], 'season_pack': season_pack, 'episode_info': []})
+
+                            season_data = app.get_season_data(media_item_id)
+
                             for item in season_info:
                                 season_number = item['season_number']
                                 season_pack = item['season_pack']
@@ -178,26 +181,29 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
                                 episode_file_id = []
                                 episode_ids = []
                                 episode_numbers = []
+
                                 for season_data_item in season_data:
-                                    if season_data_item['monitored'] == False:
+                                    if not season_data_item['monitored']:
                                         continue
                                     if season_data_item['seasonNumber'] == season_number:
-                                        media_data_episodes = [episode for season in data['season_info'] if season['season_number'] == season_number for episode in season['episodes']]
+                                        media_data_episodes = [episode for season in media_data_item['season_info'] if season['season_number'] == season_number for episode in season['episodes']]
                                         if season_pack:
                                             episode_file_id.append(season_data_item['episodeFileId'])
-                                        elif not season_pack:
-                                            if season_data_item['episodeNumber'] in media_data_episodes:
-                                                episode_file_id.append(season_data_item['episodeFileId'])
-                                                episode_ids.append(season_data_item['id'])
-                                                episode_numbers.append(season_data_item['episodeNumber'])
+                                        elif not season_pack and season_data_item['episodeNumber'] in media_data_episodes:
+                                            episode_file_id.append(season_data_item['episodeFileId'])
+                                            episode_ids.append(season_data_item['id'])
+                                            episode_numbers.append(season_data_item['episodeNumber'])
                                 episode_info.append({'episode_file_id': episode_file_id, 'episode_ids': episode_ids, 'episode_numbers': episode_numbers})
-                            results.append({'title': media_title, 'media_id': media_id, 'seasons': season_info})
-    logger.debug(f"Results: {results}")
+                            results.append({'title': media_item_title, 'media_id': media_item_id, 'seasons': season_info})
+
+    logger.debug(f"Results: {json.dumps(results, indent=4)}")
     final_step(app, results, instance_type, dry_run)
 
 def final_step(app, results, instance_type, dry_run):
     searches = config.maximum_searches
     tmp_file_path = 'tmp/search_count.txt'
+    if not os.path.exists('tmp/'):
+        os.makedirs('tmp/')
     if not os.path.exists(tmp_file_path):
         with open(tmp_file_path, 'w') as f:
             f.write('0\n0')
@@ -230,8 +236,9 @@ def final_step(app, results, instance_type, dry_run):
                         app.refresh_media(media_id)
                         app.search_season(media_id, season_number)
                         logger.info(f"Deleted episode file for {title} Season {season_number}, and the entire season was searched for a replacement")
+                        search_count += 1
                     else:
-                        logger.info(f"Would have deleted episode file for {title} Season {season_number}, and the entire season would have been searched for a replacement")
+                        logger.info(f"Would have deleted episode files for {title} Season {season_number}, and the entire season would have been searched for a replacement")
                 elif not season_pack:
                     episode_file_id = episode_info[0]['episode_file_id']
                     episode_ids = episode_info[0]['episode_ids']
@@ -244,7 +251,7 @@ def final_step(app, results, instance_type, dry_run):
                         search_count += 1  
                         logger.info(f"Deleted episode file for {title} Season {season_number}, and the individual episodes {episode_numbers} were searched for a replacement")
                     else:
-                        logger.info(f"Would have deleted episode file for {title} Season {season_number}, and the individual episodes {episode_numbers} would have been searched for a replacement")
+                        logger.info(f"Would have deleted episode files for {title} Season {season_number}, and the individual episodes {episode_numbers} would have been searched for a replacement")
         elif instance_type == 'Radarr':
             file_ids = result['file_ids']
             logger.debug(f"Processing {instance_type} - Deleting movie file for {title}")
@@ -258,9 +265,9 @@ def final_step(app, results, instance_type, dry_run):
                 logger.info(f"Would have deleted movie file for {title}, and the movie would have been searched for a replacement")   
     with open(tmp_file_path, 'w') as f:
         f.write(f'{search_count}\n{last_search_time}')
-    logger.info("Done!")
 
 def main():
+    exclude_series = None
     dry_run = config.dry_run
     if config.dry_run:
         logger.info('*' * 40)
@@ -301,10 +308,14 @@ def main():
                 for radarr_config in config.script_data['radarr']:
                     for radarr_path in ([radarr_config['paths']] if isinstance(radarr_config['paths'], str) else radarr_config['paths']):
                         if any(nohl_path.startswith(radarr_path) for nohl_path in nohl_files):
-                            instances_to_run.append({'instance_name': radarr_config['name'], 'files_to_process':[]})
-                            for nohl_file in nohl_files:
-                                if any(nohl_file.startswith(radarr_path) for radarr_path in ([radarr_path] if isinstance(radarr_path, str) else radarr_path)):
-                                    instances_to_run[-1]['files_to_process'].append(nohl_file)
+                            instance_found = False
+                            for instance in instances_to_run:
+                                if instance['instance_name'] == radarr_config['name']:
+                                    instance['files_to_process'].extend([nohl_file for nohl_file in nohl_files if nohl_file.startswith(radarr_path)])
+                                    instance_found = True
+                                    break
+                            if not instance_found:
+                                instances_to_run.append({'instance_name': radarr_config['name'], 'files_to_process':[nohl_file for nohl_file in nohl_files if nohl_file.startswith(radarr_path)]})
         except KeyError:
             logger.warning("No Radarr instances found in script_data")
         try:
@@ -312,18 +323,23 @@ def main():
                 for sonarr_config in config.script_data['sonarr']:
                     for sonarr_path in ([sonarr_config['paths']] if isinstance(sonarr_config['paths'], str) else sonarr_config['paths']):
                         if any(nohl_path.startswith(sonarr_path) for nohl_path in nohl_files):
-                            instances_to_run.append({'instance_name': sonarr_config['name'], 'files_to_process':[]})
-                            for nohl_file in nohl_files:
-                                if any(nohl_file.startswith(sonarr_path) for sonarr_path in ([sonarr_path] if isinstance(sonarr_path, str) else sonarr_path)):
-                                    instances_to_run[-1]['files_to_process'].append(nohl_file)
+                            instance_found = False
+                            for instance in instances_to_run:
+                                if instance['instance_name'] == sonarr_config['name']:
+                                    instance['files_to_process'].extend([nohl_file for nohl_file in nohl_files if nohl_file.startswith(sonarr_path)])
+                                    instance_found = True
+                                    break
+                            if not instance_found:
+                                instances_to_run.append({'instance_name': sonarr_config['name'], 'files_to_process':[nohl_file for nohl_file in nohl_files if nohl_file.startswith(sonarr_path)]})
         except KeyError:
             logger.warning("No Sonarr instances found in script_data")
+        logger.debug(f"Instances to run: {json.dumps(instances_to_run, indent=4)}")
+            
     instance_data = {
         'Radarr': config.radarr_data,
         'Sonarr': config.sonarr_data
     }
     for instance_type, instances in instance_data.items():
-        print(f"instance_type: {instance_type}")
         for instance in instances:
             instance_name = instance['name']
             instance_type = instance_type.capitalize()
@@ -337,6 +353,7 @@ def main():
                         if data:
                             try:
                                 include_profiles = data['include_profiles']
+                                logger.debug(f"Include profiles: {include_profiles}")
                                 exclude_profiles = data['exclude_profiles']
                                 nohl_files = _instance['files_to_process']
                             except KeyError:
@@ -350,19 +367,18 @@ def main():
                         if data:
                             try:
                                 include_profiles = data['include_profiles']
+                                logger.debug(f"Include profiles: {include_profiles}")
                                 exclude_profiles = data['exclude_profiles']
+                                logger.debug(f"Exclude profiles: {exclude_profiles}")
                                 exclude_series = data['exclude_series']
+                                logger.debug(f"Exclude series: {exclude_series}")
                             except KeyError:
                                 logger.error(f"Missing include_profiles, exclude_profiles, or both in {instance_name} config. Please check your config.")
                                 logger.error(f"Exiting...")
                                 sys.exit()
                             nohl_files = _instance['files_to_process']
                             logger.debug(f"Processing {len(nohl_files)} files")
-                    logger.debug(f"Including profiles: {include_profiles}")
-                    logger.debug(f"Excluding profiles: {exclude_profiles}")
-                    if instance_type == "Sonarr":
-                        logger.debug(f"Exclude series: {exclude_series}")
-                    process_instances(instance_type, url, api, nohl_files, include_profiles, exclude_profiles, dry_run, exclude_series=None)
+                    process_instances(instance_type, url, api, nohl_files, include_profiles, exclude_profiles, dry_run, exclude_series)
         time.sleep(5)
 
 if __name__ == "__main__":

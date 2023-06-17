@@ -197,26 +197,41 @@ nohl:
       include_profiles:
         - 
       exclude_series:
-  
+
+# This script's primary purpose is to monitor the queue of Radarr/Sonarr for stuck torrents, and to move them to a different category so that qBittorrent Manager can deal with them as needed
+# The secondary purpose of this script is to monitor a category for torrents that report as missing files and to move them to a different category so that qBittorrent Manager can deal with them as needed
 queinatorr:
   log_level: info
   dry_run: false
   qbittorrent:
   - name: qbittorrent_1
+    # Required (String or List): If you have multiple instances of Radarr/Sonarr you can specify which one you want to use for this instance of qBittorrent
     starr_app: radarr_1
+    # Required: If you recieve a message from Radarr/Sonarr that a torrent is ineligible for import, you can move it to a different category so that qBittorrent Manager can deal with it as needed
     move_category: 
       radarr_1: completed-movies
+    # Optional: If you want to move from the monitored category to the move_category if qBittorrent is reporting the torrent as missing files
+    # Each Sonarr/Radarr instance can either be a string or a list
+    # Note: This entire key is optional, if you don't want to move missing files, you can remove it
+    move_missing:
+      radarr_1: movies
   - name: qbittorrent_2
+    # Required (String or List): If you have multiple instances of Radarr/Sonarr you can specify which one you want to use for this instance of qBittorrent
     starr_app: 
       - sonarr_1
       - sonarr_2
+    # Required: If you recieve a message from Radarr/Sonarr that a torrent is ineligible for import, you can move it to a different category so that qBittorrent Manager can deal with it as needed
     move_category: 
       sonarr_1: completed-series
       sonarr_2: completed-anime
+    # Optional: If you want to move from the monitored category to the move_category if qBittorrent is reporting the torrent as missing files
+    # Each Sonarr/Radarr instance can either be a string or a list
     move_missing:
       sonarr_1: series
       sonarr_2: anime
 
+# This script's purpose is to monitor the health status of Radarr/Sonarr and to delete movies/series if they are reported as to have been 
+# Removed on TheMovieDB/TheTVDB
 movie-deletarr:
   log_level: debug
   dry_run: true

@@ -23,24 +23,10 @@ import re
 
 config = Config(script_name="movie-deletarr")
 logger = setup_logger(config.log_level, "movie-deletarr")
-# health_1 =    [
-#                 {
-#                     "source": "RemovedMovieCheck",
-#                     "type": "error",
-#                     "message": "Good movie (tmdbid 811367), Great movie (tmdbid 980804)",
-#                     "wikiUrl": "https://wiki.servarr.com/radarr/system#movie-was-removed-from-tmdb"
-#                 }
-#             ]
-# health_2 =  [
-#                 {
-#                     "source": "RemoveSeriesCheck",
-#                     "type": "error",
-#                     "message": "Show 1 (tvdbid 374939), Show 2 (tvdbid 980804), insert show (tvdbid 75886), awesome show (tvdbid 337544)",
-#                     "wikiUrl": "https://wiki.servarr.com/radarr/system#movie-was-removed-from-tmdb"
-#                 }
-#             ]
+
 tmdb_id_extractor = re.compile(r"tmdbid (\d+)")
 tvdb_id_extractor = re.compile(r"tvdbid (\d+)")
+
 def main():
     dry_run = config.dry_run
     log_level = config.log_level
@@ -61,10 +47,6 @@ def main():
             logger.debug(f"api: {'*' * (len(api) - 5)}{api[-5:]}")
             app = StARR(url, api, logger)
             health = app.get_health()
-            # if instance_type == "Radarr":
-            #     health = health_1
-            # if instance_type == "Sonarr":
-            #     health = health_2
             media = app.get_media()
             id_list = []
             for h in health:
@@ -94,13 +76,8 @@ def main():
                 if not dry_run:
                     logger.info(f"{title} deleted with id: {id}")
                     app.delete_media(id, instance_type)
-                    if log_level == "debug":
-                        break
                 else:
                     logger.info(f"{title} would have been deleted with id: {id}")
-                    if log_level == "debug":
-                        break
-
 
 if __name__ == '__main__':
     main()

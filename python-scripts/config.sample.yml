@@ -35,6 +35,15 @@ global:
       api: abcdefghijlmnop
     # url is the url for the plex instance
       url: http://localhost:32400
+  qbittorrent:
+    - name: qbittorrent_1
+      url: http://
+      username: username
+      password: password
+    - name: qbittorrent_2
+      url: http://
+      username: username
+      password: password
 
 # The upgradinatorr script is used to upgrade movies and tv shows, it can be used to upgrade all movies and tv shows or just a subset.
 # WARNING: This script can caues havoc with your usenet provider or torrent tracker if you are not careful.

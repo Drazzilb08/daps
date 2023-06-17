@@ -160,7 +160,7 @@ def main():
                 logger.debug(f'{" Settings ":*^40}')
                 logger.debug(f"Instance Name: {instance_name}")
                 logger.debug(f"URL: {url}")
-                logger.debug(f"API Key: {'<redacted>' if api else 'None'}")
+                logger.debug(f"api: {'*' * (len(api) - 5)}{api[-5:]}")
                 process_instance(instance_type, instance_name, count, tag_name, unattended, status, monitored, url, api, config.dry_run, reset)
 
 if __name__ == '__main__':

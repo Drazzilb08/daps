@@ -13,7 +13,7 @@
 #              hardlinks seeding.
 # Usage: python3 nohl.py
 # Requirements: Python 3.8+, requests
-# Version: 0.0.6
+# Version: 0.0.7
 # License: MIT License
 # ===================================================================================================
 
@@ -28,9 +28,9 @@ from modules.config import Config
 from modules.logger import setup_logger
 from modules.arrpy import StARR
 from unidecode import unidecode
+
 config = Config(script_name="nohl")
 logger = setup_logger(config.log_level, "nohl")
-
 
 illegal_chars_regex = re.compile(r"[^\w\s\-\(\)/.'’]+")
 season_regex = r"(?i)S(\d{2})E"
@@ -141,7 +141,6 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
         media_data_item_title_modified = unidecode(media_data_item['title'])
         media_data_item_title_modified = illegal_chars_regex.sub("", media_data_item_title_modified)
         media_data_item_year = media_data_item['year']
-        logger.debug(f"Processing title: {media_data_item_title}, Year: {media_data_item_year}")
 
         for media_item in media:
             quality_profile_id = None
@@ -154,7 +153,8 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
             media_item_monitored = media_item['monitored']
 
             quality_profile_id = media_item['qualityProfileId']
-
+            if media_data_item_title_modified == media_item_title_modified and media_data_item_year != media_item_year:
+                logger.warning(f"Found match for {media_item_title} and {media_data_item_title} but years do not match. Media Year: {media_item_year}, File Year: {media_data_item_year}")
             if media_data_item_title_modified == media_item_title_modified and media_data_item_year == media_item_year:
                 if media_item_title in exclude_series if exclude_series else False:
                     logger.info(f"Skipping {media_item_title} because it is in the exclude list.")
@@ -222,12 +222,19 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
 
 def final_step(app, results, instance_type, dry_run):
     searches = config.maximum_searches
-    tmp_file_path = 'tmp/search_count.txt'
-    if not os.path.exists('tmp/'):
-        os.makedirs('tmp/')
+    logger.debug(f"Searches: {searches}")
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    tmp_dir = os.path.join(script_dir, 'tmp')
+    tmp_file_path = f'{tmp_dir}/search_count.txt'
+    if not os.path.exists(tmp_dir):
+        os.makedirs(tmp_dir)
     if not os.path.exists(tmp_file_path):
-        with open(tmp_file_path, 'w') as f:
-            f.write('0\n0')
+        try:
+            with open(tmp_file_path, 'w') as f:
+                f.write('0\n0')
+        except OSError as e:
+            logger.error(f"Error creating search count file: {e}")
+            sys.exit(1)
     try:
         with open(tmp_file_path, 'r') as f:
             search_count, last_search_time = map(int, f.read().split('\n'))
@@ -273,6 +280,7 @@ def final_step(app, results, instance_type, dry_run):
                         logger.info(f"Deleted episode file for {title} Season {season_number}, and the individual episodes {episode_numbers} were searched for a replacement")
                     else:
                         logger.info(f"Would have deleted episode files for {title} Season {season_number}, and the individual episodes {episode_numbers} would have been searched for a replacement")
+                logger.debug(f"Search counter: {search_count}")
         elif instance_type == 'Radarr':
             file_ids = result['file_ids']
             logger.debug(f"Processing {instance_type} - Deleting movie file for {title}")
@@ -284,8 +292,12 @@ def final_step(app, results, instance_type, dry_run):
                 search_count += 1
             else:
                 logger.info(f"Would have deleted movie file for {title}, and the movie would have been searched for a replacement")   
-    with open(tmp_file_path, 'w') as f:
-        f.write(f'{search_count}\n{last_search_time}')
+    logger.debug(f"Search Total: {search_count}")
+    try:
+        with open(tmp_file_path, 'w') as f:
+            f.write(f'{search_count}\n{last_search_time}')
+    except Exception as e:
+        logger.error(f"Error writing to file: {e}")
 
 def main():
     exclude_series = None

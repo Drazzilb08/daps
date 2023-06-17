@@ -311,35 +311,33 @@ class StARR:
         response = self.make_get_request(endpoint, headers=self.headers)
         return response
     
-    def rename_media(self, media_id, file_ids):
+    def rename_media(self, media_ids):
         """
         Rename a media item.
         Parameters:
-            media_id (int): The ID of the media item to rename.
-            file_ids (list): A list of file IDs to rename.
-            dry_run (bool): Whether or not to actually rename the media item.
+            media_ids (list): A list of media IDs to attempt rename.
         """
         id_type = None
-        if isinstance(file_ids, int):
-            file_ids = [file_ids]
+        name = None
         if self.instance_type == 'Sonarr':
-            id_type = "seriesId"
+            name = "RenameSeries"
+            id_type = "seriesIds"
         elif self.instance_type == 'Radarr':
-            id_type = "movieId"
+            name = "RenameMovie"
+            id_type = "movieIds"
         payload = {
-            "name": "RenameFiles",
-            id_type: media_id,
-            "files": file_ids
+            "name": name,
+            id_type: media_ids,
         }
         endpoint = f"{self.url}/api/v3/command"
         response = self.make_post_request(endpoint, json=payload)
         if response:
-            return True
+            return
         else:
             self.logger.error(f"Failed to rename media item")
-            return False
+            return
     
-    def refresh_media(self, media_id):
+    def refresh_media(self, media_ids):
         """
         Refresh a media item.
         Parameters:
@@ -347,8 +345,8 @@ class StARR:
         """
         name_type = None
         id_type = None
-        if isinstance(media_id, int):
-            media_id = [media_id]
+        if isinstance(media_ids, int):
+            media_ids = [media_ids]
         if self.instance_type == 'Sonarr':
             id_type = "seriesIds"
             name_type = "RefreshSeries"
@@ -357,14 +355,14 @@ class StARR:
             name_type = "RefreshMovie"
         payload = {
             "name": name_type,
-            id_type: media_id
+            id_type: media_ids
         }
         endpoint = f"{self.url}/api/v3/command"
         response = self.make_post_request(endpoint, headers=self.headers, json=payload)
         if response:
             return True
         else:
-            self.logger.error(f"Failed to refresh media item with ID {media_id}")
+            self.logger.error(f"Failed to refresh media item with ID {media_ids}")
             return False
     
     def search_media(self, media_id):

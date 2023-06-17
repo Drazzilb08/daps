@@ -61,6 +61,8 @@ def match_media(media, file, threshold):
             matched_media_name = illegal_chars_regex.sub("", matched_media_name)
             matched_media_year = matched_media['year']
             matched_media_name_match = fuzz.token_sort_ratio(file_name, matched_media_name)
+            if matched_media_name_match >= threshold and year != matched_media_year:
+                logger.debug(f"Found a possible match: {matched_media_name} ({matched_media_year})")
             if matched_media_name_match >= threshold and year == matched_media_year:
                 return matched_media
         return None

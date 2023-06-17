@@ -11,7 +11,7 @@
 #              in a queue due to a missing file or not being an upgrade for existing episode file(s).
 # Usage: python3 queinatorr.py
 # Requirements: requests, qbittorrentapi
-# Version: 0.0.1
+# Version: 0.0.2
 # License: MIT License
 # ===================================================================================================
 
@@ -28,7 +28,8 @@ logger = setup_logger(config.log_level, "queinatorr")
 queue_list = [
     "Not an upgrade for existing episode file(s)",
     "No files found are eligible for import in",
-    "The download is missing files"
+    "The download is missing files",
+    "Not a Custom Format upgrade for existing movie file(s)"
 ]
 
 def handle_qbit(title_list, url, username, password, move_category, dry_run, move_missing):
@@ -47,7 +48,7 @@ def handle_qbit(title_list, url, username, password, move_category, dry_run, mov
         return
     for torrent in torrents:
         if move_missing:
-            if torrent['category'] == move_missing and torrent['state'] == 'missingFiles':
+            if torrent['category'] in move_missing and torrent['state'] == 'missingFiles':
                 category = torrent['category']
                 name = torrent['name']
                 hash = torrent['hash']
@@ -168,6 +169,8 @@ def main():
                                 if move_missing:
                                     for starr_app, category in move_missing.items():
                                         if starr_app == i['name']:
+                                            if isinstance(category, str):
+                                                category = [category]
                                             move_missing = category
                                             logger.debug(f"move_missing: {move_missing}")
                                             logger.debug(f"Move missing for {starr_app} is {move_missing}")

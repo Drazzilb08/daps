@@ -194,7 +194,7 @@ queinatorr:
   dry_run: false
   qbittorrent:
   - name: qbittorrent_1
-    starr_app: 
+    starr_app: radarr_1
     move_category: 
       radarr_1: completed-movies
   - name: qbittorrent_2

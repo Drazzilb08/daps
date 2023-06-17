@@ -20,7 +20,6 @@
 from modules.config import Config
 from modules.logger import setup_logger
 from modules.arrpy import StARR
-from modules.validate import ValidateInput
 
 config = Config(script_name="renameinatorr")
 logger = setup_logger(config.log_level, "renameinatorr")
@@ -105,6 +104,8 @@ def process_instance(instance_type, instance_name, url, api, tag_name, count, dr
         reset (bool): Whether or not to reset the tag.
         unattended (bool): Whether or not to run unattended.
     """
+    file_id = None
+    media_type = None
     tagged_count = 0
     untagged_count = 0
     total_count = 0
@@ -177,8 +178,10 @@ def main():
     """
     Main function to run the script
     """
-    validate_input = ValidateInput(config.log_level, config.dry_run, logger) 
-    config.log_level, config.dry_run = validate_input.validate_script(logger)
+    tag_name = None
+    count = None
+    reset = None
+    unattended = None
     logger.debug('*' * 40)
     logger.debug(f'* {"Script Input Validated":^36} *')
     logger.debug('*' * 40)

@@ -168,6 +168,7 @@ class StARR:
         Returns:
             list: A list of media objects.
         """
+        media = None
         if self.instance_type == 'Sonarr':
             media = "series"
         elif self.instance_type == 'Radarr':
@@ -207,6 +208,8 @@ class StARR:
         Returns:
             dict: The JSON response from the POST request.
         """
+        id_type = None
+        media = None
         if isinstance(media_id, int):
             media_id = [media_id]
         if self.instance_type == 'Sonarr':
@@ -262,6 +265,8 @@ class StARR:
             tag_id (int): The ID of the tag to remove.
             tag_name (str): The name of the tag to remove.
         """
+        id_type = None
+        media = None
         media_ids = []
         for media in all_media:
             if tag_id in media['tags']:
@@ -297,6 +302,7 @@ class StARR:
         Returns:
             list: A list of media items to rename.
         """
+        rename_endpoint = None
         if self.instance_type == 'Sonarr':
             rename_endpoint = "seriesId"
         elif self.instance_type == 'Radarr':
@@ -313,6 +319,7 @@ class StARR:
             file_ids (list): A list of file IDs to rename.
             dry_run (bool): Whether or not to actually rename the media item.
         """
+        id_type = None
         if isinstance(file_ids, int):
             file_ids = [file_ids]
         if self.instance_type == 'Sonarr':
@@ -338,6 +345,8 @@ class StARR:
         Parameters:
             media_id (int): The ID of the media item to refresh.
         """
+        name_type = None
+        id_type = None
         if isinstance(media_id, int):
             media_id = [media_id]
         if self.instance_type == 'Sonarr':
@@ -364,6 +373,8 @@ class StARR:
         Parameters:
             media_id (int): The ID of the media item to search for.
         """
+        name_type = None
+        id_type = None
         if isinstance(media_id, int):
             media_id = [media_id]
         if self.instance_type == 'Sonarr':
@@ -529,6 +540,7 @@ class StARR:
         Parameters:
             media_id (int): The ID of the media item to delete.
         """
+        endpoint = None
         if instance_type == 'Sonarr':
             endpoint = f"{self.url}/api/v3/series/{media_id}"
         elif instance_type == 'Radarr':

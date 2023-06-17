@@ -225,13 +225,15 @@ def main():
     """
     Main function for the script.
     """
+    url = None
+    api_key = None
     for data in config.plex_data:
         api_key = data.get('api', '')
         url = data.get('url', '')
     if url and api_key:
         plex_collections = []
     else:
-        plex_collections = None
+        plex_collections = []
     illegal_chars = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
     plex = PlexInstance(url, api_key, logger)
     asset_series, asset_collections, asset_movies = get_assets_files(config.assets_path)

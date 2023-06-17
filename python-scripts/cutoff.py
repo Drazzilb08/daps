@@ -138,6 +138,8 @@ def main():
     """
     Main function for the script.
     """
+    tag_id = None
+    tag_name = None
     movies_printed = 0
     untagged_movies = 0
     tagged_movies = 0

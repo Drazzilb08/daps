@@ -42,7 +42,7 @@ def setup_logger(log_level, script_name):
     if log_level == 'debug':
         console_handler.setLevel(logging.DEBUG)
     elif log_level == 'info':
-        console_handler.setLevel(logging.info)
+        console_handler.setLevel(logging.INFO)
     elif log_level == 'critical':
         console_handler.setLevel(logging.CRITICAL)
     logger.addHandler(console_handler)

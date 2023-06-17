@@ -33,6 +33,7 @@ queue_list = [
 ]
 
 def handle_qbit(title_list, url, username, password, move_category, dry_run, move_missing):
+    name = None
     logger.debug('*' * 40)
     logger.debug(f'* {"Processing qBittorrent":^36} *')
     logger.debug('*' * 40)
@@ -55,7 +56,7 @@ def handle_qbit(title_list, url, username, password, move_category, dry_run, mov
                 dict_torrent_hash_name_category[name] = {'hash': hash, 'category': category}
                 logger.info(f"Adding {name} to the list of torrents to move from {category} to {move_category} due to it missing files, chances are it's a cross-seed")
         torrent_name = torrent['name']
-        if any(title.lower() in torrent_name.lower() or title.lower() in torrent_name.rsplit('.', 1)[0].lower() for title in title_list):
+        if any(isinstance(title, str) and (title and torrent_name and title.lower() in str(torrent_name).lower() or title and isinstance(torrent_name, str) and '.' in torrent_name and title.lower() in torrent_name.rsplit('.', 1)[0].lower()) for title in title_list):
             try:
                 category = torrent['category']
                 name = torrent['name']

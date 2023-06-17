@@ -28,6 +28,9 @@ tmdb_id_extractor = re.compile(r"tmdbid (\d+)")
 tvdb_id_extractor = re.compile(r"tvdbid (\d+)")
 
 def main():
+    health = None
+    media_id = None
+    id_type = None
     dry_run = config.dry_run
     log_level = config.log_level
     print(f"dry_run: {dry_run}")
@@ -49,14 +52,15 @@ def main():
             health = app.get_health()
             media = app.get_media()
             id_list = []
-            for h in health:
-                if h['source'] == "RemovedMovieCheck" or h['source'] == "RemoveSeriesCheck":
-                    if instance_type == "Radarr":
-                        for m in re.finditer(tmdb_id_extractor, h['message']):
-                            id_list.append(int(m.group(1)))
-                    if instance_type == "Sonarr":
-                        for m in re.finditer(tvdb_id_extractor, h['message']):
-                            id_list.append(int(m.group(1)))
+            if health:
+                for h in health:
+                    if h['source'] == "RemovedMovieCheck" or h['source'] == "RemoveSeriesCheck":
+                        if instance_type == "Radarr":
+                            for m in re.finditer(tmdb_id_extractor, h['message']):
+                                id_list.append(int(m.group(1)))
+                        if instance_type == "Sonarr":
+                            for m in re.finditer(tvdb_id_extractor, h['message']):
+                                id_list.append(int(m.group(1)))
             logger.info(f"id_list: {id_list}")
             dict_list_of_ids = {}
             for m in media:

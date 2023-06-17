@@ -19,7 +19,6 @@
 from modules.config import Config
 from modules.logger import setup_logger
 from modules.plex import PlexInstance
-from modules.validate import ValidateInput
 from modules.arrpy import StARR
 import os
 import sys
@@ -45,8 +44,9 @@ def match_collection(plex_collections, file, collection_threshold):
         return None
     except Exception as e:
         logger.error(f"Error: {e}")
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        logger.error(f"Error: {exc_type}, {exc_tb.tb_lineno}")
+        exc_type, exc_obj, tb = sys.exc_info()
+        if tb is not None:
+            logger.error(f"Error: {exc_type}, {tb.tb_lineno}")
         return None
 
 def match_media(media, file, threshold):
@@ -66,9 +66,10 @@ def match_media(media, file, threshold):
         return None
     except Exception as e:
         logger.error(f"Error: {e}")
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        logger.error(f"Error: {exc_type}, {exc_tb.tb_lineno}")
-        return
+        exc_type, exc_obj, tb = sys.exc_info()
+        if tb is not None:
+            logger.error(f"Error: {exc_type}, {tb.tb_lineno}")
+        return None
 
 def rename_file(matched_name, file, destination_dir, source_dir, dry_run, action_type, print_only_renames, destination_file_list):
     file_extension = os.path.splitext(file)[-1].lstrip('.')
@@ -89,8 +90,10 @@ def rename_file(matched_name, file, destination_dir, source_dir, dry_run, action
                 message = f"{file} -> {matched_name}"
             except Exception as e:
                 logger.error(f"Error: {e}")
-                exc_type, exc_obj, exc_tb = sys.exc_info()
-                logger.error(f"Error: {exc_type}, {exc_tb.tb_lineno}")
+                exc_type, exc_obj, tb = sys.exc_info()
+                if tb is not None:
+                    logger.error(f"Error: {exc_type}, {tb.tb_lineno}")
+                return None
         return message
     else:
         if not print_only_renames:
@@ -104,9 +107,11 @@ def rename_file(matched_name, file, destination_dir, source_dir, dry_run, action
                         shutil.copy(source, destination)
                     message = f"{file} -->> {matched_name}"
                 except Exception as e:
-                    logger.error(f"Error: {e}")
-                    exc_type, exc_obj, exc_tb = sys.exc_info()
-                    logger.error(f"Error: {exc_type}, {exc_tb.tb_lineno}")
+                        logger.error(f"Error: {e}")
+                        exc_type, exc_obj, tb = sys.exc_info()
+                        if tb is not None:
+                            logger.error(f"Error: {exc_type}, {tb.tb_lineno}")
+                        return None
             return message
 
 def rename_movies(matched_movie, file, destination_dir, source_dir, dry_run, action_type, print_only_renames, destination_file_list):
@@ -117,9 +122,11 @@ def rename_movies(matched_movie, file, destination_dir, source_dir, dry_run, act
         matched_movie = os.path.basename(folder_path)
         return rename_file(matched_movie, file, destination_dir, source_dir, dry_run, action_type, print_only_renames, destination_file_list)
     except Exception as e:
-        logger.error(f"Error: {e}")
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        logger.error(f"Error: {exc_type}, {exc_tb.tb_lineno}")
+            logger.error(f"Error: {e}")
+            exc_type, exc_obj, tb = sys.exc_info()
+            if tb is not None:
+                logger.error(f"Error: {exc_type}, {tb.tb_lineno}")
+            return None
 
 def rename_series(matched_series, file, destination_dir, source_dir, dry_run, action_type, print_only_renames, destination_file_list):
     try:
@@ -135,7 +142,8 @@ def rename_series(matched_series, file, destination_dir, source_dir, dry_run, ac
                 logger.error(
                     f"Error: Cannot convert {season_info} to an integer in file {file}. {e}")
                 exc_type, exc_obj, exc_tb = sys.exc_info()
-                logger.error(f"Error: {exc_type}, {exc_tb.tb_lineno}")
+                if exc_tb is not None:
+                    logger.error(f"Error: {exc_type}, {exc_tb.tb_lineno}")
                 return
             season_info = f"{season_number:02d}"
             matched_series = matched_series + "_Season" + season_info
@@ -145,7 +153,8 @@ def rename_series(matched_series, file, destination_dir, source_dir, dry_run, ac
     except Exception as e:
         logger.error(f"Error: {e}")
         exc_type, exc_obj, exc_tb = sys.exc_info()
-        logger.error(f"Error: {exc_type}, {exc_tb.tb_lineno}")
+        if exc_tb is not None:
+            logger.error(f"Error: {exc_type}, {exc_tb.tb_lineno}")
 
 def get_assets_files(assets_path):
     series = set()
@@ -158,7 +167,9 @@ def get_assets_files(assets_path):
     except FileNotFoundError:
         logger.error(f"Error: {assets_path} not found.")
         exc_type, exc_obj, exc_tb = sys.exc_info()
-        logger.error(f"Error: {exc_type}, {exc_tb.tb_lineno}")
+        logger.error(f"Error: {exc_type}")
+        if exc_tb is not None:
+            logger.error(f"Line number: {exc_tb.tb_lineno}")
         sys.exit(1)
 
     for file in tqdm(files, desc=f'Sorting assets', total=len(files)):
@@ -192,6 +203,9 @@ def get_assets_files(assets_path):
     return list(series), list(collections), list(movies)
 
 def process_instance(instance_type, instance_name, url, api, destination_file_list, final_output, asset_series, asset_collections, asset_movies):
+    source_file_list = []
+    collections = []
+    media = []
     try:
         if instance_type == "Plex":
             if config.library_names:
@@ -209,7 +223,6 @@ def process_instance(instance_type, instance_name, url, api, destination_file_li
                 source_file_list = asset_movies
             elif instance_type == "Sonarr":
                 source_file_list = asset_series
-        
         for file in tqdm(source_file_list, desc=f'Processing {instance_name}', total=len(source_file_list)):
             if file in destination_file_list and config.action_type == "copy":
                 continue
@@ -236,15 +249,12 @@ def process_instance(instance_type, instance_name, url, api, destination_file_li
                 source_file_list[source_file_list.index(file)] = ""
         return final_output
     except Exception as e:
-        final_output.append(f"Error processing {instance_name}: {e}")
         exc_type, exc_obj, exc_tb = sys.exc_info()
-        final_output.append(f"Error: {exc_type}, {exc_tb.tb_lineno}")
+        final_output.append(f"Error processing {instance_name}: {e} on line {exc_tb.tb_lineno if exc_tb else None}")
         return final_output
 
 def main():
     final_output = []
-    validate_input = ValidateInput(config.log_level, config.dry_run, config.source_dir, config.library_names, config.destination_dir, config.movies_threshold, config.series_threshold, config.collection_threshold, config.action_type, config.print_only_renames, logger)
-    config.log_level, config.dry_run = validate_input.validate_script(logger)
     destination_file_list = sorted(os.listdir(config.destination_dir), key=lambda x: x.lower())
     logger.debug('*' * 40)
     logger.debug(f'* {"Script Input Validated":^36} *')
@@ -293,7 +303,6 @@ def main():
             elif instance_type == "Plex":
                 script_name = instance_name
             if script_name and instance_name == script_name:
-                validate_input.validate_global(url, api, instance_name, instance_type)
                 final_output.append('*' * 40)
                 final_output.append(f'* {instance_name:^36} *')
                 final_output.append('*' * 40)

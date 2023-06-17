@@ -18,7 +18,6 @@
 from modules.config import Config
 from modules.logger import setup_logger
 from modules.arrpy import StARR
-from modules.validate import ValidateInput
 
 config = Config(script_name="upgradinatorr")
 logger = setup_logger(config.log_level, "upgradinatorr")
@@ -44,6 +43,7 @@ def check_all_tagged(all_media, tag_id, status, monitored):
     return True
 
 def process_instance(instance_type, instance_name, count, tag_name, unattended, status, monitored, url, api, dry_run, reset):
+    media_type = None
     tagged_count = 0
     untagged_count = 0
     total_count = 0
@@ -102,8 +102,12 @@ def main():
     """
     Main function for the script.
     """
-    validate_input = ValidateInput(config.log_level, config.dry_run, logger) 
-    config.log_level, config.dry_run = validate_input.validate_script(logger)
+    count = 0
+    tag_name = None
+    unattended = None
+    status = None
+    monitored = None
+    reset = False
     logger.debug('*' * 40)
     logger.debug(f'* {"Script Input Validated":^36} *')
     logger.debug('*' * 40)

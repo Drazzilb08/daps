@@ -13,7 +13,7 @@
 #              identified as having been renamed.
 # Usage: python3 /path/to/renameinatorr.py
 # Requirements: requests, pyyaml
-# Version: 2.0.4
+# Version: 2.0.5
 # License: MIT License
 # ===================================================================================================
 
@@ -120,7 +120,7 @@ def process_instance(instance_type, instance_name, url, api, tag_name, count, dr
         media_type = "Series"
         file_id = "episodeFileId"
     arr_tag_id = app.check_and_create_tag(tag_name, dry_run)
-    logger.debug(f"Length of Media for {str(app)}: {len(media)}")
+    logger.debug(f"Length of Media for {instance_name}: {len(media)}")
     all_tagged = check_all_tagged(media, arr_tag_id)
     if reset:
         if not dry_run:
@@ -147,23 +147,25 @@ def process_instance(instance_type, instance_name, url, api, tag_name, count, dr
         untagged_media = [
             m for m in media if arr_tag_id not in m['tags']]
         media_to_process = untagged_media[:count]
-        checked = True
         items = []
+        media_ids = []
+
+        if not all_tagged:
+            untagged_media = [
+                m for m in media if arr_tag_id not in m['tags']]
+        media_to_process = untagged_media[:count]
+        items = []
+        media_ids = []
         for item in media_to_process:
             media_id = item["id"]
+            media_ids.append(media_id)
             library_item_to_rename = app.get_rename_list(media_id)
-            files_to_rename = [file[file_id]for file in library_item_to_rename]
-            if not dry_run:
-                if instance_type == "Radarr":
-                    checked = app.rename_media(media_id, library_item_to_rename)
-                elif instance_type == "Sonarr": 
-                    checked = app.rename_media(media_id, files_to_rename)
-            if checked:
-                if not dry_run:
-                    app.add_tag(media_id, arr_tag_id)
-                    new_tag += 1
-                    app.refresh_media(media_id)
-                items.append(item)
+            items.append(item)
+        if not dry_run:
+            app.rename_media(media_ids)
+            app.add_tag(media_ids, arr_tag_id)
+            new_tag += 1
+            app.refresh_media(media_ids)
         for m in media:
             if (arr_tag_id in m["tags"]):
                 tagged_count += 1
@@ -230,8 +232,8 @@ def main():
                 logger.info('*' * 40)
                 logger.debug(f'{" Settings ":*^40}')
                 logger.debug(f"Instance Name: {instance_name}")
-                logger.debug(f"URL: {url}")
-                logger.debug(f"API Key: {'<redacted>' if api else 'None'}")
+                logger.debug(f"url: {url}")
+                logger.debug(f"api: {'*' * (len(api) - 5)}{api[-5:]}")
                 process_instance(instance_type, instance_name, url, api, tag_name, count, config.dry_run, reset, unattended)
 
 if __name__ == "__main__":

@@ -13,10 +13,11 @@
 #              identified as having been renamed.
 # Usage: python3 /path/to/renameinatorr.py
 # Requirements: requests, pyyaml
-# Version: 2.0.5
+# Version: 2.0.6
 # License: MIT License
 # ===================================================================================================
 
+import json
 from modules.config import Config
 from modules.logger import setup_logger
 from modules.arrpy import StARR
@@ -40,7 +41,7 @@ def check_all_tagged(all_media, tag_id):
             return False
     return True
 
-def print_format(items, library_item_to_rename, instance_type, dry_run, total_count, tagged_percent, untagged_percent, media_type, tagged_count, untagged_count):
+def print_format(items, instance_type, dry_run, total_count, tagged_percent, untagged_percent, media_type, tagged_count, untagged_count):
     """
     Print the format of the output.
     
@@ -62,28 +63,23 @@ def print_format(items, library_item_to_rename, instance_type, dry_run, total_co
     else:
         tagged = "has been tagged"
         renamed = "renamed to"
-    for item in items:
-        if instance_type == "sonarr":
-            series_title = item["title"]
-            logger.info(f"Series Title: {series_title} {tagged}.")
-            current_season = None
-            for episode in library_item_to_rename:
-                season_number = episode["seasonNumber"]
-                existing_path = episode["existingPath"]
-                new_path = episode["newPath"]
-                if current_season != season_number:
-                    current_season = season_number
-                    logger.info(f"\tSeason {season_number:02d}:")
-                logger.info(
-                    f"\t\t{existing_path.split('/')[-1]} {renamed} {new_path.split('/')[-1]}")
-        if instance_type == "radarr":
-            movie_title = item["title"]
-            logger.info(f"Movie Title: {movie_title} {tagged}.")
-            for file in library_item_to_rename:
-                existing_path = file["existingPath"]
-                new_path = file["newPath"]
-                logger.info(
-                    f"\t{existing_path.split('/')[-1]} {renamed} {new_path.split('/')[-1]}")
+    for item, rename_items in items.items():
+        title = item
+        logger.info(f"Title: {title} {tagged}.")
+        current_season = None
+        for rename_item in rename_items:
+            existing_path = rename_item["existingPath"]
+            new_path = rename_item["newPath"]
+            if instance_type == "sonarr":
+                season_number = rename_item["seasonNumber"]
+                if instance_type == "sonarr":
+                    season_number = rename_item["seasonNumber"]
+                    if current_season != season_number:
+                        current_season = season_number
+                        logger.info(f"\tSeason {season_number:02d}:")
+                    logger.info(f"\t\t{existing_path.split('/')[-1]} {renamed} {new_path.split('/')[-1]}")
+            if instance_type == "radarr":
+                logger.info(f"\t{existing_path.split('/')[-1]} {renamed} {rename_item['newPath'].split('/')[-1]}")
     if total_count > 0:
         tagged_percent = (tagged_count / total_count) * 100
         untagged_percent = (untagged_count / total_count) * 100
@@ -115,10 +111,8 @@ def process_instance(instance_type, instance_name, url, api, tag_name, count, dr
     media = app.get_media()
     if instance_type == "Radarr":
         media_type = "Movies"
-        file_id = "movieFileId"
     elif instance_type == "Sonarr":
         media_type = "Series"
-        file_id = "episodeFileId"
     arr_tag_id = app.check_and_create_tag(tag_name, dry_run)
     logger.debug(f"Length of Media for {instance_name}: {len(media)}")
     all_tagged = check_all_tagged(media, arr_tag_id)
@@ -154,13 +148,15 @@ def process_instance(instance_type, instance_name, url, api, tag_name, count, dr
             untagged_media = [
                 m for m in media if arr_tag_id not in m['tags']]
         media_to_process = untagged_media[:count]
-        items = []
+        items = {}
         media_ids = []
         for item in media_to_process:
+            title = item["title"]
             media_id = item["id"]
             media_ids.append(media_id)
             library_item_to_rename = app.get_rename_list(media_id)
-            items.append(item)
+            items[title] = library_item_to_rename
+        # print(json.dumps(items, indent=4))
         if not dry_run:
             app.rename_media(media_ids)
             app.add_tag(media_ids, arr_tag_id)
@@ -174,7 +170,7 @@ def process_instance(instance_type, instance_name, url, api, tag_name, count, dr
         total_count = (tagged_count + new_tag) + untagged_count
         tagged_percent = ((tagged_count + new_tag) / total_count) * 100
         untagged_percent = (untagged_count / total_count) * 100
-        print_format(items, library_item_to_rename, instance_type.lower(), dry_run, total_count, tagged_percent, untagged_percent, media_type, tagged_count, untagged_count)
+        print_format(items, instance_type.lower(), dry_run, total_count, tagged_percent, untagged_percent, media_type, tagged_count, untagged_count)
 
 def main():
     """

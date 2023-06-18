@@ -6,7 +6,7 @@ import logging
 
 logging.getLogger("qbittorrentapi").setLevel(logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)
-logging.getLogger('urllib3').setLevel(logging.CRITICAL)
+logging.getLogger('urllib3').setLevel(logging.WARNING)
 
 class StARR:
     def __init__(self, url, api, logger):

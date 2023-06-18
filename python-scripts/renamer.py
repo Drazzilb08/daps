@@ -21,6 +21,7 @@ from modules.logger import setup_logger
 from plexapi.server import PlexServer
 from modules.arrpy import StARR
 import os
+import json
 import sys
 from fuzzywuzzy import fuzz
 from tqdm import tqdm
@@ -41,6 +42,7 @@ def match_collection(plex_collections, file, collection_threshold):
                 file_name, plex_collection)
             if plex_collection_match >= collection_threshold:
                 return plex_collection
+        logger.debug(f"No collection match found for {file}")
         return None
     except Exception as e:
         logger.error(f"Error: {e}")
@@ -218,6 +220,7 @@ def process_instance(instance_type, instance_name, url, api, destination_file_li
                     library = app.library.section(library_name)
                     collections += library.collections()
                 collection_names = [collection.title for collection in collections if collection.smart != True]
+                logger.debug(f"Collection Names: {json.dumps(collection_names, indent=4)}")
             else:
                 message = f"Error: No library names specified for {instance_name}"
                 final_output.append(message)
@@ -237,6 +240,7 @@ def process_instance(instance_type, instance_name, url, api, destination_file_li
             matched_series = None
             if instance_type == "Plex":
                 matched_collection = match_collection(collection_names, file, config.collection_threshold)
+                logger.debug(f"Matched Collection: {matched_collection}")
             elif instance_type == "Radarr":
                 matched_movie = match_media(media, file, config.movies_threshold)
             elif instance_type == "Sonarr":

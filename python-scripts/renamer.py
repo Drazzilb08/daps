@@ -12,13 +12,13 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 3.0.11
+# Version: 3.0.12
 # License: MIT License
 # ===================================================================================================
 
 from modules.config import Config
 from modules.logger import setup_logger
-from modules.plex import PlexInstance
+from plexapi.server import PlexServer
 from modules.arrpy import StARR
 import os
 import sys
@@ -208,12 +208,16 @@ def process_instance(instance_type, instance_name, url, api, destination_file_li
     source_file_list = []
     collections = []
     media = []
+    collection_names = []
     try:
         if instance_type == "Plex":
             if config.library_names:
-                app = PlexInstance(url, api, logger)
+                app = PlexServer(url, api)
                 source_file_list = asset_collections
-                collections = app.get_collections(config.library_names)
+                for library_name in config.library_names:
+                    library = app.library.section(library_name)
+                    collections += library.collections()
+                collection_names = [collection.title for collection in collections if collection.smart != True]
             else:
                 message = f"Error: No library names specified for {instance_name}"
                 final_output.append(message)
@@ -232,7 +236,7 @@ def process_instance(instance_type, instance_name, url, api, destination_file_li
             matched_movie = None
             matched_series = None
             if instance_type == "Plex":
-                matched_collection = match_collection(collections, file, config.collection_threshold)
+                matched_collection = match_collection(collection_names, file, config.collection_threshold)
             elif instance_type == "Radarr":
                 matched_movie = match_media(media, file, config.movies_threshold)
             elif instance_type == "Sonarr":

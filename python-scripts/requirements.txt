@@ -5,3 +5,4 @@ pyyaml
 python-Levenshtein 
 unidecode
 qbittorrent-api
+plexapi

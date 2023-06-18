@@ -13,14 +13,14 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 unmatched-asset.py
 # Requirements: requests
-# Version: 3.0.3
+# Version: 3.0.4
 # License: MIT License
 # ===================================================================================================
 
 import os
 import re
 from pathlib import Path
-from modules.plex import PlexInstance
+from plexapi.server import PlexServer
 from modules.logger import setup_logger
 from modules.config import Config
 
@@ -235,18 +235,20 @@ def main():
     else:
         plex_collections = []
     illegal_chars = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
-    plex = PlexInstance(url, api_key, logger)
+    app = PlexServer(url, api_key)
     asset_series, asset_collections, asset_movies = get_assets_files(config.assets_path)
     media_movies, media_series = get_media_folders(config.media_paths)
-    if config.library_names:
-        for library in config.library_names:
-            collections_from_plex = plex.get_collections(library)
-            for collection in config.ignore_collections:
-                if collection in collections_from_plex:
-                    collections_from_plex.remove(collection)
-            for collection in collections_from_plex:
-                sanitized_collection = ''.join(c for c in collection if c not in illegal_chars)
-                plex_collections.append((library, sanitized_collection))
+    collections = []
+    for library_name in config.library_names:
+        library = app.library.section(library_name)
+        collections += library.collections()
+    collection_names = [collection.title for collection in collections if collection.smart != True]
+    for collection in config.ignore_collections:
+        if collection in collection_names:
+            collection_names.remove(collection)
+    for collection in collection_names:
+        sanitized_collection = ''.join(c for c in collection if c not in illegal_chars)
+        plex_collections.append((config.library_names[0], sanitized_collection))
     unmatched_movies, unmatched_series, unmatched_collections = unmatched(asset_series, asset_movies, media_movies, media_series, plex_collections, asset_collections)
     print_output(unmatched_movies, unmatched_series, unmatched_collections, media_movies, media_series, plex_collections)
 

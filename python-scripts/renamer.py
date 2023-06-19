@@ -12,7 +12,7 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 3.0.12
+# Version: 4.0.0 Apha 1
 # License: MIT License
 # ===================================================================================================
 
@@ -24,146 +24,163 @@ import os
 import json
 import sys
 from fuzzywuzzy import fuzz
+from fuzzywuzzy import process
 from tqdm import tqdm
 import re
 import shutil
+from unidecode import unidecode
 
 config = Config(script_name="renamer")
 logger = setup_logger(config.log_level, "renamer")
 year_regex = re.compile(r"\((19|20)\d{2}\)")
-illegal_chars_regex = re.compile(r"[^\w\s\-\(\)/.'’]+")
+illegal_chars_regex = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')
 
-def match_collection(plex_collections, file, collection_threshold):
-    try:
-        file_name = os.path.splitext(file)[0]
-        for plex_collection in plex_collections:
-            plex_collection = illegal_chars_regex.sub("", plex_collection)
-            plex_collection_match = fuzz.token_sort_ratio(
-                file_name, plex_collection)
-            if plex_collection_match >= collection_threshold:
-                return plex_collection
-        logger.debug(f"No collection match found for {file}")
-        return None
-    except Exception as e:
-        logger.error(f"Error: {e}")
-        exc_type, exc_obj, tb = sys.exc_info()
-        if tb is not None:
-            logger.error(f"Error: {exc_type}, {tb.tb_lineno}")
-        return None
 
-def match_media(media, file, threshold):
-    try:
-        file_name = re.split(r'\(\d{4}\)', file)[0].rstrip()
-        year_match = re.search(r'\((\d{4})\)', file)
-        year = year_match.group(1) if year_match else None
-        year = int(year) if year else None
-        for matched_media in media:
-            year_in_title = year_regex.search(matched_media['title'])
-            matched_media_name = year_regex.sub("", matched_media['title']) if year_in_title else matched_media['title']
-            matched_media_name = illegal_chars_regex.sub("", matched_media_name)
-            matched_media_year = matched_media['year']
-            matched_media_name_match = fuzz.token_sort_ratio(file_name, matched_media_name)
-            if matched_media_name_match >= threshold and year != matched_media_year:
-                logger.debug(f"Found a possible match: {matched_media_name} ({matched_media_year})")
-            if matched_media_name_match >= threshold and year == matched_media_year:
-                return matched_media
-        return None
-    except Exception as e:
-        logger.error(f"Error: {e}")
-        exc_type, exc_obj, tb = sys.exc_info()
-        if tb is not None:
-            logger.error(f"Error: {exc_type}, {tb.tb_lineno}")
-        return None
+season_name_info = [
+    " - Season",
+    " - Specials",
+    "_Season"
+]
 
-def rename_file(matched_name, file, destination_dir, source_dir, dry_run, action_type, print_only_renames, destination_file_list):
-    file_extension = os.path.splitext(file)[-1].lstrip('.')
-    matched_name = matched_name + "." + file_extension
-    destination = os.path.join(destination_dir, matched_name)
-    source = os.path.join(source_dir, file)
-    if matched_name in destination_file_list and action_type == "copy":
-        return None
-    if file != matched_name:
-        if dry_run:
-            message = f"{file} -> {matched_name}"
-        else:
-            try:
-                if action_type == "move":
-                    shutil.move(source, destination)
-                elif action_type == "copy":
-                    shutil.copy(source, destination)
-                message = f"{file} -> {matched_name}"
-            except Exception as e:
-                logger.error(f"Error: {e}")
-                exc_type, exc_obj, tb = sys.exc_info()
-                if tb is not None:
-                    logger.error(f"Error: {exc_type}, {tb.tb_lineno}")
-                return None
-        return message
-    else:
-        if not print_only_renames:
-            if dry_run:
-                message = f"{file} -->> {matched_name}"
+def scorer(s1, s2, force_ascii=True, full_process=True):
+    return fuzz.ratio(s1, s2)
+
+def match_collection(plex_collections, source_file_list, collection_threshold):
+    matched_collections = {}
+    almost_matched = {}
+    for collection in tqdm(plex_collections, desc="Matching collections", total=len(plex_collections)):
+        if collection == "Collectionless":
+            continue
+        collection = illegal_chars_regex.sub('', collection)
+        best_match = process.extractOne(collection, source_file_list.keys(), scorer=scorer)
+        if best_match and best_match[1] >= collection_threshold:
+            matched_collections[collection] = {'files': source_file_list[best_match[0]]['files'], 'score': best_match[1]}
+        if best_match and collection_threshold - 10 <= best_match[1] < collection_threshold:
+            almost_matched[collection] = {'files': source_file_list[best_match[0]]['files'], 'score': best_match[1]}
+    logger.debug(f"Matched collections: {json.dumps(matched_collections, ensure_ascii=False, indent=4)}")
+    logger.debug(f"Almost matched collections: {json.dumps(almost_matched, ensure_ascii=False, indent=4)}")
+    return matched_collections
+
+def match_media(media, source_file_list, threshold):
+    matched_media = {}
+    almost_matched = {}
+    not_matched = {}  
+    for item in tqdm(media, desc="Matching media", total=len(media)):
+        title = item['title']
+        title = year_regex.sub('', title)
+        title = illegal_chars_regex.sub('', title)
+        title = unidecode(title)
+        year = item['year']
+        path = item['path']
+        folder = os.path.basename(os.path.normpath(path))
+        title_match = process.extractOne(title, source_file_list.keys(), scorer=scorer)
+        path_match = process.extractOne(path, source_file_list.keys(), scorer=scorer)
+        if title_match and path_match:
+            if title_match[1] >= path_match[1]:
+                best_match = title_match
             else:
-                try:
-                    if action_type == "move":
-                        shutil.move(source, destination)
-                    elif action_type == "copy":
-                        shutil.copy(source, destination)
-                    message = f"{file} -->> {matched_name}"
-                except Exception as e:
-                        logger.error(f"Error: {e}")
-                        exc_type, exc_obj, tb = sys.exc_info()
-                        if tb is not None:
-                            logger.error(f"Error: {exc_type}, {tb.tb_lineno}")
-                        return None
-            return message
+                best_match = path_match
+        elif title_match:
+            best_match = title_match
+        elif path_match:
+            best_match = path_match
+        else:
+            best_match = None
+        if best_match and best_match[1] >= threshold:
+            source_file_list_year = source_file_list[best_match[0]]['year']
+            if source_file_list_year == year:
+                matched_media[folder] = {'files': source_file_list[best_match[0]]['files'], 'score': best_match[1]}
+        elif best_match and threshold - 5 <= best_match[1] < threshold:
+            source_file_list_year = source_file_list[best_match[0]]['year']
+            if source_file_list_year == year:
+                almost_matched[folder] = {'files': source_file_list[best_match[0]]['files'], 'score': best_match[1]}
+        elif best_match and threshold - 10 <= best_match[1] < threshold:
+            not_matched[folder] = {'files': source_file_list[best_match[0]]['files'], 'score': best_match[1]}
+    logger.debug(f"Not matched media: {json.dumps(not_matched, ensure_ascii=False, indent=4)}")
+    logger.debug(f"Matched media: {json.dumps(matched_media, ensure_ascii=False, indent=4)}")
+    logger.debug(f"Almost matched media: {json.dumps(almost_matched, ensure_ascii=False, indent=4)}")
+    return matched_media
 
-def rename_movies(matched_movie, file, destination_dir, source_dir, dry_run, action_type, print_only_renames, destination_file_list):
-    try:
-        folder_path = matched_movie['folderName']
-        if folder_path.endswith('/'):
-            folder_path = folder_path[:-1]
-        matched_movie = os.path.basename(folder_path)
-        return rename_file(matched_movie, file, destination_dir, source_dir, dry_run, action_type, print_only_renames, destination_file_list)
-    except Exception as e:
-            logger.error(f"Error: {e}")
-            exc_type, exc_obj, tb = sys.exc_info()
-            if tb is not None:
-                logger.error(f"Error: {exc_type}, {tb.tb_lineno}")
-            return None
-
-def rename_series(matched_series, file, destination_dir, source_dir, dry_run, action_type, print_only_renames, destination_file_list):
-    try:
-        folder_path = matched_series['path']
-        if folder_path.endswith('/'):
-            folder_path = folder_path[:-1]
-        matched_series = os.path.basename(folder_path)
-        if "Season" in file:
-            season_info = file.split("Season")[1].split(".")[0]
-            try:
-                season_number = int(season_info)
-            except ValueError as e:
-                logger.error(
-                    f"Error: Cannot convert {season_info} to an integer in file {file}. {e}")
-                exc_type, exc_obj, exc_tb = sys.exc_info()
-                if exc_tb is not None:
-                    logger.error(f"Error: {exc_type}, {exc_tb.tb_lineno}")
-                return
-            season_info = f"{season_number:02d}"
-            matched_series = matched_series + "_Season" + season_info
-        elif "Specials" in file:
-            matched_series = matched_series + "_Season00"
-        return rename_file(matched_series, file, destination_dir, source_dir, dry_run, action_type, print_only_renames, destination_file_list)
-    except Exception as e:
-        logger.error(f"Error: {e}")
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        if exc_tb is not None:
-            logger.error(f"Error: {exc_type}, {exc_tb.tb_lineno}")
+def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type, print_only_renames, destination_file_list):
+    messages = []
+    for media in tqdm(matched_media, desc="Renaming files", total=len(matched_media)):
+        for file in matched_media[media]['files']:
+            source_file_path = os.path.join(source_dir, file)
+            file_extension = os.path.splitext(file)[1]
+            old_file_name = file
+            if any(word in file for word in season_name_info):
+                season_number = re.search(r"Season (\d+)", file)
+                if season_number:
+                    season_number = season_number.group(1)
+                    season_number = season_number.zfill(2)
+                    new_file_name = f"{media}_Season{season_number}{file_extension}"
+                elif season_number := re.search(r"Season (\d\d)", file):
+                    season_number = season_number.group(1)
+                    new_file_name = f"{media}_Season{season_number}{file_extension}"
+                elif " - Specials" in file:
+                    new_file_name = f"{media}_Season00{file_extension}"
+                elif "_Season" in file:
+                    new_file_name = file
+                else:
+                    logger.error(f"Unable to find season number for {file}")
+                    continue
+            else:
+                new_file_name = f"{media}{file_extension}"
+            destination_file_path = os.path.join(destination_dir, new_file_name)
+            if new_file_name in destination_file_list and action_type == 'copy':
+                logger.debug(f"Destination file already exists: {destination_file_path}")
+                continue
+            if new_file_name != old_file_name:
+                if dry_run:
+                    messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
+                else:
+                    if action_type == 'copy':
+                        try:
+                            shutil.copyfile(source_file_path, destination_file_path)
+                        except OSError as e:
+                            logger.error(f"Unable to copy file: {e}")
+                    elif action_type == 'move':
+                        try:
+                            shutil.move(source_file_path, destination_file_path)
+                        except OSError as e:
+                            logger.error(f"Unable to move file: {e}")
+                    elif action_type == 'hardlink':
+                        try:
+                            os.link(source_file_path, destination_file_path)
+                        except OSError as e:
+                            logger.error(f"Unable to create hardlink: {e}")
+                    else:
+                        logger.error(f"Unknown action type: {action_type}")
+                    messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
+            else:
+                if not print_only_renames:
+                    if dry_run:
+                        messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -->> {new_file_name}")
+                    else:
+                        if action_type == 'copy':
+                            try:
+                                shutil.copyfile(source_file_path, destination_file_path)
+                            except OSError as e:
+                                logger.error(f"Unable to copy file: {e}")
+                        elif action_type == 'move':
+                            try:
+                                shutil.move(source_file_path, destination_file_path)
+                            except OSError as e:
+                                logger.error(f"Unable to move file: {e}")
+                        elif action_type == 'hardlink':
+                            try:
+                                os.link(source_file_path, destination_file_path)
+                            except OSError as e:
+                                logger.error(f"Unable to create hardlink: {e}")
+                        else:
+                            logger.error(f"Unknown action type: {action_type}")
+                        messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -->> {new_file_name}")
+    return messages
 
 def get_assets_files(assets_path):
-    series = set()
-    movies = set()
-    collections = set()
+    series = {}
+    movies = {}
+    collections = {}
 
     try:
         print("Getting assets files..., this may take a while.")
@@ -177,34 +194,40 @@ def get_assets_files(assets_path):
         sys.exit(1)
 
     for file in tqdm(files, desc=f'Sorting assets', total=len(files)):
+        if file.startswith('.'):
+            continue
         base_name, extension = os.path.splitext(file)
-        lowercase_base_name = base_name.lower()
-        if not re.search(r'\(\d{4}\)', lowercase_base_name):
-            base_name = base_name + extension
-            collections.add(base_name)
+        if not re.search(r'\(\d{4}\)', base_name):
+            collections[base_name] = {'year': None, 'files': []}
+            collections[base_name]['files'].append(file)
         else:
-            if any((
-                lowercase_base_name == f.lower() or 
-                f.lower().startswith(lowercase_base_name + " - season") or 
-                f.lower().startswith(lowercase_base_name + " - specials") or 
-                lowercase_base_name == f.lower() or 
-                f.lower().startswith(lowercase_base_name + "_season")
-                ) for f in files):
-                base_name = base_name + extension
-                series.add(base_name)
-            elif re.search(r' - season| - specials', lowercase_base_name):
-                base_name = base_name + extension
-                series.add(base_name)
-            elif re.search(r'_season', lowercase_base_name):
-                base_name = base_name + extension
-                series.add(base_name)
+            match = re.search(r'\((\d{4})\)', base_name)
+            year = int(match.group(1)) if match else None
+            title = base_name.replace(f'({year})', '').strip()
+            title = unidecode(title)
+            if any(title in file and any(season_name in file for season_name in season_name_info) for file in files):
+                if title in series:
+                    series[title]['files'].append(file)
+                else:
+                    series[title] = {'year': year, 'files': []}
+                    series[title]['files'].append(file)
+            elif any(word in file for word in season_name_info):
+                title_without_series_info = title
+                for season_name in season_name_info:
+                    if season_name in file:
+                        title_without_series_info = title.split(season_name)[0].strip()
+                if title_without_series_info in series:
+                    series[title_without_series_info]['files'].append(file)
+                else:
+                    series[title_without_series_info] = {'year': year, 'files': []}
+                    series[title_without_series_info]['files'].append(file)
             else:
-                base_name = base_name + extension
-                movies.add(base_name)
-    series = sorted(series)
-    collections = sorted(collections)
-    movies = sorted(movies)
-    return list(series), list(collections), list(movies)
+                movies[title] = {'year': year, 'files': []}
+                movies[title]['files'].append(file)
+    collections = dict(sorted(collections.items()))
+    movies = dict(sorted(movies.items()))
+    series = dict(sorted(series.items()))
+    return series, collections, movies
 
 def process_instance(instance_type, instance_name, url, api, destination_file_list, final_output, asset_series, asset_collections, asset_movies):
     source_file_list = []
@@ -220,7 +243,6 @@ def process_instance(instance_type, instance_name, url, api, destination_file_li
                     library = app.library.section(library_name)
                     collections += library.collections()
                 collection_names = [collection.title for collection in collections if collection.smart != True]
-                logger.debug(f"Collection Names: {json.dumps(collection_names, indent=4)}")
             else:
                 message = f"Error: No library names specified for {instance_name}"
                 final_output.append(message)
@@ -232,31 +254,18 @@ def process_instance(instance_type, instance_name, url, api, destination_file_li
                 source_file_list = asset_movies
             elif instance_type == "Sonarr":
                 source_file_list = asset_series
-        for file in tqdm(source_file_list, desc=f'Processing {instance_name}', total=len(source_file_list)):
-            if file in destination_file_list and config.action_type == "copy":
-                continue
-            matched_collection = None
-            matched_movie = None
-            matched_series = None
-            if instance_type == "Plex":
-                matched_collection = match_collection(collection_names, file, config.collection_threshold)
-                logger.debug(f"Matched Collection: {matched_collection}")
-            elif instance_type == "Radarr":
-                matched_movie = match_media(media, file, config.movies_threshold)
-            elif instance_type == "Sonarr":
-                matched_series = match_media(media, file, config.series_threshold)
-            if matched_collection:
-                message = rename_file(matched_collection, file, config.destination_dir, config.source_dir, config.dry_run, config.action_type, config.print_only_renames, destination_file_list)
-                final_output.append(message)
-                source_file_list[source_file_list.index(file)] = ""
-            elif matched_movie:
-                message = rename_movies(matched_movie, file, config.destination_dir, config.source_dir, config.dry_run, config.action_type, config.print_only_renames, destination_file_list)
-                final_output.append(message)
-                source_file_list[source_file_list.index(file)] = ""
-            elif matched_series:
-                message = rename_series(matched_series, file, config.destination_dir, config.source_dir, config.dry_run, config.action_type, config.print_only_renames, destination_file_list)
-                final_output.append(message)
-                source_file_list[source_file_list.index(file)] = ""
+        # logger.debug(f"source_file_list: {json.dumps(source_file_list, ensure_ascii=False, indent=4)}")
+        matched_media = []
+        if instance_type == "Plex":
+            matched_media = match_collection(collection_names, source_file_list, config.collection_threshold)
+        elif instance_type == "Radarr" or instance_type == "Sonarr":
+            matched_media = match_media(media, source_file_list, config.movies_threshold)
+        if matched_media:
+            message = rename_file(matched_media, config.destination_dir, config.source_dir, config.dry_run, config.action_type, config.print_only_renames, destination_file_list)
+            final_output.extend(message)
+        else:
+            message = f"No matches found for {instance_name}"
+            final_output.append(message)
         return final_output
     except Exception as e:
         exc_type, exc_obj, exc_tb = sys.exc_info()
@@ -324,10 +333,11 @@ def main():
                 permissions = 0o777
                 os.chmod(config.destination_dir, permissions)
                 os.chmod(config.source_dir, permissions)
-    for message in final_output:
-        if message == None:
-            continue
-        logger.info(message)
+    if final_output:
+        for message in final_output:
+            if message == None:
+                continue
+            logger.info(message)
 
 if __name__ == "__main__":
     main()

@@ -12,7 +12,7 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.0.0 Apha 1
+# Version: 4.0.0 Apha 2
 # License: MIT License
 # ===================================================================================================
 
@@ -73,8 +73,9 @@ def match_media(media, source_file_list, threshold):
         year = item['year']
         path = item['path']
         folder = os.path.basename(os.path.normpath(path))
+        folder_without_year = year_regex.sub('', folder)
         title_match = process.extractOne(title, source_file_list.keys(), scorer=scorer)
-        path_match = process.extractOne(path, source_file_list.keys(), scorer=scorer)
+        path_match = process.extractOne(folder_without_year, source_file_list.keys(), scorer=scorer)
         if title_match and path_match:
             if title_match[1] >= path_match[1]:
                 best_match = title_match

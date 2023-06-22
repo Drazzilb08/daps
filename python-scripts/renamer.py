@@ -11,8 +11,11 @@
 # Description: This script will check for unmatched assets in your Plex library.
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py
+# Note: There is a limitation to how this script works with regards to it matching series assets the 
+#       main series poster requires seasonal posters to be present. If you have a series that does 
+#       not have a seasonal poster then it will not match the series poster.
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.0.0 Apha 2
+# Version: 4.0.0 Apha 3
 # License: MIT License
 # ===================================================================================================
 
@@ -272,9 +275,16 @@ def process_instance(instance_type, instance_name, url, api, destination_file_li
         exc_type, exc_obj, exc_tb = sys.exc_info()
         final_output.append(f"Error processing {instance_name}: {e} on line {exc_tb.tb_lineno if exc_tb else None}")
         return final_output
+    
+def print_output(final_output):
+    if final_output:
+        for message in final_output:
+            logger.info(message)
+        return
+    else:
+        return
 
 def main():
-    final_output = []
     destination_file_list = sorted(os.listdir(config.destination_dir), key=lambda x: x.lower())
     logger.debug('*' * 40)
     logger.debug(f'* {"Script Input Validated":^36} *')
@@ -308,6 +318,7 @@ def main():
 
     for instance_type, instances in instance_data.items():
         for instance in instances:
+            final_output = []
             instance_name = instance['name']
             url = instance['url']
             api = instance['api']
@@ -331,14 +342,10 @@ def main():
                 logger.debug(f"URL: {url}")
                 logger.debug(f"API Key: {'<redacted>' if api else 'None'}")
                 final_output = process_instance(instance_type, instance_name, url, api, destination_file_list, final_output, asset_series, asset_collections, asset_movies)
+                print_output(final_output)
                 permissions = 0o777
                 os.chmod(config.destination_dir, permissions)
                 os.chmod(config.source_dir, permissions)
-    if final_output:
-        for message in final_output:
-            if message == None:
-                continue
-            logger.info(message)
 
 if __name__ == "__main__":
     main()

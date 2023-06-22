@@ -11,7 +11,7 @@
 #              from TMDB or TVDB.
 # Usage: python3 movie-deletarr.py
 # Requirements: requests
-# Version: 0.0.1
+# Version: 1.0.0
 # License: MIT License
 # ===================================================================================================
 

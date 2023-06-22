@@ -6,16 +6,20 @@
 #   \____/|_| |_|_| |_| |_|\__,_|\__\___|_| |_|\___|\__,_|    /_/    \_\___/___/\___|\__(_) .__/ \__, |
 #                                                                                         | |     __/ |
 #                                                                                         |_|    |___/ 
-# ===================================================================================================
-# Author: Drazzilb
-# Description: This script will check your media folders against your assets folder to see if there are any folders that do not have a matching asset.
-#              It will also check your collections against your assets folder to see if there are any collections that do not have a matching asset.
-#              It will output the results to a file in the logs folder.
-# Usage: python3 unmatched-asset.py
-# Requirements: requests
-# Version: 3.0.4
-# License: MIT License
-# ===================================================================================================
+# ===========================================================================================================
+#  Author: Drazzilb                                                                                        
+#  Description: This script will check your media folders against your assets folder to see if there       
+#                are any folders that do not have a matching asset. It will also check your collections     
+#                against your assets folder to see if there are any collections that do not have a          
+#                matching asset. It will output the results to a file in the logs folder.                  
+#  Usage: python3 unmatched=asset.py                                                                                  
+#  Note: There is a limitation to how this script works with regards to it matching series assets the     
+#         main series poster requires seasonal posters to be present. If you have a series that does       
+#         not have a seasonal poster then it will not match the series poster.                                
+#  Requirements: requests                                                                                            
+#  Version: 4.0.0 Alpha 1                                                                                 
+#  License: MIT License                                                                                   
+# =========================================================================================================== 
 
 import os
 import re
@@ -23,48 +27,101 @@ from pathlib import Path
 from plexapi.server import PlexServer
 from modules.logger import setup_logger
 from modules.config import Config
+import sys
+from unidecode import unidecode
+from tqdm import tqdm
+import json
+import logging
 
 config = Config(script_name="unmatched-assets")
 logger = setup_logger(config.log_level, "unmatched-assets")
+logging.getLogger("requests").setLevel(logging.WARNING)
+logging.getLogger('urllib3').setLevel(logging.WARNING)
+
+illegal_chars_regex = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')
+
+season_name_info = [
+    "_Season"
+]
 
 def get_assets_files(assets_path):
-    """
-    Gets the files from the assets folder and sorts them into series, movies, and collections.
-    
-    Parameters:
-        assets_path (str): The path to the assets folder.
-    
-    Returns:
-        series (list): A list of series.
-        collections (list): A list of collections.
-        movies (list): A list of movies.
-    """
-    series = set()
-    movies = set()
-    collections = set()
+    series = {'series': []}
+    movies = {'movies': []}
+    collections = {'collections': []}
 
-    print("Getting assets files..., this may take a while.")
-    files = os.listdir(assets_path)
-    for file in files:
-        file_name, file_ext = os.path.splitext(file)
-        lowercase_file_name = file_name.lower()
-        if not re.search(r'\(\d{4}\)', lowercase_file_name):
-            collections.add(file_name)
+    try:
+        print("Getting assets files..., this may take a while.")
+        files = os.listdir(assets_path)
+        files = sorted(files, key=lambda x: x.lower())
+    except FileNotFoundError:
+        logger.error(f"Error: {assets_path} not found.")
+        exc_type, exc_obj, exc_tb = sys.exc_info()
+        logger.error(f"Error: {exc_type}")
+        if exc_tb is not None:
+            logger.error(f"Line number: {exc_tb.tb_lineno}")
+        sys.exit(1)
+    season_number = None
+    for file in tqdm(files, desc=f'Sorting assets', total=len(files)):
+        if file.startswith('.'):
+            continue
+        base_name, extension = os.path.splitext(file)
+        if not re.search(r'\(\d{4}\)', base_name):
+            collections['collections'].append({
+                'title': base_name
+            })
         else:
-            if any((
-                lowercase_file_name == f.lower() or 
-                f.lower().startswith(lowercase_file_name + "_season") or 
-                f.lower().startswith(lowercase_file_name + " specials"
-                )) for f in files):
-                series.add(file_name)
-            elif re.search(r'_season\d{2}|specials', lowercase_file_name):
-                series.add(file_name)
+            title = base_name
+            title = unidecode(title)
+            title_without_season_info = title
+            for season_info in season_name_info:
+                title_without_season_info = re.sub(season_info + r'\d+', '', title_without_season_info)
+            if any(title_without_season_info in file and any(season_info in file for season_info in season_name_info) for file in files):
+                season_number = re.search(r'\d{2}$', base_name)
+                if season_number:
+                    if season_number.group(0) == '00':
+                        season_number = 'Specials'
+                    else:
+                        season_number = f"Season {season_number.group(0)}"
+                if any(d['title'] == title_without_season_info for d in series['series']):
+                    if season_number:
+                        series['series'][-1]['season_number'].append(season_number)
+                else:
+                    series['series'].append({
+                        'title': title_without_season_info, 
+                        'season_number': []
+                    })
+                    if season_number:
+                        series['series'][-1]['season_number'].append(season_number)
+            elif any(season_info in file for season_info in season_name_info):
+                season_number = re.search(r'\d{2}$', base_name)
+                if season_number:
+                    if season_number.group(0) == '00':
+                        season_number = 'Specials'
+                    else:
+                        season_number = f"Season {season_number.group(0)}"
+                    if any(d['title'] == title_without_season_info for d in series['series']):
+                        if season_number:
+                            series['series'][-1]['season_number'].append(season_number)
+                    else:
+                        series['series'].append({
+                            'title': title_without_season_info, 
+                            'season_number': []
+                        })
+                        if season_number:
+                            series['series'][-1]['season_number'].append(season_number)
             else:
-                movies.add(file_name)
-    series = sorted(series)
-    collections = sorted(collections)
-    movies = sorted(movies)
-    return list(series), list(collections), list(movies)
+                movies['movies'].append({'title': title})
+    
+    collections['collections'] = sorted(collections['collections'], key=lambda x: x['title'])
+    movies['movies'] = sorted(movies['movies'], key=lambda x: x['title'])
+    series['series'] = sorted(series['series'], key=lambda x: x['title'])
+    
+    logger.debug("Assets:")
+    # logger.debug(json.dumps(collections, ensure_ascii=False, indent=4))
+    # logger.debug(json.dumps(movies, ensure_ascii=False, indent=4))
+    logger.debug(json.dumps(series, ensure_ascii=False, indent=4))
+    return series, collections, movies
+
 
 def get_media_folders(media_paths):
     """
@@ -77,82 +134,94 @@ def get_media_folders(media_paths):
         media_movies (list): A list of movies.
         media_series (list): A list of series.
     """
-    media_series = []
-    media_movies = []
+    series = {'series': []}
+    movies = {'movies': []}
     print("Getting media folder information..., this may take a while.")
+    
     for media_path in media_paths:
+        base_name = os.path.basename(os.path.normpath(media_path))
         for subfolder in sorted(Path(media_path).iterdir()):
             if subfolder.is_dir():
-                has_season_or_special = False
-                sub_sub_folder_contents = []
-                for sub_sub_folder in sorted(subfolder.iterdir()):
+                for sub_sub_folder in sorted(Path(subfolder).iterdir()):
                     if sub_sub_folder.is_dir():
-                        sub_sub_folder_contents.append(sub_sub_folder.name)
-                        if "season" in sub_sub_folder.name.lower() or "special" in sub_sub_folder.name.lower():
-                            has_season_or_special = True
-                if has_season_or_special:
-                    media_series.append((media_path, subfolder.name, sub_sub_folder_contents))
-                else:
-                    media_movies.append((media_path, subfolder.name))
-            
-    return media_movies, media_series
-
-def unmatched(asset_series, asset_movies, media_movies, media_series, plex_collections, asset_collections):
-    """
-    Checks the media folders against the assets folder to see if there are any folders that do not have a matching asset.
-    
-    Parameters:
-        asset_series (list): A list of series from the assets folder.
-        asset_movies (list): A list of movies from the assets folder.
-        media_movies (list): A list of movies from the media folders.
-        media_series (list): A list of series from the media folders.
-        plex_collections (list): A list of collections from Plex.
-        asset_collections (list): A list of collections from the assets folder.
-        
-    Returns:
-        unmatched_series (list): A list of series that do not have a matching asset.
-        unmatched_movies (list): A list of movies that do not have a matching asset.
-        unmatched_collections (list): A list of collections that do not have a matching asset.
-    """
-    unmatched_series = []
-    unmatched_movies = []
-    unmatched_collections = []
-    if media_series:
-        for series_info in media_series:
-            library = series_info[0]
-            series_name = series_info[1]
-            series_seasons = series_info[2]
-            flag = False
-            if series_name not in asset_series:
-                unmatched_series.append((library, series_name, series_seasons, flag))
-            else:
-                missing_seasons = []
-                for season in series_seasons:
-                    season = season.replace(" ", "")
-                    season_with_series = f"{series_name}_{season}"
-                    if season == "Specials":
-                        season_with_series = f"{series_name}_Season00"
-                    if season_with_series not in asset_series:
-                        if season == "Season00":
-                            season = "Specials"
+                        if any(subfolder.name in s['title'] for s in series['series']):
+                            series['series'][-1]['season_number'].append(sub_sub_folder.name)
                         else:
-                            season = season.replace("Season", "Season ")
-                        missing_seasons.append(season)
-                        flag = True
-                if missing_seasons:
-                    unmatched_series.append((library, series_name, missing_seasons, flag))
-    if media_movies:
-        for movie in media_movies:
-            movie_name = movie[1]
-            if movie_name not in asset_movies:
-                unmatched_movies.append((movie))
-    if plex_collections:
-        for collection in plex_collections:
-            collection_name = collection[1]
+                            series['series'].append({
+                                'title': subfolder.name, 
+                                'season_number': [],
+                                'path': base_name
+                                })
+                            series['series'][-1]['season_number'].append(sub_sub_folder.name)
+                if not any(sub_sub_folder.is_dir() for sub_sub_folder in Path(subfolder).iterdir()):
+                    movies['movies'].append({
+                        'title': subfolder.name,
+                        'path': base_name
+                        })
+    series = dict(sorted(series.items()))
+    movies = dict(sorted(movies.items()))
+    logger.debug("Media Directories:")
+    logger.debug(json.dumps(series, ensure_ascii=False, indent=4))
+    # logger.debug(json.dumps(movies, ensure_ascii=False, indent=4))
+    return movies, series
 
-            if collection_name not in asset_collections:
-                unmatched_collections.append((collection))
+def match_assets(asset_series, asset_movies, media_movies, media_series, plex_collections, asset_collections):
+    unmatched_series = {'unmatched_series': []}
+    unmatched_movies = {'unmatched_movies': []}
+    unmatched_collections = {'unmatched_collections': []}
+
+    for series in tqdm(media_series['series'], desc='Matching series', total=len(media_series['series'])):
+        asset_found = False
+        for asset in asset_series['series']:
+            if unidecode(series['title']) == unidecode(asset['title']):
+                asset_found = True
+                missing_seasons = [season for season in series['season_number'] if season not in asset['season_number']]
+                if missing_seasons:
+                    unmatched_series['unmatched_series'].append({
+                        'title': series['title'],
+                        'season_number': missing_seasons,
+                        'missing_season': True,
+                        'path': series['path']
+                    })
+                break
+        if not asset_found:
+            unmatched_series['unmatched_series'].append({
+                'title': series['title'],
+                'season_number': series['season_number'],
+                'missing_season': False,
+                'path': series['path']
+            })
+
+    for media_movie in tqdm(media_movies['movies'], desc='Matching movies', total=len(media_movies['movies'])):
+        asset_found = False
+        for asset in asset_movies['movies']:
+            if unidecode(media_movie['title']) == unidecode(asset['title']):
+                asset_found = True
+                break
+        if not asset_found:
+            unmatched_movies['unmatched_movies'].append({
+                'title': media_movie['title'],
+                'path': media_movie['path']
+            })
+
+    for plex_collection in tqdm(plex_collections['collections'], desc='Matching collections', total=len(plex_collections['collections'])):
+        asset_found = False
+        for asset in asset_collections['collections']:
+            if unidecode(plex_collection['title']) == unidecode(asset['title']):
+                asset_found = True
+                break
+        if not asset_found:
+            unmatched_collections['unmatched_collections'].append({
+                'title': plex_collection['title'],
+            })
+    logger.debug("Unmatched Assets:")
+    logger.debug(json.dumps(unmatched_series, ensure_ascii=False, indent=4))
+    # logger.debug(json.dumps(unmatched_movies, ensure_ascii=False, indent=4))
+    # logger.debug(json.dumps(unmatched_collections, ensure_ascii=False, indent=4))
+
     return unmatched_movies, unmatched_series, unmatched_collections
+
+
 
 
 def print_output(unmatched_movies, unmatched_series, unmatched_collections, media_movies, media_series, plex_collections):
@@ -174,49 +243,51 @@ def print_output(unmatched_movies, unmatched_series, unmatched_collections, medi
     unmatched_series_total = 0
     unmatched_collections_total = 0
     unmatched_seasons = 0
-    total_movies = len(media_movies)
-    total_series = len(media_series)
-    total_seasons = len([season for series in media_series for season in series[2]])
+    total_seasons = 0
+    total_movies = len(media_movies['movies'])
+    total_series = len(media_series['series'])
+    for series in media_series['series']:
+        total_seasons += len(series['season_number'])
     total_collections = len(plex_collections)
     if unmatched_movies:
         logger.info("Unmatched Movies:")
         previous_path = None
-        for path in unmatched_movies:
-            if path[0] != previous_path:
-                logger.info("*" * 40)
-                logger.info(f"\tMedia Path: {os.path.basename(os.path.normpath(path[0])).title()}")
-                previous_path = path[0]
-            logger.info(f"\t{path[1]}")
+        for movie in unmatched_movies['unmatched_movies']:
+            if movie['path'] != previous_path:
+                logger.info(f"\t{movie['path'].capitalize()}")
+                previous_path = movie['path']
+            logger.info(f"\t\t{movie['title']}")
             unmatched_movies_total += 1
-        logger.info(f"\t{unmatched_movies_total} unmatched movies found: Percent complete: ({100 - 100 * unmatched_movies_total / total_movies:.2f}% of total {total_movies}).\n")
+        logger.info(f"\t{unmatched_movies_total} unmatched movies found: Percent complete: ({100 - 100 * unmatched_movies_total / total_movies:.2f}% of total {total_movies}).")
+    unmatched_series = sorted(unmatched_series['unmatched_series'], key=lambda k: k['path'])
     if unmatched_series:
         logger.info("Unmatched Series:")
         previous_path = None
-        for path in unmatched_series:
-            if path[0] != previous_path:
-                logger.info("*" * 40)
-                logger.info(f"\tMedia Path: {os.path.basename(os.path.normpath(path[0])).title()}")
-                previous_path = path[0]
-            logger.info(f"\t{path[1]}")
+        for series in unmatched_series:
+            if series['path'] != previous_path:
+                logger.info(f"\t{series['path'].capitalize()}")
+                previous_path = series['path']
+            if series['missing_season']:
+                output = f"Series poster available but seasons listed are missing"
+                logger.info(f"\t\t{series['title']}, {output}")
+                for season in series['season_number']:
+                    logger.info(f"\t\t\t{season}")
+            else:
+                output = f"Series poster unavailable"
+                logger.info(f"\t\t{series['title']}, {output}")
+                for season in series['season_number']:
+                    logger.info(f"\t\t\t{season}")
             unmatched_series_total += 1
-            for season in path[2]:
-                if path[3]:
-                    logger.info(f"\t\t{season} (Missing assets)")
-                    unmatched_seasons += 1
-                else:
-                    logger.info(f"\t\t{season}")
-                    unmatched_seasons += 1
+            if series['missing_season']:
+                unmatched_seasons += 1
+        
         logger.info(f"\t{unmatched_seasons} unmatched seasons found: Percent complete: ({100 - 100 * unmatched_seasons / total_seasons:.2f}% of total {total_seasons}).")
         logger.info(f"\t{unmatched_series_total} unmatched series found: Percent complete: ({100 - 100 * unmatched_series_total / total_series:.2f}% of total {total_series}).")
         logger.info(f"\t{unmatched_series_total} unmatched series & {unmatched_seasons} unmatched seasons. Grand percent complete: ({100 - 100 * (unmatched_series_total + unmatched_seasons) / (total_series + total_seasons):.2f}% of grand total {total_series + unmatched_seasons}).\n")
     if unmatched_collections:
         logger.info("Unmatched Collections:")
-        previous_library = None
-        for library in unmatched_collections:
-            if library[0] != previous_library:
-                logger.info(f"\tLibrary: {library[0].title()}")
-                previous_library = library[0]
-            logger.info(f"\t\t{library[1]}")
+        for collection in unmatched_collections['unmatched_collections']:
+            logger.info(f"\t{collection['title']}")
             unmatched_collections_total += 1
         logger.info(f"\t{unmatched_collections_total} unmatched collections found: Percent complete: ({100 - 100 * unmatched_collections_total / unmatched_collections_total:.2f}% of total {total_collections}).\n")
     logger.info(f"Grand total: {unmatched_movies_total} unmatched movies, {unmatched_series_total} unmatched series, {unmatched_seasons} unmatched seasons, {unmatched_collections_total} unmatched collections. Grand percent complete: ({100 - 100 * (unmatched_movies_total + unmatched_series_total + unmatched_seasons + unmatched_collections_total) / (total_movies + total_series + total_seasons + total_collections):.2f}% of grand total {total_movies + total_series + total_seasons + total_collections}).\n")
@@ -230,27 +301,26 @@ def main():
     for data in config.plex_data:
         api_key = data.get('api', '')
         url = data.get('url', '')
-    if url and api_key:
-        plex_collections = []
-    else:
-        plex_collections = []
-    illegal_chars = ['<', '>', ':', '"', '/', '\\', '|', '?', '*']
     app = PlexServer(url, api_key)
     asset_series, asset_collections, asset_movies = get_assets_files(config.assets_path)
     media_movies, media_series = get_media_folders(config.media_paths)
     collections = []
-    for library_name in config.library_names:
-        library = app.library.section(library_name)
-        collections += library.collections()
+    if config.library_names:
+        for library_name in config.library_names:
+            library = app.library.section(library_name)
+            collections += library.collections()
+    else:
+        logger.info("No library names specified in config.yml. Skipping collections.")
     collection_names = [collection.title for collection in collections if collection.smart != True]
     for collection in config.ignore_collections:
         if collection in collection_names:
             collection_names.remove(collection)
+    dict_plex = {'collections': []}
     for collection in collection_names:
-        sanitized_collection = ''.join(c for c in collection if c not in illegal_chars)
-        plex_collections.append((config.library_names[0], sanitized_collection))
-    unmatched_movies, unmatched_series, unmatched_collections = unmatched(asset_series, asset_movies, media_movies, media_series, plex_collections, asset_collections)
-    print_output(unmatched_movies, unmatched_series, unmatched_collections, media_movies, media_series, plex_collections)
+        sanitized_collection = illegal_chars_regex.sub('', collection)
+        dict_plex['collections'].append({'title': sanitized_collection})
+    unmatched_movies, unmatched_series, unmatched_collections = match_assets(asset_series, asset_movies, media_movies, media_series, dict_plex, asset_collections)
+    print_output(unmatched_movies, unmatched_series, unmatched_collections, media_movies, media_series, dict_plex)
 
 if __name__ == "__main__":
     """

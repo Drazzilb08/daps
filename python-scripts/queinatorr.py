@@ -11,7 +11,7 @@
 #              in a queue due to a missing file or not being an upgrade for existing episode file(s).
 # Usage: python3 queinatorr.py
 # Requirements: requests, qbittorrentapi
-# Version: 0.0.3
+# Version: 1.0.0
 # License: MIT License
 # ===================================================================================================
 

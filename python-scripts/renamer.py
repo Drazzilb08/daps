@@ -14,8 +14,24 @@
 # Note: There is a limitation to how this script works with regards to it matching series assets the 
 #       main series poster requires seasonal posters to be present. If you have a series that does 
 #       not have a seasonal poster then it will not match the series poster.
+# Note: If you're not seeing a movie/show show up as match, chances are it could be due to the 
+#       following reasons:
+#       1. The threshold is too high. Try lowering it.
+#        - One thing to do before changing the threshold is to check for "Almost Matches"
+#          These are matches that are close to the threshold but with 10 points less.
+#          To check for "Almost Matches" Set logging level to debug and run the script.
+#          Debug logs are quite verbose so it may require some digging. Good ol Ctrl+F is your friend.
+#        - The default threshold is 96, This is what I've found to be the best balance between
+#          accuracy and false positives. If you're getting too many false positives, try raising
+#          the threshold. If you're not getting enough matches, try lowering the threshold.
+#       2. The movie/show's naming scheme is not conducive to matching. Try renaming it per Trash's Guides
+#          - Radarr: https://trash-guides.info/Radarr/Radarr-recommended-naming-scheme/
+#          - Sonarr: https://trash-guides.info/Sonarr/Sonarr-recommended-naming-scheme/
+#       3. Finally the years may be off, from time to time TVDB and/or TMDB may have an entry put onto their
+#          site with the wrong year. During that time you may have added a movie/show to your library. 
+#          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.0.0 Apha 3
+# Version: 4.0.0 Apha 4
 # License: MIT License
 # ===================================================================================================
 
@@ -59,6 +75,7 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
         if best_match and best_match[1] >= collection_threshold:
             matched_collections[collection] = {'files': source_file_list[best_match[0]]['files'], 'score': best_match[1]}
         if best_match and collection_threshold - 10 <= best_match[1] < collection_threshold:
+            logger.debug(f"Almost matched collection: {collection} with score: {best_match[1]}")
             almost_matched[collection] = {'files': source_file_list[best_match[0]]['files'], 'score': best_match[1]}
     logger.debug(f"Matched collections: {json.dumps(matched_collections, ensure_ascii=False, indent=4)}")
     logger.debug(f"Almost matched collections: {json.dumps(almost_matched, ensure_ascii=False, indent=4)}")

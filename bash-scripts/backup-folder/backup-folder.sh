@@ -7,7 +7,12 @@
 # |____/ \__,_|\___|_|\_\\__,_| .__/  |_|  \___/|_|\__,_|\___|_|
 #                             | |
 #                             |_|
-# v3.0.1
+# ====================================================
+# Version: 3.0.1
+# Backup Folder - A script to backup a folder to another folder
+# Author: Drazzilb
+# License: MIT License
+# ====================================================
 
 source_dir=''
 destination_dir=''

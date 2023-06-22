@@ -5,7 +5,12 @@
 # | '_ \ / _ \|  __  | |
 # | | | | (_) | |  | | |____
 # |_| |_|\___/|_|  |_|______|
-# v2.0.1
+# ====================================================
+# Version: 2.0.1
+# noHL - A script to find media that isn't hardlinked
+# Author: Drazzilb
+# License: MIT License
+# ====================================================
 
 # Define variables
 source_dir='/path/to/media/'

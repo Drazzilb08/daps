@@ -7,8 +7,12 @@
 #  /_/    \_\ .__/| .__/ \__,_|\__,_|\__\__,_| |____/ \__,_|\___|_|\_\\__,_| .__/
 #           | |   | |                                                      | |
 #           |_|   |_|                                                      |_|
-#
-# v4.2.1
+# ====================================================
+# Version: 4.2.1
+# backup-appdata - A script to backup your Docker appdata
+# Author: Drazzilb
+# License: MIT License
+# ====================================================
 
 # Path to config file such as "/path/to/config/config_file.txt"
 # Only use if config file is not in the same location as the script.

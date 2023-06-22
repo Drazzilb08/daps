@@ -7,8 +7,12 @@
 #  /_/    \_\ .__/| .__/ \__,_|\__,_|\__\__,_| |____/ \__,_|\___|_|\_\\__,_| .__/
 #           | |   | |                                                      | |
 #           |_|   |_|                                                      |_|
-#
-# v4.1.1
+# ====================================================
+# Version: 4.2.1
+# backup-appdata - A script to backup your Docker appdata
+# Author: Drazzilb
+# License: MIT License
+# ====================================================
 
 # Path to config file such as "/path/to/config/config_file.txt"
 # Only use if config file is not in the same location as the script.
@@ -180,8 +184,8 @@ create_backup() {
         else
             # if dry_run is set to false
             extension="tar.7z"
-            # check if exclude_file is set
-            if [ -n "$exclude_file" ]; then
+            # check if exclude_file is set and exists
+            if [ -n "$exclude_file" ] && [ -f "$exclude_file" ]; then
                 # if yes use it to exclude files from backup
                 tar --ignore-failed-read -cf - --exclude-from="$exclude_file" "$source_dir" | 7z a -si -t7z -m0=lzma2 -mx=1 -md=32m -mfb=64 -mmt=on -ms=off "$backup_file.$extension"
             else

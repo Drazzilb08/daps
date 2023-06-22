@@ -8,7 +8,11 @@
 #  |_|    |_|\___/_/\_\ |____/ \__,_|\___|_|\_\\__,_| .__/  |_____/ \___|_|  |_| .__/ \__|
 #                                                   | |                        | |
 #                                                   |_|                        |_|
-# v4.0.1
+# ====================================================
+# Version: 4.0.1
+# backup-plex - A script to backup your plex database and media
+# Author: Drazzilb
+# License: MIT License
 
 # Please see the config file for more information
 config_file=""

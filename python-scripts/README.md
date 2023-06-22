@@ -1,3 +1,5 @@
+# **Warning**: Massive changes to python scripts, Requires requirements update
+
 # Renamer
 ## Overview
 These are simple scripts that do not require much. Renamer hooks into your Radarr instance for Movie's names, Sonarr for your TV Show names and Plex for your collection names. 

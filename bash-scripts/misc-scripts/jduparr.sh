@@ -8,7 +8,12 @@
 #    | |_____/ \____/|_| /_/    \_\_|  \_\_|  \_\
 #   _/ |                                         
 #  |__/                                          
-#
+# ====================================================
+# Version: 1.0.0
+# jDuparr - A script to find duplicate files in your media library
+# Author: Drazzilb
+# License: MIT License
+# ====================================================
 
 downloads_dir='/path/to/downloads'
 media_dir='/path/to/media'
@@ -18,12 +23,11 @@ bar_color='FF00FF'
 channel=''
 
 include=(
-    # "Add a folder that is further down in your media dir"
-    # "Use this if you have your downlaods inside the same parrent directory as your media"
-    # "Such as ../media/downloads"
-    # "Such as ../media/movies"
-    # "Such as ../media/shows"
-    # "This should account for that"
+    'Movies'
+    'TV Shows'
+    'Anime'
+    'XXX'
+    'Other'
 )
 
 # <----- Do not edit below this point ----->
@@ -109,14 +113,19 @@ check_config() {
 
 find_duplicates() {
     start=$(date +%s)
+    echo "Running jdupes" | tee "$(dirname "$0")/../logs/jduparr.log"
     if [ ${#include[@]} -eq 0 ]; then
-        jdupes -r -L -A -X onlyext:mp4,mkv,avi "${downloads_dir}" "${media_dir}"
+        mkdir -p "$(dirname "$0")/../logs"
+        jdupes -r -L -A -X onlyext:mp4,mkv,avi "${downloads_dir}" "${media_dir}" | tee -a "$(dirname "$0")/../logs/jduparr.log" 2>&1
         true
     else
         for ((i = 0; i < ${#include[@]}; i++)); do
-            jdupes -r -L -A -X onlyext:mp4,mkv,avi "${downloads_dir}" "${media_dir}/${include[$i]}"
+            echo "Running jdupes for ${include[$i]}" | tee -a "$(dirname "$0")/../logs/jduparr.log"
+            jdupes -r -L -A -X onlyext:mp4,mkv,avi "${downloads_dir}" "${media_dir}/${include[$i]}" | tee -a "$(dirname "$0")/../logs/jduparr.log" >&1
+            echo "jDupes completed for ${include[$i]}" | tee -a "$(dirname "$0")/../logs/jduparr.log"
             true
         done
+    echo "jDupes completed" | tee -a "$(dirname "$0")/../logs/jduparr.log"
     fi
     end=$(date +%s)
 }
@@ -134,6 +143,7 @@ calculate_runtime() {
     else
         run_output="jDupes completed in $hours hours $minutes minutes and $seconds seconds"
     fi
+    echo "$run_output" | tee -a "$(dirname "$0")/../logs/jduparr.log"
 }
 
 hex_to_decimal() {
@@ -226,7 +236,6 @@ cleanup() {
 }
 
 main() {
-
     check_duplicate_script
     check_config
     hex_to_decimal

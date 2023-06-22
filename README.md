@@ -1,6 +1,9 @@
 Collection of unRAID userscripts
 
 ## Note to users
+Python Scripts:<br>
+Numerious updates to python scripts as well as additions<br>
+If you were using any previous python scripts you'll need to update your requirements
 As of version:<br>
 4.0.0 Plex backup<br>
 4.0.0 Appdata backup<br>

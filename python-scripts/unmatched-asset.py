@@ -17,7 +17,7 @@
 #         main series poster requires seasonal posters to be present. If you have a series that does       
 #         not have a seasonal poster then it will not match the series poster.                                
 #  Requirements: requests                                                                                            
-#  Version: 4.0.0 Alpha 1                                                                                 
+#  Version: 4.0.0                                                                               
 #  License: MIT License                                                                                   
 # =========================================================================================================== 
 

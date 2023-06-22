@@ -117,8 +117,8 @@ def get_assets_files(assets_path):
     series['series'] = sorted(series['series'], key=lambda x: x['title'])
     
     logger.debug("Assets:")
-    # logger.debug(json.dumps(collections, ensure_ascii=False, indent=4))
-    # logger.debug(json.dumps(movies, ensure_ascii=False, indent=4))
+    logger.debug(json.dumps(collections, ensure_ascii=False, indent=4))
+    logger.debug(json.dumps(movies, ensure_ascii=False, indent=4))
     logger.debug(json.dumps(series, ensure_ascii=False, indent=4))
     return series, collections, movies
 
@@ -162,7 +162,7 @@ def get_media_folders(media_paths):
     movies = dict(sorted(movies.items()))
     logger.debug("Media Directories:")
     logger.debug(json.dumps(series, ensure_ascii=False, indent=4))
-    # logger.debug(json.dumps(movies, ensure_ascii=False, indent=4))
+    logger.debug(json.dumps(movies, ensure_ascii=False, indent=4))
     return movies, series
 
 def match_assets(asset_series, asset_movies, media_movies, media_series, plex_collections, asset_collections):
@@ -216,8 +216,8 @@ def match_assets(asset_series, asset_movies, media_movies, media_series, plex_co
             })
     logger.debug("Unmatched Assets:")
     logger.debug(json.dumps(unmatched_series, ensure_ascii=False, indent=4))
-    # logger.debug(json.dumps(unmatched_movies, ensure_ascii=False, indent=4))
-    # logger.debug(json.dumps(unmatched_collections, ensure_ascii=False, indent=4))
+    logger.debug(json.dumps(unmatched_movies, ensure_ascii=False, indent=4))
+    logger.debug(json.dumps(unmatched_collections, ensure_ascii=False, indent=4))
 
     return unmatched_movies, unmatched_series, unmatched_collections
 

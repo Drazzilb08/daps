@@ -13,7 +13,7 @@
 #              hardlinks seeding.
 # Usage: python3 nohl.py
 # Requirements: Python 3.8+, requests
-# Version: 0.0.7
+# Version: 0.0.8
 # License: MIT License
 # ===================================================================================================
 
@@ -153,7 +153,7 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
             media_item_monitored = media_item['monitored']
 
             quality_profile_id = media_item['qualityProfileId']
-            if media_data_item_title_modified == media_item_title_modified and media_data_item_year != media_item_year:
+            if media_data_item_title_modified == media_item_title_modified and abs(media_data_item_year - media_item_year) == 1:
                 logger.warning(f"Found match for {media_item_title} and {media_data_item_title} but years do not match. Media Year: {media_item_year}, File Year: {media_data_item_year}")
             if media_data_item_title_modified == media_item_title_modified and media_data_item_year == media_item_year:
                 if media_item_title in exclude_series if exclude_series else False:

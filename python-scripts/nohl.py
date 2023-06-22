@@ -13,7 +13,7 @@
 #              hardlinks seeding.
 # Usage: python3 nohl.py
 # Requirements: Python 3.8+, requests
-# Version: 0.0.8
+# Version: 1.0.0
 # License: MIT License
 # ===================================================================================================
 

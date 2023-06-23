@@ -1,5 +1,26 @@
 # **Warning**: Massive changes to python scripts, Requires requirements update
 
+# NOHL
+## Appreciation
+First and formost I'd like to thank s0up4200 for his original script [here](https://github.com/s0up4200/scripts-for-the-arrs-and-brrs/blob/main/hardlink-radarr.py) gave me the idea for this version for the script. <br>
+
+Thank you
+
+## Overview
+NOHL.py is a  script scans your media dir for files that aren't hardlinked, deletes the season (or file if the season isn't completely aired)/movie and then pushes a request to radarr/sonarr to download either the episode/season/movie
+You can control it by unmonitoring movies/shows/seasons or you can add an exclude list for series also can include/exclude profiles (based upon the name you gave the profile w/in sonarr/radarr) if you leave it blank it will just do ALL
+
+... More documentation to follow
+
+# queinatorr
+## Overview
+... Placeholder
+
+# Movie-Deletarr
+## Overview
+
+... Placeholder
+
 # Renamer
 ## Overview
 These are simple scripts that do not require much. Renamer hooks into your Radarr instance for Movie's names, Sonarr for your TV Show names and Plex for your collection names. 
@@ -34,7 +55,7 @@ You should see a progress the script connecting to the service you set up in the
 Here is an example of what a run would look like:
 ![img](../screenshots/renamer.py.png)
 
-# Unmatched Posters
+# Unmatched Assets
 
 ## Overview
 This is a super simple script that takes your assets directory from PMM and bumps it against your media directory to check what assets your missing. I like to have complete sets of all my posters and have them all matching. This is very helpful to see what all I'm missing.

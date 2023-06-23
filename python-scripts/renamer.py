@@ -374,9 +374,9 @@ def main():
             elif instance_type == "Plex":
                 script_name = instance_name
             if script_name and instance_name == script_name:
-                final_output.append('*' * 40)
-                final_output.append(f'* {instance_name:^36} *')
-                final_output.append('*' * 40)
+                logger.info('*' * 40)
+                logger.info(f'* {instance_name:^36} *')
+                logger.info('*' * 40)
                 logger.debug(f'{" Settings ":*^40}')
                 logger.debug(f"Instance Name: {instance_name}")
                 logger.debug(f"URL: {url}")

@@ -39,22 +39,21 @@ title_regex = r"^.*/([^/]+)\s\((\d{4})\)/.*$"
 
 def find_no_hl_files(media_paths):
     no_hl_files = []
-    while True:
-        for dir in media_paths:
-            try:
-                logger.debug(f"Processing directory: {dir}")
-                for root, dirs, files in os.walk(dir):
-                    for file in files:
-                        try:
-                            if file.endswith(".mkv") or file.endswith(".mp4"):
-                                file_path = os.path.join(root, file)
-                                if (os.path.isfile(file_path) and os.stat(file_path).st_nlink == 1):
-                                    logger.debug(f"Found no hardlink file: {file_path}")
-                                    no_hl_files.append(file_path)
-                        except Exception as e:
-                            logger.warning(f"Error processing file: {file}. Error: {e}")
-            except Exception as e:
-                logger.warning(f"Error processing directory: {dir}. Error: {e}")
+    for dir in media_paths:
+        try:
+            logger.debug(f"Processing directory: {dir}")
+            for root, dirs, files in os.walk(dir):
+                for file in files:
+                    try:
+                        if file.endswith(".mkv") or file.endswith(".mp4"):
+                            file_path = os.path.join(root, file)
+                            if (os.path.isfile(file_path) and os.stat(file_path).st_nlink == 1):
+                                logger.debug(f"Found no hardlink file: {file_path}")
+                                no_hl_files.append(file_path)
+                    except Exception as e:
+                        logger.warning(f"Error processing file: {file}. Error: {e}")
+        except Exception as e:
+            logger.warning(f"Error processing directory: {dir}. Error: {e}")
         if no_hl_files:
             break
         logger.debug("No non-hardlink files found. Sleeping for 60 seconds.")

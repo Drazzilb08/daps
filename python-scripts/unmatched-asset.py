@@ -7,17 +7,17 @@
 #                                                                                         | |     __/ |
 #                                                                                         |_|    |___/ 
 # ===========================================================================================================
-#  Author: Drazzilb                                                                                        
-#  Description: This script will check your media folders against your assets folder to see if there       
-#                are any folders that do not have a matching asset. It will also check your collections     
-#                against your assets folder to see if there are any collections that do not have a          
-#                matching asset. It will output the results to a file in the logs folder.                  
-#  Usage: python3 unmatched=asset.py                                                                                  
-#  Note: There is a limitation to how this script works with regards to it matching series assets the     
-#         main series poster requires seasonal posters to be present. If you have a series that does       
-#         not have a seasonal poster then it will not match the series poster.                                
-#  Requirements: requests                                                                                            
-#  Version: 4.1.1                                                                           
+#  Author: Drazzilb
+#  Description: This script will check your media folders against your assets folder to see if there
+#                are any folders that do not have a matching asset. It will also check your collections
+#                against your assets folder to see if there are any collections that do not have a
+#                matching asset. It will output the results to a file in the logs folder.
+#  Usage: python3 unmatched=asset.py
+#  Note: There is a limitation to how this script works with regards to it matching series assets the
+#         main series poster requires seasonal posters to be present. If you have a series that does
+#         not have a seasonal poster then it will not match the series poster.
+#  Requirements: requests
+#  Version: 4.1.1
 #  License: MIT License                                                                                   
 # =========================================================================================================== 
 
@@ -41,6 +41,7 @@ logging.getLogger('urllib3').setLevel(logging.WARNING)
 illegal_chars_regex = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')
 
 season_name_info = [
+    "_Season",
     "Season"
 ]
 
@@ -64,26 +65,43 @@ def get_assets_files(assets_path):
     season_number = None
     if not asset_folders:
         for file in tqdm(files, desc=f'Sorting assets', total=len(files)):
-                if file.startswith('.'):
-                    continue
-                base_name, extension = os.path.splitext(file)
-                if not re.search(r'\(\d{4}\)', base_name):
-                    collections['collections'].append({
-                        'title': base_name
-                    })
-                else:
-                    title = base_name
-                    title = unidecode(title)
-                    title_without_season_info = title
-                    for season_info in season_name_info:
-                        title_without_season_info = re.sub(season_info + r'\d+', '', title_without_season_info)
-                    if any(title_without_season_info in file and any(season_info in file for season_info in season_name_info) for file in files):
-                        season_number = re.search(r'\d{2}$', base_name)
+            if file.startswith('.'):
+                continue
+            base_name, extension = os.path.splitext(file)
+            if not re.search(r'\(\d{4}\)', base_name):
+                collections['collections'].append({
+                    'title': base_name
+                })
+            else:
+                title = base_name
+                title = unidecode(title)
+                title_without_season_info = title
+                for season_info in season_name_info:
+                    title_without_season_info = re.sub(season_info + r'\d+', '', title_without_season_info)
+                if any(title_without_season_info in file and any(season_info in file for season_info in season_name_info) for file in files):
+                    season_number = re.search(r'\d{2}$', base_name)
+                    if season_number:
+                        if season_number.group(0) == '00':
+                            season_number = 'Specials'
+                        else:
+                            season_number = f"Season {season_number.group(0)}"
+                    if any(d['title'] == title_without_season_info for d in series['series']):
                         if season_number:
-                            if season_number.group(0) == '00':
-                                season_number = 'Specials'
-                            else:
-                                season_number = f"Season {season_number.group(0)}"
+                            series['series'][-1]['season_number'].append(season_number)
+                    else:
+                        series['series'].append({
+                            'title': title_without_season_info, 
+                            'season_number': []
+                        })
+                        if season_number:
+                            series['series'][-1]['season_number'].append(season_number)
+                elif any(season_info in file for season_info in season_name_info):
+                    season_number = re.search(r'\d{2}$', base_name)
+                    if season_number:
+                        if season_number.group(0) == '00':
+                            season_number = 'Specials'
+                        else:
+                            season_number = f"Season {season_number.group(0)}"
                         if any(d['title'] == title_without_season_info for d in series['series']):
                             if season_number:
                                 series['series'][-1]['season_number'].append(season_number)
@@ -94,25 +112,8 @@ def get_assets_files(assets_path):
                             })
                             if season_number:
                                 series['series'][-1]['season_number'].append(season_number)
-                    elif any(season_info in file for season_info in season_name_info):
-                        season_number = re.search(r'\d{2}$', base_name)
-                        if season_number:
-                            if season_number.group(0) == '00':
-                                season_number = 'Specials'
-                            else:
-                                season_number = f"Season {season_number.group(0)}"
-                            if any(d['title'] == title_without_season_info for d in series['series']):
-                                if season_number:
-                                    series['series'][-1]['season_number'].append(season_number)
-                            else:
-                                series['series'].append({
-                                    'title': title_without_season_info, 
-                                    'season_number': []
-                                })
-                                if season_number:
-                                    series['series'][-1]['season_number'].append(season_number)
-                    else:
-                        movies['movies'].append({'title': title})
+                else:
+                    movies['movies'].append({'title': title})
     else:
         for root, dirs, files in os.walk(assets_path):
             if root == assets_path:

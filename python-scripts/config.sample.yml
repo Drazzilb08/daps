@@ -105,6 +105,7 @@ renamer:
   log_level: info
   # Options are 'true' or 'false'
   dry_run: true
+  asset_folders: false
   # Options are 'Copy' or 'Move'
   action_type: move
   print_only_renames: true

@@ -17,7 +17,7 @@
 #         main series poster requires seasonal posters to be present. If you have a series that does       
 #         not have a seasonal poster then it will not match the series poster.                                
 #  Requirements: requests                                                                                            
-#  Version: 4.1.0                                                                               
+#  Version: 4.1.1                                                                           
 #  License: MIT License                                                                                   
 # =========================================================================================================== 
 
@@ -117,6 +117,8 @@ def get_assets_files(assets_path):
         for root, dirs, files in os.walk(assets_path):
             if root == assets_path:
                 continue
+            if not files:
+                continue
             basename = os.path.basename(root)
             if basename.startswith('.'):
                 continue
@@ -153,8 +155,7 @@ def get_assets_files(assets_path):
                                     if season_number:
                                         series['series'][-1]['season_number'].append(season_number)
                 else:
-                    if any('poster' in filename.lower() for filename in files):
-                        movies['movies'].append({'title': title})
+                    movies['movies'].append({'title': title})
 
 
     
@@ -190,6 +191,10 @@ def get_media_folders(media_paths):
             if subfolder.is_dir():
                 for sub_sub_folder in sorted(Path(subfolder).iterdir()):
                     if sub_sub_folder.is_dir():
+                        sub_sub_folder_base_name = os.path.basename(os.path.normpath(sub_sub_folder))
+                        if not (sub_sub_folder_base_name.startswith("Season ") or sub_sub_folder_base_name == "Specials"):
+                            logger.debug(f"Skipping '{sub_sub_folder_base_name}' because it is not a season folder.")
+                            continue
                         if any(subfolder.name in s['title'] for s in series['series']):
                             series['series'][-1]['season_number'].append(sub_sub_folder.name)
                         else:

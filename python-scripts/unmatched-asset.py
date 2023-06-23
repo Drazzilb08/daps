@@ -153,7 +153,9 @@ def get_assets_files(assets_path):
                                     if season_number:
                                         series['series'][-1]['season_number'].append(season_number)
                 else:
-                    movies['movies'].append({'title': title})
+                    if any('poster' in filename.lower() for filename in files):
+                        movies['movies'].append({'title': title})
+
 
     
     collections['collections'] = sorted(collections['collections'], key=lambda x: x['title'])

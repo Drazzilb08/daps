@@ -30,6 +30,7 @@ class Config:
         # Typical variables
         self.log_level = self.script_data.get('log_level', 'info').lower()  # Use 'info' as default log level if not provided
         self.dry_run = self.script_data.get('dry_run', False)  # Use False as default value for dry_run if not provided
+        self.asset_folders = self.script_data.get('asset_folders', [])  # Use empty list as default value for asset_folders if not provided
         self.radarr = self.script_data.get('radarr', False)  # Use False as default value for radarr if not provided')
         self.sonarr = self.script_data.get('sonarr', False)  # Use False as default value for sonarr if not provided')
         self.qbit = self.script_data.get('qbittorrent', False)  # Use False as default value for qbit if not provided')

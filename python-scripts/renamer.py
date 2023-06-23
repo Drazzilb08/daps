@@ -31,7 +31,7 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.0.0
+# Version: 4.1.0
 # License: MIT License
 # ===================================================================================================
 
@@ -53,7 +53,6 @@ config = Config(script_name="renamer")
 logger = setup_logger(config.log_level, "renamer")
 year_regex = re.compile(r"\((19|20)\d{2}\)")
 illegal_chars_regex = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')
-
 
 season_name_info = [
     " - Season",
@@ -124,7 +123,14 @@ def match_media(media, source_file_list, threshold):
 
 def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type, print_only_renames, destination_file_list):
     messages = []
+    asset_folders = config.asset_folders
     for media in tqdm(matched_media, desc="Renaming files", total=len(matched_media)):
+        if asset_folders:
+            if dry_run:
+                logger.info(f"Would create asset folder: {media} at {destination_dir}")
+            else:
+                logger.info(f"Creating asset folder: {media} at {destination_dir}")
+                os.makedirs(os.path.join(destination_dir, media), exist_ok=True)
         for file in matched_media[media]['files']:
             source_file_path = os.path.join(source_dir, file)
             file_extension = os.path.splitext(file)[1]
@@ -134,12 +140,22 @@ def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type
                 if season_number:
                     season_number = season_number.group(1)
                     season_number = season_number.zfill(2)
-                    new_file_name = f"{media}_Season{season_number}{file_extension}"
+                    if asset_folders:
+                        new_file_name = f"Season {season_number}{file_extension}"
+                    else:
+                        new_file_name = f"{media}_Season{season_number}{file_extension}"
                 elif season_number := re.search(r"Season (\d\d)", file):
-                    season_number = season_number.group(1)
-                    new_file_name = f"{media}_Season{season_number}{file_extension}"
+                    if asset_folders:
+                        season_number = season_number.group(1)
+                        new_file_name = f"Season {season_number}{file_extension}"
+                    else:
+                        season_number = season_number.group(1)
+                        new_file_name = f"{media}_Season{season_number}{file_extension}"
                 elif " - Specials" in file:
-                    new_file_name = f"{media}_Season00{file_extension}"
+                    if asset_folders:
+                        new_file_name = f"Season 00{file_extension}"
+                    else:
+                        new_file_name = f"{media}_Season00{file_extension}"
                 elif "_Season" in file:
                     new_file_name = file
                 else:
@@ -147,7 +163,10 @@ def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type
                     continue
             else:
                 new_file_name = f"{media}{file_extension}"
-            destination_file_path = os.path.join(destination_dir, new_file_name)
+            if asset_folders:
+                destination_file_path = os.path.join(destination_dir, media, new_file_name)
+            else:
+                destination_file_path = os.path.join(destination_dir, new_file_name)
             if new_file_name in destination_file_list and action_type == 'copy':
                 logger.debug(f"Destination file already exists: {destination_file_path}")
                 continue
@@ -202,7 +221,6 @@ def get_assets_files(assets_path):
     series = {}
     movies = {}
     collections = {}
-
     try:
         print("Getting assets files..., this may take a while.")
         files = os.listdir(assets_path)
@@ -213,7 +231,6 @@ def get_assets_files(assets_path):
         if exc_tb is not None:
             logger.error(f"Line number: {exc_tb.tb_lineno}")
         sys.exit(1)
-
     for file in tqdm(files, desc=f'Sorting assets', total=len(files)):
         if file.startswith('.'):
             continue
@@ -248,6 +265,9 @@ def get_assets_files(assets_path):
     collections = dict(sorted(collections.items()))
     movies = dict(sorted(movies.items()))
     series = dict(sorted(series.items()))
+    logger.debug(f"collections: {json.dumps(collections, indent=4)}")
+    logger.debug(f"movies: {json.dumps(movies, indent=4)}")
+    logger.debug(f"series: {json.dumps(series, indent=4)}")
     return series, collections, movies
 
 def process_instance(instance_type, instance_name, url, api, destination_file_list, final_output, asset_series, asset_collections, asset_movies):

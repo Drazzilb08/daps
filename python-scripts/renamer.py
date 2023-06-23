@@ -127,9 +127,9 @@ def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type
     for media in tqdm(matched_media, desc="Renaming files", total=len(matched_media)):
         if asset_folders:
             if dry_run:
-                messages.append(f"Would create asset folder: {media} at {destination_dir}")
+                logger.info(f"Would create asset folder: {media} at {destination_dir}")
             else:
-                messages.append(f"Creating asset folder: {media} at {destination_dir}")
+                logger.info(f"Creating asset folder: {media} at {destination_dir}")
                 os.makedirs(os.path.join(destination_dir, media), exist_ok=True)
         for file in matched_media[media]['files']:
             source_file_path = os.path.join(source_dir, file)
@@ -141,19 +141,19 @@ def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type
                     season_number = season_number.group(1)
                     season_number = season_number.zfill(2)
                     if asset_folders:
-                        new_file_name = f"Season {season_number}{file_extension}"
+                        new_file_name = f"Season{season_number}{file_extension}"
                     else:
                         new_file_name = f"{media}_Season{season_number}{file_extension}"
                 elif season_number := re.search(r"Season (\d\d)", file):
                     if asset_folders:
                         season_number = season_number.group(1)
-                        new_file_name = f"Season {season_number}{file_extension}"
+                        new_file_name = f"Season{season_number}{file_extension}"
                     else:
                         season_number = season_number.group(1)
                         new_file_name = f"{media}_Season{season_number}{file_extension}"
                 elif " - Specials" in file:
                     if asset_folders:
-                        new_file_name = f"Season 00{file_extension}"
+                        new_file_name = f"Season00{file_extension}"
                     else:
                         new_file_name = f"{media}_Season00{file_extension}"
                 elif "_Season" in file:

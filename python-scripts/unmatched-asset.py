@@ -17,7 +17,7 @@
 #         main series poster requires seasonal posters to be present. If you have a series that does       
 #         not have a seasonal poster then it will not match the series poster.                                
 #  Requirements: requests                                                                                            
-#  Version: 4.0.0                                                                               
+#  Version: 4.1.0                                                                               
 #  License: MIT License                                                                                   
 # =========================================================================================================== 
 
@@ -41,10 +41,11 @@ logging.getLogger('urllib3').setLevel(logging.WARNING)
 illegal_chars_regex = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')
 
 season_name_info = [
-    "_Season"
+    "Season"
 ]
 
 def get_assets_files(assets_path):
+    asset_folders = config.asset_folders    
     series = {'series': []}
     movies = {'movies': []}
     collections = {'collections': []}
@@ -61,56 +62,99 @@ def get_assets_files(assets_path):
             logger.error(f"Line number: {exc_tb.tb_lineno}")
         sys.exit(1)
     season_number = None
-    for file in tqdm(files, desc=f'Sorting assets', total=len(files)):
-        if file.startswith('.'):
-            continue
-        base_name, extension = os.path.splitext(file)
-        if not re.search(r'\(\d{4}\)', base_name):
-            collections['collections'].append({
-                'title': base_name
-            })
-        else:
-            title = base_name
-            title = unidecode(title)
-            title_without_season_info = title
-            for season_info in season_name_info:
-                title_without_season_info = re.sub(season_info + r'\d+', '', title_without_season_info)
-            if any(title_without_season_info in file and any(season_info in file for season_info in season_name_info) for file in files):
-                season_number = re.search(r'\d{2}$', base_name)
-                if season_number:
-                    if season_number.group(0) == '00':
-                        season_number = 'Specials'
-                    else:
-                        season_number = f"Season {season_number.group(0)}"
-                if any(d['title'] == title_without_season_info for d in series['series']):
-                    if season_number:
-                        series['series'][-1]['season_number'].append(season_number)
+    if not asset_folders:
+        for file in tqdm(files, desc=f'Sorting assets', total=len(files)):
+                if file.startswith('.'):
+                    continue
+                base_name, extension = os.path.splitext(file)
+                if not re.search(r'\(\d{4}\)', base_name):
+                    collections['collections'].append({
+                        'title': base_name
+                    })
                 else:
+                    title = base_name
+                    title = unidecode(title)
+                    title_without_season_info = title
+                    for season_info in season_name_info:
+                        title_without_season_info = re.sub(season_info + r'\d+', '', title_without_season_info)
+                    if any(title_without_season_info in file and any(season_info in file for season_info in season_name_info) for file in files):
+                        season_number = re.search(r'\d{2}$', base_name)
+                        if season_number:
+                            if season_number.group(0) == '00':
+                                season_number = 'Specials'
+                            else:
+                                season_number = f"Season {season_number.group(0)}"
+                        if any(d['title'] == title_without_season_info for d in series['series']):
+                            if season_number:
+                                series['series'][-1]['season_number'].append(season_number)
+                        else:
+                            series['series'].append({
+                                'title': title_without_season_info, 
+                                'season_number': []
+                            })
+                            if season_number:
+                                series['series'][-1]['season_number'].append(season_number)
+                    elif any(season_info in file for season_info in season_name_info):
+                        season_number = re.search(r'\d{2}$', base_name)
+                        if season_number:
+                            if season_number.group(0) == '00':
+                                season_number = 'Specials'
+                            else:
+                                season_number = f"Season {season_number.group(0)}"
+                            if any(d['title'] == title_without_season_info for d in series['series']):
+                                if season_number:
+                                    series['series'][-1]['season_number'].append(season_number)
+                            else:
+                                series['series'].append({
+                                    'title': title_without_season_info, 
+                                    'season_number': []
+                                })
+                                if season_number:
+                                    series['series'][-1]['season_number'].append(season_number)
+                    else:
+                        movies['movies'].append({'title': title})
+    else:
+        for root, dirs, files in os.walk(assets_path):
+            if root == assets_path:
+                continue
+            basename = os.path.basename(root)
+            if basename.startswith('.'):
+                continue
+            if not re.search(r'\(\d{4}\)', basename):
+                collections['collections'].append({
+                    'title': basename
+                })
+            else:
+                title = basename
+                if any(season_info in file for season_info in season_name_info for file in files):
                     series['series'].append({
-                        'title': title_without_season_info, 
+                        'title': title, 
                         'season_number': []
                     })
-                    if season_number:
-                        series['series'][-1]['season_number'].append(season_number)
-            elif any(season_info in file for season_info in season_name_info):
-                season_number = re.search(r'\d{2}$', base_name)
-                if season_number:
-                    if season_number.group(0) == '00':
-                        season_number = 'Specials'
-                    else:
-                        season_number = f"Season {season_number.group(0)}"
-                    if any(d['title'] == title_without_season_info for d in series['series']):
-                        if season_number:
-                            series['series'][-1]['season_number'].append(season_number)
-                    else:
-                        series['series'].append({
-                            'title': title_without_season_info, 
-                            'season_number': []
-                        })
-                        if season_number:
-                            series['series'][-1]['season_number'].append(season_number)
-            else:
-                movies['movies'].append({'title': title})
+                    for file in files:
+                        if file.startswith('.'):
+                            continue
+                        base_name, extension = os.path.splitext(file)
+                        if any(season_info in file for season_info in season_name_info):
+                            season_number = re.search(r'\d{2}$', base_name)
+                            if season_number:
+                                if season_number.group(0) == '00':
+                                    season_number = 'Specials'
+                                else:
+                                    season_number = f"Season {season_number.group(0)}"
+                                if any(d['title'] == title for d in series['series']):
+                                    if season_number:
+                                        series['series'][-1]['season_number'].append(season_number)
+                                else:
+                                    series['series'].append({
+                                        'title': title, 
+                                        'season_number': []
+                                    })
+                                    if season_number:
+                                        series['series'][-1]['season_number'].append(season_number)
+                else:
+                    movies['movies'].append({'title': title})
+
     
     collections['collections'] = sorted(collections['collections'], key=lambda x: x['title'])
     movies['movies'] = sorted(movies['movies'], key=lambda x: x['title'])
@@ -249,7 +293,7 @@ def print_output(unmatched_movies, unmatched_series, unmatched_collections, medi
     for series in media_series['series']:
         total_seasons += len(series['season_number'])
     total_collections = len(plex_collections)
-    if unmatched_movies:
+    if unmatched_movies['unmatched_movies']:
         logger.info("Unmatched Movies:")
         previous_path = None
         for movie in unmatched_movies['unmatched_movies']:
@@ -284,7 +328,7 @@ def print_output(unmatched_movies, unmatched_series, unmatched_collections, medi
         logger.info(f"\t{unmatched_seasons} unmatched seasons found: Percent complete: ({100 - 100 * unmatched_seasons / total_seasons:.2f}% of total {total_seasons}).")
         logger.info(f"\t{unmatched_series_total} unmatched series found: Percent complete: ({100 - 100 * unmatched_series_total / total_series:.2f}% of total {total_series}).")
         logger.info(f"\t{unmatched_series_total} unmatched series & {unmatched_seasons} unmatched seasons. Grand percent complete: ({100 - 100 * (unmatched_series_total + unmatched_seasons) / (total_series + total_seasons):.2f}% of grand total {total_series + unmatched_seasons}).\n")
-    if unmatched_collections:
+    if unmatched_collections['unmatched_collections']:
         logger.info("Unmatched Collections:")
         for collection in unmatched_collections['unmatched_collections']:
             logger.info(f"\t{collection['title']}")

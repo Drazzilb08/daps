@@ -47,6 +47,7 @@ from fuzzywuzzy import process
 from tqdm import tqdm
 import re
 import shutil
+import errno
 from unidecode import unidecode
 
 config = Config(script_name="renamer")
@@ -121,7 +122,7 @@ def match_media(media, source_file_list, threshold):
     logger.debug(f"Almost matched media: {json.dumps(almost_matched, ensure_ascii=False, indent=4)}")
     return matched_media
 
-def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type, print_only_renames, destination_file_list):
+def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type, print_only_renames):
     messages = []
     asset_folders = config.asset_folders
     for media in tqdm(matched_media, desc="Renaming files", total=len(matched_media)):
@@ -170,9 +171,6 @@ def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type
                 destination_file_path = os.path.join(destination_dir, media, new_file_name)
             else:
                 destination_file_path = os.path.join(destination_dir, new_file_name)
-            if new_file_name in destination_file_list and action_type == 'copy':
-                logger.debug(f"Destination file already exists: {destination_file_path}")
-                continue
             if new_file_name != old_file_name:
                 if dry_run:
                     messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
@@ -190,8 +188,8 @@ def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type
                     elif action_type == 'hardlink':
                         try:
                             os.link(source_file_path, destination_file_path)
-                        except OSError as e:
-                            logger.error(f"Unable to create hardlink: {e}")
+                        except OSError:
+                            continue
                     else:
                         logger.error(f"Unknown action type: {action_type}")
                     messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
@@ -214,7 +212,9 @@ def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type
                             try:
                                 os.link(source_file_path, destination_file_path)
                             except OSError as e:
-                                logger.error(f"Unable to create hardlink: {e}")
+                                if e.errno != errno.EEXIST:
+                                    logger.error(f"Unable to hardlink file: {e}")
+                                continue
                         else:
                             logger.error(f"Unknown action type: {action_type}")
                         messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -->> {new_file_name}")
@@ -273,7 +273,7 @@ def get_assets_files(assets_path):
     logger.debug(f"series: {json.dumps(series, indent=4)}")
     return series, collections, movies
 
-def process_instance(instance_type, instance_name, url, api, destination_file_list, final_output, asset_series, asset_collections, asset_movies):
+def process_instance(instance_type, instance_name, url, api, final_output, asset_series, asset_collections, asset_movies):
     source_file_list = []
     collections = []
     media = []
@@ -305,7 +305,7 @@ def process_instance(instance_type, instance_name, url, api, destination_file_li
         elif instance_type == "Radarr" or instance_type == "Sonarr":
             matched_media = match_media(media, source_file_list, config.movies_threshold)
         if matched_media:
-            message = rename_file(matched_media, config.destination_dir, config.source_dir, config.dry_run, config.action_type, config.print_only_renames, destination_file_list)
+            message = rename_file(matched_media, config.destination_dir, config.source_dir, config.dry_run, config.action_type, config.print_only_renames)
             final_output.extend(message)
         else:
             message = f"No matches found for {instance_name}"
@@ -325,7 +325,6 @@ def print_output(final_output):
         return
 
 def main():
-    destination_file_list = sorted(os.listdir(config.destination_dir), key=lambda x: x.lower())
     logger.debug('*' * 40)
     logger.debug(f'* {"Script Input Validated":^36} *')
     logger.debug('*' * 40)
@@ -381,7 +380,7 @@ def main():
                 logger.debug(f"Instance Name: {instance_name}")
                 logger.debug(f"URL: {url}")
                 logger.debug(f"API Key: {'<redacted>' if api else 'None'}")
-                final_output = process_instance(instance_type, instance_name, url, api, destination_file_list, final_output, asset_series, asset_collections, asset_movies)
+                final_output = process_instance(instance_type, instance_name, url, api, final_output, asset_series, asset_collections, asset_movies)
                 print_output(final_output)
                 permissions = 0o777
                 os.chmod(config.destination_dir, permissions)

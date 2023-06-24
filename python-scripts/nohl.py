@@ -13,7 +13,7 @@
 #              hardlinks seeding.
 # Usage: python3 nohl.py
 # Requirements: Python 3.8+, requests
-# Version: 1.0.0
+# Version: 1.0.1
 # License: MIT License
 # ===================================================================================================
 
@@ -35,7 +35,7 @@ logger = setup_logger(config.log_level, "nohl")
 illegal_chars_regex = re.compile(r"[^\w\s\-\(\)/.'’]+")
 season_regex = r"(?i)S(\d{2})E"
 episode_regex = r"(?:E|e)(\d{1,2})"
-title_regex = r"^.*/([^/]+)\s\((\d{4})\)/.*$"
+title_regex = r".*\/([^/]+)\s\((\d{4})\).*"
 
 def find_no_hl_files(media_paths):
     no_hl_files = []
@@ -71,15 +71,13 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
     season_number = None
     season_number_modified = None
     episode = None
-
     if instance_type == 'Radarr':
         for file in nohl_files:
             try:
                 title_match = re.match(title_regex, file)
+                print(title_match)
                 if title_match:
                     title = title_match.group(1)
-                title_match = re.match(title_regex, file)
-                if title_match:
                     year = int(title_match.group(2))
                 logger.debug(f"Processing file: {file}, Title: {title}, Year: {year}")
             except Exception as e:
@@ -96,12 +94,6 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
                 logger.warning(f"Error processing file: {file}. Error: {e}")
             try:
                 title = None
-                match = re.match(title_regex, file)
-                if match:
-                    title = match.group(1)
-            except Exception as e:
-                logger.warning(f"Error processing file: {file}. Error: {e}")
-            try:
                 match = re.match(title_regex, file)
                 if match:
                     title = match.group(1)
@@ -334,7 +326,10 @@ def main():
             paths.extend([item['paths']] if isinstance(item['paths'], str) else item['paths'])
             monitored_paths.extend([item['paths']] if isinstance(item['paths'], str) else item['paths'])
     for i in monitored_paths:
-        logger.info(f"Monitoring: {i}")
+        if i:
+            logger.info(f"Monitoring: {i}")
+        if not i:
+            continue
     nohl_files = find_no_hl_files(paths)
     if nohl_files:
         instances_to_run = []

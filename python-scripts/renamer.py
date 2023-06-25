@@ -31,7 +31,7 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.1.1
+# Version: 4.2.1
 # License: MIT License
 # ===================================================================================================
 
@@ -177,19 +177,36 @@ def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type
                 else:
                     if action_type == 'copy':
                         try:
-                            shutil.copyfile(source_file_path, destination_file_path)
+                            if os.path.isfile(destination_file_path):
+                                if os.path.getsize(source_file_path) != os.path.getsize(destination_file_path):
+                                    shutil.copyfile(source_file_path, destination_file_path)
+                                else:
+                                    pass
+                            else:
+                                shutil.copyfile(source_file_path, destination_file_path)
                         except OSError as e:
                             logger.error(f"Unable to copy file: {e}")
                     elif action_type == 'move':
                         try:
                             shutil.move(source_file_path, destination_file_path)
+                            messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
                         except OSError as e:
                             logger.error(f"Unable to move file: {e}")
                     elif action_type == 'hardlink':
                         try:
                             os.link(source_file_path, destination_file_path)
-                        except OSError:
-                            continue
+                            messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
+                        except OSError as e:
+                            if e.errno == errno.EEXIST:
+                                if os.path.samefile(source_file_path, destination_file_path):
+                                    pass
+                                else:
+                                    os.replace(destination_file_path, source_file_path)
+                                    os.link(source_file_path, destination_file_path)
+                                    messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
+                            else:
+                                logger.error(f"Unable to hardlink file: {e}")
+                                continue
                     else:
                         logger.error(f"Unknown action type: {action_type}")
                     messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
@@ -200,25 +217,41 @@ def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type
                     else:
                         if action_type == 'copy':
                             try:
-                                shutil.copyfile(source_file_path, destination_file_path)
+                                if os.path.isfile(destination_file_path):
+                                    if os.path.getsize(source_file_path) != os.path.getsize(destination_file_path):
+                                        shutil.copyfile(source_file_path, destination_file_path)
+                                        messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -->> {new_file_name}")
+                                    else:
+                                        pass
+                                else:
+                                    shutil.copyfile(source_file_path, destination_file_path)
+                                    messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -->> {new_file_name}")
                             except OSError as e:
                                 logger.error(f"Unable to copy file: {e}")
                         elif action_type == 'move':
                             try:
                                 shutil.move(source_file_path, destination_file_path)
+                                messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -->> {new_file_name}")
                             except OSError as e:
                                 logger.error(f"Unable to move file: {e}")
                         elif action_type == 'hardlink':
                             try:
                                 os.link(source_file_path, destination_file_path)
+                                messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
                             except OSError as e:
-                                if e.errno != errno.EEXIST:
+                                if e.errno == errno.EEXIST:
+                                    if os.path.samefile(source_file_path, destination_file_path):
+                                        pass
+                                    else:
+                                        os.replace(destination_file_path, source_file_path)
+                                        os.link(source_file_path, destination_file_path)
+                                        messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
+                                else:
                                     logger.error(f"Unable to hardlink file: {e}")
-                                continue
+                                    continue
                         else:
                             logger.error(f"Unknown action type: {action_type}")
-                        messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -->> {new_file_name}")
-    return messages
+    return messages 
 
 def get_assets_files(assets_path):
     series = {}

@@ -1,6 +1,7 @@
-Collection of unRAID userscripts
 
 <div align="center">
+
+Collection of unRAID userscripts
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![GitHub issues](https://img.shields.io/github/issues/Drazzilb08/userScripts.svg)](https://github.com/Drazzilb08/userScripts/issues)
@@ -9,9 +10,10 @@ Collection of unRAID userscripts
 [![Python](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
 [![Bash](https://img.shields.io/badge/bash-5.0-green.svg)](https://www.gnu.org/software/bash/)
 
-</div>
+To help with documentation of the collections of these scripts, I've created a [WIKI](https://github.com/Drazzilb08/userScripts/wiki) If there are any questions or concerns please let me know with a [GitHub issue](https://github.com/Drazzilb08/userScripts/issues).
 
-To help with documentation of the collections of these scripts, I've created a [wiki](https://github.com/Drazzilb08/userScripts/wiki) If there are any questions or concerns please let me know with a [GitHub issue](https://github.com/Drazzilb08/userScripts/issues).
+
+</div>
 
 ## Versioning
 

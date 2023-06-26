@@ -31,7 +31,7 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.2.1
+# Version: 4.2.2
 # License: MIT License
 # ===================================================================================================
 
@@ -49,6 +49,7 @@ import re
 import shutil
 import errno
 from unidecode import unidecode
+import filecmp
 
 config = Config(script_name="renamer")
 logger = setup_logger(config.log_level, "renamer")
@@ -178,12 +179,14 @@ def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type
                     if action_type == 'copy':
                         try:
                             if os.path.isfile(destination_file_path):
-                                if os.path.getsize(source_file_path) != os.path.getsize(destination_file_path):
-                                    shutil.copyfile(source_file_path, destination_file_path)
-                                else:
+                                if filecmp.cmp(source_file_path, destination_file_path):
                                     pass
+                                else:
+                                    shutil.copyfile(source_file_path, destination_file_path)
+                                    messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -->> {new_file_name}")
                             else:
                                 shutil.copyfile(source_file_path, destination_file_path)
+                                messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -->> {new_file_name}")
                         except OSError as e:
                             logger.error(f"Unable to copy file: {e}")
                     elif action_type == 'move':
@@ -209,7 +212,6 @@ def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type
                                 continue
                     else:
                         logger.error(f"Unknown action type: {action_type}")
-                    messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
             else:
                 if not print_only_renames:
                     if dry_run:
@@ -218,11 +220,11 @@ def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type
                         if action_type == 'copy':
                             try:
                                 if os.path.isfile(destination_file_path):
-                                    if os.path.getsize(source_file_path) != os.path.getsize(destination_file_path):
+                                    if filecmp.cmp(source_file_path, destination_file_path):
+                                        pass
+                                    else:
                                         shutil.copyfile(source_file_path, destination_file_path)
                                         messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -->> {new_file_name}")
-                                    else:
-                                        pass
                                 else:
                                     shutil.copyfile(source_file_path, destination_file_path)
                                     messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -->> {new_file_name}")

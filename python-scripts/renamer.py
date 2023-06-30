@@ -31,25 +31,25 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.2.2
+# Version: 4.3.2
 # License: MIT License
 # ===================================================================================================
 
-from modules.config import Config
 from modules.logger import setup_logger
 from plexapi.server import PlexServer
+from modules.config import Config
 from modules.arrpy import StARR
-import os
-import json
-import sys
-from fuzzywuzzy import fuzz
+from unidecode import unidecode
 from fuzzywuzzy import process
+from fuzzywuzzy import fuzz
 from tqdm import tqdm
-import re
+import filecmp
 import shutil
 import errno
-from unidecode import unidecode
-import filecmp
+import json
+import sys
+import os
+import re
 
 config = Config(script_name="renamer")
 logger = setup_logger(config.log_level, "renamer")
@@ -62,43 +62,62 @@ season_name_info = [
     "_Season"
 ]
 
-def scorer(s1, s2, force_ascii=True, full_process=True):
-    return fuzz.ratio(s1, s2)
-
 def match_collection(plex_collections, source_file_list, collection_threshold):
-    matched_collections = {}
-    almost_matched = {}
+    matched_collections = {"matched_media": []}
+    almost_matched = {"almost_matched": []}
     for collection in tqdm(plex_collections, desc="Matching collections", total=len(plex_collections)):
-        if collection == "Collectionless":
-            continue
+        match = process.extractOne(collection, [item['title'] for item in source_file_list['collections']], scorer=fuzz.ratio)
         collection = illegal_chars_regex.sub('', collection)
-        best_match = process.extractOne(collection, source_file_list.keys(), scorer=scorer)
-        if best_match and best_match[1] >= collection_threshold:
-            matched_collections[collection] = {'files': source_file_list[best_match[0]]['files'], 'score': best_match[1]}
-        if best_match and collection_threshold - 10 <= best_match[1] < collection_threshold:
-            logger.debug(f"Almost matched collection: {collection} with score: {best_match[1]}")
-            almost_matched[collection] = {'files': source_file_list[best_match[0]]['files'], 'score': best_match[1]}
+        if match:
+            score = match[1]
+            title = match[0]
+            files = []
+            for item in source_file_list['collections']:
+                if title == item['title']:
+                    files = item['files']
+                    break
+            if score >= collection_threshold:
+                matched_collections['matched_media'].append({
+                    "title": title,
+                    "year": None,
+                    "files": files,
+                    "score": score,
+                    "folder": collection,
+                })
+            elif score >= collection_threshold - 10:
+                almost_matched['almost_matched'].append({
+                    "title": title,
+                    "year": None,
+                    "files": files,
+                    "score": score,
+                    "folder": collection,
+                })
     logger.debug(f"Matched collections: {json.dumps(matched_collections, ensure_ascii=False, indent=4)}")
     logger.debug(f"Almost matched collections: {json.dumps(almost_matched, ensure_ascii=False, indent=4)}")
     return matched_collections
 
-def match_media(media, source_file_list, threshold):
-    matched_media = {}
-    almost_matched = {}
-    not_matched = {}  
+def match_media(media, source_file_list, threshold, type):
+    matched_media = {"matched_media": []}
+    almost_matched = {"almost_matched": []}
+    not_matched = {"not_matched": []}
     for item in tqdm(media, desc="Matching media", total=len(media)):
         title = item['title']
         title = year_regex.sub('', title)
+        year_from_title = year_regex.search(item['title'])
         title = illegal_chars_regex.sub('', title)
         title = unidecode(title)
-        year = item['year']
+        title = title.rstrip()
+        if year_from_title:
+            year = int(year_from_title.group(0)[1:-1])
+        else:
+            year = item['year']
         path = item['path']
         folder = os.path.basename(os.path.normpath(path))
         folder_without_year = year_regex.sub('', folder)
-        title_match = process.extractOne(title, source_file_list.keys(), scorer=scorer)
-        path_match = process.extractOne(folder_without_year, source_file_list.keys(), scorer=scorer)
+        title_match = process.extractOne(title, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
+        path_match = process.extractOne(folder_without_year, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
         if title_match and path_match:
-            if title_match[1] >= path_match[1]:
+            if title_match >= path_match:
                 best_match = title_match
             else:
                 best_match = path_match
@@ -108,32 +127,58 @@ def match_media(media, source_file_list, threshold):
             best_match = path_match
         else:
             best_match = None
-        if best_match and best_match[1] >= threshold:
-            source_file_list_year = source_file_list[best_match[0]]['year']
-            if source_file_list_year == year:
-                matched_media[folder] = {'files': source_file_list[best_match[0]]['files'], 'score': best_match[1]}
-        elif best_match and threshold - 5 <= best_match[1] < threshold:
-            source_file_list_year = source_file_list[best_match[0]]['year']
-            if source_file_list_year == year:
-                almost_matched[folder] = {'files': source_file_list[best_match[0]]['files'], 'score': best_match[1]}
-        elif best_match and threshold - 10 <= best_match[1] < threshold:
-            not_matched[folder] = {'files': source_file_list[best_match[0]]['files'], 'score': best_match[1]}
-    logger.debug(f"Not matched media: {json.dumps(not_matched, ensure_ascii=False, indent=4)}")
+        if best_match:
+            match_year = None
+            match_title = best_match[0]
+            score = best_match[1]
+            files = []
+            for item in source_file_list[type]:
+                if title == item['title']:
+                    match_year = item['year']
+                    files = item['files']
+                    break
+            if score >= threshold and year == match_year:
+                matched_media['matched_media'].append({
+                    "title": match_title,
+                    "year": year,
+                    "files": files,
+                    "score": best_match,
+                    "folder": folder,
+                })
+            elif score >= threshold - 10 and year == match_year:
+                almost_matched['almost_matched'].append({
+                    "title": match_title,
+                    "year": year,
+                    "files": files,
+                    "score": best_match,
+                    "folder": folder,
+                })
+            else:
+                not_matched['not_matched'].append({
+                    "title": match_title,
+                    "year": year,
+                    "files": files,
+                    "score": best_match,
+                    "folder": folder,
+                })
     logger.debug(f"Matched media: {json.dumps(matched_media, ensure_ascii=False, indent=4)}")
     logger.debug(f"Almost matched media: {json.dumps(almost_matched, ensure_ascii=False, indent=4)}")
+    logger.debug(f"Not matched media: {json.dumps(not_matched, ensure_ascii=False, indent=4)}")
     return matched_media
 
 def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type, print_only_renames):
     messages = []
     asset_folders = config.asset_folders
-    for media in tqdm(matched_media, desc="Renaming files", total=len(matched_media)):
+    for media in tqdm(matched_media['matched_media'], desc="Renaming files", total=len(matched_media['matched_media'])):
+        files = media['files']
+        folder = media['folder']
         if asset_folders:
             if dry_run:
-                logger.info(f"Would create asset folder: {media} at {destination_dir}")
+                logger.info(f"Would create asset folder: {folder} at {destination_dir}")
             else:
-                logger.info(f"Creating asset folder: {media} at {destination_dir}")
+                logger.info(f"Creating asset folder: {folder} at {destination_dir}")
                 os.makedirs(os.path.join(destination_dir, media), exist_ok=True)
-        for file in matched_media[media]['files']:
+        for file in files:
             source_file_path = os.path.join(source_dir, file)
             file_extension = os.path.splitext(file)[1]
             old_file_name = file
@@ -145,19 +190,19 @@ def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type
                     if asset_folders:
                         new_file_name = f"Season{season_number}{file_extension}"
                     else:
-                        new_file_name = f"{media}_Season{season_number}{file_extension}"
+                        new_file_name = f"{folder}_Season{season_number}{file_extension}"
                 elif season_number := re.search(r"Season (\d\d)", file):
                     if asset_folders:
                         season_number = season_number.group(1)
                         new_file_name = f"Season{season_number}{file_extension}"
                     else:
                         season_number = season_number.group(1)
-                        new_file_name = f"{media}_Season{season_number}{file_extension}"
+                        new_file_name = f"{folder}_Season{season_number}{file_extension}"
                 elif " - Specials" in file:
                     if asset_folders:
                         new_file_name = f"Season00{file_extension}"
                     else:
-                        new_file_name = f"{media}_Season00{file_extension}"
+                        new_file_name = f"{folder}_Season00{file_extension}"
                 elif "_Season" in file:
                     new_file_name = file
                 else:
@@ -167,14 +212,31 @@ def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type
                 if asset_folders:
                     new_file_name = f"poster{file_extension}"
                 else:
-                    new_file_name = f"{media}{file_extension}"
+                    new_file_name = f"{folder}{file_extension}"
             if asset_folders:
                 destination_file_path = os.path.join(destination_dir, media, new_file_name)
             else:
                 destination_file_path = os.path.join(destination_dir, new_file_name)
             if new_file_name != old_file_name:
                 if dry_run:
-                    messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
+                    if action_type == 'copy':
+                        if os.path.isfile(destination_file_path):
+                            if filecmp.cmp(source_file_path, destination_file_path):
+                                pass
+                            else:
+                                messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
+                        else:
+                            messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
+                    if action_type == 'hardlink':
+                        if os.path.isfile(destination_file_path):
+                            if filecmp.cmp(source_file_path, destination_file_path):
+                                pass
+                            else:
+                                messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
+                        else:
+                            messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
+                    elif action_type == 'move':
+                        messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
                 else:
                     if action_type == 'copy':
                         try:
@@ -215,7 +277,24 @@ def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type
             else:
                 if not print_only_renames:
                     if dry_run:
-                        messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -->> {new_file_name}")
+                        if action_type == 'copy':
+                            if os.path.isfile(destination_file_path):
+                                if filecmp.cmp(source_file_path, destination_file_path):
+                                    pass
+                                else:
+                                    messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
+                            else:
+                                messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
+                        if action_type == 'hardlink':
+                            if os.path.isfile(destination_file_path):
+                                if filecmp.cmp(source_file_path, destination_file_path):
+                                    pass
+                                else:
+                                    messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
+                            else:
+                                messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
+                        elif action_type == 'move':
+                            messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
                     else:
                         if action_type == 'copy':
                             try:
@@ -256,9 +335,10 @@ def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type
     return messages 
 
 def get_assets_files(assets_path):
-    series = {}
-    movies = {}
-    collections = {}
+    asset_files = {}
+    series = {"series": []}
+    movies = {"movies":[]}
+    collections = {"collections": []}
     try:
         print("Getting assets files..., this may take a while.")
         files = os.listdir(assets_path)
@@ -274,82 +354,98 @@ def get_assets_files(assets_path):
             continue
         base_name, extension = os.path.splitext(file)
         if not re.search(r'\(\d{4}\)', base_name):
-            collections[base_name] = {'year': None, 'files': []}
-            collections[base_name]['files'].append(file)
+            collection = {
+                "title": base_name,
+                "year": None,
+                "files": []
+            }
+            collection['files'].append(file)
+            collections['collections'].append(collection)
         else:
             match = re.search(r'\((\d{4})\)', base_name)
             year = int(match.group(1)) if match else None
             title = base_name.replace(f'({year})', '').strip()
             title = unidecode(title)
             if any(title in file and any(season_name in file for season_name in season_name_info) for file in files):
-                if title in series:
-                    series[title]['files'].append(file)
+                for show_name in series['series']:
+                    if title == show_name['title'] and year == show_name['year']:
+                        show_name['files'].append(file)
+                        break
                 else:
-                    series[title] = {'year': year, 'files': []}
-                    series[title]['files'].append(file)
+                    show = {
+                        "title": title,
+                        "year": year,
+                        "files": []
+                    }
+                    show['files'].append(file)
+                    series['series'].append(show)
             elif any(word in file for word in season_name_info):
                 title_without_series_info = title
                 for season_name in season_name_info:
                     if season_name in file:
                         title_without_series_info = title.split(season_name)[0].strip()
-                if title_without_series_info in series:
-                    series[title_without_series_info]['files'].append(file)
+                for show_name in series['series']:
+                    if title_without_series_info == show_name['title'] and year == show_name['year']:
+                        show_name['files'].append(file)
+                        break
                 else:
-                    series[title_without_series_info] = {'year': year, 'files': []}
-                    series[title_without_series_info]['files'].append(file)
+                    show = {
+                        "title": title_without_series_info,
+                        "year": year,
+                        "files": []
+                    }
+                    show['files'].append(file)
+                    series['series'].append(show)
             else:
-                movies[title] = {'year': year, 'files': []}
-                movies[title]['files'].append(file)
+                movie = {
+                    "title": title,
+                    "year": year,
+                    "files": []
+                }
+                movie['files'].append(file)
+                movies['movies'].append(movie)
     collections = dict(sorted(collections.items()))
     movies = dict(sorted(movies.items()))
     series = dict(sorted(series.items()))
-    logger.debug(f"collections: {json.dumps(collections, indent=4)}")
-    logger.debug(f"movies: {json.dumps(movies, indent=4)}")
-    logger.debug(f"series: {json.dumps(series, indent=4)}")
-    return series, collections, movies
+    asset_files.update(collections)
+    asset_files.update(movies)
+    asset_files.update(series)
+    logger.debug(json.dumps(asset_files, indent=4))
+    return asset_files
 
-def process_instance(instance_type, instance_name, url, api, final_output, asset_series, asset_collections, asset_movies):
+def process_instance(instance_type, instance_name, url, api, final_output, asset_files):
     source_file_list = []
     collections = []
     media = []
     collection_names = []
-    try:
-        if instance_type == "Plex":
-            if config.library_names:
-                app = PlexServer(url, api)
-                source_file_list = asset_collections
-                for library_name in config.library_names:
-                    library = app.library.section(library_name)
-                    collections += library.collections()
-                collection_names = [collection.title for collection in collections if collection.smart != True]
-            else:
-                message = f"Error: No library names specified for {instance_name}"
-                final_output.append(message)
-                return final_output
-        else: 
-            app = StARR(url, api, logger)
-            media = app.get_media()
-            if instance_type == "Radarr":
-                source_file_list = asset_movies
-            elif instance_type == "Sonarr":
-                source_file_list = asset_series
-        # logger.debug(f"source_file_list: {json.dumps(source_file_list, ensure_ascii=False, indent=4)}")
-        matched_media = []
-        if instance_type == "Plex":
-            matched_media = match_collection(collection_names, source_file_list, config.collection_threshold)
-        elif instance_type == "Radarr" or instance_type == "Sonarr":
-            matched_media = match_media(media, source_file_list, config.movies_threshold)
-        if matched_media:
-            message = rename_file(matched_media, config.destination_dir, config.source_dir, config.dry_run, config.action_type, config.print_only_renames)
-            final_output.extend(message)
+    if instance_type == "Plex":
+        if config.library_names:
+            app = PlexServer(url, api)
+            for library_name in config.library_names:
+                library = app.library.section(library_name)
+                collections += library.collections()
+            collection_names = [collection.title for collection in collections if collection.smart != True]
         else:
-            message = f"No matches found for {instance_name}"
+            message = f"Error: No library names specified for {instance_name}"
             final_output.append(message)
-        return final_output
-    except Exception as e:
-        exc_type, exc_obj, exc_tb = sys.exc_info()
-        final_output.append(f"Error processing {instance_name}: {e} on line {exc_tb.tb_lineno if exc_tb else None}")
-        return final_output
+            return final_output
+    else: 
+        app = StARR(url, api, logger)
+        media = app.get_media()
+    matched_media = []
+    if instance_type == "Plex":
+        matched_media = match_collection(collection_names, asset_files, config.collection_threshold)
+    elif instance_type == "Radarr":
+        matched_media = match_media(media, asset_files, config.movies_threshold, "movies")
+    elif instance_type == "Sonarr":
+        matched_media = match_media(media, asset_files, config.series_threshold, "series")
+    if matched_media:
+        message = rename_file(matched_media, config.destination_dir, config.source_dir, config.dry_run, config.action_type, config.print_only_renames)
+        final_output.extend(message)
+    else:
+        message = f"No matches found for {instance_name}"
+        final_output.append(message)
+    return final_output
     
 def print_output(final_output):
     if final_output:
@@ -383,7 +479,7 @@ def main():
         logger.info(f'* {" NO CHANGES WILL BE MADE ":^36} *')
         logger.info('*' * 40)
         logger.info('')
-    asset_series, asset_collections, asset_movies = get_assets_files(config.source_dir)
+    asset_files = get_assets_files(config.source_dir)
     instance_data = {
         'Plex': config.plex_data,
         'Radarr': config.radarr_data,
@@ -415,7 +511,7 @@ def main():
                 logger.debug(f"Instance Name: {instance_name}")
                 logger.debug(f"URL: {url}")
                 logger.debug(f"API Key: {'<redacted>' if api else 'None'}")
-                final_output = process_instance(instance_type, instance_name, url, api, final_output, asset_series, asset_collections, asset_movies)
+                final_output = process_instance(instance_type, instance_name, url, api, final_output, asset_files)
                 print_output(final_output)
                 permissions = 0o777
                 os.chmod(config.destination_dir, permissions)

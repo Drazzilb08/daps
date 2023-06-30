@@ -177,7 +177,7 @@ def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type
                 logger.info(f"Would create asset folder: {folder} at {destination_dir}")
             else:
                 logger.info(f"Creating asset folder: {folder} at {destination_dir}")
-                os.makedirs(os.path.join(destination_dir, media), exist_ok=True)
+                os.makedirs(os.path.join(destination_dir, folder), exist_ok=True)
         for file in files:
             source_file_path = os.path.join(source_dir, file)
             file_extension = os.path.splitext(file)[1]
@@ -214,7 +214,7 @@ def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type
                 else:
                     new_file_name = f"{folder}{file_extension}"
             if asset_folders:
-                destination_file_path = os.path.join(destination_dir, media, new_file_name)
+                destination_file_path = os.path.join(destination_dir, folder, new_file_name)
             else:
                 destination_file_path = os.path.join(destination_dir, new_file_name)
             if new_file_name != old_file_name:

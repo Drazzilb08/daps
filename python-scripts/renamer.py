@@ -31,7 +31,7 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.3.6
+# Version: 4.3.7
 # License: MIT License
 # ===================================================================================================
 
@@ -67,13 +67,26 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
     almost_matched = {"almost_matched": []}
     for collection in tqdm(plex_collections, desc="Matching collections", total=len(plex_collections)):
         match = process.extractOne(collection, [item['title'] for item in source_file_list['collections']], scorer=fuzz.ratio)
+        match_without = process.extractOne(collection, [re.sub(r' Collection', '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio)
+        if match and match_without:
+            if match[1] >= match_without[1]:
+                best_match = match
+            else:
+                best_match = match_without
+        elif match:
+            best_match = match
+        elif match_without:
+            best_match = match_without
+        else:
+            best_match = None
         collection = illegal_chars_regex.sub('', collection)
-        if match:
-            score = match[1]
-            title = match[0]
+        if best_match:
+            score = best_match[1]
+            title = best_match[0]
+
             for item in source_file_list['collections']:
                 files = item['files']
-                if score >= collection_threshold and title == item['title']:
+                if score >= collection_threshold and (title == item['title'] or title == item['title'].replace(' Collection', '')):
                     matched_collections['matched_media'].append({
                         "title": title,
                         "year": None,
@@ -82,7 +95,7 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
                         "folder": collection,
                     })
                     break
-                elif score >= collection_threshold - 10 and score < collection_threshold and title == item['title']:
+                elif score >= collection_threshold - 10 and score < collection_threshold and title == item['title'] or title == item['title'].replace(' Collection', ''):
                     files = item['files']
                     almost_matched['almost_matched'].append({
                         "title": title,

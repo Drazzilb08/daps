@@ -31,7 +31,7 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.3.5
+# Version: 4.3.6
 # License: MIT License
 # ===================================================================================================
 
@@ -53,7 +53,7 @@ import re
 
 config = Config(script_name="renamer")
 logger = setup_logger(config.log_level, "renamer")
-year_regex = re.compile(r"\((19|20)\d{2}\)")
+year_regex = re.compile(r"\((19|20)\d{2}\).*")
 illegal_chars_regex = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')
 
 season_name_info = [
@@ -71,27 +71,27 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
         if match:
             score = match[1]
             title = match[0]
-            files = []
             for item in source_file_list['collections']:
-                if title == item['title']:
-                    files = item['files']
+                files = item['files']
+                if score >= collection_threshold and title == item['title']:
+                    matched_collections['matched_media'].append({
+                        "title": title,
+                        "year": None,
+                        "files": files,
+                        "score": score,
+                        "folder": collection,
+                    })
                     break
-            if score >= collection_threshold:
-                matched_collections['matched_media'].append({
-                    "title": title,
-                    "year": None,
-                    "files": files,
-                    "score": score,
-                    "folder": collection,
-                })
-            elif score >= collection_threshold - 10:
-                almost_matched['almost_matched'].append({
-                    "title": title,
-                    "year": None,
-                    "files": files,
-                    "score": score,
-                    "folder": collection,
-                })
+                elif score >= collection_threshold - 10 and score < collection_threshold and title == item['title']:
+                    files = item['files']
+                    almost_matched['almost_matched'].append({
+                        "title": title,
+                        "year": None,
+                        "files": files,
+                        "score": score,
+                        "folder": collection,
+                    })
+                    break
     logger.debug(f"Matched collections: {json.dumps(matched_collections, ensure_ascii=False, indent=4)}")
     logger.debug(f"Almost matched collections: {json.dumps(almost_matched, ensure_ascii=False, indent=4)}")
     return matched_collections
@@ -112,11 +112,11 @@ def match_media(media, source_file_list, threshold, type):
             year = item['year']
         path = item['path']
         folder = os.path.basename(os.path.normpath(path))
-        folder_without_year = year_regex.sub('', folder).rstrip()
+        folder_without_year = re.sub(year_regex, '', folder)
         title_match = process.extractOne(title, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
         path_match = process.extractOne(folder_without_year, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
         if title_match and path_match:
-            if title_match >= path_match:
+            if title_match[1] >= path_match[1]:
                 best_match = title_match
             else:
                 best_match = path_match
@@ -143,7 +143,7 @@ def match_media(media, source_file_list, threshold, type):
                         "folder": folder,
                     })
                     break
-                elif score >= threshold - 10 and match_title == i['title'] and year == match_year:
+                elif score >= threshold - 10 and score < threshold and match_title == i['title'] and year == match_year:
                     almost_matched['almost_matched'].append({
                         "title": match_title,
                         "year": match_year,

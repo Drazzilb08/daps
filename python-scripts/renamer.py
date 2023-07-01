@@ -95,7 +95,7 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
                         "folder": collection,
                     })
                     break
-                elif score >= collection_threshold - 10 and score < collection_threshold and title == item['title'] or title == item['title'].replace(' Collection', ''):
+                elif score >= collection_threshold - 10 and score < collection_threshold and (title == item['title'] or title == item['title'].replace(' Collection', '')):
                     files = item['files']
                     almost_matched['almost_matched'].append({
                         "title": title,

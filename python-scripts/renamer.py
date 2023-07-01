@@ -31,7 +31,7 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.3.3
+# Version: 4.3.4
 # License: MIT License
 # ===================================================================================================
 
@@ -99,7 +99,6 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
 def match_media(media, source_file_list, threshold, type):
     matched_media = {"matched_media": []}
     almost_matched = {"almost_matched": []}
-    not_matched = {"not_matched": []}
     for item in tqdm(media, desc="Matching media", total=len(media)):
         title = item['title']
         title = year_regex.sub('', title)
@@ -113,7 +112,7 @@ def match_media(media, source_file_list, threshold, type):
             year = item['year']
         path = item['path']
         folder = os.path.basename(os.path.normpath(path))
-        folder_without_year = year_regex.sub('', folder)
+        folder_without_year = year_regex.sub('', folder).rstrip()
         title_match = process.extractOne(title, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
         path_match = process.extractOne(folder_without_year, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
         if title_match and path_match:
@@ -132,38 +131,30 @@ def match_media(media, source_file_list, threshold, type):
             match_title = best_match[0]
             score = best_match[1]
             files = []
-            for item in source_file_list[type]:
-                if title == item['title'] and year == item['year']:
-                    match_year = item['year']
-                    files = item['files']
+            for i in source_file_list[type]:
+                match_year = i['year']
+                if score >= threshold and year == match_year:
+                    files = i['files']
+                    matched_media['matched_media'].append({
+                        "title": match_title,
+                        "year": match_year,
+                        "files": files,
+                        "score": best_match,
+                        "folder": folder,
+                    })
                     break
-            if score >= threshold and year == match_year:
-                matched_media['matched_media'].append({
-                    "title": match_title,
-                    "year": match_year,
-                    "files": files,
-                    "score": best_match,
-                    "folder": folder,
-                })
-            elif score >= threshold - 10 and year == match_year:
-                almost_matched['almost_matched'].append({
-                    "title": match_title,
-                    "year": match_year,
-                    "files": files,
-                    "score": best_match,
-                    "folder": folder,
-                })
-            else:
-                not_matched['not_matched'].append({
-                    "title": match_title,
-                    "year": match_year,
-                    "files": files,
-                    "score": best_match,
-                    "folder": folder,
-                })
+                elif score >= threshold - 10 and year == match_year:
+                    files = i['files']
+                    almost_matched['almost_matched'].append({
+                        "title": match_title,
+                        "year": match_year,
+                        "files": files,
+                        "score": best_match,
+                        "folder": folder,
+                    })
+                    break
     logger.debug(f"Matched media: {json.dumps(matched_media, ensure_ascii=False, indent=4)}")
     logger.debug(f"Almost matched media: {json.dumps(almost_matched, ensure_ascii=False, indent=4)}")
-    logger.debug(f"Not matched media: {json.dumps(not_matched, ensure_ascii=False, indent=4)}")
     return matched_media
 
 def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type, print_only_renames):
@@ -366,7 +357,7 @@ def get_assets_files(assets_path):
             year = int(match.group(1)) if match else None
             title = base_name.replace(f'({year})', '').strip()
             title = unidecode(title)
-            if any(title in file and any(season_name in file for season_name in season_name_info) for file in files):
+            if any(title in file and any(season_name in file for season_name in season_name_info) and str(year) in file for file in files):
                 for show_name in series['series']:
                     if title == show_name['title'] and year == show_name['year']:
                         show_name['files'].append(file)

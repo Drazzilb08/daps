@@ -11,7 +11,7 @@
 # Description: A script to upgrade Sonarr/Radarr libraries to the keep in line with trash-guides
 # Usage: python3 /path/to/upgradinatorr.py
 # Requirements: requests, pyyaml
-# Version: 2.0.4
+# Version: 2.0.5
 # License: MIT License
 # ===================================================================================================
 
@@ -144,6 +144,8 @@ def main():
                     unattended = data['unattended']
                     monitored = data['monitored']
                     status = data['status']
+                    if not status:
+                        status = "all"
             elif instance_type == "Sonarr" and config.sonarr:
                 data = next((data for data in config.sonarr if data['name'] == instance_name), None)
                 if data:

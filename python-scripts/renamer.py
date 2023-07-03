@@ -31,7 +31,7 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.3.7
+# Version: 4.3.8
 # License: MIT License
 # ===================================================================================================
 
@@ -65,6 +65,7 @@ season_name_info = [
 def match_collection(plex_collections, source_file_list, collection_threshold):
     matched_collections = {"matched_media": []}
     almost_matched = {"almost_matched": []}
+    not_matched = {"not_matched": []}
     for collection in tqdm(plex_collections, desc="Matching collections", total=len(plex_collections)):
         match = process.extractOne(collection, [item['title'] for item in source_file_list['collections']], scorer=fuzz.ratio)
         match_without = process.extractOne(collection, [re.sub(r' Collection', '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio)
@@ -105,6 +106,11 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
                         "folder": collection,
                     })
                     break
+                else:
+                    not_matched['not_matched'].append(collection)
+        else:
+            not_matched['not_matched'].append(collection)
+    logger.debug(f"Not matched collections: {json.dumps(not_matched, ensure_ascii=False, indent=4)}")
     logger.debug(f"Matched collections: {json.dumps(matched_collections, ensure_ascii=False, indent=4)}")
     logger.debug(f"Almost matched collections: {json.dumps(almost_matched, ensure_ascii=False, indent=4)}")
     return matched_collections
@@ -112,6 +118,7 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
 def match_media(media, source_file_list, threshold, type):
     matched_media = {"matched_media": []}
     almost_matched = {"almost_matched": []}
+    not_matched = {"not_matched": []}
     for item in tqdm(media, desc="Matching media", total=len(media)):
         title = item['title']
         title = year_regex.sub('', title)
@@ -139,6 +146,7 @@ def match_media(media, source_file_list, threshold, type):
             best_match = path_match
         else:
             best_match = None
+        
         if best_match:
             match_year = None
             match_title = best_match[0]
@@ -165,8 +173,29 @@ def match_media(media, source_file_list, threshold, type):
                         "folder": folder,
                     })
                     break
+                else:
+                    year_int = None
+                    year_int = isinstance(year, int)
+                    not_matched['not_matched'].append({
+                        "title": f'{title}',
+                        "year": year,
+                        "year_int": year_int,
+                        "path": path,
+                        "folder": folder,
+                    })
+        else:
+            year_int = None
+            year_int = isinstance(year, int)
+            not_matched['not_matched'].append({
+                "title": f'{title}',
+                "year": year,
+                "year_int": year_int,
+                "path": path,
+                "folder": folder,
+            })
     logger.debug(f"Matched media: {json.dumps(matched_media, ensure_ascii=False, indent=4)}")
     logger.debug(f"Almost matched media: {json.dumps(almost_matched, ensure_ascii=False, indent=4)}")
+    logger.debug(f"Not matched media: {json.dumps(not_matched, ensure_ascii=False, indent=4)}")
     return matched_media
 
 def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type, print_only_renames):

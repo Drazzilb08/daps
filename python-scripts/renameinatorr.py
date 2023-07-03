@@ -77,9 +77,13 @@ def print_format(items, instance_type, dry_run, total_count, tagged_percent, unt
                     if current_season != season_number:
                         current_season = season_number
                         logger.info(f"\tSeason {season_number:02d}:")
-                    logger.info(f"\t\t{existing_path.split('/')[-1]} {renamed} {new_path.split('/')[-1]}")
+                    logger.info(f"\t\t{existing_path.split('/')[-1]} {renamed}")
+                    logger.info(f"\t\t{new_path.split('/')[-1]}")
+                    logger.info(f"")
             if instance_type == "radarr":
-                logger.info(f"\t{existing_path.split('/')[-1]} {renamed} {rename_item['newPath'].split('/')[-1]}")
+                logger.info(f"\t{existing_path.split('/')[-1]} {renamed}")
+                logger.info(f"\t{new_path.split('/')[-1]}")
+                logger.info(f"")
     if total_count > 0:
         tagged_percent = (tagged_count / total_count) * 100
         untagged_percent = (untagged_count / total_count) * 100

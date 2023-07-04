@@ -17,7 +17,7 @@
 #         main series poster requires seasonal posters to be present. If you have a series that does
 #         not have a seasonal poster then it will not match the series poster.
 #  Requirements: requests
-#  Version: 4.1.2
+#  Version: 4.1.3
 #  License: MIT License
 # ===========================================================================================================
 
@@ -214,8 +214,10 @@ def match_assets(asset_series, asset_movies, media_movies, media_series, plex_co
 
     for series in tqdm(media_series['series'], desc='Matching series', total=len(media_series['series'])):
         asset_found = False
+        media_title  = re.sub(r'\(\d{4}\)|\W+', '', unidecode(series['title'])).strip()
         for asset in asset_series['series']:
-            if unidecode(series['title']) == unidecode(asset['title']):
+            asset_title = re.sub(r'\(\d{4}\)|\W+', '', unidecode(asset['title'])).strip()
+            if asset_title == media_title:
                 asset_found = True
                 missing_seasons = [
                     season for season in series['season_number'] if season not in asset['season_number']]
@@ -237,8 +239,10 @@ def match_assets(asset_series, asset_movies, media_movies, media_series, plex_co
 
     for media_movie in tqdm(media_movies['movies'], desc='Matching movies', total=len(media_movies['movies'])):
         asset_found = False
+        media_title = re.sub(r'\(\d{4}\)|\W+', '', unidecode(media_movie['title'])).strip()
         for asset in asset_movies['movies']:
-            if unidecode(media_movie['title']) == unidecode(asset['title']):
+            asset_title = re.sub(r'\(\d{4}\)|\W+', '', unidecode(asset['title'])).strip()
+            if media_title == asset_title:
                 asset_found = True
                 break
         if not asset_found:
@@ -260,8 +264,7 @@ def match_assets(asset_series, asset_movies, media_movies, media_series, plex_co
     logger.debug("Unmatched Assets:")
     logger.debug(json.dumps(unmatched_series, ensure_ascii=False, indent=4))
     logger.debug(json.dumps(unmatched_movies, ensure_ascii=False, indent=4))
-    logger.debug(json.dumps(unmatched_collections,
-                 ensure_ascii=False, indent=4))
+    logger.debug(json.dumps(unmatched_collections, ensure_ascii=False, indent=4))
 
     return unmatched_movies, unmatched_series, unmatched_collections
 
@@ -369,10 +372,8 @@ def main():
     for collection in collection_names:
         sanitized_collection = illegal_chars_regex.sub('', collection)
         dict_plex['collections'].append({'title': sanitized_collection})
-    unmatched_movies, unmatched_series, unmatched_collections = match_assets(
-        asset_series, asset_movies, media_movies, media_series, dict_plex, asset_collections)
-    print_output(unmatched_movies, unmatched_series,
-                 unmatched_collections, media_movies, media_series, dict_plex)
+    unmatched_movies, unmatched_series, unmatched_collections = match_assets(asset_series, asset_movies, media_movies, media_series, dict_plex, asset_collections)
+    print_output(unmatched_movies, unmatched_series, unmatched_collections, media_movies, media_series, dict_plex)
 
 
 if __name__ == "__main__":

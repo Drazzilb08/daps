@@ -106,10 +106,6 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
                         "folder": collection,
                     })
                     break
-                else:
-                    not_matched['not_matched'].append(collection)
-        else:
-            not_matched['not_matched'].append(collection)
     logger.debug(f"Not matched collections: {json.dumps(not_matched, ensure_ascii=False, indent=4)}")
     logger.debug(f"Matched collections: {json.dumps(matched_collections, ensure_ascii=False, indent=4)}")
     logger.debug(f"Almost matched collections: {json.dumps(almost_matched, ensure_ascii=False, indent=4)}")
@@ -173,26 +169,6 @@ def match_media(media, source_file_list, threshold, type):
                         "folder": folder,
                     })
                     break
-                else:
-                    year_int = None
-                    year_int = isinstance(year, int)
-                    not_matched['not_matched'].append({
-                        "title": f'{title}',
-                        "year": year,
-                        "year_int": year_int,
-                        "path": path,
-                        "folder": folder,
-                    })
-        else:
-            year_int = None
-            year_int = isinstance(year, int)
-            not_matched['not_matched'].append({
-                "title": f'{title}',
-                "year": year,
-                "year_int": year_int,
-                "path": path,
-                "folder": folder,
-            })
     logger.debug(f"Matched media: {json.dumps(matched_media, ensure_ascii=False, indent=4)}")
     logger.debug(f"Almost matched media: {json.dumps(almost_matched, ensure_ascii=False, indent=4)}")
     logger.debug(f"Not matched media: {json.dumps(not_matched, ensure_ascii=False, indent=4)}")

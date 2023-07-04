@@ -214,9 +214,9 @@ def match_assets(asset_series, asset_movies, media_movies, media_series, plex_co
 
     for series in tqdm(media_series['series'], desc='Matching series', total=len(media_series['series'])):
         asset_found = False
-        media_title  = re.sub(r'\(\d{4}\)|\W+', '', unidecode(series['title'])).strip()
+        media_title  = re.sub(r'\(\d{4}\)|\W+', '', unidecode(series['title']).replace('&', 'and')).strip()
         for asset in asset_series['series']:
-            asset_title = re.sub(r'\(\d{4}\)|\W+', '', unidecode(asset['title'])).strip()
+            asset_title = re.sub(r'\(\d{4}\)|\W+', '', unidecode(asset['title']).replace('&', 'and')).strip()
             if asset_title == media_title:
                 asset_found = True
                 missing_seasons = [
@@ -239,9 +239,9 @@ def match_assets(asset_series, asset_movies, media_movies, media_series, plex_co
 
     for media_movie in tqdm(media_movies['movies'], desc='Matching movies', total=len(media_movies['movies'])):
         asset_found = False
-        media_title = re.sub(r'\(\d{4}\)|\W+', '', unidecode(media_movie['title'])).strip()
+        media_title = re.sub(r'\(\d{4}\)|\W+', '', unidecode(media_movie['title']).replace('&', 'and')).strip()
         for asset in asset_movies['movies']:
-            asset_title = re.sub(r'\(\d{4}\)|\W+', '', unidecode(asset['title'])).strip()
+            asset_title = re.sub(r'\(\d{4}\)|\W+', '', unidecode(asset['title']).replace('&', 'and')).strip()
             if media_title == asset_title:
                 asset_found = True
                 break

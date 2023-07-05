@@ -31,7 +31,7 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.3.9
+# Version: 4.3.10
 # License: MIT License
 # ===================================================================================================
 
@@ -144,15 +144,16 @@ def match_media(media, source_file_list, threshold, type):
         folder = os.path.basename(os.path.normpath(path))
         folder_without_year = re.sub(year_regex, '', folder)
         title_match = process.extractOne(title, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
-        if alternate_titles and title_match:
-            for i in alternate_titles:
-                alternate_match = process.extractOne(i, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
-                if alternate_match:
-                    if alternate_match[1] > title_match[1]:
-                        title_match = alternate_match
-                        alternate_title = True
-                        break
         path_match = process.extractOne(folder_without_year, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
+        if title_match and path_match and title_match[1] < threshold and path_match[1] < threshold:
+            if alternate_titles:
+                for i in alternate_titles:
+                    alternate_match = process.extractOne(i, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
+                    if alternate_match:
+                        if alternate_match[1] > title_match[1]:
+                            title_match = alternate_match
+                            alternate_title = True
+                            break
         if title_match and path_match:
             if title_match[1] >= path_match[1]:
                 best_match = title_match
@@ -180,7 +181,6 @@ def match_media(media, source_file_list, threshold, type):
                         "files": files,
                         "score": best_match,
                         "alternate_title": alternate_title,
-                        "alternate_titles": alternate_titles,
                         "folder": folder,
                     })
                     break
@@ -191,7 +191,6 @@ def match_media(media, source_file_list, threshold, type):
                         "files": files,
                         "score": best_match,
                         "alternate_title": alternate_title,
-                        "alternate_titles": alternate_titles,
                         "folder": folder,
                     })
                     break

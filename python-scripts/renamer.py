@@ -521,9 +521,13 @@ def main():
                 logger.debug(f"API Key: {'<redacted>' if api else 'None'}")
                 final_output = process_instance(instance_type, instance_name, url, api, final_output, asset_files)
                 print_output(final_output)
-                permissions = 0o777
-                os.chmod(config.destination_dir, permissions)
-                os.chmod(config.source_dir, permissions)
+                try:
+                    permissions = 0o777
+                    os.chmod(config.destination_dir, permissions)
+                    os.chmod(config.source_dir, permissions)
+                except Exception as e:
+                    logger.error(e)
+                    pass
 
 if __name__ == "__main__":
     main()

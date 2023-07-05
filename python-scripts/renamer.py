@@ -31,7 +31,7 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.3.8
+# Version: 4.3.9
 # License: MIT License
 # ===================================================================================================
 
@@ -116,20 +116,42 @@ def match_media(media, source_file_list, threshold, type):
     almost_matched = {"almost_matched": []}
     not_matched = {"not_matched": []}
     for item in tqdm(media, desc="Matching media", total=len(media)):
+        alternate_title = False
+        alternate_titles = []
         title = item['title']
+        try:
+            if item['alternateTitles']:
+                for i in item['alternateTitles']:
+                    alternate_titles.append(i['title'])
+        except KeyError:
+            alternate_titles = []
         title = year_regex.sub('', title)
         year_from_title = year_regex.search(item['title'])
         title = illegal_chars_regex.sub('', title)
         title = unidecode(title)
         title = title.rstrip()
+        secondary_year = None
         if year_from_title:
             year = int(year_from_title.group(0)[1:-1])
         else:
             year = item['year']
+        try:
+            if item['secondaryYear']:
+                secondary_year = item['secondaryYear']
+        except KeyError:
+            secondary_year = None
         path = item['path']
         folder = os.path.basename(os.path.normpath(path))
         folder_without_year = re.sub(year_regex, '', folder)
         title_match = process.extractOne(title, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
+        if alternate_titles and title_match:
+            for i in alternate_titles:
+                alternate_match = process.extractOne(i, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
+                if alternate_match:
+                    if alternate_match[1] > title_match[1]:
+                        title_match = alternate_match
+                        alternate_title = True
+                        break
         path_match = process.extractOne(folder_without_year, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
         if title_match and path_match:
             if title_match[1] >= path_match[1]:
@@ -151,21 +173,25 @@ def match_media(media, source_file_list, threshold, type):
             for i in source_file_list[type]:
                 files = i['files']
                 match_year = i['year']
-                if score >= threshold and match_title == i['title'] and year == match_year:
+                if score >= threshold and match_title == i['title'] and (year == match_year or secondary_year == match_year):
                     matched_media['matched_media'].append({
                         "title": match_title,
                         "year": match_year,
                         "files": files,
                         "score": best_match,
+                        "alternate_title": alternate_title,
+                        "alternate_titles": alternate_titles,
                         "folder": folder,
                     })
                     break
-                elif score >= threshold - 10 and score < threshold and match_title == i['title'] and year == match_year:
+                elif score >= threshold - 10 and score < threshold and match_title == i['title'] and (year == match_year or secondary_year == match_year):
                     almost_matched['almost_matched'].append({
                         "title": match_title,
                         "year": match_year,
                         "files": files,
                         "score": best_match,
+                        "alternate_title": alternate_title,
+                        "alternate_titles": alternate_titles,
                         "folder": folder,
                     })
                     break
@@ -470,6 +496,7 @@ def main():
     logger.debug(f'{" Script Settings ":*^40}')
     logger.debug(f'Dry_run: {config.dry_run}')
     logger.debug(f"Log Level: {config.log_level}")
+    logger.debug(f"Asset folder: {config.asset_folders}")
     logger.debug(f"library_names: {config.library_names}")
     logger.debug(f"source_dir: {config.source_dir}")
     logger.debug(f"destination_dir: {config.destination_dir}")

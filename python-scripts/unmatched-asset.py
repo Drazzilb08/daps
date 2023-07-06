@@ -17,7 +17,7 @@
 #         main series poster requires seasonal posters to be present. If you have a series that does
 #         not have a seasonal poster then it will not match the series poster.
 #  Requirements: requests
-#  Version: 4.1.4
+#  Version: 4.1.5
 #  License: MIT License
 # ===========================================================================================================
 
@@ -95,13 +95,14 @@ def get_assets_files(assets_path):
                     'title': base_name
                 })
             else:
+                file_name = os.path.splitext(file)[0]
                 title = base_name
                 title = unidecode(title)
                 title_without_season_info = title
                 for season_info in season_name_info:
                     title_without_season_info = re.sub(
                         season_info + r'\d+', '', title_without_season_info)
-                if any(title_without_season_info in file and any(season_info in file for season_info in season_name_info) for file in files):
+                if any(file_name + season_name in file for season_name in season_name_info for file in files):
                     season_number = extract_season_info(base_name)
                     if season_number:
                         add_series(title_without_season_info, season_number)

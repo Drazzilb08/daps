@@ -31,7 +31,7 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.3.11
+# Version: 4.3.12
 # License: MIT License
 # ===================================================================================================
 
@@ -165,15 +165,13 @@ def match_media(media, source_file_list, threshold, type):
         folder_without_year = re.sub(year_regex, '', folder)
         title_match = process.extractOne(title, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
         path_match = process.extractOne(folder_without_year, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
-        if title_match and path_match and title_match[1] < threshold and path_match[1] < threshold:
-            if alternate_titles:
-                for i in alternate_titles:
-                    alternate_match = process.extractOne(i, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
-                    if alternate_match:
-                        if alternate_match[1] > title_match[1]:
-                            title_match = alternate_match
-                            alternate_title = True
-                            break
+        if title_match and path_match and title_match[1] < threshold and path_match[1] < threshold and alternate_titles:
+            for i in alternate_titles:
+                alternate_match = process.extractOne(i, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
+                if alternate_match and alternate_match[1] > title_match[1] and alternate_match[1] > path_match[1] and alternate_match[1] != title_match[1] and alternate_match[1] != path_match[1]:
+                    title_match = alternate_match
+                    alternate_title = True
+                    break
         if title_match and path_match:
             if title_match[1] >= path_match[1]:
                 best_match = title_match
@@ -421,7 +419,7 @@ def get_assets_files(assets_path):
             year = int(match.group(1)) if match else None
             title = base_name.replace(f'({year})', '').strip()
             title = unidecode(title)
-            if any(title in file and any(season_name in file for season_name in season_name_info) and str(year) in file for file in files):
+            if any(file.startswith(title) and any(season_name in file for season_name in season_name_info) and str(year) in file for file in files):
                 for show_name in series['series']:
                     if title == show_name['title'] and year == show_name['year']:
                         show_name['files'].append(file)

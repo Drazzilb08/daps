@@ -31,7 +31,7 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.3.13
+# Version: 4.3.14
 # License: MIT License
 # ===================================================================================================
 
@@ -163,27 +163,27 @@ def match_media(media, source_file_list, threshold, type):
         path = item['path']
         folder = os.path.basename(os.path.normpath(path))
         folder_without_year = re.sub(year_regex, '', folder)
-        title_match = process.extractOne(title, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
-        path_match = process.extractOne(folder_without_year, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
-        if title_match and path_match and title_match[1] < threshold and path_match[1] < threshold and alternate_titles:
+        matches = []
+        matches.append(process.extract(title, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio))
+        matches.append(process.extract(folder_without_year, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio))
+        best_match = None
+        for match in matches:
+            for i in match:
+                if best_match:
+                    if i[1] > best_match[1]:
+                        best_match = i
+                    elif i[1] == best_match[1]:
+                        if i[0] == title:
+                            best_match = i
+                else:
+                    best_match = i
+        if best_match and best_match[1] < threshold:
             for i in alternate_titles:
                 alternate_match = process.extractOne(i, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
-                if alternate_match and alternate_match[1] > title_match[1] and alternate_match[1] > path_match[1] and alternate_match[1] != title_match[1] and alternate_match[1] != path_match[1]:
-                    title_match = alternate_match
+                if alternate_match and best_match and alternate_match[1] > best_match[1]:
+                    best_match = alternate_match
                     alternate_title = True
                     break
-        if title_match and path_match:
-            if title_match[1] >= path_match[1]:
-                best_match = title_match
-            else:
-                best_match = path_match
-        elif title_match:
-            best_match = title_match
-        elif path_match:
-            best_match = path_match
-        else:
-            best_match = None
-        
         if best_match:
             match_year = None
             match_title = best_match[0]
@@ -568,13 +568,5 @@ def main():
                 logger.debug(f"API Key: {'<redacted>' if api else 'None'}")
                 final_output = process_instance(instance_type, instance_name, url, api, final_output, asset_files)
                 print_output(final_output)
-                try:
-                    permissions = 0o777
-                    os.chmod(config.destination_dir, permissions)
-                    os.chmod(config.source_dir, permissions)
-                except Exception as e:
-                    logger.error(e)
-                    pass
-
 if __name__ == "__main__":
     main()

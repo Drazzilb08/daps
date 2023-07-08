@@ -31,7 +31,7 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.3.14
+# Version: 4.3.15
 # License: MIT License
 # ===================================================================================================
 
@@ -227,9 +227,9 @@ def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type
         folder = media['folder']
         if asset_folders:
             if dry_run:
-                logger.info(f"Would create asset folder: {folder} at {destination_dir}")
+                messages.append(f"Would create asset folder: {folder} at {destination_dir}")
             else:
-                logger.info(f"Creating asset folder: {folder} at {destination_dir}")
+                messages.append(f"Creating asset folder: {folder} at {destination_dir}")
                 os.makedirs(os.path.join(destination_dir, folder), exist_ok=True)
         for file in files:
             source_file_path = os.path.join(source_dir, file)

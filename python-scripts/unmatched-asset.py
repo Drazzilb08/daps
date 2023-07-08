@@ -17,7 +17,7 @@
 #         main series poster requires seasonal posters to be present. If you have a series that does
 #         not have a seasonal poster then it will not match the series poster.
 #  Requirements: requests
-#  Version: 4.1.5
+#  Version: 4.1.6
 #  License: MIT License
 # ===========================================================================================================
 
@@ -346,9 +346,23 @@ def main():
     """
     url = None
     api_key = None
-    for data in config.plex_data:
-        api_key = data.get('api', '')
-        url = data.get('url', '')
+    app = None
+    library = None
+    logger.debug('*' * 40)
+    logger.debug(f'* {"Script Settings":^36} *')
+    logger.debug('*' * 40)
+    logger.debug(f'{"Log level:":<20}{config.log_level if config.log_level else "Not set"}')
+    logger.debug(f"{'Asset Folders: ':<20}{config.asset_folders if config.asset_folders else 'Not set'}")
+    logger.debug(f'{"Assets path:":<20}{config.assets_path if config.assets_path else "Not set"}')
+    logger.debug(f'{"Media paths:":<20}{config.media_paths if config.media_paths else "Not set"}')
+    logger.debug(f'{"Library names:":<20}{config.library_names if config.library_names else "Not set"}')
+    logger.debug(f'{"Ignore collections:":<20}{config.ignore_collections if config.ignore_collections else "Not set"}')
+    logger.debug('*' * 40)
+    logger.debug('')
+    if config.plex_data:
+        for data in config.plex_data:
+            api_key = data.get('api', '')
+            url = data.get('url', '')
     if config.library_names:
         app = PlexServer(url, api_key)
     else:
@@ -357,7 +371,7 @@ def main():
         config.assets_path)
     media_movies, media_series = get_media_folders(config.media_paths)
     collections = []
-    if config.library_names:
+    if config.library_names and app:
         for library_name in config.library_names:
             library = app.library.section(library_name)
             collections += library.collections()
@@ -366,9 +380,10 @@ def main():
             "No library names specified in config.yml. Skipping collections.")
     collection_names = [
         collection.title for collection in collections if collection.smart != True]
-    for collection in config.ignore_collections:
-        if collection in collection_names:
-            collection_names.remove(collection)
+    if config.ignore_collections:
+        for collection in config.ignore_collections:
+            if collection in collection_names:
+                collection_names.remove(collection)
     dict_plex = {'collections': []}
     for collection in collection_names:
         sanitized_collection = illegal_chars_regex.sub('', collection)

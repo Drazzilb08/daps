@@ -137,6 +137,7 @@ renamer:
 unmatched-assets:
   log_level: info
   # Optional: Add libraries you want the script to check for unmatched assets
+  asset_folders: false
   library_names:
     - Movies
     - Anime Movies

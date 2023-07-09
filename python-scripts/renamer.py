@@ -31,7 +31,7 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.3.17
+# Version: 4.3.18
 # License: MIT License
 # ===================================================================================================
 
@@ -439,7 +439,8 @@ def get_assets_files(assets_path):
             title = title.replace('&', 'and')
             if any(file.startswith(file_name) and any(file_name + season_name in file for season_name in season_name_info) for file in files):
                 for show_name in series['series']:
-                    if title_match == show_name['title'] and year == show_name['year']:
+                    title = re.sub(remove_special_chars, '', title)
+                    if title == show_name['title'] and year == show_name['year']:
                         show_name['files'].append(file)
                         break
                 else:
@@ -455,12 +456,13 @@ def get_assets_files(assets_path):
                 for season_name in season_name_info:
                     if season_name in file:
                         title = title.split(season_name)[0].strip()
-                        title = re.sub(remove_special_chars, '', title)
                 for show_name in series['series']:
+                    title = re.sub(remove_special_chars, '', title)
                     if title == show_name['title'] and year == show_name['year']:
                         show_name['files'].append(file)
                         break
                 else:
+                    title = re.sub(remove_special_chars, '', title)
                     show = {
                         "title": title,
                         "year": year,

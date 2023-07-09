@@ -17,7 +17,7 @@
 #         main series poster requires seasonal posters to be present. If you have a series that does
 #         not have a seasonal poster then it will not match the series poster.
 #  Requirements: requests
-#  Version: 4.1.6
+#  Version: 4.1.7
 #  License: MIT License
 # ===========================================================================================================
 
@@ -39,6 +39,7 @@ logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger('urllib3').setLevel(logging.WARNING)
 
 illegal_chars_regex = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')
+year_regex = re.compile(r"\((19|20)\d{2}\).*")
 
 season_name_info = [
     "_Season",
@@ -102,7 +103,7 @@ def get_assets_files(assets_path):
                 for season_info in season_name_info:
                     title_without_season_info = re.sub(
                         season_info + r'\d+', '', title_without_season_info)
-                if any(file_name + season_name in file for season_name in season_name_info for file in files):
+                if any(file.startswith(file_name) and any(file_name + season_name in file for season_name in season_name_info) for file in files):
                     season_number = extract_season_info(base_name)
                     if season_number:
                         add_series(title_without_season_info, season_number)
@@ -118,19 +119,18 @@ def get_assets_files(assets_path):
                     movies['movies'].append({'title': title})
     else:
         for root, dirs, files in os.walk(assets_path):
+            title = os.path.basename(root)
             if root == assets_path:
                 continue
             if not files:
                 continue
-            basename = os.path.basename(root)
-            if basename.startswith('.'):
+            if title.startswith('.'):
                 continue
-            if not re.search(r'\(\d{4}\)', basename):
+            if not re.search(year_regex, title):
                 collections['collections'].append({
-                    'title': basename
+                    'title': title
                 })
             else:
-                title = basename
                 if any(season_info in file for season_info in season_name_info for file in files):
                     series['series'].append({
                         'title': title,
@@ -352,7 +352,7 @@ def main():
     logger.debug(f'* {"Script Settings":^36} *')
     logger.debug('*' * 40)
     logger.debug(f'{"Log level:":<20}{config.log_level if config.log_level else "Not set"}')
-    logger.debug(f"{'Asset Folders: ':<20}{config.asset_folders if config.asset_folders else 'Not set'}")
+    logger.debug(f"{'Asset Folders: ':<20}{config.asset_folders}")
     logger.debug(f'{"Assets path:":<20}{config.assets_path if config.assets_path else "Not set"}')
     logger.debug(f'{"Media paths:":<20}{config.media_paths if config.media_paths else "Not set"}')
     logger.debug(f'{"Library names:":<20}{config.library_names if config.library_names else "Not set"}')

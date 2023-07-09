@@ -31,7 +31,7 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.3.15
+# Version: 4.3.16
 # License: MIT License
 # ===================================================================================================
 
@@ -47,6 +47,7 @@ import filecmp
 import shutil
 import errno
 import json
+import html
 import sys
 import os
 import re
@@ -55,6 +56,7 @@ config = Config(script_name="renamer")
 logger = setup_logger(config.log_level, "renamer")
 year_regex = re.compile(r"\((19|20)\d{2}\).*")
 illegal_chars_regex = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')
+remove_special_chars = re.compile(r'[^a-zA-Z0-9\sÆ^³]+')
 
 season_name_info = [
     " - Season",
@@ -71,31 +73,31 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
     not_matched = {"not_matched": []}
     for collection in tqdm(plex_collections, desc="Matching collections", total=len(plex_collections)):
         match = process.extractOne(collection, [item['title'] for item in source_file_list['collections']], scorer=fuzz.ratio)
-        match_without_collection = process.extractOne(collection, [re.sub(r' Collection', '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio)
-        match_without_the = process.extractOne(collection, [re.sub(r' The', '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio)
-        if match and match_without_collection and match_without_the:
-            if match[1] >= match_without_collection[1] and match[1] >= match_without_the[1]:
+        match_without_suffix = process.extractOne(collection, [re.sub(r' Collection', '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio)
+        match_without_prefix = process.extractOne(collection, [re.sub(r'^(A|An|The) ', '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio)
+        if match and match_without_suffix and match_without_prefix:
+            if match[1] >= match_without_suffix[1] and match[1] >= match_without_prefix[1]:
                 best_match = match
-            elif match_without_collection[1] >= match[1] and match_without_collection[1] >= match_without_the[1]:
-                best_match = match_without_collection
+            elif match_without_suffix[1] >= match[1] and match_without_suffix[1] >= match_without_prefix[1]:
+                best_match = match_without_suffix
             else:
-                best_match = match_without_the
-        elif match and match_without_collection:
-            if match[1] >= match_without_collection[1]:
-                best_match = match
-            else:
-                best_match = match_without_collection
-        elif match and match_without_the:
-            if match[1] >= match_without_the[1]:
+                best_match = match_without_prefix
+        elif match and match_without_suffix:
+            if match[1] >= match_without_suffix[1]:
                 best_match = match
             else:
-                best_match = match_without_the
+                best_match = match_without_suffix
+        elif match and match_without_prefix:
+            if match[1] >= match_without_prefix[1]:
+                best_match = match
+            else:
+                best_match = match_without_prefix
         elif match:
             best_match = match
-        elif match_without_collection:
-            best_match = match_without_collection
-        elif match_without_the:
-            best_match = match_without_the
+        elif match_without_suffix:
+            best_match = match_without_suffix
+        elif match_without_prefix:
+            best_match = match_without_prefix
         else:
             best_match = None
         collection = illegal_chars_regex.sub('', collection)
@@ -111,6 +113,7 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
                         "year": None,
                         "files": files,
                         "score": score,
+                        "best_match": best_match,
                         "folder": collection,
                     })
                     break
@@ -121,6 +124,7 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
                         "year": None,
                         "files": files,
                         "score": score,
+                        "best_match": best_match,
                         "folder": collection,
                     })
                     break
@@ -150,9 +154,15 @@ def match_media(media, source_file_list, threshold, type):
         title = title.rstrip()
         for word in words_to_remove:
             title = title.replace(word, '')
+        title = title.replace('&', 'and')
+        title = re.sub(remove_special_chars, '', title)
         secondary_year = None
         if year_from_title:
-            year = int(year_from_title.group(0)[1:-1])
+            try:
+                year = int(year_from_title.group(0)[1:-1])
+            except ValueError:
+                logger.error(f"Could not convert year to int: {year_from_title.group(0)[1:-1]} for {item['title']}")
+                continue
         else:
             year = item['year']
         try:
@@ -229,8 +239,9 @@ def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type
             if dry_run:
                 messages.append(f"Would create asset folder: {folder} at {destination_dir}")
             else:
-                messages.append(f"Creating asset folder: {folder} at {destination_dir}")
-                os.makedirs(os.path.join(destination_dir, folder), exist_ok=True)
+                if not os.path.exists(os.path.join(destination_dir, folder)):
+                    messages.append(f"Creating asset folder: {folder} at {destination_dir}")
+                    os.makedirs(os.path.join(destination_dir, folder), exist_ok=True)
         for file in files:
             source_file_path = os.path.join(source_dir, file)
             file_extension = os.path.splitext(file)[1]
@@ -419,8 +430,28 @@ def get_assets_files(assets_path):
             match = re.search(r'\((\d{4})\)', base_name)
             year = int(match.group(1)) if match else None
             title = base_name.replace(f'({year})', '').strip()
-            title = unidecode(title)
-            if any(file_name + season_name in file for season_name in season_name_info for file in files):
+            title = unidecode(html.unescape(title))
+            title_match = unidecode(title)
+            title = title.replace('&', 'and')
+            if any(file.startswith(file_name) and any(file_name + season_name in file for season_name in season_name_info) for file in files):
+                for show_name in series['series']:
+                    if title_match == show_name['title'] and year == show_name['year']:
+                        show_name['files'].append(file)
+                        break
+                else:
+                    title = re.sub(remove_special_chars, '', title)
+                    show = {
+                        "title": title,
+                        "year": year,
+                        "files": []
+                    }
+                    show['files'].append(file)
+                    series['series'].append(show)
+            elif any(word in file for word in season_name_info):
+                for season_name in season_name_info:
+                    if season_name in file:
+                        title = title.split(season_name)[0].strip()
+                        title = re.sub(remove_special_chars, '', title)
                 for show_name in series['series']:
                     if title == show_name['title'] and year == show_name['year']:
                         show_name['files'].append(file)
@@ -433,24 +464,8 @@ def get_assets_files(assets_path):
                     }
                     show['files'].append(file)
                     series['series'].append(show)
-            elif any(word in file for word in season_name_info):
-                title_without_series_info = title
-                for season_name in season_name_info:
-                    if season_name in file:
-                        title_without_series_info = title.split(season_name)[0].strip()
-                for show_name in series['series']:
-                    if title_without_series_info == show_name['title'] and year == show_name['year']:
-                        show_name['files'].append(file)
-                        break
-                else:
-                    show = {
-                        "title": title_without_series_info,
-                        "year": year,
-                        "files": []
-                    }
-                    show['files'].append(file)
-                    series['series'].append(show)
             else:
+                title = re.sub(remove_special_chars, '', title)
                 movie = {
                     "title": title,
                     "year": year,
@@ -468,7 +483,6 @@ def get_assets_files(assets_path):
     return asset_files
 
 def process_instance(instance_type, instance_name, url, api, final_output, asset_files):
-    source_file_list = []
     collections = []
     media = []
     collection_names = []

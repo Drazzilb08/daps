@@ -31,7 +31,7 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.3.16
+# Version: 4.3.17
 # License: MIT License
 # ===================================================================================================
 
@@ -205,7 +205,10 @@ def match_media(media, source_file_list, threshold, type):
                 if score >= threshold and match_title == i['title'] and (year == match_year or secondary_year == match_year):
                     matched_media['matched_media'].append({
                         "title": match_title,
+                        "arr_title": title,
                         "year": match_year,
+                        "arr_year": year,
+                        "secondaryYear": secondary_year,
                         "files": files,
                         "score": best_match,
                         "alternate_title": alternate_title,
@@ -218,6 +221,7 @@ def match_media(media, source_file_list, threshold, type):
                         "arr_title": title,
                         "year": match_year,
                         "arr_year": year,
+                        "secondaryYear": secondary_year,
                         "files": files,
                         "score": best_match,
                         "alternate_title": alternate_title,

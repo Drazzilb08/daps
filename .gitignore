@@ -159,3 +159,4 @@ logs/
 *config.yml
 *archives*
 tmp/
+bash-scripts/sync.sh

@@ -71,7 +71,7 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
     matched_collections = {"matched_media": []}
     almost_matched = {"almost_matched": []}
     not_matched = {"not_matched": []}
-    for collection in tqdm(plex_collections, desc="Matching collections", total=len(plex_collections)):
+    for collection in tqdm(plex_collections, desc="Matching collections", total=len(plex_collections), disable=None):
         match = process.extractOne(collection, [item['title'] for item in source_file_list['collections']], scorer=fuzz.ratio)
         match_without_suffix = process.extractOne(collection, [re.sub(r' Collection', '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio)
         match_without_prefix = process.extractOne(collection, [re.sub(r'^(A|An|The) ', '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio)
@@ -137,7 +137,7 @@ def match_media(media, source_file_list, threshold, type):
     matched_media = {"matched_media": []}
     almost_matched = {"almost_matched": []}
     not_matched = {"not_matched": []}
-    for item in tqdm(media, desc="Matching media", total=len(media)):
+    for item in tqdm(media, desc="Matching media", total=len(media), disable=None):
         alternate_title = False
         alternate_titles = []
         title = item['title']
@@ -236,7 +236,7 @@ def match_media(media, source_file_list, threshold, type):
 def rename_file(matched_media, destination_dir, source_dir, dry_run, action_type, print_only_renames):
     messages = []
     asset_folders = config.asset_folders
-    for media in tqdm(matched_media['matched_media'], desc="Renaming files", total=len(matched_media['matched_media'])):
+    for media in tqdm(matched_media['matched_media'], desc="Renaming files", total=len(matched_media['matched_media']), disable=None):
         files = media['files']
         folder = media['folder']
         if asset_folders:
@@ -417,7 +417,7 @@ def get_assets_files(assets_path):
         if exc_tb is not None:
             logger.error(f"Line number: {exc_tb.tb_lineno}")
         sys.exit(1)
-    for file in tqdm(files, desc=f'Sorting assets', total=len(files)):
+    for file in tqdm(files, desc=f'Sorting assets', total=len(files), disable=None):
         if file.startswith('.'):
             continue
         base_name, extension = os.path.splitext(file)

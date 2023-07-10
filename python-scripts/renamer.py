@@ -31,7 +31,7 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.3.18
+# Version: 4.3.19
 # License: MIT License
 # ===================================================================================================
 
@@ -56,7 +56,7 @@ config = Config(script_name="renamer")
 logger = setup_logger(config.log_level, "renamer")
 year_regex = re.compile(r"\((19|20)\d{2}\).*")
 illegal_chars_regex = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')
-remove_special_chars = re.compile(r'[^a-zA-Z0-9\sÆ^³]+')
+remove_special_chars = re.compile(r'[^a-zA-Z0-9\s]+')
 
 season_name_info = [
     " - Season",
@@ -72,9 +72,12 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
     almost_matched = {"almost_matched": []}
     not_matched = {"not_matched": []}
     for collection in tqdm(plex_collections, desc="Matching collections", total=len(plex_collections), disable=None):
-        match = process.extractOne(collection, [item['title'] for item in source_file_list['collections']], scorer=fuzz.ratio)
-        match_without_suffix = process.extractOne(collection, [re.sub(r' Collection', '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio)
-        match_without_prefix = process.extractOne(collection, [re.sub(r'^(A|An|The) ', '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio)
+        collection_match = unidecode(html.unescape(collection))
+        collection_match = collection.replace('&', 'and')
+        collection_match = re.sub(remove_special_chars, "", collection_match)
+        match = process.extractOne(collection_match, [item['title'] for item in source_file_list['collections']], scorer=fuzz.ratio)
+        match_without_suffix = process.extractOne(collection_match, [re.sub(r' Collection', '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio)
+        match_without_prefix = process.extractOne(collection_match, [re.sub(r'^(A|An|The) ', '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio)
         if match and match_without_suffix and match_without_prefix:
             if match[1] >= match_without_suffix[1] and match[1] >= match_without_prefix[1]:
                 best_match = match
@@ -110,6 +113,7 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
                 if score >= collection_threshold and (title == item['title'] or title == item['title'].replace(' Collection', '')):
                     matched_collections['matched_media'].append({
                         "title": title,
+                        "collection_match": collection_match,
                         "year": None,
                         "files": files,
                         "score": score,
@@ -121,6 +125,7 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
                     files = item['files']
                     almost_matched['almost_matched'].append({
                         "title": title,
+                        "collection_match": collection_match,
                         "year": None,
                         "files": files,
                         "score": score,
@@ -422,6 +427,9 @@ def get_assets_files(assets_path):
             continue
         base_name, extension = os.path.splitext(file)
         if not re.search(r'\(\d{4}\)', base_name):
+            base_name = unidecode(html.unescape(base_name))
+            base_name = base_name.replace('&', 'and')
+            base_name = re.sub(remove_special_chars, '', base_name)
             collection = {
                 "title": base_name,
                 "year": None,

@@ -17,7 +17,7 @@
 #         main series poster requires seasonal posters to be present. If you have a series that does
 #         not have a seasonal poster then it will not match the series poster.
 #  Requirements: requests
-#  Version: 4.1.7
+#  Version: 4.1.8
 #  License: MIT License
 # ===========================================================================================================
 
@@ -25,6 +25,7 @@ import os
 import re
 from pathlib import Path
 from plexapi.server import PlexServer
+from plexapi.exceptions import BadRequest
 from modules.logger import setup_logger
 from modules.config import Config
 import sys
@@ -373,13 +374,19 @@ def main():
     collections = []
     if config.library_names and app:
         for library_name in config.library_names:
-            library = app.library.section(library_name)
-            collections += library.collections()
+            try:
+                library = app.library.section(library_name)
+                logger.debug(library)
+                collections += library.collections()
+            except BadRequest:
+                logger.error(f"Library {library_name} not found.")
+                continue
     else:
         logger.info(
             "No library names specified in config.yml. Skipping collections.")
     collection_names = [
         collection.title for collection in collections if collection.smart != True]
+    logger.debug(json.dumps(collection_names, indent=4))
     if config.ignore_collections:
         for collection in config.ignore_collections:
             if collection in collection_names:

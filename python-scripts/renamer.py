@@ -31,12 +31,13 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 4.3.19
+# Version: 4.3.20
 # License: MIT License
 # ===================================================================================================
 
 from modules.logger import setup_logger
 from plexapi.server import PlexServer
+from plexapi.exceptions import BadRequest
 from modules.config import Config
 from modules.arrpy import StARR
 from unidecode import unidecode
@@ -443,7 +444,6 @@ def get_assets_files(assets_path):
             year = int(match.group(1)) if match else None
             title = base_name.replace(f'({year})', '').strip()
             title = unidecode(html.unescape(title))
-            title_match = unidecode(title)
             title = title.replace('&', 'and')
             if any(file.startswith(file_name) and any(file_name + season_name in file for season_name in season_name_info) for file in files):
                 for show_name in series['series']:
@@ -504,9 +504,14 @@ def process_instance(instance_type, instance_name, url, api, final_output, asset
         if config.library_names:
             app = PlexServer(url, api)
             for library_name in config.library_names:
-                library = app.library.section(library_name)
-                collections += library.collections()
+                try:
+                    library = app.library.section(library_name)
+                    logger.debug(f"Library: {library_name} found in {instance_name}")
+                    collections += library.collections()
+                except BadRequest:
+                    logger.error(f"Error: {library_name} does not exist in {instance_name}")
             collection_names = [collection.title for collection in collections if collection.smart != True]
+            logger.debug(json.dumps(collection_names, indent=4))
         else:
             message = f"Error: No library names specified for {instance_name}"
             final_output.append(message)

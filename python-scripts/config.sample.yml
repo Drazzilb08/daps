@@ -114,7 +114,13 @@ renamer:
     - Movies
     - Anime Movies
   # Where your ingest movies folder is (THe source and destination should not be the same directory)
-  source_dir: /path/to/posters/
+  source_dir: /path/to/posters/ <--- Lowest priority
+  # What posters you'd like to override the souce dir with. This dir will take priority for assets over source_dir
+  # To not use any override, simply leave it blank or remove it from the config
+  # Can be a single dir or a list of dirs
+  source_overrides: 
+    - /path/to/posters/override/ <--- Middle priority
+    - /path/to/posters/override2/ <--- Highest priority
   # Where your posters are going to go. In my usecase I use Plex-Meta-Manager. This is the /config/assets dir for PMM for me.
   destination_dir: /path/to/poster/destination
   # The thresholds are used to consider what is a "Match", As with any automation there is never a 100% guarantee of accuracy. There will be times the script will mess up.

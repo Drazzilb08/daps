@@ -11,7 +11,7 @@
 #              in a queue due to a missing file or not being an upgrade for existing episode file(s).
 # Usage: python3 queinatorr.py
 # Requirements: requests, qbittorrentapi
-# Version: 1.0.0
+# Version: 1.0.1
 # License: MIT License
 # ===================================================================================================
 
@@ -27,9 +27,14 @@ logger = setup_logger(config.log_level, "queinatorr")
 
 queue_list = [
     "Not an upgrade for existing episode file(s)",
+    "Not an upgrade for existing movie file(s)",
+    "Not a Custom Format upgrade for existing movie file(s)",
+    "Not a Custom Format upgrade for existing episode file(s)",
+    "Not a quality revision upgrade for existing movie file(s)",
+    "Not a quality revision upgrade for existing episode file(s)",
+    "Not an upgrade for existing movie file",
     "No files found are eligible for import in",
     "The download is missing files",
-    "Not a Custom Format upgrade for existing movie file(s)"
 ]
 
 def handle_qbit(title_list, url, username, password, move_category, dry_run, move_missing):

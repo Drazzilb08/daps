@@ -31,7 +31,7 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 5.0.0
+# Version: 5.1.0
 # License: MIT License
 # ===================================================================================================
 
@@ -64,58 +64,72 @@ season_name_info = [
     " - Specials",
     "_Season"
 ]
+
 words_to_remove = [
     "(US)",
 ]
+
+prifxes = [
+    "The", 
+    "A", 
+    "An"
+]
+suffixes = [
+    "Collection",
+]
+
+def find_best_match(matches, title):
+    best_match = None
+    for match in matches:
+        for i in match:
+            if best_match:
+                if i[1] > best_match[1]:
+                    best_match = i
+                elif i[1] == best_match[1]:
+                    if i[0] == title:
+                        best_match = i
+            else:
+                best_match = i
+    return best_match
 
 def match_collection(plex_collections, source_file_list, collection_threshold):
     matched_collections = {"matched_media": []}
     almost_matched = {"almost_matched": []}
     not_matched = {"not_matched": []}
     for collection in tqdm(plex_collections, desc="Matching collections", total=len(plex_collections), disable=None):
-        collection_match = unidecode(html.unescape(collection))
-        collection_match = collection.replace('&', 'and')
-        collection_match = re.sub(remove_special_chars, "", collection_match)
-        match = process.extractOne(collection_match, [item['title'] for item in source_file_list['collections']], scorer=fuzz.ratio)
-        match_without_suffix = process.extractOne(collection_match, [re.sub(r' Collection', '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio)
-        match_without_prefix = process.extractOne(collection_match, [re.sub(r'^(A|An|The) ', '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio)
-        if match and match_without_suffix and match_without_prefix:
-            if match[1] >= match_without_suffix[1] and match[1] >= match_without_prefix[1]:
-                best_match = match
-            elif match_without_suffix[1] >= match[1] and match_without_suffix[1] >= match_without_prefix[1]:
-                best_match = match_without_suffix
-            else:
-                best_match = match_without_prefix
-        elif match and match_without_suffix:
-            if match[1] >= match_without_suffix[1]:
-                best_match = match
-            else:
-                best_match = match_without_suffix
-        elif match and match_without_prefix:
-            if match[1] >= match_without_prefix[1]:
-                best_match = match
-            else:
-                best_match = match_without_prefix
-        elif match:
-            best_match = match
-        elif match_without_suffix:
-            best_match = match_without_suffix
-        elif match_without_prefix:
-            best_match = match_without_prefix
-        else:
-            best_match = None
+        normalize_title = normalize_titles(collection)
+        matches = []
+        matches.append(process.extract(collection, [item['title'] for item in source_file_list['collections']], scorer=fuzz.ratio))
+        for prefix in prifxes:
+            matches.append(process.extract(collection, [re.sub(rf"^{prefix}\s*", '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio))
+        for suffix in suffixes:
+            matches.append(process.extract(collection, [re.sub(rf"^\s*{suffix}\s*", '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio))
+        matches.append(process.extract(normalize_title, [item['normalized_title'] for item in source_file_list['collections']], scorer=fuzz.ratio))
+        best_match = find_best_match(matches, collection)
         collection = illegal_chars_regex.sub('', collection)
         if best_match:
             score = best_match[1]
             title = best_match[0]
-
             for item in source_file_list['collections']:
                 files = item['files']
                 path = item['path']
-                if score >= collection_threshold and (title == item['title'] or title == item['title'].replace(' Collection', '')):
+                if score >= collection_threshold and (
+                    (
+                    title == item['title'] or 
+                    title == item['normalized_title']
+                    ) or (
+                        any(title == re.sub(rf"^{prefix}\s*", '', item['title']) for prefix in prifxes) or 
+                        any(title == re.sub(rf"^\s*{suffix}\s*", '', item['title']) for suffix in suffixes)
+                    ) or (
+                        any(title == re.sub(rf"^{prefix}\s*", '', item['normalized_title']) for prefix in prifxes) or
+                        any(title == re.sub(rf"^\s*{suffix}\s*", '', item['normalized_title']) for suffix in suffixes)
+                    )
+                ):
                     matched_collections['matched_media'].append({
                         "title": title,
-                        "collection_match": collection_match,
+                        "normalized_title": item['normalized_title'],
+                        "collection": collection,
+                        "normalized_collection": normalize_title,
                         "year": None,
                         "files": files,
                         "score": score,
@@ -124,11 +138,24 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
                         "path": path,
                     })
                     break
-                elif score >= collection_threshold - 10 and score < collection_threshold and (title == item['title'] or title == item['title'].replace(' Collection', '')):
+                elif score >= collection_threshold - 10 and score < collection_threshold and (
+                    (
+                    title == item['title'] or 
+                    title == item['normalized_title']
+                    ) or (
+                        any(title == re.sub(rf"^{prefix}\s*", '', item['title']) for prefix in prifxes) or 
+                        any(title == re.sub(rf"^\s*{suffix}\s*", '', item['title']) for suffix in suffixes)
+                    ) or (
+                        any(title == re.sub(rf"^{prefix}\s*", '', item['normalized_title']) for prefix in prifxes) or
+                        any(title == re.sub(rf"^\s*{suffix}\s*", '', item['normalized_title']) for suffix in suffixes)
+                    )
+                ):
                     files = item['files']
                     almost_matched['almost_matched'].append({
                         "title": title,
-                        "collection_match": collection_match,
+                        "normalized_title": item['normalized_title'],
+                        "collection": collection,
+                        "normalized_collection": normalize_title,
                         "year": None,
                         "files": files,
                         "score": score,
@@ -156,15 +183,8 @@ def match_media(media, source_file_list, threshold, type):
                     alternate_titles.append(i['title'])
         except KeyError:
             alternate_titles = []
-        title = year_regex.sub('', title)
         year_from_title = year_regex.search(item['title'])
-        title = illegal_chars_regex.sub('', title)
-        title = unidecode(title)
-        title = title.rstrip()
-        for word in words_to_remove:
-            title = title.replace(word, '')
-        title = title.replace('&', 'and')
-        title = re.sub(remove_special_chars, '', title)
+        normalized_title = normalize_titles(title)
         secondary_year = None
         if year_from_title:
             try:
@@ -185,17 +205,9 @@ def match_media(media, source_file_list, threshold, type):
         matches = []
         matches.append(process.extract(title, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio))
         matches.append(process.extract(folder_without_year, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio))
+        matches.append(process.extract(normalized_title, [item['normalized_title'] for item in source_file_list[type]], scorer=fuzz.ratio))
         best_match = None
-        for match in matches:
-            for i in match:
-                if best_match:
-                    if i[1] > best_match[1]:
-                        best_match = i
-                    elif i[1] == best_match[1]:
-                        if i[0] == title:
-                            best_match = i
-                else:
-                    best_match = i
+        best_match = find_best_match(matches, title)
         if best_match and best_match[1] < threshold:
             for i in alternate_titles:
                 alternate_match = process.extractOne(i, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
@@ -212,10 +224,18 @@ def match_media(media, source_file_list, threshold, type):
                 files = i['files']
                 match_year = i['year']
                 path = i['path']
-                if score >= threshold and match_title == i['title'] and (year == match_year or secondary_year == match_year):
+                if score >= threshold and (
+                    match_title == i['title'] or 
+                    match_title == i['normalized_title']
+                ) and (
+                    year == match_year or 
+                    secondary_year == match_year
+                ):
                     matched_media['matched_media'].append({
                         "title": match_title,
+                        "normalized_title": i['normalized_title'],
                         "arr_title": title,
+                        "arr_normalized_title": normalized_title,
                         "year": match_year,
                         "arr_year": year,
                         "secondaryYear": secondary_year,
@@ -226,10 +246,18 @@ def match_media(media, source_file_list, threshold, type):
                         "path": path,
                     })
                     break
-                elif score >= threshold - 10 and score < threshold and match_title == i['title'] and (year == match_year or secondary_year == match_year):
+                elif score >= threshold - 10 and score < threshold and (
+                    match_title == i['title'] or 
+                    match_title == i['normalized_title']
+                ) and (
+                    year == match_year or 
+                    secondary_year == match_year
+                ):
                     almost_matched['almost_matched'].append({
                         "title": match_title,
+                        "normalized_title": i['normalized_title'],
                         "arr_title": title,
+                        "arr_normalized_title": normalized_title,
                         "year": match_year,
                         "arr_year": year,
                         "secondaryYear": secondary_year,
@@ -299,138 +327,116 @@ def rename_file(matched_media, destination_dir, dry_run, action_type, print_only
                 destination_file_path = os.path.join(destination_dir, folder, new_file_name)
             else:
                 destination_file_path = os.path.join(destination_dir, new_file_name)
-            if path in config.source_overrides:
-                for i in destination_files:
-                    if folder == os.path.splitext(i)[0] and file_extension != os.path.splitext(i)[1]:
-                        if dry_run:
-                            messages.append(f"Would remove {i} from {destination_dir}")
-                        else:
-                            messages.append(f"Removing {i} from {destination_dir}")
-                            os.remove(os.path.join(destination_dir, i))
-            if new_file_name != old_file_name:
-                if dry_run:
-                    if action_type == 'copy':
-                        if os.path.isfile(destination_file_path):
-                            if filecmp.cmp(source_file_path, destination_file_path):
-                                pass
-                            else:
-                                messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
-                        else:
-                            messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
-                    if action_type == 'hardlink':
-                        if os.path.isfile(destination_file_path):
-                            if filecmp.cmp(source_file_path, destination_file_path):
-                                pass
-                            else:
-                                messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
-                        else:
-                            messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
-                    elif action_type == 'move':
-                        messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
-                else:
-                    if action_type == 'copy':
-                        try:
-                            if os.path.isfile(destination_file_path):
-                                if filecmp.cmp(source_file_path, destination_file_path):
-                                    pass
-                                else:
-                                    shutil.copyfile(source_file_path, destination_file_path)
-                                    messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -->> {new_file_name}")
-                            else:
-                                shutil.copyfile(source_file_path, destination_file_path)
-                                messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -->> {new_file_name}")
-                        except OSError as e:
-                            logger.error(f"Unable to copy file: {e}")
-                    elif action_type == 'move':
-                        try:
-                            shutil.move(source_file_path, destination_file_path)
-                            messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
-                        except OSError as e:
-                            logger.error(f"Unable to move file: {e}")
-                    elif action_type == 'hardlink':
-                        try:
-                            os.link(source_file_path, destination_file_path)
-                            messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
-                        except OSError as e:
-                            if e.errno == errno.EEXIST:
-                                if os.path.samefile(source_file_path, destination_file_path):
-                                    pass
-                                else:
-                                    os.replace(destination_file_path, source_file_path)
-                                    os.link(source_file_path, destination_file_path)
-                                    messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
-                            else:
-                                logger.error(f"Unable to hardlink file: {e}")
-                                continue
+            if config.source_overrides:
+                if path in config.source_overrides:
+                    if asset_folders:
+                        for root, dirs, files in os.walk(destination_dir):
+                            basedir = os.path.basename(root)
+                            if basedir == folder:
+                                for file in files:
+                                    if file.startswith("."):
+                                        continue
+                                    if file != new_file_name:
+                                        if dry_run:
+                                            messages.append(f"Would remove {file} from {root}")
+                                        else:
+                                            messages.append(f"Removed {file} from {root}")
+                                            os.remove(os.path.join(root, file))
                     else:
-                        logger.error(f"Unknown action type: {action_type}")
+                        for i in destination_files:
+                            if folder == os.path.splitext(i)[0] and file_extension != os.path.splitext(i)[1]:
+                                if dry_run:
+                                    messages.append(f"Would remove {i} from {destination_dir}")
+                                else:
+                                    messages.append(f"Removed {i} from {destination_dir}")
+                                    os.remove(os.path.join(destination_dir, i))
+            if new_file_name != old_file_name:
+                messages.extend(process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, '->'))
             else:
                 if not print_only_renames:
-                    if dry_run:
-                        if action_type == 'copy':
-                            if os.path.isfile(destination_file_path):
-                                if filecmp.cmp(source_file_path, destination_file_path):
-                                    pass
-                                else:
-                                    messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
-                            else:
-                                messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
-                        if action_type == 'hardlink':
-                            if os.path.isfile(destination_file_path):
-                                if filecmp.cmp(source_file_path, destination_file_path):
-                                    pass
-                                else:
-                                    messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
-                            else:
-                                messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
-                        elif action_type == 'move':
-                            messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
-                    else:
-                        if action_type == 'copy':
-                            try:
-                                if os.path.isfile(destination_file_path):
-                                    if filecmp.cmp(source_file_path, destination_file_path):
-                                        pass
-                                    else:
-                                        shutil.copyfile(source_file_path, destination_file_path)
-                                        messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -->> {new_file_name}")
-                                else:
-                                    shutil.copyfile(source_file_path, destination_file_path)
-                                    messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -->> {new_file_name}")
-                            except OSError as e:
-                                logger.error(f"Unable to copy file: {e}")
-                        elif action_type == 'move':
-                            try:
-                                shutil.move(source_file_path, destination_file_path)
-                                messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -->> {new_file_name}")
-                            except OSError as e:
-                                logger.error(f"Unable to move file: {e}")
-                        elif action_type == 'hardlink':
-                            try:
-                                os.link(source_file_path, destination_file_path)
-                                messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
-                            except OSError as e:
-                                if e.errno == errno.EEXIST:
-                                    if os.path.samefile(source_file_path, destination_file_path):
-                                        pass
-                                    else:
-                                        os.replace(destination_file_path, source_file_path)
-                                        os.link(source_file_path, destination_file_path)
-                                        messages.append(f"Action Type: {action_type.capitalize()}: {old_file_name} -> {new_file_name}")
-                                else:
-                                    logger.error(f"Unable to hardlink file: {e}")
-                                    continue
-                        else:
-                            logger.error(f"Unknown action type: {action_type}")
-    return messages 
+                    messages.extend(process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, '-->>'))
+    return messages
 
-def get_collection_dict(title, year, files, path):
+def process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, arrow):
+    output = []
+    if dry_run:
+        if action_type == 'copy':
+            if os.path.isfile(destination_file_path):
+                if filecmp.cmp(source_file_path, destination_file_path):
+                    pass
+                else:
+                    output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
+            else:
+                output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
+        if action_type == 'hardlink':
+            if os.path.isfile(destination_file_path):
+                if filecmp.cmp(source_file_path, destination_file_path):
+                    pass
+                else:
+                    output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
+            else:
+                output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
+        elif action_type == 'move':
+            output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
+    else:
+        if action_type == 'copy':
+            try:
+                if os.path.isfile(destination_file_path):
+                    if filecmp.cmp(source_file_path, destination_file_path):
+                        pass
+                    else:
+                        shutil.copyfile(source_file_path, destination_file_path)
+                        output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
+                else:
+                    shutil.copyfile(source_file_path, destination_file_path)
+                    output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
+            except OSError as e:
+                logger.error(f"Unable to copy file: {e}")
+        elif action_type == 'move':
+            try:
+                shutil.move(source_file_path, destination_file_path)
+                output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
+            except OSError as e:
+                logger.error(f"Unable to move file: {e}")
+        elif action_type == 'hardlink':
+            try:
+                os.link(source_file_path, destination_file_path)
+                output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
+            except OSError as e:
+                if e.errno == errno.EEXIST:
+                    if os.path.samefile(source_file_path, destination_file_path):
+                        pass
+                    else:
+                        os.replace(destination_file_path, source_file_path)
+                        os.link(source_file_path, destination_file_path)
+                        output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
+                else:
+                    logger.error(f"Unable to hardlink file: {e}")
+                    return
+        else:
+            logger.error(f"Unknown action type: {action_type}")
+    return output
+
+def load_dict(title, year, files, path):
     return {
         "title": title,
+        "normalized_title": None,
         "year": year,
         "files": files,
         "path": path
     }
+
+def normalize_titles(title):
+    normalized_title = title
+    for word in words_to_remove:
+        normalized_title = title.replace(word, '')
+    normalized_title = year_regex.sub('', normalized_title)
+    normalized_title = illegal_chars_regex.sub('', normalized_title)
+    normalized_title = unidecode(html.unescape(normalized_title))
+    normalized_title = normalized_title.rstrip()
+    normalized_title = normalized_title.replace('&', 'and')
+    normalized_title = re.sub(remove_special_chars, '', normalized_title)
+    return normalized_title
 
 def add_file_to_asset(category_dict, file):
     category_dict['files'].append(file)
@@ -440,8 +446,7 @@ def find_or_create_show(show_list, title, year, files, path):
         if title == show['title'] and year == show['year']:
             add_file_to_asset(show, files[0])
             return
-    show = get_collection_dict(title, year, files, path)
-    add_file_to_asset(show, files[0])
+    show = load_dict(title, year, files, path)
     show_list.append(show)
 
 def get_files(path):
@@ -452,24 +457,19 @@ def get_files(path):
         logger.error(f"Path not found: {path}")
     return files
 
-def sort_files(files, path, dict):
-    for file in tqdm(files, desc=f'Sorting assets', total=len(files), disable=None):
+def sort_files(files, path, dict, basename):
+    for file in tqdm(files, desc=f'Sorting assets from \'{basename}\' directory', total=len(files), disable=None):
         if file.startswith('.'):
             continue
         base_name, extension = os.path.splitext(file)
         if not re.search(r'\(\d{4}\)', base_name):
-            base_name = unidecode(html.unescape(base_name))
-            base_name = base_name.replace('&', 'and')
-            base_name = re.sub(remove_special_chars, '', base_name)
-            collection = get_collection_dict(base_name, None, [file], path)
+            collection = load_dict(base_name, None, [file], path)
             dict['collections'].append(collection)
         else:
             file_name = os.path.splitext(file)[0]
             match = re.search(r'\((\d{4})\)', base_name)
             year = int(match.group(1)) if match else None
             title = base_name.replace(f'({year})', '').strip()
-            title = unidecode(html.unescape(title))
-            title = title.replace('&', 'and')
             if any(file.startswith(file_name) and any(file_name + season_name in file for season_name in season_name_info) for file in files):
                 find_or_create_show(dict['series'], title, year, [file], path)
             elif any(word in file for word in season_name_info):
@@ -478,32 +478,38 @@ def sort_files(files, path, dict):
                         title = title.split(season_name)[0].strip()
                 find_or_create_show(dict['series'], title, year, [file], path)
             else:
-                movie = get_collection_dict(title, year, [file], path)
+                movie = load_dict(title, year, [file], path)
                 dict['movies'].append(movie)
     return dict
 
 def get_assets_files(assets_path, override_paths):
     asset_files = {"series": [], "movies": [], "collections": []}
-    override_files = {"series": [], "movies": [], "collections": []}    
+    override_files = {"series": [], "movies": [], "collections": []}
+    asset_types = ['series', 'movies', 'collections']  
     files = get_files(assets_path)
     if assets_path:
-        asset_files = sort_files(files, assets_path, asset_files)
+        basename = os.path.basename(assets_path.rstrip('/'))
+        asset_files = sort_files(files, assets_path, asset_files, basename)
     if isinstance(override_paths, str):
         override_paths = [override_paths]
     if override_paths:
         for paths in override_paths:
             files = get_files(paths)
-            override_files = sort_files(files, paths, override_files)
+            basename = os.path.basename(paths.rstrip('/'))
+            override_files = sort_files(files, paths, override_files, basename)
             if override_files and asset_files:
-                asset_files = handle_override_files(asset_files, override_files)
+                asset_files = handle_override_files(asset_files, override_files, asset_types)
+
+    for asset_types in asset_files:
+        for asset in asset_files[asset_types]:
+            normalized_title = normalize_titles(asset['title'])
+            asset['normalized_title'] = normalized_title
 
     logger.debug(json.dumps(asset_files, indent=4))
     return asset_files
 
-def handle_override_files(asset_files, override_files):
-    types = ['series', 'movies', 'collections']
-
-    for type in types:
+def handle_override_files(asset_files, override_files, asset_types):
+    for type in asset_types:
         for override_asset in override_files[type]:
             for asset in asset_files[type]:
                 if override_asset['title'] == asset['title']:
@@ -571,7 +577,7 @@ def main():
     logger.debug(f"Asset folder: {config.asset_folders}")
     logger.debug(f"library_names: {config.library_names}")
     logger.debug(f"source_dir: {config.source_dir}")
-    logger.debug(f"source_override: {config.source_overrides}")
+    logger.debug(f"source_overrides: {config.source_overrides}")
     logger.debug(f"destination_dir: {config.destination_dir}")
     logger.debug(f"movies_threshold: {config.movies_threshold}")
     logger.debug(f"series_threshold: {config.series_threshold}")

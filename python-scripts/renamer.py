@@ -31,7 +31,7 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 5.1.1
+# Version: 5.2.0
 # License: MIT License
 # ===================================================================================================
 
@@ -96,25 +96,26 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
     matched_collections = {"matched_media": []}
     almost_matched = {"almost_matched": []}
     not_matched = {"not_matched": []}
-    for collection in tqdm(plex_collections, desc="Matching collections", total=len(plex_collections), disable=None):
-        normalize_title = normalize_titles(collection)
+    for plex_collection in tqdm(plex_collections, desc="Matching collections", total=len(plex_collections), disable=None):
+        plex_normalize_title = normalize_titles(plex_collection)
         matches = []
-        matches.append(process.extract(collection, [item['title'] for item in source_file_list['collections']], scorer=fuzz.ratio))
-        matches.append(process.extract(normalize_title, [item['normalized_title'] for item in source_file_list['collections']], scorer=fuzz.ratio))
+        matches.append(process.extract(plex_collection, [item['title'] for item in source_file_list['collections']], scorer=fuzz.ratio))
+        matches.append(process.extract(plex_normalize_title, [item['normalized_title'] for item in source_file_list['collections']], scorer=fuzz.ratio))
         for prefix in prefixes:
-            matches.append(process.extract(collection, [re.sub(rf"^{prefix}\s(?=\S)", '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio))
-            matches.append(process.extract(normalize_title, [re.sub(rf"^{prefix}\s(?=\S)", '', item['normalized_title']) for item in source_file_list['collections']], scorer=fuzz.ratio))
+            matches.append(process.extract(plex_collection, [re.sub(rf"^{prefix}\s(?=\S)", '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio))
+            matches.append(process.extract(plex_normalize_title, [re.sub(rf"^{prefix}\s(?=\S)", '', item['normalized_title']) for item in source_file_list['collections']], scorer=fuzz.ratio))
         for suffix in suffixes:
-            matches.append(process.extract(collection, [re.sub(rf"\s*{suffix}*", '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio))
-            matches.append(process.extract(normalize_title, [re.sub(rf"\s*{suffix}*", '', item['normalized_title']) for item in source_file_list['collections']], scorer=fuzz.ratio))
-        best_match = find_best_match(matches, collection)
-        collection = illegal_chars_regex.sub('', collection)
+            matches.append(process.extract(plex_collection, [re.sub(rf"\s*{suffix}*", '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio))
+            matches.append(process.extract(plex_normalize_title, [re.sub(rf"\s*{suffix}*", '', item['normalized_title']) for item in source_file_list['collections']], scorer=fuzz.ratio))
+        best_match = find_best_match(matches, plex_collection)
+        folder = illegal_chars_regex.sub('', plex_collection)
         if best_match:
+            match_title = best_match[0]
             score = best_match[1]
-            title = best_match[0]
             for item in source_file_list['collections']:
+                file_title = item['title']
                 files = item['files']
-                path = item['path']
+                file_normalized_title = item['normalized_title']
                 without_prefix = []
                 for prefix in prefixes:
                     without_prefix = []
@@ -126,44 +127,60 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
                     without_suffix.append(re.sub(rf"\s*{suffix}", '', item['title']))
                     without_suffix.append(re.sub(rf"\s*{suffix}", '', item['normalized_title']))
                 if score >= collection_threshold and (
-                    title == item['title'] or 
-                    title == item['normalized_title'] or
-                    title in without_prefix or
-                    title in without_suffix
+                    match_title == item['title'] or 
+                    match_title == item['normalized_title'] or
+                    match_title in without_prefix or
+                    match_title in without_suffix
                 ):
                     matched_collections['matched_media'].append({
-                        "title": title,
-                        "normalized_title": item['normalized_title'],
-                        "collection": collection,
-                        "normalized_collection": normalize_title,
+                        "title": file_title,
+                        "normalized_title": file_normalized_title,
+                        "plex_collection": plex_collection,
+                        "normalized_collection": plex_normalize_title,
                         "year": None,
                         "files": files,
                         "score": score,
                         "best_match": best_match,
-                        "folder": collection,
-                        "path": path,
+                        "folder": folder,
                     })
                     break
                 elif score >= collection_threshold - 10 and score < collection_threshold and (
-                    title == item['title'] or 
-                    title == item['normalized_title'] or
-                    title in without_prefix or
-                    title in without_suffix
+                    match_title == item['title'] or 
+                    match_title == item['normalized_title'] or
+                    match_title in without_prefix or
+                    match_title in without_suffix
                 ):
-                    files = item['files']
                     almost_matched['almost_matched'].append({
-                        "title": title,
-                        "normalized_title": item['normalized_title'],
-                        "collection": collection,
-                        "normalized_collection": normalize_title,
+                        "title": file_title,
+                        "normalized_title": file_normalized_title,
+                        "plex_collection": plex_collection,
+                        "normalized_collection": plex_normalize_title,
                         "year": None,
                         "files": files,
                         "score": score,
                         "best_match": best_match,
-                        "folder": collection,
-                        "path": path,
+                        "folder": folder,
                     })
                     break
+                elif score < collection_threshold - 10 and (
+                    match_title == item['title'] or 
+                    match_title == item['normalized_title'] or
+                    match_title in without_prefix or
+                    match_title in without_suffix
+                ):
+                    not_matched['not_matched'].append({
+                        "title": file_title,
+                        "normalized_title": file_normalized_title,
+                        "plex_collection": plex_collection,
+                        "normalized_collection": plex_normalize_title,
+                        "year": None,
+                        "files": files,
+                        "score": score,
+                        "best_match": best_match,
+                        "folder": folder,
+                    })
+                    break
+
     logger.debug(f"Not matched collections: {json.dumps(not_matched, ensure_ascii=False, indent=4)}")
     logger.debug(f"Matched collections: {json.dumps(matched_collections, ensure_ascii=False, indent=4)}")
     logger.debug(f"Almost matched collections: {json.dumps(almost_matched, ensure_ascii=False, indent=4)}")
@@ -171,12 +188,11 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
 
 def match_media(media, source_file_list, threshold, type):
     matched_media = {"matched_media": []}
-    almost_matched = {"almost_matched": []}
     not_matched = {"not_matched": []}
     for item in tqdm(media, desc="Matching media", total=len(media), disable=None):
         alternate_title = False
         alternate_titles = []
-        title = item['title']
+        arr_title = item['title']
         try:
             if item['alternateTitles']:
                 for i in item['alternateTitles']:
@@ -184,16 +200,16 @@ def match_media(media, source_file_list, threshold, type):
         except KeyError:
             alternate_titles = []
         year_from_title = year_regex.search(item['title'])
-        normalized_title = normalize_titles(title)
+        arr_normalized_title = normalize_titles(arr_title)
         secondary_year = None
         if year_from_title:
             try:
-                year = int(year_from_title.group(0)[1:-1])
+                arr_year = int(year_from_title.group(0)[1:-1])
             except ValueError:
                 logger.error(f"Could not convert year to int: {year_from_title.group(0)[1:-1]} for {item['title']}")
                 continue
         else:
-            year = item['year']
+            arr_year = item['year']
         try:
             if item['secondaryYear']:
                 secondary_year = item['secondaryYear']
@@ -201,75 +217,44 @@ def match_media(media, source_file_list, threshold, type):
             secondary_year = None
         path = item['path']
         folder = os.path.basename(os.path.normpath(path))
-        folder_without_year = re.sub(year_regex, '', folder)
-        matches = []
-        matches.append(process.extract(title, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio))
-        matches.append(process.extract(folder_without_year, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio))
-        matches.append(process.extract(normalized_title, [item['normalized_title'] for item in source_file_list[type]], scorer=fuzz.ratio))
-        best_match = None
-        best_match = find_best_match(matches, title)
-        if best_match and best_match[1] < threshold:
-            for i in alternate_titles:
-                alternate_match = process.extractOne(i, [item['title'] for item in source_file_list[type]], scorer=fuzz.ratio)
-                if alternate_match and best_match and alternate_match[1] > best_match[1]:
-                    best_match = alternate_match
-                    alternate_title = True
-                    break
-        if best_match:
-            match_year = None
-            match_title = best_match[0]
-            score = best_match[1]
-            files = []
-            for i in source_file_list[type]:
-                files = i['files']
-                match_year = i['year']
-                path = i['path']
-                if score >= threshold and (
-                    match_title == i['title'] or 
-                    match_title == i['normalized_title']
-                ) and (
-                    year == match_year or 
-                    secondary_year == match_year
-                ):
-                    matched_media['matched_media'].append({
-                        "title": match_title,
-                        "normalized_title": i['normalized_title'],
-                        "arr_title": title,
-                        "arr_normalized_title": normalized_title,
-                        "year": match_year,
-                        "arr_year": year,
-                        "secondaryYear": secondary_year,
-                        "files": files,
-                        "score": best_match,
-                        "alternate_title": alternate_title,
-                        "folder": folder,
-                        "path": path,
-                    })
-                    break
-                elif score >= threshold - 10 and score < threshold and (
-                    match_title == i['title'] or 
-                    match_title == i['normalized_title']
-                ) and (
-                    year == match_year or 
-                    secondary_year == match_year
-                ):
-                    almost_matched['almost_matched'].append({
-                        "title": match_title,
-                        "normalized_title": i['normalized_title'],
-                        "arr_title": title,
-                        "arr_normalized_title": normalized_title,
-                        "year": match_year,
-                        "arr_year": year,
-                        "secondaryYear": secondary_year,
-                        "files": files,
-                        "score": best_match,
-                        "alternate_title": alternate_title,
-                        "folder": folder,
-                        "path": path,
-                    })
-                    break
+        files = []
+        for i in source_file_list[type]:
+            file_title = i['title']
+            file_normalized_title = i['normalized_title']
+            files = i['files']
+            file_year = i['year']
+            if (arr_title == file_title or arr_normalized_title == file_normalized_title) and (
+                arr_year == file_year or secondary_year == file_year
+            ):
+                matched_media['matched_media'].append({
+                    "title": file_title,
+                    "normalized_title": file_normalized_title,
+                    "arr_title": arr_title,
+                    "arr_normalized_title": arr_normalized_title,
+                    "year": file_year,
+                    "arr_year": arr_year,
+                    "secondaryYear": secondary_year,
+                    "files": files,
+                    "alternate_title": alternate_title,
+                    "folder": folder,
+                })
+                break
+            elif (arr_title == file_title or arr_normalized_title == file_normalized_title) and (
+                arr_year != file_year or secondary_year != file_year
+            ):
+                not_matched['not_matched'].append({
+                    "title": file_title,
+                    "normalized_title": file_normalized_title,
+                    "arr_title": arr_title,
+                    "arr_normalized_title": arr_normalized_title,
+                    "year": file_year,
+                    "arr_year": arr_year,
+                    "secondaryYear": secondary_year,
+                    "files": files,
+                    "alternate_title": alternate_title,
+                    "folder": folder,
+                })
     logger.debug(f"Matched media: {json.dumps(matched_media, ensure_ascii=False, indent=4)}")
-    logger.debug(f"Almost matched media: {json.dumps(almost_matched, ensure_ascii=False, indent=4)}")
     logger.debug(f"Not matched media: {json.dumps(not_matched, ensure_ascii=False, indent=4)}")
     return matched_media
 
@@ -288,10 +273,10 @@ def rename_file(matched_media, destination_dir, dry_run, action_type, print_only
                     messages.append(f"Creating asset folder: {folder} at {destination_dir}")
                     os.makedirs(os.path.join(destination_dir, folder), exist_ok=True)
         for file in files:
-            path = media['path']
+            path = os.path.dirname(file)
+            old_file_name = os.path.basename(file)
             source_file_path = os.path.join(path, file)
             file_extension = os.path.splitext(file)[1]
-            old_file_name = file
             if any(word in file for word in season_name_info):
                 season_number = re.search(r"Season (\d+)", file)
                 if season_number:
@@ -415,13 +400,12 @@ def process_file(old_file_name, new_file_name, action_type, dry_run, destination
             logger.error(f"Unknown action type: {action_type}")
     return output
 
-def load_dict(title, year, files, path):
+def load_dict(title, year, files):
     return {
         "title": title,
         "normalized_title": None,
         "year": year,
-        "files": files,
-        "path": path
+        "files": files
     }
 
 def normalize_titles(title):
@@ -433,7 +417,7 @@ def normalize_titles(title):
     normalized_title = unidecode(html.unescape(normalized_title))
     normalized_title = normalized_title.rstrip()
     normalized_title = normalized_title.replace('&', 'and')
-    normalized_title = re.sub(remove_special_chars, '', normalized_title)
+    normalized_title = re.sub(remove_special_chars, '', normalized_title).lower()
     return normalized_title
 
 def add_file_to_asset(category_dict, file):
@@ -444,7 +428,7 @@ def find_or_create_show(show_list, title, year, files, path):
         if title == show['title'] and year == show['year']:
             add_file_to_asset(show, files[0])
             return
-    show = load_dict(title, year, files, path)
+    show = load_dict(title, year, files)
     show_list.append(show)
 
 def get_files(path):
@@ -457,11 +441,12 @@ def get_files(path):
 
 def sort_files(files, path, dict, basename):
     for file in tqdm(files, desc=f'Sorting assets from \'{basename}\' directory', total=len(files), disable=None):
+        full_path = os.path.join(path, file)
         if file.startswith('.'):
             continue
         base_name, extension = os.path.splitext(file)
         if not re.search(r'\(\d{4}\)', base_name):
-            collection = load_dict(base_name, None, [file], path)
+            collection = load_dict(base_name, None, [full_path])
             dict['collections'].append(collection)
         else:
             file_name = os.path.splitext(file)[0]
@@ -469,14 +454,14 @@ def sort_files(files, path, dict, basename):
             year = int(match.group(1)) if match else None
             title = base_name.replace(f'({year})', '').strip()
             if any(file.startswith(file_name) and any(file_name + season_name in file for season_name in season_name_info) for file in files):
-                find_or_create_show(dict['series'], title, year, [file], path)
+                find_or_create_show(dict['series'], title, year, [full_path], path)
             elif any(word in file for word in season_name_info):
                 for season_name in season_name_info:
                     if season_name in file:
                         title = title.split(season_name)[0].strip()
-                find_or_create_show(dict['series'], title, year, [file], path)
+                find_or_create_show(dict['series'], title, year, [full_path], path)
             else:
-                movie = load_dict(title, year, [file], path)
+                movie = load_dict(title, year, [full_path])
                 dict['movies'].append(movie)
     return dict
 
@@ -484,8 +469,8 @@ def get_assets_files(assets_path, override_paths):
     asset_files = {"series": [], "movies": [], "collections": []}
     override_files = {"series": [], "movies": [], "collections": []}
     asset_types = ['series', 'movies', 'collections']  
-    files = get_files(assets_path)
     if assets_path:
+        files = get_files(assets_path)
         basename = os.path.basename(assets_path.rstrip('/'))
         asset_files = sort_files(files, assets_path, asset_files, basename)
     if isinstance(override_paths, str):
@@ -497,26 +482,32 @@ def get_assets_files(assets_path, override_paths):
             override_files = sort_files(files, paths, override_files, basename)
             if override_files and asset_files:
                 asset_files = handle_override_files(asset_files, override_files, asset_types)
-
     for asset_types in asset_files:
         for asset in asset_files[asset_types]:
             normalized_title = normalize_titles(asset['title'])
             asset['normalized_title'] = normalized_title
-
+    for asset_types in asset_files:
+        for asset in asset_files[asset_types]:
+            asset['files'].sort()
     logger.debug(json.dumps(asset_files, indent=4))
     return asset_files
 
 def handle_override_files(asset_files, override_files, asset_types):
     for type in asset_types:
         for override_asset in override_files[type]:
+            found = False
             for asset in asset_files[type]:
-                if override_asset['title'] == asset['title']:
-                    asset_files[type].remove(asset)
-                    asset_files[type].append(override_asset)
-                    break
-            else:
+                if override_asset['title'] == asset['title'] and override_asset['year'] == asset['year']:
+                    found = True
+                    seen_files = set()
+                    for override_file in override_asset['files']:
+                        override_file_name = os.path.splitext(os.path.basename(override_file))[0]
+                        if override_file_name not in seen_files:
+                            seen_files.add(override_file_name)
+                            asset['files'] = [f for f in asset['files'] if os.path.splitext(os.path.basename(f))[0] != override_file_name]
+                            asset['files'].append(override_file)
+            if not found:
                 asset_files[type].append(override_asset)
-    
     return asset_files
 
 def process_instance(instance_type, instance_name, url, api, final_output, asset_files):

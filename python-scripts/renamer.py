@@ -31,7 +31,7 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 5.1.0
+# Version: 5.1.1
 # License: MIT License
 # ===================================================================================================
 
@@ -55,7 +55,7 @@ import re
 
 config = Config(script_name="renamer")
 logger = setup_logger(config.log_level, "renamer")
-year_regex = re.compile(r"\((19|20)\d{2}\).*")
+year_regex = re.compile(r"\((19|20)\d{2}\)")
 illegal_chars_regex = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')
 remove_special_chars = re.compile(r'[^a-zA-Z0-9\s]+')
 
@@ -69,7 +69,7 @@ words_to_remove = [
     "(US)",
 ]
 
-prifxes = [
+prefixes = [
     "The", 
     "A", 
     "An"
@@ -100,11 +100,13 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
         normalize_title = normalize_titles(collection)
         matches = []
         matches.append(process.extract(collection, [item['title'] for item in source_file_list['collections']], scorer=fuzz.ratio))
-        for prefix in prifxes:
-            matches.append(process.extract(collection, [re.sub(rf"^{prefix}\s*", '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio))
-        for suffix in suffixes:
-            matches.append(process.extract(collection, [re.sub(rf"^\s*{suffix}\s*", '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio))
         matches.append(process.extract(normalize_title, [item['normalized_title'] for item in source_file_list['collections']], scorer=fuzz.ratio))
+        for prefix in prefixes:
+            matches.append(process.extract(collection, [re.sub(rf"^{prefix}\s(?=\S)", '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio))
+            matches.append(process.extract(normalize_title, [re.sub(rf"^{prefix}\s(?=\S)", '', item['normalized_title']) for item in source_file_list['collections']], scorer=fuzz.ratio))
+        for suffix in suffixes:
+            matches.append(process.extract(collection, [re.sub(rf"\s*{suffix}*", '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio))
+            matches.append(process.extract(normalize_title, [re.sub(rf"\s*{suffix}*", '', item['normalized_title']) for item in source_file_list['collections']], scorer=fuzz.ratio))
         best_match = find_best_match(matches, collection)
         collection = illegal_chars_regex.sub('', collection)
         if best_match:
@@ -113,17 +115,21 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
             for item in source_file_list['collections']:
                 files = item['files']
                 path = item['path']
+                without_prefix = []
+                for prefix in prefixes:
+                    without_prefix = []
+                    for prefix in prefixes:
+                        without_prefix.append(re.sub(rf"^{prefix}\s(?=\S)", '', item['title']))
+                        without_prefix.append(re.sub(rf"^{prefix}\s(?=\S)", '', item['normalized_title']))
+                without_suffix = []
+                for suffix in suffixes:
+                    without_suffix.append(re.sub(rf"\s*{suffix}", '', item['title']))
+                    without_suffix.append(re.sub(rf"\s*{suffix}", '', item['normalized_title']))
                 if score >= collection_threshold and (
-                    (
                     title == item['title'] or 
-                    title == item['normalized_title']
-                    ) or (
-                        any(title == re.sub(rf"^{prefix}\s*", '', item['title']) for prefix in prifxes) or 
-                        any(title == re.sub(rf"^\s*{suffix}\s*", '', item['title']) for suffix in suffixes)
-                    ) or (
-                        any(title == re.sub(rf"^{prefix}\s*", '', item['normalized_title']) for prefix in prifxes) or
-                        any(title == re.sub(rf"^\s*{suffix}\s*", '', item['normalized_title']) for suffix in suffixes)
-                    )
+                    title == item['normalized_title'] or
+                    title in without_prefix or
+                    title in without_suffix
                 ):
                     matched_collections['matched_media'].append({
                         "title": title,
@@ -139,16 +145,10 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
                     })
                     break
                 elif score >= collection_threshold - 10 and score < collection_threshold and (
-                    (
                     title == item['title'] or 
-                    title == item['normalized_title']
-                    ) or (
-                        any(title == re.sub(rf"^{prefix}\s*", '', item['title']) for prefix in prifxes) or 
-                        any(title == re.sub(rf"^\s*{suffix}\s*", '', item['title']) for suffix in suffixes)
-                    ) or (
-                        any(title == re.sub(rf"^{prefix}\s*", '', item['normalized_title']) for prefix in prifxes) or
-                        any(title == re.sub(rf"^\s*{suffix}\s*", '', item['normalized_title']) for suffix in suffixes)
-                    )
+                    title == item['normalized_title'] or
+                    title in without_prefix or
+                    title in without_suffix
                 ):
                     files = item['files']
                     almost_matched['almost_matched'].append({
@@ -334,13 +334,11 @@ def rename_file(matched_media, destination_dir, dry_run, action_type, print_only
                             basedir = os.path.basename(root)
                             if basedir == folder:
                                 for file in files:
-                                    if file.startswith("."):
-                                        continue
-                                    if file != new_file_name:
+                                    if os.path.splitext(file)[0] == os.path.splitext(new_file_name)[0] and file_extension != os.path.splitext(file)[1]:
                                         if dry_run:
-                                            messages.append(f"Would remove {file} from {root}")
+                                            messages.append(f"Would remove {file} from {basedir}")
                                         else:
-                                            messages.append(f"Removed {file} from {root}")
+                                            messages.append(f"Removed {file} from {basedir}")
                                             os.remove(os.path.join(root, file))
                     else:
                         for i in destination_files:

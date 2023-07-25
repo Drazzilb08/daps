@@ -14,7 +14,7 @@
 # Author: Drazzilb
 # License: MIT License
 
-# Please see the config file for more information
+# Please see the config file for more information, not required if config file is in the same directory as the script
 config_file=""
 
 # <----- Do not edit below this point ----->

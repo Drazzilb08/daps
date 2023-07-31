@@ -15,13 +15,25 @@
 # License: MIT License
 # ====================================================
 
-downloads_dir='/path/to/downloads'
-media_dir='/path/to/media'
-webhook=''
-bot_name='Notification Bot'
-bar_color='FF00FF'
-channel=''
+downloads_dir='/path/to/downloads' # This is the root directory for your downloads
+media_dir='/path/to/media'         # This is the root directory for your media you want to check for duplicates
 
+# Optional for notifications on Discord through Discord webhook or Notifiarr API.
+webhook=''                         # Not required if you don't want to use notifications // Leave as is if not using notifications
+bot_name='Notification Bot'        # Not required if you don't want to use notifications // Leave as is if not using notifications
+bar_color='FF00FF'                 # Not required if you don't want to use notifications // Leave as is if not using notifications
+channel=''                         # Not required if you don't want to use notifications // Leave as is if not using notifications
+
+
+# Include any sub paths to the media directory you want to check
+# Example: If you want to check the following paths
+# .
+# └── path/to/media/ <--- Any items w/in this dir will not be checked
+#     ├── 'Movies' <--- Any items w/in this dir will be checked
+#     ├── 'TV Shows' <--- Any items w/in this dir will be checked
+#     ├── 'Anime' <--- Any items w/in this dir will be checked
+#     ├── 'XXX' <--- Any items w/in this dir will be checked
+#     └── 'Other' <--- Any items w/in this dir will be checked
 include=(
     'Movies'
     'TV Shows'

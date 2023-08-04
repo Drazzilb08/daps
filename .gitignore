@@ -160,3 +160,4 @@ logs/
 *archives*
 tmp/
 bash-scripts/sync.sh
+python-scripts/change_border.py

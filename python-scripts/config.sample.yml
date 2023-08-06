@@ -54,18 +54,13 @@ upgradinatorr:
   log_level: info
   dry_run: true
   radarr:
-    - name: radarr_1
-      count:
-      monitored: true
-      status: released
-      tag_name:
-      unattended: false
     - name: radarr_2
       count:
       monitored: true
       status: released
       tag_name:
       unattended: false
+      reset: false
   sonarr:
     - name: sonarr_1
       count:
@@ -73,12 +68,14 @@ upgradinatorr:
       status: continuing
       tag_name:
       unattended: false
+      reset: false
     - name: sonarr_2
       count:
       monitored: true
       status: continuing
       tag_name:
       unattended: false
+      reset: false
 
 # The renameinatorr script is used to rename movies and tv shows, it can be used to rename all movies and tv shows or just a subset.
 # This script is meant to keep your library clean and tidy, it will rename your movies and tv shows to match criteria set in Media Management tag of Radarr/Sonarr.

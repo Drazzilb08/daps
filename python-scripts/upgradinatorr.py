@@ -11,7 +11,7 @@
 # Description: A script to upgrade Sonarr/Radarr libraries to the keep in line with trash-guides
 # Usage: python3 /path/to/upgradinatorr.py
 # Requirements: requests, pyyaml
-# Version: 2.0.5
+# Version: 2.0.6
 # License: MIT License
 # ===================================================================================================
 
@@ -138,23 +138,22 @@ def main():
                 data = next((data for data in config.radarr if data['name'] == instance_name), None)
                 if data:
                     script_name = data['name']
-                    count = data['count']
-                    tag_name = data['tag_name']
-                    reset = data['reset']
-                    unattended = data['unattended']
-                    monitored = data['monitored']
-                    status = data['status']
-                    if not status:
-                        status = "all"
+                    count = data.get('count', 1)
+                    tag_name = data.get('tag_name', 'Upgradinatorr')
+                    reset = data.get('reset', False)
+                    unattended = data.get('unattended', False)
+                    monitored = data.get('monitored', True)
+                    status = data.get('status', 'all')
             elif instance_type == "Sonarr" and config.sonarr:
                 data = next((data for data in config.sonarr if data['name'] == instance_name), None)
                 if data:
                     script_name = data['name']
                     count = data['count']
-                    tag_name = data['tag_name']
-                    reset = data['reset']
-                    unattended = data['unattended']
-                    status = data['status']
+                    count = data.get('count', 1)
+                    tag_name = data.get('tag_name', 'Upgradinatorr')
+                    reset = data.get('reset', False)
+                    unattended = data.get('unattended', False)
+                    status = data.get('status', 'all')
             if script_name and instance_name == script_name:
                 logger.info('*' * 40)
                 logger.info(f'* {instance_name:^36} *')

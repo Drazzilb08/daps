@@ -119,13 +119,13 @@ check_space() {
 
 # Function to display help
 display_help() {
-    echo "Usage: $0 [ -s | --source ] [ -d | --destination ] [ -c | --compress ] [ -k | --keep-backup ] [ -u | --unraid-notify ] [ -d | --webhook ] [ -n | --bot-name [ -b | --bar-color ] [ -h | --help ]"
-    echo "This script will backup defined folders to a defined destination, you can either archive yoru files (using tar) or compress them (using 7Zip)"
+    echo "Usage: $0 [ -s | --source ] [ -d | --destination ] [ -c | --compress ] [ -k | --keep-backup ] [ -u | --unraid-notify ] [ -w | --webhook ] [ -n | --bot-name [ -b | --bar-color ] [ -h | --help ]"
+    echo "This script will backup defined folders to a defined destination, you can either archive your files (using tar) or compress them (using 7Zip)"
     echo "Options:"
     echo " -s    --source          : Set the source directory to backup"
     echo " -d    --destination     : Set the destination directory to save the backup"
     echo " -c    --compress        : Use compression on the backup file (default: false)"
-    echo " -k    --keep-backup     : Number of backups to keep (default: 2)"
+    echo " -k    --keep-backup     : Number of daily backups to keep (default: 2)"
     echo " -u    --unraid-notify   : Use unRAID notifications for backup status (default: false)"
     echo " -q    --quiet           : Run script without displaying output"
     echo " -w    --webhook         : Use webhoo notifications (currently discord is the only one accepted) for backup status (default: false)"
@@ -342,7 +342,7 @@ verbose_output() {
 
 cleanup() {
     # Remove oldest backups
-    verbose_output "Keeping $keep_backup backups, removing the rest"
+    verbose_output "Keeping $keep_backup daily backups, removing the rest"
     find "$destination_dir" -mindepth 1 -maxdepth 1 -type d | sort -r | tail -n +"$(( $keep_backup + 1 ))" | xargs -I {} rm -rf {}
 }
 

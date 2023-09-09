@@ -13,7 +13,7 @@
 #              hardlinks seeding.
 # Usage: python3 nohl.py
 # Requirements: Python 3.8+, requests
-# Version: 1.0.2
+# Version: 1.0.3
 # License: MIT License
 # ===================================================================================================
 
@@ -70,7 +70,6 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
         for file in nohl_files:
             try:
                 title_match = re.match(title_regex, file)
-                print(title_match)
                 if title_match:
                     title = title_match.group(1)
                     year = int(title_match.group(2))
@@ -142,12 +141,11 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
             quality_profile_id = None
             quality_profile_name = None
             media_item_title = media_item['title']
-            media_item_title_modified = unidecode(media_item['title'])
+            media_item_title_modified = unidecode(re.sub(r' \(\d+\)', '', (media_item['title'])))
             media_item_title_modified = illegal_chars_regex.sub("", media_item_title_modified)
             media_item_year = media_item['year']
             media_item_id = media_item['id']
             media_item_monitored = media_item['monitored']
-
             quality_profile_id = media_item['qualityProfileId']
             if media_data_item_title_modified == media_item_title_modified and abs(media_data_item_year - media_item_year) == 1:
                 logger.warning(f"Found match for {media_item_title} and {media_data_item_title} but years do not match. Media Year: {media_item_year}, File Year: {media_data_item_year}")
@@ -173,7 +171,7 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
                             except:
                                 continue
                         else:
-                            logger.debug(f"Skipping {media_item_title} because it is not monitored.")
+                            logger.info(f"Skipping {media_item_title} because it is not monitored.")
                             continue
 
                     elif instance_type == 'Sonarr':
@@ -238,15 +236,15 @@ def process_instances(instance_type, url, api, nohl_files, include_profiles, exc
                                 'seasons': season_info
                             })
                         else:
-                            logger.debug(f"Skipping {media_item_title} because it is not monitored.")
+                            logger.info(f"Skipping {media_item_title} because it is not monitored.")
                             continue
                 else:
                     if quality_profile_name:
-                        logger.debug(f"Skipping {media_item_title} because it does not meet quality profile requirements. Quality Profile: {quality_profile_name}")
+                        logger.info(f"Skipping {media_item_title} because it does not meet quality profile requirements. Quality Profile: {quality_profile_name}")
                     else:
-                        logger.debug(f"Skipping {media_item_title} because it does not have a quality profile.")
+                        logger.info(f"Skipping {media_item_title} because it does not have a quality profile.")
                     continue
-
+                
     logger.debug(f"Results: {json.dumps(results, indent=4)}")
     final_step(app, results, instance_type, dry_run)
 

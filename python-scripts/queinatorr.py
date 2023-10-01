@@ -11,7 +11,7 @@
 #              in a queue due to a missing file or not being an upgrade for existing episode file(s).
 # Usage: python3 queinatorr.py
 # Requirements: requests, qbittorrentapi
-# Version: 1.0.1
+# Version: 1.0.2
 # License: MIT License
 # ===================================================================================================
 
@@ -32,6 +32,7 @@ queue_list = [
     "Not a Custom Format upgrade for existing episode file(s)",
     "Not a quality revision upgrade for existing movie file(s)",
     "Not a quality revision upgrade for existing episode file(s)",
+    "New Quality is BR-DISK",
     "Not an upgrade for existing movie file",
     "No files found are eligible for import in",
     "The download is missing files",
@@ -89,26 +90,25 @@ def handle_queued_items(queue):
     logger.debug('*' * 40)
     title_list = []
     for record in queue['records']:
+        title = record['title']
         if record['statusMessages']:
             for message in record['statusMessages']:
                 if not message['messages']:
                     continue
-                title = message['title']
                 messages = message['messages']
-                if messages:
-                    if any(queue_item in msg for msg in messages for queue_item in queue_list):
-                        if title and messages:
-                            logger.info(f"Found {title} with {messages}")
-                            title_list.append(title)
+                # if messages:
+                #     if any(queue_item in msg for msg in messages for queue_item in queue_list):
+                #         if title and messages:
+            logger.info(f"Found {title} with {messages}")
+            title_list.append(title)
         try:
             if record['errorMessage']:
-                title = record['title']
                 error_message = record['errorMessage']
-                if error_message:
-                    if error_message in queue_list:
-                        if title and error_message:
-                            logger.info(f"Found {title} with {error_message}....")
-                            title_list.append(title)
+                # if error_message:
+                #     if error_message in queue_list:
+                #         if title and error_message:
+            logger.info(f"Found {title} with {error_message}....")
+            title_list.append(title)
         except KeyError:
             pass
     logger.debug("")

@@ -9,7 +9,7 @@
 #                                                   | |                        | |
 #                                                   |_|                        |_|
 # ====================================================
-# Version: 4.0.1
+# Version: 4.0.2
 # backup-plex - A script to backup your plex database and media
 # Author: Drazzilb
 # License: MIT License
@@ -179,7 +179,7 @@ send_notification() {
     # Get current time in UTC format
     get_ts=$(date -u -Iseconds)
     # Get a random joke from the specified file
-    joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/dev/jokes.txt | shuf -n 1)
+    joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
     # Check if the webhook is for discord
     if [[ $webhook =~ ^https://discord\.com/api/webhooks/ ]]; then
         bot_name="Notification Bot"

@@ -256,6 +256,39 @@ class StARR:
                 self.logger.info(
                     f'Tag Name: {tag_name} does not exist, dry run enabled, skipping.')
         return tag_id
+
+    def remove_tag(self, tag_id, media_id, tag_name, title):
+        """
+        Remove a tag from a media item.
+        Parameters:
+            media_id (int): The ID of the media item to remove the tag from.
+            tag_id (int): The ID of the tag to remove from the media item.
+        Returns:
+            dict: The JSON response from the PUT request.
+        """
+        id_type = None
+        media = None
+        if isinstance(media_id, int):
+            media_id = [media_id]
+        if self.instance_type == 'Sonarr':
+            media = "series"
+            id_type = "seriesIds"
+        elif self.instance_type == 'Radarr':
+            media = "movie"
+            id_type = "movieIds"
+        payload = {
+            id_type: media_id,
+            "tags": [tag_id],
+            "applyTags": "remove"
+        }
+        endpoint = f"{self.url}/api/v3/{media}/editor"
+        response = self.make_put_request(endpoint, json=payload)
+        if response:
+            self.logger.info(f"Removed tag '{tag_name}' from {title} media items")
+            return True
+        else:
+            self.logger.error(f"Failed to remove tag '{tag_name}' from media items")
+            return False
     
     def remove_tags(self, all_media, tag_id, tag_name):
         """

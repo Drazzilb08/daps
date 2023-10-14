@@ -58,3 +58,8 @@ class Config:
         self.movies = self.script_data.get('movies', False)  # Use False as default value for movies if not provided
         self.series = self.script_data.get('series', False)  # Use False as default value for tv_shows if not provided
         self.maximum_searches = self.script_data.get('maximum_searches', 0)  # Use 0 as default value for maximum_searches if not provided
+
+        #labelarr
+        self.labels = self.script_data.get('labels', '[]')
+        self.add_from_plex = self.script_data.get('add_from_plex', False)
+

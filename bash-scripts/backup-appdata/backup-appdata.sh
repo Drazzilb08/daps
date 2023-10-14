@@ -8,7 +8,7 @@
 #           | |   | |                                                      | |
 #           |_|   |_|                                                      |_|
 # ====================================================
-# Version: 4.2.1
+# Version: 4.2.3
 # backup-appdata - A script to backup your Docker appdata
 # Author: Drazzilb
 # License: MIT License
@@ -513,17 +513,17 @@ send_notification() {
     # Get a random joke from the specified file
     # Check if the webhook is for discord
     if [[ "$webhook" =~ ^https://discord\.com/api/webhooks/ ]]; then
-        joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/dev/jokes.txt | shuf -n 1)
+        joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
         discord_common_fields
         bot_name="Notification Bot"
         # Call the discord_payload function to construct the payload
         if [ ${#new_container[@]} -gt 0 ]; then
-            joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/dev/jokes.txt | shuf -n 1)
+            joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
             new_container_notification
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
         fi
         if [ ${#removed_containers[@]} -gt 0 ]; then
-            joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/dev/jokes.txt | shuf -n 1)
+            joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
             removed_container_notification
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
         fi
@@ -533,16 +533,16 @@ send_notification() {
     fi
     # Check if the webhook is for notifiarr
     if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
-        joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/dev/jokes.txt | shuf -n 1)
+        joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
         notifiarr_common_fields
         # Call the notifarr_payload function to construct the payload
         if [ ${#new_container[@]} -gt 0 ]; then
-            joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/dev/jokes.txt | shuf -n 1)
+            joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
             new_container_notification
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook" >/dev/null
         fi
         if [ ${#removed_containers[@]} -gt 0 ]; then
-            joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/dev/jokes.txt | shuf -n 1)
+            joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
             removed_container_notification
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook" >/dev/null
         fi

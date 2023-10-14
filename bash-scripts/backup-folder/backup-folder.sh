@@ -8,7 +8,7 @@
 #                             | |
 #                             |_|
 # ====================================================
-# Version: 3.0.1
+# Version: 3.0.2
 # Backup Folder - A script to backup a folder to another folder
 # Author: Drazzilb
 # License: MIT License
@@ -207,7 +207,7 @@ send_notification() {
     # Get current time in UTC format
     get_ts=$(date -u -Iseconds)
     # Get a random joke from the specified file
-    joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/dev/jokes.txt | shuf -n 1)
+    joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
     # Check if the webhook is for discord
     if [[ $webhook =~ ^https://discord\.com/api/webhooks/ ]]; then
         # Call the discord_payload function to construct the payload

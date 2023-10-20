@@ -124,9 +124,6 @@ renamer:
   # If however you see it messing up more often on things you can restrict the threshold.
   # 0 = Anything goes, 100 = Must be exact match
   # The default numbers here are based upon what I've seen to be the most effective, I've had one-offs where I had to manually fix things. 
-  # Eg. Hanna vs Anna, One letter difference and in the case I had the years were the same too.
-  movies_threshold: 96
-  series_threshold: 96
   collection_threshold: 99
   # Decide which radarr instance you will be using for renamer, this is useful if you have for example: A Sonarr/Sonarr-Anime and/or Radarr/Radarr-Anime
   # If you however duplicate entries between a Radarr/Radarr4K for example. this won't help and will only double the work for the script for no gain.

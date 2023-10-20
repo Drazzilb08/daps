@@ -31,7 +31,7 @@
 #          site with the wrong year. During that time you may have added a movie/show to your library. 
 #          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 5.2.0
+# Version: 5.2.1
 # License: MIT License
 # ===================================================================================================
 
@@ -186,7 +186,7 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
     logger.debug(f"Almost matched collections: {json.dumps(almost_matched, ensure_ascii=False, indent=4)}")
     return matched_collections
 
-def match_media(media, source_file_list, threshold, type):
+def match_media(media, source_file_list, type):
     matched_media = {"matched_media": []}
     not_matched = {"not_matched": []}
     for item in tqdm(media, desc="Matching media", total=len(media), disable=None):
@@ -537,9 +537,9 @@ def process_instance(instance_type, instance_name, url, api, final_output, asset
     if instance_type == "Plex":
         matched_media = match_collection(collection_names, asset_files, config.collection_threshold)
     elif instance_type == "Radarr":
-        matched_media = match_media(media, asset_files, config.movies_threshold, "movies")
+        matched_media = match_media(media, asset_files, "movies")
     elif instance_type == "Sonarr":
-        matched_media = match_media(media, asset_files, config.series_threshold, "series")
+        matched_media = match_media(media, asset_files, "series")
     if matched_media:
         message = rename_file(matched_media, config.destination_dir, config.dry_run, config.action_type, config.print_only_renames)
         final_output.extend(message)
@@ -568,8 +568,6 @@ def main():
     logger.debug(f"source_dir: {config.source_dir}")
     logger.debug(f"source_overrides: {config.source_overrides}")
     logger.debug(f"destination_dir: {config.destination_dir}")
-    logger.debug(f"movies_threshold: {config.movies_threshold}")
-    logger.debug(f"series_threshold: {config.series_threshold}")
     logger.debug(f"collection_threshold: {config.collection_threshold}")
     logger.debug(f"action_type: {config.action_type}")
     logger.debug(f"print_only_renames: {config.print_only_renames}")

@@ -8,7 +8,7 @@
 #           | |   | |                                                      | |
 #           |_|   |_|                                                      |_|
 # ====================================================
-# Version: 4.2.3
+# Version: 4.3.3
 # backup-appdata - A script to backup your Docker appdata
 # Author: Drazzilb
 # License: MIT License
@@ -338,7 +338,23 @@ get_paths() {
     # Get the container name
     container_name="$1"
     # Get the config path of the container
-    config_path=$(docker inspect -f '{{json .Mounts}}' "$container_name" | jq -r '.[] | select(.Destination | test("^/config")) | .Source' | head -n1)
+    config_paths=$(docker inspect -f '{{json .Mounts}}' "$container_name" | jq -r '.[] | select(.Destination | test("^/config")) | .Source')
+    # if config paths has more than 1 entry itterate over them
+    if [ "$(echo "$config_paths" | wc -w)" -gt 1 ]; then
+        for config_path in $config_paths; do
+            # if config path is empty skip over it
+            if [ -z "$config_path" ]; then
+                continue
+            fi
+            # if config path is $config_path/$container_name save config_path as this path
+            if [ -d "$config_path/$container_name" ]; then
+                config_path="$config_path/$container_name"
+                break
+            fi
+        done
+    else
+        config_path="$(echo "$config_paths" | tr '\n' ' ' | sed 's/ *$//')"
+    fi
     # Check if config path is empty
     if [ -z "$config_path" ]; then
         # Get the appdata path of the container

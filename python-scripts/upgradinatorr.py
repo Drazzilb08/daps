@@ -11,7 +11,7 @@
 # Description: A script to upgrade Sonarr/Radarr libraries to the keep in line with trash-guides
 # Usage: python3 /path/to/upgradinatorr.py
 # Requirements: requests, pyyaml
-# Version: 2.0.6
+# Version: 2.1.6
 # License: MIT License
 # ===================================================================================================
 
@@ -36,8 +36,15 @@ def check_all_tagged(all_media, tag_id, status, monitored):
     for media in all_media:
         if monitored != media['monitored']:
             continue
-        if status != "all" and status != media['status']:
-            continue
+        if isinstance(status, str):
+            if status != "all" and status != media['status']:
+                continue
+        elif isinstance(status, list):
+            for stat in status:
+                if stat == media['status']:
+                    break
+            else:
+                continue
         if tag_id not in media['tags']:
             return False
     return True
@@ -77,7 +84,10 @@ def process_instance(instance_type, instance_name, count, tag_name, unattended, 
         logger.info(f"Skipping {instance_name}...")
         return
     if not all_tagged:
-        untagged_media = [m for m in media if arr_tag_id not in m['tags'] and m['monitored'] == monitored and (status == "all" or status == m['status'])]
+        if isinstance(status, str):
+            untagged_media = [m for m in media if arr_tag_id not in m['tags'] and m['monitored'] == monitored and (status == "all" or status == m['status'])]
+        elif isinstance(status, list):
+            untagged_media = [m for m in media if arr_tag_id not in m['tags'] and m['monitored'] == monitored and any(stat == m['status'] for stat in status)]
         media_to_process = untagged_media[:count]
         media_ids_to_process = [item["id"] for item in media_to_process]
         if not dry_run:

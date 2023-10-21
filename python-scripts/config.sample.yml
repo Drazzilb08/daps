@@ -65,7 +65,9 @@ upgradinatorr:
     - name: sonarr_1
       count:
       monitored: true
-      status: continuing
+      status:
+        - continuing
+        - ended
       tag_name:
       unattended: false
       reset: false
@@ -237,3 +239,17 @@ queinatorr:
 movie-deletarr:
   log_level: debug
   dry_run: true
+
+# This script's purpose is to add/remove labels in Plex based on tags in Sonarr/Radarr it can also be used to add sync tags to Radarr/Sonarr basedupon a certain label w/in Plex
+labelarr:
+  dry_run: false
+  log_level: info
+  # This option is used to sync labesl from plex to Radarr/Sonarr
+  add_from_plex: false
+  radarr:
+    - name: radarr_1
+  sonarr:
+    - name: sonarr_1
+  # The label that you wish to sync from/to Plex
+  labels:
+    - kids

@@ -8,7 +8,7 @@
 #           | |   | |                                                      | |
 #           |_|   |_|                                                      |_|
 # ====================================================
-# Version: 4.3.3
+# Version: 4.4.3
 # backup-appdata - A script to backup your Docker appdata
 # Author: Drazzilb
 # License: MIT License
@@ -226,9 +226,7 @@ create_backup() {
 info_function() {
     local container_name="$1"
     local container_list_name="$2"
-    local secondary_container_list_name="$3"
     declare -n container_info="$container_list_name"
-    declare -n secondary_container_info="$secondary_container_list_name"
 
     container_size=$(du -sh "$backup_file.$extension" | awk '{print $1}')
     threshold=1000
@@ -240,7 +238,7 @@ info_function() {
             total_length=$((total_length + ${#elements} + 1))
         done
         if [ $((total_length + ${#upcoming_iteration})) -gt $threshold ]; then
-            secondary_container_info+=("$upcoming_iteration")
+            container_info+=("$upcoming_iteration")
         else
             container_info+=("$upcoming_iteration")
         fi
@@ -303,7 +301,7 @@ stop_start_container() {
         # create backup
         create_backup "$container_name"
         # print information about the container
-        info_function "$container_name" container_stop_list secondary_container_stop_list
+        info_function "$container_name" container_stop_list
         was_running=true
     else
         # if container not running
@@ -316,7 +314,7 @@ stop_start_container() {
         # create backup
         create_backup "$container_name"
         # print information about the container
-        info_function "$container_name" container_stop_list secondary_container_stop_list
+        info_function "$container_name" container_stop_list
         was_running=false
     fi
     # check if container was running before stopping
@@ -468,7 +466,7 @@ backup_prep() {
             # Create a backup of the container
             create_backup "$no_stop_container"
             # Print information about the container
-            info_function "$no_stop_container" container_no_stop_list secondary_container_no_stop_list
+            info_function "$no_stop_container" container_no_stop_list
         else
             # If the container does not exist, add it to the removed_containers array
             removed_threshold=500
@@ -523,6 +521,7 @@ calculate_runtime() {
         run_output="Appdata backup completed in $hours hours $minutes minutes and $seconds seconds"
     fi
 }
+
 send_notification() {
     # Get current time in UTC format
     get_ts=$(date -u -Iseconds)
@@ -544,6 +543,7 @@ send_notification() {
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
         fi
         payload
+        # echo "$payload"
         # Send the payload to the discord webhook URL
         curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
     fi
@@ -567,6 +567,7 @@ send_notification() {
         curl -s -H "Content-Type: application/json" -X POST -d "'$payload'" "$webhook" >/dev/null
     fi
 }
+
 notifiarr_common_fields() {
     title="title"
     text="text"
@@ -582,6 +583,7 @@ notifiarr_common_fields() {
             "footer": "'"Powered by: Drazzilb | $joke"'"},
             "ids": {"channel": "'"$channel"'"}}}'
 }
+
 discord_common_fields() {
     title="name"
     text="value"
@@ -603,6 +605,7 @@ discord_common_fields() {
                 ]
             }'
 }
+
 field_builder() {
     local field_builder
     local title_text="$1"
@@ -626,219 +629,148 @@ field_builder() {
     fields="$fields""$field_builder"
 }
 
-payload() {
-    # Build stop list JSON Builder
-    container_stop_list_string=$(printf "%s\n" "${container_stop_list[@]}")
-    secondary_container_stop_list_string=$(printf "%s\n" "${secondary_container_stop_list[@]}")
-    json_stop_string="\`\`\`$(jq -Rs '.' <<<"$container_stop_list_string" | sed -e 's/^"//' -e 's/"$//')\`\`\`"
-    json_stop_string_2="\`\`\`$(jq -Rs '.' <<<"$secondary_container_stop_list_string" | sed -e 's/^"//' -e 's/"$//')\`\`\`"
-    # Build no stop list JSON builder
-    container_no_stop_list_string=$(printf "%s\n" "${container_no_stop_list[@]}")
-    secondary_container_no_stop_list_string=$(printf "%s\n" "${secondary_container_no_stop_list[@]}")
-    json_no_stop_string="\`\`\`$(jq -Rs '.' <<<"$container_no_stop_list_string" | sed -e 's/^"//' -e 's/"$//')\`\`\`"
-    json_no_stop_string_2="\`\`\`$(jq -Rs '.' <<<"$secondary_container_no_stop_list_string" | sed -e 's/^"//' -e 's/"$//')\`\`\`"
-
-    if [ "$use_summary" == "true" ]; then
-        field_builder "Runtime" "$run_output" "true"
-        field_builder "Total size of all appdata backups today" "$run_size" "false"
-        field_builder "Total size of all appdata backups" "$full_size" "false"
-        payload=''"$common_fields"'
-                    "fields":
-                    [
-                        '"$fields"'
-                    ]'"$common_fields2"''
-    else
-        if [ ${#secondary_container_stop_list[@]} -gt 0 ] || [ ${#secondary_container_no_stop_list[@]} -gt 0 ]; then
-            # Containers stopped and backed up x2, containers backed up without stopping them 0x
-            if [ ${#secondary_container_stop_list[@]} -gt 0 ] && [ ${#container_no_stop_list[@]} -eq 0 ]; then
-                field_builder "Runtime" "$run_output" "true"
-                field_builder "Containers stopped and backed up" "$json_stop_string" "false"
-                field_builder "Containers stopped and backed up" "$json_stop_string_2" "false"
-                field_builder "Total size of all appdata backups today" "$run_size" "false"
-                field_builder "Total size of all appdata backups" "$full_size" "false"
-                payload=''"$common_fields"'
-                    "fields":
-                    [
-                        '"$fields"'
-                    ]'"$common_fields2"''
-            # Containers stopped and backed up x0, containers backed up without stopping them 2x
-            elif [ ${#container_stop_list[@]} -eq 0 ] && [ ${#secondary_container_no_stop_list[@]} -gt 0 ]; then
-                field_builder "Runtime" "$run_output" "true"
-                field_builder "Containers backed up without stopping them" "$json_no_stop_string" "false"
-                field_builder "Containers backed up without stopping them" "$json_no_stop_string_2" "false"
-                field_builder "Total size of all appdata backups today" "$run_size" "false"
-                field_builder "Total size of all appdata backups" "$full_size" "false"
-                payload=''"$common_fields"'
-                    "fields":
-                    [
-                        '"$fields"'
-                    ]'"$common_fields2"''
-            # Containers stopped and backed up x2, containers stopped and backed up 1x
-            elif [ ${#secondary_container_stop_list[@]} -gt 0 ] && [ ${#container_no_stop_list[@]} -gt 0 ] && [ ${#secondary_container_no_stop_list[@]} -eq 0 ]; then
-                field_builder "Runtime" "$run_output" "true"
-                field_builder "Containers stopped and backed up" "$json_stop_string" "false"
-                field_builder "Containers stopped and backed up" "$json_stop_string_2" "false"
-                field_builder "Containers backed up without stopping them" "$json_no_stop_string" "false"
-                field_builder "Total size of all appdata backups today" "$run_size" "false"
-                field_builder "Total size of all appdata backups" "$full_size" "false"
-                payload=''"$common_fields"'
-                    "fields":
-                    [
-                        '"$fields"'
-                    ]'"$common_fields2"''
-            # Containers stopped and backed up x1, containers stopped and backed up 2x
-            elif [ ${#secondary_container_no_stop_list[@]} -gt 0 ] && [ ${#container_stop_list[@]} -gt 0 ] && [ ${#secondary_container_stop_list[@]} -eq 0 ]; then
-                field_builder "Runtime" "$run_output" "true"
-                field_builder "Containers stopped and backed up" "$json_stop_string" "false"
-                field_builder "Containers backed up without stopping them" "$json_no_stop_string" "false"
-                field_builder "Containers backed up without stopping them" "$json_no_stop_string_2" "false"
-                field_builder "Total size of all appdata backups today" "$run_size" "false"
-                field_builder "Total size of all appdata backups" "$full_size" "false"
-                payload=''"$common_fields"'
-                    "fields":
-                    [
-                        '"$fields"'
-                    ]'"$common_fields2"''
-            # Containers stopped and backed up x2, containers stopped and backed up 2x
-            else
-                field_builder "Runtime" "$run_output" "true"
-                field_builder "Containers stopped and backed up" "$json_stop_string" "false"
-                field_builder "Containers stopped and backed up" "$json_stop_string_2" "false"
-                field_builder "Containers backed up without stopping them" "$json_no_stop_string" "false"
-                field_builder "Containers backed up without stopping them" "$json_no_stop_string_2" "false"
-                field_builder "Total size of all appdata backups today" "$run_size" "false"
-                field_builder "Total size of all appdata backups" "$full_size" "false"
-                payload=''"$common_fields"'
-                    "fields":
-                    [
-                        '"$fields"'
-                    ]'"$common_fields2"''
-            fi
-        else
-            # Containers stopped and backed up x1, containers stopped and backed up 1x
-            if [ ${#container_stop_list[@]} -gt 0 ] && [ ${#container_no_stop_list[@]} -gt 0 ]; then
-                field_builder "Runtime" "$run_output" "true"
-                field_builder "Containers stopped and backed up" "$json_stop_string" "false"
-                field_builder "Containers backed up without stopping them" "$json_no_stop_string" "false"
-                field_builder "Total size of all appdata backups today" "$run_size" "false"
-                field_builder "Total size of all appdata backups" "$full_size" "false"
-                payload=''"$common_fields"'
-                    "fields":
-                    [
-                        '"$fields"'
-                    ]'"$common_fields2"''
-            # Containers stopped and backed up x1, containers stopped and backed up 0x
-            elif [ ${#container_stop_list[@]} -gt 0 ] && [ ${#container_no_stop_list[@]} -eq 0 ]; then
-                field_builder "Runtime" "$run_output" "true"
-                field_builder "Containers stopped and backed up" "$json_stop_string" "false"
-                field_builder "Total size of all appdata backups today" "$run_size" "false"
-                field_builder "Total size of all appdata backups" "$full_size" "false"
-                payload=''"$common_fields"'
-                    "fields":
-                    [
-                        '"$fields"'
-                    ]'"$common_fields2"''
-            # Containers stopped and backed up x0, containers stopped and backed up 1x
-            elif [ ${#container_stop_list[@]} -eq 0 ] && [ ${#container_no_stop_list[@]} -gt 0 ]; then
-                field_builder "Runtime" "$run_output" "true"
-                field_builder "Containers backed up without stopping them" "$json_no_stop_string" "false"
-                field_builder "Total size of all appdata backups today" "$run_size" "false"
-                field_builder "Total size of all appdata backups" "$full_size" "false"
-                payload=''"$common_fields"'
-                    "fields":
-                    [
-                        '"$fields"'
-                    ]'"$common_fields2"''
-            else
-                field_builder "Error!" "It seems that you do not have any containers loaded" "true"
-                field_builder "Total size of all appdata backups" "$full_size" "false"
-                payload=''"$common_fields"'
-                    "fields":
-                    [
-                        '"$fields"'
-                    ]'"$common_fields2"''
-            fi
+# Function to find the last occurrence of a line break before a specific index
+find_last_line_break() {
+    local input_string="$1"
+    local index=$2
+    for ((i = index; i >= 0; i--)); do
+        if [ "${input_string:i:1}" == $'\n' ]; then
+            echo "$i"
+            return
         fi
+    done
+    echo "-1"
+}
+
+payload() {
+    json_stop_list=()
+    json_no_stop_list=()
+    container_stop_list_string=$(printf "%s\n" "${container_stop_list[@]}")
+    container_no_stop_list_string=$(printf "%s\n" "${container_no_stop_list[@]}")
+
+    container_stop_list_string_length=${#container_stop_list_string}
+    container_no_stop_list_string_length=${#container_no_stop_list_string}
+
+    # Split container_stop_list_string at line breaks
+    if "$container_stop_list_string_length" -gt 3 ]; then
+        while [ "$container_stop_list_string_length" -gt 1000 ]; do
+            last_line_break=$(find_last_line_break "$container_stop_list_string" 750)
+            json_stop_list+=("${container_stop_list_string:0:last_line_break}")
+            container_stop_list_string="${container_stop_list_string:last_line_break+1}"
+            container_stop_list_string_length=${#container_stop_list_string}
+        done
+        json_stop_list+=("$container_stop_list_string")
     fi
+
+    # Split container_no_stop_list_string at line breaks
+    if [ "$container_no_stop_list_string_length" -gt 3 ]; then
+        while [ "$container_no_stop_list_string_length" -gt 1000 ]; do
+            last_line_break=$(find_last_line_break "$container_no_stop_list_string" 750)
+            json_no_stop_list+=("${container_no_stop_list_string:0:last_line_break}")
+            container_no_stop_list_string="${container_no_stop_list_string:last_line_break+1}"
+            container_no_stop_list_string_length=${#container_no_stop_list_string}
+        done
+        json_no_stop_list+=("$container_no_stop_list_string")
+    fi
+    
+    # convert each string in json_stop_list using jq to a json object and add it to json_stop_list
+    for i in "${!json_stop_list[@]}"; do
+        json_stop_list[i]="\`\`\`$(jq -Rs '.' <<<"${json_stop_list[i]}" | sed -e 's/^"//' -e 's/"$//')\`\`\`"
+    done
+    # convert each string in json_no_stop_list using jq to a json object and add it to json_no_stop_list
+    for i in "${!json_no_stop_list[@]}"; do
+        json_no_stop_list[i]="\`\`\`$(jq -Rs '.' <<<"${json_no_stop_list[i]}" | sed -e 's/^"//' -e 's/"$//')\`\`\`"
+    done
+    field_builder "Runtime" "$run_output" "true"
+    field_builder "Total size of all appdata backups today" "$run_size" "false"
+    field_builder "Total size of all appdata backups" "$full_size" "false"
+    
+    #for each item in json_stop_list add it to the fields
+    for i in "${!json_stop_list[@]}"; do
+        field_builder "Containers that were stopped before backup" "${json_stop_list[i]}" "false"
+    done
+    #for each item in json_no_stop_list add it to the fields
+    for i in "${!json_no_stop_list[@]}"; do
+        field_builder "Containers that were not stopped before backup" "${json_no_stop_list[i]}" "false"
+    done
+    
+    payload=''"$common_fields"'
+        "fields":
+        [
+            '"$fields"'
+        ]'"$common_fields2"''
 }
 removed_container_notification() {
-    # Container removed JSON builder
+    json_removed_containers_list=()
+
     removed_containers_string=$(printf "%s\n" "${removed_containers[@]}")
-    secondary_removed_containers_string=$(printf "%s\n" "${secondary_removed_containers[@]}")
-    json_removed_containers_string="\`\`\`$(jq -Rs '.' <<<"$removed_containers_string" | sed -e 's/^"//' -e 's/"$//')\`\`\`"
-    json_removed_containers_string_2="\`\`\`$(jq -Rs '.' <<<"$secondary_removed_containers_string" | sed -e 's/^"//' -e 's/"$//')\`\`\`"
-    if [ ${#secondary_removed_containers[@]} -gt 0 ]; then
-        field_builder "This is a list of containers that have been removed from your config file" "$json_removed_containers_string" "true"
-        field_builder "This is a list of containers that have been removed from your config file" "$json_removed_containers_string_2" "false"
-        field_builder "These entries were either a typo or the container was removed from your system" "" "false"
-        payload=''"$common_fields"'
-                    "description": "Your config file has been edited:",
-                    "fields":
-                    [
-                        '"$fields"'
-                    ]'"$common_fields2"''
-    else
-        field_builder "This is a list of containers that have been removed from your config file" "$json_removed_containers_string" "true"
-        field_builder "These entries were either a typo or the container was removed from your system" "" "false"
-        payload=''"$common_fields"'
-                    "description": "Your config file has been edited:",
-                    "fields":
-                    [
-                        '"$fields"'
-                    ]'"$common_fields2"''
-    fi
+    removed_containers_string_count=$(printf "%s\n" "${removed_containers[@]}" | wc -l)
+
+    # Split removed_containers_string at line breaks
+    while [ "$removed_containers_string_count" -gt 1000 ]; do
+        last_line_break=$(find_last_line_break "$removed_containers_string" 1000)
+        json_removed_containers_list+=("${removed_containers_string:0:last_line_break}")
+        removed_containers_string="${removed_containers_string:last_line_break+1}"
+        removed_containers_string_count=$(printf "%s\n" "${removed_containers_string[@]}" | wc -l)
+    done
+    json_removed_containers_list+=("$removed_containers_string")
+
+    # convert each string in json_removed_containers_list using jq to a json object and add it to json_removed_containers_list
+    for i in "${!json_removed_containers_list[@]}"; do
+        json_removed_containers_list[i]="\`\`\`$(jq -Rs '.' <<<"${json_removed_containers_list[i]}" | sed -e 's/^"//' -e 's/"$//')\`\`\`"
+    done
+    
+    #for each item in json_removed_containers_list add it to the fields
+    for i in "${!json_removed_containers_list[@]}"; do
+        field_builder "These containers were removed from your config file and were not backed up on this run" "${json_removed_containers_list[i]}" "true"
+    done
+    payload=''"$common_fields"'
+        "description": "Your config file has been edited:",
+        "fields":
+        [
+            '"$fields"'
+        ]'"$common_fields2"''
 }
 new_container_notification() {
     # Container new JSON builder
+    json_new_containers_list=()
     new_containers_string=$(printf "%s\n" "${new_containers[@]}")
-    secondary_new_containers_string=$(printf "%s\n" "${secondary_new_containers[@]}")
-    json_new_containers_string="\`\`\`$(jq -Rs '.' <<<"$new_containers_string" | sed -e 's/^"//' -e 's/"$//')\`\`\`"
-    json_new_containers_string_2="\`\`\`$(jq -Rs '.' <<<"$secondary_new_containers_string" | sed -e 's/^"//' -e 's/"$//')\`\`\`"
-    if [ ${#secondary_new_containers[@]} -gt 0 ]; then
-        if [ "$add_to_stop" == "true" ]; then
-            field_builder "These containers have been added to your stop list and were stopped before being backed up on this run" "$json_new_containers_string" "true"
-            field_builder "These containers have been added to your stop list and were stopped before being backed up on this run" "$json_new_containers_string_2" "false"
-            field_builder "'If you wish to change this you'll need to update your config file manually:'" "" "false"
-            payload=''"$common_fields"'
-                            "description": "Your config file has been edited:",
-                            "fields":
-                            [
-                                '"$fields"'
-                            ]'"$common_fields2"''
-        fi
-        if [ "$add_to_no_stop" == "true" ]; then
-            field_builder "These containers have been added to your no_stop list and were not stopped before being backed up on this run" "$json_new_containers_string" "true"
-            field_builder "These containers have been added to your no_stop list and were not stopped before being backed up on this run" "$json_new_containers_string_2" "false"
-            field_builder "'If you wish to change this you'll need to update your config file manually:'" "" "false"
-            payload=''"$common_fields"'
-                            "description": "Your config file has been edited:",
-                            "fields":
-                            [
-                                '"$fields"'
-                            ]'"$common_fields2"''
-        fi
-    else
-        if [ "$add_to_stop" == "true" ]; then
-            field_builder "These containers have been added to your stop list and were stopped before being backed up on this run" "$json_new_containers_string" "true"
-            field_builder "'If you wish to change this you'll need to update your config file manually'" "" "false"
-            payload=''"$common_fields"'
-                        "description": "Your config file has been edited:",
-                        "fields":
-                        [
-                            '"$fields"'
-                        ]'"$common_fields2"''
-        fi
-        if [ "$add_to_no_stop" == "true" ]; then
-            field_builder "These containers have been added to your no_stop list and were not stopped before being backed up on this run" "$json_new_containers_string" "true"
-            field_builder "'If you wish to change this you'll need to update your config file manually'" "" "false"
-            payload=''"$common_fields"'
-                            "description": "Your config file has been edited:",
-                            "fields":
-                            [
-                                '"$fields"'
-                            ]'"$common_fields2"''
-        fi
+    new_containers_string_count=$(printf "%s\n" "${new_containers[@]}" | wc -l)
+
+    # Split new_containers_string at line breaks
+    while [ "$new_containers_string_count" -gt 1000 ]; do
+        last_line_break=$(find_last_line_break "$new_containers_string" 1000)
+        json_new_containers_list+=("${new_containers_string:0:last_line_break}")
+        new_containers_string="${new_containers_string:last_line_break+1}"
+        new_containers_string_count=$(printf "%s\n" "${new_containers_string[@]}" | wc -l)
+    done
+    json_new_containers_list+=("$new_containers_string")
+
+    # convert each string in json_new_containers_list using jq to a json object and add it to json_new_containers_list
+    for i in "${!json_new_containers_list[@]}"; do
+        json_new_containers_list[i]="\`\`\`$(jq -Rs '.' <<<"${json_new_containers_list[i]}" | sed -e 's/^"//' -e 's/"$//')\`\`\`"
+    done
+
+    if [ "$add_to_stop" == "true" ]; then
+        #for each item in json_new_containers_list add it to the fields
+        for i in "${!json_new_containers_list[@]}"; do
+            field_builder "These containers have been added to your stop list and were stopped before being backed up on this run" "${json_new_containers_list[i]}" "true"
+        done
+        field_builder "'If you wish to change this you'll need to update your config file manually:'" "" "false"
     fi
+    if [ "$add_to_no_stop" == "true" ]; then
+        #for each item in json_new_containers_list add it to the fields
+        for i in "${!json_new_containers_list[@]}"; do
+            field_builder "These containers have been added to your no stop list and were not stopped before being backed up on this run" "${json_new_containers_list[i]}" "true"
+        done
+        field_builder "'If you wish to change this you'll need to update your config file manually:'" "" "false"
+    fi
+    payload=''"$common_fields"'
+        "description": "Your config file has been edited:",
+        "fields":
+        [
+            '"$fields"'
+        ]'"$common_fields2"''
 }
 
 hex_to_decimal() {
@@ -912,13 +844,10 @@ cleanup() {
     find "$destination_dir" -mindepth 1 -maxdepth 1 -type d | sort -r | tail -n +"$(( $keep_backup + 1 ))" | xargs -I {} rm -rf {}
 }
 
-
 main() {
     # Get the current time
     container_stop_list=()
-    secondary_container_stop_list=()
     container_no_stop_list=()
-    secondary_container_no_stop_list=()
     now="$(date +"%H.%M")"
     start=$(date +%s)
     if ! pgrep dockerd >/dev/null; then

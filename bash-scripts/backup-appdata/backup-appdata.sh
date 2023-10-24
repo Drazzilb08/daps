@@ -8,7 +8,7 @@
 #           | |   | |                                                      | |
 #           |_|   |_|                                                      |_|
 # ====================================================
-# Version: 4.4.3
+# Version: 4.4.4
 # backup-appdata - A script to backup your Docker appdata
 # Author: Drazzilb
 # License: MIT License
@@ -684,15 +684,16 @@ payload() {
     field_builder "Runtime" "$run_output" "true"
     field_builder "Total size of all appdata backups today" "$run_size" "false"
     field_builder "Total size of all appdata backups" "$full_size" "false"
-    
-    #for each item in json_stop_list add it to the fields
-    for i in "${!json_stop_list[@]}"; do
-        field_builder "Containers that were stopped before backup" "${json_stop_list[i]}" "false"
-    done
-    #for each item in json_no_stop_list add it to the fields
-    for i in "${!json_no_stop_list[@]}"; do
-        field_builder "Containers that were not stopped before backup" "${json_no_stop_list[i]}" "false"
-    done
+    if [ "$use_summary" ==  "false" ]; then
+        #for each item in json_stop_list add it to the fields
+        for i in "${!json_stop_list[@]}"; do
+            field_builder "Containers that were stopped before backup" "${json_stop_list[i]}" "false"
+        done
+        #for each item in json_no_stop_list add it to the fields
+        for i in "${!json_no_stop_list[@]}"; do
+            field_builder "Containers that were not stopped before backup" "${json_no_stop_list[i]}" "false"
+        done
+    fi
     
     payload=''"$common_fields"'
         "fields":

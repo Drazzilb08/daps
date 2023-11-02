@@ -12,7 +12,7 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 5.2.2
+# Version: 5.2.3
 # License: MIT License
 # ===================================================================================================
 
@@ -181,7 +181,9 @@ def match_media(media, source_file_list, type):
             arr_path_year = year_regex.search(item['path'])
             arr_path_year = int(arr_path_year.group(0)[1:-1])
         except AttributeError:
-            if item['status'] != 'upcoming':
+            if item['status'] == 'upcoming' or item['status'] == 'announced':
+                continue
+            else:
                 logger.warning(f"Unable to find year in path: {item['path']}")
         try:
             if item['alternateTitles']:

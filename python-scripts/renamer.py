@@ -10,28 +10,9 @@
 # Author: Drazzilb
 # Description: This script will check for unmatched assets in your Plex library.
 #              It will output the results to a file in the logs folder.
-# Usage: python3 renamer.py
-# Note: There is a limitation to how this script works with regards to it matching series assets the 
-#       main series poster requires seasonal posters to be present. If you have a series that does 
-#       not have a seasonal poster then it will not match the series poster.
-# Note: If you're not seeing a movie/show show up as match, chances are it could be due to the 
-#       following reasons:
-#       1. The threshold is too high. Try lowering it.
-#        - One thing to do before changing the threshold is to check for "Almost Matches"
-#          These are matches that are close to the threshold but with 10 points less.
-#          To check for "Almost Matches" Set logging level to debug and run the script.
-#          Debug logs are quite verbose so it may require some digging. Good ol Ctrl+F is your friend.
-#        - The default threshold is 96, This is what I've found to be the best balance between
-#          accuracy and false positives. If you're getting too many false positives, try raising
-#          the threshold. If you're not getting enough matches, try lowering the threshold.
-#       2. The movie/show's naming scheme is not conducive to matching. Try renaming it per Trash's Guides
-#          - Radarr: https://trash-guides.info/Radarr/Radarr-recommended-naming-scheme/
-#          - Sonarr: https://trash-guides.info/Sonarr/Sonarr-recommended-naming-scheme/
-#       3. Finally the years may be off, from time to time TVDB and/or TMDB may have an entry put onto their
-#          site with the wrong year. During that time you may have added a movie/show to your library. 
-#          Since then the year has been corrected on TVDB/TMDB but your media still has the wrong year. 
+# Usage: python3 renamer.py 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 5.2.1
+# Version: 5.2.2
 # License: MIT License
 # ===================================================================================================
 
@@ -193,6 +174,15 @@ def match_media(media, source_file_list, type):
         alternate_title = False
         alternate_titles = []
         arr_title = item['title']
+        arr_path = os.path.basename(item['path'])
+        arr_path = year_regex.sub("", arr_path).strip()
+        normalized_arr_path = normalize_titles(arr_path)
+        try:
+            arr_path_year = year_regex.search(item['path'])
+            arr_path_year = int(arr_path_year.group(0)[1:-1])
+        except AttributeError:
+            if item['status'] != 'upcoming':
+                logger.warning(f"Unable to find year in path: {item['path']}")
         try:
             if item['alternateTitles']:
                 for i in item['alternateTitles']:
@@ -223,32 +213,40 @@ def match_media(media, source_file_list, type):
             file_normalized_title = i['normalized_title']
             files = i['files']
             file_year = i['year']
-            if (arr_title == file_title or arr_normalized_title == file_normalized_title) and (
-                arr_year == file_year or secondary_year == file_year
+            if (
+                arr_title == file_title or arr_normalized_title == file_normalized_title or arr_path == file_title or normalized_arr_path == file_normalized_title) and (
+                arr_year == file_year or secondary_year == file_year or arr_path_year == file_year
             ):
                 matched_media['matched_media'].append({
                     "title": file_title,
                     "normalized_title": file_normalized_title,
                     "arr_title": arr_title,
                     "arr_normalized_title": arr_normalized_title,
+                    "arr_path": arr_path,
+                    "normalized_arr_path": normalized_arr_path,
                     "year": file_year,
                     "arr_year": arr_year,
+                    "arr_path_year": arr_path_year,
                     "secondaryYear": secondary_year,
                     "files": files,
                     "alternate_title": alternate_title,
                     "folder": folder,
                 })
                 break
-            elif (arr_title == file_title or arr_normalized_title == file_normalized_title) and (
-                arr_year != file_year or secondary_year != file_year
+            elif (
+                arr_title == file_title or arr_normalized_title == file_normalized_title or arr_path == file_title or normalized_arr_path == file_normalized_title) and (
+                arr_year != file_year or secondary_year != file_year or arr_path_year != file_year
             ):
                 not_matched['not_matched'].append({
                     "title": file_title,
                     "normalized_title": file_normalized_title,
                     "arr_title": arr_title,
                     "arr_normalized_title": arr_normalized_title,
+                    "arr_path": arr_path,
+                    "normalized_arr_path": normalized_arr_path,
                     "year": file_year,
                     "arr_year": arr_year,
+                    "arr_path_year": arr_path_year,
                     "secondaryYear": secondary_year,
                     "files": files,
                     "alternate_title": alternate_title,

@@ -12,7 +12,7 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 5.2.3
+# Version: 5.3.3
 # License: MIT License
 # ===================================================================================================
 
@@ -173,6 +173,8 @@ def match_media(media, source_file_list, type):
     for item in tqdm(media, desc="Matching media", total=len(media), disable=None):
         alternate_title = False
         alternate_titles = []
+        normalized_alternate_titles = False
+        normalized_alternate_titles = []
         arr_title = item['title']
         arr_path = os.path.basename(item['path'])
         arr_path = year_regex.sub("", arr_path).strip()
@@ -189,6 +191,7 @@ def match_media(media, source_file_list, type):
             if item['alternateTitles']:
                 for i in item['alternateTitles']:
                     alternate_titles.append(i['title'])
+                    normalized_alternate_titles.append(normalize_titles(i['title']))
         except KeyError:
             alternate_titles = []
         year_from_title = year_regex.search(item['title'])
@@ -216,8 +219,16 @@ def match_media(media, source_file_list, type):
             files = i['files']
             file_year = i['year']
             if (
-                arr_title == file_title or arr_normalized_title == file_normalized_title or arr_path == file_title or normalized_arr_path == file_normalized_title) and (
-                arr_year == file_year or secondary_year == file_year or arr_path_year == file_year
+                arr_title == file_title or 
+                arr_normalized_title == file_normalized_title or 
+                arr_path == file_title or 
+                normalized_arr_path == file_normalized_title or
+                file_title in alternate_titles or
+                file_normalized_title in normalized_alternate_titles 
+                ) and (
+                arr_year == file_year or 
+                secondary_year == file_year or 
+                arr_path_year == file_year
             ):
                 matched_media['matched_media'].append({
                     "title": file_title,
@@ -236,8 +247,16 @@ def match_media(media, source_file_list, type):
                 })
                 break
             elif (
-                arr_title == file_title or arr_normalized_title == file_normalized_title or arr_path == file_title or normalized_arr_path == file_normalized_title) and (
-                arr_year != file_year or secondary_year != file_year or arr_path_year != file_year
+                arr_title == file_title or 
+                arr_normalized_title == file_normalized_title or 
+                arr_path == file_title or 
+                normalized_arr_path == file_normalized_title or
+                file_title in alternate_titles or
+                file_normalized_title in normalized_alternate_titles
+                ) and (
+                arr_year != file_year or 
+                secondary_year != file_year or 
+                arr_path_year != file_year
             ):
                 not_matched['not_matched'].append({
                     "title": file_title,

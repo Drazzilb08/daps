@@ -12,7 +12,7 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 5.3.3
+# Version: 5.3.4
 # License: MIT License
 # ===================================================================================================
 
@@ -36,6 +36,7 @@ import re
 
 config = Config(script_name="renamer")
 logger = setup_logger(config.log_level, "renamer")
+
 year_regex = re.compile(r"\((19|20)\d{2}\)")
 illegal_chars_regex = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')
 remove_special_chars = re.compile(r'[^a-zA-Z0-9\s]+')
@@ -51,13 +52,14 @@ words_to_remove = [
 ]
 
 prefixes = [
-    "The", 
-    "A", 
+    "The",
+    "A",
     "An"
 ]
 suffixes = [
     "Collection",
 ]
+
 
 def find_best_match(matches, title):
     best_match = None
@@ -73,15 +75,17 @@ def find_best_match(matches, title):
                 best_match = i
     return best_match
 
+
 def match_collection(plex_collections, source_file_list, collection_threshold):
     matched_collections = {"matched_media": []}
     almost_matched = {"almost_matched": []}
     not_matched = {"not_matched": []}
     for plex_collection in tqdm(plex_collections, desc="Matching collections", total=len(plex_collections), disable=None):
         plex_normalize_title = normalize_titles(plex_collection)
-        matches = []
-        matches.append(process.extract(plex_collection, [item['title'] for item in source_file_list['collections']], scorer=fuzz.ratio))
-        matches.append(process.extract(plex_normalize_title, [item['normalized_title'] for item in source_file_list['collections']], scorer=fuzz.ratio))
+        matches = [
+            process.extract(plex_collection, [item['title'] for item in source_file_list['collections']], scorer=fuzz.ratio),
+            process.extract(plex_normalize_title, [item['normalized_title'] for item in source_file_list['collections']], scorer=fuzz.ratio)
+        ]
         for prefix in prefixes:
             matches.append(process.extract(plex_collection, [re.sub(rf"^{prefix}\s(?=\S)", '', item['title']) for item in source_file_list['collections']], scorer=fuzz.ratio))
             matches.append(process.extract(plex_normalize_title, [re.sub(rf"^{prefix}\s(?=\S)", '', item['normalized_title']) for item in source_file_list['collections']], scorer=fuzz.ratio))
@@ -108,10 +112,10 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
                     without_suffix.append(re.sub(rf"\s*{suffix}", '', item['title']))
                     without_suffix.append(re.sub(rf"\s*{suffix}", '', item['normalized_title']))
                 if score >= collection_threshold and (
-                    match_title == item['title'] or 
-                    match_title == item['normalized_title'] or
-                    match_title in without_prefix or
-                    match_title in without_suffix
+                        match_title == item['title'] or
+                        match_title == item['normalized_title'] or
+                        match_title in without_prefix or
+                        match_title in without_suffix
                 ):
                     matched_collections['matched_media'].append({
                         "title": file_title,
@@ -126,10 +130,10 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
                     })
                     break
                 elif score >= collection_threshold - 10 and score < collection_threshold and (
-                    match_title == item['title'] or 
-                    match_title == item['normalized_title'] or
-                    match_title in without_prefix or
-                    match_title in without_suffix
+                        match_title == item['title'] or
+                        match_title == item['normalized_title'] or
+                        match_title in without_prefix or
+                        match_title in without_suffix
                 ):
                     almost_matched['almost_matched'].append({
                         "title": file_title,
@@ -144,10 +148,10 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
                     })
                     break
                 elif score < collection_threshold - 10 and (
-                    match_title == item['title'] or 
-                    match_title == item['normalized_title'] or
-                    match_title in without_prefix or
-                    match_title in without_suffix
+                        match_title == item['title'] or
+                        match_title == item['normalized_title'] or
+                        match_title in without_prefix or
+                        match_title in without_suffix
                 ):
                     not_matched['not_matched'].append({
                         "title": file_title,
@@ -167,13 +171,13 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
     logger.debug(f"Almost matched collections: {json.dumps(almost_matched, ensure_ascii=False, indent=4)}")
     return matched_collections
 
+
 def match_media(media, source_file_list, type):
     matched_media = {"matched_media": []}
     not_matched = {"not_matched": []}
     for item in tqdm(media, desc="Matching media", total=len(media), disable=None):
         alternate_title = False
         alternate_titles = []
-        normalized_alternate_titles = False
         normalized_alternate_titles = []
         arr_title = item['title']
         arr_path = os.path.basename(item['path'])
@@ -219,16 +223,16 @@ def match_media(media, source_file_list, type):
             files = i['files']
             file_year = i['year']
             if (
-                arr_title == file_title or 
-                arr_normalized_title == file_normalized_title or 
-                arr_path == file_title or 
-                normalized_arr_path == file_normalized_title or
-                file_title in alternate_titles or
-                file_normalized_title in normalized_alternate_titles 
-                ) and (
-                arr_year == file_year or 
-                secondary_year == file_year or 
-                arr_path_year == file_year
+                    arr_title == file_title or
+                    arr_normalized_title == file_normalized_title or
+                    arr_path == file_title or
+                    normalized_arr_path == file_normalized_title or
+                    file_title in alternate_titles or
+                    file_normalized_title in normalized_alternate_titles
+            ) and (
+                    arr_year == file_year or
+                    secondary_year == file_year or
+                    arr_path_year == file_year
             ):
                 matched_media['matched_media'].append({
                     "title": file_title,
@@ -247,16 +251,16 @@ def match_media(media, source_file_list, type):
                 })
                 break
             elif (
-                arr_title == file_title or 
-                arr_normalized_title == file_normalized_title or 
-                arr_path == file_title or 
-                normalized_arr_path == file_normalized_title or
-                file_title in alternate_titles or
-                file_normalized_title in normalized_alternate_titles
-                ) and (
-                arr_year != file_year or 
-                secondary_year != file_year or 
-                arr_path_year != file_year
+                    arr_title == file_title or
+                    arr_normalized_title == file_normalized_title or
+                    arr_path == file_title or
+                    normalized_arr_path == file_normalized_title or
+                    file_title in alternate_titles or
+                    file_normalized_title in normalized_alternate_titles
+            ) and (
+                    arr_year != file_year or
+                    secondary_year != file_year or
+                    arr_path_year != file_year
             ):
                 not_matched['not_matched'].append({
                     "title": file_title,
@@ -276,6 +280,7 @@ def match_media(media, source_file_list, type):
     logger.debug(f"Matched media: {json.dumps(matched_media, ensure_ascii=False, indent=4)}")
     logger.debug(f"Not matched media: {json.dumps(not_matched, ensure_ascii=False, indent=4)}")
     return matched_media
+
 
 def rename_file(matched_media, destination_dir, dry_run, action_type, print_only_renames):
     messages = []
@@ -353,11 +358,12 @@ def rename_file(matched_media, destination_dir, dry_run, action_type, print_only
                                     messages.append(f"Removed {i} from {destination_dir}")
                                     os.remove(os.path.join(destination_dir, i))
             if new_file_name != old_file_name:
-                messages.extend(process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, '->'))
+                messages.extend(process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, '-renamed->'))
             else:
                 if not print_only_renames:
-                    messages.extend(process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, '-->>'))
+                    messages.extend(process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, '-not-renamed->>'))
     return messages
+
 
 def process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, arrow):
     output = []
@@ -365,6 +371,7 @@ def process_file(old_file_name, new_file_name, action_type, dry_run, destination
         if action_type == 'copy':
             if os.path.isfile(destination_file_path):
                 if filecmp.cmp(source_file_path, destination_file_path):
+                    logger.debug(f"Copy -> File already exists: {destination_file_path}")
                     pass
                 else:
                     output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
@@ -373,6 +380,7 @@ def process_file(old_file_name, new_file_name, action_type, dry_run, destination
         if action_type == 'hardlink':
             if os.path.isfile(destination_file_path):
                 if filecmp.cmp(source_file_path, destination_file_path):
+                    logger.debug(f"Hardlink -> File already exists: {destination_file_path}")
                     pass
                 else:
                     output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
@@ -385,6 +393,7 @@ def process_file(old_file_name, new_file_name, action_type, dry_run, destination
             try:
                 if os.path.isfile(destination_file_path):
                     if filecmp.cmp(source_file_path, destination_file_path):
+                        logger.debug(f"Copy -> File already exists: {destination_file_path}")
                         pass
                     else:
                         shutil.copyfile(source_file_path, destination_file_path)
@@ -407,6 +416,7 @@ def process_file(old_file_name, new_file_name, action_type, dry_run, destination
             except OSError as e:
                 if e.errno == errno.EEXIST:
                     if os.path.samefile(source_file_path, destination_file_path):
+                        logger.debug(f"Hardlink -> File already exists: {destination_file_path}")
                         pass
                     else:
                         os.replace(destination_file_path, source_file_path)
@@ -419,6 +429,7 @@ def process_file(old_file_name, new_file_name, action_type, dry_run, destination
             logger.error(f"Unknown action type: {action_type}")
     return output
 
+
 def load_dict(title, year, files):
     return {
         "title": title,
@@ -426,6 +437,7 @@ def load_dict(title, year, files):
         "year": year,
         "files": files
     }
+
 
 def normalize_titles(title):
     normalized_title = title
@@ -439,8 +451,10 @@ def normalize_titles(title):
     normalized_title = re.sub(remove_special_chars, '', normalized_title).lower()
     return normalized_title
 
+
 def add_file_to_asset(category_dict, file):
     category_dict['files'].append(file)
+
 
 def find_or_create_show(show_list, title, year, files, path):
     for show in show_list:
@@ -450,6 +464,7 @@ def find_or_create_show(show_list, title, year, files, path):
     show = load_dict(title, year, files)
     show_list.append(show)
 
+
 def get_files(path):
     files = []
     try:
@@ -457,6 +472,7 @@ def get_files(path):
     except FileNotFoundError:
         logger.error(f"Path not found: {path}")
     return files
+
 
 def sort_files(files, path, dict, basename):
     for file in tqdm(files, desc=f'Sorting assets from \'{basename}\' directory', total=len(files), disable=None):
@@ -484,10 +500,11 @@ def sort_files(files, path, dict, basename):
                 dict['movies'].append(movie)
     return dict
 
+
 def get_assets_files(assets_path, override_paths):
     asset_files = {"series": [], "movies": [], "collections": []}
     override_files = {"series": [], "movies": [], "collections": []}
-    asset_types = ['series', 'movies', 'collections']  
+    asset_types = ['series', 'movies', 'collections']
     if assets_path:
         files = get_files(assets_path)
         basename = os.path.basename(assets_path.rstrip('/'))
@@ -511,6 +528,7 @@ def get_assets_files(assets_path, override_paths):
     logger.debug(json.dumps(asset_files, indent=4))
     return asset_files
 
+
 def handle_override_files(asset_files, override_files, asset_types):
     for type in asset_types:
         for override_asset in override_files[type]:
@@ -519,6 +537,7 @@ def handle_override_files(asset_files, override_files, asset_types):
                 if override_asset['title'] == asset['title'] and override_asset['year'] == asset['year']:
                     found = True
                     seen_files = set()
+                    logger.debug(f"Override asset: {override_asset['title']} {override_asset['year']} will be used instead of {asset['title']} {asset['year']}")
                     for override_file in override_asset['files']:
                         override_file_name = os.path.splitext(os.path.basename(override_file))[0]
                         if override_file_name not in seen_files:
@@ -528,6 +547,7 @@ def handle_override_files(asset_files, override_files, asset_types):
             if not found:
                 asset_files[type].append(override_asset)
     return asset_files
+
 
 def process_instance(instance_type, instance_name, url, api, final_output, asset_files):
     collections = []
@@ -549,7 +569,7 @@ def process_instance(instance_type, instance_name, url, api, final_output, asset
             message = f"Error: No library names specified for {instance_name}"
             final_output.append(message)
             return final_output
-    else: 
+    else:
         app = StARR(url, api, logger)
         media = app.get_media()
     matched_media = []
@@ -566,7 +586,8 @@ def process_instance(instance_type, instance_name, url, api, final_output, asset
         message = f"No matches found for {instance_name}"
         final_output.append(message)
     return final_output
-    
+
+
 def print_output(final_output):
     if final_output:
         for message in final_output:
@@ -574,6 +595,7 @@ def print_output(final_output):
         return
     else:
         return
+
 
 def main():
     logger.debug('*' * 40)
@@ -592,6 +614,7 @@ def main():
     logger.debug(f"print_only_renames: {config.print_only_renames}")
     logger.debug(f'*' * 40)
     logger.debug('')
+
     if config.dry_run:
         logger.info('*' * 40)
         logger.info(f'* {"Dry_run Activated":^36} *')
@@ -599,7 +622,9 @@ def main():
         logger.info(f'* {" NO CHANGES WILL BE MADE ":^36} *')
         logger.info('*' * 40)
         logger.info('')
+
     asset_files = get_assets_files(config.source_dir, config.source_overrides)
+    
     instance_data = {
         'Plex': config.plex_data,
         'Radarr': config.radarr_data,
@@ -633,5 +658,6 @@ def main():
                 logger.debug(f"API Key: {'<redacted>' if api else 'None'}")
                 final_output = process_instance(instance_type, instance_name, url, api, final_output, asset_files)
                 print_output(final_output)
+
 if __name__ == "__main__":
     main()

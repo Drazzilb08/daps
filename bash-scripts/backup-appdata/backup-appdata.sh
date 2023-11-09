@@ -8,7 +8,7 @@
 #           | |   | |                                                      | |
 #           |_|   |_|                                                      |_|
 # ====================================================
-# Version: 4.4.4
+# Version: 4.4.5
 # backup-appdata - A script to backup your Docker appdata
 # Author: Drazzilb
 # License: MIT License
@@ -811,7 +811,7 @@ check_config() {
     # Check if 7zip command is available if compress is set to true
     if [ "$compress" == "true" ]; then
         command -v 7z >/dev/null 2>&1 || {
-            echo -e "7Zip is not installed.\nPlease install 7Zip and rerun.\nIf on unRaid 7Zip can be found through the appstore" >&2
+            echo -e "7Zip is not installed.\nPlease install 7Zip and rerun.\nIf on unRaid 7Zip can be found through NerdPack/NerdTools in the UnRaid appstore" >&2
             exit 1
         }
     fi

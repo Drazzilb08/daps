@@ -253,3 +253,41 @@ labelarr:
   # The label that you wish to sync from/to Plex
   labels:
     - kids
+
+renamer-cleaner:
+  log_level: info
+  dry_run: true
+  asset_folders: false
+  library_names:
+    - Movies
+    - Anime Movies
+  ignore_collections:
+    - "Star Wars Universe"
+    - "DC Animated Universe"
+    - "Alien / Predator"
+    - "Rocky / Creed"
+    - "MonsterVerse"
+    - "Star Trek"
+    - "X-Men Universe"
+    - "In Association With Marvel"
+    - "View Askewniverse"
+    - "The Mummy Universe"
+    - "Middle Earth"
+    - "In Association With DC"
+    - "Wizarding World"
+    - "Fast & Furious"
+    - "The Spiderverse"
+    - "Marvel Cinematic Universe"
+    - "The Conjuring Universe"
+    - "The Batman Universe"
+    - "Collectionless"
+    - "DC Extended Universe"
+  assets_path: /mnt/user/appdata/plex-meta-manager/assets
+  media_paths:
+    - /mnt/user/data/media/anime movies/
+    - /mnt/user/data/media/documentary movies/
+    - /mnt/user/data/media/movies/
+    - /mnt/user/data/media/anime series/
+    - /mnt/user/data/media/animated series/
+    - /mnt/user/data/media/documentary series/
+    - /mnt/user/data/media/series/

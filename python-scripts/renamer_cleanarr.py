@@ -11,7 +11,7 @@
 #               Media directory and cause a loop. I wouldn't recommend running this script very often (weekly at most, monthly is probably)
 #  Usage: python3 renamer_cleaner.py
 #  Requirements: requests
-#  Version: 1.0.0
+#  Version: 1.0.0 - beta
 #  License: MIT License
 # ===========================================================================================================
 

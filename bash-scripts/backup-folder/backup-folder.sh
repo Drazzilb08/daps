@@ -8,7 +8,7 @@
 #                             | |
 #                             |_|
 # ====================================================
-# Version: 3.0.2
+# Version: 3.0.3
 # Backup Folder - A script to backup a folder to another folder
 # Author: Drazzilb
 # License: MIT License
@@ -52,7 +52,7 @@ check_config() {
     # Check if 7zip command is available if compress is set to true
     if [ "$compress" == "true" ]; then
         command -v 7z >/dev/null 2>&1 || {
-            echo -e "7Zip is not installed.\nPlease install 7Zip and rerun.\nIf on unRaid 7Zip can be found through the appstore" >&2
+            echo -e "7Zip is not installed.\nPlease install 7Zip and rerun.\nIf on unRaid 7Zip can be found through NerdPack/NerdTools in the UnRaid appstore" >&2
             exit 1
         }
     fi

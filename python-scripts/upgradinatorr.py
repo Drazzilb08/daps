@@ -11,7 +11,7 @@
 # Description: A script to upgrade Sonarr/Radarr libraries to the keep in line with trash-guides
 # Usage: python3 /path/to/upgradinatorr.py
 # Requirements: requests, pyyaml
-# Version: 2.1.6
+# Version: 2.1.7
 # License: MIT License
 # ===================================================================================================
 
@@ -50,6 +50,21 @@ def check_all_tagged(all_media, tag_id, status, monitored):
     return True
 
 def process_instance(instance_type, instance_name, count, tag_name, unattended, status, monitored, url, api, dry_run, reset):
+    """
+    Process a given instance.
+    Parameters:
+        instance_type (str): The type of instance to process.
+        instance_name (str): The name of the instance to process.
+        count (int): The number of items to process.
+        tag_name (str): The name of the tag to use.
+        unattended (bool): Whether or not to run the script unattended.
+        status (str): The status to check for.
+        monitored (bool): Whether or not to check for monitored media.
+        url (str): The URL of the instance.
+        api (str): The API key of the instance.
+        dry_run (bool): Whether or not to run the script in dry run mode.
+        reset (bool): Whether or not to reset the tag.
+    """
     media_type = None
     tagged_count = 0
     untagged_count = 0
@@ -163,8 +178,18 @@ def main():
                     tag_name = data.get('tag_name', 'Upgradinatorr')
                     reset = data.get('reset', False)
                     unattended = data.get('unattended', False)
+                    monitored = data.get('monitored', True)
                     status = data.get('status', 'all')
             if script_name and instance_name == script_name:
+                logger.debug('*' * 40)
+                logger.debug(f"Script Settings for {instance_name}:")
+                logger.debug(f"count: {count}")
+                logger.debug(f"tag_name: {tag_name}")
+                logger.debug(f"reset: {reset}")
+                logger.debug(f"unattended: {unattended}")
+                logger.debug(f"status: {status}")
+                logger.debug(f"monitored: {monitored}")
+                logger.debug('*' * 40)
                 logger.info('*' * 40)
                 logger.info(f'* {instance_name:^36} *')
                 logger.info('*' * 40)

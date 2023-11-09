@@ -1,6 +1,5 @@
 import sys
 import requests
-import json
 import logging
 
 
@@ -155,7 +154,6 @@ class StARR:
         """
         endpoint = f"{self.url}/api/v3/moviefile/{movie_id}"
         response = self.make_get_request(endpoint)
-        print(json.dumps(response, indent=4))
         for r in response:
             if r['movieId'] == movie_id:
                 print(f"Found file ID {r['id']} for movie ID {movie_id}")
@@ -196,6 +194,7 @@ class StARR:
         payload = {
             "label": tag
         }
+        self.logger.debug(f"Create tag payload: {payload}")
         endpoint = f"{self.url}/api/v3/tag"
         return self.make_post_request(endpoint, json=payload)
 
@@ -223,6 +222,7 @@ class StARR:
             "tags": [tag_id],
             "applyTags": "add"
         }
+        self.logger.debug(f"Add tag payload: {payload}")
         endpoint = f"{self.url}/api/v3/{media}/editor"
         return self.make_put_request(endpoint, json=payload)
     
@@ -281,6 +281,7 @@ class StARR:
             "tags": [tag_id],
             "applyTags": "remove"
         }
+        self.logger.debug(f"Remove tag payload: {payload}")
         endpoint = f"{self.url}/api/v3/{media}/editor"
         response = self.make_put_request(endpoint, json=payload)
         if response:
@@ -318,6 +319,7 @@ class StARR:
             "tags": [tag_id],
             "applyTags": "remove"
         }
+        self.logger.debug(f"Remove tag payload: {payload}")
         endpoint = f"{self.url}/api/v3/{media}/editor"
         response = self.make_put_request(endpoint, json=payload)
         if response:
@@ -362,6 +364,7 @@ class StARR:
             "name": name,
             id_type: media_ids,
         }
+        self.logger.debug(f"Rename payload: {payload}")
         endpoint = f"{self.url}/api/v3/command"
         response = self.make_post_request(endpoint, json=payload)
         if response:
@@ -378,18 +381,25 @@ class StARR:
         """
         name_type = None
         id_type = None
-        if isinstance(media_ids, int):
-            media_ids = [media_ids]
         if self.instance_type == 'Sonarr':
-            id_type = "seriesIds"
+            if len(media_ids) == 1:
+                id_type = "seriesId"
+                media_ids = int(media_ids[0])
+            else:
+                id_type = "seriesIds"
             name_type = "RefreshSeries"
         elif self.instance_type == 'Radarr':
-            id_type = "movieIds"
+            if len(media_ids) == 1:
+                id_type = "movieId"
+                media_ids = int(media_ids[0])
+            else:
+                id_type = "movieIds"
             name_type = "RefreshMovie"
         payload = {
             "name": name_type,
             id_type: media_ids
         }
+        self.logger.debug(f"Refresh payload: {payload}")
         endpoint = f"{self.url}/api/v3/command"
         response = self.make_post_request(endpoint, headers=self.headers, json=payload)
         if response:
@@ -409,7 +419,11 @@ class StARR:
         if isinstance(media_id, int):
             media_id = [media_id]
         if self.instance_type == 'Sonarr':
-            id_type = "seriesIds"
+            if len(media_id) == 1:
+                id_type = "seriesId"
+                media_id = int(media_id[0])
+            else:
+                id_type = "seriesIds"
             name_type = "SeriesSearch"
         elif self.instance_type == 'Radarr':
             id_type = "movieIds"
@@ -418,6 +432,7 @@ class StARR:
             "name": name_type,
             id_type: media_id
         }
+        self.logger.debug(f"Search payload: {payload}")
         endpoint = f"{self.url}/api/v3/command"
         response = self.make_post_request(endpoint, json=payload)
         if response:
@@ -474,6 +489,7 @@ class StARR:
         payload = {
             "episodeFileIds": media_id
         }
+        self.logger.debug(f"Delete episode files payload: {payload}")
         endpoint = f"{self.url}/api/v3/episodefile/bulk"
         response = self.make_delete_request(endpoint, payload)
         if response.status_code == 200:
@@ -508,6 +524,7 @@ class StARR:
             "name": "EpisodeSearch",
             "episodeIds": episode_ids
         }
+        self.logger.debug(f"Search payload: {payload}")
         response = self.make_post_request(endpoint, json=payload)
         if response:
             return True
@@ -546,6 +563,7 @@ class StARR:
         payload = {
             "name": "RefreshMonitoredDownloads"
         }
+        self.logger.debug(f"Refresh queue payload: {payload}")
         response = self.make_post_request(endpoint, json=payload)
         if response:
             return True

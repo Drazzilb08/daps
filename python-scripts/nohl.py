@@ -13,7 +13,7 @@
 #              hardlinks seeding.
 # Usage: python3 nohl.py
 # Requirements: Python 3.8+, requests
-# Version: 1.0.3
+# Version: 1.0.4
 # License: MIT License
 # ===================================================================================================
 
@@ -428,11 +428,14 @@ def main():
                                 try:
                                     include_profiles = data['include_profiles']
                                     logger.debug(f"Include profiles: {include_profiles}")
-                                    exclude_profiles = data['exclude_profiles']
-                                    nohl_files = _instance['files_to_process']
                                 except KeyError:
-                                    logger.error(f"Missing include_profiles, exclude_profiles, or both in {instance_name} config. Please check your config.")
-                                    logger.error(f"Exiting...")
+                                    logger.error(f"Missing include_profiles in {instance_name} config. Please check your config.")
+                                    sys.exit()
+                                try:
+                                    exclude_profiles = data['exclude_profiles']
+                                    logger.debug(f"Exclude profiles: {exclude_profiles}")
+                                except KeyError:
+                                    logger.error(f"Missing exclude_profiles in {instance_name} config. Please check your config.")
                                     sys.exit()
                                 logger.debug(f"Processing {len(nohl_files)} files")
                         elif instance_type == "Sonarr":
@@ -442,12 +445,22 @@ def main():
                                 try:
                                     include_profiles = data['include_profiles']
                                     logger.debug(f"Include profiles: {include_profiles}")
+                                except KeyError:
+                                    logger.error(f"Missing include_profiles in {instance_name} config. Please check your config.")
+                                    logger.error(f"Exiting...")
+                                    sys.exit()
+                                try:
                                     exclude_profiles = data['exclude_profiles']
                                     logger.debug(f"Exclude profiles: {exclude_profiles}")
+                                except KeyError:
+                                    logger.error(f"Missing exclude_profiles in {instance_name} config. Please check your config.")
+                                    logger.error(f"Exiting...")
+                                    sys.exit()
+                                try:
                                     exclude_series = data['exclude_series']
                                     logger.debug(f"Exclude series: {exclude_series}")
                                 except KeyError:
-                                    logger.error(f"Missing include_profiles, exclude_profiles, or both in {instance_name} config. Please check your config.")
+                                    logger.error(f"Missing exclude_series in {instance_name} config. Please check your config.")
                                     logger.error(f"Exiting...")
                                     sys.exit()
                                 nohl_files = _instance['files_to_process']

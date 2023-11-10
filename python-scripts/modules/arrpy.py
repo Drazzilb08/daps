@@ -2,6 +2,7 @@ import sys
 import requests
 import logging
 
+# Version 1.0.0
 
 logging.getLogger("qbittorrentapi").setLevel(logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)
@@ -382,16 +383,22 @@ class StARR:
         name_type = None
         id_type = None
         if self.instance_type == 'Sonarr':
-            if len(media_ids) == 1:
+            if isinstance(media_ids, list) and len(media_ids) == 1:
                 id_type = "seriesId"
                 media_ids = int(media_ids[0])
+            elif isinstance(media_ids, int):
+                id_type = "seriesId"
+                media_ids = int(media_ids)
             else:
                 id_type = "seriesIds"
             name_type = "RefreshSeries"
         elif self.instance_type == 'Radarr':
-            if len(media_ids) == 1:
+            if isinstance(media_ids, list) and len(media_ids) == 1:
                 id_type = "movieId"
                 media_ids = int(media_ids[0])
+            elif isinstance(media_ids, int): 
+                id_type = "movieId"
+                media_ids = int(media_ids)
             else:
                 id_type = "movieIds"
             name_type = "RefreshMovie"
@@ -419,15 +426,25 @@ class StARR:
         if isinstance(media_id, int):
             media_id = [media_id]
         if self.instance_type == 'Sonarr':
-            if len(media_id) == 1:
+            if isinstance(media_id, list) and len(media_id) == 1:
                 id_type = "seriesId"
                 media_id = int(media_id[0])
+            elif isinstance(media_id, int):
+                id_type = "seriesId"
+                media_id = int(media_id)
             else:
                 id_type = "seriesIds"
             name_type = "SeriesSearch"
         elif self.instance_type == 'Radarr':
-            id_type = "movieIds"
-            name_type = "MoviesSearch"
+            if isinstance(media_id, list) and len(media_id) == 1:
+                id_type = "movieId"
+                media_id = int(media_id[0])
+            elif isinstance(media_id, int):
+                id_type = "movieId"
+                media_id = int(media_id)
+            else:
+                id_type = "movieIds"
+                name_type = "MoviesSearch"
         payload = {
             "name": name_type,
             id_type: media_id

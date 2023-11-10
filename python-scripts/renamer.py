@@ -12,7 +12,7 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 5.3.4
+# Version: 5.3.5
 # License: MIT License
 # ===================================================================================================
 
@@ -512,12 +512,13 @@ def get_assets_files(assets_path, override_paths):
     if isinstance(override_paths, str):
         override_paths = [override_paths]
     if override_paths:
-        for paths in override_paths:
-            files = get_files(paths)
-            basename = os.path.basename(paths.rstrip('/'))
-            override_files = sort_files(files, paths, override_files, basename)
+        for path in override_paths:
+            files = get_files(path)
+            basename = os.path.basename(path.rstrip('/'))
+            override_files = sort_files(files, path, override_files, basename)
+            logger.debug(f"Override files {path}: {json.dumps(override_files, indent=4)}")
             if override_files and asset_files:
-                asset_files = handle_override_files(asset_files, override_files, asset_types)
+                asset_files = handle_override_files(asset_files, override_files, asset_types, path)
     for asset_types in asset_files:
         for asset in asset_files[asset_types]:
             normalized_title = normalize_titles(asset['title'])
@@ -529,7 +530,7 @@ def get_assets_files(assets_path, override_paths):
     return asset_files
 
 
-def handle_override_files(asset_files, override_files, asset_types):
+def handle_override_files(asset_files, override_files, asset_types, path):
     for type in asset_types:
         for override_asset in override_files[type]:
             found = False
@@ -537,13 +538,18 @@ def handle_override_files(asset_files, override_files, asset_types):
                 if override_asset['title'] == asset['title'] and override_asset['year'] == asset['year']:
                     found = True
                     seen_files = set()
-                    logger.debug(f"Override asset: {override_asset['title']} {override_asset['year']} will be used instead of {asset['title']} {asset['year']}")
                     for override_file in override_asset['files']:
                         override_file_name = os.path.splitext(os.path.basename(override_file))[0]
                         if override_file_name not in seen_files:
                             seen_files.add(override_file_name)
-                            asset['files'] = [f for f in asset['files'] if os.path.splitext(os.path.basename(f))[0] != override_file_name]
-                            asset['files'].append(override_file)
+                            for i, f in enumerate(asset['files']):
+                                if os.path.splitext(os.path.basename(f))[0] == override_file_name:
+                                    asset['files'][i] = override_file
+                                    logger.debug(f"Overwrote {override_file_name} in {asset['title']} ({asset['year']}) from {path}")
+                                    break
+                            else:
+                                asset['files'].append(override_file)
+                                logger.debug(f"Added {override_file} to {asset['title']} ({asset['year']}) from {path}")
             if not found:
                 asset_files[type].append(override_asset)
     return asset_files

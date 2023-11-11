@@ -18,7 +18,7 @@
 #         not have a seasonal poster then it will not match the series poster. If you don't have a season poster
 #         your series will appear in the movies section.
 #  Requirements: requests
-#  Version: 4.1.9a
+#  Version: 4.1.9b
 #  License: MIT License
 # ===========================================================================================================
 
@@ -149,21 +149,37 @@ def get_assets_files(assets_path):
 
 def get_media_folders(media_paths):
     asset_types = ['series', 'movies']
-    media = {asset_type: [] for asset_type in asset_types}
+    media = {'movies': [], 'series': []}
     print("Getting media folder information..., this may take a while.")
     for media_path in media_paths:
         base_name = os.path.basename(os.path.normpath(media_path))
         for subfolder in sorted(Path(media_path).iterdir()):
             if subfolder.is_dir():
-                if any(subfolder.name in m['title'] for m in media['movies']):
-                    continue
-                media_type = 'series' if any(subfolder.name in s['title'] for s in media['series']) else 'movies'
-                if media_type == 'series':
-                    for series in media['series']:
-                        if subfolder.name in series['title']:
-                            series['season_number'].append(sub_sub_folder.name)
-                else:
-                    media[media_type].append({
+                for sub_sub_folder in sorted(Path(subfolder).iterdir()):
+                    if sub_sub_folder.is_dir():
+                        sub_sub_folder_base_name = os.path.basename(
+                            os.path.normpath(sub_sub_folder))
+                        if not (sub_sub_folder_base_name.startswith("Season ") or sub_sub_folder_base_name == "Specials"):
+                            logger.debug(
+                                f"Skipping '{sub_sub_folder_base_name}' because it is not a season folder.")
+                            continue
+                        if any(subfolder.name in s['title'] for s in media['series']):
+                            for series in media['series']:
+                                if subfolder.name in series['title']:
+                                    series['season_number'].append(
+                                        sub_sub_folder.name)
+                        else:
+                            media['series'].append({
+                                'title': subfolder.name,
+                                'season_number': [],
+                                'path': base_name
+                            })
+                            for series in media['series']:
+                                if subfolder.name in series['title']:
+                                    series['season_number'].append(
+                                        sub_sub_folder.name)
+                if not any(sub_sub_folder.is_dir() for sub_sub_folder in Path(subfolder).iterdir()):
+                    media['movies'].append({
                         'title': subfolder.name,
                         'path': base_name
                     })

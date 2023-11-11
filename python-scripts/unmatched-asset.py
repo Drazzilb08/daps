@@ -15,7 +15,8 @@
 #  Usage: python3 unmatched=asset.py
 #  Note: There is a limitation to how this script works with regards to it matching series assets the
 #         main series poster requires seasonal posters to be present. If you have a series that does
-#         not have a seasonal poster then it will not match the series poster.
+#         not have a seasonal poster then it will not match the series poster. If you don't have a season poster
+#         your series will appear in the movies section.
 #  Requirements: requests
 #  Version: 4.1.9
 #  License: MIT License

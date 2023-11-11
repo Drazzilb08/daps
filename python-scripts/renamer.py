@@ -12,7 +12,7 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 5.3.5
+# Version: 5.3.6
 # License: MIT License
 # ===================================================================================================
 
@@ -60,7 +60,6 @@ suffixes = [
     "Collection",
 ]
 
-
 def find_best_match(matches, title):
     best_match = None
     for match in matches:
@@ -74,7 +73,6 @@ def find_best_match(matches, title):
             else:
                 best_match = i
     return best_match
-
 
 def match_collection(plex_collections, source_file_list, collection_threshold):
     matched_collections = {"matched_media": []}
@@ -171,7 +169,6 @@ def match_collection(plex_collections, source_file_list, collection_threshold):
     logger.debug(f"Almost matched collections: {json.dumps(almost_matched, ensure_ascii=False, indent=4)}")
     return matched_collections
 
-
 def match_media(media, source_file_list, type):
     matched_media = {"matched_media": []}
     not_matched = {"not_matched": []}
@@ -190,7 +187,7 @@ def match_media(media, source_file_list, type):
             if item['status'] == 'upcoming' or item['status'] == 'announced':
                 continue
             else:
-                logger.warning(f"Unable to find year in path: {item['path']}")
+                logger.warning(f"Unable to find year in {item['title']} path")
         try:
             if item['alternateTitles']:
                 for i in item['alternateTitles']:
@@ -281,7 +278,6 @@ def match_media(media, source_file_list, type):
     logger.debug(f"Not matched media: {json.dumps(not_matched, ensure_ascii=False, indent=4)}")
     return matched_media
 
-
 def rename_file(matched_media, destination_dir, dry_run, action_type, print_only_renames):
     messages = []
     asset_folders = config.asset_folders
@@ -364,7 +360,6 @@ def rename_file(matched_media, destination_dir, dry_run, action_type, print_only
                     messages.extend(process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, '-not-renamed->>'))
     return messages
 
-
 def process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, arrow):
     output = []
     if dry_run:
@@ -429,7 +424,6 @@ def process_file(old_file_name, new_file_name, action_type, dry_run, destination
             logger.error(f"Unknown action type: {action_type}")
     return output
 
-
 def load_dict(title, year, files):
     return {
         "title": title,
@@ -437,7 +431,6 @@ def load_dict(title, year, files):
         "year": year,
         "files": files
     }
-
 
 def normalize_titles(title):
     normalized_title = title
@@ -451,10 +444,8 @@ def normalize_titles(title):
     normalized_title = re.sub(remove_special_chars, '', normalized_title).lower()
     return normalized_title
 
-
 def add_file_to_asset(category_dict, file):
     category_dict['files'].append(file)
-
 
 def find_or_create_show(show_list, title, year, files, path):
     for show in show_list:
@@ -464,7 +455,6 @@ def find_or_create_show(show_list, title, year, files, path):
     show = load_dict(title, year, files)
     show_list.append(show)
 
-
 def get_files(path):
     files = []
     try:
@@ -472,7 +462,6 @@ def get_files(path):
     except FileNotFoundError:
         logger.error(f"Path not found: {path}")
     return files
-
 
 def sort_files(files, path, dict, basename):
     for file in tqdm(files, desc=f'Sorting assets from \'{basename}\' directory', total=len(files), disable=None):
@@ -500,11 +489,9 @@ def sort_files(files, path, dict, basename):
                 dict['movies'].append(movie)
     return dict
 
-
 def get_assets_files(assets_path, override_paths):
-    asset_files = {"series": [], "movies": [], "collections": []}
-    override_files = {"series": [], "movies": [], "collections": []}
-    asset_types = ['series', 'movies', 'collections']
+    asset_files = {asset_type: [] for asset_type in ['series', 'movies', 'collections']}
+    override_files = {asset_type: [] for asset_type in ['series', 'movies', 'collections']}
     if assets_path:
         files = get_files(assets_path)
         basename = os.path.basename(assets_path.rstrip('/'))
@@ -512,48 +499,37 @@ def get_assets_files(assets_path, override_paths):
     if isinstance(override_paths, str):
         override_paths = [override_paths]
     if override_paths:
-        for path in override_paths:
+        for path in tqdm(override_paths, desc="Processing override paths", total=len(override_paths)):
             files = get_files(path)
             basename = os.path.basename(path.rstrip('/'))
             override_files = sort_files(files, path, override_files, basename)
-            logger.debug(f"Override files {path}: {json.dumps(override_files, indent=4)}")
             if override_files and asset_files:
-                asset_files = handle_override_files(asset_files, override_files, asset_types, path)
-    for asset_types in asset_files:
-        for asset in asset_files[asset_types]:
+                asset_files = handle_override_files(asset_files, override_files, path, asset_types=['series', 'movies', 'collections'])
+    for asset_type in asset_files:
+        for asset in asset_files[asset_type]:
             normalized_title = normalize_titles(asset['title'])
             asset['normalized_title'] = normalized_title
-    for asset_types in asset_files:
-        for asset in asset_files[asset_types]:
             asset['files'].sort()
     logger.debug(json.dumps(asset_files, indent=4))
     return asset_files
 
-
-def handle_override_files(asset_files, override_files, asset_types, path):
+def handle_override_files(asset_files, override_files, path, asset_types):
     for type in asset_types:
         for override_asset in override_files[type]:
-            found = False
+            asset_found = False
             for asset in asset_files[type]:
                 if override_asset['title'] == asset['title'] and override_asset['year'] == asset['year']:
-                    found = True
-                    seen_files = set()
+                    asset_found = True
                     for override_file in override_asset['files']:
-                        override_file_name = os.path.splitext(os.path.basename(override_file))[0]
-                        if override_file_name not in seen_files:
-                            seen_files.add(override_file_name)
-                            for i, f in enumerate(asset['files']):
-                                if os.path.splitext(os.path.basename(f))[0] == override_file_name:
-                                    asset['files'][i] = override_file
-                                    logger.debug(f"Overwrote {override_file_name} in {asset['title']} ({asset['year']}) from {path}")
-                                    break
-                            else:
-                                asset['files'].append(override_file)
-                                logger.debug(f"Added {override_file} to {asset['title']} ({asset['year']}) from {path}")
-            if not found:
+                        over_ride_file_name = os.path.split(override_file)[1]
+                        asset['files'] = [f for f in asset['files'] if os.path.split(f)[1] != over_ride_file_name]
+                        asset['files'].append(override_file)
+                        logger.debug(f"Override: Added {override_file} to {asset['title']}")
+                    break
+            if not asset_found:
                 asset_files[type].append(override_asset)
+                logger.debug(f"Override: Added {override_asset['title']} to {type} from {path}")
     return asset_files
-
 
 def process_instance(instance_type, instance_name, url, api, final_output, asset_files):
     collections = []
@@ -593,7 +569,6 @@ def process_instance(instance_type, instance_name, url, api, final_output, asset
         final_output.append(message)
     return final_output
 
-
 def print_output(final_output):
     if final_output:
         for message in final_output:
@@ -601,7 +576,6 @@ def print_output(final_output):
         return
     else:
         return
-
 
 def main():
     logger.debug('*' * 40)

@@ -11,7 +11,7 @@
 #               Media directory and cause a loop. I wouldn't recommend running this script very often (weekly at most, monthly is probably)
 #  Usage: python3 renamer_cleaner.py
 #  Requirements: requests
-#  Version: 1.0.0 - beta
+#  Version: 1.0.0 - beta2
 #  License: MIT License
 # ===========================================================================================================
 
@@ -22,11 +22,11 @@ from plexapi.server import PlexServer
 from plexapi.exceptions import BadRequest
 from modules.logger import setup_logger
 from modules.config import Config
-from unidecode import unidecode
 from tqdm import tqdm
 import json
 import logging
 import sys
+import shutil
 
 config = Config(script_name="renamer-cleaner")
 logger = setup_logger(config.log_level, "renamer-cleaner")
@@ -110,7 +110,6 @@ def get_media_folders(media_paths):
     print("Getting media folder information..., this may take a while.")
 
     for media_path in media_paths:
-        base_name = os.path.basename(os.path.normpath(media_path))
         for subfolder in sorted(Path(media_path).iterdir()):
             if subfolder.is_dir():
                 for sub_sub_folder in sorted(Path(subfolder).iterdir()):
@@ -141,61 +140,45 @@ def get_media_folders(media_paths):
 
 
 def match_assets(assets, media, dict_plex):
-    unmatched_posters = {'movies': [], 'series': [], 'collections': []}
-    for asset in assets['movies']:
-        if not any(asset['title'] in m['title'] for m in media['movies']):
-            unmatched_posters['movies'].append(asset)
-    for asset in assets['series']:
-        if not any(asset['title'] in s['title'] for s in media['series']):
-            unmatched_posters['series'].append(asset)
-    for asset in assets['collections']:
-        if not any(asset['title'] in c['title'] for c in dict_plex['collections']):
-            unmatched_posters['collections'].append(asset)
+    asset_types = ['movies', 'series', 'collections']
+    unmatched_posters = {asset_type: [] for asset_type in asset_types}
+    for asset_type in asset_types:
+        for asset in assets[asset_type]:
+            if asset_type == 'collections':
+                if not any(asset['title'] in c['title'] for c in dict_plex['collections']):
+                    unmatched_posters[asset_type].append(asset)
+            else:
+                if not any(asset['title'] in m['title'] for m in media[asset_type]):
+                    unmatched_posters[asset_type].append(asset)
     logger.debug("Unmatched Posters:")
     logger.debug(json.dumps(unmatched_posters, ensure_ascii=False, indent=4))
     return unmatched_posters
 
 def remove_assets(asset_folders, unmatched_assets, assets_path, dry_run):
+    asset_types = ['movies', 'series', 'collections']
     messages = []
     if not asset_folders:
-        for asset in unmatched_assets['movies']:
-            if not dry_run:
-                os.remove(os.path.join(assets_path, asset['files']))
-                messages.append(f"Removed '{asset['files']}'")
-            else:
-                messages.append(f"Would have removed '{asset['files']}'")
-        for asset in unmatched_assets['series']:
-            for file in asset['files']:
-                if not dry_run:
-                    os.remove(os.path.join(assets_path, file))
-                    messages.append(f"Removed '{file}'")
-                else:
-                    messages.append(f"Would have removed '{file}'")
-        for asset in unmatched_assets['collections']:
-            if not dry_run:
-                os.remove(os.path.join(assets_path, asset['files']))
-                messages.append(f"Removed '{asset['files']}'")
-            else:
-                messages.append(f"Would have removed '{asset['files']}'")
+        for asset_type in asset_types:
+            for asset in unmatched_assets[asset_type]:
+                files = asset['files']
+                if isinstance(files, str):
+                    files = [files]
+                for file in files:
+                    path = os.path.join(assets_path, file)
+                    if not dry_run:
+                        os.remove(path)
+                        messages.append(f"Removed '{path}'")
+                    else:
+                        messages.append(f"Would have removed '{asset['title']}' from '{assets_path}'")
     else:
-        for asset in unmatched_assets['movies']:
-            if not dry_run:
-                os.remove(os.path.join(assets_path, asset['title']))
-                messages.append(f"Removed '{asset['title']}'")
-            else:
-                messages.append(f"Would have removed '{asset['title']}'")
-        for asset in unmatched_assets['series']:
-            if not dry_run:
-                os.remove(os.path.join(assets_path, asset['title']))
-                messages.append(f"Removed '{asset['title']}'")
-            else:
-                messages.append(f"Would have removed '{asset['title']}'")
-        for asset in unmatched_assets['collections']:
-            if not dry_run:
-                os.remove(os.path.join(assets_path, asset['title']))
-                messages.append(f"Removed '{asset['title']}'")
-            else:
-                messages.append(f"Would have removed '{asset['title']}'")
+        for asset_type in asset_types:
+            for asset in unmatched_assets[asset_type]:
+                path = os.path.join(assets_path, asset['title'])
+                if not dry_run:
+                    shutil.rmtree(path)
+                    messages.append(f"Removed '{path}'")
+                else:
+                    messages.append(f"Would have removed '{asset['title']}' from '{assets_path}'")
     return messages
 
 def print_output(messages):

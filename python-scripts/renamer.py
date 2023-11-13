@@ -12,7 +12,7 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 5.3.6
+# Version: 5.3.7
 # License: MIT License
 # ===================================================================================================
 
@@ -177,6 +177,11 @@ def match_media(media, source_file_list, type):
         alternate_titles = []
         normalized_alternate_titles = []
         arr_title = item['title']
+        try:
+            if item['originalTitle']:
+                arr_title = item['originalTitle']
+        except KeyError:
+            pass
         arr_path = os.path.basename(item['path'])
         arr_path = year_regex.sub("", arr_path).strip()
         normalized_arr_path = normalize_titles(arr_path)
@@ -442,6 +447,7 @@ def normalize_titles(title):
     normalized_title = normalized_title.rstrip()
     normalized_title = normalized_title.replace('&', 'and')
     normalized_title = re.sub(remove_special_chars, '', normalized_title).lower()
+    normalized_title = normalized_title.replace(' ', '')
     return normalized_title
 
 def add_file_to_asset(category_dict, file):

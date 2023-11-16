@@ -1,8 +1,9 @@
 import sys
 import requests
 import logging
+import json
 
-# Version 1.0.0
+# Version 1.0.1
 
 logging.getLogger("qbittorrentapi").setLevel(logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)
@@ -423,40 +424,25 @@ class StARR:
         """
         name_type = None
         id_type = None
-        if isinstance(media_id, int):
-            media_id = [media_id]
-        if self.instance_type == 'Sonarr':
-            if isinstance(media_id, list) and len(media_id) == 1:
+        for id in media_id:
+            if self.instance_type == 'Sonarr':
+                name_type = "SeriesSearch"
                 id_type = "seriesId"
-                media_id = int(media_id[0])
-            elif isinstance(media_id, int):
-                id_type = "seriesId"
-                media_id = int(media_id)
-            else:
-                id_type = "seriesIds"
-            name_type = "SeriesSearch"
-        elif self.instance_type == 'Radarr':
-            if isinstance(media_id, list) and len(media_id) == 1:
+            elif self.instance_type == 'Radarr':
+                name_type = "MovieSearch"
                 id_type = "movieId"
-                media_id = int(media_id[0])
-            elif isinstance(media_id, int):
-                id_type = "movieId"
-                media_id = int(media_id)
+            payload = {
+                "name": name_type,
+                id_type: id
+            }
+            self.logger.debug(f"Search payload: {payload}")
+            endpoint = f"{self.url}/api/v3/command"
+            response = self.make_post_request(endpoint, json=payload)
+            if response:
+                return True
             else:
-                id_type = "movieIds"
-                name_type = "MoviesSearch"
-        payload = {
-            "name": name_type,
-            id_type: media_id
-        }
-        self.logger.debug(f"Search payload: {payload}")
-        endpoint = f"{self.url}/api/v3/command"
-        response = self.make_post_request(endpoint, json=payload)
-        if response:
-            return True
-        else:
-            self.logger.error(f"Failed to search for media item with ID {media_id}")
-            return False
+                self.logger.error(f"Failed to search for media item with ID {media_id}")
+                return False
     
     def search_season(self, media_id, season_number):
         """

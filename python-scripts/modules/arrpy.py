@@ -3,7 +3,7 @@ import requests
 import logging
 import json
 
-# Version 1.0.2
+# Version 1.0.3
 
 logging.getLogger("qbittorrentapi").setLevel(logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)
@@ -425,24 +425,36 @@ class StARR:
         name_type = None
         id_type = None
         self.logger.debug(f"Media ID: {media_id}")
-        for id in media_id:
-            if self.instance_type == 'Sonarr':
-                name_type = "SeriesSearch"
-                id_type = "seriesId"
-            elif self.instance_type == 'Radarr':
-                name_type = "MovieSearch"
-                id_type = "movieId"
+        def send_request(payload):
+            endpoint = f"{self.url}/api/v3/command"
+            response = self.make_post_request(endpoint, json=payload)
+            if response:
+                self.logger.debug(json.dumps(response, indent=4))
+                return True
+            else:
+                self.logger.error(f"Failed to search for media item with ID {media_id}")
+                return False
+
+        if self.instance_type == 'Sonarr':
+            for id in media_id:
+                    name_type = "SeriesSearch"
+                    id_type = "seriesId"
             payload = {
                 "name": name_type,
                 id_type: id
             }
             self.logger.debug(f"Search payload: {payload}")
-            endpoint = f"{self.url}/api/v3/command"
-            response = self.make_post_request(endpoint, json=payload)
-            if response:
-                self.logger.info(f"Searching for media item with ID {id}")
-            else:
-                self.logger.error(f"Failed to search for media item with ID {id}")
+            send_request(payload)
+        elif self.instance_type == 'Radarr':
+            name_type = "MoviesSearch"
+            id_type = "movieIds"
+            id = media_id
+            payload = {
+                "name": name_type,
+                id_type: id
+            }
+            self.logger.debug(f"Search payload: {payload}")
+            send_request(payload)
     
     def search_season(self, media_id, season_number):
         """

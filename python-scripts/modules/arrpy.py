@@ -3,7 +3,7 @@ import requests
 import logging
 import json
 
-# Version 1.0.1
+# Version 1.0.2
 
 logging.getLogger("qbittorrentapi").setLevel(logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)
@@ -424,6 +424,7 @@ class StARR:
         """
         name_type = None
         id_type = None
+        self.logger.debug(f"Media ID: {media_id}")
         for id in media_id:
             if self.instance_type == 'Sonarr':
                 name_type = "SeriesSearch"
@@ -439,10 +440,9 @@ class StARR:
             endpoint = f"{self.url}/api/v3/command"
             response = self.make_post_request(endpoint, json=payload)
             if response:
-                return True
+                self.logger.info(f"Searching for media item with ID {id}")
             else:
-                self.logger.error(f"Failed to search for media item with ID {media_id}")
-                return False
+                self.logger.error(f"Failed to search for media item with ID {id}")
     
     def search_season(self, media_id, season_number):
         """

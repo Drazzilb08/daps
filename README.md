@@ -17,7 +17,7 @@ To help with documentation of the collections of these scripts, I've created a [
 
 ## Versioning
 
-I've started to put version numbers on each of my scripts, you can find the version at the very bottom of every script.
+I've started to put version numbers on each of my scripts, you can find the version at the top of every script.
 I do my best to keep up with everything
 
 1. 0.0.X versions are bug fixes

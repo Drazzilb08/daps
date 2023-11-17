@@ -8,7 +8,7 @@
 #           | |   | |                                                      | |
 #           |_|   |_|                                                      |_|
 # ====================================================
-# Version: 4.4.5
+# Version: 4.4.6
 # backup-appdata - A script to backup your Docker appdata
 # Author: Drazzilb
 # License: MIT License
@@ -535,17 +535,28 @@ send_notification() {
         if [ ${#new_container[@]} -gt 0 ]; then
             joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
             new_container_notification
-            curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
+            new_container_response=$(curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook")
+            if [ "$dry_run" == "true" ]; then
+                echo "$new_container_response"
+            fi
         fi
         if [ ${#removed_containers[@]} -gt 0 ]; then
             joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
             removed_container_notification
-            curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
+            removed_container=$(curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook")
+            if [ "$dry_run" == "true" ]; then
+                echo "$removed_container"
+            fi
         fi
         payload
-        # echo "$payload"
+        if [ "$dry_run" == "true" ]; then
+            echo "$payload"
+        fi
         # Send the payload to the discord webhook URL
-        curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
+        curl_response=$(curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook")
+        if [ "$dry_run" == "true" ]; then
+            echo "$curl_response"
+        fi
     fi
     # Check if the webhook is for notifiarr
     if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
@@ -555,16 +566,28 @@ send_notification() {
         if [ ${#new_container[@]} -gt 0 ]; then
             joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
             new_container_notification
-            curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook" >/dev/null
+            new_container_response=$(curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook")
+            if [ "$dry_run" == "true" ]; then
+                echo "$new_container_response"
+            fi
         fi
         if [ ${#removed_containers[@]} -gt 0 ]; then
             joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
             removed_container_notification
-            curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook" >/dev/null
+            removed_container=$(curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook")
+            if [ "$dry_run" == "true" ]; then
+                echo "$removed_container"
+            fi
         fi
         payload
         # Send the payload to the notifiarr webhook URL
-        curl -s -H "Content-Type: application/json" -X POST -d "'$payload'" "$webhook" >/dev/null
+        if [ "$dry_run" == "true" ]; then
+            echo "$payload"
+        fi
+        curl_response=$(curl -s -H "Content-Type: application/json" -X POST -d "'$payload'" "$webhook")
+        if [ "$dry_run" == "true" ]; then
+            echo "$curl_response"
+        fi
     fi
 }
 
@@ -572,16 +595,35 @@ notifiarr_common_fields() {
     title="title"
     text="text"
     common_fields='
-    {"notification": 
-    {"update": false,"name": "Appdata Backup","event": ""},
-    "discord": 
-    {"color": "'"$hex_bar_color"'",
-        "ping": {"pingUser": 0,"pingRole": 0},
-        "images": {"thumbnail": "","image": ""},
-        "text": {"title": "Appdata Backup",'
-    common_fields2='
-            "footer": "'"Powered by: Drazzilb | $joke"'"},
-            "ids": {"channel": "'"$channel"'"}}}'
+{
+    "notification": 
+    {
+        "update": false,"name": "Appdata Backup","event": ""},
+        "discord": 
+        {
+            "color": "'"$hex_bar_color"'",
+            "ping": 
+            {
+                "pingUser": 0,
+                "pingRole": 0
+            },
+            "images": 
+            {
+                "thumbnail": "",
+                "image": ""
+            },
+            "text": 
+            {
+                "title": "Appdata Backup",'
+        common_fields2='
+        ,"footer": "'"Powered by: Drazzilb | $joke"'"
+        },
+        "ids": 
+        {
+            "channel": "'"$channel"'"
+        }
+    }
+}'
 }
 
 discord_common_fields() {
@@ -652,7 +694,7 @@ payload() {
     container_no_stop_list_string_length=${#container_no_stop_list_string}
 
     # Split container_stop_list_string at line breaks
-    if "$container_stop_list_string_length" -gt 3 ]; then
+    if [ "$container_stop_list_string_length" -gt 3 ]; then
         while [ "$container_stop_list_string_length" -gt 1000 ]; do
             last_line_break=$(find_last_line_break "$container_stop_list_string" 750)
             json_stop_list+=("${container_stop_list_string:0:last_line_break}")

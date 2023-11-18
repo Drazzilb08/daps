@@ -9,10 +9,10 @@
 # Description: A script to add/remove labels in Plex based on tags in Sonarr/Radarr
 # Usage: python3 /path/to/labelarr.py
 # Requirements: requests, pyyaml, plexapi
-# Version: 1.0.0
 # License: MIT License
 # ======================================================================================
 
+version = "1.0.0"
 
 import os
 from tqdm import tqdm
@@ -22,6 +22,7 @@ from modules.arrpy import StARR
 from plexapi.server import PlexServer
 from plexapi.exceptions import BadRequest
 import unicodedata
+from modules.arrpy import arrpy_py_version
 
 config = Config(script_name="labelarr")
 logger = setup_logger(config.log_level, "labelarr")
@@ -110,6 +111,12 @@ def sync_labels_from_plex(plex, media, instance_type, app, labels, dry_run):
                             logger.info(f"Dry Run: Not removing tag from '{title} ({year})' in '{instance_type}'")
     
 def main():
+    logger.debug('*' * 40)
+    logger.debug(f'* {"labelarr":^36} *')
+    logger.debug(f'* {"Script Version:":<2} {version:>20} *')
+    logger.debug(f'* {"arrpy.py Version:":<2} {arrpy_py_version:>18} *')
+    logger.debug('*' * 40)
+    logger.debug('')
     logger.info("Starting Labelarr")
     logger.debug('*' * 40)
     logger.debug(f'* {"Script Input Validated":^36} *')

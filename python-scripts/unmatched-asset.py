@@ -18,9 +18,10 @@
 #         not have a seasonal poster then it will not match the series poster. If you don't have a season poster
 #         your series will appear in the movies section.
 #  Requirements: requests
-#  Version: 4.1.9b
 #  License: MIT License
 # ===========================================================================================================
+
+version = "4.1.10"
 
 import os
 import re
@@ -33,6 +34,7 @@ from unidecode import unidecode
 from tqdm import tqdm
 import json
 import logging
+from modules.arrpy import arrpy_py_version
 
 config = Config(script_name="unmatched-assets")
 logger = setup_logger(config.log_level, "unmatched-assets")
@@ -302,6 +304,12 @@ def main():
     api_key = None
     app = None
     library = None
+    logger.debug('*' * 40)
+    logger.debug(f'* {"Unmatched Assets":^36} *')
+    logger.debug(f'* {"Script Version:":<2} {version:>20} *')
+    logger.debug(f'* {"arrpy.py Version:":<2} {arrpy_py_version:>18} *')
+    logger.debug('*' * 40)
+    logger.debug('')
     logger.debug('*' * 40)
     logger.debug(f'* {"Script Settings":^36} *')
     logger.debug('*' * 40)

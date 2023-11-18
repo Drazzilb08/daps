@@ -11,13 +11,15 @@
 #              from TMDB or TVDB.
 # Usage: python3 movie-deletarr.py
 # Requirements: requests
-# Version: 1.0.0
 # License: MIT License
 # ===================================================================================================
+
+version = "1.0.0"
 
 from modules.config import Config
 from modules.logger import setup_logger
 from modules.arrpy import StARR
+from modules.arrpy import arrpy_py_version
 import json
 import re
 
@@ -33,8 +35,14 @@ def main():
     id_type = None
     dry_run = config.dry_run
     log_level = config.log_level
-    print(f"dry_run: {dry_run}")
-    print(f"log_level: {log_level}")
+    logger.debug('*' * 40)
+    logger.debug(f'* {"movie-deletarr":^36} *')
+    logger.debug(f'* {"Script Version:":<2} {version:>20} *')
+    logger.debug(f'* {"arrpy.py Version:":<2} {arrpy_py_version:>18} *')
+    logger.debug('*' * 40)
+    logger.debug('')
+    logger.debug(f"dry_run: {dry_run}")
+    logger.debug(f"log_level: {log_level}")
     instance_data = {
         'Radarr': config.radarr_data,
         'Sonarr': config.sonarr_data

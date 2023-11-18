@@ -3,7 +3,7 @@ import requests
 import logging
 import json
 
-# Version 1.0.3
+arrpy_py_version = "1.0.3"
 
 logging.getLogger("qbittorrentapi").setLevel(logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)

@@ -11,9 +11,10 @@
 #              in a queue due to a missing file or not being an upgrade for existing episode file(s).
 # Usage: python3 queinatorr.py
 # Requirements: requests, qbittorrentapi
-# Version: 1.0.2
 # License: MIT License
 # ===================================================================================================
+
+version = "1.0.2"
 
 import json
 from modules.config import Config
@@ -21,6 +22,7 @@ from modules.logger import setup_logger
 from qbittorrentapi import Client
 from modules.arrpy import StARR
 from urllib.parse import urlsplit
+from modules.arrpy import arrpy_py_version
 
 config = Config(script_name="queinatorr")
 logger = setup_logger(config.log_level, "queinatorr")
@@ -119,6 +121,12 @@ def handle_queued_items(queue):
 def main():
     logger.info("Starting queinatorr")
     dry_run = config.dry_run
+    logger.debug('*' * 40)
+    logger.debug(f'* {"Unmatched Assets":^36} *')
+    logger.debug(f'* {"Script Version:":<2} {version:>20} *')
+    logger.debug(f'* {"arrpy.py Version:":<2} {arrpy_py_version:>18} *')
+    logger.debug('*' * 40)
+    logger.debug('')
     if config.dry_run:
         logger.info('*' * 40)
         logger.info(f'* {"Dry_run Activated":^36} *')

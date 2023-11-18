@@ -12,10 +12,12 @@
 #              It will output the results to a file in the logs folder.
 # Usage: python3 renamer.py 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
-# Version: 5.3.7
 # License: MIT License
 # ===================================================================================================
 
+version = "5.3.7"
+
+from modules.arrpy import arrpy_py_version
 from plexapi.exceptions import BadRequest
 from modules.logger import setup_logger
 from plexapi.server import PlexServer
@@ -584,6 +586,12 @@ def print_output(final_output):
         return
 
 def main():
+    logger.debug('*' * 40)
+    logger.debug(f'* {"Renamer":^36} *')
+    logger.debug(f'* {"Script Version:":<2} {version:>20} *')
+    logger.debug(f'* {"arrpy.py Version:":<2} {arrpy_py_version:>18} *')
+    logger.debug('*' * 40)
+    logger.debug('')
     logger.debug('*' * 40)
     logger.debug(f'* {"Script Input Validated":^36} *')
     logger.debug('*' * 40)

@@ -11,9 +11,10 @@
 #               Media directory and cause a loop. I wouldn't recommend running this script very often (weekly at most, monthly is probably)
 #  Usage: python3 renamer_cleaner.py
 #  Requirements: requests
-#  Version: 1.0.0 - beta2
 #  License: MIT License
 # ===========================================================================================================
+
+version = "1.0.0"
 
 import os
 import re
@@ -193,6 +194,11 @@ def main():
     api_key = None
     app = None
     library = None
+    logger.debug('*' * 40)
+    logger.debug(f'* {"Renamer Cleaner":^36} *')
+    logger.debug(f'* {"Version:":<18} {version:>17} *')
+    logger.debug('*' * 40)
+    logger.debug('')
     if config.dry_run:
         logger.info('*' * 40)
         logger.info(f'* {"Dry_run Activated":^36} *')

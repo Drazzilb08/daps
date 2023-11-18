@@ -13,14 +13,15 @@
 #              identified as having been renamed.
 # Usage: python3 /path/to/renameinatorr.py
 # Requirements: requests, pyyaml
-# Version: 2.0.6
 # License: MIT License
 # ===================================================================================================
 
-import json
+version = "2.0.6"
+
 from modules.config import Config
 from modules.logger import setup_logger
 from modules.arrpy import StARR
+from modules.arrpy import arrpy_py_version
 
 config = Config(script_name="renameinatorr")
 logger = setup_logger(config.log_level, "renameinatorr")
@@ -185,6 +186,11 @@ def main():
     reset = None
     unattended = None
     logger.debug('*' * 40)
+    logger.debug(f'* {"Renamer Cleaner":^36} *')
+    logger.debug(f'* {"Script Version:":<2} {version:>20} *')
+    logger.debug(f'* {"arrpy.py Version:":<2} {arrpy_py_version:>18} *')
+    logger.debug('*' * 40)
+    logger.debug('')
     logger.debug(f'* {"Script Input Validated":^36} *')
     logger.debug('*' * 40)
     logger.debug(f'{" Script Settings ":*^40}')

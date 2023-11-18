@@ -13,10 +13,10 @@
 #              hardlinks seeding.
 # Usage: python3 nohl.py
 # Requirements: Python 3.8+, requests
-# Version: 1.0.4
 # License: MIT License
 # ===================================================================================================
 
+version = "1.0.4"
 
 import os
 import re
@@ -28,6 +28,7 @@ from modules.config import Config
 from modules.logger import setup_logger
 from modules.arrpy import StARR
 from unidecode import unidecode
+from modules.arrpy import arrpy_py_version
 
 config = Config(script_name="nohl")
 logger = setup_logger(config.log_level, "nohl")
@@ -333,6 +334,12 @@ def main():
     include_profiles = None
     exclude_profiles = None
     dry_run = config.dry_run
+    logger.debug('*' * 40)
+    logger.debug(f'* {"noHL.py":^36} *')
+    logger.debug(f'* {"Script Version:":<2} {version:>20} *')
+    logger.debug(f'* {"arrpy.py Version:":<2} {arrpy_py_version:>18} *')
+    logger.debug('*' * 40)
+    logger.debug('')
     if config.dry_run:
         logger.info('*' * 40)
         logger.info(f'* {"Dry_run Activated":^36} *')

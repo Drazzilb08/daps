@@ -41,5 +41,6 @@ Thanks
 3. [qBitManager](https://github.com/StuffAnThings/qbit_manage) Amazing bit of python scripting that makes managing qBittorrent much easier
 4. [Upgradinatorr](https://github.com/angrycuban13/Just-A-Bunch-Of-Starr-Scripts/tree/main/Upgradinatorr) An amazing bit of powershell writing by AngryCuban meant to keep your movie library as up to date as possible
 5. [Homepage](https://github.com/benphelps/homepage) Probably one of the best homelab dashboard around IMO.
+6. [reTraktArr](https://github.com/zakkarry/reTraktarr) Here is a neat script that will help you keep your Radarr and Sonarr libraries in sync with your Trakt lists. The way I'm using this is to have my entire library visable on trakt and visable to anybody I want to show my collection to
 
 If you think there are some other neat ones I should include or try out please let me know.

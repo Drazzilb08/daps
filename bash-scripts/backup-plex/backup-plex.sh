@@ -9,7 +9,7 @@
 #                                                   | |                        | |
 #                                                   |_|                        |_|
 # ====================================================
-# Version: 4.0.3
+# Version: 4.0.4
 # backup-plex - A script to backup your plex database and media
 # Author: Drazzilb
 # License: MIT License
@@ -73,12 +73,12 @@ check_config() {
             exit 1
         fi
         # Check if channel is set if using Notifiarr
-        if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]] && [ -n "$channel" ]; then
+        if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]] && [ -z "$channel" ]; then
             echo "ERROR: It appears you're trying to use Notifiarr as your notification agent but haven't set a channel. How will the bot know where to send the notification?"
             echo "Please use the -C or --channel argument to set the channel ID used for this notification"
         fi
         #check if botname is set and using notifiarr
-        if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]] && [ -n "$bot_name" ]; then
+        if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]] && [ -z "$bot_name" ]; then
             echo "ERROR: It appears you're using the Notifarr webhook and setting the bot name to $bot_name. Notifiarr does not support this"
             echo "Please do not set the bot name while using Notifiarr"
         fi

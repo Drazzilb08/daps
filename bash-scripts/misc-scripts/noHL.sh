@@ -68,7 +68,7 @@ check_config() {
         fi
         # Check if webhook returns valid response code
         response_code=$(curl --write-out "%{response_code}" --silent --output /dev/null "$webhook")
-        if [ "$response_code" -ge 200 ] && [ "$response_code" -lt 400 ]; then
+        if [ "$response_code" -ge 200 ] && [ "$response_code" -le 400 ]; then
             # Print message if quiet option is not set
             echo "Webhook is valid"
         else

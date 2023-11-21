@@ -8,7 +8,7 @@
 #           | |   | |                                                      | |
 #           |_|   |_|                                                      |_|
 # ====================================================
-# Version: 4.4.6
+# Version: 4.4.7
 # backup-appdata - A script to backup your Docker appdata
 # Author: Drazzilb
 # License: MIT License
@@ -866,19 +866,28 @@ check_config() {
         # Check if channel is set if using Notifiarr
         if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]] && [ -z "$channel" ]; then
             echo "ERROR: It appears you're trying to use Notifiarr as your notification agent but haven't set a channel. How will the bot know where to send the notification?"
+            echo "Please use the -C or --channel argument to set the channel ID used for this notification"
+            echo "You can find the channel ID by going to the channel you want to use and clicking the settings icon and selecting 'Copy ID'"
+            exit 1
         fi
+
         # Check if channel is not set if using discord webhook
-        if [[ ! $webhook =~ ^https://discord\.com/api/webhooks/ ]] && [ -z "$channel" ]; then
+        if [[ $webhook =~ ^https://discord\.com/api/webhooks/ ]] && [ -n "$channel" ]; then
             echo "ERROR: It appears you're using the discord webhook and using the channel argument"
-            echo "The channel argument is only used with Notifiarr's webhook"
+            echo "Please not the channel argument is only for Notifiarr"
         fi
         # Check if webhook returns valid response code
-        response_code=$(curl --write-out "%{response_code}" --silent --output /dev/null "$webhook")
-        if [ "$response_code" -ge 200 ] && [ "$response_code" -le 400 ]; then
-            verbose_output "Webhook is valid"
+        if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
+            apikey="${webhook##*/}"
+            response_code=$(curl --write-out "%{response_code}" --silent --output /dev/null -H "x-api-key: $apikey" "https://notifiarr.com/api/v1/user/validate")
+        else
+            response_code=$(curl --write-out "%{response_code}" --silent --output /dev/null "$webhook")
+        fi
+        if [ "$response_code" -eq 200 ]; then
+            echo "Webhook is valid"
         else
             echo "Webhook is not valid"
-            echo "Backup will be created withoutt a notification being sent"
+            echo "Backup will be created without a notification being sent"
         fi
     fi
 }

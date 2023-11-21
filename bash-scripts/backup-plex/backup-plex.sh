@@ -9,7 +9,7 @@
 #                                                   | |                        | |
 #                                                   |_|                        |_|
 # ====================================================
-# Version: 4.0.4
+# Version: 4.0.5
 # backup-plex - A script to backup your plex database and media
 # Author: Drazzilb
 # License: MIT License
@@ -76,21 +76,36 @@ check_config() {
         if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]] && [ -z "$channel" ]; then
             echo "ERROR: It appears you're trying to use Notifiarr as your notification agent but haven't set a channel. How will the bot know where to send the notification?"
             echo "Please use the -C or --channel argument to set the channel ID used for this notification"
+            echo "You can find the channel ID by going to the channel you want to use and clicking the settings icon and selecting 'Copy ID'"
+            exit 1
         fi
-        #check if botname is set and using notifiarr
-        if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]] && [ -z "$bot_name" ]; then
-            echo "ERROR: It appears you're using the Notifarr webhook and setting the bot name to $bot_name. Notifiarr does not support this"
-            echo "Please do not set the bot name while using Notifiarr"
-        fi
+
         # Check if channel is not set if using discord webhook
-        if [[ ! $webhook =~ ^https://discord\.com/api/webhooks/ ]] && [ -z "$channel" ]; then
+        if [[ $webhook =~ ^https://discord\.com/api/webhooks/ ]] && [ -n "$channel" ]; then
             echo "ERROR: It appears you're using the discord webhook and using the channel argument"
-            echo "The channel argument is only used with Notifiarr's webhook"
+            echo "Please not the channel argument is only for Notifiarr"
         fi
         # Check if webhook returns valid response code
-        response_code=$(curl --write-out "%{response_code}" --silent --output /dev/null "$webhook")
-        if [ "$response_code" -ge 200 ] && [ "$response_code" -le 400 ]; then
-            verbose_output "Webhook is valid"
+        if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
+            apikey="${webhook##*/}"
+            if [ "$debug" == "true" ]; then
+                echo "Checking webhook validity: $webhook"
+                echo "API Key: $apikey"
+            fi
+            response_code=$(curl --write-out "%{response_code}" --silent --output /dev/null -H "x-api-key: $apikey" "https://notifiarr.com/api/v1/user/validate")
+        else
+            if [ "$debug" == "true" ]; then
+                echo "Checking webhook validity: $webhook" | tee -a "$log_dir/jduparr.log"
+            fi
+            response_code=$(curl --write-out "%{response_code}" --silent --output /dev/null "$webhook")
+        fi
+
+        if [ "$debug" == "true" ]; then
+            echo "Response: $response_code" | tee -a "$log_dir/jduparr.log"
+        fi
+
+        if [ "$response_code" -eq 200 ]; then
+            echo "Webhook is valid"
         else
             echo "Webhook is not valid"
             echo "Backup will be created without a notification being sent"

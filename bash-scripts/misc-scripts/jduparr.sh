@@ -9,7 +9,7 @@
 #   _/ |                                         
 #  |__/                                          
 # ====================================================
-# Version: 1.0.1
+# Version: 2.0.0
 # jDuparr - A script to find duplicate files in your media library
 # Author: Drazzilb
 # License: MIT License
@@ -17,12 +17,14 @@
 
 downloads_dir='/path/to/downloads' # This is the root directory for your downloads
 media_dir='/path/to/media'         # This is the root directory for your media you want to check for duplicates
+log_dir='/path/to/logsdir'         # This is the directory the logs gets written in
 
 # Optional for notifications on Discord through Discord webhook or Notifiarr API.
 webhook=''                         # Not required if you don't want to use notifications // Leave as is if not using notifications
 bot_name='Notification Bot'        # Not required if you don't want to use notifications // Leave as is if not using notifications
 bar_color='FF00FF'                 # Not required if you don't want to use notifications // Leave as is if not using notifications
 channel=''                         # Not required if you don't want to use notifications // Leave as is if not using notifications
+debug='false'                      # Set to true to enable debug logging
 
 
 # Include any sub paths to the media directory you want to check
@@ -104,17 +106,35 @@ check_config() {
         if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]] && [ -z "$channel" ]; then
             echo "ERROR: It appears you're trying to use Notifiarr as your notification agent but haven't set a channel. How will the bot know where to send the notification?"
             echo "Please use the -C or --channel argument to set the channel ID used for this notification"
+            echo "You can find the channel ID by going to the channel you want to use and clicking the settings icon and selecting 'Copy ID'"
+            exit 1
         fi
 
         # Check if channel is not set if using discord webhook
-        if [[ ! $webhook =~ ^https://discord\.com/api/webhooks/ ]] && [ -z "$channel" ]; then
+        if [[ $webhook =~ ^https://discord\.com/api/webhooks/ ]] && [ -n "$channel" ]; then
             echo "ERROR: It appears you're using the discord webhook and using the channel argument"
             echo "Please not the channel argument is only for Notifiarr"
         fi
         # Check if webhook returns valid response code
-        response_code=$(curl --write-out "%{response_code}" --silent --output /dev/null "$webhook")
-        if [ "$response_code" -ge 200 ] && [ "$response_code" -lt 400 ]; then
-            # Print message if quiet option is not set
+        if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
+            apikey="${webhook##*/}"
+            if [ "$debug" == "true" ]; then
+                echo "Checking webhook validity: $webhook"
+                echo "API Key: $apikey"
+            fi
+            response_code=$(curl --write-out "%{response_code}" --silent --output /dev/null -H "x-api-key: $apikey" "https://notifiarr.com/api/v1/user/validate")
+        else
+            if [ "$debug" == "true" ]; then
+                echo "Checking webhook validity: $webhook" | tee -a "$log_dir/jduparr.log"
+            fi
+            response_code=$(curl --write-out "%{response_code}" --silent --output /dev/null "$webhook")
+        fi
+
+        if [ "$debug" == "true" ]; then
+            echo "Response: $response_code" | tee -a "$log_dir/jduparr.log"
+        fi
+
+        if [ "$response_code" -eq 200 ]; then
             echo "Webhook is valid"
         else
             echo "Webhook is not valid"
@@ -125,21 +145,63 @@ check_config() {
 
 find_duplicates() {
     start=$(date +%s)
-    echo "Running jdupes" | tee "$(dirname "$0")/../logs/jduparr.log"
+    echo "Running jdupes" | tee "$log_dir/jduparr.log"
+    list_of_jdupes_output=()
     if [ ${#include[@]} -eq 0 ]; then
+        if [ $debug == "true" ]; then
+            echo "Running jdupes for all directories" | tee -a "$log_dir/jduparr.log"
+            echo -e "Download directory: ${downloads_dir}" | tee -a "$log_dir/jduparr.log"
+            echo -e "Media directory: ${media_dir}" | tee -a "$log_dir/jduparr.log"
+            echo -e "jdupes -r -L -A -X onlyext:mp4,mkv,avi ${downloads_dir} \"${media_dir}\"" | tee -a "$log_dir/jduparr.log"
+        fi
         mkdir -p "$(dirname "$0")/../logs"
-        jdupes -r -L -A -X onlyext:mp4,mkv,avi "${downloads_dir}" "${media_dir}" | tee -a "$(dirname "$0")/../logs/jduparr.log" 2>&1
+        jdupes_output=$(jdupes -r -L -A -X onlyext:mp4,mkv,avi "${downloads_dir}" "${media_dir}" | tee -a "$log_dir/jduparr.log" 2>&1)
+        if [ $debug == "true" ]; then
+            echo -e "jdupes output: ${jdupes_output}" | tee -a "$log_dir/jduparr.log"
+        fi
+        if [[ -z $jdupes_output ]]; then
+            jdupes_output="No duplicates found."
+        fi
+        echo "jDupes completed" | tee -a "$log_dir/jduparr.log"
+        list_of_jdupes_output+=("$jdupes_output")
         true
     else
         for ((i = 0; i < ${#include[@]}; i++)); do
-            echo "Running jdupes for ${include[$i]}" | tee -a "$(dirname "$0")/../logs/jduparr.log"
-            jdupes -r -L -A -X onlyext:mp4,mkv,avi "${downloads_dir}" "${media_dir}/${include[$i]}" | tee -a "$(dirname "$0")/../logs/jduparr.log" >&1
-            echo "jDupes completed for ${include[$i]}" | tee -a "$(dirname "$0")/../logs/jduparr.log"
+            if [ $debug == "true" ]; then
+                echo -e "Download directory: ${downloads_dir}" | tee -a "$log_dir/jduparr.log"
+                echo -e "Media directory: ${media_dir}/${include[$i]}" | tee -a "$log_dir/jduparr.log"
+                echo "jdupes -r -L -A -X onlyext:mp4,mkv,avi ${downloads_dir} \"${media_dir}/${include[$i]}\"" | tee -a "$log_dir/jduparr.log"
+            fi
+            echo "Running jdupes for ${include[$i]}" | tee -a "$log_dir/jduparr.log"
+            jdupes_output=$(jdupes -r -L -A -X onlyext:mp4,mkv,avi "${downloads_dir}" "${media_dir}/${include[$i]}" | tee -a "$log_dir/jduparr.log" >&1)
+            if [ $debug == "true" ]; then
+                echo -e "jdupes output: ${jdupes_output}" | tee -a "$log_dir/jduparr.log"
+            fi
+            if [[ -z $jdupes_output ]]; then
+                jdupes_output="No duplicates found."
+            fi
+            echo "jDupes completed for ${include[$i]}" | tee -a "$log_dir/jduparr.log"
+            list_of_jdupes_output+=("$jdupes_output")
             true
         done
-    echo "jDupes completed" | tee -a "$(dirname "$0")/../logs/jduparr.log"
     fi
     end=$(date +%s)
+}
+
+parse_jdupes_run() {
+    # Check if the list_of_jdupes_output is empty
+    for jdupes_output in "${list_of_jdupes_output[@]}"; do
+        if [[ $jdupes_output == "No duplicates found." ]]; then
+            parsed_log="No hardlinks created"
+        else
+            parsed_log+=$(echo "$jdupes_output" | sed -nE 's/\[SRC\] (.*)/\1/p' | sed 's/----> /Hardlinked /')
+        fi
+    done
+    # remove all but file names from parsed_log
+    parsed_log=$(echo "$parsed_log" | sed -E 's/.*\/(.*)/\1/')
+    if [ $debug == "true" ]; then
+        echo -e "Parsed log:${parsed_log}" | tee -a "$log_dir/jduparr.log"
+    fi
 }
 
 calculate_runtime() {
@@ -155,7 +217,7 @@ calculate_runtime() {
     else
         run_output="jDupes completed in $hours hours $minutes minutes and $seconds seconds"
     fi
-    echo "$run_output" | tee -a "$(dirname "$0")/../logs/jduparr.log"
+    echo "$run_output" | tee -a "$log_dir/jduparr.log"
 }
 
 hex_to_decimal() {
@@ -182,11 +244,19 @@ send_notification() {
         if [[ "$webhook" =~ ^https://discord\.com/api/webhooks/ ]]; then
             discord_common_fields
             payload
+            if [ "$debug" == "true" ]; then
+                echo "$webhook" | tee -a "$log_dir/jduparr.log"
+                echo "$payload" | tee -a "$log_dir/jduparr.log"
+            fi
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
         fi
         if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
             notifiarr_common_fields
             payload
+            if [ "$debug" == "true" ]; then
+                echo "$webhook" | tee -a "$log_dir/jduparr.log"
+                echo "$payload" | tee -a "$log_dir/jduparr.log"
+            fi
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
         fi
     else
@@ -194,52 +264,135 @@ send_notification() {
     fi
 }
 
+find_last_line_break() {
+    local input_string="$1"
+    local index=$2
+    for ((i = index; i >= 0; i--)); do
+        if [ "${input_string:i:1}" == $'\n' ]; then
+            echo "$i"
+            return
+        fi
+    done
+    echo "-1"
+}
+
+field_builder() {
+    local field_builder
+    local title_text="$1"
+    local text_value="$2"
+    local reset="$3"
+    if [ "$reset" == "true" ]; then
+        fields=""
+    fi
+    field_builder='
+                    {
+                        "'"$title"'": "'"$title_text"'",
+                        "'"$text"'": "'"$text_value"'",
+                        "inline": false
+                    }'
+
+    # Check if fields is not empty and add a comma if it is not
+    if [ -n "$fields" ]; then
+        field_builder=","$field_builder
+    fi
+
+    fields="$fields""$field_builder"
+}
+
 payload() {
+    parse_jdupes_run
+    json_parsed_list=()
+    parsed_log_length=${#parsed_log}
+    # Runtime field added
+    field_builder "Runtime:" "$run_output" "true"
+    # if parsed_log_length is greater than 5500
+    if [ "$parsed_log_length" -gt 5500 ]; then
+        parsed_log="\`\`\`Whoah buddy, that's a lot of files.\nDiscord only allows 6000 characters per message.\`\`\`"
+        field_builder "Files Relinked:" "$parsed_log" "true"
+    else
+        parsed_list_string=$(printf "%s\n" "${parsed_log[@]}")
+        if [ "$parsed_log_length" -gt 3 ]; then
+            while [ "$parsed_log_length" -gt 1000 ]; do
+                last_line_break=$(find_last_line_break "$parsed_list_string" 750)
+                json_parsed_list+=("${parsed_list_string:0:$last_line_break}")
+                parsed_list_string="${parsed_list_string:$last_line_break+1}"
+                parsed_log_length=${#parsed_list_string}
+            done
+            json_parsed_list+=("$parsed_list_string")
+        fi
+        for i in "${!json_parsed_list[@]}"; do
+            json_parsed_list[i]="\`\`\`$(jq -Rs '.' <<<"${json_parsed_list[i]}" | sed -e 's/^"//' -e 's/"$//')\`\`\`"
+        done
+        # for each item in json_parsed_list, add it to the fields
+        for i in "${!json_parsed_list[@]}"; do
+            field_builder "Files Relinked:" "${json_parsed_list[i]}" "false"
+        done
+    fi
     payload=''"$common_fields"'
-                "description": "'"jDupes has finished it's run."'",
+                "description": "'"jDupes has finished its run."'",
                 "fields": 
                 [
-                    {
-                        "'"$title"'": "Runtime:",
-                        "'"$text"'": "'"${run_output}"'"
-                    }
-                ]'"$common_fields2"''
+                    '"$fields"'
+                ],
+        '"$common_fields2"''
 }
 
 notifiarr_common_fields() {
     title="title"
     text="text"
     common_fields='
-    {"notification": 
-    {"update": false,"name": "jDuparr","event": ""},
+{
+    "notification": 
+    {
+        "update": false,
+        "name": "'"${bot_name}"'",
+        "event": ""
+    },
     "discord": 
-    {"color": "'"$hex_bar_color"'",
-        "ping": {"pingUser": 0,"pingRole": 0},
-        "images": {"thumbnail": "","image": ""},
-        "text": {"title": "jDuparr",'
+    {
+        "color": "'"$hex_bar_color"'",
+        "ping": 
+        {
+            "pingUser": 0,
+            "pingRole": 0
+        },
+        "images": 
+        {
+            "thumbnail": "",
+            "image": ""
+        },
+        "text": {
+            "title": "jDuparr",'
     common_fields2='
-            "footer": "'"Powered by: Drazzilb | $joke"'"},
-            "ids": {"channel": "'"$channel"'"}}}'
+        "footer": "'"Powered by: Drazzilb | $joke"'"
+        },
+        "ids": 
+        {
+            "channel": "'"$channel"'"
+        }
+    }
+}'
 }
 discord_common_fields() {
     title="name"
     text="value"
-    common_fields='{
-                "username": "'"${bot_name}"'",
-                "embeds": 
-                [
-                    {
-                        "title": "jDuparr",'
-    common_fields2=',
-                        "footer": 
-                        {
-                            "text": "'"Powered by: Drazzilb | $joke"'"
-                        },
-                        "color": "'"${decimal_bar_color}"'",
-                        "timestamp": "'"${get_ts}"'"
-                    }
-                ]
-            }'
+    common_fields='
+    {
+        "username": "'"${bot_name}"'",
+        "embeds": 
+        [
+            {
+                "title": "jDuparr",'
+    common_fields2='
+                "footer": 
+                {
+                    "text": "'"Powered by: Drazzilb | $joke"'"
+                },
+                "color": "'"${decimal_bar_color}"'",
+                "timestamp": "'"${get_ts}"'"
+            }
+        ]
+    }'
 }
 
 cleanup() {
@@ -248,6 +401,8 @@ cleanup() {
 }
 
 main() {
+    media_dir=${media_dir%/}
+    log_dir=${log_dir%/}
     check_duplicate_script
     check_config
     hex_to_decimal
@@ -256,6 +411,7 @@ main() {
     if [ -n "$webhook" ]; then
         send_notification
     fi
+    echo "$run_output" | tee -a "$log_dir/jduparr.log"
     cleanup
 }
 

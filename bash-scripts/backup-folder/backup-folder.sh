@@ -8,7 +8,7 @@
 #                             | |
 #                             |_|
 # ====================================================
-# Version: 3.0.4
+# Version: 3.0.5
 # Backup Folder - A script to backup a folder to another folder
 # Author: Drazzilb
 # License: MIT License
@@ -71,7 +71,7 @@ check_config() {
         fi
 
         # Check if channel is not set if using discord webhook
-        if [[ $webhook =~ ^https://discord\.com/api/webhooks/ ]] && [ -n "$channel" ]; then
+        if [[ $webhook =~ ^https://discord\.com/api/webhooks/ ]] && [ -z "$channel" ]; then
             echo "ERROR: It appears you're using the discord webhook and using the channel argument"
             echo "Please not the channel argument is only for Notifiarr"
         fi
@@ -123,7 +123,7 @@ check_space() {
 
 # Function to display help
 display_help() {
-    echo "Usage: $0 [ -s | --source ] [ -d | --destination ] [ -c | --compress ] [ -k | --keep-backup ] [ -u | --unraid-notify ] [ -w | --webhook ] [ -n | --bot-name [ -b | --bar-color ] [ -h | --help ]"
+    echo "Usage: $0 [ -s | --source ] [ -d | --destination ] [ -c | --compress ] [ -k | --keep-backup ] [ -u | --unraid-notify ] [ -w | --webhook ] [ -n | --bot-name [ -b | --bar-color ] [ -h | --help ]"
     echo "This script will backup defined folders to a defined destination, you can either archive your files (using tar) or compress them (using 7Zip)"
     echo "Options:"
     echo " -s    --source          : Set the source directory to backup"
@@ -222,7 +222,7 @@ send_notification() {
     # Check if the webhook is for notifiarr
     if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
         # Call the notifarr_payload function to construct the payload
-        notifarr_payload
+        notifiarr_payload
         # Send the payload to the notifiarr webhook URL
         curl -s -H "Content-Type: application/json" -X POST -d "'$payload'" "$webhook" >/dev/null
     fi
@@ -232,7 +232,7 @@ unraid_notify() {
 }
 
 # Function to generate Notifiarr JSON payload
-notifiarr_paylaod() {
+notifiarr_payload() {
     payload='{
     "notification": 
     {
@@ -279,7 +279,7 @@ notifiarr_paylaod() {
             "channel": "'"$channel"'"
         }
     }
-}'
+    }'
 }
 
 # Function to generate Discord JSON payload

@@ -79,12 +79,6 @@ check_config() {
             echo "You can find the channel ID by going to the channel you want to use and clicking the settings icon and selecting 'Copy ID'"
             exit 1
         fi
-
-        # Check if channel is not set if using discord webhook
-        if [[ $webhook =~ ^https://discord\.com/api/webhooks/ ]] && [ -n "$channel" ]; then
-            echo "ERROR: It appears you're using the discord webhook and using the channel argument"
-            echo "Please not the channel argument is only for Notifiarr"
-        fi
         # Check if webhook returns valid response code
         if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
             apikey="${webhook##*/}"
@@ -206,7 +200,7 @@ send_notification() {
     fi
     # Check if the webhook is for notifiarr
     if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
-        # Call the notifarr_payload function to construct the payload
+        # Call the notifiarr_payload function to construct the payload
         notifiarr_common_fields
         payload
         # Send the payload to the notifiarr webhook URL
@@ -541,7 +535,7 @@ debug_output_function() {
 
 # Function to display help
 display_help() {
-    echo "Usage: $0 [ -s | --source ] [ -d | --destination ] [ -F | --force-full ] [ -f | full-backup] [ -k | --keep-essential ] [ -K | --keep-full ] [ -c | --compress ] [ -u | --unraid-notify ] [ -q | --quiet ] [ -w | --webhook ] [ -n | --bot-name [ -b | --bar-color ] [ -h | --help ]"
+    echo "Usage: $0 [ -s | --source ] [ -d | --destination ] [ -F | --force-full ] [ -f | full-backup] [ -k | --keep-essential ] [ -K | --keep-full ] [ -c | --compress ] [ -u | --unraid-notify ] [ -q | --quiet ] [ -w | --webhook ] [ -n | --bot-name ] [ -b | --bar-color ] [ -h | --help ]"
     echo "This script is for backing up and compressing Plex Media Server data"
     echo "Options:"
     echo "  -s    --source <dir>               : Source directory to backup"

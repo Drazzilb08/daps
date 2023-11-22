@@ -109,12 +109,8 @@ check_config() {
             echo "You can find the channel ID by going to the channel you want to use and clicking the settings icon and selecting 'Copy ID'"
             exit 1
         fi
-
-        # Check if channel is not set if using discord webhook
-        if [[ $webhook =~ ^https://discord\.com/api/webhooks/ ]] && [ -n "$channel" ]; then
-            echo "ERROR: It appears you're using the discord webhook and using the channel argument"
-            echo "Please not the channel argument is only for Notifiarr"
-        fi
+        # if discord webhook set and channel is set throw error
+        if [[]]
         # Check if webhook returns valid response code
         if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
             apikey="${webhook##*/}"

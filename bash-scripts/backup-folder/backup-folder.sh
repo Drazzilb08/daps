@@ -8,7 +8,7 @@
 #                             | |
 #                             |_|
 # ====================================================
-# Version: 3.0.5
+# Version: 3.0.6
 # Backup Folder - A script to backup a folder to another folder
 # Author: Drazzilb
 # License: MIT License
@@ -226,7 +226,7 @@ unraid_notify() {
 }
 
 # Function to generate Notifiarr JSON payload
-notifiarr_paylaod() {
+notifiarr_payload() {
     payload='{
     "notification": 
     {

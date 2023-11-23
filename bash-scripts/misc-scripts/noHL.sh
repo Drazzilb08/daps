@@ -6,7 +6,7 @@
 # | | | | (_) | |  | | |____
 # |_| |_|\___/|_|  |_|______|
 # ====================================================
-# Version: 2.0.3
+# Version: 2.1.3
 # noHL - A script to find media that isn't hardlinked
 # Author: Drazzilb
 # License: MIT License
@@ -20,6 +20,11 @@ include=(
     #"Movies"
     #"TV Shows"
     #"Anime"
+)
+exclude=(
+    #"Show Name"
+    #"Show Name"
+    #"Show Name"
 )
 webhook=false
 webhook=''
@@ -109,6 +114,10 @@ check_hardlinks() {
         find "${source_dir}/${include[$i]}" -type f -links 1 -iname '*' -printf "%f\n" | tee -a "$log_file"
         # Use awk and sed to remove unwanted characters from the file name and print it to /tmp/nohl.tmp
         find "${source_dir}/${include[$i]}" -type f -links 1 -iname '*' -printf "%f\n" | awk -F"[" '{print $1}' | sed $'s/[^[:print:]\t]//g' | tee -a /tmp/nohl.tmp >/dev/null
+    done
+    # itterate over nohl.tmp and remove any lines that contain the an entry within the exclude array
+    for ((i = 0; i < ${#exclude[@]}; i++)); do
+        sed -i "/${exclude[$i]}/d" /tmp/nohl.tmp
     done
 }
 

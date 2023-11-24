@@ -6,7 +6,7 @@
 # | | | | (_) | |  | | |____
 # |_| |_|\___/|_|  |_|______|
 # ====================================================
-# Version: 2.1.3
+# Version: 2.2.3
 # noHL - A script to find media that isn't hardlinked
 # Author: Drazzilb
 # License: MIT License
@@ -15,17 +15,23 @@
 # Define variables
 source_dir='/path/to/media/'
 log_dir='/path/to/log/files'
+
+# Define folders inside your source_dir to include in the search
 include=(
     #"Media directories"
     #"Movies"
     #"TV Shows"
     #"Anime"
 )
+
+# Define folders inside your source_dir to exclude from the search
 exclude=(
     #"Show Name"
     #"Show Name"
     #"Show Name"
 )
+
+# Define variables for webhook notifications
 webhook=false
 webhook=''
 bar_color=16776960
@@ -86,6 +92,22 @@ check_config() {
 
 # Function to check for hardlinks
 check_hardlinks() {
+    exclude_folders=(
+        "scenes"
+        "behind the scenes"
+        "trailers"
+        "featurettes"
+        "other"
+    )
+    file_extensions=(
+        "mp4"
+        "mkv"
+        "avi"
+        "mov"
+        "wmv"
+        "flv"
+        "webm"
+    )
     # Print starting message
     echo "Starting Search..."
     # remove trailing slash from log_dir if it exists
@@ -108,17 +130,17 @@ check_hardlinks() {
     fi
     # Iterate through the include array
     for ((i = 0; i < ${#include[@]}; i++)); do
-        # Print search message with the current include element
         echo "****** Searching ${include[$i]}... ******" | tee -a "$log_file"
-        # Use find command to search for files with hard link count of 1 and the current include element directory
-        find "${source_dir}/${include[$i]}" -type f -links 1 -iname '*' -printf "%f\n" | tee -a "$log_file"
+
+        # Construct the find command to search for files with hard link count of 1
+        # Exclude folders listed in 'exclude_folders' and 'exclude'
+        # Include specific file extensions listed in 'file_extensions'
+        find "${source_dir}/${include[$i]}" -type d \( -name "${exclude_folders[*]}" -o -name "${exclude[*]}" \) -prune -o -type f -links 1 \( -iname "*.${file_extensions[0]}" -o -iname "*.${file_extensions[1]}" -o -iname "*.${file_extensions[2]}" -o -iname "*.${file_extensions[3]}" -o -iname "*.${file_extensions[4]}" -o -iname "*.${file_extensions[5]}" \) -printf "%P\n" | tee -a "$log_file"
+
         # Use awk and sed to remove unwanted characters from the file name and print it to /tmp/nohl.tmp
-        find "${source_dir}/${include[$i]}" -type f -links 1 -iname '*' -printf "%f\n" | awk -F"[" '{print $1}' | sed $'s/[^[:print:]\t]//g' | tee -a /tmp/nohl.tmp >/dev/null
+        find "${source_dir}/${include[$i]}" -type d \( -name "${exclude_folders[*]}" -o -name "${exclude[*]}" \) -prune -o -type f -links 1 \( -iname "*.${file_extensions[0]}" -o -iname "*.${file_extensions[1]}" -o -iname "*.${file_extensions[2]}" -o -iname "*.${file_extensions[3]}" -o -iname "*.${file_extensions[4]}" -o -iname "*.${file_extensions[5]}" \) -printf "%f\n" | awk -F"[" '{print $1}' | sed $'s/[^[:print:]\t]//g' | tee -a /tmp/nohl.tmp >/dev/null
     done
-    # itterate over nohl.tmp and remove any lines that contain the an entry within the exclude array
-    for ((i = 0; i < ${#exclude[@]}; i++)); do
-        sed -i "/${exclude[$i]}/d" /tmp/nohl.tmp
-    done
+
 }
 
 # Function to send notification

@@ -9,7 +9,7 @@
 #   _/ |                                         
 #  |__/                                          
 # ====================================================
-# Version: 2.0.0
+# Version: 2.0.1
 # jDuparr - A script to find duplicate files in your media library
 # Author: Drazzilb
 # License: MIT License
@@ -109,8 +109,6 @@ check_config() {
             echo "You can find the channel ID by going to the channel you want to use and clicking the settings icon and selecting 'Copy ID'"
             exit 1
         fi
-        # if discord webhook set and channel is set throw error
-        if [[]]
         # Check if webhook returns valid response code
         if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
             apikey="${webhook##*/}"

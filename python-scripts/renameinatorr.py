@@ -16,7 +16,7 @@
 # License: MIT License
 # ===================================================================================================
 
-version = "2.0.6"
+version = "2.0.7"
 
 from modules.config import Config
 from modules.logger import setup_logger
@@ -121,9 +121,10 @@ def process_instance(instance_type, instance_name, url, api, tag_name, count, dr
     arr_tag_id = app.check_and_create_tag(tag_name, dry_run)
     logger.debug(f"Length of Media for {instance_name}: {len(media)}")
     all_tagged = check_all_tagged(media, arr_tag_id)
+    all_media_ids = [item["id"] for item in media]
     if reset:
         if not dry_run:
-            app.remove_tags(media, arr_tag_id, tag_name)
+            app.remove_tags(all_media_ids, arr_tag_id)
             logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
             all_tagged = False 
         else:
@@ -131,7 +132,7 @@ def process_instance(instance_type, instance_name, url, api, tag_name, count, dr
             all_tagged = False
     elif all_tagged and unattended:
         if not dry_run:
-            app.remove_tags(media, arr_tag_id, tag_name)
+            app.remove_tags(all_media_ids, arr_tag_id)
             logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
             all_tagged = False
         else:
@@ -161,7 +162,6 @@ def process_instance(instance_type, instance_name, url, api, tag_name, count, dr
             media_ids.append(media_id)
             library_item_to_rename = app.get_rename_list(media_id)
             items[title] = library_item_to_rename
-        # print(json.dumps(items, indent=4))
         if not dry_run:
             app.rename_media(media_ids)
             app.add_tag(media_ids, arr_tag_id)

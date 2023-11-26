@@ -14,7 +14,7 @@
 # License: MIT License
 # ===================================================================================================
 
-version = "2.1.7"
+version = "2.1.8"
 
 from modules.config import Config
 from modules.logger import setup_logger
@@ -79,9 +79,10 @@ def process_instance(instance_type, instance_name, count, tag_name, unattended, 
         media_type = "Series"
     arr_tag_id = app.check_and_create_tag(tag_name, dry_run)
     all_tagged = check_all_tagged(media, arr_tag_id, status, monitored)
+    all_media_ids = [item["id"] for item in media]
     if reset:
         if not dry_run:
-            app.remove_tags(media, arr_tag_id, tag_name)
+            app.remove_tags(all_media_ids, arr_tag_id)
             logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
             all_tagged = False 
         else:
@@ -89,7 +90,7 @@ def process_instance(instance_type, instance_name, count, tag_name, unattended, 
             all_tagged = False
     elif all_tagged and unattended:
         if not dry_run:
-            app.remove_tags(media, arr_tag_id, tag_name)
+            app.remove_tags(all_media_ids, arr_tag_id)
             logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
             all_tagged = False
         else:

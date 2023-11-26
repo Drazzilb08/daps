@@ -12,7 +12,7 @@
 # License: MIT License
 # ======================================================================================
 
-version = "1.0.0"
+version = "1.0.1"
 
 import os
 from tqdm import tqdm
@@ -76,6 +76,10 @@ def sync_labels_to_plex(plex, media, instance_type, app, labels, dry_run):
 
 def sync_labels_from_plex(plex, media, instance_type, app, labels, dry_run):
     plex_data = get_plex_data(plex, instance_type)
+    items_to_tag = []
+    tag_message = []
+    items_to_untag = []
+    untag_message = []
     for label in labels:
         label_tag = app.check_and_create_tag(label, dry_run)
         for data in tqdm(plex_data, desc=f"Searching 'Plex' for {label}", total=len(plex_data), disable=None):
@@ -98,17 +102,27 @@ def sync_labels_from_plex(plex, media, instance_type, app, labels, dry_run):
                     elif label_tag not in tag_ids and label.capitalize() in label_names:
                         logger.debug(f"Found: '{label}' in 'Plex' for item: {title} ({year}) but not in '{instance_type}'")
                         if not dry_run:
-                            logger.info(f"Adding: '{label}' to '{title} ({year})' in '{instance_type}'")
-                            app.add_tag(media_id, label_tag)
+                            tag_message.append(f"Adding: '{label}' to '{title} ({year})' in '{instance_type}'")
+                            items_to_tag.append(media_id)
                         else:
-                            logger.info(f"Dry Run: Not adding tag to '{title} ({year})' in '{instance_type}'")
+                            tag_message.append(f"Dry Run: Not adding tag to '{title} ({year})' in '{instance_type}'")
                     elif label_tag in tag_ids and label.capitalize() not in label_names:
                         logger.debug(f"Found: '{label}' in '{instance_type}' for item: {title} ({year}) but not in 'Plex'")
                         if not dry_run:
-                            logger.info(f"Removing: '{label}' from '{title} ({year})' in '{instance_type}'")
-                            app.remove_tag(media_id, label_tag)
+                            untag_message.append(f"Removing: '{label}' from '{title} ({year})' in '{instance_type}'")
+                            items_to_untag.append(media_id)
                         else:
-                            logger.info(f"Dry Run: Not removing tag from '{title} ({year})' in '{instance_type}'")
+                            untag_message.append(f"Dry Run: Not removing tag from '{title} ({year})' in '{instance_type}'")
+    if items_to_tag:
+        logger.info(f"Adding {len(items_to_tag)} items to '{label}' in '{instance_type}'")
+        for message in tag_message:
+            logger.info(message)
+        app.add_tags(items_to_tag, label_tag)
+    if items_to_untag:
+        logger.info(f"Removing {len(items_to_untag)} items from '{label}' in '{instance_type}'")
+        for message in untag_message:
+            logger.info(message)
+        app.remove_tags(items_to_untag, label_tag)
     
 def main():
     logger.debug('*' * 40)
@@ -171,10 +185,9 @@ def main():
                 media = app.get_media()
                 if config.add_from_plex:
                     sync_labels_from_plex(plex, media, instance_type, app, labels, dry_run)
-                elif config.add_to_plex:
+                else:
                     sync_labels_to_plex(plex, media, instance_type, app, labels, dry_run)
     logger.info("Labelarr finished")
-
 
 if __name__ == "__main__":
     main()

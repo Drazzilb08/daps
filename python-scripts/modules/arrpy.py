@@ -3,7 +3,7 @@ import requests
 import logging
 import json
 
-arrpy_py_version = "1.0.3"
+arrpy_py_version = "1.0.4"
 
 logging.getLogger("qbittorrentapi").setLevel(logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)
@@ -12,7 +12,7 @@ logging.getLogger('urllib3').setLevel(logging.WARNING)
 class StARR:
     def __init__(self, url, api, logger):
         """
-        nitialize a Instance object.
+        Initialize the StARR class.
         Parameters:
             url (str): The URL of the ARR instance.
             api (str): The API key to use to connect to the ARR instance.
@@ -160,7 +160,6 @@ class StARR:
             if r['movieId'] == movie_id:
                 print(f"Found file ID {r['id']} for movie ID {movie_id}")
                 exit()
-                return r['id']
 
     def get_media(self):
         """
@@ -227,7 +226,6 @@ class StARR:
         self.logger.debug(f"Add tag payload: {payload}")
         endpoint = f"{self.url}/api/v3/{media}/editor"
         return self.make_put_request(endpoint, json=payload)
-    
 
     def check_and_create_tag(self, tag_name, dry_run):
         """
@@ -258,58 +256,16 @@ class StARR:
                 self.logger.info(
                     f'Tag Name: {tag_name} does not exist, dry run enabled, skipping.')
         return tag_id
-
-    def remove_tag(self, tag_id, media_id, tag_name, title):
-        """
-        Remove a tag from a media item.
-        Parameters:
-            media_id (int): The ID of the media item to remove the tag from.
-            tag_id (int): The ID of the tag to remove from the media item.
-        Returns:
-            dict: The JSON response from the PUT request.
-        """
-        id_type = None
-        media = None
-        if isinstance(media_id, int):
-            media_id = [media_id]
-        if self.instance_type == 'Sonarr':
-            media = "series"
-            id_type = "seriesIds"
-        elif self.instance_type == 'Radarr':
-            media = "movie"
-            id_type = "movieIds"
-        payload = {
-            id_type: media_id,
-            "tags": [tag_id],
-            "applyTags": "remove"
-        }
-        self.logger.debug(f"Remove tag payload: {payload}")
-        endpoint = f"{self.url}/api/v3/{media}/editor"
-        response = self.make_put_request(endpoint, json=payload)
-        if response:
-            self.logger.info(f"Removed tag '{tag_name}' from {title} media items")
-            return True
-        else:
-            self.logger.error(f"Failed to remove tag '{tag_name}' from media items")
-            return False
     
-    def remove_tags(self, all_media, tag_id, tag_name):
+    def remove_tag(self, media_ids, tag_id):
         """
         Remove a tag from all media.
         Parameters:
-            all_media (list): A list of media objects.
-            tag_id (int): The ID of the tag to remove.
-            tag_name (str): The name of the tag to remove.
+            media_ids (list): A list of media IDs to remove the tag from.
+            tag_id (int): The ID of the tag to remove from the media.
         """
         id_type = None
         media = None
-        media_ids = []
-        for media in all_media:
-            if tag_id in media['tags']:
-                media_ids.append(media['id'])
-        if not media_ids:
-            self.logger.info(f"No media found with tag '{tag_name}'")
-            return False
         if self.instance_type == 'Sonarr':
             media = "series"
             id_type = "seriesIds"
@@ -323,13 +279,7 @@ class StARR:
         }
         self.logger.debug(f"Remove tag payload: {payload}")
         endpoint = f"{self.url}/api/v3/{media}/editor"
-        response = self.make_put_request(endpoint, json=payload)
-        if response:
-            self.logger.info(f"Removed tag '{tag_name}' from {len(media_ids)} media items")
-            return True
-        else:
-            self.logger.error(f"Failed to remove tag '{tag_name}' from media items")
-            return False
+        return self.make_put_request(endpoint, json=payload)
     
     def get_rename_list(self, media_id):
         """
@@ -345,9 +295,8 @@ class StARR:
         elif self.instance_type == 'Radarr':
             rename_endpoint = "movieId"
         endpoint = f"{self.url}/api/v3/rename?{rename_endpoint}={media_id}"
-        response = self.make_get_request(endpoint, headers=self.headers)
-        return response
-    
+        return self.make_get_request(endpoint, headers=self.headers)
+
     def rename_media(self, media_ids):
         """
         Rename a media item.
@@ -368,12 +317,7 @@ class StARR:
         }
         self.logger.debug(f"Rename payload: {payload}")
         endpoint = f"{self.url}/api/v3/command"
-        response = self.make_post_request(endpoint, json=payload)
-        if response:
-            return
-        else:
-            self.logger.error(f"Failed to rename media item")
-            return
+        return self.make_post_request(endpoint, json=payload)
     
     def refresh_media(self, media_ids):
         """
@@ -409,12 +353,7 @@ class StARR:
         }
         self.logger.debug(f"Refresh payload: {payload}")
         endpoint = f"{self.url}/api/v3/command"
-        response = self.make_post_request(endpoint, headers=self.headers, json=payload)
-        if response:
-            return True
-        else:
-            self.logger.error(f"Failed to refresh media item with ID {media_ids}")
-            return False
+        return self.make_post_request(endpoint, headers=self.headers, json=payload)
     
     def search_media(self, media_id):
         """
@@ -425,26 +364,17 @@ class StARR:
         name_type = None
         id_type = None
         self.logger.debug(f"Media ID: {media_id}")
-        def send_request(payload):
-            endpoint = f"{self.url}/api/v3/command"
-            response = self.make_post_request(endpoint, json=payload)
-            if response:
-                self.logger.debug(json.dumps(response, indent=4))
-                return True
-            else:
-                self.logger.error(f"Failed to search for media item with ID {media_id}")
-                return False
-
+        endpoint = f"{self.url}/api/v3/command"
         if self.instance_type == 'Sonarr':
             for id in media_id:
-                    name_type = "SeriesSearch"
-                    id_type = "seriesId"
-            payload = {
-                "name": name_type,
-                id_type: id
-            }
-            self.logger.debug(f"Search payload: {payload}")
-            send_request(payload)
+                name_type = "SeriesSearch"
+                id_type = "seriesId"
+                payload = {
+                    "name": name_type,
+                    id_type: id
+                }
+                self.logger.debug(f"Search payload: {payload}")
+                self.make_post_request(endpoint, json=payload)
         elif self.instance_type == 'Radarr':
             name_type = "MoviesSearch"
             id_type = "movieIds"
@@ -454,7 +384,7 @@ class StARR:
                 id_type: id
             }
             self.logger.debug(f"Search payload: {payload}")
-            send_request(payload)
+            self.make_post_request(endpoint, json=payload)
     
     def search_season(self, media_id, season_number):
         """
@@ -470,12 +400,7 @@ class StARR:
             "SeasonNumber": season_number
             }
         endpoint = f"{self.url}/api/v3/command"
-        response = self.make_post_request(endpoint, json=payload)
-        if response:
-            return True
-        else:
-            self.logger.error(f"Failed to search for season {season_number} of series with ID {media_id}")
-            return False
+        return self.make_post_request(endpoint, json=payload)
     
     def get_season_data(self, media_id):
         """
@@ -486,12 +411,7 @@ class StARR:
             list: A list of dictionaries representing the episodes for the season
         """
         endpoint = f"{self.url}/api/v3/episode?seriesId={media_id}"
-        response = self.make_get_request(endpoint, headers=self.headers)
-        if response:
-            return response
-        else:
-            self.logger.error(f"Failed to get data for series with ID {media_id}")
-            return False
+        return self.make_get_request(endpoint, headers=self.headers)
 
     def delete_episode_files(self, media_id):
         """
@@ -506,12 +426,7 @@ class StARR:
         }
         self.logger.debug(f"Delete episode files payload: {payload}")
         endpoint = f"{self.url}/api/v3/episodefile/bulk"
-        response = self.make_delete_request(endpoint, payload)
-        if response.status_code == 200:
-            return True
-        else:
-            self.logger.error(f"Failed to delete episode files for series with ID {media_id}")
-            return False
+        return self.make_delete_request(endpoint, payload)
 
     def delete_movie_file(self, media_id):
         """
@@ -520,12 +435,7 @@ class StARR:
             media_id (int): The ID of the media item to delete.
         """
         endpoint = f"{self.url}/api/v3/moviefile/{media_id}"
-        response = self.make_delete_request(endpoint)
-        if response.status_code == 200:
-            return True
-        else:
-            self.logger.error(f"Failed to delete media item with ID {media_id}")
-            return False
+        return self.make_delete_request(endpoint)
 
     def search_episodes(self, episode_ids):
         """
@@ -540,24 +450,14 @@ class StARR:
             "episodeIds": episode_ids
         }
         self.logger.debug(f"Search payload: {payload}")
-        response = self.make_post_request(endpoint, json=payload)
-        if response:
-            return True
-        else:
-            self.logger.error(f"Failed to search for episode with ID {episode_ids}")
-            return False
+        return self.make_post_request(endpoint, json=payload)
         
     def get_queue(self):
         """
         Get the queue.
         """
         endpoint = f"{self.url}/api/v3/queue"
-        response = self.make_get_request(endpoint, headers=self.headers)
-        if response:
-            return response
-        else:
-            self.logger.error(f"Failed to get queue")
-            return False
+        return self.make_get_request(endpoint, headers=self.headers)
     
     def get_quality_profile_names(self):
         """
@@ -570,6 +470,7 @@ class StARR:
             for profile in response:
                 dict_of_names_and_ids[profile["name"]] = profile["id"]
             return dict_of_names_and_ids
+
     def refresh_queue(self):
         """
         Refresh the queue.
@@ -579,24 +480,14 @@ class StARR:
             "name": "RefreshMonitoredDownloads"
         }
         self.logger.debug(f"Refresh queue payload: {payload}")
-        response = self.make_post_request(endpoint, json=payload)
-        if response:
-            return True
-        else:
-            self.logger.error(f"Failed to refresh queue")
-            return False
+        return self.make_post_request(endpoint, json=payload)
 
     def get_health(self):
         """
         Get the health status.
         """
         endpoint = f"{self.url}/api/v3/health"
-        response = self.make_get_request(endpoint, headers=self.headers)
-        if response:
-            return response
-        else:
-            self.logger.error(f"Failed to get health status")
-            return False
+        return self.make_get_request(endpoint, headers=self.headers)
     
     def delete_media(self, media_id, instance_type):
         """
@@ -610,9 +501,4 @@ class StARR:
         elif instance_type == 'Radarr':
             endpoint = f"{self.url}/api/v3/movie/{media_id}"
 
-        response = self.make_delete_request(endpoint)
-        if response.status_code == 200:
-            return True
-        else:
-            self.logger.error(f"Failed to delete media item with ID {media_id}")
-            return False
+        return self.make_delete_request(endpoint)

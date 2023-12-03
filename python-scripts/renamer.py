@@ -15,12 +15,14 @@
 # License: MIT License
 # ===================================================================================================
 
-version = "5.3.7"
+script_version = "6.0.0"
 
 from modules.arrpy import arrpy_py_version
 from plexapi.exceptions import BadRequest
 from modules.logger import setup_logger
 from plexapi.server import PlexServer
+from modules.version import version
+from modules.discord import discord
 from modules.config import Config
 from modules.arrpy import StARR
 from unidecode import unidecode
@@ -38,6 +40,8 @@ import re
 
 config = Config(script_name="renamer")
 logger = setup_logger(config.log_level, "renamer")
+version("renamer", script_version, arrpy_py_version, logger, config)
+script_name = "Renamer"
 
 year_regex = re.compile(r"\((19|20)\d{2}\)")
 illegal_chars_regex = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')
@@ -586,12 +590,6 @@ def print_output(final_output):
         return
 
 def main():
-    logger.debug('*' * 40)
-    logger.debug(f'* {"Renamer":^36} *')
-    logger.debug(f'* {"Script Version:":<2} {version:>20} *')
-    logger.debug(f'* {"arrpy.py Version:":<2} {arrpy_py_version:>18} *')
-    logger.debug('*' * 40)
-    logger.debug('')
     logger.debug('*' * 40)
     logger.debug(f'* {"Script Input Validated":^36} *')
     logger.debug('*' * 40)

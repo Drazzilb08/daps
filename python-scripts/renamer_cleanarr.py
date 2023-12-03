@@ -14,7 +14,7 @@
 #  License: MIT License
 # ===========================================================================================================
 
-version = "1.0.0"
+script_version = "2.0.0"
 
 import os
 import re
@@ -28,9 +28,15 @@ import json
 import logging
 import sys
 import shutil
+from modules.arrpy import arrpy_py_version
+from modules.version import version
+from modules.discord import discord
 
 config = Config(script_name="renamer-cleaner")
 logger = setup_logger(config.log_level, "renamer-cleaner")
+version("renamer-cleaner", script_version, arrpy_py_version, logger, config)
+script_name = "renamer-cleaner"
+
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger('urllib3').setLevel(logging.WARNING)
 
@@ -194,11 +200,6 @@ def main():
     api_key = None
     app = None
     library = None
-    logger.debug('*' * 40)
-    logger.debug(f'* {"Renamer Cleaner":^36} *')
-    logger.debug(f'* {"Version:":<18} {version:>17} *')
-    logger.debug('*' * 40)
-    logger.debug('')
     if config.dry_run:
         logger.info('*' * 40)
         logger.info(f'* {"Dry_run Activated":^36} *')

@@ -3,7 +3,7 @@ import requests
 import logging
 import json
 
-arrpy_py_version = "1.0.4"
+arrpy_py_version = "1.0.6"
 
 logging.getLogger("qbittorrentapi").setLevel(logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)
@@ -74,7 +74,10 @@ class StARR:
                 return response.json()
             except (requests.exceptions.Timeout, requests.exceptions.HTTPError) as ex:
                 self.logger.warning(f'GET request failed ({ex}), retrying ({i+1}/{self.max_retries})...')
-        self.logger.error(f'GET request failed after {self.max_retries} retries, exiting script')
+        self.logger.error(f'GET request failed after {self.max_retries} retries')
+        self.logger.error(f"endpoint: {endpoint}")
+        self.logger.error(f"response: {response}")
+        self.logger.error(f"exiting script")
         sys.exit(1)
     
     def make_post_request(self, endpoint, headers=None, json=None):
@@ -97,7 +100,11 @@ class StARR:
                 return response.json()
             except (requests.exceptions.Timeout, requests.exceptions.HTTPError) as ex:
                 self.logger.warning(f'POST request failed ({ex}), retrying ({i+1}/{self.max_retries})...')
-        self.logger.error(f'POST request failed after {self.max_retries} retries, exiting script')
+        self.logger.error(f'GET request failed after {self.max_retries} retries')
+        self.logger.error(f"endpoint: {endpoint}")
+        self.logger.error(f"Payload: {json}")
+        self.logger.error(f"response: {response}")
+        self.logger.error(f"exiting script")
         sys.exit(1)
 
     
@@ -121,7 +128,11 @@ class StARR:
                 return response.json()
             except (requests.exceptions.Timeout, requests.exceptions.HTTPError) as ex:
                 self.logger.warning(f'PUT request failed ({ex}), retrying ({i+1}/{self.max_retries})...')
-        self.logger.error(f'PUT request failed after {self.max_retries} retries, exiting script')
+        self.logger.error(f'GET request failed after {self.max_retries} retries')
+        self.logger.error(f"endpoint: {endpoint}")
+        self.logger.error(f"Payload: {json}")
+        self.logger.error(f"response: {response}")
+        self.logger.error(f"exiting script")
         sys.exit(1)
 
     def make_delete_request(self, endpoint, json=None, headers=None):
@@ -143,7 +154,11 @@ class StARR:
                 return response
             except (requests.exceptions.Timeout, requests.exceptions.HTTPError) as ex:
                 self.logger.warning(f'DELETE request failed ({ex}), retrying ({i+1}/{self.max_retries})...')
-        self.logger.error(f'DELETE request failed after {self.max_retries} retries, exiting script')
+        self.logger.error(f'GET request failed after {self.max_retries} retries')
+        self.logger.error(f"endpoint: {endpoint}")
+        self.logger.error(f"Payload: {json}")
+        self.logger.error(f"response: {response}")
+        self.logger.error(f"exiting script")
         sys.exit(1)
     
     def get_movie_fileid(self, movie_id):
@@ -199,7 +214,7 @@ class StARR:
         endpoint = f"{self.url}/api/v3/tag"
         return self.make_post_request(endpoint, json=payload)
 
-    def add_tag(self, media_id, tag_id):
+    def add_tags(self, media_id, tag_id):
         """
         Add a tag to a media item.
         Parameters:
@@ -257,7 +272,7 @@ class StARR:
                     f'Tag Name: {tag_name} does not exist, dry run enabled, skipping.')
         return tag_id
     
-    def remove_tag(self, media_ids, tag_id):
+    def remove_tags(self, media_ids, tag_id):
         """
         Remove a tag from all media.
         Parameters:
@@ -500,5 +515,20 @@ class StARR:
             endpoint = f"{self.url}/api/v3/series/{media_id}"
         elif instance_type == 'Radarr':
             endpoint = f"{self.url}/api/v3/movie/{media_id}"
-
         return self.make_delete_request(endpoint)
+
+    def get_tag_id_from_name(self, tag_name):
+        """
+        Get the ID of a tag from its name.
+        Parameters:
+            tag_name (str): The name of the tag to get the ID for.
+        Returns:
+            int: The ID of the tag.
+        """
+        all_tags = self.get_all_tags()
+        tag_id = None
+        for tag in all_tags:
+            if tag["label"] == tag_name:
+                tag_id = tag["id"]
+                break
+        return tag_id

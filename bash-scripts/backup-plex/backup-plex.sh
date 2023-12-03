@@ -9,7 +9,7 @@
 #                                                   | |                        | |
 #                                                   |_|                        |_|
 # ====================================================
-# Version: 4.0.5
+# Version: 4.0.6
 # backup-plex - A script to backup your plex database and media
 # Author: Drazzilb
 # License: MIT License
@@ -89,13 +89,13 @@ check_config() {
             response_code=$(curl --write-out "%{response_code}" --silent --output /dev/null -H "x-api-key: $apikey" "https://notifiarr.com/api/v1/user/validate")
         else
             if [ "$debug" == "true" ]; then
-                echo "Checking webhook validity: $webhook" | tee -a "$log_dir/jduparr.log"
+                echo "Checking webhook validity: $webhook"
             fi
             response_code=$(curl --write-out "%{response_code}" --silent --output /dev/null "$webhook")
         fi
 
         if [ "$debug" == "true" ]; then
-            echo "Response: $response_code" | tee -a "$log_dir/jduparr.log"
+            echo "Response: $response_code"
         fi
 
         if [ "$response_code" -eq 200 ]; then

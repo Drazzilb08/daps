@@ -7,7 +7,6 @@
 # dry_run can be true or false
 # The rest of the options are script specific
 global:
-  webhook: https://discord.com/api/webhooks/1234567890/abcdefghijklmnopqrstuvwxyz
   radarr:
     # name is the name of the radarr instance, this is used to reference the instance in other scripts
     - name: radarr_1
@@ -45,6 +44,13 @@ global:
       url: http://
       username: username
       password: password
+
+discord:
+  # Supports Discord Webhooks and Notifiarr Passthrough
+  webhook: https://discord.com/api/webhooks/1234567890/abcdefghijklmnopqrstuvwxyz
+  # This is the channel id for the discord channel you want to send messages to
+  # Required for Notifiarr
+  channel_id: 1234567890
 
 # The upgradinatorr script is used to upgrade movies and tv shows, it can be used to upgrade all movies and tv shows or just a subset.
 # WARNING: This script can caues havoc with your usenet provider or torrent tracker if you are not careful.

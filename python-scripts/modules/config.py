@@ -1,5 +1,4 @@
 import pathlib
-import time
 import yaml
 import os
 
@@ -19,7 +18,12 @@ class Config:
 
         # Load config into instance variables
         self.global_data = config['global']
-        self.webhook_data = config['global']['webhook']
+        try:
+            self.discord_data = config['discord']
+        except KeyError:
+            self.discord_data = {}
+        self.webhook_data = self.discord_data.get('webhook', {})
+        self.channel_id = self.discord_data.get('channel_id', '')
         self.script_data = config.get(f'{self.script_name}', {})
         
 

@@ -19,7 +19,9 @@ class Config:
 
         # Load config into instance variables
         self.global_data = config['global']
+        self.webhook_data = config['global']['webhook']
         self.script_data = config.get(f'{self.script_name}', {})
+        
 
         # Global variables
         self.radarr_data = self.global_data.get('radarr', {})  # Use empty dict if radarr data is not found

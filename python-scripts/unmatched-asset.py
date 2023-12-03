@@ -21,7 +21,7 @@
 #  License: MIT License
 # ===========================================================================================================
 
-version = "4.1.10"
+script_version = "5.0.0"
 
 import os
 import re
@@ -35,9 +35,14 @@ from tqdm import tqdm
 import json
 import logging
 from modules.arrpy import arrpy_py_version
+from modules.version import version
+from modules.discord import discord
 
 config = Config(script_name="unmatched-assets")
 logger = setup_logger(config.log_level, "unmatched-assets")
+version("unmatched-assets", script_version, arrpy_py_version, logger, config)
+script_name = "Unmatched Assets"
+
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger('urllib3').setLevel(logging.WARNING)
 
@@ -304,12 +309,6 @@ def main():
     api_key = None
     app = None
     library = None
-    logger.debug('*' * 40)
-    logger.debug(f'* {"Unmatched Assets":^36} *')
-    logger.debug(f'* {"Script Version:":<2} {version:>20} *')
-    logger.debug(f'* {"arrpy.py Version:":<2} {arrpy_py_version:>18} *')
-    logger.debug('*' * 40)
-    logger.debug('')
     logger.debug('*' * 40)
     logger.debug(f'* {"Script Settings":^36} *')
     logger.debug('*' * 40)

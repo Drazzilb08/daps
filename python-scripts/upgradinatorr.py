@@ -14,15 +14,19 @@
 # License: MIT License
 # ===================================================================================================
 
-version = "2.1.8"
+script_version = "3.0.0"
 
 from modules.config import Config
 from modules.logger import setup_logger
 from modules.arrpy import StARR
 from modules.arrpy import arrpy_py_version
+from modules.version import version
+from modules.discord import discord
 
 config = Config(script_name="upgradinatorr")
 logger = setup_logger(config.log_level, "upgradinatorr")
+version("upgradinatorr", script_version, arrpy_py_version, logger, config)
+script_name = "Upgradinatorr"
 
 def check_all_tagged(all_media, tag_id, status, monitored):
     """
@@ -92,14 +96,17 @@ def process_instance(instance_type, instance_name, count, tag_name, unattended, 
         if not dry_run:
             app.remove_tags(all_media_ids, arr_tag_id)
             logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
+            discord(None, logger, config, script_name, description=f"All of {instance_name} have had the tag {tag_name} removed.", color=0xFFA500, url=None)
             all_tagged = False
         else:
             logger.info(f'All of {instance_name} would have had the tag {tag_name} removed.')
+            discord(None, logger, config, script_name, description=f"All of {instance_name} would have had the tag {tag_name} removed.", color=0xFFA500, url=None)
             all_tagged = False
     elif all_tagged and not unattended:
         logger.info(f'All of {instance_name} has been tagged with {tag_name}')
         logger.info("If you would like to remove the tag and re-run the script, please set reset to True or set unattended to True.")
         logger.info(f"Skipping {instance_name}...")
+        discord(None, logger, config, script_name, description=f"All of {instance_name} has been tagged with {tag_name}, please set reset to True or set unattended to True to remove the tag and re-run the script, {instance_name} will be skipped.", color=0xFFA500, url=None)
         return
     if not all_tagged:
         if isinstance(status, str):
@@ -109,7 +116,7 @@ def process_instance(instance_type, instance_name, count, tag_name, unattended, 
         media_to_process = untagged_media[:count]
         media_ids_to_process = [item["id"] for item in media_to_process]
         if not dry_run:
-            app.add_tag(media_ids_to_process, arr_tag_id)
+            app.add_tags(media_ids_to_process, arr_tag_id)
             app.search_media(media_ids_to_process)
             for title in media_to_process:
                 logger.info(f"Search request sent for '{title['title']}', this item has been tagged with '{tag_name}'")
@@ -136,12 +143,6 @@ def main():
     status = None
     monitored = None
     reset = False
-    logger.debug('*' * 40)
-    logger.debug(f'* {"Upgradinatorr":^36} *')
-    logger.debug(f'* {"Script Version:":<2} {version:>20} *')
-    logger.debug(f'* {"arrpy.py Version:":<2} {arrpy_py_version:>18} *')
-    logger.debug('*' * 40)
-    logger.debug('')
     logger.debug('*' * 40)
     logger.debug(f'* {"Script Input Validated":^36} *')
     logger.debug('*' * 40)

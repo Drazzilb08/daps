@@ -14,7 +14,7 @@
 # License: MIT License
 # ===================================================================================================
 
-version = "1.0.0"
+script_version = "1.0.0"
 
 from modules.config import Config
 from modules.logger import setup_logger
@@ -22,9 +22,14 @@ from modules.arrpy import StARR
 from modules.arrpy import arrpy_py_version
 import json
 import re
+from modules.version import version
+from modules.discord import discord
 
 config = Config(script_name="movie-deletarr")
 logger = setup_logger(config.log_level, "movie-deletarr")
+version("movie-deletarr", script_version, arrpy_py_version, logger, config)
+script_name = "Movie-Deletarr"
+
 
 tmdb_id_extractor = re.compile(r"tmdbid (\d+)")
 tvdb_id_extractor = re.compile(r"tvdbid (\d+)")

@@ -3,7 +3,6 @@ from modules.discord import discord
 from datetime import datetime
 
 def version(script_name, script_version, arrpy_py_version, logger, config):
-    print(f"script version: {script_version}")
     logger.debug('*' * 40)
     logger.debug(f'* {str(script_name):^36} *')
     logger.debug(f'* {"Script Version:":<2} {str(script_version):>20} *')
@@ -36,15 +35,9 @@ def version(script_name, script_version, arrpy_py_version, logger, config):
     color = 0xff0000
     # Compare the script version with the GitHub version
     if script_version == github_script_version and arrpy_py_version == github_arrpy_py_version:
-        logger.debug('*' * 40)
-        logger.debug(f'* {"Renamer Cleaner":^36} *')
-        logger.debug(f'* {"Script Version:":<2} {version:>20} *')
-        logger.debug(f'* {"arrpy.py Version:":<2} {arrpy_py_version:>18} *')
-        logger.debug('*' * 40)
+        logger.info("Script version matches GitHub version.")
     elif script_version != github_script_version and arrpy_py_version == github_arrpy_py_version:
         logger.error("Script version does not match GitHub version.")
-        logger.error(f"Script version: {script_version}")
-        logger.error(f"GitHub version: {github_script_version}")
         logger.error("Please update the script.")
         fields = [
                     {
@@ -62,8 +55,6 @@ def version(script_name, script_version, arrpy_py_version, logger, config):
         discord(fields, logger, config, script_name, description, color, github_download)
     elif arrpy_py_version != github_arrpy_py_version and script_version == github_script_version:
         logger.error("Script version does not match GitHub version.")
-        logger.error(f"Script version: {arrpy_py_version}")
-        logger.error(f"GitHub version: {github_arrpy_py_version}")
         logger.error("Please update the script.")
         fields = [
                     {

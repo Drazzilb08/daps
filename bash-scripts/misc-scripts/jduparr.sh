@@ -9,15 +9,14 @@
 #   _/ |                                         
 #  |__/                                          
 # ====================================================
-# Version: 2.0.1
+# Version: 3.0.0
 # jDuparr - A script to find duplicate files in your media library
 # Author: Drazzilb
 # License: MIT License
 # ====================================================
 
-downloads_dir='/path/to/downloads' # This is the root directory for your downloads
-media_dir='/path/to/media'         # This is the root directory for your media you want to check for duplicates
-log_dir='/path/to/logsdir'         # This is the directory the logs gets written in
+data_dir='/path/to/data/dir'         # This is the root directory for your media you want to check for duplicates
+log_dir='/path/to/log/dir'         # This is the directory the logs gets written in
 
 # Optional for notifications on Discord through Discord webhook or Notifiarr API.
 webhook=''                         # Not required if you don't want to use notifications // Leave as is if not using notifications
@@ -25,24 +24,7 @@ bot_name='Notification Bot'        # Not required if you don't want to use notif
 bar_color='FF00FF'                 # Not required if you don't want to use notifications // Leave as is if not using notifications
 channel=''                         # Not required if you don't want to use notifications // Leave as is if not using notifications
 debug='false'                      # Set to true to enable debug logging
-
-
-# Include any sub paths to the media directory you want to check
-# Example: If you want to check the following paths
-# .
-# └── path/to/media/ <--- Any items w/in this dir will not be checked
-#     ├── 'Movies' <--- Any items w/in this dir will be checked
-#     ├── 'TV Shows' <--- Any items w/in this dir will be checked
-#     ├── 'Anime' <--- Any items w/in this dir will be checked
-#     ├── 'XXX' <--- Any items w/in this dir will be checked
-#     └── 'Other' <--- Any items w/in this dir will be checked
-include=(
-    'Movies'
-    'TV Shows'
-    'Anime'
-    'XXX'
-    'Other'
-)
+unraid_notification='false'        # Set to true to enable unraid notifications
 
 # <----- Do not edit below this point ----->
 
@@ -80,21 +62,10 @@ display_help() {
 }
 
 check_config() {
-    if [ -z "$downloads_dir" ]; then
-        echo "ERROR: Your download directory is not set, please check your configuration"
-        exit
-    fi
-    if [ ! -d "$downloads_dir" ]; then
-        echo "ERROR: Your download directory does not exist, please check your configuration"
-        exit
-    fi
-    if [ -z "$media_dir" ]; then
-        echo "ERROR: Your media directory is not set, please check your configuration"
-        exit
-    fi
-    if [ ! -d "$media_dir" ]; then
-        echo "ERROR: Your media directory does not exist, please check your configuration"
-        exit
+    # If data_dir not set
+    if [ -z "$data_dir" ]; then
+        echo "ERROR: data_dir not set"
+        exit 1
     fi
     # Check if webhook is set and in the correct format
     if [ -n "$webhook" ]; then
@@ -140,61 +111,37 @@ check_config() {
 find_duplicates() {
     start=$(date +%s)
     echo "Running jdupes" | tee "$log_dir/jduparr.log"
-    list_of_jdupes_output=()
-    if [ ${#include[@]} -eq 0 ]; then
-        if [ $debug == "true" ]; then
-            echo "Running jdupes for all directories" | tee -a "$log_dir/jduparr.log"
-            echo -e "Download directory: ${downloads_dir}" | tee -a "$log_dir/jduparr.log"
-            echo -e "Media directory: ${media_dir}" | tee -a "$log_dir/jduparr.log"
-            echo -e "jdupes -r -L -A -X onlyext:mp4,mkv,avi ${downloads_dir} \"${media_dir}\"" | tee -a "$log_dir/jduparr.log"
-        fi
-        mkdir -p "$(dirname "$0")/../logs"
-        jdupes_output=$(jdupes -r -L -A -X onlyext:mp4,mkv,avi "${downloads_dir}" "${media_dir}" | tee -a "$log_dir/jduparr.log" 2>&1)
-        if [ $debug == "true" ]; then
-            echo -e "jdupes output: ${jdupes_output}" | tee -a "$log_dir/jduparr.log"
-        fi
-        if [[ -z $jdupes_output ]]; then
-            jdupes_output="No duplicates found."
-        fi
-        echo "jDupes completed" | tee -a "$log_dir/jduparr.log"
-        list_of_jdupes_output+=("$jdupes_output")
-        true
-    else
-        for ((i = 0; i < ${#include[@]}; i++)); do
-            if [ $debug == "true" ]; then
-                echo -e "Download directory: ${downloads_dir}" | tee -a "$log_dir/jduparr.log"
-                echo -e "Media directory: ${media_dir}/${include[$i]}" | tee -a "$log_dir/jduparr.log"
-                echo "jdupes -r -L -A -X onlyext:mp4,mkv,avi ${downloads_dir} \"${media_dir}/${include[$i]}\"" | tee -a "$log_dir/jduparr.log"
-            fi
-            echo "Running jdupes for ${include[$i]}" | tee -a "$log_dir/jduparr.log"
-            jdupes_output=$(jdupes -r -L -A -X onlyext:mp4,mkv,avi "${downloads_dir}" "${media_dir}/${include[$i]}" | tee -a "$log_dir/jduparr.log" >&1)
-            if [ $debug == "true" ]; then
-                echo -e "jdupes output: ${jdupes_output}" | tee -a "$log_dir/jduparr.log"
-            fi
-            if [[ -z $jdupes_output ]]; then
-                jdupes_output="No duplicates found."
-            fi
-            echo "jDupes completed for ${include[$i]}" | tee -a "$log_dir/jduparr.log"
-            list_of_jdupes_output+=("$jdupes_output")
-            true
-        done
+    if [ $debug == "true" ]; then
+        echo "Running jdupes for all directories" | tee -a "$log_dir/jduparr.log"
+        echo -e "Media directory: ${data_dir}" | tee -a "$log_dir/jduparr.log"
+        echo -e "jdupes -r -L -X onlyext:mp4,mkv,avi ${data_dir}" | tee -a "$log_dir/jduparr.log"
+    fi
+    mkdir -p "$(dirname "$0")/../logs"
+    echo "jDupes started" | tee -a "$log_dir/jduparr.log"
+    results=$(jdupes -r -M -X onlyext:mp4,mkv,avi "${data_dir}")
+    if [[ $results != *"No duplicates found."* ]]; then
+        jdupes -r -L -X onlyext:mp4,mkv,avi "${data_dir}"
+    fi
+    echo "jDupes completed" | tee -a "$log_dir/jduparr.log"
+
+    # Call the function to parse the jduparr.log file
+    parse_jdupes_output
+    if [ $debug == "true" ]; then
+        echo -e "jdupes output: ${results}" | tee -a "$log_dir/jduparr.log"
     fi
     end=$(date +%s)
 }
 
-parse_jdupes_run() {
-    # Check if the list_of_jdupes_output is empty
-    for jdupes_output in "${list_of_jdupes_output[@]}"; do
-        if [[ $jdupes_output == "No duplicates found." ]]; then
-            parsed_log="No hardlinks created"
-        else
-            parsed_log+=$(echo "$jdupes_output" | sed -nE 's/\[SRC\] (.*)/\1/p' | sed 's/----> /Hardlinked /')
-        fi
-    done
-    # remove all but file names from parsed_log
-    parsed_log=$(echo "$parsed_log" | sed -E 's/.*\/(.*)/\1/')
+parse_jdupes_output(){
+    if [[ $results != *"No duplicates found."* ]]; then
+        icon="❌"
+        parsed_log=$(echo "$results" | awk -F/ '{print $NF}' | sort -u)
+    else
+        icon="✅"
+        parsed_log="No hardlinks created"
+    fi
     if [ $debug == "true" ]; then
-        echo -e "Parsed log:${parsed_log}" | tee -a "$log_dir/jduparr.log"
+        echo -e "Parsed log: ${parsed_log}" | tee -a "$log_dir/jduparr.log"
     fi
 }
 
@@ -294,7 +241,6 @@ field_builder() {
 }
 
 payload() {
-    parse_jdupes_run
     json_parsed_list=()
     parsed_log_length=${#parsed_log}
     # Runtime field added
@@ -319,7 +265,7 @@ payload() {
         done
         # for each item in json_parsed_list, add it to the fields
         for i in "${!json_parsed_list[@]}"; do
-            field_builder "Files Relinked:" "${json_parsed_list[i]}" "false"
+            field_builder "$icon Folder: $data_dir - Checked and validated" "${json_parsed_list[i]}" "false"
         done
     fi
     payload=''"$common_fields"'
@@ -394,14 +340,30 @@ cleanup() {
     exit
 }
 
+unraid_notify(){
+    if [ "$results" == "No duplicates found." ]; then
+        message="✅ Folder: $data_dir - Checked and validated\n➡️ No duplicates found.\n\n"
+    else
+        message="❌ Folder: $data_dir - Checked and validated\n➡️ Hardlinks recreated:\n$parsed_log\n\n"
+    fi
+    if [ "$debug" == "true" ]; then
+        echo "$message" | tee -a "$log_dir/jduparr.log"
+    fi
+    /usr/local/emhttp/plugins/dynamix/scripts/notify -s "Script Execution Summary" -d "$message"
+
+}
+
 main() {
-    media_dir=${media_dir%/}
+    data_dir=${data_dir%/}
     log_dir=${log_dir%/}
     check_duplicate_script
     check_config
     hex_to_decimal
     find_duplicates
     calculate_runtime
+    if [ "$unraid_notification" == "true" ]; then
+        unraid_notify
+    fi
     if [ -n "$webhook" ]; then
         send_notification
     fi
@@ -413,18 +375,18 @@ main() {
 TEMP=$(getopt -o w:b:n:h --long webhook:,bar-color:,bot-name:,help -n "$0" -- "$@")
 eval set -- "$TEMP"
 
-while true; do
+while [[ $# -gt 0 ]]; do
     case "$1" in
     -w | --webhook)
         webhook="$2"
         shift 2
         ;;
     -b | --bar-color)
-        hex_to_decimal "$2"
+        bar_color="$2"
         shift 2
         ;;
     -n | --bot-name)
-        bot_name=$2
+        bot_name="$2"
         shift 2
         ;;
     -h | --help)
@@ -436,24 +398,11 @@ while true; do
         break
         ;;
     *)
-        echo "Internal error!"
+        echo "Invalid argument: $1" >&2
+        display_help
         exit 1
         ;;
     esac
 done
-
-# Check for any remaining arguments
-if [ -n "$1" ]; then
-    echo "Invalid argument: $1" >&2
-    display_help
-    exit 1
-fi
-
-# Check for any remaining arguments
-if [ -n "$1" ]; then
-    echo "Invalid argument: $1" >&2
-    display_help
-    exit 1
-fi
 
 main

@@ -38,7 +38,7 @@ def version(script_name, script_version, arrpy_py_version, logger, config):
     if script_version == github_script_version and arrpy_py_version == github_arrpy_py_version:
         logger.debug('*' * 40)
         logger.debug(f'* {"Renamer Cleaner":^36} *')
-        logger.debug(f'* {"Script Version:":<2} {version:>20} *')
+        logger.debug(f'* {"Script Version:":<2} {script_version:>20} *')
         logger.debug(f'* {"arrpy.py Version:":<2} {arrpy_py_version:>18} *')
         logger.debug('*' * 40)
     elif script_version != github_script_version and arrpy_py_version == github_arrpy_py_version:

@@ -16,7 +16,7 @@
 # License: MIT License
 # ===================================================================================================
 
-version = "1.0.4"
+script_version = "2.0.0"
 
 import os
 import re
@@ -29,9 +29,13 @@ from modules.logger import setup_logger
 from modules.arrpy import StARR
 from unidecode import unidecode
 from modules.arrpy import arrpy_py_version
+from modules.version import version
+from modules.discord import discord
 
 config = Config(script_name="nohl")
 logger = setup_logger(config.log_level, "nohl")
+version("nohl", script_version, arrpy_py_version, logger, config)
+script_name = "noHL"
 
 illegal_chars_regex = re.compile(r"[^\w\s\-\(\)/.'’]+")
 season_regex = r"(?i)S(\d{2})E"

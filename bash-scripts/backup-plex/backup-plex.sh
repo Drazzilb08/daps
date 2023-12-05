@@ -9,7 +9,7 @@
 #                                                   | |                        | |
 #                                                   |_|                        |_|
 # ====================================================
-# Version: 4.0.6
+# Version: 5.0.0
 # backup-plex - A script to backup your plex database and media
 # Author: Drazzilb
 # License: MIT License
@@ -18,9 +18,10 @@
 config_file=""
 
 # <----- Do not edit below this point ----->
-debug=false # Only use if you want to see the final output of every variable.
 
 config_file() {
+    shutdown_plex=false
+    debug=false
     if [ -z "$config_file" ]; then
         script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
         config_file="$script_dir/backup-plex.conf"
@@ -28,8 +29,8 @@ config_file() {
     # Check if config file exists
     if [ -f "$config_file" ]; then
         # Read config file
-        # shellcheck source=backup-plex.conf
-        . "$config_file"
+        # shellcheck source=/dev/null
+        source "$config_file"
     else
         # Use command line arguments
         # handle_options "$@"
@@ -185,66 +186,14 @@ unraid_notification() {
 }
 
 send_notification() {
-    # Get current time in UTC format
-    get_ts=$(date -u -Iseconds)
-    # Get a random joke from the specified file
-    joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
-    # Check if the webhook is for discord
-    if [[ $webhook =~ ^https://discord\.com/api/webhooks/ ]]; then
-        bot_name="Notification Bot"
-        # Call the discord_payload function to construct the payload
-        discord_common_fields
-        payload
-        # Send the payload to the discord webhook URL
-        curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
+    if [[ -n "$webhook" ]]; then
+        if [ $debug == "true" ]; then
+            echo -e "\ncurl -s -H \"Content-Type: application/json\" -X POST -d \"$payload\" \"$webhook\""
+            curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
+        else
+            curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook" /dev/null
+        fi
     fi
-    # Check if the webhook is for notifiarr
-    if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
-        # Call the notifiarr_payload function to construct the payload
-        notifiarr_common_fields
-        payload
-        # Send the payload to the notifiarr webhook URL
-        curl -s -H "Content-Type: application/json" -X POST -d "'$payload'" "$webhook" #>/dev/null
-    fi
-}
-
-notifiarr_common_fields() {
-    title="title"
-    text="text"
-    # Extract common fields for the payload
-    common_fields='
-    {"notification": 
-    {"update": false,"name": "Plex Backup","event": ""},
-    "discord": 
-    {"color": "'"$hex_bar_color"'",
-        "ping": {"pingUser": 0,"pingRole": 0},
-        "images": {"thumbnail": "","image": ""},
-        "text": {"title": "Plex Backup",'
-    common_fields2='
-            "footer": "'"Powered by: Drazzilb | $joke"'"},
-            "ids": {"channel": "'"$channel"'"}}}'
-}
-
-discord_common_fields() {
-    title="name"
-    text="value"
-    # Extract common fields for the payload
-    common_fields='{
-                "username": "'"${bot_name}"'",
-                "embeds": 
-                [
-                    {
-                        "title": "Plex Backup",'
-    common_fields2='
-                        "footer": 
-                        {
-                            "text": "'"Powered by: Drazzilb | $joke"'"
-                        },
-                        "color": "'"${decimal_bar_color}"'",
-                        "timestamp": "'"${get_ts}"'"
-                    }
-                ]
-            }'
 }
 
 field_builder() {
@@ -255,13 +204,11 @@ field_builder() {
     if [ "$reset" == "true" ]; then
         fields=""
     fi
-    field_builder='
-    {
-        "'"$title"'": "'"$title_text"':",
-        "'"$text"'": "'"$text_value"'",
-        "inline": false
-    }'
-
+    field_builder='{
+                "'"$title"'": "'"$title_text"':",
+                "'"$text"'": "'"$text_value"'",
+                "inline": false
+            }'
     # Check if fields is not empty and add a comma if it is not
     if [ -n "$fields" ]; then
         field_builder=","$field_builder
@@ -270,56 +217,68 @@ field_builder() {
     fields="$fields""$field_builder"
 }
 
-payload() {
-    # Check the type of backup that was created
-    if [ "$backup_type" == "essential" ]; then
-        field_builder "Runtime" "$run_output" "true"
-        field_builder "This Essential backup size" "$essential_backup_size" "false"
-        field_builder "Total size of all Essential backups" "$(du -sh "$dest/Essential/" | awk '{print $1}')" "false"
-        payload=''"$common_fields"'
-                    "description": "Essential Plex data has been backed up",
-                    "fields": 
-                    [
-                        '"$fields"'
-                    ],
-                    '"$common_fields2"''
-    elif [ "$backup_type" == "full" ]; then
-        field_builder "Runtime" "$run_output" "true"
-        field_builder "This Full backup size" "$full_backup_size" "false"
-        field_builder "Total size of all Full backups" "$(du -sh "$dest/Full/" | awk '{print $1}')" "false"
-        payload=''"$common_fields"'
-                "description": "Essential Plex data has been backed up",
-                "fields": 
-                [
-                    '"$fields"'
-                ],
-                '"$common_fields2"''
-    elif [ "$backup_type" == "essential_no_full" ]; then
-        field_builder "Runtime" "$run_output" "true"
-        field_builder "This Essential backup size" "$essential_backup_size" "false"
-        field_builder "Total size of all Essential backups" "$(du -sh "$dest/Essential/" | awk '{print $1}')" "false"
-        field_builder "Days since last Full backup" "$days" "false"
-        payload=''"$common_fields"'
-                "description": "Essential Plex data has been backed up",
-                "fields": 
-                [
-                    '"$fields"'
-                ],
-                '"$common_fields2"''
-    else
-        field_builder "Runtime" "$run_output" "true"
-        field_builder "This Essential backup size" "$essential_backup_size" "false"
-        field_builder "This Full backup size" "$full_backup_size" "false"
-        field_builder "Total size of all Essential backups" "$(du -sh "$dest/Essential/" | awk '{print $1}')" "false"
-        field_builder "Total size of all Full backups" "$(du -sh "$dest/Full/" | awk '{print $1}')" "false"
-        field_builder "Days since last Full backup" "$days" "false"
-        payload=''"$common_fields"'
-                "description": "Both Full & Essential Plex data has been backed up",
-                "fields": 
-                [
-                    '"$fields"'
-                ],'"$common_fields2"''
+build_payload(){
+    get_ts=$(date -u -Iseconds)
+    # Get a random joke from the specified file
+    joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
+    # ensure joke is valid for json
+    joke=$(echo "$joke" | sed 's/"/\\"/g')    
+    # ensure jokes is valid for json
+    if [[ $webhook =~ ^https://discord\.com/api/webhooks/ ]]; then
+        bot_name="Notification Bot"
+        title="name"
+        text="value"
+        common_fields='{
+    "username": "'"${bot_name}"'",
+    "embeds": 
+    [
+        {
+            "title": "Plex Backup",'
+    common_fields2='"footer": 
+            {
+                    "text": "'"Powered by: Drazzilb | $joke"'"
+                },
+            "color": "'"${decimal_bar_color}"'",
+            "timestamp": "'"${get_ts}"'"
+        }
+    ]
+}'
+    elif [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
+        # Call the notifiarr_payload function to construct the payload
+        title="title"
+        text="text"
+        common_fields='{
+    "notification": 
+    {
+        "update": false,
+        "name": "Plex Backup",
+        "event": ""
+    },
+        "discord": 
+        {
+            "color": "'"$hex_bar_color"'",
+            "text": {
+                "title": "Plex Backup",'
+    common_fields2='
+        "footer": "'"Powered by: Drazzilb | $joke"'"
+    },
+        "ids": {
+            "channel": "'"$channel"'"
+        }
+    }
+}'
     fi
+}
+
+payload (){
+    local description="$1"
+    payload=''"$common_fields"'
+            "description": "'"$description"'",
+            "fields": 
+            [
+                '"$fields"'
+            ],
+            '"$common_fields2"''
 }
 
 check_space() {
@@ -410,18 +369,104 @@ create_backup() {
     else
         full_backup_size=$(du -sh "$backup_path/$folder_type-plex_backup.$extension" | awk '{print $1}')
     fi
+    full_backup_total_size=$(du -sh "$dest/Full/" | awk '{print $1}')
+    essential_backup_total_size=$( du -sh "$dest/Essential/" | awk '{print $1}')
     # Set the end time
     end=$(date +%s)
     # Set permissions of the destination directory to 777
     chmod -R 777 "$dest"
     verbose_output "\nBackup complete"
+    calculate_runtime
+    if [ "$dry_run" == true ]; then
+        # create made up sizes for dry run
+        essential_backup_size="1.0G"
+        full_backup_size="1.0G"
+        full_backup_total_size="2.0G"
+        essential_backup_total_size="2.0G"
+        run_output="Dry Run: Fake runtime"
+    fi
+}
+
+stop_plex(){
+    if [ "$shutdown_plex" == "true" ]; then
+        if [ "$backup_type" == "essential" ]; then
+            backup_notification="Essential Backup"
+        elif [ "$backup_type" == "full" ]; then
+            backup_notification="Full Backup"
+        elif [ "$backup_type" == "both" ]; then
+            backup_notification="Essential & Full Backup"
+        elif [ "$backup_type" == "essential_no_full" ]; then
+            backup_notification="Essential Backup"
+        fi
+        if [[ $(docker ps --format '{{.Names}}' 2>/dev/null | grep -w '^plex$') ]]; then
+            plex_type="docker"
+        # check if plex is running in systemctl
+        elif [[ $(systemctl is-active plexmediaserver 2>/dev/null) == "active" ]]; then
+            plex_type="systemctl"
+        fi
+        current_state="running"
+        if [ "$debug" == "true" ]; then
+            echo "Current state: $current_state"
+            echo "Plex type: $plex_type"
+        fi
+        if [ "$plex_type" == "docker" ]; then
+            verbose_output "Plex is running in a docker container, using docker stop command"
+            docker stop plex
+        # If plex is not being ran in a docker container, use the systemctl stop command
+        elif [ "$plex_type" == "systemctl" ]; then
+            verbose_output "Plex is running using systemctl, using systemctl stop command"
+            systemctl stop plexmediaserver.service
+        # none of the above stop commands work throw error
+        else
+            echo "ERROR: Plex is not running in a docker container and systemctl is not installed."
+            exit 1
+        fi
+        build_payload 
+        field_builder "Plex is being shut down for a/an" "$backup_notification backup" "true"
+        payload "Plex Status"
+        send_notification
+        current_state="stopped"
+        if [ "$debug" == "true" ]; then
+            echo "Current state: $current_state"
+            echo "Plex type: $plex_type"
+        fi
+    fi
+}
+
+start_plex() {
+    if [ "$shutdown_plex" == "true" ]; then
+        if [ "$debug" == "true" ]; then
+            echo "Current state: $current_state"
+            echo "Plex type: $plex_type"
+        fi
+        if [ "$plex_type" == "docker" ]; then
+            verbose_output "Plex is running in a docker container, using docker stop command"
+            docker start plex
+        # If plex is not being ran in a docker container, use the systemctl stop command
+        elif [ "$plex_type" == "systemctl" ]; then
+            verbose_output "Plex is running using systemctl, using systemctl stop command"
+            systemctl start plexmediaserver.service
+        # none of the above stop commands work throw error
+        else
+            echo "ERROR: Plex is not running in a docker container and systemctl is not installed."
+            exit 1
+        fi
+        build_payload 
+        field_builder "Plex is being started started after a/an" "$backup_notification backup" "true"
+        payload "Plex Status"
+        send_notification
+        current_state="stopped"
+        if [ "$debug" == "true" ]; then
+            echo "Current state: $current_state"
+            echo "Plex type: $plex_type"
+        fi
+    fi
 }
 
 main() {
     # Check if config file is defined in command line arguments
     config_file
     handle_options "$@"
-    echo "Config file: $config_file"
     # Check for --config= argument in command line options and assign the value to config_file variable
     for arg in "$@"; do
         if [[ $arg == --config=* ]]; then
@@ -439,6 +484,7 @@ main() {
     else
         lastbackup=0
     fi
+    
     # get current date
     current_date=$(date +"%m/%d/%y")
     # calculate the number of days since last backup
@@ -447,18 +493,33 @@ main() {
     # check if full_backup is set to false
     if [ "$full_backup" == "false" ]; then
         # create essential backup
-        create_backup "Essential"
         backup_type="essential"
+        stop_plex
+        create_backup "Essential"
+        build_payload
+        field_builder "Runtime" "$run_output" "true"
+        field_builder "This Essential backup size" "$essential_backup_size" "false"
+        field_builder "Total size of all Essential backups" "$essential_backup_total_size" "false"
+        payload "Essential Backup"
+        send_notification
+        start_plex
         verbose_output ""
         verbose_output "Total size of this Essential backup: ${essential_backup_size}"
         # check if force_full_backup is not 0
         if [ "$force_full_backup" != 0 ]; then
             # check if number of days since last full backup is greater than or equal to force_full_backup or lastbackup is 0
             if [[ "$days" -ge $force_full_backup ]] || [[ "$lastbackup" == 0 ]]; then
- 
                 #create full backup
-                create_backup "Full"
                 backup_type="both"
+                stop_plex
+                create_backup "Full"
+                build_payload
+                field_builder "Runtime" "$run_output" "true"
+                field_builder "This Full backup size" "$full_backup_size" "false"
+                field_builder "Total size of all Full backups" "$full_backup_total_size" "false"
+                payload "Full Backup"
+                send_notification
+                start_plex
                 days="0"
                 echo "$current_date" >"$(dirname "$0")"/last_plex_backup.tmp
                 verbose_output "Total size of this Essential backup: ${essential_backup_size}"
@@ -470,8 +531,19 @@ main() {
         fi
     else
         #create full backup
-        create_backup "Full"
         backup_type="full"
+        stop_plex
+        create_backup "Full"
+        build_payload
+        field_builder "Runtime" "$run_output" "true"
+        field_builder "This Essential backup size" "$essential_backup_size" "false"
+        field_builder "This Full backup size" "$full_backup_size" "false"
+        field_builder "Total size of all Essential backups" "$essential_backup_total_size" "false"
+        field_builder "Total size of all Full backups" "$full_backup_total_size" "false"
+        field_builder "Days since last Full backup" "$days" "false"
+        payload "Full and Essential Backup"
+        send_notification
+        start_plex
         echo "$current_date" >"$(dirname "$0")"/last_plex_backup.tmp
         days="0"
         verbose_output "Total size of this Full backup: ${full_backup_size}"
@@ -479,22 +551,17 @@ main() {
     # call cleanup function
     cleanup_function
     # calculate runtime
-    calculate_runtime
     verbose_output "$run_output"
     # check if Essential and Full directories exist and output total size
     if [ -d "$destination_dir/Essential/" ]; then
-        verbose_output "Total size of all Essential backups: $(du -sh "$destination_dir/Essential/" | awk '{print $1}')"
+        verbose_output "Total size of all Essential backups: $essential_backup_total_size"
     fi
     if [ -d "$destination_dir/Full/" ]; then
-        verbose_output "Total size of all Full backups: $(du -sh "$destination_dir/Full/" | awk '{print $1}')"
+        verbose_output "Total size of all Full backups: $full_backup_total_size"
     fi
     # check if unraid_notify is set to true and call unraid_notification function
     if [ "$unraid_notify" == "true" ]; then
         unraid_notification
-    fi
-    # check if webhook is set to true and call send_notification function
-    if [ -n "$webhook" ]; then
-        send_notification
     fi
     # check if debug is set to true and call debug_output_function
     if [ $debug == "true" ]; then
@@ -521,7 +588,9 @@ debug_output_function() {
     echo -e "* Runetime: $run_output"
     echo -e "* Channel: $channel"
     echo -e "* Essential Size: ${essential_backup_size}"
+    echo -e "* Essential Total Size: ${essential_backup_total_size}"
     echo -e "* Full Size: ${full_backup_size}"
+    echo -e "* Full Total Size: ${full_backup_total_size}"
     echo -e "* Days: $days"
     echo -e "* Hex bar color: $hex_bar_color"
     echo -e "* Decimal bar color: $decimal_bar_color"
@@ -529,7 +598,7 @@ debug_output_function() {
     echo -e "* lastbackup: $lastbackup"
     echo -e "* Folder Type: $folder_type"
     echo -e "* Backup Type: $backup_type"
-    echo -e "* Payload:\n$payload\n"
+    echo -e "* Shutdown Plex: $shutdown_plex"
     echo -e "**********************DEBUG**********************\n"
 }
 

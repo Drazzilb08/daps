@@ -9,7 +9,7 @@
 #   _/ |                                         
 #  |__/                                          
 # ====================================================
-# Version: 3.0.0
+# Version: 3.0.1
 # jDuparr - A script to find duplicate files in your media library
 # Author: Drazzilb
 # License: MIT License
@@ -134,10 +134,10 @@ find_duplicates() {
 
 parse_jdupes_output(){
     if [[ $results != *"No duplicates found."* ]]; then
-        icon="❌"
+        field_message="❌ Unlinked files discovered..."
         parsed_log=$(echo "$results" | awk -F/ '{print $NF}' | sort -u)
     else
-        icon="✅"
+        field_message="✅ No unlinked files discovered..."
         parsed_log="No hardlinks created"
     fi
     if [ $debug == "true" ]; then
@@ -158,7 +158,6 @@ calculate_runtime() {
     else
         run_output="jDupes completed in $hours hours $minutes minutes and $seconds seconds"
     fi
-    echo "$run_output" | tee -a "$log_dir/jduparr.log"
 }
 
 hex_to_decimal() {
@@ -200,8 +199,6 @@ send_notification() {
             fi
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
         fi
-    else
-        echo "$run_output"
     fi
 }
 
@@ -253,7 +250,7 @@ payload() {
         parsed_list_string=$(printf "%s\n" "${parsed_log[@]}")
         if [ "$parsed_log_length" -gt 3 ]; then
             while [ "$parsed_log_length" -gt 1000 ]; do
-                last_line_break=$(find_last_line_break "$parsed_list_string" 750)
+                last_line_break=$(find_last_line_break "$parsed_list_string" 1024)
                 json_parsed_list+=("${parsed_list_string:0:$last_line_break}")
                 parsed_list_string="${parsed_list_string:$last_line_break+1}"
                 parsed_log_length=${#parsed_list_string}
@@ -264,8 +261,14 @@ payload() {
             json_parsed_list[i]="\`\`\`$(jq -Rs '.' <<<"${json_parsed_list[i]}" | sed -e 's/^"//' -e 's/"$//')\`\`\`"
         done
         # for each item in json_parsed_list, add it to the fields
+        first_run=true
         for i in "${!json_parsed_list[@]}"; do
-            field_builder "$icon Folder: $data_dir - Checked and validated" "${json_parsed_list[i]}" "false"
+            if [ "$first_run" == "true" ]; then
+                field_builder "$field_message Files Relinked:" "${json_parsed_list[i]}" "false"
+                first_run=false
+            else
+                field_builder "Files Relinked:" "${json_parsed_list[i]}" "false"
+            fi
         done
     fi
     payload=''"$common_fields"'

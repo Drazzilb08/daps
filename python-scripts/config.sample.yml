@@ -261,7 +261,7 @@ labelarr:
   labels:
     - kids
 
-renamer-cleaner:
+renamer_cleanarr:
   log_level: info
   dry_run: true
   asset_folders: false

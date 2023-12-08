@@ -32,10 +32,10 @@ from modules.arrpy import arrpy_py_version
 from modules.version import version
 from modules.discord import discord
 
-config = Config(script_name="renamer-cleaner")
-logger = setup_logger(config.log_level, "renamer-cleaner")
-version("renamer-cleaner", script_version, arrpy_py_version, logger, config)
-script_name = "renamer-cleaner"
+config = Config(script_name="renamer_cleanarr")
+logger = setup_logger(config.log_level, "renamer_cleanarr")
+version("renamer_cleanarr", script_version, arrpy_py_version, logger, config)
+script_name = "renamer_cleanarr"
 
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger('urllib3').setLevel(logging.WARNING)

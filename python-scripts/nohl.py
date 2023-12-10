@@ -16,7 +16,7 @@
 # License: MIT License
 # ===================================================================================================
 
-script_version = "2.0.0"
+script_version = "2.0.1"
 
 import os
 import re
@@ -32,10 +32,10 @@ from modules.arrpy import arrpy_py_version
 from modules.version import version
 from modules.discord import discord
 
-config = Config(script_name="nohl")
-logger = setup_logger(config.log_level, "nohl")
-version("nohl", script_version, arrpy_py_version, logger, config)
-script_name = "noHL"
+script_name = "nohl"
+config = Config(script_name)
+logger = setup_logger(config.log_level, script_name)
+version(script_name, script_version, arrpy_py_version, logger, config)
 
 illegal_chars_regex = re.compile(r"[^\w\s\-\(\)/.'’]+")
 season_regex = r"(?i)S(\d{2})E"
@@ -338,12 +338,6 @@ def main():
     include_profiles = None
     exclude_profiles = None
     dry_run = config.dry_run
-    logger.debug('*' * 40)
-    logger.debug(f'* {"noHL.py":^36} *')
-    logger.debug(f'* {"Script Version:":<2} {version:>20} *')
-    logger.debug(f'* {"arrpy.py Version:":<2} {arrpy_py_version:>18} *')
-    logger.debug('*' * 40)
-    logger.debug('')
     if config.dry_run:
         logger.info('*' * 40)
         logger.info(f'* {"Dry_run Activated":^36} *')

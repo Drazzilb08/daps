@@ -30,8 +30,8 @@ def version(script_name, script_version, arrpy_py_version, logger, config):
             if "arrpy_py_version =" in line:
                 github_arrpy_py_version = line.split("=")[1].strip().strip('"')  # Remove the quotes
                 break
-    description = "Script version does not match GitHub version, please click the link"
-    github_download = f"https://github.com/Drazzilb08/userScripts/archive/refs/heads/master.zip"
+    github_download = "https://github.com/Drazzilb08/userScripts/archive/refs/heads/master.zip"
+    description = f"Script version does not match GitHub version, please click the link \n{github_download}\n to download the latest version."
     color = 0xff0000
     # Compare the script version with the GitHub version
     if script_version == github_script_version and arrpy_py_version == github_arrpy_py_version:
@@ -52,7 +52,6 @@ def version(script_name, script_version, arrpy_py_version, logger, config):
                     },
                 ]
                     
-        discord(fields, logger, config, script_name, description, color, github_download)
     elif arrpy_py_version != github_arrpy_py_version and script_version == github_script_version:
         logger.error("Script version does not match GitHub version.")
         logger.error("Please update the script.")
@@ -68,7 +67,6 @@ def version(script_name, script_version, arrpy_py_version, logger, config):
                         "inline": False
                     },
                 ]
-        discord(fields, logger, config, script_name, description, color, github_download)
     else:
         logger.error("Script version does not match GitHub version.")
         logger.error(f"Script version: {script_version}")
@@ -98,4 +96,8 @@ def version(script_name, script_version, arrpy_py_version, logger, config):
                             "inline": False
                         },
                     ]
-        discord(fields, logger, config, script_name, description, color, github_download)
+    response = discord(fields, logger, config, script_name, description, color, content=None)
+    if response:
+        logger.info("Discord notification sent.")
+    else:
+        logger.error("Discord notification failed.")

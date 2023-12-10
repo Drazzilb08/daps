@@ -51,7 +51,7 @@ def version(script_name, script_version, arrpy_py_version, logger, config):
                         "inline": False
                     },
                 ]
-                    
+        discord(fields, logger, config, script_name, description, color, content=None)
     elif arrpy_py_version != github_arrpy_py_version and script_version == github_script_version:
         logger.error("Script version does not match GitHub version.")
         logger.error("Please update the script.")
@@ -67,6 +67,7 @@ def version(script_name, script_version, arrpy_py_version, logger, config):
                         "inline": False
                     },
                 ]
+        discord(fields, logger, config, script_name, description, color, content=None)
     else:
         logger.error("Script version does not match GitHub version.")
         logger.error(f"Script version: {script_version}")
@@ -96,7 +97,7 @@ def version(script_name, script_version, arrpy_py_version, logger, config):
                             "inline": False
                         },
                     ]
-    response = discord(fields, logger, config, script_name, description, color, content=None)
+        discord(fields, logger, config, script_name, description, color, content=None)
     if response:
         logger.info("Discord notification sent.")
     else:

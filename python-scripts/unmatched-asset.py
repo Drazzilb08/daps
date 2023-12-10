@@ -21,7 +21,7 @@
 #  License: MIT License
 # ===========================================================================================================
 
-script_version = "5.0.0"
+script_version = "5.0.1"
 
 import os
 import re
@@ -38,10 +38,10 @@ from modules.arrpy import arrpy_py_version
 from modules.version import version
 from modules.discord import discord
 
-config = Config(script_name="unmatched-assets")
-logger = setup_logger(config.log_level, "unmatched-assets")
-version("unmatched-assets", script_version, arrpy_py_version, logger, config)
-script_name = "Unmatched Assets"
+script_name = "unmatched-assets"
+config = Config(script_name)
+logger = setup_logger(config.log_level, script_name)
+version(script_name, script_version, arrpy_py_version, logger, config)
 
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger('urllib3').setLevel(logging.WARNING)

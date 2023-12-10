@@ -1,6 +1,5 @@
 import pathlib
 import yaml
-import os
 
 base_dir = pathlib.Path(__file__).parent.parent
 config_path = f'{base_dir}/config.yml'
@@ -19,11 +18,9 @@ class Config:
         # Load config into instance variables
         self.global_data = config['global']
         try:
-            self.discord_data = config['discord']
+            self.discord = config['discord']
         except KeyError:
-            self.discord_data = {}
-        self.webhook_data = self.discord_data.get('webhook', {})
-        self.channel_id = self.discord_data.get('channel_id', '')
+            self.discord = {}
         self.script_data = config.get(f'{self.script_name}', {})
         
 

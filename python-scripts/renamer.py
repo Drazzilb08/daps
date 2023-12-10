@@ -187,7 +187,7 @@ def match_media(media, source_file_list, type):
             if item['originalTitle']:
                 arr_original_title = item['originalTitle']
         except KeyError:
-            arr_original_title = ""
+            arr_original_title = None
         arr_path = os.path.basename(item['path'])
         arr_path = year_regex.sub("", arr_path).strip()
         normalized_arr_path = normalize_titles(arr_path)

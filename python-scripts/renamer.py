@@ -15,14 +15,14 @@
 # License: MIT License
 # ===================================================================================================
 
-script_version = "6.0.0"
+script_version = "6.1.0"
 
 from modules.arrpy import arrpy_py_version
 from plexapi.exceptions import BadRequest
 from modules.logger import setup_logger
 from plexapi.server import PlexServer
 from modules.version import version
-from modules.discord import discord
+from modules.discord import discord, field_builder
 from modules.config import Config
 from modules.arrpy import StARR
 from unidecode import unidecode
@@ -38,10 +38,10 @@ import sys
 import os
 import re
 
-config = Config(script_name="renamer")
-logger = setup_logger(config.log_level, "renamer")
-version("renamer", script_version, arrpy_py_version, logger, config)
-script_name = "Renamer"
+script_name = "renamer"
+config = Config(script_name)
+logger = setup_logger(config.log_level, script_name)
+version(script_name, script_version, arrpy_py_version, logger, config)
 
 year_regex = re.compile(r"\((19|20)\d{2}\)")
 illegal_chars_regex = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')
@@ -184,10 +184,9 @@ def match_media(media, source_file_list, type):
         normalized_alternate_titles = []
         arr_title = item['title']
         try:
-            if item['originalTitle']:
-                arr_title = item['originalTitle']
+            original_title = item['originalTitle']
         except KeyError:
-            pass
+            original_title = None
         arr_path = os.path.basename(item['path'])
         arr_path = year_regex.sub("", arr_path).strip()
         normalized_arr_path = normalize_titles(arr_path)
@@ -235,6 +234,7 @@ def match_media(media, source_file_list, type):
                     arr_normalized_title == file_normalized_title or
                     arr_path == file_title or
                     normalized_arr_path == file_normalized_title or
+                    original_title == file_title or
                     file_title in alternate_titles or
                     file_normalized_title in normalized_alternate_titles
             ) and (
@@ -263,6 +263,7 @@ def match_media(media, source_file_list, type):
                     arr_normalized_title == file_normalized_title or
                     arr_path == file_title or
                     normalized_arr_path == file_normalized_title or
+                    original_title == file_title or
                     file_title in alternate_titles or
                     file_normalized_title in normalized_alternate_titles
             ) and (
@@ -291,6 +292,8 @@ def match_media(media, source_file_list, type):
 
 def rename_file(matched_media, destination_dir, dry_run, action_type, print_only_renames):
     messages = []
+    new_file_name_list = []
+    processed_file_info = []
     asset_folders = config.asset_folders
     destination_files = os.listdir(destination_dir)
     for media in tqdm(matched_media['matched_media'], desc="Renaming files", total=len(matched_media['matched_media']), disable=None):
@@ -365,11 +368,16 @@ def rename_file(matched_media, destination_dir, dry_run, action_type, print_only
                                     messages.append(f"Removed {i} from {destination_dir}")
                                     os.remove(os.path.join(destination_dir, i))
             if new_file_name != old_file_name:
-                messages.extend(process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, '-renamed->'))
+                processed_file_info = process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, '-renamed->')
+                # remove Action Type: {action_type} from discord message and leading space
             else:
                 if not print_only_renames:
-                    messages.extend(process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, '-not-renamed->>'))
-    return messages
+                    processed_file_info.extend(process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, '-not-renamed->>'))
+            # remove extension from new_file_name
+            new_file_name = os.path.splitext(new_file_name)[0]
+            new_file_name_list.append(new_file_name)
+
+    return messages, new_file_name_list
 
 def process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, arrow):
     output = []
@@ -562,7 +570,7 @@ def process_instance(instance_type, instance_name, url, api, final_output, asset
         else:
             message = f"Error: No library names specified for {instance_name}"
             final_output.append(message)
-            return final_output
+            return final_output, None
     else:
         app = StARR(url, api, logger)
         media = app.get_media()
@@ -574,12 +582,12 @@ def process_instance(instance_type, instance_name, url, api, final_output, asset
     elif instance_type == "Sonarr":
         matched_media = match_media(media, asset_files, "series")
     if matched_media:
-        message = rename_file(matched_media, config.destination_dir, config.dry_run, config.action_type, config.print_only_renames)
+        message, new_file_name_list = rename_file(matched_media, config.destination_dir, config.dry_run, config.action_type, config.print_only_renames)
         final_output.extend(message)
     else:
         message = f"No matches found for {instance_name}"
         final_output.append(message)
-    return final_output
+    return final_output, new_file_name_list
 
 def print_output(final_output):
     if final_output:
@@ -588,6 +596,21 @@ def print_output(final_output):
         return
     else:
         return
+    
+def notification(file_list):
+    if file_list:
+        for instance_type, file_list in file_list.items():
+            if not file_list:
+                continue
+            fields = field_builder(file_list, name="Renamed Posters")
+            for field_number, field in fields.items():
+                response = discord(field, logger, config, script_name, description=f"Number of posters added {len(file_list)}", color=0x00FF00, content=None)
+                if response:
+                    logger.info(f"Discord notification sent for {instance_type}")
+                else:
+                    logger.error(f"Discord notification failed for {instance_type}")
+        else:
+            return
 
 def main():
     logger.debug('*' * 40)
@@ -622,7 +645,7 @@ def main():
         'Radarr': config.radarr_data,
         'Sonarr': config.sonarr_data
     }
-
+    discord_output = {}
     for instance_type, instances in instance_data.items():
         for instance in instances:
             final_output = []
@@ -648,8 +671,10 @@ def main():
                 logger.debug(f"Instance Name: {instance_name}")
                 logger.debug(f"URL: {url}")
                 logger.debug(f"API Key: {'<redacted>' if api else 'None'}")
-                final_output = process_instance(instance_type, instance_name, url, api, final_output, asset_files)
+                final_output, file_list = process_instance(instance_type, instance_name, url, api, final_output, asset_files)
+                discord_output[instance_name] = file_list
                 print_output(final_output)
+    notification(discord_output)
 
 if __name__ == "__main__":
     main()

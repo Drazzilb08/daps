@@ -14,7 +14,7 @@
 #  License: MIT License
 # ===========================================================================================================
 
-script_version = "2.0.0"
+script_version = "2.1.0"
 
 import os
 import re
@@ -32,10 +32,10 @@ from modules.arrpy import arrpy_py_version
 from modules.version import version
 from modules.discord import discord
 
-config = Config(script_name="renamer_cleanarr")
-logger = setup_logger(config.log_level, "renamer_cleanarr")
-version("renamer_cleanarr", script_version, arrpy_py_version, logger, config)
 script_name = "renamer_cleanarr"
+config = Config(script_name)
+logger = setup_logger(config.log_level, script_name)
+version(script_name, script_version, arrpy_py_version, logger, config)
 
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger('urllib3').setLevel(logging.WARNING)
@@ -47,66 +47,72 @@ season_name_info = [
     "_Season",
 ]
 
-def get_assets_files(assets_path):
-    asset_folders = config.asset_folders
+def get_assets_files(assets_paths, asset_folders):
     assets = {'movies': [], 'series': [], 'collections': []}
-
+    
     print("Getting assets files..., this may take a while.")
-    files = os.listdir(assets_path)
-    files = sorted(files, key=lambda x: x.lower())
+    for assets_path in assets_paths:
+        files = os.listdir(assets_path)
+        files = sorted(files, key=lambda x: x.lower())
 
-    if not asset_folders:
-        for file in tqdm(files, desc=f'Sorting assets', total=len(files)):
-            
-            if file.startswith('.'):
-                continue
-            base_name, extension = os.path.splitext(file)
-            if not re.search(r'\(\d{4}\)', base_name):
-                assets['collections'].append({
-                    'title': base_name,
-                    'files': file
-                })
-            else:
-                if any(file.startswith(base_name) and any(season_name in file for season_name in season_name_info) for file in files) and not any(season_name in file for season_name in season_name_info):
-                    season_files = [file for file in files if file.startswith(base_name) and any(season_name in file for season_name in season_name_info)]
-                    season_files.append(file)
-                    season_files = sorted(season_files)
-                    assets['series'].append({
-                        'title': base_name,
-                        'files': season_files
-                    })
-                elif any(season_name in file for season_name in season_name_info):
+        if not asset_folders:
+            for file in tqdm(files, desc=f'Sorting assets', total=len(files)):
+                
+                if file.startswith('.'):
                     continue
-                else:
-                    assets['movies'].append({
+                base_name, extension = os.path.splitext(file)
+                if not re.search(r'\(\d{4}\)', base_name):
+                    assets['collections'].append({
                         'title': base_name,
-                        'files': file
-                    })
-    else:
-        for root, dirs, files in os.walk(assets_path):
-            title = os.path.basename(root)
-            if root == assets_path:
-                continue
-            if not files:
-                continue
-            if title.startswith('.'):
-                continue
-            if not re.search(year_regex, title):
-                assets['collections'].append({
-                    'title': title,
-                    'files': files
-                })
-            else:
-                if any("Season" in file for file in files):
-                    assets['series'].append({
-                        'title': title,
-                        'files': files
+                        'files': file,
+                        'source': assets_path
                     })
                 else:
-                    assets['movies'].append({
+                    if any(file.startswith(base_name) and any(season_name in file for season_name in season_name_info) for file in files) and not any(season_name in file for season_name in season_name_info):
+                        season_files = [file for file in files if file.startswith(base_name) and any(season_name in file for season_name in season_name_info)]
+                        season_files.append(file)
+                        season_files = sorted(season_files)
+                        assets['series'].append({
+                            'title': base_name,
+                            'files': season_files,
+                            'source': assets_path
+                        })
+                    elif any(season_name in file for season_name in season_name_info):
+                        continue
+                    else:
+                        assets['movies'].append({
+                            'title': base_name,
+                            'files': file,
+                            'source': assets_path
+                        })
+        else:
+            for root, dirs, files in os.walk(assets_path):
+                title = os.path.basename(root)
+                if root == assets_path:
+                    continue
+                if not files:
+                    continue
+                if title.startswith('.'):
+                    continue
+                if not re.search(year_regex, title):
+                    assets['collections'].append({
                         'title': title,
-                        'files': files
+                        'files': files,
+                        'source': root
                     })
+                else:
+                    if any("Season" in file for file in files):
+                        assets['series'].append({
+                            'title': title,
+                            'files': files,
+                            'source': root
+                        })
+                    else:
+                        assets['movies'].append({
+                            'title': title,
+                            'files': files,
+                            'source': root
+                        })
     logger.debug("Assets:")
     logger.debug(json.dumps(assets, ensure_ascii=False, indent=4))
     return assets
@@ -161,31 +167,50 @@ def match_assets(assets, media, dict_plex):
     logger.debug(json.dumps(unmatched_posters, ensure_ascii=False, indent=4))
     return unmatched_posters
 
-def remove_assets(asset_folders, unmatched_assets, assets_path, dry_run):
+def remove_assets(asset_folders, unmatched_assets, dry_run):
     asset_types = ['movies', 'series', 'collections']
     messages = []
-    if not asset_folders:
-        for asset_type in asset_types:
-            for asset in unmatched_assets[asset_type]:
-                files = asset['files']
-                if isinstance(files, str):
-                    files = [files]
-                for file in files:
-                    path = os.path.join(assets_path, file)
-                    if not dry_run:
-                        os.remove(path)
-                        messages.append(f"Removed '{path}'")
-                    else:
-                        messages.append(f"Would have removed '{asset['title']}' from '{assets_path}'")
-    else:
-        for asset_type in asset_types:
-            for asset in unmatched_assets[asset_type]:
-                path = os.path.join(assets_path, asset['title'])
-                if not dry_run:
-                    shutil.rmtree(path)
-                    messages.append(f"Removed '{path}'")
+    for asset_type in asset_types:
+        for asset in unmatched_assets[asset_type]:
+            if asset_type == 'collections':
+                if asset_folders:
+                    for root, dirs, files in os.walk(asset['source']):
+                        for dir in dirs:
+                            if dir == asset['title']:
+                                logger.debug(f"Removing {dir}")
+                                if not dry_run:
+                                    shutil.rmtree(os.path.join(root, dir))
+                                messages.append(f"Removed {dir}")
                 else:
-                    messages.append(f"Would have removed '{asset['title']}' from '{assets_path}'")
+                    logger.debug(f"Removing {os.path.join(asset['source'], asset['files'])}")
+                    if not dry_run:
+                        os.remove(os.path.join(asset['source'], asset['files']))
+                        messages.append(f"Removed Path: {os.path.join(asset['source'], asset['files'])}")
+                    messages.append(f"Would have removed {os.path.join(asset['source'], asset['files'])}")
+            else:
+                if asset_folders:
+                    for root, dirs, files in os.walk(asset['source']):
+                        for dir in dirs:
+                            if dir == asset['title']:
+                                logger.debug(f"Removing {dir}")
+                                if not dry_run:
+                                    shutil.rmtree(os.path.join(root, dir))
+                                    messages.append(f"Removed {dir}")
+                                messages.append(f"Would have removed {dir}")
+                else:
+                    # if files is a list then it is a series
+                    if isinstance(asset['files'], list):
+                        for file in asset['files']:
+                            file_path = os.path.join(asset['source'], file)
+                            logger.debug(f"Removing {os.path.join(asset['source'], file)}")
+                            if not dry_run:
+                                os.remove(file_path)
+                            messages.append(f"Removed Path: {os.path.join(asset['source'], file)}")
+                    else:
+                        logger.debug(f"Removing {os.path.join(asset['source'], asset['files'])}")
+                        if not dry_run:
+                            os.remove(os.path.join(asset['source'], asset['files']))
+                        messages.append(f"Removed Path: {os.path.join(asset['source'], asset['files'])}")
     return messages
 
 def print_output(messages):
@@ -200,6 +225,13 @@ def main():
     api_key = None
     app = None
     library = None
+    script_data = config.script_data
+    print(json.dumps(script_data, indent=4))
+    assets_paths = script_data['assets_paths']
+    library_names = script_data['library_names']
+    asset_folders = script_data['asset_folders']
+    media_paths = script_data['media_paths']
+    ignore_collections = script_data['ignore_collections']
     if config.dry_run:
         logger.info('*' * 40)
         logger.info(f'* {"Dry_run Activated":^36} *')
@@ -212,11 +244,11 @@ def main():
     logger.debug('*' * 40)
     logger.debug(f'{"Log level:":<20}{config.log_level if config.log_level else "Not set"}')
     logger.debug(f'{"Dry run:":<20}{config.dry_run}')
-    logger.debug(f"{'Asset Folders: ':<20}{config.asset_folders}")
-    logger.debug(f'{"Assets path:":<20}{config.assets_path if config.assets_path else "Not set"}')
-    logger.debug(f'{"Media paths:":<20}{config.media_paths if config.media_paths else "Not set"}')
-    logger.debug(f'{"Library names:":<20}{config.library_names if config.library_names else "Not set"}')
-    logger.debug(f'{"Ignore collections:":<20}{config.ignore_collections if config.ignore_collections else "Not set"}')
+    logger.debug(f"{'Asset Folders: ':<20}{asset_folders}")
+    logger.debug(f'{"Assets path:":<20}{assets_paths if assets_paths else "Not set"}')
+    logger.debug(f'{"Media paths:":<20}{media_paths if media_paths else "Not set"}')
+    logger.debug(f'{"Library names:":<20}{library_names if library_names else "Not set"}')
+    logger.debug(f'{"Ignore collections:":<20}{ignore_collections if ignore_collections else "Not set"}')
     logger.debug('*' * 40)
     logger.debug('')
     if config.plex_data:
@@ -232,11 +264,11 @@ def main():
     else:
         logger.info("No library names specified in config.yml. Skipping Plex.")
         sys.exit()
-    assets = get_assets_files(config.assets_path)
-    media = get_media_folders(config.media_paths)
+    assets = get_assets_files(assets_paths, asset_folders)
+    media = get_media_folders(media_paths)
     collections = []
-    if config.library_names and app:
-        for library_name in config.library_names:
+    if library_names and app:
+        for library_name in library_names:
             try:
                 library = app.library.section(library_name)
                 logger.debug(library)
@@ -254,7 +286,7 @@ def main():
         sanitized_collection = illegal_chars_regex.sub('', collection)
         dict_plex['collections'].append({'title': sanitized_collection})
     unmatched_assets = match_assets(assets, media, dict_plex)
-    message = remove_assets(config.asset_folders, unmatched_assets, config.assets_path, config.dry_run)
+    message = remove_assets(asset_folders, unmatched_assets, config.dry_run)
     print_output(message)
 
 if __name__ == "__main__":

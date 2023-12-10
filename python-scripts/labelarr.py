@@ -12,7 +12,7 @@
 # License: MIT License
 # ======================================================================================
 
-script_version = "2.0.0"
+script_version = "2.1.0"
 
 from modules.arrpy import arrpy_py_version, StARR
 from plexapi.exceptions import BadRequest, NotFound
@@ -28,10 +28,10 @@ import re
 from modules.version import version
 from modules.discord import discord
 
-config = Config(script_name="labelarr")
-logger = setup_logger(config.log_level, "labelarr")
-version("labelarr", script_version, arrpy_py_version, logger, config)
-script_name = "Labelarr"
+script_name = "labelarr"
+config = Config(script_name)
+logger = setup_logger(config.log_level, script_name)
+version(script_name, script_version, arrpy_py_version, logger, config)
 
 words_to_remove = [
     "(US)",
@@ -52,78 +52,98 @@ def normalize_titles(title):
     return normalized_title
 
 def get_plex_data(plex, instance_type):
-    library_names = [name.capitalize() for name in config.library_names]
+    library_names = [name.title() for name in config.library_names]
+    logger.debug(f"Library Names: {library_names}")
     if instance_type == "Radarr":
         type = "movie"
     elif instance_type == "Sonarr":
         type = "show"
     sections = plex.library.sections()
     plex_data = {}
-    total_sections = 0
-    total_items = 0
+    search_sections = []
     for section in sections:
         section_type = section.type
-        if section_type == type:
-            total_sections += 1
-    with tqdm(total=total_sections, desc=f"Getting '{instance_type}' data from Plex", disable=None) as pbar_sections:
-        for section in sections:
-            if section.title not in library_names or "All" not in library_names:
-                pbar_sections.update(1)
-                continue
-            if section.type == type and section.title in library_names:
-                items = section.all()
-                total_items += len(items)
-                with tqdm(total=len(items), desc=f"Processing '{section.title}' library", leave=False, disable=None) as pbar_items:
-                    for item in items:
-                        labels = [str(label).lower() for label in item.labels]
-                        plex_data[item.title] = {'title': item.title, 'year': item.year, 'labels': labels}
-                        pbar_items.update(1)
-                pbar_sections.update(1)
+        if section_type == type and section.title in library_names or not library_names:
+            search_sections.append(section)
+    with tqdm(total=len(search_sections), desc=f"Getting '{instance_type}' data from Plex", disable=False) as pbar_sections:
+        for library in search_sections:
+            items = library.all()
+            with tqdm(total=len(items), desc=f"Processing '{library.title}' library", leave=False, disable=False) as pbar_items:
+                for item in items:
+                    labels = [str(label).lower() for label in item.labels]
+                    plex_data[item.title] = {'title': item.title, 'year': item.year, 'labels': labels}
+                    pbar_items.update(1)
+            pbar_sections.update(1)
     logger.debug(json.dumps(plex_data, indent=4, sort_keys=True))
     return plex_data
 
 def sync_labels_to_plex(plex, media, instance_type, app, user_labels, dry_run, plex_data):
+    logger.debug("Syncing labels to Plex")
     items_to_sync = {}
     logger.info(f"Processing '{instance_type}' data")
-    for label in user_labels:
-        retries = 0
-        logger.debug(f"Processing label: {label}")
-        label = label.capitalize()
-        # Get tag ID from the ARR
-        while retries < 3:
-            tag_id = app.get_tag_id_from_name(label)
-            if tag_id:
-                # If tag ID fetched successfully, no need to retry
-                retries = 3
-                logger.debug(f"Label: {label} | Tag ID: {tag_id}")
-                for item in media:
-                    title = item['title']
-                    normalized_title = normalize_titles(title)
-                    year = item['year']
-                    tags = item['tags']
-                    for plex_item in plex_data:
-                        plex_title = plex_data[plex_item]['title']
-                        plex_year = plex_data[plex_item]['year']
-                        plex_labels = plex_data[plex_item]['labels']
-                        normalized_plex_title = normalize_titles(plex_title)
-                        if normalized_title == normalized_plex_title and year == plex_year:
-                            # Check if label is in ARR tags and not in Plex labels
-                            if tag_id in tags and label not in plex_labels:
-                                items_to_sync[title] = {'title': plex_title, 'year': plex_year, 'add_remove': "add", 'label': label}
-                            # Check if label is not in ARR tags and is in Plex labels
-                            elif tag_id not in tags and label in plex_labels:
-                                items_to_sync[title] = {'title': plex_title, 'year': plex_year, 'add_remove': "remove", 'label': label}
+    retries = 0
+    tag_ids = []
+    user_labels = [label.lower() for label in user_labels]
+    while retries < 3:
+        for item in user_labels:
+            tag_id = app.get_tag_id_from_name(item)
+            if not tag_id:
+                logger.info(f"Tag ID not found for '{item}'. Creating tag...")
+                tag_id = app.create_tag(item)
+                logger.debug(f"Tag: {item} | Tag ID: {tag_id}")
+                tag_ids.append(tag_id)
             else:
-                logger.error(f"Label: {label} | Tag ID: {tag_id} | Tag ID not found in {instance_type} | Retrying...")
-                retries += 1
-                continue
-    
+                logger.debug(f"Tag: {item} | Tag ID: {tag_id}")
+                tag_ids.append(tag_id)
+        if tag_ids:
+            retries = 3
+            for item in media:
+                title = item['title']
+                normalized_title = normalize_titles(title)
+                year = item['year']
+                tags = item['tags']
+                for plex_item in plex_data:
+                    plex_title = plex_data[plex_item]['title']
+                    plex_year = plex_data[plex_item]['year']
+                    plex_labels = plex_data[plex_item]['labels']
+                    normalized_plex_title = normalize_titles(plex_title)
+                    if normalized_title == normalized_plex_title and year == plex_year:
+                        if normalized_title == "earth":
+                            print(f"Title: {title}")
+                            print(f"Normalized Title: {normalized_title}")
+                            print(f"Year: {year}")
+                            print(f"Tags: {tags}")
+                            print(f"Plex Title: {plex_title}")
+                            print(f"Normalized Plex Title: {normalized_plex_title}")
+                            print(f"Plex Year: {plex_year}")
+                            print(f"Plex Labels: {plex_labels}")
+                            print(f"Tag IDs: {tag_ids}")
+                            print(f"User Labels: {user_labels}")
+                        for label in user_labels:
+                            for tag_id in tag_ids:
+                                if tag_id in tags and label not in plex_labels:
+                                    if title not in items_to_sync:
+                                        items_to_sync[title] = {'title': plex_title, 'year': plex_year, 'add_remove': "add", 'labels': []}
+                                    if label not in items_to_sync[title]['labels']:  # Check if label is not already in items_to_sync
+                                        items_to_sync[title]['labels'].append(label)
+                                # Check if label is not in ARR tags and is in Plex labels
+                                elif tag_id not in tags and label in plex_labels:
+                                    if title not in items_to_sync:
+                                        items_to_sync[title] = {'title': plex_title, 'year': plex_year, 'add_remove': "remove", 'labels': []}
+                                    if label not in items_to_sync[title]['labels']:  # Check if label is not already in items_to_sync
+                                        items_to_sync[title]['labels'].append(label)
+        else:
+            logger.error(f"Label: {label} | Tag ID: {tag_id} | Tag ID not found in {instance_type} | Retrying...")
+            retries += 1
+            continue
+    logger.debug(f"Items to sync: {len(items_to_sync)}")
+    logger.debug(json.dumps(items_to_sync, indent=4, sort_keys=True))
     if items_to_sync:
         for title, data in items_to_sync.items():
             title = data['title']
             year = data['year']
             add_remove = data['add_remove']
-            label = data['label']
+            labels = data['labels']  # Updated variable name to 'labels'
             if instance_type == "Sonarr":
                 type = "show"
             elif instance_type == "Radarr":
@@ -131,11 +151,13 @@ def sync_labels_to_plex(plex, media, instance_type, app, user_labels, dry_run, p
             if not dry_run:
                 try:
                     if add_remove == "add":
-                        plex.library.search(title=title, year=year, libtype=type)[0].addLabel(label)
-                        logger.info(f"Label: {label} | Title: {title} | Year: {year} | Add/Remove: {add_remove}")
+                        for label in labels:  # Iterate over the labels
+                            plex.library.search(title=title, year=year, libtype=type)[0].addLabel(label)
+                            logger.info(f"Label: {label} | Title: {title} | Year: {year} | Add/Remove: {add_remove}")
                     elif add_remove == "remove":
-                        plex.library.search(title=title, year=year, libtype=type)[0].removeLabel(label)
-                        logger.info(f"Label: {label} | Title: {title} | Year: {year} | Add/Remove: {add_remove}")
+                        for label in labels:  # Iterate over the labels
+                            plex.library.search(title=title, year=year, libtype=type)[0].removeLabel(label)
+                            logger.info(f"Label: {label} | Title: {title} | Year: {year} | Add/Remove: {add_remove}")
                 except NotFound:
                     logger.error(f"Label: {label} | Title: {title} | Year: {year} | Add/Remove: {add_remove} | Title not found in Plex")
                     continue

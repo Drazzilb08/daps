@@ -3,7 +3,7 @@ import requests
 import logging
 import json
 
-arrpy_py_version = "1.0.6"
+arrpy_py_version = "1.0.7"
 
 logging.getLogger("qbittorrentapi").setLevel(logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)
@@ -205,14 +205,15 @@ class StARR:
         Parameters:
             tag (dict): The tag to create.
         Returns:
-            dict: The JSON response from the POST request.
+            int: The ID of the created tag.
         """
         payload = {
             "label": tag
         }
         self.logger.debug(f"Create tag payload: {payload}")
         endpoint = f"{self.url}/api/v3/tag"
-        return self.make_post_request(endpoint, json=payload)
+        response = self.make_post_request(endpoint, json=payload)
+        return response['id']
 
     def add_tags(self, media_id, tag_id):
         """
@@ -242,36 +243,6 @@ class StARR:
         endpoint = f"{self.url}/api/v3/{media}/editor"
         return self.make_put_request(endpoint, json=payload)
 
-    def check_and_create_tag(self, tag_name, dry_run):
-        """
-        Check if a tag exists on the ARR instance, and create it if it doesn't.
-        Parameters:
-            tag_name (str): The name of the tag to check.
-            dry_run (bool): Whether or not to actually create the tag.
-        Returns:
-            int: The ID of the tag.
-        """
-        all_tags = self.get_all_tags()
-        tag_id = None
-        for tag in all_tags:
-            if tag["label"] == tag_name:
-                tag_id = tag["id"]
-                self.logger.debug(
-                    f'Tag Name: {tag_name} exists with tagId: {tag_id}, no need to create.')
-                break
-        if tag_id is None:
-            if not dry_run:
-                self.create_tag(tag_name)
-                all_tags = self.get_all_tags()
-                for tag in all_tags:
-                    if tag["label"] == tag_name:
-                        tag_id = tag["id"]
-                        break
-            else:
-                self.logger.info(
-                    f'Tag Name: {tag_name} does not exist, dry run enabled, skipping.')
-        return tag_id
-    
     def remove_tags(self, media_ids, tag_id):
         """
         Remove a tag from all media.
@@ -526,9 +497,9 @@ class StARR:
             int: The ID of the tag.
         """
         all_tags = self.get_all_tags()
-        tag_id = None
+        tag_name = tag_name.lower()
         for tag in all_tags:
             if tag["label"] == tag_name:
                 tag_id = tag["id"]
-                break
-        return tag_id
+                return tag_id
+        return None

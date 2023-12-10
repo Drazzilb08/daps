@@ -46,11 +46,38 @@ global:
       password: password
 
 discord:
-  # Supports Discord Webhooks and Notifiarr Passthrough
-  webhook: https://discord.com/api/webhooks/1234567890/abcdefghijklmnopqrstuvwxyz
-  # This is the channel id for the discord channel you want to send messages to
-  # Required for Notifiarr
-  channel_id: 1234567890
+  # This is the webhook for Notifiarr, if you don't use Notifiarr you can leave this blank
+  notifiarr_webhook:
+  # These are the webhooks for the discord scripts, if you don't use discord you can leave these blank
+  upgradinatorr:
+    # This is the discord webhook for this script
+    discord_webhook:
+    # This is the channel id for the discord script. Channel id is only needed if using Notifiarr
+    channel_id: 
+  renameinatorr:
+    discord_webhook: 
+    channel_id: 
+  renamer:
+    discord_webhook: 
+    channel_id: 
+  movie-deletarr:
+    discord_webhook: 
+    channel_id: 
+  unmatched-assets:
+    discord_webhook: 
+    channel_id: 
+  nohl:
+    discord_webhook: h
+    channel_id: 
+  queinatorr:
+    discord_webhook: 
+    channel_id: 
+  labelarr:
+    discord_webhook: 
+    channel_id: 
+  renamer_cleanarr:
+    discord_webhook: 
+    channel_id: 
 
 # The upgradinatorr script is used to upgrade movies and tv shows, it can be used to upgrade all movies and tv shows or just a subset.
 # WARNING: This script can caues havoc with your usenet provider or torrent tracker if you are not careful.
@@ -289,7 +316,8 @@ renamer_cleanarr:
     - "The Batman Universe"
     - "Collectionless"
     - "DC Extended Universe"
-  assets_path: /mnt/user/appdata/plex-meta-manager/assets
+  assets_paths: 
+    - /mnt/user/appdata/plex-meta-manager/assets
   media_paths:
     - /mnt/user/data/media/anime movies/
     - /mnt/user/data/media/documentary movies/

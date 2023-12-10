@@ -67,7 +67,7 @@ discord:
     discord_webhook: 
     channel_id: 
   nohl:
-    discord_webhook: h
+    discord_webhook:
     channel_id: 
   queinatorr:
     discord_webhook: 

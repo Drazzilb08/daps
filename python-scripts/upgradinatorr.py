@@ -14,7 +14,7 @@
 # License: MIT License
 # ===================================================================================================
 
-script_version = "3.0.0"
+script_version = "3.0.1"
 
 from modules.config import Config
 from modules.logger import setup_logger
@@ -23,10 +23,10 @@ from modules.arrpy import arrpy_py_version
 from modules.version import version
 from modules.discord import discord
 
-config = Config(script_name="upgradinatorr")
-logger = setup_logger(config.log_level, "upgradinatorr")
-version("upgradinatorr", script_version, arrpy_py_version, logger, config)
-script_name = "Upgradinatorr"
+script_name = "upgradinatorr"
+config = Config(script_name)
+logger = setup_logger(config.log_level, script_name)
+version(script_name, script_version, arrpy_py_version, logger, config)
 
 def check_all_tagged(all_media, tag_id, status, monitored):
     """
@@ -81,7 +81,13 @@ def process_instance(instance_type, instance_name, count, tag_name, unattended, 
         media_type = "Movies"
     elif instance_type == "Sonarr":
         media_type = "Series"
-    arr_tag_id = app.check_and_create_tag(tag_name, dry_run)
+    arr_tag_id = app.get_tag_id_from_name(tag_name)
+    if not arr_tag_id:
+        arr_tag_id = app.create_tag(tag_name)
+        if arr_tag_id:
+            logger.debug(f"Tag: {tag_name} | Tag ID: {arr_tag_id}")
+    else:
+        logger.debug(f"Tag: {tag_name} | Tag ID: {arr_tag_id}")
     all_tagged = check_all_tagged(media, arr_tag_id, status, monitored)
     all_media_ids = [item["id"] for item in media]
     if reset:

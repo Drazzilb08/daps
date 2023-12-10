@@ -185,9 +185,9 @@ def match_media(media, source_file_list, type):
         arr_title = item['title']
         try:
             if item['originalTitle']:
-                arr_title = item['originalTitle']
+                arr_original_title = item['originalTitle']
         except KeyError:
-            pass
+            arr_original_title = ""
         arr_path = os.path.basename(item['path'])
         arr_path = year_regex.sub("", arr_path).strip()
         normalized_arr_path = normalize_titles(arr_path)
@@ -232,6 +232,7 @@ def match_media(media, source_file_list, type):
             file_year = i['year']
             if (
                     arr_title == file_title or
+                    arr_original_title == file_title or
                     arr_normalized_title == file_normalized_title or
                     arr_path == file_title or
                     normalized_arr_path == file_normalized_title or
@@ -246,6 +247,34 @@ def match_media(media, source_file_list, type):
                     "title": file_title,
                     "normalized_title": file_normalized_title,
                     "arr_title": arr_title,
+                    "arr_normalized_title": arr_normalized_title,
+                    "arr_path": arr_path,
+                    "normalized_arr_path": normalized_arr_path,
+                    "year": file_year,
+                    "arr_year": arr_year,
+                    "arr_path_year": arr_path_year,
+                    "secondaryYear": secondary_year,
+                    "files": files,
+                    "alternate_title": alternate_title,
+                    "folder": folder,
+                })
+                break
+            elif (
+                    arr_original_title == file_title or
+                    arr_normalized_title == file_normalized_title or
+                    arr_path == file_title or
+                    normalized_arr_path == file_normalized_title or
+                    file_title in alternate_titles or
+                    file_normalized_title in normalized_alternate_titles
+            ) and (
+                    arr_year == file_year or
+                    secondary_year == file_year or
+                    arr_path_year == file_year
+            ):
+                matched_media['matched_media'].append({
+                    "title": file_title,
+                    "normalized_title": file_normalized_title,
+                    "arr_original_title": arr_original_title,
                     "arr_normalized_title": arr_normalized_title,
                     "arr_path": arr_path,
                     "normalized_arr_path": normalized_arr_path,

@@ -16,7 +16,7 @@
 # License: MIT License
 # ===================================================================================================
 
-script_version = "2.0.1"
+script_version = "2.1.1"
 
 import os
 import re
@@ -31,6 +31,7 @@ from unidecode import unidecode
 from modules.arrpy import arrpy_py_version
 from modules.version import version
 from modules.discord import discord
+from modules.formatting import create_table
 
 script_name = "nohl"
 config = Config(script_name)
@@ -333,18 +334,13 @@ def final_step(app, results, instance_type, dry_run):
         logger.error(f"Error writing to file: {e}")
 
 def main():
-    exclude_series = None
-    instances_to_run = []
-    include_profiles = None
-    exclude_profiles = None
     dry_run = config.dry_run
     if config.dry_run:
-        logger.info('*' * 40)
-        logger.info(f'* {"Dry_run Activated":^36} *')
-        logger.info('*' * 40)
-        logger.info(f'* {" NO CHANGES WILL BE MADE ":^36} *')
-        logger.info('*' * 40)
-        logger.info('')
+        data = [
+            ["Dry Run"],
+            ["NO CHANGES WILL BE MADE"]
+        ]
+        logger.info(create_table(data))
     search = config.maximum_searches
     if search >= 20:
         logger.error(f"Maximum searches set to {search}. This can cause devastating issues with your trackers. I will not be held responsible for any issues that arise from this. Please set this to a lower number.")

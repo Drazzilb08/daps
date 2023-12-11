@@ -14,7 +14,7 @@
 #  License: MIT License
 # ===========================================================================================================
 
-script_version = "2.1.0"
+script_version = "2.2.0"
 
 import os
 import re
@@ -23,6 +23,7 @@ from plexapi.server import PlexServer
 from plexapi.exceptions import BadRequest
 from modules.logger import setup_logger
 from modules.config import Config
+from modules.formatting import create_table
 from tqdm import tqdm
 import json
 import logging
@@ -221,36 +222,31 @@ def print_output(messages):
     logger.info(f"Total number of assets removed: {count}")
 
 def main():
-    url = None
-    api_key = None
-    app = None
-    library = None
     script_data = config.script_data
-    print(json.dumps(script_data, indent=4))
     assets_paths = script_data['assets_paths']
     library_names = script_data['library_names']
     asset_folders = script_data['asset_folders']
     media_paths = script_data['media_paths']
-    ignore_collections = script_data['ignore_collections']
-    if config.dry_run:
-        logger.info('*' * 40)
-        logger.info(f'* {"Dry_run Activated":^36} *')
-        logger.info('*' * 40)
-        logger.info(f'* {" NO CHANGES WILL BE MADE ":^36} *')
-        logger.info('*' * 40)
-        logger.info('')
-    logger.debug('*' * 40)
-    logger.debug(f'* {"Script Settings":^36} *')
-    logger.debug('*' * 40)
-    logger.debug(f'{"Log level:":<20}{config.log_level if config.log_level else "Not set"}')
-    logger.debug(f'{"Dry run:":<20}{config.dry_run}')
-    logger.debug(f"{'Asset Folders: ':<20}{asset_folders}")
+    log_level = script_data['log_level']
+    assets_paths = script_data['assets_paths']
+    dry_run = script_data['dry_run']
+    data = [
+        ["Script Settings"]
+    ]
+    logger.debug(create_table(data))
+    logger.debug(f'{"Log level:":<20}{log_level if log_level else "Not set"}')
+    logger.debug(f'{"Dry_run:":<20}{dry_run if dry_run else "False"}')
+    logger.debug(f'{"Asset Folders:":<20}{asset_folders if asset_folders else "Not set"}')
     logger.debug(f'{"Assets path:":<20}{assets_paths if assets_paths else "Not set"}')
     logger.debug(f'{"Media paths:":<20}{media_paths if media_paths else "Not set"}')
     logger.debug(f'{"Library names:":<20}{library_names if library_names else "Not set"}')
-    logger.debug(f'{"Ignore collections:":<20}{ignore_collections if ignore_collections else "Not set"}')
-    logger.debug('*' * 40)
-    logger.debug('')
+    logger.debug('*' * 40 + '\n')
+    if dry_run:
+        data = [
+            ["Dry Run"],
+            ["NO CHANGES WILL BE MADE"]
+        ]
+        logger.info(create_table(data))
     if config.plex_data:
         for data in config.plex_data:
             api_key = data.get('api', '')
@@ -286,7 +282,7 @@ def main():
         sanitized_collection = illegal_chars_regex.sub('', collection)
         dict_plex['collections'].append({'title': sanitized_collection})
     unmatched_assets = match_assets(assets, media, dict_plex)
-    message = remove_assets(asset_folders, unmatched_assets, config.dry_run)
+    message = remove_assets(asset_folders, unmatched_assets, dry_run)
     print_output(message)
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@
 #                                                   | |                        | |
 #                                                   |_|                        |_|
 # ====================================================
-# Version: 5.0.1
+# Version: 5.0.2
 # backup-plex - A script to backup your plex database and media
 # Author: Drazzilb
 # License: MIT License
@@ -505,10 +505,10 @@ main() {
     days=$((($(date --date="$current_date" +%s) - $(date --date="$lastbackup" +%s)) / (60 * 60 * 24)))
     start=$(date +%s)
     # check if full_backup is set to false
+    stop_plex
     if [ "$full_backup" == "false" ]; then
         # create essential backup
         backup_type="essential"
-        stop_plex
         create_backup "Essential"
         build_payload
         field_builder "Runtime" "$run_output" "true"
@@ -516,7 +516,6 @@ main() {
         field_builder "Total size of all Essential backups" "$essential_backup_total_size" "false"
         payload "Essential Backup"
         send_notification
-        start_plex
         verbose_output ""
         verbose_output "Total size of this Essential backup: ${essential_backup_size}"
         # check if force_full_backup is not 0
@@ -525,7 +524,6 @@ main() {
             if [[ "$days" -ge $force_full_backup ]] || [[ "$lastbackup" == 0 ]]; then
                 #create full backup
                 backup_type="both"
-                stop_plex
                 create_backup "Full"
                 build_payload
                 field_builder "Runtime" "$run_output" "true"
@@ -533,7 +531,6 @@ main() {
                 field_builder "Total size of all Full backups" "$full_backup_total_size" "false"
                 payload "Full Backup"
                 send_notification
-                start_plex
                 days="0"
                 echo "$current_date" >"$(dirname "$0")"/last_plex_backup.tmp
                 verbose_output "Total size of this Essential backup: ${essential_backup_size}"
@@ -546,7 +543,6 @@ main() {
     else
         #create full backup
         backup_type="full"
-        stop_plex
         create_backup "Full"
         build_payload
         field_builder "Runtime" "$run_output" "true"
@@ -557,11 +553,11 @@ main() {
         field_builder "Days since last Full backup" "$days" "false"
         payload "Full and Essential Backup"
         send_notification
-        start_plex
         echo "$current_date" >"$(dirname "$0")"/last_plex_backup.tmp
         days="0"
         verbose_output "Total size of this Full backup: ${full_backup_size}"
     fi
+    start_plex
     # call cleanup function
     cleanup_function
     # calculate runtime

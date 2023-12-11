@@ -14,7 +14,7 @@
 # License: MIT License
 # ===================================================================================================
 
-script_version = "3.1.1"
+script_version = "3.2.1"
 
 from modules.config import Config
 from modules.logger import setup_logger
@@ -77,6 +77,26 @@ def process_instance(instance_type, instance_name, count, tag_name, unattended, 
     untagged_count = 0
     total_count = 0
     app = StARR(url, api, logger)
+    server_name = app.get_instance_name()
+    data = [
+        [server_name],
+    ]
+    logger.info(create_table(data))
+    data = [
+        [f"{server_name} Settings"]
+    ]
+    logger.debug(create_table(data))
+    logger.debug('*' * 40)
+    logger.debug(f"Script Settings for {instance_name}:")
+    logger.debug(f'{"Count:":<20}{count if count else "Not Set"}')
+    logger.debug(f'{"tag_name:":<20}{tag_name if tag_name else "Not Set"}')
+    logger.debug(f'{"reset: {reset}":<20}{reset if reset else "Not Set"}')
+    logger.debug(f'{"unattended:":<20}{unattended if unattended else "Not Set"}')
+    logger.debug(f'{"URL:":<20}{url if url else "Not Set"}')
+    logger.debug(f'{"API:":<20}{"*" * (len(api) - 5)}{api[-5:] if api else "Not Set"}')
+    logger.debug(f'{"Instance Type:":<20}{instance_type if instance_type else "Not Set"}')
+    logger.debug(f'{"ARR name:":<20}{server_name if instance_name else "Not Set"}')
+    logger.debug('*' * 40 + '\n')
     media = app.get_media()
     if instance_type == "Radarr":
         media_type = "Movies"
@@ -187,25 +207,6 @@ def main():
                     monitored = data.get('monitored', True)
                     status = data.get('status', 'all')
             if script_name and instance_name == script_name:
-                data = [
-                    [instance_type, instance_name],
-                ]
-                logger.info(create_table(data))
-                data = [
-                    [f"{instance_name} Settings"]
-                ]
-                logger.debug(create_table(data))
-                logger.debug('*' * 40)
-                logger.debug(f"Script Settings for {instance_name}:")
-                logger.debug(f'{"Count:":<20}{count if count else "Not Set"}')
-                logger.debug(f'{"tag_name:":<20}{tag_name if tag_name else "Not Set"}')
-                logger.debug(f'{"reset: {reset}":<20}{reset if reset else "Not Set"}')
-                logger.debug(f'{"unattended:":<20}{unattended if unattended else "Not Set"}')
-                logger.debug(f'{"monitored:":<20}{monitored if monitored else "Not Set"}')
-                logger.debug(f'{"status:":<20}{status if status else "Not Set"}')
-                logger.debug(f'{"URL:":<20}{url if url else "Not Set"}')
-                logger.debug(f'{"API:":<20}{"*" * (len(api) - 5)}{api[-5:] if api else "Not Set"}')
-                logger.debug('*' * 40 + '\n')
                 process_instance(instance_type, instance_name, count, tag_name, unattended, status, monitored, url, api, config.dry_run, reset)
 
 if __name__ == '__main__':

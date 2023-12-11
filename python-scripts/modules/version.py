@@ -32,6 +32,9 @@ def version(script_name, script_version, arrpy_py_version, logger, config):
     if arrpy_py_version:
         arrpy_py_version_int = int(arrpy_py_version.replace(".", ""))
         github_arrpy_py_version_int = int(github_arrpy_py_version.replace(".", ""))
+    else:
+        arrpy_py_version_int = None
+        github_arrpy_py_version_int = None
     # Compare the script version with the GitHub version
     data = [
         ["Script Version Data"]

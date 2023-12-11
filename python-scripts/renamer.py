@@ -641,7 +641,6 @@ def main():
     logger.debug(f'{"Action type:":<20}{config.action_type}')
     logger.debug(f'{"Print only renames:":<20}{config.print_only_renames}')
     logger.debug(f'*' * 40 + '\n')
-    exit()
     if config.dry_run:
         data = [
             ["Dry Run"],

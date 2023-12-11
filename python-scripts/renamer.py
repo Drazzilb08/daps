@@ -8,20 +8,20 @@
 #                                                    |___/
 # ===================================================================================================
 # Author: Drazzilb
-# Description: This script will check for unmatched assets in your Plex library.
-#              It will output the results to a file in the logs folder.
+# Description: This script will rename your posters to match Plex-Meta-Manager's naming scheme.
 # Usage: python3 renamer.py 
 # Requirements: requests, tqdm, fuzzywuzzy, pyyaml
 # License: MIT License
 # ===================================================================================================
 
-script_version = "6.1.2"
+script_version = "6.2.2"
 
 from modules.arrpy import arrpy_py_version
 from plexapi.exceptions import BadRequest
 from modules.logger import setup_logger
 from plexapi.server import PlexServer
 from modules.version import version
+from modules.formatting import create_table
 from modules.discord import discord, field_builder
 from modules.config import Config
 from modules.arrpy import StARR
@@ -620,39 +620,34 @@ def notification(file_list):
                 continue
             fields = field_builder(file_list, name="Renamed Posters")
             for field_number, field in fields.items():
-                response = discord(field, logger, config, script_name, description=f"Number of posters added {len(file_list)}", color=0x00FF00, content=None)
-                if response:
-                    logger.info(f"Discord notification sent for {instance_type}")
-                else:
-                    logger.error(f"Discord notification failed for {instance_type}")
+                discord(field, logger, config, script_name, description=f"Number of posters added {len(file_list)}", color=0x00FF00, content=None)
         else:
             return
 
 def main():
-    logger.debug('*' * 40)
-    logger.debug(f'* {"Script Input Validated":^36} *')
-    logger.debug('*' * 40)
-    logger.debug(f'{" Script Settings ":*^40}')
-    logger.debug(f'Dry_run: {config.dry_run}')
-    logger.debug(f"Log Level: {config.log_level}")
-    logger.debug(f"Asset folder: {config.asset_folders}")
-    logger.debug(f"library_names: {config.library_names}")
-    logger.debug(f"source_dir: {config.source_dir}")
-    logger.debug(f"source_overrides: {config.source_overrides}")
-    logger.debug(f"destination_dir: {config.destination_dir}")
-    logger.debug(f"collection_threshold: {config.collection_threshold}")
-    logger.debug(f"action_type: {config.action_type}")
-    logger.debug(f"print_only_renames: {config.print_only_renames}")
+    data = [
+        ["Script Settings"],
+    ]
+    logger.debug(create_table(data))
     logger.debug(f'*' * 40)
-    logger.debug('')
-
+    logger.debug(f'{"Dry_run:":<20}{config.dry_run if config.dry_run else "False"}')
+    logger.debug(f'{"Log level:":<20}{config.log_level if config.log_level else "INFO"}')
+    logger.debug(f'{"Asset folders:":<20}{config.asset_folders if config.asset_folders else "False"}')
+    logger.debug(f'{"Library names:":<20}{config.library_names if config.library_names else "Not set"}')
+    logger.debug(f'{"Source dir:":<20}{config.source_dir if config.source_dir else "Not set"}')
+    logger.debug(f'{"Source overrides:":<20}{config.source_overrides if config.source_overrides else "Not set"}')
+    logger.debug(f'{"Destination dir:":<20}{config.destination_dir if config.destination_dir else "Not set"}')
+    logger.debug(f'{"Threshold:":<20}{config.collection_threshold}')
+    logger.debug(f'{"Action type:":<20}{config.action_type}')
+    logger.debug(f'{"Print only renames:":<20}{config.print_only_renames}')
+    logger.debug(f'*' * 40 + '\n')
+    exit()
     if config.dry_run:
-        logger.info('*' * 40)
-        logger.info(f'* {"Dry_run Activated":^36} *')
-        logger.info('*' * 40)
-        logger.info(f'* {" NO CHANGES WILL BE MADE ":^36} *')
-        logger.info('*' * 40)
-        logger.info('')
+        data = [
+            ["Dry Run"],
+            ["NO CHANGES WILL BE MADE"]
+        ]
+        logger.info(create_table(data))
 
     asset_files = get_assets_files(config.source_dir, config.source_overrides)
     
@@ -680,13 +675,15 @@ def main():
             elif instance_type == "Plex":
                 script_name = instance_name
             if script_name and instance_name == script_name:
-                logger.info('*' * 40)
-                logger.info(f'* {instance_name:^36} *')
-                logger.info('*' * 40)
-                logger.debug(f'{" Settings ":*^40}')
-                logger.debug(f"Instance Name: {instance_name}")
-                logger.debug(f"URL: {url}")
-                logger.debug(f"API Key: {'<redacted>' if api else 'None'}")
+                data = [
+                    [instance_type],
+                ]
+                logger.info(create_table(data))
+                data = [
+                    ["Instance Name", "URL", "API Key"],
+                    [instance_name, url, '<redacted>' if api else 'None']
+                ]
+                logger.debug(create_table(data))
                 final_output, file_list = process_instance(instance_type, instance_name, url, api, final_output, asset_files)
                 discord_output[instance_name] = file_list
                 print_output(final_output)

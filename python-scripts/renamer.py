@@ -675,7 +675,7 @@ def main():
                 script_name = instance_name
             if script_name and instance_name == script_name:
                 data = [
-                    [instance_type],
+                    [instance_type, instance_name],
                 ]
                 logger.info(create_table(data))
                 data = [

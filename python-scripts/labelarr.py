@@ -12,12 +12,15 @@
 # License: MIT License
 # ======================================================================================
 
-script_version = "2.1.0"
+script_version = "2.2.0"
 
-from modules.arrpy import arrpy_py_version, StARR
 from plexapi.exceptions import BadRequest, NotFound
+from modules.discord import discord, field_builder
+from modules.arrpy import arrpy_py_version, StARR
+from modules.formatting import create_table
 from modules.logger import setup_logger
 from plexapi.server import PlexServer
+from modules.version import version
 from modules.config import Config
 from unidecode import unidecode
 from tqdm import tqdm
@@ -25,8 +28,6 @@ import html
 import json
 import time
 import re
-from modules.version import version
-from modules.discord import discord
 
 script_name = "labelarr"
 config = Config(script_name)
@@ -79,23 +80,25 @@ def get_plex_data(plex, instance_type):
 
 def sync_labels_to_plex(plex, media, instance_type, app, user_labels, dry_run, plex_data):
     logger.debug("Syncing labels to Plex")
+    message = []
     items_to_sync = {}
-    logger.info(f"Processing '{instance_type}' data")
     retries = 0
-    tag_ids = []
     user_labels = [label.lower() for label in user_labels]
+    label_to_tag = {}
     while retries < 3:
-        for item in user_labels:
-            tag_id = app.get_tag_id_from_name(item)
+        for label in user_labels:
+            tag_id = app.get_tag_id_from_name(label)
             if not tag_id:
-                logger.info(f"Tag ID not found for '{item}'. Creating tag...")
-                tag_id = app.create_tag(item)
-                logger.debug(f"Tag: {item} | Tag ID: {tag_id}")
-                tag_ids.append(tag_id)
+                logger.info(f"Tag ID not found for '{label}'. Creating tag...")
+                tag_id = app.create_tag(label)
+                logger.debug(f"Tag: {label} | Tag ID: {tag_id}")
+                if tag_id:
+                    label_to_tag[label] = tag_id
             else:
-                logger.debug(f"Tag: {item} | Tag ID: {tag_id}")
-                tag_ids.append(tag_id)
-        if tag_ids:
+                logger.debug(f"Tag: {label} | Tag ID: {tag_id}")
+                label_to_tag[label] = tag_id
+        # match labels to tags
+        if label_to_tag:
             retries = 3
             for item in media:
                 title = item['title']
@@ -108,29 +111,16 @@ def sync_labels_to_plex(plex, media, instance_type, app, user_labels, dry_run, p
                     plex_labels = plex_data[plex_item]['labels']
                     normalized_plex_title = normalize_titles(plex_title)
                     if normalized_title == normalized_plex_title and year == plex_year:
-                        if normalized_title == "earth":
-                            print(f"Title: {title}")
-                            print(f"Normalized Title: {normalized_title}")
-                            print(f"Year: {year}")
-                            print(f"Tags: {tags}")
-                            print(f"Plex Title: {plex_title}")
-                            print(f"Normalized Plex Title: {normalized_plex_title}")
-                            print(f"Plex Year: {plex_year}")
-                            print(f"Plex Labels: {plex_labels}")
-                            print(f"Tag IDs: {tag_ids}")
-                            print(f"User Labels: {user_labels}")
-                        for label in user_labels:
-                            for tag_id in tag_ids:
-                                if tag_id in tags and label not in plex_labels:
-                                    if title not in items_to_sync:
-                                        items_to_sync[title] = {'title': plex_title, 'year': plex_year, 'add_remove': "add", 'labels': []}
-                                    if label not in items_to_sync[title]['labels']:  # Check if label is not already in items_to_sync
-                                        items_to_sync[title]['labels'].append(label)
-                                # Check if label is not in ARR tags and is in Plex labels
-                                elif tag_id not in tags and label in plex_labels:
-                                    if title not in items_to_sync:
-                                        items_to_sync[title] = {'title': plex_title, 'year': plex_year, 'add_remove': "remove", 'labels': []}
-                                    if label not in items_to_sync[title]['labels']:  # Check if label is not already in items_to_sync
+                        for label, tag_id in label_to_tag.items():
+                            if tag_id in tags and label not in plex_labels:
+                                if title not in items_to_sync:
+                                    items_to_sync[title] = {'title': plex_title, 'year': plex_year, 'add_remove': "add", 'labels': []}
+                                if label not in items_to_sync[title]['labels']:
+                                    items_to_sync[title]['labels'].append(label)
+                            elif tag_id not in tags and label in plex_labels:
+                                if title not in items_to_sync:
+                                    items_to_sync[title] = {'title': plex_title, 'year': plex_year, 'add_remove': "remove", 'labels': []}
+                                if label not in items_to_sync[title]['labels']:
                                         items_to_sync[title]['labels'].append(label)
         else:
             logger.error(f"Label: {label} | Tag ID: {tag_id} | Tag ID not found in {instance_type} | Retrying...")
@@ -153,14 +143,19 @@ def sync_labels_to_plex(plex, media, instance_type, app, user_labels, dry_run, p
                     if add_remove == "add":
                         for label in labels:  # Iterate over the labels
                             plex.library.search(title=title, year=year, libtype=type)[0].addLabel(label)
-                            logger.info(f"Label: {label} | Title: {title} | Year: {year} | Add/Remove: {add_remove}")
+                            message.append(f"Label: {label} | Title: {title} | Year: {year} | Add/Remove: {add_remove}")
                     elif add_remove == "remove":
                         for label in labels:  # Iterate over the labels
                             plex.library.search(title=title, year=year, libtype=type)[0].removeLabel(label)
-                            logger.info(f"Label: {label} | Title: {title} | Year: {year} | Add/Remove: {add_remove}")
+                            message.append(f"Label: {label} | Title: {title} | Year: {year} | Add/Remove: {add_remove}")
                 except NotFound:
                     logger.error(f"Label: {label} | Title: {title} | Year: {year} | Add/Remove: {add_remove} | Title not found in Plex")
                     continue
+            else:
+                message.append(f"DRY RUN: Label: {label} | Title: {title} | Year: {year} | Add/Remove: {add_remove}")
+    else:
+        logger.info("No items to sync")
+    return message
 
 def sync_labels_from_plex(plex, media, instance_type, app, labels, dry_run, plex_data):
     items_to_sync = {'add': [], 'remove': []}
@@ -212,30 +207,37 @@ def sync_labels_from_plex(plex, media, instance_type, app, labels, dry_run, plex
                     if tags and media_ids:
                         if not dry_run:
                             app.remove_tags(media_ids, tags)
-    if message:
-        for msg in message:
-            logger.info(msg)
+    return message
+
+def handle_messages(final_output):
+    if final_output:
+        for message in final_output:
+            logger.info(message)
+
+def notification(final_output):
+    fields = field_builder(final_output, name="Tagged items")
+    if fields:
+        for field_number, field in fields.items():
+            discord(field, logger, config, script_name, description=None, color=0xFFA500, content=None)
     
 def main():
-    logger.info("Starting Labelarr")
-    logger.debug('*' * 40)
-    logger.debug(f'* {"Script Input Validated":^36} *')
-    logger.debug('*' * 40)
-    logger.debug(f'{" Script Settings ":*^40}')
-    logger.debug(f'Dry_run: {config.dry_run}')
-    logger.debug(f"Log Level: {config.log_level}")
-    logger.debug(f"Labels: {config.labels}")
-    logger.debug(f'*' * 40)
-    logger.debug('')
+    data = [
+        ["Script Settings"],
+    ]
+    logger.debug(create_table(data))
+    logger.debug(f'{"Dry_run:":<20}{config.dry_run if config.dry_run else "False"}')
+    logger.debug(f'{"Log level:":<20}{config.log_level if config.log_level else "INFO"}')
+    logger.debug(f'{"Labels:":<20}{config.labels if config.labels else "Not Set"}')
+    logger.debug(f'{"Add From Plex:":<20}{config.add_from_plex if config.add_from_plex else "False"}')
+    logger.debug(f'{"Library Names:":<20}{config.library_names if config.library_names else "Not Set"}')
     dry_run = config.dry_run
     labels = config.labels
     if config.dry_run:
-        logger.info('*' * 40)
-        logger.info(f'* {"Dry_run Activated":^36} *')
-        logger.info('*' * 40)
-        logger.info(f'* {" NO CHANGES WILL BE MADE ":^36} *')
-        logger.info('*' * 40)
-        logger.info('')
+        data = [
+            ["Dry Run"],
+            ["NO CHANGES WILL BE MADE"]
+        ]
+        logger.info(create_table(data))
     if config.plex_data:
         for data in config.plex_data:
             api_key = data.get('api', '')
@@ -249,7 +251,7 @@ def main():
         'Radarr': config.radarr_data,
         'Sonarr': config.sonarr_data
     }
-
+    final_output = []
     for instance_type, instances in instance_data.items():
         for instance in instances:
             instance_name = instance['name']
@@ -265,29 +267,21 @@ def main():
                 if data:
                     script_name = data['name']
             if script_name and instance_name == script_name:
-                left_variable = instance_type
-                right_variable = instance_name
-
-                total_width = 40  # Total width of the box
-                variable_width = (total_width - 4) // 2  # Calculate width for each side, considering borders and spaces
-
-                left_side = f'* {left_variable.center(variable_width - 1)}'
-                right_side = f'{right_variable.center(variable_width - 2)} *'
-
-                logger.info('*' * total_width)
-                logger.info(left_side + ' | ' + right_side)
-                logger.info('*' * total_width)
-
+                data = [
+                    ["Script Name", "Instance Name"],
+                    [script_name, instance_name]
+                ]
+                logger.info(create_table(data))
                 logger.debug(f"url: {url}")
                 logger.debug(f"api: {'*' * (len(api) - 5)}{api[-5:]}")
                 app = StARR(url, api, logger)
                 media = app.get_media()
                 plex_data = get_plex_data(plex, instance_type)
                 if config.add_from_plex:
-                    sync_labels_from_plex(plex, media, instance_type, app, labels, dry_run, plex_data)
+                    final_output.extend(sync_labels_from_plex(plex, media, instance_type, app, labels, dry_run, plex_data))
                 else:
-                    sync_labels_to_plex(plex, media, instance_type, app, labels, dry_run, plex_data)
-    logger.info("Labelarr finished")
+                    final_output.extend(sync_labels_to_plex(plex, media, instance_type, app, labels, dry_run, plex_data))
+    handle_messages(final_output)
 
 if __name__ == "__main__":
     start_time = time.time()

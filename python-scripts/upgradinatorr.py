@@ -14,7 +14,7 @@
 # License: MIT License
 # ===================================================================================================
 
-script_version = "3.0.1"
+script_version = "3.1.1"
 
 from modules.config import Config
 from modules.logger import setup_logger
@@ -22,6 +22,7 @@ from modules.arrpy import StARR
 from modules.arrpy import arrpy_py_version
 from modules.version import version
 from modules.discord import discord
+from modules.formatting import create_table
 
 script_name = "upgradinatorr"
 config = Config(script_name)
@@ -140,30 +141,19 @@ def process_instance(instance_type, instance_name, count, tag_name, unattended, 
         logger.info(f'Total {media_type}: {total_count}, Tagged {media_type}: {tagged_count} ({tagged_percent:.2f}%), Untagged {media_type}: {untagged_count} ({untagged_percent:.2f}%)\n')
 
 def main():
-    """
-    Main function for the script.
-    """
-    count = 0
-    tag_name = None
-    unattended = None
-    status = None
-    monitored = None
-    reset = False
-    logger.debug('*' * 40)
-    logger.debug(f'* {"Script Input Validated":^36} *')
-    logger.debug('*' * 40)
-    logger.debug(f'{" Script Settings ":*^40}')
-    logger.debug(f'Dry_run: {config.dry_run}')
-    logger.debug(f"Log Level: {config.log_level}")
-    logger.debug(f'*' * 40)
-    logger.debug('')
+    data = [
+        ["Script Settings"]
+    ]
+    logger.debug(create_table(data))
+    logger.debug(f'{"Dry_run:":<20}{config.dry_run if config.dry_run else "False"}')
+    logger.debug(f'{"Log level:":<20}{config.log_level if config.log_level else "INFO"}')
+    logger.debug(f'*' * 40 + '\n')
     if config.dry_run:
-        logger.info('*' * 40)
-        logger.info(f'* {"Dry_run Activated":^36} *')
-        logger.info('*' * 40)
-        logger.info(f'* {" NO CHANGES WILL BE MADE ":^36} *')
-        logger.info('*' * 40)
-        logger.info('')
+        data = [
+            ["Dry Run"],
+            ["NO CHANGES WILL BE MADE"]
+        ]
+        logger.info(create_table(data))
     instance_data = {
         'Radarr': config.radarr_data,
         'Sonarr': config.sonarr_data
@@ -197,22 +187,21 @@ def main():
                     monitored = data.get('monitored', True)
                     status = data.get('status', 'all')
             if script_name and instance_name == script_name:
+                data = [
+                    [f"{instance_name} Settings"]
+                ]
+                logger.debug(create_table(data))
                 logger.debug('*' * 40)
                 logger.debug(f"Script Settings for {instance_name}:")
-                logger.debug(f"count: {count}")
-                logger.debug(f"tag_name: {tag_name}")
-                logger.debug(f"reset: {reset}")
-                logger.debug(f"unattended: {unattended}")
-                logger.debug(f"status: {status}")
-                logger.debug(f"monitored: {monitored}")
-                logger.debug('*' * 40)
-                logger.info('*' * 40)
-                logger.info(f'* {instance_name:^36} *')
-                logger.info('*' * 40)
-                logger.debug(f'{" Settings ":*^40}')
-                logger.debug(f"Instance Name: {instance_name}")
-                logger.debug(f"URL: {url}")
-                logger.debug(f"api: {'*' * (len(api) - 5)}{api[-5:]}")
+                logger.debug(f'{"Count:":<20}{count if count else "Not Set"}')
+                logger.debug(f'{"tag_name:":<20}{tag_name if tag_name else "Not Set"}')
+                logger.debug(f'{"reset: {reset}":<20}{reset if reset else "Not Set"}')
+                logger.debug(f'{"unattended:":<20}{unattended if unattended else "Not Set"}')
+                logger.debug(f'{"monitored:":<20}{monitored if monitored else "Not Set"}')
+                logger.debug(f'{"status:":<20}{status if status else "Not Set"}')
+                logger.debug(f'{"URL:":<20}{url if url else "Not Set"}')
+                logger.debug(f'{"API:":<20}{"*" * (len(api) - 5)}{api[-5:] if api else "Not Set"}')
+                logger.debug('*' * 40 + '\n')
                 process_instance(instance_type, instance_name, count, tag_name, unattended, status, monitored, url, api, config.dry_run, reset)
 
 if __name__ == '__main__':

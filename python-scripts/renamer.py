@@ -41,7 +41,7 @@ import re
 script_name = "renamer"
 config = Config(script_name)
 logger = setup_logger(config.log_level, script_name)
-# version(script_name, script_version, arrpy_py_version, logger, config)
+version(script_name, script_version, arrpy_py_version, logger, config)
 
 year_regex = re.compile(r"\((19|20)\d{2}\)")
 illegal_chars_regex = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')

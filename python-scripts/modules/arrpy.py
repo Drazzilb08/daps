@@ -3,7 +3,7 @@ import requests
 import logging
 import json
 
-arrpy_py_version = "1.0.7"
+arrpy_py_version = "1.1.7"
 
 logging.getLogger("qbittorrentapi").setLevel(logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)
@@ -46,6 +46,15 @@ class StARR:
             self.logger.error("Exiting script")
             sys.exit(1)
     
+    def get_instance_name(self):
+        """
+        Get the name of the ARR instance.
+        Returns:
+            str: The name of the ARR instance.
+        """
+        status = self.get_system_status()
+        return status.get("instanceName")
+
     def get_system_status(self):
         """
         Get the system status of the ARR instance.

@@ -14,7 +14,7 @@
 # License: MIT License
 # ===================================================================================================
 
-script_version = "6.2.2"
+script_version = "6.3.2"
 
 from modules.arrpy import arrpy_py_version
 from plexapi.exceptions import BadRequest
@@ -587,9 +587,31 @@ def process_instance(instance_type, instance_name, url, api, final_output, asset
             message = f"Error: No library names specified for {instance_name}"
             final_output.append(message)
             return final_output, None
+        # get freindlyname of plex server
+        server_name = app.friendlyName
+        data = [
+        [f"Plex Server: {server_name}"],
+        ]
+        logger.info(create_table(data))
     else:
         app = StARR(url, api, logger)
         media = app.get_media()
+        server_name = app.get_instance_name()
+        data = [
+            [server_name],
+        ]
+        logger.info(create_table(data))
+    data = [
+        [f"{server_name} Settings"]
+    ]
+    logger.debug(create_table(data))
+    logger.debug('*' * 40)
+    logger.debug(f"Script Settings for {instance_name}:")
+    logger.debug(f'{"URL:":<20}{url if url else "Not Set"}')
+    logger.debug(f'{"API:":<20}{"*" * (len(api) - 5)}{api[-5:] if api else "Not Set"}')
+    logger.debug(f'{"Instance Type:":<20}{instance_type if instance_type else "Not Set"}')
+    logger.debug(f'{"ARR name:":<20}{server_name if instance_name else "Not Set"}')
+    logger.debug('*' * 40 + '\n')
     matched_media = []
     if instance_type == "Plex":
         matched_media = match_collection(collection_names, asset_files, config.collection_threshold)
@@ -674,15 +696,6 @@ def main():
             elif instance_type == "Plex":
                 script_name = instance_name
             if script_name and instance_name == script_name:
-                data = [
-                    [instance_type, instance_name],
-                ]
-                logger.info(create_table(data))
-                data = [
-                    ["Instance Name", "URL", "API Key"],
-                    [instance_name, url, '<redacted>' if api else 'None']
-                ]
-                logger.debug(create_table(data))
                 final_output, file_list = process_instance(instance_type, instance_name, url, api, final_output, asset_files)
                 discord_output[instance_name] = file_list
                 print_output(final_output)

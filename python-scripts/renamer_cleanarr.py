@@ -14,7 +14,7 @@
 #  License: MIT License
 # ===========================================================================================================
 
-script_version = "2.2.0"
+script_version = "2.2.1"
 
 import os
 import re
@@ -187,7 +187,8 @@ def remove_assets(asset_folders, unmatched_assets, dry_run):
                     if not dry_run:
                         os.remove(os.path.join(asset['source'], asset['files']))
                         messages.append(f"Removed Path: {os.path.join(asset['source'], asset['files'])}")
-                    messages.append(f"Would have removed {os.path.join(asset['source'], asset['files'])}")
+                    else:
+                        messages.append(f"Would have removed {os.path.join(asset['source'], asset['files'])}")
             else:
                 if asset_folders:
                     for root, dirs, files in os.walk(asset['source']):
@@ -197,7 +198,8 @@ def remove_assets(asset_folders, unmatched_assets, dry_run):
                                 if not dry_run:
                                     shutil.rmtree(os.path.join(root, dir))
                                     messages.append(f"Removed {dir}")
-                                messages.append(f"Would have removed {dir}")
+                                else:
+                                    messages.append(f"Would have removed {dir}")
                 else:
                     # if files is a list then it is a series
                     if isinstance(asset['files'], list):
@@ -206,12 +208,16 @@ def remove_assets(asset_folders, unmatched_assets, dry_run):
                             logger.debug(f"Removing {os.path.join(asset['source'], file)}")
                             if not dry_run:
                                 os.remove(file_path)
-                            messages.append(f"Removed Path: {os.path.join(asset['source'], file)}")
+                                messages.append(f"Removed Path: {os.path.join(asset['source'], file)}")
+                            else: 
+                                messages.append(f"Would have removed {os.path.join(asset['source'], file)}")
                     else:
                         logger.debug(f"Removing {os.path.join(asset['source'], asset['files'])}")
                         if not dry_run:
                             os.remove(os.path.join(asset['source'], asset['files']))
-                        messages.append(f"Removed Path: {os.path.join(asset['source'], asset['files'])}")
+                            messages.append(f"Removed Path: {os.path.join(asset['source'], asset['files'])}")
+                        else:
+                            messages.append(f"Would have removed {os.path.join(asset['source'], asset['files'])}")
     return messages
 
 def print_output(messages):

@@ -21,7 +21,7 @@
 #  License: MIT License
 # ===========================================================================================================
 
-script_version = "5.0.1"
+script_version = "5.0.2"
 
 import os
 import re
@@ -34,14 +34,14 @@ from unidecode import unidecode
 from tqdm import tqdm
 import json
 import logging
-from modules.arrpy import arrpy_py_version
 from modules.version import version
 from modules.discord import discord
+from modules.formatting import create_table
 
-script_name = "unmatched-assets"
+script_name = "unmatched-asset"
 config = Config(script_name)
 logger = setup_logger(config.log_level, script_name)
-version(script_name, script_version, arrpy_py_version, logger, config)
+version(script_name, script_version, arrpy_py_version=None, logger=logger, config=config)
 
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger('urllib3').setLevel(logging.WARNING)
@@ -305,21 +305,17 @@ def main():
     """
     Main function for the script.
     """
-    url = None
-    api_key = None
-    app = None
-    library = None
-    logger.debug('*' * 40)
-    logger.debug(f'* {"Script Settings":^36} *')
-    logger.debug('*' * 40)
+    data = [
+        ["Script Settings"]
+    ]
+    logger.debug(create_table(data))
     logger.debug(f'{"Log level:":<20}{config.log_level if config.log_level else "Not set"}')
-    logger.debug(f"{'Asset Folders: ':<20}{config.asset_folders}")
+    logger.debug(f'{"Asset Folders:":<20}{config.asset_folders if config.asset_folders else "Not set"}')
     logger.debug(f'{"Assets path:":<20}{config.assets_path if config.assets_path else "Not set"}')
     logger.debug(f'{"Media paths:":<20}{config.media_paths if config.media_paths else "Not set"}')
     logger.debug(f'{"Library names:":<20}{config.library_names if config.library_names else "Not set"}')
     logger.debug(f'{"Ignore collections:":<20}{config.ignore_collections if config.ignore_collections else "Not set"}')
-    logger.debug('*' * 40)
-    logger.debug('')
+    logger.debug('*' * 40 + '\n')
     if config.plex_data:
         for data in config.plex_data:
             api_key = data.get('api', '')

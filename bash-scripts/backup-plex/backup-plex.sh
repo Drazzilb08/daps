@@ -9,7 +9,7 @@
 #                                                   | |                        | |
 #                                                   |_|                        |_|
 # ====================================================
-# Version: 5.0.0
+# Version: 5.0.1
 # backup-plex - A script to backup your plex database and media
 # Author: Drazzilb
 # License: MIT License
@@ -20,8 +20,9 @@ config_file=""
 # <----- Do not edit below this point ----->
 
 config_file() {
-    shutdown_plex=false
     debug=false
+    shutdown_plex=false
+
     if [ -z "$config_file" ]; then
         script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
         config_file="$script_dir/backup-plex.conf"
@@ -314,13 +315,13 @@ create_backup() {
     # Get the type of backup (Essential or Full) from the first argument
     local folder_type=$1
     verbose_output "Creating $folder_type backup... please wait"
+    # remove leading slash from source_dir
+    source_dir=${source_dir%/}
     # Set start time
     start=$(date +%s)
     # Get absolute path of the destination directory
     dest=$(realpath -s "$destination_dir")
     # Change to the parent directory of the source directory
-    cd "$source_dir"/.. || exit
-    folder_name=$(basename "$source_dir")
     now="$(date +"%H.%M")"
     # Create directory with backup type and current date in the destination directory
     backup_path="$dest/$folder_type/$(date +%F)@$now"
@@ -328,17 +329,30 @@ create_backup() {
     # Set the backup source and exclude directories based on the type of backup
     if [ "$folder_type" == "Essential" ]; then
         backup_source=(
-            "$folder_name/Plug-in Support/Databases"
-            "$folder_name/Plug-in Support/Preferences"
-            "$folder_name/Preferences.xml"
+            "$source_dir/Plug-in Support/Databases"
+            "$source_dir/Plug-in Support/Preferences"
+            "$source_dir/Preferences.xml"
         )
         exclude=()
     else
-        backup_source=("$folder_name")
+        backup_source=("$source_dir")
         exclude=(
             "--exclude=$source_dir/Cache"
             "--exclude=$source_dir/Codecs"
         )
+    fi
+    if [ "$debug" == "true" ]; then
+        echo "Source: $source_dir"
+        echo "Destination: $destination_dir"
+        echo "Dest: $dest"
+        echo "Backup Type: $folder_type"
+        echo "Backup Path: $backup_path"
+        for element in "${backup_source[@]}"; do
+            echo "Backup Source: $element"
+        done
+        for element in "${exclude[@]}"; do
+            echo "Exclude: $element"
+        done
     fi
     # Check if the compress flag is set, and create the archive accordingly
     if [ "$compress" == "true" ]; then

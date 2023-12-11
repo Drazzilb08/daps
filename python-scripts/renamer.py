@@ -15,7 +15,7 @@
 # License: MIT License
 # ===================================================================================================
 
-script_version = "6.1.1"
+script_version = "6.1.2"
 
 from modules.arrpy import arrpy_py_version
 from plexapi.exceptions import BadRequest
@@ -379,6 +379,9 @@ def rename_file(matched_media, destination_dir, dry_run, action_type, print_only
                     messages.extend(processsed_file_info)
                     if not asset_folders:
                         discord_messages.extend(discord_message)
+            if not asset_folders:
+                for i in discord_messages:
+                    discord_messages = [i.split('.')[0] for i in discord_messages]
     return messages, discord_messages
 
 def process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, arrow):

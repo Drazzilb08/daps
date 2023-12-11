@@ -127,7 +127,6 @@ def field_builder(discord_messages, name):
     if current_message:
         modified_discord_messages.append(current_message)
     discord_messages_dict = {}
-    print(f"len(modified_discord_messages): {len(modified_discord_messages)}")
     field_count = 1
     if len(modified_discord_messages) > 5:
         for i in range(0, len(modified_discord_messages), 5):

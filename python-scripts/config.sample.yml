@@ -36,9 +36,13 @@ global:
     # url is the url for the plex instance
       url: http://localhost:32400
   qbittorrent:
+    # name is the name of the qbittorrent instance, this is used to reference the instance in other scripts
     - name: qbittorrent_1
-      url: http://
+    # url is the url for the qbittorrent instance
+      url: http://\
+    # username is the username for the qbittorrent instance
       username: username
+    # password is the password for the qbittorrent instance
       password: password
     - name: qbittorrent_2
       url: http://
@@ -88,18 +92,18 @@ upgradinatorr:
   log_level: info
   dry_run: true
   radarr:
-    - name: radarr_2
-      count:
-      monitored: true
-      status: released
-      tag_name:
-      unattended: false
-      reset: false
+    - name: radarr_1 # This is referenced to the instance name in the global section
+      count: 2 # This is the number of movies you want to have upgradinatorr search (Set a low number, 1-5 is a good number)
+      monitored: true # Options: true or false
+      status: released 
+      tag_name: checked # Set the tag_name to the tag you want to use to track movies that have been searched for
+      unattended: false # Options: true or false, set if you want upgradinatorr to reset tags when all movies have been searched for
+      reset: false # Options: true or false, set if you want upgradinatorr to reset tags when all movies have been searched for
   sonarr:
-    - name: sonarr_1
-      count:
+    - name: sonarr_1 # This is referenced to the instance name in the global section
+      count: 2 # This is the number of series you want to have upgradinatorr search (Set a low number, 1-3 is a good number for series)
       monitored: true
-      status:
+      status: 
         - continuing
         - ended
       tag_name:

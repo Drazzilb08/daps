@@ -53,7 +53,7 @@ def discord(fields, logger, config, script_name, description, color, content):
                                     "description": f"{description}",
                                     "content": f"{content}",
                                     "fields": fields,
-                                    "footer": f"{random_joke}",
+                                    "footer": f"Powered by: Drazzilb | {random_joke}",
                                 },
                                 "ids": {
                                     "channel": f"{channel_id}",
@@ -81,7 +81,7 @@ def discord(fields, logger, config, script_name, description, color, content):
                                 "content": f"{content}",
                                 "fields": fields,
                                 "footer": {
-                                    "text": f"{random_joke}"
+                                    "text": f"Powered by: Drazzilb | {random_joke}"
                                 },
                                 "timestamp": timestamp,
                             }
@@ -98,7 +98,8 @@ def discord(fields, logger, config, script_name, description, color, content):
                 logger.debug(json.dumps(payload, indent=4))
                 response = requests.post(webhook, json=payload)
                 if response.status_code == 204 or response.status_code == 200:
-                    return True
+                    logger.debug("Discord notification sent.")
+                    return
                 else:
                     logger.error(f"Webhook failed: {webhook}")
                     logger.error(f"Discord notification failed with status code: {response.status_code} with response: {response.text}")
@@ -106,10 +107,10 @@ def discord(fields, logger, config, script_name, description, color, content):
                 logger.error("Payload is empty. Cannot send Discord notification.")
         except Exception as e:
             logger.error(f"Error: {e}")
-            return False
+            return
     else:
         logger.debug(f"Discord webhook is missing. Cannot send Discord notification.")
-        return False
+        return
 
 def content_builder(discord_messages):
     pass

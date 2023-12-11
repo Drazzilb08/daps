@@ -14,7 +14,7 @@
 # License: MIT License
 # ===================================================================================================
 
-script_version = "3.2.1"
+script_version = "3.2.2"
 
 from modules.config import Config
 from modules.logger import setup_logger
@@ -123,17 +123,17 @@ def process_instance(instance_type, instance_name, count, tag_name, unattended, 
         if not dry_run:
             app.remove_tags(all_media_ids, arr_tag_id)
             logger.info(f'All of {instance_name} have had the tag {tag_name} removed.')
-            discord(None, logger, config, script_name, description=f"All of {instance_name} have had the tag {tag_name} removed.", color=0xFFA500, url=None)
+            discord(None, logger, config, script_name, description=f"All of {instance_name} have had the tag {tag_name} removed.", color=0xFFA500, content=None)
             all_tagged = False
         else:
             logger.info(f'All of {instance_name} would have had the tag {tag_name} removed.')
-            discord(None, logger, config, script_name, description=f"All of {instance_name} would have had the tag {tag_name} removed.", color=0xFFA500, url=None)
+            discord(None, logger, config, script_name, description=f"All of {instance_name} would have had the tag {tag_name} removed.", color=0xFFA500, content=None)
             all_tagged = False
     elif all_tagged and not unattended:
         logger.info(f'All of {instance_name} has been tagged with {tag_name}')
         logger.info("If you would like to remove the tag and re-run the script, please set reset to True or set unattended to True.")
         logger.info(f"Skipping {instance_name}...")
-        discord(None, logger, config, script_name, description=f"All of {instance_name} has been tagged with {tag_name}, please set reset to True or set unattended to True to remove the tag and re-run the script, {instance_name} will be skipped.", color=0xFFA500, url=None)
+        discord(None, logger, config, script_name, description=f"All of {instance_name} has been tagged with {tag_name}, please set reset to True or set unattended to True to remove the tag and re-run the script, {instance_name} will be skipped.", color=0xFFA500, content=None)
         return
     if not all_tagged:
         if isinstance(status, str):

@@ -188,6 +188,10 @@ def main():
                     status = data.get('status', 'all')
             if script_name and instance_name == script_name:
                 data = [
+                    [instance_type, instance_name],
+                ]
+                logger.info(create_table(data))
+                data = [
                     [f"{instance_name} Settings"]
                 ]
                 logger.debug(create_table(data))

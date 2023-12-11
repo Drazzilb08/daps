@@ -15,7 +15,7 @@
 # License: MIT License
 # ===================================================================================================
 
-script_version = "6.1.0"
+script_version = "6.1.1"
 
 from modules.arrpy import arrpy_py_version
 from plexapi.exceptions import BadRequest
@@ -41,7 +41,7 @@ import re
 script_name = "renamer"
 config = Config(script_name)
 logger = setup_logger(config.log_level, script_name)
-version(script_name, script_version, arrpy_py_version, logger, config)
+# version(script_name, script_version, arrpy_py_version, logger, config)
 
 year_regex = re.compile(r"\((19|20)\d{2}\)")
 illegal_chars_regex = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')
@@ -292,8 +292,7 @@ def match_media(media, source_file_list, type):
 
 def rename_file(matched_media, destination_dir, dry_run, action_type, print_only_renames):
     messages = []
-    new_file_name_list = []
-    processed_file_info = []
+    discord_messages = []
     asset_folders = config.asset_folders
     destination_files = os.listdir(destination_dir)
     for media in tqdm(matched_media['matched_media'], desc="Renaming files", total=len(matched_media['matched_media']), disable=None):
@@ -301,11 +300,13 @@ def rename_file(matched_media, destination_dir, dry_run, action_type, print_only
         folder = media['folder']
         if asset_folders:
             if dry_run:
-                messages.append(f"Would create asset folder: {folder} at {destination_dir}")
+                if not os.path.exists(os.path.join(destination_dir, folder)):
+                    discord_messages.append(folder)
             else:
                 if not os.path.exists(os.path.join(destination_dir, folder)):
-                    messages.append(f"Creating asset folder: {folder} at {destination_dir}")
+                    messages.append(f"Creating asset folder: {folder}")
                     os.makedirs(os.path.join(destination_dir, folder), exist_ok=True)
+                    discord_messages.append(folder)
         for file in files:
             path = os.path.dirname(file)
             old_file_name = os.path.basename(file)
@@ -368,19 +369,21 @@ def rename_file(matched_media, destination_dir, dry_run, action_type, print_only
                                     messages.append(f"Removed {i} from {destination_dir}")
                                     os.remove(os.path.join(destination_dir, i))
             if new_file_name != old_file_name:
-                processed_file_info = process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, '-renamed->')
-                # remove Action Type: {action_type} from discord message and leading space
+                processsed_file_info, discord_message = process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, '-renamed->')
+                messages.extend(processsed_file_info)
+                if not asset_folders:
+                    discord_messages.extend(discord_message)
             else:
                 if not print_only_renames:
-                    processed_file_info.extend(process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, '-not-renamed->>'))
-            # remove extension from new_file_name
-            new_file_name = os.path.splitext(new_file_name)[0]
-            new_file_name_list.append(new_file_name)
-
-    return messages, new_file_name_list
+                    processsed_file_info, discord_message = process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, '-not-renamed->>')
+                    messages.extend(processsed_file_info)
+                    if not asset_folders:
+                        discord_messages.extend(discord_message)
+    return messages, discord_messages
 
 def process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, arrow):
     output = []
+    discord_output = []
     if dry_run:
         if action_type == 'copy':
             if os.path.isfile(destination_file_path):
@@ -389,8 +392,10 @@ def process_file(old_file_name, new_file_name, action_type, dry_run, destination
                     pass
                 else:
                     output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
+                    discord_output.append(new_file_name)
             else:
                 output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
+                discord_output.append(new_file_name)
         if action_type == 'hardlink':
             if os.path.isfile(destination_file_path):
                 if filecmp.cmp(source_file_path, destination_file_path):
@@ -398,10 +403,13 @@ def process_file(old_file_name, new_file_name, action_type, dry_run, destination
                     pass
                 else:
                     output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
+                    discord_output.append(new_file_name)
             else:
                 output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
+                discord_output.append(new_file_name)
         elif action_type == 'move':
             output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
+            discord_output.append(new_file_name)
     else:
         if action_type == 'copy':
             try:
@@ -412,21 +420,25 @@ def process_file(old_file_name, new_file_name, action_type, dry_run, destination
                     else:
                         shutil.copyfile(source_file_path, destination_file_path)
                         output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
+                        discord_output.append(new_file_name)
                 else:
                     shutil.copyfile(source_file_path, destination_file_path)
                     output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
+                    discord_output.append(new_file_name)
             except OSError as e:
                 logger.error(f"Unable to copy file: {e}")
         elif action_type == 'move':
             try:
                 shutil.move(source_file_path, destination_file_path)
                 output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
+                discord_output.append(new_file_name)
             except OSError as e:
                 logger.error(f"Unable to move file: {e}")
         elif action_type == 'hardlink':
             try:
                 os.link(source_file_path, destination_file_path)
                 output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
+                discord_output.append(new_file_name)
             except OSError as e:
                 if e.errno == errno.EEXIST:
                     if os.path.samefile(source_file_path, destination_file_path):
@@ -436,12 +448,13 @@ def process_file(old_file_name, new_file_name, action_type, dry_run, destination
                         os.replace(destination_file_path, source_file_path)
                         os.link(source_file_path, destination_file_path)
                         output.append(f"Action Type: {action_type.capitalize()}: {old_file_name} {arrow} {new_file_name}")
+                        discord_output.append(new_file_name)
                 else:
                     logger.error(f"Unable to hardlink file: {e}")
                     return
         else:
             logger.error(f"Unknown action type: {action_type}")
-    return output
+    return output, discord_output
 
 def load_dict(title, year, files):
     return {
@@ -582,12 +595,12 @@ def process_instance(instance_type, instance_name, url, api, final_output, asset
     elif instance_type == "Sonarr":
         matched_media = match_media(media, asset_files, "series")
     if matched_media:
-        message, new_file_name_list = rename_file(matched_media, config.destination_dir, config.dry_run, config.action_type, config.print_only_renames)
+        message, discord_messages = rename_file(matched_media, config.destination_dir, config.dry_run, config.action_type, config.print_only_renames)
         final_output.extend(message)
     else:
         message = f"No matches found for {instance_name}"
         final_output.append(message)
-    return final_output, new_file_name_list
+    return final_output, discord_messages
 
 def print_output(final_output):
     if final_output:

@@ -31,7 +31,8 @@ import re
 
 script_name = "labelarr"
 config = Config(script_name)
-logger = setup_logger(config.log_level, script_name)
+log_level = config.log_level
+logger = setup_logger(log_level, script_name)
 version(script_name, script_version, arrpy_py_version, logger, config)
 
 words_to_remove = [
@@ -224,9 +225,9 @@ def main():
     data = [
         ["Script Settings"],
     ]
-    logger.debug(create_table(data))
+    create_table(data, log_level, logger)
     logger.debug(f'{"Dry_run:":<20}{config.dry_run if config.dry_run else "False"}')
-    logger.debug(f'{"Log level:":<20}{config.log_level if config.log_level else "INFO"}')
+    logger.debug(f'{"Log level:":<20}{log_level if log_level else "INFO"}')
     logger.debug(f'{"Labels:":<20}{config.labels if config.labels else "Not Set"}')
     logger.debug(f'{"Add From Plex:":<20}{config.add_from_plex if config.add_from_plex else "False"}')
     logger.debug(f'{"Library Names:":<20}{config.library_names if config.library_names else "Not Set"}')
@@ -237,7 +238,7 @@ def main():
             ["Dry Run"],
             ["NO CHANGES WILL BE MADE"]
         ]
-        logger.info(create_table(data))
+        create_table(data, log_level, logger)
     if config.plex_data:
         for data in config.plex_data:
             api_key = data.get('api', '')
@@ -271,7 +272,7 @@ def main():
                     ["Script Name", "Instance Name"],
                     [script_name, instance_name]
                 ]
-                logger.info(create_table(data))
+                create_table(data, log_level, logger)
                 logger.debug(f"url: {url}")
                 logger.debug(f"api: {'*' * (len(api) - 5)}{api[-5:]}")
                 app = StARR(url, api, logger)

@@ -3,7 +3,7 @@ import requests
 import logging
 import json
 
-arrpy_py_version = "1.1.7"
+arrpy_py_version = "1.2.7"
 
 logging.getLogger("qbittorrentapi").setLevel(logging.WARNING)
 logging.getLogger("requests").setLevel(logging.WARNING)
@@ -512,3 +512,12 @@ class StARR:
                 tag_id = tag["id"]
                 return tag_id
         return None
+    
+    def remove_item_from_queue(self, queue_id, blocklist):
+        """
+        Remove an item from the queue.
+        Parameters:
+            queue_id (int): The ID of the queue item to remove.
+        """
+        endpoint = f"{self.url}/api/v3/queue/{queue_id}?removeFromClient=false&blocklist={blocklist}&skipRedownload=true"
+        return self.make_delete_request(endpoint)

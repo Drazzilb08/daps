@@ -40,7 +40,8 @@ import re
 
 script_name = "renamer"
 config = Config(script_name)
-logger = setup_logger(config.log_level, script_name)
+log_level = config.log_level
+logger = setup_logger(log_level, script_name)
 version(script_name, script_version, arrpy_py_version, logger, config)
 
 year_regex = re.compile(r"\((19|20)\d{2}\)")
@@ -592,7 +593,7 @@ def process_instance(instance_type, instance_name, url, api, final_output, asset
         data = [
         [f"Plex Server: {server_name}"],
         ]
-        logger.info(create_table(data))
+        create_table(data, log_level, logger)
     else:
         app = StARR(url, api, logger)
         media = app.get_media()
@@ -600,11 +601,11 @@ def process_instance(instance_type, instance_name, url, api, final_output, asset
         data = [
             [server_name],
         ]
-        logger.info(create_table(data))
+        create_table(data, log_level, logger)
     data = [
         [f"{server_name} Settings"]
     ]
-    logger.debug(create_table(data))
+    create_table(data, log_level, logger)
     logger.debug('*' * 40)
     logger.debug(f"Script Settings for {instance_name}:")
     logger.debug(f'{"URL:":<20}{url if url else "Not Set"}')
@@ -650,10 +651,10 @@ def main():
     data = [
         ["Script Settings"],
     ]
-    logger.debug(create_table(data))
+    create_table(data, log_level, logger)
     logger.debug(f'*' * 40)
     logger.debug(f'{"Dry_run:":<20}{config.dry_run if config.dry_run else "False"}')
-    logger.debug(f'{"Log level:":<20}{config.log_level if config.log_level else "INFO"}')
+    logger.debug(f'{"Log level:":<20}{log_level if log_level else "INFO"}')
     logger.debug(f'{"Asset folders:":<20}{config.asset_folders if config.asset_folders else "False"}')
     logger.debug(f'{"Library names:":<20}{config.library_names if config.library_names else "Not set"}')
     logger.debug(f'{"Source dir:":<20}{config.source_dir if config.source_dir else "Not set"}')
@@ -668,7 +669,7 @@ def main():
             ["Dry Run"],
             ["NO CHANGES WILL BE MADE"]
         ]
-        logger.info(create_table(data))
+        create_table(data, log_level, logger)
 
     asset_files = get_assets_files(config.source_dir, config.source_overrides)
     

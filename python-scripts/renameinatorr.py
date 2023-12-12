@@ -28,7 +28,8 @@ from modules.formatting import create_table
 
 script_name = "renameinatorr"
 config = Config(script_name)
-logger = setup_logger(config.log_level, script_name)
+log_level = config.log_level
+logger = setup_logger(log_level, script_name)
 version(script_name, script_version, arrpy_py_version, logger, config)
 
 def check_all_tagged(all_media, tag_id):
@@ -121,11 +122,11 @@ def process_instance(instance_type, instance_name, url, api, tag_name, count, dr
     data = [
         [server_name],
     ]
-    logger.info(create_table(data))
+    create_table(data, log_level, logger)
     data = [
         [f"{server_name} Settings"]
     ]
-    logger.debug(create_table(data))
+    create_table(data, log_level, logger)
     logger.debug('*' * 40)
     logger.debug(f"Script Settings for {instance_name}:")
     logger.debug(f'{"Count:":<20}{count if count else "Not Set"}')
@@ -145,7 +146,10 @@ def process_instance(instance_type, instance_name, url, api, tag_name, count, dr
     logger.debug(f"Length of Media for {instance_name}: {len(media)}")
     arr_tag_id = app.get_tag_id_from_name(tag_name)
     if not arr_tag_id:
-        arr_tag_id = app.create_tag(tag_name)
+        if not dry_run:
+            arr_tag_id = app.create_tag(tag_name)
+        else:
+            logger.info(f"Tag {tag_name} would have been created.")
         if arr_tag_id:
             logger.debug(f"Tag: {tag_name} | Tag ID: {arr_tag_id}")
     else:
@@ -214,16 +218,16 @@ def main():
     data = [
         ["Script Settings"]
     ]
-    logger.debug(create_table(data))
+    create_table(data, log_level, logger)
     logger.debug(f'{"Dry_run:":<20}{config.dry_run if config.dry_run else "False"}')
-    logger.debug(f'{"Log level:":<20}{config.log_level if config.log_level else "INFO"}')
+    logger.debug(f'{"Log level:":<20}{log_level if log_level else "INFO"}')
     logger.debug(f'*' * 40 + '\n')
     if config.dry_run:
         data = [
             ["Dry Run"],
             ["NO CHANGES WILL BE MADE"]
         ]
-        logger.info(create_table(data))
+        create_table(data, log_level, logger)
     instance_data = {
         'Radarr': config.radarr_data,
         'Sonarr': config.sonarr_data

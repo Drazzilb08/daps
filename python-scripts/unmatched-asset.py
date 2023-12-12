@@ -40,7 +40,8 @@ from modules.formatting import create_table
 
 script_name = "unmatched-asset"
 config = Config(script_name)
-logger = setup_logger(config.log_level, script_name)
+log_level = config.log_level
+logger = setup_logger(log_level, script_name)
 version(script_name, script_version, arrpy_py_version=None, logger=logger, config=config)
 
 logging.getLogger("requests").setLevel(logging.WARNING)
@@ -308,8 +309,8 @@ def main():
     data = [
         ["Script Settings"]
     ]
-    logger.debug(create_table(data))
-    logger.debug(f'{"Log level:":<20}{config.log_level if config.log_level else "Not set"}')
+    create_table(data, log_level, logger)
+    logger.debug(f'{"Log level:":<20}{log_level if log_level else "Not set"}')
     logger.debug(f'{"Asset Folders:":<20}{config.asset_folders if config.asset_folders else "Not set"}')
     logger.debug(f'{"Assets path:":<20}{config.assets_path if config.assets_path else "Not set"}')
     logger.debug(f'{"Media paths:":<20}{config.media_paths if config.media_paths else "Not set"}')

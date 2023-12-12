@@ -35,6 +35,7 @@ from modules.discord import discord
 
 script_name = "renamer_cleanarr"
 config = Config(script_name)
+log_level = config.log_level
 logger = setup_logger(config.log_level, script_name)
 version(script_name, script_version, arrpy_py_version, logger, config)
 
@@ -239,7 +240,7 @@ def main():
     data = [
         ["Script Settings"]
     ]
-    logger.debug(create_table(data))
+    create_table(data, log_level, logger)
     logger.debug(f'{"Log level:":<20}{log_level if log_level else "Not set"}')
     logger.debug(f'{"Dry_run:":<20}{dry_run if dry_run else "False"}')
     logger.debug(f'{"Asset Folders:":<20}{asset_folders if asset_folders else "Not set"}')
@@ -252,7 +253,7 @@ def main():
             ["Dry Run"],
             ["NO CHANGES WILL BE MADE"]
         ]
-        logger.info(create_table(data))
+        create_table(data, log_level, logger)
     if config.plex_data:
         for data in config.plex_data:
             api_key = data.get('api', '')

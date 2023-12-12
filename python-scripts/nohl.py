@@ -35,7 +35,8 @@ from modules.formatting import create_table
 
 script_name = "nohl"
 config = Config(script_name)
-logger = setup_logger(config.log_level, script_name)
+log_level = config.log_level
+logger = setup_logger(log_level, script_name)
 version(script_name, script_version, arrpy_py_version, logger, config)
 
 illegal_chars_regex = re.compile(r"[^\w\s\-\(\)/.'’]+")
@@ -340,7 +341,7 @@ def main():
             ["Dry Run"],
             ["NO CHANGES WILL BE MADE"]
         ]
-        logger.info(create_table(data))
+        create_table(data, log_level, logger)
     search = config.maximum_searches
     if search >= 20:
         logger.error(f"Maximum searches set to {search}. This can cause devastating issues with your trackers. I will not be held responsible for any issues that arise from this. Please set this to a lower number.")

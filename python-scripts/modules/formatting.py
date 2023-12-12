@@ -1,4 +1,4 @@
-def create_table(data):
+def create_table(data, log_level, logger):
     if not data:
         return "No data provided."
 
@@ -54,4 +54,17 @@ def create_table(data):
     # Bottom border
     table += "*" * (total_width + 2) + "\n"
 
-    return table
+    log_functions = {
+        "info": logger.info,
+        "debug": logger.debug,
+        "warning": logger.warning,
+        "error": logger.error,
+        "critical": logger.critical
+    }
+    lines = table.split('\n')
+    log_function = log_functions.get(log_level)
+
+    if log_function:
+        for line in lines:
+            if line.strip():
+                log_function(line)

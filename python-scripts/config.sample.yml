@@ -174,7 +174,7 @@ renamer:
     - name: sonarr_2
 
 # This is a script that will take your existing collections, Movies, and Series, and match them to your Plex Library and/or your Media Dir
-unmatched-assets:
+unmatched-asset:
   log_level: info
   # Optional: Add libraries you want the script to check for unmatched assets
   asset_folders: false

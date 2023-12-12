@@ -309,7 +309,7 @@ def main():
     data = [
         ["Script Settings"]
     ]
-    create_table(data, log_level, logger)
+    create_table(data, log_level="info", logger=logger)
     logger.debug(f'{"Log level:":<20}{log_level if log_level else "Not set"}')
     logger.debug(f'{"Asset Folders:":<20}{config.asset_folders if config.asset_folders else "Not set"}')
     logger.debug(f'{"Assets path:":<20}{config.assets_path if config.assets_path else "Not set"}')

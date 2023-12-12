@@ -341,7 +341,7 @@ def main():
             ["Dry Run"],
             ["NO CHANGES WILL BE MADE"]
         ]
-        create_table(data, log_level, logger)
+        create_table(data, log_level="info", logger=logger)
     search = config.maximum_searches
     if search >= 20:
         logger.error(f"Maximum searches set to {search}. This can cause devastating issues with your trackers. I will not be held responsible for any issues that arise from this. Please set this to a lower number.")

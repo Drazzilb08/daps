@@ -225,7 +225,7 @@ def main():
     data = [
         ["Script Settings"],
     ]
-    create_table(data, log_level, logger)
+    create_table(data, log_level="info", logger=logger)
     logger.debug(f'{"Dry_run:":<20}{config.dry_run if config.dry_run else "False"}')
     logger.debug(f'{"Log level:":<20}{log_level if log_level else "INFO"}')
     logger.debug(f'{"Labels:":<20}{config.labels if config.labels else "Not Set"}')
@@ -238,7 +238,7 @@ def main():
             ["Dry Run"],
             ["NO CHANGES WILL BE MADE"]
         ]
-        create_table(data, log_level, logger)
+        create_table(data, log_level="info", logger=logger)
     if config.plex_data:
         for data in config.plex_data:
             api_key = data.get('api', '')
@@ -272,7 +272,7 @@ def main():
                     ["Script Name", "Instance Name"],
                     [script_name, instance_name]
                 ]
-                create_table(data, log_level, logger)
+                create_table(data, log_level="info", logger=logger)
                 logger.debug(f"url: {url}")
                 logger.debug(f"api: {'*' * (len(api) - 5)}{api[-5:]}")
                 app = StARR(url, api, logger)

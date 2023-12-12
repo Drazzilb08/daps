@@ -240,7 +240,7 @@ def main():
     data = [
         ["Script Settings"]
     ]
-    create_table(data, log_level, logger)
+    create_table(data, log_level="info", logger=logger)
     logger.debug(f'{"Log level:":<20}{log_level if log_level else "Not set"}')
     logger.debug(f'{"Dry_run:":<20}{dry_run if dry_run else "False"}')
     logger.debug(f'{"Asset Folders:":<20}{asset_folders if asset_folders else "Not set"}')
@@ -253,7 +253,7 @@ def main():
             ["Dry Run"],
             ["NO CHANGES WILL BE MADE"]
         ]
-        create_table(data, log_level, logger)
+        create_table(data, log_level="info", logger=logger)
     if config.plex_data:
         for data in config.plex_data:
             api_key = data.get('api', '')

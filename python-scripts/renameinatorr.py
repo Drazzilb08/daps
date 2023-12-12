@@ -126,7 +126,7 @@ def process_instance(instance_type, instance_name, url, api, tag_name, count, dr
     data = [
         [f"{server_name} Settings"]
     ]
-    create_table(data, log_level="info", logger=logger)
+    create_table(data, log_level="debug", logger=logger)
     logger.debug('*' * 40)
     logger.debug(f"Script Settings for {instance_name}:")
     logger.debug(f'{"Count:":<20}{count if count else "Not Set"}')
@@ -218,7 +218,7 @@ def main():
     data = [
         ["Script Settings"]
     ]
-    create_table(data, log_level="info", logger=logger)
+    create_table(data, log_level="debug", logger=logger)
     logger.debug(f'{"Dry_run:":<20}{config.dry_run if config.dry_run else "False"}')
     logger.debug(f'{"Log level:":<20}{log_level if log_level else "INFO"}')
     logger.debug(f'*' * 40 + '\n')

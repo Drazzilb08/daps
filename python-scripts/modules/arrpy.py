@@ -83,7 +83,7 @@ class StARR:
                 return response.json()
             except (requests.exceptions.Timeout, requests.exceptions.HTTPError) as ex:
                 self.logger.warning(f'GET request failed ({ex}), retrying ({i+1}/{self.max_retries})...')
-        self.logger.error(f'GET request failed after {self.max_retries} retries')
+        self.logger.error(f'GET request failed after {self.max_retries} retries with response: {response.text}')
         self.logger.error(f"endpoint: {endpoint}")
         self.logger.error(f"response: {response}")
         self.logger.error(f"exiting script")
@@ -109,7 +109,7 @@ class StARR:
                 return response.json()
             except (requests.exceptions.Timeout, requests.exceptions.HTTPError) as ex:
                 self.logger.warning(f'POST request failed ({ex}), retrying ({i+1}/{self.max_retries})...')
-        self.logger.error(f'GET request failed after {self.max_retries} retries')
+        self.logger.error(f'GET request failed after {self.max_retries} retries with response: {response.text}')
         self.logger.error(f"endpoint: {endpoint}")
         self.logger.error(f"Payload: {json}")
         self.logger.error(f"response: {response}")
@@ -137,7 +137,7 @@ class StARR:
                 return response.json()
             except (requests.exceptions.Timeout, requests.exceptions.HTTPError) as ex:
                 self.logger.warning(f'PUT request failed ({ex}), retrying ({i+1}/{self.max_retries})...')
-        self.logger.error(f'GET request failed after {self.max_retries} retries')
+        self.logger.error(f'GET request failed after {self.max_retries} retries with response: {response.text}')
         self.logger.error(f"endpoint: {endpoint}")
         self.logger.error(f"Payload: {json}")
         self.logger.error(f"response: {response}")
@@ -163,7 +163,7 @@ class StARR:
                 return response
             except (requests.exceptions.Timeout, requests.exceptions.HTTPError) as ex:
                 self.logger.warning(f'DELETE request failed ({ex}), retrying ({i+1}/{self.max_retries})...')
-        self.logger.error(f'GET request failed after {self.max_retries} retries')
+        self.logger.error(f'GET request failed after {self.max_retries} retries with response: {response.text}')
         self.logger.error(f"endpoint: {endpoint}")
         self.logger.error(f"Payload: {json}")
         self.logger.error(f"response: {response}")
@@ -374,6 +374,9 @@ class StARR:
             name_type = "MoviesSearch"
             id_type = "movieIds"
             id = media_id
+            # convert to list if not already
+            if isinstance(id, int):
+                id = [id]
             payload = {
                 "name": name_type,
                 id_type: id

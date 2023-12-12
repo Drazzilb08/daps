@@ -225,7 +225,7 @@ def main():
     data = [
         ["Script Settings"],
     ]
-    create_table(data, log_level="info", logger=logger)
+    create_table(data, log_level="debug", logger=logger)
     logger.debug(f'{"Dry_run:":<20}{config.dry_run if config.dry_run else "False"}')
     logger.debug(f'{"Log level:":<20}{log_level if log_level else "INFO"}')
     logger.debug(f'{"Labels:":<20}{config.labels if config.labels else "Not Set"}')

@@ -14,7 +14,7 @@
 # License: MIT License
 # ===================================================================================================
 
-script_version = "6.3.2"
+script_version = "6.3.3"
 
 from modules.arrpy import arrpy_py_version
 from plexapi.exceptions import BadRequest
@@ -382,7 +382,7 @@ def rename_file(matched_media, destination_dir, dry_run, action_type, print_only
                         discord_messages.extend(discord_message)
             if not asset_folders:
                 for i in discord_messages:
-                    discord_messages = [i.split('.')[0] for i in discord_messages]
+                    discord_messages = [os.path.splitext(i)[0] for i in discord_messages]
     return messages, discord_messages
 
 def process_file(old_file_name, new_file_name, action_type, dry_run, destination_file_path, source_file_path, arrow):
@@ -582,7 +582,8 @@ def process_instance(instance_type, instance_name, url, api, final_output, asset
                     collections += library.collections()
                 except BadRequest:
                     logger.error(f"Error: {library_name} does not exist in {instance_name}")
-            collection_names = [collection.title for collection in collections if collection.smart != True]
+            # collection_names = [collection.title for collection in collections if collection.smart != True]
+            collection_names = [collection.title for collection in collections]
             logger.debug(json.dumps(collection_names, indent=4))
         else:
             message = f"Error: No library names specified for {instance_name}"

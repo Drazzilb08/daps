@@ -21,7 +21,7 @@
 #  License: MIT License
 # ===========================================================================================================
 
-script_version = "5.0.2"
+script_version = "5.0.4"
 
 import os
 import re
@@ -300,7 +300,14 @@ def print_output(unmatched_media, media, plex_collections):
             logger.info(f"\t{collection['title']}")
             unmatched_collections_total += 1
         logger.info(f"\t{unmatched_collections_total} unmatched collections found: Percent complete: ({100 - 100 * unmatched_collections_total / unmatched_collections_total:.2f}% of total {total_collections}).\n")
-    logger.info(f"Grand total: {unmatched_movies_total} unmatched movies, {unmatched_series_total} unmatched series, {unmatched_seasons} unmatched seasons, {unmatched_collections_total} unmatched collections. Grand percent complete: ({100 - 100 * (unmatched_movies_total + unmatched_series_total + unmatched_seasons + unmatched_collections_total) / (total_movies + total_series + total_seasons + total_collections):.2f}% of grand total {total_movies + total_series + total_seasons + total_collections}).\n")
+    grand_total_movies = unmatched_movies_total
+    grand_total_series = unmatched_series_total
+    grand_total_seasons = unmatched_seasons
+    grand_total_collections = unmatched_collections_total
+    grand_total = grand_total_movies + grand_total_series + grand_total_seasons + grand_total_collections
+    grand_percent_complete = max(0, 100 - 100 * (grand_total_movies + grand_total_series + grand_total_seasons + grand_total_collections) / (total_movies + total_series + total_seasons + total_collections))
+
+    logger.info(f"Grand total: {grand_total_movies} unmatched movies, {grand_total_series} unmatched series, {grand_total_seasons} unmatched seasons, {grand_total_collections} unmatched collections. Grand percent complete: ({grand_percent_complete:.2f}% of grand total {grand_total}).\n")
 
 def main():
     """

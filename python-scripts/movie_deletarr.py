@@ -9,7 +9,7 @@
 # Description: This script will delete movies and shows from Radarr and Sonarr based on the if they show
 #              up in the health check. This is useful for removing movies and shows that have been removed
 #              from TMDB or TVDB.
-# Usage: python3 movie-deletarr.py
+# Usage: python3 movie_deletarr.py
 # Requirements: requests
 # License: MIT License
 # ===================================================================================================
@@ -25,7 +25,7 @@ import re
 from modules.version import version
 from modules.discord import discord
 
-script_name = "movie-deletarr"
+script_name = "movie_deletarr"
 config = Config(script_name)
 logger = setup_logger(config.log_level, script_name)
 version(script_name, script_version, arrpy_py_version, logger, config)
@@ -41,7 +41,7 @@ def main():
     dry_run = config.dry_run
     log_level = config.log_level
     logger.debug('*' * 40)
-    logger.debug(f'* {"movie-deletarr":^36} *')
+    logger.debug(f'* {"movie_deletarr":^36} *')
     logger.debug(f'* {"Script Version:":<2} {version:>20} *')
     logger.debug(f'* {"arrpy.py Version:":<2} {arrpy_py_version:>18} *')
     logger.debug('*' * 40)

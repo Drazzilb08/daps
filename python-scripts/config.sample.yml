@@ -64,10 +64,10 @@ discord:
   renamer:
     discord_webhook: 
     channel_id: 
-  movie-deletarr:
+  movie_deletarr:
     discord_webhook: 
     channel_id: 
-  unmatched-assets:
+  unmatched_assets:
     discord_webhook: 
     channel_id: 
   nohl:
@@ -174,7 +174,7 @@ renamer:
     - name: sonarr_2
 
 # This is a script that will take your existing collections, Movies, and Series, and match them to your Plex Library and/or your Media Dir
-unmatched-assets:
+unmatched_assets:
   log_level: info
   # Optional: Add libraries you want the script to check for unmatched assets
   asset_folders: false
@@ -274,7 +274,7 @@ queinatorr:
 
 # This script's purpose is to monitor the health status of Radarr/Sonarr and to delete movies/series if they are reported as to have been 
 # Removed on TheMovieDB/TheTVDB
-movie-deletarr:
+movie_deletarr:
   log_level: debug
   dry_run: true
 

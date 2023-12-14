@@ -12,7 +12,7 @@
 #                are any folders that do not have a matching asset. It will also check your collections
 #                against your assets folder to see if there are any collections that do not have a
 #                matching asset. It will output the results to a file in the logs folder.
-#  Usage: python3 unmatched=asset.py
+#  Usage: python3 unmatched_assets.py
 #  Note: There is a limitation to how this script works with regards to it matching series assets the
 #         main series poster requires seasonal posters to be present. If you have a series that does
 #         not have a seasonal poster then it will not match the series poster. If you don't have a season poster
@@ -38,7 +38,7 @@ from modules.version import version
 from modules.discord import discord
 from modules.formatting import create_table
 
-script_name = "unmatched-asset"
+script_name = "unmatched_assets"
 config = Config(script_name)
 log_level = config.log_level
 logger = setup_logger(log_level, script_name)

@@ -111,11 +111,6 @@ def process_instance(instance_type, instance_name, url, api, tag_name, count, dr
         reset (bool): Whether or not to reset the tag.
         unattended (bool): Whether or not to run unattended.
     """
-    media_type = None
-    tagged_count = 0
-    untagged_count = 0
-    total_count = 0
-    new_tag = 0
     library_item_to_rename = []
     app = StARR(url, api, logger)
     server_name = app.get_instance_name()

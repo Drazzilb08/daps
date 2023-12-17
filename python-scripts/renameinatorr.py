@@ -16,7 +16,7 @@
 # License: MIT License
 # ===================================================================================================
 
-script_version = "3.2.2"
+script_version = "3.2.3"
 
 from modules.config import Config
 from modules.logger import setup_logger
@@ -188,6 +188,9 @@ def process_instance(instance_type, instance_name, url, api, tag_name, count, dr
         media_to_process = untagged_media[:count]
         items = {}
         media_ids = []
+        tagged_count = 0
+        untagged_count = 0
+        new_tag = 0
         for item in media_to_process:
             title = item["title"]
             media_id = item["id"]
@@ -208,6 +211,10 @@ def process_instance(instance_type, instance_name, url, api, tag_name, count, dr
         tagged_percent = ((tagged_count + new_tag) / total_count) * 100
         untagged_percent = (untagged_count / total_count) * 100
         print_format(items, instance_type.lower(), dry_run, total_count, tagged_percent, untagged_percent, media_type, tagged_count, untagged_count)
+
+# TODO: Add support for parrent folders
+def rename_folder():
+    pass
 
 def main():
     data = [

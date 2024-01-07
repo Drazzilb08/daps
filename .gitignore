@@ -160,5 +160,6 @@ logs/
 *archives*
 tmp/
 bash-scripts/sync.sh
-python-scripts/change_border.py
-python-scripts/torrent-maker.py
+*.extra*
+*extra-scripts*
+*TODO*

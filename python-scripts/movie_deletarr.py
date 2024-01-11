@@ -42,7 +42,7 @@ def main():
     log_level = config.log_level
     logger.debug('*' * 40)
     logger.debug(f'* {"movie_deletarr":^36} *')
-    logger.debug(f'* {"Script Version:":<2} {version:>20} *')
+    logger.debug(f'* {"Script Version:":<2} {script_version:>20} *')
     logger.debug(f'* {"arrpy.py Version:":<2} {arrpy_py_version:>18} *')
     logger.debug('*' * 40)
     logger.debug('')

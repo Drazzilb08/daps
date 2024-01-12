@@ -1,0 +1,404 @@
+# Options:
+# run - will run a single time per run of main.py (mainly useful for testing with dry_run)
+# hourly - Will perform the action every hour on the hour
+# daily(int) - daily(12) - Will perform the action every day at 12:00am
+# weekly(day) - weekly(monday) or weekly(monday|tuesday) - Will perform the action on the day(s) of the week specified at 12:00am
+# monthly(int) - monthly(12) - Will perform the action on the specified day of every month at 12:00am
+# range(month/date-month/date) - range(12/01-12/31) or range(12/01-12/31|01/01-01/31) - Will perform the action on the specified date range every year, every day at 12:00am
+# all[options] - all[range(12/01-12/31), weekly(thursday)] or all[range(12/01-12/31), weekly(thursday|friday), hourly] or all[range(12/01-12/31), weekly(thursday), daily(12)] - Uses a combination of above options to perform the action
+# all[weekly(thursday), daily(12)] - Will perform the action every Thursday at 12:00am
+    # Note: 'options' must be in order range, monthly, weekly, daily, hourly
+
+schedule:
+  border_replacerr:
+  labelarr: 
+  nohl: 
+  poster_cleanarr:
+  poster_renamerr:
+  queinatorr:
+  renameinatorr:
+  unmatched_assets: 
+  upgradinatorr:
+  backup_folder:
+    # Include as many backup folder instances as you want, name must match the name of the backup_folder instance
+    backup_folder_1: 
+    backup_folder_2: 
+  backup_plex: 
+  backup_appdata: 
+
+instances:
+  radarr:
+    # Instance name can be whatever you want, it just needs to match the name used in other sections
+    radarr_1:
+      url: http://localhost:7878
+      api: abcdefghijklmnopqrstuvwxyz1234567890
+    radarr_2:
+      url: http://localhost:7878
+      api: abcdefghijklmnopqrstuvwxyz1234567890
+  sonarr:
+    # Instance name can be whatever you want, it just needs to match the name used in other sections
+    sonarr_1: 
+      url: http://localhost:8989
+      api: abcdefghijklmnopqrstuvwxyz1234567890
+    sonarr_2:
+      url: http://localhost:8989
+      api: abcdefghijklmnopqrstuvwxyz1234567890
+    sonarr_3:
+      url: http://localhost:8989
+      api: abcdefghijklmnopqrstuvwxyz1234567890
+  plex:
+    plex_1:
+      # API key can be found here: https://support.plex.tv/articles/204059436-finding-an-authentication-token-x-plex-token/
+      url: http://localhost:32400
+      api: abcdefghijklmnopqrstuvwxyz1234567890
+  qbittorrent:
+    # Instance name can be whatever you want, it just needs to match the name used in other sections
+    qbittorrent_1:
+      url: http://localhost:8080
+      username: admin
+      password: adminadmin
+    qbittorrent_2:
+      url: 
+      username: 
+      password: 
+
+# This is a collection of BASH scripts that can be run by the script.
+bash_scripts:
+  log_level: info
+  # This script can use the config here, if using this config DO NOT use the plex_backup.conf file
+  backup_plex:
+    source: /path/to/plex/appdata/
+    destination: /path/to/backup/destination/
+    # This is the number of essential backups to keep
+    keep_essential: 5
+    # This is the number of full backups to keep
+    keep_full: 2
+    # This is the number of days to keep the full backups
+    force_full_backup: 7
+    # This is to perform a full backup every time the script is run
+    full_backup: false
+    # This is to compress the backup
+    compress: true
+    dry_run: true
+    # This is to shutdown plex before the backup
+    shutdown_plex: true
+    debug: false
+  # This is not currently used, but will be used in the future (DO NOT USE, however the script can be scheduled), you just need to use the backup_appdata.conf file
+  backup_appdata:
+  backup_folder:
+    backup_folder_1:
+      source: /path/to/source
+      destination: /path/to/destination
+      keep_backups: 5
+      compress: false
+    backup_folder_2:
+      source: 
+      destination: 
+      keep_backup: 12
+      compress: true
+  nohl_bash:
+    source_dir:
+    include:
+      - 
+      - 
+    exclude:
+      - 
+      - 
+  jduparr:
+    data_dir: 
+
+# THIS SCRIPT SYNCS GDRIVE TO A LOCAL FOLDER. ANYTHING UNIQUE IN THE FOLDER WILL BE DELETED.
+# -> You can use client_id, client_secret, and token to authenticate, or you can use gdrive_sa_location to use a service account.
+# DRAZZILB GDRIVE ID: 1VeeQ_frBFpp6AZLimaJSSr0Qsrl6Tb7z
+# This script is meant to be used in conjunction with Plex-Meta-Manager, however, it can be used on its own.
+# This is a script base of this one: https://discord.com/channels/492590071455940612/1124032073557086258/1126226814629576858
+sync_gdrive:
+  log_level: info # debug, info, warning, error, critical
+  run: true # If false, it will skip this step
+  client_id: asdasds.apps.googleusercontent.com # Client ID for rclone usually ends with .apps.googleusercontent.com
+  client_secret: GOCSPX-asda123 # Client Secret for rclone, usually starts with GOCSPX-
+  token: # The token for rclone, this is the output of rclone config dump that needs to run manually
+  # Token looks like this: { "access_token": "value", "token_type": "Bearer", "refresh_token": "value", "expiry": "value" }
+  gdrive_sa_location: /config/rclone_sa.json # The location of your rclone service account file (JSON)
+  gdrive_sync: # example of multiple gdrive_id's with multiple sync_locations as objects, we have deprecated gdrive_id and sync_location so please use this instead
+    - id: 1VeeQ_frBFpp6AZLimaJSSr0Qsrl6Tb7z # The ID of the folder you want to sync from
+      location: /data/input # Where you want to sync the posters to
+    - id: 1wrSru-46iIN1iqCl2Cjhj5ofdazPgbsz # The ID of the folder you want to sync from
+      location: /data/input2 # Where you want to sync the posters to
+
+discord:
+  # Notifiarr uses passthrough integration
+  notifiarr_webhook: 
+  main:
+    # used for version checks and notifications
+    discord_webhook: 
+    # Channel ID only used with notifiarr webhook
+    channel_id: 
+  renameinatorr:
+    discord_webhook: 
+    channel_id: 
+  upgradinatorr:
+    discord_webhook: 
+    channel_id: 
+  poster_renamerr:
+    discord_webhook: 
+    channel_id: 
+  movie-deletarr:
+    discord_webhook: 
+    channel_id: 
+  unmatched_assets:
+    discord_webhook: 
+    channel_id: 
+  nohl:
+    discord_webhook: 
+    channel_id: 
+  queinatorr:
+    discord_webhook: 
+    channel_id: 
+  labelarr:
+    discord_webhook: 
+    channel_id: 
+  poster_cleanarr:
+    discord_webhook: 
+    channel_id: 
+  border_replacerr:
+    discord_webhook: 
+    channel_id: 
+  backup_appdata:
+    discord_webhook: 
+    channel_id: 
+  backup_plex:
+    discord_webhook: 
+    channel_id: 
+  backup_folder:
+    discord_webhook: 
+    channel_id: 
+  nohl_bash:
+    discord_webhook: 
+    channel_id: 
+  jduparr:
+    discord_webhook: 
+    channel_id: 
+
+upgradinatorr:
+  log_level: info
+  dry_run: false
+  instances:
+    radarr_1:
+      count: 3
+      tag_name: checked
+      unattended: true
+    radarr_2:
+      count: 10
+      tag_name: checked
+      unattended: true
+    sonarr_1:
+      count: 1
+      tag_name: checked
+      unattended: true
+    sonarr_2:
+      count: 1
+      tag_name: checked
+      unattended: true
+    sonarr_3:
+      count: 20
+      tag_name: checked
+      unattended: true
+
+
+renameinatorr:
+  log_level: info
+  dry_run: false
+  rename_folders: true
+  instances:
+    - radarr_2
+    - sonarr_3
+
+border_replacerr:
+  # Colors: https://www.w3schools.com/colors/colors_picker.asp
+  log_level: info
+  dry_run: true
+  input_dir: /path/to/posters/
+  output_dir: /path/to/output/
+  # If you want to resize the posters, set this to true, else set it to false
+  resize: false
+  # If you want to adjust the border width (not all MM2K posters are 25px borders some are 26-27)
+  border_width: 26
+  # Setting a border color of nothing will remove the border, else it will add the border color
+  border_colors: 
+  schedule:
+    # You can make any holiday you want for any occation. For the schedule please use the range(month/date-month/date) option
+    christmas:
+      schedule: range(12/01-12/31)
+      color: 
+        - "#FF0000"
+        - "#00FF00"
+    halloween:
+      schedule: range(10/01-10/31)
+      color: "#FFA500"
+    thanksgiving:
+      schedule: range(11/01-11/30)
+      color: "#FFA500"
+
+poster_renamerr:
+  log_level: info
+  dry_run: false
+  action_type: copy # <- Options: copy, move
+  asset_folders: false # <- This will copy the folder structure of the source_dir to the destination_dir, this MUST be the same as you use in Plex-Meta-Manager
+  print_only_renames: false # <- This will print the renames to the log, but will not actually rename anything
+  # This will integrate border_replacer with poster_renamerr, set this to true if you want to use them at the same time (no need to schedule border_replacer)
+  # Note: This will create a tmp dir in your output directory for border_replacer to use and for poster_renamer to have accurate account of what has been added
+  border_replacerr: false
+  # Libraries are ONLY used for collections
+  library_names:
+    - Movies
+    - Anime Movies
+  source_dir: /path/to/posters/ # <- Lowest priority
+  # Optional, if you want to override the source_dir for certain libraries
+  source_overrides:
+    - /path/to/posters/overrideA
+    - /path/to/posters/overrideB # <- Highest priorty
+  destination_dir: /path/to/output/
+  instances:
+    - plex_1
+    - radarr_1
+    - sonarr_1
+    # - sonarr_2
+    # - radarr_2
+    # - sonarr_3
+
+unmatched_assets:
+  log_level: info
+  asset_folders: false
+  instances:
+    - plex_1
+  # Libraries are ONLY used for collections
+  library_names:
+    - Movies
+    - Anime Movies
+  ignore_collections:
+    - "Star Wars Universe"
+    - "DC Animated Universe"
+    - "Alien / Predator"
+    - "Rocky / Creed"
+    - "MonsterVerse"
+    - "Star Trek"
+    - "X-Men Universe"
+    - "In Association With Marvel"
+    - "View Askewniverse"
+    - "The Mummy Universe"
+    - "Middle Earth"
+    - "In Association With DC"
+    - "Wizarding World"
+    - "Fast & Furious"
+    - "The Spiderverse"
+    - "Marvel Cinematic Universe"
+    - "The Conjuring Universe"
+    - "The Batman Universe"
+    - "Collectionless"
+    - "DC Extended Universe"
+  assets_paths: 
+    - /path/to/assets
+  media_paths:
+    - /path/to/media/movies
+    - /path/to/media/series
+
+poster_cleanarr:
+  log_level: info
+  dry_run: true
+  asset_folders: true
+  instances:
+    - plex_1
+  # Libraries are ONLY used for collections
+  library_names:
+    - Movies
+    - Anime Movies
+  ignore_collections:
+    - "Star Wars Universe"
+    - "DC Animated Universe"
+    - "Alien / Predator"
+    - "Rocky / Creed"
+    - "MonsterVerse"
+    - "Star Trek"
+    - "X-Men Universe"
+    - "In Association With Marvel"
+    - "View Askewniverse"
+    - "The Mummy Universe"
+    - "Middle Earth"
+    - "In Association With DC"
+    - "Wizarding World"
+    - "Fast & Furious"
+    - "The Spiderverse"
+    - "Marvel Cinematic Universe"
+    - "The Conjuring Universe"
+    - "The Batman Universe"
+    - "Collectionless"
+    - "DC Extended Universe"
+  assets_paths: 
+    - /path/to/assets
+  media_paths:
+    - /path/to/media/movies
+    - /path/to/media/series
+  
+nohl:
+  # Note: Dry run will display all items regardless of maximum_searches setting
+  dry_run: true
+  log_level: info
+  maximum_searches: 10 # Please keep this number low to avoid bans
+  instances:
+    - radarr_2
+    - sonarr_3
+  paths:
+    - /path/to/media/movies
+    - /path/to/media/series
+  filters:
+    exclude_profiles: test3, test4
+    exclude_movies:
+      - "The Matrix"
+      - "The Matrix Reloaded"
+      - "The Matrix Revolutions"
+    exclude_series:
+      - Diners, Drive-ins and Dives
+      - Marvel's Spider-Man
+
+queinatorr:
+  log_level: info
+  dry_run: true
+  days_to_keep: 14 # The number of days to keep in the pre_import_category prior to moving to the post_import_category
+  instances:
+    radarr_1:
+      qbit_instance: qbittorrent_1
+      pre_import_category: movies
+      post_import_category: completed-movies
+    sonarr_1:
+      qbit_instance: qbittorrent_2
+      pre_import_category: series
+      post_import_category: completed-series
+    sonarr_2:
+      qbit_instance: qbittorrent_2
+      pre_import_category: anime
+      post_import_category: completed-anime
+
+labelarr:
+  dry_run: true
+  log_level: info
+  instances:
+    radarr_2: 
+      library_names:
+        - Movies
+      plex_instances:
+        - plex_1
+      # Labels/tags to sync between Radarr/Sonarr and Plex
+      labels:
+        - kids
+    sonarr_3:
+      library_names:
+        - Animated Series
+        - Childrens Series
+      plex_instances:
+        - plex_1
+      labels:
+        - kids
+
+main:
+  log_level: info

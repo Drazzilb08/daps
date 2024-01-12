@@ -1,0 +1,7 @@
+requests
+tqdm
+pyyaml
+unidecode
+qbittorrent-api
+plexapi
+pillow

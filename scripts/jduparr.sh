@@ -15,8 +15,10 @@
 # License: MIT License
 # ====================================================
 
-data_dir='/path/to/data/dir'         # This is the root directory for your media you want to check for duplicates
-log_dir='/path/to/log/dir'         # This is the directory the logs gets written in
+
+data_dir='/path/to/data/dir'            # This is the root directory for your media you want to check for duplicates
+log_dir=''                              # This is the directory the logs gets written in if not set will use script's directory
+                                        
 
 # Optional for notifications on Discord through Discord webhook or Notifiarr API.
 webhook=''                         # Not required if you don't want to use notifications // Leave as is if not using notifications
@@ -90,13 +92,13 @@ check_config() {
             response_code=$(curl --write-out "%{response_code}" --silent --output /dev/null -H "x-api-key: $apikey" "https://notifiarr.com/api/v1/user/validate")
         else
             if [ "$debug" == "true" ]; then
-                echo "Checking webhook validity: $webhook" | tee -a "$log_dir/jduparr.log"
+                echo "Checking webhook validity: $webhook" | tee -a "$log_dir/.jduparr_bash.log"
             fi
             response_code=$(curl --write-out "%{response_code}" --silent --output /dev/null "$webhook")
         fi
 
         if [ "$debug" == "true" ]; then
-            echo "Response: $response_code" | tee -a "$log_dir/jduparr.log"
+            echo "Response: $response_code" | tee -a "$log_dir/.jduparr_bash.log"
         fi
 
         if [ "$response_code" -eq 200 ]; then
@@ -110,24 +112,24 @@ check_config() {
 
 find_duplicates() {
     start=$(date +%s)
-    echo "Running jdupes" | tee "$log_dir/jduparr.log"
+    echo "Running jdupes" | tee "$log_dir/.jduparr_bash.log"
     if [ $debug == "true" ]; then
-        echo "Running jdupes for all directories" | tee -a "$log_dir/jduparr.log"
-        echo -e "Media directory: ${data_dir}" | tee -a "$log_dir/jduparr.log"
-        echo -e "jdupes -r -L -X onlyext:mp4,mkv,avi ${data_dir}" | tee -a "$log_dir/jduparr.log"
+        echo "Running jdupes for all directories" | tee -a "$log_dir/.jduparr_bash.log"
+        echo -e "Media directory: ${data_dir}" | tee -a "$log_dir/.jduparr_bash.log"
+        echo -e "jdupes -r -L -X onlyext:mp4,mkv,avi ${data_dir}" | tee -a "$log_dir/.jduparr_bash.log"
     fi
     mkdir -p "$(dirname "$0")/../logs"
-    echo "jDupes started" | tee -a "$log_dir/jduparr.log"
+    echo "jDupes started" | tee -a "$log_dir/.jduparr_bash.log"
     results=$(jdupes -r -M -X onlyext:mp4,mkv,avi "${data_dir}")
     if [[ $results != *"No duplicates found."* ]]; then
         jdupes -r -L -X onlyext:mp4,mkv,avi "${data_dir}"
     fi
-    echo "jDupes completed" | tee -a "$log_dir/jduparr.log"
+    echo "jDupes completed" | tee -a "$log_dir/.jduparr_bash.log"
 
-    # Call the function to parse the jduparr.log file
+    # Call the function to parse the .jduparr_bash.log file
     parse_jdupes_output
     if [ $debug == "true" ]; then
-        echo -e "jdupes output: ${results}" | tee -a "$log_dir/jduparr.log"
+        echo -e "jdupes output: ${results}" | tee -a "$log_dir/.jduparr_bash.log"
     fi
     end=$(date +%s)
 }
@@ -141,7 +143,7 @@ parse_jdupes_output(){
         parsed_log="No hardlinks created"
     fi
     if [ $debug == "true" ]; then
-        echo -e "Parsed log: ${parsed_log}" | tee -a "$log_dir/jduparr.log"
+        echo -e "Parsed log: ${parsed_log}" | tee -a "$log_dir/.jduparr_bash.log"
     fi
 }
 
@@ -185,8 +187,8 @@ send_notification() {
             discord_common_fields
             payload
             if [ "$debug" == "true" ]; then
-                echo "$webhook" | tee -a "$log_dir/jduparr.log"
-                echo "$payload" | tee -a "$log_dir/jduparr.log"
+                echo "$webhook" | tee -a "$log_dir/.jduparr_bash.log"
+                echo "$payload" | tee -a "$log_dir/.jduparr_bash.log"
             fi
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
         fi
@@ -194,8 +196,8 @@ send_notification() {
             notifiarr_common_fields
             payload
             if [ "$debug" == "true" ]; then
-                echo "$webhook" | tee -a "$log_dir/jduparr.log"
-                echo "$payload" | tee -a "$log_dir/jduparr.log"
+                echo "$webhook" | tee -a "$log_dir/.jduparr_bash.log"
+                echo "$payload" | tee -a "$log_dir/.jduparr_bash.log"
             fi
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
         fi
@@ -350,7 +352,7 @@ unraid_notify(){
         message="❌ Folder: $data_dir - Checked and validated\n➡️ Hardlinks recreated:\n$parsed_log\n\n"
     fi
     if [ "$debug" == "true" ]; then
-        echo "$message" | tee -a "$log_dir/jduparr.log"
+        echo "$message" | tee -a "$log_dir/.jduparr_bash.log"
     fi
     /usr/local/emhttp/plugins/dynamix/scripts/notify -s "Script Execution Summary" -d "$message"
 
@@ -359,6 +361,12 @@ unraid_notify(){
 main() {
     data_dir=${data_dir%/}
     log_dir=${log_dir%/}
+    # If no log dir set use script's dir
+    if [ -z "$log_dir" ]; then
+        log_dir="$(dirname "$0")/../logs/jduparr"
+        
+    fi
+    handle_options "$@"
     check_duplicate_script
     check_config
     hex_to_decimal
@@ -370,46 +378,22 @@ main() {
     if [ -n "$webhook" ]; then
         send_notification
     fi
-    echo "$run_output" | tee -a "$log_dir/jduparr.log"
+    echo "$run_output" | tee -a "$log_dir/.jduparr_bash.log"
     cleanup
 }
 
-# Parse command line arguments
-TEMP=$(getopt -o w:b:n:h --long webhook:,bar-color:,bot-name:,help -n "$0" -- "$@")
-eval set -- "$TEMP"
+handle_options() {
+    while getopts ":w:D:b:n:h:L:" opt; do
+        case $opt in
+        w) webhook="$OPTARG" ;;
+        D) data_dir="$OPTARG" ;;
+        b) bar_color="$OPTARG" ;;
+        n) bot_name="$OPTARG" ;;
+        h) display_help ;;
+        L) log_dir="$OPTARG" ;;
+        \?) echo "Invalid option -$OPTARG" >&2 ;;
+        esac
+    done
+}
 
-while [[ $# -gt 0 ]]; do
-    case "$1" in
-    -w | --webhook)
-        webhook="$2"
-        shift 2
-        ;;
-    -d | --data-dir)
-        data_dir="$2"
-        shift 2
-        ;;
-    -b | --bar-color)
-        bar_color="$2"
-        shift 2
-        ;;
-    -n | --bot-name)
-        bot_name="$2"
-        shift 2
-        ;;
-    -h | --help)
-        display_help
-        exit 0
-        ;;
-    --)
-        shift
-        break
-        ;;
-    *)
-        echo "Invalid argument: $1" >&2
-        display_help
-        exit 1
-        ;;
-    esac
-done
-
-main
+main "$@"

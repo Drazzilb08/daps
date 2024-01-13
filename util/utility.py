@@ -447,6 +447,7 @@ def handle_starr_data(app, instance_type):
                 'title': item['title'],
                 'year': item['year'],
                 'media_id': item['id'],
+                'db_id': item['tmdbId'] if instance_type == "radarr" else item['tvdbId'],
                 'monitored': item['monitored'],
                 'status': item['status'],
                 'root_folder': item['rootFolderPath'],
@@ -457,7 +458,7 @@ def handle_starr_data(app, instance_type):
                 'secondary_year': item.get('secondaryYear', None),
                 'alternate_titles': alternate_titles,
                 'normalized_alternate_titles': normalized_alternate_titles,
-                'file_id': file_id if instance_type == "radarr" else None,  # Add file_id for Radarr items
+                'file_id': file_id if instance_type == "radarr" else None,
                 'folder': os.path.basename(os.path.normpath(item['path'])),
                 'tags': item['tags'],
                 'seasons': season_dict if instance_type == "sonarr" else None,  # Add season_dict for Sonarr items

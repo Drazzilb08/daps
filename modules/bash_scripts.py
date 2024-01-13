@@ -27,6 +27,7 @@ def set_cmd_args(settings, bash_script_file, logger, script_name):
         destination = str(settings.get('destination')) if 'destination' in settings else None
         keep_backups = str(settings.get('keep_backups')) if 'keep_backups' in settings else None
         compress = str(settings.get('compress')) if 'compress' in settings else None
+        data_dir = str(settings.get('data_dir')) if 'data_dir' in settings else None
 
         keep_essential = str(settings.get('keep_essential')) if 'keep_essential' in settings else None
         keep_full = str(settings.get('keep_full')) if 'keep_full' in settings else None
@@ -105,6 +106,10 @@ def set_cmd_args(settings, bash_script_file, logger, script_name):
         if script_debug:
             cmd.append('-D')
             cmd.append(shlex.quote(str(script_debug)))
+        
+        if data_dir:
+            cmd.append('-D')
+            cmd.append(shlex.quote(str(data_dir)))
 
         if script_name in ['backup_appdata', 'backup_plex']:
             use_config_file = None

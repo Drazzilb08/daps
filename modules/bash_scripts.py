@@ -21,20 +21,40 @@ def set_cmd_args(settings, bash_script_file, logger, script_name):
     cmds = []
     cmd = [bash_script_file]
     if settings:
-        source = settings.get('source', None)
-        destination = settings.get('destination', None)
-        keep_backups = settings.get('keep_backups', None)
-        compress = settings.get('compress', None)
+        script_debug = str(settings.get('debug')) if 'debug' in settings else None
 
-        keep_essential = settings.get('keep_essential', None)
-        keep_full = settings.get('keep_full', None)
-        force_full_Backup = settings.get('force_full_backup', None)
-        script_dry_run = settings.get('dry_run', None)
-        shutdown_plex = settings.get('shutdown_plex', None)
-        script_debug = settings.get('debug', None)
-        full_backup = settings.get('full_backup', None)
-        webhook_url = settings.get('webhook_url', None)
-        channel = settings.get('channel', None)
+        source = str(settings.get('source')) if 'source' in settings else None
+        destination = str(settings.get('destination')) if 'destination' in settings else None
+        keep_backups = str(settings.get('keep_backups')) if 'keep_backups' in settings else None
+        compress = str(settings.get('compress')) if 'compress' in settings else None
+
+        keep_essential = str(settings.get('keep_essential')) if 'keep_essential' in settings else None
+        keep_full = str(settings.get('keep_full')) if 'keep_full' in settings else None
+        force_full_Backup = str(settings.get('force_full_backup')) if 'force_full_backup' in settings else None
+        script_dry_run = str(settings.get('dry_run')) if 'dry_run' in settings else None
+        shutdown_plex = str(settings.get('shutdown_plex')) if 'shutdown_plex' in settings else None
+        full_backup = str(settings.get('full_backup')) if 'full_backup' in settings else None
+        webhook_url = str(settings.get('webhook_url')) if 'webhook_url' in settings else None
+        channel = str(settings.get('channel')) if 'channel' in settings else None
+        
+        logger.debug(f"channel: {channel}")
+        logger.debug(f"webhook_url: {webhook_url}")
+        logger.debug(f"source: {source}")
+        logger.debug(f"destination: {destination}")
+        logger.debug(f"keep_backups: {keep_backups}")
+        logger.debug(f"compress: {compress}")
+        logger.debug(f"keep_essential: {keep_essential}")
+        logger.debug(f"keep_full: {keep_full}")
+        logger.debug(f"force_full_Backup: {force_full_Backup}")
+        logger.debug(f"script_dry_run: {script_dry_run}")
+        logger.debug(f"shutdown_plex: {shutdown_plex}")
+        logger.debug(f"script_debug: {script_debug}")
+        logger.debug(f"full_backup: {full_backup}")
+        logger.debug(f"webhook_url: {webhook_url}")
+        logger.debug(f"channel: {channel}")
+        logger.debug(f"script_name: {script_name}")
+        logger.debug(f"settings: {settings}")
+        logger.debug(f"bash_script_file: {bash_script_file}")
 
         if source:
             cmd.append('-s')
@@ -92,8 +112,8 @@ def set_cmd_args(settings, bash_script_file, logger, script_name):
             cmd.append(shlex.quote(str(use_config_file)))
     
     cmds.append(cmd)
+    logger.debug(json.dumps(cmds, indent=4))
     return cmds
-    
 
 def run_script(cmds, logger):
     """
@@ -128,4 +148,5 @@ def main(settings, script_name):
     cmds = set_cmd_args(settings, bash_script_file, logger, script_name)
     run_script(cmds, logger)
     logger.debug(f"{script_name.capitalize()} complete.")
+    logger.info(f"{'*' * 40} END {'*' * 40}\n")
 

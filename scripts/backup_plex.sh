@@ -495,7 +495,9 @@ main() {
     else
         lastbackup=0
     fi
-    
+    if [ "$debug" == "True" ]; then
+        echo "Last backup: $lastbackup"
+    fi
     # get current date
     current_date=$(date +"%m/%d/%y")
     # calculate the number of days since last backup

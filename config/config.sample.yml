@@ -11,6 +11,7 @@
 
 schedule:
   border_replacerr:
+  health_checkarr:
   labelarr: 
   nohl: 
   poster_cleanarr:
@@ -399,6 +400,14 @@ labelarr:
         - plex_1
       labels:
         - kids
+
+health_checkarr:
+  log_level: info
+  dry_run: true
+  instances:
+    - radarr_1
+    - sonarr_1
+    - sonarr_2
 
 main:
   log_level: info

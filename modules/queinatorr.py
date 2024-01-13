@@ -21,7 +21,7 @@ from util.config import Config
 from util.logger import setup_logger
 from qbittorrentapi import Client
 from util.arrpy import StARR
-from util.discord import discord
+from util.discord import discord, discord_check
 from util.utility import *
 
 try:
@@ -570,7 +570,8 @@ def main():
     print_output(final_output_dict)
     
     # Send a notification to Discord with the final output
-    notification(final_output_dict)
+    if discord_check(config, script_name):
+        notification(final_output_dict)
 
     logger.info(f"{'*' * 40} END {'*' * 40}\n")
 

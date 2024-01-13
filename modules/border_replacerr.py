@@ -443,6 +443,7 @@ def main():
     process_files(input_dir, output_dir, asset_folders=False)
 
     logger.info(f"Border Replacer Complete")  # Log completion message
+    logger.info(f"{'*' * 40} END {'*' * 40}\n")
 
 
 if __name__ == "__main__":

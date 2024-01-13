@@ -423,6 +423,7 @@ def main():
 
     # Print the output of removed assets
     print_output(remove_data)
+    logger.info(f"{'*' * 40} END {'*' * 40}\n")
 
 
 if __name__ == "__main__":

@@ -20,7 +20,7 @@ import time
 from util.config import Config
 from util.logger import setup_logger
 from util.arrpy import StARR
-from util.discord import discord
+from util.discord import discord, discord_check
 from util.utility import *
 
 script_name = "upgradinatorr"
@@ -313,7 +313,9 @@ def main():
     # If there's data in the final output dictionary, print output and send notifications
     if final_output_dict:
         print_output(final_output_dict)
-        notification(final_output_dict)
+        if discord_check(config, script_name):
+            notification(final_output_dict)
+    logger.info(f"{'*' * 40} END {'*' * 40}\n")
 
 if __name__ == '__main__':
     main()

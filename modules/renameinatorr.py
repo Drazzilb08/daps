@@ -21,7 +21,7 @@ from util.config import Config
 from util.logger import setup_logger
 from util.arrpy import StARR
 from util.utility import *
-from util.discord import discord
+from util.discord import discord, discord_check
 
 try:
     from tqdm import tqdm
@@ -333,7 +333,9 @@ def main():
     # Print output and send notifications if data exists
     if any(value['data'] for value in output_dict.values()):
         print_output(output_dict)
-        notification(output_dict)
+        if discord_check(config, script_name):
+            notification(output_dict)
+    logger.info(f"{'*' * 40} END {'*' * 40}\n")
 
 if __name__ == "__main__":
     main()

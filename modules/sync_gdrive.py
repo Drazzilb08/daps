@@ -106,3 +106,4 @@ def main():
         logger.info("Finished sync_gdrive")
     else:
         logger.info("Skipping sync_gdrive.py")
+    logger.info(f"{'*' * 40} END {'*' * 40}\n")

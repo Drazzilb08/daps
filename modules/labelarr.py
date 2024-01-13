@@ -341,6 +341,7 @@ def main():
                                 continue
                     else:
                         continue
+    logger.info(f"{'*' * 40} END {'*' * 40}\n")
 
 
 if __name__ == "__main__":

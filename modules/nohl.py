@@ -820,7 +820,7 @@ def main():
     # Send a Discord notification containing the output data
     if discord_check(config, script_name):
         notification(output_dict)
-
+    logger.info(f"{'*' * 40} END {'*' * 40}\n")
 
 if __name__ == "__main__":
     main()

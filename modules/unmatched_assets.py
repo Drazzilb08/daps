@@ -253,6 +253,7 @@ def main():
     # Matching assets and printing output
     unmatched_dict = match_assets(assets_dict, media_dict)
     print_output(unmatched_dict, media_dict)
+    logger.info(f"{'*' * 40} END {'*' * 40}\n")
 
 
 if __name__ == "__main__":

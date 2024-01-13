@@ -46,7 +46,11 @@ def run_module(module_name):
     """
 
     # Import the module
-    module = importlib.import_module(f"modules.{module_name}")
+    try:
+        module = importlib.import_module(f"modules.{module_name}")
+    except ModuleNotFoundError:
+        logger.error(f"Script: {module_name} does not exist")
+        return
     # Run the module
     module.main()
 
@@ -125,7 +129,11 @@ if __name__ == '__main__':
                             if input_name == instance:
                                 settings = config.bash_config.get(script_name, {}).get(instance, {})
                                 bash_script(settings, script_name)
-            else:
-                run_module(script_name)
+                else:
+                    run=True
+                    run_module(input_name)
+        
+            
+    # If no arguments are passed to the script, run the main function
     else:
         main()

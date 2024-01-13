@@ -49,6 +49,21 @@ def run_module(module_name):
     # Run the module
     module.main()
 
+def run_bash_script(script_name):
+    """
+    Run a bash script
+    
+    Args:
+        script_name (str): The name of the bash script to run
+        
+    Returns:
+        None
+    """
+    bash_configs = config.bash_config
+    if script_name in bash_configs:
+        from modules import bash_scripts
+        script_settings = bash_configs.get(script_name, {})
+        bash_scripts.main(script_settings, script_name)
 
 def main():
     while True:
@@ -73,25 +88,26 @@ def main():
                         if schedule_time != "run" and schedule:
                             sub_script_settings = script_settings.get(instance, {})
                             logger.debug(f"Running: {instance.capitalize()} Schedule: {schedule_time} started")
-                            # logger.debug(json.dumps(script_settings, indent=4))
-                            # process = multiprocessing.Process(target=bash_scripts.main, args=(script_settings, script_name))
-                            # process.startscript_settings, script_name  # Start the process without joining
-                            # processes.append(process)
+                            logger.debug(json.dumps(script_settings, indent=4))
+                            process = multiprocessing.Process(target=bash_scripts.main, args=(sub_script_settings, script_name))
+                            process.startscript_settings, script_name  # Start the process without joining
+                            processes.append(process)
                             logger.debug(f"Script: {script_name.capitalize()} ended")
                 else:
                     if schedule_time != "run" and scheduler(schedule_time, logger=logger):
                         logger.debug(f"Running: {script_name.capitalize()} Schedule: {schedule_time} started")
-                        # logger.debug(json.dumps(script_settings, indent=4))
-                        # process = multiprocessing.Process(target=bash_scripts.main, args=(script_settings, script_name))
-                        # process.startscript_settings, script_name  # Start the process without joining
-                        # processes.append(process)
+                        logger.debug(json.dumps(script_settings, indent=4))
+                        process = multiprocessing.Process(target=bash_scripts.main, args=(script_settings, script_name))
+                        process.startscript_settings, script_name  # Start the process without joining
+                        processes.append(process)
                         logger.debug(f"Script: {script_name.capitalize()} ended")
             else:
                 if schedule_time != "run" and scheduler(schedule_time, logger=logger):
                     logger.debug(f"Python Script {script_name.capitalize()} Schedule: {schedule_time} started")
-                    # process = multiprocessing.Process(target=run_module, args=(script_name,))
-                    # process.start()  # Start the process without joining
-                    # processes.append(process)
+                    process = multiprocessing.Process(target=run_module, args=(script_name,))
+                    process.start()   # Start the process without joining
+                    if process:
+                        processes.append(process)
                     logger.debug(f"{script_name.capitalize()} has been ended")
                 if schedule_time == "run" and not already_run.get(script_name, False):
                     logger.debug(f"Python Script {script_name.capitalize()} Schedule: {schedule_time} started")
@@ -112,7 +128,16 @@ if __name__ == '__main__':
     """
     # If arguments are passed to the script, run the script with those arguments
     if len(sys.argv) > 1:
-        for module_name in sys.argv[1:]:
-            run_module(module_name)
+        for script_name in sys.argv[1:]:
+            if script_name not in config.bash_config:
+                run_module(script_name)
+            elif script_name in config.bash_config or script_name in config.bash_config.values():
+                if script_name in config.bash_config:
+                    run_bash_script(script_name)
+                else:
+                    for key, value in config.bash_config.items():
+                        if script_name == value:
+                            run_bash_script(value)
+                run_bash_script(script_name)
     else:
         main()

@@ -7,6 +7,7 @@ import importlib
 import multiprocessing
 import time
 import datetime
+from modules.bash_scripts import main as bash_script
 
 script_name = "main"
 
@@ -49,21 +50,6 @@ def run_module(module_name):
     # Run the module
     module.main()
 
-def run_bash_script(script_name):
-    """
-    Run a bash script
-    
-    Args:
-        script_name (str): The name of the bash script to run
-        
-    Returns:
-        None
-    """
-    bash_configs = config.bash_config
-    if script_name in bash_configs:
-        from modules import bash_scripts
-        script_settings = bash_configs.get(script_name, {})
-        bash_scripts.main(script_settings, script_name)
 
 def main():
     while True:
@@ -128,16 +114,18 @@ if __name__ == '__main__':
     """
     # If arguments are passed to the script, run the script with those arguments
     if len(sys.argv) > 1:
-        for script_name in sys.argv[1:]:
-            if script_name not in config.bash_config:
+        for input_name in sys.argv[1:]:
+            if input_name in config.bash_config:
+                settings = config.bash_config.get(input_name, {})
+                bash_script(settings, input_name)
+            elif input_name not in config.bash_config:
+                for script_name, script_value in config.bash_config.items():
+                    if isinstance(script_value, dict):
+                        for instance, instance_value in script_value.items():
+                            if input_name == instance:
+                                settings = config.bash_config.get(script_name, {}).get(instance, {})
+                                bash_script(settings, script_name)
+            else:
                 run_module(script_name)
-            elif script_name in config.bash_config or script_name in config.bash_config.values():
-                if script_name in config.bash_config:
-                    run_bash_script(script_name)
-                else:
-                    for key, value in config.bash_config.items():
-                        if script_name == value:
-                            run_bash_script(value)
-                run_bash_script(script_name)
     else:
         main()

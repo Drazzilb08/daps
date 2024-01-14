@@ -684,7 +684,7 @@ def notification(final_output):
     # Send messages to Discord
     for message_number, fields in built_fields.items():
         print(f"Sending message {message_number} of {message_count}...")
-        discord(fields, logger, config, script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
+        discord(fields, logger, script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
 
 
 def main():
@@ -818,7 +818,7 @@ def main():
     handle_messages(output_dict)
     
     # Send a Discord notification containing the output data
-    if discord_check(config, script_name):
+    if discord_check(script_name):
         notification(output_dict)
     logger.info(f"{'*' * 40} END {'*' * 40}\n")
 

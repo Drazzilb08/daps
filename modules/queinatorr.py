@@ -433,7 +433,7 @@ def notification(messages):
     
     # If there are fields to be sent to Discord, send the message
     if fields:
-        discord(fields, logger, config, script_name, description=f"{'__**Dry Run**__' if dry_run else 'Queinatorr'}", color=0x800080, content=None)
+        discord(fields, logger, script_name, description=f"{'__**Dry Run**__' if dry_run else 'Queinatorr'}", color=0x800080, content=None)
 
 
 
@@ -570,7 +570,7 @@ def main():
     print_output(final_output_dict)
     
     # Send a notification to Discord with the final output
-    if discord_check(config, script_name):
+    if discord_check(script_name):
         notification(final_output_dict)
 
     logger.info(f"{'*' * 40} END {'*' * 40}\n")

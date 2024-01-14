@@ -193,7 +193,7 @@ def notification(output_dict):
         total_character_count_per_key[key] = sum(len(field['value']) for field in value)
     for key, value in discord_dict.items():
         print(f"Sending message {key} of {len(discord_dict)}")
-        discord(fields=value, logger=logger, config=config, script_name=script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
+        discord(fields=value, logger=logger, script_name=script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
 
 
 def process_instance(app, rename_folders, server_name, instance_type):
@@ -333,7 +333,7 @@ def main():
     # Print output and send notifications if data exists
     if any(value['data'] for value in output_dict.values()):
         print_output(output_dict)
-        if discord_check(config, script_name):
+        if discord_check(script_name):
             notification(output_dict)
     logger.info(f"{'*' * 40} END {'*' * 40}\n")
 

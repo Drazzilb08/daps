@@ -100,12 +100,11 @@ check_config() {
         if [ "$debug" == "true" ]; then
             echo "Response: $response_code" | tee -a "$log_dir/.jduparr_bash.log"
         fi
-
         if [ "$response_code" -eq 200 ]; then
             echo "Webhook is valid"
         else
             echo "Webhook is not valid"
-            echo "Backup will be created without a notification being sent"
+            echo "Please check your webhook and try again"
         fi
     fi
 }

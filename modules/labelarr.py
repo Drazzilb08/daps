@@ -211,7 +211,7 @@ def notification(data_dict):
         for message_number, fields in built_fields.items():
             print(f"Sending message {message_number} of {message_count}...")
             # Discord function call (may require specific parameters to function)
-            discord(fields, logger, config, script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
+            discord(fields, logger, script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
 
 
 def handle_tags(app, media_dict, tag_names):
@@ -332,7 +332,7 @@ def main():
                                     handle_messages(data_dict)
                                     
                                     # Send notifications related to syncing actions
-                                    if discord_check(config, script_name):
+                                    if discord_check(script_name):
                                         notification(data_dict)
                                 else:
                                     logger.info(f"No items to sync from {starr_server_name} to {server_name}.\n")

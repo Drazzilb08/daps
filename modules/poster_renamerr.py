@@ -500,7 +500,7 @@ def notification(output):
     for key, value in discord_dict.items():
         print(f"Sending message {key} of {len(discord_dict)}")  # Display message sending status
         # Actual function to send messages to Discord (which is currently represented by a 'print' statement)
-        discord(fields=value, logger=logger, config=config, script_name=script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
+        discord(fields=value, logger=logger, script_name=script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
         # pausse for 5 seconds each 5th message
         if key % 5 == 0:
             print("Pausing for 5 seconds to let Discord catch up...")
@@ -599,7 +599,7 @@ def main():
         # Log output and handle notifications
         logger.debug(f"Output:\n{json.dumps(output, indent=4)}")
         handle_output(output)
-        if discord_check(config, script_name):
+        if discord_check(script_name):
             notification(output)
     if border_replacerr:
         # Run border_replacerr.py or log intent to run

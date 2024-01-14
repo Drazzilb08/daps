@@ -269,7 +269,7 @@ def notification(output_dict):
                 "value": f"```{value}```"
             })
     # Send the constructed fields as a Discord message
-    discord(fields, logger, config, script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
+    discord(fields, logger, script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
 
 def main():
     """
@@ -318,7 +318,7 @@ def main():
     # If there's data in the final output dictionary, print output and send notifications
     if final_output_dict:
         print_output(final_output_dict)
-        if discord_check(config, script_name):
+        if discord_check(script_name):
             notification(final_output_dict)
     logger.info(f"{'*' * 40} END {'*' * 40}\n")
 

@@ -559,6 +559,9 @@ def main():
     else:
         logger.error("No asset files found. Exiting.")
         exit(1)
+    
+    # Log asset data
+    logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
 
     media_dict = {}  # Initialize dictionary for media data
     # Loop through instances for media retrieval
@@ -583,10 +586,9 @@ def main():
                         media_dict[media_type].extend(results)
                     else:
                         media_dict[media_type] = results
-                    logger.debug(f"media_dict[{media_type}]:\n{media_dict[media_type]}")
+    # Log media data
+    logger.debug(f"media_dict:\n{json.dumps(media_dict, indent=4)}")
 
-    # Log asset and media files
-    logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
     if media_dict and assets_dict:
         # Match media data to asset files
         combined_dict = match_data(media_dict, assets_dict)

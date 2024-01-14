@@ -151,7 +151,7 @@ def fix_borders(assets_dict, script_config, border_colors, output_dir):
         banner = "Replacing Border"
 
     # Initialize asset types to process
-    asset_types = ["series", "movies", "collections"]
+    asset_types = ["movies", "series", "collections"]
 
     # Logging the action if it's determined
     if action:
@@ -167,11 +167,15 @@ def fix_borders(assets_dict, script_config, border_colors, output_dir):
         if asset_type in assets_dict:
             current_index = 0  # Index for cycling through border colors
             items = assets_dict[asset_type]
-
             # Loop through each item in the asset type
             for data in tqdm(items, desc=f"Processing {asset_type.capitalize()}", total=len(items), unit="Posters", disable=None):
-                files = data['files']
+                files = data.get('files', None)
                 path = data.get('path', None)
+                year = data.get('year', None)
+                if year:
+                    year = f"({year})"
+                else:
+                    year = ""
 
                 # Prepare output directory for saving processed files
                 if path:
@@ -184,8 +188,11 @@ def fix_borders(assets_dict, script_config, border_colors, output_dir):
 
                 # Process each input file within the asset
                 for input_file in files:
+                    file_name = os.path.basename(input_file)
                     if rgb_border_colors:
                         rgb_border_color = rgb_border_colors[current_index]
+                    else:
+                        rgb_border_color = None
 
                     # Actual processing or dry run action
                     if not dry_run:
@@ -199,14 +206,17 @@ def fix_borders(assets_dict, script_config, border_colors, output_dir):
                                 replace_border_and_resize(input_file, output_path, rgb_border_color, border_width)
                             else:
                                 remove_border_resize(input_file, output_path, border_width)
-                        messages.append(f"{action} {os.path.basename(input_file)}")
+                        if path:
+                            messages.append(f"{action} {data['title']}{year} - {file_name})")
+                        else:
+                            messages.append(f"{action} {file_name}")
                     else:
-                        messages.append(f"Would have {action} {os.path.basename(input_file)}")
+                        messages.append(f"Would have {action} {file_name}")
 
                     if rgb_border_colors:
                         current_index = (current_index + 1) % len(rgb_border_colors)
-            else:
-                logger.info(f"No {asset_type} found.")
+        else:
+            logger.info(f"No {asset_type} found.")
     return messages
 
 def replace_border_and_resize(input_file, output_path, border_colors, border_width):
@@ -395,7 +405,7 @@ def process_files(input_dir, output_dir, asset_folders):
 
     # Categorize files in the input directory into assets
     assets_dict = categorize_files(input_dir, asset_folders)
-
+    
     # If assets are found in the input directory
     if assets_dict:
         logger.debug(f"assets_dict:\n{json.dumps(assets_dict, indent=4)}")
@@ -444,7 +454,6 @@ def main():
 
     logger.info(f"Border Replacer Complete")  # Log completion message
     logger.info(f"{'*' * 40} END {'*' * 40}\n")
-
 
 if __name__ == "__main__":
     main()

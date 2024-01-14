@@ -172,8 +172,9 @@ def categorize_files(folder_path, asset_folders):
                     assets['movies'].append(asset_dict)
                     assets['movies'][-1]['files'].append(file_path)
     else:  # If asset_folders is True, sort assets based on folders
-        for dir, _, files in tqdm(os.walk(folder_path), desc='Sorting assets', total=len(folder_path), disable=None):
-            if dir == folder_path or "tmp" in dir:
+        total_folders = len(os.listdir(folder_path))
+        for dir, _, files in tqdm(os.walk(folder_path), desc='Sorting posters', total=total_folders, disable=None, leave=False):
+            if dir == folder_path or dir.endswith("tmp"):
                 continue  # Skip root folder and temporary folders
 
             base_name = os.path.basename(dir)

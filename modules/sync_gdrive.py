@@ -6,58 +6,57 @@ from util.call_script import call_script
 
 config = Config(script_name="sync_gdrive")
 logger = setup_logger(config.log_level, "sync_gdrive")
-bash_script_file = '../bash/rclone.sh'
+bash_script_file = './scripts/rclone.sh'
 
-def output_debug_info(cmd) -> list[str]:
+def output_debug_info(cmd, settings) -> list[str]:
+    client_id = settings.get('client_id', None)
+    client_secret = settings.get('client_secret', None)
+    token = settings.get('token', None)
     debug_cmd = cmd.copy()
     if '-i' in debug_cmd:
-        debug_cmd[debug_cmd.index('-i') + 1] = '<redacted>' if config.client_id else 'None'
+        debug_cmd[debug_cmd.index('-i') + 1] = '<redacted>' if client_id else 'None'
     if '-s' in debug_cmd:
-        debug_cmd[debug_cmd.index('-s') + 1] = '<redacted>' if config.client_secret else 'None'
+        debug_cmd[debug_cmd.index('-s') + 1] = '<redacted>' if client_secret else 'None'
 
     if '-t' in debug_cmd:
-        debug_cmd[debug_cmd.index('-t') + 1] = '<redacted>' if config.token else 'None'
+        debug_cmd[debug_cmd.index('-t') + 1] = '<redacted>' if token else 'None'
 
     return debug_cmd
 
-
-def set_cmd_args() -> list[list[str]]:
+def set_cmd_args(settings) -> list[list[str]]:
     cmds = []
     cmd = [bash_script_file]
     sync_list = []
+    client_id = settings.get('client_id', None)
+    client_secret = settings.get('client_secret', None)
+    token = settings.get('token', None)
+    gdrive_sa_location = settings.get('gdrive_sa_location', None)
+    gdrive_sync = settings.get('gdrive_sync', None)
 
-    if not config.gdrive_sync:
+    if not gdrive_sync:
         sync_list.append(1)
     else:
-        sync_list = config.gdrive_sync
+        sync_list = gdrive_sync
 
     logger.debug(f"Sync list: {sync_list}")
     for sync_item in sync_list:
         logger.debug(f"Syncing: {sync_item}")
         sync_cmd = cmd.copy()
-        if config.client_id:
+        if client_id:
             sync_cmd.append('-i')
-            sync_cmd.append(shlex.quote(config.client_id))
+            sync_cmd.append(shlex.quote(client_id))
+        else:
+            logger.error("No client id provided")
+            exit(1)
 
-        if config.client_secret:
+        if client_secret:
             sync_cmd.append('-s')
-            sync_cmd.append(shlex.quote(config.client_secret))
+            sync_cmd.append(shlex.quote(client_secret))
+        else:
+            logger.error("No client secret provided")
+            exit(1)
 
-        if not config.gdrive_sync:
-            if config.sync_location != '':
-                sync_cmd.append('-l')
-                sync_cmd.append(shlex.quote(config.sync_location))
-            else:
-                logger.error("No sync location provided")
-                exit(1)
-            if config.gdrive_id != '':
-                sync_cmd.append('-f')
-                sync_cmd.append(shlex.quote(config.gdrive_id))
-            else:
-                logger.error("No gdrive id provided")
-                exit(1)
-
-        if config.gdrive_sync:
+        if gdrive_sync:
             if sync_item['location'] != '':
                 sync_cmd.append('-l')
                 sync_cmd.append(shlex.quote(sync_item['location']))
@@ -70,23 +69,22 @@ def set_cmd_args() -> list[list[str]]:
             else:
                 logger.error("No gdrive id provided")
                 exit(1)
-
-        if config.token != {}:
+        
+        if token:
             sync_cmd.append('-t')
-            sync_cmd.append(json.dumps(config.token))
+            sync_cmd.append(json.dumps(token))
 
-        if config.gdrive_sa_location != '':
+        if gdrive_sa_location:
             sync_cmd.append('-g')
-            sync_cmd.append(shlex.quote(config.gdrive_sa_location))
+            sync_cmd.append(shlex.quote(gdrive_sa_location))
 
         cmds.append(sync_cmd)
 
     return cmds
 
-
 # run the rclone.sh script
-def run_rclone(cmd):
-    debug_cmd = output_debug_info(cmd)
+def run_rclone(cmd, settings):
+    debug_cmd = output_debug_info(cmd, settings)
     try:
         logger.debug(f"RClone command with args: {debug_cmd}")
         call_script(cmd, logger)
@@ -96,14 +94,10 @@ def run_rclone(cmd):
         logger.error(f"RClone command with args: {debug_cmd} --> Failed")
         pass
 
-
 # Main function
 def main():
-    if config.run:
-        logger.info("Running sync_gdrive")
-        for cmd in set_cmd_args():
-            run_rclone(cmd)
-        logger.info("Finished sync_gdrive")
-    else:
-        logger.info("Skipping sync_gdrive.py")
+    settings = config.script_config
+    logger.info("Running sync_gdrive")
+    for cmd in set_cmd_args(settings):
+        run_rclone(cmd, settings)
     logger.info(f"{'*' * 40} END {'*' * 40}\n")

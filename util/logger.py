@@ -24,6 +24,9 @@ def setup_logger(log_level, script_name):
     Returns:
         A logger object for logging messages.
     """
+    if log_level not in ['debug', 'info', 'critical']:
+        log_level = 'info'
+        print(f"Invalid log level '{log_level}', defaulting to 'info'")
     # Define the directory for log files based on script name
     log_dir = f'{base_dir}/logs/{script_name}'
     

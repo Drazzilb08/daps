@@ -39,7 +39,11 @@ class Config:
         # If the script_name attribute exists, set script-specific configurations
         if self.script_name:
             self.script_config = config.get(f'{self.script_name}', None)  # Script-specific config
-            self.log_level = self.script_config.get('log_level', 'info').lower()  # Log level
+            try:
+                self.log_level = self.script_config.get('log_level', 'info').lower()  # Log level
+            except AttributeError:
+                print(f"Invalid log level '{self.script_config.get('log_level', 'info')}', defaulting to 'info'")
+                self.log_level = 'info'
             self.dry_run = self.script_config.get('dry_run', False)  # Dry run setting
             self.sync_gdrive = self.script_config.get('sync_gdrive', False)  # Google Drive sync setting
 

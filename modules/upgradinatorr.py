@@ -131,9 +131,16 @@ def process_instance(instance_type, instance_settings, app):
     
     # Get tag ID based on the provided tag name
     tag_id = app.get_tag_id_from_name(tag_name)
-    
+
     # Filter media based on tag and count criteria
     filtered_media_dict = filter_media(media_dict, tag_id, count)
+    if not filtered_media_dict and unattended:
+        media_ids = [item['media_id'] for item in media_dict]
+        logger.info("All media is tagged. Removing tags...")
+        app.remove_tags(media_ids, tag_id)
+        media_dict = handle_starr_data(app, instance_type)
+        filtered_media_dict = filter_media(media_dict, tag_id, count)
+    
     logger.debug(f"filtered_media_dict:\n{json.dumps(filtered_media_dict, indent=4)}")
     
     # Processing tagged and untagged counts
@@ -157,11 +164,9 @@ def process_instance(instance_type, instance_settings, app):
     # Processing media data
     if not dry_run:
         media_ids = [item['media_id'] for item in filtered_media_dict]
-        response = app.search_media(media_ids)
-        if response:
-            response = app.add_tags(media_ids, tag_id)
-        ready = app.get_command_status(response['id'])
-        time.sleep(3)
+        search_response = app.search_media(media_ids)
+        app.add_tags(media_ids, tag_id)
+        ready = app.wait_for_command(search_response['id'])
         if ready:
             queue = app.get_queue(instance_type)
             queue_dict = process_queue(queue, instance_type, media_ids)
@@ -171,14 +176,12 @@ def process_instance(instance_type, instance_settings, app):
                 for queue_item in queue_dict:
                     if item['media_id'] == queue_item['media_id']:
                         torrents[queue_item['torrent']] = queue_item['torrent_custom_format_score']
-                if torrents:
-                    output_dict['data'].append({
-                        'media_id': item['media_id'],
-                        'title': item['title'],
-                        'year': item['year'],
-                        'torrents': torrents,
-                        'torrent_custom_format_score': queue_item['torrent_custom_format_score']
-                    })
+                output_dict['data'].append({
+                    'media_id': item['media_id'],
+                    'title': item['title'],
+                    'year': item['year'],
+                    'torrent': torrents
+                })
     else:
         for item in filtered_media_dict:
             output_dict['data'].append({
@@ -201,7 +204,6 @@ def print_output(output_dict):
     Returns:
         None
     """
-    
     for instance, run_data in output_dict.items():
         instance_data = run_data.get('data', None)
         if instance_data:
@@ -216,8 +218,11 @@ def print_output(output_dict):
                 logger.info(f"{item['title']} ({item['year']})")
                 
                 # Print torrents and their format scores associated with the media
-                for torrent, format_score in item['torrents'].items():
-                    logger.info(f"\t{torrent}\tScore: {format_score}")
+                if item['torrent']:
+                    for torrent, format_score in item['torrent'].items():
+                        logger.info(f"\t{torrent}\tScore: {format_score}")
+                else:
+                    logger.info("\tNo upgrades found for this item.")
                 
                 logger.info("")  # Add a newline for separation between media items
         else:
@@ -246,7 +251,7 @@ def notification(output_dict):
         for item in instance_data:
             title = item['title']
             year = item['year']
-            torrent = item['torrents']
+            torrent = item['torrent']
             torrent_list = []
             torrent_list.append(f"{title} ({year})")
             # Construct a list of torrents and their format scores associated with the media

@@ -5,10 +5,15 @@ except ImportError as e:
     print("Please install the required modules with 'pip install -r requirements.txt'")
     exit(1)
 
-import json, random
+import requests
+import random
+import json
 from datetime import datetime
+from util.config import Config
 
-def get_discord_data(config, script_name, logger):
+config = Config(script_name="discord")
+
+def get_discord_data(script_name, logger):
     """
     Gather discord data from config file
     
@@ -30,28 +35,17 @@ def get_discord_data(config, script_name, logger):
     # Get the script-specific notification info from the config based on the script name
     script_notification_info = discord.get(script_name, {})
 
+    channel_id = script_notification_info.get('channel_id', None)
+    discord_webhook = script_notification_info.get('discord_webhook', None)
 
-    # Determine the webhook and channel_id based on the retrieved information
     if notifiarr_webhook:
-        # If 'notifiarr_webhook' exists, retrieve channel_id from script_notification_info
-        channel_id = script_notification_info.get('channel_id', None)
-        webhook = notifiarr_webhook
-        
-        # Validate channel_id existence
         if not channel_id:
-            webhook = None
             logger.error("Discord channel ID is missing. Cannot send Discord notification.")
+            return
+        else:
+            return notifiarr_webhook, channel_id
     else:
-        # If 'notifiarr_webhook' does not exist, retrieve webhook from script_notification_info
-        webhook = script_notification_info.get('discord_webhook', None)
-        channel_id = None
-    
-    return webhook, channel_id
-
-
-import requests
-import random
-from datetime import datetime
+        return discord_webhook, None
 
 def get_message_data(logger):
     """
@@ -84,7 +78,7 @@ def get_message_data(logger):
 
     return random_joke, timestamp
 
-def discord_check(config, script_name):
+def discord_check(script_name):
     """
     Check if Discord notifications are enabled for the script
     
@@ -98,19 +92,22 @@ def discord_check(config, script_name):
     # Get the 'discord' section from the config
     discord = config.discord
     
+    notifiarr_webhook = discord.get('notifiarr_webhook', None)
+
     # Get the script-specific notification info from the config based on the script name
     script_notification_info = discord.get(script_name, {})
+
+    channel_id = script_notification_info.get('channel_id', None)
+    discord_webhook = script_notification_info.get('discord_webhook', None)
     
-    # Get the 'enabled' value from the script-specific notification info
-    enabled = script_notification_info.get('enabled', False)
-    if enabled:
+    if discord_webhook or channel_id and notifiarr_webhook:
         # If enabled is True, return True
         return True
     else:
         # If enabled is False, return False
         return False
 
-def discord(fields, logger, config, script_name, description, color, content):
+def discord(fields, logger, script_name, description, color, content):
     """
     Send a Discord notification
     
@@ -127,7 +124,7 @@ def discord(fields, logger, config, script_name, description, color, content):
         None
     """
     # Get the webhook and channel_id from the config
-    webhook, channel_id = get_discord_data(config, script_name, logger)
+    webhook, channel_id = get_discord_data(script_name, logger)
     if webhook:
         # Get the random joke and timestamp
         random_joke, timestamp = get_message_data(logger)

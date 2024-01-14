@@ -3,6 +3,7 @@ import json
 from util.logger import setup_logger
 from util.config import Config
 from util.call_script import call_script
+from util.discord import get_discord_data, discord_check
 
 def set_cmd_args(settings, bash_script_file, logger, script_name):
     """
@@ -20,6 +21,8 @@ def set_cmd_args(settings, bash_script_file, logger, script_name):
     """
     cmds = []
     cmd = [bash_script_file]
+    if discord_check(script_name):
+        webhook_url, channel = get_discord_data(script_name, logger)
     if settings:
         script_debug = str(settings.get('debug')) if 'debug' in settings else None
 
@@ -35,8 +38,6 @@ def set_cmd_args(settings, bash_script_file, logger, script_name):
         script_dry_run = str(settings.get('dry_run')) if 'dry_run' in settings else None
         shutdown_plex = str(settings.get('shutdown_plex')) if 'shutdown_plex' in settings else None
         full_backup = str(settings.get('full_backup')) if 'full_backup' in settings else None
-        webhook_url = str(settings.get('webhook_url')) if 'webhook_url' in settings else None
-        channel = str(settings.get('channel')) if 'channel' in settings else None
         
         logger.debug(f"channel: {channel}")
         logger.debug(f"webhook_url: {webhook_url}")

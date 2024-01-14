@@ -111,14 +111,14 @@ check_config() {
 
 find_duplicates() {
     start=$(date +%s)
-    echo "Running jdupes" | tee "$log_dir/.jduparr_bash.log"
+    echo "Running jdupes pre-run" | tee "$log_dir/.jduparr_bash.log"
     if [ $debug == "true" ]; then
         echo "Running jdupes for all directories" | tee -a "$log_dir/.jduparr_bash.log"
         echo -e "Media directory: ${data_dir}" | tee -a "$log_dir/.jduparr_bash.log"
         echo -e "jdupes -r -L -X onlyext:mp4,mkv,avi ${data_dir}" | tee -a "$log_dir/.jduparr_bash.log"
     fi
     mkdir -p "$(dirname "$0")/../logs"
-    echo "jDupes started" | tee -a "$log_dir/.jduparr_bash.log"
+    echo "Start re-linking files" | tee -a "$log_dir/.jduparr_bash.log"
     results=$(jdupes -r -M -X onlyext:mp4,mkv,avi "${data_dir}")
     if [[ $results != *"No duplicates found."* ]]; then
         jdupes -r -L -X onlyext:mp4,mkv,avi "${data_dir}"

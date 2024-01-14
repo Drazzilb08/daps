@@ -74,5 +74,5 @@ def version_check(logger, config):
         
         print("Sending Discord notification")
         # Call function to send Discord notification with script details
-        discord(field, logger=logger, config=config, script_name="main", description=f"__**Drazzilb's Scripts**__", color=0xff0000, content=None)
+        discord(field, logger=logger, script_name="main", description=f"__**Drazzilb's Scripts**__", color=0xff0000, content=None)
 

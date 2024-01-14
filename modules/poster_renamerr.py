@@ -511,7 +511,7 @@ def main():
     Main function to handle the renaming process
     """
 
-    print("Border Renamarr running...")
+    print("Poster Renamarr running...")
 
     # Display script settings
     data = [["Script Settings"]]

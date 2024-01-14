@@ -1,5 +1,6 @@
 import shlex
 import json
+import os
 from util.logger import setup_logger
 from util.config import Config
 from util.call_script import call_script
@@ -33,14 +34,14 @@ def set_cmd_args(settings) -> list[list[str]]:
     gdrive_sa_location = settings.get('gdrive_sa_location', None)
     gdrive_sync = settings.get('gdrive_sync', None)
 
-    if not gdrive_sync:
-        sync_list.append(1)
-    else:
-        sync_list = gdrive_sync
+    sync_list = gdrive_sync if isinstance(gdrive_sync, list) else [gdrive_sync]
 
     logger.debug(f"Sync list: {sync_list}")
     for sync_item in sync_list:
         logger.debug(f"Syncing: {sync_item}")
+        sync_location = sync_item['location']
+        sync_id = sync_item['id']
+
         sync_cmd = cmd.copy()
         if client_id:
             sync_cmd.append('-i')
@@ -57,13 +58,17 @@ def set_cmd_args(settings) -> list[list[str]]:
             exit(1)
 
         if gdrive_sync:
-            if sync_item['location'] != '':
+            if sync_location != '' and os.path.exists(sync_location):
                 sync_cmd.append('-l')
                 sync_cmd.append(shlex.quote(sync_item['location']))
             else:
-                logger.error("No sync location provided")
-                exit(1)
-            if sync_item['id'] != '':
+                if not os.path.exists(sync_location):
+                    logger.error(f"Sync location {sync_location} does not exist")
+                    exit(1)
+                else:
+                    logger.error("No sync location provided")
+                    exit(1)
+            if sync_id != '':
                 sync_cmd.append('-f')
                 sync_cmd.append(shlex.quote(sync_item['id']))
             else:

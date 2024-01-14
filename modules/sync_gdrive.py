@@ -9,7 +9,7 @@ config = Config(script_name="sync_gdrive")
 logger = setup_logger(config.log_level, "sync_gdrive")
 bash_script_file = './scripts/rclone.sh'
 
-def output_debug_info(cmd, settings) -> list[str]:
+def output_debug_info(cmd, settings):
     client_id = settings.get('client_id', None)
     client_secret = settings.get('client_secret', None)
     token = settings.get('token', None)
@@ -24,7 +24,7 @@ def output_debug_info(cmd, settings) -> list[str]:
 
     return debug_cmd
 
-def set_cmd_args(settings) -> list[list[str]]:
+def set_cmd_args(settings):
     cmds = []
     cmd = [bash_script_file]
     sync_list = []
@@ -35,6 +35,14 @@ def set_cmd_args(settings) -> list[list[str]]:
     gdrive_sync = settings.get('gdrive_sync', None)
 
     sync_list = gdrive_sync if isinstance(gdrive_sync, list) else [gdrive_sync]
+
+    if gdrive_sa_location and os.path.isfile(gdrive_sa_location):
+        gdrive_okay = True
+    elif gdrive_sa_location and not os.path.isfile(gdrive_sa_location):
+        gdrive_okay = False
+        logger.warning(f"\nGoogle service account file '{gdrive_sa_location}' does not exist\nPlease make sure you have the correct path to the file or remove the path from the config file\n")
+    else:
+        gdrive_okay = False
 
     logger.debug(f"Sync list: {sync_list}")
     for sync_item in sync_list:
@@ -79,7 +87,7 @@ def set_cmd_args(settings) -> list[list[str]]:
             sync_cmd.append('-t')
             sync_cmd.append(json.dumps(token))
 
-        if gdrive_sa_location:
+        if gdrive_okay:
             sync_cmd.append('-g')
             sync_cmd.append(shlex.quote(gdrive_sa_location))
 

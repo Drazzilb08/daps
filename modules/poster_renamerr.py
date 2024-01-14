@@ -267,7 +267,7 @@ def rename_files(matched_assets, script_config):
     # Iterate through each asset type
     for asset_type in asset_types:
         output[asset_type] = []
-        for item in tqdm(matched_assets[asset_type], desc=f"Renaming {asset_type}", unit="assets", leave=False, disable=None, total=len(matched_assets[asset_type])):
+        for item in tqdm(matched_assets[asset_type], desc=f"Renaming {asset_type} posters", unit="assets", leave=False, disable=None, total=len(matched_assets[asset_type])):
             messages = []
             discord_messages = []
             files = item['files']
@@ -510,6 +510,8 @@ def main():
     """
     Main function to handle the renaming process
     """
+
+    print("Border Renamarr running...")
 
     # Display script settings
     data = [["Script Settings"]]

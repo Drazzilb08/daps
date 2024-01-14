@@ -349,6 +349,7 @@ class StARR:
         Returns:
             bool: True if the refresh was successful, False otherwise.
         """
+        print("Waiting for action to complete...")
         while True:
             endpoint = f"{self.url}/api/v3/command/{command_id}"
             response = self.make_get_request(endpoint)
@@ -691,12 +692,16 @@ class StARR:
         """
         all_tags = self.get_all_tags()
         tag_name = tag_name.lower()
-        for tag in all_tags:
-            if tag["label"] == tag_name:
-                tag_id = tag["id"]
-                if not tag_id:
-                    tag_id = self.create_tag(tag_name)
-                return tag_id
+        if all_tags:
+            for tag in all_tags:
+                if tag["label"] == tag_name:
+                    tag_id = tag["id"]
+                    if not tag_id:
+                        tag_id = self.create_tag(tag_name)
+                    return tag_id
+        else:
+            tag_id = self.create_tag(tag_name)
+            return tag_id
         return None
     
     def remove_item_from_queue(self, queue_ids):

@@ -249,6 +249,7 @@ poster_renamerr:
   print_only_renames: false # <- This will print the renames to the log, but will not actually rename anything
   # This will integrate border_replacer with poster_renamerr, set this to true if you want to use them at the same time (no need to schedule border_replacer)
   # Note: This will create a tmp dir in your output directory for border_replacer to use and for poster_renamer to have accurate account of what has been added
+  # Note: All of border_replacer's settings will be used, except for the input_dir and output_dir, so make sure you're not in dry_run mode for border_replacer
   border_replacerr: false
   # Libraries are ONLY used for collections
   library_names:

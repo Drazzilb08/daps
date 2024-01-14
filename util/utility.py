@@ -407,9 +407,6 @@ def handle_starr_data(app, instance_type):
     media = app.get_media()  # Fetch media data from the Radarr or Sonarr instance
     if media:
         for item in tqdm(media, desc=f"Getting {instance_type.capitalize()} data", total=len(media), disable=None, leave=False):
-            if item['status'] == "upcoming" or item['status'] == "announced":
-                continue  # Skip upcoming or announced items
-            
             # Fetch relevant data based on the instance type (Radarr or Sonarr)
             if instance_type == "radarr":
                 file_id = item.get('movieFile', {}).get('id', None)  # Fetch file ID for Radarr
@@ -420,13 +417,12 @@ def handle_starr_data(app, instance_type):
                     episode_data = app.get_episode_data_by_season(item['id'], season['seasonNumber'])  # Fetch episode data for each season
                     episode_dict = []  # Initialize a list to hold episode data
                     for episode in episode_data:
-                        if not episode['hasFile']:
-                            continue  # Skip episodes without files
                         episode_dict.append({
                             'episode_number': episode['episodeNumber'],
                             'monitored': episode['monitored'],
                             'episode_file_id': episode['episodeFileId'],
-                            'episode_id': episode['id']
+                            'episode_id': episode['id'],
+                            'has_file': episode['hasFile'],
                         })  # Append episode data to the episode dictionary
                     if episode_dict:
                         season_dict.append({
@@ -461,6 +457,7 @@ def handle_starr_data(app, instance_type):
                 'normalized_alternate_titles': normalized_alternate_titles,
                 'file_id': file_id if instance_type == "radarr" else None,
                 'folder': os.path.basename(os.path.normpath(item['path'])),
+                'has_file': item['hasFile'] if instance_type == "radarr" else None,
                 'tags': item['tags'],
                 'seasons': season_dict if instance_type == "sonarr" else None,  # Add season_dict for Sonarr items
             })  # Append the constructed dictionary to media_dict

@@ -115,17 +115,32 @@ bash_scripts:
 # This is a script base of this one: https://discord.com/channels/492590071455940612/1124032073557086258/1126226814629576858
 sync_gdrive:
   log_level: info # debug, info, warning, error, critical
-  run: true # If false, it will skip this step
-  client_id: asdasds.apps.googleusercontent.com # Client ID for rclone usually ends with .apps.googleusercontent.com
-  client_secret: GOCSPX-asda123 # Client Secret for rclone, usually starts with GOCSPX-
-  token: # The token for rclone, this is the output of rclone config dump that needs to run manually
+  # Client ID for rclone usually ends with .apps.googleusercontent.com
+  client_id: asdasds.apps.googleusercontent.com
+  # Client Secret for rclone, usually starts with GOCSPX-
+  client_secret: GOCSPX-asda123
+  # The token for rclone, this is the output of rclone config dump that needs to run manually
   # Token looks like this: { "access_token": "value", "token_type": "Bearer", "refresh_token": "value", "expiry": "value" }
-  gdrive_sa_location: /config/rclone_sa.json # The location of your rclone service account file (JSON)
+  # NOTE: Include the curly braces
+  token: { "access_token": "value", "token_type": "Bearer", "refresh_token": "value", "expiry": "value" }
+  # The location of your rclone service account file (JSON)
+  gdrive_sa_location: /config/rclone_sa.json 
   gdrive_sync: # example of multiple gdrive_id's with multiple sync_locations as objects, we have deprecated gdrive_id and sync_location so please use this instead
-    - id: 1VeeQ_frBFpp6AZLimaJSSr0Qsrl6Tb7z # The ID of the folder you want to sync from
-      location: /data/input # Where you want to sync the posters to
-    - id: 1wrSru-46iIN1iqCl2Cjhj5ofdazPgbsz # The ID of the folder you want to sync from
-      location: /data/input2 # Where you want to sync the posters to
+      # id: The ID of the folder you want to sync from
+      # location: Where you want to sync the posters to
+    - id: 1VeeQ_frBFpp6AZLimaJSSr0Qsrl6Tb7z # Drazzib
+      location: /path/to/location # Where you want to sync the posters to
+    - id: 1wrSru-46iIN1iqCl2Cjhj5ofdazPgbsz # dsaq
+      location: /path/to/location # Where you want to sync the posters to
+    - id: 1zWY-ORtJkOLcQChV--oHquxW3JCow1zm # solen
+      location: /path/to/location # Where you want to sync the posters to
+    - id: 1Xg9Huh7THDbmjeanW0KyRbEm6mGn_jm8 # BZ
+      location: /path/to/location # Where you want to sync the posters to
+    - id: 1oBzEOXXrTHGq6sUY_4RMtzMTt4VHyeJp # chrisdc
+      location: /path/to/location # Where you want to sync the posters to
+    - id: 1G77TLQvgs_R7HdMWkMcwHL6vd_96cMp7 # Quafley
+      location: /path/to/location # Where you want to sync the posters to
+      
 
 discord:
   # Notifiarr uses passthrough integration

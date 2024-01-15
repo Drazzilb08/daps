@@ -409,7 +409,7 @@ def notification(output):
     fields = []  # List to hold individual message fields
     # Loop through the output dictionary containing messages for different asset types
     for asset_type, assets in output.items():
-        if asset_type:
+        if assets:
             discord_messages = []  # List to hold individual messages for each asset
             current_field = ""  # String to store messages within the field character limit
             
@@ -434,8 +434,12 @@ def notification(output):
                     else:
                         for message in messages:
                             asset_messages.append(f"\t{message}")
-                asset_messages.append("")  # Adding an empty line between assets
-                discord_messages.append("\n".join(asset_messages))  # Joining lines into an asset-specific message
+                    if asset_messages:
+                        asset_messages.append("")  # Adding an empty line between assets
+                    discord_messages.append("\n".join(asset_messages))  # Joining lines into an asset-specific message
+                else:
+                    continue
+        
             
             # Split asset-specific messages into multiple fields if their total length exceeds Discord's field limit
             for message in discord_messages:
@@ -469,6 +473,8 @@ def notification(output):
                         start_index = i * num_messages_per_field
                         end_index = min(start_index + num_messages_per_field, num_fields)
                         discord_dict[i + 1] = fields[start_index:end_index]  # Splitting fields into separate keys
+        else:
+            continue
 
     # Check if the total character count of the messages in the current dict exceeds 6000 characters
     new_dict = {}

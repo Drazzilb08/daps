@@ -251,16 +251,26 @@ def replace_border_and_resize(input_file, output_path, border_colors, border_wid
             # Resize proportionally to a maximum of 1000x1500
             resized_image = extended_image.resize((1000, 1500), Image.LANCZOS)  # Use high-quality resampling
 
-            # Save the final resized image with the new border
-            if os.path.isfile(output_path): # Check if the file already exists
-                if not filecmp.cmp(input_file, output_path): # Check if the file is different from the original
-                    resized_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+            file_name = os.path.basename(input_file)
+            final_path = f"{output_path}/{file_name}" # Set the output path to the parent directory
+            
+            if os.path.isfile(final_path):
+                # Save file to /tmp/ and compare to existing file
+                tmp_path = f"/tmp/{file_name}"
+                resized_image.save(tmp_path)
+                if not filecmp.cmp(final_path, tmp_path):
+                    resized_image.save(final_path)
+                    # Remove tmp file
+                    os.remove(tmp_path)
                     return True
                 else:
+                    # Remove tmp file
+                    os.remove(tmp_path)
                     return False
-            else: # If the file doesn't exist
-                resized_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+            else:
+                resized_image.save(final_path)
                 return True
+    # Log an error if the image can't be opened
     except UnidentifiedImageError as e:
         logger.error(f"Error: {e}")
         logger.error(f"Error processing {input_file}")
@@ -300,17 +310,27 @@ def replace_border(input_file, output_path, border_colors, border_width):
             new_height = cropped_image.height + 2 * border_width # to account for the new border
             extended_image = Image.new("RGB", (new_width, new_height), border_colors) # Create a new image with the new border color
             extended_image.paste(cropped_image, (border_width, border_width)) # Paste the cropped image onto the new image
+            
+            file_name = os.path.basename(input_file)
+            final_path = f"{output_path}/{file_name}" # Set the output path to the parent directory
 
-            # Save the final image with the new border
-            if os.path.isfile(output_path): # Check if the file already exists
-                if not filecmp.cmp(input_file, output_path): # Check if the file is different from the original
-                    extended_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+            if os.path.isfile(final_path):
+                # Save file to /tmp/ and compare to existing file
+                tmp_path = f"/tmp/{file_name}"
+                extended_image.save(tmp_path)
+                if not filecmp.cmp(final_path, tmp_path):
+                    extended_image.save(final_path)
+                    # Remove tmp file
+                    os.remove(tmp_path)
                     return True
                 else:
+                    # Remove tmp file
+                    os.remove(tmp_path)
                     return False
-            else: # If the file doesn't exist
-                extended_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+            else:
+                extended_image.save(final_path)
                 return True
+    # Log an error if the image can't be opened
     except UnidentifiedImageError as e:
         logger.error(f"Error: {e}")
         logger.error(f"Error processing {input_file}")
@@ -345,22 +365,27 @@ def remove_border_resize(input_file, output_path, border_width):
 
             # Resize proportionally to a maximum of 1000x1500
             resized_image = cropped_image.resize((1000, 1500), Image.LANCZOS)  # Use high-quality resampling
+            
+            file_name = os.path.basename(input_file)
+            final_path = f"{output_path}/{file_name}" # Set the output path to the parent directory
 
-            # Extend the canvas to 1000x1500 if necessary
-            if resized_image.size != (1000, 1500): # Check if the image is smaller than 1000x1500
-                extended_image = Image.new("RGB", (1000, 1500), "white")  # Create a white canvas
-                extended_image.paste(resized_image, (0, 0))  # Paste the resized image onto the canvas
-                resized_image = extended_image # Set the resized image to the extended image
-
-            if os.path.isfile(output_path): # Check if the file already exists
-                if not filecmp.cmp(input_file, output_path): # Check if the file is different from the original
-                    resized_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+            if os.path.isfile(final_path):
+                # Save file to /tmp/ and compare to existing file
+                tmp_path = f"/tmp/{file_name}"
+                resized_image.save(tmp_path)
+                if not filecmp.cmp(final_path, tmp_path):
+                    resized_image.save(final_path)
+                    # Remove tmp file
+                    os.remove(tmp_path)
                     return True
                 else:
+                    # Remove tmp file
+                    os.remove(tmp_path)
                     return False
-            else: # If the file doesn't exist
-                resized_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+            else:
+                resized_image.save(final_path)
                 return True
+    # Log an error if the image can't be opened
     except UnidentifiedImageError as e:
         logger.error(f"Error: {e}")
         logger.error(f"Error processing {input_file}")
@@ -392,19 +417,31 @@ def remove_border(input_file, output_path, border_width):
             right = left + new_width # Calculate the right and bottom coordinates
             bottom = top + new_height # of the cropped image
             cropped_image = image.crop((left, top, right, bottom)) # Crop the image
-            
-            if os.path.isfile(output_path): # Check if the file already exists
-                if not filecmp.cmp(input_file, output_path): # Check if the file is different from the original
-                    cropped_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+
+            file_name = os.path.basename(input_file)
+            final_path = f"{output_path}/{file_name}" # Set the output path to the parent directory
+
+            if os.path.isfile(final_path):
+                # Save file to /tmp/ and compare to existing file
+                tmp_path = f"/tmp/{file_name}"
+                cropped_image.save(tmp_path)
+                if not filecmp.cmp(final_path, tmp_path):
+                    cropped_image.save(final_path)
+                    # Remove tmp file
+                    os.remove(tmp_path)
                     return True
                 else:
+                    # Remove tmp file
+                    os.remove(tmp_path)
                     return False
-            else: # If the file doesn't exist
-                cropped_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+            else:
+                cropped_image.save(final_path) # Save the file
                 return True
+    # Log an error if the image can't be opened
     except UnidentifiedImageError as e:
         logger.error(f"Error: {e}")
         logger.error(f"Error processing {input_file}")
+        return False
 
 def process_files(input_dir, output_dir, asset_folders):
     """
@@ -438,6 +475,10 @@ def process_files(input_dir, output_dir, asset_folders):
 
     # Categorize files in the input directory into assets
     assets_dict = categorize_files(input_dir, asset_folders)
+
+    # if trailing slash on output_dir, remove it
+    if output_dir.endswith("/"):
+        output_dir = output_dir[:-1]
     
     # If assets are found in the input directory
     if assets_dict:
@@ -450,6 +491,9 @@ def process_files(input_dir, output_dir, asset_folders):
         if messages:
             for message in messages:
                 logger.info(message)
+        else:
+            # Log a message if no files were processed
+            logger.info(f"No files processed")
     else:
         # Log a message if no files are found in the input directory
         logger.info(f"No files found in {input_dir}")

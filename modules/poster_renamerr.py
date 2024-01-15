@@ -304,7 +304,7 @@ def rename_files(matched_assets, script_config):
                     new_file_path = os.path.join(dest_dir, new_file_name)
                 else:
                     if asset_folders:
-                        new_file_name = f"Poster{file_extension}"
+                        new_file_name = f"poster{file_extension}"
                     else:
                         new_file_name = f"{folder}{file_extension}"
                     new_file_path = os.path.join(dest_dir, new_file_name)

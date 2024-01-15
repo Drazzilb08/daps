@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 #     _ _____  _    _ _____        _____  _____  
 #    (_)  __ \| |  | |  __ \ /\   |  __ \|  __ \ 
@@ -358,6 +358,7 @@ unraid_notify(){
 }
 
 main() {
+
     data_dir=${data_dir%/}
     log_dir=${log_dir%/}
     # If no log dir set use script's dir
@@ -382,12 +383,13 @@ main() {
 }
 
 handle_options() {
-    while getopts ":w:D:b:n:h:L:" opt; do
+    while getopts ":w:D:b:n:h:L:C:" opt; do
         case $opt in
         w) webhook="$OPTARG" ;;
         D) data_dir="$OPTARG" ;;
         b) bar_color="$OPTARG" ;;
         n) bot_name="$OPTARG" ;;
+        C) channel="$OPTARG" ;;
         h) display_help ;;
         L) log_dir="$OPTARG" ;;
         \?) echo "Invalid option -$OPTARG" >&2 ;;

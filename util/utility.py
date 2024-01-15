@@ -32,14 +32,14 @@ words_to_remove = [
     "(US)",
 ]
 
-# List of prefixes and suffixes to remove from titlesfor comparison
+# List of prefixes and suffixes to remove from titles for comparison
 prefixes = [
     "The",
     "A",
     "An"
 ]
 
-# List of prefixes and suffixes to remove from titlesfor comparison
+# List of prefixes and suffixes to remove from titles for comparison
 suffixes = [
     "Collection",
 ]
@@ -353,9 +353,9 @@ def get_media_folders(paths, logger):
             normalized_title = normalize_titles(item)  # Normalize the item's title
             
             if os.path.isdir(os.path.join(path, item)) and any(os.path.isdir(os.path.join(path, item, sub_folder)) for sub_folder in os.listdir(os.path.join(path, item))):
-                # If the item is a directory and contains subfolders
+                # If the item is a directory and contains sub folders
                 sub_folders = [sub_folder for sub_folder in os.listdir(os.path.join(path, item)) if os.path.isdir(os.path.join(path, item, sub_folder)) and not sub_folder.startswith('.')]
-                sub_folders.sort()  # Sort the subfolders
+                sub_folders.sort()  # Sort the sub folders
                 
                 season_numbers = []
                 for folder in sub_folders:

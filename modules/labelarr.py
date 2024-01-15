@@ -7,7 +7,7 @@
 # ======================================================================================
 # Author: Drazzilb
 # Description: A script to sync labels between Plex and Radarr/Sonarr
-# Usage: python3 /path/to/labelarr.py
+# Usage: python3 labelarr.py
 # Requirements: requests, pyyaml, plexapi
 # License: MIT License
 # ======================================================================================

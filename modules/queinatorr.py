@@ -387,7 +387,7 @@ def notification(messages):
         field_list = []
         
         # Retrieve values for various parameters from the input 'value' dictionary
-        pre_inport_category = value.get('pre_import_category', None)
+        pre_import_category = value.get('pre_import_category', None)
         post_import_category = value.get('post_import_category', None)
         qbit_instance = value.get('qbit_instance', None)
         days_to_keep = value.get('days_to_keep', None)
@@ -410,7 +410,7 @@ def notification(messages):
             if total_queue_items > 0:
                 field = {
                     "name": f"{server_name} - Queue Items (Total: " + str(total_queue_items) + ")",
-                    "value": f"```Items removed from queue:\nAction: {pre_inport_category} -> {post_import_category}```",
+                    "value": f"```Items removed from queue:\nAction: {pre_import_category} -> {post_import_category}```",
                     "inline": False
                 }
                 fields.append(field)
@@ -423,7 +423,7 @@ def notification(messages):
             if total_qbit_items > 0:
                 field = {
                     "name": f"{server_name} - qBittorrent Items (Total: " + str(total_qbit_items) + ")",
-                    "value": f"```Items moved to from {pre_inport_category} -> {post_import_category}:\nDownloaded {days_to_keep} days ago or more```",
+                    "value": f"```Items moved to from {pre_import_category} -> {post_import_category}:\nDownloaded {days_to_keep} days ago or more```",
                     "inline": False
                 }
                 fields.append(field)
@@ -461,7 +461,7 @@ def print_output(messages):
     
     # Iterate through each instance and its corresponding value in the messages dictionary
     for instance_name, value in messages.items():
-        pre_inport_category = value.get('pre_import_category', None)
+        pre_import_category = value.get('pre_import_category', None)
         post_import_category = value.get('post_import_category', None)
         qbit_instance = value.get('qbit_instance', None)
         
@@ -499,7 +499,7 @@ def print_output(messages):
             # Create header and subheader for qBittorrent items
             data = [
                 [f"qBittorrent Items Processed for {server_name}"],
-                [f"{pre_inport_category} -> {post_import_category} ({qbit_instance})"],
+                [f"{pre_import_category} -> {post_import_category} ({qbit_instance})"],
             ]
             create_table(data, log_level="info", logger=logger)
             

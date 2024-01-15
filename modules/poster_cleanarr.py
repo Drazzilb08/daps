@@ -11,7 +11,7 @@
 #  Description: This script will remove any assets from your plex-meta-manager asset directory that are not being used by your media.
 #               Note: This script will remove things that renamer has put in to the assets directory that do not have a folder in your
 #               Media directory and cause a loop. I wouldn't recommend running this script very often (weekly at most, monthly is probably)
-#  Usage: python3 renamer_cleaner.py
+#  Usage: python3 poster_cleanarr.py
 #  Requirements: requests
 #  License: MIT License
 # ===========================================================================================================

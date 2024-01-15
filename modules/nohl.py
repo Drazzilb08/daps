@@ -81,12 +81,12 @@ def find_no_hl_files(path):
         }
         
         if os.path.isdir(os.path.join(path, item)) and any(os.path.isdir(os.path.join(path, item, sub_folder)) for sub_folder in os.listdir(os.path.join(path, item))):
-            # If the item is a directory and contains subfolders
+            # If the item is a directory and contains sub folders
             sub_folders = [sub_folder for sub_folder in os.listdir(os.path.join(path, item)) if os.path.isdir(os.path.join(path, item, sub_folder)) and not sub_folder.startswith('.')]
             sub_folders.sort()
             asset_dict['season_info'] = []  # Initialize list to store season information
             
-            # Processing subfolders
+            # Processing sub folders
             for sub_folder in sub_folders:
                 sub_folder_files = [file for file in os.listdir(os.path.join(path, item, sub_folder)) if os.path.isfile(os.path.join(path, item, sub_folder, file)) and not file.startswith('.')]
                 season = re.search(season_regex, sub_folder)
@@ -97,7 +97,7 @@ def find_no_hl_files(path):
                 sub_folder_files.sort()
                 nohl_files = []
                 
-                # Finding non-hardlinked files within subfolders
+                # Finding non-hardlinked files within sub folders
                 for file in sub_folder_files:
                     file_path = os.path.join(path, item, sub_folder, file)
                     if (os.path.isfile(file_path) and os.stat(file_path).st_nlink == 1):

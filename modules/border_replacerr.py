@@ -472,6 +472,9 @@ def process_files(input_dir, output_dir, asset_folders):
     # If no border colors are available, log a message
     if not border_colors:
         logger.info(f"No border colors set, removing border instead.")
+    else:
+        # Log the border colors being used
+        logger.info(f"Using {', '.join(border_colors)} border colors.")
 
     # Categorize files in the input directory into assets
     assets_dict = categorize_files(input_dir, asset_folders)

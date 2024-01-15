@@ -160,10 +160,10 @@ def match_data(media_dict, asset_files):
                                 asset['title'] in alternate_titles or
                                 asset['normalized_title'] in normalized_alternate_titles or
                                 asset['title'] == original_title or
-                                no_prefix == media['title'] or
-                                no_suffix == media['title'] or
-                                no_prefix_normalized == media['normalized_title'] or
-                                no_suffix_normalized == media['normalized_title']
+                                (no_prefix and media['title'] in no_prefix) or
+                                (no_suffix and media['title'] in no_suffix) or
+                                (no_prefix_normalized and media['normalized_title'] in no_prefix_normalized) or
+                                (no_suffix_normalized and media['normalized_title'] in no_suffix_normalized)
                             ) and (
                                 asset['year'] == media['year'] or
                                 asset['year'] == secondary_year

@@ -7,7 +7,7 @@ from util.call_script import call_script
 
 config = Config(script_name="sync_gdrive")
 logger = setup_logger(config.log_level, "sync_gdrive")
-bash_script_file = './scripts/rclone.sh'
+bash_script_file = os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + '/../scripts/rclone.sh')
 
 def output_debug_info(cmd, settings):
     client_id = settings.get('client_id', None)

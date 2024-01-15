@@ -27,7 +27,7 @@ from util.scheduler import handle_range
 
 try:
     from tqdm import tqdm
-    from PIL import Image
+    from PIL import Image, UnidentifiedImageError
 except ImportError as e:
     print(f"ImportError: {e}")
     print("Please install the required modules with 'pip install -r requirements.txt'")
@@ -234,27 +234,31 @@ def replace_border_and_resize(input_file, output_path, border_colors, border_wid
     """
 
     # Open the image
-    with Image.open(input_file) as image:
-        width, height = image.size
+    try:
+        with Image.open(input_file) as image:
+            width, height = image.size
 
-        # Crop the existing border
-        cropped_image = image.crop((border_width, border_width, width - border_width, height - border_width))
+            # Crop the existing border
+            cropped_image = image.crop((border_width, border_width, width - border_width, height - border_width))
 
-        # Add new border
-        new_width = cropped_image.width + 2 * border_width # Add 2 * border_width to the width and height
-        new_height = cropped_image.height + 2 * border_width # to account for the new border
-        extended_image = Image.new("RGB", (new_width, new_height), border_colors) # Create a new image with the new border color
-        extended_image.paste(cropped_image, (border_width, border_width)) # Paste the cropped image onto the new image
+            # Add new border
+            new_width = cropped_image.width + 2 * border_width # Add 2 * border_width to the width and height
+            new_height = cropped_image.height + 2 * border_width # to account for the new border
+            extended_image = Image.new("RGB", (new_width, new_height), border_colors) # Create a new image with the new border color
+            extended_image.paste(cropped_image, (border_width, border_width)) # Paste the cropped image onto the new image
 
-        # Resize proportionally to a maximum of 1000x1500
-        resized_image = extended_image.resize((1000, 1500), Image.LANCZOS)  # Use high-quality resampling
+            # Resize proportionally to a maximum of 1000x1500
+            resized_image = extended_image.resize((1000, 1500), Image.LANCZOS)  # Use high-quality resampling
 
-        # Save the final resized image with the new border
-        if os.path.isfile(output_path): # Check if the file already exists
-            if not filecmp.cmp(input_file, output_path): # Check if the file is different from the original
+            # Save the final resized image with the new border
+            if os.path.isfile(output_path): # Check if the file already exists
+                if not filecmp.cmp(input_file, output_path): # Check if the file is different from the original
+                    resized_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+            else: # If the file doesn't exist
                 resized_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
-        else: # If the file doesn't exist
-            resized_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+    except UnidentifiedImageError as e:
+        logger.error(f"Error: {e}")
+        logger.error(f"Error processing {input_file}")
 
                     
 def replace_border(input_file, output_path, border_colors, border_width):
@@ -272,31 +276,35 @@ def replace_border(input_file, output_path, border_colors, border_width):
     """
 
     # Open the image
-    with Image.open(input_file) as image:
-        border_width = border_width * 2 # Multiply by 2 to account for the border on both sides
-        width, height = image.size # Get the width and height of the image
+    try:
+        with Image.open(input_file) as image:
+            border_width = border_width * 2 # Multiply by 2 to account for the border on both sides
+            width, height = image.size # Get the width and height of the image
 
-        # Crop the center
-        new_width = width - border_width # Subtract 2 * border_width from the width and height
-        new_height = height - border_width # to account for the border
-        left = (width - new_width) // 2 # Calculate the left and top coordinates
-        top = (height - new_height) // 2 # of the cropped image
-        right = left + new_width # Calculate the right and bottom coordinates
-        bottom = top + new_height # of the cropped image
-        cropped_image = image.crop((left, top, right, bottom)) # Crop the image
+            # Crop the center
+            new_width = width - border_width # Subtract 2 * border_width from the width and height
+            new_height = height - border_width # to account for the border
+            left = (width - new_width) // 2 # Calculate the left and top coordinates
+            top = (height - new_height) // 2 # of the cropped image
+            right = left + new_width # Calculate the right and bottom coordinates
+            bottom = top + new_height # of the cropped image
+            cropped_image = image.crop((left, top, right, bottom)) # Crop the image
 
-        # Add border
-        new_width = cropped_image.width + 2 * border_width # Add 2 * border_width to the width and height
-        new_height = cropped_image.height + 2 * border_width # to account for the new border
-        extended_image = Image.new("RGB", (new_width, new_height), border_colors) # Create a new image with the new border color
-        extended_image.paste(cropped_image, (border_width, border_width)) # Paste the cropped image onto the new image
+            # Add border
+            new_width = cropped_image.width + 2 * border_width # Add 2 * border_width to the width and height
+            new_height = cropped_image.height + 2 * border_width # to account for the new border
+            extended_image = Image.new("RGB", (new_width, new_height), border_colors) # Create a new image with the new border color
+            extended_image.paste(cropped_image, (border_width, border_width)) # Paste the cropped image onto the new image
 
-        # Save the final image with the new border
-        if os.path.isfile(output_path): # Check if the file already exists
-            if not filecmp.cmp(input_file, output_path): # Check if the file is different from the original
+            # Save the final image with the new border
+            if os.path.isfile(output_path): # Check if the file already exists
+                if not filecmp.cmp(input_file, output_path): # Check if the file is different from the original
+                    extended_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+            else: # If the file doesn't exist
                 extended_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
-        else: # If the file doesn't exist
-            extended_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+    except UnidentifiedImageError as e:
+        logger.error(f"Error: {e}")
+        logger.error(f"Error processing {input_file}")
 
 def remove_border_resize(input_file, output_path, border_width):
     """
@@ -312,33 +320,37 @@ def remove_border_resize(input_file, output_path, border_width):
     """
 
     # Open the image
-    with Image.open(input_file) as image: # Open the image
-        border_width = border_width * 2 # Multiply by 2 to account for the border on both sides
-        width, height = image.size # Get the width and height of the image
+    try:
+        with Image.open(input_file) as image: # Open the image
+            border_width = border_width * 2 # Multiply by 2 to account for the border on both sides
+            width, height = image.size # Get the width and height of the image
 
-        # Crop the center
-        new_width = width - border_width # Subtract 2 * border_width from the width and height
-        new_height = height - border_width # to account for the border
-        left = (width - new_width) // 2 # Calculate the left and top coordinates
-        top = (height - new_height) // 2 # of the cropped image
-        right = left + new_width # Calculate the right and bottom coordinates
-        bottom = top + new_height # of the cropped image
-        cropped_image = image.crop((left, top, right, bottom)) # Crop the image
+            # Crop the center
+            new_width = width - border_width # Subtract 2 * border_width from the width and height
+            new_height = height - border_width # to account for the border
+            left = (width - new_width) // 2 # Calculate the left and top coordinates
+            top = (height - new_height) // 2 # of the cropped image
+            right = left + new_width # Calculate the right and bottom coordinates
+            bottom = top + new_height # of the cropped image
+            cropped_image = image.crop((left, top, right, bottom)) # Crop the image
 
-        # Resize proportionally to a maximum of 1000x1500
-        resized_image = cropped_image.resize((1000, 1500), Image.LANCZOS)  # Use high-quality resampling
+            # Resize proportionally to a maximum of 1000x1500
+            resized_image = cropped_image.resize((1000, 1500), Image.LANCZOS)  # Use high-quality resampling
 
-        # Extend the canvas to 1000x1500 if necessary
-        if resized_image.size != (1000, 1500): # Check if the image is smaller than 1000x1500
-            extended_image = Image.new("RGB", (1000, 1500), "white")  # Create a white canvas
-            extended_image.paste(resized_image, (0, 0))  # Paste the resized image onto the canvas
-            resized_image = extended_image # Set the resized image to the extended image
+            # Extend the canvas to 1000x1500 if necessary
+            if resized_image.size != (1000, 1500): # Check if the image is smaller than 1000x1500
+                extended_image = Image.new("RGB", (1000, 1500), "white")  # Create a white canvas
+                extended_image.paste(resized_image, (0, 0))  # Paste the resized image onto the canvas
+                resized_image = extended_image # Set the resized image to the extended image
 
-        if os.path.isfile(output_path): # Check if the file already exists
-            if not filecmp.cmp(input_file, output_path): # Check if the file is different from the original
+            if os.path.isfile(output_path): # Check if the file already exists
+                if not filecmp.cmp(input_file, output_path): # Check if the file is different from the original
+                    resized_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+            else: # If the file doesn't exist
                 resized_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
-        else: # If the file doesn't exist
-            resized_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+    except UnidentifiedImageError as e:
+        logger.error(f"Error: {e}")
+        logger.error(f"Error processing {input_file}")
 
 def remove_border(input_file, output_path, border_width):
     """
@@ -354,24 +366,28 @@ def remove_border(input_file, output_path, border_width):
     """
 
     # Open the image
-    with Image.open(input_file) as image: # Open the image
-        border_width = border_width * 2 # Multiply by 2 to account for the border on both sides
-        width, height = image.size # Get the width and height of the image
+    try:
+        with Image.open(input_file) as image: # Open the image
+            border_width = border_width * 2 # Multiply by 2 to account for the border on both sides
+            width, height = image.size # Get the width and height of the image
 
-        # Crop the center
-        new_width = width - border_width # Subtract 2 * border_width from the width and height
-        new_height = height - border_width # to account for the border
-        left = (width - new_width) // 2 # Calculate the left and top coordinates
-        top = (height - new_height) // 2 # of the cropped image
-        right = left + new_width # Calculate the right and bottom coordinates
-        bottom = top + new_height # of the cropped image
-        cropped_image = image.crop((left, top, right, bottom)) # Crop the image
-        
-        if os.path.isfile(output_path): # Check if the file already exists
-            if not filecmp.cmp(input_file, output_path): # Check if the file is different from the original
+            # Crop the center
+            new_width = width - border_width # Subtract 2 * border_width from the width and height
+            new_height = height - border_width # to account for the border
+            left = (width - new_width) // 2 # Calculate the left and top coordinates
+            top = (height - new_height) // 2 # of the cropped image
+            right = left + new_width # Calculate the right and bottom coordinates
+            bottom = top + new_height # of the cropped image
+            cropped_image = image.crop((left, top, right, bottom)) # Crop the image
+            
+            if os.path.isfile(output_path): # Check if the file already exists
+                if not filecmp.cmp(input_file, output_path): # Check if the file is different from the original
+                    cropped_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+            else: # If the file doesn't exist
                 cropped_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
-        else: # If the file doesn't exist
-            cropped_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+    except UnidentifiedImageError as e:
+        logger.error(f"Error: {e}")
+        logger.error(f"Error processing {input_file}")
 
 def process_files(input_dir, output_dir, asset_folders):
     """

@@ -163,3 +163,4 @@ bash-scripts/sync.sh
 *.extra*
 *extra-scripts*
 *TODO*
+*backup*.conf

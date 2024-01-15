@@ -311,8 +311,11 @@ def main():
                             server_name = plex.friendlyName
                             
                             # Fetch Plex data and process it
-                            plex_dict = get_plex_data(plex, library_names, logger, include_smart=False, collections_only=False)
-                            
+                            if library_names:
+                                plex_dict = get_plex_data(plex, library_names, logger, include_smart=False, collections_only=False)
+                            else:
+                                logger.error(f"No library names provided for {starr_server_name}, against {server_name}. Skipping...")
+                                continue
                             # If Plex data is found
                             if plex_dict:
                                 # Logging Plex data

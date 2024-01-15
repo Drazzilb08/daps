@@ -9,8 +9,8 @@
 # ===================================================================================================
 # Author: Drazzilb
 # Description: This script will rename your posters to match Plex-Meta-Manager's naming scheme from TPDB's naming.
-# Usage: python3 renamer.py 
-# Requirements: requests, tqdm, fuzzywuzzy, pyyaml
+# Usage: python3 poster_renamerr.py 
+# Requirements: requests, tqdm, pyyaml
 # License: MIT License
 # ===================================================================================================
 
@@ -41,6 +41,8 @@ config = Config(script_name)
 log_level = config.log_level
 dry_run = config.dry_run
 logger = setup_logger(log_level, script_name)
+
+year_regex = re.compile(r"\s?\((\d{4})\).*")
 
 def get_assets_files(source_dir, source_overrides):
     """
@@ -273,7 +275,7 @@ def rename_files(matched_assets, script_config):
             files = item['files']
             folder = item['folder']
 
-            # Removem any OS illegal characters from the file name
+            # Remove any OS illegal characters from the file name
             if asset_type == "collections":
                 folder = re.sub(r'[<>:"/\\|?*]', '', folder.replace('/', ''))
             
@@ -283,9 +285,6 @@ def rename_files(matched_assets, script_config):
                 if not os.path.exists(dest_dir):
                     if not dry_run:
                         os.makedirs(dest_dir)
-                        messages.append(f"Created folder {os.path.basename(dest_dir)}")
-                    else:
-                        messages.append(f"Would create folder {os.path.basename(dest_dir)}")
             else:
                 dest_dir = destination_dir
             
@@ -337,13 +336,14 @@ def rename_files(matched_assets, script_config):
             output[asset_type].append({
                 'title': item['title'],
                 'year': item['year'],
+                'folder': item['folder'],
                 'messages': messages,
                 'discord_messages': discord_messages,
             })
     
     return output
 
-def handle_output(output):
+def handle_output(output, asset_folders):
     """
     Handles the output messages
     
@@ -365,22 +365,29 @@ def handle_output(output):
             # Iterate through each asset within the asset type
             for asset in assets:
                 title = asset['title']
+                title = year_regex.sub("", title).strip()
                 year = asset['year']
+                folder = asset['folder']
                 messages = asset['messages']
                 if year:
                     year = f" ({year})"
                 else:
                     year = ""
-                
+                messages.sort()  # Sorting the messages alphabetically for consistency
                 # Log the asset title and year, along with its messages
                 if messages:
+                    logger.info(f"{title}{year}")
+                    if asset_folders:
+                        if dry_run:
+                            logger.info(f"\tWould create folder '{folder}'")
+                        else:
+                            logger.info(f"\tCreated folder '{folder}'")
                     if asset_type == "series":
-                        logger.info(f"{title}{year}")
                         for message in messages:
                             logger.info(f"\t{message}")
                     else:
                         for message in messages:
-                            logger.info(f"{title}{year} - {message}")
+                            logger.info(f"\t{message}")
                     logger.info("")
         else:
             # If no assets are present for the asset type, log the message
@@ -400,7 +407,6 @@ def notification(output):
     
     discord_dict = {}  # Dictionary to organize messages to be sent to Discord
     fields = []  # List to hold individual message fields
-
     # Loop through the output dictionary containing messages for different asset types
     for asset_type, assets in output.items():
         if asset_type:
@@ -411,21 +417,23 @@ def notification(output):
             for asset in assets:
                 asset_messages = []  # List to hold individual lines for each asset's message
                 title = asset['title']
+                title = year_regex.sub("", title).strip()
                 year = asset['year']
                 if year:
                     year = f" ({year})"
                 else:
                     year = ""
                 messages = asset['discord_messages']  # Extracting specific messages for Discord display
+                # Sort messages
                 messages.sort()  # Sorting the messages alphabetically for consistency
                 if messages:
+                    asset_messages.append(f"{title}{year}")  # Adding the title and year as the first line of the message
                     if asset_type == "series":
-                        asset_messages.append(f"{title}{year}")  # Adding the title and year as the first line of the message
                         for message in messages:
                             asset_messages.append(f"\t{message}")
                     else:
                         for message in messages:
-                            asset_messages.append(f"{message}")
+                            asset_messages.append(f"\t{message}")
                 asset_messages.append("")  # Adding an empty line between assets
                 discord_messages.append("\n".join(asset_messages))  # Joining lines into an asset-specific message
             
@@ -501,7 +509,7 @@ def notification(output):
         print(f"Sending message {key} of {len(discord_dict)}")  # Display message sending status
         # Actual function to send messages to Discord (which is currently represented by a 'print' statement)
         discord(fields=value, logger=logger, script_name=script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
-        # pausse for 5 seconds each 5th message
+        # Pauses for 5 seconds each 5th message
         if key % 5 == 0:
             print("Pausing for 5 seconds to let Discord catch up...")
             time.sleep(5)
@@ -598,7 +606,7 @@ def main():
     if output:
         # Log output and handle notifications
         logger.debug(f"Output:\n{json.dumps(output, indent=4)}")
-        handle_output(output)
+        handle_output(output, asset_folders)
         if discord_check(script_name):
             notification(output)
     if border_replacerr:

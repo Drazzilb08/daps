@@ -394,7 +394,7 @@ class StARR:
         endpoint = f"{self.url}/api/v3/command"
         return self.make_post_request(endpoint, headers=self.headers, json=payload)
     
-    def search_media(self, media_id):
+    def search_media(self, media_ids):
         """
         Search for a media item.
         Args:
@@ -402,29 +402,30 @@ class StARR:
         """
         name_type = None
         id_type = None
-        self.logger.debug(f"Media ID: {media_id}")
+        self.logger.debug(f"Media ID: {media_ids}")
         endpoint = f"{self.url}/api/v3/command"
+        if isinstance(media_ids, int):
+            media_ids = [media_ids]
         if self.instance_type == 'Sonarr':
-            for id in media_id:
-                name_type = "SeriesSearch"
-                id_type = "seriesId"
+            name_type = "SeriesSearch"
+            id_type = "seriesId"
+            for id in media_ids:
                 payload = {
                     "name": name_type,
                     id_type: id
                 }
+                self.logger.debug(f"Search payload: {payload}")
+                result = self.make_post_request(endpoint, json=payload)
+            return result
         elif self.instance_type == 'Radarr':
             name_type = "MoviesSearch"
             id_type = "movieIds"
-            id = media_id
-            # convert to list if not already
-            if isinstance(id, int):
-                id = [id]
             payload = {
                 "name": name_type,
-                id_type: id
+                id_type: media_ids
             }
-        self.logger.debug(f"Search payload: {payload}")
-        return self.make_post_request(endpoint, json=payload)
+            self.logger.debug(f"Search payload: {payload}")
+            return self.make_post_request(endpoint, json=payload)
     
     def search_season(self, media_id, season_number):
         """

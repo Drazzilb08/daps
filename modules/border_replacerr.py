@@ -139,16 +139,16 @@ def fix_borders(assets_dict, script_config, border_colors, output_dir):
     action = None
     if not border_colors and not resize:
         action = "Removed border on"
-        banner = "Removing Border"
+        banner = "Removing Borders"
     elif not border_colors and resize:
         action = "Removed border and resized"
-        banner = "Removing Border and Resizing"
+        banner = "Removing Borders and Resizing"
     elif border_colors and resize:
         action = "Replacing border and resized"
-        banner = "Replacing Border and Resizing"
+        banner = "Replacing Borders and Resizing"
     else:
         action = "Replacing border on"
-        banner = "Replacing Border"
+        banner = "Replacing Borders"
 
     # Initialize asset types to process
     asset_types = ["movies", "series", "collections"]
@@ -168,7 +168,7 @@ def fix_borders(assets_dict, script_config, border_colors, output_dir):
             current_index = 0  # Index for cycling through border colors
             items = assets_dict[asset_type]
             # Loop through each item in the asset type
-            for data in tqdm(items, desc=f"Processing {asset_type.capitalize()}", total=len(items), unit="Posters", disable=None):
+            for data in tqdm(items, desc=f"Processing {asset_type.capitalize()}", total=len(items), unit="Posters", disable=None, leave=False):
                 files = data.get('files', None)
                 path = data.get('path', None)
                 year = data.get('year', None)
@@ -198,18 +198,19 @@ def fix_borders(assets_dict, script_config, border_colors, output_dir):
                     if not dry_run:
                         if not resize:
                             if rgb_border_color:
-                                replace_border(input_file, output_path, rgb_border_color, border_width)
+                                results = replace_border(input_file, output_path, rgb_border_color, border_width)
                             else:
-                                remove_border(input_file, output_path, border_width)
+                                results = remove_border(input_file, output_path, border_width)
                         else:
                             if rgb_border_color:
-                                replace_border_and_resize(input_file, output_path, rgb_border_color, border_width)
+                                results = replace_border_and_resize(input_file, output_path, rgb_border_color, border_width)
                             else:
-                                remove_border_resize(input_file, output_path, border_width)
-                        if path:
-                            messages.append(f"{action} {data['title']}{year} - {file_name})")
-                        else:
-                            messages.append(f"{action} {file_name}")
+                                results = remove_border_resize(input_file, output_path, border_width)
+                        if results:
+                            if path:
+                                messages.append(f"{action} {data['title']}{year} - {file_name}")
+                            else:
+                                messages.append(f"{action} {file_name}")
                     else:
                         messages.append(f"Would have {action} {file_name}")
 
@@ -230,7 +231,7 @@ def replace_border_and_resize(input_file, output_path, border_colors, border_wid
         border_width (int): The border width.
     
     Returns:
-        None
+        bool: True if the file was saved, False otherwise.
     """
 
     # Open the image
@@ -254,8 +255,12 @@ def replace_border_and_resize(input_file, output_path, border_colors, border_wid
             if os.path.isfile(output_path): # Check if the file already exists
                 if not filecmp.cmp(input_file, output_path): # Check if the file is different from the original
                     resized_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+                    return True
+                else:
+                    return False
             else: # If the file doesn't exist
                 resized_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+                return True
     except UnidentifiedImageError as e:
         logger.error(f"Error: {e}")
         logger.error(f"Error processing {input_file}")
@@ -272,7 +277,7 @@ def replace_border(input_file, output_path, border_colors, border_width):
         border_width (int): The border width.
         
     Returns:
-        None
+        bool: True if the file was saved, False otherwise.
     """
 
     # Open the image
@@ -300,8 +305,12 @@ def replace_border(input_file, output_path, border_colors, border_width):
             if os.path.isfile(output_path): # Check if the file already exists
                 if not filecmp.cmp(input_file, output_path): # Check if the file is different from the original
                     extended_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+                    return True
+                else:
+                    return False
             else: # If the file doesn't exist
                 extended_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+                return True
     except UnidentifiedImageError as e:
         logger.error(f"Error: {e}")
         logger.error(f"Error processing {input_file}")
@@ -316,7 +325,7 @@ def remove_border_resize(input_file, output_path, border_width):
         border_width (int): The border width.
         
     Returns:
-        None
+        bool: True if the file was saved, False otherwise.
     """
 
     # Open the image
@@ -346,8 +355,12 @@ def remove_border_resize(input_file, output_path, border_width):
             if os.path.isfile(output_path): # Check if the file already exists
                 if not filecmp.cmp(input_file, output_path): # Check if the file is different from the original
                     resized_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+                    return True
+                else:
+                    return False
             else: # If the file doesn't exist
                 resized_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+                return True
     except UnidentifiedImageError as e:
         logger.error(f"Error: {e}")
         logger.error(f"Error processing {input_file}")
@@ -362,7 +375,7 @@ def remove_border(input_file, output_path, border_width):
         border_width (int): The border width.
         
     Returns:
-        None
+        bool: True if the file was saved, False otherwise.
     """
 
     # Open the image
@@ -383,8 +396,12 @@ def remove_border(input_file, output_path, border_width):
             if os.path.isfile(output_path): # Check if the file already exists
                 if not filecmp.cmp(input_file, output_path): # Check if the file is different from the original
                     cropped_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+                    return True
+                else:
+                    return False
             else: # If the file doesn't exist
                 cropped_image.save(f"{output_path}/{os.path.basename(input_file)}") # Save the file
+                return True
     except UnidentifiedImageError as e:
         logger.error(f"Error: {e}")
         logger.error(f"Error processing {input_file}")

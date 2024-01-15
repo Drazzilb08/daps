@@ -241,9 +241,20 @@ border_replacerr:
   # If you want to adjust the border width (not all MM2K posters are 25px borders some are 26-27)
   border_width: 26
   # Setting a border color of nothing will remove the border, else it will add the border color
-  border_colors: 
+  # Examples: Must include everything from double quotes to double quotes such as "#FF0000"
+  # "#FF0000" - Red
+  # "#00FF00" - Green
+  # "#0000FF" - Blue
+  # "#FFA500" - Orange
+  # "#FFFF00" - Yellow
+  # "#800080" - Purple
+  # "#FFC0CB" - Pink
+  # "#FFFFFF" - White
+  # "#000000" - Black
+  # "#808080" - Gray
+  border_colors: "#FF0000"
   schedule:
-    # You can make any holiday you want for any occation. For the schedule please use the range(month/date-month/date) option
+    # You can make any holiday you want for any occasion. For the schedule please use the range(month/date-month/date) option
     christmas:
       schedule: range(12/01-12/31)
       color: 
@@ -274,7 +285,7 @@ poster_renamerr:
   # Optional, if you want to override the source_dir for certain libraries
   source_overrides:
     - /path/to/posters/overrideA
-    - /path/to/posters/overrideB # <- Highest priorty
+    - /path/to/posters/overrideB # <- Highest priority
   destination_dir: /path/to/output/
   instances:
     - plex_1

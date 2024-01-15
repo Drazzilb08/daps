@@ -159,7 +159,7 @@ discord:
   poster_renamerr:
     discord_webhook: 
     channel_id: 
-  movie-deletarr:
+  health_checkarr:
     discord_webhook: 
     channel_id: 
   unmatched_assets:
@@ -234,6 +234,7 @@ border_replacerr:
   # Colors: https://www.w3schools.com/colors/colors_picker.asp
   log_level: info
   dry_run: true
+  asset_folders: false
   input_dir: /path/to/posters/
   output_dir: /path/to/output/
   # If you want to resize the posters, set this to true, else set it to false
@@ -323,7 +324,6 @@ unmatched_assets:
     - "Marvel Cinematic Universe"
     - "The Conjuring Universe"
     - "The Batman Universe"
-    - "Collectionless"
     - "DC Extended Universe"
   assets_paths: 
     - /path/to/assets
@@ -360,7 +360,6 @@ poster_cleanarr:
     - "Marvel Cinematic Universe"
     - "The Conjuring Universe"
     - "The Batman Universe"
-    - "Collectionless"
     - "DC Extended Universe"
   assets_paths: 
     - /path/to/assets

@@ -433,6 +433,7 @@ def main():
     output_dir = script_config['output_dir']
     schedule = script_config['schedule']
     border_colors = script_config['border_colors']
+    asset_folders = script_config['asset_folders']
 
     # Convert single string border color to a list if necessary
     if isinstance(border_colors, str):
@@ -450,7 +451,7 @@ def main():
     logger.debug(f'{"Schedule:":<20}{schedule if schedule else "Not Set"}')
 
     # Process files in the input directory with specified settings
-    process_files(input_dir, output_dir, asset_folders=False)
+    process_files(input_dir, output_dir, asset_folders)
 
     logger.info(f"Border Replacer Complete")  # Log completion message
     logger.info(f"{'*' * 40} END {'*' * 40}\n")

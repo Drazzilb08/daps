@@ -173,7 +173,6 @@ def categorize_files(folder_path, asset_folders):
                     assets['movies'].append(asset_dict)
                     assets['movies'][-1]['files'].append(file_path)
     else:  # If asset_folders is True, sort assets based on folders
-        print("Sorting by folders...")
         for dir_entry in tqdm(os.scandir(folder_path), desc='Sorting posters', total=len(os.listdir(folder_path)), disable=None):
             if dir_entry.is_dir():
                 dir = dir_entry.path

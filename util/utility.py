@@ -105,6 +105,7 @@ def categorize_files(folder_path, asset_folders):
 
     # If asset_folders is False, categorize files within the folder
     if not asset_folders:
+        pass
         # Get list of files in the folder
         files = [f.name for f in os.scandir(folder_path) if f.is_file()]
         files = sorted(files, key=lambda x: x.lower())  # Sort files alphabetically
@@ -172,65 +173,68 @@ def categorize_files(folder_path, asset_folders):
                     assets['movies'].append(asset_dict)
                     assets['movies'][-1]['files'].append(file_path)
     else:  # If asset_folders is True, sort assets based on folders
-        total_folders = len(os.listdir(folder_path))
-        for dir, _, files in tqdm(os.walk(folder_path), desc='Sorting posters', total=total_folders, disable=None, leave=False):
-            if dir == folder_path or dir.endswith("tmp"):
-                continue  # Skip root folder and temporary folders
+        print("Sorting by folders...")
+        for dir_entry in tqdm(os.scandir(folder_path), desc='Sorting posters', total=len(os.listdir(folder_path)), disable=None):
+            if dir_entry.is_dir():
+                dir = dir_entry.path
+                files = [f.name for f in os.scandir(dir) if f.is_file()]
+                if dir == folder_path or dir.endswith("tmp"):
+                    continue  # Skip root folder and temporary folders
 
-            base_name = os.path.basename(dir)
-            title = re.sub(year_regex, '', base_name)
-            normalize_title = normalize_titles(base_name)
+                base_name = os.path.basename(dir)
+                title = re.sub(year_regex, '', base_name)
+                normalize_title = normalize_titles(base_name)
 
-            try:
-                year = int(year_regex.search(base_name).group(1))
-            except:
-                year = None
+                try:
+                    year = int(year_regex.search(base_name).group(1))
+                except:
+                    year = None
 
-            # Create a dictionary for the asset
-            asset_dict = {
-                'title': title,
-                'year': year,
-                'normalized_title': normalize_title,
-                'no_prefix': [title.replace(prefix, '').strip() for prefix in prefixes if title.startswith(prefix)],
-                'no_suffix': [title.replace(suffix, '').strip() for suffix in suffixes if title.endswith(suffix)],
-                'no_prefix_normalized': [normalize_titles(title.replace(prefix, '').strip()) for prefix in prefixes if title.startswith(prefix)],
-                'no_suffix_normalized': [normalize_titles(title.replace(suffix, '').strip()) for suffix in suffixes if title.endswith(suffix)],
-                'path': dir,
-                'files': [],
-            }
+                # Create a dictionary for the asset
+                asset_dict = {
+                    'title': title,
+                    'year': year,
+                    'normalized_title': normalize_title,
+                    'no_prefix': [title.replace(prefix, '').strip() for prefix in prefixes if title.startswith(prefix)],
+                    'no_suffix': [title.replace(suffix, '').strip() for suffix in suffixes if title.endswith(suffix)],
+                    'no_prefix_normalized': [normalize_titles(title.replace(prefix, '').strip()) for prefix in prefixes if title.startswith(prefix)],
+                    'no_suffix_normalized': [normalize_titles(title.replace(suffix, '').strip()) for suffix in suffixes if title.endswith(suffix)],
+                    'path': dir,
+                    'files': [],
+                }
 
-            if not year:  # If year is not found in the folder name
-                # Categorize as a collection
-                # Process files within the folder and add to the collection
-                assets['collections'].append(asset_dict)
-                for file in files:
-                    if file.startswith('.'):
-                        continue
-                    assets['collections'][-1]['files'].append(f"{dir}/{file}")
-            else:
-                # If year is found in the folder name
-                # Check if the folder contains series or movies based on certain criteria
-                # (presence of Season information for series, etc. - specific to the context)
-                if any("Season" in file for file in files):
-                    asset_dict['season_numbers'] = []
-                    assets['series'].append(asset_dict)
+                if not year:  # If year is not found in the folder name
+                    # Categorize as a collection
+                    # Process files within the folder and add to the collection
+                    assets['collections'].append(asset_dict)
                     for file in files:
                         if file.startswith('.'):
                             continue
-                        if "season" in file.lower():
-                            season_numbers = re.search(r'Season\s*(\d+)', file).group(1)
-                            asset_dict['season_numbers'].append(f"{int(season_numbers):02}")
-                            assets['series'][-1]['files'].append(f"{dir}/{file}")
-                        if "poster" in file.lower():
-                            assets['series'][-1]['files'].append(f"{dir}/{file}")
-                    assets['series'][-1]['season_numbers'].sort()
-                    assets['series'][-1]['files'].sort()
+                        assets['collections'][-1]['files'].append(f"{dir}/{file}")
                 else:
-                    assets['movies'].append(asset_dict)
-                    for file in files:
-                        if file.startswith('.'):
-                            continue
-                        assets['movies'][-1]['files'].append(f"{dir}/{file}")
+                    # If year is found in the folder name
+                    # Check if the folder contains series or movies based on certain criteria
+                    # (presence of Season information for series, etc. - specific to the context)
+                    if any("Season" in file for file in files):
+                        asset_dict['season_numbers'] = []
+                        assets['series'].append(asset_dict)
+                        for file in files:
+                            if file.startswith('.'):
+                                continue
+                            if "season" in file.lower():
+                                season_numbers = re.search(r'Season\s*(\d+)', file).group(1)
+                                asset_dict['season_numbers'].append(f"{int(season_numbers):02}")
+                                assets['series'][-1]['files'].append(f"{dir}/{file}")
+                            if "poster" in file.lower():
+                                assets['series'][-1]['files'].append(f"{dir}/{file}")
+                        assets['series'][-1]['season_numbers'].sort()
+                        assets['series'][-1]['files'].sort()
+                    else:
+                        assets['movies'].append(asset_dict)
+                        for file in files:
+                            if file.startswith('.'):
+                                continue
+                            assets['movies'][-1]['files'].append(f"{dir}/{file}")
     return assets
 
 def create_table(data, log_level, logger):
@@ -337,7 +341,7 @@ def get_media_folders(paths, logger):
         base_name = os.path.basename(os.path.normpath(path))  # Get the base folder name
         
         # Iterate through items in the directory
-        for item in tqdm(os.listdir(path), desc=f"Getting media folders for '{base_name}'", disable=None):
+        for item in tqdm(os.listdir(path), desc=f"Getting media folders for '{base_name}'", disable=None, leave=False):
             if item.startswith('.'):
                 continue  # Skip hidden files/folders
             
@@ -360,14 +364,8 @@ def get_media_folders(paths, logger):
                 season_numbers = []
                 for folder in sub_folders:
                     if folder == "Specials":
-                        season_numbers = '00'
-                        media_dict['series'].append({
-                            'title': title,
-                            'year': year,
-                            'normalized_title': normalized_title,
-                            'season_numbers': season_numbers,
-                            'path': os.path.join(path, item),
-                        })
+                        season_data = '00'
+                        season_numbers.append(season_data)
                     elif folder.startswith("Season"):
                         season_data = folder.replace("Season", "").strip().zfill(2)
                         season_numbers.append(season_data)
@@ -379,6 +377,7 @@ def get_media_folders(paths, logger):
                     'normalized_title': normalized_title,
                     'season_numbers': season_numbers,
                     'path': os.path.join(path, item),
+                    'location': base_name,
                 })
             else:
                 # Add movie data to the media dictionary
@@ -387,6 +386,7 @@ def get_media_folders(paths, logger):
                     'year': year,
                     'normalized_title': normalized_title,
                     'path': os.path.join(path, item),
+                    'location': base_name,
                 })
     
     return media_dict
@@ -508,6 +508,7 @@ def get_plex_data(plex, library_names, logger, include_smart, collections_only):
                 plex_dict.append({
                     'title': collection,
                     'normalized_title': normalize_titles(collection),
+                    'location': library_name,
                     'year': None,
                     'folder': collection,
                 })  # Append collection information to plex_dict

@@ -24,7 +24,6 @@ from util.logger import setup_logger
 try:
     from plexapi.server import PlexServer
     from plexapi.exceptions import BadRequest
-    from tqdm import tqdm
 except ImportError as e:
     print(f"ImportError: {e}")
     print("Please install the required modules with 'pip install -r requirements.txt'")

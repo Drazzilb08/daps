@@ -335,6 +335,8 @@ def main():
         print_output(output_dict)
         if discord_check(script_name):
             notification(output_dict)
+    else:
+        logger.info("No media items to rename.")
     logger.info(f"{'*' * 40} END {'*' * 40}\n")
 
 if __name__ == "__main__":

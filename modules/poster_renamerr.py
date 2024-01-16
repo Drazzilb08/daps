@@ -311,6 +311,7 @@ def rename_files(matched_assets, script_config):
                 # Check if the new file path already exists
                 if os.path.isfile(new_file_path):
                     existing_file = os.path.join(dest_dir, new_file_name)
+                    # Check if the existing file is the same as the new file True = same, False = different
                     if not filecmp.cmp(file, existing_file):
                         if file_name != new_file_name:
                             messages.append(f"{file_name} -renamed-> {new_file_name}")
@@ -609,12 +610,15 @@ def main():
         logger.debug(f"Matched and Unmatched media:\n{json.dumps(combined_dict, indent=4)}")
         matched_assets = combined_dict.get('matched', None)
         output = rename_files(matched_assets, script_config)
-    if output:
+    if any(asset['messages'] for asset in output['collections']) or any(asset['messages'] for asset in output['movies']) or any(asset['messages'] for asset in output['series']):
         # Log output and handle notifications
         logger.debug(f"Output:\n{json.dumps(output, indent=4)}")
         handle_output(output, asset_folders)
         if discord_check(script_name):
             notification(output)
+    else:
+        # Log message if no output is found
+        logger.info("No new posters to rename.")
     if border_replacerr:
         # Run border_replacerr.py or log intent to run
         if not dry_run:

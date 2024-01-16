@@ -284,6 +284,9 @@ def main():
                         results = get_plex_data(app, library_names, logger, include_smart=False, collections_only=True)
                         media_dict['collections'] = []
                         media_dict['collections'].extend(results)
+                        # Remove ignored collections
+                        if ignore_collections:
+                            media_dict['collections'] = [collection for collection in media_dict['collections'] if collection['title'] not in ignore_collections]
                     else:
                         logger.warning("No library names specified in config.yml. Skipping Plex.")
     else:

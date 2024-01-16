@@ -79,7 +79,8 @@ def match_assets(assets_dict, media_dict):
                         matched = True
                         
                         # Find missing seasons by comparing season numbers
-                        missing_seasons = [season for season in media_data['season_numbers'] if season not in next((asset_data['season_numbers'] for asset_data in assets_dict[media_type] if asset_data['normalized_title'] == media_normalized_title and asset_data['year'] == media_data['year']), [])]
+                        if media_type == 'series':
+                            missing_seasons = [season for season in media_data['season_numbers'] if season not in asset_data['season_numbers']]
                         
                         # If missing seasons are found, append details to unmatched_assets
                         if missing_seasons:
@@ -88,7 +89,8 @@ def match_assets(assets_dict, media_dict):
                                 'title': media_data['title'],
                                 'year': media_data['year'],
                                 'missing_season': True,
-                                'missing_seasons': missing_seasons
+                                'missing_seasons': missing_seasons,
+                                'location': media_data['location']
                             })
                 
                 # If there's no match found, add the media to unmatched_assets
@@ -98,12 +100,14 @@ def match_assets(assets_dict, media_dict):
                             'title': media_data['title'],
                             'year': media_data['year'],
                             'missing_season': False,
-                            'season_numbers': media_data['season_numbers']
+                            'season_numbers': media_data['season_numbers'],
+                            'location': media_data['location']
                         })
                     else:
                         unmatched_assets[media_type].append({
                             'title': media_data['title'],
                             'year': media_data['year'],
+                            'location': media_data['location']
                         })
     
     return unmatched_assets
@@ -119,20 +123,33 @@ def print_output(unmatched_dict, media_dict):
     Returns:
         None
     """
-    
     # Asset types to consider
     asset_types = ['movies', 'series', 'collections']
 
     # Loop through different asset types
     for asset_type in asset_types:
         data_set = unmatched_dict.get(asset_type, None)
+        if asset_type == 'collections':
+            location_type = "Library"
+        else:
+            location_type = "Folder"
         if data_set:
             # Print unmatched assets for each type
             data = [
                 [f"Unmatched {asset_type.capitalize()}"]
             ]
             create_table(data, log_level="info", logger=logger)
+            previous_location = None
             for data in data_set:
+                location = data['location']
+                if location != previous_location:
+                    table = [
+                        [f"{location_type}: {location}"]
+                    ]
+                    logger.info("")
+                    create_table(table, log_level="info", logger=logger)
+                    logger.info("")
+                    previous_location = location
                 # Print details of unmatched assets, handling series separately for missing seasons
                 if asset_type == 'series':
                     if data.get('missing_season'):
@@ -149,23 +166,39 @@ def print_output(unmatched_dict, media_dict):
                 logger.info("")
 
     # Calculate statistics for movies, series, collections, and the overall unmatched assets
-    total_movies = len(media_dict.get('movies', []))
-    unmatched_movies_total = len(unmatched_dict.get('movies', []))
-    percent_movies_complete = (total_movies - unmatched_movies_total) / total_movies * 100
+    if unmatched_dict.get('movies', None):
+        total_movies = len(media_dict.get('movies', []))
+        unmatched_movies_total = len(unmatched_dict.get('movies', []))
+        percent_movies_complete = (total_movies - unmatched_movies_total) / total_movies * 100
+    else:
+        total_movies = 0
+        unmatched_movies_total = 0
+        percent_movies_complete = 0
 
-    unmatched_series_total = len(unmatched_dict.get('series', []))
-    total_series = len(media_dict.get('series', []))
-    series_percent_complete = (total_series - unmatched_series_total) / total_series * 100
+    if unmatched_dict.get('series', None):
+        total_series = len(media_dict.get('series', []))
+        unmatched_series_total = len(unmatched_dict.get('series', []))
+        series_percent_complete = (total_series - unmatched_series_total) / total_series * 100
 
-    unmatched_seasons_total = sum(len(data.get('season_numbers', [])) + len(data.get('missing_seasons', [])) for data in unmatched_dict.get('series', []))
-    total_seasons = sum(len(media_data.get('season_numbers', [])) for media_data in media_dict.get('series', []))
-    season_total_percent_complete = (total_seasons - unmatched_seasons_total) / total_seasons * 100 if total_seasons != 0 else 0
+        unmatched_seasons_total = sum(len(data.get('season_numbers', [])) + len(data.get('missing_seasons', [])) for data in unmatched_dict.get('series', []))
+        total_seasons = sum(len(media_data.get('season_numbers', [])) for media_data in media_dict.get('series', []))
+        season_total_percent_complete = (total_seasons - unmatched_seasons_total) / total_seasons * 100 if total_seasons != 0 else 0
+    else:
+        total_series = 0
+        unmatched_series_total = 0
+        series_percent_complete = 0
+        season_total_percent_complete = 0
 
-    unmatched_collections_total = len(unmatched_dict.get('collections', []))
-    total_collections = len(media_dict.get('collections', []))
-    collection_percent_complete = (total_collections - unmatched_collections_total) / total_collections * 100 if total_collections != 0 else 0
+    if unmatched_dict.get('collections', None):
+        unmatched_collections_total = len(unmatched_dict.get('collections', []))
+        total_collections = len(media_dict.get('collections', []))
+        collection_percent_complete = (total_collections - unmatched_collections_total) / total_collections * 100 if total_collections != 0 else 0
+    else:
+        unmatched_collections_total = 0
+        total_collections = 0
+        collection_percent_complete = 0
 
-    grand_total = unmatched_movies_total + unmatched_series_total + unmatched_seasons_total + unmatched_collections_total
+    grand_total = total_movies + total_series + total_seasons + total_collections
     grand_unmatched_total = unmatched_movies_total + unmatched_series_total + unmatched_seasons_total + unmatched_collections_total
     grand_percent_complete = (grand_total - grand_unmatched_total) / grand_total * 100 if grand_total != 0 else 0
 
@@ -175,12 +208,18 @@ def print_output(unmatched_dict, media_dict):
         ["Statistics"],
     ]
     create_table(data, log_level="info", logger=logger)
-    logger.info(f"Total Movies:{total_movies}\t\tUnmatched Movies: {unmatched_movies_total}\t\tPercent Complete: {percent_movies_complete:.2f}%")
-    logger.info(f"Total Series: {total_series}\t\tUnmatched Series: {unmatched_series_total}\t\tPercent Complete: {series_percent_complete:.2f}%")
-    logger.info(f"Total Seasons: {total_seasons}\tUnmatched Seasons: {unmatched_seasons_total}\t\tPercent Complete: {season_total_percent_complete:.2f}%")
-    logger.info(f"Total Collections: {total_collections}\tUnmatched Collections: {unmatched_collections_total}\tPercent Complete: {collection_percent_complete:.2f}%")
-    logger.info(f"Grand total: {grand_unmatched_total}\t\tGrand Total Unmatched: {grand_unmatched_total}\tPercent Complete: {grand_percent_complete:.2f}%")
-
+    table = [
+        ["Type", "Total", "Unmatched", "Percent Complete"]
+    ]
+    if unmatched_dict.get('movies', None):
+        table.append(["Movies", total_movies, unmatched_movies_total, f"{percent_movies_complete:.2f}%"])
+    if unmatched_dict.get('series', None):
+        table.append(["Series", total_series, unmatched_series_total, f"{series_percent_complete:.2f}%"])
+        table.append(["Seasons", total_seasons, unmatched_seasons_total, f"{season_total_percent_complete:.2f}%"])
+    if unmatched_dict.get('collections', None):
+        table.append(["Collections", total_collections, unmatched_collections_total, f"{collection_percent_complete:.2f}%"])
+    table.append(["Grand Total", grand_total, grand_unmatched_total, f"{grand_percent_complete:.2f}%"])
+    create_table(table, log_level="info", logger=logger)
 
 def main():
     """
@@ -224,6 +263,7 @@ def main():
         exit()
 
     media_dict = get_media_folders(media_paths, logger)
+    logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
     
     # Checking for media paths and logging
     if any(value is None for value in media_dict.values()):
@@ -249,7 +289,6 @@ def main():
     else:
         logger.warning("No instances specified in config.yml. Skipping Plex.")
     logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
-    
     # Matching assets and printing output
     unmatched_dict = match_assets(assets_dict, media_dict)
     print_output(unmatched_dict, media_dict)

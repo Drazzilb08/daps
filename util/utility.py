@@ -495,9 +495,9 @@ def get_plex_data(plex, library_names, logger, include_smart, collections_only):
         
         if collections_only:
             if include_smart:
-                collection_names[library_name] = [collection.title for collection in library.search(libtype="collection") if not collection.smart]
-            else:
                 collection_names[library_name] = [collection.title for collection in library.search(libtype="collection")]
+            else:
+                collection_names[library_name] = [collection.title for collection in library.search(libtype="collection") if not collection.smart]
         else:
             library_data[library_name] = library.all()  # Get all items from the library
         

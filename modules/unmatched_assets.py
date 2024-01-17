@@ -188,6 +188,8 @@ def print_output(unmatched_dict, media_dict):
         unmatched_series_total = 0
         series_percent_complete = 0
         season_total_percent_complete = 0
+        unmatched_seasons_total = 0
+        total_seasons = 0
 
     if unmatched_dict.get('collections', None):
         unmatched_collections_total = len(unmatched_dict.get('collections', []))

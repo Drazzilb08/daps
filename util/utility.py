@@ -349,8 +349,7 @@ def get_media_folders(paths, logger):
                 title = str(re.sub(year_regex, '', item))
                 year = int(year_regex.search(item).group(1))
             except Exception as e:
-                logger.error(f"Error: {e}")  # Log any exceptions that occur
-                logger.error(f"Item: {item}")  # Log the problematic item
+                logger.warning(f"Warning: {e} - Skipping '{item}' in '{base_name}'")
                 continue  # Continue to the next item
             
             normalized_title = normalize_titles(item)  # Normalize the item's title
@@ -403,6 +402,7 @@ def handle_starr_data(app, instance_type):
     """
 
     media_dict = []  # Initialize an empty list to hold media data
+    print(f"Getting {instance_type.capitalize()} data...")
     media = app.get_media()  # Fetch media data from the Radarr or Sonarr instance
     if media:
         for item in tqdm(media, desc=f"Getting {instance_type.capitalize()} data", total=len(media), disable=None, leave=False):

@@ -587,6 +587,7 @@ def main():
                 if instance_type == "plex":
                     media_type = "collections"
                     if library_names:
+                        print("Connecting to Plex...")
                         app = PlexServer(instances_data[instance]['url'], instances_data[instance]['api'])
                         results = get_plex_data(app, library_names, logger, include_smart=True, collections_only=True)
                 else:

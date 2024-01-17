@@ -279,6 +279,7 @@ def main():
                 if instance in instance_data:
                     url = instance_data[instance]['url']
                     api = instance_data[instance]['api']
+                    print("Connecting to Plex...")
                     app = PlexServer(url, api)
                     if library_names and app:
                         results = get_plex_data(app, library_names, logger, include_smart=False, collections_only=True)

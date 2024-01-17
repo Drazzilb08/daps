@@ -303,6 +303,7 @@ def main():
                         if plex_instance in config.plex_config:
                             # Connect to the Plex server
                             try:
+                                print("Connecting to Plex...")
                                 plex = PlexServer(config.plex_config[plex_instance]['url'], config.plex_config[plex_instance]['api'])
                             except BadRequest:
                                 logger.error(f"Error connecting to Plex instance: {plex_instance}")

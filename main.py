@@ -33,6 +33,20 @@ already_run = {
     "backup_appdata": False,
 }
 
+python_scripts = [
+    "border_replacerr",
+    "health_checkarr",
+    "labelarr",
+    "nohl",
+    "poster_cleanarr",
+    "poster_renamerr",
+    "queinatorr",
+    "renaminatorr",
+    "sync_gdrive",
+    "upgradinatorr",
+]
+    
+
 
 def run_module(module_name):
     """
@@ -129,9 +143,9 @@ if __name__ == '__main__':
                             if input_name == instance:
                                 settings = config.bash_config.get(script_name, {}).get(instance, {})
                                 bash_script(settings, script_name)
-                else:
-                    run=True
-                    run_module(input_name)
+            elif input_name in python_scripts:
+                run=True
+                run_module(input_name)
         
             
     # If no arguments are passed to the script, run the main function

@@ -351,14 +351,14 @@ main() {
     if [ -n "$webhook" ]; then
         send_notification
     fi
-    if [ $unraid_notify == True ]; then
+    if [ "$unraid_notify" == True ]; then
         unraid_notify
     fi
     cleanup
 }
 # Define function to handle options
 handle_options() {
-    while getopts ":s:d:c:k:u:q:w:n:b:h:C" opt; do
+    while getopts ":s:d:c:k:u:q:w:n:b:h:C:" opt; do
         case $opt in
             s) source_dir="$OPTARG";;
             d) destination_dir="$OPTARG";;

@@ -59,14 +59,14 @@ def get_assets_files(source_dir, source_overrides):
     source_assets = categorize_files(source_dir, asset_folders=False)
     # Handles source overrides if provided
     if source_overrides:
-        if isinstance(source_overrides, list):
-            # Process each override directory
-            for source_override in source_overrides:
-                # Retrieves asset files from the override directory
-                override_assets = categorize_files(source_override, asset_folders=False)
-                # Handles overrides between primary source and the override
-                handle_overrides(source_assets, override_assets)
-    
+        source_overrides = [source_overrides] if isinstance(source_overrides, str) else source_overrides
+        # Process each override directory
+        for source_override in source_overrides:
+            # Retrieves asset files from the override directory
+            override_assets = categorize_files(source_override, asset_folders=False)
+            # Handles overrides between primary source and the override
+            handle_overrides(source_assets, override_assets)
+
     # Returns the collected dictionary of categorized asset files
     return source_assets
 
@@ -107,6 +107,14 @@ def handle_overrides(source_assets, override_assets):
                                 if source_file_name == override_file_name:
                                     source_asset['files'].remove(source_file)
                                     source_asset['files'].append(override_file)
+                                    break  # Add break statement here
+                                # else:
+                                #     # Adds override file to source asset if the filename doesn't match
+                                #     source_asset['files'].append(override_file)
+            # Add missing assets from override_assets to source_assets
+            for override_asset in override_assets[asset_type]:
+                if override_asset not in source_assets[asset_type]:
+                    source_assets[asset_type].append(override_asset)
 
 def match_data(media_dict, asset_files):
     """

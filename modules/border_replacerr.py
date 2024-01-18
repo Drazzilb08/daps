@@ -237,10 +237,11 @@ def replace_border_and_resize(input_file, output_path, border_colors, border_wid
     # Open the image
     try:
         with Image.open(input_file) as image:
-            width, height = image.size
+            # Set the border width
+            width, height = image.size # Get the width and height of the image
 
-            # Crop the existing border
-            cropped_image = image.crop((border_width, border_width, width - border_width, height - border_width))
+            # Remove border
+            cropped_image = image.crop((border_width, border_width, width - border_width, height - border_width)) # Crop the image to remove the border
 
             # Add new border
             new_width = cropped_image.width + 2 * border_width # Add 2 * border_width to the width and height
@@ -293,17 +294,11 @@ def replace_border(input_file, output_path, border_colors, border_width):
     # Open the image
     try:
         with Image.open(input_file) as image:
-            border_width = border_width * 2 # Multiply by 2 to account for the border on both sides
+            # Set the border width
             width, height = image.size # Get the width and height of the image
 
-            # Crop the center
-            new_width = width - border_width # Subtract 2 * border_width from the width and height
-            new_height = height - border_width # to account for the border
-            left = (width - new_width) // 2 # Calculate the left and top coordinates
-            top = (height - new_height) // 2 # of the cropped image
-            right = left + new_width # Calculate the right and bottom coordinates
-            bottom = top + new_height # of the cropped image
-            cropped_image = image.crop((left, top, right, bottom)) # Crop the image
+            # Remove border
+            cropped_image = image.crop((border_width, border_width, width - border_width, height - border_width)) # Crop the image to remove the border
 
             # Add border
             new_width = cropped_image.width + 2 * border_width # Add 2 * border_width to the width and height
@@ -351,17 +346,11 @@ def remove_border_resize(input_file, output_path, border_width):
     # Open the image
     try:
         with Image.open(input_file) as image: # Open the image
-            border_width = border_width * 2 # Multiply by 2 to account for the border on both sides
+            # Set the border width
             width, height = image.size # Get the width and height of the image
 
-            # Crop the center
-            new_width = width - border_width # Subtract 2 * border_width from the width and height
-            new_height = height - border_width # to account for the border
-            left = (width - new_width) // 2 # Calculate the left and top coordinates
-            top = (height - new_height) // 2 # of the cropped image
-            right = left + new_width # Calculate the right and bottom coordinates
-            bottom = top + new_height # of the cropped image
-            cropped_image = image.crop((left, top, right, bottom)) # Crop the image
+            # Remove border
+            cropped_image = image.crop((border_width, border_width, width - border_width, height - border_width)) # Crop the image to remove the border
 
             # Resize proportionally to a maximum of 1000x1500
             resized_image = cropped_image.resize((1000, 1500), Image.LANCZOS)  # Use high-quality resampling
@@ -406,17 +395,11 @@ def remove_border(input_file, output_path, border_width):
     # Open the image
     try:
         with Image.open(input_file) as image: # Open the image
-            border_width = border_width * 2 # Multiply by 2 to account for the border on both sides
+            # Set the border width
             width, height = image.size # Get the width and height of the image
 
-            # Crop the center
-            new_width = width - border_width # Subtract 2 * border_width from the width and height
-            new_height = height - border_width # to account for the border
-            left = (width - new_width) // 2 # Calculate the left and top coordinates
-            top = (height - new_height) // 2 # of the cropped image
-            right = left + new_width # Calculate the right and bottom coordinates
-            bottom = top + new_height # of the cropped image
-            cropped_image = image.crop((left, top, right, bottom)) # Crop the image
+            # Remove border
+            cropped_image = image.crop((border_width, border_width, width - border_width, height - border_width)) # Crop the image to remove the border
 
             file_name = os.path.basename(input_file)
             final_path = f"{output_path}/{file_name}" # Set the output path to the parent directory
@@ -474,7 +457,7 @@ def process_files(input_dir, output_dir, asset_folders):
         logger.info(f"No border colors set, removing border instead.")
     else:
         # Log the border colors being used
-        logger.info(f"Using {', '.join(border_colors)} border colors.")
+        logger.info(f"Using {', '.join(border_colors)} border color(s).")
 
     # Categorize files in the input directory into assets
     assets_dict = categorize_files(input_dir, asset_folders)
@@ -484,7 +467,7 @@ def process_files(input_dir, output_dir, asset_folders):
         output_dir = output_dir[:-1]
     
     # If assets are found in the input directory
-    if assets_dict:
+    if any(assets_dict['movies']) or any(assets_dict['series']) or any(assets_dict['collections']):
         logger.debug(f"assets_dict:\n{json.dumps(assets_dict, indent=4)}")
 
         # Fix borders for assets using specified configurations
@@ -498,8 +481,8 @@ def process_files(input_dir, output_dir, asset_folders):
             # Log a message if no files were processed
             logger.info(f"No files processed")
     else:
-        # Log a message if no files are found in the input directory
-        logger.info(f"No files found in {input_dir}")
+        logger.error(f"No assets found in {input_dir}")
+        exit()
 
 
 def main():

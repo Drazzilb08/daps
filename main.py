@@ -44,6 +44,7 @@ python_scripts = [
     "renaminatorr",
     "sync_gdrive",
     "upgradinatorr",
+    "unmatched_assets",
 ]
     
 
@@ -146,7 +147,8 @@ if __name__ == '__main__':
             elif input_name in python_scripts:
                 run=True
                 run_module(input_name)
-        
+            else:
+                logger.error(f"Script: {input_name} does not exist")
             
     # If no arguments are passed to the script, run the main function
     else:

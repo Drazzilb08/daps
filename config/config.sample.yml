@@ -156,13 +156,8 @@ discord:
   upgradinatorr:
     discord_webhook: 
     channel_id: 
+  # Note: It is recommended for a fresh run to not use a notifications channel, as it will spam the channel with all the matched assets
   poster_renamerr:
-    discord_webhook: 
-    channel_id: 
-  health_checkarr:
-    discord_webhook: 
-    channel_id: 
-  unmatched_assets:
     discord_webhook: 
     channel_id: 
   nohl:
@@ -175,9 +170,6 @@ discord:
     discord_webhook: 
     channel_id: 
   poster_cleanarr:
-    discord_webhook: 
-    channel_id: 
-  border_replacerr:
     discord_webhook: 
     channel_id: 
   backup_appdata:
@@ -220,7 +212,6 @@ upgradinatorr:
       count: 20
       tag_name: checked
       unattended: true
-
 
 renameinatorr:
   log_level: info

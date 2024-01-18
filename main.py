@@ -138,17 +138,18 @@ if __name__ == '__main__':
                 settings = config.bash_config.get(input_name, {})
                 bash_script(settings, input_name)
             elif input_name not in config.bash_config:
+                if input_name in python_scripts:
+                    print(f"Running: {input_name}")
+                    run=True
+                    run_module(input_name)
                 for script_name, script_value in config.bash_config.items():
                     if isinstance(script_value, dict):
                         for instance, instance_value in script_value.items():
                             if input_name == instance:
                                 settings = config.bash_config.get(script_name, {}).get(instance, {})
                                 bash_script(settings, script_name)
-            elif input_name in python_scripts:
-                run=True
-                run_module(input_name)
-            else:
-                logger.error(f"Script: {input_name} does not exist")
+                else:
+                    logger.error(f"Script: {input_name} does not exist")
             
     # If no arguments are passed to the script, run the main function
     else:

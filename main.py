@@ -148,8 +148,8 @@ if __name__ == '__main__':
                             if input_name == instance:
                                 settings = config.bash_config.get(script_name, {}).get(instance, {})
                                 bash_script(settings, script_name)
-                else:
-                    logger.error(f"Script: {input_name} does not exist")
+            if input_name not in config.bash_config and input_name not in python_scripts:
+                logger.error(f"Script: {input_name} does not exist")
             
     # If no arguments are passed to the script, run the main function
     else:

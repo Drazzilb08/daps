@@ -162,16 +162,17 @@ def categorize_files(folder_path, asset_folders):
                     if not assets['series'][-1].get('season_numbers'):
                         assets['series'][-1]['season_numbers'] = []
                     if " - Specials" in file:
-                        assets['series'][-1]['season_numbers'].append('00')
+                        assets['series'][-1]['season_numbers'].append(0)
                     elif re.search(r'[-_]\s*Season\s*(\d+)', file):
                         match = re.search(r'[-_]\s*Season\s*(\d+)', file)
                         if match:
-                            assets['series'][-1]['season_numbers'].append(f"{int(match.group(1)):02}")
+                            assets['series'][-1]['season_numbers'].append(int(match.group(1)))
                     assets['series'][-1]['season_numbers'].sort()
                     assets['series'][-1]['files'].sort()
                 else:
                     assets['movies'].append(asset_dict)
                     assets['movies'][-1]['files'].append(file_path)
+                    
     else:  # If asset_folders is True, sort assets based on folders
         for dir_entry in tqdm(os.scandir(folder_path), desc='Sorting posters', total=len(os.listdir(folder_path)), disable=None):
             if dir_entry.is_dir():
@@ -428,6 +429,7 @@ def handle_starr_data(app, instance_type):
                             'season_number': season['seasonNumber'],
                             'monitored': season['monitored'],
                             'season_pack': season['statistics']['episodeCount'] == season['statistics']['totalEpisodeCount'],
+                            'season_has_episodes': season['statistics']['episodeCount'] > 0,
                             'episode_data': episode_dict,
                         })  # Append season data to the season dictionary
             

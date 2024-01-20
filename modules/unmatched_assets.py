@@ -22,10 +22,11 @@
 # ===========================================================================================================
 
 import json
-
+import os
 from util.utility import *
 from util.logger import setup_logger
 from util.config import Config
+from util.arrpy import StARR
 
 try:
     from plexapi.server import PlexServer
@@ -39,7 +40,7 @@ config = Config(script_name)
 log_level = config.log_level
 logger = setup_logger(log_level, script_name)
 
-def match_assets(assets_dict, media_dict):
+def match_assets(assets_dict, media_dict, ignore_root_folders):
     """
     Matches assets to media and returns a dictionary of unmatched assets.
     
@@ -55,57 +56,82 @@ def match_assets(assets_dict, media_dict):
     unmatched_assets = {}
     # Loop through different media types
     for media_type in ['movies', 'series', 'collections']:
-        unmatched_assets[media_type] = []
+        unmatched_assets[media_type] = {}
         # Check if the media type is present in both assets and media dictionaries
         if media_type in media_dict and media_type in assets_dict:
             # Iterate through each media data in the media dictionary of the current type
             for media_data in media_dict[media_type]:
-                media_normalized_title = media_data['normalized_title']
-                media_year = media_data['year']
+                # Check if the media is released, ended, or continuing
+                if media_type in ['series', 'movies'] and not media_data['status'] in ['released', 'ended', 'continuing']:
+                        continue
+                if media_type == "collections":
+                    location = media_data['location']
+                else:
+                    location = media_data['root_folder']
+                root_folder = os.path.basename(location.rstrip('/')).lower()
+                if ignore_root_folders:
+                    if root_folder in ignore_root_folders or location in ignore_root_folders:
+                        continue
+                # Initialize variable to store whether a match was found
                 matched = False
-                missing_seasons = []
-                
+                if location not in unmatched_assets[media_type]:
+                    unmatched_assets[media_type][location] = []
+                # Get season numbers for series
+                if media_type == 'series':
+                    media_seasons_numbers = [season['season_number'] for season in media_data.get('seasons', []) if season['season_has_episodes']]
                 # Compare media data with each asset data for the same media type
                 for asset_data in assets_dict[media_type]:
-                    asset_normalized_title = asset_data['normalized_title']
-                    asset_year = asset_data['year']
-                    
+                    no_prefix = asset_data.get('no_prefix', None)
+                    no_suffix = asset_data.get('no_suffix', None)
+                    no_prefix_normalized = asset_data.get('no_prefix_normalized', None)
+                    no_suffix_normalized = asset_data.get('no_suffix_normalized', None)
+                    alternate_titles = media_data.get('alternate_titles', [])
+                    normalized_alternate_titles = media_data.get('normalized_alternate_titles', [])
+                    secondary_year = media_data.get('secondary_year', None)
+                    original_title = media_data.get('original_title', None)
+                    asset_seasons_numbers = asset_data.get('season_numbers', None)
                     # If normalized title and year match between asset and media, check for missing seasons
-                    if media_normalized_title == asset_normalized_title and media_year == asset_year:
+                    if (
+                            asset_data['title'] == media_data['title'] or
+                            asset_data['normalized_title'] == media_data['normalized_title'] or
+                            asset_data['title'] in alternate_titles or
+                            asset_data['normalized_title'] in normalized_alternate_titles or
+                            asset_data['title'] == original_title or
+                            (no_prefix and media_data['title'] in no_prefix) or
+                            (no_suffix and media_data['title'] in no_suffix) or
+                            (no_prefix_normalized and media_data['normalized_title'] in no_prefix_normalized) or
+                            (no_suffix_normalized and media_data['normalized_title'] in no_suffix_normalized)
+                        ) and (
+                            asset_data['year'] == media_data['year'] or
+                            asset_data['year'] == secondary_year
+                        ):
                         matched = True
-                        
-                        # Find missing seasons by comparing season numbers
                         if media_type == 'series':
-                            missing_seasons = [season for season in media_data['season_numbers'] if season not in asset_data['season_numbers']]
-                        
-                        # If missing seasons are found, append details to unmatched_assets
-                        if missing_seasons:
-                            missing_seasons.sort()
-                            unmatched_assets[media_type].append({
-                                'title': media_data['title'],
-                                'year': media_data['year'],
-                                'missing_season': True,
-                                'missing_seasons': missing_seasons,
-                                'location': media_data['location']
-                            })
-                
-                # If there's no match found, add the media to unmatched_assets
+                            if asset_seasons_numbers and media_seasons_numbers:
+                                missing_seasons = []
+                                for season in media_seasons_numbers:
+                                    if season not in asset_seasons_numbers:
+                                        missing_seasons.append(season)
+                                if missing_seasons:
+                                    unmatched_assets[media_type][location].append({
+                                        'title': media_data['title'],
+                                        'year': media_data['year'],
+                                        'missing_seasons': True,
+                                        'season_numbers': missing_seasons
+                                    })
                 if not matched:
                     if media_type == 'series':
-                        unmatched_assets[media_type].append({
+                        unmatched_assets[media_type][location].append({
                             'title': media_data['title'],
                             'year': media_data['year'],
-                            'missing_season': False,
-                            'season_numbers': media_data['season_numbers'],
-                            'location': media_data['location']
+                            'missing_seasons': False,
+                            'season_numbers': media_seasons_numbers
                         })
                     else:
-                        unmatched_assets[media_type].append({
+                        unmatched_assets[media_type][location].append({
                             'title': media_data['title'],
-                            'year': media_data['year'],
-                            'location': media_data['location']
+                            'year': media_data['year']
                         })
-    
     return unmatched_assets
 
 def print_output(unmatched_dict, media_dict):
@@ -121,66 +147,64 @@ def print_output(unmatched_dict, media_dict):
     """
     # Asset types to consider
     asset_types = ['movies', 'series', 'collections']
-
     # Loop through different asset types
     for asset_type in asset_types:
         data_set = unmatched_dict.get(asset_type, None)
-        if asset_type == 'collections':
-            location_type = "Library"
-        else:
-            location_type = "Folder"
         if data_set:
-            # Print unmatched assets for each type
-            data = [
+            table = [
                 [f"Unmatched {asset_type.capitalize()}"]
             ]
-            create_table(data, log_level="info", logger=logger)
-            previous_location = None
-            for data in data_set:
-                location = data['location']
-                if location != previous_location:
-                    table = [
-                        [f"{location_type}: {location}"]
-                    ]
+            create_table(table, log_level="info", logger=logger)
+            for location, data in data_set.items():
+                location = location.rstrip('/')
+                location_base = os.path.basename(location)
+                if data:
+                    logger.info(f"{location_base.title()}: {len(data)}")
                     logger.info("")
-                    create_table(table, log_level="info", logger=logger)
-                    logger.info("")
-                    previous_location = location
-                # Print details of unmatched assets, handling series separately for missing seasons
-                if asset_type == 'series':
-                    if data.get('missing_season'):
-                        logger.info(f"\t{data['title']} ({data['year']}) (Seasons listed below are missing)")
-                        for season in data['missing_seasons']:
-                            logger.info(f"\t\tSeason: {season} <- Missing")
-                    elif data.get('season_numbers'):
-                        logger.info(f"\t{data['title']} ({data['year']})")
-                        for season in data['season_numbers']:
-                            logger.info(f"\t\tSeason: {season}")
-                else:
-                    year = f" ({data['year']})" if data['year'] else ""
-                    logger.info(f"\t{data['title']}{year}")
-                logger.info("")
-
-    #TODO: Fix statistics if unmatched is empty due to all being matched Group by dictionary
-    # IF unmatched is empty, set to 0
-    # IF media is empty, set to 0
+                    for item in data:
+                        if asset_type == 'series':
+                            if item.get('missing_seasons'):
+                                logger.info(f"\t{item['title']} ({item['year']}) (Seasons listed below have missing posters)")
+                                for season in item['season_numbers']:
+                                    logger.info(f"\t\tSeason: {season} <- Missing")
+                            else:
+                                logger.info(f"\t{item['title']} ({item['year']})")
+                                for season in item['season_numbers']:
+                                    logger.info(f"\t\tSeason: {season}")
+                        else:
+                            year = f" ({item['year']})" if item['year'] else ""
+                            logger.info(f"\t{item['title']}{year}")
+                        logger.info("")
+            logger.info("")
     # Calculate statistics for movies, series, collections, and the overall unmatched assets
-                
-    unmatched_movies_total = len(unmatched_dict.get('movies', [])) if unmatched_dict.get('movies') else 0
+    unmatched_movies_total = sum(len(data) for data in unmatched_dict.get('movies', {}).values())
     total_movies = len(media_dict.get('movies', [])) if media_dict.get('movies') else 0
-    percent_movies_complete = (total_movies - unmatched_movies_total) / total_movies * 100
+    percent_movies_complete = (total_movies - unmatched_movies_total) / total_movies * 100 if total_movies != 0 else 0
 
-    unmatched_series_total = len(unmatched_dict.get('series', [])) if unmatched_dict.get('series') else 0
+    unmatched_series_total = sum(len(data) for data in unmatched_dict.get('series', {}).values())
     total_series = len(media_dict.get('series', [])) if media_dict.get('series') else 0
-    series_percent_complete = (total_series - unmatched_series_total) / total_series * 100
+    series_percent_complete = (total_series - unmatched_series_total) / total_series * 100 if total_series != 0 else 0
 
-    unmatched_seasons_total = sum(len(data.get('season_numbers', [])) + len(data.get('missing_seasons', [])) for data in unmatched_dict.get('series', [])) if unmatched_dict.get('series') else 0
-    total_seasons = sum(len(media_data.get('season_numbers', [])) for media_data in media_dict.get('series', [])) if media_dict.get('series') else 0
-    season_total_percent_complete = (total_seasons - unmatched_seasons_total) / total_seasons * 100
+    unmatched_seasons_total = 0
+    total_seasons = 0
+    for location, data in unmatched_dict.get('series', {}).items():
+        for item in data:
+            if item.get('missing_season'):
+                unmatched_seasons_total += len(item['missing_seasons']) if item['missing_seasons'] else 0
+            elif item.get('season_numbers'):
+                unmatched_seasons_total += len(item['season_numbers']) if item['season_numbers'] else 0
+    for item in media_dict.get('series', []):
+        seasons = item.get('seasons', None)
+        if seasons:
+            for season in seasons:
+                if season['season_has_episodes']:
+                    total_seasons += 1
 
-    unmatched_collections_total = len(unmatched_dict.get('collections', [])) if unmatched_dict.get('collections') else 0
+    season_total_percent_complete = (total_seasons - unmatched_seasons_total) / total_seasons * 100 if total_seasons != 0 else 0
+
+    unmatched_collections_total = sum(len(data) for data in unmatched_dict.get('collections', {}).values())
     total_collections = len(media_dict.get('collections', [])) if media_dict.get('collections') else 0
-    collection_percent_complete = (total_collections - unmatched_collections_total) / total_collections * 100
+    collection_percent_complete = (total_collections - unmatched_collections_total) / total_collections * 100 if total_collections != 0 else 0
 
     grand_total = total_movies + total_series + total_seasons + total_collections
     grand_unmatched_total = unmatched_movies_total + unmatched_series_total + unmatched_seasons_total + unmatched_collections_total
@@ -207,80 +231,98 @@ def print_output(unmatched_dict, media_dict):
 
 def main():
     """
-    Main function for the script.
+    Main function.
     """
-    # Logging script settings
-    data = [
-        ["Script Settings"]
-    ]
-    create_table(data, log_level="debug", logger=logger)
-    
-    # Retrieving script configuration
-    script_config = config.script_config
-    asset_folders = script_config.get('asset_folders', [])
-    assets_paths = script_config.get('assets_paths', '')
-    media_paths = script_config.get('media_paths', [])
-    library_names = script_config.get('library_names', [])
-    ignore_collections = script_config.get('ignore_collections', [])
-    instances = script_config.get('instances', None)
-
-    # Logging script settings
-    logger.debug(f'{"Log level:":<20}{log_level if log_level else "Not set"}')
-    logger.debug(f'{"Asset Folders:":<20}{asset_folders if asset_folders else "Not set"}')
-    logger.debug(f'{"Assets path:":<20}{assets_paths if assets_paths else "Not set"}')
-    logger.debug(f'{"Media paths:":<20}{media_paths if media_paths else "Not set"}')
-    logger.debug(f'{"Library names:":<20}{library_names if library_names else "Not set"}')
-    logger.debug(f'{"Ignore collections:":<20}{ignore_collections if ignore_collections else "Not set"}')
-    logger.debug(f'{"Instances:":<20}{instances if instances else "Not set"}')
-    logger.debug('*' * 40 + '\n')
-
-    # Fetching assets and media paths
-    media_dict = {}
-    for path in assets_paths:
-        assets_dict = categorize_files(path, asset_folders)
+    try:
+        # Logging script settings
+        data = [
+            ["Script Settings"]
+        ]
+        create_table(data, log_level="debug", logger=logger)
         
-    # Checking for assets and logging
-    if assets_dict:
-        logger.debug(f"Assets:\n{json.dumps(assets_dict, indent=4)}")
-    if not all(assets_dict.values()):
-        logger.error("No assets found, Check asset_folders setting in your config. Exiting.")
-        exit()
-    if media_paths:
-        media_dict = get_media_folders(media_paths, logger)
+        # Retrieving script configuration
+        script_config = config.script_config
+        asset_folders = script_config.get('asset_folders', [])
+        assets_paths = script_config.get('assets_paths', '')
+        media_paths = script_config.get('media_paths', [])
+        library_names = script_config.get('library_names', [])
+        ignore_collections = script_config.get('ignore_collections', [])
+        instances = script_config.get('instances', None)
+        ignore_root_folders = script_config.get('ignore_root_folders', [])
+
+        # Logging script settings
+        logger.debug(f'{"Log level:":<20}{log_level if log_level else "Not set"}')
+        logger.debug(f'{"Asset Folders:":<20}{asset_folders if asset_folders else "Not set"}')
+        logger.debug(f'{"Assets path:":<20}{assets_paths if assets_paths else "Not set"}')
+        logger.debug(f'{"Media paths:":<20}{media_paths if media_paths else "Not set"}')
+        logger.debug(f'{"Library names:":<20}{library_names if library_names else "Not set"}')
+        logger.debug(f'{"Ignore collections:":<20}{ignore_collections if ignore_collections else "Not set"}')
+        logger.debug(f'{"Instances:":<20}{instances if instances else "Not set"}')
+        logger.debug('*' * 40 + '\n')
+
+        # Fetching assets and media paths
+        media_dict = {}
+        for path in assets_paths:
+            assets_dict = categorize_files(path, asset_folders)
+            
+        # Checking for assets and logging
+        if assets_dict:
+            logger.debug(f"Assets:\n{json.dumps(assets_dict, indent=4)}")
+        if not all(assets_dict.values()):
+            logger.error("No assets found, Check asset_folders setting in your config. Exiting.")
+            sys.exit()
+        
+        # Checking for media paths and logging
+        if any(value is None for value in media_dict.values()):
+            logger.error("No media found, Check media_paths setting in your config. Exiting.")
+            sys.exit()
+        if media_dict:
+            logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
+        
+        # Processing Plex instances
+        if instances:
+            for instance_type, instance_data in config.instances_config.items():
+                for instance in instances:
+                    if instance in instance_data:
+                        if instance_type == "plex":
+                            url = instance_data[instance]['url']
+                            api = instance_data[instance]['api']
+                            print("Connecting to Plex...")
+                            app = PlexServer(url, api)
+                            if library_names and app:
+                                results = get_plex_data(app, library_names, logger, include_smart=False, collections_only=True)
+                                media_dict['collections'] = []
+                                media_dict['collections'].extend(results)
+                                # Remove ignored collections
+                                if ignore_collections:
+                                    media_dict['collections'] = [collection for collection in media_dict['collections'] if collection['title'] not in ignore_collections]
+                            else:
+                                logger.warning("No library names specified in config.yml. Skipping Plex.")
+                        else:
+                            url = instance_data[instance]['url']
+                            api = instance_data[instance]['api']
+                            print(f"Connecting to {instance_type.capitalize()}...")
+                            app = StARR(url, api, logger)
+                            if app:
+                                results = handle_starr_data(app, instance_type)
+                                if instance_type == "radarr":
+                                    media_dict['movies'] = []
+                                    media_dict['movies'].extend(results)
+                                elif instance_type == "sonarr":
+                                    media_dict['series'] = []
+                                    media_dict['series'].extend(results)
+                            else:
+                                logger.warning(f"No {instance_type.capitalize()} instances specified in config.yml. Skipping {instance_type.capitalize()}.")
+        else:
+            logger.warning("No instances specified in config.yml. Skipping Plex.")
         logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
-    
-    # Checking for media paths and logging
-    if any(value is None for value in media_dict.values()):
-        logger.error("No media found, Check media_paths setting in your config. Exiting.")
-        exit()
-    if media_dict:
-        logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
-    
-    # Processing Plex instances
-    if instances:
-        for instance_type, instance_data in config.instances_config.items():
-            for instance in instances:
-                if instance in instance_data:
-                    url = instance_data[instance]['url']
-                    api = instance_data[instance]['api']
-                    print("Connecting to Plex...")
-                    app = PlexServer(url, api)
-                    if library_names and app:
-                        results = get_plex_data(app, library_names, logger, include_smart=False, collections_only=True)
-                        media_dict['collections'] = []
-                        media_dict['collections'].extend(results)
-                        # Remove ignored collections
-                        if ignore_collections:
-                            media_dict['collections'] = [collection for collection in media_dict['collections'] if collection['title'] not in ignore_collections]
-                    else:
-                        logger.warning("No library names specified in config.yml. Skipping Plex.")
-    else:
-        logger.warning("No instances specified in config.yml. Skipping Plex.")
-    logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
-    # Matching assets and printing output
-    unmatched_dict = match_assets(assets_dict, media_dict)
-    print_output(unmatched_dict, media_dict)
-    logger.info(f"{'*' * 40} END {'*' * 40}\n")
+        # Matching assets and printing output
+        unmatched_dict = match_assets(assets_dict, media_dict, ignore_root_folders)
+        print_output(unmatched_dict, media_dict)
+        logger.info(f"{'*' * 40} END {'*' * 40}\n")
+    except KeyboardInterrupt:
+        print("Exiting due to keyboard interrupt.")
+        sys.exit()
 
 
 if __name__ == "__main__":

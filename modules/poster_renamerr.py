@@ -119,12 +119,19 @@ def handle_overrides(source_assets, override_assets):
                         elif 'season_numbers' not in source_asset and 'season_numbers' in override_asset:
                             source_asset['season_numbers'] = override_asset['season_numbers']
             # Add missing assets from override_assets to source_assets
-            for override_asset in override_assets[asset_type]:
-                if not (
-                        source_asset['title'] == override_asset['title']
-                        and source_asset['year'] == override_asset['year']
-                    ):
-                    source_assets[asset_type].append(override_asset)
+            for asset_type in asset_types:
+                if asset_type in override_assets and asset_type in source_assets:
+                    for override_asset in override_assets[asset_type]:
+                        found_match = False
+                        for source_asset in source_assets[asset_type]:
+                            if (
+                                source_asset['title'] == override_asset['title']
+                                and source_asset['year'] == override_asset['year']
+                            ):
+                                found_match = True
+                                break
+                        if not found_match:
+                            source_assets[asset_type].append(override_asset)
 
 def match_data(media_dict, asset_files):
     """

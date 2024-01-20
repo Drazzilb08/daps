@@ -188,6 +188,10 @@ def fix_borders(assets_dict, script_config, border_colors, output_dir):
 
                 # Process each input file within the asset
                 for input_file in files:
+                    file_name, extension = os.path.splitext(input_file)
+                    if extension not in [".jpg", ".png", ".jpeg", ".JPG", ".PNG", ".JPEG"]:
+                        logger.warning(f"Skipping {input_file} as it is not a jpg or png file.")
+                        continue
                     file_name = os.path.basename(input_file)
                     if rgb_border_colors:
                         rgb_border_color = rgb_border_colors[current_index]

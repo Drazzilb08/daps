@@ -260,92 +260,94 @@ def handle_tags(app, media_dict, tag_names):
 
 def main():
     """
-    The main function.
+    Main function.
     """
-    
-    # If in dry run mode, create a table indicating no changes will be made
-    if dry_run:
-        data = [
-            ["Dry Run"],
-            ["NO CHANGES WILL BE MADE"]
-        ]
-        create_table(data, log_level="info", logger=logger)
-    
-    # Fetch script configurations
-    script_config = config.script_config
-    instances = script_config.get('instances', None)
-    
-    # Iterate through instance types and their respective configurations
-    for instance_type, instance_data in config.instances_config.items():
-        for instance, instance_settings in instances.items():
-            if instance in instance_data:
-                # Extract various settings for the instance
-                plex_instances = instance_settings.get('plex_instances', None)
-                labels = instance_settings.get('labels', None)
-                library_names = instance_settings.get('library_names', None)
-                
-                # Create StARR object and get instance name
-                app = StARR(instance_data[instance]['url'], instance_data[instance]['api'], logger)
-                starr_server_name = app.get_instance_name()
-                
-                # Fetch and process media data from the StARR instance
-                media_dict = handle_starr_data(app, instance_type)
-                media_dict = handle_tags(app, media_dict, labels)
-                
-                # If media data is found
-                if media_dict:
-                    # Logging settings and instance information
-                    logger.debug(f"Media Data:\n{json.dumps(media_dict, indent=4)}")
-                    # (Additional logging and table creation omitted for brevity)
+    try:
+        # If in dry run mode, create a table indicating no changes will be made
+        if dry_run:
+            data = [
+                ["Dry Run"],
+                ["NO CHANGES WILL BE MADE"]
+            ]
+            create_table(data, log_level="info", logger=logger)
+        
+        # Fetch script configurations
+        script_config = config.script_config
+        instances = script_config.get('instances', None)
+        
+        # Iterate through instance types and their respective configurations
+        for instance_type, instance_data in config.instances_config.items():
+            for instance, instance_settings in instances.items():
+                if instance in instance_data:
+                    # Extract various settings for the instance
+                    plex_instances = instance_settings.get('plex_instances', None)
+                    labels = instance_settings.get('labels', None)
+                    library_names = instance_settings.get('library_names', None)
                     
-                    # Iterate through Plex instances associated with the current StARR instance
-                    for plex_instance in plex_instances:
-                        if plex_instance in config.plex_config:
-                            # Connect to the Plex server
-                            try:
-                                print("Connecting to Plex...")
-                                plex = PlexServer(config.plex_config[plex_instance]['url'], config.plex_config[plex_instance]['api'])
-                            except BadRequest:
-                                logger.error(f"Error connecting to Plex instance: {plex_instance}")
-                                continue
-                            server_name = plex.friendlyName
-                            
-                            # Fetch Plex data and process it
-                            if library_names:
-                                plex_dict = get_plex_data(plex, library_names, logger, include_smart=False, collections_only=False)
-                            else:
-                                logger.error(f"No library names provided for {starr_server_name}, against {server_name}. Skipping...")
-                                continue
-                            # If Plex data is found
-                            if plex_dict:
-                                # Logging Plex data
-                                logger.debug(f"Plex Data:\n{json.dumps(plex_dict, indent=4)}")
+                    # Create StARR object and get instance name
+                    app = StARR(instance_data[instance]['url'], instance_data[instance]['api'], logger)
+                    starr_server_name = app.get_instance_name()
+                    
+                    # Fetch and process media data from the StARR instance
+                    media_dict = handle_starr_data(app, instance_type)
+                    media_dict = handle_tags(app, media_dict, labels)
+                    
+                    # If media data is found
+                    if media_dict:
+                        # Logging settings and instance information
+                        logger.debug(f"Media Data:\n{json.dumps(media_dict, indent=4)}")
+                        # (Additional logging and table creation omitted for brevity)
+                        
+                        # Iterate through Plex instances associated with the current StARR instance
+                        for plex_instance in plex_instances:
+                            if plex_instance in config.plex_config:
+                                # Connect to the Plex server
+                                try:
+                                    print("Connecting to Plex...")
+                                    plex = PlexServer(config.plex_config[plex_instance]['url'], config.plex_config[plex_instance]['api'])
+                                except BadRequest:
+                                    logger.error(f"Error connecting to Plex instance: {plex_instance}")
+                                    continue
+                                server_name = plex.friendlyName
                                 
-                                # Process data for syncing to Plex
-                                data_dict = process_data(plex_dict, media_dict, labels)
-                                
-                                # If items to sync are found
-                                if data_dict:
-                                    logger.debug(f"Items to sync:\n{json.dumps(data_dict, indent=4)}")
-                                    # Perform actual syncing to Plex if not in dry run mode
-                                    if not dry_run:
-                                        sync_to_plex(plex, data_dict, instance_type)
-                                    
-                                    # Handle messages related to syncing actions
-                                    handle_messages(data_dict)
-                                    
-                                    # Send notifications related to syncing actions
-                                    if discord_check(script_name):
-                                        notification(data_dict)
+                                # Fetch Plex data and process it
+                                if library_names:
+                                    plex_dict = get_plex_data(plex, library_names, logger, include_smart=False, collections_only=False)
                                 else:
-                                    logger.info(f"No items to sync from {starr_server_name} to {server_name}.\n")
-                            else:
-                                logger.error(f"No Plex Data found for {server_name}. Skipping...")
-                                continue
-                    else:
-                        continue
-    logger.info(f"{'*' * 40} END {'*' * 40}\n")
-
+                                    logger.error(f"No library names provided for {starr_server_name}, against {server_name}. Skipping...")
+                                    continue
+                                # If Plex data is found
+                                if plex_dict:
+                                    # Logging Plex data
+                                    logger.debug(f"Plex Data:\n{json.dumps(plex_dict, indent=4)}")
+                                    
+                                    # Process data for syncing to Plex
+                                    data_dict = process_data(plex_dict, media_dict, labels)
+                                    
+                                    # If items to sync are found
+                                    if data_dict:
+                                        logger.debug(f"Items to sync:\n{json.dumps(data_dict, indent=4)}")
+                                        # Perform actual syncing to Plex if not in dry run mode
+                                        if not dry_run:
+                                            sync_to_plex(plex, data_dict, instance_type)
+                                        
+                                        # Handle messages related to syncing actions
+                                        handle_messages(data_dict)
+                                        
+                                        # Send notifications related to syncing actions
+                                        if discord_check(script_name):
+                                            notification(data_dict)
+                                    else:
+                                        logger.info(f"No items to sync from {starr_server_name} to {server_name}.\n")
+                                else:
+                                    logger.error(f"No Plex Data found for {server_name}. Skipping...")
+                                    continue
+                        else:
+                            continue
+        logger.info(f"{'*' * 40} END {'*' * 40}\n")
+    except KeyboardInterrupt:
+        print("Keyboard Interrupt detected. Exiting...")
+        sys.exit()
 
 if __name__ == "__main__":
     start_time = time.time()

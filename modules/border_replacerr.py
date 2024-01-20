@@ -493,35 +493,38 @@ def main():
     """
     Main function.
     """
+    try:
+        # Obtain script configuration details
+        script_config = config.script_config
+        input_dir = script_config['input_dir']
+        output_dir = script_config['output_dir']
+        schedule = script_config['schedule']
+        border_colors = script_config['border_colors']
+        asset_folders = script_config['asset_folders']
 
-    # Obtain script configuration details
-    script_config = config.script_config
-    input_dir = script_config['input_dir']
-    output_dir = script_config['output_dir']
-    schedule = script_config['schedule']
-    border_colors = script_config['border_colors']
-    asset_folders = script_config['asset_folders']
+        # Convert single string border color to a list if necessary
+        if isinstance(border_colors, str):
+            border_colors = [border_colors]
 
-    # Convert single string border color to a list if necessary
-    if isinstance(border_colors, str):
-        border_colors = [border_colors]
+        # Creating a table to log script settings in debug mode
+        data = [
+            ["Script Settings"],
+        ]
+        create_table(data, log_level="debug", logger=logger)
+        logger.debug(f'{"Dry_run:":<20}{config.dry_run if config.dry_run else "False"}')
+        logger.debug(f'{"Log Level:":<20}{config.log_level if config.log_level else "info"}')
+        logger.debug(f'{"Input Dir:":<20}{input_dir if input_dir else "Not Set"}')
+        logger.debug(f'{"Output Dir:":<20}{output_dir if output_dir else "Not Set"}')
+        logger.debug(f'{"Schedule:":<20}{schedule if schedule else "Not Set"}')
 
-    # Creating a table to log script settings in debug mode
-    data = [
-        ["Script Settings"],
-    ]
-    create_table(data, log_level="debug", logger=logger)
-    logger.debug(f'{"Dry_run:":<20}{config.dry_run if config.dry_run else "False"}')
-    logger.debug(f'{"Log Level:":<20}{config.log_level if config.log_level else "info"}')
-    logger.debug(f'{"Input Dir:":<20}{input_dir if input_dir else "Not Set"}')
-    logger.debug(f'{"Output Dir:":<20}{output_dir if output_dir else "Not Set"}')
-    logger.debug(f'{"Schedule:":<20}{schedule if schedule else "Not Set"}')
+        # Process files in the input directory with specified settings
+        process_files(input_dir, output_dir, asset_folders)
 
-    # Process files in the input directory with specified settings
-    process_files(input_dir, output_dir, asset_folders)
-
-    logger.info(f"Border Replacer Complete")  # Log completion message
-    logger.info(f"{'*' * 40} END {'*' * 40}\n")
+        logger.info(f"Border Replacer Complete")  # Log completion message
+        logger.info(f"{'*' * 40} END {'*' * 40}\n")
+    except KeyboardInterrupt:
+        print("Keyboard Interrupt detected. Exiting...")
+        sys.exit()
 
 if __name__ == "__main__":
     main()

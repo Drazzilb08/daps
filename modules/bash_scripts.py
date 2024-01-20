@@ -1,5 +1,6 @@
 import shlex
 import json
+import sys
 from util.logger import setup_logger
 from util.config import Config
 from util.call_script import call_script
@@ -147,12 +148,16 @@ def main(settings, script_name):
         settings (dict): The settings for the bash script.
         script_name (str): The name of the bash script.
     """
-    config = Config(script_name="bash_scripts")
-    logger = setup_logger(config.log_level, script_name)
-    bash_script_file = f'./scripts/{script_name}.sh'
-    logger.debug(f"Running: {script_name.capitalize()}")
-    cmds = set_cmd_args(settings, bash_script_file, logger, script_name)
-    run_script(cmds, logger)
-    logger.debug(f"{script_name.capitalize()} complete.")
-    logger.info(f"{'*' * 40} END {'*' * 40}\n")
+    try:
+        config = Config(script_name="bash_scripts")
+        logger = setup_logger(config.log_level, script_name)
+        bash_script_file = f'./scripts/{script_name}.sh'
+        logger.debug(f"Running: {script_name.capitalize()}")
+        cmds = set_cmd_args(settings, bash_script_file, logger, script_name)
+        run_script(cmds, logger)
+        logger.debug(f"{script_name.capitalize()} complete.")
+        logger.info(f"{'*' * 40} END {'*' * 40}\n")
+    except KeyboardInterrupt:
+        print("Keyboard Interrupt detected. Exiting...")
+        sys.exit()
 

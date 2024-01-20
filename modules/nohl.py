@@ -689,138 +689,141 @@ def notification(final_output):
 
 def main():
     """
-    Main function for nohl.py, orchestrates the entire workflow.
+    Main function.
     """
+    try:
+        # Check if a dry run is enabled
+        if dry_run:
+            # Display a notification for a dry run
+            data = [
+                ["Dry Run"],
+                ["NO CHANGES WILL BE MADE"]
+            ]
+            create_table(data, log_level="info", logger=logger)
+        
+        # Fetch configurations from the script's config file
+        script_config = config.script_config
+        max_search = script_config.get('maximum_searches', None)
+        instances = script_config.get('instances', None)
+        filters = script_config.get('filters', None)
+        paths = script_config.get('paths', None)
+        print_files = script_config.get('print_files', False)
 
-    # Check if a dry run is enabled
-    if dry_run:
-        # Display a notification for a dry run
+        # Check if instances are properly configured
+        if instances is None:
+            logger.error("No instances set in config file.")
+            sys.exit(1)
+
+        # Display script configurations in the logs
         data = [
-            ["Dry Run"],
-            ["NO CHANGES WILL BE MADE"]
+            ["Script Configuration"],
         ]
-        create_table(data, log_level="info", logger=logger)
-    
-    # Fetch configurations from the script's config file
-    script_config = config.script_config
-    max_search = script_config.get('maximum_searches', None)
-    instances = script_config.get('instances', None)
-    filters = script_config.get('filters', None)
-    paths = script_config.get('paths', None)
-    print_files = script_config.get('print_files', False)
+        create_table(data, log_level="debug", logger=logger)
+        logger.debug(f'{"Maximum Searches:":<30}{max_search if max_search else "Not Set"}')
+        logger.debug(f'{f"Instances:":<30}\n{json.dumps(instances, indent=4) if instances else "Not Set"}')
+        logger.debug(f'{"Filters:":<30}\n{json.dumps(filters, indent=4) if filters else "Not Set"}')
+        logger.debug(f'{"Paths:":<30}\n{json.dumps(paths, indent=4) if paths else "Not Set"}')
+        logger.debug(f'{"Print Files:":<30}{script_config.get("print_files", False)}')
+        logger.debug('*' * 42 + '\n')
 
-    # Check if instances are properly configured
-    if instances is None:
-        logger.error("No instances set in config file.")
-        sys.exit(1)
+        # Display the summary of non-hardlinked files in each directory
+        output_dict = {}
+        # Process provided paths to find non-hardlinked files
+        nohl_dict = {'movies': [], 'series': []}
+        if paths:
+            with tqdm(paths, desc="Finding non-hardlinked files in ", unit="path", total=len(paths), disable=None) as progress_bar:
+                for path in paths:
+                    # Update description for each path before processing
+                    pbar_path = os.path.basename(os.path.normpath(path))
+                    progress_bar.set_description(f"Finding non-hardlinked files in '{pbar_path}'")
 
-    # Display script configurations in the logs
-    data = [
-        ["Script Configuration"],
-    ]
-    create_table(data, log_level="debug", logger=logger)
-    logger.debug(f'{"Maximum Searches:":<30}{max_search if max_search else "Not Set"}')
-    logger.debug(f'{f"Instances:":<30}\n{json.dumps(instances, indent=4) if instances else "Not Set"}')
-    logger.debug(f'{"Filters:":<30}\n{json.dumps(filters, indent=4) if filters else "Not Set"}')
-    logger.debug(f'{"Paths:":<30}\n{json.dumps(paths, indent=4) if paths else "Not Set"}')
-    logger.debug(f'{"Print Files:":<30}{script_config.get("print_files", False)}')
-    logger.debug('*' * 42 + '\n')
+                    # Process the path and update progress
+                    results = find_no_hl_files(path)
+                    if results:
+                        nohl_dict['movies'].extend(results['movies'])
+                        nohl_dict['series'].extend(results['series'])
 
-    # Display the summary of non-hardlinked files in each directory
-    output_dict = {}
-    # Process provided paths to find non-hardlinked files
-    nohl_dict = {'movies': [], 'series': []}
-    if paths:
-        with tqdm(paths, desc="Finding non-hardlinked files in ", unit="path", total=len(paths), disable=None) as progress_bar:
-            for path in paths:
-                # Update description for each path before processing
-                pbar_path = os.path.basename(os.path.normpath(path))
-                progress_bar.set_description(f"Finding non-hardlinked files in '{pbar_path}'")
+                    progress_bar.update()  # Manually update progress for each iteration
 
-                # Process the path and update progress
-                results = find_no_hl_files(path)
-                if results:
-                    nohl_dict['movies'].extend(results['movies'])
-                    nohl_dict['series'].extend(results['series'])
-
-                progress_bar.update()  # Manually update progress for each iteration
-
-    # Generate a summary of the number of non-hardlinked files in each directory
-    total = 0
-    logger.info("")
-    data = [
-        ["Directory", "Number of Files"],
-    ]
-    counter = {}
-    for media_type, results in nohl_dict.items():
-        if results:
-            old_root_path = ""
-            for item in results:
-                root_path = os.path.basename(os.path.normpath(item['root_path']))
-                if media_type == 'movies':
-                    counter[root_path] = counter.get(root_path, 0) + len(item['nohl'])
-                    total += len(item['nohl'])
-                elif media_type == 'series':
-                    for season in item['season_info']:
-                        counter[root_path] = counter.get(root_path, 0) + len(season['nohl'])
-                        total += len(season['nohl'])
-                if print_files:
-                    if old_root_path != root_path:
-                        logger.info(f"Root Path: {root_path}")
-                    logger.info(f"\t{item['title']} ({item['year']})")
+        # Generate a summary of the number of non-hardlinked files in each directory
+        total = 0
+        logger.info("")
+        data = [
+            ["Directory", "Number of Files"],
+        ]
+        counter = {}
+        for media_type, results in nohl_dict.items():
+            if results:
+                old_root_path = ""
+                for item in results:
+                    root_path = os.path.basename(os.path.normpath(item['root_path']))
                     if media_type == 'movies':
-                        for file in item['nohl']:
-                            file_name = os.path.basename(file)
-                            logger.info(f"\t\t{file_name}")
-                    else:
+                        counter[root_path] = counter.get(root_path, 0) + len(item['nohl'])
+                        total += len(item['nohl'])
+                    elif media_type == 'series':
                         for season in item['season_info']:
-                            for file in season['nohl']:
+                            counter[root_path] = counter.get(root_path, 0) + len(season['nohl'])
+                            total += len(season['nohl'])
+                    if print_files:
+                        if old_root_path != root_path:
+                            logger.info(f"Root Path: {root_path}")
+                        logger.info(f"\t{item['title']} ({item['year']})")
+                        if media_type == 'movies':
+                            for file in item['nohl']:
                                 file_name = os.path.basename(file)
                                 logger.info(f"\t\t{file_name}")
-                    logger.info("")
-                old_root_path = root_path
-    for key, value in counter.items():
-        data.append([key, value])
-    if total:
-        data.append(["Total", total])
-        create_table(data, log_level="info", logger=logger)
-        logger.info("")
-    # Iterate through instances and handle the connections and data retrieval
-    for instance_type, instance_data in config.instances_config.items():
-        for instance in instances:
-            if instance in instance_data:
-                instance_settings = instance_data.get(instance, None)
-                app = StARR(instance_settings['url'], instance_settings['api'], logger)
-                server_name = app.get_instance_name()
-                exclude_profiles = filters.get('exclude_profiles', [])
-                if instance_type == "radarr" and not nohl_dict['movies'] or instance_type == "sonarr" and not nohl_dict['series']:
-                    logger.info(f"No non-hardlinked files found for server: {server_name}\n")
-                    continue
-                exclude_media = filters.get('exclude_movies', []) if instance_type == 'radarr' else filters.get('exclude_series', [])
-                data_dict = {'search_media': [], 'filtered_media': []}
-                nohl_data = nohl_dict['movies'] if instance_type == "radarr" else nohl_dict['series'] if instance_type == "sonarr" else None
-                if nohl_data:
-                    media_dict = handle_starr_data(app, instance_type)
-                    data_dict = filter_media(app, media_dict, nohl_data, instance_type, exclude_profiles, exclude_media,)
-                    search_dict = data_dict.get('search_media', [])
-                    if search_dict:
-                        # Conduct searches if not a dry run
-                        if not dry_run:
-                            search_dict = handle_searches(app, search_dict, instance_type, max_search)
-                            data_dict['search_media'] = search_dict
-                    # Prepare output data
-                output_dict[instance] = {
-                    'server_name': server_name,
-                    'instance_type': instance_type,
-                    'data': data_dict
-                }
-    # Display command-line output about processed files and excluded media
-    handle_messages(output_dict)
-    
-    # Send a Discord notification containing the output data
-    if discord_check(script_name):
-        notification(output_dict)
-    logger.info(f"{'*' * 40} END {'*' * 40}\n")
+                        else:
+                            for season in item['season_info']:
+                                for file in season['nohl']:
+                                    file_name = os.path.basename(file)
+                                    logger.info(f"\t\t{file_name}")
+                        logger.info("")
+                    old_root_path = root_path
+        for key, value in counter.items():
+            data.append([key, value])
+        if total:
+            data.append(["Total", total])
+            create_table(data, log_level="info", logger=logger)
+            logger.info("")
+        # Iterate through instances and handle the connections and data retrieval
+        for instance_type, instance_data in config.instances_config.items():
+            for instance in instances:
+                if instance in instance_data:
+                    instance_settings = instance_data.get(instance, None)
+                    app = StARR(instance_settings['url'], instance_settings['api'], logger)
+                    server_name = app.get_instance_name()
+                    exclude_profiles = filters.get('exclude_profiles', [])
+                    if instance_type == "radarr" and not nohl_dict['movies'] or instance_type == "sonarr" and not nohl_dict['series']:
+                        logger.info(f"No non-hardlinked files found for server: {server_name}\n")
+                        continue
+                    exclude_media = filters.get('exclude_movies', []) if instance_type == 'radarr' else filters.get('exclude_series', [])
+                    data_dict = {'search_media': [], 'filtered_media': []}
+                    nohl_data = nohl_dict['movies'] if instance_type == "radarr" else nohl_dict['series'] if instance_type == "sonarr" else None
+                    if nohl_data:
+                        media_dict = handle_starr_data(app, instance_type)
+                        data_dict = filter_media(app, media_dict, nohl_data, instance_type, exclude_profiles, exclude_media,)
+                        search_dict = data_dict.get('search_media', [])
+                        if search_dict:
+                            # Conduct searches if not a dry run
+                            if not dry_run:
+                                search_dict = handle_searches(app, search_dict, instance_type, max_search)
+                                data_dict['search_media'] = search_dict
+                        # Prepare output data
+                    output_dict[instance] = {
+                        'server_name': server_name,
+                        'instance_type': instance_type,
+                        'data': data_dict
+                    }
+        # Display command-line output about processed files and excluded media
+        handle_messages(output_dict)
+        
+        # Send a Discord notification containing the output data
+        if discord_check(script_name):
+            notification(output_dict)
+        logger.info(f"{'*' * 40} END {'*' * 40}\n")
+    except KeyboardInterrupt:
+        print("Keyboard Interrupt detected. Exiting...")
+        sys.exit()
 
 if __name__ == "__main__":
     main()

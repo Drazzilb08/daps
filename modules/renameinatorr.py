@@ -285,59 +285,62 @@ def process_instance(app, rename_folders, server_name, instance_type):
 
 def main():
     """
-    Main function for the script.
+    Main function.
     """
-    
-    # Get instances and rename_folders settings from the script config
-    instances = config.script_config.get('instances', None)
-    rename_folders = config.script_config.get('rename_folders', False)
-    
-    # Log script settings
-    data = [
-        ["Script Settings"]
-    ]
-    create_table(data, log_level="debug", logger=logger)
-    logger.debug(f'{"Dry_run:":<20}{dry_run if dry_run else "False"}')
-    logger.debug(f'{"Log level:":<20}{log_level if log_level else "INFO"}')
-    logger.debug(f'{"Instances:":<20}{instances if instances else "Not Set"}')
-    logger.debug(f'{"Rename Folders:":<20}{rename_folders if rename_folders else "False"}')
-    logger.debug(f'*' * 40 + '\n')
-    
-    # Handle dry run settings
-    if dry_run:
+    try:
+        # Get instances and rename_folders settings from the script config
+        instances = config.script_config.get('instances', None)
+        rename_folders = config.script_config.get('rename_folders', False)
+        
+        # Log script settings
         data = [
-            ["Dry Run"],
-            ["NO CHANGES WILL BE MADE"]
+            ["Script Settings"]
         ]
-        create_table(data, log_level="info", logger=logger)
-        logger.info('')
-    
-    # Output dictionary to store processed data
-    output_dict = {}
-    
-    # Process instances and gather data
-    for instance_type, instance_data in config.instances_config.items():
-        for instance in instances:
-            if instance in instance_data:
-                # Initialize StARR object for the instance
-                app = StARR(instance_data[instance]['url'], instance_data[instance]['api'], logger)
-                server_name = app.get_instance_name()
-                
-                # Process data for the instance and store in output_dict
-                data = process_instance(app, rename_folders, server_name, instance_type)
-                output_dict[instance] = {
-                    "server_name": server_name,
-                    "data": data
-                }
-    
-    # Print output and send notifications if data exists
-    if any(value['data'] for value in output_dict.values()):
-        print_output(output_dict)
-        if discord_check(script_name):
-            notification(output_dict)
-    else:
-        logger.info("No media items to rename.")
-    logger.info(f"{'*' * 40} END {'*' * 40}\n")
+        create_table(data, log_level="debug", logger=logger)
+        logger.debug(f'{"Dry_run:":<20}{dry_run if dry_run else "False"}')
+        logger.debug(f'{"Log level:":<20}{log_level if log_level else "INFO"}')
+        logger.debug(f'{"Instances:":<20}{instances if instances else "Not Set"}')
+        logger.debug(f'{"Rename Folders:":<20}{rename_folders if rename_folders else "False"}')
+        logger.debug(f'*' * 40 + '\n')
+        
+        # Handle dry run settings
+        if dry_run:
+            data = [
+                ["Dry Run"],
+                ["NO CHANGES WILL BE MADE"]
+            ]
+            create_table(data, log_level="info", logger=logger)
+            logger.info('')
+        
+        # Output dictionary to store processed data
+        output_dict = {}
+        
+        # Process instances and gather data
+        for instance_type, instance_data in config.instances_config.items():
+            for instance in instances:
+                if instance in instance_data:
+                    # Initialize StARR object for the instance
+                    app = StARR(instance_data[instance]['url'], instance_data[instance]['api'], logger)
+                    server_name = app.get_instance_name()
+                    
+                    # Process data for the instance and store in output_dict
+                    data = process_instance(app, rename_folders, server_name, instance_type)
+                    output_dict[instance] = {
+                        "server_name": server_name,
+                        "data": data
+                    }
+        
+        # Print output and send notifications if data exists
+        if any(value['data'] for value in output_dict.values()):
+            print_output(output_dict)
+            if discord_check(script_name):
+                notification(output_dict)
+        else:
+            logger.info("No media items to rename.")
+        logger.info(f"{'*' * 40} END {'*' * 40}\n")
+    except KeyboardInterrupt:
+        print("Keyboard Interrupt detected. Exiting...")
+        sys.exit()
 
 if __name__ == "__main__":
     main()

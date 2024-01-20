@@ -4,6 +4,7 @@ import os
 from util.logger import setup_logger
 from util.config import Config
 from util.call_script import call_script
+import sys
 
 config = Config(script_name="sync_gdrive")
 logger = setup_logger(config.log_level, "sync_gdrive")
@@ -109,8 +110,12 @@ def run_rclone(cmd, settings):
 
 # Main function
 def main():
-    settings = config.script_config
-    logger.info("Running sync_gdrive")
-    for cmd in set_cmd_args(settings):
-        run_rclone(cmd, settings)
-    logger.info(f"{'*' * 40} END {'*' * 40}\n")
+    try:
+        settings = config.script_config
+        logger.info("Running sync_gdrive")
+        for cmd in set_cmd_args(settings):
+            run_rclone(cmd, settings)
+        logger.info(f"{'*' * 40} END {'*' * 40}\n")
+    except KeyboardInterrupt:
+        print("Keyboard Interrupt detected. Exiting...")
+        sys.exit()

@@ -339,93 +339,95 @@ def print_output(remove_data):
 
 def main():
     """
-    Main function for the script.
+    Main function.
     """
+    try:
+        # Check if it's a dry run and log the message
+        if dry_run:
+            data = [
+                ["Dry Run"],
+                ["NO CHANGES WILL BE MADE"]
+            ]
+            create_table(data, log_level="info", logger=logger)
 
-    # Check if it's a dry run and log the message
-    if dry_run:
+        # Fetch script configurations from the provided YAML file
+        script_data = config.script_config
+        assets_paths = script_data.get('assets_paths', [])
+        library_names = script_data.get('library_names', [])
+        asset_folders = script_data.get('asset_folders', False)
+        media_paths = script_data.get('media_paths', [])
+        assets_paths = script_data.get('assets_paths', [])
+        ignore_collections = script_data.get('ignore_collections', [])
+        instances = script_data.get('instances', None)
+
+        # Log script settings for debugging purposes
         data = [
-            ["Dry Run"],
-            ["NO CHANGES WILL BE MADE"]
+            ["Script Settings"]
         ]
-        create_table(data, log_level="info", logger=logger)
+        create_table(data, log_level="debug", logger=logger)
+        logger.debug(f'{"Log level:":<20}{log_level if log_level else "Not set"}')
+        logger.debug(f'{"Dry_run:":<20}{dry_run if dry_run else "False"}')
+        logger.debug(f'{"Asset Folders:":<20}{asset_folders if asset_folders else "Not set"}')
+        logger.debug(f'{"Assets paths:":<20}{assets_paths if assets_paths else "Not set"}')
+        logger.debug(f'{"Media paths:":<20}{media_paths if media_paths else "Not set"}')
+        logger.debug(f'{"Library names:":<20}{library_names if library_names else "Not set"}')
+        logger.debug(f'{"Ignore Collections:":<20}{ignore_collections if ignore_collections else "Not set"}')
+        logger.debug(f'{"Instances:":<20}{instances if instances else "Not set"}')
+        logger.debug('*' * 40 + '\n')
 
-    # Fetch script configurations from the provided YAML file
-    script_data = config.script_config
-    assets_paths = script_data.get('assets_paths', [])
-    library_names = script_data.get('library_names', [])
-    asset_folders = script_data.get('asset_folders', False)
-    media_paths = script_data.get('media_paths', [])
-    assets_paths = script_data.get('assets_paths', [])
-    ignore_collections = script_data.get('ignore_collections', [])
-    instances = script_data.get('instances', None)
+        # Initialize dictionaries to store assets and media information
+        assets_dict = {}
+        media_dict = {'series': {}, 'movies': {}, 'collections': {}}
 
-    # Log script settings for debugging purposes
-    data = [
-        ["Script Settings"]
-    ]
-    create_table(data, log_level="debug", logger=logger)
-    logger.debug(f'{"Log level:":<20}{log_level if log_level else "Not set"}')
-    logger.debug(f'{"Dry_run:":<20}{dry_run if dry_run else "False"}')
-    logger.debug(f'{"Asset Folders:":<20}{asset_folders if asset_folders else "Not set"}')
-    logger.debug(f'{"Assets paths:":<20}{assets_paths if assets_paths else "Not set"}')
-    logger.debug(f'{"Media paths:":<20}{media_paths if media_paths else "Not set"}')
-    logger.debug(f'{"Library names:":<20}{library_names if library_names else "Not set"}')
-    logger.debug(f'{"Ignore Collections:":<20}{ignore_collections if ignore_collections else "Not set"}')
-    logger.debug(f'{"Instances:":<20}{instances if instances else "Not set"}')
-    logger.debug('*' * 40 + '\n')
+        # Fetch and categorize assets
+        for path in assets_paths:
+            assets_dict = categorize_files(path, asset_folders)
 
-    # Initialize dictionaries to store assets and media information
-    assets_dict = {}
-    media_dict = {'series': {}, 'movies': {}, 'collections': {}}
+        # Check if assets exist, log and exit if not found
+        if not all(assets_dict.values()):
+            logger.error("No assets found, Check asset_folders setting in your config. Exiting.")
+            sys.exit()
 
-    # Fetch and categorize assets
-    for path in assets_paths:
-        assets_dict = categorize_files(path, asset_folders)
+        # Fetch media information
+        media_dict = get_media_folders(media_paths, logger)
 
-    # Check if assets exist, log and exit if not found
-    if not all(assets_dict.values()):
-        logger.error("No assets found, Check asset_folders setting in your config. Exiting.")
-        exit()
+        # Check if media exists, log and exit if not found
+        if any(value is None for value in media_dict.values()):
+            logger.error("No media found, Check media_paths setting in your config. Exiting.")
+            sys.exit()
 
-    # Fetch media information
-    media_dict = get_media_folders(media_paths, logger)
+        # Fetch Plex data if instances are specified in the config
+        if instances:
+            for instance_type, instance_data in config.instances_config.items():
+                for instance in instances:
+                    if instance in instance_data:
+                        url = instance_data[instance]['url']
+                        api = instance_data[instance]['api']
+                        print("Connecting to Plex...")
+                        app = PlexServer(url, api)
+                        if library_names and app:
+                            results = get_plex_data(app, library_names, logger, include_smart=False, collections_only=True)
+                            media_dict['collections'] = []
+                            media_dict['collections'].extend(results)
+                        else:
+                            logger.warning("No library names specified in config.yml. Skipping Plex.")
+        else:
+            logger.warning("No instances specified in config.yml. Skipping Plex.")
 
-    # Check if media exists, log and exit if not found
-    if any(value is None for value in media_dict.values()):
-        logger.error("No media found, Check media_paths setting in your config. Exiting.")
-        exit()
+        # Match assets with media and log the results
+        unmatched_dict = match_assets(assets_dict, media_dict)
+        logger.debug(f"Unmatched:\n{json.dumps(unmatched_dict, indent=4)}")
 
-    # Fetch Plex data if instances are specified in the config
-    if instances:
-        for instance_type, instance_data in config.instances_config.items():
-            for instance in instances:
-                if instance in instance_data:
-                    url = instance_data[instance]['url']
-                    api = instance_data[instance]['api']
-                    print("Connecting to Plex...")
-                    app = PlexServer(url, api)
-                    if library_names and app:
-                        results = get_plex_data(app, library_names, logger, include_smart=False, collections_only=True)
-                        media_dict['collections'] = []
-                        media_dict['collections'].extend(results)
-                    else:
-                        logger.warning("No library names specified in config.yml. Skipping Plex.")
-    else:
-        logger.warning("No instances specified in config.yml. Skipping Plex.")
+        # Remove unmatched assets and log the details
+        remove_data = remove_assets(unmatched_dict)
+        logger.debug(f"Remove Data:\n{json.dumps(remove_data, indent=4)}")
 
-    # Match assets with media and log the results
-    unmatched_dict = match_assets(assets_dict, media_dict)
-    logger.debug(f"Unmatched:\n{json.dumps(unmatched_dict, indent=4)}")
-
-    # Remove unmatched assets and log the details
-    remove_data = remove_assets(unmatched_dict)
-    logger.debug(f"Remove Data:\n{json.dumps(remove_data, indent=4)}")
-
-    # Print the output of removed assets
-    print_output(remove_data)
-    logger.info(f"{'*' * 40} END {'*' * 40}\n")
-
+        # Print the output of removed assets
+        print_output(remove_data)
+        logger.info(f"{'*' * 40} END {'*' * 40}\n")
+    except KeyboardInterrupt:
+        print("Keyboard Interrupt detected. Exiting...")
+        sys.exit()
 
 if __name__ == "__main__":
     main()

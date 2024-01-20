@@ -541,110 +541,112 @@ def notification(output):
 
 def main():
     """
-    Main function to handle the renaming process
+    Main function.
     """
+    try:
+        
+        # Display script settings
+        data = [["Script Settings"]]
+        create_table(data, log_level="debug", logger=logger)
+        script_config = config.script_config
+        # Extract script configuration settings
+        asset_folders = script_config.get('asset_folders', False)
+        library_names = script_config.get('library_names', False)
+        source_dir = script_config.get('source_dir', False)
+        source_overrides = script_config.get('source_overrides', False)
+        destination_dir = script_config.get('destination_dir', False)
+        action_type = script_config.get('action_type', False)
+        print_only_renames = script_config.get('print_only_renames', False)
+        border_replacerr = script_config.get('border_replacerr', False)
+        instances = script_config.get('instances', [])
 
-    print("Poster Renamarr running...")
+        logger.debug('*' * 40)  # Log separator
+        # Log script configuration settings
+        logger.debug(f'{"Dry_run:":<20}{dry_run if dry_run else "False"}')
+        logger.debug(f'{"Log level:":<20}{log_level if log_level else "INFO"}')
+        logger.debug(f'{"Asset folders:":<20}{asset_folders if asset_folders else "False"}')
+        logger.debug(f'{"Library names:":<20}{library_names if library_names else "False"}')
+        logger.debug(f'{"Source dir:":<20}{source_dir if source_dir else "False"}')
+        logger.debug(f'{"Source overrides:":<20}{source_overrides if source_overrides else "False"}')
+        logger.debug(f'{"Destination dir:":<20}{destination_dir if destination_dir else "False"}')
+        logger.debug(f'{"Action type:":<20}{action_type if action_type else "False"}')
+        logger.debug(f'{"Print only renames:":<20}{print_only_renames if print_only_renames else "False"}')
+        logger.debug(f'{"Border replacerr:":<20}{border_replacerr if border_replacerr else "False"}')
+        logger.debug(f'{"Instances:":<20}{instances if instances else "False"}')
+        # Log other settings...
+        logger.debug('*' * 40 + '\n')  # Log separator
 
-    # Display script settings
-    data = [["Script Settings"]]
-    create_table(data, log_level="debug", logger=logger)
-    script_config = config.script_config
-    # Extract script configuration settings
-    asset_folders = script_config.get('asset_folders', False)
-    library_names = script_config.get('library_names', False)
-    source_dir = script_config.get('source_dir', False)
-    source_overrides = script_config.get('source_overrides', False)
-    destination_dir = script_config.get('destination_dir', False)
-    action_type = script_config.get('action_type', False)
-    print_only_renames = script_config.get('print_only_renames', False)
-    border_replacerr = script_config.get('border_replacerr', False)
-    instances = script_config.get('instances', [])
+        if dry_run:
+            # Log dry run message
+            data = [
+                ["Dry Run"],
+                ["NO CHANGES WILL BE MADE"]
+            ]
+            create_table(data, log_level="info", logger=logger)
 
-    logger.debug('*' * 40)  # Log separator
-    # Log script configuration settings
-    logger.debug(f'{"Dry_run:":<20}{dry_run if dry_run else "False"}')
-    logger.debug(f'{"Log level:":<20}{log_level if log_level else "INFO"}')
-    logger.debug(f'{"Asset folders:":<20}{asset_folders if asset_folders else "False"}')
-    logger.debug(f'{"Library names:":<20}{library_names if library_names else "False"}')
-    logger.debug(f'{"Source dir:":<20}{source_dir if source_dir else "False"}')
-    logger.debug(f'{"Source overrides:":<20}{source_overrides if source_overrides else "False"}')
-    logger.debug(f'{"Destination dir:":<20}{destination_dir if destination_dir else "False"}')
-    logger.debug(f'{"Action type:":<20}{action_type if action_type else "False"}')
-    logger.debug(f'{"Print only renames:":<20}{print_only_renames if print_only_renames else "False"}')
-    logger.debug(f'{"Border replacerr:":<20}{border_replacerr if border_replacerr else "False"}')
-    logger.debug(f'{"Instances:":<20}{instances if instances else "False"}')
-    # Log other settings...
-    logger.debug('*' * 40 + '\n')  # Log separator
-
-    if dry_run:
-        # Log dry run message
-        data = [
-            ["Dry Run"],
-            ["NO CHANGES WILL BE MADE"]
-        ]
-        create_table(data, log_level="info", logger=logger)
-
-    assets_dict = get_assets_files(source_dir, source_overrides)
-    # Log retrieved asset files or exit if not found
-    if assets_dict:
-        logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
-    else:
-        logger.error("No asset files found. Exiting.")
-        exit(1)
-    media_dict = {}  # Initialize dictionary for media data
-    # Loop through instances for media retrieval
-    for instance_type, instances_data in config.instances_config.items():
-        # Retrieve media data for each instance
-        for instance in instances:
-            if instance in instances_data:
-                if instance_type == "plex":
-                    media_type = "collections"
-                    if library_names:
-                        print("Connecting to Plex...")
-                        app = PlexServer(instances_data[instance]['url'], instances_data[instance]['api'])
-                        results = get_plex_data(app, library_names, logger, include_smart=True, collections_only=True)
-                else:
-                    if instance_type == "radarr":
-                        media_type = 'movies'
-                    elif instance_type == "sonarr":
-                        media_type = 'series'
-                    app = StARR(instances_data[instance]['url'], instances_data[instance]['api'], logger)
-                    results = handle_starr_data(app, instance_type)
-                if results:
-                    if media_type in media_dict:
-                        media_dict[media_type].extend(results)
-                    else:
-                        media_dict[media_type] = results
-    # Log media data
-    # logger.debug(f"media_dict:\n{json.dumps(media_dict, indent=4)}")
-
-    if media_dict and assets_dict:
-        # Match media data to asset files
-        combined_dict = match_data(media_dict, assets_dict)
-        logger.debug(f"Matched and Unmatched media:\n{json.dumps(combined_dict, indent=4)}")
-        matched_assets = combined_dict.get('matched', None)
-        output = rename_files(matched_assets, script_config)
-    if any(asset['messages'] for asset in output['collections']) or any(asset['messages'] for asset in output['movies']) or any(asset['messages'] for asset in output['series']):
-        # Log output and handle notifications
-        logger.debug(f"Output:\n{json.dumps(output, indent=4)}")
-        handle_output(output, asset_folders)
-        if discord_check(script_name):
-            notification(output)
-    else:
-        # Log message if no output is found
-        logger.info("No new posters to rename.")
-    if border_replacerr:
-        # Run border_replacerr.py or log intent to run
-        if not dry_run:
-            logger.info(f"Running border_replacerr.py")
-            tmp_dir = os.path.join(destination_dir, 'tmp')
-            from modules.border_replacerr import process_files
-            process_files(tmp_dir, destination_dir, asset_folders)
-            logger.info(f"Border_replacerr.py finished, check logs for details.")
+        assets_dict = get_assets_files(source_dir, source_overrides)
+        # Log retrieved asset files or exit if not found
+        if assets_dict:
+            logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
         else:
-            logger.info(f"Would run border_replacerr.py")
-    logger.info(f"{'*' * 40} END {'*' * 40}\n")
+            logger.error("No asset files found. Exiting.")
+            exit(1)
+        media_dict = {}  # Initialize dictionary for media data
+        # Loop through instances for media retrieval
+        for instance_type, instances_data in config.instances_config.items():
+            # Retrieve media data for each instance
+            for instance in instances:
+                if instance in instances_data:
+                    if instance_type == "plex":
+                        media_type = "collections"
+                        if library_names:
+                            print("Connecting to Plex...")
+                            app = PlexServer(instances_data[instance]['url'], instances_data[instance]['api'])
+                            results = get_plex_data(app, library_names, logger, include_smart=True, collections_only=True)
+                    else:
+                        if instance_type == "radarr":
+                            media_type = 'movies'
+                        elif instance_type == "sonarr":
+                            media_type = 'series'
+                        app = StARR(instances_data[instance]['url'], instances_data[instance]['api'], logger)
+                        results = handle_starr_data(app, instance_type)
+                    if results:
+                        if media_type in media_dict:
+                            media_dict[media_type].extend(results)
+                        else:
+                            media_dict[media_type] = results
+        # Log media data
+        # logger.debug(f"media_dict:\n{json.dumps(media_dict, indent=4)}")
+
+        if media_dict and assets_dict:
+            # Match media data to asset files
+            combined_dict = match_data(media_dict, assets_dict)
+            logger.debug(f"Matched and Unmatched media:\n{json.dumps(combined_dict, indent=4)}")
+            matched_assets = combined_dict.get('matched', None)
+            output = rename_files(matched_assets, script_config)
+        if any(asset['messages'] for asset in output['collections']) or any(asset['messages'] for asset in output['movies']) or any(asset['messages'] for asset in output['series']):
+            # Log output and handle notifications
+            logger.debug(f"Output:\n{json.dumps(output, indent=4)}")
+            handle_output(output, asset_folders)
+            if discord_check(script_name):
+                notification(output)
+        else:
+            # Log message if no output is found
+            logger.info("No new posters to rename.")
+        if border_replacerr:
+            # Run border_replacerr.py or log intent to run
+            if not dry_run:
+                logger.info(f"Running border_replacerr.py")
+                tmp_dir = os.path.join(destination_dir, 'tmp')
+                from modules.border_replacerr import process_files
+                process_files(tmp_dir, destination_dir, asset_folders)
+                logger.info(f"Border_replacerr.py finished, check logs for details.")
+            else:
+                logger.info(f"Would run border_replacerr.py")
+        logger.info(f"{'*' * 40} END {'*' * 40}\n")
+    except KeyboardInterrupt:
+        print("Keyboard Interrupt detected. Exiting...")
+        sys.exit()
 
 if __name__ == "__main__":
     main()

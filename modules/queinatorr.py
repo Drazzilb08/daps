@@ -516,64 +516,68 @@ def print_output(messages):
 
 def main():
     """
-    This function will process all instances defined in the config file.
+    Main function.
     """
-    # Display a notice for dry run mode if enabled
-    if dry_run:
-        data = [
-            ["Dry Run"],
-            ["NO CHANGES WILL BE MADE"]
-        ]
-        create_table(data, log_level="info", logger=logger)
-    
-    # Retrieve script configuration from the config file
-    script_config = config.script_config
+    try:
+        # Display a notice for dry run mode if enabled
+        if dry_run:
+            data = [
+                ["Dry Run"],
+                ["NO CHANGES WILL BE MADE"]
+            ]
+            create_table(data, log_level="info", logger=logger)
+        
+        # Retrieve script configuration from the config file
+        script_config = config.script_config
 
-    # Get the number of days to keep torrents in pre-import category
-    days_to_keep = script_config.get('days_to_keep', 15)
-    
-    # Retrieve instance information from the configuration
-    instances = script_config.get('instances', None)
-    if instances is None:
-        logger.error("No instances defined in the config.")
-        exit(1)
-    
-    # Initialize the final output dictionary
-    final_output_dict = {}
-    
-    # Iterate through each instance type and its settings in the configuration
-    for instance_type, instance_data in config.instances_config.items():
-        for instance, instance_settings in instances.items():
-            # Check if the instance exists in the configuration data
-            if instance in instance_data:
-                # Retrieve necessary instance settings
-                url = instance_data[instance]['url']
-                api = instance_data[instance]['api']
-                pre_import_category = instance_settings.get('pre_import_category', False)
-                post_import_category = instance_settings.get('post_import_category', False)
-                qbit_instance = instance_settings.get('qbit_instance', False)
-                
-                # Process the instance and retrieve the output
-                output = process_instance(instance_type, url, api, pre_import_category, post_import_category, qbit_instance, days_to_keep)
-                
-                # If there is an output, update the final output dictionary
-                if output:
-                    final_output_dict[instance] = {
-                        'output': output,
-                        'pre_import_category': pre_import_category,
-                        'post_import_category': post_import_category,
-                        'qbit_instance': qbit_instance,
-                        'days_to_keep': days_to_keep
-                    }
-    
-    # Print the final output details to the console
-    print_output(final_output_dict)
-    
-    # Send a notification to Discord with the final output
-    if discord_check(script_name):
-        notification(final_output_dict)
+        # Get the number of days to keep torrents in pre-import category
+        days_to_keep = script_config.get('days_to_keep', 15)
+        
+        # Retrieve instance information from the configuration
+        instances = script_config.get('instances', None)
+        if instances is None:
+            logger.error("No instances defined in the config.")
+            exit(1)
+        
+        # Initialize the final output dictionary
+        final_output_dict = {}
+        
+        # Iterate through each instance type and its settings in the configuration
+        for instance_type, instance_data in config.instances_config.items():
+            for instance, instance_settings in instances.items():
+                # Check if the instance exists in the configuration data
+                if instance in instance_data:
+                    # Retrieve necessary instance settings
+                    url = instance_data[instance]['url']
+                    api = instance_data[instance]['api']
+                    pre_import_category = instance_settings.get('pre_import_category', False)
+                    post_import_category = instance_settings.get('post_import_category', False)
+                    qbit_instance = instance_settings.get('qbit_instance', False)
+                    
+                    # Process the instance and retrieve the output
+                    output = process_instance(instance_type, url, api, pre_import_category, post_import_category, qbit_instance, days_to_keep)
+                    
+                    # If there is an output, update the final output dictionary
+                    if output:
+                        final_output_dict[instance] = {
+                            'output': output,
+                            'pre_import_category': pre_import_category,
+                            'post_import_category': post_import_category,
+                            'qbit_instance': qbit_instance,
+                            'days_to_keep': days_to_keep
+                        }
+        
+        # Print the final output details to the console
+        print_output(final_output_dict)
+        
+        # Send a notification to Discord with the final output
+        if discord_check(script_name):
+            notification(final_output_dict)
 
-    logger.info(f"{'*' * 40} END {'*' * 40}\n")
+        logger.info(f"{'*' * 40} END {'*' * 40}\n")
+    except KeyboardInterrupt:
+        print("Keyboard Interrupt detected. Exiting...")
+        sys.exit()
 
 if __name__ == '__main__':
     main()

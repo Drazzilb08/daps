@@ -273,54 +273,57 @@ def notification(output_dict):
 
 def main():
     """
-    Main entry point for the script.
+    Main function.
     """
-    
-    # Check if it's a dry run and display a message
-    if dry_run:
-        data = [
-            ["Dry Run"],
-            ["NO CHANGES WILL BE MADE"]
-        ]
-        create_table(data, log_level="info", logger=logger)
-    
-    # Access the script configuration settings
-    script_config = config.script_config
-    
-    # Retrieve instances from the configuration file
-    instances = script_config.get('instances', None)
-    
-    # Check if instances are present in the configuration
-    if not instances:
-        logger.error("No instances found in config file.")
-        exit()
-    
-    # Dictionary to store the final output
-    final_output_dict = {}
-    
-    # Iterate over instance configurations
-    for instance_type, instance_data in config.instances_config.items():
-        for instance, instance_settings in instances.items():
-            if instance in instance_data:
-                # Initialize StARR with instance URL, API, and logger
-                final_output_dict[instance] = {}
-                url = instance_data[instance]['url']
-                api = instance_data[instance]['api']
-                app = StARR(url, api, logger)
-                
-                # Process instance and get output
-                output = process_instance(instance_type, instance_settings, app)
-                final_output_dict[instance] = output
-    
-    # Debug log of the final output dictionary
-    logger.debug(f"final_output_dict:\n{json.dumps(final_output_dict, indent=4)}")
-    
-    # If there's data in the final output dictionary, print output and send notifications
-    if final_output_dict:
-        print_output(final_output_dict)
-        if discord_check(script_name):
-            notification(final_output_dict)
-    logger.info(f"{'*' * 40} END {'*' * 40}\n")
+    try:
+        # Check if it's a dry run and display a message
+        if dry_run:
+            data = [
+                ["Dry Run"],
+                ["NO CHANGES WILL BE MADE"]
+            ]
+            create_table(data, log_level="info", logger=logger)
+        
+        # Access the script configuration settings
+        script_config = config.script_config
+        
+        # Retrieve instances from the configuration file
+        instances = script_config.get('instances', None)
+        
+        # Check if instances are present in the configuration
+        if not instances:
+            logger.error("No instances found in config file.")
+            sys.exit()
+        
+        # Dictionary to store the final output
+        final_output_dict = {}
+        
+        # Iterate over instance configurations
+        for instance_type, instance_data in config.instances_config.items():
+            for instance, instance_settings in instances.items():
+                if instance in instance_data:
+                    # Initialize StARR with instance URL, API, and logger
+                    final_output_dict[instance] = {}
+                    url = instance_data[instance]['url']
+                    api = instance_data[instance]['api']
+                    app = StARR(url, api, logger)
+                    
+                    # Process instance and get output
+                    output = process_instance(instance_type, instance_settings, app)
+                    final_output_dict[instance] = output
+        
+        # Debug log of the final output dictionary
+        logger.debug(f"final_output_dict:\n{json.dumps(final_output_dict, indent=4)}")
+        
+        # If there's data in the final output dictionary, print output and send notifications
+        if final_output_dict:
+            print_output(final_output_dict)
+            if discord_check(script_name):
+                notification(final_output_dict)
+        logger.info(f"{'*' * 40} END {'*' * 40}\n")
+    except KeyboardInterrupt:
+        print("Keyboard Interrupt detected. Exiting...")
+        sys.exit()
 
 if __name__ == '__main__':
     main()

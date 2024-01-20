@@ -40,62 +40,68 @@ tmdb_id_extractor = re.compile(r"tmdbid (\d+)")
 tvdb_id_extractor = re.compile(r"tvdbid (\d+)")
 
 def main():
-    health = None
-    media_id = None
-    id_type = None
-    script_config = config.script_config
-    instances = script_config.get('instances', None)
-    # Log script settings
-    data = [
-        ["Script Settings"]
-    ]
-    create_table(data, log_level="debug", logger=logger)
-    logger.debug(f'{"Dry_run:":<20}{dry_run if dry_run else "False"}')
-    logger.debug(f'{"Log level:":<20}{log_level if log_level else "INFO"}')
-    logger.debug(f'{"Instances:":<20}{instances if instances else "Not Set"}')
-    logger.debug(f'*' * 40 + '\n')
-    
-    if dry_run:
+    """
+    Main function.
+    """
+    try:
+        health = None
+        script_config = config.script_config
+        instances = script_config.get('instances', None)
+        # Log script settings
         data = [
-            ["Dry Run"],
-            ["NO CHANGES WILL BE MADE"]
+            ["Script Settings"]
         ]
-        create_table(data, log_level="info", logger=logger)
-        logger.info('')
+        create_table(data, log_level="debug", logger=logger)
+        logger.debug(f'{"Dry_run:":<20}{dry_run if dry_run else "False"}')
+        logger.debug(f'{"Log level:":<20}{log_level if log_level else "INFO"}')
+        logger.debug(f'{"Instances:":<20}{instances if instances else "Not Set"}')
+        logger.debug(f'*' * 40 + '\n')
+        
+        if dry_run:
+            data = [
+                ["Dry Run"],
+                ["NO CHANGES WILL BE MADE"]
+            ]
+            create_table(data, log_level="info", logger=logger)
+            logger.info('')
 
-    for instance_type, instance_data in config.instances_config.items():
-        for instance in instances:
-            if instance in instance_data:
-                app = StARR(instance_data[instance]['url'], instance_data[instance]['api'], logger)
-                server_name = app.get_instance_name()
-                health = app.get_health()
-                media_dict = handle_starr_data(app, instance_type)
-                id_list = []
-                if health:
-                    for health_item in health:
-                        if health_item['source'] == "RemovedMovieCheck" or health_item['source'] == "RemoveSeriesCheck":
-                            if instance_type == "Radarr":
-                                for m in re.finditer(tmdb_id_extractor, health_item['message']):
-                                    id_list.append(int(m.group(1)))
-                            if instance_type == "Sonarr":
-                                for m in re.finditer(tvdb_id_extractor, health_item['message']):
-                                    id_list.append(int(m.group(1)))
-                logger.debug(f"id_list:\n{json.dumps(id_list, indent=4)}")
-                output = []
-                for item in tqdm(media_dict, desc=f"Processing {instance_type}", unit="items", disable=None, total=len(media_dict)):
-                    if item['db_id'] in id_list:
-                        logger.debug(f"Found {item['title']} with: {item['db_id']}")
-                        output.append(item)
-                logger.debug(f"output:\n{json.dumps(output, indent=4)}")
+        for instance_type, instance_data in config.instances_config.items():
+            for instance in instances:
+                if instance in instance_data:
+                    app = StARR(instance_data[instance]['url'], instance_data[instance]['api'], logger)
+                    server_name = app.get_instance_name()
+                    health = app.get_health()
+                    media_dict = handle_starr_data(app, instance_type)
+                    id_list = []
+                    if health:
+                        for health_item in health:
+                            if health_item['source'] == "RemovedMovieCheck" or health_item['source'] == "RemoveSeriesCheck":
+                                if instance_type == "Radarr":
+                                    for m in re.finditer(tmdb_id_extractor, health_item['message']):
+                                        id_list.append(int(m.group(1)))
+                                if instance_type == "Sonarr":
+                                    for m in re.finditer(tvdb_id_extractor, health_item['message']):
+                                        id_list.append(int(m.group(1)))
+                    logger.debug(f"id_list:\n{json.dumps(id_list, indent=4)}")
+                    output = []
+                    for item in tqdm(media_dict, desc=f"Processing {instance_type}", unit="items", disable=None, total=len(media_dict)):
+                        if item['db_id'] in id_list:
+                            logger.debug(f"Found {item['title']} with: {item['db_id']}")
+                            output.append(item)
+                    logger.debug(f"output:\n{json.dumps(output, indent=4)}")
 
-                if output:
-                    logger.info(f"Deleting {len(output)} {instance_type} items from {server_name}")
-                    for item in tqdm(output, desc=f"Deleting {instance_type} items", unit="items", disable=None, total=len(output)):
-                        if not dry_run:
-                            logger.info(f"{item['title']} deleted with id: {item['db_id']}")
-                            app.delete_media(item['db_id'], instance_type)
-                        else:
-                            logger.info(f"{item['title']} would have been deleted with id: {item['db_id']}")
-    logger.info(f"{'*' * 40} END {'*' * 40}\n")
+                    if output:
+                        logger.info(f"Deleting {len(output)} {instance_type} items from {server_name}")
+                        for item in tqdm(output, desc=f"Deleting {instance_type} items", unit="items", disable=None, total=len(output)):
+                            if not dry_run:
+                                logger.info(f"{item['title']} deleted with id: {item['db_id']}")
+                                app.delete_media(item['db_id'], instance_type)
+                            else:
+                                logger.info(f"{item['title']} would have been deleted with id: {item['db_id']}")
+        logger.info(f"{'*' * 40} END {'*' * 40}\n")
+    except KeyboardInterrupt:
+        print("Keyboard Interrupt detected. Exiting...")
+        sys.exit()
+
 if __name__ == '__main__':
     main()

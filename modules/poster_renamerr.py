@@ -107,13 +107,23 @@ def handle_overrides(source_assets, override_assets):
                                 if source_file_name == override_file_name:
                                     source_asset['files'].remove(source_file)
                                     source_asset['files'].append(override_file)
-                                    break  # Add break statement here
-                                # else:
-                                #     # Adds override file to source asset if the filename doesn't match
-                                #     source_asset['files'].append(override_file)
+                                    break
+                                # Checks if the override file is already in the source asset
+                                elif override_file not in source_asset['files']:
+                                    # Adds override file to source asset if the filename doesn't match and it's not a duplicate
+                                    source_asset['files'].append(override_file)
+                                    break
+                        # Combines the season_numbers key
+                        if 'season_numbers' in source_asset and 'season_numbers' in override_asset:
+                            source_asset['season_numbers'].extend(override_asset['season_numbers'])
+                        elif 'season_numbers' not in source_asset and 'season_numbers' in override_asset:
+                            source_asset['season_numbers'] = override_asset['season_numbers']
             # Add missing assets from override_assets to source_assets
             for override_asset in override_assets[asset_type]:
-                if override_asset not in source_assets[asset_type]:
+                if not (
+                        source_asset['title'] == override_asset['title']
+                        and source_asset['year'] == override_asset['year']
+                    ):
                     source_assets[asset_type].append(override_asset)
 
 def match_data(media_dict, asset_files):
@@ -582,10 +592,6 @@ def main():
     else:
         logger.error("No asset files found. Exiting.")
         exit(1)
-    
-    # Log asset data
-    logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
-
     media_dict = {}  # Initialize dictionary for media data
     # Loop through instances for media retrieval
     for instance_type, instances_data in config.instances_config.items():
@@ -611,7 +617,7 @@ def main():
                     else:
                         media_dict[media_type] = results
     # Log media data
-    logger.debug(f"media_dict:\n{json.dumps(media_dict, indent=4)}")
+    # logger.debug(f"media_dict:\n{json.dumps(media_dict, indent=4)}")
 
     if media_dict and assets_dict:
         # Match media data to asset files

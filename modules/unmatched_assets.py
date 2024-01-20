@@ -279,7 +279,12 @@ def main():
         if media_dict:
             logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
         
-        # Processing Plex instances
+        # Fetch information from Plex and StARR
+        media_dict = {
+            'movies': [],
+            'series': [],
+            'collections': []
+        }
         if instances:
             for instance_type, instance_data in config.instances_config.items():
                 for instance in instances:
@@ -291,7 +296,6 @@ def main():
                             app = PlexServer(url, api)
                             if library_names and app:
                                 results = get_plex_data(app, library_names, logger, include_smart=False, collections_only=True)
-                                media_dict['collections'] = []
                                 media_dict['collections'].extend(results)
                                 # Remove ignored collections
                                 if ignore_collections:
@@ -306,10 +310,8 @@ def main():
                             if app:
                                 results = handle_starr_data(app, instance_type)
                                 if instance_type == "radarr":
-                                    media_dict['movies'] = []
                                     media_dict['movies'].extend(results)
                                 elif instance_type == "sonarr":
-                                    media_dict['series'] = []
                                     media_dict['series'].extend(results)
                             else:
                                 logger.warning(f"No {instance_type.capitalize()} instances specified in config.yml. Skipping {instance_type.capitalize()}.")

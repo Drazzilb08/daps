@@ -47,6 +47,7 @@ def match_assets(assets_dict, media_dict, ignore_root_folders):
     Args:
         assets_dict (dict): Dictionary of assets.
         media_dict (dict): Dictionary of media.
+        ignore_root_folders (list): List of root folders to ignore.
         
     Returns:
         dict: Dictionary of unmatched assets.

@@ -41,7 +41,7 @@ instances:
     sonarr_1: 
       url: http://localhost:8989
       api: abcdefghijklmnopqrstuvwxyz1234567890
-    sonarr_2:
+    sonarr_anime:
       url: http://localhost:8989
       api: abcdefghijklmnopqrstuvwxyz1234567890
     sonarr_3:
@@ -204,7 +204,7 @@ upgradinatorr:
       count: 1
       tag_name: checked
       unattended: true
-    sonarr_2:
+    sonarr_anime:
       count: 1
       tag_name: checked
       unattended: true
@@ -283,7 +283,7 @@ poster_renamerr:
     - plex_1
     - radarr_1
     - sonarr_1
-    # - sonarr_2
+    # - sonarr_anime
     # - radarr_2
     # - sonarr_3
 
@@ -292,6 +292,9 @@ unmatched_assets:
   asset_folders: false
   instances:
     - plex_1
+    - radarr_1
+    - sonarr_1
+    - sonarr_anime
   # Supports both data path as well as base_name of folder path
   # Note: If you use base_name, the name must match exactly just without the "/"
   ignore_root_folders:
@@ -323,9 +326,7 @@ unmatched_assets:
     - "DC Extended Universe"
   assets_paths: 
     - /path/to/assets
-  media_paths:
-    - /path/to/media/movies
-    - /path/to/media/series
+
 
 poster_cleanarr:
   log_level: info
@@ -333,35 +334,17 @@ poster_cleanarr:
   asset_folders: true
   instances:
     - plex_1
+    - radarr_1
+    - sonarr_1
+    - sonarr_anime
   # Libraries are ONLY used for collections
   library_names:
     - Movies
     - Anime Movies
   ignore_collections:
-    - "Star Wars Universe"
-    - "DC Animated Universe"
-    - "Alien / Predator"
-    - "Rocky / Creed"
-    - "MonsterVerse"
-    - "Star Trek"
-    - "X-Men Universe"
-    - "In Association With Marvel"
-    - "View Askewniverse"
-    - "The Mummy Universe"
-    - "Middle Earth"
-    - "In Association With DC"
-    - "Wizarding World"
-    - "Fast & Furious"
-    - "The Spiderverse"
-    - "Marvel Cinematic Universe"
-    - "The Conjuring Universe"
-    - "The Batman Universe"
-    - "DC Extended Universe"
+    - "Random Collection in assets you want to keep"
   assets_paths: 
     - /path/to/assets
-  media_paths:
-    - /path/to/media/movies
-    - /path/to/media/series
   
 nohl:
   # Note: Dry run will display all items regardless of maximum_searches setting
@@ -397,7 +380,7 @@ queinatorr:
       qbit_instance: qbittorrent_2
       pre_import_category: series
       post_import_category: completed-series
-    sonarr_2:
+    sonarr_anime:
       qbit_instance: qbittorrent_2
       pre_import_category: anime
       post_import_category: completed-anime
@@ -429,7 +412,7 @@ health_checkarr:
   instances:
     - radarr_1
     - sonarr_1
-    - sonarr_2
+    - sonarr_anime
 
 main:
   log_level: info

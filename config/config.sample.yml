@@ -292,6 +292,11 @@ unmatched_assets:
   asset_folders: false
   instances:
     - plex_1
+  # Supports both data path as well as base_name of folder path
+  # Note: If you use base_name, the name must match exactly just without the "/"
+  ignore_root_folders:
+    - anime movies
+    - /data/Kids Shows
   # Libraries are ONLY used for collections
   library_names:
     - Movies

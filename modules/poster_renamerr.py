@@ -162,12 +162,12 @@ def match_data(media_dict, asset_files):
                 matched_dict = []  # Initialize matched dictionary for current asset type
                 asset_data = asset_files[asset_type]  # Get asset data for current asset type
                 media_data = media_dict[asset_type]  # Get media data for current asset type
-
                 # Iterate through each media entry of the current asset type
                 with tqdm(total=len(media_data), desc=f"Matching {asset_type}", unit="media", leave=False, disable=None) as pbar_inner:
                     for media in media_data:
                         matched = False  # Flag to indicate if media has been matched to an asset
-
+                        if asset_type == 'series':
+                            media_seasons_numbers = [season['season_number'] for season in media.get('seasons', [])]
                         # Iterate through each asset entry of the current asset type
                         for asset in asset_data:
                             # Extracting various properties of assets and media for comparison
@@ -197,7 +197,18 @@ def match_data(media_dict, asset_files):
                             ):
                                 matched = True  # Set flag to indicate a match
                                 season_numbers = asset.get('season_numbers', None)
-
+                                if asset_type == "series":
+                                    # Iterate through each file in the asset
+                                    for file in asset['files']:
+                                        # Check for season-related file naming
+                                        if re.search(r' - Season| - Specials', file):
+                                            if re.search(r"Season (\d+)", file):
+                                                season_number = int(re.search(r"Season (\d+)", file).group(1))
+                                            elif "Specials" in file:
+                                                season_number = 0
+                                            if season_number not in media_seasons_numbers:
+                                                # remove file from asset['files'] if season number is not in media_seasons_numbers
+                                                asset['files'].remove(file)
                                 # Store matched data in the matched dictionary
                                 matched_dict.append({
                                     'title': media['title'],
@@ -556,6 +567,7 @@ def main():
         data = [["Script Settings"]]
         create_table(data, log_level="debug", logger=logger)
         script_config = config.script_config
+        valid = validate(config, script_name, logger)
         # Extract script configuration settings
         asset_folders = script_config.get('asset_folders', False)
         library_names = script_config.get('library_names', False)
@@ -623,7 +635,7 @@ def main():
                         else:
                             media_dict[media_type] = results
         # Log media data
-        # logger.debug(f"media_dict:\n{json.dumps(media_dict, indent=4)}")
+        logger.debug(f"media_dict:\n{json.dumps(media_dict, indent=4)}")
 
         if media_dict and assets_dict:
             # Match media data to asset files

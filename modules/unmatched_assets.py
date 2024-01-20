@@ -250,6 +250,7 @@ def main():
         ignore_collections = script_config.get('ignore_collections', [])
         instances = script_config.get('instances', None)
         ignore_root_folders = script_config.get('ignore_root_folders', [])
+        valid = validate(config, script_config, logger)
 
         # Logging script settings
         logger.debug(f'{"Log level:":<20}{log_level if log_level else "Not set"}')

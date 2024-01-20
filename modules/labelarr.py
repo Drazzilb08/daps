@@ -274,6 +274,7 @@ def main():
         # Fetch script configurations
         script_config = config.script_config
         instances = script_config.get('instances', None)
+        valid = validate(config, script_config, logger)
         
         # Iterate through instance types and their respective configurations
         for instance_type, instance_data in config.instances_config.items():

@@ -47,6 +47,7 @@ def main():
         health = None
         script_config = config.script_config
         instances = script_config.get('instances', None)
+        valid = validate(config, script_config, logger)
         # Log script settings
         data = [
             ["Script Settings"]

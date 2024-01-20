@@ -289,8 +289,10 @@ def main():
     """
     try:
         # Get instances and rename_folders settings from the script config
+        script_config = config.script_config
         instances = config.script_config.get('instances', None)
         rename_folders = config.script_config.get('rename_folders', False)
+        valid = validate(config, script_config, logger)
         
         # Log script settings
         data = [

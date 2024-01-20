@@ -708,6 +708,7 @@ def main():
         filters = script_config.get('filters', None)
         paths = script_config.get('paths', None)
         print_files = script_config.get('print_files', False)
+        valid = validate(config, script_config, logger)
 
         # Check if instances are properly configured
         if instances is None:

@@ -289,6 +289,7 @@ def main():
         
         # Retrieve instances from the configuration file
         instances = script_config.get('instances', None)
+        valid = validate(config, script_config, logger)
         
         # Check if instances are present in the configuration
         if not instances:

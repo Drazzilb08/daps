@@ -567,7 +567,7 @@ def main():
         data = [["Script Settings"]]
         create_table(data, log_level="debug", logger=logger)
         script_config = config.script_config
-        valid = validate(config, script_name, logger)
+        valid = validate(config, script_config, logger)
         # Extract script configuration settings
         asset_folders = script_config.get('asset_folders', False)
         library_names = script_config.get('library_names', False)

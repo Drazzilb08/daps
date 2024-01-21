@@ -447,7 +447,7 @@ def handle_starr_data(app, instance_type):
             
             # Construct a dictionary for each item and append it to media_dict
             media_dict.append({
-                'title': item['title'],
+                'title': re.sub(r"\s?\(\d{4}\)", "", item['title']),
                 'year': item['year'],
                 'media_id': item['id'],
                 'db_id': item['tmdbId'] if instance_type == "radarr" else item['tvdbId'],

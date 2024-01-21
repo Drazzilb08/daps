@@ -602,7 +602,7 @@ def main():
                 ["NO CHANGES WILL BE MADE"]
             ]
             create_table(data, log_level="info", logger=logger)
-
+        print("Gathering all the posters, please wait...")
         assets_dict = get_assets_files(source_dir, source_overrides)
         # Log retrieved asset files or exit if not found
         if assets_dict:

@@ -552,7 +552,6 @@ def validate(config, script_config, logger):
     list_of_instance_keys = [sub_key for key in config.instances_config.keys() for sub_key in config.instances_config[key].keys()]
     print("Validating instances...")
     for instance in instances:
-        print(f"Validating instance '{instance}'...")
         if instance not in list_of_instance_keys:
             logger.error(f"Instance '{instance}' not found in config.yml.")
             return False

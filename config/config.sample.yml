@@ -63,6 +63,7 @@ instances:
       username: 
       password: 
 
+# Bash Scripts
 # This is a collection of BASH scripts that can be run by the script.
 bash_scripts:
   log_level: info
@@ -107,6 +108,8 @@ bash_scripts:
       - 
   jduparr:
     data_dir: 
+
+# Python Scripts
 
 # THIS SCRIPT SYNCS GDRIVE TO A LOCAL FOLDER. ANYTHING UNIQUE IN THE FOLDER WILL BE DELETED.
 # -> You can use client_id, client_secret, and token to authenticate, or you can use gdrive_sa_location to use a service account.

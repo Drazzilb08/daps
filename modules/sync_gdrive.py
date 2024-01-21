@@ -77,6 +77,8 @@ def set_cmd_args(settings):
                     try:
                         os.makedirs(sync_location)
                         logger.info(f"Created {sync_location}")
+                        sync_cmd.append('-l')
+                        sync_cmd.append(shlex.quote(sync_item['location']))
                     except Exception as e:
                         logger.error(f"Exception occurred while creating {sync_location}: {e}")
                         exit(1)

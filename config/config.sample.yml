@@ -140,6 +140,8 @@ sync_gdrive:
       location: /path/to/location # Where you want to sync the posters to
     - id: 1G77TLQvgs_R7HdMWkMcwHL6vd_96cMp7 # Quafley
       location: /path/to/location # Where you want to sync the posters to
+    - id: 1bBbK_3JeXCy3ElqTwkFHaNoNxYgqtLug # Stupifier
+      location: /path/to/location # Where you want to sync the posters to
       
 
 discord:

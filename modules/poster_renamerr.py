@@ -155,7 +155,7 @@ def match_data(media_dict, asset_files):
     asset_types = [type for type in media_dict if media_dict[type] is not None]
 
     # Iterate through each asset type
-    with tqdm(total=len(asset_types), desc=f"Matching assets...", unit="asset types", leave=False) as pbar_outer:
+    with tqdm(total=len(asset_types), desc=f"Matching assets...", unit="asset types", leave=True) as pbar_outer:
         for asset_type in asset_types:
             if asset_type in media_dict:  # Check if the asset type exists in media dictionary
                 unmatched_dict = []  # Initialize unmatched dictionary for current asset type
@@ -163,7 +163,7 @@ def match_data(media_dict, asset_files):
                 asset_data = asset_files[asset_type]  # Get asset data for current asset type
                 media_data = media_dict[asset_type]  # Get media data for current asset type
                 # Iterate through each media entry of the current asset type
-                with tqdm(total=len(media_data), desc=f"Matching {asset_type}", unit="media", leave=False, disable=None) as pbar_inner:
+                with tqdm(total=len(media_data), desc=f"Matching {asset_type}", unit="media", leave=True, disable=None) as pbar_inner:
                     for media in media_data:
                         matched = False  # Flag to indicate if media has been matched to an asset
                         if asset_type == 'series':
@@ -305,7 +305,7 @@ def rename_files(matched_assets, script_config):
     # Iterate through each asset type
     for asset_type in asset_types:
         output[asset_type] = []
-        for item in tqdm(matched_assets[asset_type], desc=f"Renaming {asset_type} posters", unit="assets", leave=False, disable=None, total=len(matched_assets[asset_type])):
+        for item in tqdm(matched_assets[asset_type], desc=f"Renaming {asset_type} posters", unit="assets", leave=True, disable=None, total=len(matched_assets[asset_type])):
             messages = []
             discord_messages = []
             files = item['files']
@@ -654,14 +654,11 @@ def main():
             logger.info("No new posters to rename.")
         if border_replacerr:
             # Run border_replacerr.py or log intent to run
-            if not dry_run:
-                logger.info(f"Running border_replacerr.py")
-                tmp_dir = os.path.join(destination_dir, 'tmp')
-                from modules.border_replacerr import process_files
-                process_files(tmp_dir, destination_dir, asset_folders)
-                logger.info(f"Border_replacerr.py finished, check logs for details.")
-            else:
-                logger.info(f"Would run border_replacerr.py")
+            logger.info(f"Running border_replacerr.py")
+            tmp_dir = os.path.join(destination_dir, 'tmp')
+            from modules.border_replacerr import process_files
+            process_files(tmp_dir, destination_dir, asset_folders, dry_run)
+            logger.info(f"Border_replacerr.py finished, check logs for details.")
         logger.info(f"{'*' * 40} END {'*' * 40}\n")
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")

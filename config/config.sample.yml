@@ -213,6 +213,7 @@ upgradinatorr:
       tag_name: checked
       unattended: true
 
+# Warning: With a large library this script can take a while as it wait's for all API calls to finish before moving on to the next instance
 renameinatorr:
   log_level: info
   dry_run: false

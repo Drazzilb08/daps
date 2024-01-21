@@ -355,7 +355,6 @@ def handle_range(schedule, logger):
         start_date = int(date_range.split("/")[1].split("-")[0])
         end_month = int(date_range.split("-")[1].split("/")[0])
         end_date = int(date_range.split("-")[1].split("/")[1].split(")")[0])
-
         logger.debug(f"range({start_month}/{start_date}-{end_month}/{end_date})")
 
         # Check for invalid dates and months
@@ -368,19 +367,13 @@ def handle_range(schedule, logger):
             return False
 
         # Check for date range crossing over the turn of the year
-        if start_month > end_month or (start_month == end_month and start_date > end_date):
-            if current_month == 1:  # January
-                if (start_month == 12 and start_date <= current_date) or (end_month == 1 and end_date >= current_date):
-                    return True
-            elif current_month == 12:  # December
-                if start_month == 12 and end_month == 1 and start_date <= current_date <= end_date:
-                    return True
-            else:
-                logger.error("Error: Invalid month range.")
-                return False
+        if start_month > end_month:
+            # Check if the current date falls within the date range
+            if (start_month == current_month and start_date <= current_date <= 31) or (end_month == current_month and 1 <= current_date <= end_date):
+                return True
 
         # Check if the current date falls within the date range
-        if (start_month == current_month and start_date >= current_date) or (end_month == current_month and end_date <= current_date):
+        if (start_month == current_month and start_date <= current_date <= end_date):
             return True
 
     # Return False if the current date doesn't match any range

@@ -60,7 +60,7 @@ def find_no_hl_files(path):
 
     nohl_data = {'movies':[], 'series':[]}  # Initialize an empty list to store non-hardlinked file information
     # Iterating through items in the specified path
-    for item in tqdm(os.listdir(path), desc=f"Searching", unit="item", total=len(os.listdir(path)), disable=None, leave=False):
+    for item in tqdm(os.listdir(path), desc=f"Searching", unit="item", total=len(os.listdir(path)), disable=None, leave=True):
         if item.startswith('.'):  # Skip hidden files or directories
             continue
         
@@ -256,7 +256,7 @@ def filter_media(app, media_dict, nohl_data, instance_type, exclude_profiles, ex
     data_dict = {'search_media': [], 'filtered_media': []}  # Initialize dictionary to store filtered media and media to search
     
     # Iterate through nohl_dict (dictionary of non-hardlinked files)
-    for nohl_item in tqdm(nohl_data, desc="Filtering media...", unit="item", total=len(nohl_data), disable=None, leave=False):
+    for nohl_item in tqdm(nohl_data, desc="Filtering media...", unit="item", total=len(nohl_data), disable=None, leave=True):
         # Iterate through media items in media_dict
         for media_item in media_dict:
             # Compare media items with non-hardlinked items

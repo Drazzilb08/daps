@@ -216,7 +216,7 @@ def process_instance(app, rename_folders, server_name, instance_type):
     # Process each item in the fetched data
     if media_dict:
         print("Processing data... This may take a while.")
-        for item in tqdm(media_dict, desc=f"Processing '{server_name}' Media", unit="items", disable=None, leave=False):
+        for item in tqdm(media_dict, desc=f"Processing '{server_name}' Media", unit="items", disable=None, leave=True):
             file_info = {}
             
             # Fetch rename list and sort it by existingPath

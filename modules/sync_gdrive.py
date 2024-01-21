@@ -73,7 +73,13 @@ def set_cmd_args(settings):
             else:
                 if not os.path.exists(sync_location):
                     logger.error(f"Sync location {sync_location} does not exist")
-                    exit(1)
+                    # Create the directory if it doesn't exist
+                    try:
+                        os.makedirs(sync_location)
+                        logger.info(f"Created {sync_location}")
+                    except Exception as e:
+                        logger.error(f"Exception occurred while creating {sync_location}: {e}")
+                        exit(1)
                 else:
                     logger.error("No sync location provided")
                     exit(1)

@@ -69,7 +69,7 @@ def print_output(output_dict):
             if item['file_info']:
                 logger.info(f"\tFiles:")
                 for existing_path, new_path in item['file_info'].items():
-                    logger.info(f"\t\t{existing_path}\n\t\t{new_path}\n")
+                    logger.info(f"\t\tOriginal: {existing_path}\n\t\tNew: {new_path}\n")
         logger.info('')
         
         # Calculate total counts for various rename items

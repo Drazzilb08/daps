@@ -250,7 +250,9 @@ border_replacerr:
   # "#FFFFFF" - White
   # "#000000" - Black
   # "#808080" - Gray
-  border_colors: "#FF0000"
+  # To remove borders set the border_colors to nothing.
+  # Example: border_colors:
+  border_colors: 
   schedule:
     # You can make any holiday you want for any occasion. For the schedule please use the range(month/date-month/date) option
     christmas:

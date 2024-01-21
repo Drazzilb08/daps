@@ -118,7 +118,6 @@ def run_rclone(cmd, settings):
 def main():
     try:
         settings = config.script_config
-        logger.info("Running sync_gdrive")
         for cmd in set_cmd_args(settings):
             run_rclone(cmd, settings)
         logger.info(f"{'*' * 40} END {'*' * 40}\n")

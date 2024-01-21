@@ -36,7 +36,7 @@ except ImportError as e:
 script_name = "border_replacerr"
 config = Config(script_name)
 log_level = config.log_level
-dry_run = config.dry_run
+# dry_run = config.dry_run
 logging.getLogger("PIL").setLevel(logging.WARNING)
 
 logger = setup_logger(log_level, script_name)
@@ -71,7 +71,6 @@ def check_holiday(data, border_colors):
             if re.match(pattern, schedule):
                 # If it matches, handle the range schedule using 'handle_range' function
                 run = handle_range(schedule, logger)
-                
                 # If 'handle_range' returns True (indicating successful execution)
                 if run:
                     # Retrieve the color for the holiday from schedule_color or use default border_colors
@@ -110,7 +109,7 @@ def convert_to_rgb(hex_color):
         hex_color = hex_color * 2 # e.g. #ABC becomes #AABBCC
     return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))  # Convert each pair of hex digits to an integer
 
-def fix_borders(assets_dict, script_config, border_colors, output_dir):
+def fix_borders(assets_dict, script_config, border_colors, output_dir, dry_run):
     """
     Replaces the border on the posters.
 
@@ -168,7 +167,7 @@ def fix_borders(assets_dict, script_config, border_colors, output_dir):
             current_index = 0  # Index for cycling through border colors
             items = assets_dict[asset_type]
             # Loop through each item in the asset type
-            for data in tqdm(items, desc=f"Processing {asset_type.capitalize()}", total=len(items), unit="Posters", disable=None, leave=False):
+            for data in tqdm(items, desc=f"Processing {asset_type.capitalize()}", total=len(items), unit="Posters", disable=None, leave=True):
                 files = data.get('files', None)
                 path = data.get('path', None)
                 year = data.get('year', None)
@@ -430,7 +429,7 @@ def remove_border(input_file, output_path, border_width):
         logger.error(f"Error processing {input_file}")
         return False
 
-def process_files(input_dir, output_dir, asset_folders):
+def process_files(input_dir, output_dir, asset_folders, dry_run):
     """
     Processes the files in the input directory.
 
@@ -464,7 +463,11 @@ def process_files(input_dir, output_dir, asset_folders):
         logger.info(f"Using {', '.join(border_colors)} border color(s).")
 
     # Categorize files in the input directory into assets
-    assets_dict = categorize_files(input_dir, asset_folders)
+    if os.path.isdir(input_dir):
+        assets_dict = categorize_files(input_dir, asset_folders)
+    else:
+        logger.error(f"No assets found in {input_dir}, if running Poster Renamerr in dry_run, this is expected.")
+        exit()
 
     # if trailing slash on output_dir, remove it
     if output_dir.endswith("/"):
@@ -475,7 +478,7 @@ def process_files(input_dir, output_dir, asset_folders):
         logger.debug(f"assets_dict:\n{json.dumps(assets_dict, indent=4)}")
 
         # Fix borders for assets using specified configurations
-        messages = fix_borders(assets_dict, script_config, border_colors, output_dir)
+        messages = fix_borders(assets_dict, script_config, border_colors, output_dir, dry_run)
 
         # If there are messages (indicating processed files), log each message
         if messages:
@@ -485,7 +488,7 @@ def process_files(input_dir, output_dir, asset_folders):
             # Log a message if no files were processed
             logger.info(f"No files processed")
     else:
-        logger.error(f"No assets found in {input_dir}")
+        logger.error(f"No assets found in {input_dir}, if running Poster Renamerr in dry_run, this is expected.")
         exit()
 
 
@@ -501,6 +504,7 @@ def main():
         schedule = script_config['schedule']
         border_colors = script_config['border_colors']
         asset_folders = script_config['asset_folders']
+        dry_run = config.dry_run
 
         # Convert single string border color to a list if necessary
         if isinstance(border_colors, str):
@@ -518,7 +522,7 @@ def main():
         logger.debug(f'{"Schedule:":<20}{schedule if schedule else "Not Set"}')
 
         # Process files in the input directory with specified settings
-        process_files(input_dir, output_dir, asset_folders)
+        process_files(input_dir, output_dir, asset_folders, dry_run)
 
         logger.info(f"Border Replacer Complete")  # Log completion message
         logger.info(f"{'*' * 40} END {'*' * 40}\n")

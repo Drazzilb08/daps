@@ -111,7 +111,7 @@ def categorize_files(folder_path, asset_folders):
         files = sorted(files, key=lambda x: x.lower())  # Sort files alphabetically
 
         # Loop through each file in the folder
-        for file in tqdm(files, desc=f"Sorting '{base_name}' folder", total=len(files), disable=None, leave=True):
+        for file in tqdm(files, desc=f"Sorting '{base_name}' folder", total=len(files), disable=None, leave=False):
             if file.startswith('.'):
                 continue  # Skip hidden files
 
@@ -346,7 +346,7 @@ def get_media_folders(paths, logger):
         base_name = os.path.basename(os.path.normpath(path))  # Get the base folder name
         
         # Iterate through items in the directory
-        for item in tqdm(os.listdir(path), desc=f"Getting media folders for '{base_name}'", disable=None, leave=True):
+        for item in tqdm(os.listdir(path), desc=f"Getting media folders for '{base_name}'", disable=None, leave=False):
             if item.startswith('.'):
                 continue  # Skip hidden files/folders
             
@@ -411,7 +411,7 @@ def handle_starr_data(app, instance_type):
     print(f"Getting {instance_type.capitalize()} data...")
     media = app.get_media()  # Fetch media data from the Radarr or Sonarr instance
     if media:
-        for item in tqdm(media, desc=f"Getting {instance_type.capitalize()} data", total=len(media), disable=None, leave=True):
+        for item in tqdm(media, desc=f"Getting {instance_type.capitalize()} data", total=len(media), disable=None, leave=False):
             # Fetch relevant data based on the instance type (Radarr or Sonarr)
             if instance_type == "radarr":
                 file_id = item.get('movieFile', {}).get('id', None)  # Fetch file ID for Radarr
@@ -444,11 +444,17 @@ def handle_starr_data(app, instance_type):
                 for alternate_title in item['alternateTitles']:
                     alternate_titles.append(alternate_title['title'])  # Collect alternate titles
                     normalized_alternate_titles.append(normalize_titles(alternate_title['title']))  # Normalize alternate titles
-            
+            # If year is in the name extract name and year
+            if re.search(r"\s?\(\d{4}\)", item['title']):
+                title = re.sub(r"\s?\(\d{4}\)", "", item['title'])
+                year = int(re.search(r"\s?\((\d{4})\)", item['title']).group(1))
+            else:
+                title = item['title']
+                year = item['year']
             # Construct a dictionary for each item and append it to media_dict
             media_dict.append({
-                'title': re.sub(r"\s?\(\d{4}\)", "", item['title']),
-                'year': item['year'],
+                'title': title,
+                'year': year,
                 'media_id': item['id'],
                 'db_id': item['tmdbId'] if instance_type == "radarr" else item['tvdbId'],
                 'monitored': item['monitored'],
@@ -511,7 +517,7 @@ def get_plex_data(plex, library_names, logger, include_smart, collections_only):
     if collections_only:
         # Process collection data
         for library_name, collection_names in collection_names.items():
-            for collection in tqdm(collection_names, desc=f"Getting Plex collection for '{library_name}'", total=len(collection_names), disable=None, leave=True):
+            for collection in tqdm(collection_names, desc=f"Processing Plex collection data for '{library_name}'", total=len(collection_names), disable=None, leave=False):
                 plex_dict.append({
                     'title': collection,
                     'normalized_title': normalize_titles(collection),
@@ -522,7 +528,7 @@ def get_plex_data(plex, library_names, logger, include_smart, collections_only):
     else:
         # Process library item data
         for library_name, library_data in library_data.items():
-            for item in tqdm(library_data, desc=f"Getting {library_name} data", total=len(library_data), disable=None, leave=True):
+            for item in tqdm(library_data, desc=f"Processing {library_name} data", total=len(library_data), disable=None, leave=False):
                 labels = [str(label).lower() for label in item.labels]  # Get lowercase labels
                 plex_dict.append({
                     'title': item.title,

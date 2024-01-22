@@ -196,9 +196,11 @@ def match_data(media_dict, asset_files):
                                 asset['year'] == secondary_year
                             ):
                                 matched = True  # Set flag to indicate a match
-                                season_numbers = asset.get('season_numbers', None)
+                                asset_season_numbers = asset.get('season_numbers', None)
                                 if asset_type == "series":
                                     # Iterate through each file in the asset
+                                    files_to_remove = []
+                                    seasons_to_remove = []
                                     for file in asset['files']:
                                         # Check for season-related file naming
                                         if re.search(r' - Season| - Specials', file):
@@ -207,15 +209,23 @@ def match_data(media_dict, asset_files):
                                             elif "Specials" in file:
                                                 season_number = 0
                                             if season_number not in media_seasons_numbers:
-                                                # remove file from asset['files'] if season number is not in media_seasons_numbers
-                                                asset['files'].remove(file)
+                                                files_to_remove.append(file)
+                                                continue
+                                    for file in files_to_remove:
+                                        asset['files'].remove(file)
+                                    for season in asset_season_numbers:
+                                        if season not in media_seasons_numbers:
+                                            seasons_to_remove.append(season)
+                                    for season in seasons_to_remove:
+                                        asset_season_numbers.remove(season)
+                                            
                                 # Store matched data in the matched dictionary
                                 matched_dict.append({
                                     'title': media['title'],
                                     'year': media['year'],
                                     'folder': media['folder'],
                                     'files': asset['files'],
-                                    'seasons_numbers': season_numbers,
+                                    'seasons_numbers': asset_season_numbers,
                                 })
                                 break  # Break loop after finding a match
 

@@ -30,6 +30,7 @@ from util.arrpy import StARR
 
 try:
     from plexapi.server import PlexServer
+    from tqdm import tqdm
 except ImportError as e:
     print(f"ImportError: {e}")
     print("Please install the required modules with 'pip install -r requirements.txt'")
@@ -39,6 +40,8 @@ script_name = "unmatched_assets"
 config = Config(script_name)
 log_level = config.log_level
 logger = setup_logger(log_level, script_name)
+
+year_regex = re.compile(r"(.*)\s\((\d{4})\)")
 
 def match_assets(assets_dict, media_dict, ignore_root_folders):
     """
@@ -61,7 +64,7 @@ def match_assets(assets_dict, media_dict, ignore_root_folders):
         # Check if the media type is present in both assets and media dictionaries
         if media_type in media_dict and media_type in assets_dict:
             # Iterate through each media data in the media dictionary of the current type
-            for media_data in media_dict[media_type]:
+            for media_data in tqdm(media_dict[media_type], desc=f"Matching {media_type}", unit="media", total=len(media_dict[media_type]), leave=True, disable=None):
                 # Check if the media is released, ended, or continuing
                 if media_type in ['series', 'movies'] and not media_data['status'] in ['released', 'ended', 'continuing']:
                         continue
@@ -91,6 +94,15 @@ def match_assets(assets_dict, media_dict, ignore_root_folders):
                     secondary_year = media_data.get('secondary_year', None)
                     original_title = media_data.get('original_title', None)
                     asset_seasons_numbers = asset_data.get('season_numbers', None)
+                    folder = media_data.get('folder', None)
+                    # Get title and year from folder base_name
+                    if folder:
+                        folder_base_name = os.path.basename(folder)
+                        match = re.search(year_regex, folder_base_name)
+                        if match:
+                            folder_title, folder_year = match.groups()
+                            folder_year = int(folder_year)
+                            normalized_folder_title = normalize_titles(folder_title)
                     # If normalized title and year match between asset and media, check for missing seasons
                     if (
                             asset_data['title'] == media_data['title'] or
@@ -98,13 +110,16 @@ def match_assets(assets_dict, media_dict, ignore_root_folders):
                             asset_data['title'] in alternate_titles or
                             asset_data['normalized_title'] in normalized_alternate_titles or
                             asset_data['title'] == original_title or
+                            folder_title == asset_data['title'] or
+                            normalized_folder_title == asset_data['normalized_title'] or
                             (no_prefix and media_data['title'] in no_prefix) or
                             (no_suffix and media_data['title'] in no_suffix) or
                             (no_prefix_normalized and media_data['normalized_title'] in no_prefix_normalized) or
                             (no_suffix_normalized and media_data['normalized_title'] in no_suffix_normalized)
                         ) and (
                             asset_data['year'] == media_data['year'] or
-                            asset_data['year'] == secondary_year
+                            asset_data['year'] == secondary_year or
+                            folder_year == asset_data['year']
                         ):
                         matched = True
                         if media_type == 'series':
@@ -294,7 +309,6 @@ def main():
                         if instance_type == "plex":
                             url = instance_data[instance]['url']
                             api = instance_data[instance]['api']
-                            print("Connecting to Plex...")
                             app = PlexServer(url, api)
                             if library_names and app:
                                 results = get_plex_data(app, library_names, logger, include_smart=False, collections_only=True)
@@ -307,7 +321,6 @@ def main():
                         else:
                             url = instance_data[instance]['url']
                             api = instance_data[instance]['api']
-                            print(f"Connecting to {instance_type.capitalize()}...")
                             app = StARR(url, api, logger)
                             if app:
                                 results = handle_starr_data(app, instance_type)

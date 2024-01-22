@@ -479,14 +479,19 @@ def process_files(input_dir, output_dir, asset_folders, dry_run):
 
         # Fix borders for assets using specified configurations
         messages = fix_borders(assets_dict, script_config, border_colors, output_dir, dry_run)
+        logger.debug(f"messages:\n{json.dumps(messages, indent=4)}")
 
         # If there are messages (indicating processed files), log each message
         if messages:
+            table = [
+                ["Processed Files", f"{len(messages)}"],
+            ]
+            create_table(table, log_level="info", logger=logger)
             for message in messages:
                 logger.info(message)
         else:
             # Log a message if no files were processed
-            logger.info(f"No files processed")
+            logger.info(f"\nNo files processed")
     else:
         logger.error(f"No assets found in {input_dir}, if running Poster Renamerr in dry_run, this is expected.")
         exit()

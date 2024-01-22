@@ -668,8 +668,7 @@ def main():
             tmp_dir = os.path.join(destination_dir, 'tmp')
             from modules.border_replacerr import process_files
             process_files(tmp_dir, destination_dir, asset_folders, dry_run)
-            logger.info(f"Border_replacerr.py finished, check logs for details.")
-        logger.info(f"{'*' * 40} END {'*' * 40}\n")
+        logger.info(f"\n{'*' * 40} END {'*' * 40}\n")
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()

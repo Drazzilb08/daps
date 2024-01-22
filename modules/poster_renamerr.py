@@ -63,7 +63,9 @@ def get_assets_files(source_dir, source_overrides):
         # Process each override directory
         for source_override in source_overrides:
             # Retrieves asset files from the override directory
-            override_assets = categorize_files(source_override, asset_folders=False)
+            override_dict = categorize_files(source_override, asset_folders=False)
+            # Consolidate the value of each key into one unified list
+            override_assets = [asset for value in override_dict.values() for asset in value]
             # Handles overrides between primary source and the override
             handle_overrides(source_assets, override_assets)
 
@@ -87,51 +89,48 @@ def handle_overrides(source_assets, override_assets):
 
     # Iterates through each asset type
     for asset_type in asset_types:
-        # Checks if the asset type exists in both source and override assets
-        if asset_type in override_assets and asset_type in source_assets:
-            # Iterates through each asset in the source assets
-            for source_asset in source_assets[asset_type]:
-                # Iterates through each asset in the override assets
-                for override_asset in override_assets[asset_type]:
-                    # Checks if the title and year of the source and override asset match
-                    if (
-                        source_asset['title'] == override_asset['title']
-                        and source_asset['year'] == override_asset['year']
-                    ):
-                        # Compares and handles the files between source and override assets
-                        for source_file in source_asset['files'][:]:
-                            for override_file in override_asset['files']:
-                                source_file_name = os.path.basename(source_file)
-                                override_file_name = os.path.basename(override_file)
-                                # Replaces source file with override file if the filenames match
-                                if source_file_name == override_file_name:
-                                    source_asset['files'].remove(source_file)
-                                    source_asset['files'].append(override_file)
-                                    break
-                                # Checks if the override file is already in the source asset
-                                elif override_file not in source_asset['files']:
-                                    # Adds override file to source asset if the filename doesn't match and it's not a duplicate
-                                    source_asset['files'].append(override_file)
-                                    break
-                        # Combines the season_numbers key
-                        if 'season_numbers' in source_asset and 'season_numbers' in override_asset:
-                            source_asset['season_numbers'].extend(override_asset['season_numbers'])
-                        elif 'season_numbers' not in source_asset and 'season_numbers' in override_asset:
-                            source_asset['season_numbers'] = override_asset['season_numbers']
-            # Add missing assets from override_assets to source_assets
-            for asset_type in asset_types:
-                if asset_type in override_assets and asset_type in source_assets:
-                    for override_asset in override_assets[asset_type]:
-                        found_match = False
-                        for source_asset in source_assets[asset_type]:
-                            if (
-                                source_asset['title'] == override_asset['title']
-                                and source_asset['year'] == override_asset['year']
-                            ):
-                                found_match = True
+        # Iterates through each asset in the source assets
+        for source_asset in source_assets[asset_type]:
+            # Iterates through each asset in the override assets
+            for override_asset in override_assets:
+                # Checks if the title and year of the source and override asset match
+                if (
+                    source_asset['title'] == override_asset['title']
+                    and source_asset['year'] == override_asset['year']
+                ):
+                    # Compares and handles the files between source and override assets
+                    for source_file in source_asset['files'][:]:
+                        for override_file in override_asset['files']:
+                            source_file_name = os.path.basename(source_file)
+                            override_file_name = os.path.basename(override_file)
+                            # Replaces source file with override file if the filenames match
+                            if source_file_name == override_file_name:
+                                source_asset['files'].remove(source_file)
+                                source_asset['files'].append(override_file)
                                 break
-                        if not found_match:
-                            source_assets[asset_type].append(override_asset)
+                            # Checks if the override file is already in the source asset
+                            elif override_file not in source_asset['files'] and override_file_name not in [os.path.basename(file) for file in source_asset['files']]:
+                                # Adds override file to source asset if the filename doesn't match and it's not a duplicate
+                                source_asset['files'].append(override_file)
+                                break
+                    # Combines the season_numbers key no duplicates
+                    if asset_type == "series":
+                        source_asset['season_numbers'] = list(set(source_asset['season_numbers'] + override_asset['season_numbers']))
+                    # Removes the override asset from the override assets
+        # Add missing assets from override_assets to source_assets
+        for asset_type in asset_types:
+            if asset_type in override_assets and asset_type in source_assets:
+                for override_asset in override_assets:
+                    found_match = False
+                    for source_asset in source_assets[asset_type]:
+                        if (
+                            source_asset['title'] == override_asset['title']
+                            and source_asset['year'] == override_asset['year']
+                        ):
+                            found_match = True
+                            break
+                    if not found_match:
+                        source_assets[asset_type].append(override_asset)
 
 def match_data(media_dict, asset_files):
     """

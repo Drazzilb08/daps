@@ -166,8 +166,10 @@ def fix_borders(assets_dict, script_config, border_colors, output_dir, dry_run):
         if asset_type in assets_dict:
             current_index = 0  # Index for cycling through border colors
             items = assets_dict[asset_type]
+            # calculate total files in asset
+            total_files = sum(len(item['files']) for item in items)
             # Loop through each item in the asset type
-            for data in tqdm(items, desc=f"Processing {asset_type.capitalize()}", total=len(items), unit="Posters", disable=None, leave=True):
+            for data in tqdm(items, desc=f"Processing {asset_type.capitalize()}", total=total_files, unit="Posters", disable=None, leave=True):
                 files = data.get('files', None)
                 path = data.get('path', None)
                 year = data.get('year', None)

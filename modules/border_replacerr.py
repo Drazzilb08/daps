@@ -107,7 +107,12 @@ def convert_to_rgb(hex_color):
     hex_color = hex_color.strip("#") # Remove the leading hash if present
     if len(hex_color) == 3: # Expand shorthand notation if necessary
         hex_color = hex_color * 2 # e.g. #ABC becomes #AABBCC
-    return tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))  # Convert each pair of hex digits to an integer
+    try:
+        color_code = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))  # Convert each pair of hex digits to an integer
+    except ValueError:
+        logger.error(f"Error: {hex_color} is not a valid hexadecimal color code.\nDefaulting to white.")
+        return (255, 255, 255)
+    return color_code
 
 def fix_borders(assets_dict, script_config, border_colors, output_dir, dry_run):
     """
@@ -166,10 +171,8 @@ def fix_borders(assets_dict, script_config, border_colors, output_dir, dry_run):
         if asset_type in assets_dict:
             current_index = 0  # Index for cycling through border colors
             items = assets_dict[asset_type]
-            # calculate total files in asset
-            total_files = sum(len(item['files']) for item in items)
             # Loop through each item in the asset type
-            for data in tqdm(items, desc=f"Processing {asset_type.capitalize()}", total=total_files, unit="Posters", disable=None, leave=True):
+            for data in tqdm(items, desc=f"Processing {asset_type.capitalize()}", total=len(items), unit="items", disable=None, leave=True):
                 files = data.get('files', None)
                 path = data.get('path', None)
                 year = data.get('year', None)

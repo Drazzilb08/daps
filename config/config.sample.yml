@@ -223,6 +223,9 @@ renameinatorr:
   log_level: info
   dry_run: false
   rename_folders: true
+  # Tag name and count are optional, if you don't want to use them leave them blank
+  count: 10
+  tag_name: renamed
   instances:
     - radarr_2
     - sonarr_3

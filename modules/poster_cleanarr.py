@@ -358,7 +358,11 @@ def main():
 
         # Fetch and categorize assets
         for path in assets_paths:
-            assets_dict = categorize_files(path, asset_folders)
+            results = categorize_files(path, asset_folders)
+            for key, value in results.items():
+                if key not in assets_dict:
+                    assets_dict[key] = []
+                assets_dict[key].extend(value)
 
         # Check if assets exist, log and exit if not found
         if not all(assets_dict.values()):

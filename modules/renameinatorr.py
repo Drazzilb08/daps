@@ -108,7 +108,6 @@ def notification(output_dict):
 
     # Process each instance's data in the output dictionary
     for instance, instance_data in output_dict.items():
-        discord_message = []
         
         # Iterate through each item in the instance's data
         for item in instance_data['data']:
@@ -196,7 +195,7 @@ def notification(output_dict):
         discord(fields=value, logger=logger, script_name=script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
 
 
-def process_instance(app, rename_folders, server_name, instance_type):
+def process_instance(app, rename_folders, server_name, instance_type, count, tag_name):
     """
     Processes the data for a specific instance.
     
@@ -212,6 +211,12 @@ def process_instance(app, rename_folders, server_name, instance_type):
     
     # Fetch data related to the instance (Sonarr or Radarr)
     media_dict = handle_starr_data(app, instance_type)
+
+    # If count and tag_name is specified, limit the number of items to process that do not have tag_name
+    if count and tag_name:
+        tag_id = app.get_tag_id_from_name(tag_name)
+        if tag_id:
+            media_dict = [item for item in media_dict if tag_id not in item['tag_ids']][:count]
     
     # Process each item in the fetched data
     if media_dict:
@@ -291,6 +296,8 @@ def main():
         script_config = config.script_config
         instances = config.script_config.get('instances', None)
         rename_folders = config.script_config.get('rename_folders', False)
+        count = config.script_config.get('count', 0)
+        tag_name = config.script_config.get('tag_name', None)
         valid = validate(config, script_config, logger)
         
         # Log script settings
@@ -302,6 +309,8 @@ def main():
         logger.debug(f'{"Log level:":<20}{log_level if log_level else "INFO"}')
         logger.debug(f'{"Instances:":<20}{instances if instances else "Not Set"}')
         logger.debug(f'{"Rename Folders:":<20}{rename_folders if rename_folders else "False"}')
+        logger.debug(f'{"Count:":<20}{count if count else None}')
+        logger.debug(f'{"Tag Name:":<20}{tag_name if tag_name else None}')
         logger.debug(f'*' * 40 + '\n')
         
         # Handle dry run settings
@@ -325,7 +334,7 @@ def main():
                     server_name = app.get_instance_name()
                     
                     # Process data for the instance and store in output_dict
-                    data = process_instance(app, rename_folders, server_name, instance_type)
+                    data = process_instance(app, rename_folders, server_name, instance_type, count, tag_name)
                     output_dict[instance] = {
                         "server_name": server_name,
                         "data": data

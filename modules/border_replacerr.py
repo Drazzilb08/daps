@@ -451,6 +451,7 @@ def process_files(input_dir, output_dir, asset_folders, dry_run):
     script_config = config.script_config
     schedule = script_config['schedule']
     border_colors = script_config['border_colors']
+    skip = script_config['skip']
 
     # Convert single string border color to a list if necessary
     if isinstance(border_colors, str):
@@ -461,7 +462,7 @@ def process_files(input_dir, output_dir, asset_folders, dry_run):
         border_colors, run_holiday = check_holiday(schedule, border_colors)
 
     # If Run holiday is False and Skip is set to True, return
-    if not run_holiday and config.skip:
+    if not run_holiday and skip:
         logger.info(f"Skipping {script_name} as it is not scheduled to run today.")
         return
     # If no border colors are available, log a message

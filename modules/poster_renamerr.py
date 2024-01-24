@@ -659,8 +659,9 @@ def main():
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()
-    except Exception as e:
-        logger.error(f"An error has occurred\n{e}")
+    except Exception:
+        logger.error(f"\n\nAn error occurred:\n", exc_info=True)
+        logger.error(f"\n\n")
     finally:
         logger.info(f"\n{'*' * 40} END {'*' * 40}\n")
 

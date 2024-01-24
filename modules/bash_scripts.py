@@ -156,8 +156,12 @@ def main(settings, script_name):
         cmds = set_cmd_args(settings, bash_script_file, logger, script_name)
         run_script(cmds, logger)
         logger.debug(f"{script_name.capitalize()} complete.")
-        logger.info(f"{'*' * 40} END {'*' * 40}\n")
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()
+    except Exception:
+        logger.error(f"\n\nAn error occurred:\n", exc_info=True)
+        logger.error(f"\n\n")
+    finally:
+        logger.info(f"\n{'*' * 40} END {'*' * 40}\n")
 

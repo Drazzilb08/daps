@@ -122,7 +122,11 @@ def main():
         settings = config.script_config
         for cmd in set_cmd_args(settings):
             run_rclone(cmd, settings)
-        logger.info(f"{'*' * 40} END {'*' * 40}\n")
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()
+    except Exception:
+        logger.error(f"\n\nAn error occurred:\n", exc_info=True)
+        logger.error(f"\n\n")
+    finally:
+        logger.info(f"\n{'*' * 40} END {'*' * 40}\n")

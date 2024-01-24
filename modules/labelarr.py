@@ -345,10 +345,14 @@ def main():
                                     continue
                         else:
                             continue
-        logger.info(f"{'*' * 40} END {'*' * 40}\n")
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()
+    except Exception:
+        logger.error(f"\n\nAn error occurred:\n", exc_info=True)
+        logger.error(f"\n\n")
+    finally:
+        logger.info(f"\n{'*' * 40} END {'*' * 40}\n")
 
 if __name__ == "__main__":
     start_time = time.time()

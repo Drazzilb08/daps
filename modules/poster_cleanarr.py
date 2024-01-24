@@ -417,10 +417,14 @@ def main():
 
         # Print the output of removed assets
         print_output(remove_data)
-        logger.info(f"{'*' * 40} END {'*' * 40}\n")
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()
+    except Exception:
+        logger.error(f"\n\nAn error occurred:\n", exc_info=True)
+        logger.error(f"\n\n")
+    finally:
+        logger.info(f"\n{'*' * 40} END {'*' * 40}\n")
 
 if __name__ == "__main__":
     main()

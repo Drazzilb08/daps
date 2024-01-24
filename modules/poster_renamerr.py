@@ -125,7 +125,7 @@ def handle_overrides(source_assets, override_assets):
         if not override_asset['year'] and override_asset not in source_assets['collections']:
             source_assets['collections'].append(override_asset)
         # if override_asset has a year and is not in the source asset movies or series, add it to the source asset movies
-        elif override_asset['year'] and override_asset not in source_assets['movies'] and override_asset not in source_assets['series']:
+        elif override_asset['year'] and override_asset not in source_assets['movies'] and 'season_numbers' not in override_asset:
             source_assets['movies'].append(override_asset)
         # if override_asset has season_numbers and is not in the source asset series, add it to the source asset series
         elif 'season_numbers' in override_asset and override_asset['season_numbers'] and override_asset not in source_assets['series']:

@@ -115,11 +115,21 @@ def handle_overrides(source_assets, override_assets):
                                 break
                     # Combines the season_numbers key no duplicates
                     if asset_type == "series":
-                        source_asset['season_numbers'] = list(set(source_asset['season_numbers'] + override_asset['season_numbers']))
-        # If the override asset is not in the source assets, add it to the source assets
-        for override_asset in override_assets:
-            if override_asset not in source_assets[asset_type]:
-                source_assets[asset_type].append(override_asset)
+                        try:
+                            source_asset['season_numbers'] = list(set(source_asset['season_numbers'] + override_asset['season_numbers']))
+                        except KeyError:
+                            continue
+    # If the override asset is not in the source assets, add it to the source assets
+    for override_asset in override_assets:
+        # if override_asset doesn't have a year and is not in the source asset collection, add it to the source asset collection
+        if not override_asset['year'] and override_asset not in source_assets['collections']:
+            source_assets['collections'].append(override_asset)
+        # if override_asset has a year and is not in the source asset movies or series, add it to the source asset movies
+        elif override_asset['year'] and override_asset not in source_assets['movies'] and override_asset not in source_assets['series']:
+            source_assets['movies'].append(override_asset)
+        # if override_asset has season_numbers and is not in the source asset series, add it to the source asset series
+        elif 'season_numbers' in override_asset and override_asset['season_numbers'] and override_asset not in source_assets['series']:
+            source_assets['series'].append(override_asset)
 
 def match_data(media_dict, asset_files):
     """

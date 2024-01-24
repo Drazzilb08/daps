@@ -36,7 +36,7 @@ days_of_week = {
     "saturday": 6
 }
 
-def handle_hourly(run_dict):
+def handle_hourly(run_dict, logger):
     """
     Handle the hourly schedule type.
     

@@ -667,10 +667,13 @@ def main():
             tmp_dir = os.path.join(destination_dir, 'tmp')
             from modules.border_replacerr import process_files
             process_files(tmp_dir, destination_dir, asset_folders, dry_run)
-        logger.info(f"\n{'*' * 40} END {'*' * 40}\n")
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()
+    except Exception as e:
+        logger.error(f"An error has occoured\n{e}")
+    finally:
+        logger.info(f"\n{'*' * 40} END {'*' * 40}\n")
 
 if __name__ == "__main__":
     main()

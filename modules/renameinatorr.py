@@ -216,7 +216,7 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
     if count and tag_name:
         tag_id = app.get_tag_id_from_name(tag_name)
         if tag_id:
-            media_dict = [item for item in media_dict if tag_id not in item['tag_ids']][:count]
+            media_dict = [item for item in media_dict if tag_id not in item['tags']][:count]
     
     # Process each item in the fetched data
     if media_dict:

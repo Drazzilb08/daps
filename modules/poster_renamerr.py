@@ -116,21 +116,10 @@ def handle_overrides(source_assets, override_assets):
                     # Combines the season_numbers key no duplicates
                     if asset_type == "series":
                         source_asset['season_numbers'] = list(set(source_asset['season_numbers'] + override_asset['season_numbers']))
-                    # Removes the override asset from the override assets
-        # Add missing assets from override_assets to source_assets
-        for asset_type in asset_types:
-            if asset_type in override_assets and asset_type in source_assets:
-                for override_asset in override_assets:
-                    found_match = False
-                    for source_asset in source_assets[asset_type]:
-                        if (
-                            source_asset['title'] == override_asset['title']
-                            and source_asset['year'] == override_asset['year']
-                        ):
-                            found_match = True
-                            break
-                    if not found_match:
-                        source_assets[asset_type].append(override_asset)
+        # If the override asset is not in the source assets, add it to the source assets
+        for override_asset in override_assets:
+            if override_asset not in source_assets[asset_type]:
+                source_assets[asset_type].append(override_asset)
 
 def match_data(media_dict, asset_files):
     """
@@ -671,7 +660,7 @@ def main():
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()
     except Exception as e:
-        logger.error(f"An error has occoured\n{e}")
+        logger.error(f"An error has occurred\n{e}")
     finally:
         logger.info(f"\n{'*' * 40} END {'*' * 40}\n")
 

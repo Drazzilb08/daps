@@ -83,14 +83,14 @@ def check_holiday(data, border_colors):
                         ]
                         create_table(data, log_level="info", logger=logger)
                         logger.info(f"Schedule: {holiday.capitalize()} | Using {', '.join(holiday_colors)} border colors.")
-                    return holiday_colors  # Return the colors for the holiday
+                    return holiday_colors, True  # Return the colors for the holiday
                     
             else:
                 # Log an error if the schedule doesn't match the expected pattern
                 logger.error(f"Error: {schedule} is not a valid range schedule.")
     
     # Return the original border colors if no range schedule was found or executed
-    return border_colors
+    return border_colors, False
 
 
 def convert_to_rgb(hex_color):
@@ -458,8 +458,12 @@ def process_files(input_dir, output_dir, asset_folders, dry_run):
 
     # Check for a scheduled event to update border colors if provided
     if schedule:
-        border_colors = check_holiday(schedule, border_colors)
+        border_colors, run_holiday = check_holiday(schedule, border_colors)
 
+    # If Run holiday is False and Skip is set to True, return
+    if not run_holiday and config.skip:
+        logger.info(f"Skipping {script_name} as it is not scheduled to run today.")
+        return
     # If no border colors are available, log a message
     if not border_colors:
         logger.info(f"No border colors set, removing border instead.")

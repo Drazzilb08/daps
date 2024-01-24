@@ -255,6 +255,7 @@ border_replacerr:
   # "#808080" - Gray
   # To remove borders set the border_colors to nothing.
   # Example: border_colors:
+  # skip - This will skip border replacement until the next schedule/holiday
   border_colors: 
   schedule:
     # You can make any holiday you want for any occasion. For the schedule please use the range(month/date-month/date) option

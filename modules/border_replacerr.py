@@ -19,6 +19,7 @@ import json
 import re
 import logging
 import filecmp
+import shutil
 
 from util.config import Config
 from util.logger import setup_logger
@@ -433,6 +434,64 @@ def remove_border(input_file, output_path, border_width):
         logger.error(f"Error: {e}")
         logger.error(f"Error processing {input_file}")
         return False
+    
+def copy_files(assets_dict, output_dir, dry_run):
+    """
+    Copies the files in the input directory to the output directory.
+    
+    Args:
+        input_dir (str): The input directory.
+        output_dir (str): The output directory.
+        asset_folders (bool): Whether to use asset folders.
+        dry_run (bool): Whether to perform a dry run.
+        
+    Returns:
+        None
+    """
+    # Initialize asset types to process
+    asset_types = ["movies", "series", "collections"]
+    for asset_type in asset_types:
+        if asset_type in assets_dict:
+            items = assets_dict[asset_type]
+            for data in tqdm(items, desc=f"Processing {asset_type.capitalize()}", total=len(items), unit="items", disable=None, leave=True):
+                files = data.get('files', None)
+                path = data.get('path', None)
+                year = data.get('year', None)
+                if year:
+                    year = f"({year})"
+                else:
+                    year = ""
+
+                # Prepare output directory for saving processed files
+                if path:
+                    path_basename = os.path.basename(path)
+                    output_path = f"{output_dir}/{path_basename}"
+                    if dry_run:
+                        if not os.path.exists(output_path):
+                            os.makedirs(output_path)
+                        else:
+                            output_path = output_dir
+                    else:
+                        logger.info(f"Creating {output_path}")
+                else:
+                    output_path = output_dir
+                
+                # Process each input file within the asset
+                for input_file in files:
+                    file_name, extension = os.path.splitext(input_file)
+                    if extension not in [".jpg", ".png", ".jpeg", ".JPG", ".PNG", ".JPEG"]:
+                        logger.warning(f"Skipping {input_file} as it is not a jpg or png file.")
+                        continue
+                    file_name = os.path.basename(input_file)
+                    final_path = f"{output_path}/{file_name}"
+                    if not dry_run:
+                        if os.path.isfile(final_path):
+                            if not filecmp.cmp(final_path, file_name):
+                                shutil.copy(input_file, final_path)
+                        else:
+                            shutil.copy(input_file, final_path)
+                    else:
+                        logger.info(f"Would have copied {file_name} to {output_path}")
 
 def process_files(input_dir, output_dir, asset_folders, dry_run):
     """
@@ -463,6 +522,7 @@ def process_files(input_dir, output_dir, asset_folders, dry_run):
 
     # If Run holiday is False and Skip is set to True, return
     if not run_holiday and skip:
+        copy_files(input_dir, output_dir, asset_folders, dry_run)
         logger.info(f"Skipping {script_name} as it is not scheduled to run today.")
         return
     # If no border colors are available, log a message

@@ -522,7 +522,7 @@ def process_files(input_dir, output_dir, asset_folders, dry_run):
 
     # If Run holiday is False and Skip is set to True, return
     if not run_holiday and skip:
-        copy_files(input_dir, output_dir, asset_folders, dry_run)
+        copy_files(assets_dict, output_dir, dry_run)
         logger.info(f"Skipping {script_name} as it is not scheduled to run today.")
         return
     # If no border colors are available, log a message

@@ -520,11 +520,6 @@ def process_files(input_dir, output_dir, asset_folders, dry_run):
     if schedule:
         border_colors, run_holiday = check_holiday(schedule, border_colors)
 
-    # If Run holiday is False and Skip is set to True, return
-    if not run_holiday and skip:
-        copy_files(assets_dict, output_dir, dry_run)
-        logger.info(f"Skipping {script_name} as it is not scheduled to run today.")
-        return
     # If no border colors are available, log a message
     if not border_colors:
         logger.info(f"No border colors set, removing border instead.")
@@ -538,6 +533,12 @@ def process_files(input_dir, output_dir, asset_folders, dry_run):
     else:
         logger.error(f"No assets found in {input_dir}, if running Poster Renamerr in dry_run, this is expected.")
         exit()
+
+    # If Run holiday is False and Skip is set to True, return
+    if not run_holiday and skip:
+        copy_files(assets_dict, output_dir, dry_run)
+        logger.info(f"Skipping {script_name} as it is not scheduled to run today.")
+        return
 
     # if trailing slash on output_dir, remove it
     if output_dir.endswith("/"):

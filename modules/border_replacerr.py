@@ -448,6 +448,10 @@ def copy_files(assets_dict, output_dir, dry_run):
     Returns:
         None
     """
+    # Remove trailing slash
+    if output_dir.endswith('/'):
+        output_dir = output_dir.rstrip('/')
+    
     # Initialize asset types to process
     asset_types = ["movies", "series", "collections"]
     for asset_type in asset_types:
@@ -516,6 +520,8 @@ def process_files(input_dir, output_dir, asset_folders, dry_run):
     if isinstance(border_colors, str):
         border_colors = [border_colors]
 
+    run_holiday = False
+    
     # Check for a scheduled event to update border colors if provided
     if schedule:
         border_colors, run_holiday = check_holiday(schedule, border_colors)

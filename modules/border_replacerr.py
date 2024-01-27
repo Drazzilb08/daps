@@ -448,6 +448,7 @@ def copy_files(assets_dict, output_dir, dry_run):
     Returns:
         None
     """
+    messages = []
     # Remove trailing slash
     if output_dir.endswith('/'):
         output_dir = output_dir.rstrip('/')
@@ -488,14 +489,17 @@ def copy_files(assets_dict, output_dir, dry_run):
                         continue
                     file_name = os.path.basename(input_file)
                     final_path = f"{output_path}/{file_name}"
+                    output_basename = os.path.basename(output_path)
                     if not dry_run:
                         if os.path.isfile(final_path):
-                            if not filecmp.cmp(final_path, file_name):
+                            if not filecmp.cmp(final_path, input_file):
                                 shutil.copy(input_file, final_path)
                         else:
                             shutil.copy(input_file, final_path)
+                        messages.append(f"Copied {data['title']}{year} - {file_name} to {output_basename}")
                     else:
-                        logger.info(f"Would have copied {file_name} to {output_path}")
+                        messages.append(f"Would have copied {data['title']}{year} - {file_name} to {output_basename}")
+    return messages
 
 def process_files(input_dir, output_dir, asset_folders, dry_run):
     """
@@ -526,13 +530,6 @@ def process_files(input_dir, output_dir, asset_folders, dry_run):
     if schedule:
         border_colors, run_holiday = check_holiday(schedule, border_colors)
 
-    # If no border colors are available, log a message
-    if not border_colors:
-        logger.info(f"No border colors set, removing border instead.")
-    else:
-        # Log the border colors being used
-        logger.info(f"Using {', '.join(border_colors)} border color(s).")
-
     # Categorize files in the input directory into assets
     if os.path.isdir(input_dir):
         assets_dict = categorize_files(input_dir, asset_folders)
@@ -542,9 +539,22 @@ def process_files(input_dir, output_dir, asset_folders, dry_run):
 
     # If Run holiday is False and Skip is set to True, return
     if not run_holiday and skip:
-        copy_files(assets_dict, output_dir, dry_run)
+        messages = copy_files(assets_dict, output_dir, dry_run)
         logger.info(f"Skipping {script_name} as it is not scheduled to run today.")
+        if messages:
+            table = [
+                    ["Processed Files", f"{len(messages)}"],
+                ]
+            create_table(table, log_level="info", logger=logger)
+            for message in messages:
+                logger.info(message)
         return
+
+    # If no border colors are available, log a message
+    if not border_colors:
+        logger.info(f"No border colors set, removing border instead.")
+    else:
+        logger.info(f"Using {', '.join(border_colors)} border color(s).")
 
     # if trailing slash on output_dir, remove it
     if output_dir.endswith("/"):

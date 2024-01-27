@@ -398,6 +398,7 @@ queinatorr:
       pre_import_category: anime
       post_import_category: completed-anime
 
+# Warning: Due to the way that Plex API works, this script can take a while to run with a large library
 labelarr:
   dry_run: true
   log_level: info

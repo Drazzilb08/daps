@@ -613,13 +613,18 @@ def main():
                 ["NO CHANGES WILL BE MADE"]
             ]
             create_table(data, log_level="info", logger=logger)
-        print("Gathering all the posters, please wait...")
+
+        # Sync posters if enabled
         if sync_posters:
             # Run sync_posters.py or log intent to run
-            logger.info(f"Running sync_posters.py")
+            logger.info(f"Running sync_gdrive")
             from modules.sync_gdrive import main
             main()
+
+        # Retrieve asset files
+        print("Gathering all the posters, please wait...")
         assets_dict = get_assets_files(source_dir, source_overrides)
+
         # Log retrieved asset files or exit if not found
         if assets_dict:
             logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")

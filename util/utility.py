@@ -44,6 +44,43 @@ suffixes = [
     "Collection",
 ]
 
+def normalize_file_names(file_name):
+    """
+    Normalize file names for comparison
+    
+    Args:
+        file_name (str): The file name to normalize
+        
+    Returns:
+        str: The normalized file name
+    """
+
+    # # Extract the year from parentheses in the file name
+    # file_name = year_regex.sub('', file_name)
+
+    # remove extension
+    file_name, extension = os.path.splitext(file_name)
+
+    # Remove illegal characters from the file name using regex
+    file_name = illegal_chars_regex.sub('', file_name)
+
+    # Convert special characters to ASCII equivalent
+    file_name = unidecode(html.unescape(file_name))
+
+    # Remove trailing whitespaces
+    file_name = file_name.rstrip()
+
+    # Replace '&' with 'and'
+    file_name = file_name.replace('&', 'and')
+
+    # Remove special characters using regex
+    file_name = re.sub(remove_special_chars, '', file_name).lower()
+
+    # Remove spaces in the file name
+    file_name = file_name.replace(' ', '')
+
+    return file_name
+
 def normalize_titles(title):
     """
     Normalize titles for comparison

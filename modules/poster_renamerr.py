@@ -101,15 +101,17 @@ def handle_overrides(source_assets, override_assets):
                     # Compares and handles the files between source and override assets
                     for source_file in source_asset['files'][:]:
                         for override_file in override_asset['files']:
-                            source_file_name = os.path.basename(source_file)
-                            override_file_name = os.path.basename(override_file)
+                            source_basename = os.path.basename(source_file)
+                            override_basename = os.path.basename(override_file)
+                            normalized_source_basename = normalize_file_names(source_basename)
+                            normalized_override_basename = normalize_file_names(override_basename)
                             # Replaces source file with override file if the filenames match
-                            if source_file_name == override_file_name:
+                            if source_basename == override_basename or normalized_source_basename == normalized_override_basename:
                                 source_asset['files'].remove(source_file)
                                 source_asset['files'].append(override_file)
                                 break
                             # Checks if the override file is already in the source asset
-                            elif override_file not in source_asset['files'] and override_file_name not in [os.path.basename(file) for file in source_asset['files']]:
+                            elif override_file not in source_asset['files'] and override_basename not in [os.path.basename(file) for file in source_asset['files']]:
                                 # Adds override file to source asset if the filename doesn't match and it's not a duplicate
                                 source_asset['files'].append(override_file)
                                 break

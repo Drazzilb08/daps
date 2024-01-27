@@ -9,6 +9,9 @@
 # all[weekly(thursday), daily(12)] - Will perform the action every Thursday at 12:00am
     # Note: 'options' must be in order range, monthly, weekly, daily, hourly
 
+
+# If using the scripts through crontab or another scheduler, I would not recommend using the schedule w/in the config. 
+# The schedule is intended for use with Docker. If you want to use the schedule w/in the config, you will need to run the main.py script in the background.
 schedule:
   border_replacerr:
   health_checkarr:
@@ -36,6 +39,12 @@ instances:
     radarr_2:
       url: http://localhost:7878
       api: abcdefghijklmnopqrstuvwxyz1234567890
+    radarr_4K:
+      url: http://localhost:7878
+      api: abcdefghijklmnopqrstuvwxyz1234567890
+    anime_radarr:
+      url: http://localhost:7878
+      api: abcdefghijklmnopqrstuvwxyz1234567890
   sonarr:
     # Instance name can be whatever you want, it just needs to match the name used in other sections
     sonarr_1: 
@@ -45,6 +54,9 @@ instances:
       url: http://localhost:8989
       api: abcdefghijklmnopqrstuvwxyz1234567890
     sonarr_3:
+      url: http://localhost:8989
+      api: abcdefghijklmnopqrstuvwxyz1234567890
+    4K_sonarr:
       url: http://localhost:8989
       api: abcdefghijklmnopqrstuvwxyz1234567890
   plex:

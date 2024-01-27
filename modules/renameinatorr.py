@@ -215,9 +215,9 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
     # If count and tag_name is specified, limit the number of items to process that do not have tag_name
     if count and tag_name:
         tag_id = app.get_tag_id_from_name(tag_name)
+        logger.info(f"Limiting to {count} items without tag '{tag_name}'")
         if tag_id:
             media_dict = [item for item in media_dict if tag_id not in item['tags']][:count]
-    
     # Process each item in the fetched data
     if media_dict:
         print("Processing data... This may take a while.")
@@ -257,6 +257,9 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
                 print(f"Waiting for {server_name} to refresh...")
                 ready = app.wait_for_command(response['id'])
                 print(f"Files renamed in {server_name}.")
+                if tag_id and count and tag_name:
+                    # Add tag to items that were renamed
+                    app.add_tag(media_ids, tag_id)
             
             # Group and rename root folders if necessary
             grouped_root_folders = {}

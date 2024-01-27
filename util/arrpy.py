@@ -684,6 +684,7 @@ class StARR:
         return self.make_delete_request(endpoint)
 
     def get_tag_id_from_name(self, tag_name):
+        print(f"Searching for tag {tag_name}")
         """
         Get the ID of a tag from its name.
         Args:
@@ -697,12 +698,10 @@ class StARR:
             for tag in all_tags:
                 if tag["label"] == tag_name:
                     tag_id = tag["id"]
-                    if not tag_id:
-                        tag_id = self.create_tag(tag_name)
                     return tag_id
-        else:
-            tag_id = self.create_tag(tag_name)
-            return tag_id
+            else:
+                tag_id = self.create_tag(tag_name)
+                return tag_id
         return None
     
     def remove_item_from_queue(self, queue_ids):

@@ -263,6 +263,7 @@ def main():
     Main function.
     """
     try:
+        print(f"{'*' * 40} START {'*' * 40}\n")
         # If in dry run mode, create a table indicating no changes will be made
         if dry_run:
             data = [
@@ -305,7 +306,7 @@ def main():
                                 # Connect to the Plex server
                                 try:
                                     print("Connecting to Plex...")
-                                    plex = PlexServer(config.plex_config[plex_instance]['url'], config.plex_config[plex_instance]['api'])
+                                    plex = PlexServer(config.plex_config[plex_instance]['url'], config.plex_config[plex_instance]['api'], timeout=120)
                                 except BadRequest:
                                     logger.error(f"Error connecting to Plex instance: {plex_instance}")
                                     continue

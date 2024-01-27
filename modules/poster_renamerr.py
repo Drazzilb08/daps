@@ -586,6 +586,7 @@ def main():
         print_only_renames = script_config.get('print_only_renames', False)
         border_replacerr = script_config.get('border_replacerr', False)
         instances = script_config.get('instances', [])
+        sync_posters = script_config.get('sync_posters', False)
 
         logger.debug('*' * 40)  # Log separator
         # Log script configuration settings
@@ -600,6 +601,8 @@ def main():
         logger.debug(f'{"Print only renames:":<20}{print_only_renames if print_only_renames else "False"}')
         logger.debug(f'{"Border replacerr:":<20}{border_replacerr if border_replacerr else "False"}')
         logger.debug(f'{"Instances:":<20}{instances if instances else "False"}')
+        logger.debug(f'{"Sync posters:":<20}{sync_posters if sync_posters else "False"}')
+        
         # Log other settings...
         logger.debug('*' * 40 + '\n')  # Log separator
 
@@ -611,6 +614,11 @@ def main():
             ]
             create_table(data, log_level="info", logger=logger)
         print("Gathering all the posters, please wait...")
+        if sync_posters:
+            # Run sync_posters.py or log intent to run
+            logger.info(f"Running sync_posters.py")
+            from modules.sync_gdrive import main
+            main()
         assets_dict = get_assets_files(source_dir, source_overrides)
         # Log retrieved asset files or exit if not found
         if assets_dict:

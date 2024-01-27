@@ -494,9 +494,10 @@ def copy_files(assets_dict, output_dir, dry_run):
                         if os.path.isfile(final_path):
                             if not filecmp.cmp(final_path, input_file):
                                 shutil.copy(input_file, final_path)
+                                messages.append(f"Copied {data['title']}{year} - {file_name} to {output_basename}")
                         else:
                             shutil.copy(input_file, final_path)
-                        messages.append(f"Copied {data['title']}{year} - {file_name} to {output_basename}")
+                            messages.append(f"Copied {data['title']}{year} - {file_name} to {output_basename}")
                     else:
                         messages.append(f"Would have copied {data['title']}{year} - {file_name} to {output_basename}")
     return messages

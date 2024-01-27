@@ -173,20 +173,6 @@ class StARR:
         self.logger.error(f"exiting script")
         sys.exit(1)
     
-    def get_movie_fileid(self, movie_id):
-        """
-        Get the file for a movie.
-        Args:
-            movie_id (int): The ID of the movie.
-        Returns:
-            dict: The JSON response from the GET request.
-        """
-        endpoint = f"{self.url}/api/v3/moviefile/{movie_id}"
-        response = self.make_get_request(endpoint)
-        for r in response:
-            if r['movieId'] == movie_id:
-                print(f"Found file ID {r['id']} for movie ID {movie_id}")
-                exit()
 
     def get_media(self):
         """
@@ -349,7 +335,6 @@ class StARR:
         Returns:
             bool: True if the refresh was successful, False otherwise.
         """
-        print("Waiting for action to complete...")
         while True:
             endpoint = f"{self.url}/api/v3/command/{command_id}"
             response = self.make_get_request(endpoint)
@@ -684,7 +669,6 @@ class StARR:
         return self.make_delete_request(endpoint)
 
     def get_tag_id_from_name(self, tag_name):
-        print(f"Searching for tag {tag_name}")
         """
         Get the ID of a tag from its name.
         Args:

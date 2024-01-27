@@ -105,74 +105,74 @@ def categorize_files(folder_path, asset_folders):
 
     # If asset_folders is False, categorize files within the folder
     if not asset_folders:
-        pass
         # Get list of files in the folder
         files = [f.name for f in os.scandir(folder_path) if f.is_file()]
         files = sorted(files, key=lambda x: x.lower())  # Sort files alphabetically
+        if files:
+            # Loop through each file in the folder
+            for file in tqdm(files, desc=f"Sorting '{base_name}' folder", total=len(files), disable=None, leave=True):
+                if file.startswith('.'):
+                    continue  # Skip hidden files
 
-        # Loop through each file in the folder
-        for file in tqdm(files, desc=f"Sorting '{base_name}' folder", total=len(files), disable=None, leave=True):
-            if file.startswith('.'):
-                continue  # Skip hidden files
+                # Extract information from the file name
+                base_name, extension = os.path.splitext(file)
+                title = re.sub(year_regex, '', base_name)
+                normalize_title = normalize_titles(base_name)
 
-            # Extract information from the file name
-            base_name, extension = os.path.splitext(file)
-            title = re.sub(year_regex, '', base_name)
-            normalize_title = normalize_titles(base_name)
+                try:
+                    year = int(year_regex.search(base_name).group(1))
+                except:
+                    year = None
 
-            try:
-                year = int(year_regex.search(base_name).group(1))
-            except:
-                year = None
+                # Create a dictionary for the asset
+                asset_dict = {
+                    'title': title,
+                    'year': year,
+                    'normalized_title': normalize_title,
+                    'path': None,
+                    'files': [],
+                }
 
-            # Create a dictionary for the asset
-            asset_dict = {
-                'title': title,
-                'year': year,
-                'normalized_title': normalize_title,
-                'path': None,
-                'files': [],
-            }
+                file_path = f"{folder_path}/{file}"  # Full file path
 
-            file_path = f"{folder_path}/{file}"  # Full file path
-
-            if not year:  # If year is not found in the file name
-                # Categorize as a collection
-                assets['collections'].append(asset_dict)
-                # Additional processing for collection items
-                no_prefix = [re.sub(r'\b{}\b'.format(prefix), '', title).strip() for prefix in prefixes if title.startswith(prefix) and re.sub(r'\b{}\b'.format(prefix), '', title).strip() != title]
-                no_suffix = [re.sub(r'\b{}\b'.format(suffix), '', title).strip() for suffix in suffixes if title.endswith(suffix) and re.sub(r'\b{}\b'.format(suffix), '', title).strip() != title]
-                no_prefix_normalized = [normalize_titles(re.sub(r'\b{}\b'.format(prefix), '', title).strip()) for prefix in prefixes if title.startswith(prefix) and normalize_titles(re.sub(r'\b{}\b'.format(prefix), '', title).strip()) != normalize_title]
-                no_suffix_normalized = [normalize_titles(re.sub(r'\b{}\b'.format(suffix), '', title).strip()) for suffix in suffixes if title.endswith(suffix) and normalize_titles(re.sub(r'\b{}\b'.format(suffix), '', title).strip()) != normalize_title]
-                assets['collections'][-1]['no_prefix'] = no_prefix if no_prefix else None
-                assets['collections'][-1]['no_suffix'] = no_suffix if no_suffix else None
-                assets['collections'][-1]['no_prefix_normalized'] = no_prefix_normalized if no_prefix_normalized else None
-                assets['collections'][-1]['no_suffix_normalized'] = no_suffix_normalized if no_suffix_normalized else None
-                assets['collections'][-1]['files'].append(file_path)
-            else:  # If year is found in the file name
-                # Categorize as either a series or a movie based on certain criteria
-                if any(file.startswith(base_name) and any(base_name + season_name in file for season_name in season_name_info) for file in files):
-                    if not any(d['normalized_title'] == normalize_title and d['year'] == year for d in assets['series']):
-                        assets['series'].append(asset_dict)
-                    assets['series'][-1]['files'].append(file_path)
-                elif any(word in file for word in season_name_info):
-                    if not any(d['normalized_title'] == normalize_title and d['year'] == year for d in assets['series']):
-                        assets['series'].append(asset_dict)
-                    assets['series'][-1]['files'].append(file_path)
-                    if not assets['series'][-1].get('season_numbers'):
-                        assets['series'][-1]['season_numbers'] = []
-                    if " - Specials" in file:
-                        assets['series'][-1]['season_numbers'].append(0)
-                    elif re.search(r'[-_]\s*Season\s*(\d+)', file):
-                        match = re.search(r'[-_]\s*Season\s*(\d+)', file)
-                        if match:
-                            assets['series'][-1]['season_numbers'].append(int(match.group(1)))
-                    assets['series'][-1]['season_numbers'].sort()
-                    assets['series'][-1]['files'].sort()
-                else:
-                    assets['movies'].append(asset_dict)
-                    assets['movies'][-1]['files'].append(file_path)
-                    
+                if not year:  # If year is not found in the file name
+                    # Categorize as a collection
+                    assets['collections'].append(asset_dict)
+                    # Additional processing for collection items
+                    no_prefix = [re.sub(r'\b{}\b'.format(prefix), '', title).strip() for prefix in prefixes if title.startswith(prefix) and re.sub(r'\b{}\b'.format(prefix), '', title).strip() != title]
+                    no_suffix = [re.sub(r'\b{}\b'.format(suffix), '', title).strip() for suffix in suffixes if title.endswith(suffix) and re.sub(r'\b{}\b'.format(suffix), '', title).strip() != title]
+                    no_prefix_normalized = [normalize_titles(re.sub(r'\b{}\b'.format(prefix), '', title).strip()) for prefix in prefixes if title.startswith(prefix) and normalize_titles(re.sub(r'\b{}\b'.format(prefix), '', title).strip()) != normalize_title]
+                    no_suffix_normalized = [normalize_titles(re.sub(r'\b{}\b'.format(suffix), '', title).strip()) for suffix in suffixes if title.endswith(suffix) and normalize_titles(re.sub(r'\b{}\b'.format(suffix), '', title).strip()) != normalize_title]
+                    assets['collections'][-1]['no_prefix'] = no_prefix if no_prefix else None
+                    assets['collections'][-1]['no_suffix'] = no_suffix if no_suffix else None
+                    assets['collections'][-1]['no_prefix_normalized'] = no_prefix_normalized if no_prefix_normalized else None
+                    assets['collections'][-1]['no_suffix_normalized'] = no_suffix_normalized if no_suffix_normalized else None
+                    assets['collections'][-1]['files'].append(file_path)
+                else:  # If year is found in the file name
+                    # Categorize as either a series or a movie based on certain criteria
+                    if any(file.startswith(base_name) and any(base_name + season_name in file for season_name in season_name_info) for file in files):
+                        if not any(d['normalized_title'] == normalize_title and d['year'] == year for d in assets['series']):
+                            assets['series'].append(asset_dict)
+                        assets['series'][-1]['files'].append(file_path)
+                    elif any(word in file for word in season_name_info):
+                        if not any(d['normalized_title'] == normalize_title and d['year'] == year for d in assets['series']):
+                            assets['series'].append(asset_dict)
+                        assets['series'][-1]['files'].append(file_path)
+                        if not assets['series'][-1].get('season_numbers'):
+                            assets['series'][-1]['season_numbers'] = []
+                        if " - Specials" in file:
+                            assets['series'][-1]['season_numbers'].append(0)
+                        elif re.search(r'[-_]\s*Season\s*(\d+)', file):
+                            match = re.search(r'[-_]\s*Season\s*(\d+)', file)
+                            if match:
+                                assets['series'][-1]['season_numbers'].append(int(match.group(1)))
+                        assets['series'][-1]['season_numbers'].sort()
+                        assets['series'][-1]['files'].sort()
+                    else:
+                        assets['movies'].append(asset_dict)
+                        assets['movies'][-1]['files'].append(file_path)
+        else:
+            print(f"No files found in '{base_name}' folder.")
     else:  # If asset_folders is True, sort assets based on folders
         try:
             for dir_entry in tqdm(os.scandir(folder_path), desc='Sorting posters', total=len(os.listdir(folder_path)), disable=None):

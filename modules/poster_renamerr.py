@@ -313,50 +313,62 @@ def rename_files(matched_assets, script_config):
     # Iterate through each asset type
     for asset_type in asset_types:
         output[asset_type] = []
-        for item in tqdm(matched_assets[asset_type], desc=f"Renaming {asset_type} posters", unit="assets", leave=True, disable=None, total=len(matched_assets[asset_type])):
-            messages = []
-            discord_messages = []
-            files = item['files']
-            folder = item['folder']
+        # If assets to rename
+        if matched_assets[asset_type]:
+            for item in tqdm(matched_assets[asset_type], desc=f"Renaming {asset_type} posters", unit="assets", leave=True, disable=None, total=len(matched_assets[asset_type])):
+                messages = []
+                discord_messages = []
+                files = item['files']
+                folder = item['folder']
 
-            # Remove any OS illegal characters from the file name
-            if asset_type == "collections":
-                folder = re.sub(r'[<>:"/\\|?*]', '', folder.replace('/', ''))
-            
-            # Handle asset_folders configuration
-            if asset_folders:
-                dest_dir = os.path.join(destination_dir, folder)
-                if not os.path.exists(dest_dir):
-                    if not dry_run:
-                        os.makedirs(dest_dir)
-            else:
-                dest_dir = destination_dir
-            
-            # Iterate through each file in the asset
-            for file in files:
-                file_name = os.path.basename(file)
-                file_extension = os.path.splitext(file)[1]
+                # Remove any OS illegal characters from the file name
+                if asset_type == "collections":
+                    folder = re.sub(r'[<>:"/\\|?*]', '', folder.replace('/', ''))
                 
-                # Check for season-related file naming
-                if re.search(r' - Season| - Specials', file_name):
-                    season_number = (re.search(r"Season (\d+)", file_name).group(1) if "Season" in file_name else "00").zfill(2)
-                    if asset_folders:
-                        new_file_name = f"Season{season_number}{file_extension}"
-                    else:
-                        new_file_name = f"{folder}_Season{season_number}{file_extension}"
-                    new_file_path = os.path.join(dest_dir, new_file_name)
+                # Handle asset_folders configuration
+                if asset_folders:
+                    dest_dir = os.path.join(destination_dir, folder)
+                    if not os.path.exists(dest_dir):
+                        if not dry_run:
+                            os.makedirs(dest_dir)
                 else:
-                    if asset_folders:
-                        new_file_name = f"poster{file_extension}"
-                    else:
-                        new_file_name = f"{folder}{file_extension}"
-                    new_file_path = os.path.join(dest_dir, new_file_name)
+                    dest_dir = destination_dir
                 
-                # Check if the new file path already exists
-                if os.path.isfile(new_file_path):
-                    existing_file = os.path.join(dest_dir, new_file_name)
-                    # Check if the existing file is the same as the new file True = same, False = different
-                    if not filecmp.cmp(file, existing_file):
+                # Iterate through each file in the asset
+                for file in files:
+                    file_name = os.path.basename(file)
+                    file_extension = os.path.splitext(file)[1]
+                    
+                    # Check for season-related file naming
+                    if re.search(r' - Season| - Specials', file_name):
+                        season_number = (re.search(r"Season (\d+)", file_name).group(1) if "Season" in file_name else "00").zfill(2)
+                        if asset_folders:
+                            new_file_name = f"Season{season_number}{file_extension}"
+                        else:
+                            new_file_name = f"{folder}_Season{season_number}{file_extension}"
+                        new_file_path = os.path.join(dest_dir, new_file_name)
+                    else:
+                        if asset_folders:
+                            new_file_name = f"poster{file_extension}"
+                        else:
+                            new_file_name = f"{folder}{file_extension}"
+                        new_file_path = os.path.join(dest_dir, new_file_name)
+                    
+                    # Check if the new file path already exists
+                    if os.path.isfile(new_file_path):
+                        existing_file = os.path.join(dest_dir, new_file_name)
+                        # Check if the existing file is the same as the new file True = same, False = different
+                        if not filecmp.cmp(file, existing_file):
+                            if file_name != new_file_name:
+                                messages.append(f"{file_name} -renamed-> {new_file_name}")
+                                discord_messages.append(f"{new_file_name}")
+                            else:
+                                if not print_only_renames:
+                                    messages.append(f"{file_name} -not-renamed-> {new_file_name}")
+                                    discord_messages.append(f"{new_file_name}")
+                            if not dry_run:
+                                process_file(file, new_file_path, action_type)
+                    else:
                         if file_name != new_file_name:
                             messages.append(f"{file_name} -renamed-> {new_file_name}")
                             discord_messages.append(f"{new_file_name}")
@@ -366,26 +378,17 @@ def rename_files(matched_assets, script_config):
                                 discord_messages.append(f"{new_file_name}")
                         if not dry_run:
                             process_file(file, new_file_path, action_type)
-                else:
-                    if file_name != new_file_name:
-                        messages.append(f"{file_name} -renamed-> {new_file_name}")
-                        discord_messages.append(f"{new_file_name}")
-                    else:
-                        if not print_only_renames:
-                            messages.append(f"{file_name} -not-renamed-> {new_file_name}")
-                            discord_messages.append(f"{new_file_name}")
-                    if not dry_run:
-                        process_file(file, new_file_path, action_type)
-            
-            # Append the messages to the output
-            output[asset_type].append({
-                'title': item['title'],
-                'year': item['year'],
-                'folder': item['folder'],
-                'messages': messages,
-                'discord_messages': discord_messages,
-            })
-    
+                
+                # Append the messages to the output
+                output[asset_type].append({
+                    'title': item['title'],
+                    'year': item['year'],
+                    'folder': item['folder'],
+                    'messages': messages,
+                    'discord_messages': discord_messages,
+                })
+        else:
+            print(f"No {asset_type} to rename")
     return output
 
 def handle_output(output, asset_folders):

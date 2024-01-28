@@ -95,32 +95,30 @@ def handle_overrides(source_assets, override_assets):
             for override_asset in override_assets:
                 # Checks if the title and year of the source and override asset match
                 if (
-                    source_asset['title'] == override_asset['title']
+                    source_asset['normalized_title'] == override_asset['normalized_title']
                     and source_asset['year'] == override_asset['year']
                 ):
                     # Compares and handles the files between source and override assets
-                    for source_file in source_asset['files'][:]:
-                        for override_file in override_asset['files']:
-                            source_basename = os.path.basename(source_file)
-                            override_basename = os.path.basename(override_file)
+                    for override_file in override_asset['files']:
+                        override_basename, extension = os.path.splitext(os.path.basename(override_file))
+                        normalized_override_basename = normalize_file_names(override_basename)
+                        for source_file in source_asset['files']:
+                            source_basename, extension = os.path.splitext(os.path.basename(source_file))
                             normalized_source_basename = normalize_file_names(source_basename)
-                            normalized_override_basename = normalize_file_names(override_basename)
                             # Replaces source file with override file if the filenames match
                             if source_basename == override_basename or normalized_source_basename == normalized_override_basename:
                                 source_asset['files'].remove(source_file)
                                 source_asset['files'].append(override_file)
                                 break
-                            # Checks if the override file is already in the source asset
-                            elif override_file not in source_asset['files'] and override_basename not in [os.path.basename(file) for file in source_asset['files']]:
-                                # Adds override file to source asset if the filename doesn't match and it's not a duplicate
-                                source_asset['files'].append(override_file)
-                                break
                     # Combines the season_numbers key no duplicates
                     if asset_type == "series":
-                        try:
-                            source_asset['season_numbers'] = list(set(source_asset['season_numbers'] + override_asset['season_numbers']))
-                        except KeyError:
-                            continue
+                        source_asset_season_numbers = source_asset.get('season_numbers', [])
+                        override_asset_season_numbers = override_asset.get('season_numbers', [])
+                        for season_number in override_asset_season_numbers:
+                            if season_number not in source_asset_season_numbers:
+                                source_asset_season_numbers.append(season_number)
+                        source_asset['season_numbers'] = source_asset_season_numbers
+                    
     # If the override asset is not in the source assets, add it to the source assets
     for override_asset in override_assets:
         # if override_asset doesn't have a year and is not in the source asset collection, add it to the source asset collection
@@ -132,6 +130,10 @@ def handle_overrides(source_assets, override_assets):
         # if override_asset has season_numbers and is not in the source asset series, add it to the source asset series
         elif 'season_numbers' in override_asset and override_asset['season_numbers'] and override_asset not in source_assets['series']:
             source_assets['series'].append(override_asset)
+
+    # Sort series by file name
+    for source_asset in source_assets['series']:
+        source_asset['files'].sort()
 
 def match_data(media_dict, asset_files):
     """
@@ -564,7 +566,7 @@ def notification(output):
     for key, value in discord_dict.items():
         print(f"Sending message {key} of {len(discord_dict)}")  # Display message sending status
         # Actual function to send messages to Discord (which is currently represented by a 'print' statement)
-        discord(fields=value, logger=logger, script_name=script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
+        discord(fields=value, logger=logger, script_name="Poster Renamerr", description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
         # Pauses for 5 seconds each 5th message
         if key % 5 == 0:
             print("Pausing for 5 seconds to let Discord catch up...")
@@ -575,7 +577,7 @@ def main():
     Main function.
     """
     try:
-        
+        logger.info(f"\n{'*' * 40} START {'*' * 40}\n")
         # Display script settings
         data = [["Script Settings"]]
         create_table(data, log_level="debug", logger=logger)

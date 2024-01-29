@@ -213,6 +213,7 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
     media_dict = handle_starr_data(app, instance_type)
 
     # If count and tag_name is specified, limit the number of items to process that do not have tag_name
+    tag_id = None
     if count and tag_name:
         tag_id = app.get_tag_id_from_name(tag_name)
         if tag_id:

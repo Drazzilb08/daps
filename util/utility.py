@@ -57,11 +57,12 @@ def normalize_file_names(file_name):
         str: The normalized file name
     """
 
-    # # Extract the year from parentheses in the file name
-    # file_name = year_regex.sub('', file_name)
-
     # remove extension
     file_name, extension = os.path.splitext(file_name)
+
+    # Remove specific words from the title
+    for word in words_to_remove:
+        file_name = file_name.replace(word, '')
 
     # Remove illegal characters from the file name using regex
     file_name = illegal_chars_regex.sub('', file_name)

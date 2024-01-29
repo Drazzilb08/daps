@@ -131,12 +131,17 @@ def handle_overrides(source_assets, override_assets):
                     break
         # Adds any remaining override assets to the source assets
         if override_assets:
-            if not override_asset['year'] and override_asset['title'] and override_asset not in source_assets['collections']:
-                source_assets['collections'].append(override_asset)
-            elif override_asset['year'] and override_asset not in source_assets['movies'] and 'season_numbers' not in override_asset and override_asset['normalized_title'] not in [asset['normalized_title'] for asset in source_assets['movies']]:
-                source_assets['movies'].append(override_asset)
-            elif 'season_numbers' in override_asset and override_asset['season_numbers'] and override_asset not in source_assets['series'] and override_asset['normalized_title'] not in [asset['normalized_title'] for asset in source_assets['series']]:
-                source_assets['series'].append(override_asset)
+            for override_asset in override_assets:
+                normalized_title = normalize_file_names(override_asset['title'])
+                if not override_asset['year'] and override_asset['title']:
+                    if not any(asset['normalized_title'] == normalized_title for asset in source_assets['collections']):
+                        source_assets['collections'].append(override_asset)
+                elif override_asset['year'] and 'season_numbers' not in override_asset:
+                    if not any(asset['normalized_title'] == normalized_title and asset['year'] == override_asset['year'] for asset in source_assets['movies']):
+                        source_assets['movies'].append(override_asset)
+                elif 'season_numbers' in override_asset and override_asset['season_numbers']:
+                    if not any(asset['normalized_title'] == normalized_title and asset['year'] == override_asset['year'] for asset in source_assets['series']):
+                        source_assets['series'].append(override_asset)
 
 def match_data(media_dict, asset_files):
     """

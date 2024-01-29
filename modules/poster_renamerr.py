@@ -69,7 +69,10 @@ def get_assets_files(source_dir, source_overrides):
             # Handles overrides between primary source and the override
             handle_overrides(source_assets, override_assets)
 
-    # Returns the collected dictionary of categorized asset files
+    # Sort the contents of each key by title
+    for key, value in source_assets.items():
+        source_assets[key] = sorted(value, key=lambda k: k['title'])
+
     return source_assets
 
 def handle_overrides(source_assets, override_assets):
@@ -110,6 +113,9 @@ def handle_overrides(source_assets, override_assets):
                                 source_asset['files'].remove(source_file)
                                 source_asset['files'].append(override_file)
                                 break
+                        # Adds override file to source asset matching based upon normalized filenames
+                        else:
+                            source_asset['files'].append(override_file)
                     # Combines the season_numbers key no duplicates
                     if asset_type == "series":
                         source_asset_season_numbers = source_asset.get('season_numbers', [])
@@ -118,22 +124,19 @@ def handle_overrides(source_assets, override_assets):
                             if season_number not in source_asset_season_numbers:
                                 source_asset_season_numbers.append(season_number)
                         source_asset['season_numbers'] = source_asset_season_numbers
-                    
-    # If the override asset is not in the source assets, add it to the source assets
-    for override_asset in override_assets:
-        # if override_asset doesn't have a year and is not in the source asset collection, add it to the source asset collection
-        if not override_asset['year'] and override_asset not in source_assets['collections']:
-            source_assets['collections'].append(override_asset)
-        # if override_asset has a year and is not in the source asset movies or series, add it to the source asset movies
-        elif override_asset['year'] and override_asset not in source_assets['movies'] and 'season_numbers' not in override_asset:
-            source_assets['movies'].append(override_asset)
-        # if override_asset has season_numbers and is not in the source asset series, add it to the source asset series
-        elif 'season_numbers' in override_asset and override_asset['season_numbers'] and override_asset not in source_assets['series']:
-            source_assets['series'].append(override_asset)
-
-    # Sort series by file name
-    for source_asset in source_assets['series']:
-        source_asset['files'].sort()
+                        # Sort the season_numbers key
+                        source_asset['season_numbers'].sort()
+                    # Removes the override asset from the override assets
+                    override_assets.remove(override_asset)
+                    break
+        # Adds any remaining override assets to the source assets
+        if override_assets:
+            if not override_asset['year'] and override_asset['title'] and override_asset not in source_assets['collections']:
+                source_assets['collections'].append(override_asset)
+            elif override_asset['year'] and override_asset not in source_assets['movies'] and 'season_numbers' not in override_asset and override_asset['normalized_title'] not in [asset['normalized_title'] for asset in source_assets['movies']]:
+                source_assets['movies'].append(override_asset)
+            elif 'season_numbers' in override_asset and override_asset['season_numbers'] and override_asset not in source_assets['series'] and override_asset['normalized_title'] not in [asset['normalized_title'] for asset in source_assets['series']]:
+                source_assets['series'].append(override_asset)
 
 def match_data(media_dict, asset_files):
     """

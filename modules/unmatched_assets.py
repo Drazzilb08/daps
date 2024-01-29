@@ -132,15 +132,14 @@ def match_assets(assets_dict, media_dict, ignore_root_folders):
                                     unmatched_assets[media_type][location].append({
                                         'title': media_data['title'],
                                         'year': media_data['year'],
-                                        'missing_seasons': True,
-                                        'season_numbers': missing_seasons
+                                        'missing_seasons': missing_seasons,
+                                        'season_numbers': media_seasons_numbers
                                     })
                 if not matched:
                     if media_type == 'series':
                         unmatched_assets[media_type][location].append({
                             'title': media_data['title'],
                             'year': media_data['year'],
-                            'missing_seasons': False,
                             'season_numbers': media_seasons_numbers
                         })
                     else:
@@ -171,17 +170,22 @@ def print_output(unmatched_dict, media_dict):
                 [f"Unmatched {asset_type.capitalize()}"]
             ]
             create_table(table, log_level="info", logger=logger)
+            logger.info(f"\n{'*' * 80}\n")
             for location, data in data_set.items():
                 location = location.rstrip('/')
                 location_base = os.path.basename(location)
                 if data:
-                    logger.info(f"{location_base.title()}: {len(data)}")
+                    table = [
+                        [location_base.title(), len(data)]
+                    ]
+                    create_table(table, log_level="info", logger=logger)
                     logger.info("")
                     for item in data:
                         if asset_type == 'series':
-                            if item.get('missing_seasons'):
+                            missing_seasons = item.get('missing_seasons', False)
+                            if missing_seasons:
                                 logger.info(f"\t{item['title']} ({item['year']}) (Seasons listed below have missing posters)")
-                                for season in item['season_numbers']:
+                                for season in item['missing_seasons']:
                                     logger.info(f"\t\tSeason: {season} <- Missing")
                             else:
                                 logger.info(f"\t{item['title']} ({item['year']})")
@@ -335,6 +339,7 @@ def main():
         logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
         # Matching assets and printing output
         unmatched_dict = match_assets(assets_dict, media_dict, ignore_root_folders)
+        logger.debug(f"Unmatched Dict:\n{json.dumps(unmatched_dict, indent=4)}")
         print_output(unmatched_dict, media_dict)
     except KeyboardInterrupt:
         print("Exiting due to keyboard interrupt.")

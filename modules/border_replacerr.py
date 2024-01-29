@@ -477,7 +477,7 @@ def copy_files(assets_dict, output_dir, dry_run):
                         else:
                             output_path = output_dir
                     else:
-                        logger.info(f"Creating {output_path}")
+                        logger.debug(f"Creating {output_path}")
                 else:
                     output_path = output_dir
                 

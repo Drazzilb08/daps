@@ -151,8 +151,8 @@ def categorize_files(folder_path, asset_folders):
         if files:
             # Loop through each file in the folder
             for file in tqdm(files, desc=f"Sorting '{base_name}' folder", total=len(files), disable=None, leave=True):
-                if file.startswith('.'):
-                    continue  # Skip hidden files
+                if file.startswith('.') or "(N-A)" in file:
+                    continue  # Skip hidden files or files with "(N-A)" in the name
 
                 # Extract information from the file name
                 base_name, extension = os.path.splitext(file)

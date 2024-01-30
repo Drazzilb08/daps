@@ -242,6 +242,35 @@ renameinatorr:
     - radarr_2
     - sonarr_3
 
+poster_renamerr:
+  log_level: info
+  dry_run: false
+  sync_posters: true # <- This will run sync_gdrive before renaming
+  action_type: copy # <- Options: copy, move
+  asset_folders: false # <- This will copy the folder structure of the source_dir to the destination_dir, this MUST be the same as you use in Plex-Meta-Manager
+  print_only_renames: false # <- This will print the renames to the log, but will not actually rename anything
+  # This will integrate border_replacer with poster_renamerr, set this to true if you want to use them at the same time (no need to schedule border_replacer)
+  # Note: This will create a tmp dir in your output directory for border_replacer to use and for poster_renamer to have accurate account of what has been added
+  # Note: All of border_replacer's settings will be used, except for the input_dir and output_dir, so make sure you're not in dry_run mode for border_replacer
+  border_replacerr: false
+  # Libraries are ONLY used for collections
+  library_names:
+    - Movies
+    - Anime Movies
+  source_dir: /path/to/posters/ # <- Lowest priority
+  # Optional, if you want to override the source_dir for certain libraries
+  source_overrides:
+    - /path/to/posters/overrideA
+    - /path/to/posters/overrideB # <- Highest priority
+  destination_dir: /path/to/output/
+  instances:
+    - plex_1
+    - radarr_1
+    - sonarr_1
+    # - sonarr_anime
+    # - radarr_2
+    # - sonarr_3
+
 border_replacerr:
   # Colors: https://www.w3schools.com/colors/colors_picker.asp
   log_level: info
@@ -283,35 +312,6 @@ border_replacerr:
     thanksgiving:
       schedule: range(11/01-11/30)
       color: "#FFA500"
-
-poster_renamerr:
-  log_level: info
-  dry_run: false
-  sync_posters: true # <- This will run sync_gdrive before renaming
-  action_type: copy # <- Options: copy, move
-  asset_folders: false # <- This will copy the folder structure of the source_dir to the destination_dir, this MUST be the same as you use in Plex-Meta-Manager
-  print_only_renames: false # <- This will print the renames to the log, but will not actually rename anything
-  # This will integrate border_replacer with poster_renamerr, set this to true if you want to use them at the same time (no need to schedule border_replacer)
-  # Note: This will create a tmp dir in your output directory for border_replacer to use and for poster_renamer to have accurate account of what has been added
-  # Note: All of border_replacer's settings will be used, except for the input_dir and output_dir, so make sure you're not in dry_run mode for border_replacer
-  border_replacerr: false
-  # Libraries are ONLY used for collections
-  library_names:
-    - Movies
-    - Anime Movies
-  source_dir: /path/to/posters/ # <- Lowest priority
-  # Optional, if you want to override the source_dir for certain libraries
-  source_overrides:
-    - /path/to/posters/overrideA
-    - /path/to/posters/overrideB # <- Highest priority
-  destination_dir: /path/to/output/
-  instances:
-    - plex_1
-    - radarr_1
-    - sonarr_1
-    # - sonarr_anime
-    # - radarr_2
-    # - sonarr_3
 
 unmatched_assets:
   log_level: info

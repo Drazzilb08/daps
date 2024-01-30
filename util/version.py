@@ -1,4 +1,8 @@
+import requests
+import os
+import pathlib
 from util.discord import discord
+
 
 try:
     import requests
@@ -6,10 +10,9 @@ except ImportError:
     print("ImportError: requests")
     print("Please install the required modules with 'pip install -r requirements.txt'")
     exit(1)
-from util.logger import setup_logger
-import re
 
-import requests
+
+script_dir = pathlib.Path(__file__).parents[1]  # Get the path to the script directory (one level up from this file
 
 def version_check(logger, config):
     """
@@ -24,7 +27,9 @@ def version_check(logger, config):
     """
     
     # Read version from a local VERSION file
-    with open("VERSION", "r") as f:
+    version_file = os.path.join(script_dir, "VERSION")
+
+    with open(version_file, "r") as f:
         script_version = f.read().strip()
     
     # Construct the URL for the GitHub raw file containing the version

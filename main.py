@@ -2,6 +2,20 @@ import json
 import sys
 import os
 from util.config import Config
+
+config_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config/config.yml")
+
+if os.path.isfile(config_file_path):
+    
+    config = Config("main")
+else:
+    while True:
+        if os.path.isfile(config_file_path):
+            config = Config("main")
+            break
+        print(f"Config file not found. Retrying in 60 seconds...")
+        time.sleep(60)
+
 from util.scheduler import scheduler
 from util.logger import setup_logger
 import importlib
@@ -9,20 +23,8 @@ import multiprocessing
 import time
 import datetime
 
-script_name = "main"
-# if config file: config/config.yml
-if os.path.isfile("config/config.yml"):
-    config = Config(script_name)
-else:
-    while True:
-        if os.path.isfile("config/config.yml"):
-            config = Config(script_name)
-            break
-        print(f"Config file not found. Retrying in 60 seconds...")
-        time.sleep(60)
-
 log_level = config.log_level
-logger = setup_logger(log_level, script_name)
+logger = setup_logger(log_level, "main")
 schedule = config.scheduler
 current_time = datetime.datetime.now().strftime("%H:%M")
 from modules.bash_scripts import main as bash_script

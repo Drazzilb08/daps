@@ -362,6 +362,26 @@ class StARR:
         endpoint = f"{self.url}/api/v3/command"
         return self.make_post_request(endpoint, headers=self.headers, json=payload)
     
+    def refresh_items(self, media_ids):
+        """
+        Refresh a media item.
+        Args:
+            media_id (int): The ID of the media item to refresh.
+        """
+        if self.instance_type == 'Sonarr':
+            name_type = "RefreshSeries"
+            media_type = "seriesIds"
+        elif self.instance_type == 'Radarr':
+            name_type = "RefreshMovie"
+            media_type = "movieIds"
+        payload = {
+            "name": name_type,
+            media_type: media_ids
+        }
+        self.logger.debug(f"Refresh payload: {payload}")
+        endpoint = f"{self.url}/api/v3/command"
+        return self.make_post_request(endpoint, headers=self.headers, json=payload)
+    
     def refresh_media(self):
         """
         Refresh a media item.

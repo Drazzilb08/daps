@@ -720,5 +720,5 @@ class StARR:
         payload = {
             "ids": queue_ids
         }
-        endpoint = f"{self.url}/api/v3/queue/bulk?removeFromClient=false&blocklist=false&skipRedownload=false"
+        endpoint = f"{self.url}/api/v3/queue/bulk?removeFromClient=false&blocklist=false&skipRedownload=false&changeCategory=false"
         return self.make_delete_request(endpoint, payload)

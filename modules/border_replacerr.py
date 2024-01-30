@@ -471,7 +471,7 @@ def copy_files(assets_dict, output_dir, dry_run):
                 if path:
                     path_basename = os.path.basename(path)
                     output_path = f"{output_dir}/{path_basename}"
-                    if dry_run:
+                    if not dry_run:
                         if not os.path.exists(output_path):
                             os.makedirs(output_path)
                         else:

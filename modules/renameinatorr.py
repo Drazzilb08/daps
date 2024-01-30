@@ -255,7 +255,7 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
                 app.rename_media(media_ids)
                 
                 # Refresh media and wait for it to be ready
-                response = app.refresh_media()
+                response = app.refresh_items(media_ids)
                 print(f"Waiting for {server_name} to refresh...")
 
                 # Wait for media to be ready
@@ -284,7 +284,7 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
                 
                 # Refresh media and wait for it to be ready
                 print(f"Waiting for {server_name} to refresh...")
-                response = app.refresh_media()
+                response = app.refresh_items(media_ids)
 
                 # Wait for media to be ready
                 ready = app.wait_for_command(response['id'])

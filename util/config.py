@@ -1,8 +1,12 @@
 import pathlib
 import yaml
+import os
 
-base_dir = pathlib.Path(__file__).parents[1]
-config_path = f'{base_dir}/config/config.yml'
+
+if 'HOSTNAME' in os.environ:  # Heuristic to check for a container environment
+    config_path = os.getenv('US_CONFIG', '/config/config.yml')
+else:
+    config_path = os.path.join(pathlib.Path(__file__).parents[1], "config/config.yml")
 
 class Config:
     """

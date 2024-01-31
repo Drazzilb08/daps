@@ -3,14 +3,21 @@ import sys
 import os
 from util.config import Config
 from util.scheduler import scheduler
-from util.logger import setup_logger
+from util.logger import setup_logger, remove_logger
 import importlib
 import multiprocessing
 import time
 import datetime
+import pathlib
 
+# Set the script name
 script_name = "main"
-config_file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config/config.yml")
+
+# Set the config file path
+if 'HOSTNAME' in os.environ:  # Heuristic to check for a container environment
+    config_file_path = os.getenv('US_CONFIG', '/config/config.yml')
+else:
+    config_file_path = os.path.join(pathlib.Path(__file__).parent, "config/config.yml")
 
 logger = setup_logger("info", script_name)
 
@@ -18,13 +25,8 @@ while not os.path.isfile(config_file_path):
     logger.info(f"Config file not found. Retrying in 60 seconds...")
     time.sleep(60)
 
-
 from modules.bash_scripts import main as bash_script
 
-config = Config(script_name)
-log_level = config.log_level
-logger = setup_logger(log_level, script_name)
-schedule = config.scheduler
 current_time = datetime.datetime.now().strftime("%H:%M")
 
 already_run = {
@@ -78,17 +80,63 @@ def run_module(module_name):
     # Run the module
     module.main()
 
+def load_config(logger):
+    """
+    Load the config file
+
+    Args:
+        logger (obj): The logger object
+
+    Returns:
+        config (obj): The config object
+        schedule (dict): The schedule dictionary
+        logger (obj): The logger object
+    """
+    if logger:
+        remove_logger(logger)
+    config = Config(script_name)
+    log_level = config.log_level
+    logger = setup_logger(log_level, script_name)
+    schedule = config.scheduler
+
+    return config, schedule, logger
+
 
 def main():
+    """
+    Main function
+    """
+    logger = None
+    config, schedule, logger = load_config(logger)
+    logger.info(f"\n{'*' * 40} START {'*' * 40}\n")
+    if len(sys.argv) > 1:
+        for input_name in sys.argv[1:]:
+            if input_name in config.bash_config:
+                settings = config.bash_config.get(input_name, {})
+                bash_script(settings, input_name)
+            elif input_name not in config.bash_config:
+                if input_name in python_scripts:
+                    print(f"Running: {input_name}")
+                    run=True
+                    run_module(input_name)
+                for script_name, script_value in config.bash_config.items():
+                    if isinstance(script_value, dict):
+                        for instance, instance_value in script_value.items():
+                            if input_name == instance:
+                                settings = config.bash_config.get(script_name, {}).get(instance, {})
+                                bash_script(settings, script_name)
+            if input_name not in config.bash_config and input_name not in python_scripts:
+                logger.error(f"Script: {input_name} does not exist")
     # If config file is not found
     try:
         last_check = None
         while True:
+            config, schedule, logger = load_config(logger)
             processes = []
             if last_check is None or last_check.date() < datetime.datetime.now().date():
                 logger.debug("Checking for new version...")
                 from util.version import version_check
-                version_check(logger, config)
+                version_check(logger)
                 last_check = datetime.datetime.now()
                 next_check = (last_check + datetime.timedelta(days=1)).strftime("%A %I:%M %p")
                 logger.info(f"Next version check: {next_check}")
@@ -151,26 +199,4 @@ if __name__ == '__main__':
     """
     Main function
     """
-    # If arguments are passed to the script, run the script with those arguments
-    if len(sys.argv) > 1:
-        for input_name in sys.argv[1:]:
-            if input_name in config.bash_config:
-                settings = config.bash_config.get(input_name, {})
-                bash_script(settings, input_name)
-            elif input_name not in config.bash_config:
-                if input_name in python_scripts:
-                    print(f"Running: {input_name}")
-                    run=True
-                    run_module(input_name)
-                for script_name, script_value in config.bash_config.items():
-                    if isinstance(script_value, dict):
-                        for instance, instance_value in script_value.items():
-                            if input_name == instance:
-                                settings = config.bash_config.get(script_name, {}).get(instance, {})
-                                bash_script(settings, script_name)
-            if input_name not in config.bash_config and input_name not in python_scripts:
-                logger.error(f"Script: {input_name} does not exist")
-            
-    # If no arguments are passed to the script, run the main function
-    else:
-        main()
+    main()

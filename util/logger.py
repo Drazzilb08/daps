@@ -11,7 +11,6 @@ import pathlib
 import time
 
 # Get the parent directory of the script file
-base_dir = pathlib.Path(__file__).parents[1]
 
 def setup_logger(log_level, script_name):
     """
@@ -24,11 +23,15 @@ def setup_logger(log_level, script_name):
     Returns:
         A logger object for logging messages.
     """
+
+    if 'HOSTNAME' in os.environ:  # Heuristic to check for a container environment
+        log_dir = os.getenv('US_LOGS', f'/config/logs/{script_name}')
+    else:
+        log_dir = f"{os.path.join(pathlib.Path(__file__).parents[1], 'logs', script_name)}"
+
     if log_level not in ['debug', 'info', 'critical']:
         log_level = 'info'
         print(f"Invalid log level '{log_level}', defaulting to 'info'")
-    # Define the directory for log files based on script name
-    log_dir = f'{base_dir}/logs/{script_name}'
     
     # Create the log directory if it doesn't exist
     if not os.path.exists(log_dir):
@@ -83,9 +86,18 @@ def setup_logger(log_level, script_name):
     log_files.sort(key=lambda x: os.path.getmtime(os.path.join(log_dir, x)), reverse=True)
     for file in log_files[3:]:
         os.remove(os.path.join(log_dir, file))
-    
-    # Add the file handler again (may be redundant, as it's added earlier)
-    logger.addHandler(handler)
-    
+
     return logger
 
+def remove_logger(logger):
+    """
+    Remove the logger.
+    
+    Parameters:
+        logger (obj): The logger object to remove
+    """
+    # Remove all handlers associated with the logger object
+    handlers = logger.handlers[:]
+    for handler in handlers:
+        handler.close()
+        logger.removeHandler(handler)

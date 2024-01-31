@@ -14,7 +14,7 @@ except ImportError:
 
 script_dir = pathlib.Path(__file__).parents[1]  # Get the path to the script directory (one level up from this file
 
-def version_check(logger, config):
+def version_check(logger):
     """
     Check for a new version of the script
     

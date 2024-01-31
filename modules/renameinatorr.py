@@ -305,7 +305,9 @@ def main():
     """
     Main function.
     """
+    name = script_name.replace("_", " ").upper()
     try:
+        logger.info(f"\n{'*' * 40} STARTING {name} {'*' * 40}\n")
         # Get instances and rename_folders settings from the script config
         script_config = config.script_config
         instances = config.script_config.get('instances', None)

@@ -589,7 +589,9 @@ def main():
     """
     Main function.
     """
+    name = script_name.replace("_", " ").upper()
     try:
+        logger.info(f"\n{'*' * 40} STARTING {name} {'*' * 40}\n")
         # Obtain script configuration details
         script_config = config.script_config
         input_dir = script_config['input_dir']

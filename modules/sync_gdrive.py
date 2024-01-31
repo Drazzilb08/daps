@@ -6,8 +6,10 @@ from util.config import Config
 from util.call_script import call_script
 import sys
 
-config = Config(script_name="sync_gdrive")
-logger = setup_logger(config.log_level, "sync_gdrive")
+
+script_name = "sync_gdrive"
+config = Config(script_name)
+logger = setup_logger(config.log_level, script_name)
 bash_script_file = os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + '/../scripts/rclone.sh')
 
 def output_debug_info(cmd, settings):
@@ -118,7 +120,9 @@ def run_rclone(cmd, settings):
 
 # Main function
 def main():
+    name = script_name.replace("_", " ").upper()
     try:
+        logger.info(f"\n{'*' * 40} STARTING {name} {'*' * 40}\n")
         settings = config.script_config
         for cmd in set_cmd_args(settings):
             run_rclone(cmd, settings)

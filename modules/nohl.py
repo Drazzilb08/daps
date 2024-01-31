@@ -691,7 +691,9 @@ def main():
     """
     Main function.
     """
+    name = script_name.replace("_", " ").upper()
     try:
+        logger.info(f"\n{'*' * 40} STARTING {name} {'*' * 40}\n")
         # Check if a dry run is enabled
         if dry_run:
             # Display a notification for a dry run

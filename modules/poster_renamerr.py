@@ -584,8 +584,9 @@ def main():
     """
     Main function.
     """
+    name = script_name.replace("_", " ").upper()
     try:
-        logger.info(f"\n{'*' * 40} START {'*' * 40}\n")
+        logger.info(f"\n{'*' * 40} STARTING {name} {'*' * 40}\n")
         # Display script settings
         data = [["Script Settings"]]
         create_table(data, log_level="debug", logger=logger)

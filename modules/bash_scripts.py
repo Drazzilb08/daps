@@ -148,7 +148,9 @@ def main(settings, script_name):
         settings (dict): The settings for the bash script.
         script_name (str): The name of the bash script.
     """
+    name = script_name.replace("_", " ").upper()
     try:
+        logger.info(f"\n{'*' * 40} STARTING {name} {'*' * 40}\n")
         config = Config(script_name="bash_scripts")
         logger = setup_logger(config.log_level, script_name)
         bash_script_file = f'./scripts/{script_name}.sh'

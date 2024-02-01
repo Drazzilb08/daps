@@ -59,8 +59,10 @@ RUN curl https://rclone.org/install.sh | bash && \
     rm -rf /var/lib/apt/lists/*
 
 # Install Docker CLI inside the container
-RUN apt-get update && \
-    apt-get install -y docker.io
+RUN apt-get update; \
+    apt-get install -y --no-install-recommends docker-cli; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/*
 
 # Share the Docker socket with the container
 VOLUME /var/run/docker.sock

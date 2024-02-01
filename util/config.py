@@ -13,10 +13,8 @@ def is_docker():
 
 # Set the config file path
 if is_docker():
-    print("Running in Docker")
     config_file_path = os.getenv('US_CONFIG', '/config/config.yml')
 else:
-    print("Running in non-Docker")
     config_file_path = os.path.join(pathlib.Path(__file__).parents[1], "config/config.yml")
 
 while not os.path.isfile(config_file_path):

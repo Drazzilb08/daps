@@ -1,12 +1,27 @@
 import pathlib
 import yaml
 import os
+from pathlib import Path
+from util.logger import setup_logger
+import time
+logger = setup_logger("info", "main")
 
 
-if 'HOSTNAME' in os.environ:  # Heuristic to check for a container environment
-    config_path = os.getenv('US_CONFIG', '/config/config.yml')
+def is_docker():
+    cgroup = Path('/proc/self/cgroup')
+    return Path('/.dockerenv').is_file() or (cgroup.is_file() and 'docker' in cgroup.read_text())
+
+# Set the config file path
+if is_docker():
+    print("Running in Docker")
+    config_file_path = os.getenv('US_CONFIG', '/config/config.yml')
 else:
-    config_path = os.path.join(pathlib.Path(__file__).parents[1], "config/config.yml")
+    print("Running in non-Docker")
+    config_file_path = os.path.join(pathlib.Path(__file__).parents[1], "config/config.yml")
+
+while not os.path.isfile(config_file_path):
+    logger.info(f"Config file not found. Retrying in 60 seconds...")
+    time.sleep(60)
 
 class Config:
     """
@@ -16,7 +31,7 @@ class Config:
         """
         Initialize the config file
         """
-        self.config_path = config_path
+        self.config_path = config_file_path
         self.script_name = script_name
         self.load_config()
 

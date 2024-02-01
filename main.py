@@ -4,29 +4,14 @@ import os
 from util.config import Config
 from util.scheduler import scheduler
 from util.logger import setup_logger, remove_logger
+from modules.bash_scripts import main as bash_script
 import importlib
 import multiprocessing
 import time
 import datetime
-import pathlib
 
 # Set the script name
 script_name = "main"
-
-# Set the config file path
-if 'HOSTNAME' in os.environ:  # Heuristic to check for a container environment
-    config_file_path = os.getenv('US_CONFIG', '/config/config.yml')
-else:
-    config_file_path = os.path.join(pathlib.Path(__file__).parent, "config/config.yml")
-
-logger = setup_logger("info", script_name)
-
-while not os.path.isfile(config_file_path):
-    logger.info(f"Config file not found. Retrying in 60 seconds...")
-    time.sleep(60)
-
-from modules.bash_scripts import main as bash_script
-
 current_time = datetime.datetime.now().strftime("%H:%M")
 
 already_run = {
@@ -60,7 +45,7 @@ python_scripts = [
     
 
 
-def run_module(module_name):
+def run_module(module_name, logger):
     """
     Run a module
     
@@ -111,7 +96,6 @@ def load_config(logger):
 
     return config, schedule, logger
 
-
 def main():
     """
     Main function
@@ -126,8 +110,7 @@ def main():
             elif input_name not in config.bash_config:
                 if input_name in python_scripts:
                     print(f"Running: {input_name}")
-                    run=True
-                    run_module(input_name)
+                    run_module(input_name, logger)
                 for script_name, script_value in config.bash_config.items():
                     if isinstance(script_value, dict):
                         for instance, instance_value in script_value.items():
@@ -203,7 +186,7 @@ def main():
                         # Check if the script is scheduled to run
                         if schedule_time != "run" and scheduler(schedule_time, logger=logger):
                             logger.debug(f"Python Script {script_name.capitalize()} Schedule: {schedule_time} started")
-                            process = multiprocessing.Process(target=run_module, args=(script_name,))
+                            process = multiprocessing.Process(target=run_module, args=(script_name, logger))
                             process.start()   # Start the process without joining
 
                             # Only add the process to the list if it was created
@@ -214,7 +197,7 @@ def main():
                         # Check if the script is scheduled to run
                         if schedule_time == "run" and not already_run.get(script_name, False):
                             logger.debug(f"Python Script {script_name.capitalize()} Schedule: {schedule_time} started")
-                            process = multiprocessing.Process(target=run_module, args=(script_name,))
+                            process = multiprocessing.Process(target=run_module, args=(script_name, logger))
                             process.start()  # Start the process without joining
 
                             # Only add the process to the list if it was created

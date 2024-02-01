@@ -14,6 +14,7 @@
 
 import json
 import time
+import sys
 
 from util.config import Config
 from util.discord import discord, discord_check

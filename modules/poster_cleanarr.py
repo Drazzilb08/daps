@@ -21,6 +21,7 @@ import re
 import json
 import logging
 import shutil
+import sys
 
 from util.logger import setup_logger
 from util.config import Config

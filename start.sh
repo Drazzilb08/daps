@@ -20,5 +20,8 @@ usermod -o -u "$PUID" dockeruser
 # Change ownership of the /app and /app/config directories to dockeruser
 chown -R dockeruser:dockeruser /app /app/config
 
+# Change ownership of the /config directory to dockeruser
+chown -R dockeruser:dockeruser /config
+
 # Execute the command as the dockeruser
 exec runuser -u dockeruser -g dockeruser -- "$@"

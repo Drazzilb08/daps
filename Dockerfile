@@ -76,13 +76,12 @@ RUN rclone --version
 # Copy the application source code into the container
 COPY . .
 
-# Create a volume for the configuration files
+
 VOLUME /config
 
 # Give permissions to all files under /app/scripts
 RUN chmod -R 777 /app/scripts
 
-# Set the entry point for the container
 CMD ["python", "main.py"]
 
 # Entry point to start the container

@@ -42,6 +42,9 @@ ENV XDG_CONFIG_HOME=/config
 ENV US_CONFIG=/config/config.yml
 ENV US_LOGS=/config/logs
 ENV TZ=America/Los_Angeles
+ENV PUID=100
+ENV PGID=99
+ENV UMASK=002
 
 # Delete unnecessary setup files
 RUN set -eux; \
@@ -73,13 +76,13 @@ RUN rclone --version
 # Copy the application source code into the container
 COPY . .
 
-# Copy config contents to /config
-
+# Create a volume for the configuration files
 VOLUME /config
 
 # Give permissions to all files under /app/scripts
 RUN chmod -R 777 /app/scripts
 
+# Set the entry point for the container
 CMD ["python", "main.py"]
 
 # Entry point to start the container

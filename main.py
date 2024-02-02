@@ -12,6 +12,7 @@ import datetime
 
 # Set the script name
 script_name = "main"
+# Set the current time
 current_time = datetime.datetime.now().strftime("%H:%M")
 
 already_run = {

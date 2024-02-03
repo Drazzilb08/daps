@@ -20,6 +20,9 @@ mkdir -p /config/logs
 # Change ownership of the /app and /config directory to dockeruser
 chown -R dockeruser:dockeruser /app /config /config/logs
 
+# Change permissions of the /config/logs directory to 777
+chmod -R 777 /config/logs
+
 # Copy contents of /app/config to /config
 cp -Rn /app/config/* /config
 

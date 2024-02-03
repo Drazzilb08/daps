@@ -76,8 +76,6 @@ RUN rclone --version
 # Copy the application source code into the container
 COPY . .
 
-VOLUME /config
-
 # Give permissions to all files under /app/scripts
 RUN chmod -R 777 /app/scripts
 

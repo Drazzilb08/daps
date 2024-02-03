@@ -14,11 +14,11 @@ groupmod -o -g "$PGID" dockeruser
 # Modify the user ID of the dockeruser
 usermod -o -u "$PUID" dockeruser
 
-# Change ownership of the /app directory to dockeruser
-chown -R dockeruser:dockeruser /app
+# Make sure the /config/logs directory exists
+mkdir -p /config/logs
 
-# Change ownership of the /config directory to dockeruser
-chown -R dockeruser:dockeruser /config
+# Change ownership of the /app and /config directory to dockeruser
+chown -R dockeruser:dockeruser /app /config /config/logs
 
 # Copy contents of /app/config to /config
 cp -Rn /app/config/* /config

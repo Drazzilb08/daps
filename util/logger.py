@@ -25,7 +25,8 @@ def setup_logger(log_level, script_name):
     """
 
     if 'HOSTNAME' in os.environ:  # Heuristic to check for a container environment
-        log_dir = os.getenv('US_LOGS', f'/config/logs/{script_name}')
+        log_dir = os.getenv(f'US_LOGS/{script_name}', f'/config/logs/{script_name}')
+        print(f"Using log directory: {log_dir}")
     else:
         log_dir = f"{os.path.join(pathlib.Path(__file__).parents[1], 'logs', script_name)}"
 
@@ -42,6 +43,7 @@ def setup_logger(log_level, script_name):
     
     # Define the log file path with the current date
     log_file = f"{log_dir}/{script_name}_{today}.log"
+    print(f"Using log file: {log_file}")
     
     # Create a logger object with the script name
     logger = logging.getLogger(script_name)

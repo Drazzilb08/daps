@@ -52,7 +52,6 @@ def handle_hourly(input, run_dict, logger):
     run_time = 0
     run_time = int(run_time)
     run_dict['type'] = action_type
-    run_dict['minutes'] = run_time
     return run_dict
 
 def handle_daily(input, run_dict, logger):
@@ -301,29 +300,28 @@ def scheduler(input, logger):
     run_day = run_dict.get('run_day')
     run_time = run_dict.get('run_time')
     run_date = run_dict.get('run_date')
-    minutes = run_dict.get('minutes')
     type = run_dict.get('type')
 
     # Check if the current time matches the schedule for the script to run
-    if run_type == "hourly" and current_minutes == minutes:
+    if run_type == "hourly" and current_minutes == 0:
         return True
-    elif run_type == "daily" and current_hour in run_time:
+    elif run_type == "daily" and current_hour in run_time and current_minutes == 0:
         return True
-    elif run_type == "weekly" and current_hour == run_time and day_of_week in run_day:
+    elif run_type == "weekly" and current_hour == run_time and day_of_week in run_day and current_minutes == 0:
         return True
-    elif run_type == "monthly" and current_hour == run_time and current_date == run_date:
+    elif run_type == "monthly" and current_hour == run_time and current_date == run_date and current_minutes == 0:
         return True
     elif run_type == "all":
-        if type == "hourly" and current_minutes == minutes:
+        if type == "hourly" and current_minutes == 0:
             return True
-        elif type == "daily" and current_hour in run_time:
+        elif type == "daily" and current_hour in run_time and current_minutes == 0:
             return True
         elif type == "weekly":
-            if minutes and current_hour == run_time and day_of_week in run_day and minutes == current_minutes:
+            if current_hour == run_time and day_of_week in run_day and current_minutes == 0:
                 return True
-            elif run_day and current_hour == run_time and day_of_week in run_day:
+            elif run_day and current_hour == run_time and day_of_week in run_day and current_minutes == 0:
                 return True
-        elif type == "monthly" and current_hour == run_time and current_date == run_date:
+        elif type == "monthly" and current_hour == run_time and current_date == run_date and current_minutes == 0:
             return True
 
     # Return False if the script should not run based on the current time

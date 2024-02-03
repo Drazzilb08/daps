@@ -42,9 +42,6 @@ ENV XDG_CONFIG_HOME=/config
 ENV US_CONFIG=/config/config.yml
 ENV US_LOGS=/config/logs
 ENV TZ=America/Los_Angeles
-ENV PUID=100
-ENV PGID=99
-ENV UMASK=002
 
 # Delete unnecessary setup files
 RUN set -eux; \
@@ -61,11 +58,17 @@ RUN curl https://rclone.org/install.sh | bash && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
+# Test rclone installation
+RUN rclone --version
+
 # Install Docker CLI inside the container
 RUN apt-get update; \
     apt-get install -y --no-install-recommends docker-cli; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
+
+# Test Docker CLI installation
+RUN docker --version
 
 # Share the Docker socket with the container
 VOLUME /var/run/docker.sock
@@ -80,9 +83,4 @@ COPY . .
 RUN chmod -R 777 /app/scripts
 
 CMD ["python", "main.py"]
-
-# Entry point to start the container
-RUN chmod +x start.sh
-
-# Start the container
 ENTRYPOINT ["bash", "./start.sh"]

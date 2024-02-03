@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # Copy contents of /app/config to /config
-cp -R /app/config/* /config
+cp -Rn /app/config/* /config
+chmod -R 777 /config
 
 # Set default values for PUID, PGID, and UMASK
 PUID=${PUID:-100}

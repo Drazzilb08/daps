@@ -31,17 +31,22 @@ def get_discord_data(script_name, logger):
     
     # Get the 'notifiarr_webhook' from the config
     notifiarr_webhook = discord.get('notifiarr_webhook', None)
-    
+
     # Get the script-specific notification info from the config based on the script name
     script_notification_info = discord.get(script_name, {})
 
+    # Get the 'channel_id' and 'discord_webhook' from the script-specific notification info
     channel_id = script_notification_info.get('channel_id', None)
+
+    # Get the 'discord_webhook' from the script-specific notification info
     discord_webhook = script_notification_info.get('discord_webhook', None)
 
+    # If notifiarr_webhook is missing, log an error and return
     if notifiarr_webhook:
+        # If channel_id is missing, log an error and return
         if not channel_id:
             logger.error("Discord channel ID is missing. Cannot send Discord notification.")
-            return
+            return None, None
         else:
             return notifiarr_webhook, channel_id
     else:
@@ -97,7 +102,10 @@ def discord_check(script_name):
     # Get the script-specific notification info from the config based on the script name
     script_notification_info = discord.get(script_name, {})
 
+    # Get the 'channel_id' and 'discord_webhook' from the script-specific notification info
     channel_id = script_notification_info.get('channel_id', None)
+
+    # Get the 'discord_webhook' from the script-specific notification info
     discord_webhook = script_notification_info.get('discord_webhook', None)
     
     if discord_webhook or channel_id and notifiarr_webhook:
@@ -125,6 +133,7 @@ def discord(fields, logger, script_name, description, color, content):
     """
     # Get the webhook and channel_id from the config
     webhook, channel_id = get_discord_data(script_name, logger)
+    script_name = script_name.replace("_", " ").title()
     if webhook:
         # Get the random joke and timestamp
         random_joke, timestamp = get_message_data(logger)
@@ -140,7 +149,7 @@ def discord(fields, logger, script_name, description, color, content):
                         payload = {
                             "notification": {
                                 "update": False,
-                                "name": f"{script_name.capitalize()}",
+                                "name": f"{script_name}",
                             },
                             "discord": {
                                 "color": f"{color}",

@@ -71,23 +71,28 @@ def handle_daily(input, run_dict, logger):
     action_type = "daily"
     
     # Extract the run time from the input string
-    run_time = int(input.split("(")[1].split(")")[0])
-    
+    run_time = input.split("(")[1].split(")")[0]
+
     # Check if multiple run times are specified
     if "," in run_time:
         run_time = run_time.split(",")
+        run_time = [int(time) for time in run_time]
     else:
-        run_time = [run_time]
+        run_time = int(run_time)
     
     # Check if the run time is within a valid range (0-23 for hours)
-    if run_time not in range(0, 24):
-        logger.error(f"Error: {run_time} is not a valid hour.")
-        exit()
+    if isinstance(run_time, list):
+        for time in run_time:
+            if time not in range(0, 24):
+                logger.error(f"Error: {time} is not a valid hour.")
+    else:
+        if run_time not in range(0, 24):
+            logger.error(f"Error: {run_time} is not a valid hour.")
     
     # Update the run_dict with the action type and run time(s)
     run_dict = {
         'type': action_type, 
-        'run_time': run_time
+        'run_time': [run_time]
     }
     return run_dict
 

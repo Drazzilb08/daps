@@ -12,6 +12,7 @@
 
 # If using the scripts through crontab or another scheduler, I would not recommend using the schedule w/in the config. 
 # The schedule is intended for use with Docker. If you want to use the schedule w/in the config, you will need to run the main.py script in the background.
+# Schedule only supports the following options: hourly, daily, weekly, monthly, all
 schedule:
   border_replacerr:
   health_checkarr:

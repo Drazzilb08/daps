@@ -155,7 +155,7 @@ cython_debug/
 input/
 output/
 logs/
-*test*
+test*.*
 *config.yml
 *archives*
 tmp/

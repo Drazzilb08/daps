@@ -67,9 +67,6 @@ RUN apt-get update; \
     apt-get clean; \
     rm -rf /var/lib/apt/lists/*
 
-# Test Docker CLI installation
-RUN docker --version
-
 # Share the Docker socket with the container
 VOLUME /var/run/docker.sock
 

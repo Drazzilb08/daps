@@ -25,14 +25,12 @@ for volume in $(find / -mount | cut -d' ' -f3); do
   if mount | grep -F "$volume" | grep -q "(ro,"; then
     continue
   fi
-  if [[ "$volume" =~ ^/(root|home|etc|var|boot|usr|mnt|lib|bin|sbin|lib64|proc|sys|dev|run|tmp|media|srv|opt|snap|app) ]]; then
+  if [[ "$volume" =~ ^/(root|home|etc|var|boot|usr|mnt|lib|bin|sbin|lib64|proc|sys|dev|run|tmp|media|srv|opt|snap) ]]; then
     continue
   fi
   # Change ownership recursively
   chown -R $PUID:$PGID "$volume"
 done
-
-chown -R $PUID:$PGID /app
 
 # Run the command as the dockeruser
 exec runuser -u dockeruser -g dockeruser -- "$@"

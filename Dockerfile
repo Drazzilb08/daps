@@ -49,8 +49,7 @@ RUN set -eux; \
     groupadd -g 99 dockeruser; \
     useradd -u 100 -g 99 dockeruser; \
     apt-get update; \
-    apt-get install -y --no-install-recommends wget curl unzip p7zip-full tzdata;
-    
+    apt-get install -y --no-install-recommends wget curl unzip p7zip-full tzdata vim;
 
 # Install rclone dependencies and rclone
 RUN curl https://rclone.org/install.sh | bash && \

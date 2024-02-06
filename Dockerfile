@@ -43,5 +43,3 @@ VOLUME /config
 RUN chmod -R 777 /app/scripts
 
 CMD ["python", "main.py"]
-
-# ENTRYPOINT ["bash", "/etc/s6-overlay/s6-rc.d/init-setup/run"]

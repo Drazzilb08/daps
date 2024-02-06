@@ -6,24 +6,18 @@ umask "${UMASK}"
 echo "
 ------------------------------------------------
     Starting userScripts
-    PUID: ${PUID}
-    PGID: ${PGID}
-    UMASK: ${UMASK}
-    CONFIG_DIR: ${CONFIG_DIR}
-    DATA_DIR: ${DATA_DIR}
-    APP_DIR: ${APP_DIR}
 ------------------------------------------------
 "
 
-if [[ ! -f "${CONFIG_DIR}/config.yml" || ! -f "${CONFIG_DIR}/config.sample.yml" ]]; then
-    echo "Config file not found. Copying config.sample.yml to ${CONFIG_DIR}"
+if [[ ! -f "${CONFIG_DIR}/config.sample.yml" || ! $(diff /app/config/config.sample.yml "${CONFIG_DIR}/config.sample.yml") ]]; then
+    echo "Config file not found or different. Copying config.sample.yml to ${CONFIG_DIR}"
     cp /app/config/config.sample.yml "${CONFIG_DIR}"
 fi
-if [[ ! -f "${CONFIG_DIR}/backup-appdata.conf" || ! -f "${CONFIG_DIR}/backup-appdata-example.conf" ]]; then
+if [[ ! -f "${CONFIG_DIR}/backup-appdata-example.conf" || ! $(diff /app/config/backup-appdata-example.conf "${CONFIG_DIR}/backup-appdata-example.conf") ]]; then
     echo "Backup appdata config file not found. Copying backup-appdata-example.conf to ${CONFIG_DIR}"
     cp /app/config/backup-appdata-example.conf "${CONFIG_DIR}"
 fi
-if [[ ! -f "${CONFIG_DIR}/backup-plex.conf" || ! -f "${CONFIG_DIR}/backup-plex-example.conf" ]]; then
+if [[ ! -f "${CONFIG_DIR}/backup-plex-example.conf" || ! $(diff /app/config/backup-plex-example.conf "${CONFIG_DIR}/backup-plex-example.conf") ]]; then
     echo "Backup plex config file not found. Copying backup-plex-example.conf to ${CONFIG_DIR}"
     cp /app/config/backup-plex-example.conf "${CONFIG_DIR}"
 fi

@@ -11,7 +11,7 @@ logger = setup_logger("info", "main")
 # Set the config file path
 if is_docker():
     # Set the config path
-    config_path = os.getenv('US_CONFIG', '/config')
+    config_path = os.getenv('CONFIG_DIR', '/config')
     # Set the config file path
     config_file_path = os.path.join(config_path, "config.yml")
 else:

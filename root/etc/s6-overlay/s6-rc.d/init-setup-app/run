@@ -1,21 +1,29 @@
 #!/command/with-contenv bash
 # shellcheck shell=bash
 
+umask "${UMASK}"
+
 echo "
 ------------------------------------------------
-  Starting userScripts
+    Starting userScripts
+    PUID: ${PUID}
+    PGID: ${PGID}
+    UMASK: ${UMASK}
+    CONFIG_DIR: ${CONFIG_DIR}
+    DATA_DIR: ${DATA_DIR}
+    APP_DIR: ${APP_DIR}
 ------------------------------------------------
 "
 
-if [[ ! -f "${CONFIG_DIR}/config.yml" ]]; then
+if [[ ! -f "${CONFIG_DIR}/config.yml" || ! -f "${CONFIG_DIR}/config.sample.yml" ]]; then
     echo "Config file not found. Copying config.sample.yml to ${CONFIG_DIR}"
     cp /app/config/config.sample.yml "${CONFIG_DIR}"
 fi
-if [[ ! -f "${CONFIG_DIR}/backup-appdata.conf" ]]; then
+if [[ ! -f "${CONFIG_DIR}/backup-appdata.conf" || ! -f "${CONFIG_DIR}/backup-appdata-example.conf" ]]; then
     echo "Backup appdata config file not found. Copying backup-appdata-example.conf to ${CONFIG_DIR}"
     cp /app/config/backup-appdata-example.conf "${CONFIG_DIR}"
 fi
-if [[ ! -f "${CONFIG_DIR}/backup-plex.conf" ]]; then
+if [[ ! -f "${CONFIG_DIR}/backup-plex.conf" || ! -f "${CONFIG_DIR}/backup-plex-example.conf" ]]; then
     echo "Backup plex config file not found. Copying backup-plex-example.conf to ${CONFIG_DIR}"
     cp /app/config/backup-plex-example.conf "${CONFIG_DIR}"
 fi
@@ -23,7 +31,4 @@ fi
 echo "Setting permissions for ${CONFIG_DIR} and ${DATA_DIR} to ${PUID}:${PGID}"
 chown hotio:hotio -R "${CONFIG_DIR}"
 chown hotio:hotio -R "${DATA_DIR}"
-
-
-exec s6-setuidgid hotio python3 "${APP_DIR}/main.py"
-
+chown hotio:hotio -R "${APP_DIR}"

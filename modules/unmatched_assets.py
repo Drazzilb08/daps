@@ -66,8 +66,8 @@ def match_assets(assets_dict, media_dict, ignore_root_folders):
         if media_type in media_dict and media_type in assets_dict:
             # Iterate through each media data in the media dictionary of the current type
             for media_data in tqdm(media_dict[media_type], desc=f"Matching {media_type}", unit="media", total=len(media_dict[media_type]), leave=True, disable=None):
-                # Check if the media is released, ended, or continuing
-                if media_type in ['series', 'movies'] and not media_data['status'] in ['released', 'ended', 'continuing']:
+                # Check if the media is released, ended, or continuing or not monitored
+                if media_type in ['series', 'movies'] and not media_data['status'] in ['released', 'ended', 'continuing'] or media_type in ['series', 'movies'] and not media_data['monitored']:
                         continue
                 if media_type == "collections":
                     location = media_data['location']

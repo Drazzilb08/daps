@@ -35,7 +35,7 @@ else:
 
 
 # Wait for the config file to be created
-while not os.path.isfile(f"{config_file_path}/config.yml"):
+while not os.path.isfile(config_file_path):
     logger.info(f"Config file not found. Retrying in 60 seconds...")
     time.sleep(60)
 

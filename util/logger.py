@@ -3,7 +3,7 @@ import time
 import logging
 import logging.handlers
 import pathlib
-
+from util.utility import is_docker
 import logging
 import logging.handlers
 import os
@@ -24,8 +24,8 @@ def setup_logger(log_level, script_name):
         A logger object for logging messages.
     """
 
-    if 'HOSTNAME' in os.environ:  # Heuristic to check for a container environment
-        log_dir = os.getenv(f'US_LOGS/{script_name}', f'/config/logs/{script_name}')
+    if is_docker():
+        log_dir = os.getenv(f'LOG_DIR/{script_name}', f'/config/logs/{script_name}')
     else:
         log_dir = f"{os.path.join(pathlib.Path(__file__).parents[1], 'logs', script_name)}"
 

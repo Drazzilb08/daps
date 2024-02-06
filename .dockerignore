@@ -3,7 +3,6 @@
 
 # Allow files and directories
 !/main.py
-!/start.sh
 !/Pipfile
 !/Pipfile.lock
 !/modules
@@ -11,7 +10,7 @@
 !/scripts
 !/config
 !/VERSION
-
+!/root
 
 # Ignore unnecessary files inside allowed directories
 # This should go after the allowed directories

@@ -369,7 +369,7 @@ def main():
 
         # Check if assets exist, log and exit if not found
         if not all(assets_dict.values()):
-            logger.error("No assets found, Check asset_folders setting in your config. Exiting.")
+            logger.error("No assets found, Please double check your settings. Exiting...")
             sys.exit()
 
         # Check if media exists, log and exit if not found

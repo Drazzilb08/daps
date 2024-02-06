@@ -3,23 +3,27 @@ import yaml
 import os
 from pathlib import Path
 from util.logger import setup_logger
+from util.utility import *
 import time
+
 logger = setup_logger("info", "main")
-
-
-def is_docker():
-    cgroup = Path('/proc/self/cgroup')
-    return Path('/.dockerenv').is_file() or (cgroup.is_file() and 'docker' in cgroup.read_text())
 
 # Set the config file path
 if is_docker():
-    config_file_path = os.getenv('US_CONFIG', '/config/config.yml')
+    # Set the config path
+    config_path = os.getenv('CONFIG_DIR', '/config')
+    # Set the config file path
+    config_file_path = os.path.join(config_path, "config.yml")
 else:
+    # Set the config file path
     config_file_path = os.path.join(pathlib.Path(__file__).parents[1], "config/config.yml")
 
+
+# Wait for the config file to be created
 while not os.path.isfile(config_file_path):
     logger.info(f"Config file not found. Retrying in 60 seconds...")
     time.sleep(60)
+
 
 class Config:
     """

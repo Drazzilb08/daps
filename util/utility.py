@@ -1,6 +1,8 @@
 import re
 import os
 import json
+from pathlib import Path
+import shutil
 
 try:
     import html
@@ -666,4 +668,9 @@ def validate(config, script_config, logger):
             return False
     else:
         return True
+
+def is_docker():
+    cgroup = Path('/proc/self/cgroup')
+    return Path('/.dockerenv').is_file() or (cgroup.is_file() and 'docker' in cgroup.read_text())
+
 

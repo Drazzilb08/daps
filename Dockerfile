@@ -37,6 +37,19 @@ RUN rclone --version
 # Install docker-cli
 RUN apk add --no-cache docker-cli
 
+# Metadata and labels
+LABEL maintainer="Drazzilb" \
+      description="userScripts" \
+      org.opencontainers.image.source="https://github.com/Drazzilb08/userScripts" \
+      org.opencontainers.image.authors="Drazzilb" \
+      org.opencontainers.image.title="userScripts"
+
+# Set script environment variables
+ENV US_CONFIG=/config
+ENV US_LOGS=/config/logs
+ENV TZ=America/Los_Angeles
+
+
 VOLUME /config
 
 # Give permissions to all files under /app/scripts

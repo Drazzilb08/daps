@@ -12,21 +12,6 @@ logger = setup_logger("info", "main")
 if is_docker():
     # Set the config path
     config_path = os.getenv('US_CONFIG', '/config')
-
-    # If config and config.sample files don't exist, copy them
-    if not os.path.isfile(os.path.join(config_path, "config.yml")) and not os.path.isfile(os.path.join(config_path, "config.sample.yml")):
-        logger.info(f"Config file not found. Copying config.sample.yml to {config_path}")
-        shutil.copy('/app/config/config.sample.yml', config_path)
-
-    # If backup-appdata and backup-plex-example files don't exist, copy them
-    if not os.path.isfile(os.path.join(config_path, "backup-appdata.conf")) and not os.path.isfile(os.path.join(config_path, "backup-appdata-example.conf")):
-        shutil.copy('/app/config/backup-appdata-example.conf', config_path)
-        logger.info(f"Backup appdata config file not found. Copying backup-appdata-example.conf to {config_path}")
-
-    # If backup-plex and backup-plex-example files don't exist, copy them
-    if not os.path.isfile(os.path.join(config_path, "backup-plex.conf")) and not os.path.isfile(os.path.join(config_path, "backup-plex-example.conf")):
-        shutil.copy('/app/config/backup-plex-example.conf', config_path)
-        logger.info(f"Backup plex config file not found. Copying backup-plex-example.conf to {config_path}")
     # Set the config file path
     config_file_path = os.path.join(config_path, "config.yml")
 else:

@@ -45,14 +45,17 @@ LABEL maintainer="Drazzilb" \
       org.opencontainers.image.title="userScripts"
 
 # Set script environment variables
-ENV US_CONFIG=/config
-ENV US_LOGS=/config/logs
+ENV CONFIG_DIR=/config
+ENV DATA_DIR=/data
+ENV LOG_DIR=/config/logs
 ENV TZ=America/Los_Angeles
 
+USER hotio
 
-VOLUME /config
+VOLUME [ "/config" ]
+VOLUME [ "/data" ]
 
 # Give permissions to all files under /app/scripts
 RUN chmod -R 777 /app/scripts
 
-CMD ["python", "main.py"]
+ENTRYPOINT ["bash", "/app/scripts/entrypoint.sh"]

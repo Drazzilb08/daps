@@ -3,23 +3,42 @@ import yaml
 import os
 from pathlib import Path
 from util.logger import setup_logger
+from util.utility import *
 import time
+
 logger = setup_logger("info", "main")
-
-
-def is_docker():
-    cgroup = Path('/proc/self/cgroup')
-    return Path('/.dockerenv').is_file() or (cgroup.is_file() and 'docker' in cgroup.read_text())
 
 # Set the config file path
 if is_docker():
-    config_file_path = os.getenv('US_CONFIG', '/config/config.yml')
+    # Set the config path
+    config_path = os.getenv('US_CONFIG', '/config')
+
+    # If config and config.sample files don't exist, copy them
+    if not os.path.isfile(os.path.join(config_path, "config.yml")) and not os.path.isfile(os.path.join(config_path, "config.sample.yml")):
+        logger.info(f"Config file not found. Copying config.sample.yml to {config_path}")
+        shutil.copy('/app/config/config.sample.yml', config_path)
+
+    # If backup-appdata and backup-plex-example files don't exist, copy them
+    if not os.path.isfile(os.path.join(config_path, "backup-appdata.conf")) and not os.path.isfile(os.path.join(config_path, "backup-appdata-example.conf")):
+        shutil.copy('/app/config/backup-appdata-example.conf', config_path)
+        logger.info(f"Backup appdata config file not found. Copying backup-appdata-example.conf to {config_path}")
+
+    # If backup-plex and backup-plex-example files don't exist, copy them
+    if not os.path.isfile(os.path.join(config_path, "backup-plex.conf")) and not os.path.isfile(os.path.join(config_path, "backup-plex-example.conf")):
+        shutil.copy('/app/config/backup-plex-example.conf', config_path)
+        logger.info(f"Backup plex config file not found. Copying backup-plex-example.conf to {config_path}")
+    # Set the config file path
+    config_file_path = os.path.join(config_path, "config.yml")
 else:
+    # Set the config file path
     config_file_path = os.path.join(pathlib.Path(__file__).parents[1], "config/config.yml")
 
-while not os.path.isfile(config_file_path):
+
+# Wait for the config file to be created
+while not os.path.isfile(f"{config_file_path}/config.yml"):
     logger.info(f"Config file not found. Retrying in 60 seconds...")
     time.sleep(60)
+
 
 class Config:
     """

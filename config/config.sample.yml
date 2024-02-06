@@ -17,7 +17,8 @@ schedule:
   border_replacerr:
   health_checkarr:
   labelarr: 
-  nohl: 
+  nohl:
+  sync_gdrive: 
   poster_cleanarr:
   poster_renamerr:
   queinatorr:

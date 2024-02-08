@@ -16,7 +16,7 @@ jobs:
       - name: checkout the repo
         run: | 
           docker login --username ${{ secrets.GH_USERNAME }} --password ${{ secrets.GH_TOKEN }} ghcr.io
-          docker build -t ghcr.io/drazzilb08/userscripts:dev .
+          docker build --build-arg BRANCH=$(git rev-parse --abbrev-ref HEAD) -t ghcr.io/drazzilb08/userscripts:dev .
           docker push ghcr.io/drazzilb08/userscripts:dev
       
       - name: Login to Docker Hub

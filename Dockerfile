@@ -27,8 +27,6 @@ RUN apk add curl unzip tzdata vim docker-cli \
     && apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ jdupes \
     && curl https://rclone.org/install.sh | bash \
     && apk add --no-cache ca-certificates fuse \
-    && apk del ipcalc \
-    && apk del curl \
     && rm -rf /var/cache/apk/*
 
 # Test rclone installation

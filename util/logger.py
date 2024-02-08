@@ -87,17 +87,9 @@ def setup_logger(log_level, script_name):
     for file in log_files[3:]:
         os.remove(os.path.join(log_dir, file))
 
-    return logger
+    # Overwrite previous logger if exists
+    logging.getLogger(script_name).handlers.clear()
+    logging.getLogger(script_name).addHandler(handler)
+    logging.getLogger(script_name).addHandler(console_handler)
 
-def remove_logger(logger):
-    """
-    Remove the logger.
-    
-    Parameters:
-        logger (obj): The logger object to remove
-    """
-    # Remove all handlers associated with the logger object
-    handlers = logger.handlers[:]
-    for handler in handlers:
-        handler.close()
-        logger.removeHandler(handler)
+    return logger

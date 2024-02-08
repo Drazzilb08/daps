@@ -14,7 +14,7 @@ def call_script(command, logger):
         CompletedProcess: The completed process
     """
     # Print the command being executed
-    print(f"Running command: {str(' '.join(command))}")
+    print(f"\nThis is a print statement and not logged.\n\nRunning command:\n\n{str(' '.join(command))}\n\n")
     
     # Execute the command and capture the output
     with Popen(command, text=True, stdout=PIPE, stderr=STDOUT) as process:

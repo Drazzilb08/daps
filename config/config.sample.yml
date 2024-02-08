@@ -1,14 +1,15 @@
 # Options:
 # run - will run a single time per run of main.py (mainly useful for testing with dry_run)
-# hourly - Will perform the action every hour on the hour
-# daily(int) - daily(12) - Will perform the action every day at 12:00am
-# weekly(day) - weekly(monday) or weekly(monday|tuesday) - Will perform the action on the day(s) of the week specified at 12:00am
-# monthly(int) - monthly(12) - Will perform the action on the specified day of every month at 12:00am
-# range(month/date-month/date) - range(12/01-12/31) or range(12/01-12/31|01/01-01/31) - Will perform the action on the specified date range every year, every day at 12:00am
-# all[options] - all[range(12/01-12/31), weekly(thursday)] or all[range(12/01-12/31), weekly(thursday|friday), hourly] or all[range(12/01-12/31), weekly(thursday), daily(12)] - Uses a combination of above options to perform the action
-# all[weekly(thursday), daily(12)] - Will perform the action every Thursday at 12:00am
-    # Note: 'options' must be in order range, monthly, weekly, daily, hourly
-
+# hourly(XX)
+#   Examples: hourly(00) or hourly(18) - Will perform the action every hour at the specified time
+# daily(XX:XX) 
+#  Examples: daily(12:23) or daily(18:15) - Will perform the action every day at the specified time
+#  Examples: daily(10:18|12:23) - Will perform the action every day at the specified times
+# weekly(day_of_week@XX:XX)
+#   Examples: weekly(monday@12:00) or weekly(monday@18:15) - Will perform the action on the specified day of the week at the specified time
+#   Examples: weekly(monday@12:23)
+# monthly(day_of_month@XX:XX)
+#   Examples: monthly(15@12:00) or monthly(15@18:15) - Will perform the action on the specified day of the month at the specified time
 
 # If using the scripts through crontab or another scheduler, I would not recommend using the schedule w/in the config. 
 # The schedule is intended for use with Docker. If you want to use the schedule w/in the config, you will need to run the main.py script in the background.
@@ -379,6 +380,7 @@ nohl:
   dry_run: true
   log_level: info
   maximum_searches: 10 # Please keep this number low to avoid bans
+  print_files: true
   instances:
     - radarr_2
     - sonarr_3

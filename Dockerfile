@@ -22,7 +22,7 @@ RUN apk update; \
     pip3 install --no-cache-dir -r requirements.txt
 
 # Install wget, curl, unzip, p7zip-full, tzdata, vim
-RUN apk add wget curl unzip tzdata vim jdupes \
+RUN apk add wget curl unzip tzdata vim \
     && apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/ p7zip \
     && apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ jdupes
 

@@ -265,8 +265,7 @@ def main():
     """
     name = script_name.replace("_", " ").upper()
     try:
-        logger.info(f"\n{'*' * 40} STARTING {name} {'*' * 40}\n")
-        print(f"{'*' * 40} START {'*' * 40}\n")
+        logger.info(create_bar(f"START {name}"))
         # If in dry run mode, create a table indicating no changes will be made
         if dry_run:
             data = [
@@ -356,7 +355,7 @@ def main():
         logger.error(f"\n\nAn error occurred:\n", exc_info=True)
         logger.error(f"\n\n")
     finally:
-        logger.info(f"\n{'*' * 40} END {'*' * 40}\n")
+        logger.info(create_bar(f"END {name}"))
 
 if __name__ == "__main__":
     start_time = time.time()

@@ -308,7 +308,7 @@ def main():
     """
     name = script_name.replace("_", " ").upper()
     try:
-        logger.info(f"\n{'*' * 40} STARTING {name} {'*' * 40}\n")
+        logger.info(create_bar(f"START {name}"))
         # Get instances and rename_folders settings from the script config
         script_config = config.script_config
         instances = config.script_config.get('instances', None)
@@ -322,13 +322,13 @@ def main():
             ["Script Settings"]
         ]
         create_table(data, log_level="debug", logger=logger)
-        logger.debug(f'{"Dry_run:":<20}{dry_run if dry_run else "False"}')
-        logger.debug(f'{"Log level:":<20}{log_level if log_level else "INFO"}')
-        logger.debug(f'{"Instances:":<20}{instances if instances else "Not Set"}')
-        logger.debug(f'{"Rename Folders:":<20}{rename_folders if rename_folders else "False"}')
-        logger.debug(f'{"Count:":<20}{count if count else None}')
-        logger.debug(f'{"Tag Name:":<20}{tag_name if tag_name else None}')
-        logger.debug(f'*' * 40 + '\n')
+        logger.debug(f'{"Dry_run:":<20}{dry_run}')
+        logger.debug(f'{"Log level:":<20}{log_level}')
+        logger.debug(f'{"Instances:":<20}{instances}')
+        logger.debug(f'{"Rename Folders:":<20}{rename_folders}')
+        logger.debug(f'{"Count:":<20}{count}')
+        logger.debug(f'{"Tag Name:":<20}{tag_name}')
+        logger.debug(create_bar("*"))
         
         # Handle dry run settings
         if dry_run:
@@ -371,7 +371,7 @@ def main():
         logger.error(f"\n\nAn error occurred:\n", exc_info=True)
         logger.error(f"\n\n")
     finally:
-        logger.info(f"\n{'*' * 40} END {'*' * 40}\n")
+        logger.info(create_bar(f"END {name}"))
 
 if __name__ == "__main__":
     main()

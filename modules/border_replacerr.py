@@ -25,7 +25,7 @@ import sys
 from util.config import Config
 from util.logger import setup_logger
 from util.utility import *
-from util.scheduler import handle_range
+from util.scheduler import check_schedule
 
 try:
     from tqdm import tqdm
@@ -71,9 +71,9 @@ def check_holiday(data, border_colors):
         if schedule:
             # Check if the schedule matches the range pattern
             if re.match(pattern, schedule):
-                # If it matches, handle the range schedule using 'handle_range' function
-                run = handle_range(schedule, logger)
-                # If 'handle_range' returns True (indicating successful execution)
+                # If it matches, handle the range schedule using 'check_schedule' function
+                run = check_schedule(schedule, logger)
+                # If 'check_schedule' returns True (indicating successful execution)
                 if run:
                     # Retrieve the color for the holiday from schedule_color or use default border_colors
                     holiday_colors = schedule_color.get('color', border_colors)
@@ -592,7 +592,7 @@ def main():
     """
     name = script_name.replace("_", " ").upper()
     try:
-        logger.info(f"\n{'*' * 40} STARTING {name} {'*' * 40}\n")
+        logger.info(create_bar(f"START {name}"))
         # Obtain script configuration details
         script_config = config.script_config
         input_dir = script_config['input_dir']
@@ -611,11 +611,12 @@ def main():
             ["Script Settings"],
         ]
         create_table(data, log_level="debug", logger=logger)
-        logger.debug(f'{"Dry_run:":<20}{config.dry_run if config.dry_run else "False"}')
-        logger.debug(f'{"Log Level:":<20}{config.log_level if config.log_level else "info"}')
-        logger.debug(f'{"Input Dir:":<20}{input_dir if input_dir else "Not Set"}')
-        logger.debug(f'{"Output Dir:":<20}{output_dir if output_dir else "Not Set"}')
-        logger.debug(f'{"Schedule:":<20}{schedule if schedule else "Not Set"}')
+        logger.debug(f'{"Dry_run:":<20}{config.dry_run}')
+        logger.debug(f'{"Log Level:":<20}{config.log_level}')
+        logger.debug(f'{"Input Dir:":<20}{input_dir}')
+        logger.debug(f'{"Output Dir:":<20}{output_dir}')
+        logger.debug(f'{"Schedule:":<20}{schedule}')
+        logger.debug(create_bar("*"))
 
         # Process files in the input directory with specified settings
         process_files(input_dir, output_dir, asset_folders, dry_run)
@@ -628,7 +629,7 @@ def main():
         logger.error(f"\n\nAn error occurred:\n", exc_info=True)
         logger.error(f"\n\n")
     finally:
-        logger.info(f"\n{'*' * 40} END {'*' * 40}\n")
+        logger.info(create_bar(f"END {name}"))
 
 if __name__ == "__main__":
     main()

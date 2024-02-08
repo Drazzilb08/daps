@@ -324,17 +324,17 @@ def process_instance(instance_type, url, api, pre_import_category, post_import_c
     ]
     create_table(data, log_level="debug", logger=logger)
     # Logging configuration details
-    logger.debug(f'{"URL:":<30}{url if url else "Not Set"}')
-    logger.debug(f'{"API:":<30}{"*" * (len(api) - 5)}{api[-5:] if api else "Not Set"}')
-    logger.debug(f'{"qBittorrent Instance:":<30}{qbit_instance if qbit_instance else "Not Set"}')
-    logger.debug(f'{"qBittorrent URL:":<30}{qbit_url if qbit_url else "Not Set"}')
-    logger.debug(f'{"qBittorrent Host:":<30}{qbit_host if qbit_host else "Not Set"}')
-    logger.debug(f'{"qBittorrent Port:":<30}{qbit_port if qbit_port else "Not Set"}')
-    logger.debug(f'{"qBittorrent Username:":<30}{qbit_username if qbit_username else "Not Set"}')
-    logger.debug(f'{"qBittorrent Password:":<30}{"*" * (len(qbit_password) - 5)}{qbit_password[-5:] if qbit_password else "Not Set"}')
-    logger.debug(f'{"pre_import_category:":<30}{pre_import_category if pre_import_category else "Not Set"}')
-    logger.debug(f'{"post_import_category:":<30}{post_import_category if post_import_category else "Not Set"}')
-    logger.debug('*' * 40 + '\n')
+    logger.debug(f'{"URL:":<30}{url}')
+    logger.debug(f'{"API:":<30}{"*" * (len(api) - 5)}{api[-5:]}')
+    logger.debug(f'{"qBittorrent Instance:":<30}{qbit_instance}')
+    logger.debug(f'{"qBittorrent URL:":<30}{qbit_url}')
+    logger.debug(f'{"qBittorrent Host:":<30}{qbit_host}')
+    logger.debug(f'{"qBittorrent Port:":<30}{qbit_port}')
+    logger.debug(f'{"qBittorrent Username:":<30}{qbit_username}')
+    logger.debug(f'{"qBittorrent Password:":<30}{"*" * (len(qbit_password) - 5)}{qbit_password[-5:]}')
+    logger.debug(f'{"pre_import_category:":<30}{pre_import_category}')
+    logger.debug(f'{"post_import_category:":<30}{post_import_category}')
+    logger.debug(create_bar("*"))
     
     # Retrieve the queue from Radarr or Sonarr instance
     queue = app.get_queue(instance_type)
@@ -521,7 +521,7 @@ def main():
     """
     name = script_name.replace("_", " ").upper()
     try:
-        logger.info(f"\n{'*' * 40} STARTING {name} {'*' * 40}\n")
+        logger.info(create_bar(f"START {name}"))
         # Display a notice for dry run mode if enabled
         if dry_run:
             data = [
@@ -584,7 +584,7 @@ def main():
         logger.error(f"\n\nAn error occurred:\n", exc_info=True)
         logger.error(f"\n\n")
     finally:
-        logger.info(f"\n{'*' * 40} END {'*' * 40}\n")
+        logger.info(create_bar(f"END {name}"))
 
 if __name__ == '__main__':
     main()

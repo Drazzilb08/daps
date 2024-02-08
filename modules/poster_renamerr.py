@@ -586,7 +586,7 @@ def main():
     """
     name = script_name.replace("_", " ").upper()
     try:
-        logger.info(f"\n{'*' * 40} STARTING {name} {'*' * 40}\n")
+        logger.info(create_bar(f"START {name}"))
         # Display script settings
         data = [["Script Settings"]]
         create_table(data, log_level="debug", logger=logger)
@@ -604,23 +604,23 @@ def main():
         instances = script_config.get('instances', [])
         sync_posters = script_config.get('sync_posters', False)
 
-        logger.debug('*' * 40)  # Log separator
+        logger.debug(create_bar("*"))  # Log separator
         # Log script configuration settings
-        logger.debug(f'{"Dry_run:":<20}{dry_run if dry_run else "False"}')
-        logger.debug(f'{"Log level:":<20}{log_level if log_level else "INFO"}')
-        logger.debug(f'{"Asset folders:":<20}{asset_folders if asset_folders else "False"}')
-        logger.debug(f'{"Library names:":<20}{library_names if library_names else "False"}')
-        logger.debug(f'{"Source dir:":<20}{source_dir if source_dir else "False"}')
-        logger.debug(f'{"Source overrides:":<20}{source_overrides if source_overrides else "False"}')
-        logger.debug(f'{"Destination dir:":<20}{destination_dir if destination_dir else "False"}')
-        logger.debug(f'{"Action type:":<20}{action_type if action_type else "False"}')
-        logger.debug(f'{"Print only renames:":<20}{print_only_renames if print_only_renames else "False"}')
-        logger.debug(f'{"Border replacerr:":<20}{border_replacerr if border_replacerr else "False"}')
-        logger.debug(f'{"Instances:":<20}{instances if instances else "False"}')
-        logger.debug(f'{"Sync posters:":<20}{sync_posters if sync_posters else "False"}')
+        logger.debug(f'{"Dry_run:":<20}{dry_run}')
+        logger.debug(f'{"Log level:":<20}{log_level}')
+        logger.debug(f'{"Asset folders:":<20}{asset_folders}')
+        logger.debug(f'{"Library names:":<20}{library_names}')
+        logger.debug(f'{"Source dir:":<20}{source_dir}')
+        logger.debug(f'{"Source overrides:":<20}{source_overrides}')
+        logger.debug(f'{"Destination dir:":<20}{destination_dir}')
+        logger.debug(f'{"Action type:":<20}{action_type}')
+        logger.debug(f'{"Print only renames:":<20}{print_only_renames}')
+        logger.debug(f'{"Border replacerr:":<20}{border_replacerr}')
+        logger.debug(f'{"Instances:":<20}{instances}')
+        logger.debug(f'{"Sync posters:":<20}{sync_posters}')
         
         # Log other settings...
-        logger.debug('*' * 40 + '\n')  # Log separator
+        logger.debug(create_bar("*"))  # Log separator
 
         if dry_run:
             # Log dry run message
@@ -702,7 +702,7 @@ def main():
         logger.error(f"\n\nAn error occurred:\n", exc_info=True)
         logger.error(f"\n\n")
     finally:
-        logger.info(f"\n{'*' * 40} END {'*' * 40}\n")
+        logger.info(create_bar(f"END {name}"))
 
 if __name__ == "__main__":
     main()

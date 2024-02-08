@@ -46,7 +46,7 @@ def main():
     """
     name = script_name.replace("_", " ").upper()
     try:
-        logger.info(f"\n{'*' * 40} STARTING {name} {'*' * 40}\n")
+        logger.info(create_bar(f"START {name}"))
         health = None
         script_config = config.script_config
         instances = script_config.get('instances', None)
@@ -59,7 +59,7 @@ def main():
         logger.debug(f'{"Dry_run:":<20}{dry_run if dry_run else "False"}')
         logger.debug(f'{"Log level:":<20}{log_level if log_level else "INFO"}')
         logger.debug(f'{"Instances:":<20}{instances if instances else "Not Set"}')
-        logger.debug(f'*' * 40 + '\n')
+        logger.debug(create_bar("*"))
         
         if dry_run:
             data = [
@@ -109,7 +109,7 @@ def main():
         logger.error(f"\n\nAn error occurred:\n", exc_info=True)
         logger.error(f"\n\n")
     finally:
-        logger.info(f"\n{'*' * 40} END {'*' * 40}\n")
+        logger.info(create_bar(f"END {name}"))
 
 if __name__ == '__main__':
     main()

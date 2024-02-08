@@ -4,6 +4,7 @@ import os
 from util.logger import setup_logger
 from util.config import Config
 from util.call_script import call_script
+from util.utility import create_bar
 import sys
 
 
@@ -122,7 +123,7 @@ def run_rclone(cmd, settings):
 def main():
     name = script_name.replace("_", " ").upper()
     try:
-        logger.info(f"\n{'*' * 40} STARTING {name} {'*' * 40}\n")
+        logger.info(create_bar(f"START {name}"))
         settings = config.script_config
         for cmd in set_cmd_args(settings):
             run_rclone(cmd, settings)
@@ -133,4 +134,4 @@ def main():
         logger.error(f"\n\nAn error occurred:\n", exc_info=True)
         logger.error(f"\n\n")
     finally:
-        logger.info(f"\n{'*' * 40} END {'*' * 40}\n")
+        logger.info(create_bar(f"END {name}"))

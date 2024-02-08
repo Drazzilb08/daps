@@ -317,7 +317,7 @@ def main():
     """
     name = script_name.replace("_", " ").upper()
     try:
-        logger.info(f"\n{'*' * 40} STARTING {name} {'*' * 40}\n")
+        logger.info(create_bar(f"START {name}"))
         # Check if it's a dry run and log the message
         if dry_run:
             data = [
@@ -345,15 +345,15 @@ def main():
             ["Script Settings"]
         ]
         create_table(data, log_level="debug", logger=logger)
-        logger.debug(f'{"Log level:":<20}{log_level if log_level else "Not set"}')
-        logger.debug(f'{"Dry_run:":<20}{dry_run if dry_run else "False"}')
-        logger.debug(f'{"Asset Folders:":<20}{asset_folders if asset_folders else "Not set"}')
-        logger.debug(f'{"Assets paths:":<20}{assets_paths if assets_paths else "Not set"}')
-        logger.debug(f'{"Media paths:":<20}{media_paths if media_paths else "Not set"}')
-        logger.debug(f'{"Library names:":<20}{library_names if library_names else "Not set"}')
-        logger.debug(f'{"Ignore Collections:":<20}{ignore_collections if ignore_collections else "Not set"}')
-        logger.debug(f'{"Instances:":<20}{instances if instances else "Not set"}')
-        logger.debug('*' * 40 + '\n')
+        logger.debug(f'{"Log level:":<20}{log_level}')
+        logger.debug(f'{"Dry_run:":<20}{dry_run}')
+        logger.debug(f'{"Asset Folders:":<20}{asset_folders}')
+        logger.debug(f'{"Assets paths:":<20}{assets_paths}')
+        logger.debug(f'{"Media paths:":<20}{media_paths}')
+        logger.debug(f'{"Library names:":<20}{library_names}')
+        logger.debug(f'{"Ignore Collections:":<20}{ignore_collections}')
+        logger.debug(f'{"Instances:":<20}{instances}')
+        logger.debug(create_bar("*"))
 
         # Initialize dictionaries to store assets and media information
         assets_dict = {}
@@ -427,7 +427,7 @@ def main():
         logger.error(f"\n\nAn error occurred:\n", exc_info=True)
         logger.error(f"\n\n")
     finally:
-        logger.info(f"\n{'*' * 40} END {'*' * 40}\n")
+        logger.info(create_bar(f"END {name}"))
 
 if __name__ == "__main__":
     main()

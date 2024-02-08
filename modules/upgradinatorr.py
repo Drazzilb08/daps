@@ -119,9 +119,9 @@ def process_instance(instance_type, instance_settings, app):
         [f"{instance_type} Settings"]
     ]
     create_table(data, log_level="debug", logger=logger)
-    logger.debug(f'{"Count:":<20}{count if count else "Not Set"}')
-    logger.debug(f'{"tag_name:":<20}{tag_name if tag_name else "Not Set"}')
-    logger.debug(f'{"unattended:":<20}{unattended if unattended else "Not Set"}')
+    logger.debug(f'{"Count:":<20}{count}')
+    logger.debug(f'{"tag_name:":<20}{tag_name}')
+    logger.debug(f'{"unattended:":<20}{unattended}')
     logger.debug('*' * 40)
     
     # Fetch media from the instance
@@ -277,7 +277,7 @@ def main():
     """
     name = script_name.replace("_", " ").upper()
     try:
-        logger.info(f"\n{'*' * 40} STARTING {name} {'*' * 40}\n")
+        logger.info(create_bar(f"STARTING {name}"))
         # Check if it's a dry run and display a message
         if dry_run:
             data = [
@@ -329,8 +329,8 @@ def main():
     except Exception:
         logger.error(f"\n\nAn error occurred:\n", exc_info=True)
         logger.error(f"\n\n")
-    finally:
-        logger.info(f"\n{'*' * 40} END {'*' * 40}\n")
+    finally: 
+        logger.info(create_bar(f"END OF {name}"))
 
 if __name__ == '__main__':
     main()

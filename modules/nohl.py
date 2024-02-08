@@ -693,7 +693,7 @@ def main():
     """
     name = script_name.replace("_", " ").upper()
     try:
-        logger.info(f"\n{'*' * 40} STARTING {name} {'*' * 40}\n")
+        logger.info(create_bar(f"START {name}"))
         # Check if a dry run is enabled
         if dry_run:
             # Display a notification for a dry run
@@ -710,6 +710,7 @@ def main():
         filters = script_config.get('filters', None)
         paths = script_config.get('paths', None)
         print_files = script_config.get('print_files', False)
+        script_config.get("print_files", False)
         valid = validate(config, script_config, logger)
 
         # Check if instances are properly configured
@@ -722,12 +723,12 @@ def main():
             ["Script Configuration"],
         ]
         create_table(data, log_level="debug", logger=logger)
-        logger.debug(f'{"Maximum Searches:":<30}{max_search if max_search else "Not Set"}')
-        logger.debug(f'{f"Instances:":<30}\n{json.dumps(instances, indent=4) if instances else "Not Set"}')
-        logger.debug(f'{"Filters:":<30}\n{json.dumps(filters, indent=4) if filters else "Not Set"}')
-        logger.debug(f'{"Paths:":<30}\n{json.dumps(paths, indent=4) if paths else "Not Set"}')
-        logger.debug(f'{"Print Files:":<30}{script_config.get("print_files", False)}')
-        logger.debug('*' * 42 + '\n')
+        logger.debug(f'{"Maximum Searches:":<30}{max_search}')
+        logger.debug(f'{f"Instances:":<30}\n{json.dumps(instances, indent=4)}')
+        logger.debug(f'{"Filters:":<30}\n{json.dumps(filters, indent=4)}')
+        logger.debug(f'{"Paths:":<30}\n{json.dumps(paths, indent=4)}')
+        logger.debug(f'{"Print Files:":<30}{print_files}')
+        logger.debug(create_bar("*"))
 
         # Display the summary of non-hardlinked files in each directory
         output_dict = {}
@@ -830,7 +831,7 @@ def main():
         logger.error(f"\n\nAn error occurred:\n", exc_info=True)
         logger.error(f"\n\n")
     finally:
-        logger.info(f"\n{'*' * 40} END {'*' * 40}\n")
+        logger.info(create_bar(f" ENDING {name} "))
 
 if __name__ == "__main__":
     main()

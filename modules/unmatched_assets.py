@@ -171,7 +171,7 @@ def print_output(unmatched_dict, media_dict):
                 [f"Unmatched {asset_type.capitalize()}"]
             ]
             create_table(table, log_level="info", logger=logger)
-            logger.info(f"\n{'*' * 80}\n")
+            logger.info(create_bar("*"))
             for location, data in data_set.items():
                 location = location.rstrip('/')
                 location_base = os.path.basename(location)
@@ -256,7 +256,7 @@ def main():
     """
     name = script_name.replace("_", " ").upper()
     try:
-        logger.info(f"\n{'*' * 40} STARTING {name} {'*' * 40}\n")
+        logger.info(create_bar(f"STARTING {name}"))
         # Logging script settings
         data = [
             ["Script Settings"]
@@ -275,14 +275,14 @@ def main():
         valid = validate(config, script_config, logger)
 
         # Logging script settings
-        logger.debug(f'{"Log level:":<20}{log_level if log_level else "Not set"}')
-        logger.debug(f'{"Asset Folders:":<20}{asset_folders if asset_folders else "Not set"}')
-        logger.debug(f'{"Assets path:":<20}{assets_paths if assets_paths else "Not set"}')
-        logger.debug(f'{"Media paths:":<20}{media_paths if media_paths else "Not set"}')
-        logger.debug(f'{"Library names:":<20}{library_names if library_names else "Not set"}')
-        logger.debug(f'{"Ignore collections:":<20}{ignore_collections if ignore_collections else "Not set"}')
-        logger.debug(f'{"Instances:":<20}{instances if instances else "Not set"}')
-        logger.debug('*' * 40 + '\n')
+        logger.debug(f'{"Log level:":<20}{log_level}')
+        logger.debug(f'{"Asset Folders:":<20}{asset_folders}')
+        logger.debug(f'{"Assets path:":<20}{assets_paths}')
+        logger.debug(f'{"Media paths:":<20}{media_paths}')
+        logger.debug(f'{"Library names:":<20}{library_names}')
+        logger.debug(f'{"Ignore collections:":<20}{ignore_collections}')
+        logger.debug(f'{"Instances:":<20}{instances}')
+        logger.debug(create_bar("*"))
 
         # Fetching assets and media paths
         media_dict = {}
@@ -351,7 +351,7 @@ def main():
         logger.error(f"\n\nAn error occurred:\n", exc_info=True)
         logger.error(f"\n\n")
     finally:
-        logger.info(f"\n{'*' * 40} END {'*' * 40}\n")
+        logger.info(create_bar(f"ENDING {name}"))
 
 
 if __name__ == "__main__":

@@ -675,20 +675,28 @@ def is_docker():
     return Path('/.dockerenv').is_file() or (cgroup.is_file() and 'docker' in cgroup.read_text())
 
 def get_current_git_branch():
-    try:
-        # Run the git branch command
-        result = subprocess.run(['git', 'branch', '--show-current'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
-        # Capture the output and return the current branch
-        return result.stdout.strip()
-    except subprocess.CalledProcessError as e:
-        # Handle any errors if the command fails
-        print(f"Error: {e}")
-        return None
+        if is_docker():
+            branch = os.getenv('BRANCH', None)
+            return branch
+        else:
+            try:
+                # Run the git branch command
+                result = subprocess.run(['git', 'branch', '--show-current'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
+                # Capture the output and return the current branch
+                return result.stdout.strip()
+            except subprocess.CalledProcessError as e:
+                # Handle any errors if the command fails
+                print(f"Error: {e}")
+                return None
     
 def create_bar(middle_text):
     total_length = 80
     remaining_length = total_length - len(middle_text) - 4  # 4 accounts for spaces and two '*' on each side
-    left_side_length = math.floor(remaining_length / 2)
-    right_side_length = remaining_length - left_side_length
+    if middle_text == "*":
+        left_side_length = 0
+        right_side_length = remaining_length
+    else:
+        left_side_length = math.floor(remaining_length / 2)
+        right_side_length = remaining_length - left_side_length
 
     return f"\n{'*' * left_side_length} {middle_text} {'*' * right_side_length}\n"

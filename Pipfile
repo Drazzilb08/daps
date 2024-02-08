@@ -11,6 +11,7 @@ unidecode = "*"
 qbittorrent-api = "*"
 plexapi = "*"
 pillow = "*"
+prettytable = "*"
 
 [dev-packages]
 

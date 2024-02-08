@@ -22,20 +22,21 @@ RUN apk update; \
     pip3 install --no-cache-dir -r requirements.txt
 
 # Install wget, curl, unzip, p7zip-full, tzdata, vim
-RUN apk add wget curl unzip tzdata && \
-    apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/ --allow-untrusted p7zip
+RUN apk add wget curl unzip tzdata vim jdupes \
+    && apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/ p7zip \
+    && apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ jdupes
 
-# # Install rclone
-# RUN curl https://rclone.org/install.sh | bash
+# Install rclone
+RUN curl https://rclone.org/install.sh | bash
 
-# # Install rclone dependencies
-# RUN apk add --no-cache ca-certificates fuse
+# Install rclone dependencies
+RUN apk add --no-cache ca-certificates fuse
 
-# # Test rclone installation
-# RUN rclone --version
+# Test rclone installation
+RUN rclone --version
 
-# # Install docker-cli
-# RUN apk add --no-cache docker-cli
+# Install docker-cli
+RUN apk add --no-cache docker-cli
 
 # Metadata and labels
 LABEL maintainer="Drazzilb" \

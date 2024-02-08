@@ -14,7 +14,7 @@ except ImportError:
 
 script_dir = pathlib.Path(__file__).parents[1]  # Get the path to the script directory (one level up from this file
 
-def version_check(logger):
+def version_check(logger, branch):
     """
     Check for a new version of the script
     
@@ -33,7 +33,7 @@ def version_check(logger):
         script_version = f.read().strip()
     
     # Construct the URL for the GitHub raw file containing the version
-    github_url = "https://raw.githubusercontent.com/Drazzilb08/userScripts/master/VERSION"
+    github_url = f"https://raw.githubusercontent.com/Drazzilb08/userScripts/{branch}/VERSION"
     
     # Send a GET request to the GitHub URL to fetch the script's version from GitHub
     response = requests.get(github_url)

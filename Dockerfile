@@ -1,5 +1,8 @@
 FROM hotio/base:alpinevpn
 
+# ARG BRANCH
+ARG BRANCH
+
 # Set working directory
 WORKDIR /app
 
@@ -44,6 +47,7 @@ ENV CONFIG_DIR=/config
 ENV DATA_DIR=/data
 ENV LOG_DIR=/config/logs
 ENV TZ=America/Los_Angeles
+ENV BRANCH=${BRANCH}
 
 VOLUME [ "/config" ]
 VOLUME [ "/data" ]

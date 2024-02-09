@@ -427,11 +427,11 @@ def handle_output(output, asset_folders):
     for asset_type, assets in output.items():
         if assets:
             # Create a table and log the asset type
-            data = [
+            table = [
                 [f"{asset_type.capitalize()}"],
             ]
             if any(asset['messages'] for asset in assets):
-                create_table(data, log_level="info", logger=logger)
+                logger.info(create_table(table))
             # Iterate through each asset within the asset type
             for asset in assets:
                 title = asset['title']
@@ -598,8 +598,8 @@ def main():
     try:
         logger.info(create_bar(f"START {name}"))
         # Display script settings
-        data = [["Script Settings"]]
-        create_table(data, log_level="debug", logger=logger)
+        table = [["Script Settings"]]
+        logger.debug(create_table(table))
         script_config = config.script_config
         valid = validate(config, script_config, logger)
         # Extract script configuration settings
@@ -640,11 +640,11 @@ def main():
 
         if dry_run:
             # Log dry run message
-            data = [
+            table = [
                 ["Dry Run"],
                 ["NO CHANGES WILL BE MADE"]
             ]
-            create_table(data, log_level="info", logger=logger)
+            logger.info(create_table(table))
 
         # Sync posters if enabled
         if sync_posters:

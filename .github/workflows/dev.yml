@@ -32,6 +32,6 @@ jobs:
           context: .
           file: ./Dockerfile
           build-args: |
-            "BRANCH_NAME=dev"
+            "BRANCH=dev"
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/userscripts:dev

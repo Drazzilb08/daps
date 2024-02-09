@@ -33,4 +33,4 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/userscripts:${{ github.sha }} || ${{ secrets.DOCKER_USERNAME }}/userscripts:dev
+          tags: ${{ secrets.DOCKER_USERNAME }}/userscripts:dev

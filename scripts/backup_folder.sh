@@ -42,7 +42,8 @@ check_config() {
     # Check if destination directory exists
     if [ ! -d "$destination_dir" ]; then
         echo "ERROR: Your destination directory ($destination_dir) does not exist please check your configuration"
-        exit 0
+        mkdir -p "$destination_dir"
+        echo "Destination directory created"
     fi
     # Check if destination directory is set
     if [ -z "$destination_dir" ]; then

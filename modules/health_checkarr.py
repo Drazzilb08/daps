@@ -52,21 +52,21 @@ def main():
         instances = script_config.get('instances', None)
         valid = validate(config, script_config, logger)
         # Log script settings
-        data = [
+        table = [
             ["Script Settings"]
         ]
-        create_table(data, log_level="debug", logger=logger)
+        logger.debug(create_table(table))
         logger.debug(f'{"Dry_run:":<20}{dry_run if dry_run else "False"}')
         logger.debug(f'{"Log level:":<20}{log_level if log_level else "INFO"}')
         logger.debug(f'{"Instances:":<20}{instances if instances else "Not Set"}')
-        logger.debug(create_bar("*"))
+        logger.debug(create_bar("-"))
         
         if dry_run:
-            data = [
+            table = [
                 ["Dry Run"],
                 ["NO CHANGES WILL BE MADE"]
             ]
-            create_table(data, log_level="info", logger=logger)
+            logger.info(create_table(table))
             logger.info('')
 
         for instance_type, instance_data in config.instances_config.items():

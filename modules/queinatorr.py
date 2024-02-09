@@ -314,15 +314,15 @@ def process_instance(instance_type, url, api, pre_import_category, post_import_c
     server_name = app.get_instance_name()
     
     # Log script instance configuration details
-    data = [
+    table = [
         [f"{server_name}"],
     ]
-    create_table(data, log_level="info", logger=logger)
+    logger.info(create_table(table))
     logger.debug('\n')
-    data = [
+    table = [
         [f"Script instance config for {server_name}"],
     ]
-    create_table(data, log_level="debug", logger=logger)
+    logger.debug(create_table(table))
     # Logging configuration details
     logger.debug(f'{"URL:":<30}{url}')
     logger.debug(f'{"API:":<30}{"*" * (len(api) - 5)}{api[-5:]}')
@@ -334,7 +334,7 @@ def process_instance(instance_type, url, api, pre_import_category, post_import_c
     logger.debug(f'{"qBittorrent Password:":<30}{"*" * (len(qbit_password) - 5)}{qbit_password[-5:]}')
     logger.debug(f'{"pre_import_category:":<30}{pre_import_category}')
     logger.debug(f'{"post_import_category:":<30}{post_import_category}')
-    logger.debug(create_bar("*"))
+    logger.debug(create_bar("-"))
     
     # Retrieve the queue from Radarr or Sonarr instance
     queue = app.get_queue(instance_type)
@@ -475,11 +475,11 @@ def print_output(messages):
         # Process and print queue items information
         if queue_items:
             # Create header and subheader for queue items
-            data = [
+            table = [
                 [f"Queue Items Processed for {server_name}"],
                 [f"{header}"]
             ]
-            create_table(data, log_level="info", logger=logger)
+            logger.info(create_table(table))
             
             # Iterate through each queue item and print its details
             for id, data in queue_items.items():
@@ -498,11 +498,11 @@ def print_output(messages):
         # Process and print qBittorrent items information
         if qbit_items:
             # Create header and subheader for qBittorrent items
-            data = [
+            table = [
                 [f"qBittorrent Items Processed for {server_name}"],
                 [f"{pre_import_category} -> {post_import_category} ({qbit_instance})"],
             ]
-            create_table(data, log_level="info", logger=logger)
+            logger.info(create_table(table))
             
             # Iterate through each qBittorrent item and print its details
             for torrent, data in qbit_items.items():
@@ -524,11 +524,11 @@ def main():
         logger.info(create_bar(f"START {name}"))
         # Display a notice for dry run mode if enabled
         if dry_run:
-            data = [
+            table = [
                 ["Dry Run"],
                 ["NO CHANGES WILL BE MADE"]
             ]
-            create_table(data, log_level="info", logger=logger)
+            logger.info(create_table(table))
         
         # Retrieve script configuration from the config file
         script_config = config.script_config

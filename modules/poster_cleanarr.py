@@ -280,10 +280,10 @@ def print_output(remove_data):
         for asset_type in asset_types:
             if asset_type in remove_data:
                 if remove_data[asset_type]:
-                    data = [
-                    [f"{asset_type.capitalize()}"]
+                    table = [
+                        [f"{asset_type.capitalize()}"]
                     ]
-                    create_table(data, log_level="info", logger=logger)
+                    logger.info(create_table(table))
                 # Iterate through each removed asset of the current type
                     for data in remove_data[asset_type]:
                         title = data['title']
@@ -302,10 +302,10 @@ def print_output(remove_data):
                             count += 1  # Increment the counter for each removed asset message
                         logger.info("")  # Add an empty line for better readability
     else:
-        data = [
+        table = [
             ["No assets removed"]
         ]
-        create_table(data, log_level="info", logger=logger)
+        logger.info(create_table(table))
                 
     # Log the total number of assets removed across all types
     logger.info(f"\nTotal number of assets removed: {count}")
@@ -320,11 +320,11 @@ def main():
         logger.info(create_bar(f"START {name}"))
         # Check if it's a dry run and log the message
         if dry_run:
-            data = [
+            table = [
                 ["Dry Run"],
                 ["NO CHANGES WILL BE MADE"]
             ]
-            create_table(data, log_level="info", logger=logger)
+            logger.info(create_table(table))
 
         # Fetch script configurations from the provided YAML file
         script_config = config.script_config
@@ -341,10 +341,10 @@ def main():
         instances = script_config.get('instances', None)
 
         # Log script settings for debugging purposes
-        data = [
+        table = [
             ["Script Settings"]
         ]
-        create_table(data, log_level="debug", logger=logger)
+        logger.debug(create_table(table))
         logger.debug(f'{"Log level:":<20}{log_level}')
         logger.debug(f'{"Dry_run:":<20}{dry_run}')
         logger.debug(f'{"Asset Folders:":<20}{asset_folders}')
@@ -353,7 +353,7 @@ def main():
         logger.debug(f'{"Library names:":<20}{library_names}')
         logger.debug(f'{"Ignore Collections:":<20}{ignore_collections}')
         logger.debug(f'{"Instances:":<20}{instances}')
-        logger.debug(create_bar("*"))
+        logger.debug(create_bar("-"))
 
         # Initialize dictionaries to store assets and media information
         assets_dict = {}

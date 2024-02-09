@@ -71,28 +71,28 @@ def check_holiday(data, border_colors):
         if schedule:
             # Check if the schedule matches the range pattern
             if re.match(pattern, schedule):
-                # If it matches, handle the range schedule using 'check_schedule' function
-                run = check_schedule(schedule, logger)
+                
                 # If 'check_schedule' returns True (indicating successful execution)
-                if run:
+                if check_schedule(schedule):
                     # Retrieve the color for the holiday from schedule_color or use default border_colors
                     holiday_colors = schedule_color.get('color', border_colors)
                     
                     # If holiday_colors exist, log the schedule execution and colors being used
                     if holiday_colors:
-                        data = [
+                        table = [
                             [f"Running {holiday.capitalize()} Schedule"],
                         ]
-                        create_table(data, log_level="info", logger=logger)
+                        logger.info(create_table(table))
                         logger.info(f"Schedule: {holiday.capitalize()} | Using {', '.join(holiday_colors)} border colors.")
-                    return holiday_colors, True  # Return the colors for the holiday
+                    
+                    return holiday_colors, True, holiday  # Return the colors for the holiday
                     
             else:
                 # Log an error if the schedule doesn't match the expected pattern
                 logger.error(f"Error: {schedule} is not a valid range schedule.")
     
     # Return the original border colors if no range schedule was found or executed
-    return border_colors, False
+    return border_colors, False, None
 
 
 def convert_to_rgb(hex_color):
@@ -161,10 +161,10 @@ def fix_borders(assets_dict, script_config, border_colors, output_dir, dry_run):
 
     # Logging the action if it's determined
     if action:
-        data = [
+        table = [
             [f"{banner}"],
         ]
-        create_table(data, log_level="info", logger=logger)
+        logger.info(create_table(table))
 
     messages = []  # List to hold progress messages
 
@@ -530,7 +530,7 @@ def process_files(input_dir, output_dir, asset_folders, dry_run):
     
     # Check for a scheduled event to update border colors if provided
     if schedule:
-        border_colors, run_holiday = check_holiday(schedule, border_colors)
+        border_colors, run_holiday, holiday = check_holiday(schedule, border_colors)
 
     # Categorize files in the input directory into assets
     if os.path.isdir(input_dir):
@@ -547,11 +547,10 @@ def process_files(input_dir, output_dir, asset_folders, dry_run):
             table = [
                     ["Processed Files", f"{len(messages)}"],
                 ]
-            create_table(table, log_level="info", logger=logger)
+            logger.info(create_table(table))
             for message in messages:
                 logger.info(message)
         return
-
     # If no border colors are available, log a message
     if not border_colors:
         logger.info(f"No border colors set, removing border instead.")
@@ -575,7 +574,7 @@ def process_files(input_dir, output_dir, asset_folders, dry_run):
             table = [
                 ["Processed Files", f"{len(messages)}"],
             ]
-            create_table(table, log_level="info", logger=logger)
+            logger.info(create_table(table))
             for message in messages:
                 logger.info(message)
         else:
@@ -607,16 +606,16 @@ def main():
             border_colors = [border_colors]
 
         # Creating a table to log script settings in debug mode
-        data = [
+        table = [
             ["Script Settings"],
         ]
-        create_table(data, log_level="debug", logger=logger)
+        logger.debug(create_table(table))
         logger.debug(f'{"Dry_run:":<20}{config.dry_run}')
         logger.debug(f'{"Log Level:":<20}{config.log_level}')
         logger.debug(f'{"Input Dir:":<20}{input_dir}')
         logger.debug(f'{"Output Dir:":<20}{output_dir}')
         logger.debug(f'{"Schedule:":<20}{schedule}')
-        logger.debug(create_bar("*"))
+        logger.debug(create_bar("-"))
 
         # Process files in the input directory with specified settings
         process_files(input_dir, output_dir, asset_folders, dry_run)

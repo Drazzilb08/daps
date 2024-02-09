@@ -268,11 +268,11 @@ def main():
         logger.info(create_bar(f"START {name}"))
         # If in dry run mode, create a table indicating no changes will be made
         if dry_run:
-            data = [
+            table = [
                 ["Dry Run"],
                 ["NO CHANGES WILL BE MADE"]
             ]
-            create_table(data, log_level="info", logger=logger)
+            logger.info(create_table(table))
         
         # Fetch script configurations
         script_config = config.script_config

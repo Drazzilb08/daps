@@ -493,13 +493,13 @@ def handle_messages(output_dict):
         filtered_media = instance_data['data']['filtered_media']
 
         # Display server name
-        data = [
+        table = [
             [f"{instance_data['server_name']}"],
         ]
         
         # Display searched media information
         if search_media:
-            create_table(data, log_level="info", logger=logger)
+            logger.info(create_table(table))
             for search_item in search_media:
                 # For Radarr instances, display deleted and searched files
                 if instance_data['instance_type'] == 'radarr':
@@ -521,11 +521,11 @@ def handle_messages(output_dict):
         logger.info("")
         
         # Display filtered media information
-        data = [
+        table = [
             ["Filtered Media"],
         ]
         if filtered_media:
-            create_table(data, log_level="debug", logger=logger)
+            logger.debug(create_table(table))
             for filtered_item in filtered_media:
                 logger.debug(f"{filtered_item['title']} ({filtered_item['year']})")
                 if filtered_item.get('monitored', None):
@@ -697,11 +697,11 @@ def main():
         # Check if a dry run is enabled
         if dry_run:
             # Display a notification for a dry run
-            data = [
+            table = [
                 ["Dry Run"],
                 ["NO CHANGES WILL BE MADE"]
             ]
-            create_table(data, log_level="info", logger=logger)
+            logger.info(create_table(table))
         
         # Fetch configurations from the script's config file
         script_config = config.script_config
@@ -719,16 +719,16 @@ def main():
             sys.exit(1)
 
         # Display script configurations in the logs
-        data = [
+        table = [
             ["Script Configuration"],
         ]
-        create_table(data, log_level="debug", logger=logger)
+        logger.info(create_table(table))
         logger.debug(f'{"Maximum Searches:":<30}{max_search}')
         logger.debug(f'{f"Instances:":<30}\n{json.dumps(instances, indent=4)}')
         logger.debug(f'{"Filters:":<30}\n{json.dumps(filters, indent=4)}')
         logger.debug(f'{"Paths:":<30}\n{json.dumps(paths, indent=4)}')
         logger.debug(f'{"Print Files:":<30}{print_files}')
-        logger.debug(create_bar("*"))
+        logger.debug(create_bar("-"))
 
         # Display the summary of non-hardlinked files in each directory
         output_dict = {}
@@ -752,7 +752,7 @@ def main():
         # Generate a summary of the number of non-hardlinked files in each directory
         total = 0
         logger.info("")
-        data = [
+        table = [
             ["Directory", "Number of Files"],
         ]
         counter = {}
@@ -784,10 +784,10 @@ def main():
                         logger.info("")
                     old_root_path = root_path
         for key, value in counter.items():
-            data.append([key, value])
+            table.append([key, value])
         if total:
-            data.append(["Total", total])
-            create_table(data, log_level="info", logger=logger)
+            table.append(["Total", total])
+            logger.info(create_table(table))
             logger.info("")
         # Iterate through instances and handle the connections and data retrieval
         for instance_type, instance_data in config.instances_config.items():

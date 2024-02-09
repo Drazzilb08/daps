@@ -50,10 +50,10 @@ def print_output(output_dict):
     # Iterate through each instance's output in the provided dictionary
     for instance, instance_data in output_dict.items():
         # Create a table for the specific instance's rename list
-        data = [
+        table = [
             [f"{instance_data['server_name'].capitalize()} Rename List"],
         ]
-        create_table(data, log_level="info", logger=logger)
+        logger.info(create_table(table))
         
         # Iterate through each item in the instance's data
         for item in instance_data['data']:
@@ -80,15 +80,15 @@ def print_output(output_dict):
         
         # Display summary of rename actions if any rename occurred
         if any(value['file_info'] or value['new_path_name'] for value in instance_data['data']):
-            data = [
+            table = [
                 [f"{instance_data['server_name'].capitalize()} Rename Summary"],
                 [f"Total Items: {total_items}"],
             ]
             if any(value['file_info'] for value in instance_data['data']):
-                data.append([f"Total Renamed Items: {total_rename_items}"])
+                table.append([f"Total Renamed Items: {total_rename_items}"])
             if any(value['new_path_name'] for value in instance_data['data']):
-                data.append([f"Total Folder Renames: {total_folder_rename}"])
-            create_table(data, log_level="info", logger=logger)
+                table.append([f"Total Folder Renames: {total_folder_rename}"])
+            logger.info(create_table(table))
         else:
             logger.info(f"No items renamed in {instance_data['server_name']}.")
         logger.info('')
@@ -318,25 +318,25 @@ def main():
         valid = validate(config, script_config, logger)
         
         # Log script settings
-        data = [
+        table = [
             ["Script Settings"]
         ]
-        create_table(data, log_level="debug", logger=logger)
+        logger.debug(create_table(table))
         logger.debug(f'{"Dry_run:":<20}{dry_run}')
         logger.debug(f'{"Log level:":<20}{log_level}')
         logger.debug(f'{"Instances:":<20}{instances}')
         logger.debug(f'{"Rename Folders:":<20}{rename_folders}')
         logger.debug(f'{"Count:":<20}{count}')
         logger.debug(f'{"Tag Name:":<20}{tag_name}')
-        logger.debug(create_bar("*"))
+        logger.debug(create_bar("-"))
         
         # Handle dry run settings
         if dry_run:
-            data = [
+            table = [
                 ["Dry Run"],
                 ["NO CHANGES WILL BE MADE"]
             ]
-            create_table(data, log_level="info", logger=logger)
+            logger.info(create_table(table))
             logger.info('')
         
         # Output dictionary to store processed data

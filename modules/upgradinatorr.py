@@ -114,11 +114,10 @@ def process_instance(instance_type, instance_settings, app):
     unattended = instance_settings.get('unattended', False)
     
     # Logging instance settings
-    # (Note: 'logger.debug' outputs logs at DEBUG level, 'create_table' generates tabular log output)
-    data = [
+    table = [
         [f"{instance_type} Settings"]
     ]
-    create_table(data, log_level="debug", logger=logger)
+    logger.debug(create_table(table))
     logger.debug(f'{"Count:":<20}{count}')
     logger.debug(f'{"tag_name:":<20}{tag_name}')
     logger.debug(f'{"unattended:":<20}{unattended}')
@@ -208,10 +207,10 @@ def print_output(output_dict):
         instance_data = run_data.get('data', None)
         if instance_data:
             # Create a table with the server name as the header
-            data = [
+            table = [
                 [f"{run_data['server_name']}"]
             ]
-            create_table(data, log_level="info", logger=logger)
+            logger.info(create_table(table))
             
             # Iterate through the media items for this instance
             for item in instance_data:
@@ -280,11 +279,11 @@ def main():
         logger.info(create_bar(f"STARTING {name}"))
         # Check if it's a dry run and display a message
         if dry_run:
-            data = [
+            table = [
                 ["Dry Run"],
                 ["NO CHANGES WILL BE MADE"]
             ]
-            create_table(data, log_level="info", logger=logger)
+            logger.info(create_table(table))
         
         # Access the script configuration settings
         script_config = config.script_config

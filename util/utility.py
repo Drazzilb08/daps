@@ -676,7 +676,7 @@ def is_docker():
 
 def get_current_git_branch():
         if is_docker():
-            branch = os.getenv('BRANCH', None)
+            branch = os.getenv('BRANCH', "master")
             return branch
         else:
             try:

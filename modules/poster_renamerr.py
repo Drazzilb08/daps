@@ -55,23 +55,33 @@ def get_assets_files(source_dir, source_overrides):
     Returns:
         dict: Dictionary of assets files
     """
+
+    source_assets = {} 
+
     # Fetches asset files from the primary source directory
-    source_assets = categorize_files(source_dir, asset_folders=False)
+    if not os.path.exists(source_dir):
+        logger.error(f"Source directory not found: {source_dir}")
+    else:
+        source_assets = categorize_files(source_dir, asset_folders=False)
     # Handles source overrides if provided
     if source_overrides:
         source_overrides = [source_overrides] if isinstance(source_overrides, str) else source_overrides
         # Process each override directory
         for source_override in source_overrides:
+            if not os.path.exists(source_override):
+                logger.error(f"Source override directory not found: {source_override}. Skipping...")
+                continue
             # Retrieves asset files from the override directory
             override_dict = categorize_files(source_override, asset_folders=False)
             # Consolidate the value of each key into one unified list
             override_assets = [asset for value in override_dict.values() for asset in value]
             # Handles overrides between primary source and the override
             handle_overrides(source_assets, override_assets)
-
-    # Sort the contents of each key by title
-    for key, value in source_assets.items():
-        source_assets[key] = sorted(value, key=lambda k: k['title'])
+    
+    if source_assets:
+        # Sort the contents of each key by title
+        for key, value in source_assets.items():
+            source_assets[key] = sorted(value, key=lambda k: k['title'])
 
     return source_assets
 
@@ -604,7 +614,7 @@ def main():
         instances = script_config.get('instances', [])
         sync_posters = script_config.get('sync_posters', False)
 
-        logger.debug(create_bar("*"))  # Log separator
+        logger.debug(create_bar("-"))  # Log separator
         # Log script configuration settings
         logger.debug(f'{"Dry_run:":<20}{dry_run}')
         logger.debug(f'{"Log level:":<20}{log_level}')
@@ -618,9 +628,15 @@ def main():
         logger.debug(f'{"Border replacerr:":<20}{border_replacerr}')
         logger.debug(f'{"Instances:":<20}{instances}')
         logger.debug(f'{"Sync posters:":<20}{sync_posters}')
+
+        if not os.path.exists(destination_dir):
+            logger.info(f"Creating destination directory: {destination_dir}")
+            os.makedirs(destination_dir)
+        else:
+            logger.debug(f"Destination directory already exists: {destination_dir}")
         
         # Log other settings...
-        logger.debug(create_bar("*"))  # Log separator
+        logger.debug(create_bar("-"))  # Log separator
 
         if dry_run:
             # Log dry run message
@@ -637,6 +653,7 @@ def main():
             from modules.sync_gdrive import main
             main()
 
+        assets_dict = {}
         # Retrieve asset files
         print("Gathering all the posters, please wait...")
         assets_dict = get_assets_files(source_dir, source_overrides)

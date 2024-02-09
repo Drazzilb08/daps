@@ -170,16 +170,19 @@ def print_output(unmatched_dict, media_dict):
             table = [
                 [f"Unmatched {asset_type.capitalize()}"]
             ]
-            create_table(table, log_level="info", logger=logger)
-            logger.info(create_bar("*"))
+            logger.info(create_table(table))
             for location, data in data_set.items():
                 location = location.rstrip('/')
                 location_base = os.path.basename(location)
                 if data:
+                    if asset_type == "collections":
+                        suffix = " Library"
+                    else:
+                        suffix = ""
                     table = [
-                        [location_base.title(), len(data)]
+                        [f"{location_base.title()}{suffix}", len(data)]
                     ]
-                    create_table(table, log_level="info", logger=logger)
+                    logger.info(create_table(table))
                     logger.info("")
                     for item in data:
                         if asset_type == 'series':
@@ -233,10 +236,10 @@ def print_output(unmatched_dict, media_dict):
 
     # Print statistics to the logger
     logger.info('')
-    data = [
+    table = [
         ["Statistics"],
     ]
-    create_table(data, log_level="info", logger=logger)
+    logger.info(create_table(table))
     table = [
         ["Type", "Total", "Unmatched", "Percent Complete"]
     ]
@@ -248,7 +251,7 @@ def print_output(unmatched_dict, media_dict):
     if unmatched_dict.get('collections', None) or media_dict.get('collections', None):
         table.append(["Collections", total_collections, unmatched_collections_total, f"{collection_percent_complete:.2f}%"])
     table.append(["Grand Total", grand_total, grand_unmatched_total, f"{grand_percent_complete:.2f}%"])
-    create_table(table, log_level="info", logger=logger)
+    logger.info(create_table(table))
 
 def main():
     """
@@ -258,10 +261,6 @@ def main():
     try:
         logger.info(create_bar(f"STARTING {name}"))
         # Logging script settings
-        data = [
-            ["Script Settings"]
-        ]
-        create_table(data, log_level="debug", logger=logger)
         
         # Retrieving script configuration
         script_config = config.script_config
@@ -275,6 +274,10 @@ def main():
         valid = validate(config, script_config, logger)
 
         # Logging script settings
+        table = [
+            ["Script Settings"]
+        ]
+        logger.debug(create_table(table))
         logger.debug(f'{"Log level:":<20}{log_level}')
         logger.debug(f'{"Asset Folders:":<20}{asset_folders}')
         logger.debug(f'{"Assets path:":<20}{assets_paths}')
@@ -282,17 +285,21 @@ def main():
         logger.debug(f'{"Library names:":<20}{library_names}')
         logger.debug(f'{"Ignore collections:":<20}{ignore_collections}')
         logger.debug(f'{"Instances:":<20}{instances}')
-        logger.debug(create_bar("*"))
+        logger.debug(create_bar("-"))
 
         # Fetching assets and media paths
+        assets_dict = {}
         media_dict = {}
         for path in assets_paths:
+            if not os.path.exists(path):
+                logger.error(f"Path: {path} does not exist. Skipping...")
+                continue
             assets_dict = categorize_files(path, asset_folders)
-            
+        
         # Checking for assets and logging
         if assets_dict:
             logger.debug(f"Assets:\n{json.dumps(assets_dict, indent=4)}")
-        if not all(assets_dict.values()):
+        if not all(assets_dict.values()) or not assets_dict:
             logger.error("No assets found, Check asset_folders setting in your config. Exiting.")
             sys.exit()
         

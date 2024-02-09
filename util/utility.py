@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import subprocess
 import math
+import pathlib
 
 try:
     import html
@@ -665,19 +666,25 @@ def is_docker():
     return Path('/.dockerenv').is_file() or (cgroup.is_file() and 'docker' in cgroup.read_text())
 
 def get_current_git_branch():
-        if is_docker():
-            branch = os.getenv('BRANCH', "master")
-            return branch
-        else:
-            try:
-                # Run the git branch command
-                result = subprocess.run(['git', 'branch', '--show-current'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, check=True, text=True)
-                # Capture the output and return the current branch
-                return result.stdout.strip()
-            except subprocess.CalledProcessError as e:
-                # Handle any errors if the command fails
-                print(f"Error: {e}")
-                return None
+    if is_docker():
+        branch = os.getenv('BRANCH', "master")
+        return branch
+    else:
+        try:
+            root_dir = pathlib.Path(__file__).parents[1]
+            # Run the git rev-parse command to get the current branch
+            result = subprocess.run(['git', 'rev-parse', '--abbrev-ref', 'HEAD'],
+                                cwd=root_dir,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                check=True,
+                                text=True)
+            # Capture the output and return the current branch
+            return result.stdout.strip()
+        except subprocess.CalledProcessError as e:
+            # Handle any errors if the command fails
+            print(f"Error: {e}")
+            return None
     
 def create_bar(middle_text):
     total_length = 80

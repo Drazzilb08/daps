@@ -83,6 +83,7 @@ def load_config(logger):
 
     return config, schedule, logger
 
+
 def main():
     """
     Main function
@@ -104,6 +105,7 @@ def main():
             # If config file is not found
             last_check = None
             initial_run = True
+            old_schedule = None
             running_scripts = {}
             while True:
                 config, scripts_schedules, logger = load_config(logger)
@@ -116,10 +118,10 @@ def main():
                     last_check = datetime.datetime.now()
                     next_check = (last_check + datetime.timedelta(days=1)).strftime("%A %I:%M %p")
                     logger.info(f"Next version check: {next_check}")
-
                 # Print the start message on the first run
-                if initial_run:
-                    logger.info(create_bar("START"))
+                if initial_run or old_schedule != scripts_schedules:
+                    if initial_run:
+                        logger.info(create_bar("START"))
 
                     # Print the schedule
                     logger.info(create_bar("SCHEDULE"))
@@ -199,7 +201,7 @@ def main():
                 for script_name in processes_to_remove:
                     logger.info(f"Script: {script_name.capitalize()} has finished")
                     del running_scripts[script_name]
-
+                old_schedule = scripts_schedules
                 time.sleep(15)
 
         

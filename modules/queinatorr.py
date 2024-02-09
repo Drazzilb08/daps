@@ -540,7 +540,7 @@ def main():
         instances = script_config.get('instances', None)
         if instances is None:
             logger.error("No instances defined in the config.")
-            exit(1)
+            return
         
         # Initialize the final output dictionary
         final_output_dict = {}

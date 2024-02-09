@@ -663,7 +663,7 @@ def main():
             logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
         else:
             logger.error("No asset files found. Exiting.")
-            exit(1)
+            return
         media_dict = {}  # Initialize dictionary for media data
         # Loop through instances for media retrieval
         for instance_type, instances_data in config.instances_config.items():

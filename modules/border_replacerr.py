@@ -537,7 +537,7 @@ def process_files(input_dir, output_dir, asset_folders, dry_run):
         assets_dict = categorize_files(input_dir, asset_folders)
     else:
         logger.error(f"No assets found in {input_dir}, if running Poster Renamerr in dry_run, this is expected.")
-        exit()
+        return
 
     # If Run holiday is False and Skip is set to True, return
     if not run_holiday and skip:
@@ -582,7 +582,7 @@ def process_files(input_dir, output_dir, asset_folders, dry_run):
             logger.info(f"\nNo files processed")
     else:
         logger.error(f"No assets found in {input_dir}, if running Poster Renamerr in dry_run, this is expected.")
-        exit()
+        return
 
 
 def main():

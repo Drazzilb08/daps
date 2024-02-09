@@ -301,12 +301,12 @@ def main():
             logger.debug(f"Assets:\n{json.dumps(assets_dict, indent=4)}")
         if not all(assets_dict.values()) or not assets_dict:
             logger.error("No assets found, Check asset_folders setting in your config. Exiting.")
-            sys.exit()
+            return
         
         # Checking for media paths and logging
         if any(value is None for value in media_dict.values()):
             logger.error("No media found, Check media_paths setting in your config. Exiting.")
-            sys.exit()
+            return
         if media_dict:
             logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
         
@@ -357,6 +357,7 @@ def main():
     except Exception:
         logger.error(f"\n\nAn error occurred:\n", exc_info=True)
         logger.error(f"\n\n")
+        return
     finally:
         logger.info(create_bar(f"ENDING {name}"))
 

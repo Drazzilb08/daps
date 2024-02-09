@@ -716,7 +716,7 @@ def main():
         # Check if instances are properly configured
         if instances is None:
             logger.error("No instances set in config file.")
-            sys.exit(1)
+            return
 
         # Display script configurations in the logs
         table = [

@@ -331,7 +331,7 @@ def main():
         results = validate(config, script_config, logger)
         if not results:
             logger.error("Invalid script configuration. Exiting.")
-            sys.exit()
+            return
         assets_paths = script_config.get('assets_paths', [])
         library_names = script_config.get('library_names', [])
         asset_folders = script_config.get('asset_folders', False)
@@ -370,12 +370,12 @@ def main():
         # Check if assets exist, log and exit if not found
         if not all(assets_dict.values()):
             logger.error("No assets found, Please double check your settings. Exiting...")
-            sys.exit()
+            return
 
         # Check if media exists, log and exit if not found
         if any(value is None for value in media_dict.values()):
             logger.error("No media found, Check media_paths setting in your config. Exiting.")
-            sys.exit()
+            return
 
         # Fetch information from Plex and StARR
         media_dict = {

@@ -60,14 +60,14 @@ def set_cmd_args(settings):
             sync_cmd.append(shlex.quote(client_id))
         else:
             logger.error("No client id provided")
-            exit(1)
+            return
 
         if client_secret:
             sync_cmd.append('-s')
             sync_cmd.append(shlex.quote(client_secret))
         else:
             logger.error("No client secret provided")
-            exit(1)
+            return
 
         if gdrive_sync:
             if sync_location != '' and os.path.exists(sync_location):
@@ -84,16 +84,16 @@ def set_cmd_args(settings):
                         sync_cmd.append(shlex.quote(sync_item['location']))
                     except Exception as e:
                         logger.error(f"Exception occurred while creating {sync_location}: {e}")
-                        exit(1)
+                        return
                 else:
                     logger.error("No sync location provided")
-                    exit(1)
+                    return
             if sync_id != '':
                 sync_cmd.append('-f')
                 sync_cmd.append(shlex.quote(sync_item['id']))
             else:
                 logger.error("No gdrive id provided")
-                exit(1)
+                return
         
         if token:
             sync_cmd.append('-t')

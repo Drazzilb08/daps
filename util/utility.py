@@ -699,4 +699,29 @@ def create_bar(middle_text):
         right_side_length = remaining_length - left_side_length
         return f"\n{'*' * left_side_length} {middle_text} {'*' * right_side_length}\n"
 
-    
+def redact_sensitive_info(text):
+    # Redact Discord webhook URLs
+    text = re.sub(r'https://discord\.com/api/webhooks/[^/]+/\S+', r'https://discord.com/api/webhooks/[redacted]', text)
+
+    # Redact Google OAuth client IDs
+    text = re.sub(r'\b(\w{24})-[a-zA-Z0-9_-]{24}\.apps\.googleusercontent\.com\b', r'[redacted].apps.googleusercontent.com', text)
+
+    # Redact Google OAuth refresh tokens
+    text = re.sub(r'(?<=refresh_token": ")([^"]+)(?=")', r'[redacted]', text)
+
+    # Redact Google Drive file IDs
+    text = re.sub(r'(\b[A-Za-z0-9_-]{33}\b)', r'[redacted]', text)
+
+    # Redact Discord access tokens
+    text = re.sub(r'(?<=access_token": ")([^"]+)(?=")', r'[redacted]', text)
+
+    # redact GOCSPX-8765434567654 to GOCSPX-[redacted]
+    text = re.sub(r'GOCSPX-\S+', r'GOCSPX-[redacted]', text)
+
+    pattern = r'(-i).*?(\.apps\.googleusercontent\.com)'
+    text = re.sub(pattern, r'\1 [redacted]\2', text, flags=re.DOTALL | re.IGNORECASE)
+
+    pattern = r'(-f)\s\S+'
+    text = re.sub(pattern, r'\1 [redacted]', text, flags=re.DOTALL | re.IGNORECASE)
+
+    return text

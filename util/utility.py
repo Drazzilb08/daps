@@ -348,18 +348,19 @@ def categorize_files(folder_path, asset_folders):
             exit(1)
     return assets
 
-def create_table(data, log_level, logger):
+def create_table(data):
     """
     Create a table from the provided data
-    
+
     Args:
         data (list): The data to create the table from
-        log_level (str): The log level to use for logging output
-        logger (logger): The logger to use for logging output
-        
+        log_level (str, optional): The log level to use for logging output. Defaults to None.
+        logger (logger, optional): The logger to use for logging output. Defaults to None.
+
     Returns:
-        None
+        str: The formatted table string
     """
+
     if not data:
         return "No data provided."
 
@@ -375,9 +376,11 @@ def create_table(data, log_level, logger):
     # Calculate total table width without including padding
     total_width = sum(col_widths) + num_cols - 1  # Separator widths between columns
 
+    width = 76
+
     # Ensure minimum width of 40
-    if total_width < 40:
-        additional_width = 40 - total_width
+    if total_width < width:
+        additional_width = width - total_width
         extra_width_per_col = additional_width // num_cols
         remainder = additional_width % num_cols
 
@@ -394,10 +397,10 @@ def create_table(data, log_level, logger):
     table = ""
 
     # Top border
-    table += "*" * (total_width + 2) + "\n"
+    table += "_" * (total_width + 2) + "\n"
 
     for row in range(num_rows):
-        table += "*"
+        table += "|"
         for col in range(num_cols):
             cell_content = str(data[row][col])
             padding = col_widths[col] - len(cell_content)
@@ -405,30 +408,17 @@ def create_table(data, log_level, logger):
             right_padding = padding - left_padding
 
             # Determine the separator for the cell
-            separator = '|' if col < num_cols - 1 else '*'
+            separator = '|' if col < num_cols - 1 else '|'
 
             table += f"{' ' * left_padding}{cell_content}{' ' * right_padding}{separator}"
         table += "\n"
         if row < num_rows - 1:
-            table += "*" + "-" * (total_width) + "*\n"
+            table += "|" + "-" * (total_width) + "|\n"
 
     # Bottom border
-    table += "*" * (total_width + 2) + "\n"
+    table += "‾" * (total_width + 2) + "\n"
 
-    log_functions = {
-        "info": logger.info,
-        "debug": logger.debug,
-        "warning": logger.warning,
-        "error": logger.error,
-        "critical": logger.critical
-    }
-    lines = table.split('\n')
-    log_function = log_functions.get(log_level)
-
-    if log_function:
-        for line in lines:
-            if line.strip():
-                log_function(line)
+    return table
 
 def get_media_folders(paths, logger):
     """
@@ -691,12 +681,15 @@ def get_current_git_branch():
     
 def create_bar(middle_text):
     total_length = 80
-    remaining_length = total_length - len(middle_text) - 4  # 4 accounts for spaces and two '*' on each side
-    if middle_text == "*":
+    if len(middle_text) == 1:
+        remaining_length = total_length - len(middle_text) - 2
         left_side_length = 0
         right_side_length = remaining_length
+        return f"\n{middle_text * left_side_length}{middle_text}{middle_text * right_side_length}\n"
     else:
+        remaining_length = total_length - len(middle_text) - 4
         left_side_length = math.floor(remaining_length / 2)
         right_side_length = remaining_length - left_side_length
+        return f"\n{'*' * left_side_length} {middle_text} {'*' * right_side_length}\n"
 
-    return f"\n{'*' * left_side_length} {middle_text} {'*' * right_side_length}\n"
+    

@@ -1,7 +1,7 @@
 FROM hotio/base:alpinevpn
 
 # ARG BRANCH
-ARG BRANCH
+ARG BRANCH=master
 
 # Set working directory
 WORKDIR /app
@@ -51,5 +51,7 @@ ENV BRANCH=${BRANCH}
 
 VOLUME [ "/config" ]
 VOLUME [ "/data" ]
+# Docker.sock
+VOLUME [ "/var/run/docker.sock" ]
 
 COPY root/ /

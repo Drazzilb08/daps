@@ -14,7 +14,7 @@
 
 # Define variables
 source_dir='/path/to/media/'
-log_dir='/path/to/log/files'
+log_dir='../logs/nohl/'
 
 # Define folders inside your source_dir to include in the search
 include=(
@@ -90,6 +90,30 @@ check_config() {
     fi
 }
 
+log_file() {
+    # remove trailing slash from log_dir if it exists
+    log_dir=${log_dir%%/}
+    if [ -z "$log_dir" ]; then
+        log_dir="${LOG_DIR:-$(dirname "$0")/../logs/nohl}"
+    fi
+    # check if the log_dir directory exists, if not create it
+    if [ ! -d "$log_dir" ]; then
+        echo "Directory doesn't exist, creating it"
+        mkdir -p "$log_dir"
+    else
+        echo "Directory exists"
+    fi
+    # remove trailing slash from source_dir if it exists
+    source_dir=${source_dir%%/}
+
+    log_file=$log_dir/nohl.log
+
+    # check if log file exists, if it does delete it
+    if [ -f "$log_file" ]; then
+        rm "$log_file"
+    fi
+}
+
 # Function to check for hardlinks
 check_hardlinks() {
     exclude_folders=(
@@ -110,24 +134,6 @@ check_hardlinks() {
     )
     # Print starting message
     echo "Starting Search..."
-    # remove trailing slash from log_dir if it exists
-    log_dir=${log_dir%%/}
-    echo "log_dir: $log_dir"
-    # check if the log_dir directory exists, if not create it
-    if [ ! -d "$log_dir" ]; then
-        echo "Directory doesn't exist, creating it"
-        mkdir -p "$log_dir"
-    else
-        echo "Directory exists"
-    fi
-    # remove trailing slash from source_dir if it exists
-    source_dir=${source_dir%%/}
-
-    log_file=$log_dir/nohl.log
-    # check if log file exists, if it does delete it
-    if [ -f "$log_file" ]; then
-        rm "$log_file"
-    fi
     # Iterate through the include array
     for ((i = 0; i < ${#include[@]}; i++)); do
         echo "****** Searching ${include[$i]}... ******" | tee -a "$log_file"
@@ -299,6 +305,7 @@ payload() {
 # Main function
 main() {
     handle_options "$@"
+    log_file
     check_config
     check_hardlinks
     if [ -n "$webhook" ]; then
@@ -308,56 +315,17 @@ main() {
 
 # Define function to handle options
 handle_options() {
-
-    # Define valid options
-    valid_long_options=("webhook:" "bot-name:" "help")
-    valid_short_options=("w:" "n:" "h")
-
-    # Handle command-line options
-    TEMP=$(getopt -o "${valid_short_options[*]}" --long "${valid_long_options[*]}" -n "$0" -- "$@")
-    eval set -- "$TEMP"
-    while true; do
-        case "$1" in
-        --source-dir | -s)
-            source_dir="$2"
-            shift 2
-            ;;
-        --include | -i)
-            include+=("$2")
-            shift 2
-            ;;
-        --exclude | -e)
-            exclude+=("$2")
-            shift 2
-            ;;
-        --webhook | -w)
-            webhook="$2"
-            shift 2
-            ;;
-        --bot-name | -n)
-            bot_name=$2
-            shift 2
-            ;;
-        -help | -h)
-            display_help
-            exit 0
-            ;;
-        --)
-            shift
-            break
-            ;;
-        *)
-            echo "Internal error!"
-            exit 1
-            ;;
+    while getopts ":s:i:e:w:n:h" opt; do
+        case $opt in
+            s) source_dir="$OPTARG" ;;
+            i) include+=("$OPTARG") ;;
+            e) exclude+=("$OPTARG") ;;
+            w) webhook="$OPTARG" ;;
+            n) bot_name="$OPTARG" ;;
+            h) display_help ;;
+            \?) echo "Invalid option: -$OPTARG" >&2; display_help; exit 1 ;;
+            :) echo "Option -$OPTARG requires an argument." >&2; display_help; exit 1 ;;
         esac
-    done
-
-    # Check for any remaining arguments
-    for arg in "$@"; do
-        echo "Invalid argument: $arg" >&2
-        display_help
-        exit 1
     done
 }
 

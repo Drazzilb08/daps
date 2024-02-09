@@ -38,7 +38,7 @@ list_of_bash_scripts = [
     "backup_appdata",
     "backup_plex",
     "jduparr",
-    "noHL",
+    "nohl_bash",
 ]
 
 branch = get_current_git_branch()
@@ -91,7 +91,7 @@ def main():
     try:
         config, scripts_schedules, logger = load_config(logger)
         if len(sys.argv) > 1:
-            logger.info(create_bar("START"))
+            initial_run = None
             for input_name in sys.argv[1:]:
                 if input_name and any(script in input_name for script in list_of_bash_scripts):
                     bash_script(input_name)
@@ -100,6 +100,7 @@ def main():
                 elif input_name not in list_of_python_scripts or (input_name and not any(script in input_name for script in list_of_bash_scripts)):
                     logger.error(f"Script: {input_name} does not exist")
         else:
+            logger.info(create_bar("START"))
             # If config file is not found
             last_check = None
             initial_run = True
@@ -214,7 +215,8 @@ def main():
 
     # If the script is stopped
     finally:
-        logger.info(create_bar("END"))
+        if initial_run is not None:
+            logger.info(create_bar("END"))
 
 
 if __name__ == '__main__':

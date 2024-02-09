@@ -16,12 +16,21 @@ jobs:
         with:
           fetch-depth: 0
         
-      - name: Build GH Container
-        run: | 
-          docker login --username ${{ secrets.GH_USERNAME }} --password ${{ secrets.GH_TOKEN }} ghcr.io
-          docker build --build-arg BRANCH=$(git rev-parse --abbrev-ref HEAD) -t ghcr.io/drazzilb08/userscripts:${{ steps.get_version.outputs.VERSION }}
-          docker push ghcr.io/drazzilb08/userscripts:${{ steps.get_version.outputs.VERSION }}
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
       
+      - name: Login to GitHub Container Registry
+        run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u ${{ secrets.GH_USERNAME }} --password-stdin
+      
+      - name: Build and push to GitHub Container Registry
+        run: |
+          docker buildx build \
+            --platform linux/amd64,linux/arm64 \
+            --build-arg BRANCH=$(git rev-parse --abbrev-ref HEAD) \
+            --tag ghcr.io/drazzilb08/userscripts:${{ steps.get_version.outputs.VERSION }} \
+            --push .
       
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -31,10 +40,9 @@ jobs:
 
       - name: Get the version
         id: get_version
-        run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
+        run: echo "::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}"
 
-      - name: Build and push
-        id: docker_build
+      - name: Build and push to Docker Hub
         uses: docker/build-push-action@v5
         with:
           context: .

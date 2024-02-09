@@ -7,6 +7,7 @@ from util.config import Config
 from util.call_script import call_script
 from util.discord import get_discord_data, discord_check
 from util.utility import create_bar
+import pathlib
 
 def set_cmd_args(settings, bash_script_file, logger, script_name):
     """
@@ -121,7 +122,6 @@ def set_cmd_args(settings, bash_script_file, logger, script_name):
             use_config_file = None
             cmd.append('-x')
             cmd.append(shlex.quote(str(use_config_file)))
-    
     cmds.append(cmd)
     logger.debug(json.dumps(cmds, indent=4))
     return cmds
@@ -154,29 +154,31 @@ def main(script_name):
     """
     name = script_name.replace("_", " ").upper()
     log_name = script_name
+    settings = None
     try:
         config = Config(script_name="bash_scripts")
         log_level = config.bash_config.get('log_level', 'info')
-        if script_name not in config.bash_config:
-            for script_setting_key, script_setting_value in config.bash_config.items():
-                # If value is a dictionary
-                if isinstance(script_setting_value, dict):
-                    for sub_script_key, v in script_setting_value.items():
-                        if sub_script_key == script_name:
-                            settings = config.bash_config.get(script_setting_key, {}).get(script_name, {})
-                            script_name = script_setting_key
-        else:
-            settings = config.bash_config.get(script_name, {})
+        for script_setting_key, script_setting_value in config.bash_config.items():
+            # If value is a dictionary
+            if isinstance(script_setting_value, dict):
+                for sub_script_key, v in script_setting_value.items():
+                    if script_name == sub_script_key:
+                        settings = config.bash_config.get(script_setting_key, {}).get(script_name, {})
+                        script_name = script_setting_key
+            else:
+                settings = config.bash_config.get(script_name, {})
         logger = setup_logger(log_level, log_name)
         logger.info(create_bar(f" START OF {name} "))
         if settings:
-            bash_script_file = f'./scripts/{script_name}.sh'
+            root_dir = pathlib.Path(__file__).parents[1]
+            bash_script_file = f'{root_dir}/scripts/{script_name}.sh'
             logger.debug(f"Running: {script_name.capitalize()}")
             cmds = set_cmd_args(settings, bash_script_file, logger, script_name)
             run_script(cmds, logger)
             logger.debug(f"{script_name.capitalize()} complete.")
         else:
-            logger.error(f"Bad stuff happened")
+            logger.error(f"Script: {script_name} does not exist")
+            return
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()

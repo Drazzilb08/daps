@@ -50,14 +50,12 @@ def check_schedule(schedule):
         ranges = data.split("|")
         for start_end in ranges:
             start, end = start_end.split("-")
-            start_date = datetime.strptime(start, "%m/%d")
-            end_date = datetime.strptime(end, "%m/%d")
-            if start_date <= end_date:
-                if start_date <= now <= end_date:
-                    return True
-            else:
-                if start_date <= now or now <= end_date:
-                    return True
+            start_month, start_day = map(int, start.split("/"))
+            end_month, end_day = map(int, end.split("/"))
+            current_month, current_day = map(int, now.strftime("%m/%d").split("/"))
+
+            if start_month <= current_month <= end_month and start_day <= current_day <= end_day:
+                return True
         return False
     else:
         raise ValueError(f"Invalid frequency: {frequency}")

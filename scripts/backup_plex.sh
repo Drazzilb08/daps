@@ -20,9 +20,11 @@ quiet="False"
 unraid_notify="False"
 
 config_file() {
-    script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
-    cd "$script_dir" || exit
-    config_file="../backup-plex.conf"
+    # if CONFIG_DIR
+    if [ -z "$log_dir" ]; then
+        config_dir="${CONFIG_DIR:-$(dirname "$0")/..}"
+    fi
+    config_file="$config_dir/backup-plex.conf"
     # Check if config file exists
     if [ -f "$config_file" ]; then
         # Read config file
@@ -481,17 +483,17 @@ start_plex() {
 
 main() {
     # Check if config file is defined in command line arguments
+    handle_options "$@"
     if [ "$use_config_file" == "True" ]; then
         config_file
     fi
-    handle_options "$@"
     hex_to_decimal "$bar_color"
     check_config "$@"
     # check for last_plex_backup.tmp file and if it exists, read the file to get the last backup date
-    if [ -f "$(dirname "$0")/last_plex_backup.tmp" ]; then
+    if [ -f "${config_dir}/last_plex_backup.tmp" ]; then
         while IFS= read -r line; do
             lastbackup=$line
-        done <"$(dirname "$0")/last_plex_backup.tmp"
+        done <"${config_dir}/last_plex_backup.tmp"
     else
         lastbackup=0
     fi
@@ -531,7 +533,7 @@ main() {
                 payload "Full Backup"
                 send_notification
                 days="0"
-                echo "$current_date" >"$(dirname "$0")"/last_plex_backup.tmp
+                echo "$current_date" >"${config_dir}"/last_plex_backup.tmp
                 verbose_output "Total size of this Essential backup: ${essential_backup_size}"
                 verbose_output "Total size of this Full backup: ${full_backup_size}"
             else
@@ -552,7 +554,8 @@ main() {
         field_builder "Days since last Full backup" "$days" "False"
         payload "Full and Essential Backup"
         send_notification
-        echo "$current_date" >"$(dirname "$0")"/last_plex_backup.tmp
+        
+        echo "$current_date" >"${config_dir}"/last_plex_backup.tmp
         days="0"
         verbose_output "Total size of this Full backup: ${full_backup_size}"
     fi

@@ -117,7 +117,6 @@ find_duplicates() {
         echo -e "Media directory: ${data_dir}" | tee -a "$log_dir/.jduparr_bash.log"
         echo -e "jdupes -r -L -X onlyext:mp4,mkv,avi ${data_dir}" | tee -a "$log_dir/.jduparr_bash.log"
     fi
-    mkdir -p "$(dirname "$0")/../logs"
     echo "Start re-linking files" | tee -a "$log_dir/.jduparr_bash.log"
     results=$(jdupes -r -M -X onlyext:mp4,mkv,avi "${data_dir}")
     if [[ $results != *"No duplicates found."* ]]; then
@@ -357,15 +356,29 @@ unraid_notify(){
 
 }
 
+log_file() {
+    log_dir=${log_dir%/}
+
+    # Get LOG_DIR env variable
+    if [ -z "$log_dir" ]; then
+        log_dir="${LOG_DIR:-$(dirname "$0")/../logs/jduparr}"
+    fi
+    
+    # Check if log directory exists
+    if [ ! -d "$log_dir" ]; then
+        echo "Log directory does not exist, creating: $log_dir"
+        mkdir -p "$log_dir"
+    else
+        # Log directory exists
+        echo "Log directory exists: $log_dir"
+    fi
+}
+
 main() {
 
     data_dir=${data_dir%/}
     log_dir=${log_dir%/}
-    # If no log dir set use script's dir
-    if [ -z "$log_dir" ]; then
-        log_dir="$(dirname "$0")/../logs/jduparr"
-        
-    fi
+    log_file
     handle_options "$@"
     check_duplicate_script
     check_config

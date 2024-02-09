@@ -33,9 +33,10 @@ appdata_dir2=/mnt/cache/appdata
 
 config_file() {
     # Get the absolute path of the script file
-    script_dir=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" &>/dev/null && pwd)
-    cd "$script_dir" || exit
-    config_file="../config/backup-appdata-example.conf"
+
+    if [ -z "$config_file" ]; then
+        config_file="${CONFIG_DIR:-$(dirname "$0")/../config/backup-appdata.conf}"
+    fi
 
     # Check if config file exists
     if [ -f "$config_file" ]; then
@@ -46,7 +47,7 @@ config_file() {
     else
         # Use command line arguments
         # handle_options "$@"
-        verbose_output "no config file found"
+        echo "no config file found"
         exit 0
     fi
 }

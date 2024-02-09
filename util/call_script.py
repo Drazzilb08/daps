@@ -2,6 +2,8 @@ from subprocess import PIPE, STDOUT, CalledProcessError, CompletedProcess, Popen
 
 from subprocess import Popen, PIPE, STDOUT, CompletedProcess, CalledProcessError
 
+from util.utility import redact_sensitive_info
+
 def call_script(command, logger):
     """
     Run a bash script
@@ -14,7 +16,14 @@ def call_script(command, logger):
         CompletedProcess: The completed process
     """
     # Print the command being executed
-    print(f"\nThis is a print statement and not logged.\n\nRunning command:\n\n{str(' '.join(command))}\n\n")
+
+    # Redact command secrets
+    redacted_command = str(' '.join(command))
+    # Redact random strings of characters
+
+    redacted_command = redact_sensitive_info(redacted_command)
+    
+    print(f"\nRunning command:\n\n{redacted_command}\n\n")
     
     # Execute the command and capture the output
     with Popen(command, text=True, stdout=PIPE, stderr=STDOUT) as process:

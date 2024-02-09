@@ -43,18 +43,29 @@ list_of_bash_scripts = [
 
 branch = get_current_git_branch()
 
-def run_module(module_name, logger):
-    if module_name in list_of_python_scripts:
+def run_module(script_name, logger):
+    if script_name in list_of_python_scripts:
         try:
-            module = importlib.import_module(f"modules.{module_name}")
+            module = importlib.import_module(f"modules.{script_name}")
+            process = multiprocessing.Process(target=module.main)
             module.main()
+            return process
         except ModuleNotFoundError:
-            logger.error(f"Script: {module_name} does not exist")
+            logger.error(f"Script: {script_name} does not exist")
             return
-    elif module_name and any(script in module_name for script in list_of_bash_scripts):
-        bash_script(module_name)
+    elif script_name and any(script in script_name for script in list_of_bash_scripts):
+        module = "bash_scripts"
+        try:
+            module = importlib.import_module(f"modules.{module}")
+            process = multiprocessing.Process(target=module.main, args=(script_name,))
+            process.start()
+            return process
+        except ModuleNotFoundError:
+            logger.error(f"Script: {script_name} does not exist!")
+            return
     else:
-        logger.error(f"Script: {module_name} does not exist")
+        logger.error(f"Script: {script_name} does not exist")
+        return
 
 def load_config(logger):
     """
@@ -95,7 +106,7 @@ def main():
             initial_run = None
             for input_name in sys.argv[1:]:
                 if input_name and any(script in input_name for script in list_of_bash_scripts):
-                    bash_script(input_name)
+                    run_module(input_name, logger)
                 elif input_name in list_of_python_scripts:
                     run_module(input_name, logger)
                 elif input_name not in list_of_python_scripts or (input_name and not any(script in input_name for script in list_of_bash_scripts)):
@@ -143,55 +154,25 @@ def main():
                 
                 # Check for scheduled scripts
                 for script_name, schedule_time in scripts_schedules.items():
-                    # Check if the script is scheduled to run
-                    if not schedule_time:
-                        continue
-                    
-                    # Check if the script is a bash script
-                    if script_name in config.bash_config:
-                        from modules import bash_scripts
-                        # Check if the script has instances
-                        if isinstance(schedule_time, dict):
-                            for instance, schedule_time in schedule_time.items():
-                                
-                                # Check if the instance is scheduled to run
-                                if not schedule_time:
-                                    continue
+                    if isinstance(schedule_time, dict):
+                        for instance, instance_schedule_time in schedule_time.items():
+                            script_name = instance
+                            schedule_time = instance_schedule_time
+                            
+                            if script_name in running_scripts or not schedule_time:
+                                continue
 
-                                # Check if the instance is scheduled to run
-                                if schedule_time != "run" and check_schedule(schedule_time) and script_name not in running_scripts:
-                                    logger.debug(f"Running: {instance.capitalize()} Schedule: {schedule_time} started")
-                                    process = multiprocessing.Process(target=bash_scripts.main, args=(script_name))
-                                    running_scripts[script_name] = process  # Store the process in the dictionary
-                                    logger.debug(f"Script: {script_name.capitalize()} ended")
-                        else:
-
-                            # Check if the script is scheduled to run
-                            if schedule_time != "run" and check_schedule(schedule_time) and script_name not in running_scripts:
-                                logger.debug(f"Running: {script_name.capitalize()} Schedule: {schedule_time} started")
-                                process = multiprocessing.Process(target=bash_scripts.main, args=(script_name))
-                                running_scripts[script_name] = process  # Store the process in the dictionary
-                                logger.debug(f"Script: {script_name.capitalize()} ended")
+                            if (script_name in list_of_python_scripts or any(script in script_name for script in list_of_bash_scripts)) and check_schedule(schedule_time):
+                                process = run_module(script_name, logger)
+                                running_scripts[script_name] = process
                     else:
+                        if script_name in running_scripts or not schedule_time:
+                            continue
 
-                        # Check if the script is scheduled to run
-                        if schedule_time != "run" and check_schedule(schedule_time) and script_name not in running_scripts:
-                            # Prevent duplicate processes
-                            logger.debug(f"Python Script {script_name.capitalize()} Schedule: {schedule_time} started")
-                            process = multiprocessing.Process(target=run_module, args=(script_name, logger))
-                            process.start()
-                            running_scripts[script_name] = process  # Store the process in the dictionary
-                            logger.debug(f"{script_name.capitalize()} has been ended")
+                        if (script_name in list_of_python_scripts or any(script in script_name for script in list_of_bash_scripts)) and check_schedule(schedule_time):
+                            process = run_module(script_name, logger)
+                            running_scripts[script_name] = process
 
-                        # Check if the script is scheduled to run
-                        if schedule_time == "run" and not already_run.get(script_name, False) and script_name not in running_scripts:
-                            logger.debug(f"Python Script {script_name.capitalize()} Schedule: {schedule_time} started")
-                            process = multiprocessing.Process(target=run_module, args=(script_name, logger))
-                            process.start()  # Start the process without joining
-                            running_scripts[script_name] = process  # Store the process in the dictionary
-                            already_run[script_name] = True
-                            logger.debug(f"{script_name.capitalize()} has been ended")
-                
                 # Remove the from running_scripts if the process is done
                 processes_to_remove = []
                 for script_name, process in running_scripts.items():
@@ -202,8 +183,7 @@ def main():
                     logger.info(f"Script: {script_name.capitalize()} has finished")
                     del running_scripts[script_name]
                 old_schedule = scripts_schedules
-                time.sleep(15)
-
+                time.sleep(2)
         
     # If the script is interrupted
     except KeyboardInterrupt:

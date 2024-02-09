@@ -394,7 +394,7 @@ def create_table(data):
     total_width = sum(col_widths) + num_cols - 1
 
     # Create the table
-    table = ""
+    table = "\n"
 
     # Top border
     table += "_" * (total_width + 2) + "\n"
@@ -416,7 +416,7 @@ def create_table(data):
             table += "|" + "-" * (total_width) + "|\n"
 
     # Bottom border
-    table += "‾" * (total_width + 2) + "\n"
+    table += "‾" * (total_width + 2) + ""
 
     return table
 

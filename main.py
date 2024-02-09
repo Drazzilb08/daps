@@ -4,7 +4,6 @@ import os
 from util.config import Config
 from util.scheduler import check_schedule
 from util.logger import setup_logger
-from modules.bash_scripts import main as bash_script
 from util.utility import *
 from prettytable import PrettyTable
 import importlib
@@ -118,6 +117,7 @@ def main():
             initial_run = True
             old_schedule = None
             running_scripts = {}
+            waiting_message_shown = False
             while True:
                 config, scripts_schedules, logger = load_config(logger)
                 
@@ -148,8 +148,11 @@ def main():
                             table.add_row([script_name, schedule_time])
                     logger.info(f"{table}")
                     logger.info(create_bar("SCHEDULE"))
-                    logger.info("Waiting for scheduled scripts...")
                     initial_run = False
+
+                if not waiting_message_shown:
+                    logger.info("Waiting for scheduled scripts...")
+                    waiting_message_shown = True
 
                 
                 # Check for scheduled scripts
@@ -180,10 +183,13 @@ def main():
                         processes_to_remove.append(script_name)
 
                 for script_name in processes_to_remove:
-                    logger.info(f"Script: {script_name.capitalize()} has finished")
-                    del running_scripts[script_name]
+                    if script_name in processes_to_remove:
+                        logger.info(f"Script: {script_name.capitalize()} has finished")
+                        del running_scripts[script_name]
+                        waiting_message_shown = False
+
                 old_schedule = scripts_schedules
-                time.sleep(2)
+                time.sleep(15)
         
     # If the script is interrupted
     except KeyboardInterrupt:

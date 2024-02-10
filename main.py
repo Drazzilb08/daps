@@ -141,7 +141,6 @@ def main():
                     table = PrettyTable(["Script", "Schedule"])
                     table.align = "l"
                     table.padding_width = 1
-                    table.add_row(["Script", "Schedule"])
                     for script_name, schedule_time in scripts_schedules.items():
                         if isinstance(schedule_time, dict):
                             for instance, schedule_time in schedule_time.items():

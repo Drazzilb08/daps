@@ -659,7 +659,7 @@ def main():
         assets_dict = get_assets_files(source_dir, source_overrides)
 
         # Log retrieved asset files or exit if not found
-        if assets_dict:
+        if any(assets_dict.values()):
             logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
         else:
             logger.error("No asset files found. Exiting.")

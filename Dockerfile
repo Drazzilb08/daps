@@ -44,6 +44,7 @@ LABEL maintainer="Drazzilb" \
 
 # Set script environment variables
 ENV CONFIG_DIR=/config
+ENV RCLONE_CONFIG=/config/rclone/rclone.conf
 ENV DATA_DIR=/data
 ENV LOG_DIR=/config/logs
 ENV TZ=America/Los_Angeles

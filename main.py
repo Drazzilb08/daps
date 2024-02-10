@@ -47,7 +47,8 @@ def run_module(script_name, logger):
         try:
             module = importlib.import_module(f"modules.{script_name}")
             process = multiprocessing.Process(target=module.main)
-            module.main()
+            if process:
+                process.start()
             return process
         except ModuleNotFoundError:
             logger.error(f"Script: {script_name} does not exist")
@@ -57,7 +58,8 @@ def run_module(script_name, logger):
         try:
             module = importlib.import_module(f"modules.{module}")
             process = multiprocessing.Process(target=module.main, args=(script_name,))
-            process.start()
+            if process:
+                process.start()
             return process
         except ModuleNotFoundError:
             logger.error(f"Script: {script_name} does not exist!")
@@ -149,6 +151,7 @@ def main():
                     logger.info(f"{table}")
                     logger.info(create_bar("SCHEDULE"))
                     initial_run = False
+                    waiting_message_shown = False
 
                 if not waiting_message_shown:
                     logger.info("Waiting for scheduled scripts...")

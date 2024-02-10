@@ -339,6 +339,8 @@ def process_instance(instance_type, url, api, pre_import_category, post_import_c
     # Retrieve the queue from Radarr or Sonarr instance
     queue = app.get_queue(instance_type)
     queue_dict = queued_items(queue, instance_type)
+
+    logger.debug(f"Queue items for '{instance_type}'\n{json.dumps(queue_dict, indent=4)}\n")
     
     # Create a dictionary to store output messages
     output_dict = {

@@ -315,6 +315,10 @@ border_replacerr:
     thanksgiving:
       schedule: range(11/01-11/30)
       color: "#FFA500"
+    valentine:
+      schedule: range(2/5-2/15)
+      color:
+        - "#D41F3A"
 
 unmatched_assets:
   log_level: info

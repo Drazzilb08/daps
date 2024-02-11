@@ -1,39 +1,29 @@
-FROM hotio/base:alpinevpn
+# Stage 1: Create an intermediate image for installing pipenv and converting Pipfile to requirements.txt
+FROM python:3.11-slim as pipenv
 
-# ARG BRANCH
-ARG BRANCH=master
-
-# Set working directory
-WORKDIR /app
-
-# Copy to the working directory
-COPY . .
-
-# Install Python
-RUN apk add --no-cache python3
-
-# Install pip3
-RUN apk add --no-cache py3-pip
+# Copy Pipfile and Pipfile.lock to the intermediate image
+COPY Pipfile Pipfile.lock ./
 
 # Install pipenv and use it to generate requirements.txt
 RUN pip3 install --no-cache-dir --upgrade pipenv; \
     pipenv requirements > requirements.txt
 
+# Debugging: Display the contents of requirements.txt
+RUN cat requirements.txt
+
+# Stage 2: Create an intermediate image for installing Python dependencies from requirements.txt
+FROM python:3.11-slim as python-reqs
+
+# Copy requirements.txt from the pipenv stage to the intermediate image
+COPY --from=pipenv /requirements.txt requirements.txt
+
 # Install gcc for building Python dependencies; install app dependencies
-RUN apk update; \
-    apk install -y gcc; \
+RUN apt-get update; \
+    apt-get install -y gcc; \
     pip3 install --no-cache-dir -r requirements.txt
 
-# Install curl, unzip, p7zip-full, tzdata, vim, rclone and docker-cli - remove curl and clean up
-RUN apk add curl unzip tzdata vim docker-cli \
-    && apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/community/ p7zip \
-    && apk add --no-cache --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing/ jdupes \
-    && curl https://rclone.org/install.sh | bash \
-    && apk add --no-cache ca-certificates fuse \
-    && rm -rf /var/cache/apk/*
-
-# Test rclone installation
-RUN rclone --version
+# Stage 3: Create the final image with the application and rclone setup
+FROM python:3.11-slim
 
 # Metadata and labels
 LABEL maintainer="Drazzilb" \
@@ -42,17 +32,53 @@ LABEL maintainer="Drazzilb" \
       org.opencontainers.image.authors="Drazzilb" \
       org.opencontainers.image.title="userScripts"
 
+# Set working directory and copy Python packages from the python-reqs stage
+
+COPY --from=python-reqs /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+
+ARG BRANCH="master"
+ARG CONFIG_DIR=/config
+
 # Set script environment variables
 ENV CONFIG_DIR=/config
-ENV RCLONE_CONFIG=/config/rclone/rclone.conf
-ENV DATA_DIR=/data
-ENV LOG_DIR=/config/logs
+ENV PUID=1000
+ENV PGID=1000
 ENV TZ=America/Los_Angeles
 ENV BRANCH=${BRANCH}
 
-VOLUME [ "/config" ]
-VOLUME [ "/data" ]
-# Docker.sock
-VOLUME [ "/var/run/docker.sock" ]
+# Install curl, unzip, p7zip-full, tzdata, vim, rclone and docker-cli - remove curl and clean up
+# Delete unnecessary setup files
+RUN set -eux; \
+    rm -f Pipfile Pipfile.lock; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends wget curl unzip p7zip-full tzdata vim; \
+    curl https://rclone.org/install.sh | bash
 
-COPY root/ /
+RUN apt-get update; \
+    apt-get install -y --no-install-recommends docker-cli; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share
+    
+
+VOLUME /var/run/docker.sock
+
+WORKDIR /app
+
+COPY . .
+
+#Make Directories
+RUN mkdir -p /config /data
+
+# Create a new user called dockeruser with the specified PUID and PGID
+RUN groupadd -g ${PGID} dockeruser; \
+    useradd -u ${PUID} -g ${PGID} -m dockeruser; \
+    chown -R dockeruser:dockeruser /app; \
+    chown -R dockeruser:dockeruser /config; \
+    chown -R dockeruser:dockeruser /data; \
+    chown -R dockeruser:dockeruser /usr/local/lib/python3.11/site-packages
+
+# Switch to the dockeruser
+USER dockeruser
+
+CMD ["python", "main.py"]
+ENTRYPOINT ["bash", "./start.sh"]

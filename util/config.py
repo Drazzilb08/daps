@@ -48,8 +48,12 @@ class Config:
             None
         """
         # Open the YAML config file and load its contents
-        with open(self.config_path, "r") as file:
-            config = yaml.safe_load(file)
+        try:
+            with open(self.config_path, "r") as file:
+                config = yaml.safe_load(file)
+        except FileNotFoundError:
+            logger.error(f"Config file not found at {self.config_path}")
+            return
 
         # Set various attributes from the loaded config
         self.instances_config = config['instances']  # Instance configurations

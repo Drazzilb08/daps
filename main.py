@@ -113,7 +113,6 @@ def main():
                 elif input_name not in list_of_python_scripts or (input_name and not any(script in input_name for script in list_of_bash_scripts)):
                     logger.error(f"Script: {input_name} does not exist")
         else:
-            logger.info(create_bar("START"))
             # If config file is not found
             last_check = None
             initial_run = True

@@ -73,12 +73,9 @@ RUN mkdir -p /config /data
 RUN groupadd -g ${PGID} dockeruser; \
     useradd -u ${PUID} -g ${PGID} -m dockeruser; \
     chown -R dockeruser:dockeruser /app; \
-    chown -R dockeruser:dockeruser /config; \
-    chown -R dockeruser:dockeruser /data; \
     chown -R dockeruser:dockeruser /usr/local/lib/python3.11/site-packages
 
-# Switch to the dockeruser
+# Set the user to dockeruser
 USER dockeruser
 
-CMD ["python", "main.py"]
-ENTRYPOINT ["bash", "./start.sh"]
+ENTRYPOINT ["bash", "start.sh"]

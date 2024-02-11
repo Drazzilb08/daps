@@ -54,7 +54,8 @@ elif [ "$CONFIG_DIR" == "/app/config" ]; then
     fi
     
 fi
-echo "Starting userScripts as $(whoami)"
 
-# Start main.py
+echo "Starting userScripts as $(whoami) with UID : $PUID and GID: $PGID"
+
+# Run main.py as the dockeruser
 python3 /app/main.py

@@ -56,8 +56,7 @@ RUN set -eux; \
 
 RUN apt-get update; \
     apt-get install -y --no-install-recommends docker-cli; \
-    apt-get clean; \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share
+    apt-get clean; 
     
 
 VOLUME /var/run/docker.sock
@@ -73,7 +72,7 @@ RUN groupadd -g ${PGID} dockeruser; \
     useradd -u ${PUID} -g ${PGID} -m dockeruser; \
     chown -R dockeruser:dockeruser /app; \
     chown -R dockeruser:dockeruser /${CONFIG_DIR}; \
-    chown -R dockeruser:dockeruser /usr/local/lib/python3.11/site-packages
+    chown -R dockeruser:dockeruser /usr/local/lib/python3.11/site-packages;
 
 # Entrypoint script
 ENTRYPOINT ["bash", "start.sh"]

@@ -166,14 +166,14 @@ def main():
                             if script_name in running_scripts or not schedule_time:
                                 continue
 
-                            if (script_name in list_of_python_scripts or any(script in script_name for script in list_of_bash_scripts)) and check_schedule(schedule_time):
+                            if (script_name in list_of_python_scripts or any(script in script_name for script in list_of_bash_scripts)) and (schedule_time == "run" or check_schedule(schedule_time)):
                                 process = run_module(script_name, logger)
                                 running_scripts[script_name] = process
                     else:
                         if script_name in running_scripts or not schedule_time:
                             continue
 
-                        if (script_name in list_of_python_scripts or any(script in script_name for script in list_of_bash_scripts)) and check_schedule(schedule_time):
+                        if (script_name in list_of_python_scripts or any(script in script_name for script in list_of_bash_scripts)) and (schedule_time == "run" or check_schedule(schedule_time)):
                             process = run_module(script_name, logger)
                             running_scripts[script_name] = process
 

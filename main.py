@@ -168,7 +168,7 @@ def main():
                             if script_name in running_scripts or not schedule_time:
                                 continue
 
-                            if (script_name in list_of_python_scripts or any(script in script_name for script in list_of_bash_scripts)) and (schedule_time == "run" and script_name not in already_run) or (schedule_time != "run" and check_schedule(schedule_time)):
+                            if (script_name in list_of_python_scripts or any(script in script_name for script in list_of_bash_scripts)) and (schedule_time == "run" and script_name not in already_run) or (schedule_time != "run" and check_schedule(script_name, schedule_time)):
                                 if schedule_time == "run":
                                     already_run[script_name] = True
                                 process = run_module(script_name, logger)
@@ -177,7 +177,7 @@ def main():
                         if script_name in running_scripts or not schedule_time:
                             continue
 
-                        if (script_name in list_of_python_scripts or any(script in script_name for script in list_of_bash_scripts)) and (schedule_time == "run" and script_name not in already_run) or (schedule_time != "run" and check_schedule(schedule_time)):
+                        if (script_name in list_of_python_scripts or any(script in script_name for script in list_of_bash_scripts)) and (schedule_time == "run" and script_name not in already_run) or (schedule_time != "run" and check_schedule(script_name, schedule_time)):
                             if schedule_time == "run":
                                 already_run[script_name] = True
                             process = run_module(script_name, logger)

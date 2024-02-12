@@ -369,7 +369,7 @@ def main():
 
         # If none of the values with in assets_dict contain data, log and exit
         if not any(value for value in assets_dict.values()):
-            logger.debug(f"Assets: {json.dumps(assets_dict, indent=4)}")
+            logger.debug(f"Assets:\n{json.dumps(assets_dict, indent=4)}")
             logger.error("No assets found, Please double check your settings. Exiting...")
             return
 
@@ -377,7 +377,7 @@ def main():
         if any(value is None for value in media_dict.values()):
             logger.error("No media found, Check media_paths setting in your config. Exiting.")
             return
-
+        logger.debug(f"Assets:\n{json.dumps(assets_dict, indent=4)}")
         # Fetch information from Plex and StARR
         media_dict = {
             'movies': [],

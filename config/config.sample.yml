@@ -10,6 +10,11 @@
 #   Examples: weekly(monday@12:23)
 # monthly(day_of_month@XX:XX)
 #   Examples: monthly(15@12:00) or monthly(15@18:15) - Will perform the action on the specified day of the month at the specified time
+# cron(<cron_expression>)
+#   Examples: cron(0 0 * * *) - Will perform the action every day at midnight
+#   Examples: cron(*/5 * * * *) - Will perform the action every 5 minutes
+#   Examples: cron(0 */3 * * *) - Will perform the action every 3rd hour
+#   Please visit https://crontab.guru/ for more information on cron expressions
 
 # If using the scripts through crontab or another scheduler, I would not recommend using the schedule w/in the config. 
 # The schedule is intended for use with Docker. If you want to use the schedule w/in the config, you will need to run the main.py script in the background.

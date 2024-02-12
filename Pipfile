@@ -12,6 +12,7 @@ qbittorrent-api = "*"
 plexapi = "*"
 pillow = "*"
 prettytable = "*"
+croniter = "*"
 
 [dev-packages]
 

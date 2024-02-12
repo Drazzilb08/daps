@@ -1,11 +1,15 @@
 from datetime import datetime
+from croniter import croniter
 
-def check_schedule(schedule):
+last_run = {}
+
+def check_schedule(script_name, schedule):
     """
     Checks if a given name is currently active based on its schedule.
 
     Args:
         name: Name of the schedule.
+        script_name: Name of the script. (Used for cron schedule)
         schedule: Schedule string in the format "frequency(data)".
         - frequency: Can be "hourly", "daily", "weekly", or "monthly".
         - data: Depends on the frequency:
@@ -14,6 +18,7 @@ def check_schedule(schedule):
             - weekly: Day of the week and time of the day (e.g., "monday@12:00", "tuesday@12:30"). Can be multiple times separated by commas.
             - monthly: Day of the month and time of the day (e.g., "15@12:00").
             - range: Date range (e.g., "01/01-12/31"). Can be multiple ranges separated by pipes.
+            - cron: Cron expression (e.g., "0 0 * * *").
 
     Returns:
         bool: True if the schedule is active, False otherwise.
@@ -57,5 +62,16 @@ def check_schedule(schedule):
             if start_month <= current_month <= end_month and start_day <= current_day <= end_day:
                 return True
         return False
+    elif frequency == "cron":
+        cron = croniter(data)
+        next_run = cron.get_next(datetime)
+        if last_run.get(script_name) is None:
+            last_run[script_name] = next_run
+            return False
+        if next_run > last_run[script_name]:
+            last_run[script_name] = next_run
+            return True
+        return False
+
     else:
         raise ValueError(f"Invalid frequency: {frequency}")

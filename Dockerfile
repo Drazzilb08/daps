@@ -41,8 +41,6 @@ ARG CONFIG_DIR=/config
 
 # Set script environment variables
 ENV CONFIG_DIR=/config
-ENV PUID=1000
-ENV PGID=1000
 ENV TZ=America/Los_Angeles
 ENV BRANCH=${BRANCH}
 
@@ -57,7 +55,6 @@ RUN set -eux; \
 RUN apt-get update; \
     apt-get install -y --no-install-recommends docker-cli; \
     apt-get clean; 
-    
 
 VOLUME /var/run/docker.sock
 VOLUME /config
@@ -68,11 +65,9 @@ WORKDIR /app
 COPY . .
 
 # Create a new user called dockeruser with the specified PUID and PGID
-RUN groupadd -g ${PGID} dockeruser; \
-    useradd -u ${PUID} -g ${PGID} -m dockeruser; \
-    chown -R dockeruser:dockeruser /app; \
-    chown -R dockeruser:dockeruser /${CONFIG_DIR}; \
-    chown -R dockeruser:dockeruser /usr/local/lib/python3.11/site-packages;
+RUN groupadd -g 99 dockeruser; \
+    useradd -u 100 -g 99 dockeruser; \
+    chown -R dockeruser:dockeruser /app; 
 
 # Entrypoint script
 ENTRYPOINT ["bash", "start.sh"]

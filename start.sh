@@ -31,8 +31,8 @@ echo "
 # Set umask
 umask "$UMASK"
 
-# Create config directory if it doesn't exist
-mkdir -p /config /data && chown ${PUID}:${PGID} /config /data
+groupmod -o -g "$PGID" dockeruser
+usermod -o -u "$PUID" dockeruser
 
 # Copy /app/config files to CONFIG_DIR unless CONFIG_DIR == /app/config
 if [ "$CONFIG_DIR" != "/app/config" ]; then
@@ -58,7 +58,7 @@ elif [ "$CONFIG_DIR" == "/app/config" ]; then
     
 fi
 
-echo "Starting userScripts as $(whoami) with UID: $PUID and GID: $PGID"
+echo "Starting userScripts as $(dockeruser) running userscripts with UID: $PUID and GID: $PGID"
 
 # Set permissions
 chown -R ${PUID}:${PGID} /${CONFIG_DIR} /data /app

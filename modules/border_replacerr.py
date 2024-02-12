@@ -208,14 +208,14 @@ def fix_borders(assets_dict, script_config, border_colors, output_dir, dry_run):
                     if not dry_run:
                         if not resize:
                             if rgb_border_color:
-                                results = replace_border(input_file, output_path, rgb_border_color, border_width)
+                                results = replace_border(input_file, output_path, rgb_border_color, border_width, False)
                             else:
-                                results = remove_border(input_file, output_path, border_width)
+                                results = remove_border(input_file, output_path, border_width, False)
                         else:
                             if rgb_border_color:
-                                results = replace_border_and_resize(input_file, output_path, rgb_border_color, border_width)
+                                results = replace_border(input_file, output_path, rgb_border_color, border_width, True)
                             else:
-                                results = remove_border_resize(input_file, output_path, border_width)
+                                results = remove_border(input_file, output_path, border_width, True)
                         if results:
                             if path:
                                 messages.append(f"{action} {data['title']}{year} - {file_name}")
@@ -230,64 +230,8 @@ def fix_borders(assets_dict, script_config, border_colors, output_dir, dry_run):
             logger.info(f"No {asset_type} found.")
     return messages
 
-def replace_border_and_resize(input_file, output_path, border_colors, border_width):
-    """
-    Removes the existing border, adds a new border of the given color, and resizes the image to 1000x1500 while maintaining aspect ratio.
-    
-    Args:
-        input_file (str): The input file.
-        output_path (str): The output path.
-        border_colors (list): The list of border colors.
-        border_width (int): The border width.
-    
-    Returns:
-        bool: True if the file was saved, False otherwise.
-    """
-
-    # Open the image
-    try:
-        with Image.open(input_file) as image:
-            # Set the border width
-            width, height = image.size # Get the width and height of the image
-
-            # Remove border
-            cropped_image = image.crop((border_width, border_width, width - border_width, height - border_width)) # Crop the image to remove the border
-
-            # Add new border
-            new_width = cropped_image.width + 2 * border_width # Add 2 * border_width to the width and height
-            new_height = cropped_image.height + 2 * border_width # to account for the new border
-            extended_image = Image.new("RGB", (new_width, new_height), border_colors) # Create a new image with the new border color
-            extended_image.paste(cropped_image, (border_width, border_width)) # Paste the cropped image onto the new image
-
-            # Resize proportionally to a maximum of 1000x1500
-            resized_image = extended_image.resize((1000, 1500), Image.LANCZOS)  # Use high-quality resampling
-
-            file_name = os.path.basename(input_file)
-            final_path = f"{output_path}/{file_name}" # Set the output path to the parent directory
-            
-            if os.path.isfile(final_path):
-                # Save file to /tmp/ and compare to existing file
-                tmp_path = f"/tmp/{file_name}"
-                resized_image.save(tmp_path)
-                if not filecmp.cmp(final_path, tmp_path):
-                    resized_image.save(final_path)
-                    # Remove tmp file
-                    os.remove(tmp_path)
-                    return True
-                else:
-                    # Remove tmp file
-                    os.remove(tmp_path)
-                    return False
-            else:
-                resized_image.save(final_path)
-                return True
-    # Log an error if the image can't be opened
-    except UnidentifiedImageError as e:
-        logger.error(f"Error: {e}")
-        logger.error(f"Error processing {input_file}")
-
                     
-def replace_border(input_file, output_path, border_colors, border_width):
+def replace_border(input_file, output_path, border_colors, border_width, resize):
     """
     Crops the center of an image, adds a 25-pixel border around it, and saves the result.
     
@@ -296,6 +240,7 @@ def replace_border(input_file, output_path, border_colors, border_width):
         output_path (str): The output path.
         border_colors (list): The list of border colors.
         border_width (int): The border width.
+        rezise (bool): Should resize
         
     Returns:
         bool: True if the file was saved, False otherwise.
@@ -313,18 +258,22 @@ def replace_border(input_file, output_path, border_colors, border_width):
             # Add border
             new_width = cropped_image.width + 2 * border_width # Add 2 * border_width to the width and height
             new_height = cropped_image.height + 2 * border_width # to account for the new border
-            extended_image = Image.new("RGB", (new_width, new_height), border_colors) # Create a new image with the new border color
-            extended_image.paste(cropped_image, (border_width, border_width)) # Paste the cropped image onto the new image
+            final_image = Image.new("RGB", (new_width, new_height), border_colors) # Create a new image with the new border color
+            final_image.paste(cropped_image, (border_width, border_width)) # Paste the cropped image onto the new image
             
+            if resize:
+                # Resize proportionally to a maximum of 1000x1500
+                final_image = final_image.resize((1000, 1500), Image.LANCZOS)  # Use high-quality resampling
+                
             file_name = os.path.basename(input_file)
             final_path = f"{output_path}/{file_name}" # Set the output path to the parent directory
 
             if os.path.isfile(final_path):
                 # Save file to /tmp/ and compare to existing file
                 tmp_path = f"/tmp/{file_name}"
-                extended_image.save(tmp_path)
+                final_image.save(tmp_path)
                 if not filecmp.cmp(final_path, tmp_path):
-                    extended_image.save(final_path)
+                    final_image.save(final_path)
                     # Remove tmp file
                     os.remove(tmp_path)
                     return True
@@ -333,63 +282,14 @@ def replace_border(input_file, output_path, border_colors, border_width):
                     os.remove(tmp_path)
                     return False
             else:
-                extended_image.save(final_path)
+                final_image.save(final_path)
                 return True
     # Log an error if the image can't be opened
     except UnidentifiedImageError as e:
         logger.error(f"Error: {e}")
         logger.error(f"Error processing {input_file}")
 
-def remove_border_resize(input_file, output_path, border_width):
-    """
-    Crops the center of an image, resizes it proportionally to a maximum of 1000x1500, and extends the canvas to 1000x1500 if necessary.
-    
-    Args:
-        input_file (str): The input file.
-        output_path (str): The output path.
-        border_width (int): The border width.
-        
-    Returns:
-        bool: True if the file was saved, False otherwise.
-    """
-
-    # Open the image
-    try:
-        with Image.open(input_file) as image: # Open the image
-            # Set the border width
-            width, height = image.size # Get the width and height of the image
-
-            # Remove border
-            cropped_image = image.crop((border_width, border_width, width - border_width, height - border_width)) # Crop the image to remove the border
-
-            # Resize proportionally to a maximum of 1000x1500
-            resized_image = cropped_image.resize((1000, 1500), Image.LANCZOS)  # Use high-quality resampling
-            
-            file_name = os.path.basename(input_file)
-            final_path = f"{output_path}/{file_name}" # Set the output path to the parent directory
-
-            if os.path.isfile(final_path):
-                # Save file to /tmp/ and compare to existing file
-                tmp_path = f"/tmp/{file_name}"
-                resized_image.save(tmp_path)
-                if not filecmp.cmp(final_path, tmp_path):
-                    resized_image.save(final_path)
-                    # Remove tmp file
-                    os.remove(tmp_path)
-                    return True
-                else:
-                    # Remove tmp file
-                    os.remove(tmp_path)
-                    return False
-            else:
-                resized_image.save(final_path)
-                return True
-    # Log an error if the image can't be opened
-    except UnidentifiedImageError as e:
-        logger.error(f"Error: {e}")
-        logger.error(f"Error processing {input_file}")
-
-def remove_border(input_file, output_path, border_width):
+def remove_border(input_file, output_path, border_width, resize):
     """
     Crops the center of an image, reducing its dimensions by 50 pixels on each side.
     
@@ -397,6 +297,7 @@ def remove_border(input_file, output_path, border_width):
         input_file (str): The input file.
         output_path (str): The output path.
         border_width (int): The border width.
+        rezise (bool): Should resize
         
     Returns:
         bool: True if the file was saved, False otherwise.
@@ -409,7 +310,11 @@ def remove_border(input_file, output_path, border_width):
             width, height = image.size # Get the width and height of the image
 
             # Remove border
-            cropped_image = image.crop((border_width, border_width, width - border_width, height - border_width)) # Crop the image to remove the border
+            final_image = image.crop((border_width, border_width, width - border_width, height - border_width)) # Crop the image to remove the border
+            
+            if resize:
+                # Resize proportionally to a maximum of 1000x1500
+                final_image = final_image.resize((1000, 1500), Image.LANCZOS)  # Use high-quality resampling
 
             file_name = os.path.basename(input_file)
             final_path = f"{output_path}/{file_name}" # Set the output path to the parent directory
@@ -417,9 +322,9 @@ def remove_border(input_file, output_path, border_width):
             if os.path.isfile(final_path):
                 # Save file to /tmp/ and compare to existing file
                 tmp_path = f"/tmp/{file_name}"
-                cropped_image.save(tmp_path)
+                final_image.save(tmp_path)
                 if not filecmp.cmp(final_path, tmp_path):
-                    cropped_image.save(final_path)
+                    final_image.save(final_path)
                     # Remove tmp file
                     os.remove(tmp_path)
                     return True
@@ -428,7 +333,7 @@ def remove_border(input_file, output_path, border_width):
                     os.remove(tmp_path)
                     return False
             else:
-                cropped_image.save(final_path) # Save the file
+                final_image.save(final_path) # Save the file
                 return True
     # Log an error if the image can't be opened
     except UnidentifiedImageError as e:

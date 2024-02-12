@@ -31,6 +31,9 @@ echo "
 # Set umask
 umask "$UMASK"
 
+# Create config directory if it doesn't exist
+mkdir -p /config /data && chown ${PUID}:${PGID} /config /data
+
 # Copy /app/config files to CONFIG_DIR unless CONFIG_DIR == /app/config
 if [ "$CONFIG_DIR" != "/app/config" ]; then
     # For each item in /app/config, copy it to the CONFIG_DIR if it doesn't exist
@@ -57,5 +60,8 @@ fi
 
 echo "Starting userScripts as $(whoami) with UID : $PUID and GID: $PGID"
 
+# Set permissions
+chown -R ${PUID}:${PGID} /${CONFIG_DIR} /data /app
+
 # Run main.py as the dockeruser
-python3 /app/main.py
+exec su -s /bin/bash -c "python3 /app/main.py" dockeruser

@@ -6,7 +6,11 @@ from util.logger import setup_logger
 from util.utility import *
 import time
 
-logger = setup_logger("info", "main")
+try:
+    logger = setup_logger("info", "main")
+except Exception as e:
+    print(f"Error setting up logger: {e}")
+    exit(1)
 
 # Set the config file path
 if is_docker():

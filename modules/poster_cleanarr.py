@@ -367,8 +367,9 @@ def main():
                     assets_dict[key] = []
                 assets_dict[key].extend(value)
 
-        # Check if assets exist, log and exit if not found
-        if not all(assets_dict.values()):
+        # If none of the values with in assets_dict contain data, log and exit
+        if not any(value for value in assets_dict.values()):
+            logger.debug(f"Assets: {json.dumps(assets_dict, indent=4)}")
             logger.error("No assets found, Please double check your settings. Exiting...")
             return
 

@@ -685,6 +685,11 @@ def get_current_git_branch():
             # Handle any errors if the command fails
             print(f"Error: {e}")
             return None
+        except FileNotFoundError as e:
+            # Handle any errors if the command fails
+            print(f"File not found, checking environment variable for branch...")
+            branch = os.getenv('BRANCH', "master")
+            return branch
     
 def create_bar(middle_text):
     total_length = 80

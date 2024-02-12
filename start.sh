@@ -58,7 +58,7 @@ elif [ "$CONFIG_DIR" == "/app/config" ]; then
     
 fi
 
-echo "Starting userScripts as $(whoami) with UID : $PUID and GID: $PGID"
+echo "Starting userScripts as $(whoami) with UID: $PUID and GID: $PGID"
 
 # Set permissions
 chown -R ${PUID}:${PGID} /${CONFIG_DIR} /data /app

@@ -58,10 +58,18 @@ elif [ "$CONFIG_DIR" == "/app/config" ]; then
     
 fi
 
-echo "Starting userScripts as $(dockeruser) running userscripts with UID: $PUID and GID: $PGID"
+echo "Starting userScripts as $(whoami) running userscripts with UID: $PUID and GID: $PGID"
 
 # Set permissions
-chown -R ${PUID}:${PGID} /${CONFIG_DIR} /data /app
+if ! chown -R ${PUID}:${PGID} /${CONFIG_DIR} /data /app; then
+    echo "Failed to change ownership."
+    echo "DEBUG: ${PUID}:${PGID} /${CONFIG_DIR}"
+    ls -la /${CONFIG_DIR} 
+    echo "DEBUG: ${PUID}:${PGID} /data"
+    ls -la /data
+    echo "DEBUG: ${PUID}:${PGID} /app"
+    ls -la /app
+fi
 
 # Run main.py as the dockeruser
 exec su -s /bin/bash -c "python3 /app/main.py" dockeruser

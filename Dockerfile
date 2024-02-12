@@ -61,21 +61,19 @@ RUN apt-get update; \
     
 
 VOLUME /var/run/docker.sock
+VOLUME /config
+VOLUME /data
 
 WORKDIR /app
 
 COPY . .
 
-#Make Directories
-RUN mkdir -p /config /data
-
 # Create a new user called dockeruser with the specified PUID and PGID
 RUN groupadd -g ${PGID} dockeruser; \
     useradd -u ${PUID} -g ${PGID} -m dockeruser; \
     chown -R dockeruser:dockeruser /app; \
+    chown -R dockeruser:dockeruser /${CONFIG_DIR}; \
     chown -R dockeruser:dockeruser /usr/local/lib/python3.11/site-packages
 
-# Set the user to dockeruser
-USER dockeruser
-
+# Entrypoint script
 ENTRYPOINT ["bash", "start.sh"]

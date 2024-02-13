@@ -8,10 +8,6 @@
 #                                                     |______|                            
 # ===========================================================================================================
 #  Author: Drazzilb
-#  Description: This script will check your media folders against your assets folder to see if there
-#                are any folders that do not have a matching asset. It will also check your collections
-#                against your assets folder to see if there are any collections that do not have a
-#                matching asset. It will output the results to a file in the logs folder.
 #  Usage: python3 unmatched_assets.py
 #  Note: There is a limitation to how this script works with regards to it matching series assets the
 #         main series poster requires seasonal posters to be present. If you have a series that does
@@ -265,7 +261,7 @@ def main():
         # Retrieving script configuration
         script_config = config.script_config
         asset_folders = script_config.get('asset_folders', [])
-        assets_paths = script_config.get('assets_paths', '')
+        source_dirs = script_config.get('source_dirs', '')
         media_paths = script_config.get('media_paths', [])
         library_names = script_config.get('library_names', [])
         ignore_collections = script_config.get('ignore_collections', [])
@@ -280,36 +276,31 @@ def main():
         logger.debug(create_table(table))
         logger.debug(f'{"Log level:":<20}{log_level}')
         logger.debug(f'{"Asset Folders:":<20}{asset_folders}')
-        logger.debug(f'{"Assets path:":<20}{assets_paths}')
+        logger.debug(f'{"Assets path:":<20}{source_dirs}')
         logger.debug(f'{"Media paths:":<20}{media_paths}')
         logger.debug(f'{"Library names:":<20}{library_names}')
         logger.debug(f'{"Ignore collections:":<20}{ignore_collections}')
         logger.debug(f'{"Instances:":<20}{instances}')
         logger.debug(create_bar("-"))
 
-        # Fetching assets and media paths
-        assets_dict = {}
-        media_dict = {}
-        for path in assets_paths:
-            if not os.path.exists(path):
-                logger.error(f"Path: {path} does not exist. Skipping...")
-                continue
-            assets_dict = categorize_files(path, asset_folders)
+        source_dirs = [source_dirs] if isinstance(source_dirs, str) else source_dirs 
+
+        assets_list = []
+        for path in source_dirs:
+            results = categorize_files(path, asset_folders)
+            if results:
+                assets_list.extend(results)
+            else:
+                logger.error(f"No assets found in {path}.")
         
         # Checking for assets and logging
-        if assets_dict:
+        if assets_list:
+            assets_dict = sort_assets(assets_list)
             logger.debug(f"Assets:\n{json.dumps(assets_dict, indent=4)}")
-        if not all(assets_dict.values()) or not assets_dict:
-            logger.error("No assets found, Check asset_folders setting in your config. Exiting.")
+        else:
+            logger.error("No assets found, Check source_dirs setting in your config. Exiting.")
             return
-        
-        # Checking for media paths and logging
-        if any(value is None for value in media_dict.values()):
-            logger.error("No media found, Check media_paths setting in your config. Exiting.")
-            return
-        if media_dict:
-            logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
-        
+
         # Fetch information from Plex and StARR
         media_dict = {
             'movies': [],
@@ -323,13 +314,15 @@ def main():
                         if instance_type == "plex":
                             url = instance_data[instance]['url']
                             api = instance_data[instance]['api']
-                            app = PlexServer(url, api)
+                            try:
+                                app = PlexServer(url, api)
+                            except Exception as e:
+                                logger.error(f"Error connecting to Plex: {e}")
+                                app = None
                             if library_names and app:
-                                results = get_plex_data(app, library_names, logger, include_smart=False, collections_only=True)
+                                print("Getting Plex data...")
+                                results = get_plex_data(app, library_names, logger, include_smart=True, collections_only=True)
                                 media_dict['collections'].extend(results)
-                                # Remove ignored collections
-                                if ignore_collections:
-                                    media_dict['collections'] = [collection for collection in media_dict['collections'] if collection['title'] not in ignore_collections]
                             else:
                                 logger.warning("No library names specified in config.yml. Skipping Plex.")
                         else:
@@ -337,20 +330,33 @@ def main():
                             api = instance_data[instance]['api']
                             app = StARR(url, api, logger)
                             if app:
+                                print(f"Getting {instance_type.capitalize()} data...")
                                 results = handle_starr_data(app, instance_type)
-                                if instance_type == "radarr":
-                                    media_dict['movies'].extend(results)
-                                elif instance_type == "sonarr":
-                                    media_dict['series'].extend(results)
-                            else:
-                                logger.warning(f"No {instance_type.capitalize()} instances specified in config.yml. Skipping {instance_type.capitalize()}.")
+                                if results:
+                                    if instance_type == "radarr":
+                                        media_dict['movies'].extend(results)
+                                    elif instance_type == "sonarr": 
+                                        media_dict['series'].extend(results)
+                                else:
+                                    logger.error(f"No {instance_type.capitalize()} data found.")
+                                
         else:
-            logger.warning("No instances specified in config.yml. Skipping Plex.")
-        logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
+            logger.error(f"No instances found. Exiting script...")
+            return
+
+        if not any(media_dict.values()):
+            logger.error("No media found, Check instances setting in your config. Exiting.")
+            return
+        else:
+            logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
         # Matching assets and printing output
         unmatched_dict = match_assets(assets_dict, media_dict, ignore_root_folders)
-        logger.debug(f"Unmatched Dict:\n{json.dumps(unmatched_dict, indent=4)}")
-        print_output(unmatched_dict, media_dict)
+        if any(unmatched_dict.values()):
+            logger.debug(f"Unmatched Dict:\n{json.dumps(unmatched_dict, indent=4)}")
+            print_output(unmatched_dict, media_dict)
+        else:
+            logger.info("All assets matched.")
+
     except KeyboardInterrupt:
         print("Exiting due to keyboard interrupt.")
         sys.exit()

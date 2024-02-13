@@ -73,7 +73,7 @@ def check_holiday(data, border_colors):
             if re.match(pattern, schedule):
                 
                 # If 'check_schedule' returns True (indicating successful execution)
-                if check_schedule(schedule):
+                if check_schedule(script_name, schedule):
                     # Retrieve the color for the holiday from schedule_color or use default border_colors
                     holiday_colors = schedule_color.get('color', border_colors)
                     
@@ -116,7 +116,7 @@ def convert_to_rgb(hex_color):
         return (255, 255, 255)
     return color_code
 
-def fix_borders(assets_dict, script_config, border_colors, output_dir, dry_run):
+def fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_run):
     """
     Replaces the border on the posters.
 
@@ -124,7 +124,7 @@ def fix_borders(assets_dict, script_config, border_colors, output_dir, dry_run):
         assets_dict (dict): The dictionary of assets.
         script_config (dict): The script config.
         border_colors (list): The list of border colors.
-        output_dir (str): The output directory.
+        destination_dir (str): The output directory.
 
     Returns:
         list: The list of messages.
@@ -186,11 +186,11 @@ def fix_borders(assets_dict, script_config, border_colors, output_dir, dry_run):
                 # Prepare output directory for saving processed files
                 if path:
                     path_basename = os.path.basename(path)
-                    output_path = f"{output_dir}/{path_basename}"
+                    output_path = f"{destination_dir}/{path_basename}"
                     if not os.path.exists(output_path):
                         os.makedirs(output_path)
                 else:
-                    output_path = output_dir
+                    output_path = destination_dir
 
                 # Process each input file within the asset
                 for input_file in files:
@@ -240,7 +240,7 @@ def replace_border(input_file, output_path, border_colors, border_width, resize)
         output_path (str): The output path.
         border_colors (list): The list of border colors.
         border_width (int): The border width.
-        rezise (bool): Should resize
+        resize (bool): Should resize
         
     Returns:
         bool: True if the file was saved, False otherwise.
@@ -297,7 +297,7 @@ def remove_border(input_file, output_path, border_width, resize):
         input_file (str): The input file.
         output_path (str): The output path.
         border_width (int): The border width.
-        rezise (bool): Should resize
+        resize (bool): Should resize
         
     Returns:
         bool: True if the file was saved, False otherwise.
@@ -341,13 +341,13 @@ def remove_border(input_file, output_path, border_width, resize):
         logger.error(f"Error processing {input_file}")
         return False
     
-def copy_files(assets_dict, output_dir, dry_run):
+def copy_files(assets_dict, destination_dir, dry_run):
     """
     Copies the files in the input directory to the output directory.
     
     Args:
-        input_dir (str): The input directory.
-        output_dir (str): The output directory.
+        source_dirs (str): The input directory.
+        destination_dir (str): The output directory.
         asset_folders (bool): Whether to use asset folders.
         dry_run (bool): Whether to perform a dry run.
         
@@ -356,8 +356,8 @@ def copy_files(assets_dict, output_dir, dry_run):
     """
     messages = []
     # Remove trailing slash
-    if output_dir.endswith('/'):
-        output_dir = output_dir.rstrip('/')
+    if destination_dir.endswith('/'):
+        destination_dir = destination_dir.rstrip('/')
     
     # Initialize asset types to process
     asset_types = ["movies", "series", "collections"]
@@ -376,16 +376,16 @@ def copy_files(assets_dict, output_dir, dry_run):
                 # Prepare output directory for saving processed files
                 if path:
                     path_basename = os.path.basename(path)
-                    output_path = f"{output_dir}/{path_basename}"
+                    output_path = f"{destination_dir}/{path_basename}"
                     if not dry_run:
                         if not os.path.exists(output_path):
                             os.makedirs(output_path)
                         else:
-                            output_path = output_dir
+                            output_path = destination_dir
                     else:
                         logger.debug(f"Creating {output_path}")
                 else:
-                    output_path = output_dir
+                    output_path = destination_dir
                 
                 # Process each input file within the asset
                 for input_file in files:
@@ -408,13 +408,13 @@ def copy_files(assets_dict, output_dir, dry_run):
                         messages.append(f"Would have copied {data['title']}{year} - {file_name} to {output_basename}")
     return messages
 
-def process_files(input_dir, output_dir, asset_folders, dry_run):
+def process_files(source_dirs, destination_dir, asset_folders, dry_run):
     """
     Processes the files in the input directory.
 
     Args:
-        input_dir (str): The input directory.
-        output_dir (str): The output directory.
+        source_dirs (str): The input directory.
+        destination_dir (str): The output directory.
         asset_folders (bool): Whether to use asset folders.
 
     Returns:
@@ -428,8 +428,8 @@ def process_files(input_dir, output_dir, asset_folders, dry_run):
     skip = script_config['skip']
 
     # Convert single string border color to a list if necessary
-    if isinstance(border_colors, str):
-        border_colors = [border_colors]
+    border_colors = [border_colors] if isinstance(border_colors, str) else border_colors
+    source_dirs = [source_dirs] if isinstance(source_dirs, str) else source_dirs 
 
     run_holiday = False
     
@@ -437,16 +437,25 @@ def process_files(input_dir, output_dir, asset_folders, dry_run):
     if schedule:
         border_colors, run_holiday, holiday = check_holiday(schedule, border_colors)
 
+    assets_list = []
     # Categorize files in the input directory into assets
-    if os.path.isdir(input_dir):
-        assets_dict = categorize_files(input_dir, asset_folders)
+    for path in source_dirs:
+        results = categorize_files(path, asset_folders)
+        if results:
+            assets_list.extend(results)
+        else:
+            logger.error(f"No assets found in {path}.")
+    
+    if assets_list:
+        assets_dict = sort_assets(assets_list)
+        logger.debug(f"Asset Files:\n{json.dumps(assets_dict, indent=4)}")
     else:
-        logger.error(f"No assets found in {input_dir}, if running Poster Renamerr in dry_run, this is expected.")
+        logger.error(f"No assets found in {(', '.join(source_dirs))}, if running Poster Renamerr in dry_run, this is expected")
         return
 
     # If Run holiday is False and Skip is set to True, return
     if not run_holiday and skip:
-        messages = copy_files(assets_dict, output_dir, dry_run)
+        messages = copy_files(assets_dict, destination_dir, dry_run)
         logger.info(f"Skipping {script_name} as it is not scheduled to run today.")
         if messages:
             table = [
@@ -456,22 +465,23 @@ def process_files(input_dir, output_dir, asset_folders, dry_run):
             for message in messages:
                 logger.info(message)
         return
+    
     # If no border colors are available, log a message
     if not border_colors:
         logger.info(f"No border colors set, removing border instead.")
     else:
         logger.info(f"Using {', '.join(border_colors)} border color(s).")
 
-    # if trailing slash on output_dir, remove it
-    if output_dir.endswith("/"):
-        output_dir = output_dir[:-1]
+    # if trailing slash on destination_dir, remove it
+    if destination_dir.endswith("/"):
+        destination_dir = destination_dir[:-1]
     
     # If assets are found in the input directory
     if any(assets_dict['movies']) or any(assets_dict['series']) or any(assets_dict['collections']):
         logger.debug(f"assets_dict:\n{json.dumps(assets_dict, indent=4)}")
 
         # Fix borders for assets using specified configurations
-        messages = fix_borders(assets_dict, script_config, border_colors, output_dir, dry_run)
+        messages = fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_run)
         logger.debug(f"messages:\n{json.dumps(messages, indent=4)}")
 
         # If there are messages (indicating processed files), log each message
@@ -486,7 +496,7 @@ def process_files(input_dir, output_dir, asset_folders, dry_run):
             # Log a message if no files were processed
             logger.info(f"\nNo files processed")
     else:
-        logger.error(f"No assets found in {input_dir}, if running Poster Renamerr in dry_run, this is expected.")
+        logger.error(f"No assets found in {source_dirs}, if running Poster Renamerr in dry_run, this is expected.")
         return
 
 
@@ -499,8 +509,8 @@ def main():
         logger.info(create_bar(f"START {name}"))
         # Obtain script configuration details
         script_config = config.script_config
-        input_dir = script_config['input_dir']
-        output_dir = script_config['output_dir']
+        source_dirs = script_config['source_dirs']
+        destination_dir = script_config['destination_dir']
         schedule = script_config['schedule']
         border_colors = script_config['border_colors']
         asset_folders = script_config['asset_folders']
@@ -517,13 +527,13 @@ def main():
         logger.debug(create_table(table))
         logger.debug(f'{"Dry_run:":<20}{config.dry_run}')
         logger.debug(f'{"Log Level:":<20}{config.log_level}')
-        logger.debug(f'{"Input Dir:":<20}{input_dir}')
-        logger.debug(f'{"Output Dir:":<20}{output_dir}')
+        logger.debug(f'{"Input Dir:":<20}{source_dirs}')
+        logger.debug(f'{"Output Dir:":<20}{destination_dir}')
         logger.debug(f'{"Schedule:":<20}{schedule}')
         logger.debug(create_bar("-"))
 
         # Process files in the input directory with specified settings
-        process_files(input_dir, output_dir, asset_folders, dry_run)
+        process_files(source_dirs, destination_dir, asset_folders, dry_run)
 
         logger.info(f"Border Replacer Complete")  # Log completion message
     except KeyboardInterrupt:

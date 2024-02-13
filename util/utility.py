@@ -137,12 +137,12 @@ def categorize_files(folder_path, asset_folders):
         asset_folders (bool): Whether or not to sort by folders
         
     Returns:
-        dict: A dictionary containing the sorted files
+        list: A list of dictionaries containing the sorted files
     """
 
+    assets_dict = []
+
     # Define asset types to categorize
-    asset_types = ['movies', 'collections', 'series']
-    assets = {asset_type: [] for asset_type in asset_types}  # Initialize an empty dictionary to hold categorized assets
     folder_path = folder_path.rstrip('/')  # Remove trailing slash from folder path
     base_name = os.path.basename(folder_path)  # Get the base folder name
 
@@ -153,7 +153,7 @@ def categorize_files(folder_path, asset_folders):
         files = sorted(files, key=lambda x: x.lower())  # Sort files alphabetically
         if files:
             # Loop through each file in the folder
-            for file in tqdm(files, desc=f"Sorting '{base_name}' folder", total=len(files), disable=None, leave=True):
+            for file in tqdm(files, desc=f"Processing '{base_name}' folder", total=len(files), disable=None, leave=True):
                 if file.startswith('.') or "(N-A)" in file:
                     continue  # Skip hidden files or files with "(N-A)" in the name
 
@@ -176,7 +176,7 @@ def categorize_files(folder_path, asset_folders):
                     no_suffix = [re.sub(r'\b{}\b'.format(suffix), '', title).strip() for suffix in suffixes if title.endswith(suffix) and re.sub(r'\b{}\b'.format(suffix), '', title).strip() != title]
                     no_prefix_normalized = [normalize_titles(re.sub(r'\b{}\b'.format(prefix), '', title).strip()) for prefix in prefixes if title.startswith(prefix) and normalize_titles(re.sub(r'\b{}\b'.format(prefix), '', title).strip()) != normalize_title]
                     no_suffix_normalized = [normalize_titles(re.sub(r'\b{}\b'.format(suffix), '', title).strip()) for suffix in suffixes if title.endswith(suffix) and normalize_titles(re.sub(r'\b{}\b'.format(suffix), '', title).strip()) != normalize_title]
-                    assets['collections'].append({
+                    assets_dict.append({
                         'title': title,
                         'year': year,
                         'normalized_title': normalize_title,
@@ -191,7 +191,7 @@ def categorize_files(folder_path, asset_folders):
                     # Categorize as a series
                     if any(file.startswith(base_name) and any(base_name + season_name in file for season_name in season_name_info) for file in files):
                         # Check if the series entry already exists in the assets dictionary
-                        series_entry = next((d for d in assets['series'] if d['normalized_title'] == normalize_title and d['year'] == year), None)
+                        series_entry = next((d for d in assets_dict if d['normalized_title'] == normalize_title and d['year'] == year), None)
                         if series_entry is None:
                             # If not, add a new series entry
                             series_entry = {
@@ -201,7 +201,7 @@ def categorize_files(folder_path, asset_folders):
                                 'files': [file_path],
                                 'season_numbers': []
                             }
-                            assets['series'].append(series_entry)
+                            assets_dict.append(series_entry)
                         else:
                             # Add the file path to the current series entry
                             if file_path not in series_entry['files']:
@@ -210,7 +210,7 @@ def categorize_files(folder_path, asset_folders):
                     
                     elif any(word in file for word in season_name_info):
                         # Check if the series entry already exists in the assets dictionary
-                        series_entry = next((d for d in assets['series'] if d['normalized_title'] == normalize_title and d['year'] == year), None)
+                        series_entry = next((d for d in assets_dict if d['normalized_title'] == normalize_title and d['year'] == year), None)
                         if series_entry is None:
                             # If not, add a new series entry
                             series_entry = {
@@ -220,7 +220,7 @@ def categorize_files(folder_path, asset_folders):
                                 'files': [file_path],
                                 'season_numbers': []
                             }
-                            assets['series'].append(series_entry)
+                            assets_dict.append(series_entry)
                         else:
                             # Add the file path to the current series entry
                             if file_path not in series_entry['files']:
@@ -229,7 +229,7 @@ def categorize_files(folder_path, asset_folders):
 
                     # Categorize as a movie
                     else:
-                        assets['movies'].append({
+                        assets_dict.append({
                             'title': title,
                             'year': year,
                             'normalized_title': normalize_title,
@@ -237,34 +237,34 @@ def categorize_files(folder_path, asset_folders):
                             'files': [file_path],
                         })
         else:
-            print(f"No files found in '{base_name}' folder.")
+            return None
 
         # Add Season number information to the series entries
-        if assets['series']:
+        if assets_dict:
             # Get Season numbers from each series entry
-            series = assets['series']
-            for series_entry in series:
-                for file in series_entry['files']:
-                    if " - Specials" in file:
-                        series_entry['season_numbers'].append(0)
+            series = [d for d in assets_dict if 'season_numbers' in d]
+            if series:
+                for series_entry in series:
+                    for file in series_entry['files']:
+                        if " - Specials" in file:
+                            series_entry['season_numbers'].append(0)
 
-                    # Check for season numbers in the file name using regex
-                    elif re.search(season_number_regex, file):
-                        match = re.search(season_number_regex, file)
-                        if match:
-                            series_entry['season_numbers'].append(int(match.group(1)))
-                # Sort the season numbers and file paths for the current series entry
-                if series_entry is not None:
-                    # Remove duplicates
-                    series_entry['season_numbers'] = list(set(series_entry['season_numbers']))
-                    series_entry['season_numbers'].sort()
-                    # Remove duplicates
-                    series_entry['files'] = list(set(series_entry['files']))
-                    series_entry['files'].sort()
-        
+                        # Check for season numbers in the file name using regex
+                        elif re.search(season_number_regex, file):
+                            match = re.search(season_number_regex, file)
+                            if match:
+                                series_entry['season_numbers'].append(int(match.group(1)))
+                    # Sort the season numbers and file paths for the current series entry
+                    if series_entry is not None:
+                        # Remove duplicates
+                        series_entry['season_numbers'] = list(set(series_entry['season_numbers']))
+                        series_entry['season_numbers'].sort()
+                        # Remove duplicates
+                        series_entry['files'] = list(set(series_entry['files']))
+                        series_entry['files'].sort()
     else:  # If asset_folders is True, sort assets based on folders
         try:
-            for dir_entry in tqdm(os.scandir(folder_path), desc='Sorting posters', total=len(os.listdir(folder_path)), disable=None):
+            for dir_entry in tqdm(os.scandir(folder_path), desc='Processing posters', total=len(os.listdir(folder_path)), disable=None):
                 if dir_entry.is_dir():
                     dir = dir_entry.path
                     files = [f.name for f in os.scandir(dir) if f.is_file()]
@@ -287,7 +287,7 @@ def categorize_files(folder_path, asset_folders):
                             if file.startswith('.'):
                                 continue
                             else:
-                                assets['collections'].append({
+                                assets_dict.append({
                                     'title': title,
                                     'year': year,
                                     'normalized_title': normalize_title,
@@ -322,7 +322,7 @@ def categorize_files(folder_path, asset_folders):
                             list_of_files.sort()
                             
                             # Add series data to the assets dictionary
-                            assets['series'].append({
+                            assets_dict.append({
                                 'title': title,
                                 'year': year,
                                 'normalized_title': normalize_title,
@@ -336,7 +336,7 @@ def categorize_files(folder_path, asset_folders):
                                 if file.startswith('.'):
                                     continue
                                 else:
-                                    assets['movies'].append({
+                                    assets_dict.append({
                                         'title': title,
                                         'year': year,
                                         'normalized_title': normalize_title,
@@ -344,10 +344,9 @@ def categorize_files(folder_path, asset_folders):
                                         'files': [f"{dir}/{file}"],
                                     })
         except FileNotFoundError:
-            print(f"Error: Folder '{folder_path}' not found.")
-            print("Exiting...")
-            exit(1)
-    return assets
+            return None
+
+    return assets_dict
 
 def create_table(data):
     """
@@ -501,11 +500,10 @@ def handle_starr_data(app, instance_type):
         instance_type (str): The type of instance (Radarr or Sonarr)
         
     Returns:
-        dict: A dictionary containing the data from Radarr or Sonarr
+        list: A list of dictionaries containing the data from Radarr or Sonarr
     """
 
     media_dict = []  # Initialize an empty list to hold media data
-    print(f"Getting {instance_type.capitalize()} data...")
     media = app.get_media()  # Fetch media data from the Radarr or Sonarr instance
     if media:
         for item in tqdm(media, desc=f"Getting {instance_type.capitalize()} data", total=len(media), disable=None, leave=True):
@@ -571,7 +569,7 @@ def handle_starr_data(app, instance_type):
                 'seasons': season_dict if instance_type == "sonarr" else None,  # Add season_dict for Sonarr items
             })  # Append the constructed dictionary to media_dict
     else:
-        print(f"No {instance_type.capitalize()} data found.")
+        return None
     
     return media_dict
 
@@ -587,14 +585,12 @@ def get_plex_data(plex, library_names, logger, include_smart, collections_only):
         collections_only (bool): Whether or not to only get collection data
         
     Returns:
-        dict: A dictionary containing the data from Plex
+        list: A list of dictionaries containing the data from Plex
     """
     
     plex_dict = []  # Initialize an empty list to hold Plex data
     collection_names = {}  # Initialize an empty dictionary to hold raw collection data
     library_data = {}  # Initialize an empty dictionary to hold library data
-    
-    print("Getting Plex data...")
     # Loop through each library name provided
     for library_name in library_names:
         try:
@@ -653,7 +649,6 @@ def validate(config, script_config, logger):
     instances = script_config.get('instances', [])
     # validate instances
     list_of_instance_keys = [sub_key for key in config.instances_config.keys() for sub_key in config.instances_config[key].keys()]
-    print("Validating instances...")
     for instance in instances:
         if instance not in list_of_instance_keys:
             logger.error(f"Instance '{instance}' not found in config.yml.")
@@ -662,10 +657,22 @@ def validate(config, script_config, logger):
         return True
 
 def is_docker():
+    """
+    Attempt to determine if running in a docker environment
+    
+    returns:
+        bool: True if running in a docker environment, False otherwise
+    """
     cgroup = Path('/proc/self/cgroup')
     return Path('/.dockerenv').is_file() or (cgroup.is_file() and 'docker' in cgroup.read_text())
 
 def get_current_git_branch():
+    """
+    Get the current git branch
+
+    Returns:
+        str: The current git branch
+    """
     if is_docker():
         branch = os.getenv('BRANCH', "master")
         return branch
@@ -692,6 +699,15 @@ def get_current_git_branch():
             return branch
     
 def create_bar(middle_text):
+    """
+    Creates a separation bar with provided text in the center
+    
+    Args:
+        middle_text (str): The text to place in the center of the separation bar
+
+    Returns:
+        str: The formatted separation bar
+    """
     total_length = 80
     if len(middle_text) == 1:
         remaining_length = total_length - len(middle_text) - 2
@@ -705,6 +721,15 @@ def create_bar(middle_text):
         return f"\n{'*' * left_side_length} {middle_text} {'*' * right_side_length}\n"
 
 def redact_sensitive_info(text):
+    """
+    Redact sensitive information from the provided text
+    
+    Args:
+        text (str): The text to redact sensitive information from
+    
+    Returns:
+        str: The text with sensitive information redacted
+    """
     # Redact Discord webhook URLs
     text = re.sub(r'https://discord\.com/api/webhooks/[^/]+/\S+', r'https://discord.com/api/webhooks/[redacted]', text)
 
@@ -730,3 +755,29 @@ def redact_sensitive_info(text):
     text = re.sub(pattern, r'\1 [redacted]', text, flags=re.DOTALL | re.IGNORECASE)
 
     return text
+
+def sort_assets(assets_list):
+    """
+    Sort assets into movies, series, and collections
+    
+    Args:
+        assets_list (list): The assets to sort
+        
+    Returns:
+        Dict: A dictionary containing the sorted assets
+    """
+    assets_dict = {
+        'movies': [],
+        'series': [],
+        'collections': []
+    }
+    for item in tqdm(assets_list, desc="Categorizing assets", total=len(assets_list), disable=None, leave=True):
+        if not item['year']:
+            assets_dict['collections'].append(item)
+        else:
+            if item.get('season_numbers', None):
+                assets_dict['series'].append(item)
+            else:
+                assets_dict['movies'].append(item)
+
+    return assets_dict

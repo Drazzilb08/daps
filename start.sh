@@ -36,27 +36,29 @@ usermod -o -u "$PUID" dockeruser
 
 # Copy /app/config files to CONFIG_DIR unless CONFIG_DIR == /app/config
 if [ "$CONFIG_DIR" != "/app/config" ]; then
-    # For each item in /app/config, copy it to the CONFIG_DIR if it doesn't exist
+    # Use diff and conditional copy for files in /app/config
     for file in /app/config/*; do
-        if [ ! -f "$CONFIG_DIR/$(basename "$file")" ]; then
-            cp "$file" "$CONFIG_DIR/$(basename "$file")"
+        local_file="$CONFIG_DIR/$(basename "$file")"
+        if [ ! -f "$local_file" ] || [ "$(diff -q "$file" "$local_file")" ]; then
+            echo "Copying $(basename "$file")"
+            cp "$file" "$local_file"
+        else
+            echo "File $(basename "$file") is up to date"
         fi
     done
 elif [ "$CONFIG_DIR" == "/app/config" ]; then
-    # If ! -f config.sample.yml, download it
-    if [ ! -f "${CONFIG_DIR}/config.sample.yml" ]; then
-        curl -s "https://raw.githubusercontent.com/Drazzilb08/userScripts/${BRANCH}/config/config.sample.yml" -o "${CONFIG_DIR}/config.sample.yml"
-    fi
-    # If ! -f backup-plex-example.conf, download it
-    if [ ! -f "${CONFIG_DIR}/backup-plex-example.conf" ]; then
-        curl -s "https://raw.githubusercontent.com/Drazzilb08/userScripts/${BRANCH}/config/backup-plex-example.conf" -o "${CONFIG_DIR}/backup-plex-example.conf"
-    fi
-    # If ! -f backup-appdata-example.yml, download it
-    if [ ! -f "${CONFIG_DIR}/backup-appdata-example.yml" ]; then
-        curl -s "https://raw.githubusercontent.com/Drazzilb08/userScripts/${BRANCH}/config/backup-appdata-example.yml" -o "${CONFIG_DIR}/backup-appdata-example.yml"
-    fi
-    
+    # Download config files only if they differ
+    for file in config.sample.yml backup-plex-example.conf backup-appdata-example.yml; do
+        local_file="$CONFIG_DIR/$file"
+        if [ ! -f "$local_file" ] || [ "$(curl -s "https://raw.githubusercontent.com/Drazzilb08/userScripts/${BRANCH}/config/$file" | diff -q - "$local_file")" ]; then
+            echo "Downloading latest $file"
+            curl -s "https://raw.githubusercontent.com/Drazzilb08/userScripts/${BRANCH}/config/$file" -o "$local_file"
+        else
+            echo "File $file is up to date"
+        fi
+    done
 fi
+
 
 echo "Starting userScripts as $(whoami) running userscripts with UID: $PUID and GID: $PGID"
 

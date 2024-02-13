@@ -15,6 +15,7 @@
 #   Examples: cron(*/5 * * * *) - Will perform the action every 5 minutes
 #   Examples: cron(0 */3 * * *) - Will perform the action every 3rd hour
 #   Please visit https://crontab.guru/ for more information on cron expressions
+# Note: You cannot use both cron and human readable expressions in the same schedule
 
 # If using the scripts through crontab or another scheduler, I would not recommend using the schedule w/in the config. 
 # The schedule is intended for use with Docker. If you want to use the schedule w/in the config, you will need to run the main.py script in the background.
@@ -37,6 +38,7 @@ schedule:
     backup_folder_2: 
   backup_plex: 
   backup_appdata: 
+  jduparr:
 
 instances:
   radarr:
@@ -134,6 +136,7 @@ bash_scripts:
 # THIS SCRIPT SYNCS GDRIVE TO A LOCAL FOLDER. ANYTHING UNIQUE IN THE FOLDER WILL BE DELETED.
 # -> You can use client_id, client_secret, and token to authenticate, or you can use gdrive_sa_location to use a service account.
 # DRAZZILB GDRIVE ID: 1VeeQ_frBFpp6AZLimaJSSr0Qsrl6Tb7z
+# Below are others that have been shared around Discord. If you have your own and would like to share it please contact me.
 # This script is meant to be used in conjunction with Plex-Meta-Manager, however, it can be used on its own.
 # This is a script base of this one: https://discord.com/channels/492590071455940612/1124032073557086258/1126226814629576858
 sync_gdrive:
@@ -192,9 +195,6 @@ discord:
     discord_webhook: 
     channel_id: 
   labelarr:
-    discord_webhook: 
-    channel_id: 
-  poster_cleanarr:
     discord_webhook: 
     channel_id: 
   backup_appdata:
@@ -265,9 +265,8 @@ poster_renamerr:
   library_names:
     - Movies
     - Anime Movies
-  source_dir: /path/to/posters/ # <- Lowest priority
-  # Optional, if you want to override the source_dir for certain libraries
-  source_overrides:
+  source_dirs: 
+    - /path/to/posters/ # <- Lowest priority
     - /path/to/posters/overrideA
     - /path/to/posters/overrideB # <- Highest priority
   destination_dir: /path/to/output/
@@ -284,8 +283,9 @@ border_replacerr:
   log_level: info
   dry_run: true
   asset_folders: false
-  input_dir: /path/to/posters/
-  output_dir: /path/to/output/
+  source_dirs: 
+    - /path/to/posters/
+  destination_dir: /path/to/output/
   # If you want to resize the posters, set this to true, else set it to false
   resize: false
   # If you want to adjust the border width (not all MM2K posters are 25px borders some are 26-27)
@@ -362,7 +362,7 @@ unmatched_assets:
     - "The Conjuring Universe"
     - "The Batman Universe"
     - "DC Extended Universe"
-  assets_paths: 
+  source_dirs: 
     - /path/to/assets
 
 
@@ -381,7 +381,7 @@ poster_cleanarr:
     - Anime Movies
   ignore_collections:
     - "Random Collection in assets you want to keep"
-  assets_paths: 
+  source_dirs: 
     - /path/to/assets
   
 nohl:

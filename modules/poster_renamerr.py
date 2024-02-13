@@ -44,114 +44,60 @@ logger = setup_logger(log_level, script_name)
 
 year_regex = re.compile(r"\s?\((\d{4})\).*")
 
-def get_assets_files(source_dir, source_overrides):
+def get_assets_files(source_dirs):
     """
-    Returns a dictionary of assets files
+    Get assets files from source directories
 
     Args:
-        source_dir (str): Path to source directory
-        source_overrides (list): List of paths to source override directories
-    
+        source_dir (list): Path to source directory
     Returns:
-        dict: Dictionary of assets files
+        list: List of dictionaries containing assets files
     """
 
-    source_assets = {} 
+    # Convert source_dirs to list if it's a string
+    source_dirs = [source_dirs] if isinstance(source_dirs, str) else source_dirs
 
-    # Fetches asset files from the primary source directory
-    if not os.path.exists(source_dir):
-        logger.error(f"Source directory not found: {source_dir}")
-    else:
-        source_assets = categorize_files(source_dir, asset_folders=False)
-    # Handles source overrides if provided
-    if source_overrides:
-        source_overrides = [source_overrides] if isinstance(source_overrides, str) else source_overrides
-        # Process each override directory
-        for source_override in source_overrides:
-            if not os.path.exists(source_override):
-                logger.error(f"Source override directory not found: {source_override}. Skipping...")
-                continue
-            # Retrieves asset files from the override directory
-            override_dict = categorize_files(source_override, asset_folders=False)
-            # Consolidate the value of each key into one unified list
-            override_assets = [asset for value in override_dict.values() for asset in value]
-            # Handles overrides between primary source and the override
-            handle_overrides(source_assets, override_assets)
+    # Initialize final_assets list
+    final_assets = []
+
+    # Iterate through each source directory
+    for source_dir in source_dirs:
+        new_assets = categorize_files(source_dir, asset_folders=False)
+        if new_assets:
+            # Merge new_assets with final_assets
+            for new in new_assets:
+                found_match = False
+                for final in final_assets:
+                    if final['normalized_title'] == new['normalized_title'] and final['year'] == new['year']:
+                        found_match = True
+                        # Compare normalized file names between final and new assets
+                        for new_file in new['files']:
+                            normalized_new_file = normalize_file_names(os.path.basename(new_file))
+                            for final_file in final['files']:
+                                normalized_final_file = normalize_file_names(os.path.basename(final_file))
+                                # Replace final file with new file if the filenames match
+                                if normalized_final_file == normalized_new_file:
+                                    final['files'].remove(final_file)
+                                    final['files'].append(new_file)
+                                    break
+                            else:
+                                # Add new file to final asset if the filenames don't match
+                                final['files'].append(new_file)
+                        # Merge season_numbers from new asset to final asset
+                        new_season_numbers = new.get('season_numbers', None)
+                        if new_season_numbers:
+                            final_season_numbers = final.get('season_numbers', None)
+                            if final_season_numbers:
+                                final['season_numbers'] = list(set(final_season_numbers + new_season_numbers))
+                            else:
+                                final['season_numbers'] = new_season_numbers
+                        break
+                if not found_match:
+                    final_assets.append(new)
+        else:
+            logger.error(f"No assets found in {source_dir}")
     
-    if source_assets:
-        # Sort the contents of each key by title
-        for key, value in source_assets.items():
-            source_assets[key] = sorted(value, key=lambda k: k['title'])
-
-    return source_assets
-
-def handle_overrides(source_assets, override_assets):
-    """
-    Handles overrides between source and override assets
-    
-    Args:
-        source_assets (dict): Dictionary of source assets
-        override_assets (dict): Dictionary of override assets
-    
-    Returns:
-        None
-    """
-
-    # List of asset types to consider for overrides
-    asset_types = ['collections', 'movies', 'series']
-
-    # Iterates through each asset type
-    for asset_type in asset_types:
-        # Iterates through each asset in the source assets
-        for source_asset in source_assets[asset_type]:
-            # Iterates through each asset in the override assets
-            for override_asset in override_assets:
-                # Checks if the title and year of the source and override asset match
-                if (
-                    source_asset['normalized_title'] == override_asset['normalized_title']
-                    and source_asset['year'] == override_asset['year']
-                ):
-                    # Compares and handles the files between source and override assets
-                    for override_file in override_asset['files']:
-                        override_basename, extension = os.path.splitext(os.path.basename(override_file))
-                        normalized_override_basename = normalize_file_names(override_basename)
-                        for source_file in source_asset['files']:
-                            source_basename, extension = os.path.splitext(os.path.basename(source_file))
-                            normalized_source_basename = normalize_file_names(source_basename)
-                            # Replaces source file with override file if the filenames match
-                            if source_basename == override_basename or normalized_source_basename == normalized_override_basename:
-                                source_asset['files'].remove(source_file)
-                                source_asset['files'].append(override_file)
-                                break
-                        # Adds override file to source asset matching based upon normalized filenames
-                        else:
-                            source_asset['files'].append(override_file)
-                    # Combines the season_numbers key no duplicates
-                    if asset_type == "series":
-                        source_asset_season_numbers = source_asset.get('season_numbers', [])
-                        override_asset_season_numbers = override_asset.get('season_numbers', [])
-                        for season_number in override_asset_season_numbers:
-                            if season_number not in source_asset_season_numbers:
-                                source_asset_season_numbers.append(season_number)
-                        source_asset['season_numbers'] = source_asset_season_numbers
-                        # Sort the season_numbers key
-                        source_asset['season_numbers'].sort()
-                    # Removes the override asset from the override assets
-                    override_assets.remove(override_asset)
-                    break
-        # Adds any remaining override assets to the source assets
-        if override_assets:
-            for override_asset in override_assets:
-                normalized_title = normalize_file_names(override_asset['title'])
-                if not override_asset['year'] and override_asset['title']:
-                    if not any(asset['normalized_title'] == normalized_title for asset in source_assets['collections']):
-                        source_assets['collections'].append(override_asset)
-                elif override_asset['year'] and 'season_numbers' not in override_asset:
-                    if not any(asset['normalized_title'] == normalized_title and asset['year'] == override_asset['year'] for asset in source_assets['movies']):
-                        source_assets['movies'].append(override_asset)
-                elif 'season_numbers' in override_asset and override_asset['season_numbers']:
-                    if not any(asset['normalized_title'] == normalized_title and asset['year'] == override_asset['year'] for asset in source_assets['series']):
-                        source_assets['series'].append(override_asset)
+    return final_assets
 
 def match_data(media_dict, asset_files):
     """
@@ -605,7 +551,7 @@ def main():
         # Extract script configuration settings
         asset_folders = script_config.get('asset_folders', False)
         library_names = script_config.get('library_names', False)
-        source_dir = script_config.get('source_dir', False)
+        source_dirs = script_config.get('source_dirs', False)
         source_overrides = script_config.get('source_overrides', False)
         destination_dir = script_config.get('destination_dir', False)
         action_type = script_config.get('action_type', False)
@@ -620,7 +566,7 @@ def main():
         logger.debug(f'{"Log level:":<20}{log_level}')
         logger.debug(f'{"Asset folders:":<20}{asset_folders}')
         logger.debug(f'{"Library names:":<20}{library_names}')
-        logger.debug(f'{"Source dir:":<20}{source_dir}')
+        logger.debug(f'{"Source dirs:":<20}\n{json.dumps(source_dirs, indent=4)}')
         logger.debug(f'{"Source overrides:":<20}{source_overrides}')
         logger.debug(f'{"Destination dir:":<20}{destination_dir}')
         logger.debug(f'{"Action type:":<20}{action_type}')
@@ -653,59 +599,83 @@ def main():
             from modules.sync_gdrive import main
             main()
 
-        assets_dict = {}
-        # Retrieve asset files
+        assets_list = []
         print("Gathering all the posters, please wait...")
-        assets_dict = get_assets_files(source_dir, source_overrides)
+        assets_list = get_assets_files(source_dirs)
 
-        # Log retrieved asset files or exit if not found
-        if any(assets_dict.values()):
+        if assets_list:
+            assets_dict = sort_assets(assets_list)
             logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
         else:
-            logger.error("No asset files found. Exiting.")
+            logger.error("No assets found. Exiting...")
             return
-        media_dict = {}  # Initialize dictionary for media data
-        # Loop through instances for media retrieval
-        for instance_type, instances_data in config.instances_config.items():
-            # Retrieve media data for each instance
-            for instance in instances:
-                if instance in instances_data:
-                    if instance_type == "plex":
-                        media_type = "collections"
-                        if library_names:
-                            print("Connecting to Plex...")
-                            app = PlexServer(instances_data[instance]['url'], instances_data[instance]['api'])
-                            results = get_plex_data(app, library_names, logger, include_smart=True, collections_only=True)
-                    else:
-                        if instance_type == "radarr":
-                            media_type = 'movies'
-                        elif instance_type == "sonarr":
-                            media_type = 'series'
-                        app = StARR(instances_data[instance]['url'], instances_data[instance]['api'], logger)
-                        results = handle_starr_data(app, instance_type)
-                    if results:
-                        if media_type in media_dict:
-                            media_dict[media_type].extend(results)
+        
+        media_dict = {
+            'movies': [],
+            'series': [],
+            'collections': []
+        }
+        if instances:
+            for instance_type, instance_data in config.instances_config.items():
+                for instance in instances:
+                    if instance in instance_data:
+                        if instance_type == "plex":
+                            url = instance_data[instance]['url']
+                            api = instance_data[instance]['api']
+                            try:
+                                app = PlexServer(url, api)
+                            except Exception as e:
+                                logger.error(f"Error connecting to Plex: {e}")
+                                app = None
+                            if library_names and app:
+                                print("Getting Plex data...")
+                                results = get_plex_data(app, library_names, logger, include_smart=True, collections_only=True)
+                                media_dict['collections'].extend(results)
+                            else:
+                                logger.warning("No library names specified in config.yml. Skipping Plex.")
                         else:
-                            media_dict[media_type] = results
+                            url = instance_data[instance]['url']
+                            api = instance_data[instance]['api']
+                            app = StARR(url, api, logger)
+                            if app:
+                                print(f"Getting {instance_type.capitalize()} data...")
+                                results = handle_starr_data(app, instance_type)
+                                if results:
+                                    if instance_type == "radarr":
+                                        media_dict['movies'].extend(results)
+                                    elif instance_type == "sonarr": 
+                                        media_dict['series'].extend(results)
+                                else:
+                                    logger.error(f"No {instance_type.capitalize()} data found.")
+                                
+        else:
+            logger.error(f"No instances found. Exiting script...")
+            return
+        
         # Log media data
-        logger.debug(f"media_dict:\n{json.dumps(media_dict, indent=4)}")
+        if not any(media_dict.values()):
+            logger.error("No media found, Check instances setting in your config. Exiting.")
+            return
+        else:
+            logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
 
         if media_dict and assets_dict:
             # Match media data to asset files
             combined_dict = match_data(media_dict, assets_dict)
             logger.debug(f"Matched and Unmatched media:\n{json.dumps(combined_dict, indent=4)}")
             matched_assets = combined_dict.get('matched', None)
-            output = rename_files(matched_assets, script_config)
-        if any(asset['messages'] for asset in output['collections']) or any(asset['messages'] for asset in output['movies']) or any(asset['messages'] for asset in output['series']):
-            # Log output and handle notifications
-            logger.debug(f"Output:\n{json.dumps(output, indent=4)}")
-            handle_output(output, asset_folders)
-            if discord_check(script_name):
-                notification(output)
-        else:
-            # Log message if no output is found
-            logger.info("No new posters to rename.")
+            if any(matched_assets.values()):
+                output = rename_files(matched_assets, script_config)
+                if any(output.values()):
+                    logger.debug(f"Output:\n{json.dumps(output, indent=4)}")
+                    handle_output(output, asset_folders)
+                    if discord_check(script_name):
+                        notification(output)
+                else:
+                    logger.info(f"No new posters to rename.")
+            else:
+                logger.info(f"No assets matched to media.")
+
         if border_replacerr:
             # Run border_replacerr.py or log intent to run
             logger.info(f"Running border_replacerr.py")

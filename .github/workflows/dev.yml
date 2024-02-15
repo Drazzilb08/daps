@@ -5,12 +5,14 @@ on:
     branches: [ dev ]
     paths-ignore:
       - '**/README.md'
+      # Ignore updates to .github
+      - '**/.github/**'
   pull_request:
     branches: [ dev ]
 
 jobs:
 
-  docker-latest:
+  docker-dev:
     runs-on: ubuntu-latest
   
     steps:

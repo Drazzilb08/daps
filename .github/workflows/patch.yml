@@ -6,12 +6,14 @@ on:
       - patch-*
     paths-ignore:
       - '**/README.md'
+      # Ignore updates to .github
+      - '**/.github/**'
   pull_request:
     branches:
       - patch-*
 
 jobs:
-  docker-latest:
+  docker-patch:
     runs-on: ubuntu-latest
     steps:
       - name: Extract branch name

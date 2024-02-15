@@ -4,7 +4,9 @@ on:
   push:
     branches: [ master ]
     paths-ignore:
-        - '**/README.md'
+      - '**/README.md'
+      # Ignore updates to .github
+      - '**/.github/**'
 
 jobs:
 

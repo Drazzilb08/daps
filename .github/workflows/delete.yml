@@ -1,0 +1,22 @@
+name: Delete Docker Images if Branch is Deleted
+
+on:
+  delete:
+    branches:
+      - patch-*
+
+jobs:
+  delete:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Delete Docker Image from GHCR
+        run: |
+          docker login --username ${{ secrets.GH_USERNAME }} --password ${{ secrets.GH_TOKEN }} ghcr.io
+          docker image rm ghcr.io/drazzilb08/userscripts:${{ github.ref_slug }}
+          docker logout ghcr.io
+
+      - name: Delete Docker Image from Docker
+        run: |
+          docker login --username ${{ secrets.DOCKER_USERNAME }} --password ${{ secrets.DOCKER_TOKEN }}
+          docker image rm ${{ secrets.DOCKER_USERNAME }}/userscripts:${{ github.ref_slug }}
+          docker logout

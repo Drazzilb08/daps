@@ -123,44 +123,21 @@ def match_data(media_dict, asset_files):
     # Iterate through each asset type
     with tqdm(total=len(asset_types), desc=f"Matching assets...", unit="asset types", leave=True) as pbar_outer:
         for asset_type in asset_types:
-            if asset_type in media_dict:  # Check if the asset type exists in media dictionary
-                unmatched_dict = []  # Initialize unmatched dictionary for current asset type
-                matched_dict = []  # Initialize matched dictionary for current asset type
-                asset_data = asset_files[asset_type]  # Get asset data for current asset type
-                media_data = media_dict[asset_type]  # Get media data for current asset type
+            if asset_type in media_dict:
+                unmatched_dict = []
+                matched_dict = []
+                asset_data = asset_files[asset_type]
+                media_data = media_dict[asset_type]
                 # Iterate through each media entry of the current asset type
                 with tqdm(total=len(media_data), desc=f"Matching {asset_type}", unit="media", leave=True, disable=None) as pbar_inner:
                     for media in media_data:
-                        matched = False  # Flag to indicate if media has been matched to an asset
+                        matched = False 
                         if asset_type == 'series':
                             media_seasons_numbers = [season['season_number'] for season in media.get('seasons', [])]
                         # Iterate through each asset entry of the current asset type
                         for asset in asset_data:
                             # Extracting various properties of assets and media for comparison
-                            no_prefix = asset.get('no_prefix', None)
-                            no_suffix = asset.get('no_suffix', None)
-                            no_prefix_normalized = asset.get('no_prefix_normalized', None)
-                            no_suffix_normalized = asset.get('no_suffix_normalized', None)
-                            alternate_titles = media.get('alternate_titles', [])
-                            normalized_alternate_titles = media.get('normalized_alternate_titles', [])
-                            secondary_year = media.get('secondary_year', None)
-                            original_title = media.get('original_title', None)
-
-                            # Matching criteria for media and asset
-                            if (
-                                asset['title'] == media['title'] or
-                                asset['normalized_title'] == media['normalized_title'] or
-                                asset['title'] in alternate_titles or
-                                asset['normalized_title'] in normalized_alternate_titles or
-                                asset['title'] == original_title or
-                                (no_prefix and media['title'] in no_prefix) or
-                                (no_suffix and media['title'] in no_suffix) or
-                                (no_prefix_normalized and media['normalized_title'] in no_prefix_normalized) or
-                                (no_suffix_normalized and media['normalized_title'] in no_suffix_normalized)
-                            ) and (
-                                asset['year'] == media['year'] or
-                                asset['year'] == secondary_year
-                            ):
+                            if is_match(media, asset):
                                 matched = True  # Set flag to indicate a match
                                 asset_season_numbers = asset.get('season_numbers', None)
                                 if asset_type == "series":
@@ -202,14 +179,15 @@ def match_data(media_dict, asset_files):
                                 'year': media['year'],
                                 'folder': media['folder'],
                             })
-
+                        
                         # Update combined matched and unmatched dictionaries
                         combined_dict['matched'][asset_type] = matched_dict
                         combined_dict['unmatched'][asset_type] = unmatched_dict
 
-                        pbar_inner.update(1)  # Update progress bar for media matching
-                pbar_outer.update(1)  # Update progress bar for asset types
-    return combined_dict  # Return the combined dictionary of matched and unmatched media data
+                        pbar_inner.update(1)
+                pbar_outer.update(1)
+
+    return combined_dict
 
 def process_file(file, new_file_path, action_type):
     """

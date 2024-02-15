@@ -1,4 +1,4 @@
-name: Docker Develop Release
+name: Docker Patch Release
 
 on:
   push:

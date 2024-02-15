@@ -346,11 +346,9 @@ def copy_files(assets_dict, destination_dir, dry_run):
     Copies the files in the input directory to the output directory.
     
     Args:
-        source_dirs (str): The input directory.
+        assets_dict (dict): The dictionary of assets.
         destination_dir (str): The output directory.
-        asset_folders (bool): Whether to use asset folders.
         dry_run (bool): Whether to perform a dry run.
-        
     Returns:
         None
     """
@@ -380,10 +378,8 @@ def copy_files(assets_dict, destination_dir, dry_run):
                     if not dry_run:
                         if not os.path.exists(output_path):
                             os.makedirs(output_path)
-                        else:
-                            output_path = destination_dir
                     else:
-                        logger.debug(f"Creating {output_path}")
+                        logger.debug(f"Would have created {output_path}")
                 else:
                     output_path = destination_dir
                 
@@ -399,10 +395,18 @@ def copy_files(assets_dict, destination_dir, dry_run):
                     if not dry_run:
                         if os.path.isfile(final_path):
                             if not filecmp.cmp(final_path, input_file):
-                                shutil.copy(input_file, final_path)
+                                try:
+                                    shutil.copy(input_file, final_path)
+                                except shutil.SameFileError:
+                                    logger.debug(f"Input file {input_file} is the same as {final_path}, skipping")
+                                logger.debug(f"Input file {input_file} is different from {final_path}, copying to {output_basename}")
                                 messages.append(f"Copied {data['title']}{year} - {file_name} to {output_basename}")
                         else:
-                            shutil.copy(input_file, final_path)
+                            try:
+                                shutil.copy(input_file, final_path)
+                            except shutil.SameFileError:
+                                logger.debug(f"Input file {input_file} is the same as {final_path}, skipping")
+                            logger.debug(f"Input file {input_file} does not exist in {output_path}, copying to {output_basename}")
                             messages.append(f"Copied {data['title']}{year} - {file_name} to {output_basename}")
                     else:
                         messages.append(f"Would have copied {data['title']}{year} - {file_name} to {output_basename}")
@@ -423,13 +427,27 @@ def process_files(source_dirs, destination_dir, asset_folders, dry_run):
 
     # Obtain script configuration details
     script_config = config.script_config
-    schedule = script_config['schedule']
-    border_colors = script_config['border_colors']
-    skip = script_config['skip']
+    schedule = script_config.get('schedule', None)
+    border_colors = script_config.get('border_colors', None)
+    skip = script_config.get('skip', False)
 
     # Convert single string border color to a list if necessary
     border_colors = [border_colors] if isinstance(border_colors, str) else border_colors
     source_dirs = [source_dirs] if isinstance(source_dirs, str) else source_dirs 
+
+    table = [
+        ["Script Settings"],
+    ]
+    logger.debug(create_table(table))
+    logger.debug(f'{"Dry_run:":<20}{config.dry_run}')
+    logger.debug(f'{"Log Level:":<20}{config.log_level}')
+    logger.debug(f'{"Input Dir:":<20}{source_dirs}')
+    logger.debug(f'{"Output Dir:":<20}{destination_dir}')
+    logger.debug(f'{"Asset Folders:":<20}{asset_folders}')
+    logger.debug(f'{"Border Colors:":<20}{border_colors}')
+    logger.debug(f'{"Skip:":<20}{skip}')
+    logger.debug(f'{"Schedule:":<20}{schedule}')
+    logger.debug(create_bar("-"))
 
     run_holiday = False
     
@@ -520,17 +538,6 @@ def main():
         if isinstance(border_colors, str):
             border_colors = [border_colors]
 
-        # Creating a table to log script settings in debug mode
-        table = [
-            ["Script Settings"],
-        ]
-        logger.debug(create_table(table))
-        logger.debug(f'{"Dry_run:":<20}{config.dry_run}')
-        logger.debug(f'{"Log Level:":<20}{config.log_level}')
-        logger.debug(f'{"Input Dir:":<20}{source_dirs}')
-        logger.debug(f'{"Output Dir:":<20}{destination_dir}')
-        logger.debug(f'{"Schedule:":<20}{schedule}')
-        logger.debug(create_bar("-"))
 
         # Process files in the input directory with specified settings
         process_files(source_dirs, destination_dir, asset_folders, dry_run)

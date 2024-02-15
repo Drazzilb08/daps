@@ -20,6 +20,8 @@ except ImportError as e:
 illegal_chars_regex = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')
 # Regex to extract the year from parentheses in the title
 year_regex = re.compile(r"\s?\((\d{4})\).*")
+# Regex to extract the year from parentheses in the folder name
+folder_year_regex = re.compile(r"(.*)\s\((\d{4})\)")
 # Regex to remove special characters from the title
 remove_special_chars = re.compile(r'[^a-zA-Z0-9\s]+')
 # Season number regex
@@ -76,6 +78,9 @@ def normalize_file_names(file_name):
     # Remove trailing whitespaces
     file_name = file_name.rstrip()
 
+    # Remove leading whitespaces
+    file_name = file_name.lstrip()
+
     # Replace '&' with 'and'
     file_name = file_name.replace('&', 'and')
 
@@ -113,18 +118,21 @@ def normalize_titles(title):
     
     # Convert special characters to ASCII equivalent
     normalized_title = unidecode(html.unescape(normalized_title))
-    
+
     # Remove trailing whitespaces
     normalized_title = normalized_title.rstrip()
+
+    # Remove leading whitespaces
+    normalized_title = normalized_title.lstrip()
     
     # Replace '&' with 'and'
     normalized_title = normalized_title.replace('&', 'and')
-    
+
     # Remove special characters using regex
     normalized_title = re.sub(remove_special_chars, '', normalized_title).lower()
     
     # Remove spaces in the title
-    normalized_title = normalized_title.replace(' ', '')
+    normalized_title = normalized_title.replace('  ', ' ')
     
     return normalized_title
 
@@ -781,3 +789,74 @@ def sort_assets(assets_list):
                 assets_dict['movies'].append(item)
 
     return assets_dict
+
+def compare_strings(string1, string2):
+    """
+    Compare two strings for equality
+
+    Args:
+        string1 (str): The first string to compare
+        string2 (str): The second string to compare
+
+    Returns:
+        bool: True if the strings are equal, False otherwise
+    """
+    string1 = re.sub(r'\W+', '', string1)
+    string2 = re.sub(r'\W+', '', string2)
+
+    return string1.lower() == string2.lower()
+
+def is_match(asset, media):
+    """
+    Check if the asset matches the media
+
+    Args:
+        asset (dict): The asset to check
+        media (dict): The media to check
+
+    Returns:
+        bool: True if the asset matches the media, False otherwise
+    """
+    no_prefix = asset.get('no_prefix', [])
+    no_suffix = asset.get('no_suffix', [])
+    no_prefix_normalized = asset.get('no_prefix_normalized', [])
+    no_suffix_normalized = asset.get('no_suffix_normalized', [])
+    alternate_titles = media.get('alternate_titles', [])
+    normalized_alternate_titles = media.get('normalized_alternate_titles', [])
+    secondary_year = media.get('secondary_year', None)
+    original_title = media.get('original_title', None)
+    folder = media.get('folder', None)
+    folder_title = None
+    folder_year = None
+    normalized_folder_title = None
+    if folder:
+        folder_base_name = os.path.basename(folder)
+        match = re.search(folder_year_regex, folder_base_name)
+        if match:
+            folder_title, folder_year = match.groups()
+            folder_year = int(folder_year)
+            normalized_folder_title = normalize_titles(folder_title)
+    
+    # Matching criteria for media and asset
+    if (
+        asset['title'] == media['title'] or
+        asset['normalized_title'] == media['normalized_title'] or
+        asset['title'] in alternate_titles or
+        asset['normalized_title'] in normalized_alternate_titles or
+        asset['title'] == original_title or
+        asset['title'] == folder_title or
+        asset['normalized_title'] == normalized_folder_title or 
+        media['title'] == no_prefix or
+        media['title'] == no_suffix or
+        (media['normalized_title'] in no_prefix_normalized) or
+        (media['normalized_title'] in no_suffix_normalized) or
+        compare_strings(asset['title'], media['title']) or
+        compare_strings(asset['normalized_title'], media['normalized_title'])
+    ) and (
+        asset['year'] == media['year'] or
+        asset['year'] == secondary_year or
+        asset['year'] == folder_year
+    ):
+        return True
+    else:
+        return False

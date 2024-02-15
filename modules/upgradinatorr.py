@@ -168,6 +168,7 @@ def process_instance(instance_type, instance_settings, app):
         ready = app.wait_for_command(search_response['id'])
         if ready:
             queue = app.get_queue(instance_type)
+            logger.debug(f"queue:\n{json.dumps(queue, indent=4)}")
             queue_dict = process_queue(queue, instance_type, media_ids)
             logger.debug(f"queue_dict:\n{json.dumps(queue_dict, indent=4)}")
             for item in filtered_media_dict:

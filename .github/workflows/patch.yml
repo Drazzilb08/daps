@@ -3,43 +3,27 @@ name: Docker Latest Release
 on:
   push:
     branches:
-      - '**patch-*' # Trigger on patch branches
+      - '**.patch-*' # Trigger on patch branches
   delete:
     branches:
-      - '**patch-*' # Delete only patch branches
+      - '**.patch-*' # Trigger on patch branch deletion
 
 jobs:
   docker-latest:
     runs-on: ubuntu-latest
-  
+
     steps:
       - name: Checkout the repo
         uses: actions/checkout@v4
-      
-      - name: Login to GitHub Container Registry
-        run: echo "${{ secrets.GH_TOKEN }}" | docker login ghcr.io -u ${{ secrets.GH_USERNAME }} --password-stdin
-      
-      - name: Build and push to GitHub Container Registry
+
+      - name: Build and push Docker image (patch-* branch)
+        if: startsWith(github.ref, 'refs/heads/patch-') && github.event_name == 'push'
         run: |
           docker build --build-arg BRANCH=$(git rev-parse --abbrev-ref HEAD) -t ghcr.io/${{ secrets.GH_USERNAME }}/userscripts:${{ github.ref }} .
           docker push ghcr.io/${{ secrets.GH_USERNAME }}/userscripts:${{ github.ref }}
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
-
-      - name: Build and push to Docker Hub
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: ./Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/userscripts:${{ github.ref }}
-
-      - name: Remove container from remote repository if branch deleted
-        if: startsWith(github.ref, 'refs/heads/') && github.event_name == 'delete' && startsWith(github.ref, 'refs/heads/patch-')
+      - name: Remove container from remote repositories (branch deletion)
+        if: startsWith(github.ref, 'refs/heads/patch-') && github.event_name == 'delete'
         run: |
           docker rmi ghcr.io/${{ secrets.GH_USERNAME }}/userscripts:${{ github.ref }} || true
           docker rmi ${{ secrets.DOCKER_USERNAME }}/userscripts:${{ github.ref }} || true

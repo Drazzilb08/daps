@@ -38,8 +38,6 @@ config = Config(script_name)
 log_level = config.log_level
 logger = setup_logger(log_level, script_name)
 
-year_regex = re.compile(r"(.*)\s\((\d{4})\)")
-
 def match_assets(assets_dict, media_dict, ignore_root_folders):
     """
     Matches assets to media and returns a dictionary of unmatched assets.
@@ -62,62 +60,42 @@ def match_assets(assets_dict, media_dict, ignore_root_folders):
         if media_type in media_dict and media_type in assets_dict:
             # Iterate through each media data in the media dictionary of the current type
             for media_data in tqdm(media_dict[media_type], desc=f"Matching {media_type}", unit="media", total=len(media_dict[media_type]), leave=True, disable=None):
+                # Initialize variable to store whether a match was found
+                matched = False
+
                 # Check if the media is released, ended, or continuing or not monitored
                 if media_type in ['series', 'movies'] and not media_data['status'] in ['released', 'ended', 'continuing'] or media_type in ['series', 'movies'] and not media_data['monitored']:
                         continue
+                
+                # Get location of media
                 if media_type == "collections":
                     location = media_data['location']
                 else:
                     location = media_data['root_folder']
+
+                # Get root folder name
                 root_folder = os.path.basename(location.rstrip('/')).lower()
+
+                # Check if the root folder should be ignored
                 if ignore_root_folders:
                     if root_folder in ignore_root_folders or location in ignore_root_folders:
                         continue
-                # Initialize variable to store whether a match was found
-                matched = False
+
+                # Check if location is in unmatched_assets
                 if location not in unmatched_assets[media_type]:
                     unmatched_assets[media_type][location] = []
+                
                 # Get season numbers for series
                 if media_type == 'series':
                     media_seasons_numbers = [season['season_number'] for season in media_data.get('seasons', []) if season['season_has_episodes']]
+
+                
                 # Compare media data with each asset data for the same media type
                 for asset_data in assets_dict[media_type]:
-                    no_prefix = asset_data.get('no_prefix', None)
-                    no_suffix = asset_data.get('no_suffix', None)
-                    no_prefix_normalized = asset_data.get('no_prefix_normalized', None)
-                    no_suffix_normalized = asset_data.get('no_suffix_normalized', None)
-                    alternate_titles = media_data.get('alternate_titles', [])
-                    normalized_alternate_titles = media_data.get('normalized_alternate_titles', [])
-                    secondary_year = media_data.get('secondary_year', None)
-                    original_title = media_data.get('original_title', None)
                     asset_seasons_numbers = asset_data.get('season_numbers', None)
-                    folder = media_data.get('folder', None)
-                    # Get title and year from folder base_name
-                    if folder:
-                        folder_base_name = os.path.basename(folder)
-                        match = re.search(year_regex, folder_base_name)
-                        if match:
-                            folder_title, folder_year = match.groups()
-                            folder_year = int(folder_year)
-                            normalized_folder_title = normalize_titles(folder_title)
-                    # If normalized title and year match between asset and media, check for missing seasons
-                    if (
-                            asset_data['title'] == media_data['title'] or
-                            asset_data['normalized_title'] == media_data['normalized_title'] or
-                            asset_data['title'] in alternate_titles or
-                            asset_data['normalized_title'] in normalized_alternate_titles or
-                            asset_data['title'] == original_title or
-                            folder_title == asset_data['title'] or
-                            normalized_folder_title == asset_data['normalized_title'] or
-                            (no_prefix and media_data['title'] in no_prefix) or
-                            (no_suffix and media_data['title'] in no_suffix) or
-                            (no_prefix_normalized and media_data['normalized_title'] in no_prefix_normalized) or
-                            (no_suffix_normalized and media_data['normalized_title'] in no_suffix_normalized)
-                        ) and (
-                            asset_data['year'] == media_data['year'] or
-                            asset_data['year'] == secondary_year or
-                            folder_year == asset_data['year']
-                        ):
+
+                    # Check if the asset matches the media
+                    if is_match(asset_data, media_data):
                         matched = True
                         if media_type == 'series':
                             if asset_seasons_numbers and media_seasons_numbers:

@@ -3,6 +3,7 @@
 PUID=${PUID:-100}
 PGID=${PGID:-99}
 UMASK=${UMASK:-002}
+START_DEBUG=${START_DEBUG:-false}
 
 export RCLONE_CONFIG="${CONFIG_DIR}/rclone/rclone.conf"
 
@@ -63,14 +64,18 @@ fi
 echo "Starting userScripts as $(whoami) running userscripts with UID: $PUID and GID: $PGID"
 
 # Set permissions
-if ! chown -R ${PUID}:${PGID} /${CONFIG_DIR} /data /app; then
-    echo "Failed to change ownership."
-    echo "DEBUG: ${PUID}:${PGID} /${CONFIG_DIR}"
-    ls -la /${CONFIG_DIR} 
-    echo "DEBUG: ${PUID}:${PGID} /data"
-    ls -la /data
-    echo "DEBUG: ${PUID}:${PGID} /app"
-    ls -la /app
+if [ "$START_DEBUG" = "true" ]; then
+    if ! chown -R ${PUID}:${PGID} /${CONFIG_DIR} /data /app; then
+        echo "Failed to change ownership."
+        echo "DEBUG: ${PUID}:${PGID} /${CONFIG_DIR}"
+        ls -la /${CONFIG_DIR} 
+        echo "DEBUG: ${PUID}:${PGID} /data"
+        ls -la /data
+        echo "DEBUG: ${PUID}:${PGID} /app"
+        ls -la /app
+    fi
+else
+    chown -R ${PUID}:${PGID} /${CONFIG_DIR} /data /app > /dev/null 2>&1
 fi
 
 # Run main.py as the dockeruser

@@ -40,6 +40,6 @@ jobs:
           context: .
           file: ./Dockerfile
           build-args: |
-            "BRANCH=patch"
+            "BRANCH=${{ steps.extract_branch.outputs.branch }}"
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/userscripts:${{ steps.extract_branch.outputs.branch }}

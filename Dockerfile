@@ -49,7 +49,7 @@ ENV BRANCH=${BRANCH}
 RUN set -eux; \
     rm -f Pipfile Pipfile.lock; \
     apt-get update; \
-    apt-get install -y --no-install-recommends wget curl unzip p7zip-full tzdata vim jdupes; \
+    apt-get install -y --no-install-recommends wget curl unzip p7zip-full tzdata vim jdupes jq; \
     curl https://rclone.org/install.sh | bash
 
 RUN apt-get update; \

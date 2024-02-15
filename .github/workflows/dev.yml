@@ -3,6 +3,9 @@ name: Docker Develop Release
 on:
   push:
     branches: [ dev ]
+    paths-ignore:
+      - '**/.*'
+      - '**/README.md'
   pull_request:
     branches: [ dev ]
 

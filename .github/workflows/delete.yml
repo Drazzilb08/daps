@@ -4,6 +4,7 @@ on:
   delete:
     branches:
       - patch-*
+      
 
 jobs:
   delete:

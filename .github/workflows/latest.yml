@@ -3,6 +3,9 @@ name: Docker Latest Release
 on:
   push:
     branches: [ master ]
+    paths-ignore:
+        - '**/.*'
+        - '**/README.md'
 
 jobs:
 

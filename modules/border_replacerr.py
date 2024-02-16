@@ -458,7 +458,7 @@ def process_files(source_dirs, destination_dir, asset_folders, dry_run):
     assets_list = []
     # Categorize files in the input directory into assets
     for path in source_dirs:
-        results = categorize_files(path, asset_folders)
+        results = categorize_files(path)
         if results:
             assets_list.extend(results)
         else:

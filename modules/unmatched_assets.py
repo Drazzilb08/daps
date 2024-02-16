@@ -265,7 +265,7 @@ def main():
 
         assets_list = []
         for path in source_dirs:
-            results = categorize_files(path, asset_folders)
+            results = categorize_files(path)
             if results:
                 assets_list.extend(results)
             else:

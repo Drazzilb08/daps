@@ -62,7 +62,7 @@ def get_assets_files(source_dirs):
 
     # Iterate through each source directory
     for source_dir in source_dirs:
-        new_assets = categorize_files(source_dir, asset_folders=False)
+        new_assets = categorize_files(source_dir)
         if new_assets:
             # Merge new_assets with final_assets
             for new in new_assets:

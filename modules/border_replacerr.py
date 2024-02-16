@@ -412,14 +412,13 @@ def copy_files(assets_dict, destination_dir, dry_run):
                         messages.append(f"Would have copied {data['title']}{year} - {file_name} to {output_basename}")
     return messages
 
-def process_files(source_dirs, destination_dir, asset_folders, dry_run):
+def process_files(source_dirs, destination_dir, dry_run):
     """
     Processes the files in the input directory.
 
     Args:
         source_dirs (str): The input directory.
         destination_dir (str): The output directory.
-        asset_folders (bool): Whether to use asset folders.
 
     Returns:
         None
@@ -443,7 +442,6 @@ def process_files(source_dirs, destination_dir, asset_folders, dry_run):
     logger.debug(f'{"Log Level:":<20}{config.log_level}')
     logger.debug(f'{"Input Dir:":<20}{source_dirs}')
     logger.debug(f'{"Output Dir:":<20}{destination_dir}')
-    logger.debug(f'{"Asset Folders:":<20}{asset_folders}')
     logger.debug(f'{"Border Colors:":<20}{border_colors}')
     logger.debug(f'{"Skip:":<20}{skip}')
     logger.debug(f'{"Schedule:":<20}{schedule}')
@@ -531,7 +529,6 @@ def main():
         destination_dir = script_config['destination_dir']
         schedule = script_config['schedule']
         border_colors = script_config['border_colors']
-        asset_folders = script_config['asset_folders']
         dry_run = config.dry_run
 
         # Convert single string border color to a list if necessary
@@ -540,7 +537,7 @@ def main():
 
 
         # Process files in the input directory with specified settings
-        process_files(source_dirs, destination_dir, asset_folders, dry_run)
+        process_files(source_dirs, destination_dir, dry_run)
 
         logger.info(f"Border Replacer Complete")  # Log completion message
     except KeyboardInterrupt:

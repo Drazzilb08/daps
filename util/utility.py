@@ -136,7 +136,25 @@ def normalize_titles(title):
     
     return normalized_title
 
-def categorize_files(folder_path, asset_folders):
+def _is_asset_folders(folder_path):
+    """
+    Check if the folder contains asset folders
+    
+    Args:
+        folder_path (str): The path to the folder to check
+        
+    Returns:
+        bool: True if the folder contains asset folders, False otherwise
+    """
+    if not os.path.exists(folder_path):
+        return False
+    else:
+        for item in os.listdir(folder_path):
+            if os.path.isdir(os.path.join(folder_path, item)):
+                return True
+        return False
+
+def categorize_files(folder_path):
     """
     Categorize files into movies, collections, and series
     
@@ -147,6 +165,8 @@ def categorize_files(folder_path, asset_folders):
     Returns:
         list: A list of dictionaries containing the sorted files
     """
+
+    asset_folders = _is_asset_folders(folder_path)
 
     assets_dict = []
 
@@ -265,7 +285,7 @@ def categorize_files(folder_path, asset_folders):
                     # Sort the season numbers and file paths for the current series entry
                     if series_entry is not None:
                         # Remove duplicates
-                        series_entry['season_numbers'] = list(set(series_entry['season_numbers']))
+                        series_entry['season_numbers'] = list(set(map(int, series_entry['season_numbers'])))
                         series_entry['season_numbers'].sort()
                         # Remove duplicates
                         series_entry['files'] = list(set(series_entry['files']))
@@ -291,21 +311,22 @@ def categorize_files(folder_path, asset_folders):
                     if not year:  # If year is not found in the folder name
                         # Categorize as a collection
                         # Process files within the folder and add to the collection
-                        for file in files:
+                        files = []
+                        for file in os.listdir(dir):
                             if file.startswith('.'):
                                 continue
-                            else:
-                                assets_dict.append({
-                                    'title': title,
-                                    'year': year,
-                                    'normalized_title': normalize_title,
-                                    'no_prefix': [title.replace(prefix, '').strip() for prefix in prefixes if title.startswith(prefix)],
-                                    'no_suffix': [title.replace(suffix, '').strip() for suffix in suffixes if title.endswith(suffix)],
-                                    'no_prefix_normalized': [normalize_titles(title.replace(prefix, '').strip()) for prefix in prefixes if title.startswith(prefix)],
-                                    'no_suffix_normalized': [normalize_titles(title.replace(suffix, '').strip()) for suffix in suffixes if title.endswith(suffix)],
-                                    'path': dir,
-                                    'files': [f"{dir}/{file}"],
-                                })
+                            files.append(f"{dir}/{file}")
+                        assets_dict.append({
+                            'title': title,
+                            'year': year,
+                            'normalized_title': normalize_title,
+                            'no_prefix': [title.replace(prefix, '').strip() for prefix in prefixes if title.startswith(prefix)],
+                            'no_suffix': [title.replace(suffix, '').strip() for suffix in suffixes if title.endswith(suffix)],
+                            'no_prefix_normalized': [normalize_titles(title.replace(prefix, '').strip()) for prefix in prefixes if title.startswith(prefix)],
+                            'no_suffix_normalized': [normalize_titles(title.replace(suffix, '').strip()) for suffix in suffixes if title.endswith(suffix)],
+                            'path': dir,
+                            'files': files,
+                        })
                     else:
                         # If year is found in the folder name
                         # Check if the folder contains series or movies based on certain criteria
@@ -317,7 +338,7 @@ def categorize_files(folder_path, asset_folders):
                                 if file.startswith('.'):
                                     continue
                                 if "season" in file.lower():
-                                    season_numbers = re.search(r'Season\s*(\d+)', file).group(1)
+                                    season_numbers = int(re.search(r'Season\s*(\d+)', file).group(1))
                                     if season_numbers not in list_of_season_numbers:
                                         list_of_season_numbers.append(season_numbers)
                                     if file not in list_of_files:
@@ -340,17 +361,18 @@ def categorize_files(folder_path, asset_folders):
                             })
                             
                         else:
-                            for file in files:
+                            files = []
+                            for file in os.listdir(dir):
                                 if file.startswith('.'):
                                     continue
-                                else:
-                                    assets_dict.append({
-                                        'title': title,
-                                        'year': year,
-                                        'normalized_title': normalize_title,
-                                        'path': dir,
-                                        'files': [f"{dir}/{file}"],
-                                    })
+                                files.append(f"{dir}/{file}")
+                            assets_dict.append({
+                                'title': title,
+                                'year': year,
+                                'normalized_title': normalize_title,
+                                'path': dir,
+                                'files': files,
+                            })
         except FileNotFoundError:
             return None
 
@@ -520,25 +542,25 @@ def handle_starr_data(app, instance_type):
                 file_id = item.get('movieFile', {}).get('id', None)  # Fetch file ID for Radarr
             elif instance_type == "sonarr":
                 season_data = item.get('seasons', [])  # Fetch season data for Sonarr
-                season_dict = []  # Initialize a list to hold season data
+                season_list = []  # Initialize a list to hold season data
                 for season in season_data:
                     episode_data = app.get_episode_data_by_season(item['id'], season['seasonNumber'])  # Fetch episode data for each season
-                    episode_dict = []  # Initialize a list to hold episode data
+                    episode_list = []  # Initialize a list to hold episode data
                     for episode in episode_data:
-                        episode_dict.append({
+                        episode_list.append({
                             'episode_number': episode['episodeNumber'],
                             'monitored': episode['monitored'],
                             'episode_file_id': episode['episodeFileId'],
                             'episode_id': episode['id'],
                             'has_file': episode['hasFile'],
                         })  # Append episode data to the episode dictionary
-                    if episode_dict:
-                        season_dict.append({
+                    if episode_list:
+                        season_list.append({
                             'season_number': season['seasonNumber'],
                             'monitored': season['monitored'],
                             'season_pack': season['statistics']['episodeCount'] == season['statistics']['totalEpisodeCount'],
                             'season_has_episodes': season['statistics']['episodeCount'] > 0,
-                            'episode_data': episode_dict,
+                            'episode_data': episode_list,
                         })  # Append season data to the season dictionary
             
             alternate_titles = []
@@ -574,7 +596,8 @@ def handle_starr_data(app, instance_type):
                 'folder': os.path.basename(os.path.normpath(item['path'])),
                 'has_file': item['hasFile'] if instance_type == "radarr" else None,
                 'tags': item['tags'],
-                'seasons': season_dict if instance_type == "sonarr" else None,  # Add season_dict for Sonarr items
+                'seasons': season_list if instance_type == "sonarr" else None,  # Add season_list for Sonarr items
+                'season_numbers': [season['season_number'] for season in season_list] if instance_type == "sonarr" else None,
             })  # Append the constructed dictionary to media_dict
     else:
         return None

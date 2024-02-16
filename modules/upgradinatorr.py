@@ -16,6 +16,7 @@
 
 import json
 import sys
+import time
 
 from util.config import Config
 from util.logger import setup_logger
@@ -69,6 +70,7 @@ def process_queue(queue, instance_type, media_ids):
     Returns:
         queue_dict (list): A list of dictionaries containing the download_id, media_id, and torrent.
     """
+
     if instance_type == "radarr":
         id_type = "movieId"
     elif instance_type == "sonarr":
@@ -165,8 +167,12 @@ def process_instance(instance_type, instance_settings, app):
         media_ids = [item['media_id'] for item in filtered_media_dict]
         search_response = app.search_media(media_ids)
         app.add_tags(media_ids, tag_id)
+        print(f"Waiting for searches to complete...")
         ready = app.wait_for_command(search_response['id'])
         if ready:
+            sleep_time = 5  # Set the sleep time to 5 seconds
+            print(f"Waiting for {sleep_time} seconds to allow for search results to populate in the queue...")
+            time.sleep(5)
             queue = app.get_queue(instance_type)
             logger.debug(f"queue:\n{json.dumps(queue, indent=4)}")
             queue_dict = process_queue(queue, instance_type, media_ids)

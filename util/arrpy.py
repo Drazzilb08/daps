@@ -629,7 +629,7 @@ class StARR:
             dict: A dictionary representing the queue.
         """
         if instance_type == 'radarr':
-            url_addon = "page=1&pageSize=200&includeMovie=true&protocol=torrent"
+            url_addon = "page=1&pageSize=200&includeMovie=true"
         elif instance_type == 'sonarr':
             url_addon = "page=1&pageSize=200&includeSeries=true"
 

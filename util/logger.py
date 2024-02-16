@@ -73,7 +73,7 @@ def setup_logger(log_level, script_name, max_logs=9):
     
     # Add the file handler to the logger
     logger.addHandler(handler)
-    
+
     # Configure console logging with the specified log level
     console_handler = logging.StreamHandler()
     if log_level == 'DEBUG':
@@ -85,5 +85,10 @@ def setup_logger(log_level, script_name, max_logs=9):
     
     # Add the console handler to the logger
     logger.addHandler(console_handler)
+
+    # Overwrite previous logger if exists
+    logging.getLogger(script_name).handlers.clear()
+    logging.getLogger(script_name).addHandler(handler)
+    logging.getLogger(script_name).addHandler(console_handler)
     
     return logger

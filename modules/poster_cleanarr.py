@@ -59,7 +59,7 @@ def match_assets(assets_dict, media_dict, ignore_collections):
     unmatched_assets = {}
     # Loop through different media types
     for media_type in ['movies', 'series', 'collections']:
-        unmatched_assets[media_type] = {}
+        unmatched_assets[media_type] = []
         # Check if the media type exists in both assets and media dictionaries
         if media_type in media_dict and media_type in assets_dict:
             # Iterate through each asset in the asset dictionary of the given media type

@@ -169,9 +169,9 @@ def process_instance(instance_type, instance_settings, app):
         app.add_tags(media_ids, tag_id)
         ready = app.wait_for_command(search_response['id'])
         if ready:
-            sleep_time = 10  # Set the sleep time to 5 seconds
+            sleep_time = 15  # Set the sleep time to 5 seconds
             print(f"Waiting for {sleep_time} seconds to allow for search results to populate in the queue...")
-            time.sleep(5)
+            time.sleep(sleep_time)
             queue = app.get_queue(instance_type)
             logger.debug(f"queue:\n{json.dumps(queue, indent=4)}")
             queue_dict = process_queue(queue, instance_type, media_ids)

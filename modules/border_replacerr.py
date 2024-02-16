@@ -452,6 +452,10 @@ def process_files(source_dirs, destination_dir, dry_run):
     # Check for a scheduled event to update border colors if provided
     if schedule:
         border_colors, run_holiday, holiday = check_holiday(schedule, border_colors)
+    
+    if not os.path.exists(destination_dir):
+        logger.error(f"Output directory {destination_dir} does not exist.")
+        return
 
     assets_list = []
     # Categorize files in the input directory into assets
@@ -539,7 +543,6 @@ def main():
         # Process files in the input directory with specified settings
         process_files(source_dirs, destination_dir, dry_run)
 
-        logger.info(f"Border Replacer Complete")  # Log completion message
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()

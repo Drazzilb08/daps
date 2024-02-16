@@ -335,6 +335,7 @@ class StARR:
         Returns:
             bool: True if the refresh was successful, False otherwise.
         """
+        print(f"Waiting for searches to complete...")
         while True:
             endpoint = f"{self.url}/api/v3/command/{command_id}"
             response = self.make_get_request(endpoint)

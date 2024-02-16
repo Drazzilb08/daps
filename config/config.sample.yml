@@ -282,7 +282,6 @@ border_replacerr:
   # Colors: https://www.w3schools.com/colors/colors_picker.asp
   log_level: info
   dry_run: true
-  asset_folders: false
   source_dirs: 
     - /path/to/posters/
   destination_dir: /path/to/output/
@@ -327,7 +326,6 @@ border_replacerr:
 
 unmatched_assets:
   log_level: info
-  asset_folders: false
   instances:
     - plex_1
     - radarr_1
@@ -369,7 +367,6 @@ unmatched_assets:
 poster_cleanarr:
   log_level: info
   dry_run: true
-  asset_folders: true
   instances:
     - plex_1
     - radarr_1

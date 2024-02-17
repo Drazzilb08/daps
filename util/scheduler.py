@@ -33,8 +33,8 @@ def check_schedule(script_name, schedule):
         times = data.split("|")
         for time in times:
             hour, minute = map(int, time.split(":"))
-        if now.hour == hour and now.minute == minute:
-            return True
+            if now.hour == hour and now.minute == minute:
+                return True
         return False
     elif frequency == "weekly":
         days = [day.split("@")[0] for day in data.split("|")]

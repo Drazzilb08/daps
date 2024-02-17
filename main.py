@@ -15,6 +15,7 @@ import datetime
 script_name = "main"
 # Set the current time
 current_time = datetime.datetime.now().strftime("%H:%M")
+logger = setup_logger("info", script_name)
 
 already_run = {}
 
@@ -70,41 +71,29 @@ def run_module(script_name, logger):
         logger.error(f"Script: {script_name} does not exist")
         return
 
-def load_config(logger):
+def load_schedule():
     """
-    Load the config file
-
-    Args:
-        logger (obj): The logger object
+    Load the schedule from the config file
 
     Returns:
-        config (obj): The config object
-        schedule (dict): The schedule dictionary
-        logger (obj): The logger object
+        dict: The schedule from the config file
     """
 
     # Load the config file
     config = Config(script_name)
 
-    # Get log level from config
-    log_level = config.log_level
-
-    # Setup the logger
-    logger = setup_logger(log_level, script_name)
-
     # Get the schedule from the config
     schedule = config.scheduler
 
-    return config, schedule, logger
+    return schedule
 
 
 def main():
     """
     Main function
     """
-    logger = None
     try:
-        config, scripts_schedules, logger = load_config(logger)
+        scripts_schedules= load_schedule()
         if len(sys.argv) > 1:
             initial_run = None
             for input_name in sys.argv[1:]:
@@ -122,11 +111,10 @@ def main():
             running_scripts = {}
             waiting_message_shown = False
             while True:
-                config, scripts_schedules, logger = load_config(logger)
+                scripts_schedules= load_schedule()
                 
                 # Check for new version
                 if last_check is None or last_check.date() < datetime.datetime.now().date():
-                    logger.debug("Checking for new version...")
                     from util.version import version_check
                     version_check(logger, branch)
                     last_check = datetime.datetime.now()

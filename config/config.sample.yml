@@ -259,7 +259,7 @@ poster_renamerr:
   print_only_renames: false # <- This will print the renames to the log, but will not actually rename anything
   # This will integrate border_replacer with poster_renamerr, set this to true if you want to use them at the same time (no need to schedule border_replacer)
   # Note: This will create a tmp dir in your output directory for border_replacer to use and for poster_renamer to have accurate account of what has been added
-  # Note: All of border_replacer's settings will be used, except for the input_dir and output_dir, so make sure you're not in dry_run mode for border_replacer
+  # Note: All of border_replacer's settings will be used, except for the input_dir and output_dir
   border_replacerr: false
   # Libraries are ONLY used for collections
   library_names:
@@ -282,9 +282,9 @@ border_replacerr:
   # Colors: https://www.w3schools.com/colors/colors_picker.asp
   log_level: info
   dry_run: true
-  source_dirs: 
+  source_dirs:  # <--- Not used if using with poster_renamerr only used if running border_replacer by itself
     - /path/to/posters/
-  destination_dir: /path/to/output/
+  destination_dir: /path/to/output/ # <---- Not used if using with poster_renamerr only used if running border_replacer by itself
   # If you want to resize the posters, set this to true, else set it to false
   resize: false
   # If you want to adjust the border width (not all MM2K posters are 25px borders some are 26-27)

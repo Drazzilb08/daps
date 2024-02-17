@@ -65,7 +65,7 @@ echo "Starting userScripts as $(whoami) running userscripts with UID: $PUID and 
 
 # Set permissions
 if [ "$START_DEBUG" = "true" ]; then
-    if ! chown -R ${PUID}:${PGID} /${CONFIG_DIR} /data /app; then
+    if ! chown -R ${PUID}:${PGID} /${CONFIG_DIR} /data /app /${log_dir}; then
         echo "Failed to change ownership."
         echo "DEBUG: ${PUID}:${PGID} /${CONFIG_DIR}"
         ls -la /${CONFIG_DIR} 
@@ -73,6 +73,8 @@ if [ "$START_DEBUG" = "true" ]; then
         ls -la /data
         echo "DEBUG: ${PUID}:${PGID} /app"
         ls -la /app
+        echo "DEBUG: ${PUID}:${PGID} /${log_dir}"
+        ls -la /${log_dir}
     fi
 else
     chown -R ${PUID}:${PGID} /${CONFIG_DIR} /data /app > /dev/null 2>&1

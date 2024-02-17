@@ -43,7 +43,7 @@ logger = setup_logger(config.log_level, script_name)
 log_level = config.log_level
 dry_run = config.dry_run
 
-def match_assets(assets_dict, media_dict, ignore_collections):
+def match_assets(assets_list, media_dict):
     """
     Match assets to media.
     
@@ -55,78 +55,62 @@ def match_assets(assets_dict, media_dict, ignore_collections):
         dict: Dictionary of unmatched assets.
     """
     # Initialize dictionary to store unmatched assets by media types
-    unmatched_assets = {}
+    unmatched_assets = []
     # Loop through different media types
-    for media_type in ['movies', 'series', 'collections']:
-        unmatched_assets[media_type] = []
-        # Iterate through each asset in the asset dictionary of the given media type
-        for asset_data in tqdm(assets_dict[media_type], desc=f"Matching {media_type}", unit="assets", total=len(assets_dict[media_type]), disable=None, leave=True):
-            # Initialize a flag to track if an asset is matched with media
-            matched = False
+    # Iterate through each asset in the asset dictionary of the given media type
+    for asset_data in tqdm(assets_list, desc=f"Matching...", unit="assets", total=len(assets_list), disable=None, leave=True):
+        # Initialize a flag to track if an asset is matched with media
+        matched = False
 
-            # Skip collections if in ignore_collections
-            if ignore_collections:
-                if media_type == 'collections' and asset_data['title'] in ignore_collections:
-                    continue
+        if not asset_data['files']:
+            unmatched_assets.append({
+                'title': asset_data['title'],
+                'year': asset_data['year'],
+                'files': asset_data['files'],
+                'path': asset_data.get('path', None)
+            })
+            continue
 
-            if not asset_data['files']:
-                unmatched_assets[media_type].append({
-                    'title': asset_data['title'],
-                    'year': asset_data['year'],
-                    'files': asset_data['files'],
-                    'path': asset_data.get('path', None)
-                })
-                continue
+        # Iterate through each media data of the same media type
+        for media_data in media_dict:
 
-            # Iterate through each media data of the same media type
-            for media_data in media_dict[media_type]:
-
-                if is_match(asset_data, media_data):
-                    matched = True
-                    # For series, check for missing seasons in the media
-                    if media_type == 'series':
-                        media_seasons_numbers = media_data.get('season_numbers', None)
-                        asset_seasons_numbers = asset_data.get('season_numbers', None)
-                        if asset_seasons_numbers and media_seasons_numbers:
-                            missing_seasons = []
-                            for season in asset_seasons_numbers:
-                                if season not in media_seasons_numbers:
-                                    missing_seasons.append(season)
-                            files = []
-                            for season in missing_seasons:
-                                season = str(season).zfill(2)
-                                season = f"Season{season}"
-                                for file in asset_data['files']:
-                                    if season in file:
-                                        files.append(file)
-                            if missing_seasons:
-                                unmatched_assets[media_type].append({
-                                    'title': asset_data['title'],
-                                    'year': asset_data['year'],
-                                    'files': files,
-                                    'path': asset_data.get('path', None),
-                                    'missing_season': True,
-                                    'missing_seasons': missing_seasons
-                                })
-                        break
-            # If no match is found, add the asset to unmatched assets based on media type
-            if not matched:
-                if media_type == 'series':
-                    unmatched_assets[media_type].append({
-                        'title': asset_data['title'],
-                        'year': asset_data['year'],
-                        'files': asset_data['files'],
-                        'path': asset_data.get('path', None),
-                        'missing_season': False,
-                        'missing_seasons': asset_data['season_numbers']
-                    })
-                else:
-                    unmatched_assets[media_type].append({
-                        'title': asset_data['title'],
-                        'year': asset_data['year'],
-                        'files': asset_data['files'],
-                        'path': asset_data.get('path', None)
-                    })
+            if is_match(asset_data, media_data):
+                matched = True
+                
+                # For series, check for missing seasons in the media
+                if media_data.get('season_numbers', None):
+                    media_seasons_numbers = media_data.get('season_numbers', None)
+                    asset_seasons_numbers = asset_data.get('season_numbers', None)
+                    if asset_seasons_numbers and media_seasons_numbers:
+                        missing_seasons = []
+                        for season in asset_seasons_numbers:
+                            if season not in media_seasons_numbers:
+                                missing_seasons.append(season)
+                        files = []
+                        for season in missing_seasons:
+                            season = str(season).zfill(2)
+                            season = f"Season{season}"
+                            for file in asset_data['files']:
+                                if season in file:
+                                    files.append(file)
+                        if missing_seasons:
+                            unmatched_assets.append({
+                                'title': asset_data['title'],
+                                'year': asset_data['year'],
+                                'files': files,
+                                'path': asset_data.get('path', None),
+                                'missing_season': True,
+                                'missing_seasons': missing_seasons
+                            })
+                    break
+        # If no match is found, add the asset to unmatched assets based on media type
+        if not matched:
+            unmatched_assets.append({
+                'title': asset_data['title'],
+                'year': asset_data['year'],
+                'files': asset_data['files'],
+                'path': asset_data.get('path', None)
+            })
     return unmatched_assets
 
 def remove_assets(unmatched_dict, source_dirs):
@@ -140,36 +124,34 @@ def remove_assets(unmatched_dict, source_dirs):
         dict: Dictionary of assets removed.
     """
     # Define the types of assets
-    asset_types = ['movies', 'series', 'collections']
     
     # Initialize a dictionary to store removed asset data categorized by asset types
-    remove_data = {media_type: [] for media_type in asset_types}
+    remove_data = []
     
     # Initialize a list to track items to be removed
     remove_list = []
     # Iterate through each asset type
-    for asset_type in asset_types:
-        # Iterate through each asset data within the unmatched assets of the given asset type
-        for asset_data in unmatched_dict[asset_type]:
-            messages = []
-            
-            # Check if the asset has no associated files (empty folder)
-            if not asset_data['files'] and asset_data['path']:
-                # Add the path of the empty folder to the removal list and log a message
-                remove_list.append(asset_data['path'])
-                messages.append(f"Removing empty folder: {os.path.basename(asset_data['path'])}")
-            else:
-                # For each file associated with the asset, add it to the removal list and log a message
-                for file in asset_data['files']:
-                    remove_list.append(file)
-                    messages.append(f"Removing file: {os.path.basename(file)}")
+    # Iterate through each asset data within the unmatched assets of the given asset type
+    for asset_data in unmatched_dict:
+        messages = []
+        
+        # Check if the asset has no associated files (empty folder)
+        if not asset_data['files'] and asset_data['path']:
+            # Add the path of the empty folder to the removal list and log a message
+            remove_list.append(asset_data['path'])
+            messages.append(f"Removing empty folder: {os.path.basename(asset_data['path'])}")
+        else:
+            # For each file associated with the asset, add it to the removal list and log a message
+            for file in asset_data['files']:
+                remove_list.append(file)
+                messages.append(f"Removing file: {os.path.basename(file)}")
 
-            # Store removal data for the current asset type
-            remove_data[asset_type].append({
-                'title': asset_data['title'],
-                'year': asset_data['year'],
-                'messages': messages
-            })
+        # Store removal data for the current asset type
+        remove_data.append({
+            'title': asset_data['title'],
+            'year': asset_data['year'],
+            'messages': messages
+        })
 
     # If not a dry run, perform the removal operations
     if not dry_run:
@@ -216,41 +198,24 @@ def print_output(remove_data):
     """
     
     # Define the types of assets
-    asset_types = ['collections', 'movies', 'series']
     count = 0  # Counter to track the total number of assets removed
-    
-    # Iterate through each asset type
-    # If any asset asset types in remove_data have data statement is true
-    if any(remove_data[asset_type] for asset_type in asset_types):
-        for asset_type in asset_types:
-            if asset_type in remove_data:
-                if remove_data[asset_type]:
-                    table = [
-                        [f"{asset_type.capitalize()}"]
-                    ]
-                    logger.info(create_table(table))
-                # Iterate through each removed asset of the current type
-                    for data in remove_data[asset_type]:
-                        title = data['title']
-                        year = data['year']
-                        
-                        # Log the title and year (if available) of the removed asset
-                        if year:
-                            logger.info(f"\t{title} ({year})")
-                        else:
-                            logger.info(f"\t{title}")
-                        
-                        # Log messages related to the removal of files or folders associated with the asset
-                        asset_messages = data['messages']
-                        for message in asset_messages:
-                            logger.info(f"\t\t{message}")
-                            count += 1  # Increment the counter for each removed asset message
-                        logger.info("")  # Add an empty line for better readability
-    else:
-        table = [
-            ["No assets removed"]
-        ]
-        logger.info(create_table(table))
+
+    for data in remove_data:
+        title = data['title']
+        year = data['year']
+        
+        # Log the title and year (if available) of the removed asset
+        if year:
+            logger.info(f"\t{title} ({year})")
+        else:
+            logger.info(f"\t{title}")
+        
+        # Log messages related to the removal of files or folders associated with the asset
+        asset_messages = data['messages']
+        for message in asset_messages:
+            logger.info(f"\t\t{message}")
+            count += 1  # Increment the counter for each removed asset message
+        logger.info("")  # Add an empty line for better readability
                 
     # Log the total number of assets removed across all types
     logger.info(f"\nTotal number of assets removed: {count}")
@@ -280,7 +245,6 @@ def main():
         library_names = script_config.get('library_names', [])
         media_paths = script_config.get('media_paths', [])
         source_dirs = script_config.get('source_dirs', [])
-        ignore_collections = script_config.get('ignore_collections', [])
         instances = script_config.get('instances', None)
 
         # Log script settings for debugging purposes
@@ -293,7 +257,6 @@ def main():
         logger.debug(f'{"Assets paths:":<20}{source_dirs}')
         logger.debug(f'{"Media paths:":<20}{media_paths}')
         logger.debug(f'{"Library names:":<20}{library_names}')
-        logger.debug(f'{"Ignore Collections:":<20}{ignore_collections}')
         logger.debug(f'{"Instances:":<20}{instances}')
         logger.debug(create_bar("-"))
 
@@ -308,18 +271,14 @@ def main():
                 logger.error(f"No assets found in {path}.")
         # Checking for assets and logging
         if assets_list:
-            assets_dict = sort_assets(assets_list)
-            logger.debug(f"Assets:\n{json.dumps(assets_dict, indent=4)}")
+            # assets_dict = sort_assets(assets_list)
+            logger.debug(f"Assets:\n{json.dumps(assets_list, indent=4)}")
         else:
             logger.error("No assets found, Check source_dirs setting in your config. Exiting.")
             return
 
         # Fetch information from Plex and StARR
-        media_dict = {
-            'movies': [],
-            'series': [],
-            'collections': []
-        }
+        media_dict = []
         if instances:
             for instance_type, instance_data in config.instances_config.items():
                 for instance in instances:
@@ -335,7 +294,7 @@ def main():
                             if library_names and app:
                                 print("Getting Plex data...")
                                 results = get_plex_data(app, library_names, logger, include_smart=True, collections_only=True)
-                                media_dict['collections'].extend(results)
+                                media_dict.extend(results)
                             else:
                                 logger.warning("No library names specified in config.yml. Skipping Plex.")
                         else:
@@ -347,9 +306,9 @@ def main():
                                 results = handle_starr_data(app, instance_type)
                                 if results:
                                     if instance_type == "radarr":
-                                        media_dict['movies'].extend(results)
+                                        media_dict.extend(results)
                                     elif instance_type == "sonarr": 
-                                        media_dict['series'].extend(results)
+                                        media_dict.extend(results)
                                 else:
                                     logger.error(f"No {instance_type.capitalize()} data found.")
                                 
@@ -357,18 +316,18 @@ def main():
             logger.error(f"No instances found. Exiting script...")
             return
 
-        if not any(media_dict.values()):
+        if not media_dict:
             logger.error("No media found, Check instances setting in your config. Exiting.")
             return
         else:
             logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
 
         # Match assets with media and log the results
-        unmatched_dict = match_assets(assets_dict, media_dict, ignore_collections)
-        if any(unmatched_dict.values()):
+        unmatched_dict = match_assets(assets_list, media_dict)
+        if unmatched_dict:
             logger.debug(f"Unmatched:\n{json.dumps(unmatched_dict, indent=4)}")
             remove_data = remove_assets(unmatched_dict, source_dirs)
-            if any(remove_data.values()):
+            if remove_data:
                 logger.debug(f"Remove Data:\n{json.dumps(remove_data, indent=4)}")
                 print_output(remove_data)
         else:

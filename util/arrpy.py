@@ -46,8 +46,8 @@ class StARR:
             self.logger.debug(f"Connected to {app_name} v{app_version} at {self.url}")
         except requests.exceptions.ConnectionError as e:
             self.logger.error(f"Could not connect to {self.url}: {e}")
-            self.logger.error("Exiting script")
-            sys.exit(1)
+            return None
+            
     
     def get_instance_name(self):
         """
@@ -89,8 +89,7 @@ class StARR:
         self.logger.error(f'GET request failed after {self.max_retries} retries.')
         self.logger.error(f"endpoint: {endpoint}")
         self.logger.error(f"response: {response.text}")
-        self.logger.error(f"exiting script")
-        sys.exit(1)
+        return None
     
     def make_post_request(self, endpoint, headers=None, json=None):
         """
@@ -116,8 +115,7 @@ class StARR:
         self.logger.error(f"endpoint: {endpoint}")
         self.logger.error(f"Payload: {json}")
         self.logger.error(f"response: {response.text}")
-        self.logger.error(f"exiting script")
-        sys.exit(1)
+        return None
 
     
     def make_put_request(self, endpoint, headers=None, json=None):
@@ -144,8 +142,7 @@ class StARR:
         self.logger.error(f"endpoint: {endpoint}")
         self.logger.error(f"Payload: {json}")
         self.logger.error(f"response: {response.text}")
-        self.logger.error(f"exiting script")
-        sys.exit(1)
+        return None
 
     def make_delete_request(self, endpoint, json=None, headers=None):
         """
@@ -170,8 +167,7 @@ class StARR:
         self.logger.error(f"endpoint: {endpoint}")
         self.logger.error(f"Payload: {json}")
         self.logger.error(f"response: {response.text}")
-        self.logger.error(f"exiting script")
-        sys.exit(1)
+        return None
     
 
     def get_media(self):

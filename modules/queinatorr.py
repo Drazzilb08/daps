@@ -180,7 +180,7 @@ def handle_queue(queue_dict, app):
                 else:
                     messages_dict[id]['messages'][message] = 1
             if error:
-                if error in messages_dict[torrent]['messages']:
+                if error in messages_dict[id]['messages']:
                     messages_dict[id]['messages'][error] += 1
                 else:
                     messages_dict[id]['messages'][error] = 1
@@ -338,6 +338,8 @@ def process_instance(instance_type, url, api, pre_import_category, post_import_c
     
     # Retrieve the queue from Radarr or Sonarr instance
     queue = app.get_queue(instance_type)
+    logger.debug(f"Queue'{instance_type}'\n{json.dumps(queue, indent=4)}\n")
+
     queue_dict = queued_items(queue, instance_type)
 
     logger.debug(f"Queue items for '{instance_type}'\n{json.dumps(queue_dict, indent=4)}\n")
@@ -359,8 +361,6 @@ def process_instance(instance_type, url, api, pre_import_category, post_import_c
     messages_dict = handle_queue(queue_dict, app)
     if messages_dict:
         output_dict['queue'] = messages_dict
-    
-    logger.debug(f"Queue items for '{instance_type}'\n{json.dumps(queue_dict, indent=4)}\n")
     
     # Handle moving torrents from the queue to the specified categories in qBittorrent
     messages_dict = handle_qbit(queue_dict, qb, post_import_category, pre_import_category, days_to_keep)

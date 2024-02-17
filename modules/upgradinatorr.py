@@ -16,6 +16,7 @@
 
 import json
 import sys
+import time
 
 from util.config import Config
 from util.logger import setup_logger
@@ -59,7 +60,7 @@ def filter_media(media_dict, tag_id, count):
 
 def process_queue(queue, instance_type, media_ids):
     """
-    Process the queue to return a list of dictionaries containing the download_id, media_id, and torrent.
+    Process the queue to return a list of dictionaries containing the download_id, media_id, and download.
     
     Args:
         queue (dict): A dictionary containing the queue information.
@@ -67,8 +68,9 @@ def process_queue(queue, instance_type, media_ids):
         media_ids (list): A list of media_ids to filter the queue with.
         
     Returns:
-        queue_dict (list): A list of dictionaries containing the download_id, media_id, and torrent.
+        queue_dict (list): A list of dictionaries containing the download_id, media_id, and download.
     """
+
     if instance_type == "radarr":
         id_type = "movieId"
     elif instance_type == "sonarr":
@@ -83,7 +85,7 @@ def process_queue(queue, instance_type, media_ids):
         queue_dict.append({
             'download_id': item['downloadId'],
             'media_id': media_id,
-            'torrent': item['title'],
+            'download': item['title'],
             'torrent_custom_format_score': item['customFormatScore'],
         })
     # Remove duplicate dictionaries in the queue_dict list and convert it to a list of unique dictionaries
@@ -167,19 +169,23 @@ def process_instance(instance_type, instance_settings, app):
         app.add_tags(media_ids, tag_id)
         ready = app.wait_for_command(search_response['id'])
         if ready:
+            sleep_time = 10  # Set the sleep time to 5 seconds
+            print(f"Waiting for {sleep_time} seconds to allow for search results to populate in the queue...")
+            time.sleep(sleep_time)
             queue = app.get_queue(instance_type)
+            logger.debug(f"queue:\n{json.dumps(queue, indent=4)}")
             queue_dict = process_queue(queue, instance_type, media_ids)
             logger.debug(f"queue_dict:\n{json.dumps(queue_dict, indent=4)}")
             for item in filtered_media_dict:
-                torrents = {}
+                downloads = {}
                 for queue_item in queue_dict:
                     if item['media_id'] == queue_item['media_id']:
-                        torrents[queue_item['torrent']] = queue_item['torrent_custom_format_score']
+                        downloads[queue_item['download']] = queue_item['torrent_custom_format_score']
                 output_dict['data'].append({
                     'media_id': item['media_id'],
                     'title': item['title'],
                     'year': item['year'],
-                    'torrent': torrents
+                    'download': downloads
                 })
     else:
         for item in filtered_media_dict:
@@ -187,7 +193,7 @@ def process_instance(instance_type, instance_settings, app):
                 'media_id': item['media_id'],
                 'title': item['title'],
                 'year': item['year'],
-                'torrent': None,
+                'download': None,
                 'torrent_custom_format_score': None
             })
     return output_dict
@@ -216,10 +222,10 @@ def print_output(output_dict):
             for item in instance_data:
                 logger.info(f"{item['title']} ({item['year']})")
                 
-                # Print torrents and their format scores associated with the media
-                if item['torrent']:
-                    for torrent, format_score in item['torrent'].items():
-                        logger.info(f"\t{torrent}\tScore: {format_score}")
+                # Print downloads and their format scores associated with the media
+                if item['download']:
+                    for download, format_score in item['download'].items():
+                        logger.info(f"\t{download}\tScore: {format_score}")
                 else:
                     logger.info("\tNo upgrades found for this item.")
                 
@@ -250,18 +256,18 @@ def notification(output_dict):
         for item in instance_data:
             title = item['title']
             year = item['year']
-            torrent = item['torrent']
+            download = item['download']
             torrent_list = []
             torrent_list.append(f"{title} ({year})")
-            # Construct a list of torrents and their format scores associated with the media
-            if torrent:
-                for torrent_item, format_score in torrent.items():
+            # Construct a list of downloads and their format scores associated with the media
+            if download:
+                for torrent_item, format_score in download.items():
                     torrent_list.append(f"\t{torrent_item}\n\tCF Score: {format_score}")
             else:
                 torrent_list.append("\tNo upgrades found for this item.")
             server_list.append("\n".join(torrent_list))
         value = "\n".join(server_list)
-        # Construct a Discord field containing the server name and associated media/torrents
+        # Construct a Discord field containing the server name and associated media/downloads
         if server_list:
             fields.append({
                 "name": server_name,

@@ -366,7 +366,7 @@ main() {
 
     # If DOCKER_ENV is set
     if [ -n "$DOCKER_ENV" ]; then
-        log_dir="${LOG_DIR:-/logs/jduparr}"
+        log_dir="${LOG_DIR/nohl_bash:-$parent_dir/logs/jduparr}"
     else
         log_dir="${log_dir:-$parent_dir/logs/jduparr}"
     fi

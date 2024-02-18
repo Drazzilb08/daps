@@ -97,9 +97,9 @@ log_file() {
     script_path=$(dirname "$0")
     parent_dir=$(dirname "$script_path")
 
-    # If DOCKER_ENV is set
+    # If DOCKER_ENV is set to true
     if [ -n "$DOCKER_ENV" ]; then
-        log_dir="${LOG_DIR:-/logs/nohl_bash}"
+        log_dir="${LOG_DIR/nohl_bash:-$parent_dir/logs/nohl_bash}"
     else
         log_dir="${log_dir:-$parent_dir/logs/nohl_bash}"
     fi

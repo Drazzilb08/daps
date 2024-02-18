@@ -4,9 +4,10 @@ PUID=${PUID:-100}
 PGID=${PGID:-99}
 UMASK=${UMASK:-002}
 
-export RCLONE_CONFIG="${CONFIG_DIR}/rclone/rclone.conf"
-
 log_dir="${CONFIG_DIR}/logs"
+
+export RCLONE_CONFIG="${CONFIG_DIR}/rclone/rclone.conf"
+export LOG_DIR="${log_dir}"
 
 echo "
 ---------------------------------------------------------

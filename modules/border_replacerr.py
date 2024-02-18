@@ -73,7 +73,7 @@ def check_holiday(data, border_colors):
             if re.match(pattern, schedule):
                 
                 # If 'check_schedule' returns True (indicating successful execution)
-                if check_schedule(script_name, schedule):
+                if check_schedule(script_name, schedule, logger):
                     # Retrieve the color for the holiday from schedule_color or use default border_colors
                     holiday_colors = schedule_color.get('color', border_colors)
                     

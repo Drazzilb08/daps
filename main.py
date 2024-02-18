@@ -93,9 +93,13 @@ def main():
     Main function
     """
     try:
+        initial_run = True
+        last_check = None
+        old_schedule = None
+        running_scripts = {}
+        waiting_message_shown = False
         scripts_schedules= load_schedule()
         if len(sys.argv) > 1:
-            initial_run = None
             for input_name in sys.argv[1:]:
                 if input_name and any(script in input_name for script in list_of_bash_scripts):
                     run_module(input_name, logger)
@@ -105,11 +109,6 @@ def main():
                     logger.error(f"Script: {input_name} does not exist")
         else:
             # If config file is not found
-            last_check = None
-            initial_run = True
-            old_schedule = None
-            running_scripts = {}
-            waiting_message_shown = False
             while True:
                 scripts_schedules= load_schedule()
                 

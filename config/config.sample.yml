@@ -379,6 +379,8 @@ poster_cleanarr:
     - Anime Movies
   ignore_collections:
     - "Random Collection in assets you want to keep"
+  # If using poster_renamer with border_replacer, include the tmp folder that border_replacer uses
+  # This will double output in the logs but 
   source_dirs: 
     - /path/to/assets
   

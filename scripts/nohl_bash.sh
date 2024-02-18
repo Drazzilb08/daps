@@ -14,7 +14,7 @@
 
 # Define variables
 source_dir='/path/to/media/'
-log_dir='../logs/nohl/'
+log_dir=''
 
 # Define folders inside your source_dir to include in the search
 include=(
@@ -92,16 +92,19 @@ check_config() {
 
 log_file() {
     # remove trailing slash from log_dir if it exists
-    log_dir=${log_dir%%/}
+    log_dir=${log_dir%/}
+
     if [ -z "$log_dir" ]; then
-        log_dir="${LOG_DIR:-$(dirname "$0")/../logs/nohl}"
+        log_dir="${LOG_DIR:-$(dirname "$0")/../logs/nohl_bash}"
     fi
+    
     # check if the log_dir directory exists, if not create it
     if [ ! -d "$log_dir" ]; then
-        echo "Directory doesn't exist, creating it"
+        echo "Log directory does not exist, creating: $log_dir"
         mkdir -p "$log_dir"
     else
-        echo "Directory exists"
+        # Log directory exists
+        echo "Log directory exists: $log_dir"
     fi
     # remove trailing slash from source_dir if it exists
     source_dir=${source_dir%%/}

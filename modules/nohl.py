@@ -270,7 +270,7 @@ def filter_media(app, media_dict, nohl_data, instance_type, exclude_profiles, ex
                     })
                     continue
                 # Check if the media title is in the exclude list
-                if media_item['title'] in exclude_media:
+                if exclude_media and media_item['title'] in exclude_media:
                     data_dict['filtered_media'].append({
                         'title': media_item['title'], 
                         'year': media_item['year'],

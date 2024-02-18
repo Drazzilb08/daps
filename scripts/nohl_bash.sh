@@ -94,22 +94,22 @@ log_file() {
     # remove trailing slash from log_dir if it exists
     log_dir=${log_dir%/}
 
-    if [ -z "$log_dir" ]; then
-        log_dir="${LOG_DIR:-$(dirname "$0")/../logs/nohl_bash}"
-    fi
-    
-    # check if the log_dir directory exists, if not create it
-    if [ ! -d "$log_dir" ]; then
-        echo "Log directory does not exist, creating: $log_dir"
-        mkdir -p "$log_dir"
+    script_path=$(dirname "$0")
+    parent_dir=$(dirname "$script_path")
+
+    # If DOCKER_ENV is set
+    if [ -n "$DOCKER_ENV" ]; then
+        log_dir="${LOG_DIR:-/logs/nohl_bash}"
     else
-        # Log directory exists
-        echo "Log directory exists: $log_dir"
+        log_dir="${log_dir:-$parent_dir/logs/nohl_bash}"
     fi
     # remove trailing slash from source_dir if it exists
     source_dir=${source_dir%%/}
 
     log_file=$log_dir/nohl.log
+    
+    echo "Log directory: $log_dir"
+    echo "Log file: $log_file"
 
     # check if log file exists, if it does delete it
     if [ -f "$log_file" ]; then

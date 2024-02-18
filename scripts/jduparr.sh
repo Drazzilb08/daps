@@ -356,29 +356,23 @@ unraid_notify(){
 
 }
 
-log_file() {
-    log_dir=${log_dir%/}
-
-    # Get LOG_DIR env variable
-    if [ -z "$log_dir" ]; then
-        log_dir="${LOG_DIR:-$(dirname "$0")/../logs/jduparr}"
-    fi
-    
-    # Check if log directory exists
-    if [ ! -d "$log_dir" ]; then
-        echo "Log directory does not exist, creating: $log_dir"
-        mkdir -p "$log_dir"
-    else
-        # Log directory exists
-        echo "Log directory exists: $log_dir"
-    fi
-}
-
 main() {
 
     data_dir=${data_dir%/}
     log_dir=${log_dir%/}
-    log_file
+
+    script_path=$(dirname "$0")
+    parent_dir=$(dirname "$script_path")
+
+    # If DOCKER_ENV is set
+    if [ -n "$DOCKER_ENV" ]; then
+        log_dir="${LOG_DIR:-/logs/jduparr}"
+    else
+        log_dir="${log_dir:-$parent_dir/logs/jduparr}"
+    fi
+
+    echo "Log directory: $log_dir" 
+    
     handle_options "$@"
     check_duplicate_script
     check_config

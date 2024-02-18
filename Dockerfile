@@ -43,6 +43,7 @@ ARG CONFIG_DIR=/config
 ENV CONFIG_DIR=/config
 ENV TZ=America/Los_Angeles
 ENV BRANCH=${BRANCH}
+ENV DOCKER_ENV=true
 
 # Install curl, unzip, p7zip-full, tzdata, vim, rclone and docker-cli - remove curl and clean up
 # Delete unnecessary setup files
@@ -68,6 +69,7 @@ COPY . .
 RUN groupadd -g 99 dockeruser; \
     useradd -u 100 -g 99 dockeruser; \
     chown -R dockeruser:dockeruser /app; 
+
 
 # Entrypoint script
 ENTRYPOINT ["bash", "start.sh"]

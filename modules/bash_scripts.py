@@ -123,12 +123,12 @@ def set_cmd_args(settings, bash_script_file, logger, script_name):
             cmd.append(shlex.quote(str(data_dir)))
         
         if include:
-            include = ",".join([f"'{i}'" for i in include])
+            include = ",".join([f"{i}" for i in include])
             cmd.append('-i')
             cmd.append(include)
         
         if exclude:
-            exclude = ",".join([f"'{i}'" for i in exclude])
+            exclude = ",".join([f"{i}" for i in exclude])
             cmd.append('-e')
             cmd.append(exclude)
 

@@ -243,7 +243,6 @@ def main():
             logger.error("Invalid script configuration. Exiting.")
             return
         library_names = script_config.get('library_names', [])
-        media_paths = script_config.get('media_paths', [])
         source_dirs = script_config.get('source_dirs', [])
         instances = script_config.get('instances', None)
 
@@ -255,7 +254,6 @@ def main():
         logger.debug(f'{"Log level:":<20}{log_level}')
         logger.debug(f'{"Dry_run:":<20}{dry_run}')
         logger.debug(f'{"Assets paths:":<20}{source_dirs}')
-        logger.debug(f'{"Media paths:":<20}{media_paths}')
         logger.debug(f'{"Library names:":<20}{library_names}')
         logger.debug(f'{"Instances:":<20}{instances}')
         logger.debug(create_bar("-"))
@@ -271,7 +269,6 @@ def main():
                 logger.error(f"No assets found in {path}.")
         # Checking for assets and logging
         if assets_list:
-            # assets_dict = sort_assets(assets_list)
             logger.debug(f"Assets:\n{json.dumps(assets_list, indent=4)}")
         else:
             logger.error("No assets found, Check source_dirs setting in your config. Exiting.")

@@ -123,14 +123,14 @@ def set_cmd_args(settings, bash_script_file, logger, script_name):
             cmd.append(shlex.quote(str(data_dir)))
         
         if include:
-            quoted_include = ' '.join(shlex.quote(s) for s in include)
+            include = ",".join([f"'{i}'" for i in include])
             cmd.append('-i')
-            cmd.append(quoted_include)
+            cmd.append(include)
         
         if exclude:
-            quoted_exclude = ' '.join(shlex.quote(s) for s in exclude)
+            exclude = ",".join([f"'{i}'" for i in exclude])
             cmd.append('-e')
-            cmd.append(quoted_exclude)
+            cmd.append(exclude)
 
         if script_name in ['backup_appdata', 'backup_plex']:
             use_config_file = None

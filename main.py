@@ -51,6 +51,7 @@ def run_module(script_name, logger):
             module = importlib.import_module(f"modules.{script_name}")
             process = multiprocessing.Process(target=module.main)
             if process:
+                logger.info(f"Running script: {script_name}")
                 process.start()
             return process
         except ModuleNotFoundError:
@@ -62,6 +63,7 @@ def run_module(script_name, logger):
             module = importlib.import_module(f"modules.{module}")
             process = multiprocessing.Process(target=module.main, args=(script_name,))
             if process:
+                logger.info(f"Running script: {script_name}")
                 process.start()
             return process
         except ModuleNotFoundError:

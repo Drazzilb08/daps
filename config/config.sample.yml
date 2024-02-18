@@ -38,6 +38,7 @@ schedule:
     backup_folder_2: 
   backup_plex: 
   backup_appdata: 
+  nohl_bash:
   jduparr:
 
 instances:

@@ -321,7 +321,7 @@ handle_options() {
     while getopts ":s:i:e:w:n:h" opt; do
         case $opt in
             s) source_dir="$OPTARG" ;;
-            i) include+=("$OPTARG") ;;
+            i) IFS=' ' read -ra include <<< "$OPTARG" ;;
             e) exclude+=("$OPTARG") ;;
             w) webhook="$OPTARG" ;;
             n) bot_name="$OPTARG" ;;

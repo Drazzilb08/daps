@@ -37,6 +37,8 @@ def set_cmd_args(settings, bash_script_file, logger, script_name):
         keep_backups = str(settings.get('keep_backups')) if 'keep_backups' in settings else None
         compress = str(settings.get('compress')) if 'compress' in settings else None
         data_dir = str(settings.get('data_dir')) if 'data_dir' in settings else None
+        include = list(settings.get('include')) if 'include' in settings else None
+        exclude = list(settings.get('exclude')) if 'exclude' in settings else None
 
         keep_essential = str(settings.get('keep_essential')) if 'keep_essential' in settings else None
         keep_full = str(settings.get('keep_full')) if 'keep_full' in settings else None
@@ -63,6 +65,8 @@ def set_cmd_args(settings, bash_script_file, logger, script_name):
         logger.debug(f"script_name: {script_name}")
         logger.debug(f"settings: {settings}")
         logger.debug(f"bash_script_file: {bash_script_file}")
+        logger.debug(f"include: {include}")
+        logger.debug(f"exclude: {exclude}")
 
         if source:
             cmd.append('-s')
@@ -117,6 +121,14 @@ def set_cmd_args(settings, bash_script_file, logger, script_name):
         if data_dir:
             cmd.append('-D')
             cmd.append(shlex.quote(str(data_dir)))
+        
+        if include:
+            cmd.append('-i')
+            cmd.append(shlex.quote(str(include)))
+        
+        if exclude:
+            cmd.append('-e')
+            cmd.append(shlex.quote(str(exclude)))
 
         if script_name in ['backup_appdata', 'backup_plex']:
             use_config_file = None

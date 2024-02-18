@@ -576,6 +576,9 @@ def main():
             logger.info(f"Running sync_gdrive")
             from modules.sync_gdrive import main
             main()
+            logger.info(f"Finished running sync_gdrive")
+        else:
+            logger.debug(f"Sync posters is disabled. Skipping...")
 
         assets_list = []
         print("Gathering all the posters, please wait...")
@@ -639,6 +642,7 @@ def main():
 
         if media_dict and assets_dict:
             # Match media data to asset files
+            print(f"Matching media to assets, please wait...")
             combined_dict = match_data(media_dict, assets_dict)
             logger.debug(f"Matched and Unmatched media:\n{json.dumps(combined_dict, indent=4)}")
             matched_assets = combined_dict.get('matched', None)
@@ -660,6 +664,9 @@ def main():
             tmp_dir = os.path.join(destination_dir, 'tmp')
             from modules.border_replacerr import process_files
             process_files(tmp_dir, destination_dir, dry_run)
+            logger.info(f"Finished running border_replacerr.py")
+        else:
+            logger.debug(f"Border replacerr is disabled. Skipping...")
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()

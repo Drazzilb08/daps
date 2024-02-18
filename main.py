@@ -94,13 +94,14 @@ def main():
     """
     Main function
     """
+   
+    initial_run = True
+    last_check = None
+    old_schedule = None
+    running_scripts = {}
+    waiting_message_shown = False
+    scripts_schedules= load_schedule()
     try:
-        initial_run = True
-        last_check = None
-        old_schedule = None
-        running_scripts = {}
-        waiting_message_shown = False
-        scripts_schedules= load_schedule()
         if len(sys.argv) > 1:
             for input_name in sys.argv[1:]:
                 if input_name and any(script in input_name for script in list_of_bash_scripts):
@@ -109,7 +110,15 @@ def main():
                     run_module(input_name, logger)
                 elif input_name not in list_of_python_scripts or (input_name and not any(script in input_name for script in list_of_bash_scripts)):
                     logger.error(f"Script: {input_name} does not exist")
-        else:
+                    return
+    except KeyboardInterrupt:
+        print("Keyboard Interrupt detected. Exiting...")
+        sys.exit()
+    except Exception:
+        logger.error(f"\n\nAn error occurred:\n", exc_info=True)
+        logger.error(f"\n\n")
+    else:
+        try:
             # If config file is not found
             while True:
                 scripts_schedules= load_schedule()
@@ -187,19 +196,18 @@ def main():
                 old_schedule = scripts_schedules
                 time.sleep(15)
         
-    # If the script is interrupted
-    except KeyboardInterrupt:
-        print("Keyboard Interrupt detected. Exiting...")
-        sys.exit()
-    
-    # If an error occurs
-    except Exception:
-        logger.error(f"\n\nAn error occurred:\n", exc_info=True)
-        logger.error(f"\n\n")
+        # If the script is interrupted
+        except KeyboardInterrupt:
+            print("Keyboard Interrupt detected. Exiting...")
+            sys.exit()
+        
+        # If an error occurs
+        except Exception:
+            logger.error(f"\n\nAn error occurred:\n", exc_info=True)
+            logger.error(f"\n\n")
 
-    # If the script is stopped
-    finally:
-        if initial_run is not None:
+        # If the script is stopped
+        finally:
             logger.info(create_bar("END"))
 
 

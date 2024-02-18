@@ -2,7 +2,6 @@ import os
 import time
 import logging
 import pathlib
-from util.utility import is_docker
 from logging.handlers import RotatingFileHandler
 
 def setup_logger(log_level, script_name, max_logs=9):
@@ -18,7 +17,7 @@ def setup_logger(log_level, script_name, max_logs=9):
         A logger object for logging messages.
     """
 
-    if is_docker():
+    if os.environ.get('DOCKER_ENV'):
         config_dir = os.getenv('CONFIG_DIR', '/config')
         log_dir = f"{config_dir}/logs/{script_name}"
     else:

@@ -687,16 +687,6 @@ def validate(config, script_config, logger):
     else:
         return True
 
-def is_docker():
-    """
-    Attempt to determine if running in a docker environment
-    
-    returns:
-        bool: True if running in a docker environment, False otherwise
-    """
-    cgroup = Path('/proc/self/cgroup')
-    return Path('/.dockerenv').is_file() or (cgroup.is_file() and 'docker' in cgroup.read_text())
-
 def get_current_git_branch():
     """
     Get the current git branch
@@ -704,7 +694,7 @@ def get_current_git_branch():
     Returns:
         str: The current git branch
     """
-    if is_docker():
+    if os.environ.get('DOCKER_ENV'):
         branch = os.getenv('BRANCH', "master")
         return branch
     else:
@@ -723,11 +713,6 @@ def get_current_git_branch():
             # Handle any errors if the command fails
             print(f"Error: {e}")
             return None
-        except FileNotFoundError as e:
-            # Handle any errors if the command fails
-            print(f"File not found, checking environment variable for branch...")
-            branch = os.getenv('BRANCH', "master")
-            return branch
     
 def create_bar(middle_text):
     """

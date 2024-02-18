@@ -13,7 +13,7 @@ except Exception as e:
     exit(1)
 
 # Set the config file path
-if is_docker():
+if os.environ.get('DOCKER_ENV'):
     # Set the config path
     config_path = os.getenv('CONFIG_DIR', '/config')
     # Set the config file path

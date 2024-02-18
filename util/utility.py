@@ -150,6 +150,8 @@ def _is_asset_folders(folder_path):
         return False
     else:
         for item in os.listdir(folder_path):
+            if item.startswith('.') or item.startswith('@') or item == "tmp":
+                continue
             if os.path.isdir(os.path.join(folder_path, item)):
                 return True
         return False
@@ -473,7 +475,7 @@ def get_media_folders(paths, logger):
         
         # Iterate through items in the directory
         for item in tqdm(os.listdir(path), desc=f"Getting media folders for '{base_name}'", disable=None, leave=True):
-            if item.startswith('.'):
+            if item.startswith('.') or item.startswith('@'):
                 continue  # Skip hidden files/folders
             
             try:

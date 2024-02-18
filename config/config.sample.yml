@@ -122,7 +122,7 @@ bash_scripts:
       keep_backup: 12
       compress: true
   nohl_bash:
-    source_dir:
+    source:
     include:
       - 
       - 

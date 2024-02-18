@@ -257,13 +257,15 @@ def notification(output_dict):
             title = item['title']
             year = item['year']
             download = item['download']
-            torrent_list = []
-            torrent_list.append(f"{title} ({year})")
+
             # Construct a list of downloads and their format scores associated with the media
             if download:
+                torrent_list = []
+                torrent_list.append(f"{title} ({year})")
                 for torrent_item, format_score in download.items():
                     torrent_list.append(f"\t{torrent_item}\n\tCF Score: {format_score}")
             else:
+                continue
                 torrent_list.append("\tNo upgrades found for this item.")
             server_list.append("\n".join(torrent_list))
         value = "\n".join(server_list)

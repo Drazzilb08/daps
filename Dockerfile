@@ -54,8 +54,8 @@ RUN set -eux; \
     curl https://rclone.org/install.sh | bash
 
 RUN apt-get update; \
-    apt-get install -y --no-install-recommends docker-cli; \
-    apt-get clean; 
+    apt-get install -y --no-install-recommends docker.io; \
+    docker --version
 
 VOLUME /var/run/docker.sock
 VOLUME /config

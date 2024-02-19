@@ -188,7 +188,7 @@ unraid_notification() {
 send_notification() {
     if [[ -n "$webhook" ]]; then
         if [ "$debug" == "True" ]; then
-            echo -e "\ncurl -s -H \"Content-Type: application/json\" -X POST -d \"$payload\" \"$webhook\""
+            echo -e "\ncurl -s -H \"Content-Type: application/json\" -X POST -d \'$payload\' \"$webhook\""
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
         else
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook" /dev/null

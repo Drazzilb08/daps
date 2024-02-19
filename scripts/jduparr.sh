@@ -92,13 +92,13 @@ check_config() {
             response_code=$(curl --write-out "%{response_code}" --silent --output /dev/null -H "x-api-key: $apikey" "https://notifiarr.com/api/v1/user/validate")
         else
             if [ "$debug" == "true" ]; then
-                echo "Checking webhook validity: $webhook" | tee -a "$log_dir/.jduparr_bash.log"
+                echo "Checking webhook validity: $webhook" | tee -a "$log_file"
             fi
             response_code=$(curl --write-out "%{response_code}" --silent --output /dev/null "$webhook")
         fi
 
         if [ "$debug" == "true" ]; then
-            echo "Response: $response_code" | tee -a "$log_dir/.jduparr_bash.log"
+            echo "Response: $response_code" | tee -a "$log_file"
         fi
         if [ "$response_code" -eq 200 ]; then
             echo "Webhook is valid"
@@ -110,24 +110,25 @@ check_config() {
 }
 
 find_duplicates() {
+    log_file="$log_dir/jduparr/.jduparr.log"
     start=$(date +%s)
-    echo "Running jdupes pre-run" | tee "$log_dir/.jduparr_bash.log"
+    echo "Running jdupes pre-run" | tee "$log_file"
     if [ $debug == "true" ]; then
-        echo "Running jdupes for all directories" | tee -a "$log_dir/.jduparr_bash.log"
-        echo -e "Media directory: ${data_dir}" | tee -a "$log_dir/.jduparr_bash.log"
-        echo -e "jdupes -r -L -X onlyext:mp4,mkv,avi ${data_dir}" | tee -a "$log_dir/.jduparr_bash.log"
+        echo "Running jdupes for all directories" | tee -a "$log_file"
+        echo -e "Media directory: ${data_dir}" | tee -a "$log_file"
+        echo -e "jdupes -r -L -X onlyext:mp4,mkv,avi ${data_dir}" | tee -a "$log_file"
     fi
-    echo "Start re-linking files" | tee -a "$log_dir/.jduparr_bash.log"
+    echo "Start re-linking files" | tee -a "$log_file"
     results=$(jdupes -r -M -X onlyext:mp4,mkv,avi "${data_dir}")
     if [[ $results != *"No duplicates found."* ]]; then
         jdupes -r -L -X onlyext:mp4,mkv,avi "${data_dir}"
     fi
-    echo "jDupes completed" | tee -a "$log_dir/.jduparr_bash.log"
+    echo "jDupes completed" | tee -a "$log_file"
 
     # Call the function to parse the .jduparr_bash.log file
     parse_jdupes_output
     if [ $debug == "true" ]; then
-        echo -e "jdupes output: ${results}" | tee -a "$log_dir/.jduparr_bash.log"
+        echo -e "jdupes output: ${results}" | tee -a "$log_file"
     fi
     end=$(date +%s)
 }
@@ -141,7 +142,7 @@ parse_jdupes_output(){
         parsed_log="No hardlinks created"
     fi
     if [ $debug == "true" ]; then
-        echo -e "Parsed log: ${parsed_log}" | tee -a "$log_dir/.jduparr_bash.log"
+        echo -e "Parsed log: ${parsed_log}" | tee -a "$log_file"
     fi
 }
 
@@ -185,8 +186,8 @@ send_notification() {
             discord_common_fields
             payload
             if [ "$debug" == "true" ]; then
-                echo "$webhook" | tee -a "$log_dir/.jduparr_bash.log"
-                echo "$payload" | tee -a "$log_dir/.jduparr_bash.log"
+                echo "$webhook" | tee -a "$log_file"
+                echo "$payload" | tee -a "$log_file"
             fi
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
         fi
@@ -194,8 +195,8 @@ send_notification() {
             notifiarr_common_fields
             payload
             if [ "$debug" == "true" ]; then
-                echo "$webhook" | tee -a "$log_dir/.jduparr_bash.log"
-                echo "$payload" | tee -a "$log_dir/.jduparr_bash.log"
+                echo "$webhook" | tee -a "$log_file"
+                echo "$payload" | tee -a "$log_file"
             fi
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
         fi
@@ -350,7 +351,7 @@ unraid_notify(){
         message="❌ Folder: $data_dir - Checked and validated\n➡️ Hardlinks recreated:\n$parsed_log\n\n"
     fi
     if [ "$debug" == "true" ]; then
-        echo "$message" | tee -a "$log_dir/.jduparr_bash.log"
+        echo "$message" | tee -a "$log_file"
     fi
     /usr/local/emhttp/plugins/dynamix/scripts/notify -s "Script Execution Summary" -d "$message"
 
@@ -385,7 +386,7 @@ main() {
     if [ -n "$webhook" ]; then
         send_notification
     fi
-    echo "$run_output" | tee -a "$log_dir/.jduparr_bash.log"
+    echo "$run_output" | tee -a "$log_file"
     cleanup
 }
 

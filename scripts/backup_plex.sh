@@ -19,12 +19,22 @@
 quiet="False"
 unraid_notify="False"
 
-config_file() {
-    # if CONFIG_DIR
-    if [ -z "$log_dir" ]; then
-        config_dir="${CONFIG_DIR:-$(dirname "$0")/..}"
+config_dir_setup() {
+    config_dir=${config_dir%/}
+
+    script_path=$(dirname "$0")
+    parent_dir=$(dirname "$script_path")
+
+    if [ -n "$DOCKER_ENV" ]; then
+        config_dir="/config"
+    else
+        config_dir="${Cconfig_dir:-$parent_dir/config}"
     fi
+    
     config_file="$config_dir/backup-plex.conf"
+}
+
+config_file() {
     # Check if config file exists
     if [ -f "$config_file" ]; then
         # Read config file
@@ -483,17 +493,14 @@ start_plex() {
 main() {
     # Check if config file is defined in command line arguments
     handle_options "$@"
+    config_dir_setup
     if [ "$use_config_file" == "True" ]; then
         config_file
     fi
     hex_to_decimal "$bar_color"
     check_config "$@"
     last_plex_backup="$config_dir/.last_plex_backup.tmp"
-    # check for .last_plex_backup.tmp file and if it exists, read the file to get the last backup date
-    if [ ! -f "$last_plex_backup" ]; then
-        verbose_output "Creating last backup file"
-        touch "$last_plex_backup"
-    fi
+    # check for .last_plex_backup.tmp file and if it exists, read the file to get the last backup date 
 
     if [ -f "$last_plex_backup" ]; then
         while IFS= read -r line; do

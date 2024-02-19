@@ -187,7 +187,7 @@ def main():
                         waiting_message_shown = False
 
                 old_schedule = scripts_schedules
-                time.sleep(15)
+                time.sleep(60)
         
         # If the script is interrupted
         except KeyboardInterrupt:

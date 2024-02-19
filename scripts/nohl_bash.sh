@@ -106,7 +106,7 @@ log_file() {
     # remove trailing slash from source_dir if it exists
     source_dir=${source_dir%%/}
 
-    log_file=$log_dir/nohl.log
+    log_file=$log_dir/nohl_bash/nohl.log
     
     echo "Log directory: $log_dir"
     echo "Log file: $log_file"
@@ -139,7 +139,7 @@ check_hardlinks() {
     echo "Starting Search..."
     # Iterate through the include array
     for ((i = 0; i < ${#include[@]}; i++)); do
-        echo "****** Searching ${include[$i]}... ******" | tee -a "$log_file"
+        echo -e "\n****** Searching ${include[$i]}... ******" | tee -a "$log_file"
 
         # Construct the find command to search for files with hard link count of 1
         # Exclude folders listed in 'exclude_folders' and 'exclude'

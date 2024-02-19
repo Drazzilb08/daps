@@ -207,7 +207,7 @@ field_builder() {
     field_builder='{
                 "'"$title"'": "'"$title_text"':",
                 "'"$text"'": "'"$text_value"'",
-                "inline": False
+                "inline": false
             }'
     # Check if fields is not empty and add a comma if it is not
     if [ -n "$fields" ]; then
@@ -488,13 +488,17 @@ main() {
     fi
     hex_to_decimal "$bar_color"
     check_config "$@"
+    last_plex_backup="$(date -r "${config_dir}/.last_plex_backup.tmp" +%s)"
     # check for .last_plex_backup.tmp file and if it exists, read the file to get the last backup date
-    if [ -f "${config_dir}/.last_plex_backup.tmp" ]; then
+    if [ -f "$last_plex_backup" ]; then
         while IFS= read -r line; do
             lastbackup=$line
-        done <"${config_dir}/.last_plex_backup.tmp"
+        done <"$last_plex_backup"
     else
         lastbackup=0
+    fi
+    if [ "$debug" == "True" ]; then
+        echo "Last Plex Backup: $last_plex_backup"
     fi
     if [ "$debug" == "True" ]; then
         echo "Last backup: $lastbackup"
@@ -532,7 +536,7 @@ main() {
                 payload "Full Backup"
                 send_notification
                 days="0"
-                echo "$current_date" >"${config_dir}"/.last_plex_backup.tmp
+                echo "$current_date" > "$last_plex_backup"
                 verbose_output "Total size of this Essential backup: ${essential_backup_size}"
                 verbose_output "Total size of this Full backup: ${full_backup_size}"
             else
@@ -554,7 +558,7 @@ main() {
         payload "Full and Essential Backup"
         send_notification
         
-        echo "$current_date" >"${config_dir}"/.last_plex_backup.tmp
+        echo "$current_date" > "$last_plex_backup"
         days="0"
         verbose_output "Total size of this Full backup: ${full_backup_size}"
     fi

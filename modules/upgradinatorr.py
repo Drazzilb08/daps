@@ -263,7 +263,7 @@ def notification(output_dict):
                 torrent_list = []
                 torrent_list.append(f"{title} ({year})")
                 for torrent_item, format_score in download.items():
-                    torrent_list.append(f"\t{torrent_item}\n\tCF Score: {format_score}")
+                    torrent_list.append(f"\t{torrent_item}\n\tCF Score: {format_score}\n")
             else:
                 continue
                 torrent_list.append("\tNo upgrades found for this item.")

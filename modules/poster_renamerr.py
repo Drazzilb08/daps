@@ -326,13 +326,14 @@ def rename_files(matched_assets, script_config):
                             process_file(file, new_file_path, action_type)
                 
                 # Append the messages to the output
-                output[asset_type].append({
-                    'title': item['title'],
-                    'year': item['year'],
-                    'folder': item['folder'],
-                    'messages': messages,
-                    'discord_messages': discord_messages,
-                })
+                if messages or discord_messages:
+                    output[asset_type].append({
+                        'title': item['title'],
+                        'year': item['year'],
+                        'folder': item['folder'],
+                        'messages': messages,
+                        'discord_messages': discord_messages,
+                    })
         else:
             print(f"No {asset_type} to rename")
     return output

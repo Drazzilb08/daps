@@ -391,7 +391,6 @@ create_backup() {
     # Set the end time
     end=$(date +%s)
     # Set permissions of the destination directory to 777
-    chmod -R 777 "$dest"
     verbose_output "\nBackup complete"
     calculate_runtime
     if [ "$dry_run" == "True" ]; then

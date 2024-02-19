@@ -488,8 +488,13 @@ main() {
     fi
     hex_to_decimal "$bar_color"
     check_config "$@"
-    last_plex_backup="$(date -r "${config_dir}/.last_plex_backup.tmp" +%s)"
+    last_plex_backup="$config_dir/.last_plex_backup.tmp"
     # check for .last_plex_backup.tmp file and if it exists, read the file to get the last backup date
+    if [ ! -f "$last_plex_backup" ]; then
+        verbose_output "Creating last backup file"
+        touch "$last_plex_backup"
+    fi
+
     if [ -f "$last_plex_backup" ]; then
         while IFS= read -r line; do
             lastbackup=$line
@@ -498,9 +503,8 @@ main() {
         lastbackup=0
     fi
     if [ "$debug" == "True" ]; then
+        echo "Config Dir: $config_dir"
         echo "Last Plex Backup: $last_plex_backup"
-    fi
-    if [ "$debug" == "True" ]; then
         echo "Last backup: $lastbackup"
     fi
     # get current date

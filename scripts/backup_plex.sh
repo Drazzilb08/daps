@@ -488,11 +488,11 @@ main() {
     fi
     hex_to_decimal "$bar_color"
     check_config "$@"
-    # check for last_plex_backup.tmp file and if it exists, read the file to get the last backup date
-    if [ -f "${config_dir}/last_plex_backup.tmp" ]; then
+    # check for .last_plex_backup.tmp file and if it exists, read the file to get the last backup date
+    if [ -f "${config_dir}/.last_plex_backup.tmp" ]; then
         while IFS= read -r line; do
             lastbackup=$line
-        done <"${config_dir}/last_plex_backup.tmp"
+        done <"${config_dir}/.last_plex_backup.tmp"
     else
         lastbackup=0
     fi
@@ -532,7 +532,7 @@ main() {
                 payload "Full Backup"
                 send_notification
                 days="0"
-                echo "$current_date" >"${config_dir}"/last_plex_backup.tmp
+                echo "$current_date" >"${config_dir}"/.last_plex_backup.tmp
                 verbose_output "Total size of this Essential backup: ${essential_backup_size}"
                 verbose_output "Total size of this Full backup: ${full_backup_size}"
             else
@@ -554,7 +554,7 @@ main() {
         payload "Full and Essential Backup"
         send_notification
         
-        echo "$current_date" >"${config_dir}"/last_plex_backup.tmp
+        echo "$current_date" >"${config_dir}"/.last_plex_backup.tmp
         days="0"
         verbose_output "Total size of this Full backup: ${full_backup_size}"
     fi

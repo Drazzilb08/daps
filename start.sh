@@ -50,7 +50,7 @@ done
 
 echo "Starting userScripts as $(whoami) running userscripts with UID: $PUID and GID: $PGID"
 
-chown -R ${PUID}:${PGID} /${CONFIG_DIR} /app > /dev/null 2>&1
+chown -R ${PGID}:${PUID} /${CONFIG_DIR} /app > /dev/null 2>&1
 chmod -R 777 /${CONFIG_DIR} > /dev/null 2>&1
 
 # Run main.py as the dockeruser

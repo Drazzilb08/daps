@@ -804,7 +804,7 @@ def main():
                     data_dict = {'search_media': [], 'filtered_media': []}
                     nohl_data = nohl_dict['movies'] if instance_type == "radarr" else nohl_dict['series'] if instance_type == "sonarr" else None
                     if nohl_data:
-                        media_dict = handle_starr_data(app, server_name, instance_type, logger)
+                        media_dict = handle_starr_data(app, server_name, instance_type)
                         data_dict = filter_media(app, media_dict, nohl_data, instance_type, exclude_profiles, exclude_media,)
                         search_dict = data_dict.get('search_media', [])
                         if search_dict:

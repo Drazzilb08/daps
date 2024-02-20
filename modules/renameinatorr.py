@@ -209,6 +209,10 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
     Returns:
         list: List of dictionaries containing the data for each item.
     """
+    table = [
+        [f"Processing {server_name}"]
+    ]
+    logger.info(create_table(table))
     
     # Fetch data related to the instance (Sonarr or Radarr)
     media_dict = handle_starr_data(app, server_name, instance_type)
@@ -221,6 +225,7 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
             media_dict = [item for item in media_dict if tag_id not in item['tags']][:count]
 
     # Process each item in the fetched data
+    rename_response = []
     if media_dict:
         print("Processing data... This may take a while.")
         for item in tqdm(media_dict, desc=f"Processing '{server_name}' Media", unit="items", disable=None, leave=True):
@@ -253,15 +258,15 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
             media_ids = [item['media_id'] for item in media_dict]
             if any(value['file_info'] for value in media_dict):
                 # Rename files and wait for media refresh
-                app.rename_media(media_ids)
+                if rename_response:
+                    app.rename_media(media_ids)
                 
-                # Refresh media and wait for it to be ready
-                response = app.refresh_items(media_ids)
-                print(f"Waiting for {server_name} to refresh...")
-
-                # Wait for media to be ready
-                ready = app.wait_for_command(response['id'])
-                print(f"Waiting for {server_name} to refresh...")
+                    # Refresh media and wait for it to be ready
+                    response = app.refresh_items(media_ids)
+                    
+                    print(f"Waiting for {server_name} to refresh...")
+                    # Wait for media to be ready
+                    ready = app.wait_for_command(response['id'])
 
             if tag_id and count and tag_name:
                 # Add tag to items that were renamed
@@ -293,6 +298,7 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
                 
                 # Get updated media data and update item with new path names
                 if ready:
+                    print(f"Fetching updated data for {server_name}...")
                     new_media_dict = handle_starr_data(app, server_name, instance_type)
                     for new_item in new_media_dict:
                         for old_item in media_dict:

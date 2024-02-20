@@ -17,6 +17,7 @@
 import json
 import re
 import sys
+import time
 
 from util.config import Config
 from util.logger import setup_logger
@@ -194,6 +195,9 @@ def notification(output_dict):
     for key, value in discord_dict.items():
         print(f"Sending message {key} of {len(discord_dict)}")
         discord(fields=value, logger=logger, script_name=script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
+        if key % 5 == 0:
+            print("Pausing for 5 seconds to let Discord catch up...")
+            time.sleep(5)
 
 
 def process_instance(app, rename_folders, server_name, instance_type, count, tag_name):

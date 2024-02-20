@@ -856,8 +856,8 @@ def is_match(asset, media):
         asset['title'] == original_title or
         asset['title'] == folder_title or
         asset['normalized_title'] == normalized_folder_title or 
-        media['title'] == no_prefix or
-        media['title'] == no_suffix or
+        (media['title'] in no_prefix) or
+        (media['title'] in no_suffix) or
         (media['normalized_title'] in no_prefix_normalized) or
         (media['normalized_title'] in no_suffix_normalized) or
         compare_strings(asset['title'], media['title']) or

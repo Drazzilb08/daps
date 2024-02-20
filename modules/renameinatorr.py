@@ -212,7 +212,7 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
     table = [
         [f"Processing {server_name}"]
     ]
-    logger.info(create_table(table))
+    print(create_table(table))
     
     # Fetch data related to the instance (Sonarr or Radarr)
     media_dict = handle_starr_data(app, server_name, instance_type)
@@ -259,12 +259,12 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
             if any(value['file_info'] for value in media_dict):
                 # Rename files and wait for media refresh
                 if rename_response:
-                    app.rename_media(media_ids)
-                
+                    app.rename_media(media_ids)              
+                    
                     # Refresh media and wait for it to be ready
+                    print(f"Refreshing {server_name}...")
                     response = app.refresh_items(media_ids)
                     
-                    print(f"Waiting for {server_name} to refresh...")
                     # Wait for media to be ready
                     ready = app.wait_for_command(response['id'])
 
@@ -278,6 +278,7 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
 
             # Group root folders by root folder name
             if rename_folders:
+                print(f"Renaming folders in {server_name}...")
                 for item in media_dict:
                     root_folder = item["root_folder"]
                     if root_folder not in grouped_root_folders:
@@ -289,13 +290,14 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
                     app.rename_folders(media_ids, root_folder)
                 
                 # Refresh media and wait for it to be ready
-                print(f"Waiting for {server_name} to refresh...")
+                print(f"Refreshing {server_name}...")
                 response = app.refresh_items(media_ids)
 
                 # Wait for media to be ready
+                print(f"Waiting for {server_name} to refresh...")
                 ready = app.wait_for_command(response['id'])
-                print(f"Folders renamed in {server_name}.")
                 
+                print(f"Folders renamed in {server_name}...")
                 # Get updated media data and update item with new path names
                 if ready:
                     print(f"Fetching updated data for {server_name}...")

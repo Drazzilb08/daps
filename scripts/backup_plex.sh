@@ -500,15 +500,14 @@ main() {
     hex_to_decimal "$bar_color"
     check_config "$@"
     last_plex_backup="$config_dir/.last_plex_backup.tmp"
+    
     # check for .last_plex_backup.tmp file and if it exists, read the file to get the last backup date 
-
     if [ -f "$last_plex_backup" ]; then
-        while IFS= read -r line; do
-            lastbackup=$line
-        done <"$last_plex_backup"
+        lastbackup=$(cat "$last_plex_backup")
     else
         lastbackup=0
     fi
+
     if [ "$debug" == "True" ]; then
         echo "Config Dir: $config_dir"
         echo "Last Plex Backup: $last_plex_backup"

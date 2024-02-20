@@ -75,7 +75,7 @@ def main():
                     app = StARR(instance_data[instance]['url'], instance_data[instance]['api'], logger)
                     server_name = app.get_instance_name()
                     health = app.get_health()
-                    media_dict = handle_starr_data(app, instance_type)
+                    media_dict = handle_starr_data(app, server_name, instance_type)
                     id_list = []
                     if health:
                         for health_item in health:

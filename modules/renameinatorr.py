@@ -211,7 +211,7 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
     """
     
     # Fetch data related to the instance (Sonarr or Radarr)
-    media_dict = handle_starr_data(app, instance_type)
+    media_dict = handle_starr_data(app, server_name, instance_type)
 
     # If count and tag_name is specified, limit the number of items to process that do not have tag_name
     tag_id = None
@@ -293,7 +293,7 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
                 
                 # Get updated media data and update item with new path names
                 if ready:
-                    new_media_dict = handle_starr_data(app, instance_type)
+                    new_media_dict = handle_starr_data(app, server_name, instance_type)
                     for new_item in new_media_dict:
                         for old_item in media_dict:
                             if new_item['media_id'] == old_item['media_id']:

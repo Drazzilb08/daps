@@ -307,9 +307,10 @@ def main():
                             url = instance_data[instance]['url']
                             api = instance_data[instance]['api']
                             app = StARR(url, api, logger)
+                            server_name = app.get_instance_name()
                             if app:
                                 print(f"Getting {instance_type.capitalize()} data...")
-                                results = handle_starr_data(app, instance_type)
+                                results = handle_starr_data(app, server_name, instance_type)
                                 if results:
                                     if instance_type == "radarr":
                                         media_dict['movies'].extend(results)

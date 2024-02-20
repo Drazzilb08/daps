@@ -523,7 +523,7 @@ def get_media_folders(paths, logger):
     
     return media_dict
 
-def handle_starr_data(app, instance_type):
+def handle_starr_data(app, server_name, instance_type):
     """
     Get data from Radarr or Sonarr
     
@@ -538,7 +538,7 @@ def handle_starr_data(app, instance_type):
     media_dict = []  # Initialize an empty list to hold media data
     media = app.get_media()  # Fetch media data from the Radarr or Sonarr instance
     if media:
-        for item in tqdm(media, desc=f"Getting {instance_type.capitalize()} data", total=len(media), disable=None, leave=True):
+        for item in tqdm(media, desc=f"Getting {server_name.capitalize()} data", total=len(media), disable=None, leave=True):
             # Fetch relevant data based on the instance type (Radarr or Sonarr)
             if instance_type == "radarr":
                 file_id = item.get('movieFile', {}).get('id', None)  # Fetch file ID for Radarr

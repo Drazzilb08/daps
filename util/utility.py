@@ -19,7 +19,7 @@ except ImportError as e:
 # Regex to remove illegal characters from file names
 illegal_chars_regex = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')
 # Regex to extract the year from parentheses in the title
-year_regex = re.compile(r"\s?\((\d{4})\).*")
+year_regex = re.compile(r"\s?\((\d{4})\)(?!.*Collection).*")
 # Regex to extract the year from parentheses in the folder name
 folder_year_regex = re.compile(r"(.*)\s\((\d{4})\)")
 # Regex to remove special characters from the title

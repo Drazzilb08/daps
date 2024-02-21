@@ -137,7 +137,7 @@ def match_data(media_dict, asset_files):
                         # Iterate through each asset entry of the current asset type
                         for asset in asset_data:
                             # Extracting various properties of assets and media for comparison
-                            if is_match(media, asset):
+                            if is_match(asset, media):
                                 matched = True  # Set flag to indicate a match
                                 asset_season_numbers = asset.get('season_numbers', None)
                                 if asset_type == "series":

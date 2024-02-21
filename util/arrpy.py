@@ -340,24 +340,6 @@ class StARR:
             elif response['status'] == 'failed':
                 return False
             time.sleep(5)
-
-    def refresh_item(self, media_id):
-        """
-        Refresh a media item.
-        Args:
-            media_id (int): The ID of the media item to refresh.
-        """
-        if self.instance_type == 'Sonarr':
-            name_type = "RefreshSeries"
-        elif self.instance_type == 'Radarr':
-            name_type = "RefreshMovie"
-        payload = {
-            "name": name_type,
-            "seriesId": media_id
-        }
-        self.logger.debug(f"Refresh payload: {payload}")
-        endpoint = f"{self.url}/api/v3/command"
-        return self.make_post_request(endpoint, headers=self.headers, json=payload)
     
     def refresh_items(self, media_ids):
         """
@@ -365,6 +347,8 @@ class StARR:
         Args:
             media_id (int): The ID of the media item to refresh.
         """
+        if isinstance(media_ids, int):
+            media_ids = [media_ids]
         if self.instance_type == 'Sonarr':
             name_type = "RefreshSeries"
             media_type = "seriesIds"

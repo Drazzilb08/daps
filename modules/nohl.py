@@ -47,7 +47,7 @@ episode_regex = r"(?:E|e)(\d{1,2})"
 title_regex = r".*\/([^/]+)\s\((\d{4})\).*"
 year_regex = re.compile(r"\s?\((\d{4})\).*")
 
-def find_no_hl_files(path):
+def find_no_hl_files(path, exclude_media):
     """
     Finds all files that are not hardlinked in a given path.
     
@@ -71,11 +71,13 @@ def find_no_hl_files(path):
         except AttributeError as e:
             logger.warning(f"Item '{item}' does not contain a year.")
             year = 0
+        if title in exclude_media:
+            logger.info(f"Skipping {title} ({year})")
         # Creating an asset dictionary to store file information
         asset_dict = {
             'title': title,
             'year': year,
-            'normalized_title': normalize_titles(title),  # Function to normalize titles
+            'normalized_title': normalize_titles(title),
             'root_path': path,
             'path': os.path.join(path, item)
         }
@@ -728,7 +730,20 @@ def main():
         logger.debug(f'{"Filters:":<30}\n{json.dumps(filters, indent=4)}')
         logger.debug(f'{"Paths:":<30}\n{json.dumps(paths, indent=4)}')
         logger.debug(f'{"Print Files:":<30}{print_files}')
+        logger.debug(f'{"Exclude Profiles:":<30}\n{json.dumps(filters.get("exclude_profiles", []), indent=4)}')
+
+        # Combine exclude movies and series into a single list
+        exclude_media = []
+        exclude_movies = filters.get('exclude_movies', [])
+        exclude_series = filters.get('exclude_series', [])
+        if exclude_movies is not None:
+            exclude_media += exclude_movies
+        if exclude_series is not None:
+            exclude_media += exclude_series
+
+        logger.debug(f'{"Exclude Media:":<30}\n{json.dumps(exclude_media, indent=4)}')
         logger.debug(create_bar("-"))
+        print(exclude_media)
 
         # Display the summary of non-hardlinked files in each directory
         output_dict = {}
@@ -742,7 +757,7 @@ def main():
                     progress_bar.set_description(f"Finding non-hardlinked files in '{pbar_path}'")
 
                     # Process the path and update progress
-                    results = find_no_hl_files(path)
+                    results = find_no_hl_files(path, exclude_media)
                     if results:
                         nohl_dict['movies'].extend(results['movies'])
                         nohl_dict['series'].extend(results['series'])
@@ -800,12 +815,11 @@ def main():
                     if instance_type == "radarr" and not nohl_dict['movies'] or instance_type == "sonarr" and not nohl_dict['series']:
                         logger.info(f"No non-hardlinked files found for server: {server_name}\n")
                         continue
-                    exclude_media = filters.get('exclude_movies', []) if instance_type == 'radarr' else filters.get('exclude_series', [])
                     data_dict = {'search_media': [], 'filtered_media': []}
                     nohl_data = nohl_dict['movies'] if instance_type == "radarr" else nohl_dict['series'] if instance_type == "sonarr" else None
                     if nohl_data:
                         media_dict = handle_starr_data(app, server_name, instance_type)
-                        data_dict = filter_media(app, media_dict, nohl_data, instance_type, exclude_profiles, exclude_media,)
+                        data_dict = filter_media(app, media_dict, nohl_data, instance_type, exclude_profiles, exclude_media)
                         search_dict = data_dict.get('search_media', [])
                         if search_dict:
                             # Conduct searches if not a dry run

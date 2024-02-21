@@ -170,7 +170,6 @@ create_backup() {
     verbose_output "Backup size $total_size"
     verbose_output "$run_output"
     # Change permissions of the backup directory to 777
-    chmod -R 777 "$destination_dir"
 }
 
 # Function to calculate script runtime

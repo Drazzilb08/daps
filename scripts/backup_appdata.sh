@@ -933,7 +933,6 @@ main() {
     if [ "$unraid_notify" == "true" ]; then
         unraid_notification
     fi
-    chmod -R 777 "$backup_path"
     cleanup
     if [ ${#new_containers[@]} -gt 0 ]; then
         printf "New containers found:\n"

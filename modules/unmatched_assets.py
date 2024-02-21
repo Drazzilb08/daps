@@ -238,9 +238,7 @@ def main():
         
         # Retrieving script configuration
         script_config = config.script_config
-        asset_folders = script_config.get('asset_folders', [])
         source_dirs = script_config.get('source_dirs', '')
-        media_paths = script_config.get('media_paths', [])
         library_names = script_config.get('library_names', [])
         ignore_collections = script_config.get('ignore_collections', [])
         instances = script_config.get('instances', None)
@@ -253,9 +251,7 @@ def main():
         ]
         logger.debug(create_table(table))
         logger.debug(f'{"Log level:":<20}{log_level}')
-        logger.debug(f'{"Asset Folders:":<20}{asset_folders}')
         logger.debug(f'{"Assets path:":<20}{source_dirs}')
-        logger.debug(f'{"Media paths:":<20}{media_paths}')
         logger.debug(f'{"Library names:":<20}{library_names}')
         logger.debug(f'{"Ignore collections:":<20}{ignore_collections}')
         logger.debug(f'{"Instances:":<20}{instances}')

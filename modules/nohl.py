@@ -72,9 +72,9 @@ def find_no_hl_files(path, exclude_media):
             logger.warning(f"Item '{item}' does not contain a year.")
             year = 0
         normalized_title = normalize_titles(title)
-        for item in exclude_media:
-            normalized_item = normalize_titles(item)
-            if normalized_title == normalized_item:
+        for exclude in exclude_media:
+            normalized_exclude = normalize_titles(exclude)
+            if normalized_title == normalized_exclude:
                 logger.info(f"Excluding {title} ({year}) from processing.")
         # Creating an asset dictionary to store file information
         asset_dict = {

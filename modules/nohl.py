@@ -187,7 +187,7 @@ def handle_searches(app, search_dict, instance_type, max_search):
         if instance_type == 'radarr':
             # For Radarr instance, handle search for movie files
             app.delete_movie_file(item['file_ids'])  # Delete specified movie files
-            results = app.refresh_item(item['media_id'])  # Refresh the media item
+            results = app.refresh_items(item['media_id'])  # Refresh the media item
             ready = app.wait_for_command(results['id'])  # Wait for the refresh command to complete
             if ready:
                 app.search_media(item['media_id'])  # Initiate search for the media item
@@ -206,7 +206,7 @@ def handle_searches(app, search_dict, instance_type, max_search):
                     if season_pack:
                         # Delete season files if it's a season pack
                         app.delete_episode_files(file_ids)
-                        results = app.refresh_item(item['media_id'])
+                        results = app.refresh_items(item['media_id'])
                         ready = app.wait_for_command(results['id'])
                         if ready:
                             app.search_season(item['media_id'], season['season_number'])
@@ -217,7 +217,7 @@ def handle_searches(app, search_dict, instance_type, max_search):
                     else:
                         # Delete episode files if individual episodes
                         app.delete_episode_files(file_ids)
-                        results = app.refresh_item(item['media_id'])
+                        results = app.refresh_items(item['media_id'])
                         ready = app.wait_for_command(results['id'])
                         if ready:
                             app.search_episodes(episode_ids)
@@ -722,7 +722,7 @@ def main():
         table = [
             ["Script Configuration"],
         ]
-        logger.info(create_table(table))
+        logger.debug(create_table(table))
         logger.debug(f'{"Maximum Searches:":<30}{max_search}')
         logger.debug(f'{f"Instances:":<30}\n{json.dumps(instances, indent=4)}')
         logger.debug(f'{"Filters:":<30}\n{json.dumps(filters, indent=4)}')

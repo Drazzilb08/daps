@@ -71,8 +71,11 @@ def find_no_hl_files(path, exclude_media):
         except AttributeError as e:
             logger.warning(f"Item '{item}' does not contain a year.")
             year = 0
-        if title in exclude_media:
-            logger.info(f"Skipping {title} ({year})")
+        normalized_title = normalize_titles(title)
+        for item in exclude_media:
+            normalized_item = normalize_titles(item)
+            if normalized_title == normalized_item:
+                logger.info(f"Excluding {title} ({year}) from processing.")
         # Creating an asset dictionary to store file information
         asset_dict = {
             'title': title,
@@ -743,7 +746,6 @@ def main():
 
         logger.debug(f'{"Exclude Media:":<30}\n{json.dumps(exclude_media, indent=4)}')
         logger.debug(create_bar("-"))
-        print(exclude_media)
 
         # Display the summary of non-hardlinked files in each directory
         output_dict = {}

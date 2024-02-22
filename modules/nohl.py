@@ -71,7 +71,7 @@ def find_no_hl_files(path):
         except AttributeError as e:
             year = 0
         # Creating an asset dictionary to store file information
-        asset_dict = {
+        asset_list = {
             'title': title,
             'year': year,
             'normalized_title': normalize_titles(title),
@@ -83,7 +83,7 @@ def find_no_hl_files(path):
             # If the item is a directory and contains sub folders
             sub_folders = [sub_folder for sub_folder in os.listdir(os.path.join(path, item)) if os.path.isdir(os.path.join(path, item, sub_folder)) and not sub_folder.startswith('.')]
             sub_folders.sort()
-            asset_dict['season_info'] = []  # Initialize list to store season information
+            asset_list['season_info'] = []  # Initialize list to store season information
             
             # Processing sub folders
             for sub_folder in sub_folders:
@@ -115,16 +115,16 @@ def find_no_hl_files(path):
                         continue
 
                 # Storing season information with non-hardlinked files
-                season_dict = {
+                season_list = {
                     'season_number': season_number,
                     'episodes': episodes,
                     'nohl': nohl_files
                 }
                 
                 if nohl_files:
-                    asset_dict['season_info'].append(season_dict)
-            if asset_dict['season_info'] and any(season['nohl'] for season in asset_dict['season_info']):
-                nohl_data['series'].append(asset_dict)
+                    asset_list['season_info'].append(season_list)
+            if asset_list['season_info'] and any(season['nohl'] for season in asset_list['season_info']):
+                nohl_data['series'].append(asset_list)
         else:
             # For individual files within directories
             files = [file for file in os.listdir(os.path.join(path, item)) if os.path.isfile(os.path.join(path, item, file)) and not file.startswith('.')]
@@ -138,25 +138,25 @@ def find_no_hl_files(path):
                     nohl_files.append(file_path)
             
             # Storing non-hardlinked files
-            asset_dict['nohl'] = nohl_files
+            asset_list['nohl'] = nohl_files
             if nohl_files:
-                nohl_data['movies'].append(asset_dict)
+                nohl_data['movies'].append(asset_list)
         
     return nohl_data  # Return the list of dictionaries representing non-hardlinked files
 
-def handle_searches(app, search_dict, instance_type):
+def handle_searches(app, search_list, instance_type):
     """
     Handles searching for files in Radarr or Sonarr.
 
     Args:
         app (StARR): StARR object for Radarr/Sonarr.
-        search_dict (dict): Dictionary of files to search for.
+        search_list (dict): Dictionary of files to search for.
         instance_type (str): Type of instance, either 'radarr' or 'sonarr'.
     """
     print("Searching for files... this may take a while.")
     searched_for = []  # Initialize a list to store media items that have been searched for
     searches = 0  # Initialize the number of searches performed
-    for item in tqdm(search_dict, desc="Searching...", unit="item", total=len(search_dict), disable=None, leave=True):
+    for item in tqdm(search_list, desc="Searching...", unit="item", total=len(search_list), disable=None, leave=True):
         if instance_type == 'radarr':
             # For Radarr instance, handle search for movie files
             app.delete_movie_file(item['file_ids'])  # Delete specified movie files
@@ -193,14 +193,14 @@ def handle_searches(app, search_dict, instance_type):
     print(f"Searches performed: {searches}")
     return searched_for
 
-def filter_media(app, media_dict, nohl_data, instance_type, exclude_profiles, exclude_media, max_search):
+def filter_media(app, media_list, nohl_data, instance_type, exclude_profiles, exclude_media, max_search):
     """
     Filters media based on quality profile and monitored status.
     
     Args:
         app (StARR): StARR object for Radarr/Sonarr.
-        media_dict (dict): Dictionary of media items.
-        nohl_dict (dict): Dictionary of files that are not hardlinked.
+        media_list (dict): Dictionary of media items.
+        nohl_list (dict): Dictionary of files that are not hardlinked.
         instance_type (str): Type of instance, either 'radarr' or 'sonarr'.
         exclude_profiles (list): List of quality profiles to exclude.
         exclude_media (list): List of media titles to exclude.
@@ -218,44 +218,28 @@ def filter_media(app, media_dict, nohl_data, instance_type, exclude_profiles, ex
                 if profile_name == profile:
                     exclude_profile_ids.append(profile_id)
     
-    data_dict = {'search_media': [], 'filtered_media': []}  # Initialize dictionary to store filtered media and media to search
+    data_list = {'search_media': [], 'filtered_media': []}  # Initialize dictionary to store filtered media and media to search
     
-    # Iterate through nohl_dict (dictionary of non-hardlinked files)
+    # Iterate through nohl_list (dictionary of non-hardlinked files)
     for nohl_item in tqdm(nohl_data, desc="Filtering media...", unit="item", total=len(nohl_data), disable=None, leave=True):
-        # Iterate through media items in media_dict
-        for media_item in media_dict:
+        # Iterate through media items in media_list
+        for media_item in media_list:
             # Compare media items with non-hardlinked items
             if media_item['normalized_title'] == nohl_item['normalized_title'] and media_item['year'] == nohl_item['year']:
                 # Check if the media item is not monitored
-                if media_item['monitored'] == False:
-                    data_dict['filtered_media'].append({
+                if media_item['monitored'] == False or media_item['title'] in exclude_media or media_item['quality_profile'] in exclude_profile_ids:
+                    data_list['filtered_media'].append({
                         'title': media_item['title'], 
                         'year': media_item['year'],
                         'monitored': media_item['monitored'],
-                    })
-                    continue
-                # Check if the media title is in the exclude list
-                if media_item['title'] in exclude_media:
-                    data_dict['filtered_media'].append({
-                        'title': media_item['title'], 
-                        'year': media_item['year'],
-                        'exclude_media': True,
-                    })
-                    continue
-                # Check if the quality profile is in the exclude list
-                if media_item['quality_profile'] in exclude_profile_ids:
-                    quality_profile_id = media_item['quality_profile']
-                    quality_profile_name = quality_profiles.get(quality_profile_id)
-                    data_dict['filtered_media'].append({
-                        'title': media_item['title'], 
-                        'year': media_item['year'],
-                        'quality_profile': quality_profile_name,
+                        'exclude_media': media_item['title'] in exclude_media,
+                        'quality_profile': quality_profiles.get(media_item['quality_profile']) if media_item['quality_profile'] in exclude_profile_ids else None
                     })
                     continue
                 # Handle search for media files based on instance type (Radarr/Sonarr)
                 if instance_type == 'radarr':
                     file_ids = media_item['file_id']
-                    data_dict['search_media'].append({
+                    data_list['search_media'].append({
                         'media_id': media_item['media_id'],
                         'title': media_item['title'], 
                         'year': media_item['year'],
@@ -328,7 +312,7 @@ def filter_media(app, media_dict, nohl_data, instance_type, exclude_profiles, ex
 
                         # If there are unmonitored seasons or season packs, add to filtered_media
                         if filtered_seasons:
-                            data_dict['filtered_media'].append({
+                            data_list['filtered_media'].append({
                                 'title': media_item['title'], 
                                 'year': media_item['year'],
                                 'seasons': filtered_seasons
@@ -336,7 +320,7 @@ def filter_media(app, media_dict, nohl_data, instance_type, exclude_profiles, ex
                         
                         # If there are monitored episodes or season packs with hardlink issues, add to search_media
                         if season_data:
-                            data_dict['search_media'].append({
+                            data_list['search_media'].append({
                                 'media_id': media_item['media_id'],
                                 'title': media_item['title'], 
                                 'year': media_item['year'],
@@ -344,10 +328,10 @@ def filter_media(app, media_dict, nohl_data, instance_type, exclude_profiles, ex
                                 'seasons': season_data
                             })
     # Limit the number of searches to the maximum allowed
-    if len(data_dict['search_media']) > max_search:
-        data_dict['search_media'] = data_dict['search_media'][:max_search]
+    if len(data_list['search_media']) > max_search:
+        data_list['search_media'] = data_list['search_media'][:max_search]
     # Return the dictionary containing filtered media and media to search for in Sonarr
-    return data_dict
+    return data_list
 
 
 def process_files(nohl_files, instance_type):
@@ -361,7 +345,7 @@ def process_files(nohl_files, instance_type):
     Returns:
         dict: Dictionary of processed files.
     """
-    files_dict = []  # Initialize an empty list to store processed file information
+    files_list = []  # Initialize an empty list to store processed file information
     
     # If the instance type is 'radarr', process each file in the dictionary
     if instance_type == 'radarr':
@@ -379,7 +363,7 @@ def process_files(nohl_files, instance_type):
                         'title': title, 
                         'year': year,
                     }
-                    files_dict.append(file_information)
+                    files_list.append(file_information)
                     
                 except AttributeError:
                     logger.error(f"Error processing file: {file}.")
@@ -404,26 +388,26 @@ def process_files(nohl_files, instance_type):
                         else:
                             season_number_modified = int(season_number)
                     
-                    existing_dict = None
-                    # Check if the processed file is already in the files_dict
-                    for existing_file in files_dict:
+                    existing_list = None
+                    # Check if the processed file is already in the files_list
+                    for existing_file in files_list:
                         if existing_file['title'] == normalized_title:
-                            existing_dict = existing_file
+                            existing_list = existing_file
                             break
                     
                     # If the file exists, update the existing entry with new episode information
-                    if existing_dict:
-                        for season_info in existing_dict['season_info']:
+                    if existing_list:
+                        for season_info in existing_list['season_info']:
                             if season_info['season_number'] == season_number_modified:
                                 season_info['episodes'].append(episode)
                                 break
                         else:
-                            existing_dict['season_info'].append({
+                            existing_list['season_info'].append({
                                 'season_number': season_number_modified, 
                                 'episodes': [episode]
                             })
                     else:
-                        # If the file does not exist, create a new entry in the files_dict
+                        # If the file does not exist, create a new entry in the files_list
                         file_information = {
                             'title': title, 
                             'year': year, 
@@ -432,14 +416,14 @@ def process_files(nohl_files, instance_type):
                                 'episodes': [episode]
                             }]
                         }
-                        files_dict.append(file_information)
+                        files_list.append(file_information)
                         
                 except AttributeError:
                     logger.error(f"Error processing file: {file}.")
                     continue
     
     # Return the processed files dictionary
-    return files_dict
+    return files_list
 
 
 def handle_messages(output_dict):
@@ -452,6 +436,10 @@ def handle_messages(output_dict):
     Returns:
         None
     """
+    table = [
+        ["Results"],
+    ]
+    logger.info(create_table(table))
     # Iterate through each instance in the output_dict
     for instance, instance_data in output_dict.items():
         
@@ -459,14 +447,8 @@ def handle_messages(output_dict):
         search_media = instance_data['data']['search_media']
         filtered_media = instance_data['data']['filtered_media']
 
-        # Display server name
-        table = [
-            [f"{instance_data['server_name']}"],
-        ]
-        
         # Display searched media information
         if search_media:
-            logger.info(create_table(table))
             for search_item in search_media:
                 # For Radarr instances, display deleted and searched files
                 if instance_data['instance_type'] == 'radarr':
@@ -483,10 +465,6 @@ def handle_messages(output_dict):
                                 for episode in season['episode_data']:
                                     logger.info(f"\t   Episode {episode['episode_number']}, deleted and searched.")
                             logger.info("")
-        else:
-            logger.info(f"No files to search for {instance_data['server_name']}")
-        logger.info("")
-        
         # Display filtered media information
         table = [
             ["Filtered Media"],
@@ -494,8 +472,9 @@ def handle_messages(output_dict):
         if filtered_media:
             logger.debug(create_table(table))
             for filtered_item in filtered_media:
+                monitored = filtered_item.get('monitored', None)
                 logger.debug(f"{filtered_item['title']} ({filtered_item['year']})")
-                if filtered_item.get('monitored', None):
+                if monitored == False:
                     logger.debug(f"\tSkipping, not monitored.")
                 elif filtered_item.get('exclude_media', None):
                     logger.debug(f"\tSkipping, excluded.")
@@ -530,13 +509,13 @@ def notification(final_output):
     built_fields = {}
     count = 0
     message_count = 0
-    character_total = 0
+
     # Loop through each instance in the final output
     for instance, instance_data in final_output.items():
-        # Extract server name and search/filtered media information
         server_name = instance_data['server_name']
-        search_media = instance_data['data']['search_media']
-        filtered_media = instance_data['data']['filtered_media']
+        data = instance_data['data']
+        search_media = data.get('search_media', [])
+        filtered_media = data.get('filtered_media', [])
 
         # Build fields for search media
         if search_media:
@@ -563,43 +542,42 @@ def notification(final_output):
                 discord_messages.append("\n".join(sub_messages))
 
             # Split asset-specific messages into multiple fields if their total length exceeds Discord's field limit
-            for message in discord_messages:
-                if len(current_field) + len(message) + (message.count("\n") + message.count("\t")) <= 1000:
-                    current_field += message + "\n"  # Adding the message to the current field
-                else:
-                    fields.append({  # Creating a field containing a set of messages
-                        "name": f"{server_name}: Search Media",  # Capitalizing the asset type for field name
-                        "value": f"```{current_field}```"  # Adding the current field's messages in code block format
+            if discord_messages:
+                for message in discord_messages:
+                    if len(current_field) + len(message) + (message.count("\n") + message.count("\t")) <= 1000:
+                        current_field += message + "\n"  # Adding the message to the current field
+                    else:
+                        fields.append({ 
+                            "name": f"❌ {server_name}: Search Media",
+                            "value": f"```{current_field}```"
+                        })
+                        current_field = message + "\n"
+                if current_field:
+                    fields.append({  # Creating a field containing the remaining messages
+                        "name": f"❌ {server_name}: Search Media",
+                        "value": f"```{current_field}```"
                     })
-                    current_field = message + "\n"  # Starting a new field with the current message
-            
-            # Add the remaining messages as a new field
-            if current_field:
-                fields.append({  # Creating a field containing the remaining messages
-                    "name": f"",
-                    "value": f"```{current_field}```"
-                })
-                if len(fields) <= 25:  # Checking if the total number of fields is within the Discord limit
-                    built_fields[1] = fields  # Storing fields in the discord_dict under key 1
-                else:
-                    # Splitting fields into multiple keys if there are more than 25 fields
-                    num_fields = len(fields)
-                    num_messages_per_field = 25
-                    num_keys = num_fields // num_messages_per_field
-                    if num_fields % num_messages_per_field != 0:
-                        num_keys += 1
+                    if len(fields) <= 25:
+                        built_fields[1] = fields
+                    else:
+                        num_fields = len(fields)
+                        num_messages_per_field = 25
+                        num_keys = num_fields // num_messages_per_field
+                        if num_fields % num_messages_per_field != 0:
+                            num_keys += 1
 
-                    for i in range(num_keys):
-                        start_index = i * num_messages_per_field
-                        end_index = min(start_index + num_messages_per_field, num_fields)
-                        built_fields[i + 1] = fields[start_index:end_index]  # Splitting fields into separate keys
+                        for i in range(num_keys):
+                            start_index = i * num_messages_per_field
+                            end_index = min(start_index + num_messages_per_field, num_fields)
+                            built_fields[i + 1] = fields[start_index:end_index]
 
         if log_level == "debug" and filtered_media:
             filter_message = []
             for filtered_item in filtered_media:
                 # Construct messages for filtered media
                 filter_message.append(f"{filtered_item['title']} ({filtered_item['year']})")
-                if filtered_item.get('monitored', None):
+                monitored = filtered_item.get('monitored', None)
+                if monitored == False:
                     filter_message.append(f"\tSkipping, not monitored.")
                 # Handle other filtering criteria (exclusion, quality profile, etc.)
                 # Append season and episode information where available
@@ -618,21 +596,20 @@ def notification(final_output):
                                 filter_message.append(f"\t\tEpisode {episode['episode_number']}, skipping, not monitored.")
                             filter_message.append("")
             filter_message = "\n".join(filter_message)
-            field = {
+            fields.append({
                     "name": f"{server_name}: Filtered Media",
                     "value": f"```{filter_message}```",
                     "inline": False
-                }
-            fields.append(field)
+                })
 
         # Handle cases where there are no files to search or filter
         if not search_media:
-            field = {
+            fields.append({
                     "name": f"✅ {server_name} all files are hardlinked!",
                     "value": f"",
                     "inline": False
-                }
-            fields.append(field)
+                })
+
         # Check character count for message splitting
         count += 1
         
@@ -703,25 +680,28 @@ def main():
         # Display the summary of non-hardlinked files in each directory
         output_dict = {}
         # Process provided paths to find non-hardlinked files
-        nohl_dict = {'movies': [], 'series': []}
+        nohl_list = {'movies': [], 'series': []}
         if paths:
             for path in paths:
                 results = find_no_hl_files(path)
                 if results:
-                    nohl_dict['movies'].extend(results['movies'])
-                    nohl_dict['series'].extend(results['series'])
+                    nohl_list['movies'].extend(results['movies'])
+                    nohl_list['series'].extend(results['series'])
 
         # Display non-hardlinked files in the logs
-        logger.debug(f"Non-Hardlinked Files:\n{json.dumps(nohl_dict, indent=4)}")
+        logger.debug(f"Non-Hardlinked Files:\n{json.dumps(nohl_list, indent=4)}")
         
         # Generate a summary of the number of non-hardlinked files in each directory
         total = 0
-        logger.info("")
         table = [
             ["Directory", "Number of Files"],
         ]
         counter = {}
-        for media_type, results in nohl_dict.items():
+        results_table = [
+            ["Non-Hardlinked Files"],
+        ]
+        logger.info(create_table(results_table))
+        for media_type, results in nohl_list.items():
             if results:
                 old_root_path = ""
                 for item in results:
@@ -758,32 +738,37 @@ def main():
         for instance_type, instance_data in config.instances_config.items():
             for instance in instances:
                 if instance in instance_data:
+                    data_list = {'search_media': [], 'filtered_media': []}
                     instance_settings = instance_data.get(instance, None)
                     app = StARR(instance_settings['url'], instance_settings['api'], logger)
                     server_name = app.get_instance_name()
                     exclude_profiles = filters.get('exclude_profiles', [])
-                    if instance_type == "radarr" and not nohl_dict['movies'] or instance_type == "sonarr" and not nohl_dict['series']:
-                        logger.info(f"No non-hardlinked files found for server: {server_name}\n")
-                        continue
+                    table = [
+                        [f"{server_name}"],
+                    ]
+                    logger.info(create_table(table))
+                    if instance_type == "radarr" and not nohl_list['movies'] or instance_type == "sonarr" and not nohl_list['series']:
+                        logger.info(f"No non-hardlinked files found for server: {server_name}")
                     exclude_media = filters.get('exclude_movies', []) if instance_type == 'radarr' else filters.get('exclude_series', [])
-                    nohl_data = nohl_dict['movies'] if instance_type == "radarr" else nohl_dict['series'] if instance_type == "sonarr" else None
+                    nohl_data = nohl_list['movies'] if instance_type == "radarr" else nohl_list['series'] if instance_type == "sonarr" else None
                     if nohl_data:
-                        media_dict = handle_starr_data(app, server_name, instance_type)
-                        data_dict = filter_media(app, media_dict, nohl_data, instance_type, exclude_profiles, exclude_media, max_search)
-                        if data_dict:
-                            logger.debug(f"Filtered Media:\n{json.dumps(data_dict['filtered_media'], indent=4)}")
-                        search_dict = data_dict.get('search_media', [])
-                        if search_dict:
+                        media_list = handle_starr_data(app, server_name, instance_type)
+                        data_list = filter_media(app, media_list, nohl_data, instance_type, exclude_profiles, exclude_media, max_search)
+                        if data_list:
+                            logger.debug(f"Data Media:\n{json.dumps(data_list, indent=4)}")
+                        search_list = data_list.get('search_media', [])
+                        if search_list:
                             # Conduct searches if not a dry run
                             if not dry_run:
-                                search_dict = handle_searches(app, search_dict, instance_type)
-                                data_dict['search_media'] = search_dict
+                                search_list = handle_searches(app, search_list, instance_type)
+                                data_list['search_media'] = search_list
                         # Prepare output data
                     output_dict[instance] = {
                         'server_name': server_name,
                         'instance_type': instance_type,
-                        'data': data_dict
+                        'data': data_list
                     }
+        logger.debug(f"Output Data:\n{json.dumps(output_dict, indent=4)}")
         # Display command-line output about processed files and excluded media
         handle_messages(output_dict)
         

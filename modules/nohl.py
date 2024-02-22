@@ -57,10 +57,10 @@ def find_no_hl_files(path):
     Returns:
         dict: Dictionary of files that are not hardlinked.
     """
-
+    path_basename = os.path.basename(path.rstrip('/'))
     nohl_data = {'movies':[], 'series':[]}  # Initialize an empty list to store non-hardlinked file information
     # Iterating through items in the specified path
-    for item in tqdm(os.listdir(path), desc=f"Searching", unit="item", total=len(os.listdir(path)), disable=None, leave=True):
+    for item in tqdm(os.listdir(path), desc=f"Searching '{path_basename}'", unit="item", total=len(os.listdir(path)), disable=None, leave=True):
         if item.startswith('.'):  # Skip hidden files or directories
             continue
         
@@ -144,30 +144,7 @@ def find_no_hl_files(path):
         
     return nohl_data  # Return the list of dictionaries representing non-hardlinked files
 
-def check_searches(searches, max_search):
-    """
-    Checks if the maximum number of searches has been reached.
-
-    Args:
-        searches (int): Number of searches performed.
-        max_search (int): Maximum number of searches allowed.
-    
-    Returns:
-        bool: True if searches is less than max_search, False if searches is greater than or equal to max_search.
-    """
-    # Check if the number of searches performed exceeds or reaches the maximum allowed
-    print(f"Searches performed: {searches} out of {max_search}")
-    if searches >= max_search:
-        logger.warning(f"Maximum searches reached: {max_search}")  # Log a warning indicating maximum searches reached
-        logger.info("*" * 42 + "\n")  # Log a separator for clarity
-        # Return False indicating the maximum search limit has been reached
-        return True
-    else:
-        # Return True indicating searches are below the maximum limit
-        return False 
-
-
-def handle_searches(app, search_dict, instance_type, max_search):
+def handle_searches(app, search_dict, instance_type):
     """
     Handles searching for files in Radarr or Sonarr.
 
@@ -175,14 +152,11 @@ def handle_searches(app, search_dict, instance_type, max_search):
         app (StARR): StARR object for Radarr/Sonarr.
         search_dict (dict): Dictionary of files to search for.
         instance_type (str): Type of instance, either 'radarr' or 'sonarr'.
-        max_search (int): Maximum number of searches allowed.
     """
     print("Searching for files... this may take a while.")
     searched_for = []  # Initialize a list to store media items that have been searched for
     searches = 0  # Initialize the number of searches performed
-    for item in tqdm(search_dict, desc="Searching...", unit="item", total=max_search, disable=None):
-        if check_searches(searches, max_search):
-            break
+    for item in tqdm(search_dict, desc="Searching...", unit="item", total=len(search_dict), disable=None, leave=True):
         if instance_type == 'radarr':
             # For Radarr instance, handle search for movie files
             app.delete_movie_file(item['file_ids'])  # Delete specified movie files
@@ -192,8 +166,6 @@ def handle_searches(app, search_dict, instance_type, max_search):
                 app.search_media(item['media_id'])  # Initiate search for the media item
                 searched_for.append(item)
                 searches += 1  # Increment the count of searches performed
-                if check_searches(searches, max_search):
-                    break
         elif instance_type == 'sonarr':
             # For Sonarr instance, handle search for episodes or season packs
             seasons = item.get('seasons', [])
@@ -210,9 +182,6 @@ def handle_searches(app, search_dict, instance_type, max_search):
                         if ready:
                             app.search_season(item['media_id'], season['season_number'])
                             searched_for.append(item)
-                            searches += 1
-                            if check_searches(searches, max_search):
-                                break
                     else:
                         # Delete episode files if individual episodes
                         app.delete_episode_files(file_ids)
@@ -220,14 +189,11 @@ def handle_searches(app, search_dict, instance_type, max_search):
                         ready = app.wait_for_command(results['id'])
                         if ready:
                             app.search_episodes(episode_ids)
-                            searches += 1
                             searched_for.append(item)
-                            if check_searches(searches, max_search):
-                                break
     print(f"Searches performed: {searches}")
     return searched_for
 
-def filter_media(app, media_dict, nohl_data, instance_type, exclude_profiles, exclude_media):
+def filter_media(app, media_dict, nohl_data, instance_type, exclude_profiles, exclude_media, max_search):
     """
     Filters media based on quality profile and monitored status.
     
@@ -377,7 +343,9 @@ def filter_media(app, media_dict, nohl_data, instance_type, exclude_profiles, ex
                                 'monitored': media_item['monitored'],
                                 'seasons': season_data
                             })
-
+    # Limit the number of searches to the maximum allowed
+    if len(data_dict['search_media']) > max_search:
+        data_dict['search_media'] = data_dict['search_media'][:max_search]
     # Return the dictionary containing filtered media and media to search for in Sonarr
     return data_dict
 
@@ -737,20 +705,15 @@ def main():
         # Process provided paths to find non-hardlinked files
         nohl_dict = {'movies': [], 'series': []}
         if paths:
-            with tqdm(paths, desc="Finding non-hardlinked files in ", unit="path", total=len(paths), disable=None) as progress_bar:
-                for path in paths:
-                    # Update description for each path before processing
-                    pbar_path = os.path.basename(os.path.normpath(path))
-                    progress_bar.set_description(f"Finding non-hardlinked files in '{pbar_path}'")
+            for path in paths:
+                results = find_no_hl_files(path)
+                if results:
+                    nohl_dict['movies'].extend(results['movies'])
+                    nohl_dict['series'].extend(results['series'])
 
-                    # Process the path and update progress
-                    results = find_no_hl_files(path)
-                    if results:
-                        nohl_dict['movies'].extend(results['movies'])
-                        nohl_dict['series'].extend(results['series'])
-
-                    progress_bar.update()  # Manually update progress for each iteration
-
+        # Display non-hardlinked files in the logs
+        logger.debug(f"Non-Hardlinked Files:\n{json.dumps(nohl_dict, indent=4)}")
+        
         # Generate a summary of the number of non-hardlinked files in each directory
         total = 0
         logger.info("")
@@ -803,18 +766,17 @@ def main():
                         logger.info(f"No non-hardlinked files found for server: {server_name}\n")
                         continue
                     exclude_media = filters.get('exclude_movies', []) if instance_type == 'radarr' else filters.get('exclude_series', [])
-                    data_dict = {'search_media': [], 'filtered_media': []}
                     nohl_data = nohl_dict['movies'] if instance_type == "radarr" else nohl_dict['series'] if instance_type == "sonarr" else None
                     if nohl_data:
                         media_dict = handle_starr_data(app, server_name, instance_type)
-                        data_dict = filter_media(app, media_dict, nohl_data, instance_type, exclude_profiles, exclude_media)
+                        data_dict = filter_media(app, media_dict, nohl_data, instance_type, exclude_profiles, exclude_media, max_search)
                         if data_dict:
                             logger.debug(f"Filtered Media:\n{json.dumps(data_dict['filtered_media'], indent=4)}")
                         search_dict = data_dict.get('search_media', [])
                         if search_dict:
                             # Conduct searches if not a dry run
                             if not dry_run:
-                                search_dict = handle_searches(app, search_dict, instance_type, max_search)
+                                search_dict = handle_searches(app, search_dict, instance_type)
                                 data_dict['search_media'] = search_dict
                         # Prepare output data
                     output_dict[instance] = {

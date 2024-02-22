@@ -385,20 +385,20 @@ poster_cleanarr:
     - /path/to/assets
   
 nohl:
-  # Note: Dry run will display all items regardless of maximum_searches setting
   dry_run: true
   log_level: info
   maximum_searches: 10 # Please keep this number low to avoid bans
-  print_files: true # Will not respect excludes for simply printing the files
+  print_files: false # Will not respect excludes for simply printing the files
   instances:
-    - radarr_2
-    - sonarr_3
+    - radarr_1
+    - sonarr_1
   paths:
     - /path/to/media/movies
     - /path/to/media/series
   filters:
     exclude_profiles: test3, test4
     # Do not include year in the exclude list
+    # The title should be exactly as it appears in `Radarr` or `Sonarr`
     exclude_movies:
       - "The Matrix"
       - "The Matrix Reloaded"

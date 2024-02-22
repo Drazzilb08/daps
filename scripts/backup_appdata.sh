@@ -32,11 +32,16 @@ appdata_dir1=/mnt/user/appdata
 appdata_dir2=/mnt/cache/appdata
 
 config_file() {
-    # Get the absolute path of the script file
-
-    if [ -z "$config_file" ]; then
-        config_file="${CONFIG_DIR:-$(dirname "$0")/../config/backup-appdata.conf}"
+    script_path=$(dirname "$0")
+    parent_dir=$(dirname "$script_path")
+    if [ -n "$DOCKER_ENV" ]; then
+        config_dir="${CONFIG_DIR:-$parent_dir/config/}"
+    else
+        config_dir="${parent_dir}/config/"
     fi
+    config_file="${config_dir}/backup_appdata.conf"
+
+    echo "Config File: $config_file"
 
     # Check if config file exists
     if [ -f "$config_file" ]; then
@@ -121,24 +126,24 @@ find_new_containers() {
             for new_container in "${new_containers[@]}"; do
                 awk -i inplace -v new_container="$new_container" '
                                             /^stop_list=\(/ {
-                                                print;
+                                                echo;
                                                 printf("    %s\n", new_container);
                                                 next;
                                             }
                                             {
-                                                print;
+                                                echo;
                                             }
                                             ' "$config_file"
             done
             for new_container in "${secondary_new_containers[@]}"; do
                 awk -i inplace -v new_container="$new_container" '
                                             /^stop_list=\(/ {
-                                                print;
+                                                echo;
                                                 printf("    %s\n", new_container);
                                                 next;
                                             }
                                             {
-                                                print;
+                                                echo;
                                             }
                                             ' "$config_file"
             done
@@ -148,24 +153,24 @@ find_new_containers() {
             for new_container in "${new_containers[@]}"; do
                 awk -i inplace -v new_container="$new_container" '
                 /^no_stop_list=\(/ {
-                    print;
+                    echo;
                     printf("    %s\n", new_container);
                     next;
                 }
                 {
-                    print;
+                    echo;
                 }
                 ' "$config_file"
             done
             for new_container in "${secondary_new_containers[@]}"; do
                 awk -i inplace -v new_container="$new_container" '
                 /^no_stop_list=\(/ {
-                    print;
+                    echo;
                     printf("    %s\n", new_container);
                     next;
                 }
                 {
-                    print;
+                    echo;
                 }
                 ' "$config_file"
             done
@@ -350,7 +355,12 @@ get_paths() {
     # Get the container name
     container_name="$1"
     # Get the config path of the container
-    config_paths=$(docker inspect -f '{{json .Mounts}}' "$container_name" | jq -r '.[] | select(.Destination | test("^/config")) | .Source')
+    config_path_basename=$(docker inspect -f '{{json .Mounts}}' "$container_name" | jq -r '.[] | select(.Destination | test("^/config")) | .Source' | xargs -n1 basename)
+    if [ -n "$DOCKER_ENV" ]; then
+        config_paths="${APPDATA_PATH}/${config_path_basename}"
+    else
+        config_paths=$(docker inspect -f '{{json .Mounts}}' "$container_name" | jq -r '.[] | select(.Destination | test("^/config")) | .Source')
+    fi
     # if config paths has more than 1 entry itterate over them
     if [ "$(echo "$config_paths" | wc -w)" -gt 1 ]; then
         for config_path in $config_paths; do
@@ -380,12 +390,12 @@ get_paths() {
             # Add the container's name to the exclusion list
             awk -i inplace -v new_container="$container_name" '
             /^exclusion_list=\(/ {
-                print;
+                echo;
                 printf("    %s        # Container automatically added here due to no appdata dir\n", new_container);
                 next;
             }
             {
-                print;
+                echo;
             }
             ' "$config_file"
             verbose_output "-----------------------------------"
@@ -917,8 +927,8 @@ main() {
     start=$(date +%s)
     config_file
     check_config
-    if ! pgrep dockerd >/dev/null; then
-        echo "Docker daemon is not running. Please start it first." >&2
+    if ! docker --version >/dev/null 2>&1; then
+        echo "Docker is not installed. Please install Docker and rerun." >&2
         exit 0
     fi
     hex_to_decimal "$bar_color"

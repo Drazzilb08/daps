@@ -41,6 +41,7 @@ ARG CONFIG_DIR=/config
 
 # Set script environment variables
 ENV CONFIG_DIR=/config
+ENV APPDATA_PATH=/appdata
 ENV TZ=America/Los_Angeles
 ENV BRANCH=${BRANCH}
 ENV DOCKER_ENV=true

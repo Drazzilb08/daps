@@ -51,9 +51,9 @@ def run_module(script_name, logger):
             module = importlib.import_module(f"modules.{script_name}")
             process = multiprocessing.Process(target=module.main)
             if process:
-                logger.info(f"Running script: {script_name}")
+                logger.info(f"Running script: {script_name} in the list of python scripts.")
                 process.start()
-            return process
+                return process
         except ModuleNotFoundError:
             logger.error(f"Script: {script_name} does not exist")
             return
@@ -65,12 +65,12 @@ def run_module(script_name, logger):
             if process:
                 logger.info(f"Running script: {script_name}")
                 process.start()
-            return process
+                return process
         except ModuleNotFoundError:
-            logger.error(f"Script: {script_name} does not exist!")
+            logger.error(f"Script: {script_name} does not exist in the list of bash scripts.")
             return
     else:
-        logger.error(f"Script: {script_name} does not exist")
+        logger.error(f"Script: {script_name} does not exist in either bash or python scripts")
         return
 
 def load_schedule():

@@ -25,6 +25,7 @@ echo "
         BRANCH:         ${BRANCH}
         CONFIG_DIR:     ${CONFIG_DIR}
         RCLONE_CONFIG:  ${RCLONE_CONFIG}
+        APPDATA Path    ${APPDATA_PATH}
         LOG_DIR:        ${LOG_DIR}
 ---------------------------------------------------------
 "
@@ -37,7 +38,7 @@ usermod -o -u "$PUID" dockeruser
 
 
 # Download latest config files if they don't exist or are different
-for file in config.sample.yml backup-appdata-example.conf; do
+for file in config.sample.yml backup_appdata.example.conf; do
     local_file="$CONFIG_DIR/$file"
     if [ ! -f "$local_file" ] || [ "$(curl -s "https://raw.githubusercontent.com/Drazzilb08/userScripts/${BRANCH}/config/$file" | diff -q - "$local_file")" ]; then
         echo "Downloading latest $file"

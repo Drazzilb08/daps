@@ -4,7 +4,7 @@ import sys
 from util.config import Config
 from util.logger import setup_logger
 from util.config import Config
-from util.call_script import call_script
+from util.call_script import *
 from util.discord import get_discord_data, discord_check
 from util.utility import create_bar
 import pathlib
@@ -156,7 +156,6 @@ def run_script(cmds, logger):
             logger.error(f"Error running command: {cmd}")
             logger.error(e)
             return
-        
 
 def main(script_name):
     """
@@ -183,15 +182,21 @@ def main(script_name):
                 settings = config.bash_config.get(script_name, {})
         logger = setup_logger(log_level, log_name)
         logger.info(create_bar(f" START OF {name} "))
+        root_dir = pathlib.Path(__file__).parents[1]
+        bash_script_file = f'{root_dir}/scripts/{script_name}.sh'
         if settings:
-            root_dir = pathlib.Path(__file__).parents[1]
-            bash_script_file = f'{root_dir}/scripts/{script_name}.sh'
+            logger.debug(f"Running: {script_name.capitalize()}")
+            cmds = set_cmd_args(settings, bash_script_file, logger, script_name)
+            run_script(cmds, logger)
+            logger.debug(f"{script_name.capitalize()} complete.")
+        elif script_name in ['backup_appdata']:
+            settings = {}
             logger.debug(f"Running: {script_name.capitalize()}")
             cmds = set_cmd_args(settings, bash_script_file, logger, script_name)
             run_script(cmds, logger)
             logger.debug(f"{script_name.capitalize()} complete.")
         else:
-            logger.error(f"Script: {script_name} does not exist")
+            logger.error(f"Script: {script_name} does not have a valid configuration. Exiting...")
             return
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")

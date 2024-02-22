@@ -449,7 +449,7 @@ stop_plex(){
             exit 0
         fi
         build_payload 
-        field_builder "Plex is being shut down for a/an" "$backup_notification backup" "True"
+        field_builder "Plex is being shut down for a backup" "True"
         payload "Plex Status"
         send_notification
         current_state="stopped"
@@ -462,6 +462,15 @@ stop_plex(){
 
 start_plex() {
     if [ "$shutdown_plex" == "True" ]; then
+        if [ "$backup_type" == "essential" ]; then
+            backup_notification="Essential Backup"
+        elif [ "$backup_type" == "full" ]; then
+            backup_notification="Full Backup"
+        elif [ "$backup_type" == "both" ]; then
+            backup_notification="Essential & Full Backup"
+        elif [ "$backup_type" == "essential_no_full" ]; then
+            backup_notification="Essential Backup"
+        fi
         if [ "$debug" == "True" ]; then
             echo "Current state: $current_state"
             echo "Plex type: $plex_type"

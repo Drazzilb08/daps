@@ -124,7 +124,7 @@ find_new_containers() {
         if [ "$add_to_stop" == true ]; then
             # Add new containers to stop_list in config file
             for new_container in "${new_containers[@]}"; do
-                awk -i inplace -v new_container="$new_container" '
+                awk inplace -v new_container="$new_container" '
                                             /^stop_list=\(/ {
                                                 echo;
                                                 printf("    %s\n", new_container);
@@ -136,7 +136,7 @@ find_new_containers() {
                                             ' "$config_file"
             done
             for new_container in "${secondary_new_containers[@]}"; do
-                awk -i inplace -v new_container="$new_container" '
+                awk inplace -v new_container="$new_container" '
                                             /^stop_list=\(/ {
                                                 echo;
                                                 printf("    %s\n", new_container);
@@ -151,7 +151,7 @@ find_new_containers() {
         if [ "$add_to_no_stop" == true ]; then
             # Add new containers to no_stop_list in config file
             for new_container in "${new_containers[@]}"; do
-                awk -i inplace -v new_container="$new_container" '
+                awk inplace -v new_container="$new_container" '
                 /^no_stop_list=\(/ {
                     echo;
                     printf("    %s\n", new_container);
@@ -163,7 +163,7 @@ find_new_containers() {
                 ' "$config_file"
             done
             for new_container in "${secondary_new_containers[@]}"; do
-                awk -i inplace -v new_container="$new_container" '
+                awk inplace -v new_container="$new_container" '
                 /^no_stop_list=\(/ {
                     echo;
                     printf("    %s\n", new_container);
@@ -355,7 +355,12 @@ get_paths() {
     # Get the container name
     container_name="$1"
     # Get the config path of the container
-    config_path_basename=$(docker inspect -f '{{json .Mounts}}' "$container_name" | jq -r '.[] | select(.Destination | test("^/config")) | .Source' | xargs -n1 basename)
+    output=$(docker inspect -f '{{json .Mounts}}' "$container_name" | jq -r '.[] | select(.Destination | test("^/config")) | .Source')
+    if [ -n "$output" ]; then
+        config_path_basename=$(echo $output | xargs basename)
+    else
+        echo "No matching paths found"
+    fi
     if [ -n "$DOCKER_ENV" ]; then
         config_paths="${APPDATA_PATH}/${config_path_basename}"
     else
@@ -375,8 +380,14 @@ get_paths() {
             fi
         done
     else
-        config_path="$(echo "$config_paths" | tr '\n' ' ' | sed 's/ *$//')"
+        # If no config_path_basename
+        if [ -z "$config_path_basename" ]; then
+            config_path=""
+        else
+            config_path="$(echo "$config_paths" | tr '\n' ' ' | sed 's/ *$//')"
+        fi
     fi
+    
     # Check if config path is empty
     if [ -z "$config_path" ]; then
         # Get the appdata path of the container
@@ -388,7 +399,7 @@ get_paths() {
             # Remove the container's entry from the config file
             sed -i "/^[[:space:]]*$container_name$/d" "$config_file"
             # Add the container's name to the exclusion list
-            awk -i inplace -v new_container="$container_name" '
+            awk inplace -v new_container="$container_name" '
             /^exclusion_list=\(/ {
                 echo;
                 printf("    %s        # Container automatically added here due to no appdata dir\n", new_container);

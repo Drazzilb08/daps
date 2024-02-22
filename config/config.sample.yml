@@ -389,7 +389,7 @@ nohl:
   dry_run: true
   log_level: info
   maximum_searches: 10 # Please keep this number low to avoid bans
-  print_files: true
+  print_files: true # Will not respect excludes for simply printing the files
   instances:
     - radarr_2
     - sonarr_3
@@ -398,6 +398,7 @@ nohl:
     - /path/to/media/series
   filters:
     exclude_profiles: test3, test4
+    # Do not include year in the exclude list
     exclude_movies:
       - "The Matrix"
       - "The Matrix Reloaded"
@@ -405,6 +406,7 @@ nohl:
     exclude_series:
       - Diners, Drive-ins and Dives
       - Marvel's Spider-Man
+      - M*A*S*H
 
 queinatorr:
   log_level: info

@@ -47,7 +47,7 @@ queue_list = [
     "qBittorrent is reporting an error"
 ]
 
-def handle_qbit(queue_dict, qb, post_import_category, pre_import_category, days_to_keep):
+def handle_qbit(queue_dict, qb, post_import_category, pre_import_category, days_to_keep, server_name):
     """
     This function will move torrents from one category to another in qBittorrent based on
     the title of the torrent. This is useful for moving torrents from a category that are stuck
@@ -76,15 +76,18 @@ def handle_qbit(queue_dict, qb, post_import_category, pre_import_category, days_
     # Iterate through all torrents and filter those in the pre_import_category
     for torrent in torrents:
         hash = torrent['hash']
+        human_readable_added_on = datetime.fromtimestamp(torrent['added_on']).strftime('%Y-%m-%d %H:%M:%S')
         if torrent['category'] == pre_import_category:
             torrents_dict[hash] = {
                 'torrent': torrent['name'],
                 'category': torrent['category'],
-                'addedOn': torrent['added_on']
+                'addedOn': torrent['added_on'],
+                'humanReadableAddedOn': human_readable_added_on
+                
             }
     
     # Log details of torrents in the pre_import_category
-    logger.debug(f"Torrents in '{pre_import_category}': {len(torrents_dict)}\n {json.dumps(torrents_dict, indent=4)}")
+    logger.debug(f"Torrents in '{pre_import_category}' category in qBittorrent apart of {server_name}: {len(torrents_dict)}\n {json.dumps(torrents_dict, indent=4)}")
     
     list_of_torrents = []  # List to store torrents from the queue_dict
     
@@ -338,11 +341,11 @@ def process_instance(instance_type, url, api, pre_import_category, post_import_c
     
     # Retrieve the queue from Radarr or Sonarr instance
     queue = app.get_queue(instance_type)
-    logger.debug(f"Queue'{instance_type}'\n{json.dumps(queue, indent=4)}\n")
+    logger.debug(f"Queue for '{server_name}'\n{json.dumps(queue, indent=4)}\n")
 
     queue_dict = queued_items(queue, instance_type)
 
-    logger.debug(f"Queue items for '{instance_type}'\n{json.dumps(queue_dict, indent=4)}\n")
+    logger.debug(f"Filtered down queue items for '{server_name}'\n{json.dumps(queue_dict, indent=4)}\n")
     
     # Create a dictionary to store output messages
     output_dict = {
@@ -363,7 +366,7 @@ def process_instance(instance_type, url, api, pre_import_category, post_import_c
         output_dict['queue'] = messages_dict
     
     # Handle moving torrents from the queue to the specified categories in qBittorrent
-    messages_dict = handle_qbit(queue_dict, qb, post_import_category, pre_import_category, days_to_keep)
+    messages_dict = handle_qbit(queue_dict, qb, post_import_category, pre_import_category, days_to_keep, server_name)
     if messages_dict:
         output_dict['qbit'] = messages_dict
     

@@ -28,8 +28,8 @@ quiet=None
 bar_color=None
 unraid_notify=None
 keep_backup=None
-appdata_dir1=/mnt/user/appdata
-appdata_dir2=/mnt/cache/appdata
+appdata_dir1=
+appdata_dir2=
 
 config_file() {
     script_path=$(dirname "$0")
@@ -391,7 +391,7 @@ get_paths() {
     # Check if config path is empty
     if [ -z "$config_path" ]; then
         # Get the appdata path of the container
-        appdata_path=$(docker inspect -f '{{json .Mounts}}' "$container_name" | jq -r '.[] | select(.Source | test("^'"$appdata_dir1"'|^'"$appdata_dir2"'")) | .Source' | grep -o -e "^$appdata_dir1/[^/]*" -e "^$appdata_dir2/[^/]*" | head -n1)
+        appdata_path=$(docker inspect -f '{{json .Mounts}}' "$container_name" | jq -r '.[] | select(.Source | test("^'"$appdata_dir1"'|^'"$appdata_dir2"'")) | .Source' | head -n1)
         # Check if appdata path is empty
         if [ -z "$appdata_path" ]; then
             # Skip over the container if it does not use appdata
@@ -411,9 +411,16 @@ get_paths() {
             ' "$config_file" > temp && mv temp "$config_file"
             verbose_output "-----------------------------------"
             return
+        else
+            # Set the source directory to the appdata path
+            if [ -n "$DOCKER_ENV" ]; then
+                # get mount path from appdata_1 or appdata 2
+                appdata_path_basename=$(echo $appdata_path | xargs basename)
+                source_dir="${APPDATA_PATH}/${appdata_path_basename}"
+            else
+                source_dir="$(echo "$appdata_path" | tr '\n' ' ' | sed 's/ *$//')"
+            fi
         fi
-        # Set the source directory to the appdata path
-        source_dir="$appdata_path"
     else
         # Set the source directory to the config path
         source_dir="$config_path"

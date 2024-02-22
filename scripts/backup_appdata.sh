@@ -358,8 +358,6 @@ get_paths() {
     output=$(docker inspect -f '{{json .Mounts}}' "$container_name" | jq -r '.[] | select(.Destination | test("^/config")) | .Source')
     if [ -n "$output" ]; then
         config_path_basename=$(echo $output | xargs basename)
-    else
-        echo "No matching paths found"
     fi
     if [ -n "$DOCKER_ENV" ]; then
         config_paths="${APPDATA_PATH}/${config_path_basename}"

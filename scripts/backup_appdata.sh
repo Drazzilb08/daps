@@ -124,55 +124,55 @@ find_new_containers() {
         if [ "$add_to_stop" == true ]; then
             # Add new containers to stop_list in config file
             for new_container in "${new_containers[@]}"; do
-                awk inplace -v new_container="$new_container" '
-                                            /^stop_list=\(/ {
-                                                echo;
-                                                printf("    %s\n", new_container);
-                                                next;
-                                            }
-                                            {
-                                                echo;
-                                            }
-                                            ' "$config_file"
+                awk -v new_container="$new_container" '
+                /^stop_list=\(/ {
+                    print;
+                    printf("    %s\n", new_container);
+                    next;
+                }
+                {
+                    print;
+                }
+                ' "$config_file" > temp && mv temp "$config_file"
             done
             for new_container in "${secondary_new_containers[@]}"; do
-                awk inplace -v new_container="$new_container" '
-                                            /^stop_list=\(/ {
-                                                echo;
-                                                printf("    %s\n", new_container);
-                                                next;
-                                            }
-                                            {
-                                                echo;
-                                            }
-                                            ' "$config_file"
+                awk -v new_container="$new_container" '
+                /^stop_list=\(/ {
+                    print;
+                    printf("    %s\n", new_container);
+                    next;
+                }
+                {
+                    print;
+                }
+                ' "$config_file" > temp && mv temp "$config_file"
             done
         fi
         if [ "$add_to_no_stop" == true ]; then
             # Add new containers to no_stop_list in config file
             for new_container in "${new_containers[@]}"; do
-                awk inplace -v new_container="$new_container" '
+                awk -v new_container="$new_container" '
                 /^no_stop_list=\(/ {
-                    echo;
+                    print;
                     printf("    %s\n", new_container);
                     next;
                 }
                 {
-                    echo;
+                    print;
                 }
-                ' "$config_file"
+                ' "$config_file" > temp && mv temp "$config_file"
             done
             for new_container in "${secondary_new_containers[@]}"; do
-                awk inplace -v new_container="$new_container" '
+                awk -v new_container="$new_container" '
                 /^no_stop_list=\(/ {
-                    echo;
+                    print;
                     printf("    %s\n", new_container);
                     next;
                 }
                 {
-                    echo;
+                    print;
                 }
-                ' "$config_file"
+                ' "$config_file" > temp && mv temp "$config_file"
             done
         fi
     fi
@@ -399,16 +399,16 @@ get_paths() {
             # Remove the container's entry from the config file
             sed -i "/^[[:space:]]*$container_name$/d" "$config_file"
             # Add the container's name to the exclusion list
-            awk inplace -v new_container="$container_name" '
+            awk -v new_container="$container_name" '
             /^exclusion_list=\(/ {
-                echo;
+                print;
                 printf("    %s        # Container automatically added here due to no appdata dir\n", new_container);
                 next;
             }
             {
-                echo;
+                print;
             }
-            ' "$config_file"
+            ' "$config_file" > temp && mv temp "$config_file"
             verbose_output "-----------------------------------"
             return
         fi

@@ -37,7 +37,7 @@ config_file() {
     if [ -n "$DOCKER_ENV" ]; then
         config_dir="${CONFIG_DIR:-$parent_dir/config/}"
     else
-        config_dir="${parent_dir}/config/"
+        config_dir="${parent_dir}/config"
     fi
     config_file="${config_dir}/backup_appdata.conf"
 

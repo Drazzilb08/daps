@@ -132,7 +132,6 @@ def fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_
 
     # Extracting necessary parameters from the script config
     border_width = script_config['border_width']
-    resize = script_config['resize']
     rgb_border_colors = []
 
     # Convert border colors to RGB format if available
@@ -143,15 +142,9 @@ def fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_
 
     # Determining the action based on configuration
     action = None
-    if not border_colors and not resize:
+    if not border_colors:
         action = "Removed border on"
         banner = "Removing Borders"
-    elif not border_colors and resize:
-        action = "Removed border and resized"
-        banner = "Removing Borders and Resizing"
-    elif border_colors and resize:
-        action = "Replacing border and resized"
-        banner = "Replacing Borders and Resizing"
     else:
         action = "Replacing border on"
         banner = "Replacing Borders"
@@ -206,16 +199,11 @@ def fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_
 
                     # Actual processing or dry run action
                     if not dry_run:
-                        if not resize:
-                            if rgb_border_color:
-                                results = replace_border(input_file, output_path, rgb_border_color, border_width, False)
-                            else:
-                                results = remove_border(input_file, output_path, border_width, False)
+                        
+                        if rgb_border_color:
+                            results = replace_border(input_file, output_path, rgb_border_color, border_width)
                         else:
-                            if rgb_border_color:
-                                results = replace_border(input_file, output_path, rgb_border_color, border_width, True)
-                            else:
-                                results = remove_border(input_file, output_path, border_width, True)
+                            results = remove_border(input_file, output_path, border_width)
                         if results:
                             if path:
                                 messages.append(f"{action} {data['title']}{year} - {file_name}")
@@ -231,7 +219,7 @@ def fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_
     return messages
 
                     
-def replace_border(input_file, output_path, border_colors, border_width, resize):
+def replace_border(input_file, output_path, border_colors, border_width):
     """
     Crops the center of an image, adds a 25-pixel border around it, and saves the result.
     
@@ -240,7 +228,6 @@ def replace_border(input_file, output_path, border_colors, border_width, resize)
         output_path (str): The output path.
         border_colors (list): The list of border colors.
         border_width (int): The border width.
-        resize (bool): Should resize
         
     Returns:
         bool: True if the file was saved, False otherwise.
@@ -260,10 +247,6 @@ def replace_border(input_file, output_path, border_colors, border_width, resize)
             new_height = cropped_image.height + 2 * border_width # to account for the new border
             final_image = Image.new("RGB", (new_width, new_height), border_colors) # Create a new image with the new border color
             final_image.paste(cropped_image, (border_width, border_width)) # Paste the cropped image onto the new image
-            
-            if resize:
-                # Resize proportionally to a maximum of 1000x1500
-                final_image = final_image.resize((1000, 1500), Image.LANCZOS)  # Use high-quality resampling
                 
             file_name = os.path.basename(input_file)
             final_path = f"{output_path}/{file_name}" # Set the output path to the parent directory
@@ -289,7 +272,7 @@ def replace_border(input_file, output_path, border_colors, border_width, resize)
         logger.error(f"Error: {e}")
         logger.error(f"Error processing {input_file}")
 
-def remove_border(input_file, output_path, border_width, resize):
+def remove_border(input_file, output_path, border_width):
     """
     Crops the center of an image, reducing its dimensions by 50 pixels on each side.
     
@@ -297,7 +280,6 @@ def remove_border(input_file, output_path, border_width, resize):
         input_file (str): The input file.
         output_path (str): The output path.
         border_width (int): The border width.
-        resize (bool): Should resize
         
     Returns:
         bool: True if the file was saved, False otherwise.
@@ -312,10 +294,6 @@ def remove_border(input_file, output_path, border_width, resize):
             # Remove border
             final_image = image.crop((border_width, border_width, width - border_width, height - border_width)) # Crop the image to remove the border
             
-            if resize:
-                # Resize proportionally to a maximum of 1000x1500
-                final_image = final_image.resize((1000, 1500), Image.LANCZOS)  # Use high-quality resampling
-
             file_name = os.path.basename(input_file)
             final_path = f"{output_path}/{file_name}" # Set the output path to the parent directory
 

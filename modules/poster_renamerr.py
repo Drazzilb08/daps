@@ -559,8 +559,6 @@ def main():
             os.makedirs(destination_dir)
         else:
             logger.debug(f"Destination directory already exists: {destination_dir}")
-        
-        # Log other settings...
         logger.debug(create_bar("-"))  # Log separator
 
         if dry_run:

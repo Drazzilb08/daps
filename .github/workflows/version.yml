@@ -19,7 +19,7 @@ jobs:
         
       - name: Build GH Container
         run: | 
-          docker login --username ${{ secrets.GH_USERNAME }} --password ${{ secrets.GH_TOKEN }} ghcr.io
+          echo ${{ secrets.GH_TOKEN }} | docker login --username ${{ secrets.GH_USERNAME }} --password-stdin ghcr.io
           docker build --build-arg BRANCH=$(git rev-parse --abbrev-ref HEAD) -t ghcr.io/drazzilb08/userscripts:${{ steps.get_version.outputs.VERSION }}
           docker push ghcr.io/drazzilb08/userscripts:${{ steps.get_version.outputs.VERSION }}
       
@@ -32,7 +32,7 @@ jobs:
 
       - name: Get the version
         id: get_version
-        run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
+        run: echo "VERSION=${{ github.ref/refs\/tags\// }}" >> $GITHUB_ENV
 
       - name: Build and push
         id: docker_build

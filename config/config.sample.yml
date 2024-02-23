@@ -280,14 +280,14 @@ poster_renamerr:
     # - sonarr_3
 
 border_replacerr:
+  # WARNING: If you have overlays that are carefully position and choose to remove the border around the poster, the overlay
+  # will not be in the correct position. This is because the overlay is positioned based on the border width.
   # Colors: https://www.w3schools.com/colors/colors_picker.asp
   log_level: info
   dry_run: true
   source_dirs:  # <--- Not used if using with poster_renamerr only used if running border_replacer by itself
     - /path/to/posters/
   destination_dir: /path/to/output/ # <---- Not used if using with poster_renamerr only used if running border_replacer by itself
-  # If you want to resize the posters, set this to true, else set it to false
-  resize: false
   # If you want to adjust the border width (not all MM2K posters are 25px borders some are 26-27)
   border_width: 26
   # skip - This will skip border replacement until the next schedule/holiday

@@ -60,6 +60,6 @@ web/
 # Ignore Files
 **/config.yml
 **/.DS_Store
-**/TODO.py
-**/test.**
+**/TODO.*
+**test**
 

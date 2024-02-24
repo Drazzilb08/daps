@@ -251,6 +251,9 @@ def replace_border(input_file, output_path, border_colors, border_width):
             file_name = os.path.basename(input_file)
             final_path = f"{output_path}/{file_name}" # Set the output path to the parent directory
 
+            # Resize the image to 1500x1000
+            final_image = final_image.resize((1000, 1500))
+
             if os.path.isfile(final_path):
                 # Save file to /tmp/ and compare to existing file
                 tmp_path = f"/tmp/{file_name}"
@@ -280,7 +283,6 @@ def remove_border(input_file, output_path, border_width):
         input_file (str): The input file.
         output_path (str): The output path.
         border_width (int): The border width.
-        
     Returns:
         bool: True if the file was saved, False otherwise.
     """
@@ -290,9 +292,18 @@ def remove_border(input_file, output_path, border_width):
         with Image.open(input_file) as image: # Open the image
             # Set the border width
             width, height = image.size # Get the width and height of the image
+                
+            # Remove top, left, and right borders, and replace bottom border with black
+            final_image = image.crop((border_width, border_width, width - border_width, height)) # Crop the image to remove the borders
+            bottom_border = Image.new(image.mode, (width - 2 * border_width, border_width), color='black') # Create a black image for the bottom border
+            bottom_border_position = (0, height - border_width - border_width) # Position the bottom border 25 pixels from the bottom
+            final_image.paste(bottom_border, bottom_border_position) # Paste the black bottom border at the specified position
+            
+            #TODO: Remove this line after testing
+            #     final_image = image.crop((border_width, border_width, width - border_width, height - border_width)) # Crop the image to remove the border
 
-            # Remove border
-            final_image = image.crop((border_width, border_width, width - border_width, height - border_width)) # Crop the image to remove the border
+            # Resize the image to 1500x1000
+            final_image = final_image.resize((1000, 1500))
             
             file_name = os.path.basename(input_file)
             final_path = f"{output_path}/{file_name}" # Set the output path to the parent directory

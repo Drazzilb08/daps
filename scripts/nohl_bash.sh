@@ -318,7 +318,7 @@ main() {
 
 # Define function to handle options
 handle_options() {
-    while getopts ":s:i:e:w:n:h:C" opt; do
+    while getopts ":s:i:e:C:w:n:h" opt; do
         case $opt in
             s) source_dir="$OPTARG" ;;
             i) IFS=',' read -r -a include <<< "$OPTARG" ;;

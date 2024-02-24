@@ -226,7 +226,19 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
     if count and tag_name:
         tag_id = app.get_tag_id_from_name(tag_name)
         if tag_id:
+            media_tmp = [item for item in media_dict if tag_id not in item['tags']][:count]
+        
+        # If all media is tagged, remove tags and fetch new data
+        if not media_tmp:
+            media_ids = [item['media_id'] for item in media_dict]
+            logger.info("All media is tagged. Removing tags...")
+            app.remove_tags(media_ids, tag_id)
+            media_dict = handle_starr_data(app, server_name, instance_type)
             media_dict = [item for item in media_dict if tag_id not in item['tags']][:count]
+        else:
+            media_dict = media_tmp
+    
+    logger.debug(f"media dict:\n{json.dumps(media_dict, indent=4)}")
 
     # Process each item in the fetched data
     rename_response = []

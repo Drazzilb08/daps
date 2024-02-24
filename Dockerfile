@@ -42,6 +42,7 @@ ARG CONFIG_DIR=/config
 # Set script environment variables
 ENV CONFIG_DIR=/config
 ENV APPDATA_PATH=/appdata
+ENV LOG_DIR=/config/logs
 ENV TZ=America/Los_Angeles
 ENV BRANCH=${BRANCH}
 ENV DOCKER_ENV=true
@@ -51,7 +52,7 @@ ENV DOCKER_ENV=true
 RUN set -eux; \
     rm -f Pipfile Pipfile.lock; \
     apt-get update; \
-    apt-get install -y --no-install-recommends wget curl unzip p7zip-full tzdata vim jdupes jq; \
+    apt-get install -y --no-install-recommends wget curl unzip p7zip-full tzdata vim jdupes jq nano; \
     curl https://rclone.org/install.sh | bash
 
 RUN apt-get update; \

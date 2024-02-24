@@ -182,6 +182,7 @@ discord:
   renameinatorr:
     discord_webhook: 
     channel_id: 
+  # Notifications will only show if an upgrade is found
   upgradinatorr:
     discord_webhook: 
     channel_id: 

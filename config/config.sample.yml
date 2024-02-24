@@ -253,6 +253,10 @@ renameinatorr:
     - sonarr_3
 
 poster_renamerr:
+  # NOTE: If you're planning to run border_replacerr and/or sync_posters it will appear that this script has hung. It's simply waiting
+  # for the other scripts to finish. You can monitor progress and/or actions on their respective logs.
+  # Logging for poster_renamer and border_replacerr scripts happens mostly at the end of the run, so you may not see anything until the end.
+  # sync_posters is a bit more verbose as it utilizes the rclone sync command.
   log_level: info
   dry_run: false
   sync_posters: true # <- This will run sync_gdrive before renaming

@@ -1,22 +1,22 @@
 #!/bin/bash
 
-PUID=${PUID:-100}
-PGID=${PGID:-99}
+PUID=${PUID:-99}
+PGID=${PGID:-100}
 UMASK=${UMASK:-002}
 
 export RCLONE_CONFIG="${CONFIG_DIR}/rclone/rclone.conf"
 
 echo "
 ---------------------------------------------------------
-                      _____           _       _       
-                     / ____|         (_)     | |      
-  _   _ ___  ___ _ _| (___   ___ _ __ _ _ __ | |_ ___ 
+                      _____           _       _
+                     / ____|         (_)     | |
+  _   _ ___  ___ _ _| (___   ___ _ __ _ _ __ | |_ ___
  | | | / __|/ _ \ '__\___ \ / __| '__| | '_ \| __/ __|
  | |_| \__ \  __/ |  ____) | (__| |  | | |_) | |_\__ \\
   \__,_|___/\___|_| |_____/ \___|_|  |_| .__/ \__|___/
-                                       | |            
+                                       | |
                                        |_|
-        PUID:           ${PUID}            
+        PUID:           ${PUID}
         PGID:           ${PGID}
         UMASK:          ${UMASK}
         BRANCH:         ${BRANCH}
@@ -48,7 +48,7 @@ done
 
 echo "Starting userScripts as $(whoami) running userscripts with UID: $PUID and GID: $PGID"
 
-chown -R ${PGID}:${PUID} /${CONFIG_DIR} /app > /dev/null 2>&1
+chown -R ${PUID}:${PGID} /${CONFIG_DIR} /app > /dev/null 2>&1
 chmod -R 777 /${CONFIG_DIR} > /dev/null 2>&1
 
 # Run main.py as the dockeruser

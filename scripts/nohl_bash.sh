@@ -318,13 +318,14 @@ main() {
 
 # Define function to handle options
 handle_options() {
-    while getopts ":s:i:e:w:n:h" opt; do
+    while getopts ":s:i:e:w:n:h:C" opt; do
         case $opt in
             s) source_dir="$OPTARG" ;;
             i) IFS=',' read -r -a include <<< "$OPTARG" ;;
             e) exclude+=("$OPTARG") ;;
             w) webhook="$OPTARG" ;;
             n) bot_name="$OPTARG" ;;
+            C) channel="$OPTARG" ;;
             h) display_help ;;
             \?) echo "Invalid option: -$OPTARG" >&2; display_help; exit 1 ;;
             :) echo "Option -$OPTARG requires an argument." >&2; display_help; exit 1 ;;

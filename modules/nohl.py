@@ -60,7 +60,7 @@ def find_no_hl_files(path):
     path_basename = os.path.basename(path.rstrip('/'))
     nohl_data = {'movies':[], 'series':[]}  # Initialize an empty list to store non-hardlinked file information
     # Iterating through items in the specified path
-    for item in tqdm(os.listdir(path), desc=f"Searching '{path_basename}'", unit="item", total=len(os.listdir(path)), disable=None, leave=True):
+    for item in tqdm([i for i in os.listdir(path) if os.path.isdir(os.path.join(path, i))], desc=f"Searching '{path_basename}'", unit="item", total=len(os.listdir(path)), disable=None, leave=True):
         if item.startswith('.'):  # Skip hidden files or directories
             continue
         

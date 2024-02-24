@@ -1,7 +1,7 @@
 
 <div align="center">
 
-Collection of unRAID userscripts
+Collection of userScripts I've written or found useful
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![GitHub issues](https://img.shields.io/github/issues/Drazzilb08/userScripts.svg)](https://github.com/Drazzilb08/userScripts/issues)

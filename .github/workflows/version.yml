@@ -29,7 +29,7 @@ jobs:
       - name: Build GH Container
         run: | 
           echo ${{ secrets.GH_TOKEN }} | docker login --username ${{ secrets.GH_USERNAME }} --password-stdin ghcr.io
-          docker build --build-arg BRANCH=${{ steps.extract_branch.outputs.branch }} -t ghcr.io/drazzilb08/userscripts:${{ steps.get_version.outputs.VERSION }}
+          docker build --build-arg BRANCH=${{ steps.extract_branch.outputs.branch }} -t ghcr.io/drazzilb08/userscripts:${{ steps.get_version.outputs.VERSION }} .
           docker push ghcr.io/drazzilb08/userscripts:${{ steps.get_version.outputs.VERSION }}
       
       - name: Login to Docker Hub

@@ -46,12 +46,24 @@ ran_modules = {}
 branch = get_current_git_branch()
 
 def run_module(script_name, logger):
+    process = None
     if script_name in list_of_python_scripts:
         try:
             module = importlib.import_module(f"modules.{script_name}")
             process = multiprocessing.Process(target=module.main)
             if process:
-                logger.info(f"Running script: {script_name} in the list of python scripts.")
+                if script_name == "poster_renamerr":
+                    config = Config(script_name)
+                    script_config = config.script_config
+                    sync_posters = script_config.get("sync_posters", False)
+                    border_replacerr = script_config.get("border_replacerr", False)
+                    posters = ", also running poster_renamerr" if sync_posters else ""
+                    border = ", also running border_replacerr" if border_replacerr else ""
+                    additional_scripts = f"{posters}{border}"
+                    logger.info(f"Running script: {script_name}{additional_scripts}.")
+                else:
+                    logger.info(f"Running script: {script_name} in the list of python scripts.")
+                
                 process.start()
                 return process
         except ModuleNotFoundError:

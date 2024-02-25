@@ -519,6 +519,7 @@ def main():
     """
     Main function.
     """
+    
     name = script_name.replace("_", " ").upper()
     try:
         logger.info(create_bar(f"START {name}"))

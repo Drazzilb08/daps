@@ -104,7 +104,7 @@ def sync_to_plex(plex, data_dict, instance_type):
         None
     """
 
-    print(f"Syncing labels to Plex")
+    logger.info(f"Syncing labels to Plex")
     
     # Loop through each item in the data_dict
     for item in data_dict:
@@ -307,7 +307,7 @@ def main():
                             if plex_instance in config.plex_config:
                                 # Connect to the Plex server
                                 try:
-                                    print("Connecting to Plex...")
+                                    logger.info("Connecting to Plex...")
                                     plex = PlexServer(config.plex_config[plex_instance]['url'], config.plex_config[plex_instance]['api'], timeout=120)
                                 except BadRequest:
                                     logger.error(f"Error connecting to Plex instance: {plex_instance}")
@@ -316,7 +316,10 @@ def main():
                                 
                                 # Fetch Plex data and process it
                                 if library_names:
+                                    library_names_str = ", ".join(library_names)
+                                    logger.info(f"Gathering plex data on {server_name} for {library_names_str}... Please wait...")
                                     plex_dict = get_plex_data(plex, library_names, logger, include_smart=False, collections_only=False)
+                                    logger.info(f"Completed gathering plex data...")
                                 else:
                                     logger.error(f"No library names provided for {starr_server_name}, against {server_name}. Skipping...")
                                     continue

@@ -57,7 +57,7 @@ def run_module(script_name, logger):
                     script_config = config.script_config
                     sync_posters = script_config.get("sync_posters", False)
                     border_replacerr = script_config.get("border_replacerr", False)
-                    posters = ", also running poster_renamerr" if sync_posters else ""
+                    posters = ", also running gdrive_sync" if sync_posters else ""
                     border = ", also running border_replacerr" if border_replacerr else ""
                     additional_scripts = f"{posters}{border}"
                     logger.info(f"Running script: {script_name}{additional_scripts}.")

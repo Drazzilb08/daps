@@ -271,11 +271,16 @@ poster_renamerr:
   library_names:
     - Movies
     - Anime Movies
+  # The order from lowest to highest priority
+  # The order is 100% personal preference
   source_dirs: 
-    - /path/to/posters/ # <- Lowest priority
-    - /path/to/posters/overrideA
-    - /path/to/posters/overrideB # <- Highest priority
-  destination_dir: /path/to/output/
+    - /path/to/stupifier/posters/ # <- This is the lowest priority
+    - /path/to/dsaq/posters/
+    - /path/to/solen/posters/
+    - /path/to/chrisdc/posters/
+    - /path/to/Quafley/posters/
+    - /path/to/drazzib/posters/ # <- This is the highest priority
+  destination_dir: /path/to/output/ 
   instances:
     - plex_1
     - radarr_1

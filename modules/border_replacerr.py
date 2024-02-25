@@ -270,10 +270,17 @@ def replace_border(input_file, output_path, border_colors, border_width):
             else:
                 final_image.save(final_path)
                 return True
+
     # Log an error if the image can't be opened
     except UnidentifiedImageError as e:
         logger.error(f"Error: {e}")
         logger.error(f"Error processing {input_file}")
+        return False
+
+    except Exception as e:
+        logger.error(f"Error: {e}")
+        logger.error(f"Error processing {input_file}")
+        return False
 
 def remove_border(input_file, output_path, border_width):
     """
@@ -295,7 +302,7 @@ def remove_border(input_file, output_path, border_width):
                 
             # Remove top, left, and right borders, and replace bottom border with black
             final_image = image.crop((border_width, border_width, width - border_width, height)) # Crop the image to remove the borders
-            bottom_border = Image.new(image.mode, (width - 2 * border_width, border_width), color='black') # Create a black image for the bottom border
+            bottom_border = Image.new("RGB", (width - 2 * border_width, border_width), color='black') # Create a black image for the bottom border
             bottom_border_position = (0, height - border_width - border_width) # Position the bottom border 25 pixels from the bottom
             final_image.paste(bottom_border, bottom_border_position) # Paste the black bottom border at the specified position
             
@@ -322,10 +329,15 @@ def remove_border(input_file, output_path, border_width):
                     os.remove(tmp_path)
                     return False
             else:
-                final_image.save(final_path) # Save the file
+                final_image.save(final_path)
                 return True
+
     # Log an error if the image can't be opened
     except UnidentifiedImageError as e:
+        logger.error(f"Error: {e}")
+        logger.error(f"Error processing {input_file}")
+        return False
+    except Exception as e:
         logger.error(f"Error: {e}")
         logger.error(f"Error processing {input_file}")
         return False

@@ -113,23 +113,23 @@ def sync_to_plex(plex, data_dict, instance_type):
         elif instance_type == "radarr":
             type = "movie"
             
-            # Search for the item in the Plex library based on title and year
-            try:
-                plex_item = plex.library.search(item['title'], libtype=type, year=item['year'])[0]
-            except IndexError:
-                # Log an error if the title is not found in Plex and continue to the next item
-                logger.error(f"Title: {item['title']} ({item['year']}) | Title not found in Plex")
-                continue
-                
-            # If the Plex item is found
-            if plex_item:
-                # Iterate through each label and corresponding action (add/remove)
-                for label, action in item['add_remove'].items():
-                    # Perform add or remove action based on the label and action type
-                    if action == "add":
-                        plex_item.addLabel(label)
-                    elif action == "remove":
-                        plex_item.removeLabel(label)
+        # Search for the item in the Plex library based on title and year
+        try:
+            plex_item = plex.library.search(item['title'], libtype=type, year=item['year'])[0]
+        except IndexError:
+            # Log an error if the title is not found in Plex and continue to the next item
+            logger.error(f"Title: {item['title']} ({item['year']}) | Title not found in Plex")
+            continue
+            
+        # If the Plex item is found
+        if plex_item:
+            # Iterate through each label and corresponding action (add/remove)
+            for label, action in item['add_remove'].items():
+                # Perform add or remove action based on the label and action type
+                if action == "add":
+                    plex_item.addLabel(label)
+                elif action == "remove":
+                    plex_item.removeLabel(label)
 
     # No explicit return value, as it's modifying Plex items directly
     return

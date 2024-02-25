@@ -34,8 +34,8 @@ list_of_python_scripts = [
 ]
 
 list_of_bash_scripts = [
-    "backup_folder",
     "backup_appdata",
+    "backup_folder",
     "backup_plex",
     "jduparr",
     "nohl_bash",
@@ -196,6 +196,8 @@ def main():
                     if script_name in processes_to_remove:
                         logger.info(f"Script: {script_name.capitalize()} has finished")
                         del running_scripts[script_name]
+                    if script_name in already_run:
+                        del already_run[script_name]
                         waiting_message_shown = False
 
                 old_schedule = scripts_schedules

@@ -31,15 +31,12 @@ def setup_logger(log_level, script_name, max_logs=9):
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     
-    # Get today's date for log file naming
-    today = time.strftime("%Y-%m-%d")
     
     # Define the log file path with the current date
     log_file = f"{log_dir}/{script_name}.log"
     
     # Check if log file already exists
     if os.path.isfile(log_file):
-        # Rename existing log files and rotate logs
         for i in range(max_logs - 1, 0, -1):
             old_log = f"{log_dir}/{script_name}.log.{i}"
             new_log = f"{log_dir}/{script_name}.log.{i + 1}"
@@ -64,7 +61,7 @@ def setup_logger(log_level, script_name, max_logs=9):
         logger.setLevel(logging.INFO)
     
     # Define the log message format
-    formatter = logging.Formatter(fmt='%(asctime)s %(levelname)s: %(message)s', datefmt='%I:%M %p')
+    formatter = logging.Formatter(fmt='%(asctime)s %(levelname)s: %(message)s', datefmt='%m/%d/%y %I:%M %p')
     
     # Create a RotatingFileHandler for log files
     handler = RotatingFileHandler(log_file, delay=True, mode="w", backupCount=max_logs)

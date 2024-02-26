@@ -47,4 +47,4 @@ jobs:
           build-args: |
             "BRANCH=${{ steps.extract_branch.outputs.branch }}"
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/userscripts:${{ steps.get_version.outputs.VERSION }}}
+          tags: ${{ secrets.DOCKER_USERNAME }}/userscripts:${{ steps.get_version.outputs.VERSION }}

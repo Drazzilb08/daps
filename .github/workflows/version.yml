@@ -47,12 +47,4 @@ jobs:
           build-args: |
             "BRANCH=${{ steps.extract_branch.outputs.branch }}"
           push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/userscripts:${{ steps.get_version.outputs.VERSION }}
-
-      - name: Create release
-        id: create_release
-        uses: softprops/action-gh-release@v1
-        with:
-          body_path: CHANGELOG
-          token: ${{ secrets.GH_PAT }}
-          tag_name: ${{ steps.get_version.outputs.VERSION }}
+          tags: ${{ secrets.DOCKER_USERNAME }}/userscripts:${{ steps.get_version.outputs.VERSION }}}

@@ -103,6 +103,10 @@ def run_module(script_to_run, logger):
             if logger: logger.error(f"Script: {script_to_run} does not exist")
             else: print(f"Script: {script_to_run} does not exist")
             return
+        except Exception as e:
+            if logger: logger.error(f"An error occurred while running the script: {script_to_run}.", exc_info=True)
+            else: print(f"An error occurred while running the script: {script_to_run}.")
+            return
     elif script_to_run and any(script in script_to_run for script in list_of_bash_scripts):
         module = "bash_scripts"
         try:
@@ -117,6 +121,10 @@ def run_module(script_to_run, logger):
         except ModuleNotFoundError:
             if logger: logger.error(f"Script: {script_to_run} does not exist in the list of bash scripts.")
             else: print(f"Script: {script_to_run} does not exist in the list of bash scripts.")
+            return
+        except Exception as e:
+            if logger: logger.error(f"An error occurred while running the script: {script_to_run}.", exc_info=True)
+            else: print(f"An error occurred while running the script: {script_to_run}.")
             return
     else:
         if logger: logger.error(f"Script: {script_to_run} does not exist in either bash or python scripts")

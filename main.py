@@ -230,7 +230,7 @@ def main():
                 # Remove the from running_scripts if the process is done
                 processes_to_remove = []
                 for script_name, process in running_scripts.items():
-                    if not process.is_alive():
+                    if process and not process.is_alive():
                         processes_to_remove.append(script_name)
 
                 for script_name in processes_to_remove:

@@ -16,11 +16,9 @@ import json
 import time
 import sys
 
-from util.config import Config
 from util.discord import discord, discord_check
 from util.arrpy import StARR
 from util.utility import *
-from util.logger import setup_logger
     
 try:
     from plexapi.server import PlexServer
@@ -31,10 +29,6 @@ except ImportError as e:
     exit(1)
 
 script_name = "labelarr"
-config = Config(script_name)
-log_level = config.log_level
-dry_run = config.dry_run
-logger = setup_logger(log_level, script_name)
 
 def process_data(plex_dict, media_dict, labels):
     """
@@ -49,8 +43,6 @@ def process_data(plex_dict, media_dict, labels):
         data_dict (dict): The data to be synced to Plex.
     """
 
-    # Importing logger to log syncing process
-    logger.debug("Syncing labels to Plex")
     
     # Initialize the list to store data to be synced to Plex
     data_dict = []
@@ -91,7 +83,7 @@ def process_data(plex_dict, media_dict, labels):
     return data_dict
 
 
-def sync_to_plex(plex, data_dict, instance_type):
+def sync_to_plex(plex, data_dict, instance_type, logger):
     """
     Sync the data to Plex.
     
@@ -135,7 +127,7 @@ def sync_to_plex(plex, data_dict, instance_type):
     return
 
 
-def handle_messages(data_dict):
+def handle_messages(data_dict, logger):
     """
     Handle the messages to be sent to Discord.
     
@@ -159,7 +151,7 @@ def handle_messages(data_dict):
                 logger.info(f"\tLabel: {label} removed.")
 
 
-def notification(data_dict):
+def notification(data_dict, logger):
     """
     Send the notification to Discord.
 
@@ -259,11 +251,17 @@ def handle_tags(app, media_dict, tag_names):
     return media_dict
 
 
-def main():
+def main(logger, config):
     """
     Main function.
     """
+    global dry_run
+    dry_run = config.dry_run
+    log_level = config.log_level
+    logger.setLevel(log_level.upper())
+    script_config = config.script_config
     name = script_name.replace("_", " ").upper()
+
     try:
         logger.info(create_bar(f"START {name}"))
         # If in dry run mode, create a table indicating no changes will be made
@@ -329,6 +327,7 @@ def main():
                                     logger.debug(f"Plex Data:\n{json.dumps(plex_dict, indent=4)}")
                                     
                                     # Process data for syncing to Plex
+                                    logger.info("Syncing labels to Plex")
                                     data_dict = process_data(plex_dict, media_dict, labels)
                                     
                                     # If items to sync are found
@@ -336,14 +335,14 @@ def main():
                                         logger.debug(f"Items to sync:\n{json.dumps(data_dict, indent=4)}")
                                         # Perform actual syncing to Plex if not in dry run mode
                                         if not dry_run:
-                                            sync_to_plex(plex, data_dict, instance_type)
+                                            sync_to_plex(plex, data_dict, instance_type, logger)
                                         
                                         # Handle messages related to syncing actions
-                                        handle_messages(data_dict)
+                                        handle_messages(data_dict, logger)
                                         
                                         # Send notifications related to syncing actions
                                         if discord_check(script_name):
-                                            notification(data_dict)
+                                            notification(data_dict, logger)
                                     else:
                                         logger.info(f"No items to sync from {starr_server_name} to {server_name}.\n")
                                 else:
@@ -359,10 +358,3 @@ def main():
         logger.error(f"\n\n")
     finally:
         logger.info(create_bar(f"END {name}"))
-
-if __name__ == "__main__":
-    start_time = time.time()
-    main()
-    end_time = time.time()
-    total_time = round(end_time - start_time, 2)
-    logger.info(f"Total Time: {time.strftime('%H:%M:%S', time.gmtime(total_time))}")

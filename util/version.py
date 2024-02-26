@@ -81,3 +81,20 @@ def version_check(logger, branch):
         # Call function to send Discord notification with script details
         discord(field, logger=logger, script_name="main", description=f"__**Drazzilb's Scripts**__", color=0xff0000, content=None)
 
+def get_version():
+    """
+    Get the version number from the VERSION file
+    
+    Args:
+        None
+        
+    Returns:
+        str: The version number
+    """
+
+    version_file = os.path.join(script_dir, "VERSION")
+
+    with open(version_file, "r") as f:
+        script_version = f.read().strip()
+    
+    return script_version

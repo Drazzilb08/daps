@@ -11,11 +11,8 @@ import multiprocessing
 import time
 import datetime
 
-# Set the script name
-script_name = "main"
 # Set the current time
 current_time = datetime.datetime.now().strftime("%H:%M")
-logger = setup_logger("info", script_name)
 
 already_run = {}
 
@@ -31,10 +28,10 @@ list_of_python_scripts = [
     "sync_gdrive",
     "upgradinatorr",
     "unmatched_assets",
+    "backup_appdata",
 ]
 
 list_of_bash_scripts = [
-    "backup_appdata",
     "backup_folder",
     "backup_plex",
     "jduparr",
@@ -45,44 +42,87 @@ ran_modules = {}
 
 branch = get_current_git_branch()
 
-def run_module(script_name, logger):
+def get_logger(config, script_name):
+    """
+    Get the logger for the script
+
+    Args:
+        log_level (str): The log level to use
+        script_name (str): The name of the script
+        config (dict): The config file
+
+    Returns:
+        logger: The logger for the script
+    """
+    # Get loglevel from script config
+    log_level = config.log_level
+    logger = setup_logger(log_level, script_name)
+
+    return logger
+
+def get_config(script_to_run):
+    """
+    Get the config for the script
+
+    Args:
+        script_name (str): The name of the script
+
+    Returns:
+        dict: The config for the script
+    """
+
+    # Load the config file
+    config = Config(script_to_run)
+
+    return config
+
+def run_module(script_to_run, logger):
     process = None
-    if script_name in list_of_python_scripts:
+    if script_to_run in list_of_python_scripts:
         try:
-            module = importlib.import_module(f"modules.{script_name}")
-            process = multiprocessing.Process(target=module.main)
+            config = get_config(script_to_run)
+            script_logger = get_logger(config, script_to_run)
+            module = importlib.import_module(f"modules.{script_to_run}")
+            process = multiprocessing.Process(target=module.main, args=(script_logger, config))
             if process:
-                if script_name == "poster_renamerr":
-                    config = Config(script_name)
+                if script_to_run == "poster_renamerr":
+                    config = Config(script_to_run)
                     script_config = config.script_config
                     sync_posters = script_config.get("sync_posters", False)
                     border_replacerr = script_config.get("border_replacerr", False)
                     posters = ", also running gdrive_sync" if sync_posters else ""
                     border = ", also running border_replacerr" if border_replacerr else ""
                     additional_scripts = f"{posters}{border}"
-                    logger.info(f"Running script: {script_name}{additional_scripts}.")
+                    if logger: logger.info(f"Running script: {script_to_run}{additional_scripts}.")
+                    else: print(f"Running script: {script_to_run}{additional_scripts}.")
                 else:
-                    logger.info(f"Running script: {script_name} in the list of python scripts.")
-                
+                    if logger: logger.info(f"Running script: {script_to_run}.")
+                    else: print(f"Running script: {script_to_run}.")
                 process.start()
                 return process
         except ModuleNotFoundError:
-            logger.error(f"Script: {script_name} does not exist")
+            if logger: logger.error(f"Script: {script_to_run} does not exist")
+            else: print(f"Script: {script_to_run} does not exist")
             return
-    elif script_name and any(script in script_name for script in list_of_bash_scripts):
+    elif script_to_run and any(script in script_to_run for script in list_of_bash_scripts):
         module = "bash_scripts"
         try:
+            config = get_config(module)
+            script_logger = get_logger(config, script_to_run)
             module = importlib.import_module(f"modules.{module}")
-            process = multiprocessing.Process(target=module.main, args=(script_name,))
+            process = multiprocessing.Process(target=module.main, args=(script_to_run, config, script_logger))
             if process:
-                logger.info(f"Running script: {script_name}")
+                if logger: logger.info(f"Running script: {script_to_run}")
+                else: print(f"Running script: {script_to_run}")
                 process.start()
                 return process
         except ModuleNotFoundError:
-            logger.error(f"Script: {script_name} does not exist in the list of bash scripts.")
+            if logger: logger.error(f"Script: {script_to_run} does not exist in the list of bash scripts.")
+            else: print(f"Script: {script_to_run} does not exist in the list of bash scripts.")
             return
     else:
-        logger.error(f"Script: {script_name} does not exist in either bash or python scripts")
+        if logger: logger.error(f"Script: {script_to_run} does not exist in either bash or python scripts")
+        else: print(f"Script: {script_to_run} does not exist in either bash or python scripts")
         return
 
 def load_schedule():
@@ -94,7 +134,7 @@ def load_schedule():
     """
 
     # Load the config file
-    config = Config(script_name)
+    config = Config("main")
 
     # Get the schedule from the config
     schedule = config.scheduler
@@ -106,7 +146,8 @@ def main():
     """
     Main function
     """
-   
+    # Set the script name
+
     initial_run = True
     last_check = None
     old_schedule = None
@@ -116,14 +157,16 @@ def main():
     if len(sys.argv) > 1:
         for input_name in sys.argv[1:]:
             if input_name and any(script in input_name for script in list_of_bash_scripts):
-                run_module(input_name, logger)
+                run_module(input_name, None)
             elif input_name in list_of_python_scripts:
-                run_module(input_name, logger)
+                run_module(input_name, None)
             elif input_name not in list_of_python_scripts or (input_name and not any(script in input_name for script in list_of_bash_scripts)):
-                logger.error(f"Script: {input_name} does not exist")
+                print(f"Script: {input_name} does not exist")
                 return
     else:
         try:
+            logger = setup_logger("info", "main")
+            logger.info("Starting the script...")
             # If config file is not found
             while True:
                 scripts_schedules= load_schedule()

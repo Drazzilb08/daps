@@ -18,8 +18,6 @@ import json
 import re
 import sys
 
-from util.config import Config
-from util.logger import setup_logger
 from util.arrpy import StARR
 from util.utility import *
 from util.discord import discord
@@ -32,18 +30,19 @@ except ImportError as e:
     exit(1)
 
 script_name = "health_checkarr"
-config = Config(script_name)
-dry_run = config.dry_run
-log_level = config.log_level
-logger = setup_logger(log_level, script_name)
 
 tmdb_id_extractor = re.compile(r"tmdbid (\d+)")
 tvdb_id_extractor = re.compile(r"tvdbid (\d+)")
 
-def main():
+def main(logger, config):
     """
     Main function.
     """
+    global dry_run
+    dry_run = config.dry_run
+    log_level = config.log_level
+    logger.setLevel(log_level.upper())
+    script_config = config.script_config
     name = script_name.replace("_", " ").upper()
     try:
         logger.info(create_bar(f"START {name}"))
@@ -110,6 +109,3 @@ def main():
         logger.error(f"\n\n")
     finally:
         logger.info(create_bar(f"END {name}"))
-
-if __name__ == '__main__':
-    main()

@@ -18,19 +18,13 @@ import json
 import sys
 import time
 
-from util.config import Config
-from util.logger import setup_logger
 from util.arrpy import StARR
 from util.discord import discord, discord_check
 from util.utility import *
 
 script_name = "upgradinatorr"
-config = Config(script_name)
-log_level = config.log_level
-dry_run = config.dry_run
-logger = setup_logger(log_level, script_name)
 
-def filter_media(media_dict, tag_id, count):
+def filter_media(media_dict, tag_id, count, logger):
     """
     Filter media_dict to remove items that are not monitored, have the tag_id, or are not in the correct status.
     
@@ -92,7 +86,7 @@ def process_queue(queue, instance_type, media_ids):
     queue_dict = [dict(t) for t in {tuple(d.items()) for d in queue_dict}]
     return queue_dict  # Return the processed queue information
 
-def process_instance(instance_type, instance_settings, app):
+def process_instance(instance_type, instance_settings, app, logger):
     """
     Process the instance to return a dictionary containing the server_name, tagged_count, untagged_count,
     total_count, and data.
@@ -135,13 +129,13 @@ def process_instance(instance_type, instance_settings, app):
     tag_id = app.get_tag_id_from_name(tag_name)
 
     # Filter media based on tag and count criteria
-    filtered_media_dict = filter_media(media_dict, tag_id, count)
+    filtered_media_dict = filter_media(media_dict, tag_id, count, logger)
     if not filtered_media_dict and unattended:
         media_ids = [item['media_id'] for item in media_dict]
         logger.info("All media is tagged. Removing tags...")
         app.remove_tags(media_ids, tag_id)
         media_dict = handle_starr_data(app, server_name, instance_type)
-        filtered_media_dict = filter_media(media_dict, tag_id, count)
+        filtered_media_dict = filter_media(media_dict, tag_id, count, logger)
     
     logger.debug(f"filtered_media_dict:\n{json.dumps(filtered_media_dict, indent=4)}")
     
@@ -199,7 +193,7 @@ def process_instance(instance_type, instance_settings, app):
             })
     return output_dict
 
-def print_output(output_dict):
+def print_output(output_dict, logger):
     """
     Print the output to the console.
     
@@ -235,7 +229,7 @@ def print_output(output_dict):
             # If no items found for an instance, print a message indicating so
             logger.info(f"No items found for {instance}.")
 
-def notification(output_dict):
+def notification(output_dict, logger):
     """
     Send a notification to Discord.
     
@@ -280,11 +274,17 @@ def notification(output_dict):
     if fields:
         discord(fields, logger, script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
 
-def main():
+def main(logger, config):
     """
     Main function.
     """
+    global dry_run
+    dry_run = config.dry_run
+    log_level = config.log_level
+    logger.setLevel(log_level.upper())
+    script_config = config.script_config
     name = script_name.replace("_", " ").upper()
+
     try:
         logger.info(create_bar(f"STARTING {name}"))
         # Check if it's a dry run and display a message
@@ -321,7 +321,7 @@ def main():
                     app = StARR(url, api, logger)
                     
                     # Process instance and get output
-                    output = process_instance(instance_type, instance_settings, app)
+                    output = process_instance(instance_type, instance_settings, app, logger)
                     final_output_dict[instance] = output
         
         # Debug log of the final output dictionary
@@ -329,9 +329,9 @@ def main():
         
         # If there's data in the final output dictionary, print output and send notifications
         if final_output_dict:
-            print_output(final_output_dict)
+            print_output(final_output_dict, logger)
             if discord_check(script_name):
-                notification(final_output_dict)
+                notification(final_output_dict, logger)
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()
@@ -340,6 +340,3 @@ def main():
         logger.error(f"\n\n")
     finally: 
         logger.info(create_bar(f"END OF {name}"))
-
-if __name__ == '__main__':
-    main()

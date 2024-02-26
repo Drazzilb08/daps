@@ -342,7 +342,7 @@ def handle_container(client, containers_dict, destination, dry_run, compress, ke
                         container.stop()
                     else:
                         logger.info(f"DRY RUN: Would have stopped {container_name}")
-                    pre_size_str, post_size_str, diff_str = backup_appdata(container_name, appdata_path, destination, compress, dry_run, time)
+                    pre_size_str, post_size_str, diff_str = backup_appdata(container_name, appdata_path, destination, compress, dry_run, time, logger)
                     if not dry_run:
                         logger.info(f"Starting {container_name}...")
                         container.start()

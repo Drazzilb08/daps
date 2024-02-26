@@ -5,7 +5,9 @@ on:
     tags:
       - v*
 
+
 jobs:
+
   docker-version:
     runs-on: ubuntu-latest
   
@@ -17,11 +19,11 @@ jobs:
     
       - name: Get the version
         id: get_version
-        run: echo "VERSION=${{ github.ref/refs\/tags\// }}" >> ${{ github.workspace }}/output.txt
+        run: echo "VERSION=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
 
       - name: Extract branch name
         shell: bash
-        run: echo "branch=${{ github.head_ref:-${{ github.ref#refs/heads/ }} }}" >> ${{ github.workspace }}/output.txt
+        run: echo "branch=${GITHUB_HEAD_REF:-${GITHUB_REF#refs/heads/}}" >> $GITHUB_OUTPUT
         id: extract_branch
         
       - name: Build GH Container
@@ -40,9 +42,10 @@ jobs:
         id: docker_build
         uses: docker/build-push-action@v5
         with:
-          context: ./
+          context: .
           file: ./Dockerfile
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          build-args: |
+            "BRANCH=${{ steps.extract_branch.outputs.branch }}"
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/userscripts:${{ steps.get_version.outputs.VERSION }}
 

@@ -125,7 +125,6 @@ def main(config, logger=None):
     """
     global dry_run
     settings = config.script_config
-    print(json.dumps(settings))
     log_level = config.log_level
     logger = setup_logger(log_level, script_name)
     name = script_name.replace("_", " ").upper()

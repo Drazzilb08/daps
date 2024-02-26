@@ -17,19 +17,9 @@ from util.logger import setup_logger
 from util.discord import *
 
 script_name = "backup_appdata"
-config = Config(script_name)
-log_level = config.log_level
-dry_run = config.dry_run
-logger = setup_logger(log_level, script_name)
 
-try:
-    client = docker.from_env()
-except DockerException as e:
-    logger.error(f"\nChances are your docker daemon is not running. Please start it and try again.")
-    logger.error(f"Error connecting to Docker: {e}\n")
-    sys.exit()
 
-def filter_containers(containers, add_to_no_stop, add_to_stop, stop_list, no_stop_list, exclusion_list, appdata_paths):
+def filter_containers(containers, add_to_no_stop, add_to_stop, stop_list, no_stop_list, exclusion_list, appdata_paths, logger):
     """
     Filter containers based on stop_list, no_stop_list, and exclusion_list
 
@@ -85,21 +75,24 @@ def filter_containers(containers, add_to_no_stop, add_to_stop, stop_list, no_sto
         volume_mounts = container.attrs["HostConfig"]["Binds"]
 
         # Get appdata path
-        for volume_mount in volume_mounts:
-            host_path = volume_mount.split(":")[0]
-            container_path = volume_mount.split(":")[1]
-            if container_path == "/config":
-                appdata_path = host_path
-                break
-            elif any(appdata_path in host_path for appdata_path in appdata_paths):
-                appdata_path = host_path
-                break
-            else:
-                appdata_path = None
+        if volume_mounts:
+            for volume_mount in volume_mounts:
+                host_path = volume_mount.split(":")[0]
+                container_path = volume_mount.split(":")[1]
+                if container_path == "/config":
+                    appdata_path = host_path
+                    break
+                elif any(appdata_path in host_path for appdata_path in appdata_paths):
+                    appdata_path = host_path
+                    break
+                else:
+                    appdata_path = None
+        else:
+            logger.debug(f"No volume mounts for {container.name}")
         
         # Check if running in Docker
         host_container_name = None
-        if os.environ.get("DOCKER_ENV"):
+        if os.environ.get("DOCKER_ENV") and appdata_path:
             # Get appdata path from environment variable
             docker_appdata_path = os.environ.get("APPDATA_PATH")
             appdata_path_basename = os.path.basename(appdata_path)
@@ -127,7 +120,7 @@ def filter_containers(containers, add_to_no_stop, add_to_stop, stop_list, no_sto
                 stop = True
                 new = True
             elif not appdata_path and container.name not in all_containers:
-                config.add_to_config(add_type="exclude", container=container, logger=logger)
+                config.add_to_config(add_type="exclude", container=container, logger=logger, message = "# Container automatically added here due to no appdata dir")
                 exclude = True
                 new = True
             elif stop_list and container.name in stop_list:
@@ -201,12 +194,16 @@ def get_folder_size(folder_path):
         str: Folder size
     """
     total = 0
-    for dirpath, dirnames, filenames in os.walk(folder_path):
-        for f in filenames:
-            fp = os.path.join(dirpath, f)
-            if not os.path.islink(fp):
-                total += os.path.getsize(fp)
-    return total
+    if folder_path:
+        print(f"Getting size of {folder_path}")
+        for dirpath, dirnames, filenames in os.walk(folder_path):
+            for f in filenames:
+                fp = os.path.join(dirpath, f)
+                if not os.path.islink(fp):
+                    total += os.path.getsize(fp)
+        return total
+    else:
+        return 0
 
 def ignore_patterns_and_subdirectories(patterns):
     def _ignore_patterns_and_subdirectories(dirname, filenames):
@@ -226,7 +223,7 @@ def add_to_tar(tar, path, arcname, ignore=None):
             full_path = os.path.join(root, file)
             tar.add(full_path, arcname=os.path.join(arcname, file))
 
-def backup_appdata(container_name, appdata_path, destination, compress, dry_run, time):
+def backup_appdata(container_name, appdata_path, destination, compress, dry_run, time, logger):
     """
     Backup appdata
 
@@ -306,17 +303,19 @@ def backup_appdata(container_name, appdata_path, destination, compress, dry_run,
     elif pre_size - post_size > 0:
         diff_str = f"-{diff_str}"
 
+    difference_percent = (post_size - pre_size) / pre_size * 100 if pre_size != 0 else 0
+
     table = [
         ["Source", pre_size_str],
         ["Backup Size", post_size_str],
-        ["Difference", diff_str]
+        ["Difference", f"{diff_str} ({difference_percent:.2f}%)"]
     ]
     logger.info(create_table(table))
 
     return pre_size_str, post_size_str, diff_str
 
 
-def handle_container(containers_dict, destination, dry_run, compress, keep_backup):
+def handle_container(client, containers_dict, destination, dry_run, compress, keep_backup, logger):
     """
     Backup docker containers
 
@@ -340,14 +339,18 @@ def handle_container(containers_dict, destination, dry_run, compress, keep_backu
             logger.info(create_bar(f"Backing up {container_name}..."))
             if stop:
                 if current_state == "running":
-                    logger.info(f"Stopping {container_name}...")
                     container = client.containers.get(container_id)
                     if not dry_run:
+                        logger.info(f"Stopping {container_name}...")
                         container.stop()
+                    else:
+                        logger.info(f"DRY RUN: Would have stopped {container_name}")
                     pre_size_str, post_size_str, diff_str = backup_appdata(container_name, appdata_path, destination, compress, dry_run, time)
-                    logger.info(f"Starting {container_name}...")
                     if not dry_run:
+                        logger.info(f"Starting {container_name}...")
                         container.start()
+                    else:
+                        logger.info(f"DRY RUN: Would have started {container_name}")
                 else:
                     logger.info(f"{container_name} was already stopped, not starting...")
                     pre_size_str, post_size_str, diff_str = backup_appdata(container_name, appdata_path, destination, compress, dry_run, time)
@@ -405,7 +408,7 @@ def default_fields(runtime, total_size_str, all_backups_size_str):
             "value": f"```{all_backups_size_str}```"
         }]
     
-def notification(containers_dict, script_name, use_summary, containers_to_remove):
+def notification(containers_dict, script_name, use_summary, containers_to_remove, logger):
     """
     Send notification
 
@@ -532,15 +535,22 @@ def notification(containers_dict, script_name, use_summary, containers_to_remove
             discord(fields=fields, logger=logger, script_name=script_name, description=description, color=0x00ff00, content=None)
 
 
-def main():
+def main(logger, config):
     """
-    Main function
+    Main function.
     """
+    global dry_run
+    dry_run = config.dry_run
+    log_level = config.log_level
+    logger.setLevel(log_level.upper())
+    script_config = config.script_config
 
     name = script_name.replace("_", " ").upper()
     start = datetime.now()
     try:
-        script_config = config.script_config
+        
+        client = docker.from_env()
+        
         logger.info(create_bar(f"START {name}"))
         # Display script settings
         table = [["Script Settings"]]
@@ -558,6 +568,8 @@ def main():
 
         # Display script settings
         logger.debug(create_bar("-"))  # Log separator
+        logger.debug(f'{"Dry_run:":<20}{dry_run}')
+        logger.debug(f'{"Log level:":<20}{log_level}')
         logger.debug(f'{"Destination:":<20} {destination}')
         logger.debug(f'{"Keep Backup:":<20} {keep_backup}')
         logger.debug(f'{"Compress:":<20} {compress}')
@@ -594,12 +606,12 @@ def main():
         containers = client.containers.list(all=True)
 
         # Filter containers
-        containers_dict, containers_to_remove = filter_containers(containers, add_to_no_stop, add_to_stop, stop_list, no_stop_list, exclusion_list, appdata_paths)
+        containers_dict, containers_to_remove = filter_containers(containers, add_to_no_stop, add_to_stop, stop_list, no_stop_list, exclusion_list, appdata_paths, logger)
 
         # Backup containers
         if containers_dict:
             logger.debug(f"Containers Dictionary:\n{json.dumps(containers_dict, indent=4)}")
-            containers_dict = handle_container(containers_dict, destination, dry_run, compress, keep_backup)
+            containers_dict = handle_container(client, containers_dict, destination, dry_run, compress, keep_backup, logger)
         else:
             logger.debug("No containers to backup")
         end = datetime.now()
@@ -636,17 +648,17 @@ def main():
         logger.info(f"Script ran for {run_time_str}")
         logger.info(f"All backups size: {all_backups_size_str}")
         if discord_check(script_name):
-            notification(containers_dict, script_name, use_summary, containers_to_remove)
+            notification(containers_dict, script_name, use_summary, containers_to_remove, logger)
             
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()
+    except DockerException as e:
+            logger.error(f"\nChances are your docker daemon is not running. Please start it and try again.")
+            logger.error(f"Error connecting to Docker: {e}\n")
+            sys.exit()
     except Exception:
         logger.error(f"\n\nAn error occurred:\n", exc_info=True)
         logger.error(f"\n\n")
     finally:
         logger.info(create_bar(f"END {name}"))
-
-
-if __name__ == "__main__":
-    main()

@@ -22,10 +22,8 @@ import filecmp
 import shutil
 import time
 
-from util.logger import setup_logger
 from util.utility import *
 from util.discord import discord, discord_check
-from util.config import Config
 from util.arrpy import StARR
 
 try:
@@ -37,14 +35,10 @@ except ImportError as e:
     exit(1)
 
 script_name = "poster_renamerr"
-config = Config(script_name)
-log_level = config.log_level
-dry_run = config.dry_run
-logger = setup_logger(log_level, script_name)
 
 year_regex = re.compile(r"\s?\((\d{4})\).*")
 
-def get_assets_files(source_dirs):
+def get_assets_files(source_dirs, logger):
     """
     Get assets files from source directories
 
@@ -189,7 +183,7 @@ def match_data(media_dict, asset_files):
 
     return combined_dict
 
-def process_file(file, new_file_path, action_type):
+def process_file(file, new_file_path, action_type, logger):
     """
     Processes a file based on the action type
     
@@ -218,7 +212,7 @@ def process_file(file, new_file_path, action_type):
 
     
 
-def rename_files(matched_assets, script_config):
+def rename_files(matched_assets, script_config, logger):
     """
     Renames files based on the matched assets and script config
     
@@ -313,7 +307,7 @@ def rename_files(matched_assets, script_config):
                                     messages.append(f"{file_name} -not-renamed-> {new_file_name}")
                                     discord_messages.append(f"{new_file_name}")
                             if not dry_run:
-                                process_file(file, new_file_path, action_type)
+                                process_file(file, new_file_path, action_type, logger)
                     else:
                         if file_name != new_file_name:
                             messages.append(f"{file_name} -renamed-> {new_file_name}")
@@ -323,7 +317,7 @@ def rename_files(matched_assets, script_config):
                                 messages.append(f"{file_name} -not-renamed-> {new_file_name}")
                                 discord_messages.append(f"{new_file_name}")
                         if not dry_run:
-                            process_file(file, new_file_path, action_type)
+                            process_file(file, new_file_path, action_type, logger)
                 
                 # Append the messages to the output
                 if messages or discord_messages:
@@ -338,7 +332,7 @@ def rename_files(matched_assets, script_config):
             print(f"No {asset_type} to rename")
     return output
 
-def handle_output(output, asset_folders):
+def handle_output(output, asset_folders, logger):
     """
     Handles the output messages
     
@@ -389,7 +383,7 @@ def handle_output(output, asset_folders):
             logger.info(f"No {asset_type} to rename")
 
 
-def notification(output):
+def notification(output, logger):
     """
     Sends a notification to Discord
     
@@ -515,12 +509,17 @@ def notification(output):
             print("Pausing for 5 seconds to let Discord catch up...")
             time.sleep(5)
 
-def main():
+def main(logger, config):
     """
     Main function.
     """
-    
+    global dry_run
+    dry_run = config.dry_run
+    log_level = config.log_level
+    logger.setLevel(log_level.upper())
+    script_config = config.script_config
     name = script_name.replace("_", " ").upper()
+
     try:
         logger.info(create_bar(f"START {name}"))
         # Display script settings
@@ -574,15 +573,18 @@ def main():
         if sync_posters:
             # Run sync_posters.py or log intent to run
             logger.info(f"Running sync_gdrive")
-            from modules.sync_gdrive import main
-            main()
+            from modules.sync_gdrive import main as gdrive_main
+            from util.config import Config
+            gdrive_config = Config("sync_gdrive")
+            gdrive_script_config = gdrive_config.script_config
+            gdrive_main(logger, config)
             logger.info(f"Finished running sync_gdrive")
         else:
             logger.debug(f"Sync posters is disabled. Skipping...")
 
         assets_list = []
         print("Gathering all the posters, please wait...")
-        assets_list = get_assets_files(source_dirs)
+        assets_list = get_assets_files(source_dirs, logger)
 
         if assets_list:
             assets_dict = sort_assets(assets_list)
@@ -648,12 +650,12 @@ def main():
             logger.debug(f"Matched and Unmatched media:\n{json.dumps(combined_dict, indent=4)}")
             matched_assets = combined_dict.get('matched', None)
             if any(matched_assets.values()):
-                output = rename_files(matched_assets, script_config)
+                output = rename_files(matched_assets, script_config, logger)
                 if any(output.values()):
                     logger.debug(f"Output:\n{json.dumps(output, indent=4)}")
-                    handle_output(output, asset_folders)
+                    handle_output(output, asset_folders, logger)
                     if discord_check(script_name):
-                        notification(output)
+                        notification(output, logger)
                 else:
                     logger.info(f"No new posters to rename.")
             else:
@@ -664,7 +666,10 @@ def main():
             logger.info(f"Running border_replacerr.py")
             tmp_dir = os.path.join(destination_dir, 'tmp')
             from modules.border_replacerr import process_files
-            process_files(tmp_dir, destination_dir, dry_run)
+            from util.config import Config
+            replacerr_config = Config("border_replacerr")
+            replacerr_script_config = replacerr_config.script_config
+            process_files(tmp_dir, destination_dir, dry_run, log_level, replacerr_script_config, logger)
             logger.info(f"Finished running border_replacerr.py")
         else:
             logger.debug(f"Border replacerr is disabled. Skipping...")
@@ -677,6 +682,3 @@ def main():
     finally:
         logger.info(create_bar(f"END {name}"))
 
-if __name__ == "__main__":
-    main()
-    

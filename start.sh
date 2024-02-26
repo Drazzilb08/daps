@@ -6,6 +6,10 @@ UMASK=${UMASK:-002}
 
 export RCLONE_CONFIG="${CONFIG_DIR}/rclone/rclone.conf"
 
+# Read version number from VERSION file from current dir
+# current dir
+VERSION=$(cat "$(dirname "$0")/VERSION")
+
 echo "
 ---------------------------------------------------------
                       _____           _       _
@@ -20,6 +24,7 @@ echo "
         PGID:           ${PGID}
         UMASK:          ${UMASK}
         BRANCH:         ${BRANCH}
+        VERSION:        ${VERSION}
         CONFIG_DIR:     ${CONFIG_DIR}
         RCLONE_CONFIG:  ${RCLONE_CONFIG}
         APPDATA Path    ${APPDATA_PATH}

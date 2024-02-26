@@ -86,7 +86,7 @@ class Config:
 
 
     # Add data to config file
-    def add_to_config(self, add_type, container, logger):
+    def add_to_config(self, add_type, container, logger, message=None):
         """
         Add data to the config file for the backup_appdata key
         
@@ -104,6 +104,7 @@ class Config:
             config = yaml.load(file)
 
         container_name = container.name
+        container_name_message = f"{container_name}\t\t\t{message}" if message else f"{container_name}"
         stop_list = config['backup_appdata']['stop_list']
         no_stop_list = config['backup_appdata']['no_stop_list']
         exclusion_list = config['backup_appdata']['exclusion_list']
@@ -112,19 +113,19 @@ class Config:
         # Add the container to the stop_list or no_stop_list
         if add_type == "stop":
             if not stop_list:
-                stop_list = [container_name]
-            elif container_name not in stop_list:
-                stop_list.append(container_name)
+                stop_list = [container_name_message]
+            elif container_name_message not in stop_list:
+                stop_list.append(container_name_message)
         elif add_type == "no_stop":
             if not no_stop_list:
-                no_stop_list = [container_name]
-            elif container_name not in no_stop_list:
-                no_stop_list.append(container_name)
+                no_stop_list = [container_name_message]
+            elif container_name_message not in no_stop_list:
+                no_stop_list.append(container_name_message)
         elif add_type == "exclude":
             if not exclusion_list:
-                exclusion_list = [container_name]
-            elif container_name not in exclusion_list:
-                exclusion_list.append(container_name)
+                exclusion_list = [container_name_message]
+            elif container_name_message not in exclusion_list:
+                exclusion_list.append(container_name_message)
 
         # Add the new data to the config file
         config['backup_appdata']['stop_list'] = stop_list

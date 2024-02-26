@@ -1,16 +1,14 @@
 import shlex
 import json
 import os
-from util.logger import setup_logger
-from util.config import Config
+
 from util.call_script import call_script
 from util.utility import create_bar
 import sys
 
 
 script_name = "sync_gdrive"
-config = Config(script_name)
-logger = setup_logger(config.log_level, script_name)
+
 bash_script_file = os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + '/../scripts/rclone.sh')
 
 def output_debug_info(cmd, settings):
@@ -28,7 +26,7 @@ def output_debug_info(cmd, settings):
 
     return debug_cmd
 
-def set_cmd_args(settings):
+def set_cmd_args(settings, logger):
     cmds = []
     cmd = [bash_script_file]
     sync_list = []
@@ -108,7 +106,7 @@ def set_cmd_args(settings):
     return cmds
 
 # run the rclone.sh script
-def run_rclone(cmd, settings):
+def run_rclone(cmd, settings, logger):
     debug_cmd = output_debug_info(cmd, settings)
     try:
         logger.debug(f"RClone command with args: {debug_cmd}")
@@ -120,13 +118,21 @@ def run_rclone(cmd, settings):
         pass
 
 # Main function
-def main():
+def main(logger, config):
+    """
+    Main function.
+    """
+    global dry_run
+    dry_run = config.dry_run
+    log_level = config.log_level
+    logger.setLevel(log_level.upper())
     name = script_name.replace("_", " ").upper()
+    
     try:
         logger.info(create_bar(f"START {name}"))
         settings = config.script_config
-        for cmd in set_cmd_args(settings):
-            run_rclone(cmd, settings)
+        for cmd in set_cmd_args(settings, logger):
+            run_rclone(cmd, settings, logger)
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()

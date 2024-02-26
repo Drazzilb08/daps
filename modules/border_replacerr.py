@@ -22,8 +22,6 @@ import filecmp
 import shutil
 import sys
 
-from util.config import Config
-from util.logger import setup_logger
 from util.utility import *
 from util.scheduler import check_schedule
 
@@ -36,19 +34,15 @@ except ImportError as e:
     exit(1)
 
 script_name = "border_replacerr"
-config = Config(script_name)
-log_level = config.log_level
 # dry_run = config.dry_run
 logging.getLogger("PIL").setLevel(logging.WARNING)
-
-logger = setup_logger(log_level, script_name)
 
 # Set regex patterns
 illegal_chars_regex = re.compile(r'[<>:"/\\|?*\x00-\x1f]+')
 year_regex = re.compile(r"\((\d{4})\).*")
 remove_special_chars = re.compile(r'[^a-zA-Z0-9\s]+')
 
-def check_holiday(data, border_colors):
+def check_holiday(data, border_colors, logger):
     """
     Checks if the schedule is a range schedule and if so, runs the range schedule.
     
@@ -95,7 +89,7 @@ def check_holiday(data, border_colors):
     return border_colors, False, None
 
 
-def convert_to_rgb(hex_color):
+def convert_to_rgb(hex_color, logger):
     """
     Converts a hexadecimal color code to an RGB tuple.
     
@@ -116,7 +110,7 @@ def convert_to_rgb(hex_color):
         return (255, 255, 255)
     return color_code
 
-def fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_run):
+def fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_run, logger):
     """
     Replaces the border on the posters.
 
@@ -137,7 +131,7 @@ def fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_
     # Convert border colors to RGB format if available
     if border_colors:
         for color in border_colors:
-            rgb_color = convert_to_rgb(color)  # Convert color to RGB
+            rgb_color = convert_to_rgb(color, logger)  # Convert color to RGB
             rgb_border_colors.append(rgb_color)
 
     # Determining the action based on configuration
@@ -201,9 +195,9 @@ def fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_
                     if not dry_run:
                         
                         if rgb_border_color:
-                            results = replace_border(input_file, output_path, rgb_border_color, border_width)
+                            results = replace_border(input_file, output_path, rgb_border_color, border_width, logger)
                         else:
-                            results = remove_border(input_file, output_path, border_width)
+                            results = remove_border(input_file, output_path, border_width, logger)
                         if results:
                             if path:
                                 messages.append(f"{action} {data['title']}{year} - {file_name}")
@@ -219,7 +213,7 @@ def fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_
     return messages
 
                     
-def replace_border(input_file, output_path, border_colors, border_width):
+def replace_border(input_file, output_path, border_colors, border_width, logger):
     """
     Crops the center of an image, adds a 25-pixel border around it, and saves the result.
     
@@ -282,7 +276,7 @@ def replace_border(input_file, output_path, border_colors, border_width):
         logger.error(f"Error processing {input_file}")
         return False
 
-def remove_border(input_file, output_path, border_width):
+def remove_border(input_file, output_path, border_width, logger):
     """
     Crops the center of an image, reducing its dimensions by 50 pixels on each side.
     
@@ -305,9 +299,6 @@ def remove_border(input_file, output_path, border_width):
             bottom_border = Image.new("RGB", (width - 2 * border_width, border_width), color='black') # Create a black image for the bottom border
             bottom_border_position = (0, height - border_width - border_width) # Position the bottom border 25 pixels from the bottom
             final_image.paste(bottom_border, bottom_border_position) # Paste the black bottom border at the specified position
-            
-            #TODO: Remove this line after testing
-            #     final_image = image.crop((border_width, border_width, width - border_width, height - border_width)) # Crop the image to remove the border
 
             # Resize the image to 1500x1000
             final_image = final_image.resize((1000, 1500))
@@ -342,7 +333,7 @@ def remove_border(input_file, output_path, border_width):
         logger.error(f"Error processing {input_file}")
         return False
     
-def copy_files(assets_dict, destination_dir, dry_run):
+def copy_files(assets_dict, destination_dir, dry_run, logger):
     """
     Copies the files in the input directory to the output directory.
     
@@ -413,7 +404,7 @@ def copy_files(assets_dict, destination_dir, dry_run):
                         messages.append(f"Would have copied {data['title']}{year} - {file_name} to {output_basename}")
     return messages
 
-def process_files(source_dirs, destination_dir, dry_run):
+def process_files(source_dirs, destination_dir, dry_run, log_level, script_config, logger):
     """
     Processes the files in the input directory.
 
@@ -426,7 +417,6 @@ def process_files(source_dirs, destination_dir, dry_run):
     """
 
     # Obtain script configuration details
-    script_config = config.script_config
     schedule = script_config.get('schedule', None)
     border_colors = script_config.get('border_colors', None)
     skip = script_config.get('skip', False)
@@ -439,8 +429,8 @@ def process_files(source_dirs, destination_dir, dry_run):
         ["Script Settings"],
     ]
     logger.debug(create_table(table))
-    logger.debug(f'{"Dry_run:":<20}{config.dry_run}')
-    logger.debug(f'{"Log Level:":<20}{config.log_level}')
+    logger.debug(f'{"Dry_run:":<20}{dry_run}')
+    logger.debug(f'{"Log Level:":<20}{log_level}')
     logger.debug(f'{"Input Dir:":<20}{source_dirs}')
     logger.debug(f'{"Output Dir:":<20}{destination_dir}')
     logger.debug(f'{"Border Colors:":<20}{border_colors}')
@@ -452,7 +442,7 @@ def process_files(source_dirs, destination_dir, dry_run):
     
     # Check for a scheduled event to update border colors if provided
     if schedule:
-        border_colors, run_holiday, holiday = check_holiday(schedule, border_colors)
+        border_colors, run_holiday, holiday = check_holiday(schedule, border_colors, logger)
     
     if not os.path.exists(destination_dir):
         logger.error(f"Output directory {destination_dir} does not exist.")
@@ -476,7 +466,7 @@ def process_files(source_dirs, destination_dir, dry_run):
 
     # If Run holiday is False and Skip is set to True, return
     if not run_holiday and skip:
-        messages = copy_files(assets_dict, destination_dir, dry_run)
+        messages = copy_files(assets_dict, destination_dir, dry_run, logger)
         logger.info(f"Skipping {script_name} as it is not scheduled to run today.")
         if messages:
             table = [
@@ -502,7 +492,7 @@ def process_files(source_dirs, destination_dir, dry_run):
         logger.debug(f"assets_dict:\n{json.dumps(assets_dict, indent=4)}")
 
         # Fix borders for assets using specified configurations
-        messages = fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_run)
+        messages = fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_run, logger)
         logger.debug(f"messages:\n{json.dumps(messages, indent=4)}")
 
         # If there are messages (indicating processed files), log each message
@@ -521,20 +511,24 @@ def process_files(source_dirs, destination_dir, dry_run):
         return
 
 
-def main():
+def main(logger, config):
     """
     Main function.
     """
+    global dry_run
+    dry_run = config.dry_run
+    log_level = config.log_level
+    logger.setLevel(log_level.upper())
+    script_config = config.script_config
     name = script_name.replace("_", " ").upper()
+
     try:
         logger.info(create_bar(f"START {name}"))
         # Obtain script configuration details
-        script_config = config.script_config
+        
         source_dirs = script_config['source_dirs']
         destination_dir = script_config['destination_dir']
-        schedule = script_config['schedule']
         border_colors = script_config['border_colors']
-        dry_run = config.dry_run
 
         # Convert single string border color to a list if necessary
         if isinstance(border_colors, str):
@@ -542,7 +536,7 @@ def main():
 
 
         # Process files in the input directory with specified settings
-        process_files(source_dirs, destination_dir, dry_run)
+        process_files(source_dirs, destination_dir, dry_run, log_level=log_level, script_config=script_config, logger=logger)
 
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
@@ -552,6 +546,3 @@ def main():
         logger.error(f"\n\n")
     finally:
         logger.info(create_bar(f"END {name}"))
-
-if __name__ == "__main__":
-    main()

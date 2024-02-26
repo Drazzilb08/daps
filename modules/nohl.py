@@ -21,8 +21,6 @@ import re
 import sys
 import json
 
-from util.config import Config
-from util.logger import setup_logger
 from util.arrpy import StARR
 from util.discord import discord, discord_check
 from util.utility import *
@@ -35,11 +33,6 @@ except ImportError as e:
     exit(1)
 
 script_name = "nohl"
-config = Config(script_name)
-log_level = config.log_level
-dry_run = config.dry_run
-logger = setup_logger(log_level, script_name)
-discord_messages = {'radarr': [], 'sonarr': []}
 
 # Regular expressions for file parsing
 season_regex = r"Season (\d{1,2})"
@@ -47,7 +40,7 @@ episode_regex = r"(?:E|e)(\d{1,2})"
 title_regex = r".*\/([^/]+)\s\((\d{4})\).*"
 year_regex = re.compile(r"\s?\((\d{4})\).*")
 
-def find_no_hl_files(path):
+def find_no_hl_files(path, logger):
     """
     Finds all files that are not hardlinked in a given path.
     
@@ -333,100 +326,7 @@ def filter_media(app, media_list, nohl_data, instance_type, exclude_profiles, ex
     # Return the dictionary containing filtered media and media to search for in Sonarr
     return data_list
 
-
-def process_files(nohl_files, instance_type):
-    """
-    Processes files to get title, year, and season information.
-    
-    Args:
-        nohl_files (dict): Dictionary of files that are not hardlinked.
-        instance_type (str): Type of instance, either 'radarr' or 'sonarr'.
-        
-    Returns:
-        dict: Dictionary of processed files.
-    """
-    files_list = []  # Initialize an empty list to store processed file information
-    
-    # If the instance type is 'radarr', process each file in the dictionary
-    if instance_type == 'radarr':
-        for directory, files in nohl_files.items():
-            for file in files:
-                try:
-                    # Extract title and year using regular expressions from the file path
-                    title_match = re.match(title_regex, file)
-                    title = title_match.group(1)
-                    normalized_title = normalize_titles(title)
-                    year = int(title_match.group(2))
-                    
-                    # Create a dictionary with title and year information and add it to the list
-                    file_information = {
-                        'title': title, 
-                        'year': year,
-                    }
-                    files_list.append(file_information)
-                    
-                except AttributeError:
-                    logger.error(f"Error processing file: {file}.")
-                    continue
-
-    # If the instance type is 'sonarr', process each file in the dictionary
-    if instance_type == 'sonarr':
-        for key, files in nohl_files.items():
-            for file in files:
-                try:
-                    # Extract season number, title, year, and episode number from the file path
-                    season_number = re.search(season_regex, file).group(1)
-                    title = re.match(title_regex, file).group(1)
-                    normalized_title = normalize_titles(title)
-                    year = int(re.match(title_regex, file).group(2))
-                    episode = int(re.search(episode_regex, file).group(1))
-                    
-                    # Modify season number formatting if needed
-                    if season_number:
-                        if season_number.startswith('0'):
-                            season_number_modified = int(season_number[1:])
-                        else:
-                            season_number_modified = int(season_number)
-                    
-                    existing_list = None
-                    # Check if the processed file is already in the files_list
-                    for existing_file in files_list:
-                        if existing_file['title'] == normalized_title:
-                            existing_list = existing_file
-                            break
-                    
-                    # If the file exists, update the existing entry with new episode information
-                    if existing_list:
-                        for season_info in existing_list['season_info']:
-                            if season_info['season_number'] == season_number_modified:
-                                season_info['episodes'].append(episode)
-                                break
-                        else:
-                            existing_list['season_info'].append({
-                                'season_number': season_number_modified, 
-                                'episodes': [episode]
-                            })
-                    else:
-                        # If the file does not exist, create a new entry in the files_list
-                        file_information = {
-                            'title': title, 
-                            'year': year, 
-                            'season_info': [{
-                                'season_number': season_number_modified, 
-                                'episodes': [episode]
-                            }]
-                        }
-                        files_list.append(file_information)
-                        
-                except AttributeError:
-                    logger.error(f"Error processing file: {file}.")
-                    continue
-    
-    # Return the processed files dictionary
-    return files_list
-
-
-def handle_messages(output_dict):
+def handle_messages(output_dict, logger):
     """
     Handle CLI output for nohl.py
     
@@ -494,7 +394,7 @@ def handle_messages(output_dict):
         logger.debug("")
 
 
-def notification(final_output):
+def notification(final_output, logger, log_level):
     """
     Sends a discord notification with the results of the script.
     
@@ -631,10 +531,15 @@ def notification(final_output):
         discord(fields, logger, script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
 
 
-def main():
+def main(logger, config):
     """
     Main function.
     """
+    global dry_run
+    dry_run = config.dry_run
+    log_level = config.log_level
+    logger.setLevel(log_level.upper())
+    script_config = config.script_config
     name = script_name.replace("_", " ").upper()
     try:
         logger.info(create_bar(f"START {name}"))
@@ -667,6 +572,8 @@ def main():
             ["Script Configuration"],
         ]
         logger.debug(create_table(table))
+        logger.debug(f'{"Dry_run:":<20}{dry_run}')
+        logger.debug(f'{"Log level:":<20}{log_level}')
         logger.debug(f'{"Maximum Searches:":<30}{max_search}')
         logger.debug(f'{f"Instances:":<30}\n{json.dumps(instances, indent=4)}')
         logger.debug(f'{"Filters:":<30}\n{json.dumps(filters, indent=4)}')
@@ -683,7 +590,7 @@ def main():
         nohl_list = {'movies': [], 'series': []}
         if paths:
             for path in paths:
-                results = find_no_hl_files(path)
+                results = find_no_hl_files(path, logger)
                 if results:
                     nohl_list['movies'].extend(results['movies'])
                     nohl_list['series'].extend(results['series'])
@@ -770,11 +677,11 @@ def main():
                     }
         logger.debug(f"Output Data:\n{json.dumps(output_dict, indent=4)}")
         # Display command-line output about processed files and excluded media
-        handle_messages(output_dict)
+        handle_messages(output_dict, logger)
         
         # Send a Discord notification containing the output data
         if discord_check(script_name):
-            notification(output_dict)
+            notification(output_dict, logger, log_level)
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()
@@ -783,6 +690,3 @@ def main():
         logger.error(f"\n\n")
     finally:
         logger.info(create_bar(f" ENDING {name} "))
-
-if __name__ == "__main__":
-    main()

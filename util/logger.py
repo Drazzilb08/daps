@@ -3,6 +3,8 @@ import time
 import logging
 import pathlib
 from logging.handlers import RotatingFileHandler
+from util.version import get_version
+from util.utility import create_bar
 
 def setup_logger(log_level, script_name, max_logs=9):
     """
@@ -86,5 +88,11 @@ def setup_logger(log_level, script_name, max_logs=9):
     logging.getLogger(script_name).handlers.clear()
     logging.getLogger(script_name).addHandler(handler)
     logging.getLogger(script_name).addHandler(console_handler)
-    
+
+    # Insert version number at the head of every log file   
+    version = get_version()
+    name = script_name.replace("_", " ").upper()
+    logger.info(create_bar(f"{name} Version: {version}"))
+
+
     return logger

@@ -19,8 +19,6 @@ import re
 import sys
 import time
 
-from util.config import Config
-from util.logger import setup_logger
 from util.arrpy import StARR
 from util.utility import *
 from util.discord import discord, discord_check
@@ -33,12 +31,8 @@ except ImportError as e:
     exit(1)
 
 script_name = "renameinatorr"
-config = Config(script_name)
-log_level = config.log_level
-dry_run = config.dry_run
-logger = setup_logger(log_level, script_name)
 
-def print_output(output_dict):
+def print_output(output_dict, logger):
     """
     Prints the output of the script to the console.
     
@@ -94,7 +88,7 @@ def print_output(output_dict):
             logger.info(f"No items renamed in {instance_data['server_name']}.")
         logger.info('')
 
-def notification(output_dict):
+def notification(output_dict, logger):
     """
     Sends a notification to Discord with the output of the script.
     
@@ -200,7 +194,7 @@ def notification(output_dict):
             time.sleep(5)
 
 
-def process_instance(app, rename_folders, server_name, instance_type, count, tag_name):
+def process_instance(app, rename_folders, server_name, instance_type, count, tag_name, logger):
     """
     Processes the data for a specific instance.
     
@@ -326,11 +320,17 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
     
     return media_dict
 
-def main():
+def main(logger, config):
     """
     Main function.
     """
+    global dry_run
+    dry_run = config.dry_run
+    log_level = config.log_level
+    logger.setLevel(log_level.upper())
+    script_config = config.script_config
     name = script_name.replace("_", " ").upper()
+
     try:
         logger.info(create_bar(f"START {name}"))
         # Get instances and rename_folders settings from the script config
@@ -375,7 +375,7 @@ def main():
                     server_name = app.get_instance_name()
                     
                     # Process data for the instance and store in output_dict
-                    data = process_instance(app, rename_folders, server_name, instance_type, count, tag_name)
+                    data = process_instance(app, rename_folders, server_name, instance_type, count, tag_name, logger)
                     output_dict[instance] = {
                         "server_name": server_name,
                         "data": data
@@ -383,9 +383,9 @@ def main():
         
         # Print output and send notifications if data exists
         if any(value['data'] for value in output_dict.values()):
-            print_output(output_dict)
+            print_output(output_dict, logger)
             if discord_check(script_name):
-                notification(output_dict)
+                notification(output_dict, logger)
         else:
             logger.info("No media items to rename.")
     except KeyboardInterrupt:
@@ -396,6 +396,3 @@ def main():
         logger.error(f"\n\n")
     finally:
         logger.info(create_bar(f"END {name}"))
-
-if __name__ == "__main__":
-    main()

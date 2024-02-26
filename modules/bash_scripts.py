@@ -2,8 +2,6 @@ import shlex
 import json
 import sys
 from util.config import Config
-from util.logger import setup_logger
-from util.config import Config
 from util.call_script import *
 from util.discord import get_discord_data, discord_check
 from util.utility import create_bar
@@ -157,7 +155,7 @@ def run_script(cmds, logger):
             logger.error(e)
             return
 
-def main(script_name):
+def main(script_name, config, logger):
     """
     Run the bash script.
     
@@ -166,11 +164,10 @@ def main(script_name):
         script_name (str): The name of the bash script.
     """
     name = script_name.replace("_", " ").upper()
-    log_name = script_name
+    log_level = config.log_level
+    logger.setLevel(log_level.upper())
     settings = None
     try:
-        config = Config(script_name="bash_scripts")
-        log_level = config.bash_config.get('log_level', 'info')
         for script_setting_key, script_setting_value in config.bash_config.items():
             # If value is a dictionary
             if isinstance(script_setting_value, dict):
@@ -180,7 +177,6 @@ def main(script_name):
                         script_name = script_setting_key
             else:
                 settings = config.bash_config.get(script_name, {})
-        logger = setup_logger(log_level, log_name)
         logger.info(create_bar(f" START OF {name} "))
         root_dir = pathlib.Path(__file__).parents[1]
         bash_script_file = f'{root_dir}/scripts/{script_name}.sh'

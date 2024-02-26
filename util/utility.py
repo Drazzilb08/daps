@@ -179,7 +179,10 @@ def categorize_files(folder_path):
     # If asset_folders is False, categorize files within the folder
     if not asset_folders:
         # Get list of files in the folder
-        files = [f.name for f in os.scandir(folder_path) if f.is_file()]
+        try:
+            files = [f.name for f in os.scandir(folder_path) if f.is_file()]
+        except FileNotFoundError:
+            return None
         files = sorted(files, key=lambda x: x.lower())  # Sort files alphabetically
         if files:
             # Loop through each file in the folder

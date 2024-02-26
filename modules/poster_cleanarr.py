@@ -23,8 +23,6 @@ import logging
 import shutil
 import sys
 
-from util.logger import setup_logger
-from util.config import Config
 from util.utility import *
 from util.arrpy import StARR
 
@@ -37,11 +35,6 @@ except ImportError as e:
     exit(1)
 
 script_name = "poster_cleanarr"
-
-config = Config(script_name)
-logger = setup_logger(config.log_level, script_name)
-log_level = config.log_level
-dry_run = config.dry_run
 
 def match_assets(assets_list, media_dict):
     """
@@ -113,7 +106,7 @@ def match_assets(assets_list, media_dict):
             })
     return unmatched_assets
 
-def remove_assets(unmatched_dict, source_dirs):
+def remove_assets(unmatched_dict, source_dirs, logger):
     """
     Remove unmatched assets.
 
@@ -186,7 +179,7 @@ def remove_assets(unmatched_dict, source_dirs):
     
     return remove_data
 
-def print_output(remove_data):
+def print_output(remove_data, logger):
     """
     Print output of removed assets.
     
@@ -221,11 +214,18 @@ def print_output(remove_data):
     logger.info(f"\nTotal number of assets removed: {count}")
 
 
-def main():
+def main(logger, config):
     """
     Main function.
     """
+    global dry_run
+    dry_run = config.dry_run
+    log_level = config.log_level
+    logger.setLevel(log_level.upper())
+    script_config = config.script_config
     name = script_name.replace("_", " ").upper()
+    logger.info(f"Testing things out")
+
     try:
         logger.info(create_bar(f"START {name}"))
         # Check if it's a dry run and log the message
@@ -324,10 +324,10 @@ def main():
         unmatched_dict = match_assets(assets_list, media_dict)
         if unmatched_dict:
             logger.debug(f"Unmatched:\n{json.dumps(unmatched_dict, indent=4)}")
-            remove_data = remove_assets(unmatched_dict, source_dirs)
+            remove_data = remove_assets(unmatched_dict, source_dirs, logger)
             if remove_data:
                 logger.debug(f"Remove Data:\n{json.dumps(remove_data, indent=4)}")
-                print_output(remove_data)
+                print_output(remove_data, logger)
         else:
             logger.info(f"No assets removed.")
 
@@ -339,6 +339,3 @@ def main():
         logger.error(f"\n\n")
     finally:
         logger.info(create_bar(f"END {name}"))
-
-if __name__ == "__main__":
-    main()

@@ -18,8 +18,6 @@ import json
 from datetime import datetime
 import sys
 
-from util.config import Config
-from util.logger import setup_logger
 from qbittorrentapi import Client
 from util.arrpy import StARR
 from util.discord import discord, discord_check
@@ -33,10 +31,6 @@ except ImportError as e:
     exit(1)
 
 script_name = "queinatorr"
-config = Config(script_name)
-log_level = config.log_level
-dry_run = config.dry_run
-logger = setup_logger(log_level, script_name)
 
 queue_list = [
     "Not an upgrade for existing episode file(s). Existing quality: WEBDL-720p. New Quality WEBDL-1080p.",
@@ -47,7 +41,7 @@ queue_list = [
     "qBittorrent is reporting an error"
 ]
 
-def handle_qbit(queue_dict, qb, post_import_category, pre_import_category, days_to_keep, server_name):
+def handle_qbit(queue_dict, qb, post_import_category, pre_import_category, days_to_keep, server_name, logger):
     """
     This function will move torrents from one category to another in qBittorrent based on
     the title of the torrent. This is useful for moving torrents from a category that are stuck
@@ -105,7 +99,7 @@ def handle_qbit(queue_dict, qb, post_import_category, pre_import_category, days_
         
         # Check if the torrent is in the list_of_torrents or older than days_to_keep and move accordingly
         if qb_torrent in list_of_torrents or qb_torrent_without_extension in list_of_torrents:
-            move_torrent_to_category(qb, hash, post_import_category)  # Move torrent to post_import_category
+            move_torrent_to_category(qb, hash, post_import_category,)  # Move torrent to post_import_category
         elif days_ago > days_to_keep:
             if qb_torrent in qbit_messages:
                 qbit_messages[qb_torrent]['count'] += 1
@@ -114,11 +108,11 @@ def handle_qbit(queue_dict, qb, post_import_category, pre_import_category, days_
                     'count': 1,
                     'message': f"{qb_torrent} -> {post_import_category} (Downloaded {days_ago} days ago)"
                 }
-            move_torrent_to_category(qb, hash, post_import_category)  # Move torrent to post_import_category
+            move_torrent_to_category(qb, hash, post_import_category, logger)  # Move torrent to post_import_category
     
     return qbit_messages  # Return messages for notifications
 
-def move_torrent_to_category(qb, torrent_hash, category):
+def move_torrent_to_category(qb, torrent_hash, category, logger):
     """
     This function will move a torrent to a category in qBittorrent.
     
@@ -282,7 +276,7 @@ def queued_items(queue, instance_type):
     
     return queue_dict
 
-def process_instance(instance_type, url, api, pre_import_category, post_import_category, qbit_instance, days_to_keep):
+def process_instance(instance_type, url, api, pre_import_category, post_import_category, qbit_instance, days_to_keep, logger, config):
     """
     This function will process a Radarr or Sonarr instance and move items from the queue to the
     specified category based on the status messages of the item.
@@ -366,13 +360,13 @@ def process_instance(instance_type, url, api, pre_import_category, post_import_c
         output_dict['queue'] = messages_dict
     
     # Handle moving torrents from the queue to the specified categories in qBittorrent
-    messages_dict = handle_qbit(queue_dict, qb, post_import_category, pre_import_category, days_to_keep, server_name)
+    messages_dict = handle_qbit(queue_dict, qb, post_import_category, pre_import_category, days_to_keep, server_name, logger)
     if messages_dict:
         output_dict['qbit'] = messages_dict
     
     return output_dict
 
-def notification(messages):
+def notification(messages, logger):
     """
     This function will send a notification to Discord.
     
@@ -443,7 +437,7 @@ def notification(messages):
 
 
 
-def print_output(messages):
+def print_output(messages, logger):
     """
     This function will print the output to the console.
     
@@ -520,11 +514,20 @@ def print_output(messages):
                 else:
                     logger.info(f"\t{message}")
 
-def main():
+def main(logger, config):
     """
     Main function.
     """
+    print(f"Logger: {logger}")
+    print(f"Config: {config}")
+    logger.warning(f"Test")
+    global dry_run
+    dry_run = config.dry_run
+    log_level = config.log_level
+    logger.setLevel(log_level.upper())
+    script_config = config.script_config
     name = script_name.replace("_", " ").upper()
+
     try:
         logger.info(create_bar(f"START {name}"))
         # Display a notice for dry run mode if enabled
@@ -563,7 +566,7 @@ def main():
                     qbit_instance = instance_settings.get('qbit_instance', False)
                     
                     # Process the instance and retrieve the output
-                    output = process_instance(instance_type, url, api, pre_import_category, post_import_category, qbit_instance, days_to_keep)
+                    output = process_instance(instance_type, url, api, pre_import_category, post_import_category, qbit_instance, days_to_keep, logger, config)
                     
                     # If there is an output, update the final output dictionary
                     if output:
@@ -576,11 +579,11 @@ def main():
                         }
         
         # Print the final output details to the console
-        print_output(final_output_dict)
+        print_output(final_output_dict, logger)
         
         # Send a notification to Discord with the final output
         if discord_check(script_name):
-            notification(final_output_dict)
+            notification(final_output_dict, logger)
 
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
@@ -590,6 +593,3 @@ def main():
         logger.error(f"\n\n")
     finally:
         logger.info(create_bar(f"END {name}"))
-
-if __name__ == '__main__':
-    main()

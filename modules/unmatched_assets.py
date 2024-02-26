@@ -21,8 +21,6 @@ import json
 import os
 import sys
 from util.utility import *
-from util.logger import setup_logger
-from util.config import Config
 from util.arrpy import StARR
 
 try:
@@ -34,9 +32,6 @@ except ImportError as e:
     exit(1)
 
 script_name = "unmatched_assets"
-config = Config(script_name)
-log_level = config.log_level
-logger = setup_logger(log_level, script_name)
 
 def match_assets(assets_dict, media_dict, ignore_root_folders):
     """
@@ -124,7 +119,7 @@ def match_assets(assets_dict, media_dict, ignore_root_folders):
                         })
     return unmatched_assets
 
-def print_output(unmatched_dict, media_dict):
+def print_output(unmatched_dict, media_dict, logger):
     """
     Prints the output of the script.
     
@@ -227,11 +222,17 @@ def print_output(unmatched_dict, media_dict):
     table.append(["Grand Total", grand_total, grand_unmatched_total, f"{grand_percent_complete:.2f}%"])
     logger.info(create_table(table))
 
-def main():
+def main(logger, config):
     """
     Main function.
     """
+    global dry_run
+    dry_run = config.dry_run
+    log_level = config.log_level
+    logger.setLevel(log_level.upper())
+    script_config = config.script_config
     name = script_name.replace("_", " ").upper()
+
     try:
         logger.info(create_bar(f"STARTING {name}"))
         # Logging script settings
@@ -328,7 +329,7 @@ def main():
         unmatched_dict = match_assets(assets_dict, media_dict, ignore_root_folders)
         if any(unmatched_dict.values()):
             logger.debug(f"Unmatched Dict:\n{json.dumps(unmatched_dict, indent=4)}")
-            print_output(unmatched_dict, media_dict)
+            print_output(unmatched_dict, media_dict, logger)
         else:
             logger.info("All assets matched.")
 
@@ -341,10 +342,3 @@ def main():
         return
     finally:
         logger.info(create_bar(f"ENDING {name}"))
-
-
-if __name__ == "__main__":
-    """
-    Entry point for the script.
-    """
-    main()

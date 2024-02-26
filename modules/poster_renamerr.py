@@ -25,6 +25,7 @@ import time
 from util.utility import *
 from util.discord import discord, discord_check
 from util.arrpy import StARR
+from util.logger import setup_logger
 
 try:
     from plexapi.server import PlexServer
@@ -509,17 +510,18 @@ def notification(output, logger):
             print("Pausing for 5 seconds to let Discord catch up...")
             time.sleep(5)
 
-def main(logger, config):
+def main(config):
     """
     Main function.
     """
     global dry_run
     dry_run = config.dry_run
     log_level = config.log_level
-    logger.setLevel(log_level.upper())
+    logger = setup_logger(log_level, script_name)
+    
     script_config = config.script_config
     name = script_name.replace("_", " ").upper()
-
+    logger.info(f"Running {name}")
     try:
         logger.info(create_bar(f"START {name}"))
         # Display script settings
@@ -560,7 +562,6 @@ def main(logger, config):
         else:
             logger.debug(f"Destination directory already exists: {destination_dir}")
         logger.debug(create_bar("-"))  # Log separator
-
         if dry_run:
             # Log dry run message
             table = [
@@ -568,7 +569,6 @@ def main(logger, config):
                 ["NO CHANGES WILL BE MADE"]
             ]
             logger.info(create_table(table))
-
         # Sync posters if enabled
         if sync_posters:
             # Run sync_posters.py or log intent to run
@@ -576,8 +576,7 @@ def main(logger, config):
             from modules.sync_gdrive import main as gdrive_main
             from util.config import Config
             gdrive_config = Config("sync_gdrive")
-            gdrive_script_config = gdrive_config.script_config
-            gdrive_main(logger, config)
+            gdrive_main(gdrive_config, logger)
             logger.info(f"Finished running sync_gdrive")
         else:
             logger.debug(f"Sync posters is disabled. Skipping...")

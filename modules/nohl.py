@@ -24,6 +24,7 @@ import json
 from util.arrpy import StARR
 from util.discord import discord, discord_check
 from util.utility import *
+from util.logger import setup_logger
 
 try:
     from tqdm import tqdm
@@ -531,14 +532,14 @@ def notification(final_output, logger, log_level):
         discord(fields, logger, script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
 
 
-def main(logger, config):
+def main(config):
     """
     Main function.
     """
     global dry_run
     dry_run = config.dry_run
     log_level = config.log_level
-    logger.setLevel(log_level.upper())
+    logger = setup_logger(log_level, script_name)
     script_config = config.script_config
     name = script_name.replace("_", " ").upper()
     try:

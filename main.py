@@ -81,9 +81,8 @@ def run_module(script_to_run, logger):
     if script_to_run in list_of_python_scripts:
         try:
             config = get_config(script_to_run)
-            script_logger = get_logger(config, script_to_run)
             module = importlib.import_module(f"modules.{script_to_run}")
-            process = multiprocessing.Process(target=module.main, args=(script_logger, config))
+            process = multiprocessing.Process(target=module.main, args=(config,))
             if process:
                 if script_to_run == "poster_renamerr":
                     config = Config(script_to_run)
@@ -108,9 +107,8 @@ def run_module(script_to_run, logger):
         module = "bash_scripts"
         try:
             config = get_config(module)
-            script_logger = get_logger(config, script_to_run)
             module = importlib.import_module(f"modules.{module}")
-            process = multiprocessing.Process(target=module.main, args=(script_to_run, config, script_logger))
+            process = multiprocessing.Process(target=module.main, args=(script_to_run, config))
             if process:
                 if logger: logger.info(f"Running script: {script_to_run}")
                 else: print(f"Running script: {script_to_run}")

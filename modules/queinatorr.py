@@ -22,6 +22,7 @@ from qbittorrentapi import Client
 from util.arrpy import StARR
 from util.discord import discord, discord_check
 from util.utility import *
+from util.logger import setup_logger
 
 try:
     from urllib.parse import urlsplit
@@ -514,7 +515,7 @@ def print_output(messages, logger):
                 else:
                     logger.info(f"\t{message}")
 
-def main(logger, config):
+def main(config):
     """
     Main function.
     """
@@ -524,7 +525,7 @@ def main(logger, config):
     global dry_run
     dry_run = config.dry_run
     log_level = config.log_level
-    logger.setLevel(log_level.upper())
+    logger = setup_logger(log_level, script_name)
     script_config = config.script_config
     name = script_name.replace("_", " ").upper()
 

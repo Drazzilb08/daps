@@ -21,6 +21,7 @@ import sys
 from util.arrpy import StARR
 from util.utility import *
 from util.discord import discord
+from util.logger import setup_logger
 
 try:
     from tqdm import tqdm
@@ -34,14 +35,14 @@ script_name = "health_checkarr"
 tmdb_id_extractor = re.compile(r"tmdbid (\d+)")
 tvdb_id_extractor = re.compile(r"tvdbid (\d+)")
 
-def main(logger, config):
+def main(config):
     """
     Main function.
     """
     global dry_run
     dry_run = config.dry_run
     log_level = config.log_level
-    logger.setLevel(log_level.upper())
+    logger = setup_logger(log_level, script_name)
     script_config = config.script_config
     name = script_name.replace("_", " ").upper()
     try:

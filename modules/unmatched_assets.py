@@ -22,6 +22,7 @@ import os
 import sys
 from util.utility import *
 from util.arrpy import StARR
+from util.logger import setup_logger
 
 try:
     from plexapi.server import PlexServer
@@ -222,14 +223,14 @@ def print_output(unmatched_dict, media_dict, logger):
     table.append(["Grand Total", grand_total, grand_unmatched_total, f"{grand_percent_complete:.2f}%"])
     logger.info(create_table(table))
 
-def main(logger, config):
+def main(config):
     """
     Main function.
     """
     global dry_run
     dry_run = config.dry_run
     log_level = config.log_level
-    logger.setLevel(log_level.upper())
+    logger = setup_logger(log_level, script_name)
     script_config = config.script_config
     name = script_name.replace("_", " ").upper()
 

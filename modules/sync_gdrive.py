@@ -4,6 +4,7 @@ import os
 
 from util.call_script import call_script
 from util.utility import create_bar
+from util.logger import setup_logger
 import sys
 
 
@@ -118,19 +119,19 @@ def run_rclone(cmd, settings, logger):
         pass
 
 # Main function
-def main(logger, config):
+def main(config, logger=None):
     """
     Main function.
     """
     global dry_run
-    dry_run = config.dry_run
+    settings = config.script_config
+    print(json.dumps(settings))
     log_level = config.log_level
-    logger.setLevel(log_level.upper())
+    logger = setup_logger(log_level, script_name)
     name = script_name.replace("_", " ").upper()
     
     try:
         logger.info(create_bar(f"START {name}"))
-        settings = config.script_config
         for cmd in set_cmd_args(settings, logger):
             run_rclone(cmd, settings, logger)
     except KeyboardInterrupt:

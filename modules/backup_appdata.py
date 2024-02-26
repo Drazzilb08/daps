@@ -12,7 +12,6 @@ import fnmatch
 import pathlib
 
 from util.utility import *
-from util.config import Config
 from util.logger import setup_logger
 from util.discord import *
 
@@ -535,14 +534,14 @@ def notification(containers_dict, script_name, use_summary, containers_to_remove
             discord(fields=fields, logger=logger, script_name=script_name, description=description, color=0x00ff00, content=None)
 
 
-def main(logger, config):
+def main(config):
     """
     Main function.
     """
     global dry_run
     dry_run = config.dry_run
     log_level = config.log_level
-    logger.setLevel(log_level.upper())
+    logger = setup_logger(log_level, script_name)
     script_config = config.script_config
 
     name = script_name.replace("_", " ").upper()

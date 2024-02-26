@@ -466,5 +466,42 @@ health_checkarr:
     - sonarr_1
     - sonarr_anime
 
+backup_appdata:
+  log_level: info
+  # Dry run will not actually perform the backup, it will only print what it would do and create dummy files
+  dry_run: true
+  destination: /path/to/backup/destination/
+  keep_backup: 5
+  # Use compression?
+  compress: true
+  # Add new containers to the stop list
+  add_to_stop: true
+  # Add new containers to the no stop list
+  add_to_no_stop: false
+  use_summary: false
+  stop_list:
+  # Containers you want to stop before backing up
+  - radarr
+  - sonarr
+  - qbittorrent
+  no_stop_list:
+  # Containers you want to not stop before backing up
+  - wrapperr
+  - Sonarr
+  - wizarr
+  exclusion_list:
+  # Containers you want to exclude from the backup, typically containers without appdata or such as plex (or if running this in a container)
+  - dazzling_mendeleev
+  - gifted_feistel
+  - xenodochial_grothendieck
+  - Dozzle
+  - scripts
+  - naughty_brown
+  - agitated_curie
+  appdata_paths:
+  # paths to appdata on host
+  - /mnt/user/cache
+  - /mnt/user/cache/
+
 main:
   log_level: info

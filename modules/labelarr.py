@@ -19,6 +19,7 @@ import sys
 from util.discord import discord, discord_check
 from util.arrpy import StARR
 from util.utility import *
+from util.logger import setup_logger
     
 try:
     from plexapi.server import PlexServer
@@ -251,14 +252,14 @@ def handle_tags(app, media_dict, tag_names):
     return media_dict
 
 
-def main(logger, config):
+def main(config):
     """
     Main function.
     """
     global dry_run
     dry_run = config.dry_run
     log_level = config.log_level
-    logger.setLevel(log_level.upper())
+    logger = setup_logger(log_level, script_name)
     script_config = config.script_config
     name = script_name.replace("_", " ").upper()
 

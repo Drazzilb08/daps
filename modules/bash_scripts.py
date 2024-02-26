@@ -5,6 +5,7 @@ from util.config import Config
 from util.call_script import *
 from util.discord import get_discord_data, discord_check
 from util.utility import create_bar
+from util.logger import setup_logger
 import pathlib
 
 def set_cmd_args(settings, bash_script_file, logger, script_name):
@@ -165,7 +166,7 @@ def main(script_name, config, logger):
     """
     name = script_name.replace("_", " ").upper()
     log_level = config.log_level
-    logger.setLevel(log_level.upper())
+    logger = setup_logger(log_level, script_name)
     settings = None
     try:
         for script_setting_key, script_setting_value in config.bash_config.items():

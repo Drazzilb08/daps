@@ -11,7 +11,7 @@
 !/config
 !/VERSION
 !/start.sh
-!/exclude-fils.txt
+!/exclude-file.txt
 
 # Ignore unnecessary files inside allowed directories
 # This should go after the allowed directories

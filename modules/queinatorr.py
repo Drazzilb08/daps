@@ -519,9 +519,6 @@ def main(config):
     """
     Main function.
     """
-    print(f"Logger: {logger}")
-    print(f"Config: {config}")
-    logger.warning(f"Test")
     global dry_run
     dry_run = config.dry_run
     log_level = config.log_level

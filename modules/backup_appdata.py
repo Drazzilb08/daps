@@ -302,12 +302,10 @@ def backup_appdata(container_name, appdata_path, destination, compress, dry_run,
     elif pre_size - post_size > 0:
         diff_str = f"-{diff_str}"
 
-    difference_percent = (post_size - pre_size) / pre_size * 100 if pre_size != 0 else 0
-
     table = [
         ["Source", pre_size_str],
         ["Backup Size", post_size_str],
-        ["Difference", f"{diff_str} ({difference_percent:.2f}%)"]
+        ["Difference", f"{diff_str}"]
     ]
     logger.info(create_table(table))
 
@@ -352,10 +350,10 @@ def handle_container(client, containers_dict, destination, dry_run, compress, ke
                         logger.info(f"DRY RUN: Would have started {container_name}")
                 else:
                     logger.info(f"{container_name} was already stopped, not starting...")
-                    pre_size_str, post_size_str, diff_str = backup_appdata(container_name, appdata_path, destination, compress, dry_run, time)
+                    pre_size_str, post_size_str, diff_str = backup_appdata(container_name, appdata_path, destination, compress, dry_run, time, logger)
             elif not stop:
                 logger.info(f"Backing up {container_name} without stopping it...")
-                pre_size_str, post_size_str, diff_str = backup_appdata(container_name, appdata_path, destination, compress, dry_run, time)
+                pre_size_str, post_size_str, diff_str = backup_appdata(container_name, appdata_path, destination, compress, dry_run, time, logger)
 
             # Add size data to dictionary
             containers_dict[container_name]["pre_size"] = pre_size_str

@@ -169,6 +169,10 @@ sync_gdrive:
       location: /path/to/location # Where you want to sync the posters to
     - id: 1bBbK_3JeXCy3ElqTwkFHaNoNxYgqtLug # Stupifier
       location: /path/to/location # Where you want to sync the posters to
+    - id: 1KnwxzwBUQzQyKF1e24q_wlFqcER9xYHM # Sahara
+      location: /path/to/location # Where you want to sync the posters to
+    - id: 1alseEnUBjH6CjXh77b5L4R-ZDGdtOMFr # Lion City Gaming
+      location: /path/to/location # Where you want to sync the posters to
       
 
 discord:

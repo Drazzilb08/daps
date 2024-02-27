@@ -241,10 +241,13 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
         print("Processing data... This may take a while.")
         for item in tqdm(media_dict, desc=f"Processing '{server_name}' Media", unit="items", disable=None, leave=True):
             file_info = {}
-            
+            can_rename = False
             # Fetch rename list and sort it by existingPath
             rename_response = app.get_rename_list(item['media_id'])
             rename_response.sort(key=lambda x: x['existingPath'])
+            
+            if rename_response:
+                can_rename = True
             
             # Process each item in the rename list to get file rename information
             for items in rename_response:
@@ -262,22 +265,32 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
             # Update item with file rename information
             item["new_path_name"] = None
             item["file_info"] = file_info
+            item["can_rename"] = can_rename
         
         # If not in dry run, perform file renaming
         if not dry_run:
             # Get media IDs and initiate file renaming
-            media_ids = [item['media_id'] for item in media_dict]
-            if any(value['file_info'] for value in media_dict):
+            media_ids = []
+            for item in media_dict:
+                if item["can_rename"]:
+                    media_ids.append(item['media_id'])
+
+            if media_ids:
                 # Rename files and wait for media refresh
-                if rename_response:
-                    app.rename_media(media_ids)              
-                    
-                    # Refresh media and wait for it to be ready
-                    print(f"Refreshing {server_name}...")
-                    response = app.refresh_items(media_ids)
-                    
-                    # Wait for media to be ready
-                    ready = app.wait_for_command(response['id'])
+                app.rename_media(media_ids)              
+                
+                # Refresh media and wait for it to be ready
+                print(f"Refreshing {server_name}...")
+                response = app.refresh_items(media_ids)
+                
+                # Wait for media to be ready
+                ready = app.wait_for_command(response['id'])
+
+                if ready:
+                    logger.info(f"Media refreshed on {server_name}...")
+                    ready = False
+            else:
+                logger.info(f"No media to rename on {server_name}...")
 
             if tag_id and count and tag_name:
                 # Add tag to items that were renamed

@@ -5,7 +5,14 @@ on:
     branches: [ master ]
     paths-ignore:
       - '**/README.md'
-      # Ignore updates to .github
+      - '**/.github/**'
+  pull_request:
+    types:
+      - closed
+    branches:
+      - master
+    paths-ignore:
+      - '**/README.md'
       - '**/.github/**'
 
 jobs:

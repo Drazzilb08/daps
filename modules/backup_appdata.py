@@ -75,34 +75,52 @@ def filter_containers(containers, add_to_no_stop, add_to_stop, stop_list, no_sto
 
         # Get appdata path
         if volume_mounts:
+            appdata_path = None
             for volume_mount in volume_mounts:
                 host_path = volume_mount.split(":")[0]
                 container_path = volume_mount.split(":")[1]
-                if container_path == "/config":
+                if container_path == "/config" and any(host_path.startswith(path) for path in appdata_paths):
                     appdata_path = host_path
                     break
-                elif any(appdata_path in host_path for appdata_path in appdata_paths):
-                    appdata_path = host_path
-                    break
-                else:
-                    appdata_path = None
+                if not appdata_path:
+                    for path in appdata_paths:
+                        if host_path.startswith(path):
+                            directories = host_path.split(os.sep)
+                            index = directories.index("appdata")
+                            next_directory = directories[index + 1]
+                            if next_directory:
+                                appdata_path = os.path.join(path, next_directory)
+                            break
         else:
             logger.debug(f"No volume mounts for {container.name}")
-        
-        # Check if running in Docker
-        host_container_name = None
+
+        logger.debug(create_bar("Container Host data"))
+        logger.debug(f"Container Name: {container.name}")
+        logger.debug(f"Host Appdata Path: {appdata_path}")
+        logger.debug(f"Volume Mounts:\n{json.dumps(volume_mounts, indent=4)}")
+        appdata_path_basename = None
         if os.environ.get("DOCKER_ENV") and appdata_path:
             # Get appdata path from environment variable
+            
             docker_appdata_path = os.environ.get("APPDATA_PATH")
+            
+            # Remove trailing / from appdata path
+            appdata_path = appdata_path.rstrip("/")
+
+            # Get appdata basename
             appdata_path_basename = os.path.basename(appdata_path)
+
+            # Merge docker_appdata_path with appdata_path_basename
+            appdata_path = os.path.join(docker_appdata_path, appdata_path_basename)
 
             # Get host container name from environment variable
             host_container_name = os.environ.get("HOST_CONTAINERNAME")
-            
 
             # Join appdata path with docker appdata path
             if docker_appdata_path:
                 appdata_path = os.path.join(docker_appdata_path, appdata_path_basename)
+            logger.debug(f"Docker Appdata Path: {appdata_path}")
+        logger.debug(create_bar("-"))
         
         new = False
         stop = None

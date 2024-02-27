@@ -499,9 +499,9 @@ backup_appdata:
   - naughty_brown
   - agitated_curie
   appdata_paths:
-  # paths to appdata on host
-  - /mnt/user/cache
-  - /mnt/user/cache/
+  # paths to appdata on host this is used for the script to better understand what to backup
+  - /mnt/user/appdata/
+  - /mnt/cache/appdata/
 
 main:
   log_level: info

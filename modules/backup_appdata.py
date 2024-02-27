@@ -260,7 +260,7 @@ def backup_appdata(container_name, appdata_path, destination, compress, dry_run,
     exclude_file = f"{parent_dir}/exclude-file.txt"
     with open(exclude_file, "r") as f:
         exclude_patterns = f.read().splitlines()
-
+    ignore = ignore_patterns_and_subdirectories(exclude_patterns)
     if not dry_run:
         if compress:
             logger.info(f"Compressing {appdata_path} to {backup_path}")
@@ -268,7 +268,6 @@ def backup_appdata(container_name, appdata_path, destination, compress, dry_run,
             # Create temporary file
             with tempfile.TemporaryDirectory() as temp_dir:
                 temp_file_path = f"{temp_dir}/{container_name}.tar.gz"
-                ignore = ignore_patterns_and_subdirectories(exclude_patterns)
                 file_path = os.path.join(backup_path, f"{container_name}.tar.gz")
 
                 # Compress appdata
@@ -282,16 +281,18 @@ def backup_appdata(container_name, appdata_path, destination, compress, dry_run,
                     shutil.move(temp_file_path, file_path)
                 # Copy from appdata to destination if temp_size is larger
                 else:
-                    file_path = os.path.join(backup_path, container_name)
-                    logger.info(f"Compressed file size is larger than original. copying {appdata_path} to {backup_path}")
-                    shutil.copytree(appdata_path, file_path, ignore=ignore_patterns_and_subdirectories(exclude_patterns), dirs_exist_ok=True)
+                    file_path = os.path.join(backup_path, f"{container_name}.tar")
+                    logger.info(f"Compressed file size is larger than original. Creating tarball of {appdata_path} in {backup_path}")
+                    with tarfile.open(file_path, "w") as tar:
+                        add_to_tar(tar, appdata_path, os.path.basename(appdata_path), ignore)
 
                 # Remove temporary file
                 shutil.rmtree(temp_dir)
         else:
             logger.info(f"Copying {appdata_path} to {backup_path}")
-            file_path = os.path.join(backup_path, container_name)
-            shutil.copytree(appdata_path, file_path, ignore=ignore_patterns_and_subdirectories(exclude_patterns), dirs_exist_ok=True)
+            file_path = os.path.join(backup_path, f"{container_name}.tar")
+            with tarfile.open(file_path, "w") as tar:
+                add_to_tar(tar, appdata_path, os.path.basename(appdata_path), ignore)
             
     else:
         logger.info(f"DRY RUN: Would have copied {appdata_path} to {backup_path}")

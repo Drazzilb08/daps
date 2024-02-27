@@ -241,11 +241,15 @@ upgradinatorr:
       unattended: true
 
 # Warning: With a large library this script can take a while as it wait's for all API calls to finish before moving on to the next instance
+# Note If you see something along the lines of Unable to move series from '<Insert path/name>'. Try moving files manually: Source and destination can't be the same <insert_path/name>
+# This is normal and you'll even see this error if you perform the same action the script does manually.
+
 renameinatorr:
   log_level: info
   dry_run: false
   rename_folders: true
   # Tag name and count are optional, if you don't want to use them leave them blank
+  # The reason for count and tag is if you want to perform renaming actions in batches or in bulk
   count: 10
   tag_name: renamed
   instances:

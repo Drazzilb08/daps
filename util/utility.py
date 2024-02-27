@@ -714,7 +714,7 @@ def get_current_git_branch():
                                 text=True)
             # Capture the output and return the current branch
             return result.stdout.strip()
-        except subprocess.CalledProcessError as e:
+        except (FileNotFoundError, subprocess.CalledProcessError) as e:
             # Handle any errors if the command fails
             print(f"Error: {e}")
             return None
@@ -849,7 +849,7 @@ def is_match(asset, media):
             folder_title, folder_year = match.groups()
             folder_year = int(folder_year)
             normalized_folder_title = normalize_titles(folder_title)
-    
+
     # Matching criteria for media and asset
     if (
         asset['title'] == media['title'] or

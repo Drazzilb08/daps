@@ -156,7 +156,7 @@ def run_script(cmds, logger):
             logger.error(e)
             return
 
-def main(script_name, config, logger):
+def main(script_name, config):
     """
     Run the bash script.
     

@@ -9,6 +9,7 @@ Collection of userScripts I've written or found useful
 [![GitHub stars](https://img.shields.io/github/stars/Drazzilb08/userScripts.svg)](https://github.com/Drazzilb08/userScripts/stargazers)
 [![Python](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
 [![Bash](https://img.shields.io/badge/bash-5.0-green.svg)](https://www.gnu.org/software/bash/)
+
 [![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-orange?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/drazzilb08)
 
 To help with documentation of the collections of these scripts, I've created a [WIKI](https://github.com/Drazzilb08/userScripts/wiki) If there are any questions or concerns please let me know with a [GitHub issue](https://github.com/Drazzilb08/userScripts/issues).
@@ -28,7 +29,7 @@ I do my best to keep up with everything
 
 I have no problem adding features or fixing issues with these scripts. However if you're going to submit a PR to correct my code **PLEASE** add detailed notes as to why this change needs to be made (ELI5 or Explain Like I'm 5). This will help me grow and make better content in the futre.
 
-**Please note that these scripts are tested by me and a few friends. They very well may work for you but they are not tested under all conditions.** 
+**Please note that these scripts are tested by me and a few friends. They very well may work for you but they are not tested under all conditions.**
 
 <br>
 

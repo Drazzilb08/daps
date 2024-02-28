@@ -246,7 +246,20 @@ def main():
                         logger.info(f"Script: {script_name.capitalize()} has finished")
                         del running_scripts[script_name]
                     if script_name in already_run:
-                        del already_run[script_name]
+                        # Check script_schedule to see if it's set to run still 
+                        if script_name in scripts_schedules:
+                            schedule_time = scripts_schedules[script_name]
+                            if isinstance(schedule_time, dict):
+                                for instance, instance_schedule_time in schedule_time.items():
+                                    if instance_schedule_time == "run":
+                                        break
+                                else:
+                                    del already_run[script_name]
+                            else:
+                                if schedule_time != "run":
+                                    del already_run[script_name]
+                        else:
+                            del already_run[script_name]
                         waiting_message_shown = False
 
                 old_schedule = scripts_schedules

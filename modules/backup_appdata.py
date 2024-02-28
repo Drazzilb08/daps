@@ -110,11 +110,11 @@ def filter_containers(containers, add_to_no_stop, add_to_stop, stop_list, no_sto
             # Get appdata basename
             appdata_path_basename = os.path.basename(appdata_path)
 
+            # Get container Hostname
+            host_container_name = os.environ.get('HOSTNAME')
+
             # Merge docker_appdata_path with appdata_path_basename
             appdata_path = os.path.join(docker_appdata_path, appdata_path_basename)
-
-            # Get host container name from environment variable
-            host_container_name = os.environ.get("HOST_CONTAINERNAME")
 
             # Join appdata path with docker appdata path
             if docker_appdata_path:
@@ -168,12 +168,13 @@ def filter_containers(containers, add_to_no_stop, add_to_stop, stop_list, no_sto
         
         # Check if host_container_name is set and container name is the same as host_container_name
         # If it is, then do not stop the container
-        if host_container_name and container.name == host_container_name:
+        if host_container_name and container.short_id == host_container_name:
+            logger.info(f"Container {container.name} is the same as host container. Not stopping it.")
             stop = False
 
         # Add to dictionary
         containers_dict[container.name] = {
-            "id": container.id,
+            "id": container.short_id,
             "stop": stop,
             "exclude": exclude,
             "appdata_path": appdata_path,

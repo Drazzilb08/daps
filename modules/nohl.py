@@ -412,21 +412,28 @@ def notification(final_output, logger, log_level):
     message_count = 0
 
     # Loop through each instance in the final output
+    previous_instance = None
     for instance, instance_data in final_output.items():
         server_name = instance_data['server_name']
         data = instance_data['data']
         search_media = data.get('search_media', [])
         filtered_media = data.get('filtered_media', [])
 
+
         # Build fields for search media
         if search_media:
+            # Initialize variables for message building
+            if previous_instance != instance:
+                name = f"❌ {server_name}: Search Media"
+            else:
+                name = None
             discord_messages = []
             current_field = ""
             for search_item in search_media:
                 sub_messages = []
                 # Construct messages for Radarr or Sonarr
                 if instance_data['instance_type'] == 'radarr':
-                    sub_messages.append(f"{search_item['title']} ({search_item['year']})\n\tDeleted and searched.\n")
+                    sub_messages.append(f"{search_item['title']} ({search_item['year']})\n")
                 elif instance_data['instance_type'] == 'sonarr':
                     # Construct messages for Sonarr including season and episode data
                     sub_messages.append(f"{search_item['title']} ({search_item['year']})")
@@ -434,43 +441,47 @@ def notification(final_output, logger, log_level):
                         # Iterate through seasons and episodes
                         for season in search_item['seasons']:
                             if season['season_pack']:
-                                sub_messages.append(f"\tSeason {season['season_number']}, deleted and searched.")
+                                sub_messages.append(f"\tSeason {season['season_number']}")
                             else:
                                 sub_messages.append(f"\tSeason {season['season_number']}")
                                 for episode in season['episode_data']:
-                                    sub_messages.append(f"\t\tEpisode {episode['episode_number']}, deleted and searched.")
+                                    sub_messages.append(f"\t\tEpisode {episode['episode_number']}")
                             sub_messages.append("")
                 discord_messages.append("\n".join(sub_messages))
 
             # Split asset-specific messages into multiple fields if their total length exceeds Discord's field limit
             if discord_messages:
+                current_field = ""
                 for message in discord_messages:
-                    if len(current_field) + len(message) + (message.count("\n") + message.count("\t")) <= 1000:
-                        current_field += message + "\n"  # Adding the message to the current field
+                    # Check if adding the message exceeds the character limit
+                    if len(current_field) + len(message) <= 1000:
+                        current_field += message + "\n"
                     else:
+                        # Add the current field to the fields list
                         fields.append({ 
-                            "name": f"❌ {server_name}: Search Media",
+                            "name": name if name else "",
                             "value": f"```{current_field}```"
                         })
+                        # Start a new field with the current message
+                        name = ""
                         current_field = message + "\n"
-                if current_field:
-                    fields.append({  # Creating a field containing the remaining messages
-                        "name": f"❌ {server_name}: Search Media",
-                        "value": f"```{current_field}```"
-                    })
-                    if len(fields) <= 25:
-                        built_fields[1] = fields
-                    else:
-                        num_fields = len(fields)
-                        num_messages_per_field = 25
-                        num_keys = num_fields // num_messages_per_field
-                        if num_fields % num_messages_per_field != 0:
-                            num_keys += 1
+                # Add the last field to the fields list
+                fields.append({ 
+                    "name": name if name else "",
+                    "value": f"```{current_field}```"
+                })
+            
+            # Add the fields to the built_fields dictionary
+            num_fields = len(fields)
+            num_messages_per_field = 25
+            num_keys = num_fields // num_messages_per_field
+            if num_fields % num_messages_per_field != 0:
+                num_keys += 1
 
-                        for i in range(num_keys):
-                            start_index = i * num_messages_per_field
-                            end_index = min(start_index + num_messages_per_field, num_fields)
-                            built_fields[i + 1] = fields[start_index:end_index]
+            for i in range(num_keys):
+                start_index = i * num_messages_per_field
+                end_index = min(start_index + num_messages_per_field, num_fields)
+                built_fields[i + 1] = fields[start_index:end_index]
 
         if log_level == "debug" and filtered_media:
             filter_message = []
@@ -513,13 +524,13 @@ def notification(final_output, logger, log_level):
 
         # Check character count for message splitting
         count += 1
-        
         # Split messages if character count exceeds a certain limit
         if count >= 25:
             count = 0
             message_count += 1
             built_fields[message_count] = fields
             fields = []
+        previous_instance = instance
     
     # Create message blocks for Discord
     if fields:
@@ -529,7 +540,12 @@ def notification(final_output, logger, log_level):
     # Send messages to Discord
     for message_number, fields in built_fields.items():
         print(f"Sending message {message_number} of {message_count}...")
-        discord(fields, logger, script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
+        if dry_run:
+            description = "__**Dry Run**__\nAll items deleted and searched for"
+        else:
+            description = "All items deleted and searched for"
+
+        discord(fields, logger, script_name, description=description, color=0x00ff00, content=None)
 
 
 def main(config):

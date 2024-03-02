@@ -400,9 +400,6 @@ class StARR:
                     "name": name_type,
                     id_type: id
                 }
-                self.logger.debug(f"Search payload: {payload}")
-                result = self.make_post_request(endpoint, json=payload)
-            return result
         elif self.instance_type == 'Radarr':
             name_type = "MoviesSearch"
             id_type = "movieIds"
@@ -410,8 +407,13 @@ class StARR:
                 "name": name_type,
                 id_type: media_ids
             }
-            self.logger.debug(f"Search payload: {payload}")
-            return self.make_post_request(endpoint, json=payload)
+        self.logger.debug(f"Search payload: {payload}")
+        result = self.make_post_request(endpoint, headers=self.headers, json=payload)
+        if result:
+            return result
+        else:
+            self.logger.error(f"Search failed for media ID: {media_ids}")
+            return None
     
     def search_season(self, media_id, season_number):
         """

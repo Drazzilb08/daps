@@ -32,8 +32,6 @@ list_of_python_scripts = [
 ]
 
 list_of_bash_scripts = [
-    "backup_folder",
-    "backup_plex",
     "jduparr",
     "nohl_bash",
 ]

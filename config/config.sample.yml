@@ -32,12 +32,6 @@ schedule:
   renameinatorr:
   unmatched_assets: 
   upgradinatorr:
-  backup_folder:
-    # Include as many backup folder instances as you want, name must match the name of the backup_folder instance
-    backup_folder_1: 
-    backup_folder_2: 
-  backup_plex: 
-  backup_appdata: 
   nohl_bash:
   jduparr:
 
@@ -90,37 +84,6 @@ instances:
 # This is a collection of BASH scripts that can be run by the script.
 bash_scripts:
   log_level: info
-  # This script can use the config here, if using this config DO NOT use the plex_backup.conf file
-  backup_plex:
-    source: /path/to/plex/appdata/
-    destination: /path/to/backup/destination/
-    # This is the number of essential backups to keep
-    keep_essential: 5
-    # This is the number of full backups to keep
-    keep_full: 2
-    # This is the number of days to keep the full backups
-    force_full_backup: 7
-    # This is to perform a full backup every time the script is run
-    full_backup: false
-    # This is to compress the backup
-    compress: true
-    dry_run: true
-    # This is to shutdown plex before the backup
-    shutdown_plex: true
-    debug: false
-  # This is not currently used, but will be used in the future (DO NOT USE, however the script can be scheduled), you just need to use the backup_appdata.conf file
-  backup_appdata:
-  backup_folder:
-    backup_folder_1:
-      source: /path/to/source
-      destination: /path/to/destination
-      keep_backups: 5
-      compress: false
-    backup_folder_2:
-      source: 
-      destination: 
-      keep_backup: 12
-      compress: true
   nohl_bash:
     source:
     include:
@@ -473,43 +436,6 @@ health_checkarr:
     - radarr_1
     - sonarr_1
     - sonarr_anime
-
-backup_appdata:
-  log_level: info
-  # Dry run will not actually perform the backup, it will only print what it would do and create dummy files
-  dry_run: true
-  destination: /path/to/backup/destination/
-  keep_backup: 5
-  # Use compression?
-  compress: true
-  # Add new containers to the stop list
-  add_to_stop: true
-  # Add new containers to the no stop list
-  add_to_no_stop: false
-  use_summary: false
-  stop_list:
-  # Containers you want to stop before backing up
-  - radarr
-  - sonarr
-  - qbittorrent
-  no_stop_list:
-  # Containers you want to not stop before backing up
-  - wrapperr
-  - Sonarr
-  - wizarr
-  exclusion_list:
-  # Containers you want to exclude from the backup, typically containers without appdata or such as plex (or if running this in a container)
-  - dazzling_mendeleev
-  - gifted_feistel
-  - xenodochial_grothendieck
-  - Dozzle
-  - scripts
-  - naughty_brown
-  - agitated_curie
-  appdata_paths:
-  # paths to appdata on host this is used for the script to better understand what to backup
-  - /mnt/user/appdata/
-  - /mnt/cache/appdata/
 
 main:
   log_level: info

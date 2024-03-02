@@ -33,13 +33,7 @@ appdata_dir2=
 
 config_file() {
     script_path=$(dirname "$0")
-    parent_dir=$(dirname "$script_path")
-    if [ -n "$DOCKER_ENV" ]; then
-        config_dir="${CONFIG_DIR:-$parent_dir/config/}"
-    else
-        config_dir="${parent_dir}/config"
-    fi
-    config_file="${config_dir}/backup_appdata.conf"
+    config_file="${script_path}/backup_appdata.conf"
 
     echo "Config File: $config_file"
 

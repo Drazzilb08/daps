@@ -23,15 +23,8 @@ config_dir_setup() {
     config_dir=${config_dir%/}
 
     script_path=$(dirname "$0")
-    parent_dir=$(dirname "$script_path")
 
-    if [ -n "$DOCKER_ENV" ]; then
-        config_dir="/config"
-    else
-        config_dir="${Cconfig_dir:-$parent_dir/config}"
-    fi
-    
-    config_file="$config_dir/backup-plex.conf"
+    config_file="$script_path/backup-plex.conf"
 }
 
 config_file() {

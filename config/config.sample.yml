@@ -166,15 +166,6 @@ discord:
   labelarr:
     discord_webhook: 
     channel_id: 
-  backup_appdata:
-    discord_webhook: 
-    channel_id: 
-  backup_plex:
-    discord_webhook: 
-    channel_id: 
-  backup_folder:
-    discord_webhook: 
-    channel_id: 
   nohl_bash:
     discord_webhook: 
     channel_id: 

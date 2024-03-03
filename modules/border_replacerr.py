@@ -247,7 +247,7 @@ def replace_border(input_file, output_path, border_colors, border_width, logger)
             final_path = f"{output_path}/{file_name}" # Set the output path to the parent directory
 
             # Resize the image to 1500x1000
-            final_image = final_image.resize((1000, 1500))
+            final_image = final_image.resize((1000, 1500)).convert("RGB")
 
             if os.path.isfile(final_path):
                 # Save file to /tmp/ and compare to existing file
@@ -302,7 +302,7 @@ def remove_border(input_file, output_path, border_width, logger):
             final_image.paste(bottom_border, bottom_border_position) # Paste the black bottom border at the specified position
 
             # Resize the image to 1500x1000
-            final_image = final_image.resize((1000, 1500))
+            final_image = final_image.resize((1000, 1500)).convert("RGB")
             
             file_name = os.path.basename(input_file)
             final_path = f"{output_path}/{file_name}" # Set the output path to the parent directory

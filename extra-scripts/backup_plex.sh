@@ -20,7 +20,7 @@ quiet="False"
 unraid_notify="False"
 
 config_dir_setup() {
-    config_dir=${config_dir%/}
+    config_dir=$(dirname "$(readlink -f "$0")")
 
     script_path=$(dirname "$0")
 

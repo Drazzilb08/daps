@@ -64,7 +64,7 @@ check_config() {
         exit 0
     fi
     # Check if 7zip command is available if compress is set to True
-    if [ "$compress" == "True" ]; then
+    if [[ "${compress,,}" == "true" ]]; then
         command -v 7z >/dev/null 2>&1 || {
             echo -e "7Zip is not installed.\nPlease install 7Zip and rerun.\nIf on unRaid 7Zip can be found through NerdPack/NerdTools in the UnRaid appstore" >&2
             exit 0
@@ -86,19 +86,19 @@ check_config() {
         # Check if webhook returns valid response code
         if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
             apikey="${webhook##*/}"
-            if [ "$debug" == "True" ]; then
+            if [[ "${full_backup,,}" == "true" ]]; then
                 echo "Checking webhook validity: $webhook"
                 echo "API Key: $apikey"
             fi
             response_code=$(curl --write-out "%{response_code}" --silent --output /dev/null -H "x-api-key: $apikey" "https://notifiarr.com/api/v1/user/validate")
         else
-            if [ "$debug" == "True" ]; then
+            if [[ "${full_backup,,}" == "true" ]]; then
                 echo "Checking webhook validity: $webhook"
             fi
             response_code=$(curl --write-out "%{response_code}" --silent --output /dev/null "$webhook")
         fi
 
-        if [ "$debug" == "True" ]; then
+        if [[ "${full_backup,,}" == "true" ]]; then
             echo "Response: $response_code"
         fi
 
@@ -131,7 +131,7 @@ hex_to_decimal() {
 
 verbose_output() {
     # Check if "quiet" variable is False
-    if [ "$quiet" == "False" ]; then
+    if [[ "${quiet,,}" == "false" ]]; then
         # Print the argument passed to the function
         echo -e "$1"
     fi
@@ -190,7 +190,7 @@ unraid_notification() {
 
 send_notification() {
     if [[ -n "$webhook" ]]; then
-        if [ "$debug" == "True" ]; then
+        if [[ "${full_backup,,}" == "true" ]]; then
             echo -e "\ncurl -s -H \"Content-Type: application/json\" -X POST -d \'$payload\' \"$webhook\""
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
         else
@@ -347,7 +347,7 @@ create_backup() {
             "--exclude=$source_dir/*.db-*-*-*"
         )
     fi
-    if [ "$debug" == "True" ]; then
+    if [[ "${full_backup,,}" == "true" ]]; then
         echo "Source: $source_dir"
         echo "Destination: $destination_dir"
         echo "Dest: $dest"
@@ -425,7 +425,7 @@ stop_plex(){
             plex_type="systemctl"
         fi
         current_state="running"
-        if [ "$debug" == "True" ]; then
+        if [[ "${full_backup,,}" == "true" ]]; then
             echo "Current state: $current_state"
             echo "Plex type: $plex_type"
         fi
@@ -446,7 +446,7 @@ stop_plex(){
         payload "Plex Status"
         send_notification
         current_state="stopped"
-        if [ "$debug" == "True" ]; then
+        if [[ "${full_backup,,}" == "true" ]]; then
             echo "Current state: $current_state"
             echo "Plex type: $plex_type"
         fi
@@ -464,7 +464,7 @@ start_plex() {
         elif [ "$backup_type" == "essential_no_full" ]; then
             backup_notification="Essential Backup"
         fi
-        if [ "$debug" == "True" ]; then
+        if [[ "${full_backup,,}" == "true" ]]; then
             echo "Current state: $current_state"
             echo "Plex type: $plex_type"
         fi
@@ -485,7 +485,7 @@ start_plex() {
         payload "Plex Status"
         send_notification
         current_state="stopped"
-        if [ "$debug" == "True" ]; then
+        if [[ "${full_backup,,}" == "true" ]]; then
             echo "Current state: $current_state"
             echo "Plex type: $plex_type"
         fi
@@ -510,7 +510,7 @@ main() {
         lastbackup=0
     fi
 
-    if [ "$debug" == "True" ]; then
+    if [[ "${full_backup,,}" == "true" ]]; then
         echo "Config Dir: $config_dir"
         echo "Last Plex Backup: $last_plex_backup"
         echo "Last backup: $lastbackup"
@@ -519,10 +519,14 @@ main() {
     current_date=$(date +"%m/%d/%y")
     # calculate the number of days since last backup
     days=$((($(date --date="$current_date" +%s) - $(date --date="$lastbackup" +%s)) / (60 * 60 * 24)))
+    if [[ "${full_backup,,}" == "true" ]]; then
+        echo "Current Date: $current_date"
+        echo "Days since last backup: $days"
+    fi
     start=$(date +%s)
     # check if full_backup is set to False
     stop_plex
-    if [ "$full_backup" == "False" ]; then
+    if [[ "${full_backup,,}" == "false" ]]; then
         # create essential backup
         backup_type="essential"
         create_backup "Essential"
@@ -587,11 +591,11 @@ main() {
         verbose_output "Total size of all Full backups: $full_backup_total_size"
     fi
     # check if unraid_notify is set to True and call unraid_notification function
-    if [ "$unraid_notify" == "True" ]; then
+    if [[ "${unraid_notify,,}" == "true" ]]; then
         unraid_notification
     fi
     # check if debug is set to True and call debug_output_function
-    if [ "$debug" == "True" ]; then
+    if [[ "${full_backup,,}" == "true" ]]; then
         debug_output_function
     fi
     verbose_output 'All Done!'

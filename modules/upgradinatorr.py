@@ -138,6 +138,11 @@ def process_instance(instance_type, instance_settings, app, logger):
         media_dict = handle_starr_data(app, server_name, instance_type)
         filtered_media_dict = filter_media(media_dict, tag_id, count, logger)
     
+    # If no filtered_media and not unattended return
+    if not filtered_media_dict and not unattended:
+        logger.info(f"No media found for {server_name}.")
+        return
+    
     logger.debug(f"filtered_media_dict:\n{json.dumps(filtered_media_dict, indent=4)}")
     
     # Processing tagged and untagged counts
@@ -206,29 +211,30 @@ def print_output(output_dict, logger):
         None
     """
     for instance, run_data in output_dict.items():
-        instance_data = run_data.get('data', None)
-        if instance_data:
-            # Create a table with the server name as the header
-            table = [
-                [f"{run_data['server_name']}"]
-            ]
-            logger.info(create_table(table))
-            
-            # Iterate through the media items for this instance
-            for item in instance_data:
-                logger.info(f"{item['title']} ({item['year']})")
+        if run_data:
+            instance_data = run_data.get('data', None)
+            if instance_data:
+                # Create a table with the server name as the header
+                table = [
+                    [f"{run_data['server_name']}"]
+                ]
+                logger.info(create_table(table))
                 
-                # Print downloads and their format scores associated with the media
-                if item['download']:
-                    for download, format_score in item['download'].items():
-                        logger.info(f"\t{download}\tScore: {format_score}")
-                else:
-                    logger.info("\tNo upgrades found for this item.")
-                
-                logger.info("")  # Add a newline for separation between media items
-        else:
-            # If no items found for an instance, print a message indicating so
-            logger.info(f"No items found for {instance}.")
+                # Iterate through the media items for this instance
+                for item in instance_data:
+                    logger.info(f"{item['title']} ({item['year']})")
+                    
+                    # Print downloads and their format scores associated with the media
+                    if item['download']:
+                        for download, format_score in item['download'].items():
+                            logger.info(f"\t{download}\tScore: {format_score}")
+                    else:
+                        logger.info("\tNo upgrades found for this item.")
+                    
+                    logger.info("")  # Add a newline for separation between media items
+            else:
+                # If no items found for an instance, print a message indicating so
+                logger.info(f"No items found for {instance}.")
 
 def notification(output_dict, logger):
     """
@@ -245,35 +251,36 @@ def notification(output_dict, logger):
     fields = []
     # Iterate through the instances in the output dictionary
     for instance, run_data in output_dict.items():
-        server_name = run_data['server_name']
-        instance_data = run_data.get('data', None)
-        server_list = []
-        # Iterate through the media items for this instance
-        for item in instance_data:
-            title = item['title']
-            year = item['year']
-            download = item['download']
+        if run_data:
+            server_name = run_data['server_name']
+            instance_data = run_data.get('data', None)
+            server_list = []
+            # Iterate through the media items for this instance
+            for item in instance_data:
+                title = item['title']
+                year = item['year']
+                download = item['download']
 
-            # Construct a list of downloads and their format scores associated with the media
-            if download:
-                torrent_list = []
-                torrent_list.append(f"{title} ({year})")
-                for torrent_item, format_score in download.items():
-                    torrent_list.append(f"\t{torrent_item}\n\tCF Score: {format_score}\n")
-            else:
-                continue
-                torrent_list.append("\tNo upgrades found for this item.")
-            server_list.append("\n".join(torrent_list))
-        value = "\n".join(server_list)
-        # Construct a Discord field containing the server name and associated media/downloads
-        if server_list:
-            fields.append({
-                "name": server_name,
-                "value": f"```{value}```"
-            })
-    # Send the constructed fields as a Discord message
-    if fields:
-        discord(fields, logger, script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
+                # Construct a list of downloads and their format scores associated with the media
+                if download:
+                    torrent_list = []
+                    torrent_list.append(f"{title} ({year})")
+                    for torrent_item, format_score in download.items():
+                        torrent_list.append(f"\t{torrent_item}\n\tCF Score: {format_score}\n")
+                else:
+                    continue
+                    torrent_list.append("\tNo upgrades found for this item.")
+                server_list.append("\n".join(torrent_list))
+            value = "\n".join(server_list)
+            # Construct a Discord field containing the server name and associated media/downloads
+            if server_list:
+                fields.append({
+                    "name": server_name,
+                    "value": f"```{value}```"
+                })
+        # Send the constructed fields as a Discord message
+        if fields:
+            discord(fields, logger, script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
 
 def main(config):
     """

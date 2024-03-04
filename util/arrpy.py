@@ -673,23 +673,24 @@ class StARR:
 
     def get_tag_id_from_name(self, tag_name):
         """
-        Get the ID of a tag from its name.
+        Get the ID of a tag from its name. If the tag does not yet
+        exist, it will be created.
         Args:
             tag_name (str): The name of the tag to get the ID for.
         Returns:
             int: The ID of the tag.
         """
-        all_tags = self.get_all_tags()
+        all_tags = self.get_all_tags() or []
         tag_name = tag_name.lower()
-        if all_tags:
-            for tag in all_tags:
-                if tag["label"] == tag_name:
-                    tag_id = tag["id"]
-                    return tag_id
-            else:
-                tag_id = self.create_tag(tag_name)
+
+        for tag in all_tags:
+            if tag["label"] == tag_name:
+                tag_id = tag["id"]
                 return tag_id
-        return None
+
+        # If the tag doesn't already exist, create it.
+        tag_id = self.create_tag(tag_name)
+        return tag_id
     
     def remove_item_from_queue(self, queue_ids):
         """

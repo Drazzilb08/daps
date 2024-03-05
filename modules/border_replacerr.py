@@ -8,7 +8,7 @@
 #                                               |_|                               
 # =================================================================================
 # Author: Drazzilb
-# Description:
+# Description: This script replaces the border on the posters or removes the border
 # Usage: python border_replacerr.py
 # Requirements: Pillow, tqdm
 # License: MIT License

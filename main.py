@@ -169,7 +169,9 @@ def main():
                 return
     else:
         try:
-            logger = setup_logger("info", "main")
+            main_config = Config("main")
+            log_level = main_config.log_level
+            logger = setup_logger(log_level, "main")
             logger.info("Starting the script...")
             # If config file is not found
             while True:

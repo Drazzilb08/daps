@@ -221,7 +221,7 @@ def filter_media(app, media_list, nohl_data, instance_type, exclude_profiles, ex
             # Compare media items with non-hardlinked items
             if media_item['normalized_title'] == nohl_item['normalized_title'] and media_item['year'] == nohl_item['year']:
                 # Check if the media item is not monitored
-                if media_item['monitored'] == False or media_item['title'] in exclude_media or media_item['quality_profile'] in exclude_profile_ids:
+                if media_item['monitored'] == False or (exclude_media is not None and media_item['title'] in exclude_media) or media_item['quality_profile'] in exclude_profile_ids:
                     data_list['filtered_media'].append({
                         'title': media_item['title'], 
                         'year': media_item['year'],
@@ -677,7 +677,10 @@ def main(config):
                     nohl_data = nohl_list['movies'] if instance_type == "radarr" else nohl_list['series'] if instance_type == "sonarr" else None
                     if nohl_data:
                         media_list = handle_starr_data(app, server_name, instance_type)
-                        data_list = filter_media(app, media_list, nohl_data, instance_type, exclude_profiles, exclude_media, max_search)
+                        if media_list:
+                            data_list = filter_media(app, media_list, nohl_data, instance_type, exclude_profiles, exclude_media, max_search)
+                        else:
+                            logger.info(f"No media found for server: {server_name}")
                         if data_list:
                             logger.debug(f"Data Media:\n{json.dumps(data_list, indent=4)}")
                         search_list = data_list.get('search_media', [])

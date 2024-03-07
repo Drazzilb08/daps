@@ -15,6 +15,7 @@ prettytable = "*"
 croniter = "*"
 "ruamel.yaml" = "*"
 docker = "*"
+python-dateutil = "*"
 
 [dev-packages]
 

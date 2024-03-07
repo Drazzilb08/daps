@@ -1,7 +1,8 @@
 from datetime import datetime
 from croniter import croniter
+from dateutil import tz
 
-last_run = {}
+next_run_times = {}
 
 def check_schedule(script_name, schedule, logger):
     """
@@ -60,14 +61,33 @@ def check_schedule(script_name, schedule, logger):
                 if start_month <= current_month <= end_month and start_day <= current_day <= end_day:
                     return True
         elif frequency == "cron":
-            cron = croniter(data)
-            next_run = cron.get_next(datetime)
-            if last_run.get(script_name) is None:
-                last_run[script_name] = next_run
-                return False
-            if next_run > last_run[script_name]:
-                last_run[script_name] = next_run
+            local_tz = tz.tzlocal()
+            local_date = datetime.now(local_tz)
+
+            current_time = datetime.now(local_tz).replace(second=0, microsecond=0)
+
+            logger.debug(f"Local time: {current_time}")
+
+            next_run = next_run_times.get(script_name)
+            if next_run is None:
+                next_run = croniter(data, local_date).get_next(datetime)
+                next_run_times[script_name] = next_run
+
+                logger.debug(f"Next run for {script_name}: {next_run}")
+
+            if next_run <= current_time:
+                next_run = croniter(data, local_date).get_next(datetime)
+                next_run_times[script_name] = next_run
+
+                logger.debug(f"Next run for {script_name}: {next_run}\n")
+
                 return True
+            else:
+                logger.debug(f"Next run time for script {script_name}: {next_run} is in the future\n")
+                return False
+            
+
+
     except ValueError as e:
         logger.error(f"Invalid schedule: {schedule} for script: {script_name}")
         logger.error (f"Error: {e}")

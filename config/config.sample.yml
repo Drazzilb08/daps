@@ -148,7 +148,7 @@ sync_gdrive:
   gdrive_sync: # example of multiple gdrive_id's with multiple sync_locations as objects, we have deprecated gdrive_id and sync_location so please use this instead
       # id: The ID of the folder you want to sync from
       # location: Where you want to sync the posters to
-    - id: 1VeeQ_frBFpp6AZLimaJSSr0Qsrl6Tb7z # Drazzib
+    - id: 1VeeQ_frBFpp6AZLimaJSSr0Qsrl6Tb7z # drazzilb
       location: /path/to/location # Where you want to sync the posters to
     - id: 1wrSru-46iIN1iqCl2Cjhj5ofdazPgbsz # dsaq
       location: /path/to/location # Where you want to sync the posters to
@@ -196,7 +196,7 @@ poster_renamerr:
     - /path/to/solen/posters/
     - /path/to/chrisdc/posters/
     - /path/to/Quafley/posters/
-    - /path/to/drazzib/posters/ # <- This is the highest priority
+    - /path/to/drazzilb/posters/ # <- This is the highest priority
   destination_dir: /path/to/output/ 
   instances:
     - plex_1

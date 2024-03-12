@@ -12,25 +12,6 @@
 # License: MIT License
 # ====================================================
 
-# Define variables
-source_dir='/path/to/media/'
-log_dir=''
-
-# Define folders inside your source_dir to include in the search
-include=(
-    #"Media directories"
-    #"Movies"
-    #"TV Shows"
-    #"Anime"
-)
-
-# Define folders inside your source_dir to exclude from the search
-exclude=(
-    #"Show Name"
-    #"Show Name"
-    #"Show Name"
-)
-
 # Define variables for webhook notifications
 webhook=false
 webhook=''
@@ -101,7 +82,7 @@ log_file() {
     if [ -n "$DOCKER_ENV" ]; then
         log_dir="${LOG_DIR/nohl_bash:-$parent_dir/logs/nohl_bash}"
     else
-        log_dir="${log_dir:-$parent_dir/logs/nohl_bash}"
+        log_dir="${log_dir:-$parent_dir/logs}"
     fi
     # remove trailing slash from source_dir if it exists
     source_dir=${source_dir%%/}
@@ -144,12 +125,32 @@ check_hardlinks() {
         # Construct the find command to search for files with hard link count of 1
         # Exclude folders listed in 'exclude_folders' and 'exclude'
         # Include specific file extensions listed in 'file_extensions'
-        find "${source_dir}/${include[$i]}" -type d \( -name "${exclude_folders[*]}" -o -name "${exclude[*]}" \) -prune -o -type f -links 1 \( -iname "*.${file_extensions[0]}" -o -iname "*.${file_extensions[1]}" -o -iname "*.${file_extensions[2]}" -o -iname "*.${file_extensions[3]}" -o -iname "*.${file_extensions[4]}" -o -iname "*.${file_extensions[5]}" \) -printf "%P\n" | tee -a "$log_file"
 
-        # Use awk and sed to remove unwanted characters from the file name and print it to /tmp/nohl.tmp
-        find "${source_dir}/${include[$i]}" -type d \( -name "${exclude_folders[*]}" -o -name "${exclude[*]}" \) -prune -o -type f -links 1 \( -iname "*.${file_extensions[0]}" -o -iname "*.${file_extensions[1]}" -o -iname "*.${file_extensions[2]}" -o -iname "*.${file_extensions[3]}" -o -iname "*.${file_extensions[4]}" -o -iname "*.${file_extensions[5]}" \) -printf "%f\n" | awk -F"[" '{print $1}' | sed $'s/[^[:print:]\t]//g' | tee -a /tmp/nohl.tmp >/dev/null
+        find_command="find \"$source_dir/${include[$i]}\" -type f -links 1 \( "
+
+        for l in "${file_extensions[@]}"; do
+            find_command+=" -name '*.$l' -o"
+        done
+
+        # Remove the trailing '-o' from the find command and close the parentheses
+        find_command=${find_command%-o}
+        find_command+=" \)"
+
+        for j in "${exclude_folders[@]}"; do
+            find_command+=" -not -path '*/$j/*'"
+        done
+
+        for k in "${exclude[@]}"; do
+            find_command+=" -not -path '*/$k/*'"
+        done
+
+        # Print the find command to the console
+        # echo "Find command: $find_command" | tee -a "$log_file"
+
+        # Execute the find command and store the output in a temporary file
+        eval "$find_command" > /tmp/nohl.tmp
+        eval "$find_command" | tee -a "$log_file"
     done
-
 }
 
 # Function to send notification
@@ -331,6 +332,12 @@ handle_options() {
             :) echo "Option -$OPTARG requires an argument." >&2; display_help; exit 1 ;;
         esac
     done
+    # Update exclude array with -e option
+    # Add string to exclude array seperated by comma
+    # shellcheck disable=SC2128
+    if [ -n "$exclude" ]; then
+        IFS=',' read -r -a exclude <<< "$exclude"
+    fi
 }
 
 # Call the function

@@ -92,6 +92,9 @@ def find_no_hl_files(path, logger):
                 
                 # Finding non-hardlinked files within sub folders
                 for file in sub_folder_files:
+                    # If file extension is not mkv or mp4 skip
+                    if not file.endswith('.mkv') and not file.endswith('.mp4'):
+                        continue
                     file_path = os.path.join(path, item, sub_folder, file)
                     if (os.path.isfile(file_path) and os.stat(file_path).st_nlink == 1):
                         nohl_files.append(file_path)

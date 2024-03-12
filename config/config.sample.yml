@@ -314,7 +314,6 @@ poster_cleanarr:
   ignore_collections:
     - "Random Collection in assets you want to keep"
   # If using poster_renamer with border_replacer, include the tmp folder that border_replacer uses
-  # This will double output in the logs but 
   source_dirs: 
     - /path/to/assets
 
@@ -454,6 +453,8 @@ bash_scripts:
     include:
       - 
       - 
+    # Exclude certain movie/series folders from being searched
+    # NOTE: It must be exactly as the folder is listed in your file system
     exclude:
       - 
       - 

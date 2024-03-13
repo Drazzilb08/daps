@@ -292,7 +292,7 @@ def main(config):
                     starr_server_name = app.get_instance_name()
                     
                     # Fetch and process media data from the StARR instance
-                    media_dict = handle_starr_data(app, starr_server_name, instance_type)
+                    media_dict = handle_starr_data(app, starr_server_name, instance_type, include_episode=False)
                     media_dict = handle_tags(app, media_dict, labels)
                     
                     # If media data is found

@@ -302,7 +302,7 @@ def main(config):
                             server_name = app.get_instance_name()
                             if app:
                                 print(f"Getting {instance_type.capitalize()} data...")
-                                results = handle_starr_data(app, server_name, instance_type)
+                                results = handle_starr_data(app, server_name, instance_type, include_episode=False)
                                 if results:
                                     if instance_type == "radarr":
                                         media_dict.extend(results)

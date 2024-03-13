@@ -37,6 +37,11 @@ season_name_info = [
 # List of words to remove from titles
 words_to_remove = [
     "(US)",
+    "(UK)",
+    "(AU)",
+    "(CA)",
+    "(NZ)",
+    "(FR)",
 ]
 
 # List of prefixes and suffixes to remove from titles for comparison
@@ -526,7 +531,7 @@ def get_media_folders(paths, logger):
     
     return media_dict
 
-def handle_starr_data(app, server_name, instance_type):
+def handle_starr_data(app, server_name, instance_type, include_episode=False):
     """
     Get data from Radarr or Sonarr
     
@@ -549,24 +554,24 @@ def handle_starr_data(app, server_name, instance_type):
                 season_data = item.get('seasons', [])  # Fetch season data for Sonarr
                 season_list = []  # Initialize a list to hold season data
                 for season in season_data:
-                    episode_data = app.get_episode_data_by_season(item['id'], season['seasonNumber'])  # Fetch episode data for each season
-                    episode_list = []  # Initialize a list to hold episode data
-                    for episode in episode_data:
-                        episode_list.append({
-                            'episode_number': episode['episodeNumber'],
-                            'monitored': episode['monitored'],
-                            'episode_file_id': episode['episodeFileId'],
-                            'episode_id': episode['id'],
-                            'has_file': episode['hasFile'],
-                        })  # Append episode data to the episode dictionary
-                    if episode_list:
-                        season_list.append({
-                            'season_number': season['seasonNumber'],
-                            'monitored': season['monitored'],
-                            'season_pack': season['statistics']['episodeCount'] == season['statistics']['totalEpisodeCount'],
-                            'season_has_episodes': season['statistics']['episodeCount'] > 0,
-                            'episode_data': episode_list,
-                        })  # Append season data to the season dictionary
+                    if include_episode:
+                        episode_data = app.get_episode_data_by_season(item['id'], season['seasonNumber'])  # Fetch episode data for each season
+                        episode_list = []  # Initialize a list to hold episode data
+                        for episode in episode_data:
+                            episode_list.append({
+                                'episode_number': episode['episodeNumber'],
+                                'monitored': episode['monitored'],
+                                'episode_file_id': episode['episodeFileId'],
+                                'episode_id': episode['id'],
+                                'has_file': episode['hasFile'],
+                            })  # Append episode data to the episode dictionary
+                    season_list.append({
+                        'season_number': season['seasonNumber'],
+                        'monitored': season['monitored'],
+                        'season_pack': season['statistics']['episodeCount'] == season['statistics']['totalEpisodeCount'],
+                        'season_has_episodes': season['statistics']['episodeCount'] > 0,
+                        'episode_data': episode_list if include_episode else [],
+                    })  # Append season data to the season dictionary
             
             alternate_titles = []
             normalized_alternate_titles = []

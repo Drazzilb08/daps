@@ -123,7 +123,7 @@ def process_instance(instance_type, instance_settings, app, logger):
     # Fetch media from the instance
     print(f"Gathering media from {server_name}...")
     server_name = app.get_instance_name()
-    media_dict = handle_starr_data(app, server_name, instance_type)
+    media_dict = handle_starr_data(app, server_name, instance_type, include_episode=False)
     logger.debug(f"media_dict:\n{json.dumps(media_dict, indent=4)}")
     
     # Get tag ID based on the provided tag name
@@ -135,7 +135,7 @@ def process_instance(instance_type, instance_settings, app, logger):
         media_ids = [item['media_id'] for item in media_dict]
         logger.info("All media is tagged. Removing tags...")
         app.remove_tags(media_ids, tag_id)
-        media_dict = handle_starr_data(app, server_name, instance_type)
+        media_dict = handle_starr_data(app, server_name, instance_type, include_episode=False)
         filtered_media_dict = filter_media(media_dict, tag_id, count, logger)
     
     # If no filtered_media and not unattended return

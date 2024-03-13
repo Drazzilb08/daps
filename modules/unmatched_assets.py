@@ -34,7 +34,7 @@ except ImportError as e:
 
 script_name = "unmatched_assets"
 
-def match_assets(assets_dict, media_dict, ignore_root_folders):
+def match_assets(assets_dict, media_dict, ignore_root_folders, logger):
     """
     Matches assets to media and returns a dictionary of unmatched assets.
     
@@ -49,6 +49,7 @@ def match_assets(assets_dict, media_dict, ignore_root_folders):
     
     # Initialize dictionary to store unmatched assets by media types
     unmatched_assets = {}
+    skipped = []
     # Loop through different media types
     for media_type in ['movies', 'series', 'collections']:
         unmatched_assets[media_type] = {}
@@ -60,8 +61,9 @@ def match_assets(assets_dict, media_dict, ignore_root_folders):
                 matched = False
 
                 # Check if the media is released, ended, or continuing or not monitored
-                if media_type in ['series', 'movies'] and not media_data['status'] in ['released', 'ended', 'continuing'] or media_type in ['series', 'movies'] and not media_data['monitored']:
-                        continue
+                if media_type in ['series', 'movies'] and not media_data['status'] in ['released', 'ended', 'continuing']:
+                    skipped.append(f"{media_data['title']} ({media_data['year']})")
+                    continue
                 
                 # Get location of media
                 if media_type == "collections":
@@ -118,7 +120,7 @@ def match_assets(assets_dict, media_dict, ignore_root_folders):
                             'title': media_data['title'],
                             'year': media_data['year']
                         })
-    return unmatched_assets
+    return unmatched_assets, skipped
 
 def print_output(unmatched_dict, media_dict, logger):
     """
@@ -308,7 +310,7 @@ def main(config):
                             server_name = app.get_instance_name()
                             if app:
                                 print(f"Getting {instance_type.capitalize()} data...")
-                                results = handle_starr_data(app, server_name, instance_type)
+                                results = handle_starr_data(app, server_name, instance_type, include_episode=False)
                                 if results:
                                     if instance_type == "radarr":
                                         media_dict['movies'].extend(results)
@@ -327,7 +329,11 @@ def main(config):
         else:
             logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
         # Matching assets and printing output
-        unmatched_dict = match_assets(assets_dict, media_dict, ignore_root_folders)
+        unmatched_dict, skipped = match_assets(assets_dict, media_dict, ignore_root_folders, logger)
+        if skipped:
+            logger.info("The following media was skipped due to it not being released, ended, or continuing:")
+            for item in skipped:
+                logger.debug(f"\t{item}")
         if any(unmatched_dict.values()):
             logger.debug(f"Unmatched Dict:\n{json.dumps(unmatched_dict, indent=4)}")
             print_output(unmatched_dict, media_dict, logger)

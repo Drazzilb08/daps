@@ -337,7 +337,7 @@ def main(config):
         # Matching assets and printing output
         unmatched_dict, skipped = match_assets(assets_dict, media_dict, ignore_root_folders, logger)
         if skipped:
-            logger.info("The following media was skipped due to it not being released, ended, or continuing:")
+            logger.debug("The following media was skipped due to it not being released, ended, or continuing:")
             for item in skipped:
                 logger.debug(f"\t{item}")
         if any(unmatched_dict.values()):

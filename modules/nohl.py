@@ -130,6 +130,8 @@ def find_no_hl_files(path, logger):
             
             # Finding non-hardlinked files within individual files
             for file in files:
+                if not file.endswith('.mkv') and not file.endswith('.mp4'):
+                        continue
                 file_path = os.path.join(path, item, file)
                 if (os.path.isfile(file_path) and os.stat(file_path).st_nlink == 1):
                     nohl_files.append(file_path)
@@ -614,7 +616,6 @@ def main(config):
                 if results:
                     nohl_list['movies'].extend(results['movies'])
                     nohl_list['series'].extend(results['series'])
-
         # Display non-hardlinked files in the logs
         logger.debug(f"Non-Hardlinked Files:\n{json.dumps(nohl_list, indent=4)}")
         
@@ -679,7 +680,7 @@ def main(config):
                     exclude_media = filters.get('exclude_movies', []) if instance_type == 'radarr' else filters.get('exclude_series', [])
                     nohl_data = nohl_list['movies'] if instance_type == "radarr" else nohl_list['series'] if instance_type == "sonarr" else None
                     if nohl_data:
-                        media_list = handle_starr_data(app, server_name, instance_type)
+                        media_list = handle_starr_data(app, server_name, instance_type, include_episode=True)
                         if media_list:
                             data_list = filter_media(app, media_list, nohl_data, instance_type, exclude_profiles, exclude_media, max_search)
                         else:

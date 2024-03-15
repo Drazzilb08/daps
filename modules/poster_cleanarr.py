@@ -225,7 +225,6 @@ def main(config):
     logger = setup_logger(log_level, script_name)
     script_config = config.script_config
     name = script_name.replace("_", " ").upper()
-    logger.info(f"Testing things out")
 
     try:
         logger.info(create_bar(f"START {name}"))

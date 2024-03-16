@@ -562,12 +562,12 @@ send_notification() {
     # Get a random joke from the specified file
     # Check if the webhook is for discord
     if [[ "$webhook" =~ ^https://discord\.com/api/webhooks/ ]]; then
-        joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
+        joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/daps/master/jokes.txt | shuf -n 1)
         discord_common_fields
         bot_name="Notification Bot"
         # Call the discord_payload function to construct the payload
         if [ ${#new_container[@]} -gt 0 ]; then
-            joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
+            joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/daps/master/jokes.txt | shuf -n 1)
             new_container_notification
             new_container_response=$(curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook")
             if [ "$dry_run" == "true" ]; then
@@ -575,7 +575,7 @@ send_notification() {
             fi
         fi
         if [ ${#removed_containers[@]} -gt 0 ]; then
-            joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
+            joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/daps/master/jokes.txt | shuf -n 1)
             removed_container_notification
             removed_container=$(curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook")
             if [ "$dry_run" == "true" ]; then
@@ -594,11 +594,11 @@ send_notification() {
     fi
     # Check if the webhook is for notifiarr
     if [[ $webhook =~ ^https://notifiarr\.com/api/v1/notification/passthrough ]]; then
-        joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
+        joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/daps/master/jokes.txt | shuf -n 1)
         notifiarr_common_fields
         # Call the notifiarr_payload function to construct the payload
         if [ ${#new_container[@]} -gt 0 ]; then
-            joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
+            joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/daps/master/jokes.txt | shuf -n 1)
             new_container_notification
             new_container_response=$(curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook")
             if [ "$dry_run" == "true" ]; then
@@ -606,7 +606,7 @@ send_notification() {
             fi
         fi
         if [ ${#removed_containers[@]} -gt 0 ]; then
-            joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
+            joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/daps/master/jokes.txt | shuf -n 1)
             removed_container_notification
             removed_container=$(curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook")
             if [ "$dry_run" == "true" ]; then

@@ -49,7 +49,7 @@ else
     echo "File $file is up to date"
 fi
 
-
+# Download latest config files if they don't exist or are different
 echo "Starting daps as $(whoami) running daps with UID: $PUID and GID: $PGID"
 
 chown -R ${PUID}:${PGID} /${CONFIG_DIR} /app > /dev/null 2>&1

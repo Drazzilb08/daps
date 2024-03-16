@@ -47,8 +47,8 @@ ENV TZ=America/Los_Angeles
 ENV BRANCH=${BRANCH}
 ENV DOCKER_ENV=true
 
-# Install curl, unzip, p7zip-full, tzdata, vim, rclone and docker-cli - remove curl and clean up
-# Delete unnecessary setup files
+# 
+# 
 RUN set -eux; \
     rm -f Pipfile Pipfile.lock; \
     apt-get update; \

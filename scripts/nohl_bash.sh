@@ -157,7 +157,7 @@ check_hardlinks() {
 # Function to send notification
 send_notification() {
     # Get a random joke from a file hosted on Github
-    joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
+    joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/daps/master/jokes.txt | shuf -n 1)
     # Get the current timestamp
     get_ts=$(date -u -Iseconds)
     number_of_issues=0

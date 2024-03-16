@@ -12,12 +12,12 @@ VERSION=$(cat "$(dirname "$0")/VERSION")
 
 echo "
 ---------------------------------------------------------
-    _____          _____   _____ 
-    |  __ \\   /\   |  __ \\ / ____|
-    | |  | | /  \\  | |__) | (___  
-    | |  | |/ /\ \\ |  ___/ \\___ \\ 
-    | |__| / ____ \\| |     ____) |
-    |_____/_/    \_\\_|    |_____/ 
+     _____          _____   _____ 
+    |  __ \   /\   |  __ \ / ____|
+    | |  | | /  \  | |__) | (___  
+    | |  | |/ /\ \ |  ___/ \___ \ 
+    | |__| / ____ \| |     ____) |
+    |_____/_/    \_\_|    |_____/ 
      (Drazzilb's Arr PMM Scripts)
                                
         PUID:           ${PUID}
@@ -42,15 +42,15 @@ usermod -o -u "$PUID" dockeruser
 # Download latest config files if they don't exist or are different
 file="config.sample.yml"
 local_file="$CONFIG_DIR/$file"
-if [ ! -f "$local_file" ] || [ "$(curl -s "https://raw.githubusercontent.com/Drazzilb08/userScripts/${BRANCH}/config/$file" | diff -q - "$local_file")" ]; then
+if [ ! -f "$local_file" ] || [ "$(curl -s "https://raw.githubusercontent.com/Drazzilb08/daps/${BRANCH}/config/$file" | diff -q - "$local_file")" ]; then
     echo "Downloading latest $file"
-    curl -s "https://raw.githubusercontent.com/Drazzilb08/userScripts/${BRANCH}/config/$file" -o "$local_file"
+    curl -s "https://raw.githubusercontent.com/Drazzilb08/daps/${BRANCH}/config/$file" -o "$local_file"
 else
     echo "File $file is up to date"
 fi
 
 
-echo "Starting userScripts as $(whoami) running userscripts with UID: $PUID and GID: $PGID"
+echo "Starting daps as $(whoami) running daps with UID: $PUID and GID: $PGID"
 
 chown -R ${PUID}:${PGID} /${CONFIG_DIR} /app > /dev/null 2>&1
 chmod -R 777 /${CONFIG_DIR} > /dev/null 2>&1

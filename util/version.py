@@ -33,7 +33,7 @@ def version_check(logger, branch):
         script_version = f.read().strip()
     
     # Construct the URL for the GitHub raw file containing the version
-    github_url = f"https://raw.githubusercontent.com/Drazzilb08/userScripts/{branch}/VERSION"
+    github_url = f"https://raw.githubusercontent.com/Drazzilb08/daps/{branch}/VERSION"
     
     # Send a GET request to the GitHub URL to fetch the script's version from GitHub
     response = requests.get(github_url)

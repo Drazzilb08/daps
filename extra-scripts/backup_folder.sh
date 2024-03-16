@@ -202,7 +202,7 @@ send_notification() {
     # Get current time in UTC format
     get_ts=$(date -u -Iseconds)
     # Get a random joke from the specified file
-    joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
+    joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/daps/master/jokes.txt | shuf -n 1)
     # Check if the webhook is for discord
     if [[ $webhook =~ ^https://discord\.com/api/webhooks/ ]]; then
         # Call the discord_payload function to construct the payload

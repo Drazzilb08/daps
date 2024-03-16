@@ -180,7 +180,7 @@ hex_to_decimal() {
 
 send_notification() {
     get_ts=$(date -u -Iseconds)
-    joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
+    joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/daps/master/jokes.txt | shuf -n 1)
     if [ -n "$webhook" ]; then
         if [[ "$webhook" =~ ^https://discord\.com/api/webhooks/ ]]; then
             discord_common_fields

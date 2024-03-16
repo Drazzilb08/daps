@@ -223,7 +223,7 @@ field_builder() {
 build_payload(){
     get_ts=$(date -u -Iseconds)
     # Get a random joke from the specified file
-    joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/userScripts/master/jokes.txt | shuf -n 1)
+    joke=$(curl -s https://raw.githubusercontent.com/Drazzilb08/daps/master/jokes.txt | shuf -n 1)
     # ensure joke is valid for json
     # shellcheck disable=SC2001
     joke=$(echo "$joke" | sed 's/"/\\"/g')    

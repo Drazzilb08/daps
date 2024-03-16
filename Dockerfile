@@ -52,14 +52,9 @@ ENV DOCKER_ENV=true
 RUN set -eux; \
     rm -f Pipfile Pipfile.lock; \
     apt-get update; \
-    apt-get install -y --no-install-recommends wget curl unzip p7zip-full tzdata vim jdupes jq nano; \
+    apt-get install -y --no-install-recommends wget curl unzip p7zip-full tzdata jdupes jq; \
     curl https://rclone.org/install.sh | bash
 
-RUN apt-get update; \
-    apt-get install -y --no-install-recommends docker.io; \
-    docker --version
-
-VOLUME /var/run/docker.sock
 VOLUME /config
 VOLUME /data
 

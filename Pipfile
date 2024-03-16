@@ -1,0 +1,23 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+requests = "*"
+tqdm = "*"
+pyyaml = "*"
+unidecode = "*"
+qbittorrent-api = "*"
+plexapi = "*"
+pillow = "*"
+prettytable = "*"
+croniter = "*"
+"ruamel.yaml" = "*"
+docker = "*"
+python-dateutil = "*"
+
+[dev-packages]
+
+[requires]
+python_version = "3.11"

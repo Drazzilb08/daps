@@ -49,5 +49,5 @@ jobs:
             "BRANCH=${{ vars.GITHUB_REF_NAME }}"
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/userscripts:latest
-            ghcr.io/drazzilb08/userscripts:latest
+            ${{ secrets.DOCKER_USERNAME }}/daps:latest
+            ghcr.io/drazzilb08/daps:latest

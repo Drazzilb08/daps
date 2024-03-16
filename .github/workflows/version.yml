@@ -52,5 +52,5 @@ jobs:
             "BRANCH=${{ steps.extract_branch.outputs.branch }}"
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/userscripts:${{ steps.get_version.outputs.VERSION }}
-            ghcr.io/drazzilb08/userscripts:${{ steps.get_version.outputs.VERSION }}
+            ${{ secrets.DOCKER_USERNAME }}/daps:${{ steps.get_version.outputs.VERSION }}
+            ghcr.io/drazzilb08/daps:${{ steps.get_version.outputs.VERSION }}

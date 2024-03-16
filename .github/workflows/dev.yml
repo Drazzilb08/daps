@@ -49,5 +49,5 @@ jobs:
             "BRANCH=dev"
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/userscripts:dev
-            ghcr.io/drazzilb08/userscripts:dev
+            ${{ secrets.DOCKER_USERNAME }}/daps:dev
+            ghcr.io/drazzilb08/daps:dev

@@ -27,10 +27,10 @@ FROM python:3.11-slim
 
 # Metadata and labels
 LABEL maintainer="Drazzilb" \
-      description="userScripts" \
-      org.opencontainers.image.source="https://github.com/Drazzilb08/userScripts" \
+      description="daps" \
+      org.opencontainers.image.source="https://github.com/Drazzilb08/daps" \
       org.opencontainers.image.authors="Drazzilb" \
-      org.opencontainers.image.title="userScripts"
+      org.opencontainers.image.title="daps"
 
 # Set working directory and copy Python packages from the python-reqs stage
 

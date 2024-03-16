@@ -46,7 +46,7 @@ jobs:
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           build-args: |
-            "BRANCH=${{ vars.GITHUB_REF_NAME }}"
+            "BRANCH=master"
           push: true
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/daps:latest

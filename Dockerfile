@@ -56,7 +56,6 @@ RUN set -eux; \
     curl https://rclone.org/install.sh | bash
 
 VOLUME /config
-VOLUME /data
 
 WORKDIR /app
 

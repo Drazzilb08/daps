@@ -73,7 +73,8 @@ def normalize_file_names(file_name):
     # Remove specific words from the title
     for word in words_to_remove:
         file_name = file_name.replace(word, '')
-
+        if file_name != file_name:
+            break
     # Remove illegal characters from the file name using regex
     file_name = illegal_chars_regex.sub('', file_name)
 
@@ -114,6 +115,8 @@ def normalize_titles(title):
     # Remove specific words from the title
     for word in words_to_remove:
         normalized_title = title.replace(word, '')
+        if normalized_title != title:
+            break
     
     # Extract the year from parentheses in the title
     normalized_title = year_regex.sub('', normalized_title)

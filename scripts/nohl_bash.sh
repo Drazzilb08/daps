@@ -148,7 +148,7 @@ check_hardlinks() {
         # echo "Find command: $find_command" | tee -a "$log_file"
 
         # Execute the find command and store the output in a temporary file
-        eval "$find_command" > /tmp/nohl.tmp
+        eval "$find_command" >> /tmp/nohl.tmp
         base_path="$source_dir/${include[$i]}"
         eval "$find_command" | sed "s|$base_path/||" | tee -a "$log_file"
     done

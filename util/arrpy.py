@@ -390,25 +390,27 @@ class StARR:
         id_type = None
         self.logger.debug(f"Media ID: {media_ids}")
         endpoint = f"{self.url}/api/v3/command"
+        payloads = []
         if isinstance(media_ids, int):
             media_ids = [media_ids]
         if self.instance_type == 'Sonarr':
             name_type = "SeriesSearch"
             id_type = "seriesId"
             for id in media_ids:
-                payload = {
+                payloads.append({
                     "name": name_type,
                     id_type: id
-                }
+                })
         elif self.instance_type == 'Radarr':
             name_type = "MoviesSearch"
             id_type = "movieIds"
-            payload = {
+            payloads.append({
                 "name": name_type,
                 id_type: media_ids
-            }
-        self.logger.debug(f"Search payload: {payload}")
-        result = self.make_post_request(endpoint, headers=self.headers, json=payload)
+            })
+        self.logger.debug(f"Search payload: {payloads}")
+        for payload in payloads:
+            result = self.make_post_request(endpoint, headers=self.headers, json=payload)
         if result:
             return result
         else:

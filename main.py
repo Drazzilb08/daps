@@ -28,7 +28,6 @@ list_of_python_scripts = [
     "sync_gdrive",
     "upgradinatorr",
     "unmatched_assets",
-    "backup_appdata",
 ]
 
 list_of_bash_scripts = [

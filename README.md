@@ -25,7 +25,7 @@ I do my best to keep up with everything
 
 ## Submitting Pull Requests
 
-I have no problem adding features or fixing issues with these scripts. However if you're going to submit a PR to correct my code **PLEASE** add detailed notes as to why this change needs to be made (ELI5 or Explain Like I'm 5). This will help me grow and make better content in the futre.
+Please feel free to make a pull request if you see something that could be improved. I'm always looking for ways to make my scripts better.
 
 **Please note that these scripts are tested by me and a few friends. They very well may work for you but they are not tested under all conditions.**
 

@@ -1,18 +1,16 @@
 
 <div align="center">
 
-Collection of userScripts I've written or found useful
+Collection of Scripts I've written or found useful
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![GitHub issues](https://img.shields.io/github/issues/Drazzilb08/userScripts.svg)](https://github.com/Drazzilb08/userScripts/issues)
-[![GitHub pull requests](https://img.shields.io/github/issues-pr/Drazzilb08/userScripts.svg)](https://github.com/Drazzilb08/userScripts/pulls)
-[![GitHub stars](https://img.shields.io/github/stars/Drazzilb08/userScripts.svg)](https://github.com/Drazzilb08/userScripts/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/Drazzilb08/daps.svg)](https://github.com/Drazzilb08/daps/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/Drazzilb08/daps.svg)](https://github.com/Drazzilb08/daps/pulls)
+[![GitHub stars](https://img.shields.io/github/stars/Drazzilb08/daps.svg)](https://github.com/Drazzilb08/daps/stargazers)
 [![Python](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
 [![Bash](https://img.shields.io/badge/bash-5.0-green.svg)](https://www.gnu.org/software/bash/)
 
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-Donate-orange?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/drazzilb08)
-
-To help with documentation of the collections of these scripts, I've created a [WIKI](https://github.com/Drazzilb08/userScripts/wiki) If there are any questions or concerns please let me know with a [GitHub issue](https://github.com/Drazzilb08/userScripts/issues).
+To help with documentation of the collections of these scripts, I've created a [WIKI](https://github.com/Drazzilb08/daps/wiki) If there are any questions or concerns please let me know with a [GitHub issue](https://github.com/Drazzilb08/daps/issues).
 
 </div>
 

@@ -327,8 +327,8 @@ def filter_media(app, media_list, nohl_data, instance_type, exclude_profiles, ex
                                 'seasons': season_data
                             })
     # Limit the number of searches to the maximum allowed
-    if len(data_list['search_media']) > max_search:
-        data_list['search_media'] = data_list['search_media'][:max_search]
+    if len(data_list['search_media']) >= max_search:
+        data_list['search_media'] = data_list['search_media'][:max_search - 1]
     # Return the dictionary containing filtered media and media to search for in Sonarr
     return data_list
 

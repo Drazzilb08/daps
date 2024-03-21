@@ -180,7 +180,6 @@ def handle_searches(app, search_list, instance_type):
                         ready = app.wait_for_command(results['id'])
                         if ready:
                             app.search_season(item['media_id'], season['season_number'])
-                            searched_for.append(item)
                     else:
                         # Delete episode files if individual episodes
                         app.delete_episode_files(file_ids)
@@ -188,7 +187,7 @@ def handle_searches(app, search_list, instance_type):
                         ready = app.wait_for_command(results['id'])
                         if ready:
                             app.search_episodes(episode_ids)
-                            searched_for.append(item)
+                searched_for.append(item)
     print(f"Searches performed: {searches}")
     return searched_for
 
@@ -328,7 +327,7 @@ def filter_media(app, media_list, nohl_data, instance_type, exclude_profiles, ex
                             })
     # Limit the number of searches to the maximum allowed
     if len(data_list['search_media']) >= max_search:
-        data_list['search_media'] = data_list['search_media'][:max_search - 1]
+        data_list['search_media'] = data_list['search_media'][:max_search]
     # Return the dictionary containing filtered media and media to search for in Sonarr
     return data_list
 

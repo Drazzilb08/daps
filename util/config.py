@@ -4,8 +4,6 @@ import os
 from pathlib import Path
 from util.utility import *
 import time
-from ruamel.yaml import YAML
-
 
 # Set the config file path
 if os.environ.get('DOCKER_ENV'):
@@ -83,95 +81,4 @@ class Config:
         self.sonarr_config = self.instances_config.get('sonarr', {})  # Sonarr configurations
         self.qbit_config = self.instances_config.get('qbittorrent', {})  # qBittorrent configurations
         self.plex_config = self.instances_config.get('plex', {})  # Plex configurations
-
-
-    # Add data to config file
-    def add_to_config(self, add_type, container, logger, message=None):
-        """
-        Add data to the config file for the backup_appdata key
-        
-        Args:
-            add_type (str): stop_list or no_stop_list
-            container_name (str): Name of the container to add to the config file
-
-        Returns:
-            None
-        """
-        yaml = YAML()
-
-        # Load the config file
-        with open(self.config_path, "r") as file:
-            config = yaml.load(file)
-
-        container_name = container.name
-        container_name_message = f"{container_name}\t\t\t{message}" if message else f"{container_name}"
-        stop_list = config['backup_appdata']['stop_list']
-        no_stop_list = config['backup_appdata']['no_stop_list']
-        exclusion_list = config['backup_appdata']['exclusion_list']
-        
-        logger.debug(f"Adding {container_name} to {add_type} list")
-        # Add the container to the stop_list or no_stop_list
-        if add_type == "stop":
-            if not stop_list:
-                stop_list = [container_name_message]
-            elif container_name_message not in stop_list:
-                stop_list.append(container_name_message)
-        elif add_type == "no_stop":
-            if not no_stop_list:
-                no_stop_list = [container_name_message]
-            elif container_name_message not in no_stop_list:
-                no_stop_list.append(container_name_message)
-        elif add_type == "exclude":
-            if not exclusion_list:
-                exclusion_list = [container_name_message]
-            elif container_name_message not in exclusion_list:
-                exclusion_list.append(container_name_message)
-
-        # Add the new data to the config file
-        config['backup_appdata']['stop_list'] = stop_list
-        config['backup_appdata']['no_stop_list'] = no_stop_list
-        config['backup_appdata']['exclusion_list'] = exclusion_list
-
-        with open(self.config_path, "w") as file:
-            yaml.dump(config, file)
-
-    def remove_from_config(self, containers_to_remove, logger):
-        """
-        Removes container names from appdata_backup stop_list or no_stop_list
-        if the container is removed from the system
-        
-        Args:
-            remove_type (str): stop_list or no_stop_list
-            container_name (str): Name of the container to remove from the config file
-
-        Returns:
-            None
-        """
-        yaml = YAML()
-
-        # Load the config file
-        with open(self.config_path, "r") as file:
-            config = yaml.load(file)
-
-        stop_list = config['backup_appdata']['stop_list']
-        no_stop_list = config['backup_appdata']['no_stop_list']
-        exclusion_list = config['backup_appdata']['exclusion_list']
-
-        for container in containers_to_remove:
-            if container in stop_list:
-                logger.debug(f"Removing {container} from stop_list")
-                stop_list.remove(container)
-            if container in no_stop_list:
-                logger.debug(f"Removing {container} from no_stop_list")
-                no_stop_list.remove(container)
-            if container in exclusion_list:
-                logger.debug(f"Removing {container} from exclusion_list")
-                exclusion_list.remove(container)
-
-        # Add the new data to the config file
-        config['backup_appdata']['stop_list'] = stop_list
-        config['backup_appdata']['no_stop_list'] = no_stop_list
-        config['backup_appdata']['exclusion_list'] = exclusion_list
-
-        with open(self.config_path, "w") as file:
-            yaml.dump(config, file)
+    

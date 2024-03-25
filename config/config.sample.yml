@@ -149,23 +149,30 @@ sync_gdrive:
       # id: The ID of the folder you want to sync from
       # location: Where you want to sync the posters to
     - id: 1VeeQ_frBFpp6AZLimaJSSr0Qsrl6Tb7z # drazzilb
-      location: /path/to/location # Where you want to sync the posters to
-    - id: 1wrSru-46iIN1iqCl2Cjhj5ofdazPgbsz # dsaq
-      location: /path/to/location # Where you want to sync the posters to
-    - id: 1zWY-ORtJkOLcQChV--oHquxW3JCow1zm # solen
-      location: /path/to/location # Where you want to sync the posters to
-    - id: 1Xg9Huh7THDbmjeanW0KyRbEm6mGn_jm8 # BZ
-      location: /path/to/location # Where you want to sync the posters to
-    - id: 1oBzEOXXrTHGq6sUY_4RMtzMTt4VHyeJp # chrisdc
-      location: /path/to/location # Where you want to sync the posters to
-    - id: 1G77TLQvgs_R7HdMWkMcwHL6vd_96cMp7 # Quafley
-      location: /path/to/location # Where you want to sync the posters to
-    - id: 1bBbK_3JeXCy3ElqTwkFHaNoNxYgqtLug # Stupifier
-      location: /path/to/location # Where you want to sync the posters to
-    - id: 1KnwxzwBUQzQyKF1e24q_wlFqcER9xYHM # Sahara
-      location: /path/to/location # Where you want to sync the posters to
-    - id: 1alseEnUBjH6CjXh77b5L4R-ZDGdtOMFr # Lion City Gaming
-      location: /path/to/location # Where you want to sync the posters to
+      location: /path/to/location/drazzilb # Where you want to sync the posters to
+
+    # Below is a list of other GDRIVE_ID's that have been shared around Discord. If you have your own and would like to share it please contact me.
+    # These are their drives and may contain things that don't necessarily work "best" with poster_renamerr or border_replacerr
+    # I'm not responsible for the content that is in these drives, nor do I have any control over them. Use at your own risk.
+    # If you have issues with the content in these drives, please contact the owner of the drive.
+    # border_replacerr and poster_renamerr is optimized to work with MM2K style posters for naming and border replacement.
+
+    # - id: 1wrSru-46iIN1iqCl2Cjhj5ofdazPgbsz # dsaq
+    #   location: /path/to/location/dasq # Where you want to sync the posters to
+    # - id: 1zWY-ORtJkOLcQChV--oHquxW3JCow1zm # solen
+    #   location: /path/to/location/solen # Where you want to sync the posters to
+    # - id: 1Xg9Huh7THDbmjeanW0KyRbEm6mGn_jm8 # BZ
+    #   location: /path/to/location/bz # Where you want to sync the posters to
+    # - id: 1oBzEOXXrTHGq6sUY_4RMtzMTt4VHyeJp # chrisdc
+    #   location: /path/to/location/chrisdc # Where you want to sync the posters to
+    # - id: 1G77TLQvgs_R7HdMWkMcwHL6vd_96cMp7 # Quafley
+    #   location: /path/to/location/quafley # Where you want to sync the posters to
+    # - id: 1bBbK_3JeXCy3ElqTwkFHaNoNxYgqtLug # Stupifier
+    #   location: /path/to/location/stupifier # Where you want to sync the posters to
+    # - id: 1KnwxzwBUQzQyKF1e24q_wlFqcER9xYHM # Sahara
+    #   location: /path/to/location/sahara # Where you want to sync the posters to
+    # - id: 1alseEnUBjH6CjXh77b5L4R-ZDGdtOMFr # Lion City Gaming
+    #   location: /path/to/location/lion_city_gaming # Where you want to sync the posters to
 
 poster_renamerr:
   # This script will rename your posters to match Plex-Meta-Manager's naming scheme from TPDB's naming utilizing Radarr/Sonarr as a source.

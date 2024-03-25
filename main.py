@@ -28,7 +28,6 @@ list_of_python_scripts = [
     "sync_gdrive",
     "upgradinatorr",
     "unmatched_assets",
-    "backup_appdata",
 ]
 
 list_of_bash_scripts = [
@@ -105,7 +104,7 @@ def run_module(script_to_run, logger):
             if logger: logger.error(f"An error occurred while running the script: {script_to_run}.", exc_info=True)
             else: print(f"An error occurred while running the script: {script_to_run}.\n{e}")
             return
-    elif script_to_run and any(script in script_to_run for script in list_of_bash_scripts):
+    elif script_to_run in list_of_bash_scripts:
         module = "bash_scripts"
         try:
             config = get_config(module)
@@ -160,11 +159,9 @@ def main():
     scripts_schedules=load_schedule()
     if len(sys.argv) > 1:
         for input_name in sys.argv[1:]:
-            if input_name and any(script in input_name for script in list_of_bash_scripts):
+            if input_name in list_of_bash_scripts or input_name in list_of_python_scripts:
                 run_module(input_name, None)
-            elif input_name in list_of_python_scripts:
-                run_module(input_name, None)
-            elif input_name not in list_of_python_scripts or (input_name and not any(script in input_name for script in list_of_bash_scripts)):
+            else:
                 print(f"Script: {input_name} does not exist")
                 return
     else:
@@ -195,11 +192,7 @@ def main():
                     table.align = "l"
                     table.padding_width = 1
                     for script_name, schedule_time in scripts_schedules.items():
-                        if isinstance(schedule_time, dict):
-                            for instance, schedule_time in schedule_time.items():
-                                table.add_row([instance, schedule_time])
-                        else:
-                            table.add_row([script_name, schedule_time])
+                        table.add_row([script_name, schedule_time])
                     logger.info(f"{table}")
                     logger.info(create_bar("SCHEDULE"))
                     initial_run = False
@@ -208,30 +201,19 @@ def main():
                 if not waiting_message_shown:
                     logger.info("Waiting for scheduled scripts...")
                     waiting_message_shown = True
-
                 
                 # Check for scheduled scripts
                 for script_name, schedule_time in scripts_schedules.items():
-                    if isinstance(schedule_time, dict):
-                        for instance, instance_schedule_time in schedule_time.items():
-                            script_name = instance
-                            schedule_time = instance_schedule_time
-                            
-                            if script_name in running_scripts or not schedule_time:
-                                continue
+                    
+                    if script_name in running_scripts or not schedule_time:
+                        continue
 
-                            if (script_name in list_of_python_scripts or any(script in script_name for script in list_of_bash_scripts)) and (schedule_time == "run" and script_name not in already_run) or (schedule_time != "run" and check_schedule(script_name, schedule_time, logger)):
-                                if schedule_time == "run":
-                                    already_run[script_name] = True
-                                process = run_module(script_name, logger)
-                                running_scripts[script_name] = process
-                    else:
-                        if script_name in running_scripts or not schedule_time:
-                            continue
-
-                        if (script_name in list_of_python_scripts or any(script in script_name for script in list_of_bash_scripts)) and (schedule_time == "run" and script_name not in already_run) or (schedule_time != "run" and check_schedule(script_name, schedule_time, logger)):
-                            if schedule_time == "run":
-                                already_run[script_name] = True
+                    if script_name in list_of_python_scripts or script_name in list_of_bash_scripts:
+                        if schedule_time == "run" and (script_name not in already_run or not already_run[script_name]):
+                            process = run_module(script_name, logger)
+                            running_scripts[script_name] = process
+                            already_run[script_name] = True
+                        elif schedule_time != "run" and check_schedule(script_name, schedule_time, logger):
                             process = run_module(script_name, logger)
                             running_scripts[script_name] = process
 
@@ -240,30 +222,16 @@ def main():
                 for script_name, process in running_scripts.items():
                     if process and not process.is_alive():
                         processes_to_remove.append(script_name)
-
+                logger.debug(f"already_run:\n{json.dumps(already_run, indent=4)}")
                 for script_name in processes_to_remove:
-                    if script_name in processes_to_remove:
-                        logger.info(f"Script: {script_name.capitalize()} has finished")
+                    logger.info(f"Script: {script_name.upper()} has finished")
+                    already_run[script_name] = False
+                    if script_name in running_scripts:
                         del running_scripts[script_name]
-                    if script_name in already_run:
-                        # Check script_schedule to see if it's set to run still 
-                        if script_name in scripts_schedules:
-                            schedule_time = scripts_schedules[script_name]
-                            if isinstance(schedule_time, dict):
-                                for instance, instance_schedule_time in schedule_time.items():
-                                    if instance_schedule_time == "run":
-                                        break
-                                else:
-                                    del already_run[script_name]
-                            else:
-                                if schedule_time != "run":
-                                    del already_run[script_name]
-                        else:
-                            del already_run[script_name]
                         waiting_message_shown = False
 
                 old_schedule = scripts_schedules
-                time.sleep(60)
+                time.sleep(30)
         
         # If the script is interrupted
         except KeyboardInterrupt:

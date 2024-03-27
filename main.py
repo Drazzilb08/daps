@@ -204,6 +204,13 @@ def main():
                 
                 # Check for scheduled scripts
                 for script_name, schedule_time in scripts_schedules.items():
+
+                    # Check if script_name is in already_run or not
+                    if script_name in already_run and schedule_time != "run" and already_run[script_name]:
+                        logger.debug(f"Script: {script_name} has already run setting already_run[{script_name}] to False")
+                        already_run[script_name] = False
+                    elif script_name in already_run and schedule_time == "run" and already_run[script_name]:
+                        logger.debug(f"Script is still set to run: {script_name}")
                     
                     if script_name in running_scripts or not schedule_time:
                         continue
@@ -212,6 +219,7 @@ def main():
                         if schedule_time == "run" and (script_name not in already_run or not already_run[script_name]):
                             process = run_module(script_name, logger)
                             running_scripts[script_name] = process
+                            logger.debug(f"Setting already_run[{script_name}] to True")
                             already_run[script_name] = True
                         elif schedule_time != "run" and check_schedule(script_name, schedule_time, logger):
                             process = run_module(script_name, logger)
@@ -225,7 +233,6 @@ def main():
                 logger.debug(f"already_run:\n{json.dumps(already_run, indent=4)}")
                 for script_name in processes_to_remove:
                     logger.info(f"Script: {script_name.upper()} has finished")
-                    already_run[script_name] = False
                     if script_name in running_scripts:
                         del running_scripts[script_name]
                         waiting_message_shown = False

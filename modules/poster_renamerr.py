@@ -282,7 +282,11 @@ def rename_files(matched_assets, script_config, logger):
                     
                     # Check for season-related file naming
                     if re.search(r' - Season| - Specials', file_name):
-                        season_number = (re.search(r"Season (\d+)", file_name).group(1) if "Season" in file_name else "00").zfill(2)
+                        try:
+                            season_number = (re.search(r"Season (\d+)", file_name).group(1) if "Season" in file_name else "00").zfill(2)
+                        except AttributeError:
+                            logger.debug(f"Error extracting season number from {file_name}")
+                            continue
                         if asset_folders:
                             new_file_name = f"Season{season_number}{file_extension}"
                         else:

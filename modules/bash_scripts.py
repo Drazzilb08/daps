@@ -60,7 +60,7 @@ def set_cmd_args(settings, bash_script_file, logger, script_name):
             cmd.append('-C')
             cmd.append(shlex.quote(str(channel)))
 
-        if silent:
+        if silent is not None:
             cmd.append('-S')
             cmd.append(shlex.quote(str(silent)))
 

@@ -862,8 +862,6 @@ def is_match(asset, media):
     if (
         asset['title'] == media['title'] or
         asset['normalized_title'] == media['normalized_title'] or
-        asset['title'] in alternate_titles or
-        asset['normalized_title'] in normalized_alternate_titles or
         asset['title'] == original_title or
         asset['title'] == folder_title or
         asset['normalized_title'] == normalized_folder_title or 
@@ -873,6 +871,42 @@ def is_match(asset, media):
         (media['normalized_title'] in no_suffix_normalized) or
         compare_strings(asset['title'], media['title']) or
         compare_strings(asset['normalized_title'], media['normalized_title'])
+    ) and (
+        asset['year'] == media['year'] or
+        asset['year'] == secondary_year or
+        asset['year'] == folder_year
+    ):
+        return True
+    else:
+        return False
+    
+def is_match_alternate(asset, media):
+    """
+    Check if the asset matches the media using alternate titles
+
+    Args:
+        asset (dict): The asset to check
+        media (dict): The media to check
+
+    Returns:
+        bool: True if the asset matches the media, False otherwise
+    """
+    alternate_titles = media.get('alternate_titles', [])
+    normalized_alternate_titles = media.get('normalized_alternate_titles', [])
+    secondary_year = media.get('secondary_year', None)
+    folder = media.get('folder', None)
+    folder_year = None
+    if folder:
+        folder_base_name = os.path.basename(folder)
+        match = re.search(folder_year_regex, folder_base_name)
+        if match:
+            folder_title, folder_year = match.groups()
+            folder_year = int(folder_year)
+
+    # Matching criteria for media and asset
+    if (
+        asset['title'] in alternate_titles or
+        asset['normalized_title'] in normalized_alternate_titles
     ) and (
         asset['year'] == media['year'] or
         asset['year'] == secondary_year or

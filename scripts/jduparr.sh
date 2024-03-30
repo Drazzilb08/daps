@@ -383,7 +383,9 @@ main() {
     if [ "$unraid_notification" == "true" ]; then
         unraid_notify
     fi
-    if [ -n "$webhook" ]; then
+    if [ -n "$webhook" ] && [ "$silent" != "true" ] && [[ $results != *"No duplicates found."* ]]; then
+        send_notification
+    elif [ -n "$webhook" ] && [ "$silent" == "false" ] && [[ $results == *"No duplicates found."* ]]; then
         send_notification
     fi
     echo "$run_output" | tee -a "$log_file"
@@ -391,7 +393,7 @@ main() {
 }
 
 handle_options() {
-    while getopts ":w:D:b:n:h:L:C:" opt; do
+    while getopts ":w:D:b:n:h:L:C:S:" opt; do
         case $opt in
         w) webhook="$OPTARG" ;;
         D) data_dir="$OPTARG" ;;
@@ -400,6 +402,7 @@ handle_options() {
         C) channel="$OPTARG" ;;
         h) display_help ;;
         L) log_dir="$OPTARG" ;;
+        S) silent="true" ;;
         \?) echo "Invalid option -$OPTARG" >&2 ;;
         esac
     done

@@ -372,8 +372,6 @@ main() {
         log_dir="${log_dir:-$parent_dir/logs/jduparr}"
     fi
 
-    echo "Log directory: $log_dir" 
-    
     handle_options "$@"
     check_duplicate_script
     check_config
@@ -383,9 +381,10 @@ main() {
     if [ "$unraid_notification" == "true" ]; then
         unraid_notify
     fi
-    if [ -n "$webhook" ] && [ "$silent" != "true" ] && [[ $results != *"No duplicates found."* ]]; then
+    echo "Silent: $silent"
+    if [[ $results == *"No duplicates found."* ]] && [ "$silent" == "False" ]; then
         send_notification
-    elif [ -n "$webhook" ] && [ "$silent" == "false" ] && [[ $results == *"No duplicates found."* ]]; then
+    elif [[ $results != *"No duplicates found."* ]]; then
         send_notification
     fi
     echo "$run_output" | tee -a "$log_file"
@@ -402,7 +401,7 @@ handle_options() {
         C) channel="$OPTARG" ;;
         h) display_help ;;
         L) log_dir="$OPTARG" ;;
-        S) silent="true" ;;
+        S) silent="$OPTARG" ;;
         \?) echo "Invalid option -$OPTARG" >&2 ;;
         esac
     done

@@ -467,6 +467,8 @@ bash_scripts:
       - 
   jduparr:
     data_dir: 
+    # Silences notifications if no duplicates are found
+    silent: false
 
 main:
   log_level: info

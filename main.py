@@ -23,7 +23,6 @@ list_of_python_scripts = [
     "nohl",
     "poster_cleanarr",
     "poster_renamerr",
-    "queinatorr",
     "renameinatorr",
     "sync_gdrive",
     "upgradinatorr",

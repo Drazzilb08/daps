@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "95526268ddcc1a7ef3fe0eec455d2b1c2bdc9dcdfa611b5023cd6de77a58ac6c"
+            "sha256": "5b0943750c2b1f1dab400e62effe67c432f1d29e83c4dbe1cf3559384a9281e5"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -136,14 +136,6 @@
             ],
             "markers": "python_version >= '3.5'",
             "version": "==3.6"
-        },
-        "packaging": {
-            "hashes": [
-                "sha256:2ddfb553fdf02fb784c234c7ba6ccc288296ceabec964ad2eae3777778130bc5",
-                "sha256:eb82c5e3e56209074766e6885bb04b8c38a0c015d0a30036ebe7ece34c9989e9"
-            ],
-            "markers": "python_version >= '3.7'",
-            "version": "==24.0"
         },
         "pillow": {
             "hashes": [
@@ -311,15 +303,6 @@
             "index": "pypi",
             "markers": "python_version >= '3.6'",
             "version": "==6.0.1"
-        },
-        "qbittorrent-api": {
-            "hashes": [
-                "sha256:57ec679a8ed612a3d9a275cbe540cf55467a6e3c1c298d76442339dc506c3a14",
-                "sha256:db6eef9ce26661cadb61df0c8d31bc73cdac7f76b034e17f6f101bcb426549f0"
-            ],
-            "index": "pypi",
-            "markers": "python_version >= '3.8'",
-            "version": "==2024.2.59"
         },
         "requests": {
             "hashes": [

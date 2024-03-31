@@ -30,6 +30,7 @@ from util.logger import setup_logger
 try:
     from plexapi.server import PlexServer
     from tqdm import tqdm
+    from pathvalidate import sanitize_filename, is_valid_filename
 except ImportError as e:
     print(f"ImportError: {e}")
     print("Please install the required modules with 'pip install -r requirements.txt'")
@@ -275,7 +276,8 @@ def rename_files(matched_assets, script_config, logger):
 
                 # Remove any OS illegal characters from the file name
                 if asset_type == "collections":
-                    folder = re.sub(r'[<>:"/\\|?*]', '', folder.replace('/', ''))
+                    if not is_valid_filename(folder):
+                        folder = sanitize_filename(folder)
                 
                 # Handle asset_folders configuration
                 if asset_folders:

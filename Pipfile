@@ -13,6 +13,7 @@ pillow = "*"
 prettytable = "*"
 croniter = "*"
 python-dateutil = "*"
+pathvalidate = "*"
 
 [dev-packages]
 

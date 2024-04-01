@@ -219,7 +219,6 @@ class StARR:
             dict: The JSON response from the POST request.
         """
         id_type = None
-        media = None
         if isinstance(media_id, int):
             media_id = [media_id]
         if self.instance_type == 'Sonarr':

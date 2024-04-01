@@ -8,12 +8,12 @@ requests = "*"
 tqdm = "*"
 pyyaml = "*"
 unidecode = "*"
-qbittorrent-api = "*"
 plexapi = "*"
 pillow = "*"
 prettytable = "*"
 croniter = "*"
 python-dateutil = "*"
+pathvalidate = "*"
 
 [dev-packages]
 

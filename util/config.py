@@ -61,7 +61,7 @@ class Config:
 
         # Set various attributes from the loaded config
         self.instances_config = config['instances']  # Instance configurations
-        self.bash_config = config['bash_scripts']  # Bash script configurations
+        self.bash_config = config.get('bash_scripts', {})  # Bash script configurations
         self.scheduler = config['schedule']  # Scheduler configurations
         self.discord = config.get('discord', {})  # Discord configurations, if available
 

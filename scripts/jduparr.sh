@@ -381,7 +381,6 @@ main() {
     if [ "$unraid_notification" == "true" ]; then
         unraid_notify
     fi
-    echo "Silent: $silent"
     if [[ $results == *"No duplicates found."* ]] && [ "$silent" == "False" ]; then
         send_notification
     elif [[ $results != *"No duplicates found."* ]]; then

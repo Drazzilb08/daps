@@ -222,10 +222,11 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
         tag_id = app.get_tag_id_from_name(tag_name)
         if tag_id:
             media_tmp = [item for item in media_dict if tag_id not in item['tags']][:count]
-        
+
         # If all media is tagged, remove tags and fetch new data
         if not media_tmp:
             media_ids = [item['media_id'] for item in media_dict]
+            print(f"Media IDs: {media_ids}")
             logger.info("All media is tagged. Removing tags...")
             app.remove_tags(media_ids, tag_id)
             media_dict = handle_starr_data(app, server_name, instance_type, include_episode=False)
@@ -241,14 +242,10 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
         print("Processing data... This may take a while.")
         for item in tqdm(media_dict, desc=f"Processing '{server_name}' Media", unit="items", disable=None, leave=True):
             file_info = {}
-            can_rename = False
             # Fetch rename list and sort it by existingPath
             rename_response = app.get_rename_list(item['media_id'])
             rename_response.sort(key=lambda x: x['existingPath'])
-            
-            if rename_response:
-                can_rename = True
-            
+
             # Process each item in the rename list to get file rename information
             for items in rename_response:
                 existing_path = items.get('existingPath', None)
@@ -265,15 +262,12 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
             # Update item with file rename information
             item["new_path_name"] = None
             item["file_info"] = file_info
-            item["can_rename"] = can_rename
         
         # If not in dry run, perform file renaming
         if not dry_run:
             # Get media IDs and initiate file renaming
             media_ids = []
-            for item in media_dict:
-                if item["can_rename"]:
-                    media_ids.append(item['media_id'])
+            media_ids = [item['media_id'] for item in media_dict]
 
             if media_ids:
                 # Rename files and wait for media refresh

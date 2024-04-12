@@ -29,36 +29,16 @@ def set_cmd_args(settings, bash_script_file, logger, script_name):
     if discord_check(script_name):
         webhook_url, channel = get_discord_data(script_name, logger)
     if settings:
-        script_debug = str(settings.get('debug')) if 'debug' in settings else None
 
         source = str(settings.get('source')) if 'source' in settings else None
-        destination = str(settings.get('destination')) if 'destination' in settings else None
-        keep_backups = str(settings.get('keep_backups')) if 'keep_backups' in settings else None
-        compress = str(settings.get('compress')) if 'compress' in settings else None
         data_dir = str(settings.get('data_dir')) if 'data_dir' in settings else None
         include = list(settings.get('include')) if 'include' in settings else None
         exclude = list(settings.get('exclude')) if 'exclude' in settings else None
+        silent = settings.get('silent') if 'silent' in settings else None
 
-        keep_essential = str(settings.get('keep_essential')) if 'keep_essential' in settings else None
-        keep_full = str(settings.get('keep_full')) if 'keep_full' in settings else None
-        force_full_Backup = str(settings.get('force_full_backup')) if 'force_full_backup' in settings else None
-        script_dry_run = str(settings.get('dry_run')) if 'dry_run' in settings else None
-        shutdown_plex = str(settings.get('shutdown_plex')) if 'shutdown_plex' in settings else None
-        full_backup = str(settings.get('full_backup')) if 'full_backup' in settings else None
-        
         logger.debug(f"channel: {channel}")
         logger.debug(f"webhook_url: {webhook_url}")
         logger.debug(f"source: {source}")
-        logger.debug(f"destination: {destination}")
-        logger.debug(f"keep_backups: {keep_backups}")
-        logger.debug(f"compress: {compress}")
-        logger.debug(f"keep_essential: {keep_essential}")
-        logger.debug(f"keep_full: {keep_full}")
-        logger.debug(f"force_full_Backup: {force_full_Backup}")
-        logger.debug(f"script_dry_run: {script_dry_run}")
-        logger.debug(f"shutdown_plex: {shutdown_plex}")
-        logger.debug(f"script_debug: {script_debug}")
-        logger.debug(f"full_backup: {full_backup}")
         logger.debug(f"webhook_url: {webhook_url}")
         logger.debug(f"channel: {channel}")
         logger.debug(f"script_name: {script_name}")
@@ -66,20 +46,11 @@ def set_cmd_args(settings, bash_script_file, logger, script_name):
         logger.debug(f"bash_script_file: {bash_script_file}")
         logger.debug(f"include: {include}")
         logger.debug(f"exclude: {exclude}")
+        logger.debug(f"Silent: {silent}")
 
         if source:
             cmd.append('-s')
             cmd.append(shlex.quote(str(source)))
-        if destination:
-            cmd.append('-d')
-            cmd.append(shlex.quote(str(destination)))
-        if keep_backups:
-            cmd.append('-k')
-            cmd.append(shlex.quote(str(keep_backups)))
-
-        if compress:
-            cmd.append('-c')
-            cmd.append(shlex.quote(str(compress)))
         
         if webhook_url:
             cmd.append('-w')
@@ -89,34 +60,10 @@ def set_cmd_args(settings, bash_script_file, logger, script_name):
             cmd.append('-C')
             cmd.append(shlex.quote(str(channel)))
 
-        if keep_essential:
-            cmd.append('-k')
-            cmd.append(shlex.quote(str(keep_essential)))
-
-        if keep_full:
-            cmd.append('-K')
-            cmd.append(shlex.quote(str(keep_full)))
-
-        if force_full_Backup:
-            cmd.append('-F')
-            cmd.append(shlex.quote(str(force_full_Backup)))
-
-        if full_backup:
-            cmd.append('-f')
-            cmd.append(shlex.quote(str(full_backup)))
-
-        if script_dry_run:
-            cmd.append('-r')
-            cmd.append(shlex.quote(str(script_dry_run)))
-
-        if shutdown_plex:
+        if silent is not None:
             cmd.append('-S')
-            cmd.append(shlex.quote(str(shutdown_plex)))
+            cmd.append(shlex.quote(str(silent)))
 
-        if script_debug:
-            cmd.append('-D')
-            cmd.append(shlex.quote(str(script_debug)))
-        
         if data_dir:
             cmd.append('-D')
             cmd.append(shlex.quote(str(data_dir)))

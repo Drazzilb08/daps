@@ -30,6 +30,7 @@ from util.logger import setup_logger
 try:
     from plexapi.server import PlexServer
     from tqdm import tqdm
+    from pathvalidate import sanitize_filename, is_valid_filename
 except ImportError as e:
     print(f"ImportError: {e}")
     print("Please install the required modules with 'pip install -r requirements.txt'")
@@ -94,6 +95,28 @@ def get_assets_files(source_dirs, logger):
     
     return final_assets
 
+def handle_series_match(asset, media_seasons_numbers, asset_season_numbers):
+    # Iterate through each file in the asset
+        files_to_remove = []
+        seasons_to_remove = []
+        for file in asset['files']:
+            # Check for season-related file naming
+            if re.search(r' - Season| - Specials', file):
+                if re.search(r"Season (\d+)", file):
+                    season_number = int(re.search(r"Season (\d+)", file).group(1))
+                elif "Specials" in file:
+                    season_number = 0
+                if season_number not in media_seasons_numbers:
+                    files_to_remove.append(file)
+                    continue
+        for file in files_to_remove:
+            asset['files'].remove(file)
+        for season in asset_season_numbers:
+            if season not in media_seasons_numbers:
+                seasons_to_remove.append(season)
+        for season in seasons_to_remove:
+            asset_season_numbers.remove(season)
+
 def match_data(media_dict, asset_files):
     """
     Matches media data to asset files
@@ -124,7 +147,7 @@ def match_data(media_dict, asset_files):
                 asset_data = asset_files[asset_type]
                 media_data = media_dict[asset_type]
                 # Iterate through each media entry of the current asset type
-                with tqdm(total=len(media_data), desc=f"Matching {asset_type}", unit="media", leave=True, disable=None) as pbar_inner:
+                with tqdm(total=len(media_data), desc=f"Matching {asset_type}", leave=True, disable=None) as pbar_inner:
                     for media in media_data:
                         matched = False 
                         if asset_type == 'series':
@@ -136,36 +159,25 @@ def match_data(media_dict, asset_files):
                                 matched = True  # Set flag to indicate a match
                                 asset_season_numbers = asset.get('season_numbers', None)
                                 if asset_type == "series":
-                                    # Iterate through each file in the asset
-                                    files_to_remove = []
-                                    seasons_to_remove = []
-                                    for file in asset['files']:
-                                        # Check for season-related file naming
-                                        if re.search(r' - Season| - Specials', file):
-                                            if re.search(r"Season (\d+)", file):
-                                                season_number = int(re.search(r"Season (\d+)", file).group(1))
-                                            elif "Specials" in file:
-                                                season_number = 0
-                                            if season_number not in media_seasons_numbers:
-                                                files_to_remove.append(file)
-                                                continue
-                                    for file in files_to_remove:
-                                        asset['files'].remove(file)
-                                    for season in asset_season_numbers:
-                                        if season not in media_seasons_numbers:
-                                            seasons_to_remove.append(season)
-                                    for season in seasons_to_remove:
-                                        asset_season_numbers.remove(season)
-                                            
-                                # Store matched data in the matched dictionary
-                                matched_dict.append({
-                                    'title': media['title'],
-                                    'year': media['year'],
-                                    'folder': media['folder'],
-                                    'files': asset['files'],
-                                    'seasons_numbers': asset_season_numbers,
-                                })
-                                break  # Break loop after finding a match
+                                    handle_series_match(asset, media_seasons_numbers, asset_season_numbers)
+                                break
+                        if not matched:
+                            for asset in asset_data:
+                                if is_match_alternate(asset, media):
+                                    matched = True
+                                    asset_season_numbers = asset.get('season_numbers', None)
+                                    if asset_type == "series":
+                                        handle_series_match(asset, media_seasons_numbers, asset_season_numbers)
+                                    break
+                                
+                        if matched:
+                            matched_dict.append({
+                                'title': media['title'],
+                                'year': media['year'],
+                                'folder': media['folder'],
+                                'files': asset['files'],
+                                'seasons_numbers': asset_season_numbers,
+                            })
 
                         if not matched:
                             # If no match is found, add to unmatched dictionary
@@ -264,7 +276,8 @@ def rename_files(matched_assets, script_config, logger):
 
                 # Remove any OS illegal characters from the file name
                 if asset_type == "collections":
-                    folder = re.sub(r'[<>:"/\\|?*]', '', folder.replace('/', ''))
+                    if not is_valid_filename(folder):
+                        folder = sanitize_filename(folder)
                 
                 # Handle asset_folders configuration
                 if asset_folders:
@@ -282,7 +295,11 @@ def rename_files(matched_assets, script_config, logger):
                     
                     # Check for season-related file naming
                     if re.search(r' - Season| - Specials', file_name):
-                        season_number = (re.search(r"Season (\d+)", file_name).group(1) if "Season" in file_name else "00").zfill(2)
+                        try:
+                            season_number = (re.search(r"Season (\d+)", file_name).group(1) if "Season" in file_name else "00").zfill(2)
+                        except AttributeError:
+                            logger.debug(f"Error extracting season number from {file_name}")
+                            continue
                         if asset_folders:
                             new_file_name = f"Season{season_number}{file_extension}"
                         else:

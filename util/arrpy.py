@@ -219,7 +219,6 @@ class StARR:
             dict: The JSON response from the POST request.
         """
         id_type = None
-        media = None
         if isinstance(media_id, int):
             media_id = [media_id]
         if self.instance_type == 'Sonarr':
@@ -660,16 +659,16 @@ class StARR:
         endpoint = f"{self.url}/api/v3/health"
         return self.make_get_request(endpoint, headers=self.headers)
     
-    def delete_media(self, media_id, instance_type):
+    def delete_media(self, media_id):
         """
         Delete a media item.
         Args:
             media_id (int): The ID of the media item to delete.
         """
         endpoint = None
-        if instance_type == 'Sonarr':
+        if self.instance_type == 'Sonarr':
             endpoint = f"{self.url}/api/v3/series/{media_id}"
-        elif instance_type == 'Radarr':
+        elif self.instance_type == 'Radarr':
             endpoint = f"{self.url}/api/v3/movie/{media_id}"
         return self.make_delete_request(endpoint)
 

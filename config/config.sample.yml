@@ -238,10 +238,12 @@ border_replacerr:
         - "#00FF00"
     halloween:
       schedule: range(10/01-10/31)
-      color: "#FFA500"
+      color:
+        - "#FFA500"
     thanksgiving:
       schedule: range(11/01-11/30)
-      color: "#FFA500"
+      color:
+        - "#FFA500"
     valentine:
       schedule: range(2/5-2/15)
       color:

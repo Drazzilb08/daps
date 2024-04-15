@@ -212,6 +212,11 @@ border_replacerr:
   border_width: 26
   # skip - This will skip border replacement until the next schedule/holiday
   skip: false
+  # fix light mm2k posters so no black bar shows at the bottom
+  exclusion_list:
+  # - "Fall (2022)"
+  # - "Inglourious Basterds (2009)"
+  # - "True Detective (2014) - Season 1"
   # Setting a border color of nothing will remove the border, else it will add the border color
   # Examples: Must include everything from double quotes to double quotes such as "#FF0000"
   # "#FF0000" - Red

@@ -54,7 +54,6 @@ def set_cmd_args(settings, logger):
         sync_id = sync_item['id']
 
         sync_cmd = cmd.copy()
-        print(f"gdrive_sa_location: {gdrive_sa_location}")
         if not gdrive_sa_location:
             if client_id:
                 sync_cmd.append('-i')

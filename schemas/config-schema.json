@@ -388,7 +388,10 @@
                     "type": "array"
                 },
                 "ignore_root_folders": {
-                    "type": ["array", "null"]
+                    "type": [
+                        "array",
+                        "null"
+                    ]
                 },
                 "library_names": {
                     "type": "array"

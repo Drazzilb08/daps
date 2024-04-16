@@ -3,49 +3,34 @@
     "type": "object",
     "additionalProperties": false,
     "definitions": {
+        "run": {
+            "type": "string",
+            "pattern": "^run$"
+        },
         "hourly": {
             "type": "string",
             "pattern": "^hourly\\([0-5][0-9]\\)$"
         },
         "daily": {
             "type": "string",
-            "pattern": "^daily\\((?:([01]?[0-9]|2[0-3]):([0-5][0-9])\\|)?([01]?[0-9]|2[0-3]):([0-5][0-9])\\)$"
+            "pattern": "^daily\\(((?:[01]?[0-9]|2[0-3]):([0-5][0-9])(?:\\|(?:[01]?[0-9]|2[0-3]):([0-5][0-9]))*)\\)$"
         },
         "weekly": {
             "type": "string",
             "pattern": "^weekly\\((monday|tuesday|wednesday|thursday|friday|saturday|sunday)@(0[0-9]|1[0-9]|2[0-3]):([0-5][0-9])\\)$"
         },
+        "monthly": {
+            "type": "string",
+            "pattern": "^monthly\\((?:28@(?:[01]?[0-9]|2[0-3]):([0-5][0-9]))\\)$"
+        },
         "cron": {
             "type": "string",
             "pattern": "^cron\\(([^)\\s]+ [^)\\s]+ [^)\\s]+ [^)\\s]+ [^)\\s]+)\\)$"
         },
-        "instance": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "object",
-                "additionalProperties": false,
-                "properties": {
-                    "url": {
-                        "type": "string"
-                    },
-                    "api": {
-                        "type": "string"
-                    }
-                },
-                "required": [
-                    "url",
-                    "api"
-                ]
-            }
-        },
-        "logLevel": {
-            "type": "string",
-            "pattern": "^debug|info|warning|error$"
-        },
         "schedule": {
             "oneOf": [
                 {
-                    "type": "null"
+                    "$ref": "#/definitions/run"
                 },
                 {
                     "$ref": "#/definitions/hourly"
@@ -57,9 +42,42 @@
                     "$ref": "#/definitions/weekly"
                 },
                 {
+                    "$ref": "#/definitions/monthly"
+                },
+                {
                     "$ref": "#/definitions/cron"
+                },
+                {
+                    "type": "null"
                 }
-            ]
+            ],
+            "description": "A schedule of either run, hourly, daily, weekly, monthly, or cron. If null, the task will not be scheduled.\nExamples:\nrun\nhourly(30)\ndaily(12:23)\ndaily(10:18|12:23)\nweekly(monday@12:00)\nmonthly(15@12:00)\ncron(0 0 * * *)"
+        },
+        "instance": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                    "url": {
+                        "type": "string",
+                        "description": "The URL of the instance, including the protocol and port. Example: http://localhost:8989",
+                        "pattern": "^https?://[^\\s]+(:[0-9]+)?$"
+                    },
+                    "api": {
+                        "type": "string",
+                        "description": "The API key of the instance"
+                    }
+                },
+                "required": [
+                    "url",
+                    "api"
+                ]
+            }
+        },
+        "logLevel": {
+            "type": "string",
+            "pattern": "^debug|info|warning|error$"
         },
         "stringOrNull": {
             "type": [
@@ -78,16 +96,25 @@
             "additionalProperties": false,
             "properties": {
                 "discord_webhook": {
-                    "$ref": "#/definitions/stringOrNull"
+                    "$ref": "#/definitions/stringOrNull",
+                    "description": "The Discord webhook URL to send messages to. If null, no messages will be sent.",
+                    "pattern": "^https?://[^\\s]+(:[0-9]+)?$"
                 },
                 "channel_id": {
-                    "$ref": "#/definitions/integerOrNull"
+                    "$ref": "#/definitions/integerOrNull",
+                    "description": "The Discord channel ID to send messages to if you are using Notifarr. If null, no messages will be sent.\nhttps://support.discord.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID"
                 }
             },
             "required": [
                 "discord_webhook",
                 "channel_id"
             ]
+        },
+        "uniqueArray": {
+            "uniqueItems": true,
+            "items": {
+                "type": "string"
+            }
         }
     },
     "properties": {
@@ -172,7 +199,9 @@
             "additionalProperties": false,
             "properties": {
                 "notifiarr_webhook": {
-                    "$ref": "#/definitions/stringOrNull"
+                    "$ref": "#/definitions/stringOrNull",
+                    "pattern": "^https?://[^\\s]+(:[0-9]+)?$",
+                    "description": "Notifiarr Passthrough URL. If null, no messages will be sent."
                 },
                 "main": {
                     "$ref": "#/definitions/discord"
@@ -287,16 +316,16 @@
                     "type": "boolean"
                 },
                 "library_names": {
-                    "type": "array"
+                    "$ref": "#/definitions/uniqueArray"
                 },
                 "source_dirs": {
-                    "type": "array"
+                    "$ref": "#/definitions/uniqueArray"
                 },
                 "destination_dir": {
                     "type": "string"
                 },
                 "instances": {
-                    "type": "array"
+                    "$ref": "#/definitions/uniqueArray"
                 }
             },
             "required": [
@@ -324,7 +353,7 @@
                     "type": "boolean"
                 },
                 "source_dirs": {
-                    "type": "array"
+                    "$ref": "#/definitions/uniqueArray"
                 },
                 "destination_dir": {
                     "type": "string"
@@ -385,7 +414,7 @@
                     "$ref": "#/definitions/logLevel"
                 },
                 "instances": {
-                    "type": "array"
+                    "$ref": "#/definitions/uniqueArray"
                 },
                 "ignore_root_folders": {
                     "type": [
@@ -394,13 +423,13 @@
                     ]
                 },
                 "library_names": {
-                    "type": "array"
+                    "$ref": "#/definitions/uniqueArray"
                 },
                 "ignore_collections": {
-                    "type": "array"
+                    "$ref": "#/definitions/uniqueArray"
                 },
                 "source_dirs": {
-                    "type": "array"
+                    "$ref": "#/definitions/uniqueArray"
                 }
             },
             "required": [
@@ -423,16 +452,16 @@
                     "type": "boolean"
                 },
                 "library_names": {
-                    "type": "array"
+                    "$ref": "#/definitions/uniqueArray"
                 },
                 "ignore_collections": {
-                    "type": "array"
+                    "$ref": "#/definitions/uniqueArray"
                 },
                 "source_dirs": {
-                    "type": "array"
+                    "$ref": "#/definitions/uniqueArray"
                 },
                 "instances": {
-                    "type": "array"
+                    "$ref": "#/definitions/uniqueArray"
                 }
             },
             "required": [
@@ -505,7 +534,7 @@
                     "type": "string"
                 },
                 "instances": {
-                    "type": "array"
+                    "$ref": "#/definitions/uniqueArray"
                 }
             },
             "required": [
@@ -533,10 +562,10 @@
                     "type": "boolean"
                 },
                 "instances": {
-                    "type": "array"
+                    "$ref": "#/definitions/uniqueArray"
                 },
                 "paths": {
-                    "type": "array"
+                    "$ref": "#/definitions/uniqueArray"
                 },
                 "filters": {
                     "type": "object",
@@ -546,10 +575,10 @@
                             "type": "string"
                         },
                         "exclude_movies": {
-                            "type": "array"
+                            "$ref": "#/definitions/uniqueArray"
                         },
                         "exclude_series": {
-                            "type": "array"
+                            "$ref": "#/definitions/uniqueArray"
                         }
                     },
                     "required": [
@@ -585,22 +614,13 @@
                         "type": "object",
                         "properties": {
                             "library_names": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
+                                "$ref": "#/definitions/uniqueArray"
                             },
                             "plex_instances": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
+                                "$ref": "#/definitions/uniqueArray"
                             },
                             "labels": {
-                                "type": "array",
-                                "items": {
-                                    "type": "string"
-                                }
+                                "$ref": "#/definitions/uniqueArray"
                             }
                         },
                         "required": [
@@ -628,10 +648,7 @@
                     "type": "boolean"
                 },
                 "instances": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "$ref": "#/definitions/uniqueArray"
                 }
             },
             "required": [
@@ -655,10 +672,10 @@
                             "$ref": "#/definitions/stringOrNull"
                         },
                         "include": {
-                            "type": "array"
+                            "$ref": "#/definitions/uniqueArray"
                         },
                         "exclude": {
-                            "type": "array"
+                            "$ref": "#/definitions/uniqueArray"
                         }
                     },
                     "required": [

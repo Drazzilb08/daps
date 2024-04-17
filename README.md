@@ -23,6 +23,22 @@ I do my best to keep up with everything
 2. 0.X.0 versions are minor changes
 3. X.0.0 versions are major changes
 
+## Schema Validation
+
+### Overview
+
+Schema validation is a method to ensure that data follows a predefined structure, data types, and constraints set by a Schema document. It compares the document against the schema rules, highlighting any deviations from the expected format or content.
+
+### How to use it
+
+- If you haven't already, install [VSCode](https://code.visualstudio.com/docs/setup/setup-overview).
+- Install the [YAML extension](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml)
+- Include the following line at the top of your config file (already present if you're modifying the config sample):
+```yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Drazzilb08/daps/master/schemas/config-schema.json
+```
+- Once added, any invalid fields or values will be flagged as errors, and hovering over the fields will provide descriptions.
+
 ## Submitting Pull Requests
 
 Please feel free to make a pull request if you see something that could be improved. I'm always looking for ways to make my scripts better.

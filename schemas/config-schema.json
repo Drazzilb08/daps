@@ -5,11 +5,13 @@
     "definitions": {
         "run": {
             "type": "string",
-            "pattern": "^run$"
+            "enum": [
+                "run"
+            ]
         },
         "hourly": {
             "type": "string",
-            "pattern": "^hourly\\([0-5][0-9]\\)$"
+            "pattern": "^hourly\\((?:[01]?[0-9]|2[0-3])\\)$"
         },
         "daily": {
             "type": "string",
@@ -51,7 +53,7 @@
                     "type": "null"
                 }
             ],
-            "description": "A schedule of either run, hourly, daily, weekly, monthly, or cron. If null, the task will not be scheduled.\nExamples:\nrun\nhourly(30)\ndaily(12:23)\ndaily(10:18|12:23)\nweekly(monday@12:00)\nmonthly(15@12:00)\ncron(0 0 * * *)"
+            "description": "A schedule of either run, hourly, daily, weekly, monthly, or cron. If null, the task will not be scheduled.\nExamples:\nrun\nhourly(10)\ndaily(12:23)\ndaily(10:18|12:23)\nweekly(monday@12:00)\nmonthly(15@12:00)\ncron(0 0 * * *)"
         },
         "instance": {
             "type": "object",
@@ -77,7 +79,12 @@
         },
         "logLevel": {
             "type": "string",
-            "pattern": "^debug|info|warning|error$"
+            "enum": [
+                "debug",
+                "info",
+                "warning",
+                "error"
+            ]
         },
         "stringOrNull": {
             "type": [
@@ -353,6 +360,9 @@
                     "type": "boolean"
                 },
                 "source_dirs": {
+                    "$ref": "#/definitions/uniqueArray"
+                },
+                "exclusion_list": {
                     "$ref": "#/definitions/uniqueArray"
                 },
                 "destination_dir": {

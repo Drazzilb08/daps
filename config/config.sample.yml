@@ -1,3 +1,5 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Drazzilb08/daps/master/schemas/config-schema.json
+
 schedule:
   # Options:
   # run - will run a single time per run of main.py (mainly useful for testing with dry_run)
@@ -144,8 +146,10 @@ sync_gdrive:
 
     # - id: 1wrSru-46iIN1iqCl2Cjhj5ofdazPgbsz # dsaq
     #   location: /path/to/location/dasq # Where you want to sync the posters to
-    # - id: 1zWY-ORtJkOLcQChV--oHquxW3JCow1zm # solen
-    #   location: /path/to/location/solen # Where you want to sync the posters to
+    # - id: 1zWY-ORtJkOLcQChV--oHquxW3JCow1zm # solens collection of others work
+    #   location: /data/posters/solens_collection # Where you want to sync the posters to
+    # - id: 1YEuS1pulJAfhKm4L8U9z5-EMtGl-d2s7 # solens own work
+    #   location: /data/posters/solens # Where you want to sync the posters to
     # - id: 1Xg9Huh7THDbmjeanW0KyRbEm6mGn_jm8 # BZ
     #   location: /path/to/location/bz # Where you want to sync the posters to
     # - id: 1oBzEOXXrTHGq6sUY_4RMtzMTt4VHyeJp # chrisdc

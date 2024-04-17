@@ -54,19 +54,20 @@ def set_cmd_args(settings, logger):
         sync_id = sync_item['id']
 
         sync_cmd = cmd.copy()
-        if client_id:
-            sync_cmd.append('-i')
-            sync_cmd.append(shlex.quote(client_id))
-        else:
-            logger.error("No client id provided")
-            return
+        if not gdrive_sa_location:
+            if client_id:
+                sync_cmd.append('-i')
+                sync_cmd.append(shlex.quote(client_id))
+            else:
+                logger.error("No client id provided")
+                return
 
-        if client_secret:
-            sync_cmd.append('-s')
-            sync_cmd.append(shlex.quote(client_secret))
-        else:
-            logger.error("No client secret provided")
-            return
+            if client_secret:
+                sync_cmd.append('-s')
+                sync_cmd.append(shlex.quote(client_secret))
+            else:
+                logger.error("No client secret provided")
+                return
 
         if gdrive_sync:
             if sync_location != '' and os.path.exists(sync_location):

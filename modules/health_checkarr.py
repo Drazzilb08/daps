@@ -79,11 +79,11 @@ def main(config):
                     id_list = []
                     if health:
                         for health_item in health:
-                            if health_item['source'] == "RemovedMovieCheck" or health_item['source'] == "RemoveSeriesCheck":
-                                if instance_type == "Radarr":
+                            if health_item['source'] == "RemovedMovieCheck" or health_item['source'] == "RemovedSeriesCheck":
+                                if instance_type == "radarr":
                                     for m in re.finditer(tmdb_id_extractor, health_item['message']):
                                         id_list.append(int(m.group(1)))
-                                if instance_type == "Sonarr":
+                                if instance_type == "sonarr":
                                     for m in re.finditer(tvdb_id_extractor, health_item['message']):
                                         id_list.append(int(m.group(1)))
                     logger.debug(f"id_list:\n{json.dumps(id_list, indent=4)}")
@@ -98,10 +98,10 @@ def main(config):
                         logger.info(f"Deleting {len(output)} {instance_type} items from {server_name}")
                         for item in tqdm(output, desc=f"Deleting {instance_type} items", unit="items", disable=None, total=len(output)):
                             if not dry_run:
-                                logger.info(f"{item['title']} deleted with id: {item['db_id']}")
-                                app.delete_media(item['db_id'], instance_type)
+                                logger.info(f"{item['title']} deleted with id: {item['media_id']} and tvdb/tmdb id: {item['db_id']}")
+                                app.delete_media(item['media_id'])
                             else:
-                                logger.info(f"{item['title']} would have been deleted with id: {item['db_id']}")
+                                logger.info(f"{item['title']} would have been deleted with id: {item['media_id']}")
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()

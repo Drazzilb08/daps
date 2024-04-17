@@ -157,6 +157,9 @@ def print_output(unmatched_dict, media_dict, logger):
                     logger.info(create_table(table))
                     logger.info("")
                     for item in data:
+                        if data.index(item) % 10 == 0:
+                            logger.info(f"\t*** {location_base.title()}{suffix} {data.index(item)+1} - {min(data.index(item)+10, len(data))} ***")
+                            logger.info("")
                         if asset_type == 'series':
                             missing_seasons = item.get('missing_seasons', False)
                             if missing_seasons:

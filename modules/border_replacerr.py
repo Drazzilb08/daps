@@ -16,7 +16,6 @@
 
 import os
 import json
-from os.path import dirname
 import re
 import logging
 import filecmp
@@ -112,7 +111,7 @@ def convert_to_rgb(hex_color, logger):
         return (255, 255, 255)
     return color_code
 
-def fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_run, logger):
+def fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_run, logger, exclusion_list):
     """
     Replaces the border on the posters.
 
@@ -128,7 +127,6 @@ def fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_
 
     # Extracting necessary parameters from the script config
     border_width = script_config['border_width']
-    exclusion_list = script_config['exclusion_list']
     rgb_border_colors = []
 
     # Convert border colors to RGB format if available
@@ -173,6 +171,12 @@ def fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_
                 else:
                     year = ""
 
+                excluded = False
+                if exclusion_list:
+                    if f"{data['title']} {year}" in exclusion_list:
+                        excluded = True
+                        logger.debug(f"Excluding {data['title']} {year}")                
+
                 # Prepare output directory for saving processed files
                 if path:
                     path_basename = os.path.basename(path)
@@ -200,7 +204,7 @@ def fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_
                         if rgb_border_color:
                             results = replace_border(input_file, output_path, rgb_border_color, border_width, logger)
                         else:
-                            results = remove_border(input_file, output_path, border_width, exclusion_list, logger)
+                            results = remove_border(input_file, output_path, border_width, logger, excluded)
                         if results:
                             if path:
                                 messages.append(f"{action} {data['title']}{year} - {file_name}")
@@ -279,7 +283,7 @@ def replace_border(input_file, output_path, border_colors, border_width, logger)
         logger.error(f"Error processing {input_file}")
         return False
 
-def remove_border(input_file, output_path, border_width, exclusion_list, logger):
+def remove_border(input_file, output_path, border_width, logger, exclude):
     """
     Crops the center of an image, reducing its dimensions by 50 pixels on each side.
     
@@ -287,67 +291,30 @@ def remove_border(input_file, output_path, border_width, exclusion_list, logger)
         input_file (str): The input file.
         output_path (str): The output path.
         border_width (int): The border width.
-        exclusion_list (list): Light posters to exclude from having a black border on the bottom
     Returns:
         bool: True if the file was saved, False otherwise.
     """
-
-    def format_season(string):
-        return re.sub(r'Season0*(\d+)', r'Season \1', string) 
-
-    if exclusion_list is None:
-        exclusion_list = []
 
     # Open the image
     try:
         with Image.open(input_file) as image: # Open the image
             # Set the border width
             width, height = image.size # Get the width and height of the image
-            # Remove top, left, and right borders, and replace bottom border with black
-            file_name = os.path.basename(input_file)
-            name_without_extension, extension = os.path.splitext(file_name)
-            # Format for no asset folders
-            parts = name_without_extension.split('_')
-            # Check if list is greater > 2 indicating season file, if not return None
-            if len(parts)>= 2:
-                name_without_season, season = parts 
-            else:
-                name_without_season = parts[0]
-                season = None
-            if season is not None: 
-                formatted_season = format_season(season)
-                # Create variable to match exclusion_list format
-                formatted_name_without_season = f"{name_without_season} - {formatted_season}"
-            else:
-                formatted_name_without_season = None
             
-            # Format for asset folders
-            directory_path = os.path.dirname(input_file)
-            parent_dir_name = os.path.basename(directory_path)
-            formatted_name_without_extension = format_season(name_without_extension)
-            # Create variable to match exclusion_list format
-            folder_season_file_name = f"{parent_dir_name} - {formatted_name_without_extension}"
-
-            # Check asset folders for exclusion list match
-            if folder_season_file_name in exclusion_list and "Season" in name_without_extension: # season file name
-                final_image = image.crop((border_width, border_width, width - border_width, height - border_width)) 
-            elif parent_dir_name in exclusion_list and "Season" not in name_without_extension: # poster/series file name
-                final_image = image.crop((border_width, border_width, width - border_width, height - border_width)) 
-
-            # Check formatted file name against exclusion list if asset folders is false
-            elif name_without_extension in exclusion_list: # poster/series file name
-                final_image = image.crop((border_width, border_width, width - border_width, height - border_width)) 
-            elif formatted_name_without_season in exclusion_list: # season file name
-                final_image = image.crop((border_width, border_width, width - border_width, height - border_width)) 
-            # Not an exclusion
-            else:
+            # Remove top, left, and right borders, and replace bottom border with black
+            if not exclude:
                 final_image = image.crop((border_width, border_width, width - border_width, height)) # Crop the image to remove the borders
                 bottom_border = Image.new("RGB", (width - 2 * border_width, border_width), color='black') # Create a black image for the bottom border
                 bottom_border_position = (0, height - border_width - border_width) # Position the bottom border 25 pixels from the bottom
                 final_image.paste(bottom_border, bottom_border_position) # Paste the black bottom border at the specified position
+            else:
+                # Remove all borders
+                final_image = image.crop((border_width, border_width, width - border_width, height - border_width)) # Crop the image to remove the borders
 
             # Resize the image to 1500x1000
             final_image = final_image.resize((1000, 1500)).convert("RGB")
+            
+            file_name = os.path.basename(input_file)
             final_path = f"{output_path}/{file_name}" # Set the output path to the parent directory
 
             if os.path.isfile(final_path):
@@ -464,6 +431,7 @@ def process_files(source_dirs, destination_dir, dry_run, log_level, script_confi
     schedule = script_config.get('schedule', None)
     border_colors = script_config.get('border_colors', None)
     skip = script_config.get('skip', False)
+    exclusion_list = script_config.get('exclusion_list', None)
 
     # Convert single string border color to a list if necessary
     border_colors = [border_colors] if isinstance(border_colors, str) else border_colors
@@ -536,7 +504,7 @@ def process_files(source_dirs, destination_dir, dry_run, log_level, script_confi
         logger.debug(f"assets_dict:\n{json.dumps(assets_dict, indent=4)}")
 
         # Fix borders for assets using specified configurations
-        messages = fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_run, logger)
+        messages = fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_run, logger, exclusion_list)
         logger.debug(f"messages:\n{json.dumps(messages, indent=4)}")
 
         # If there are messages (indicating processed files), log each message

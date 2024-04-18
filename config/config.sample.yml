@@ -216,11 +216,13 @@ border_replacerr:
   border_width: 26
   # skip - This will skip border replacement until the next schedule/holiday
   skip: false
-  # fix light mm2k posters so no black bar shows at the bottom
+  # The exclusion list is ideal to fix those pesky posters that MM2K makes (or others) that don't fit the normal scheme of the black gradient at the bottom
+  # This will omit the black border at the bottom of the poster that gets made on most posters and remove all borders
+  # Below are a few examples of certain posters that don't fit the normal scheme
+  # NOte it is not recommended/supported to use the exclusion list with series posters
   exclusion_list:
   # - "Fall (2022)"
   # - "Inglourious Basterds (2009)"
-  # - "True Detective (2014) - Season 1"
   # Setting a border color of nothing will remove the border, else it will add the border color
   # Examples: Must include everything from double quotes to double quotes such as "#FF0000"
   # "#FF0000" - Red

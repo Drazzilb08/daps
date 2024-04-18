@@ -433,13 +433,13 @@ bash_scripts:
   nohl_bash:
     source:
     include:
-      - 
-      - 
+      - /data/include1
+      - /data/include2
     # Exclude certain movie/series folders from being searched
     # NOTE: It must be exactly as the folder is listed in your file system
     exclude:
-      - 
-      - 
+      - /data/exclude1
+      - /data/exclude2
   jduparr:
     data_dir: 
     # Silences notifications if no duplicates are found

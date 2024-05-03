@@ -53,7 +53,7 @@ instances:
       api: abcdefghijklmnopqrstuvwxyz1234567890
   sonarr:
     # Instance name can be whatever you want, it just needs to match the name used in other sections
-    sonarr_1: 
+    sonarr_1:
       url: http://localhost:8989
       api: abcdefghijklmnopqrstuvwxyz1234567890
     sonarr_anime:
@@ -328,22 +328,27 @@ upgradinatorr:
     radarr_1:
       count: 3
       tag_name: checked
+      ignore_tag: ignore
       unattended: true
     radarr_2:
       count: 10
       tag_name: checked
+      ignore_tag: ignore
       unattended: true
     sonarr_1:
       count: 1
       tag_name: checked
+      ignore_tag: ignore
       unattended: true
     sonarr_anime:
       count: 1
       tag_name: checked
+      ignore_tag: ignore
       unattended: true
     sonarr_3:
       count: 20
       tag_name: checked
+      ignore_tag: ignore
       unattended: true
 
 renameinatorr:

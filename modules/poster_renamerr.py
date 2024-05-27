@@ -272,7 +272,7 @@ def rename_files(matched_assets, script_config, logger):
                 messages = []
                 discord_messages = []
                 files = item['files']
-                folder = os.path.basename(os.path.normpath(item['folder']))
+                folder = item['folder']
 
                 # Remove any OS illegal characters from the file name
                 if asset_type == "collections":

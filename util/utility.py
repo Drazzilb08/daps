@@ -591,7 +591,7 @@ def handle_starr_data(app, server_name, instance_type, include_episode=False):
                 year = item['year']
             # Check windows path
             reg = re.match(r"^([A-Z]:\\)", item['path'])
-            if reg.group(1):
+            if reg and reg.group(1):
                 folder = item['path'][item['path'].rfind("\\")+1:]
             else:
                 folder = os.path.basename(os.path.normpath(item['path']))

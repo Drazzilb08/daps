@@ -237,20 +237,22 @@ border_replacerr:
   # "#808080" - Gray
   # To remove borders set the border_colors to nothing.
   # Example: border_colors:
-  border_colors: 
+  border_colors:
   schedule:
     # You can make any holiday you want for any occasion. For the schedule please use the range(month/date-month/date) option
     christmas:
       schedule: range(12/01-12/31)
-      color: 
+      color:
         - "#FF0000"
         - "#00FF00"
     halloween:
       schedule: range(10/01-10/31)
-      color: "#FFA500"
+      color:
+        - "#FFA500"
     thanksgiving:
       schedule: range(11/01-11/30)
-      color: "#FFA500"
+      color:
+        - "#FFA500"
     valentine:
       schedule: range(2/5-2/15)
       color:

@@ -254,7 +254,7 @@ build_payload(){
         common_fields='{
     "notification": 
     {
-        "update": False,
+        "update": false,
         "name": "Plex Backup",
         "event": ""
     },

@@ -194,7 +194,7 @@ send_notification() {
             echo -e "\ncurl -s -H \"Content-Type: application/json\" -X POST -d \'$payload\' \"$webhook\""
             curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook"
         else
-            curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook" /dev/null
+            curl -s -H "Content-Type: application/json" -X POST -d "$payload" "$webhook" --output /dev/null
         fi
     fi
 }

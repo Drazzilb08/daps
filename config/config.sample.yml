@@ -314,6 +314,9 @@ poster_cleanarr:
   library_names:
     - Movies
     - Anime Movies
+  ignore_media:
+    - "Random Movie in assets you want to keep (1999)"
+    - "Random Series in assets you want to keep (1999)"
   ignore_collections:
     - "Random Collection in assets you want to keep"
   # If using poster_renamer with border_replacer, include the tmp folder that border_replacer uses

@@ -505,6 +505,10 @@
                             "tag_name": {
                                 "type": "string"
                             },
+                            "ignore_tag":
+                            {
+                                "type": "string"
+                            },
                             "unattended": {
                                 "type": "boolean"
                             }

@@ -568,10 +568,15 @@ def handle_starr_data(app, server_name, instance_type, include_episode=False):
                                 'episode_id': episode['id'],
                                 'has_file': episode['hasFile'],
                             })  # Append episode data to the episode dictionary
+                    # Check if season is complete
+                    try:
+                        status = season['statistics']['episodeCount'] == season['statistics']['totalEpisodeCount']
+                    except:
+                        status = False
                     season_list.append({
                         'season_number': season['seasonNumber'],
                         'monitored': season['monitored'],
-                        'season_pack': season['statistics']['episodeCount'] == season['statistics']['totalEpisodeCount'],
+                        'season_pack': status,
                         'season_has_episodes': season['statistics']['episodeCount'] > 0,
                         'episode_data': episode_list if include_episode else [],
                     })  # Append season data to the season dictionary

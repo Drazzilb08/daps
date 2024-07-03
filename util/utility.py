@@ -573,11 +573,15 @@ def handle_starr_data(app, server_name, instance_type, include_episode=False):
                         status = season['statistics']['episodeCount'] == season['statistics']['totalEpisodeCount']
                     except:
                         status = False
+                    try:
+                        season_stats = season['statistics']['episodeCount']
+                    except:
+                        season_stats = 0
                     season_list.append({
                         'season_number': season['seasonNumber'],
                         'monitored': season['monitored'],
                         'season_pack': status,
-                        'season_has_episodes': season['statistics']['episodeCount'] > 0,
+                        'season_has_episodes': season_stats,
                         'episode_data': episode_list if include_episode else [],
                     })  # Append season data to the season dictionary
             

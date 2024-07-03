@@ -97,8 +97,6 @@ def sync_to_plex(plex, data_dict, instance_type, logger):
         None
     """
 
-    logger.info(f"Syncing labels to Plex")
-    
     # Loop through each item in the data_dict
     for item in data_dict:
         if instance_type == "sonarr":

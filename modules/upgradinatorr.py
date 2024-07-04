@@ -48,6 +48,16 @@ def filter_media(media_dict, tag_id, count, logger):
             # Log skipped items
             logger.debug(f"Skipping {item['title']} ({item['year']}), Status: {item['status']}, Monitored: {item['monitored']}, Tags: {item['tags']}")
             continue  # Move to the next item if conditions are not met
+        # Check number of monitored episodes within a season
+        if item['seasons']:
+            for i, season in enumerate(item['seasons']):
+                monitored_count = 0
+                for episode in season['episode_data']:
+                    if episode['monitored']:
+                        monitored_count += 1
+                # Change monitoring of season depending on how many unmonitored episodes there are
+                if monitored_count / len(season['episode_data']) < 0.8:
+                    item['season'][i]['monitored'] = False
         filtered_media_dict.append(item)  # Append the item to the filtered list
         filter_count += 1  # Increment the counter for filtered items
     return filtered_media_dict  # Return the filtered list of media
@@ -123,7 +133,7 @@ def process_instance(instance_type, instance_settings, app, logger):
     # Fetch media from the instance
     print(f"Gathering media from {server_name}...")
     server_name = app.get_instance_name()
-    media_dict = handle_starr_data(app, server_name, instance_type, include_episode=False)
+    media_dict = handle_starr_data(app, server_name, instance_type, include_episode=True)
     logger.debug(f"media_dict:\n{json.dumps(media_dict, indent=4)}")
     
     # Get tag ID based on the provided tag name
@@ -135,7 +145,7 @@ def process_instance(instance_type, instance_settings, app, logger):
         media_ids = [item['media_id'] for item in media_dict]
         logger.info("All media is tagged. Removing tags...")
         app.remove_tags(media_ids, tag_id)
-        media_dict = handle_starr_data(app, server_name, instance_type, include_episode=False)
+        media_dict = handle_starr_data(app, server_name, instance_type, include_episode=True)
         filtered_media_dict = filter_media(media_dict, tag_id, count, logger)
     
     # If no filtered_media and not unattended return
@@ -166,6 +176,7 @@ def process_instance(instance_type, instance_settings, app, logger):
     # Processing media data
     if not dry_run:
         media_ids = [item['media_id'] for item in filtered_media_dict]
+        # TODO implement app.search_season to take control over what seasons are being searched since we are altering the monitoring of them
         search_response = app.search_media(media_ids)
         app.add_tags(media_ids, tag_id)
         ready = app.wait_for_command(search_response['id'])

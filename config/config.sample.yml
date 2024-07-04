@@ -317,6 +317,10 @@ poster_cleanarr:
   ignore_media:
     - "Random Movie in assets you want to keep (1999)"
     - "Random Series in assets you want to keep (1999)"
+    - "The Matrix (1999)"
+    - "The Lion King (1994)"
+    - "Friends (1994)"
+    - "The Simpsons (1989)"
   ignore_collections:
     - "Random Collection in assets you want to keep"
   # If using poster_renamer with border_replacer, include the tmp folder that border_replacer uses

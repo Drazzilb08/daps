@@ -67,11 +67,6 @@ def match_assets(assets_list, media_dict, ignore_media):
 
         # Iterate through each media data of the same media type
         for media_data in media_dict:
-            
-            # if title is in ignore_media, skip
-            if ignore_media and f"{media_data['title']} ({media_data['year']})" in ignore_media:
-                matched = True
-                continue
 
             if is_match(asset_data, media_data):
                 matched = True
@@ -104,6 +99,9 @@ def match_assets(assets_list, media_dict, ignore_media):
                     break
         # If no match is found, add the asset to unmatched assets based on media type
         if not matched:
+            if f"{asset_data['title']} ({asset_data['year']})" in ignore_media:
+                print(f"{asset_data['title']} ({asset_data['year']}) is in ignore_media, skipping...")
+                continue
             unmatched_assets.append({
                 'title': asset_data['title'],
                 'year': asset_data['year'],

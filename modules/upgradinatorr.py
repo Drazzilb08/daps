@@ -188,10 +188,8 @@ def process_instance(instance_type, instance_settings, app, logger):
                     logger.debug(f"Command completed successfully for search response ID: {search_response['id']}")
                 else:
                     logger.warning(f"Command did not complete successfully for search response ID: {search_response['id']}")
-                return True
             else:
                 logger.warning(f"No search response for media ID: {media_id}")
-                return False
             
         media_ids = []
         for item in filtered_media_dict:

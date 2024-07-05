@@ -25,13 +25,18 @@ from util.logger import setup_logger
 
 script_name = "upgradinatorr"
 
-def filter_media(media_dict, tag_id, count, logger):
+def filter_media(media_dict, checked_tag_id, ignore_tag_id, count, logger):
     """
-    Filter media_dict to remove items that are not monitored, have the tag_id, or are not in the correct status.
+    Filter media_dict to remove items that are:
+        * not monitored
+        * have the checked_tag_id
+        * have the ignore_tag_id
+        * not in the correct status
     
     Args:
         media_dict (list): A list of dictionaries containing media information.
-        tag_id (int): The tag_id to filter out.
+        checked_tag_id (int): The checked_tag_id to filter out.
+        ignore_tag_id (int): The ignore_tag_id to filter out.
         count (int): The number of items to return.
         
     Returns:
@@ -43,8 +48,8 @@ def filter_media(media_dict, tag_id, count, logger):
     for item in media_dict:
         if filter_count == count:  # Check if the desired count has been reached
             break
-        # Check conditions: tag_id not in tags, monitored is True, and status is one of the specified statuses
-        if tag_id in item['tags'] or item['monitored'] == False or item['status'] not in ["continuing", "airing", "ended", "canceled", "released"]:
+        # Check conditions: checked_tag_id not in tags, ignore_tag_id not in tags, monitored is True, and status is one of the specified statuses
+        if checked_tag_id in item['tags'] or ignore_tag_id in item['tags'] or item['monitored'] == False or item['status'] not in ["continuing", "airing", "ended", "canceled", "released"]:
             # Log skipped items
             logger.debug(f"Skipping {item['title']} ({item['year']}), Status: {item['status']}, Monitored: {item['monitored']}, Tags: {item['tags']}")
             continue  # Move to the next item if conditions are not met
@@ -107,7 +112,8 @@ def process_instance(instance_type, instance_settings, app, logger):
     total_count = 0
     server_name = app.get_instance_name()
     count = instance_settings.get('count', 2)
-    tag_name = instance_settings.get('tag_name', "checked")
+    checked_tag_name = instance_settings.get('tag_name', "checked")
+    ignore_tag_name = instance_settings.get('ignore_tag', "ignore")
     unattended = instance_settings.get('unattended', False)
     
     # Logging instance settings
@@ -116,7 +122,8 @@ def process_instance(instance_type, instance_settings, app, logger):
     ]
     logger.debug(create_table(table))
     logger.debug(f'{"Count:":<20}{count}')
-    logger.debug(f'{"tag_name:":<20}{tag_name}')
+    logger.debug(f'{"checked_tag_name:":<20}{checked_tag_name}')
+    logger.debug(f'{"ignore_tag_name:":<20}{checked_tag_name}')
     logger.debug(f'{"unattended:":<20}{unattended}')
     logger.debug('*' * 40)
     
@@ -127,16 +134,17 @@ def process_instance(instance_type, instance_settings, app, logger):
     logger.debug(f"media_dict:\n{json.dumps(media_dict, indent=4)}")
     
     # Get tag ID based on the provided tag name
-    tag_id = app.get_tag_id_from_name(tag_name)
+    checked_tag_id = app.get_tag_id_from_name(checked_tag_name)
+    ignore_tag_id = app.get_tag_id_from_name(ignore_tag_name)
 
     # Filter media based on tag and count criteria
-    filtered_media_dict = filter_media(media_dict, tag_id, count, logger)
+    filtered_media_dict = filter_media(media_dict, checked_tag_id, ignore_tag_id, count, logger)
     if not filtered_media_dict and unattended:
         media_ids = [item['media_id'] for item in media_dict]
         logger.info("All media is tagged. Removing tags...")
-        app.remove_tags(media_ids, tag_id)
+        app.remove_tags(media_ids, checked_tag_id)
         media_dict = handle_starr_data(app, server_name, instance_type, include_episode=False)
-        filtered_media_dict = filter_media(media_dict, tag_id, count, logger)
+        filtered_media_dict = filter_media(media_dict, checked_tag_id, ignore_tag_id, count, logger)
     
     # If no filtered_media and not unattended return
     if not filtered_media_dict and not unattended:
@@ -149,7 +157,7 @@ def process_instance(instance_type, instance_settings, app, logger):
     if media_dict:
         total_count = len(media_dict)
         for item in media_dict:
-            if tag_id in item['tags']:
+            if checked_tag_id in item['tags']:
                 tagged_count += 1
             else:
                 untagged_count += 1
@@ -167,7 +175,7 @@ def process_instance(instance_type, instance_settings, app, logger):
     if not dry_run:
         media_ids = [item['media_id'] for item in filtered_media_dict]
         search_response = app.search_media(media_ids)
-        app.add_tags(media_ids, tag_id)
+        app.add_tags(media_ids, checked_tag_id)
         ready = app.wait_for_command(search_response['id'])
         if ready:
             sleep_time = 10  # Set the sleep time to 5 seconds

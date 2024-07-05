@@ -37,7 +37,7 @@ except ImportError as e:
 
 script_name = "poster_cleanarr"
 
-def match_assets(assets_list, media_dict):
+def match_assets(assets_list, media_dict, ignore_media):
     """
     Match assets to media.
     
@@ -99,6 +99,9 @@ def match_assets(assets_list, media_dict):
                     break
         # If no match is found, add the asset to unmatched assets based on media type
         if not matched:
+            if f"{asset_data['title']} ({asset_data['year']})" in ignore_media:
+                print(f"{asset_data['title']} ({asset_data['year']}) is in ignore_media, skipping...")
+                continue
             unmatched_assets.append({
                 'title': asset_data['title'],
                 'year': asset_data['year'],
@@ -245,6 +248,7 @@ def main(config):
         library_names = script_config.get('library_names', [])
         source_dirs = script_config.get('source_dirs', [])
         instances = script_config.get('instances', None)
+        ignore_media = script_config.get('ignore_media', [])
 
         # Log script settings for debugging purposes
         table = [
@@ -256,6 +260,7 @@ def main(config):
         logger.debug(f'{"Assets paths:":<20}{source_dirs}')
         logger.debug(f'{"Library names:":<20}{library_names}')
         logger.debug(f'{"Instances:":<20}{instances}')
+        logger.debug(f'{"Ignore media:":<20}{ignore_media}')
         logger.debug(create_bar("-"))
 
         source_dirs = [source_dirs] if isinstance(source_dirs, str) else source_dirs 
@@ -321,7 +326,7 @@ def main(config):
             logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
 
         # Match assets with media and log the results
-        unmatched_dict = match_assets(assets_list, media_dict)
+        unmatched_dict = match_assets(assets_list, media_dict, ignore_media)
         if unmatched_dict:
             logger.debug(f"Unmatched:\n{json.dumps(unmatched_dict, indent=4)}")
             remove_data = remove_assets(unmatched_dict, source_dirs, logger)

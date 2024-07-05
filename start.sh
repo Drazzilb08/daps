@@ -54,6 +54,7 @@ echo "Starting daps as $(whoami) running daps with UID: $PUID and GID: $PGID"
 
 chown -R ${PUID}:${PGID} /${CONFIG_DIR} /app > /dev/null 2>&1
 chmod -R 777 /${CONFIG_DIR} > /dev/null 2>&1
+chmod 660 /${CONFIG_DIR}/config.yml > /dev/null 2>&1
 
 # Run main.py as the dockeruser
 exec su -s /bin/bash -c "python3 /app/main.py" dockeruser

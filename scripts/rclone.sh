@@ -50,6 +50,7 @@ rclone sync \
    --no-update-modtime \
    --drive-use-trash=false \
    --drive-chunk-size=512M \
+   --exclude=**.partial \
    --check-first \
    --bwlimit=80M \
    --size-only \

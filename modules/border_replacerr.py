@@ -61,9 +61,10 @@ def check_holiday(data, border_colors, logger):
     # Iterate through each holiday and its corresponding schedule and color in the data
     for holiday, schedule_color in data.items():
         schedule = schedule_color.get('schedule', None)
-        
+
         # If schedule exists for the holiday
         if schedule:
+            
             # Check if the schedule matches the range pattern
             if re.match(pattern, schedule):
                 
@@ -71,7 +72,9 @@ def check_holiday(data, border_colors, logger):
                 if check_schedule(script_name, schedule, logger):
                     # Retrieve the color for the holiday from schedule_color or use default border_colors
                     holiday_colors = schedule_color.get('color', border_colors)
-                    
+                    # If holiday color is string convert to list
+                    if isinstance(holiday_colors, str):
+                        holiday_colors = [holiday_colors]
                     # If holiday_colors exist, log the schedule execution and colors being used
                     if holiday_colors:
                         table = [

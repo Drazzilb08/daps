@@ -46,17 +46,13 @@ class Config:
         """
         # Open the YAML config file and load its contents
         try:
-            try:
-                with open(self.config_path, "r") as file:
-                    config = yaml.safe_load(file)
-            except FileNotFoundError:
-                print(f"Config file not found at {self.config_path}")
-                return
-            except yaml.parser.ParserError as e:
-                print(f"Error parsing config file: {e}")
-                return
+            with open(self.config_path, "r") as file:
+                config = yaml.safe_load(file)
         except FileNotFoundError:
             print(f"Config file not found at {self.config_path}")
+            return
+        except yaml.parser.ParserError as e:
+            print(f"Error parsing config file: {e}")
             return
 
         # Set various attributes from the loaded config

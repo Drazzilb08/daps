@@ -132,6 +132,8 @@ def process_instance(instance_type, instance_settings, app, logger):
     logger.debug(f'{"Count:":<20}{count}')
     logger.debug(f'{"tag_name:":<20}{tag_name}')
     logger.debug(f'{"unattended:":<20}{unattended}')
+    if instance_type == 'sonarr':
+        logger.debug(f'{"season_monitored_threshold:":<20}{season_monitored_threshold}')
     logger.debug('*' * 40)
     
     # Fetch media from the instance

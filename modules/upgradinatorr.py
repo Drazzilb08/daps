@@ -25,7 +25,7 @@ from util.logger import setup_logger
 
 script_name = "upgradinatorr"
 
-def filter_media(media_dict, tag_id, count, logger):
+def filter_media(media_dict, tag_id, count, season_monitored_threshold, logger):
     """
     Filter media_dict to remove items that are not monitored, have the tag_id, or are not in the correct status.
     
@@ -56,8 +56,8 @@ def filter_media(media_dict, tag_id, count, logger):
                     if episode['monitored']:
                         monitored_count += 1
                 # Change monitoring of season depending on how many unmonitored episodes there are
-                if monitored_count / len(season['episode_data']) < 0.8:
-                    item['season'][i]['monitored'] = False
+                if monitored_count / len(season['episode_data']) < season_monitored_threshold:
+                    item['seasons'][i]['monitored'] = False
         filtered_media_dict.append(item)  # Append the item to the filtered list
         filter_count += 1  # Increment the counter for filtered items
     return filtered_media_dict  # Return the filtered list of media
@@ -119,6 +119,8 @@ def process_instance(instance_type, instance_settings, app, logger):
     count = instance_settings.get('count', 2)
     tag_name = instance_settings.get('tag_name', "checked")
     unattended = instance_settings.get('unattended', False)
+    # default 0 means that a season will NOT be unmonitored if all episodes ARE unmonitored
+    season_monitored_threshold = instance_settings.get('season_monitored_threshold', 0)
     
     # Logging instance settings
     table = [
@@ -140,13 +142,13 @@ def process_instance(instance_type, instance_settings, app, logger):
     tag_id = app.get_tag_id_from_name(tag_name)
 
     # Filter media based on tag and count criteria
-    filtered_media_dict = filter_media(media_dict, tag_id, count, logger)
+    filtered_media_dict = filter_media(media_dict, tag_id, count, season_monitored_threshold, logger)
     if not filtered_media_dict and unattended:
         media_ids = [item['media_id'] for item in media_dict]
         logger.info("All media is tagged. Removing tags...")
         app.remove_tags(media_ids, tag_id)
         media_dict = handle_starr_data(app, server_name, instance_type, include_episode=True)
-        filtered_media_dict = filter_media(media_dict, tag_id, count, logger)
+        filtered_media_dict = filter_media(media_dict, tag_id, count, season_monitored_threshold, logger)
     
     # If no filtered_media and not unattended return
     if not filtered_media_dict and not unattended:
@@ -175,13 +177,35 @@ def process_instance(instance_type, instance_settings, app, logger):
     
     # Processing media data
     if not dry_run:
-        media_ids = [item['media_id'] for item in filtered_media_dict]
-        # TODO implement app.search_season to take control over what seasons are being searched since we are altering the monitoring of them
-        search_response = app.search_media(media_ids)
-        app.add_tags(media_ids, tag_id)
-        ready = app.wait_for_command(search_response['id'])
+        media_ids = []
+        for item in filtered_media_dict:
+            media_ids.append(item['media_id'])
+            search_response = None
+            logger.debug(f"Processing media item with ID: {item['media_id']}")
+
+            if item['seasons'] is None:
+                logger.debug(f"Searching media without seasons for media ID: {item['media_id']}")
+                search_response = app.search_media(item['media_id'])
+            else:
+                for season in item['seasons']:
+                    if season['monitored']:
+                        logger.debug(f"Searching season {season['season_number']} for media ID: {item['media_id']}")
+                        search_response = app.search_season(item['media_id'], season['season_number'])
+
+            logger.debug(f"Adding tag {tag_id} to media ID: {item['media_id']}")
+            app.add_tags(item['media_id'], tag_id)
+            
+            logger.debug(f"Waiting for command to complete for search response ID: {search_response['id']}")
+            ready = app.wait_for_command(search_response['id'])
+            # attempting to replicate previous logic, maybe add timeout if not ready?
+            if ready:
+                logger.debug(f"Command completed successfully for search response ID: {search_response['id']}")
+                continue
+            else:
+                logger.warning(f"Command did not complete successfully for search response ID: {search_response['id']}")
+
         if ready:
-            sleep_time = 10  # Set the sleep time to 5 seconds
+            sleep_time = 10  # Set the sleep time to 10 seconds
             print(f"Waiting for {sleep_time} seconds to allow for search results to populate in the queue...")
             time.sleep(sleep_time)
             queue = app.get_queue(instance_type)

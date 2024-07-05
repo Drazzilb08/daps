@@ -177,52 +177,57 @@ def process_instance(instance_type, instance_settings, app, logger):
     
     # Processing media data
     if not dry_run:
+        
+        def process_search_response(search_response, media_id):
+            if search_response:
+                logger.debug(f"Waiting for command to complete for search response ID: {search_response['id']}")
+                ready = app.wait_for_command(search_response['id'])
+                if ready:
+                    logger.debug(f"Command completed successfully for search response ID: {search_response['id']}")
+                else:
+                    logger.warning(f"Command did not complete successfully for search response ID: {search_response['id']}")
+                return True
+            else:
+                logger.warning(f"No search response for media ID: {media_id}")
+                return False
+            
         media_ids = []
         for item in filtered_media_dict:
             media_ids.append(item['media_id'])
-            search_response = None
             logger.debug(f"Processing media item with ID: {item['media_id']}")
 
             if item['seasons'] is None:
                 logger.debug(f"Searching media without seasons for media ID: {item['media_id']}")
                 search_response = app.search_media(item['media_id'])
+                process_search_response(search_response, item['media_id'])
             else:
                 for season in item['seasons']:
                     if season['monitored']:
                         logger.debug(f"Searching season {season['season_number']} for media ID: {item['media_id']}")
                         search_response = app.search_season(item['media_id'], season['season_number'])
+                        process_search_response(search_response, item['media_id'])
 
             logger.debug(f"Adding tag {tag_id} to media ID: {item['media_id']}")
             app.add_tags(item['media_id'], tag_id)
             
-            logger.debug(f"Waiting for command to complete for search response ID: {search_response['id']}")
-            ready = app.wait_for_command(search_response['id'])
-            # attempting to replicate previous logic, maybe add timeout if not ready?
-            if ready:
-                logger.debug(f"Command completed successfully for search response ID: {search_response['id']}")
-                continue
-            else:
-                logger.warning(f"Command did not complete successfully for search response ID: {search_response['id']}")
-
-        if ready:
-            sleep_time = 10  # Set the sleep time to 10 seconds
-            print(f"Waiting for {sleep_time} seconds to allow for search results to populate in the queue...")
-            time.sleep(sleep_time)
-            queue = app.get_queue(instance_type)
-            logger.debug(f"queue:\n{json.dumps(queue, indent=4)}")
-            queue_dict = process_queue(queue, instance_type, media_ids)
-            logger.debug(f"queue_dict:\n{json.dumps(queue_dict, indent=4)}")
-            for item in filtered_media_dict:
-                downloads = {}
-                for queue_item in queue_dict:
-                    if item['media_id'] == queue_item['media_id']:
-                        downloads[queue_item['download']] = queue_item['torrent_custom_format_score']
-                output_dict['data'].append({
-                    'media_id': item['media_id'],
-                    'title': item['title'],
-                    'year': item['year'],
-                    'download': downloads
-                })
+        sleep_time = 10  # Set the sleep time to 10 seconds
+        print(f"Waiting for {sleep_time} seconds to allow for search results to populate in the queue...")
+        time.sleep(sleep_time)
+        queue = app.get_queue(instance_type)
+        logger.debug(f"queue:\n{json.dumps(queue, indent=4)}")
+        queue_dict = process_queue(queue, instance_type, media_ids)
+        logger.debug(f"queue_dict:\n{json.dumps(queue_dict, indent=4)}")
+        for item in filtered_media_dict:
+            downloads = {}
+            for queue_item in queue_dict:
+                if item['media_id'] == queue_item['media_id']:
+                    downloads[queue_item['download']] = queue_item['torrent_custom_format_score']
+            output_dict['data'].append({
+                'media_id': item['media_id'],
+                'title': item['title'],
+                'year': item['year'],
+                'download': downloads
+            })
     else:
         for item in filtered_media_dict:
             output_dict['data'].append({

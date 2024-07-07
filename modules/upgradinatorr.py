@@ -49,6 +49,7 @@ def filter_media(media_dict, tag_id, count, season_monitored_threshold, logger):
             logger.debug(f"Skipping {item['title']} ({item['year']}), Status: {item['status']}, Monitored: {item['monitored']}, Tags: {item['tags']}")
             continue  # Move to the next item if conditions are not met
         # Check number of monitored episodes within a season
+        series_monitored = False
         if item['seasons']:
             for i, season in enumerate(item['seasons']):
                 monitored_count = 0
@@ -60,6 +61,11 @@ def filter_media(media_dict, tag_id, count, season_monitored_threshold, logger):
                 if monitored_percentage < season_monitored_threshold:
                     item['seasons'][i]['monitored'] = False
                     logger.debug(f"{item['title']}, Season {i} unmonitored. Reason: monitored percentage {monitored_percentage} less than season_monitored_threshold {season_monitored_threshold}")
+                if item['seasons'][i]['monitored']:
+                    series_monitored = True
+        if series_monitored == False:
+            logger.debug(f"Skipping {item['title']} ({item['year']}), Status: {item['status']}, Monitored: {item['monitored']}, Tags: {item['tags']}")
+            continue
         filtered_media_dict.append(item)  # Append the item to the filtered list
         filter_count += 1  # Increment the counter for filtered items
     return filtered_media_dict  # Return the filtered list of media

@@ -53,7 +53,7 @@ instances:
       api: abcdefghijklmnopqrstuvwxyz1234567890
   sonarr:
     # Instance name can be whatever you want, it just needs to match the name used in other sections
-    sonarr_1: 
+    sonarr_1:
       url: http://localhost:8989
       api: abcdefghijklmnopqrstuvwxyz1234567890
     sonarr_anime:
@@ -314,6 +314,13 @@ poster_cleanarr:
   library_names:
     - Movies
     - Anime Movies
+  ignore_media:
+    - "Random Movie in assets you want to keep (1999)"
+    - "Random Series in assets you want to keep (1999)"
+    - "The Matrix (1999)"
+    - "The Lion King (1994)"
+    - "Friends (1994)"
+    - "The Simpsons (1989)"
   ignore_collections:
     - "Random Collection in assets you want to keep"
   # If using poster_renamer with border_replacer, include the tmp folder that border_replacer uses
@@ -328,22 +335,27 @@ upgradinatorr:
     radarr_1:
       count: 3
       tag_name: checked
+      ignore_tag: ignore
       unattended: true
     radarr_2:
       count: 10
       tag_name: checked
+      ignore_tag: ignore
       unattended: true
     sonarr_1:
       count: 1
       tag_name: checked
+      ignore_tag: ignore
       unattended: true
     sonarr_anime:
       count: 1
       tag_name: checked
+      ignore_tag: ignore
       unattended: true
     sonarr_3:
       count: 20
       tag_name: checked
+      ignore_tag: ignore
       unattended: true
 
 renameinatorr:

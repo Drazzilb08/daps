@@ -464,6 +464,10 @@
                 "library_names": {
                     "$ref": "#/definitions/uniqueArray"
                 },
+                "ignore_media":
+                {
+                    "type":"string"
+                },
                 "ignore_collections": {
                     "$ref": "#/definitions/uniqueArray"
                 },
@@ -503,6 +507,10 @@
                                 "type": "integer"
                             },
                             "tag_name": {
+                                "type": "string"
+                            },
+                            "ignore_tag":
+                            {
                                 "type": "string"
                             },
                             "unattended": {

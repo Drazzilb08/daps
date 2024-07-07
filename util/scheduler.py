@@ -56,9 +56,9 @@ def check_schedule(script_name, schedule, logger):
                 start, end = start_end.split("-")
                 start_month, start_day = map(int, start.split("/"))
                 end_month, end_day = map(int, end.split("/"))
-                current_month, current_day = map(int, now.strftime("%m/%d").split("/"))
-
-                if start_month <= current_month <= end_month and start_day <= current_day <= end_day:
+                start_date = datetime(now.year, start_month, start_day)
+                end_date = datetime(now.year, end_month, end_day)
+                if start_date <= now <= end_date:
                     return True
         elif frequency == "cron":
             local_tz = tz.tzlocal()
@@ -80,7 +80,6 @@ def check_schedule(script_name, schedule, logger):
                 next_run_times[script_name] = next_run
 
                 logger.debug(f"Next run for {script_name}: {next_run}\n")
-
                 return True
             else:
                 logger.debug(f"Next run time for script {script_name}: {next_run} is in the future\n")

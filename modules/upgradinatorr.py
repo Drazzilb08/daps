@@ -25,13 +25,18 @@ from util.logger import setup_logger
 
 script_name = "upgradinatorr"
 
-def filter_media(media_dict, tag_id, count, season_monitored_threshold, logger):
+def filter_media(media_dict, checked_tag_id, ignore_tag_id, count, season_monitored_threshold, logger):
     """
-    Filter media_dict to remove items that are not monitored, have the tag_id, or are not in the correct status.
+    Filter media_dict to remove items that are:
+        * not monitored
+        * have the checked_tag_id
+        * have the ignore_tag_id
+        * not in the correct status
     
     Args:
         media_dict (list): A list of dictionaries containing media information.
-        tag_id (int): The tag_id to filter out.
+        checked_tag_id (int): The checked_tag_id to filter out.
+        ignore_tag_id (int): The ignore_tag_id to filter out.
         count (int): The number of items to return.
         
     Returns:
@@ -43,14 +48,14 @@ def filter_media(media_dict, tag_id, count, season_monitored_threshold, logger):
     for item in media_dict:
         if filter_count == count:  # Check if the desired count has been reached
             break
-        # Check conditions: tag_id not in tags, monitored is True, and status is one of the specified statuses
-        if tag_id in item['tags'] or item['monitored'] == False or item['status'] not in ["continuing", "airing", "ended", "canceled", "released"]:
+        # Check conditions: checked_tag_id not in tags, ignore_tag_id not in tags, monitored is True, and status is one of the specified statuses
+        if checked_tag_id in item['tags'] or ignore_tag_id in item['tags'] or item['monitored'] == False or item['status'] not in ["continuing", "airing", "ended", "canceled", "released"]:
             # Log skipped items
             logger.debug(f"Skipping {item['title']} ({item['year']}), Status: {item['status']}, Monitored: {item['monitored']}, Tags: {item['tags']}")
             continue  # Move to the next item if conditions are not met
         # Check number of monitored episodes within a season
-        series_monitored = False
         if item['seasons']:
+            series_monitored = False
             for i, season in enumerate(item['seasons']):
                 monitored_count = 0
                 for episode in season['episode_data']:
@@ -63,9 +68,10 @@ def filter_media(media_dict, tag_id, count, season_monitored_threshold, logger):
                     logger.debug(f"{item['title']}, Season {i} unmonitored. Reason: monitored percentage {monitored_percentage} less than season_monitored_threshold {season_monitored_threshold}")
                 if item['seasons'][i]['monitored']:
                     series_monitored = True
-        if series_monitored == False:
-            logger.debug(f"Skipping {item['title']} ({item['year']}), Status: {item['status']}, Monitored: {item['monitored']}, Tags: {item['tags']}")
-            continue
+            # Skip if all seasons are unmonitored
+            if series_monitored == False:
+                logger.debug(f"Skipping {item['title']} ({item['year']}), Status: {item['status']}, Monitored: {item['monitored']}, Tags: {item['tags']}")
+                continue
         filtered_media_dict.append(item)  # Append the item to the filtered list
         filter_count += 1  # Increment the counter for filtered items
     return filtered_media_dict  # Return the filtered list of media
@@ -125,7 +131,8 @@ def process_instance(instance_type, instance_settings, app, logger):
     total_count = 0
     server_name = app.get_instance_name()
     count = instance_settings.get('count', 2)
-    tag_name = instance_settings.get('tag_name', "checked")
+    checked_tag_name = instance_settings.get('tag_name', "checked")
+    ignore_tag_name = instance_settings.get('ignore_tag', "ignore")
     unattended = instance_settings.get('unattended', False)
     # default 0 means that a season will NOT be unmonitored if all episodes ARE unmonitored
     season_monitored_threshold = instance_settings.get('season_monitored_threshold', 0)
@@ -136,7 +143,8 @@ def process_instance(instance_type, instance_settings, app, logger):
     ]
     logger.debug(create_table(table))
     logger.debug(f'{"Count:":<20}{count}')
-    logger.debug(f'{"tag_name:":<20}{tag_name}')
+    logger.debug(f'{"checked_tag_name:":<20}{checked_tag_name}')
+    logger.debug(f'{"ignore_tag_name:":<20}{checked_tag_name}')
     logger.debug(f'{"unattended:":<20}{unattended}')
     if instance_type == 'sonarr':
         logger.debug(f'{"season_monitored_threshold:":<20}{season_monitored_threshold}')
@@ -149,16 +157,17 @@ def process_instance(instance_type, instance_settings, app, logger):
     logger.debug(f"media_dict:\n{json.dumps(media_dict, indent=4)}")
     
     # Get tag ID based on the provided tag name
-    tag_id = app.get_tag_id_from_name(tag_name)
+    checked_tag_id = app.get_tag_id_from_name(checked_tag_name)
+    ignore_tag_id = app.get_tag_id_from_name(ignore_tag_name)
 
     # Filter media based on tag and count criteria
-    filtered_media_dict = filter_media(media_dict, tag_id, count, season_monitored_threshold, logger)
+    filtered_media_dict = filter_media(media_dict, checked_tag_id, ignore_tag_id, count, season_monitored_threshold, logger)
     if not filtered_media_dict and unattended:
         media_ids = [item['media_id'] for item in media_dict]
         logger.info("All media is tagged. Removing tags...")
-        app.remove_tags(media_ids, tag_id)
+        app.remove_tags(media_ids, checked_tag_id)
         media_dict = handle_starr_data(app, server_name, instance_type, include_episode=True)
-        filtered_media_dict = filter_media(media_dict, tag_id, count, season_monitored_threshold, logger)
+        filtered_media_dict = filter_media(media_dict, checked_tag_id, ignore_tag_id, count, season_monitored_threshold, logger)
     
     # If no filtered_media and not unattended return
     if not filtered_media_dict and not unattended:
@@ -171,7 +180,7 @@ def process_instance(instance_type, instance_settings, app, logger):
     if media_dict:
         total_count = len(media_dict)
         for item in media_dict:
-            if tag_id in item['tags']:
+            if checked_tag_id in item['tags']:
                 tagged_count += 1
             else:
                 untagged_count += 1
@@ -215,8 +224,8 @@ def process_instance(instance_type, instance_settings, app, logger):
                         search_response = app.search_season(item['media_id'], season['season_number'])
                         process_search_response(search_response, item['media_id'])
 
-            logger.debug(f"Adding tag {tag_id} to media ID: {item['media_id']}")
-            app.add_tags(item['media_id'], tag_id)
+            logger.debug(f"Adding tag {checked_tag_id} to media ID: {item['media_id']}")
+            app.add_tags(item['media_id'], checked_tag_id)
             
         sleep_time = 10  # Set the sleep time to 10 seconds
         print(f"Waiting for {sleep_time} seconds to allow for search results to populate in the queue...")

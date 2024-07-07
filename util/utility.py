@@ -568,11 +568,20 @@ def handle_starr_data(app, server_name, instance_type, include_episode=False):
                                 'episode_id': episode['id'],
                                 'has_file': episode['hasFile'],
                             })  # Append episode data to the episode dictionary
+                    # Check if season is complete
+                    try:
+                        status = season['statistics']['episodeCount'] == season['statistics']['totalEpisodeCount']
+                    except:
+                        status = False
+                    try:
+                        season_stats = season['statistics']['episodeCount']
+                    except:
+                        season_stats = 0
                     season_list.append({
                         'season_number': season['seasonNumber'],
                         'monitored': season['monitored'],
-                        'season_pack': season['statistics']['episodeCount'] == season['statistics']['totalEpisodeCount'],
-                        'season_has_episodes': season['statistics']['episodeCount'] > 0,
+                        'season_pack': status,
+                        'season_has_episodes': season_stats,
                         'episode_data': episode_list if include_episode else [],
                     })  # Append season data to the season dictionary
             
@@ -589,6 +598,12 @@ def handle_starr_data(app, server_name, instance_type, include_episode=False):
             else:
                 title = item['title']
                 year = item['year']
+            # Check windows path
+            reg = re.match(r"^([A-Z]:\\)", item['path'])
+            if reg and reg.group(1):
+                folder = item['path'][item['path'].rfind("\\")+1:]
+            else:
+                folder = os.path.basename(os.path.normpath(item['path']))
             # Construct a dictionary for each item and append it to media_dict
             media_dict.append({
                 'title': title,
@@ -606,7 +621,7 @@ def handle_starr_data(app, server_name, instance_type, include_episode=False):
                 'alternate_titles': alternate_titles,
                 'normalized_alternate_titles': normalized_alternate_titles,
                 'file_id': file_id if instance_type == "radarr" else None,
-                'folder': os.path.basename(os.path.normpath(item['path'])),
+                'folder': folder,
                 'has_file': item['hasFile'] if instance_type == "radarr" else None,
                 'tags': item['tags'],
                 'seasons': season_list if instance_type == "sonarr" else None,  # Add season_list for Sonarr items

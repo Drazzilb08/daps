@@ -20,6 +20,7 @@ from util.discord import discord, discord_check
 from util.arrpy import StARR
 from util.utility import *
 from util.logger import setup_logger
+import re
     
 try:
     from plexapi.server import PlexServer
@@ -31,100 +32,44 @@ except ImportError as e:
 
 script_name = "labelarr"
 
-def process_data(plex_dict, media_dict, labels):
-    """
-    Process the data to be synced to Plex.
+def sync_to_plex(plex, labels, media_dict, app, starr_server_name, logger, library_names):
     
-    Args:
-        plex_dict (dict): The Plex data.
-        media_dict (dict): The Radarr/Sonarr data.
-        labels (list): The list of labels to sync.
-        
-    Returns:
-        data_dict (dict): The data to be synced to Plex.
-    """
+    tag_ids = {}
 
-    
-    # Initialize the list to store data to be synced to Plex
+    for label in labels: 
+        tag_id = app.get_tag_id_from_name(label)
+        if tag_id:
+            tag_ids[label] = tag_id
+
     data_dict = []
-    
-    # Iterate through each media item in the Radarr/Sonarr data
-    for media_item in media_dict:
-        # Iterate through each Plex item in the Plex data
-        for plex_item in plex_dict:
-            # Check if the normalized title and year match between Plex and media data
-            if (
-                media_item['normalized_title'] == plex_item['normalized_title']
-                and media_item['year'] == plex_item['year']
-            ):
-                # Get labels from Plex and media tags from Radarr/Sonarr
-                plex_labels = plex_item.get('labels', [])
-                media_tags = media_item.get('tag_data', {}).keys()
-                
-                # Dictionary to store labels to add or remove
-                add_remove = {}
-                
-                # Check each label in the provided list
-                for label in labels:
-                    # Determine labels to add or remove based on comparison between Plex labels and media tags
-                    if label in plex_labels and label not in media_tags:
-                        add_remove[label] = "remove"
-                    elif label not in plex_labels and label in media_tags:
-                        add_remove[label] = "add"
-                
-                # If there are labels to add or remove, append data to data_dict
-                if add_remove:
-                    data_dict.append({
-                        "title": media_item['title'],
-                        "year": media_item['year'],
-                        "add_remove": add_remove
-                    })
-    
-    # Return the data to be synced to Plex
+    for library in tqdm(library_names, desc=f"Processing Library", unit="library"):
+        library_data = plex.library.section(library).all()
+        for library_item in tqdm(library_data, desc=f"Syncing labels between {library} and {starr_server_name.capitalize()}"):
+            try:
+                plex_item_labels = [label.tag.lower() for label in library_item.labels]
+            except AttributeError:
+                logger.error(f"Error fetching labels for {library_item.title} ({library_item.year})")
+                continue
+            normalized_title = normalize_titles(library_item.title)
+            for media_item in media_dict:
+                if normalized_title == media_item['normalized_title'] and library_item.year == media_item['year']:
+                    add_remove = {}
+                    for tag, id in tag_ids.items():
+                        if tag not in plex_item_labels and id in media_item['tags']:
+                            add_remove[tag] = 'add'
+                            if not dry_run:
+                                library_item.addLabel(tag)
+                        elif tag in plex_item_labels and id not in media_item['tags']:
+                            add_remove[tag] = 'remove'
+                            if not dry_run:
+                                library_item.removeLabel(tag)
+                    if add_remove:
+                        data_dict.append({
+                            "title": library_item.title,
+                            "year": library_item.year,
+                            "add_remove": add_remove,
+                        })
     return data_dict
-
-
-def sync_to_plex(plex, data_dict, instance_type, logger):
-    """
-    Sync the data to Plex.
-    
-    Args:
-        plex (obj): The Plex server object.
-        data_dict (dict): The data to be synced to Plex.
-        instance_type (str): The type of instance (radarr/sonarr).
-        
-    Returns:
-        None
-    """
-
-    # Loop through each item in the data_dict
-    for item in data_dict:
-        if instance_type == "sonarr":
-            type = "show"
-        elif instance_type == "radarr":
-            type = "movie"
-            
-        # Search for the item in the Plex library based on title and year
-        try:
-            plex_item = plex.library.search(item['title'], libtype=type, year=item['year'])[0]
-        except IndexError:
-            # Log an error if the title is not found in Plex and continue to the next item
-            logger.error(f"Title: {item['title']} ({item['year']}) | Title not found in Plex")
-            continue
-            
-        # If the Plex item is found
-        if plex_item:
-            # Iterate through each label and corresponding action (add/remove)
-            for label, action in item['add_remove'].items():
-                # Perform add or remove action based on the label and action type
-                if action == "add":
-                    plex_item.addLabel(label)
-                elif action == "remove":
-                    plex_item.removeLabel(label)
-
-    # No explicit return value, as it's modifying Plex items directly
-    return
-
 
 def handle_messages(data_dict, logger):
     """
@@ -136,6 +81,10 @@ def handle_messages(data_dict, logger):
     Returns:
         None
     """
+    table = [
+        ["Results"],
+    ]
+    logger.info(create_table(table))
     # Loop through each item in the data_dict
     for item in data_dict:
         # Log the title and year of the item
@@ -201,54 +150,10 @@ def notification(data_dict, logger):
     if built_fields:
         for message_number, fields in built_fields.items():
             print(f"Sending message {message_number} of {message_count}...")
-            # Discord function call (may require specific parameters to function)
             discord(fields, logger, script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
-
-
-def handle_tags(app, media_dict, tag_names):
-    """
-    Handle the tags for the media.
-
-    Args:
-        app (obj): The StARR object.
-        media_dict (dict): The media data.
-        tag_names (list): The list of tag names.
-
-    Returns:
-        media_dict (dict): The media data with the tag data added.
-    """
-
-    tag_dict = {}
-    
-    # If tag_names list is not empty
-    if tag_names:
-        # Convert tag names to lowercase and store in 'tags'
-        tags = [tag.lower() for tag in tag_names]
-        
-        # Iterate through each tag in the lowercase 'tags' list
-        for tag in tags:
-            # Get the tag ID from StARR object for each tag
-            tag_id = app.get_tag_id_from_name(tag)
-            
-            # If tag ID exists, add it to the tag dictionary
-            if tag_id:
-                tag_dict[tag] = tag_id
-    
-    # If tag_dict is not empty
-    if tag_dict:
-        # Iterate through each item in the media dictionary
-        for item in media_dict:
-            tag_data = {}
-            # Check each tag and its ID against the item's tags
-            for tag, tag_id in tag_dict.items():
-                # If the tag ID exists in the item's tags, add it to tag_data
-                if tag_id in item['tags']:
-                    tag_data[tag] = tag_id
-            # Assign the collected tag_data to the item
-            item['tag_data'] = tag_data
-    
-    return media_dict
-
+            if message_number % 5 == 0:
+                print("Pausing for 5 seconds to let Discord catch up...")
+                time.sleep(5)
 
 def main(config):
     """
@@ -291,7 +196,6 @@ def main(config):
                     
                     # Fetch and process media data from the StARR instance
                     media_dict = handle_starr_data(app, starr_server_name, instance_type, include_episode=False)
-                    media_dict = handle_tags(app, media_dict, labels)
                     
                     # If media data is found
                     if media_dict:
@@ -305,48 +209,28 @@ def main(config):
                                 # Connect to the Plex server
                                 try:
                                     logger.info("Connecting to Plex...")
-                                    plex = PlexServer(config.plex_config[plex_instance]['url'], config.plex_config[plex_instance]['api'], timeout=120)
+                                    plex = PlexServer(config.plex_config[plex_instance]['url'], config.plex_config[plex_instance]['api'], timeout=180)
                                 except BadRequest:
                                     logger.error(f"Error connecting to Plex instance: {plex_instance}")
                                     continue
                                 server_name = plex.friendlyName
-                                
-                                # Fetch Plex data and process it
+                                # Process data for syncing to Plex
                                 if library_names:
-                                    library_names_str = ", ".join(library_names)
-                                    logger.info(f"Gathering plex data on {server_name} for {library_names_str}... Please wait...")
-                                    plex_dict = get_plex_data(plex, library_names, logger, include_smart=False, collections_only=False)
-                                    logger.info(f"Completed gathering plex data...")
-                                else:
-                                    logger.error(f"No library names provided for {starr_server_name}, against {server_name}. Skipping...")
-                                    continue
-                                # If Plex data is found
-                                if plex_dict:
-                                    # Logging Plex data
-                                    logger.debug(f"Plex Data:\n{json.dumps(plex_dict, indent=4)}")
-                                    
-                                    # Process data for syncing to Plex
                                     logger.info("Syncing labels to Plex")
-                                    data_dict = process_data(plex_dict, media_dict, labels)
-                                    
-                                    # If items to sync are found
-                                    if data_dict:
-                                        logger.debug(f"Items to sync:\n{json.dumps(data_dict, indent=4)}")
-                                        # Perform actual syncing to Plex if not in dry run mode
-                                        if not dry_run:
-                                            sync_to_plex(plex, data_dict, instance_type, logger)
-                                        
-                                        # Handle messages related to syncing actions
-                                        handle_messages(data_dict, logger)
-                                        
-                                        # Send notifications related to syncing actions
-                                        if discord_check(script_name):
-                                            notification(data_dict, logger)
-                                    else:
-                                        logger.info(f"No items to sync from {starr_server_name} to {server_name}.\n")
+                                    data_dict = sync_to_plex(plex, labels, media_dict, app, starr_server_name, logger, library_names)
                                 else:
-                                    logger.error(f"No Plex Data found for {server_name}. Skipping...")
+                                    logger.error(f"No library names provided for {server_name}. Skipping...")
                                     continue
+                                
+                                # Handle messages related to syncing actions
+                                if data_dict:
+                                    handle_messages(data_dict, logger)
+                                    
+                                    # Send notifications related to syncing actions
+                                    if discord_check(script_name):
+                                        notification(data_dict, logger)
+                                else:
+                                    logger.info(f"No items to sync from {starr_server_name} to {server_name}.\n")
                         else:
                             continue
     except KeyboardInterrupt:

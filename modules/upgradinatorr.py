@@ -32,12 +32,14 @@ def filter_media(media_dict, checked_tag_id, ignore_tag_id, count, season_monito
         * have the checked_tag_id
         * have the ignore_tag_id
         * not in the correct status
+        * do not have enough episodes monitored within a season
     
     Args:
         media_dict (list): A list of dictionaries containing media information.
         checked_tag_id (int): The checked_tag_id to filter out.
         ignore_tag_id (int): The ignore_tag_id to filter out.
         count (int): The number of items to return.
+        season_monitored_threshold (int): The episode monitoring threshold to filter out seasons. 
         
     Returns:
         filtered_media_dict (list): A list of dictionaries containing media information.

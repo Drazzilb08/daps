@@ -144,12 +144,12 @@ def process_instance(instance_type, instance_settings, app, logger):
         [f"{instance_type} Settings"]
     ]
     logger.debug(create_table(table))
-    logger.debug(f'{"Count:":<20}{count}')
-    logger.debug(f'{"checked_tag_name:":<20}{checked_tag_name}')
-    logger.debug(f'{"ignore_tag_name:":<20}{checked_tag_name}')
-    logger.debug(f'{"unattended:":<20}{unattended}')
+    logger.debug(f'{"Count:":<28}{count}')
+    logger.debug(f'{"checked_tag_name:":<28}{checked_tag_name}')
+    logger.debug(f'{"ignore_tag_name:":<28}{checked_tag_name}')
+    logger.debug(f'{"unattended:":<28}{unattended}')
     if instance_type == 'sonarr':
-        logger.debug(f'{"season_monitored_threshold:":<20}{season_monitored_threshold}')
+        logger.debug(f'{"season_monitored_threshold:":<28}{season_monitored_threshold}')
     logger.debug('*' * 40)
     
     # Fetch media from the instance

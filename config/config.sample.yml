@@ -329,6 +329,26 @@ poster_cleanarr:
 
 upgradinatorr:
   # A script to upgrade Sonarr/Radarr libraries to the keep in line with trash-guides
+  # count: Number of items to search.
+  # tag_name: The name of the tag to add to items that have been processed.
+  # ignore_tag: The name of the tag to ignore.
+  # unattended: If true, the script will remove the checked_tag if all media is tagged, resulting in this running forever.
+  # season_monitored_threshold: (Sonarr only) The episode monitoring threshold to filter out seasons.
+  #   If the monitored percentage of episodes in a season is less than this threshold, the season will be skipped.
+  #   Example: season_monitored_threshold: 0.5 means 50% of episodes in a season must be monitored for the season to be searched.
+  #   Default: 0 (disables the threshold, seasons will not be skipped based on episode monitoring).
+  
+  # Examples:
+  # The following configuration will process up to 1 item from the 'sonarr_1' instance, using 'checked' as the tag name
+  # and 'ignore' as the ignore tag. It will operate in unattended mode, and only search seasons if at least 50%
+  # of their episodes are monitored.
+  #
+  # sonarr_1:
+  #   count: 1
+  #   tag_name: checked
+  #   ignore_tag: ignore
+  #   unattended: true
+  #   season_monitored_threshold: 0.5
   log_level: info
   dry_run: false
   instances:
@@ -352,11 +372,13 @@ upgradinatorr:
       tag_name: checked
       ignore_tag: ignore
       unattended: true
+      season_monitored_threshold: 0.99
     sonarr_3:
       count: 20
       tag_name: checked
       ignore_tag: ignore
       unattended: true
+      season_monitored_threshold: 0.5
 
 renameinatorr:
   # This script will rename all series in Sonarr/Radarr to match the naming scheme of the

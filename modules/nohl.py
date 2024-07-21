@@ -191,7 +191,7 @@ def handle_searches(app, search_list, instance_type):
     print(f"Searches performed: {searches}")
     return searched_for
 
-def filter_media(app, media_list, nohl_data, instance_type, exclude_profiles, exclude_media, max_search):
+def filter_media(app, media_list, nohl_data, instance_type, exclude_profiles, exclude_media, max_search, logger):
     """
     Filters media based on quality profile and monitored status.
     
@@ -224,6 +224,9 @@ def filter_media(app, media_list, nohl_data, instance_type, exclude_profiles, ex
         for media_item in media_list:
             # Compare media items with non-hardlinked items
             if media_item['normalized_title'] == nohl_item['normalized_title'] and media_item['year'] == nohl_item['year']:
+                # Check if the root path of the non-hardlinked item is in the root folder of the media item
+                if nohl_item['root_path'] not in media_item['root_folder']:
+                    continue
                 # Check if the media item is not monitored
                 if media_item['monitored'] == False or (exclude_media is not None and media_item['title'] in exclude_media) or media_item['quality_profile'] in exclude_profile_ids:
                     data_list['filtered_media'].append({
@@ -681,7 +684,7 @@ def main(config):
                     if nohl_data:
                         media_list = handle_starr_data(app, server_name, instance_type, include_episode=True)
                         if media_list:
-                            data_list = filter_media(app, media_list, nohl_data, instance_type, exclude_profiles, exclude_media, max_search)
+                            data_list = filter_media(app, media_list, nohl_data, instance_type, exclude_profiles, exclude_media, max_search, logger)
                         else:
                             logger.info(f"No media found for server: {server_name}")
                         if data_list:

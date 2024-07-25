@@ -466,7 +466,10 @@
                 },
                 "ignore_media":
                 {
-                    "type":"string"
+                    "type": [
+                        "array",
+                        "null"
+                    ]
                 },
                 "ignore_collections": {
                     "$ref": "#/definitions/uniqueArray"

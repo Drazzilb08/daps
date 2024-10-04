@@ -25,19 +25,21 @@ from util.logger import setup_logger
 
 script_name = "upgradinatorr"
 
-def filter_media(media_dict, checked_tag_id, ignore_tag_id, count, logger):
+def filter_media(media_dict, checked_tag_id, ignore_tag_id, count, season_monitored_threshold, logger):
     """
     Filter media_dict to remove items that are:
         * not monitored
         * have the checked_tag_id
         * have the ignore_tag_id
         * not in the correct status
+        * do not have enough episodes monitored within a season
     
     Args:
         media_dict (list): A list of dictionaries containing media information.
         checked_tag_id (int): The checked_tag_id to filter out.
         ignore_tag_id (int): The ignore_tag_id to filter out.
         count (int): The number of items to return.
+        season_monitored_threshold (int): The episode monitoring threshold to filter out seasons. 
         
     Returns:
         filtered_media_dict (list): A list of dictionaries containing media information.
@@ -53,6 +55,25 @@ def filter_media(media_dict, checked_tag_id, ignore_tag_id, count, logger):
             # Log skipped items
             logger.debug(f"Skipping {item['title']} ({item['year']}), Status: {item['status']}, Monitored: {item['monitored']}, Tags: {item['tags']}")
             continue  # Move to the next item if conditions are not met
+        # Check number of monitored episodes within a season
+        if item['seasons']:
+            series_monitored = False
+            for i, season in enumerate(item['seasons']):
+                monitored_count = 0
+                for episode in season['episode_data']:
+                    if episode['monitored']:
+                        monitored_count += 1
+                # Change monitoring of season depending on how many unmonitored episodes there are
+                monitored_percentage = monitored_count / len(season['episode_data'])
+                if monitored_percentage < season_monitored_threshold:
+                    item['seasons'][i]['monitored'] = False
+                    logger.debug(f"{item['title']}, Season {i} unmonitored. Reason: monitored percentage {monitored_percentage} less than season_monitored_threshold {season_monitored_threshold}")
+                if item['seasons'][i]['monitored']:
+                    series_monitored = True
+            # Skip if all seasons are unmonitored
+            if series_monitored == False:
+                logger.debug(f"Skipping {item['title']} ({item['year']}), Status: {item['status']}, Monitored: {item['monitored']}, Tags: {item['tags']}")
+                continue
         filtered_media_dict.append(item)  # Append the item to the filtered list
         filter_count += 1  # Increment the counter for filtered items
     return filtered_media_dict  # Return the filtered list of media
@@ -115,22 +136,26 @@ def process_instance(instance_type, instance_settings, app, logger):
     checked_tag_name = instance_settings.get('tag_name', "checked")
     ignore_tag_name = instance_settings.get('ignore_tag', "ignore")
     unattended = instance_settings.get('unattended', False)
+    # default 0 means that a season will NOT be unmonitored if all episodes ARE unmonitored
+    season_monitored_threshold = instance_settings.get('season_monitored_threshold', 0)
     
     # Logging instance settings
     table = [
         [f"{instance_type} Settings"]
     ]
     logger.debug(create_table(table))
-    logger.debug(f'{"Count:":<20}{count}')
-    logger.debug(f'{"checked_tag_name:":<20}{checked_tag_name}')
-    logger.debug(f'{"ignore_tag_name:":<20}{checked_tag_name}')
-    logger.debug(f'{"unattended:":<20}{unattended}')
+    logger.debug(f'{"Count:":<28}{count}')
+    logger.debug(f'{"checked_tag_name:":<28}{checked_tag_name}')
+    logger.debug(f'{"ignore_tag_name:":<28}{checked_tag_name}')
+    logger.debug(f'{"unattended:":<28}{unattended}')
+    if instance_type == 'sonarr':
+        logger.debug(f'{"season_monitored_threshold:":<28}{season_monitored_threshold}')
     logger.debug('*' * 40)
     
     # Fetch media from the instance
     print(f"Gathering media from {server_name}...")
     server_name = app.get_instance_name()
-    media_dict = handle_starr_data(app, server_name, instance_type, include_episode=False)
+    media_dict = handle_starr_data(app, server_name, instance_type, include_episode=True)
     logger.debug(f"media_dict:\n{json.dumps(media_dict, indent=4)}")
     
     # Get tag ID based on the provided tag name
@@ -138,13 +163,13 @@ def process_instance(instance_type, instance_settings, app, logger):
     ignore_tag_id = app.get_tag_id_from_name(ignore_tag_name)
 
     # Filter media based on tag and count criteria
-    filtered_media_dict = filter_media(media_dict, checked_tag_id, ignore_tag_id, count, logger)
+    filtered_media_dict = filter_media(media_dict, checked_tag_id, ignore_tag_id, count, season_monitored_threshold, logger)
     if not filtered_media_dict and unattended:
         media_ids = [item['media_id'] for item in media_dict]
         logger.info("All media is tagged. Removing tags...")
         app.remove_tags(media_ids, checked_tag_id)
-        media_dict = handle_starr_data(app, server_name, instance_type, include_episode=False)
-        filtered_media_dict = filter_media(media_dict, checked_tag_id, ignore_tag_id, count, logger)
+        media_dict = handle_starr_data(app, server_name, instance_type, include_episode=True)
+        filtered_media_dict = filter_media(media_dict, checked_tag_id, ignore_tag_id, count, season_monitored_threshold, logger)
     
     # If no filtered_media and not unattended return
     if not filtered_media_dict and not unattended:
@@ -173,29 +198,55 @@ def process_instance(instance_type, instance_settings, app, logger):
     
     # Processing media data
     if not dry_run:
-        media_ids = [item['media_id'] for item in filtered_media_dict]
-        search_response = app.search_media(media_ids)
-        app.add_tags(media_ids, checked_tag_id)
-        ready = app.wait_for_command(search_response['id'])
-        if ready:
-            sleep_time = 10  # Set the sleep time to 5 seconds
-            print(f"Waiting for {sleep_time} seconds to allow for search results to populate in the queue...")
-            time.sleep(sleep_time)
-            queue = app.get_queue(instance_type)
-            logger.debug(f"queue:\n{json.dumps(queue, indent=4)}")
-            queue_dict = process_queue(queue, instance_type, media_ids)
-            logger.debug(f"queue_dict:\n{json.dumps(queue_dict, indent=4)}")
-            for item in filtered_media_dict:
-                downloads = {}
-                for queue_item in queue_dict:
-                    if item['media_id'] == queue_item['media_id']:
-                        downloads[queue_item['download']] = queue_item['torrent_custom_format_score']
-                output_dict['data'].append({
-                    'media_id': item['media_id'],
-                    'title': item['title'],
-                    'year': item['year'],
-                    'download': downloads
-                })
+        
+        def process_search_response(search_response, media_id):
+            if search_response:
+                logger.debug(f"Waiting for command to complete for search response ID: {search_response['id']}")
+                ready = app.wait_for_command(search_response['id'])
+                if ready:
+                    logger.debug(f"Command completed successfully for search response ID: {search_response['id']}")
+                else:
+                    logger.warning(f"Command did not complete successfully for search response ID: {search_response['id']}")
+            else:
+                logger.warning(f"No search response for media ID: {media_id}")
+            
+        media_ids = []
+        for item in filtered_media_dict:
+            media_ids.append(item['media_id'])
+            logger.debug(f"Processing media item with ID: {item['media_id']}")
+
+            if item['seasons'] is None:
+                logger.debug(f"Searching media without seasons for media ID: {item['media_id']}")
+                search_response = app.search_media(item['media_id'])
+                process_search_response(search_response, item['media_id'])
+            else:
+                for season in item['seasons']:
+                    if season['monitored']:
+                        logger.debug(f"Searching season {season['season_number']} for media ID: {item['media_id']}")
+                        search_response = app.search_season(item['media_id'], season['season_number'])
+                        process_search_response(search_response, item['media_id'])
+
+            logger.debug(f"Adding tag {checked_tag_id} to media ID: {item['media_id']}")
+            app.add_tags(item['media_id'], checked_tag_id)
+            
+        sleep_time = 10  # Set the sleep time to 10 seconds
+        print(f"Waiting for {sleep_time} seconds to allow for search results to populate in the queue...")
+        time.sleep(sleep_time)
+        queue = app.get_queue(instance_type)
+        logger.debug(f"queue:\n{json.dumps(queue, indent=4)}")
+        queue_dict = process_queue(queue, instance_type, media_ids)
+        logger.debug(f"queue_dict:\n{json.dumps(queue_dict, indent=4)}")
+        for item in filtered_media_dict:
+            downloads = {}
+            for queue_item in queue_dict:
+                if item['media_id'] == queue_item['media_id']:
+                    downloads[queue_item['download']] = queue_item['torrent_custom_format_score']
+            output_dict['data'].append({
+                'media_id': item['media_id'],
+                'title': item['title'],
+                'year': item['year'],
+                'download': downloads
+            })
     else:
         for item in filtered_media_dict:
             output_dict['data'].append({

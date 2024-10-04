@@ -165,8 +165,15 @@ send_notification() {
     if [ -f "/tmp/nohl.tmp" ]; then
         # Get the number of issues in the file
         number_of_issues=$(sed -e'/^\s*$/d' /tmp/nohl.tmp | wc -l)
-        # Get the list of issues in the file
-        list_of_issues=$(sed -e '/^\s*$/d' -e 's/\(.*\) - S\([0-9][0-9]\)E\([0-9][0-9]\) - [0-9]* -.*/\1 - S\2E\3/' -e 's/\(.*\) {\(.*\)}/\1/' /tmp/nohl.tmp | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev)
+        # Get the list of issues in the file only keeping the filename
+        list_of_issues=$(sed -e '/^\s*$/d' -e 's/\(.*\) - S\([0-9][0-9]\)E\([0-9][0-9]\) - .*/\1 - S\2E\3/' -e 's/\(.*\) {\(.*\)}/\1/' /tmp/nohl.tmp | while read -r line; do
+        filename=$(basename "$line")
+        if [[ "$filename" =~ S[0-9]{2}E[0-9]{2} ]]; then
+            echo "$filename" | sed -e 's/^\(.*S[0-9][0-9]E[0-9][0-9]\).*/\1/'
+        else
+            echo "$filename" | sed -e 's/^\(.*(\([0-9]\{4\}\))\).*/\1/'
+        fi
+        done | jq -Rs . | cut -c 2- | rev | cut -c 2- | rev)
     fi
     # Check if the webhook is for discord
     if [[ $webhook =~ ^https://discord\.com/api/webhooks/ ]]; then

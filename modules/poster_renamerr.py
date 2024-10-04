@@ -313,18 +313,26 @@ def rename_files(matched_assets, script_config, logger):
                         new_file_path = os.path.join(dest_dir, new_file_name)
                     
                     # Check if the new file path already exists
-                    if os.path.isfile(new_file_path):
+                    if os.path.lexists(new_file_path):
                         existing_file = os.path.join(dest_dir, new_file_name)
-                        # Check if the existing file is the same as the new file True = same, False = different
-                        if not filecmp.cmp(file, existing_file):
-                            if file_name != new_file_name:
-                                messages.append(f"{file_name} -renamed-> {new_file_name}")
-                                discord_messages.append(f"{new_file_name}")
-                            else:
-                                if not print_only_renames:
-                                    messages.append(f"{file_name} -not-renamed-> {new_file_name}")
+                        try:
+                            # Check if the existing file is the same as the new file True = same, False = different
+                            if not filecmp.cmp(file, existing_file):
+                                if file_name != new_file_name:
+                                    messages.append(f"{file_name} -renamed-> {new_file_name}")
                                     discord_messages.append(f"{new_file_name}")
+                                else:
+                                    if not print_only_renames:
+                                        messages.append(f"{file_name} -not-renamed-> {new_file_name}")
+                                        discord_messages.append(f"{new_file_name}")
+                                if not dry_run:
+                                    if action_type in ["hardlink", "symlink"]:
+                                        os.remove(new_file_path)
+                                    process_file(file, new_file_path, action_type, logger)
+                        except FileNotFoundError:
+                            # Handle the case where existing_file is a broken symlink
                             if not dry_run:
+                                os.remove(new_file_path)
                                 process_file(file, new_file_path, action_type, logger)
                     else:
                         if file_name != new_file_name:

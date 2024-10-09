@@ -512,12 +512,14 @@
                             "tag_name": {
                                 "type": "string"
                             },
-                            "ignore_tag":
-                            {
+                            "ignore_tag": {
                                 "type": "string"
                             },
                             "unattended": {
                                 "type": "boolean"
+                            },
+                            "season_monitored_threshold": {
+                                "type": "number"
                             }
                         },
                         "required": [

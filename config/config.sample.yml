@@ -173,7 +173,7 @@ poster_renamerr:
   log_level: info
   dry_run: false
   sync_posters: true # <- This will run sync_gdrive before renaming
-  action_type: copy # <- Options: copy, move
+  action_type: copy # <- Options: copy, move, hardlink, symlink (Note: 'hardlink' and 'symlink' require "source_dirs" and "destination_dir" to be on the same filesystem)
   asset_folders: false # <- This will copy the folder structure of the source_dir to the destination_dir, this MUST be the same as you use in Plex-Meta-Manager
   print_only_renames: false # <- This will print the renames to the log, but will not actually rename anything
   # This will integrate border_replacer with poster_renamerr, set this to true if you want to use them at the same time (no need to schedule border_replacer)

@@ -311,7 +311,7 @@
                 },
                 "action_type": {
                     "type": "string",
-                    "pattern": "^copy|move$"
+                    "pattern": "^copy|move|hardlink|symlink$"
                 },
                 "asset_folders": {
                     "type": "boolean"

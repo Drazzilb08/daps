@@ -64,7 +64,10 @@ def filter_media(media_dict, checked_tag_id, ignore_tag_id, count, season_monito
                     if episode['monitored']:
                         monitored_count += 1
                 # Change monitoring of season depending on how many unmonitored episodes there are
-                monitored_percentage = monitored_count / len(season['episode_data'])
+                if len(season["episode_data"]) > 0:
+                    monitored_percentage = monitored_count / len(season['episode_data'])
+                else:
+                    continue
                 if monitored_percentage < season_monitored_threshold:
                     item['seasons'][i]['monitored'] = False
                     logger.debug(f"{item['title']}, Season {i} unmonitored. Reason: monitored percentage {monitored_percentage} less than season_monitored_threshold {season_monitored_threshold}")

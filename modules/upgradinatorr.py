@@ -67,6 +67,7 @@ def filter_media(media_dict, checked_tag_id, ignore_tag_id, count, season_monito
                 if len(season["episode_data"]) > 0:
                     monitored_percentage = monitored_count / len(season['episode_data'])
                 else:
+                    logger.debug(f"Skipping {item['title']} ({item['year']}), Season {i} unmonitored. Reason: No episodes in season.")
                     continue
                 if monitored_percentage < season_monitored_threshold:
                     item['seasons'][i]['monitored'] = False

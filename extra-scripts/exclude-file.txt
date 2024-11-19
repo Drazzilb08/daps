@@ -24,3 +24,5 @@ com.plexapp.plugins.library.db-*
 */Cache/Transcode/*
 */Cache/PhotoTranscoder/*
 .DS_Store
+*/@eaDir
+Thumbs.db

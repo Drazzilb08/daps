@@ -311,7 +311,7 @@
                 },
                 "action_type": {
                     "type": "string",
-                    "pattern": "^copy|move$"
+                    "pattern": "^copy|move|hardlink|symlink$"
                 },
                 "asset_folders": {
                     "type": "boolean"
@@ -512,12 +512,16 @@
                             "tag_name": {
                                 "type": "string"
                             },
-                            "ignore_tag":
-                            {
+                            "ignore_tag": {
                                 "type": "string"
                             },
                             "unattended": {
                                 "type": "boolean"
+                            },
+                            "season_monitored_threshold": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 1
                             }
                         },
                         "required": [

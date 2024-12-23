@@ -182,6 +182,10 @@ create_backup() {
     # Create the backup file name
     backup_file="$(realpath -s "$destination_dir")/$(date +%F)@$now/$container_name"
     # Go to the source directory
+    # Check if source_dir is a directory, if not, strip the filename
+    if [ ! -d "$source_dir" ]; then
+        source_dir=$(dirname "$source_dir")
+    fi
     cd "$source_dir"/.. || return 
     # Get the name of the source directory
     source_dir=$(basename "$source_dir")

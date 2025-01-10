@@ -1,11 +1,12 @@
-import os
 import logging
+import os
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
 from util.hoorn_lib_common.log_rotator import LogRotator
-from util.version import get_version
 from util.utility import create_bar
+from util.version import get_version
+
 
 def setup_logger(log_level, script_name, max_logs=10):
     """

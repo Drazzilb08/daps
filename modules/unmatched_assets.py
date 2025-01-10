@@ -17,12 +17,11 @@
 #  License: MIT License
 # ===========================================================================================================
 
-import json
-import os
 import sys
-from util.utility import *
+
 from util.arrpy import StARR
 from util.logger import setup_logger
+from util.utility import *
 
 try:
     from plexapi.server import PlexServer

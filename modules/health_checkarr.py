@@ -14,14 +14,11 @@
 # License: MIT License
 # ===================================================================================================
 
-import json
-import re
 import sys
 
 from util.arrpy import StARR
-from util.utility import *
-from util.discord import discord
 from util.logger import setup_logger
+from util.utility import *
 
 try:
     from tqdm import tqdm

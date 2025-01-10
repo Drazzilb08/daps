@@ -1,8 +1,10 @@
-from subprocess import PIPE, STDOUT, CalledProcessError, CompletedProcess, Popen
-
 from subprocess import Popen, PIPE, STDOUT, CompletedProcess, CalledProcessError
 
 from util.utility import redact_sensitive_info
+from subprocess import Popen, PIPE, STDOUT, CompletedProcess, CalledProcessError
+
+from util.utility import redact_sensitive_info
+
 
 def call_script(command, logger):
     """

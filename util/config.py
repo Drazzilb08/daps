@@ -1,9 +1,8 @@
-import pathlib
-import yaml
-import os
-from pathlib import Path
-from util.utility import *
 import time
+
+import yaml
+
+from util.utility import *
 
 # Set the config file path
 if os.environ.get('DOCKER_ENV'):

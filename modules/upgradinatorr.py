@@ -14,14 +14,13 @@
 # License: MIT License
 # ===================================================================================================
 
-import json
 import sys
 import time
 
 from util.arrpy import StARR
 from util.discord import discord, discord_check
-from util.utility import *
 from util.logger import setup_logger
+from util.utility import *
 
 script_name = "upgradinatorr"
 

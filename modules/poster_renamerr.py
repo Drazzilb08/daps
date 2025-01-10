@@ -14,18 +14,15 @@
 # License: MIT License
 # ===================================================================================================
 
-import os
-import sys
-import re
-import json
 import filecmp
 import shutil
+import sys
 import time
 
-from util.utility import *
-from util.discord import discord, discord_check
 from util.arrpy import StARR
+from util.discord import discord, discord_check
 from util.logger import setup_logger
+from util.utility import *
 
 try:
     from plexapi.server import PlexServer

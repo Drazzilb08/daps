@@ -1,12 +1,11 @@
-import shlex
 import json
 import os
-
-from util.call_script import call_script
-from util.utility import create_bar
-from util.logger import setup_logger
+import shlex
 import sys
 
+from util.call_script import call_script
+from util.logger import setup_logger
+from util.utility import create_bar
 
 script_name = "sync_gdrive"
 

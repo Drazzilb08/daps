@@ -67,6 +67,7 @@ def setup_logger(log_level, script_name, max_logs=9):
     
     # Create a RotatingFileHandler for log files
     handler = RotatingFileHandler(log_file, delay=True, mode="w", backupCount=max_logs)
+    handler.encoding = "utf-8"
     handler.setFormatter(formatter)
     
     # Add the file handler to the logger

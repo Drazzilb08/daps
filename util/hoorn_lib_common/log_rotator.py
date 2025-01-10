@@ -3,7 +3,8 @@
 # See: https://github.com/LordMartron94/py-common/blob/main/py_common/logging/output/file_hoorn_log_output.py
 import os
 from pathlib import Path
-from typing import List
+from sys import path_hooks
+from typing import List, Dict, Tuple
 
 from util.hoorn_lib_common.file_handler import FileHandler
 
@@ -41,22 +42,24 @@ class LogRotator:
         """
 
         children = self._file_handler.get_children_paths(self._root_log_directory, ".txt", recursive=True)
-        children.sort(reverse=True)
 
-        organized_by_separator: List[List[Path]] = self._organize_logs_by_subdirectory(children)
+        # Map file_paths to associated numbers
+        matched: List[Tuple[Path, int]] = [(path, int(path.stem.split("_")[1])) for path in children]
 
-        for directory_logs in organized_by_separator:
-            self._increment_logs_in_directory(directory_logs)
+        # Sort by number in reverse
+        matched.sort(key=lambda x: x[1], reverse=True)
 
-    def _increment_logs_in_directory(self, log_files: List[Path]) -> None:
-        for i in range(len(log_files)):
-            child = log_files[i]
-            number = int(child.stem.split("_")[-1])
+        self._increment_logs_in_directory(matched)
+
+    def _increment_logs_in_directory(self, matched_logs: List[Tuple[Path, int]]) -> None:
+        for i in range(len(matched_logs)):
+            path = matched_logs[i][0]
+            number = matched_logs[i][1]
             if number + 1 > self._max_logs_to_keep:
-                os.remove(child)
+                os.remove(path)
                 continue
 
-            os.rename(child, Path.joinpath(child.parent.absolute(), f"log_{number + 1}.txt"))
+            os.rename(path, Path.joinpath(path.parent.absolute(), f"log_{number + 1}.txt"))
 
     def _organize_logs_by_subdirectory(self, log_paths: List[Path]) -> List[List[Path]]:
         """

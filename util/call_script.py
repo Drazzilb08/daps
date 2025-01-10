@@ -17,16 +17,8 @@ def call_script(command, logger):
     Returns:
         CompletedProcess: The completed process
     """
-    # Print the command being executed
+    # Note 10 January 2025: Removed printing redacted command because it is already being logged elsewhere
 
-    # Redact command secrets
-    redacted_command = str(' '.join(command))
-    # Redact random strings of characters
-
-    redacted_command = redact_sensitive_info(redacted_command)
-    
-    print(f"\nRunning command:\n\n{redacted_command}\n\n")
-    
     # Execute the command and capture the output
     with Popen(command, text=True, stdout=PIPE, stderr=STDOUT) as process:
         for line in process.stdout:

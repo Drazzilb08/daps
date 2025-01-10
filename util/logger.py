@@ -3,6 +3,7 @@ import os
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
+from util.constants import DOCKER_ENV
 from util.hoorn_lib_common.log_rotator import LogRotator
 from util.utility import create_bar
 from util.version import get_version
@@ -21,7 +22,7 @@ def setup_logger(log_level, script_name, max_logs=10):
         A logger object for logging messages.
     """
 
-    if os.environ.get('DOCKER_ENV'):
+    if DOCKER_ENV:
         config_dir = os.getenv('CONFIG_DIR', '/config')
         log_dir: str = f"{config_dir}/logs/{script_name}"
     else:

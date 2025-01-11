@@ -599,7 +599,7 @@ def main(config):
             from modules.sync_gdrive import main as gdrive_main
             from util.config import Config
             gdrive_config = Config("sync_gdrive")
-            gdrive_main(gdrive_config, logger)
+            gdrive_main(gdrive_config)
             logger.info(f"Finished running sync_gdrive")
         else:
             logger.debug(f"Sync posters is disabled. Skipping...")

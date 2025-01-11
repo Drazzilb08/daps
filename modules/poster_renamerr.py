@@ -56,10 +56,12 @@ def get_assets_files(source_dirs, logger):
 
     # Iterate through each source directory
     for source_dir in source_dirs:
+        logger.debug(f"Getting asset files for: {source_dir}")
         new_assets = categorize_files(source_dir)
         if new_assets:
             # Merge new_assets with final_assets
             for new in new_assets:
+                logger.debug(f"Processing asset: {new}")
                 found_match = False
                 for final in final_assets:
                     if final['normalized_title'] == new['normalized_title'] and final['year'] == new['year']:

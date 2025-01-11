@@ -10,7 +10,6 @@ import pydantic
 from util.call_script import call_script
 from util.constants import OS_NAME
 from util.get_sync_file import SyncFileGetter, OsName
-from util.hoorn_lib_common.command_handler import CommandHelper
 from util.logger import setup_logger
 from util.utility import create_bar
 
@@ -166,7 +165,6 @@ def get_cmds(settings, logger, base_cmd=None, windows: bool = False) -> Union[Li
                 cmd.extend([
                     "--drive-client-id", shlex.quote(context.client_id),
                     "--drive-client-secret", shlex.quote(context.client_secret),
-                    # "--drive-token", shlex.quote(json.dumps(context.token)),
                 ])
 
             if use_saf:
@@ -247,17 +245,15 @@ def main(config):
             for cmd in set_cmd_args(settings, logger):
                 run_rclone(cmd, settings, logger)
         elif OS_NAME == OsName.WINDOWS:
-            cmd_helper: CommandHelper = CommandHelper(logger)
             cmds: List[List] = get_cmds(settings, logger, windows=True)
             refresh_path_cmd = '$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")'
             # create_posters_cmd = "rclone config create posters drive config_is_local=false"
 
             for cmd in cmds:
                 # Combine the refresh command and the normal command into a single string
-                combined_cmd = [f"{refresh_path_cmd}; {', '.join(cmd)}"]
-
                 powershell_path = Path(r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe")
-                cmd_helper.open_application(powershell_path, combined_cmd, new_window=False, keep_open=False)
+                combined_cmd = [powershell_path, f"{refresh_path_cmd}; {', '.join(cmd)}"]
+                call_script(combined_cmd, logger)
         else:
             raise Exception("Unsupported OS")
     except KeyboardInterrupt:

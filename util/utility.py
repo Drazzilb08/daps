@@ -1,8 +1,11 @@
+import json
 import math
 import os
 import pathlib
 import re
 import subprocess
+
+from pathlib import Path
 
 try:
     import html
@@ -152,10 +155,20 @@ def _is_asset_folders(folder_path):
     Returns:
         bool: True if the folder contains asset folders, False otherwise
     """
-    if not os.path.exists(folder_path):
+    folder_path = Path(folder_path)
+
+    if not folder_path.exists():
         return False
     else:
+        # Added this myself on 11 January 2025 (Mr. Hoorn) to massively speed up the check.
+        associated_json_path = folder_path.parent.joinpath(f"{folder_path.stem}.json")
+        if associated_json_path.exists() and associated_json_path.is_file():
+            with open(associated_json_path, 'r') as file:
+                json_data = json.load(file)
+                return json_data['contains_asset_folders']
+
         for item in os.listdir(folder_path):
+            print(f'Checking {item}')
             if item.startswith('.') or item.startswith('@') or item == "tmp":
                 continue
             if os.path.isdir(os.path.join(folder_path, item)):
@@ -168,11 +181,15 @@ def categorize_files(folder_path):
     
     Args:
         folder_path (str): The path to the folder to sort
-        asset_folders (bool): Whether or not to sort by folders
         
     Returns:
         list: A list of dictionaries containing the sorted files
     """
+
+    # TODO - Clean up and refactor for maintainability and readability
+    # Seriously, damn, this is so complex.
+    # 1675% cognitive complexity according to:
+    # https://plugins.jetbrains.com/plugin/index?xmlId=com.github.nikolaikopernik.codecomplexity&utm_source=product&utm_medium=link&utm_campaign=IU&utm_content=2024.2
 
     asset_folders = _is_asset_folders(folder_path)
 
@@ -186,13 +203,20 @@ def categorize_files(folder_path):
     if not asset_folders:
         # Get list of files in the folder
         try:
-            files = [f.name for f in os.scandir(folder_path) if f.is_file()]
+            files = []
+            for f in os.scandir(folder_path):
+                print(f"Scanning: {f.name}")
+                if f.is_file():
+                    files.append(f.name)
         except FileNotFoundError:
             return None
+        print("Starting sort files")
         files = sorted(files, key=lambda x: x.lower())  # Sort files alphabetically
+        print("End sort files")
         if files:
             # Loop through each file in the folder
             for file in tqdm(files, desc=f"Processing '{base_name}' folder", total=len(files), disable=None, leave=True):
+                print(f"Processing file {file}")
                 if file.startswith('.') or "(N-A)" in file:
                     continue  # Skip hidden files or files with "(N-A)" in the name
 

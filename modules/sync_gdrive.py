@@ -3,6 +3,7 @@ import os
 import shlex
 import sys
 from pathlib import Path
+from pprint import pprint
 from typing import Union, List, Optional, Dict
 
 import pydantic
@@ -247,13 +248,18 @@ def main(config):
         elif OS_NAME == OsName.WINDOWS:
             cmds: List[List] = get_cmds(settings, logger, windows=True)
             refresh_path_cmd = '$env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")'
-            # create_posters_cmd = "rclone config create posters drive config_is_local=false"
 
+            powershell_path = Path(r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe")
+
+            cmd_string = ""
             for cmd in cmds:
-                # Combine the refresh command and the normal command into a single string
-                powershell_path = Path(r"C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe")
-                combined_cmd = [powershell_path, f"{refresh_path_cmd}; {', '.join(cmd)}"]
-                call_script(combined_cmd, logger)
+                cmd_string += ', '.join(cmd)
+                cmd_string += '; '
+
+            combined_cmd = [powershell_path, f"{refresh_path_cmd}; {cmd_string}"]
+            # print(combined_cmd)
+
+            call_script(combined_cmd, logger)
         else:
             raise Exception("Unsupported OS")
     except KeyboardInterrupt:

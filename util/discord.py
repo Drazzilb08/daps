@@ -5,10 +5,12 @@ except ImportError as e:
     print("Please install the required modules with 'pip install -r requirements.txt'")
     exit(1)
 
-import requests
-import random
 import json
+import random
 from datetime import datetime
+
+import requests
+
 from util.config import Config
 
 config = Config(script_name="discord")

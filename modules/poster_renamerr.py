@@ -14,18 +14,16 @@
 # License: MIT License
 # ===================================================================================================
 
-import os
-import sys
-import re
-import json
 import filecmp
+import json
 import shutil
+import sys
 import time
 
-from util.utility import *
-from util.discord import discord, discord_check
 from util.arrpy import StARR
+from util.discord import discord, discord_check
 from util.logger import setup_logger
+from util.utility import *
 
 try:
     from plexapi.server import PlexServer
@@ -58,10 +56,12 @@ def get_assets_files(source_dirs, logger):
 
     # Iterate through each source directory
     for source_dir in source_dirs:
+        logger.debug(f"Getting asset files for: {source_dir}")
         new_assets = categorize_files(source_dir)
         if new_assets:
             # Merge new_assets with final_assets
             for new in new_assets:
+                logger.debug(f"Processing asset: {new}")
                 found_match = False
                 for final in final_assets:
                     if final['normalized_title'] == new['normalized_title'] and final['year'] == new['year']:
@@ -601,7 +601,7 @@ def main(config):
             from modules.sync_gdrive import main as gdrive_main
             from util.config import Config
             gdrive_config = Config("sync_gdrive")
-            gdrive_main(gdrive_config, logger)
+            gdrive_main(gdrive_config)
             logger.info(f"Finished running sync_gdrive")
         else:
             logger.debug(f"Sync posters is disabled. Skipping...")

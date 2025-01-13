@@ -1,8 +1,10 @@
-import requests
 import os
 import pathlib
 from util.discord import discord
+import os
+import pathlib
 
+from util.discord import discord
 
 try:
     import requests

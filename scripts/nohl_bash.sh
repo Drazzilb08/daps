@@ -87,7 +87,7 @@ log_file() {
     # remove trailing slash from source_dir if it exists
     source_dir=${source_dir%%/}
 
-    log_file=$log_dir/nohl_bash/nohl.log
+    log_file=$log_dir/nohl_bash/log_0.txt
     
     echo "Log directory: $log_dir"
     echo "Log file: $log_file"

@@ -155,7 +155,6 @@ def main():
     old_schedule = None
     running_scripts = {}
     waiting_message_shown = False
-    scripts_schedules=load_schedule()
     if len(sys.argv) > 1:
         for input_name in sys.argv[1:]:
             if input_name in list_of_bash_scripts or input_name in list_of_python_scripts:

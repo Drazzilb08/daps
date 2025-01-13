@@ -1,12 +1,13 @@
-import shlex
 import json
+import pathlib
+import shlex
 import sys
-from util.config import Config
+
 from util.call_script import *
 from util.discord import get_discord_data, discord_check
-from util.utility import create_bar
 from util.logger import setup_logger
-import pathlib
+from util.utility import create_bar
+
 
 def set_cmd_args(settings, bash_script_file, logger, script_name):
     """

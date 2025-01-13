@@ -12,16 +12,14 @@
 # License: MIT License
 # ======================================================================================
 
-import json
-import time
 import sys
+import time
 
-from util.discord import discord, discord_check
 from util.arrpy import StARR
-from util.utility import *
+from util.discord import discord, discord_check
 from util.logger import setup_logger
-import re
-    
+from util.utility import *
+
 try:
     from plexapi.server import PlexServer
     from plexapi.exceptions import BadRequest

@@ -14,17 +14,14 @@
 # License: MIT License
 # =================================================================================
 
-import os
-import json
-import re
-import logging
 import filecmp
+import logging
 import shutil
 import sys
 
-from util.utility import *
-from util.scheduler import check_schedule
 from util.logger import setup_logger
+from util.scheduler import check_schedule
+from util.utility import *
 
 try:
     from tqdm import tqdm

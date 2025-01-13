@@ -1,7 +1,5 @@
-import sys
-import time
-import json
 import logging
+import time
 
 try:
     import requests

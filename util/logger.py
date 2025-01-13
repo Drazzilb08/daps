@@ -1,12 +1,15 @@
-import os
-import time
 import logging
-import pathlib
+import os
 from logging.handlers import RotatingFileHandler
-from util.version import get_version
-from util.utility import create_bar
+from pathlib import Path
 
-def setup_logger(log_level, script_name, max_logs=9):
+from util.constants import DOCKER_ENV
+from util.hoorn_lib_common.log_rotator import LogRotator
+from util.utility import create_bar
+from util.version import get_version
+
+
+def setup_logger(log_level, script_name, max_logs=10):
     """
     Setup the logger.
     
@@ -19,11 +22,11 @@ def setup_logger(log_level, script_name, max_logs=9):
         A logger object for logging messages.
     """
 
-    if os.environ.get('DOCKER_ENV'):
+    if DOCKER_ENV:
         config_dir = os.getenv('CONFIG_DIR', '/config')
-        log_dir = f"{config_dir}/logs/{script_name}"
+        log_dir: str = f"{config_dir}/logs/{script_name}"
     else:
-        log_dir = f"{os.path.join(pathlib.Path(__file__).parents[1], 'logs', script_name)}"
+        log_dir = f"{os.path.join(Path(__file__).parents[1], 'logs', script_name)}"
 
     if log_level not in ['debug', 'info', 'critical']:
         log_level = 'info'
@@ -32,19 +35,10 @@ def setup_logger(log_level, script_name, max_logs=9):
     # Create the log directory if it doesn't exist
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    
-    
-    # Define the log file path with the current date
-    log_file = f"{log_dir}/{script_name}.log"
-    
-    # Check if log file already exists
-    if os.path.isfile(log_file):
-        for i in range(max_logs - 1, 0, -1):
-            old_log = f"{log_dir}/{script_name}.log.{i}"
-            new_log = f"{log_dir}/{script_name}.log.{i + 1}"
-            if os.path.exists(old_log):
-                os.rename(old_log, new_log)
-        os.rename(log_file, f"{log_dir}/{script_name}.log.1")
+
+    rotator: LogRotator = LogRotator(log_directory=Path(log_dir), max_logs_to_keep=max_logs, create_directory=True)
+    rotator.increment_logs()
+    log_file = rotator.get_log_file()
     
     # Create a logger object with the script name
     logger = logging.getLogger(script_name)
@@ -67,6 +61,7 @@ def setup_logger(log_level, script_name, max_logs=9):
     
     # Create a RotatingFileHandler for log files
     handler = RotatingFileHandler(log_file, delay=True, mode="w", backupCount=max_logs)
+    handler.encoding = "utf-8"
     handler.setFormatter(formatter)
     
     # Add the file handler to the logger

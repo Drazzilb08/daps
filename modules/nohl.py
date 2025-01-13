@@ -16,15 +16,12 @@
 # License: MIT License
 # ===================================================================================================
 
-import os
-import re
 import sys
-import json
 
 from util.arrpy import StARR
 from util.discord import discord, discord_check
-from util.utility import *
 from util.logger import setup_logger
+from util.utility import *
 
 try:
     from tqdm import tqdm

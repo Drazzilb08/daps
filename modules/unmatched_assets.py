@@ -306,7 +306,7 @@ def main(config):
                                 # Remove ignored collections
                                 if ignore_collections:
                                     for item in ignore_collections:
-                                        for collection in results:
+                                        for collection in results[:]:
                                             if collection['title'] == item:
                                                 results.remove(collection)
                                 media_dict['collections'].extend(results)

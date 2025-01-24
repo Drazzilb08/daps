@@ -208,7 +208,6 @@ def filter_media(app, media_list, nohl_data, instance_type, exclude_profiles, ex
     """
     quality_profiles = app.get_quality_profile_names()
     exclude_profile_ids = []
-    
     # Get IDs for quality profiles to be excluded
     if exclude_profiles:
         for profile in exclude_profiles:
@@ -225,7 +224,8 @@ def filter_media(app, media_list, nohl_data, instance_type, exclude_profiles, ex
             # Compare media items with non-hardlinked items
             if media_item['normalized_title'] == nohl_item['normalized_title'] and media_item['year'] == nohl_item['year']:
                 # Check if the root path of the non-hardlinked item is in the root folder of the media item
-                if nohl_item['root_path'] not in media_item['root_folder']:
+                if media_item['root_folder'] not in nohl_item['root_path']:
+                    logger.debug(f"Skipping {media_item['title']} ({media_item['year']}), root folder mismatch.")
                     continue
                 # Check if the media item is not monitored
                 if media_item['monitored'] == False or (exclude_media is not None and media_item['title'] in exclude_media) or media_item['quality_profile'] in exclude_profile_ids:

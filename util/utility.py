@@ -888,8 +888,8 @@ def is_match(asset, media):
         compare_strings(asset['normalized_title'], media['normalized_title'])
     ) and (
         asset['year'] == media['year'] or
-        asset['year'] == secondary_year or
-        asset['year'] == folder_year
+        (asset['year'] == secondary_year and secondary_year is not None) or # None = None is not confirmation of a match
+        (asset['year'] == folder_year and folder_year is not None) # None = None is not confirmation of a match
     ):
         return True
     else:
@@ -924,8 +924,8 @@ def is_match_alternate(asset, media):
         asset['normalized_title'] in normalized_alternate_titles
     ) and (
         asset['year'] == media['year'] or
-        asset['year'] == secondary_year or
-        asset['year'] == folder_year
+        (asset['year'] == secondary_year and secondary_year is not None) or # None = None is not confirmation of a match
+        (asset['year'] == folder_year and folder_year is not None) # None = None is not confirmation of a match
     ):
         return True
     else:

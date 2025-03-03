@@ -21,6 +21,7 @@ import json
 import filecmp
 import shutil
 import time
+import pickle
 
 from util.utility import *
 from util.discord import discord, discord_check
@@ -39,6 +40,86 @@ except ImportError as e:
 script_name = "poster_renamerr"
 
 year_regex = re.compile(r"\s?\((\d{4})\).*")
+
+# need to figure out how to handle underscores
+def preprocess_name(name: str) -> str:
+    """
+    Preprocess a name for consistent matching:
+    - Convert to lowercase
+    - Remove special characters
+    - Remove common words
+    """
+    # Convert to lowercase and remove special characters
+    name = re.sub(r'[^\w\s]', ' ', name.lower())
+    # Remove extra whitespace
+    name = ' '.join(name.split())
+
+    # Optionally remove common words
+    common_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to'}
+    return ' '.join(word for word in name.split() if word not in common_words)
+
+index = {}
+processed_forms = {}
+
+def build_search_index(title, asset):
+    """
+    Build an index of preprocessed movie names for efficient lookup
+    Returns both the index and preprocessed forms
+    """
+
+    processed = preprocess_name(title)
+    if processed not in index:
+            index[processed] = list()
+    index[processed].append(asset)
+
+    # Store word-level index for partial matches
+    words = processed.split()
+
+    # only need to do the first word here
+    # also - store add to a prefix to expand possible matches
+    for word in words:
+        if len(word) > 2 or len(words)==1:  # Only index words longer than 2 chars unless it's the only word
+            if word not in processed_forms:
+                processed_forms[word] = list() #maybe consider moving to dequeue?
+            processed_forms[word].append(asset)
+            # also add the prefix
+            if len(word) > 3:
+                prefix = word[0:3]
+                if prefix not in processed_forms:
+                    processed_forms[prefix] = list()
+                processed_forms[prefix].append(asset)
+            break;
+
+    return
+
+def search_matches(movie_title, prefer_exact=True):
+    """ search for matches in the index """
+    matches = list()
+
+    processed_filename = preprocess_name(movie_title)
+
+    # Try exact matches first
+    # but this fails when a collection is named the same thing as a movie! i.e. John Wick
+    # leave this to the caller to determine.
+    if processed_filename in index and prefer_exact:
+        return index[processed_filename]
+
+    words = processed_filename.split();
+    # Try word-level matches
+    for word in words:
+        if (len(word) > 2 or len(words)==1) and word in processed_forms:
+
+            # first add any prefix matches to the beginning of the list.
+            if len(word) > 3:
+                prefix = word[0:3]
+                if prefix in processed_forms:
+                    matches.extend(processed_forms[prefix])
+
+            # then add the full word matches as items later in the list will take priority
+            matches.extend(processed_forms[word])
+            break
+
+    return matches
 
 def get_assets_files(source_dirs, logger):
     """
@@ -63,7 +144,8 @@ def get_assets_files(source_dirs, logger):
             # Merge new_assets with final_assets
             for new in new_assets:
                 found_match = False
-                for final in final_assets:
+
+                for final in final_assets[:]:
                     if final['normalized_title'] == new['normalized_title'] and final['year'] == new['year']:
                         found_match = True
                         # Compare normalized file names between final and new assets
@@ -75,10 +157,12 @@ def get_assets_files(source_dirs, logger):
                                 if normalized_final_file == normalized_new_file:
                                     final['files'].remove(final_file)
                                     final['files'].append(new_file)
+                                    # build_search_index(new['title'], new)
                                     break
                             else:
                                 # Add new file to final asset if the filenames don't match
                                 final['files'].append(new_file)
+                                # build_search_index(new['title'], new)
                         # Merge season_numbers from new asset to final asset
                         new_season_numbers = new.get('season_numbers', None)
                         if new_season_numbers:
@@ -90,6 +174,7 @@ def get_assets_files(source_dirs, logger):
                         break
                 if not found_match:
                     final_assets.append(new)
+                    build_search_index(new['title'], new)
         else:
             logger.error(f"No assets found in {source_dir}")
     
@@ -117,7 +202,7 @@ def handle_series_match(asset, media_seasons_numbers, asset_season_numbers):
         for season in seasons_to_remove:
             asset_season_numbers.remove(season)
 
-def match_data(media_dict, asset_files):
+def match_data(media_dict, asset_files, logger=None):
     """
     Matches media data to asset files
     
@@ -137,49 +222,81 @@ def match_data(media_dict, asset_files):
 
     # List of asset types to consider
     asset_types = [type for type in media_dict if media_dict[type] is not None]
-
+    total_comparisons = 0;
+    total_items = 0;
+    matches =0;
+    non_matches=0;
     # Iterate through each asset type
     with tqdm(total=len(asset_types), desc=f"Matching assets...", unit="asset types", leave=True) as pbar_outer:
         for asset_type in asset_types:
             if asset_type in media_dict:
                 unmatched_dict = []
                 matched_dict = []
-                asset_data = asset_files[asset_type]
                 media_data = media_dict[asset_type]
                 # Iterate through each media entry of the current asset type
                 with tqdm(total=len(media_data), desc=f"Matching {asset_type}", leave=True, disable=None) as pbar_inner:
                     for media in media_data:
+                        search_match = None;
+                        total_items+=1
                         matched = False 
-                        if asset_type == 'series':
+                        # search here to identify matches
+                        # collections need to be handled a little differently since they might overlap with a movie name - i.e. John Wick (collection + movie)
+                        search_matched_assets = search_matches(media['title'], 'year' in media and media['year'])
+                        logger.debug(f"SEARCH ({asset_type}): matched assets for {media['title']}")
+
+                        logger.debug(search_matched_assets)
+                        ## now to loop over each matched asset to determine if it's a match
+                        if 'seasons' in media and media['seasons']:
                             media_seasons_numbers = [season['season_number'] for season in media.get('seasons', [])]
-                        # Iterate through each asset entry of the current asset type
-                        for asset in asset_data:
-                            # Extracting various properties of assets and media for comparison
-                            if is_match(asset, media):
-                                matched = True  # Set flag to indicate a match
-                                asset_season_numbers = asset.get('season_numbers', None)
-                                if asset_type == "series":
-                                    handle_series_match(asset, media_seasons_numbers, asset_season_numbers)
+                            logger.debug(f"Season Numbers: {media_seasons_numbers}")
+                        i = len(search_matched_assets) -1;
+                        # traverse the list of matches in reverse order to maintain priority order
+                        while i >=0:
+                            search_asset = search_matched_assets[i]
+                            i-=1
+                            total_comparisons+=1
+                            if is_match(search_asset,media):
+                                matched=True
+                                asset_season_numbers = search_asset.get('season_numbers', None)
+                                if asset_season_numbers:
+                                    handle_series_match(search_asset, media_seasons_numbers, asset_season_numbers)
+                                else:
+                                    logger.debug(f"no season numbers found on asset {search_asset}")
+                                    logger.debug(f"for media {media}")
+                                search_match = search_asset
                                 break
+
                         if not matched:
-                            for asset in asset_data:
-                                if is_match_alternate(asset, media):
-                                    matched = True
-                                    asset_season_numbers = asset.get('season_numbers', None)
-                                    if asset_type == "series":
-                                        handle_series_match(asset, media_seasons_numbers, asset_season_numbers)
+                            # need to do more searches now based on alt titles
+                            for alt_title in media.get('alternate_titles', []):
+                                search_matched_assets = search_matches(alt_title, 'year' in media and media['year'])
+                                i = len(search_matched_assets) -1;
+                                while i >=0:
+                                    search_asset = search_matched_assets[i]
+                                    i-=1
+                                    total_comparisons+=1
+                                    if is_match_alternate(search_asset,media):
+                                        matched=True
+                                        asset_season_numbers = search_asset.get('season_numbers', None)
+                                        if asset_season_numbers:
+                                            handle_series_match(search_asset, media_seasons_numbers, asset_season_numbers)
+                                        search_match = search_asset
+                                        break
+                                if matched:
                                     break
-                                
+
                         if matched:
+                            matches +=1
                             matched_dict.append({
                                 'title': media['title'],
                                 'year': media['year'],
                                 'folder': media['folder'],
-                                'files': asset['files'],
+                                'files': search_match['files'],
                                 'seasons_numbers': asset_season_numbers,
                             })
 
                         if not matched:
+                            non_matches += 1
                             # If no match is found, add to unmatched dictionary
                             unmatched_dict.append({
                                 'title': media['title'],
@@ -192,8 +309,11 @@ def match_data(media_dict, asset_files):
                         combined_dict['unmatched'][asset_type] = unmatched_dict
 
                         pbar_inner.update(1)
-                pbar_outer.update(1)
-
+            pbar_outer.update(1)
+    logger.info(f"{total_items} total_items")
+    logger.info(f"{total_comparisons} total_comparisons")
+    logger.info(f"{matches} total_matches")
+    logger.info(f"{non_matches} non_matches")
     return combined_dict
 
 def process_file(file, new_file_path, action_type, logger):
@@ -540,6 +660,9 @@ def main(config):
     Main function.
     """
     global dry_run
+    global index
+    global processed_forms
+
     dry_run = config.dry_run
     log_level = config.log_level
     logger = setup_logger(log_level, script_name)
@@ -607,9 +730,28 @@ def main(config):
             logger.debug(f"Sync posters is disabled. Skipping...")
 
         assets_list = []
-        print("Gathering all the posters, please wait...")
-        assets_list = get_assets_files(source_dirs, logger)
+        if os.path.isfile("asset_list.pickle"):
+            with open('asset_list.pickle', 'rb') as file:
+                assets_list = pickle.load(file)
+            with open('search_index.pickle', 'rb') as file:
+                index = pickle.load(file)
+            with open('processed_forms.pickle', 'rb') as file:
+                processed_forms = pickle.load(file)
+        else:
+            print("File does not exist!")
+            print("Gathering all the posters, please wait...")
+            assets_list = get_assets_files(source_dirs, logger)
 
+            with open('asset_list.pickle', 'wb') as file:
+                pickle.dump(assets_list, file)
+            with open('search_index.pickle', 'wb') as file:
+                pickle.dump(index, file)
+            with open('processed_forms.pickle', 'wb') as file:
+                pickle.dump(processed_forms, file)
+        logger.debug("SEARCH_INDEX:")
+        logger.debug(index);
+        logger.debug("PROCESSED_FORMS:")
+        logger.debug(processed_forms);
         if assets_list:
             assets_dict = sort_assets(assets_list)
             logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
@@ -670,7 +812,7 @@ def main(config):
         if media_dict and assets_dict:
             # Match media data to asset files
             print(f"Matching media to assets, please wait...")
-            combined_dict = match_data(media_dict, assets_dict)
+            combined_dict = match_data(media_dict, assets_dict, logger)
             logger.debug(f"Matched and Unmatched media:\n{json.dumps(combined_dict, indent=4)}")
             matched_assets = combined_dict.get('matched', None)
             if any(matched_assets.values()):

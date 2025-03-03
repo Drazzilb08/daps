@@ -246,9 +246,11 @@ def match_data(media_dict, asset_files, logger=None):
 
                         logger.debug(search_matched_assets)
                         ## now to loop over each matched asset to determine if it's a match
+                        media_seasons_numbers = None
                         if 'seasons' in media and media['seasons']:
                             media_seasons_numbers = [season['season_number'] for season in media.get('seasons', [])]
                             logger.debug(f"Season Numbers: {media_seasons_numbers}")
+
                         i = len(search_matched_assets) -1;
                         # traverse the list of matches in reverse order to maintain priority order
                         while i >=0:
@@ -256,32 +258,47 @@ def match_data(media_dict, asset_files, logger=None):
                             i-=1
                             total_comparisons+=1
                             if is_match(search_asset,media):
-                                matched=True
+                                # either the both should be None or they should both be _something_
                                 asset_season_numbers = search_asset.get('season_numbers', None)
-                                if asset_season_numbers:
-                                    handle_series_match(search_asset, media_seasons_numbers, asset_season_numbers)
+                                if ((asset_season_numbers is None and media_seasons_numbers is None) or (asset_season_numbers and media_seasons_numbers)):
+                                    matched=True
+                                    if asset_season_numbers and media_seasons_numbers:
+                                        handle_series_match(search_asset, media_seasons_numbers, asset_season_numbers)
+                                    else:
+                                        logger.debug(f"no season numbers found on asset {search_asset}")
+                                        logger.debug(f"for media {media}")
+                                    search_match = search_asset
+                                    break
                                 else:
-                                    logger.debug(f"no season numbers found on asset {search_asset}")
-                                    logger.debug(f"for media {media}")
-                                search_match = search_asset
-                                break
+                                    logger.debug(f"asset type '{asset_type}' found a match for a different asset type, but we are skipping")
+                                    logger.debug(search_asset)
+                                    logger.debug(media)
 
                         if not matched:
                             # need to do more searches now based on alt titles
                             for alt_title in media.get('alternate_titles', []):
                                 search_matched_assets = search_matches(alt_title, 'year' in media and media['year'])
+                                logger.debug(f"SEARCH ({asset_type}): matched assets for {alt_title} - Alternate search")
+                                logger.debug(search_matched_assets)
                                 i = len(search_matched_assets) -1;
                                 while i >=0:
                                     search_asset = search_matched_assets[i]
                                     i-=1
                                     total_comparisons+=1
                                     if is_match_alternate(search_asset,media):
-                                        matched=True
+                                        # either the both should be None or they should both be _something_
                                         asset_season_numbers = search_asset.get('season_numbers', None)
-                                        if asset_season_numbers:
-                                            handle_series_match(search_asset, media_seasons_numbers, asset_season_numbers)
-                                        search_match = search_asset
-                                        break
+                                        if ((asset_season_numbers is None and media_seasons_numbers is None) or (asset_season_numbers and media_seasons_numbers)):
+                                            matched=True
+                                            if asset_season_numbers and media_seasons_numbers:
+                                                handle_series_match(search_asset, media_seasons_numbers, asset_season_numbers)
+                                            search_match = search_asset
+                                            break
+                                        else:
+                                            logger.debug(f"asset type '{asset_type}' found a ALT match for a different asset type, but we are skipping")
+                                            logger.debug(search_asset)
+                                            logger.debug(media)
+
                                 if matched:
                                     break
 

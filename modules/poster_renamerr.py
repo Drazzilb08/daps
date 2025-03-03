@@ -21,7 +21,6 @@ import json
 import filecmp
 import shutil
 import time
-import pickle
 
 from util.utility import *
 from util.discord import discord, discord_check
@@ -40,110 +39,6 @@ except ImportError as e:
 script_name = "poster_renamerr"
 
 year_regex = re.compile(r"\s?\((\d{4})\).*")
-
-# need to figure out how to handle underscores
-def preprocess_name(name: str) -> str:
-    """
-    Preprocess a name for consistent matching:
-    - Convert to lowercase
-    - Remove special characters
-    - Remove common words
-    """
-    # Convert to lowercase and remove special characters
-    name = re.sub(r'[^\w\s]', ' ', name.lower())
-    # Remove extra whitespace
-    name = ' '.join(name.split())
-
-    # Optionally remove common words
-    common_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to'}
-    return ' '.join(word for word in name.split() if word not in common_words)
-
-index = {
-    'movies': {},
-    'series': {},
-    'collections': {}
-}
-
-processed_forms = {
-    'movies': {},
-    'series': {},
-    'collections': {}
-}
-def build_search_index(title, asset, asset_type):
-    """
-    Build an index of preprocessed movie names for efficient lookup
-    Returns both the index and preprocessed forms
-    """
-    asset_type_index = index[asset_type]
-    asset_type_processed_forms = processed_forms[asset_type]
-    processed = preprocess_name(title)
-    if processed not in asset_type_index:
-            asset_type_index[processed] = list()
-    asset_type_index[processed].append(asset)
-
-    # Store word-level index for partial matches
-    words = processed.split()
-
-
-    # only need to do the first word here
-    # also - store add to a prefix to expand possible matches
-    for word in words:
-        if len(word) > 2 or len(words)==1:  # Only index words longer than 2 chars unless it's the only word
-            if word not in asset_type_processed_forms:
-                asset_type_processed_forms[word] = list() #maybe consider moving to dequeue?
-            asset_type_processed_forms[word].append(asset)
-            # also add the prefix
-            if len(word) > 3:
-                prefix = word[0:3]
-                if prefix not in asset_type_processed_forms:
-                    asset_type_processed_forms[prefix] = list()
-                asset_type_processed_forms[prefix].append(asset)
-            break;
-
-    return
-
-def search_matches(movie_title, asset_type, prefer_exact=True, debug_search=False):
-    """ search for matches in the index """
-    matches = list()
-    
-    processed_filename = preprocess_name(movie_title)
-
-    asset_type_index = index[asset_type]
-    asset_type_processed_forms = processed_forms[asset_type]
-
-    # Try exact matches first
-    # but this fails when a collection is named the same thing as a movie! i.e. John Wick
-    # leave this to the caller to determine.
-    if (debug_search):
-        print(processed_filename)
-        print(prefer_exact)
-        print(processed_filename in asset_type_index)
-    if processed_filename in asset_type_index and prefer_exact:
-        return asset_type_index[processed_filename]
-
-    words = processed_filename.split();
-    # Try word-level matches
-    for word in words:
-        if (len(word) > 2 or len(words)==1):
-
-            # first add any prefix matches to the beginning of the list.
-            if len(word) > 3:
-                prefix = word[0:3]
-                if (debug_search):
-                    print(prefix)
-                    print(prefix in asset_type_processed_forms)
-
-                if prefix in asset_type_processed_forms:
-                    matches.extend(asset_type_processed_forms[prefix])
-
-            # then add the full word matches as items later in the list will take priority
-            if word in asset_type_processed_forms:
-                matches.extend(asset_type_processed_forms[word])
-            if (debug_search):
-                print(matches)
-            break
-
-    return matches
 
 def get_assets_files(source_dirs, logger):
     """
@@ -181,12 +76,10 @@ def get_assets_files(source_dirs, logger):
                                 if normalized_final_file == normalized_new_file:
                                     final['files'].remove(final_file)
                                     final['files'].append(new_file)
-                                    # build_search_index(new['title'], new)
                                     break
                             else:
                                 # Add new file to final asset if the filenames don't match
                                 final['files'].append(new_file)
-                                # build_search_index(new['title'], new)
                         # Merge season_numbers from new asset to final asset
                         new_season_numbers = new.get('season_numbers', None)
                         if new_season_numbers:
@@ -198,18 +91,6 @@ def get_assets_files(source_dirs, logger):
                         break
                 if not found_match:
                     final_assets.append(new)
-                    # I could pass in the asset type here to "help"
-                    # also need to pass in during search then... 
-                    # no years == collection
-                    # season_numbers == tv
-                    # everything else movies
-                    asset_type = 'movies'
-                    if not new['year']:
-                        asset_type = 'collections'
-                    elif new.get('season_numbers', None):
-                        asset_type = 'series'
-                    
-                    build_search_index(new['title'], new, asset_type)
         else:
             logger.error(f"No assets found in {source_dir}")
     
@@ -712,8 +593,6 @@ def main(config):
     Main function.
     """
     global dry_run
-    global index
-    global processed_forms
 
     dry_run = config.dry_run
     log_level = config.log_level
@@ -785,30 +664,27 @@ def main(config):
         else:
             logger.debug(f"Sync posters is disabled. Skipping...")
 
-        assets_list = []
-        if (not refresh_cached_asset_structures) and os.path.isfile("asset_list.pickle"):
-            with open('asset_list.pickle', 'rb') as file:
-                assets_list = pickle.load(file)
-            with open('search_index.pickle', 'rb') as file:
-                index = pickle.load(file)
-            with open('processed_forms.pickle', 'rb') as file:
-                processed_forms = pickle.load(file)
-        else:
+        assets_list = None
+        assets_dict = None
+        if (not refresh_cached_asset_structures):
+            logger.debug("getting cached structs & index")
+            assets_list, assets_dict = get_cached_structs_and_load_index()
+            logger.debug(f"assets_list loaded: {assets_list is not None}")
+            logger.debug(f"assets_dict loaded: {assets_dict is not None}")
+        
+        if not assets_list:
             print("Gathering all the posters, please wait...")
             assets_list = get_assets_files(source_dirs, logger)
-            if cache_asset_structures:
-                with open('asset_list.pickle', 'wb') as file:
-                    pickle.dump(assets_list, file)
-                with open('search_index.pickle', 'wb') as file:
-                    pickle.dump(index, file)
-                with open('processed_forms.pickle', 'wb') as file:
-                    pickle.dump(processed_forms, file)
-        logger.debug("SEARCH_INDEX:")
-        logger.debug(index);
-        logger.debug("PROCESSED_FORMS:")
-        logger.debug(processed_forms);
+            
+        # logger.debug("SEARCH_INDEX:")
+        # logger.debug(index);
+        # logger.debug("PROCESSED_FORMS:")
+        # logger.debug(processed_forms);
         if assets_list:
-            assets_dict = sort_assets(assets_list)
+            if not assets_dict:
+                assets_dict = sort_assets(assets_list, True)
+                if cache_asset_structures:
+                    save_cached_structs_and_index_to_disk(assets_list, assets_dict)
             logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
         else:
             logger.error("No assets found. Exiting...")

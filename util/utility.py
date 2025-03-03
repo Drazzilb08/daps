@@ -5,6 +5,7 @@ from pathlib import Path
 import subprocess
 import math
 import pathlib
+import pickle
 
 try:
     import html
@@ -55,6 +56,139 @@ prefixes = [
 suffixes = [
     "Collection",
 ]
+
+# need to figure out how to handle underscores
+def preprocess_name(name: str) -> str:
+    """
+    Preprocess a name for consistent matching:
+    - Convert to lowercase
+    - Remove special characters
+    - Remove common words
+    """
+    # Convert to lowercase and remove special characters
+    name = re.sub(r'[^\w\s]', ' ', name.lower())
+    # Remove extra whitespace
+    name = ' '.join(name.split())
+
+    # Optionally remove common words
+    common_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to'}
+    return ' '.join(word for word in name.split() if word not in common_words)
+
+index = {
+    'movies': {},
+    'series': {},
+    'collections': {}
+}
+
+processed_forms = {
+    'movies': {},
+    'series': {},
+    'collections': {}
+}
+
+def save_cached_structs_and_index_to_disk(assets_list, assets_dict):
+    with open('asset_list.pickle', 'wb') as file:
+        pickle.dump(assets_list, file)
+    with open('asset_dict.pickle', 'wb') as file:
+        pickle.dump(assets_dict, file)
+    with open('search_index.pickle', 'wb') as file:
+        pickle.dump(index, file)
+    with open('processed_forms.pickle', 'wb') as file:
+        pickle.dump(processed_forms, file)
+
+
+def get_cached_structs_and_load_index():
+    global index
+    global processed_forms
+    assets_list = None
+    assets_dict = None
+    if os.path.isfile("asset_list.pickle"):
+        with open('asset_list.pickle', 'rb') as file:
+            assets_list = pickle.load(file)
+        with open('asset_dict.pickle', 'rb') as file:
+            assets_dict = pickle.load(file)
+        with open('search_index.pickle', 'rb') as file:
+            index = pickle.load(file)
+        with open('processed_forms.pickle', 'rb') as file:
+            processed_forms = pickle.load(file)
+        
+    return assets_list, assets_dict
+
+def build_search_index(title, asset, asset_type):
+    """
+    Build an index of preprocessed movie names for efficient lookup
+    Returns both the index and preprocessed forms
+    """
+    asset_type_index = index[asset_type]
+    asset_type_processed_forms = processed_forms[asset_type]
+    processed = preprocess_name(title)
+    if processed not in asset_type_index:
+            asset_type_index[processed] = list()
+    asset_type_index[processed].append(asset)
+
+    # Store word-level index for partial matches
+    words = processed.split()
+
+
+    # only need to do the first word here
+    # also - store add to a prefix to expand possible matches
+    for word in words:
+        if len(word) > 2 or len(words)==1:  # Only index words longer than 2 chars unless it's the only word
+            if word not in asset_type_processed_forms:
+                asset_type_processed_forms[word] = list() #maybe consider moving to dequeue?
+            asset_type_processed_forms[word].append(asset)
+            # also add the prefix
+            if len(word) > 3:
+                prefix = word[0:3]
+                if prefix not in asset_type_processed_forms:
+                    asset_type_processed_forms[prefix] = list()
+                asset_type_processed_forms[prefix].append(asset)
+            break;
+
+    return
+
+def search_matches(movie_title, asset_type, prefer_exact=True, debug_search=False):
+    """ search for matches in the index """
+    matches = list()
+    
+    processed_filename = preprocess_name(movie_title)
+
+    asset_type_index = index[asset_type]
+    asset_type_processed_forms = processed_forms[asset_type]
+
+    # Try exact matches first
+    # but this fails when a collection is named the same thing as a movie! i.e. John Wick
+    # leave this to the caller to determine.
+    if (debug_search):
+        print(processed_filename)
+        print(prefer_exact)
+        print(processed_filename in asset_type_index)
+    if processed_filename in asset_type_index and prefer_exact:
+        return asset_type_index[processed_filename]
+
+    words = processed_filename.split();
+    # Try word-level matches
+    for word in words:
+        if (len(word) > 2 or len(words)==1):
+
+            # first add any prefix matches to the beginning of the list.
+            if len(word) > 3:
+                prefix = word[0:3]
+                if (debug_search):
+                    print(prefix)
+                    print(prefix in asset_type_processed_forms)
+
+                if prefix in asset_type_processed_forms:
+                    matches.extend(asset_type_processed_forms[prefix])
+
+            # then add the full word matches as items later in the list will take priority
+            if word in asset_type_processed_forms:
+                matches.extend(asset_type_processed_forms[word])
+            if (debug_search):
+                print(matches)
+            break
+
+    return matches
 
 def normalize_file_names(file_name):
     """
@@ -800,7 +934,7 @@ def redact_sensitive_info(text):
 
     return text
 
-def sort_assets(assets_list):
+def sort_assets(assets_list, build_index=False):
     """
     Sort assets into movies, series, and collections
     
@@ -816,13 +950,15 @@ def sort_assets(assets_list):
         'collections': []
     }
     for item in tqdm(assets_list, desc="Categorizing assets", total=len(assets_list), disable=None, leave=True):
+        asset_type = 'movies'
         if not item['year']:
-            assets_dict['collections'].append(item)
-        else:
-            if item.get('season_numbers', None):
-                assets_dict['series'].append(item)
-            else:
-                assets_dict['movies'].append(item)
+            asset_type = 'collections'
+        elif item.get('season_numbers', None):
+            asset_type = 'series'
+        
+        assets_dict[asset_type].append(item)
+        if build_index:
+            build_search_index(item['title'], item, asset_type)
 
     return assets_dict
 

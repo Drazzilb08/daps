@@ -58,65 +58,89 @@ def preprocess_name(name: str) -> str:
     common_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to'}
     return ' '.join(word for word in name.split() if word not in common_words)
 
-index = {}
-processed_forms = {}
+index = {
+    'movies': {},
+    'series': {},
+    'collections': {}
+}
 
-def build_search_index(title, asset):
+processed_forms = {
+    'movies': {},
+    'series': {},
+    'collections': {}
+}
+def build_search_index(title, asset, asset_type):
     """
     Build an index of preprocessed movie names for efficient lookup
     Returns both the index and preprocessed forms
     """
-
+    asset_type_index = index[asset_type]
+    asset_type_processed_forms = processed_forms[asset_type]
     processed = preprocess_name(title)
-    if processed not in index:
-            index[processed] = list()
-    index[processed].append(asset)
+    if processed not in asset_type_index:
+            asset_type_index[processed] = list()
+    asset_type_index[processed].append(asset)
 
     # Store word-level index for partial matches
     words = processed.split()
+
 
     # only need to do the first word here
     # also - store add to a prefix to expand possible matches
     for word in words:
         if len(word) > 2 or len(words)==1:  # Only index words longer than 2 chars unless it's the only word
-            if word not in processed_forms:
-                processed_forms[word] = list() #maybe consider moving to dequeue?
-            processed_forms[word].append(asset)
+            if word not in asset_type_processed_forms:
+                asset_type_processed_forms[word] = list() #maybe consider moving to dequeue?
+            asset_type_processed_forms[word].append(asset)
             # also add the prefix
             if len(word) > 3:
                 prefix = word[0:3]
-                if prefix not in processed_forms:
-                    processed_forms[prefix] = list()
-                processed_forms[prefix].append(asset)
+                if prefix not in asset_type_processed_forms:
+                    asset_type_processed_forms[prefix] = list()
+                asset_type_processed_forms[prefix].append(asset)
             break;
 
     return
 
-def search_matches(movie_title, prefer_exact=True):
+def search_matches(movie_title, asset_type, prefer_exact=True, debug_search=False):
     """ search for matches in the index """
     matches = list()
-
+    
     processed_filename = preprocess_name(movie_title)
+
+    asset_type_index = index[asset_type]
+    asset_type_processed_forms = processed_forms[asset_type]
 
     # Try exact matches first
     # but this fails when a collection is named the same thing as a movie! i.e. John Wick
     # leave this to the caller to determine.
-    if processed_filename in index and prefer_exact:
-        return index[processed_filename]
+    if (debug_search):
+        print(processed_filename)
+        print(prefer_exact)
+        print(processed_filename in asset_type_index)
+    if processed_filename in asset_type_index and prefer_exact:
+        return asset_type_index[processed_filename]
 
     words = processed_filename.split();
     # Try word-level matches
     for word in words:
-        if (len(word) > 2 or len(words)==1) and word in processed_forms:
+        if (len(word) > 2 or len(words)==1):
 
             # first add any prefix matches to the beginning of the list.
             if len(word) > 3:
                 prefix = word[0:3]
-                if prefix in processed_forms:
-                    matches.extend(processed_forms[prefix])
+                if (debug_search):
+                    print(prefix)
+                    print(prefix in asset_type_processed_forms)
+
+                if prefix in asset_type_processed_forms:
+                    matches.extend(asset_type_processed_forms[prefix])
 
             # then add the full word matches as items later in the list will take priority
-            matches.extend(processed_forms[word])
+            if word in asset_type_processed_forms:
+                matches.extend(asset_type_processed_forms[word])
+            if (debug_search):
+                print(matches)
             break
 
     return matches
@@ -174,7 +198,18 @@ def get_assets_files(source_dirs, logger):
                         break
                 if not found_match:
                     final_assets.append(new)
-                    build_search_index(new['title'], new)
+                    # I could pass in the asset type here to "help"
+                    # also need to pass in during search then... 
+                    # no years == collection
+                    # season_numbers == tv
+                    # everything else movies
+                    asset_type = 'movies'
+                    if not new['year']:
+                        asset_type = 'collections'
+                    elif new.get('season_numbers', None):
+                        asset_type = 'series'
+                    
+                    build_search_index(new['title'], new, asset_type)
         else:
             logger.error(f"No assets found in {source_dir}")
     
@@ -241,8 +276,8 @@ def match_data(media_dict, asset_files, logger=None):
                         matched = False 
                         # search here to identify matches
                         # collections need to be handled a little differently since they might overlap with a movie name - i.e. John Wick (collection + movie)
-                        search_matched_assets = search_matches(media['title'], 'year' in media and media['year'])
-                        logger.debug(f"SEARCH ({asset_type}): matched assets for {media['title']}")
+                        search_matched_assets = search_matches(media['title'], asset_type)
+                        logger.debug(f"SEARCH ({asset_type}): matched assets for {media['title']} type={asset_type}")
 
                         logger.debug(search_matched_assets)
                         ## now to loop over each matched asset to determine if it's a match
@@ -277,8 +312,8 @@ def match_data(media_dict, asset_files, logger=None):
                         if not matched:
                             # need to do more searches now based on alt titles
                             for alt_title in media.get('alternate_titles', []):
-                                search_matched_assets = search_matches(alt_title, 'year' in media and media['year'])
-                                logger.debug(f"SEARCH ({asset_type}): matched assets for {alt_title} - Alternate search")
+                                search_matched_assets = search_matches(alt_title, asset_type)
+                                logger.debug(f"SEARCH ({asset_type}): matched assets for {alt_title} type={asset_type} - Alternate search")
                                 logger.debug(search_matched_assets)
                                 i = len(search_matched_assets) -1;
                                 while i >=0:

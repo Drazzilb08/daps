@@ -740,6 +740,8 @@ def main(config):
         border_replacerr = script_config.get('border_replacerr', False)
         instances = script_config.get('instances', [])
         sync_posters = script_config.get('sync_posters', False)
+        cache_asset_structures = script_config.get('cache_asset_structures', False)
+        refresh_cached_asset_structures = script_config.get('refresh_cached_asset_structures', True)
 
         logger.debug(create_bar("-"))  # Log separator
         # Log script configuration settings
@@ -755,6 +757,8 @@ def main(config):
         logger.debug(f'{"Border replacerr:":<20}{border_replacerr}')
         logger.debug(f'{"Instances:":<20}{instances}')
         logger.debug(f'{"Sync posters:":<20}{sync_posters}')
+        logger.debug(f'{"Cache Asset Structs:":<20}{cache_asset_structures}')
+        logger.debug(f'{"Refresh Cached Structs:":<20}{refresh_cached_asset_structures}')
 
         if not os.path.exists(destination_dir):
             logger.info(f"Creating destination directory: {destination_dir}")
@@ -782,7 +786,7 @@ def main(config):
             logger.debug(f"Sync posters is disabled. Skipping...")
 
         assets_list = []
-        if os.path.isfile("asset_list.pickle"):
+        if (not refresh_cached_asset_structures) and os.path.isfile("asset_list.pickle"):
             with open('asset_list.pickle', 'rb') as file:
                 assets_list = pickle.load(file)
             with open('search_index.pickle', 'rb') as file:
@@ -790,16 +794,15 @@ def main(config):
             with open('processed_forms.pickle', 'rb') as file:
                 processed_forms = pickle.load(file)
         else:
-            print("File does not exist!")
             print("Gathering all the posters, please wait...")
             assets_list = get_assets_files(source_dirs, logger)
-
-            with open('asset_list.pickle', 'wb') as file:
-                pickle.dump(assets_list, file)
-            with open('search_index.pickle', 'wb') as file:
-                pickle.dump(index, file)
-            with open('processed_forms.pickle', 'wb') as file:
-                pickle.dump(processed_forms, file)
+            if cache_asset_structures:
+                with open('asset_list.pickle', 'wb') as file:
+                    pickle.dump(assets_list, file)
+                with open('search_index.pickle', 'wb') as file:
+                    pickle.dump(index, file)
+                with open('processed_forms.pickle', 'wb') as file:
+                    pickle.dump(processed_forms, file)
         logger.debug("SEARCH_INDEX:")
         logger.debug(index);
         logger.debug("PROCESSED_FORMS:")

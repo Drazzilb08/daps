@@ -201,6 +201,9 @@ poster_renamerr:
     # - sonarr_anime
     # - radarr_2
     # - sonarr_3
+  cache_asset_structures: false
+  refresh_cached_asset_structures: false
+
 
 border_replacerr:
   # This script replaces the border on the posters or removes the border

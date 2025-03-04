@@ -177,8 +177,6 @@ def search_matches(movie_title, asset_type, prefer_exact=True, debug_search=Fals
         print(prefer_exact)
         print(processed_filename in asset_type_index)
     if processed_filename in asset_type_index:
-        if prefer_exact:
-            return asset_type_index[processed_filename]
         exact_matches = asset_type_index[processed_filename]
 
     words = processed_filename.split();
@@ -204,8 +202,9 @@ def search_matches(movie_title, asset_type, prefer_exact=True, debug_search=Fals
         if (debug_search):
             print(matches)
         break
-    if not prefer_exact:
-        matches.extend(exact_matches)
+
+    matches.extend(exact_matches)
+
     return matches
 
 def normalize_file_names(file_name):

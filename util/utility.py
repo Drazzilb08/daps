@@ -57,7 +57,16 @@ suffixes = [
     "Collection",
 ]
 
-# need to figure out how to handle underscores
+# dict per asset type to map asset prefixes to the assets, themselves.
+prefix_index = {
+    'movies': {},
+    'series': {},
+    'collections': {}
+}
+
+# length to use as a prefix.  anything shorter than this will be used as-is
+prefix_length = 3
+
 def preprocess_name(name: str) -> str:
     """
     Preprocess a name for consistent matching:
@@ -74,28 +83,19 @@ def preprocess_name(name: str) -> str:
     common_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to'}
     return ' '.join(word for word in name.split() if word not in common_words)
 
-index = {
-    'movies': {},
-    'series': {},
-    'collections': {}
-}
-
-processed_forms = {
-    'movies': {},
-    'series': {},
-    'collections': {}
-}
-
-prefix_length = 3
-
-def save_cached_structs_and_index_to_disk(assets_list):
+def save_cached_structs_to_disk(assets_list):
+    """
+    Persist asset list to disk to avoid future runs having to re-process all of the posters
+    """
     with open('asset_list.pickle', 'wb') as file:
         pickle.dump(assets_list, file)
 
 
-def get_cached_structs_and_load_index():
-    global index
-    global processed_forms
+def load_cached_structs():
+    """
+    load the asset list from disk
+    """
+
     assets_list = None
     if os.path.isfile("asset_list.pickle"):
         with open('asset_list.pickle', 'rb') as file:
@@ -108,8 +108,7 @@ def build_search_index(title, asset, asset_type, logger):
     Build an index of preprocessed movie names for efficient lookup
     Returns both the index and preprocessed forms
     """
-    asset_type_index = index[asset_type]
-    asset_type_processed_forms = processed_forms[asset_type]
+    asset_type_processed_forms = prefix_index[asset_type]
     processed = preprocess_name(title)
     debug = False # (processed == 'mission impossible' or processed == 'mission impossible collection')
 
@@ -118,10 +117,6 @@ def build_search_index(title, asset, asset_type, logger):
         print(processed)
         print(asset_type)
         print(asset)
-
-    if processed not in asset_type_index:
-            asset_type_index[processed] = list()
-    asset_type_index[processed].append(asset)
 
     # Store word-level index for partial matches
     words = processed.split()
@@ -135,7 +130,8 @@ def build_search_index(title, asset, asset_type, logger):
         if word not in asset_type_processed_forms:
             asset_type_processed_forms[word] = list() #maybe consider moving to dequeue?
         asset_type_processed_forms[word].append(asset)
-        # also add the prefix
+
+        # also add the prefix.  if shorter than prefix_length then it was already added above.
         if len(word) > prefix_length:
             prefix = word[0:prefix_length]
             if debug:
@@ -143,7 +139,7 @@ def build_search_index(title, asset, asset_type, logger):
             if prefix not in asset_type_processed_forms:
                 asset_type_processed_forms[prefix] = list()
             asset_type_processed_forms[prefix].append(asset)
-        break;
+        break
 
     return
 
@@ -152,22 +148,17 @@ def search_matches(movie_title, asset_type, logger, debug_search=False):
     matches = list()
     
     processed_filename = preprocess_name(movie_title)
-
-    asset_type_index = index[asset_type]
-    asset_type_processed_forms = processed_forms[asset_type]
+    asset_type_processed_forms = prefix_index[asset_type]
 
     if (debug_search):
         print('debug_search_matches')
         print(processed_filename)
-        print(processed_filename in asset_type_index)
 
-    words = processed_filename.split();
+    words = processed_filename.split()
     if (debug_search):
         print(words)
     # Try word-level matches
     for word in words:
-    # if (len(word) > 2 or len(words)==1):
-
         # first add any prefix matches to the beginning of the list.
         if len(word) > prefix_length:
             prefix = word[0:prefix_length]
@@ -178,7 +169,9 @@ def search_matches(movie_title, asset_type, logger, debug_search=False):
             if prefix in asset_type_processed_forms:
                 matches.extend(asset_type_processed_forms[prefix])
 
-        # then add the full word matches as items later in the list will take priority
+        # then add the full word matches as items.
+        # TODO: is this even needed any more given everything would grab the prefix
+        #       or maybe this is an else to the above?
         if word in asset_type_processed_forms:
             matches.extend(asset_type_processed_forms[word])
         if (debug_search):

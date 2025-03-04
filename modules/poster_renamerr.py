@@ -685,7 +685,7 @@ def main(config):
         loaded_from_disk = False
         if (load_asset_structs_from_disk):
             logger.debug("getting cached structs & index")
-            assets_list = get_cached_structs_and_load_index()
+            assets_list = load_cached_structs()
             loaded_from_disk = assets_list is not None
             logger.debug(f"assets_list loaded: {loaded_from_disk}")
         
@@ -696,7 +696,7 @@ def main(config):
         if assets_list:
             assets_dict = sort_assets(assets_list, logger, build_index=True)
             if persist_asset_structs_to_disk:
-                save_cached_structs_and_index_to_disk(assets_list)
+                save_cached_structs_to_disk(assets_list)
             logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
         else:
             logger.error("No assets found. Exiting...")

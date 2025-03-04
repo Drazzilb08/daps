@@ -253,7 +253,10 @@ def match_data(media_dict, asset_files, logger=None):
                         combined_dict['unmatched'][asset_type] = unmatched_dict
 
                         pbar_inner.update(1)
+                print(str(pbar_inner))
             pbar_outer.update(1)
+
+    print(str(pbar_outer))
     logger.info(f"{total_items} total_items")
     logger.info(f"{total_comparisons} total_comparisons")
     logger.info(f"{matches} total_matches")
@@ -332,7 +335,8 @@ def rename_files(matched_assets, script_config, logger):
         output[asset_type] = []
         # If assets to rename
         if matched_assets[asset_type]:
-            for item in tqdm(matched_assets[asset_type], desc=f"Renaming {asset_type} posters", unit="assets", leave=True, disable=None, total=len(matched_assets[asset_type])):
+            progress_bar = tqdm(matched_assets[asset_type], desc=f"Renaming {asset_type} posters", unit="assets", leave=True, disable=None, total=len(matched_assets[asset_type]))
+            for item in progress_bar:
                 messages = []
                 discord_messages = []
                 files = item['files']
@@ -418,6 +422,7 @@ def rename_files(matched_assets, script_config, logger):
                         'messages': messages,
                         'discord_messages': discord_messages,
                     })
+            print(str(progress_bar))
         else:
             print(f"No {asset_type} to rename")
     return output

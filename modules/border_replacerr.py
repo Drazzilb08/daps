@@ -165,7 +165,8 @@ def fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_
             current_index = 0  # Index for cycling through border colors
             items = assets_dict[asset_type]
             # Loop through each item in the asset type
-            for data in tqdm(items, desc=f"Processing {asset_type.capitalize()}", total=len(items), unit="items", disable=None, leave=True):
+            progress_bar = tqdm(items, desc=f"Processing {asset_type.capitalize()}", total=len(items), unit="items", disable=None, leave=True)
+            for data in progress_bar:
                 files = data.get('files', None)
                 path = data.get('path', None)
                 year = data.get('year', None)
@@ -218,6 +219,7 @@ def fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_
 
                     if rgb_border_colors:
                         current_index = (current_index + 1) % len(rgb_border_colors)
+            print(str(progress_bar))
         else:
             logger.info(f"No {asset_type} found.")
     return messages

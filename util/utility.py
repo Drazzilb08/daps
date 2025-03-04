@@ -325,7 +325,8 @@ def categorize_files(folder_path):
         files = sorted(files, key=lambda x: x.lower())  # Sort files alphabetically
         if files:
             # Loop through each file in the folder
-            for file in tqdm(files, desc=f"Processing '{base_name}' folder", total=len(files), disable=None, leave=True):
+            progress_bar = tqdm(files, desc=f"Processing '{base_name}' folder", total=len(files), disable=None, leave=True)
+            for file in progress_bar:
                 if file.startswith('.') or "(N-A)" in file:
                     continue  # Skip hidden files or files with "(N-A)" in the name
 
@@ -408,6 +409,7 @@ def categorize_files(folder_path):
                             'path': None,
                             'files': [file_path],
                         })
+            print(str(progress_bar))
         else:
             return None
 
@@ -436,7 +438,8 @@ def categorize_files(folder_path):
                         series_entry['files'].sort()
     else:  # If asset_folders is True, sort assets based on folders
         try:
-            for dir_entry in tqdm(os.scandir(folder_path), desc='Processing posters', total=len(os.listdir(folder_path)), disable=None):
+            progress_bar = tqdm(os.scandir(folder_path), desc='Processing posters', total=len(os.listdir(folder_path)), disable=None)
+            for dir_entry in progress_bar:
                 if dir_entry.is_dir():
                     dir = dir_entry.path
                     files = [f.name for f in os.scandir(dir) if f.is_file()]
@@ -517,6 +520,7 @@ def categorize_files(folder_path):
                                 'path': dir,
                                 'files': files,
                             })
+            print(str(progress_bar))
         except FileNotFoundError:
             return None
 
@@ -616,7 +620,8 @@ def get_media_folders(paths, logger):
         base_name = os.path.basename(os.path.normpath(path))  # Get the base folder name
         
         # Iterate through items in the directory
-        for item in tqdm(os.listdir(path), desc=f"Getting media folders for '{base_name}'", disable=None, leave=True):
+        progress_bar = tqdm(os.listdir(path), desc=f"Getting media folders for '{base_name}'", disable=None, leave=True)
+        for item in progress_bar:
             if item.startswith('.') or item.startswith('@'):
                 continue  # Skip hidden files/folders
             
@@ -662,6 +667,7 @@ def get_media_folders(paths, logger):
                     'path': os.path.join(path, item),
                     'location': base_name,
                 })
+        print(str(progress_bar))
     
     return media_dict
 
@@ -680,7 +686,8 @@ def handle_starr_data(app, server_name, instance_type, include_episode=False):
     media_dict = []  # Initialize an empty list to hold media data
     media = app.get_media()  # Fetch media data from the Radarr or Sonarr instance
     if media:
-        for item in tqdm(media, desc=f"Getting {server_name.capitalize()} data", total=len(media), disable=None, leave=True):
+        progress_bar = tqdm(media, desc=f"Getting {server_name.capitalize()} data", total=len(media), disable=None, leave=True)
+        for item in progress_bar:
             # Fetch relevant data based on the instance type (Radarr or Sonarr)
             if instance_type == "radarr":
                 file_id = item.get('movieFile', {}).get('id', None)  # Fetch file ID for Radarr
@@ -758,6 +765,7 @@ def handle_starr_data(app, server_name, instance_type, include_episode=False):
                 'seasons': season_list if instance_type == "sonarr" else None,  # Add season_list for Sonarr items
                 'season_numbers': [season['season_number'] for season in season_list] if instance_type == "sonarr" else None,
             })  # Append the constructed dictionary to media_dict
+        print(str(progress_bar))
     else:
         return None
     
@@ -800,7 +808,8 @@ def get_plex_data(plex, library_names, logger, include_smart, collections_only):
     if collections_only:
         # Process collection data
         for library_name, collection_names in collection_names.items():
-            for collection in tqdm(collection_names, desc=f"Processing Plex collection data for '{library_name}'", total=len(collection_names), disable=None, leave=True):
+            progress_bar = tqdm(collection_names, desc=f"Processing Plex collection data for '{library_name}'", total=len(collection_names), disable=None, leave=True)
+            for collection in progress_bar:
                 plex_dict.append({
                     'title': collection,
                     'normalized_title': normalize_titles(collection),
@@ -808,10 +817,12 @@ def get_plex_data(plex, library_names, logger, include_smart, collections_only):
                     'year': None,
                     'folder': collection,
                 })  # Append collection information to plex_dict
+            print(str(progress_bar))
     else:
         # Process library item data
         for library_name, library_data in library_data.items():
-            for item in tqdm(library_data, desc=f"Processing {library_name} data", total=len(library_data), disable=None, leave=True):
+            progress_bar = tqdm(library_data, desc=f"Processing {library_name} data", total=len(library_data), disable=None, leave=True)
+            for item in progress_bar:
                 labels = [str(label).lower() for label in item.labels]  # Get lowercase labels
                 plex_dict.append({
                     'title': item.title,
@@ -819,7 +830,7 @@ def get_plex_data(plex, library_names, logger, include_smart, collections_only):
                     'year': item.year,
                     'labels': labels,
                 })  # Append item information to plex_dict
-    
+            print(str(progress_bar))
     return plex_dict  # Return the constructed Plex data dictionary
 
 
@@ -946,7 +957,8 @@ def sort_assets(assets_list, build_index=False):
         'series': [],
         'collections': []
     }
-    for item in tqdm(assets_list, desc="Categorizing assets", total=len(assets_list), disable=None, leave=True):
+    progress_bar = tqdm(assets_list, desc="Categorizing assets", total=len(assets_list), disable=None, leave=True)
+    for item in progress_bar:
         asset_type = 'movies'
         if not item['year']:
             asset_type = 'collections'
@@ -959,7 +971,7 @@ def sort_assets(assets_list, build_index=False):
             if debug_sort:
                 print(f"adding item to index: {item}")
             build_search_index(item['title'], item, asset_type)
-
+    print(str(progress_bar))
     return assets_dict
 
 def compare_strings(string1, string2):

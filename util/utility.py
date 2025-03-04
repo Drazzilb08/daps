@@ -88,33 +88,20 @@ processed_forms = {
 
 prefix_length = 3
 
-def save_cached_structs_and_index_to_disk(assets_list, assets_dict):
+def save_cached_structs_and_index_to_disk(assets_list):
     with open('asset_list.pickle', 'wb') as file:
         pickle.dump(assets_list, file)
-    with open('asset_dict.pickle', 'wb') as file:
-        pickle.dump(assets_dict, file)
-    with open('search_index.pickle', 'wb') as file:
-        pickle.dump(index, file)
-    with open('processed_forms.pickle', 'wb') as file:
-        pickle.dump(processed_forms, file)
 
 
 def get_cached_structs_and_load_index():
     global index
     global processed_forms
     assets_list = None
-    assets_dict = None
     if os.path.isfile("asset_list.pickle"):
         with open('asset_list.pickle', 'rb') as file:
             assets_list = pickle.load(file)
-        with open('asset_dict.pickle', 'rb') as file:
-            assets_dict = pickle.load(file)
-        with open('search_index.pickle', 'rb') as file:
-            index = pickle.load(file)
-        with open('processed_forms.pickle', 'rb') as file:
-            processed_forms = pickle.load(file)
         
-    return assets_list, assets_dict
+    return assets_list
 
 def build_search_index(title, asset, asset_type):
     """

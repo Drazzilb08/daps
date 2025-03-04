@@ -630,8 +630,8 @@ def main(config):
         border_replacerr = script_config.get('border_replacerr', False)
         instances = script_config.get('instances', [])
         sync_posters = script_config.get('sync_posters', False)
-        cache_asset_structures = script_config.get('cache_asset_structures', False)
-        refresh_cached_asset_structures = script_config.get('refresh_cached_asset_structures', True)
+        persist_asset_structs_to_disk = script_config.get('persist_asset_structs_to_disk', False)
+        load_asset_structs_from_disk = script_config.get('load_asset_structs_from_disk', False)
 
         logger.debug(create_bar("-"))  # Log separator
         # Log script configuration settings
@@ -647,8 +647,8 @@ def main(config):
         logger.debug(f'{"Border replacerr:":<20}{border_replacerr}')
         logger.debug(f'{"Instances:":<20}{instances}')
         logger.debug(f'{"Sync posters:":<20}{sync_posters}')
-        logger.debug(f'{"Cache Asset Structs:":<20}{cache_asset_structures}')
-        logger.debug(f'{"Refresh Cached Structs:":<20}{refresh_cached_asset_structures}')
+        logger.debug(f'{"Persist Asset Structs to disk:":<20}{persist_asset_structs_to_disk}')
+        logger.debug(f'{"Load Cached Structs from disk:":<20}{load_asset_structs_from_disk}')
 
         if not os.path.exists(destination_dir):
             logger.info(f"Creating destination directory: {destination_dir}")
@@ -677,25 +677,21 @@ def main(config):
 
         assets_list = None
         assets_dict = None
-        if (not refresh_cached_asset_structures):
+        loaded_from_disk = False
+        if (load_asset_structs_from_disk):
             logger.debug("getting cached structs & index")
-            assets_list, assets_dict = get_cached_structs_and_load_index()
-            logger.debug(f"assets_list loaded: {assets_list is not None}")
-            logger.debug(f"assets_dict loaded: {assets_dict is not None}")
+            assets_list = get_cached_structs_and_load_index()
+            loaded_from_disk = assets_list is not None
+            logger.debug(f"assets_list loaded: {loaded_from_disk}")
         
         if not assets_list:
             print("Gathering all the posters, please wait...")
             assets_list = get_assets_files(source_dirs, logger)
             
-        # logger.debug("SEARCH_INDEX:")
-        # logger.debug(index);
-        # logger.debug("PROCESSED_FORMS:")
-        # logger.debug(processed_forms);
         if assets_list:
-            if not assets_dict:
-                assets_dict = sort_assets(assets_list, True)
-                if cache_asset_structures:
-                    save_cached_structs_and_index_to_disk(assets_list, assets_dict)
+            assets_dict = sort_assets(assets_list, build_index=True)
+            if persist_asset_structs_to_disk:
+                save_cached_structs_and_index_to_disk(assets_list)
             logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
         else:
             logger.error("No assets found. Exiting...")

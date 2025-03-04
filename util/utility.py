@@ -66,7 +66,7 @@ def preprocess_name(name: str) -> str:
     - Remove common words
     """
     # Convert to lowercase and remove special characters
-    name = re.sub(r'[^\w\s]', ' ', name.lower())
+    name = re.sub(r'[^a-zA-Z0-9\s]', '', name.lower())
     # Remove extra whitespace
     name = ' '.join(name.split())
 
@@ -122,28 +122,40 @@ def build_search_index(title, asset, asset_type):
     asset_type_index = index[asset_type]
     asset_type_processed_forms = processed_forms[asset_type]
     processed = preprocess_name(title)
+
+    debug = False
+
+    if debug:
+        print('debug_build_search_index')
+        print(processed)
+        print(asset_type)
+        print(asset)
+
     if processed not in asset_type_index:
             asset_type_index[processed] = list()
     asset_type_index[processed].append(asset)
 
     # Store word-level index for partial matches
     words = processed.split()
-
+    if debug:
+        print(words)
 
     # only need to do the first word here
     # also - store add to a prefix to expand possible matches
     for word in words:
-        if len(word) > 2 or len(words)==1:  # Only index words longer than 2 chars unless it's the only word
-            if word not in asset_type_processed_forms:
-                asset_type_processed_forms[word] = list() #maybe consider moving to dequeue?
-            asset_type_processed_forms[word].append(asset)
-            # also add the prefix
-            if len(word) > 3:
-                prefix = word[0:3]
-                if prefix not in asset_type_processed_forms:
-                    asset_type_processed_forms[prefix] = list()
-                asset_type_processed_forms[prefix].append(asset)
-            break;
+    # if len(word) > 2 or len(words)==1:  # Only index words longer than 2 chars unless it's the only word
+        if word not in asset_type_processed_forms:
+            asset_type_processed_forms[word] = list() #maybe consider moving to dequeue?
+        asset_type_processed_forms[word].append(asset)
+        # also add the prefix
+        if len(word) > 3:
+            prefix = word[0:3]
+            if debug:
+                print(prefix)
+            if prefix not in asset_type_processed_forms:
+                asset_type_processed_forms[prefix] = list()
+            asset_type_processed_forms[prefix].append(asset)
+        break;
 
     return
 
@@ -155,39 +167,45 @@ def search_matches(movie_title, asset_type, prefer_exact=True, debug_search=Fals
 
     asset_type_index = index[asset_type]
     asset_type_processed_forms = processed_forms[asset_type]
-
+    exact_matches = list()
     # Try exact matches first
     # but this fails when a collection is named the same thing as a movie! i.e. John Wick
     # leave this to the caller to determine.
     if (debug_search):
+        print('debug_search_matches')
         print(processed_filename)
         print(prefer_exact)
         print(processed_filename in asset_type_index)
-    if processed_filename in asset_type_index and prefer_exact:
-        return asset_type_index[processed_filename]
+    if processed_filename in asset_type_index:
+        if prefer_exact:
+            return asset_type_index[processed_filename]
+        exact_matches = asset_type_index[processed_filename]
 
     words = processed_filename.split();
+    if (debug_search):
+        print(words)
     # Try word-level matches
     for word in words:
-        if (len(word) > 2 or len(words)==1):
+    # if (len(word) > 2 or len(words)==1):
 
-            # first add any prefix matches to the beginning of the list.
-            if len(word) > 3:
-                prefix = word[0:3]
-                if (debug_search):
-                    print(prefix)
-                    print(prefix in asset_type_processed_forms)
-
-                if prefix in asset_type_processed_forms:
-                    matches.extend(asset_type_processed_forms[prefix])
-
-            # then add the full word matches as items later in the list will take priority
-            if word in asset_type_processed_forms:
-                matches.extend(asset_type_processed_forms[word])
+        # first add any prefix matches to the beginning of the list.
+        if len(word) > 3:
+            prefix = word[0:3]
             if (debug_search):
-                print(matches)
-            break
+                print(prefix)
+                print(prefix in asset_type_processed_forms)
 
+            if prefix in asset_type_processed_forms:
+                matches.extend(asset_type_processed_forms[prefix])
+
+        # then add the full word matches as items later in the list will take priority
+        if word in asset_type_processed_forms:
+            matches.extend(asset_type_processed_forms[word])
+        if (debug_search):
+            print(matches)
+        break
+    if not prefer_exact:
+        matches.extend(exact_matches)
     return matches
 
 def normalize_file_names(file_name):

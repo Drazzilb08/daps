@@ -157,7 +157,10 @@ def match_data(media_dict, asset_files, logger=None):
                         matched = False 
                         # search here to identify matches
                         # collections need to be handled a little differently since they might overlap with a movie name - i.e. John Wick (collection + movie)
-                        search_matched_assets = search_matches(media['title'], asset_type)
+                        dbg_search = False
+                        # if (media['title'] == "X" or media['title'] == "The Fast and the Furious"):
+                        #     dbg_search = True
+                        search_matched_assets = search_matches(media['title'], asset_type, prefer_exact=(asset_type!='collections'), debug_search=dbg_search)
                         logger.debug(f"SEARCH ({asset_type}): matched assets for {media['title']} type={asset_type}")
 
                         logger.debug(search_matched_assets)
@@ -193,7 +196,7 @@ def match_data(media_dict, asset_files, logger=None):
                         if not matched:
                             # need to do more searches now based on alt titles
                             for alt_title in media.get('alternate_titles', []):
-                                search_matched_assets = search_matches(alt_title, asset_type)
+                                search_matched_assets = search_matches(alt_title, asset_type, prefer_exact=(asset_type!='collections'), debug_search=dbg_search)
                                 logger.debug(f"SEARCH ({asset_type}): matched assets for {alt_title} type={asset_type} - Alternate search")
                                 logger.debug(search_matched_assets)
                                 i = len(search_matched_assets) -1;

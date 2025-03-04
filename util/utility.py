@@ -86,6 +86,8 @@ processed_forms = {
     'collections': {}
 }
 
+prefix_length = 3
+
 def save_cached_structs_and_index_to_disk(assets_list, assets_dict):
     with open('asset_list.pickle', 'wb') as file:
         pickle.dump(assets_list, file)
@@ -122,8 +124,7 @@ def build_search_index(title, asset, asset_type):
     asset_type_index = index[asset_type]
     asset_type_processed_forms = processed_forms[asset_type]
     processed = preprocess_name(title)
-
-    debug = False
+    debug = False # (processed == 'mission impossible' or processed == 'mission impossible collection')
 
     if debug:
         print('debug_build_search_index')
@@ -148,8 +149,8 @@ def build_search_index(title, asset, asset_type):
             asset_type_processed_forms[word] = list() #maybe consider moving to dequeue?
         asset_type_processed_forms[word].append(asset)
         # also add the prefix
-        if len(word) > 3:
-            prefix = word[0:3]
+        if len(word) > prefix_length:
+            prefix = word[0:prefix_length]
             if debug:
                 print(prefix)
             if prefix not in asset_type_processed_forms:
@@ -159,7 +160,7 @@ def build_search_index(title, asset, asset_type):
 
     return
 
-def search_matches(movie_title, asset_type, prefer_exact=True, debug_search=False):
+def search_matches(movie_title, asset_type, debug_search=False):
     """ search for matches in the index """
     matches = list()
     
@@ -167,17 +168,11 @@ def search_matches(movie_title, asset_type, prefer_exact=True, debug_search=Fals
 
     asset_type_index = index[asset_type]
     asset_type_processed_forms = processed_forms[asset_type]
-    exact_matches = list()
-    # Try exact matches first
-    # but this fails when a collection is named the same thing as a movie! i.e. John Wick
-    # leave this to the caller to determine.
+
     if (debug_search):
         print('debug_search_matches')
         print(processed_filename)
-        print(prefer_exact)
         print(processed_filename in asset_type_index)
-    if processed_filename in asset_type_index:
-        exact_matches = asset_type_index[processed_filename]
 
     words = processed_filename.split();
     if (debug_search):
@@ -187,8 +182,8 @@ def search_matches(movie_title, asset_type, prefer_exact=True, debug_search=Fals
     # if (len(word) > 2 or len(words)==1):
 
         # first add any prefix matches to the beginning of the list.
-        if len(word) > 3:
-            prefix = word[0:3]
+        if len(word) > prefix_length:
+            prefix = word[0:prefix_length]
             if (debug_search):
                 print(prefix)
                 print(prefix in asset_type_processed_forms)
@@ -202,8 +197,6 @@ def search_matches(movie_title, asset_type, prefer_exact=True, debug_search=Fals
         if (debug_search):
             print(matches)
         break
-
-    matches.extend(exact_matches)
 
     return matches
 
@@ -974,7 +967,10 @@ def sort_assets(assets_list, build_index=False):
             asset_type = 'series'
         
         assets_dict[asset_type].append(item)
+        debug_sort = (False) # item['normalized_title'] == 'mission impossible' or item['normalized_title'] == 'mission impossible collection':
         if build_index:
+            if debug_sort:
+                print(f"adding item to index: {item}")
             build_search_index(item['title'], item, asset_type)
 
     return assets_dict

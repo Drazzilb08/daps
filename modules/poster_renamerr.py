@@ -55,7 +55,6 @@ def get_assets_files(source_dirs, logger):
 
     # Initialize final_assets list
     final_assets = []
-
     # Iterate through each source directory
     for source_dir in source_dirs:
         new_assets = categorize_files(source_dir)
@@ -63,9 +62,14 @@ def get_assets_files(source_dirs, logger):
             # Merge new_assets with final_assets
             for new in new_assets:
                 found_match = False
-
-                for final in final_assets[:]:
+                debug_assets = False # (new['normalized_title'] == 'mission impossible' or new['normalized_title'] == 'mission impossible collection')
+                if debug_assets:
+                    print(f"found new asset: {new}")
+                for final in final_assets:
                     if final['normalized_title'] == new['normalized_title'] and final['year'] == new['year']:
+                        if debug_assets:
+                            print('found a match')
+                            print(final)
                         found_match = True
                         # Compare normalized file names between final and new assets
                         for new_file in new['files']:
@@ -74,11 +78,21 @@ def get_assets_files(source_dirs, logger):
                                 normalized_final_file = normalize_file_names(os.path.basename(final_file))
                                 # Replace final file with new file if the filenames match
                                 if normalized_final_file == normalized_new_file:
+                                    if debug_assets:
+                                        print('swapping file')
+                                        print(f"replacing {final_file}")
+                                        print(f"with {new_file}")
+                                        print(f"files before: {final['files']}")
                                     final['files'].remove(final_file)
                                     final['files'].append(new_file)
                                     break
                             else:
                                 # Add new file to final asset if the filenames don't match
+                                if debug_assets:
+                                    print("files did not match")
+                                    print(normalized_final_file)
+                                    print(normalized_new_file)
+                                    print(f"adding to files: {new_file}")
                                 final['files'].append(new_file)
                         # Merge season_numbers from new asset to final asset
                         new_season_numbers = new.get('season_numbers', None)
@@ -90,6 +104,9 @@ def get_assets_files(source_dirs, logger):
                                 final['season_numbers'] = new_season_numbers
                         break
                 if not found_match:
+                    if debug_assets:
+                        print("didn't find a match, appending")
+                        print(new)
                     final_assets.append(new)
         else:
             logger.error(f"No assets found in {source_dir}")
@@ -157,10 +174,8 @@ def match_data(media_dict, asset_files, logger=None):
                         matched = False 
                         # search here to identify matches
                         # collections need to be handled a little differently since they might overlap with a movie name - i.e. John Wick (collection + movie)
-                        dbg_search = False
-                        # if (media['title'] == "X" or media['title'] == "The Fast and the Furious"):
-                        #     dbg_search = True
-                        search_matched_assets = search_matches(media['title'], asset_type, prefer_exact=(asset_type!='collections'), debug_search=dbg_search)
+                        dbg_search = False # media['title'] == "Mission Impossible"
+                        search_matched_assets = search_matches(media['title'], asset_type, debug_search=dbg_search)
                         logger.debug(f"SEARCH ({asset_type}): matched assets for {media['title']} type={asset_type}")
 
                         logger.debug(search_matched_assets)
@@ -170,11 +185,7 @@ def match_data(media_dict, asset_files, logger=None):
                             media_seasons_numbers = [season['season_number'] for season in media.get('seasons', [])]
                             logger.debug(f"Season Numbers: {media_seasons_numbers}")
 
-                        i = len(search_matched_assets) -1;
-                        # traverse the list of matches in reverse order to maintain priority order
-                        while i >=0:
-                            search_asset = search_matched_assets[i]
-                            i-=1
+                        for search_asset in search_matched_assets:
                             total_comparisons+=1
                             if is_match(search_asset,media):
                                 # either the both should be None or they should both be _something_
@@ -196,13 +207,10 @@ def match_data(media_dict, asset_files, logger=None):
                         if not matched:
                             # need to do more searches now based on alt titles
                             for alt_title in media.get('alternate_titles', []):
-                                search_matched_assets = search_matches(alt_title, asset_type, prefer_exact=(asset_type!='collections'), debug_search=dbg_search)
+                                search_matched_assets = search_matches(alt_title, asset_type, debug_search=dbg_search)
                                 logger.debug(f"SEARCH ({asset_type}): matched assets for {alt_title} type={asset_type} - Alternate search")
                                 logger.debug(search_matched_assets)
-                                i = len(search_matched_assets) -1;
-                                while i >=0:
-                                    search_asset = search_matched_assets[i]
-                                    i-=1
+                                for search_asset in search_matched_assets:
                                     total_comparisons+=1
                                     if is_match_alternate(search_asset,media):
                                         # either the both should be None or they should both be _something_

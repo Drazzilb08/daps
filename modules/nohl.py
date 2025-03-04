@@ -682,7 +682,7 @@ def main(config):
                     exclude_media = filters.get('exclude_movies', []) if instance_type == 'radarr' else filters.get('exclude_series', [])
                     nohl_data = nohl_list['movies'] if instance_type == "radarr" else nohl_list['series'] if instance_type == "sonarr" else None
                     if nohl_data:
-                        media_list = handle_starr_data(app, server_name, instance_type, include_episode=True)
+                        media_list = handle_starr_data(app, server_name, instance_type, logger, include_episode=True)
                         if media_list:
                             data_list = filter_media(app, media_list, nohl_data, instance_type, exclude_profiles, exclude_media, max_search, logger)
                         else:

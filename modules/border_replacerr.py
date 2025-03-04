@@ -219,7 +219,7 @@ def fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_
 
                     if rgb_border_colors:
                         current_index = (current_index + 1) % len(rgb_border_colors)
-            print(str(progress_bar))
+            logger.info(str(progress_bar))
         else:
             logger.info(f"No {asset_type} found.")
     return messages
@@ -370,7 +370,8 @@ def copy_files(assets_dict, destination_dir, dry_run, logger):
     for asset_type in asset_types:
         if asset_type in assets_dict:
             items = assets_dict[asset_type]
-            for data in tqdm(items, desc=f"Processing {asset_type.capitalize()}", total=len(items), unit="items", disable=None, leave=True):
+            progress_bar = tqdm(items, desc=f"Processing {asset_type.capitalize()}", total=len(items), unit="items", disable=None, leave=True)
+            for data in progress_bar:
                 files = data.get('files', None)
                 path = data.get('path', None)
                 year = data.get('year', None)
@@ -418,6 +419,7 @@ def copy_files(assets_dict, destination_dir, dry_run, logger):
                             messages.append(f"Copied {data['title']}{year} - {file_name} to {output_basename}")
                     else:
                         messages.append(f"Would have copied {data['title']}{year} - {file_name} to {output_basename}")
+            logger.info(str(progress_bar))
     return messages
 
 def process_files(source_dirs, destination_dir, dry_run, log_level, script_config, logger):
@@ -468,14 +470,14 @@ def process_files(source_dirs, destination_dir, dry_run, log_level, script_confi
     assets_list = []
     # Categorize files in the input directory into assets
     for path in source_dirs:
-        results = categorize_files(path)
+        results = categorize_files(path, logger)
         if results:
             assets_list.extend(results)
         else:
             logger.error(f"No assets found in {path}.")
     
     if assets_list:
-        assets_dict = sort_assets(assets_list)
+        assets_dict = sort_assets(assets_list, logger)
         logger.debug(f"Asset Files:\n{json.dumps(assets_dict, indent=4)}")
     else:
         logger.error(f"No assets found in {(', '.join(source_dirs))}, if running Poster Renamerr in dry_run, this is expected")

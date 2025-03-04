@@ -103,7 +103,7 @@ def get_cached_structs_and_load_index():
         
     return assets_list
 
-def build_search_index(title, asset, asset_type):
+def build_search_index(title, asset, asset_type, logger):
     """
     Build an index of preprocessed movie names for efficient lookup
     Returns both the index and preprocessed forms
@@ -147,7 +147,7 @@ def build_search_index(title, asset, asset_type):
 
     return
 
-def search_matches(movie_title, asset_type, debug_search=False):
+def search_matches(movie_title, asset_type, logger, debug_search=False):
     """ search for matches in the index """
     matches = list()
     
@@ -295,7 +295,7 @@ def _is_asset_folders(folder_path):
                 return True
         return False
 
-def categorize_files(folder_path):
+def categorize_files(folder_path, logger):
     """
     Categorize files into movies, collections, and series
     
@@ -409,7 +409,7 @@ def categorize_files(folder_path):
                             'path': None,
                             'files': [file_path],
                         })
-            print(str(progress_bar))
+            logger.info(str(progress_bar))
         else:
             return None
 
@@ -520,7 +520,7 @@ def categorize_files(folder_path):
                                 'path': dir,
                                 'files': files,
                             })
-            print(str(progress_bar))
+            logger.info(str(progress_bar))
         except FileNotFoundError:
             return None
 
@@ -667,11 +667,11 @@ def get_media_folders(paths, logger):
                     'path': os.path.join(path, item),
                     'location': base_name,
                 })
-        print(str(progress_bar))
+        logger.info(str(progress_bar))
     
     return media_dict
 
-def handle_starr_data(app, server_name, instance_type, include_episode=False):
+def handle_starr_data(app, server_name, instance_type, logger, include_episode=False):
     """
     Get data from Radarr or Sonarr
     
@@ -765,7 +765,7 @@ def handle_starr_data(app, server_name, instance_type, include_episode=False):
                 'seasons': season_list if instance_type == "sonarr" else None,  # Add season_list for Sonarr items
                 'season_numbers': [season['season_number'] for season in season_list] if instance_type == "sonarr" else None,
             })  # Append the constructed dictionary to media_dict
-        print(str(progress_bar))
+        logger.info(str(progress_bar))
     else:
         return None
     
@@ -817,7 +817,7 @@ def get_plex_data(plex, library_names, logger, include_smart, collections_only):
                     'year': None,
                     'folder': collection,
                 })  # Append collection information to plex_dict
-            print(str(progress_bar))
+            logger.info(str(progress_bar))
     else:
         # Process library item data
         for library_name, library_data in library_data.items():
@@ -830,7 +830,7 @@ def get_plex_data(plex, library_names, logger, include_smart, collections_only):
                     'year': item.year,
                     'labels': labels,
                 })  # Append item information to plex_dict
-            print(str(progress_bar))
+            logger.info(str(progress_bar))
     return plex_dict  # Return the constructed Plex data dictionary
 
 
@@ -942,7 +942,7 @@ def redact_sensitive_info(text):
 
     return text
 
-def sort_assets(assets_list, build_index=False):
+def sort_assets(assets_list, logger, build_index=False):
     """
     Sort assets into movies, series, and collections
     
@@ -970,8 +970,8 @@ def sort_assets(assets_list, build_index=False):
         if build_index:
             if debug_sort:
                 print(f"adding item to index: {item}")
-            build_search_index(item['title'], item, asset_type)
-    print(str(progress_bar))
+            build_search_index(item['title'], item, asset_type, logger)
+    logger.info(str(progress_bar))
     return assets_dict
 
 def compare_strings(string1, string2):

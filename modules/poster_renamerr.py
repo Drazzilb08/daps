@@ -57,7 +57,7 @@ def get_assets_files(source_dirs, logger):
     final_assets = []
     # Iterate through each source directory
     for source_dir in source_dirs:
-        new_assets = categorize_files(source_dir)
+        new_assets = categorize_files(source_dir, logger)
         if new_assets:
             # Merge new_assets with final_assets
             for new in new_assets:
@@ -175,7 +175,7 @@ def match_data(media_dict, asset_files, logger=None):
                         # search here to identify matches
                         # collections need to be handled a little differently since they might overlap with a movie name - i.e. John Wick (collection + movie)
                         dbg_search = False # media['title'] == "Mission Impossible"
-                        search_matched_assets = search_matches(media['title'], asset_type, debug_search=dbg_search)
+                        search_matched_assets = search_matches(media['title'], asset_type, logger, debug_search=dbg_search)
                         logger.debug(f"SEARCH ({asset_type}): matched assets for {media['title']} type={asset_type}")
 
                         logger.debug(search_matched_assets)
@@ -207,7 +207,7 @@ def match_data(media_dict, asset_files, logger=None):
                         if not matched:
                             # need to do more searches now based on alt titles
                             for alt_title in media.get('alternate_titles', []):
-                                search_matched_assets = search_matches(alt_title, asset_type, debug_search=dbg_search)
+                                search_matched_assets = search_matches(alt_title, asset_type, logger, debug_search=dbg_search)
                                 logger.debug(f"SEARCH ({asset_type}): matched assets for {alt_title} type={asset_type} - Alternate search")
                                 logger.debug(search_matched_assets)
                                 for search_asset in search_matched_assets:
@@ -253,10 +253,10 @@ def match_data(media_dict, asset_files, logger=None):
                         combined_dict['unmatched'][asset_type] = unmatched_dict
 
                         pbar_inner.update(1)
-                print(str(pbar_inner))
+                logger.info(str(pbar_inner))
             pbar_outer.update(1)
 
-    print(str(pbar_outer))
+    logger.info(str(pbar_outer))
     logger.info(f"{total_items} total_items")
     logger.info(f"{total_comparisons} total_comparisons")
     logger.info(f"{matches} total_matches")
@@ -422,7 +422,7 @@ def rename_files(matched_assets, script_config, logger):
                         'messages': messages,
                         'discord_messages': discord_messages,
                     })
-            print(str(progress_bar))
+            logger.info(str(progress_bar))
         else:
             print(f"No {asset_type} to rename")
     return output
@@ -694,7 +694,7 @@ def main(config):
             assets_list = get_assets_files(source_dirs, logger)
             
         if assets_list:
-            assets_dict = sort_assets(assets_list, build_index=True)
+            assets_dict = sort_assets(assets_list, logger, build_index=True)
             if persist_asset_structs_to_disk:
                 save_cached_structs_and_index_to_disk(assets_list)
             logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
@@ -732,7 +732,7 @@ def main(config):
                             server_name = app.get_instance_name()
                             if app:
                                 print(f"Getting {instance_type.capitalize()} data...")
-                                results = handle_starr_data(app, server_name, instance_type, include_episode=False)
+                                results = handle_starr_data(app, server_name, instance_type, logger, include_episode=False)
                                 if results:
                                     if instance_type == "radarr":
                                         media_dict['movies'].extend(results)

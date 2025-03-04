@@ -267,7 +267,7 @@ def main(config):
 
         assets_list = []
         for path in source_dirs:
-            results = categorize_files(path)
+            results = categorize_files(path, logger)
             if results:
                 assets_list.extend(results)
             else:
@@ -306,7 +306,7 @@ def main(config):
                             server_name = app.get_instance_name()
                             if app:
                                 print(f"Getting {instance_type.capitalize()} data...")
-                                results = handle_starr_data(app, server_name, instance_type, include_episode=False)
+                                results = handle_starr_data(app, server_name, instance_type, logger, include_episode=False)
                                 if results:
                                     if instance_type == "radarr":
                                         media_dict.extend(results)

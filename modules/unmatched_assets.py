@@ -268,7 +268,7 @@ def main(config):
 
         assets_list = []
         for path in source_dirs:
-            results = categorize_files(path)
+            results = categorize_files(path, logger)
             if results:
                 assets_list.extend(results)
             else:
@@ -276,7 +276,7 @@ def main(config):
         
         # Checking for assets and logging
         if assets_list:
-            assets_dict = sort_assets(assets_list)
+            assets_dict = sort_assets(assets_list, logger)
             logger.debug(f"Assets:\n{json.dumps(assets_dict, indent=4)}")
         else:
             logger.error("No assets found, Check source_dirs setting in your config. Exiting.")
@@ -319,7 +319,7 @@ def main(config):
                             server_name = app.get_instance_name()
                             if app:
                                 print(f"Getting {instance_type.capitalize()} data...")
-                                results = handle_starr_data(app, server_name, instance_type, include_episode=False)
+                                results = handle_starr_data(app, server_name, instance_type, logger, include_episode=False)
                                 if results:
                                     if instance_type == "radarr":
                                         media_dict['movies'].extend(results)

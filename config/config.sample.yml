@@ -204,6 +204,7 @@ poster_renamerr:
   persist_asset_structs_to_disk: false
   load_asset_structs_from_disk: false
   auto_refresh_cached_structs_hours: 24
+  incremental_border_replacerr: false
 
 border_replacerr:
   # This script replaces the border on the posters or removes the border

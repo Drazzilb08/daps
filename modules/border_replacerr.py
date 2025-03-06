@@ -535,7 +535,7 @@ def process_files(source_dirs, destination_dir, dry_run, log_level, script_confi
         if not incremental_run:
             logger.error(f"No assets found in {source_dirs}, if running Poster Renamerr in dry_run, this is expected.")
         else:
-            logger.info("No assets passed in while performing an incremental run.")
+            logger.info("No assets passed in while performing an incremental Border Replacerr.")
         return
 
 

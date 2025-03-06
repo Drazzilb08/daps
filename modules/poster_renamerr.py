@@ -662,6 +662,7 @@ def main(config):
         persist_asset_structs_to_disk = script_config.get('persist_asset_structs_to_disk', False)
         load_asset_structs_from_disk = script_config.get('load_asset_structs_from_disk', False)
         auto_refresh_cached_structs_hours = script_config.get('auto_refresh_cached_structs_hours', 24)
+        incremental_border_replacerr = script_config.get('incremental_border_replacerr', False)
 
         logger.debug(create_bar("-"))  # Log separator
         # Log script configuration settings
@@ -680,6 +681,7 @@ def main(config):
         logger.debug(f'{"Persist asset structs to disk:":<20}{persist_asset_structs_to_disk}')
         logger.debug(f'{"Load cached structs from disk:":<20}{load_asset_structs_from_disk}')
         logger.debug(f'{"Auto refresh cached structs hours:":<20}{auto_refresh_cached_structs_hours}')
+        logger.debug(f'{"Incremental border replacerr:":<20}{incremental_border_replacerr}')
 
         if not os.path.exists(destination_dir):
             logger.info(f"Creating destination directory: {destination_dir}")
@@ -804,7 +806,7 @@ def main(config):
             from util.config import Config
             replacerr_config = Config("border_replacerr")
             replacerr_script_config = replacerr_config.script_config
-            process_files(tmp_dir, destination_dir, dry_run, log_level, replacerr_script_config, logger, renamed_assets=renamed_assets) # pass in renamed_assets here
+            process_files(tmp_dir, destination_dir, dry_run, log_level, replacerr_script_config, logger, renamed_assets=(renamed_assets if incremental_border_replacerr else None)) # pass in renamed_assets here
             logger.info(f"Finished running border_replacerr.py")
         else:
             logger.debug(f"Border replacerr is disabled. Skipping...")

@@ -661,6 +661,7 @@ def main(config):
         sync_posters = script_config.get('sync_posters', False)
         persist_asset_structs_to_disk = script_config.get('persist_asset_structs_to_disk', False)
         load_asset_structs_from_disk = script_config.get('load_asset_structs_from_disk', False)
+        auto_refresh_cached_structs_hours = script_config.get('auto_refresh_cached_structs_hours', 24)
 
         logger.debug(create_bar("-"))  # Log separator
         # Log script configuration settings
@@ -678,6 +679,7 @@ def main(config):
         logger.debug(f'{"Sync posters:":<20}{sync_posters}')
         logger.debug(f'{"Persist Asset Structs to disk:":<20}{persist_asset_structs_to_disk}')
         logger.debug(f'{"Load Cached Structs from disk:":<20}{load_asset_structs_from_disk}')
+        logger.debug(f'{"Auto refresh cached structs hours:":<20}{auto_refresh_cached_structs_hours}')
 
         if not os.path.exists(destination_dir):
             logger.info(f"Creating destination directory: {destination_dir}")
@@ -709,7 +711,7 @@ def main(config):
         loaded_from_disk = False
         if (load_asset_structs_from_disk):
             logger.debug("getting cached structs & index")
-            assets_list = load_cached_structs(config_dir_path)
+            assets_list = load_cached_structs(config_dir_path, auto_refresh_cached_structs_hours, logger)
             loaded_from_disk = assets_list is not None
             logger.debug(f"assets_list loaded: {loaded_from_disk}")
         
@@ -720,7 +722,7 @@ def main(config):
         if assets_list:
             assets_dict = sort_assets(assets_list, logger, build_index=True)
             if persist_asset_structs_to_disk and not loaded_from_disk:
-                save_cached_structs_to_disk(assets_list, config_dir_path)
+                save_cached_structs_to_disk(assets_list, config_dir_path, logger)
             logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
         else:
             logger.error("No assets found. Exiting...")

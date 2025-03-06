@@ -6,6 +6,7 @@ import subprocess
 import math
 import pathlib
 import pickle
+import datetime
 
 try:
     import html
@@ -85,7 +86,7 @@ def preprocess_name(name: str) -> str:
     common_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to'}
     return ' '.join(word for word in name.split() if word not in common_words)
 
-def save_cached_structs_to_disk(assets_list, path):
+def save_cached_structs_to_disk(assets_list, path, logger):
     """
     Persist asset list to disk to avoid future runs having to re-process all of the posters
     """
@@ -94,7 +95,7 @@ def save_cached_structs_to_disk(assets_list, path):
         pickle.dump(assets_list, file)
 
 
-def load_cached_structs(path):
+def load_cached_structs(path, refresh_after_n_hours, logger):
     """
     load the asset list from disk
     """
@@ -104,6 +105,12 @@ def load_cached_structs(path):
     # join
     asset_list_path = os.path.join(path, asset_list_pickle_file)
     if os.path.isfile(asset_list_path):
+        created_time_epoch = os.path.getctime(asset_list_path)
+        created_datetime = datetime.datetime.fromtimestamp(created_time_epoch)
+        if refresh_after_n_hours > 0:
+                if (datetime.datetime.now() - created_datetime) >= datetime.timedelta(hours=refresh_after_n_hours):
+                    logger.info(f"existing file was created more than {refresh_after_n_hours} ago, forcing a refresh")
+                    return assets_list
         with open(asset_list_path, 'rb') as file:
             assets_list = pickle.load(file)
         

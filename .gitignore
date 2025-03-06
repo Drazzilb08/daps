@@ -63,4 +63,4 @@ web/
 **/TODO.*
 **test**
 **side-projects**
-
+**/*.pickle

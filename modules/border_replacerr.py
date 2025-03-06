@@ -468,6 +468,7 @@ def process_files(source_dirs, destination_dir, dry_run, log_level, script_confi
         return
 
     assets_list = []
+    incremental_run = False
     # Categorize files in the input directory into assets
     if not renamed_assets:
         for path in source_dirs:
@@ -485,6 +486,8 @@ def process_files(source_dirs, destination_dir, dry_run, log_level, script_confi
             return
     else:
         assets_dict = renamed_assets
+        logger.info(f"Doing an incremental run on only assetss that were provided")
+        incremental_run = True
 
     # If Run holiday is False and Skip is set to True, return
     if not run_holiday and skip:
@@ -529,7 +532,10 @@ def process_files(source_dirs, destination_dir, dry_run, log_level, script_confi
             # Log a message if no files were processed
             logger.info(f"\nNo files processed")
     else:
-        logger.error(f"No assets found in {source_dirs}, if running Poster Renamerr in dry_run, this is expected.")
+        if not incremental_run:
+            logger.error(f"No assets found in {source_dirs}, if running Poster Renamerr in dry_run, this is expected.")
+        else:
+            logger.info("No assets passed in while performing an incremental run.")
         return
 
 

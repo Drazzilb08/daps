@@ -677,8 +677,8 @@ def main(config):
         logger.debug(f'{"Border replacerr:":<20}{border_replacerr}')
         logger.debug(f'{"Instances:":<20}{instances}')
         logger.debug(f'{"Sync posters:":<20}{sync_posters}')
-        logger.debug(f'{"Persist Asset Structs to disk:":<20}{persist_asset_structs_to_disk}')
-        logger.debug(f'{"Load Cached Structs from disk:":<20}{load_asset_structs_from_disk}')
+        logger.debug(f'{"Persist asset structs to disk:":<20}{persist_asset_structs_to_disk}')
+        logger.debug(f'{"Load cached structs from disk:":<20}{load_asset_structs_from_disk}')
         logger.debug(f'{"Auto refresh cached structs hours:":<20}{auto_refresh_cached_structs_hours}')
 
         if not os.path.exists(destination_dir):

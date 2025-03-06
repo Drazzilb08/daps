@@ -5,7 +5,6 @@ from pathlib import Path
 import subprocess
 import math
 import pathlib
-import pickle
 import datetime
 
 try:
@@ -68,7 +67,7 @@ prefix_index = {
 # length to use as a prefix.  anything shorter than this will be used as-is
 prefix_length = 3
 
-asset_list_pickle_file = "asset_list.pickle"
+asset_list_file = "asset_list.json"
 
 def preprocess_name(name: str) -> str:
     """
@@ -90,9 +89,9 @@ def save_cached_structs_to_disk(assets_list, path, logger):
     """
     Persist asset list to disk to avoid future runs having to re-process all of the posters
     """
-    asset_list_path = os.path.join(path, asset_list_pickle_file)
-    with open(asset_list_path, 'wb') as file:
-        pickle.dump(assets_list, file)
+    asset_list_path = os.path.join(path, asset_list_file)
+    with open(asset_list_path, 'w') as file:
+        json.dump(assets_list, file)
 
 
 def load_cached_structs(path, refresh_after_n_hours, logger):
@@ -103,17 +102,19 @@ def load_cached_structs(path, refresh_after_n_hours, logger):
     assets_list = None
     # config_dir_path
     # join
-    asset_list_path = os.path.join(path, asset_list_pickle_file)
+    asset_list_path = os.path.join(path, asset_list_file)
     if os.path.isfile(asset_list_path):
         created_time_epoch = os.path.getctime(asset_list_path)
         created_datetime = datetime.datetime.fromtimestamp(created_time_epoch)
         if refresh_after_n_hours > 0:
                 if (datetime.datetime.now() - created_datetime) >= datetime.timedelta(hours=refresh_after_n_hours):
                     logger.info(f"existing file was created more than {refresh_after_n_hours} ago, forcing a refresh")
-                    return assets_list
-        with open(asset_list_path, 'rb') as file:
-            assets_list = pickle.load(file)
-        
+                    return None
+        try:
+            with open(asset_list_path, 'r') as file:
+                assets_list = json.load(file)
+        except Exception as e:
+            logger.info(f"Failure to load asset file from disk: {e}")
     return assets_list
 
 def build_search_index(title, asset, asset_type, logger):

@@ -696,7 +696,7 @@ def main(config):
             
         if assets_list:
             assets_dict = sort_assets(assets_list, logger, build_index=True)
-            if persist_asset_structs_to_disk:
+            if persist_asset_structs_to_disk and not loaded_from_disk:
                 save_cached_structs_to_disk(assets_list, config_dir_path)
             logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
         else:

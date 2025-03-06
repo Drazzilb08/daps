@@ -615,6 +615,7 @@ def main(config):
     logger = setup_logger(log_level, script_name)
     
     script_config = config.script_config
+    config_dir_path = os.path.dirname(config.config_path)
     name = script_name.replace("_", " ").upper()
     logger.info(f"Running {name}")
     try:
@@ -685,7 +686,7 @@ def main(config):
         loaded_from_disk = False
         if (load_asset_structs_from_disk):
             logger.debug("getting cached structs & index")
-            assets_list = load_cached_structs()
+            assets_list = load_cached_structs(config_dir_path)
             loaded_from_disk = assets_list is not None
             logger.debug(f"assets_list loaded: {loaded_from_disk}")
         
@@ -696,7 +697,7 @@ def main(config):
         if assets_list:
             assets_dict = sort_assets(assets_list, logger, build_index=True)
             if persist_asset_structs_to_disk:
-                save_cached_structs_to_disk(assets_list)
+                save_cached_structs_to_disk(assets_list, config_dir_path)
             logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
         else:
             logger.error("No assets found. Exiting...")

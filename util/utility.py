@@ -67,6 +67,8 @@ prefix_index = {
 # length to use as a prefix.  anything shorter than this will be used as-is
 prefix_length = 3
 
+asset_list_pickle_file = "asset_list.pickle"
+
 def preprocess_name(name: str) -> str:
     """
     Preprocess a name for consistent matching:
@@ -83,22 +85,26 @@ def preprocess_name(name: str) -> str:
     common_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to'}
     return ' '.join(word for word in name.split() if word not in common_words)
 
-def save_cached_structs_to_disk(assets_list):
+def save_cached_structs_to_disk(assets_list, path):
     """
     Persist asset list to disk to avoid future runs having to re-process all of the posters
     """
-    with open('asset_list.pickle', 'wb') as file:
+    asset_list_path = os.path.join(path, asset_list_pickle_file)
+    with open(asset_list_path, 'wb') as file:
         pickle.dump(assets_list, file)
 
 
-def load_cached_structs():
+def load_cached_structs(path):
     """
     load the asset list from disk
     """
 
     assets_list = None
-    if os.path.isfile("asset_list.pickle"):
-        with open('asset_list.pickle', 'rb') as file:
+    # config_dir_path
+    # join
+    asset_list_path = os.path.join(path, asset_list_pickle_file)
+    if os.path.isfile(asset_list_path):
+        with open(asset_list_path, 'rb') as file:
             assets_list = pickle.load(file)
         
     return assets_list

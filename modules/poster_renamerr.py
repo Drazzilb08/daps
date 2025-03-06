@@ -41,7 +41,7 @@ script_name = "poster_renamerr"
 
 year_regex = re.compile(r"\s?\((\d{4})\).*")
 
-def get_assets_files(source_dirs, logger):
+def get_assets_files(source_dirs, logger, debug_items=None):
     """
     Get assets files from source directories
 
@@ -63,14 +63,14 @@ def get_assets_files(source_dirs, logger):
             # Merge new_assets with final_assets
             for new in new_assets:
                 found_match = False
-                debug_assets = False # (new['normalized_title'] == 'mission impossible' or new['normalized_title'] == 'mission impossible collection')
+                debug_assets = debug_items and len(debug_items) > 0 and new['normalized_title'] in debug_items
                 if debug_assets:
-                    print(f"found new asset: {new}")
+                    logger.info(f"found new asset: {new}")
                 for final in final_assets:
                     if final['normalized_title'] == new['normalized_title'] and final['year'] == new['year']:
                         if debug_assets:
-                            print('found a match')
-                            print(final)
+                            logger.info('found a match')
+                            logger.info(final)
                         found_match = True
                         # Compare normalized file names between final and new assets
                         for new_file in new['files']:
@@ -80,20 +80,20 @@ def get_assets_files(source_dirs, logger):
                                 # Replace final file with new file if the filenames match
                                 if normalized_final_file == normalized_new_file:
                                     if debug_assets:
-                                        print('swapping file')
-                                        print(f"replacing {final_file}")
-                                        print(f"with {new_file}")
-                                        print(f"files before: {final['files']}")
+                                        logger.info('swapping file')
+                                        logger.info(f"replacing {final_file}")
+                                        logger.info(f"with {new_file}")
+                                        logger.info(f"files before: {final['files']}")
                                     final['files'].remove(final_file)
                                     final['files'].append(new_file)
                                     break
                             else:
                                 # Add new file to final asset if the filenames don't match
                                 if debug_assets:
-                                    print("files did not match")
-                                    print(normalized_final_file)
-                                    print(normalized_new_file)
-                                    print(f"adding to files: {new_file}")
+                                    logger.info("files did not match")
+                                    logger.info(normalized_final_file)
+                                    logger.info(normalized_new_file)
+                                    logger.info(f"adding to files: {new_file}")
                                 final['files'].append(new_file)
                         # Merge season_numbers from new asset to final asset
                         new_season_numbers = new.get('season_numbers', None)
@@ -106,8 +106,8 @@ def get_assets_files(source_dirs, logger):
                         break
                 if not found_match:
                     if debug_assets:
-                        print("didn't find a match, appending")
-                        print(new)
+                        logger.info("didn't find a match, appending")
+                        logger.info(new)
                     final_assets.append(new)
         else:
             logger.error(f"No assets found in {source_dir}")
@@ -136,7 +136,7 @@ def handle_series_match(asset, media_seasons_numbers, asset_season_numbers):
         for season in seasons_to_remove:
             asset_season_numbers.remove(season)
 
-def match_data(media_dict, asset_files, logger=None):
+def match_data(media_dict, asset_files, logger=None, debug_items=None):
     """
     Matches media data to asset files
     
@@ -174,10 +174,9 @@ def match_data(media_dict, asset_files, logger=None):
                         total_items+=1
                         matched = False 
                         # search here to identify matches
-                        # collections need to be handled a little differently since they might overlap with a movie name - i.e. John Wick (collection + movie)
-                        dbg_search = False # media['title'] == "Mission Impossible"
-                        search_matched_assets = search_matches(media['title'], asset_type, logger, debug_search=dbg_search)
-                        logger.debug(f"SEARCH ({asset_type}): matched assets for {media['title']} type={asset_type}")
+                        debug_search = debug_items and len(debug_items) > 0 and media['normalized_title'] in debug_items
+                        search_matched_assets = search_matches(media['title'], asset_type, logger, debug_search=debug_search)
+                        logger.debug(f"SEARCH ({asset_type}): matched assets for {media['title']} ({media['normalized_title']}) type={asset_type}")
 
                         logger.debug(search_matched_assets)
                         ## now to loop over each matched asset to determine if it's a match
@@ -208,7 +207,7 @@ def match_data(media_dict, asset_files, logger=None):
                         if not matched:
                             # need to do more searches now based on alt titles
                             for alt_title in media.get('alternate_titles', []):
-                                search_matched_assets = search_matches(alt_title, asset_type, logger, debug_search=dbg_search)
+                                search_matched_assets = search_matches(alt_title, asset_type, logger, debug_search=debug_search)
                                 logger.debug(f"SEARCH ({asset_type}): matched assets for {alt_title} type={asset_type} - Alternate search")
                                 logger.debug(search_matched_assets)
                                 for search_asset in search_matched_assets:
@@ -663,6 +662,7 @@ def main(config):
         load_asset_structs_from_disk = script_config.get('load_asset_structs_from_disk', False)
         auto_refresh_cached_structs_hours = script_config.get('auto_refresh_cached_structs_hours', 24)
         incremental_border_replacerr = script_config.get('incremental_border_replacerr', False)
+        search_index_debug_normalized_items = script_config.get('search_index_debug_normalized_items', [])
 
         logger.debug(create_bar("-"))  # Log separator
         # Log script configuration settings
@@ -682,6 +682,7 @@ def main(config):
         logger.debug(f'{"Load cached structs from disk:":<20}{load_asset_structs_from_disk}')
         logger.debug(f'{"Auto refresh cached structs hours:":<20}{auto_refresh_cached_structs_hours}')
         logger.debug(f'{"Incremental border replacerr:":<20}{incremental_border_replacerr}')
+        logger.debug(f'{"Search index debug items:":<20}{search_index_debug_normalized_items}')
 
         if not os.path.exists(destination_dir):
             logger.info(f"Creating destination directory: {destination_dir}")
@@ -712,17 +713,17 @@ def main(config):
         assets_dict = None
         loaded_from_disk = False
         if (load_asset_structs_from_disk):
-            logger.debug("getting cached structs & index")
+            logger.debug("getting cached structs")
             assets_list = load_cached_structs(config_dir_path, auto_refresh_cached_structs_hours, logger)
             loaded_from_disk = assets_list is not None
             logger.debug(f"assets_list loaded: {loaded_from_disk}")
         
         if not assets_list:
             print("Gathering all the posters, please wait...")
-            assets_list = get_assets_files(source_dirs, logger)
+            assets_list = get_assets_files(source_dirs, logger, debug_items=search_index_debug_normalized_items)
             
         if assets_list:
-            assets_dict = sort_assets(assets_list, logger, build_index=True)
+            assets_dict = sort_assets(assets_list, logger, debug_items=search_index_debug_normalized_items, build_index=True)
             if persist_asset_structs_to_disk and not loaded_from_disk:
                 save_cached_structs_to_disk(assets_list, config_dir_path, logger)
             logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
@@ -783,7 +784,7 @@ def main(config):
         if media_dict and assets_dict:
             # Match media data to asset files
             print(f"Matching media to assets, please wait...")
-            combined_dict = match_data(media_dict, assets_dict, logger) #need this to return info in
+            combined_dict = match_data(media_dict, assets_dict, logger, debug_items=search_index_debug_normalized_items)
             logger.debug(f"Matched and Unmatched media:\n{json.dumps(combined_dict, indent=4)}")
             matched_assets = combined_dict.get('matched', None)
             if any(matched_assets.values()):

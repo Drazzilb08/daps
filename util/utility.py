@@ -100,8 +100,6 @@ def load_cached_structs(path, refresh_after_n_hours, logger):
     """
 
     assets_list = None
-    # config_dir_path
-    # join
     asset_list_path = os.path.join(path, asset_list_file)
     if os.path.isfile(asset_list_path):
         created_time_epoch = os.path.getctime(asset_list_path)
@@ -117,25 +115,25 @@ def load_cached_structs(path, refresh_after_n_hours, logger):
             logger.info(f"Failure to load asset file from disk: {e}")
     return assets_list
 
-def build_search_index(title, asset, asset_type, logger):
+def build_search_index(title, asset, asset_type, logger, debug_items=None):
     """
     Build an index of preprocessed movie names for efficient lookup
     Returns both the index and preprocessed forms
     """
     asset_type_processed_forms = prefix_index[asset_type]
     processed = preprocess_name(title)
-    debug = False # (processed == 'mission impossible' or processed == 'mission impossible collection')
+    debug_build_index = debug_items and len(debug_items) > 0 and processed in debug_items
 
-    if debug:
-        print('debug_build_search_index')
-        print(processed)
-        print(asset_type)
-        print(asset)
+    if debug_build_index:
+        logger.info('debug_build_search_index')
+        logger.info(processed)
+        logger.info(asset_type)
+        logger.info(asset)
 
     # Store word-level index for partial matches
     words = processed.split()
-    if debug:
-        print(words)
+    if debug_build_index:
+        logger.info(words)
 
     # only need to do the first word here
     # also - store add to a prefix to expand possible matches
@@ -148,8 +146,8 @@ def build_search_index(title, asset, asset_type, logger):
         # also add the prefix.  if shorter than prefix_length then it was already added above.
         if len(word) > prefix_length:
             prefix = word[0:prefix_length]
-            if debug:
-                print(prefix)
+            if debug_build_index:
+                logger.info(prefix)
             if prefix not in asset_type_processed_forms:
                 asset_type_processed_forms[prefix] = list()
             asset_type_processed_forms[prefix].append(asset)
@@ -165,20 +163,20 @@ def search_matches(movie_title, asset_type, logger, debug_search=False):
     asset_type_processed_forms = prefix_index[asset_type]
 
     if (debug_search):
-        print('debug_search_matches')
-        print(processed_filename)
+        logger.info('debug_search_matches')
+        logger.info(processed_filename)
 
     words = processed_filename.split()
     if (debug_search):
-        print(words)
+        logger.info(words)
     # Try word-level matches
     for word in words:
         # first add any prefix matches to the beginning of the list.
         if len(word) > prefix_length:
             prefix = word[0:prefix_length]
             if (debug_search):
-                print(prefix)
-                print(prefix in asset_type_processed_forms)
+                logger.info(prefix)
+                logger.info(prefix in asset_type_processed_forms)
 
             if prefix in asset_type_processed_forms:
                 matches.extend(asset_type_processed_forms[prefix])
@@ -189,7 +187,7 @@ def search_matches(movie_title, asset_type, logger, debug_search=False):
         if word in asset_type_processed_forms:
             matches.extend(asset_type_processed_forms[word])
         if (debug_search):
-            print(matches)
+            logger.info(matches)
         break
 
     return matches
@@ -949,7 +947,7 @@ def redact_sensitive_info(text):
 
     return text
 
-def sort_assets(assets_list, logger, build_index=False):
+def sort_assets(assets_list, logger, debug_items=None, build_index=False):
     """
     Sort assets into movies, series, and collections
     
@@ -973,11 +971,11 @@ def sort_assets(assets_list, logger, build_index=False):
             asset_type = 'series'
         
         assets_dict[asset_type].append(item)
-        debug_sort = (False) # item['normalized_title'] == 'mission impossible' or item['normalized_title'] == 'mission impossible collection':
+        debug_sort = debug_items and len(debug_items) > 0 and item['normalized_title'] in debug_items
         if build_index:
             if debug_sort:
-                print(f"adding item to index: {item}")
-            build_search_index(item['title'], item, asset_type, logger)
+                logger.info(f"adding item to index: {item}")
+            build_search_index(item['title'], item, asset_type, logger, debug_items=debug_items)
     logger.info(str(progress_bar))
     return assets_dict
 

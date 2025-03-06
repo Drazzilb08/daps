@@ -205,6 +205,9 @@ poster_renamerr:
   load_asset_structs_from_disk: false
   auto_refresh_cached_structs_hours: 24
   incremental_border_replacerr: false
+  search_index_debug_normalized_items:
+    # - mission impossible
+    # - mission impossible collection
 
 border_replacerr:
   # This script replaces the border on the posters or removes the border

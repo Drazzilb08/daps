@@ -21,6 +21,7 @@ import json
 import filecmp
 import shutil
 import time
+import copy
 
 from util.utility import *
 from util.discord import discord, discord_check
@@ -231,12 +232,14 @@ def match_data(media_dict, asset_files, logger=None):
 
                         if matched:
                             matches +=1
-                            matched_dict.append({
+                            matched_dict.append({ # this is the structure where matches go... I think we'd need more info here to help border_replacer?... maybe just add a ref to the entire media as well?
                                 'title': media['title'],
                                 'year': media['year'],
                                 'folder': media['folder'],
                                 'files': search_match['files'],
                                 'seasons_numbers': asset_season_numbers,
+                                'asset_ref': search_match,
+                                'asset_type': asset_type,
                             })
 
                         if not matched:
@@ -305,7 +308,12 @@ def rename_files(matched_assets, script_config, logger):
     """
     
     output = {}
-    
+    renamed_assets = {
+        'movies': [],
+        'series': [],
+        'collections': []
+    }
+
     # Retrieve configuration settings from the script_config
     asset_folders = script_config.get('asset_folders', False)
     border_replacerr = script_config.get('border_replacerr', False)
@@ -396,12 +404,21 @@ def rename_files(matched_assets, script_config, logger):
                                 if not dry_run:
                                     if action_type in ["hardlink", "symlink"]:
                                         os.remove(new_file_path)
-                                    process_file(file, new_file_path, action_type, logger)
+
+                                    process_file(file, new_file_path, action_type, logger) # any place that has process_file we need to track
+                                    renamed_item = copy.deepcopy(item)
+                                    renamed_item['files'] = [new_file_path]
+                                    renamed_item['path'] = os.path.join(destination_dir, folder)
+                                    renamed_assets[asset_type].append(renamed_item) # append here, but need to change file and folder attrs... which means copy (I think)
                         except FileNotFoundError:
                             # Handle the case where existing_file is a broken symlink
                             if not dry_run:
                                 os.remove(new_file_path)
                                 process_file(file, new_file_path, action_type, logger)
+                                renamed_item = copy.deepcopy(item)
+                                renamed_item['files'] = [new_file_path]
+                                renamed_item['path'] = os.path.join(destination_dir, folder)
+                                renamed_assets[asset_type].append(renamed_item) # append here, but need to change file and folder attrs... which means copy (I think)
                     else:
                         if file_name != new_file_name:
                             messages.append(f"{file_name} -renamed-> {new_file_name}")
@@ -412,6 +429,10 @@ def rename_files(matched_assets, script_config, logger):
                                 discord_messages.append(f"{new_file_name}")
                         if not dry_run:
                             process_file(file, new_file_path, action_type, logger)
+                            renamed_item = copy.deepcopy(item)
+                            renamed_item['files'] = [new_file_path]
+                            renamed_item['path'] = os.path.join(destination_dir, folder)
+                            renamed_assets[asset_type].append(renamed_item) # append here, but need to change file and folder attrs... which means copy (I think)
                 
                 # Append the messages to the output
                 if messages or discord_messages:
@@ -425,7 +446,9 @@ def rename_files(matched_assets, script_config, logger):
             logger.info(str(progress_bar))
         else:
             print(f"No {asset_type} to rename")
-    return output
+
+    logger.debug(f"RENAMED_ASSETS: {renamed_assets}")
+    return output, renamed_assets
 
 def handle_output(output, asset_folders, logger):
     """
@@ -752,15 +775,15 @@ def main(config):
             return
         else:
             logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
-
+        renamed_assets = None
         if media_dict and assets_dict:
             # Match media data to asset files
             print(f"Matching media to assets, please wait...")
-            combined_dict = match_data(media_dict, assets_dict, logger)
+            combined_dict = match_data(media_dict, assets_dict, logger) #need this to return info in
             logger.debug(f"Matched and Unmatched media:\n{json.dumps(combined_dict, indent=4)}")
             matched_assets = combined_dict.get('matched', None)
             if any(matched_assets.values()):
-                output = rename_files(matched_assets, script_config, logger)
+                output, renamed_assets = rename_files(matched_assets, script_config, logger)
                 if any(output.values()):
                     logger.debug(f"Output:\n{json.dumps(output, indent=4)}")
                     handle_output(output, asset_folders, logger)
@@ -779,7 +802,7 @@ def main(config):
             from util.config import Config
             replacerr_config = Config("border_replacerr")
             replacerr_script_config = replacerr_config.script_config
-            process_files(tmp_dir, destination_dir, dry_run, log_level, replacerr_script_config, logger)
+            process_files(tmp_dir, destination_dir, dry_run, log_level, replacerr_script_config, logger, renamed_assets=renamed_assets) # pass in renamed_assets here
             logger.info(f"Finished running border_replacerr.py")
         else:
             logger.debug(f"Border replacerr is disabled. Skipping...")

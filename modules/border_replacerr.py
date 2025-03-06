@@ -422,7 +422,7 @@ def copy_files(assets_dict, destination_dir, dry_run, logger):
             logger.info(str(progress_bar))
     return messages
 
-def process_files(source_dirs, destination_dir, dry_run, log_level, script_config, logger):
+def process_files(source_dirs, destination_dir, dry_run, log_level, script_config, logger, renamed_assets=None):
     """
     Processes the files in the input directory.
 
@@ -469,19 +469,22 @@ def process_files(source_dirs, destination_dir, dry_run, log_level, script_confi
 
     assets_list = []
     # Categorize files in the input directory into assets
-    for path in source_dirs:
-        results = categorize_files(path, logger)
-        if results:
-            assets_list.extend(results)
+    if not renamed_assets:
+        for path in source_dirs:
+            results = categorize_files(path, logger)
+            if results:
+                assets_list.extend(results)
+            else:
+                logger.error(f"No assets found in {path}.")
+
+        if assets_list:
+            assets_dict = sort_assets(assets_list, logger)
+            logger.debug(f"Asset Files:\n{json.dumps(assets_dict, indent=4)}")
         else:
-            logger.error(f"No assets found in {path}.")
-    
-    if assets_list:
-        assets_dict = sort_assets(assets_list, logger)
-        logger.debug(f"Asset Files:\n{json.dumps(assets_dict, indent=4)}")
+            logger.error(f"No assets found in {(', '.join(source_dirs))}, if running Poster Renamerr in dry_run, this is expected")
+            return
     else:
-        logger.error(f"No assets found in {(', '.join(source_dirs))}, if running Poster Renamerr in dry_run, this is expected")
-        return
+        assets_dict = renamed_assets
 
     # If Run holiday is False and Skip is set to True, return
     if not run_holiday and skip:

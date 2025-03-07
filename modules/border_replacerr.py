@@ -461,6 +461,9 @@ def process_files(source_dirs, destination_dir, dry_run, log_level, script_confi
     
     # Check for a scheduled event to update border colors if provided
     if schedule:
+        if (renamed_assets):
+            renamed_assets = None # if there's a schedule it implies the configuration can change so we should not allow an incremental run
+            logger.info(f"Bypassing incremental run since a schedule is set")
         border_colors, run_holiday, holiday = check_holiday(schedule, border_colors, logger)
     
     if not os.path.exists(destination_dir):

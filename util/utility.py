@@ -83,7 +83,7 @@ def preprocess_name(name: str) -> str:
 
     # Optionally remove common words
     common_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to'}
-    return ' '.join(word for word in name.split() if word not in common_words)
+    return ''.join(word for word in name.split() if word not in common_words)
 
 def save_cached_structs_to_disk(assets_list, path, logger):
     """
@@ -815,12 +815,24 @@ def get_plex_data(plex, library_names, logger, include_smart, collections_only):
         for library_name, collection_names in collection_names.items():
             progress_bar = tqdm(collection_names, desc=f"Processing Plex collection data for '{library_name}'", total=len(collection_names), disable=None, leave=True)
             for collection in progress_bar:
+                title = normalize_titles(collection)
+                alternate_titles = []
+                # collections are special as they can be 'X.jpg' or 'X Collection.jpg'.  This is adding the alernate titles to the objects here
+                # as these are what are used to perform lookups in the index.
+                # This helps when a main title lookup doesn't find matches but using the alternate titles (w/ or w/out the suffix) would help
+                # we add the same normalied versions to both alternate and normalized variations since we are controlling the content, not externals
+                if title.endswith(" collection"):
+                    alternate_titles.append(title.removesuffix(" collection"))
+                else:
+                    alternate_titles.append(title + " collection")
                 plex_dict.append({
                     'title': collection,
-                    'normalized_title': normalize_titles(collection),
+                    'normalized_title': title,
                     'location': library_name,
                     'year': None,
                     'folder': collection,
+                    'alternate_titles': alternate_titles,
+                    'normalized_alternate_titles': alternate_titles
                 })  # Append collection information to plex_dict
             logger.info(str(progress_bar))
     else:

@@ -712,6 +712,8 @@ def main(config):
         assets_list = None
         assets_dict = None
         loaded_from_disk = False
+        logger.info("SPUD_UPDATED_CODE: 3/12/25 3:25pm")
+
         if (load_asset_structs_from_disk):
             logger.debug("getting cached structs")
             assets_list = load_cached_structs(config_dir_path, auto_refresh_cached_structs_hours, logger)

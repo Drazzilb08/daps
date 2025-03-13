@@ -63,10 +63,13 @@ def get_assets_files(source_dirs, logger, debug_items=None):
             # Merge new_assets with final_assets
             for new in new_assets:
                 found_match = False
-                debug_assets = debug_items and len(debug_items) > 0 and new['normalized_title'] in debug_items
+                debug_assets = debug_items and len(debug_items) > 0 and (debug_item in new['normalized_title'] for debug_item in debug_items)
                 if debug_assets:
                     logger.info(f"found new asset: {new}")
-                for final in final_assets:
+                search_matched_assets = search_matches(new['normalized_title'], 'posters', logger)
+                for final in search_matched_assets:
+                    if debug_assets:
+                        logger.info(f"comparing to final asset {final}")
                     if final['normalized_title'] == new['normalized_title'] and final['year'] == new['year']:
                         if debug_assets:
                             logger.info('found a match')
@@ -109,6 +112,8 @@ def get_assets_files(source_dirs, logger, debug_items=None):
                         logger.info("didn't find a match, appending")
                         logger.info(new)
                     final_assets.append(new)
+                    build_search_index(new['normalized_title'], new, 'posters', logger)
+
         else:
             logger.error(f"No assets found in {source_dir}")
     

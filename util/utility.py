@@ -61,7 +61,8 @@ suffixes = [
 prefix_index = {
     'movies': {},
     'series': {},
-    'collections': {}
+    'collections': {},
+    'posters': {},
 }
 
 # length to use as a prefix.  anything shorter than this will be used as-is
@@ -276,7 +277,7 @@ def normalize_titles(title):
     normalized_title = re.sub(remove_special_chars, '', normalized_title).lower()
     
     # Remove spaces in the title
-    normalized_title = normalized_title.replace('  ', ' ')
+    normalized_title = normalized_title.replace(' ', '')
     
     return normalized_title
 
@@ -328,7 +329,16 @@ def categorize_files(folder_path, logger):
         except FileNotFoundError:
             return None
         files = sorted(files, key=lambda x: x.lower())  # Sort files alphabetically
+        # loop over all files here and build a file index
         if files:
+            # initialize the indices for this directory
+            prefix_index['files'] = {}
+            prefix_index['assets'] = {}
+            for file in files:
+                mybase, extension = os.path.splitext(file)
+                normalize_title = normalize_titles(mybase)
+                # this index is just based on the poster files we are reading in to make looking up what we've processed so far in this dir much faster.
+                build_search_index(normalize_title, file, 'files', logger)
             # Loop through each file in the folder
             progress_bar = tqdm(files, desc=f"Processing '{base_name}' folder", total=len(files), disable=None, leave=True)
             for file in progress_bar:
@@ -354,7 +364,7 @@ def categorize_files(folder_path, logger):
                     no_suffix = [re.sub(r'\b{}\b'.format(suffix), '', title).strip() for suffix in suffixes if title.endswith(suffix) and re.sub(r'\b{}\b'.format(suffix), '', title).strip() != title]
                     no_prefix_normalized = [normalize_titles(re.sub(r'\b{}\b'.format(prefix), '', title).strip()) for prefix in prefixes if title.startswith(prefix) and normalize_titles(re.sub(r'\b{}\b'.format(prefix), '', title).strip()) != normalize_title]
                     no_suffix_normalized = [normalize_titles(re.sub(r'\b{}\b'.format(suffix), '', title).strip()) for suffix in suffixes if title.endswith(suffix) and normalize_titles(re.sub(r'\b{}\b'.format(suffix), '', title).strip()) != normalize_title]
-                    assets_dict.append({
+                    item = {
                         'title': title,
                         'year': year,
                         'normalized_title': normalize_title,
@@ -364,12 +374,15 @@ def categorize_files(folder_path, logger):
                         'no_suffix_normalized': no_suffix_normalized,
                         'path': None,
                         'files': [file_path],
-                    })
+                    }
+                    assets_dict.append(item)
+                    # this index is to store the final asset overall, primarily for use with shows, but worth being consistent for movies & collections, too
+                    build_search_index(item['normalized_title'], item, 'assets', logger)
                 else:
                     # Categorize as a series
-                    if any(file.startswith(base_name) and any(base_name + season_name in file for season_name in season_name_info) for file in files):
+                    if any(file.startswith(base_name) and any(base_name + season_name in file for season_name in season_name_info) for file in search_matches(normalize_title, 'files', logger)):
                         # Check if the series entry already exists in the assets dictionary
-                        series_entry = next((d for d in assets_dict if d['normalized_title'] == normalize_title and d['year'] == year), None)
+                        series_entry = next((d for d in search_matches(normalize_title, 'assets', logger) if d['normalized_title'] == normalize_title and d['year'] == year), None)
                         if series_entry is None:
                             # If not, add a new series entry
                             series_entry = {
@@ -380,6 +393,8 @@ def categorize_files(folder_path, logger):
                                 'season_numbers': []
                             }
                             assets_dict.append(series_entry)
+                            # this index is to store the final asset overall so that lookups can occur much more quickly. Primarily for shows
+                            build_search_index(series_entry['normalized_title'], series_entry, 'assets', logger)
                         else:
                             # Add the file path to the current series entry
                             if file_path not in series_entry['files']:
@@ -387,8 +402,8 @@ def categorize_files(folder_path, logger):
                                     series_entry['files'].append(file_path)
                     
                     elif any(word in file for word in season_name_info):
-                        # Check if the series entry already exists in the assets dictionary
-                        series_entry = next((d for d in assets_dict if d['normalized_title'] == normalize_title and d['year'] == year), None)
+                        # Check if the series entry already exists in the assets index
+                        series_entry = next((d for d in search_matches(normalize_title, 'assets', logger) if d['normalized_title'] == normalize_title and d['year'] == year), None)
                         if series_entry is None:
                             # If not, add a new series entry
                             series_entry = {
@@ -399,21 +414,25 @@ def categorize_files(folder_path, logger):
                                 'season_numbers': []
                             }
                             assets_dict.append(series_entry)
+                            # this index is to store the final asset overall so that lookups can occur much more quickly. Primarily for shows
+                            build_search_index(series_entry['normalized_title'], series_entry, 'assets', logger)
                         else:
-                            # Add the file path to the current series entry
                             if file_path not in series_entry['files']:
                                 if normalize_file_names(file_path) not in [normalize_file_names(f) for f in series_entry['files']]:
                                     series_entry['files'].append(file_path)
 
                     # Categorize as a movie
                     else:
-                        assets_dict.append({
+                        item = {
                             'title': title,
                             'year': year,
                             'normalized_title': normalize_title,
                             'path': None,
                             'files': [file_path],
-                        })
+                        }
+                        assets_dict.append(item)
+                        # this index is to store the final asset overall so that lookups can occur much more quickly. Primarily for shows
+                        build_search_index(item['normalized_title'], item, 'assets', logger)
             logger.info(str(progress_bar))
         else:
             return None
@@ -820,11 +839,11 @@ def get_plex_data(plex, library_names, logger, include_smart, collections_only):
                 # collections are special as they can be 'X.jpg' or 'X Collection.jpg'.  This is adding the alernate titles to the objects here
                 # as these are what are used to perform lookups in the index.
                 # This helps when a main title lookup doesn't find matches but using the alternate titles (w/ or w/out the suffix) would help
-                # we add the same normalied versions to both alternate and normalized variations since we are controlling the content, not externals
+                # we add the same normalized versions to both alternate and normalized variations since we are controlling the content, not externals
                 if title.endswith(" collection"):
                     alternate_titles.append(title.removesuffix(" collection"))
                 else:
-                    alternate_titles.append(title + " collection")
+                    alternate_titles.append(normalize_titles(title + " collection"))
                 plex_dict.append({
                     'title': collection,
                     'normalized_title': title,

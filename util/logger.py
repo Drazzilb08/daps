@@ -63,7 +63,7 @@ def setup_logger(log_level, script_name, max_logs=9):
         logger.setLevel(logging.INFO)
     
     # Define the log message format
-    formatter = logging.Formatter(fmt='%(asctime)s %(levelname)s: %(message)s', datefmt='%m/%d/%y %I:%M %p')
+    formatter = logging.Formatter(fmt='%(asctime)s %(levelname)s: %(message)s', datefmt='%m/%d/%y %I:%M:%S %p')
     
     # Create a RotatingFileHandler for log files
     handler = RotatingFileHandler(log_file, delay=True, mode="w", backupCount=max_logs)

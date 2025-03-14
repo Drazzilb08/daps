@@ -663,9 +663,6 @@ def main(config):
         border_replacerr = script_config.get('border_replacerr', False)
         instances = script_config.get('instances', [])
         sync_posters = script_config.get('sync_posters', False)
-        persist_asset_structs_to_disk = script_config.get('persist_asset_structs_to_disk', False)
-        load_asset_structs_from_disk = script_config.get('load_asset_structs_from_disk', False)
-        auto_refresh_cached_structs_hours = script_config.get('auto_refresh_cached_structs_hours', 24)
         incremental_border_replacerr = script_config.get('incremental_border_replacerr', False)
         search_index_debug_normalized_items = script_config.get('search_index_debug_normalized_items', [])
 
@@ -683,9 +680,6 @@ def main(config):
         logger.debug(f'{"Border replacerr:":<20}{border_replacerr}')
         logger.debug(f'{"Instances:":<20}{instances}')
         logger.debug(f'{"Sync posters:":<20}{sync_posters}')
-        logger.debug(f'{"Persist asset structs to disk:":<20}{persist_asset_structs_to_disk}')
-        logger.debug(f'{"Load cached structs from disk:":<20}{load_asset_structs_from_disk}')
-        logger.debug(f'{"Auto refresh cached structs hours:":<20}{auto_refresh_cached_structs_hours}')
         logger.debug(f'{"Incremental border replacerr:":<20}{incremental_border_replacerr}')
         logger.debug(f'{"Search index debug items:":<20}{search_index_debug_normalized_items}')
 
@@ -714,25 +708,13 @@ def main(config):
         else:
             logger.debug(f"Sync posters is disabled. Skipping...")
 
-        assets_list = None
-        assets_dict = None
-        loaded_from_disk = False
-        logger.info("SPUD_UPDATED_CODE: 3/12/25 3:25pm")
+        logger.info("SPUD_UPDATED_CODE: 3/14/25 4pm")
 
-        if (load_asset_structs_from_disk):
-            logger.debug("getting cached structs")
-            assets_list = load_cached_structs(config_dir_path, auto_refresh_cached_structs_hours, logger)
-            loaded_from_disk = assets_list is not None
-            logger.debug(f"assets_list loaded: {loaded_from_disk}")
-        
-        if not assets_list:
-            print("Gathering all the posters, please wait...")
-            assets_list = get_assets_files(source_dirs, logger, debug_items=search_index_debug_normalized_items)
+        print("Gathering all the posters, please wait...")
+        assets_list = get_assets_files(source_dirs, logger, debug_items=search_index_debug_normalized_items)
             
         if assets_list:
             assets_dict = sort_assets(assets_list, logger, debug_items=search_index_debug_normalized_items, build_index=True)
-            if persist_asset_structs_to_disk and not loaded_from_disk:
-                save_cached_structs_to_disk(assets_list, config_dir_path, logger)
             logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
         else:
             logger.error("No assets found. Exiting...")

@@ -57,16 +57,19 @@ suffixes = [
     "Collection",
 ]
 
-# dict per asset type to map asset prefixes to the assets, themselves.
-prefix_index = {
-    'movies': {},
-    'series': {},
-    'collections': {},
-    'posters': {},
-}
-
 # length to use as a prefix.  anything shorter than this will be used as-is
 prefix_length = 3
+
+def create_new_empty_index():
+    # dict per asset type to map asset prefixes to the assets, themselves.
+    prefix_index = {
+        'movies': {},
+        'series': {},
+        'collections': {},
+    }
+    return prefix_index
+
+
 
 def preprocess_name(name: str) -> str:
     """
@@ -84,7 +87,7 @@ def preprocess_name(name: str) -> str:
     common_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to'}
     return ''.join(word for word in name.split() if word not in common_words)
 
-def build_search_index(title, asset, asset_type, logger, debug_items=None):
+def build_search_index(prefix_index, title, asset, asset_type, logger, debug_items=None):
     """
     Build an index of preprocessed movie names for efficient lookup
     Returns both the index and preprocessed forms
@@ -124,7 +127,7 @@ def build_search_index(title, asset, asset_type, logger, debug_items=None):
 
     return
 
-def search_matches(movie_title, asset_type, logger, debug_search=False):
+def search_matches(prefix_index, movie_title, asset_type, logger, debug_search=False):
     """ search for matches in the index """
     matches = list()
     
@@ -300,13 +303,14 @@ def categorize_files(folder_path, logger):
         # loop over all files here and build a file index
         if files:
             # initialize the indices for this directory
+            prefix_index = create_new_empty_index()
             prefix_index['files'] = {}
             prefix_index['assets'] = {}
             for file in files:
                 mybase, extension = os.path.splitext(file)
                 normalize_title = normalize_titles(mybase)
                 # this index is just based on the poster files we are reading in to make looking up what we've processed so far in this dir much faster.
-                build_search_index(normalize_title, file, 'files', logger)
+                build_search_index(prefix_index, normalize_title, file, 'files', logger)
             # Loop through each file in the folder
             progress_bar = tqdm(files, desc=f"Processing '{base_name}' folder", total=len(files), disable=None, leave=True)
             for file in progress_bar:
@@ -345,12 +349,12 @@ def categorize_files(folder_path, logger):
                     }
                     assets_dict.append(item)
                     # this index is to store the final asset overall, primarily for use with shows, but worth being consistent for movies & collections, too
-                    build_search_index(item['normalized_title'], item, 'assets', logger)
+                    build_search_index(prefix_index, item['normalized_title'], item, 'assets', logger)
                 else:
                     # Categorize as a series
-                    if any(file.startswith(base_name) and any(base_name + season_name in file for season_name in season_name_info) for file in search_matches(normalize_title, 'files', logger)):
+                    if any(file.startswith(base_name) and any(base_name + season_name in file for season_name in season_name_info) for file in search_matches(prefix_index, normalize_title, 'files', logger)):
                         # Check if the series entry already exists in the assets dictionary
-                        series_entry = next((d for d in search_matches(normalize_title, 'assets', logger) if d['normalized_title'] == normalize_title and d['year'] == year), None)
+                        series_entry = next((d for d in search_matches(prefix_index, normalize_title, 'assets', logger) if d['normalized_title'] == normalize_title and d['year'] == year), None)
                         if series_entry is None:
                             # If not, add a new series entry
                             series_entry = {
@@ -362,7 +366,7 @@ def categorize_files(folder_path, logger):
                             }
                             assets_dict.append(series_entry)
                             # this index is to store the final asset overall so that lookups can occur much more quickly. Primarily for shows
-                            build_search_index(series_entry['normalized_title'], series_entry, 'assets', logger)
+                            build_search_index(prefix_index, series_entry['normalized_title'], series_entry, 'assets', logger)
                         else:
                             # Add the file path to the current series entry
                             if file_path not in series_entry['files']:
@@ -371,7 +375,7 @@ def categorize_files(folder_path, logger):
                     
                     elif any(word in file for word in season_name_info):
                         # Check if the series entry already exists in the assets index
-                        series_entry = next((d for d in search_matches(normalize_title, 'assets', logger) if d['normalized_title'] == normalize_title and d['year'] == year), None)
+                        series_entry = next((d for d in search_matches(prefix_index, normalize_title, 'assets', logger) if d['normalized_title'] == normalize_title and d['year'] == year), None)
                         if series_entry is None:
                             # If not, add a new series entry
                             series_entry = {
@@ -383,7 +387,7 @@ def categorize_files(folder_path, logger):
                             }
                             assets_dict.append(series_entry)
                             # this index is to store the final asset overall so that lookups can occur much more quickly. Primarily for shows
-                            build_search_index(series_entry['normalized_title'], series_entry, 'assets', logger)
+                            build_search_index(prefix_index, series_entry['normalized_title'], series_entry, 'assets', logger)
                         else:
                             if file_path not in series_entry['files']:
                                 if normalize_file_names(file_path) not in [normalize_file_names(f) for f in series_entry['files']]:
@@ -400,7 +404,7 @@ def categorize_files(folder_path, logger):
                         }
                         assets_dict.append(item)
                         # this index is to store the final asset overall so that lookups can occur much more quickly. Primarily for shows
-                        build_search_index(item['normalized_title'], item, 'assets', logger)
+                        build_search_index(prefix_index, item['normalized_title'], item, 'assets', logger)
             logger.info(str(progress_bar))
         else:
             return None
@@ -946,7 +950,7 @@ def redact_sensitive_info(text):
 
     return text
 
-def sort_assets(assets_list, logger, debug_items=None, build_index=False):
+def sort_assets(assets_list, logger, debug_items=None, prefix_index=None):
     """
     Sort assets into movies, series, and collections
     
@@ -971,10 +975,10 @@ def sort_assets(assets_list, logger, debug_items=None, build_index=False):
         
         assets_dict[asset_type].append(item)
         debug_sort = debug_items and len(debug_items) > 0 and item['normalized_title'] in debug_items
-        if build_index:
+        if prefix_index:
             if debug_sort:
                 logger.info(f"adding item to index: {item}")
-            build_search_index(item['title'], item, asset_type, logger, debug_items=debug_items)
+            build_search_index(prefix_index, item['title'], item, asset_type, logger, debug_items=debug_items)
     logger.info(str(progress_bar))
     return assets_dict
 

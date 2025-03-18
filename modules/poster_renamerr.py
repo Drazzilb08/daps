@@ -56,6 +56,8 @@ def get_assets_files(source_dirs, logger, debug_items=None):
 
     # Initialize final_assets list
     final_assets = []
+    prefix_index = create_new_empty_index()
+    prefix_index['posters'] = {}
     # Iterate through each source directory
     for source_dir in source_dirs:
         new_assets = categorize_files(source_dir, logger)
@@ -66,7 +68,7 @@ def get_assets_files(source_dirs, logger, debug_items=None):
                 debug_assets = debug_items and len(debug_items) > 0 and (debug_item in new['normalized_title'] for debug_item in debug_items)
                 if debug_assets:
                     logger.info(f"found new asset: {new}")
-                search_matched_assets = search_matches(new['normalized_title'], 'posters', logger)
+                search_matched_assets = search_matches(prefix_index, new['normalized_title'], 'posters', logger)
                 for final in search_matched_assets:
                     if debug_assets:
                         logger.info(f"comparing to final asset {final}")
@@ -112,7 +114,7 @@ def get_assets_files(source_dirs, logger, debug_items=None):
                         logger.info("didn't find a match, appending")
                         logger.info(new)
                     final_assets.append(new)
-                    build_search_index(new['normalized_title'], new, 'posters', logger)
+                    build_search_index(prefix_index, new['normalized_title'], new, 'posters', logger)
 
         else:
             logger.error(f"No assets found in {source_dir}")
@@ -141,7 +143,7 @@ def handle_series_match(asset, media_seasons_numbers, asset_season_numbers):
         for season in seasons_to_remove:
             asset_season_numbers.remove(season)
 
-def match_data(media_dict, asset_files, logger=None, debug_items=None):
+def match_data(media_dict, asset_files, prefix_index, logger=None, debug_items=None):
     """
     Matches media data to asset files
     
@@ -180,7 +182,7 @@ def match_data(media_dict, asset_files, logger=None, debug_items=None):
                         matched = False 
                         # search here to identify matches
                         debug_search = debug_items and len(debug_items) > 0 and media['normalized_title'] in debug_items
-                        search_matched_assets = search_matches(media['title'], asset_type, logger, debug_search=debug_search)
+                        search_matched_assets = search_matches(prefix_index, media['title'], asset_type, logger, debug_search=debug_search)
                         logger.debug(f"SEARCH ({asset_type}): matched assets for {media['title']} ({media['normalized_title']}) type={asset_type}")
 
                         logger.debug(search_matched_assets)
@@ -212,7 +214,7 @@ def match_data(media_dict, asset_files, logger=None, debug_items=None):
                         if not matched:
                             # need to do more searches now based on alt titles
                             for alt_title in media.get('alternate_titles', []):
-                                search_matched_assets = search_matches(alt_title, asset_type, logger, debug_search=debug_search)
+                                search_matched_assets = search_matches(prefix_index, alt_title, asset_type, logger, debug_search=debug_search)
                                 logger.debug(f"SEARCH ({asset_type}): matched assets for {alt_title} type={asset_type} - Alternate search")
                                 logger.debug(search_matched_assets)
                                 for search_asset in search_matched_assets:
@@ -709,12 +711,12 @@ def main(config):
             logger.debug(f"Sync posters is disabled. Skipping...")
 
         logger.info("SPUD_UPDATED_CODE: 3/14/25 4pm")
-
         print("Gathering all the posters, please wait...")
         assets_list = get_assets_files(source_dirs, logger, debug_items=search_index_debug_normalized_items)
-            
+
+        prefix_index = create_new_empty_index()
         if assets_list:
-            assets_dict = sort_assets(assets_list, logger, debug_items=search_index_debug_normalized_items, build_index=True)
+            assets_dict = sort_assets(assets_list, logger, debug_items=search_index_debug_normalized_items, prefix_index=prefix_index)
             logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
         else:
             logger.error("No assets found. Exiting...")
@@ -773,7 +775,7 @@ def main(config):
         if media_dict and assets_dict:
             # Match media data to asset files
             print(f"Matching media to assets, please wait...")
-            combined_dict = match_data(media_dict, assets_dict, logger, debug_items=search_index_debug_normalized_items)
+            combined_dict = match_data(media_dict, assets_dict, prefix_index, logger, debug_items=search_index_debug_normalized_items)
             logger.debug(f"Matched and Unmatched media:\n{json.dumps(combined_dict, indent=4)}")
             matched_assets = combined_dict.get('matched', None)
             if any(matched_assets.values()):

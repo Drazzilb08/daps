@@ -1,15 +1,15 @@
-#   _____          _            _____                                           
-#  |  __ \        | |          |  __ \                                          
-#  | |__) |__  ___| |_ ___ _ __| |__) |___ _ __   __ _ _ __ ___   ___ _ __ _ __ 
+#   _____          _            _____
+#  |  __ \        | |          |  __ \
+#  | |__) |__  ___| |_ ___ _ __| |__) |___ _ __   __ _ _ __ ___   ___ _ __ _ __
 #  |  ___/ _ \/ __| __/ _ \ '__|  _  // _ \ '_ \ / _` | '_ ` _ \ / _ \ '__| '__|
-#  | |  | (_) \__ \ ||  __/ |  | | \ \  __/ | | | (_| | | | | | |  __/ |  | |   
-#  |_|   \___/|___/\__\___|_|  |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|  |_|   
-#                         ______                                                
-#                        |______|                                               
+#  | |  | (_) \__ \ ||  __/ |  | | \ \  __/ | | | (_| | | | | | |  __/ |  | |
+#  |_|   \___/|___/\__\___|_|  |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|  |_|
+#                         ______
+#                        |______|
 # ===================================================================================================
 # Author: Drazzilb
 # Description: This script will rename your posters to match Plex-Meta-Manager's naming scheme from TPDB's naming.
-# Usage: python3 poster_renamerr.py 
+# Usage: python3 poster_renamerr.py
 # Requirements: requests, tqdm, pyyaml
 # License: MIT License
 # ===================================================================================================
@@ -118,7 +118,7 @@ def get_assets_files(source_dirs, logger, debug_items=None):
 
         else:
             logger.error(f"No assets found in {source_dir}")
-    
+
     return final_assets
 
 def handle_series_match(asset, media_seasons_numbers, asset_season_numbers):
@@ -146,11 +146,11 @@ def handle_series_match(asset, media_seasons_numbers, asset_season_numbers):
 def match_data(media_dict, asset_files, prefix_index, logger=None, debug_items=None):
     """
     Matches media data to asset files
-    
+
     Args:
         media_dict (dict): Dictionary of media data
         asset_files (dict): Dictionary of asset files
-        
+
     Returns:
         dict: Dictionary of matched and unmatched media data
     """
@@ -179,10 +179,10 @@ def match_data(media_dict, asset_files, prefix_index, logger=None, debug_items=N
                     for media in media_data:
                         search_match = None;
                         total_items+=1
-                        matched = False 
+                        matched = False
                         # search here to identify matches
                         debug_search = debug_items and len(debug_items) > 0 and media['normalized_title'] in debug_items
-                        search_matched_assets = search_matches(prefix_index, media['title'], asset_type, logger, debug_search=debug_search)
+                        search_matched_assets = search_matches(prefix_index, media['normalized_title'], asset_type, logger, debug_search=debug_search)
                         logger.debug(f"SEARCH ({asset_type}): matched assets for {media['title']} ({media['normalized_title']}) type={asset_type}")
 
                         logger.debug(search_matched_assets)
@@ -256,7 +256,7 @@ def match_data(media_dict, asset_files, prefix_index, logger=None, debug_items=N
                                 'year': media['year'],
                                 'folder': media['folder'],
                             })
-                        
+
                         # Update combined matched and unmatched dictionaries
                         combined_dict['matched'][asset_type] = matched_dict
                         combined_dict['unmatched'][asset_type] = unmatched_dict
@@ -275,16 +275,16 @@ def match_data(media_dict, asset_files, prefix_index, logger=None, debug_items=N
 def process_file(file, new_file_path, action_type, logger):
     """
     Processes a file based on the action type
-    
+
     Args:
         file (str): Path to file
         new_file_path (str): Path to new file
         action_type (str): Action type to perform on the file
-        
+
     Returns:
         None
     """
-    
+
     try:
         # Check the action type and perform the appropriate operation
         if action_type == "copy":
@@ -299,20 +299,20 @@ def process_file(file, new_file_path, action_type, logger):
         # Handle errors if any operation fails
         logger.error(f"Error {action_type}ing file: {e}")  # Log the error message
 
-    
+
 
 def rename_files(matched_assets, script_config, logger):
     """
     Renames files based on the matched assets and script config
-    
+
     Args:
         matched_assets (dict): Dictionary of matched assets
         script_config (dict): Dictionary of script config
-        
+
     Returns:
         dict: Dictionary of output messages
     """
-    
+
     output = {}
     renamed_assets = {
         'movies': [],
@@ -326,7 +326,7 @@ def rename_files(matched_assets, script_config, logger):
     action_type = script_config.get('action_type', False)
     print_only_renames = script_config.get('print_only_renames', False)
     destination_dir = script_config.get('destination_dir', False)
-    
+
     # Handle border_replacerr settings
     if border_replacerr:
         tmp_dir = os.path.join(destination_dir, 'tmp')
@@ -341,9 +341,9 @@ def rename_files(matched_assets, script_config, logger):
             destination_dir = tmp_dir
     else:
         destination_dir = script_config.get('destination_dir', False)
-    
+
     asset_types = ['collections', 'movies', 'series']
-    
+
     # Iterate through each asset type
     for asset_type in asset_types:
         output[asset_type] = []
@@ -360,7 +360,7 @@ def rename_files(matched_assets, script_config, logger):
                 if asset_type == "collections":
                     if not is_valid_filename(folder):
                         folder = sanitize_filename(folder)
-                
+
                 # Handle asset_folders configuration
                 if asset_folders:
                     dest_dir = os.path.join(destination_dir, folder)
@@ -369,12 +369,12 @@ def rename_files(matched_assets, script_config, logger):
                             os.makedirs(dest_dir)
                 else:
                     dest_dir = destination_dir
-                
+
                 # Iterate through each file in the asset
                 for file in files:
                     file_name = os.path.basename(file)
                     file_extension = os.path.splitext(file)[1]
-                    
+
                     # Check for season-related file naming
                     if re.search(r' - Season| - Specials', file_name):
                         try:
@@ -393,7 +393,7 @@ def rename_files(matched_assets, script_config, logger):
                         else:
                             new_file_name = f"{folder}{file_extension}"
                         new_file_path = os.path.join(dest_dir, new_file_name)
-                    
+
                     # Check if the new file path already exists
                     if os.path.lexists(new_file_path):
                         existing_file = os.path.join(dest_dir, new_file_name)
@@ -439,7 +439,7 @@ def rename_files(matched_assets, script_config, logger):
                             renamed_item['files'] = [new_file_path]
                             renamed_item['path'] = os.path.join(destination_dir, folder)
                             renamed_assets[asset_type].append(renamed_item) # append here, but need to change file and folder attrs... which means copy (I think)
-                
+
                 # Append the messages to the output
                 if messages or discord_messages:
                     output[asset_type].append({
@@ -459,10 +459,10 @@ def rename_files(matched_assets, script_config, logger):
 def handle_output(output, asset_folders, logger):
     """
     Handles the output messages
-    
+
     Args:
         output (dict): Dictionary of output messages
-    
+
     Returns:
         None
     """
@@ -510,14 +510,14 @@ def handle_output(output, asset_folders, logger):
 def notification(output, logger):
     """
     Sends a notification to Discord
-    
+
     Args:
         output (dict): Dictionary of output messages
-        
+
     Returns:
         None
     """
-    
+
     discord_dict = {}  # Dictionary to organize messages to be sent to Discord
     fields = []  # List to hold individual message fields
     # Loop through the output dictionary containing messages for different asset types
@@ -525,7 +525,7 @@ def notification(output, logger):
         if assets:
             discord_messages = []  # List to hold individual messages for each asset
             current_field = ""  # String to store messages within the field character limit
-            
+
             # Prepare messages for each asset within the asset type
             for asset in assets:
                 asset_messages = []  # List to hold individual lines for each asset's message
@@ -552,8 +552,8 @@ def notification(output, logger):
                     discord_messages.append("\n".join(asset_messages))  # Joining lines into an asset-specific message
                 else:
                     continue
-        
-            
+
+
             # Split asset-specific messages into multiple fields if their total length exceeds Discord's field limit
             for message in discord_messages:
                 if len(current_field) + len(message) + len("\t\n") <= 1000:
@@ -565,7 +565,7 @@ def notification(output, logger):
                     })
                     current_field = message + "\n"  # Starting a new field with the current message
                     asset_type = ""  # Resetting asset_type for the next field within the same asset_type
-            
+
             # Add the remaining messages as a new field
             if current_field:
                 fields.append({  # Creating a field containing the remaining messages
@@ -642,7 +642,7 @@ def main(config):
     dry_run = config.dry_run
     log_level = config.log_level
     logger = setup_logger(log_level, script_name)
-    
+
     script_config = config.script_config
     config_dir_path = os.path.dirname(config.config_path)
     name = script_name.replace("_", " ").upper()
@@ -721,7 +721,7 @@ def main(config):
         else:
             logger.error("No assets found. Exiting...")
             return
-        
+
         media_dict = {
             'movies': [],
             'series': [],
@@ -756,15 +756,15 @@ def main(config):
                                 if results:
                                     if instance_type == "radarr":
                                         media_dict['movies'].extend(results)
-                                    elif instance_type == "sonarr": 
+                                    elif instance_type == "sonarr":
                                         media_dict['series'].extend(results)
                                 else:
                                     logger.error(f"No {instance_type.capitalize()} data found.")
-                                
+
         else:
             logger.error(f"No instances found. Exiting script...")
             return
-        
+
         # Log media data
         if not any(media_dict.values()):
             logger.error("No media found, Check instances setting in your config. Exiting.")

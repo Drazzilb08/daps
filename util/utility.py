@@ -130,7 +130,7 @@ def build_search_index(prefix_index, title, asset, asset_type, logger, debug_ite
 def search_matches(prefix_index, movie_title, asset_type, logger, debug_search=False):
     """ search for matches in the index """
     matches = list()
-    
+
     processed_filename = preprocess_name(movie_title)
     asset_type_processed_forms = prefix_index[asset_type]
 
@@ -167,10 +167,10 @@ def search_matches(prefix_index, movie_title, asset_type, logger, debug_search=F
 def normalize_file_names(file_name):
     """
     Normalize file names for comparison
-    
+
     Args:
         file_name (str): The file name to normalize
-        
+
     Returns:
         str: The normalized file name
     """
@@ -209,29 +209,29 @@ def normalize_file_names(file_name):
 def normalize_titles(title):
     """
     Normalize titles for comparison
-    
+
     Args:
         title (str): The title to normalize
-        
+
     Returns:
         str: The normalized title
     """
-    
+
     # Initialize the normalized title as the original title
     normalized_title = title
-    
+
     # Remove specific words from the title
     for word in words_to_remove:
         normalized_title = title.replace(word, '')
         if normalized_title != title:
             break
-    
+
     # Extract the year from parentheses in the title
     normalized_title = year_regex.sub('', normalized_title)
-    
+
     # Remove illegal characters from the title using regex
     normalized_title = illegal_chars_regex.sub('', normalized_title)
-    
+
     # Convert special characters to ASCII equivalent
     normalized_title = unidecode(html.unescape(normalized_title))
 
@@ -240,25 +240,25 @@ def normalize_titles(title):
 
     # Remove leading whitespaces
     normalized_title = normalized_title.lstrip()
-    
+
     # Replace '&' with 'and'
     normalized_title = normalized_title.replace('&', 'and')
 
     # Remove special characters using regex
     normalized_title = re.sub(remove_special_chars, '', normalized_title).lower()
-    
+
     # Remove spaces in the title
     normalized_title = normalized_title.replace(' ', '')
-    
+
     return normalized_title
 
 def _is_asset_folders(folder_path):
     """
     Check if the folder contains asset folders
-    
+
     Args:
         folder_path (str): The path to the folder to check
-        
+
     Returns:
         bool: True if the folder contains asset folders, False otherwise
     """
@@ -275,11 +275,11 @@ def _is_asset_folders(folder_path):
 def categorize_files(folder_path, logger):
     """
     Categorize files into movies, collections, and series
-    
+
     Args:
         folder_path (str): The path to the folder to sort
         asset_folders (bool): Whether or not to sort by folders
-        
+
     Returns:
         list: A list of dictionaries containing the sorted files
     """
@@ -372,7 +372,7 @@ def categorize_files(folder_path, logger):
                             if file_path not in series_entry['files']:
                                 if normalize_file_names(file_path) not in [normalize_file_names(f) for f in series_entry['files']]:
                                     series_entry['files'].append(file_path)
-                    
+
                     elif any(word in file for word in season_name_info):
                         # Check if the series entry already exists in the assets index
                         series_entry = next((d for d in search_matches(prefix_index, normalize_title, 'assets', logger) if d['normalized_title'] == normalize_title and d['year'] == year), None)
@@ -488,11 +488,11 @@ def categorize_files(folder_path, logger):
                                         list_of_files.append(f"{dir}/{file}")
                                 if "poster" in file.lower():
                                     list_of_files.append(f"{dir}/{file}")
-                            
+
                             # sort the season numbers and files
                             list_of_season_numbers.sort()
                             list_of_files.sort()
-                            
+
                             # Add series data to the assets dictionary
                             assets_dict.append({
                                 'title': title,
@@ -502,7 +502,7 @@ def categorize_files(folder_path, logger):
                                 'path': dir,
                                 'files': list_of_files,
                             })
-                            
+
                         else:
                             files = []
                             for file in os.listdir(dir):
@@ -597,11 +597,11 @@ def create_table(data):
 def get_media_folders(paths, logger):
     """
     Get media folders from the provided paths
-    
+
     Args:
         paths (list): The paths to get media folders from
         logger (logger): The logger to use for logging output
-        
+
     Returns:
         dict: A dictionary containing the media folders
     """
@@ -609,18 +609,18 @@ def get_media_folders(paths, logger):
     media_dict = {}  # Initialize an empty dictionary to hold media folders
     if isinstance(paths, str):  # Ensure paths is a list
         list(paths)
-    
+
     media_dict = {'movies': [], 'series': []}  # Initialize dictionaries for movies and series
-    
+
     for path in paths:  # Loop through each path provided
         base_name = os.path.basename(os.path.normpath(path))  # Get the base folder name
-        
+
         # Iterate through items in the directory
         progress_bar = tqdm(os.listdir(path), desc=f"Getting media folders for '{base_name}'", disable=None, leave=True)
         for item in progress_bar:
             if item.startswith('.') or item.startswith('@'):
                 continue  # Skip hidden files/folders
-            
+
             try:
                 # Extract title and year information from item name using regex
                 title = str(re.sub(year_regex, '', item))
@@ -628,14 +628,14 @@ def get_media_folders(paths, logger):
             except Exception as e:
                 logger.warning(f"Warning: {e} - Skipping '{item}' in '{base_name}'")
                 continue  # Continue to the next item
-            
+
             normalized_title = normalize_titles(item)  # Normalize the item's title
-            
+
             if os.path.isdir(os.path.join(path, item)) and any(os.path.isdir(os.path.join(path, item, sub_folder)) for sub_folder in os.listdir(os.path.join(path, item))):
                 # If the item is a directory and contains sub folders
                 sub_folders = [sub_folder for sub_folder in os.listdir(os.path.join(path, item)) if os.path.isdir(os.path.join(path, item, sub_folder)) and not sub_folder.startswith('.')]
                 sub_folders.sort()  # Sort the sub folders
-                
+
                 season_numbers = []
                 for folder in sub_folders:
                     if folder == "Specials":
@@ -644,7 +644,7 @@ def get_media_folders(paths, logger):
                     elif folder.startswith("Season"):
                         season_data = folder.replace("Season", "").strip().zfill(2)
                         season_numbers.append(season_data)
-                
+
                 # Add series data to the media dictionary
                 media_dict['series'].append({
                     'title': title,
@@ -664,17 +664,17 @@ def get_media_folders(paths, logger):
                     'location': base_name,
                 })
         logger.info(str(progress_bar))
-    
+
     return media_dict
 
 def handle_starr_data(app, server_name, instance_type, logger, include_episode=False):
     """
     Get data from Radarr or Sonarr
-    
+
     Args:
         app (Radarr or Sonarr): The Radarr or Sonarr instance
         instance_type (str): The type of instance (Radarr or Sonarr)
-        
+
     Returns:
         list: A list of dictionaries containing the data from Radarr or Sonarr
     """
@@ -718,7 +718,7 @@ def handle_starr_data(app, server_name, instance_type, logger, include_episode=F
                         'season_has_episodes': season_stats,
                         'episode_data': episode_list if include_episode else [],
                     })  # Append season data to the season dictionary
-            
+
             alternate_titles = []
             normalized_alternate_titles = []
             if item['alternateTitles']:
@@ -764,24 +764,24 @@ def handle_starr_data(app, server_name, instance_type, logger, include_episode=F
         logger.info(str(progress_bar))
     else:
         return None
-    
+
     return media_dict
 
 def get_plex_data(plex, library_names, logger, include_smart, collections_only):
     """
     Get data from Plex
-    
+
     Args:
         plex (Plex): The Plex instance
         library_names (list): The names of the libraries to get data from
         logger (logger): The logger to use for logging output
         include_smart (bool): Whether or not to include smart collections
         collections_only (bool): Whether or not to only get collection data
-        
+
     Returns:
         list: A list of dictionaries containing the data from Plex
     """
-    
+
     plex_dict = []  # Initialize an empty list to hold Plex data
     collection_names = {}  # Initialize an empty dictionary to hold raw collection data
     library_data = {}  # Initialize an empty dictionary to hold library data
@@ -792,7 +792,7 @@ def get_plex_data(plex, library_names, logger, include_smart, collections_only):
         except NotFound:
             logger.error(f"Error: Library '{library_name}' not found, check your settings and try again.")
             continue
-        
+
         if collections_only:
             if include_smart:
                 collection_names[library_name] = [collection.title for collection in library.search(libtype="collection")]
@@ -800,7 +800,7 @@ def get_plex_data(plex, library_names, logger, include_smart, collections_only):
                 collection_names[library_name] = [collection.title for collection in library.search(libtype="collection") if not collection.smart]
         else:
             library_data[library_name] = library.all()  # Get all items from the library
-        
+
     if collections_only:
         # Process collection data
         for library_name, collection_names in collection_names.items():
@@ -845,12 +845,12 @@ def get_plex_data(plex, library_names, logger, include_smart, collections_only):
 def validate(config, script_config, logger):
     """
     Validate the config file
-    
+
     Args:
         config (Config): The Config instance
         script_config (dict): The script-specific config
         logger (logger): The logger to use for logging output
-        
+
     Returns:
         bool: True if the config is valid, False otherwise
     """
@@ -891,11 +891,11 @@ def get_current_git_branch():
             # Handle any errors if the command fails
             print(f"Error: {e}")
             return None
-    
+
 def create_bar(middle_text):
     """
     Creates a separation bar with provided text in the center
-    
+
     Args:
         middle_text (str): The text to place in the center of the separation bar
 
@@ -917,10 +917,10 @@ def create_bar(middle_text):
 def redact_sensitive_info(text):
     """
     Redact sensitive information from the provided text
-    
+
     Args:
         text (str): The text to redact sensitive information from
-    
+
     Returns:
         str: The text with sensitive information redacted
     """
@@ -953,10 +953,10 @@ def redact_sensitive_info(text):
 def sort_assets(assets_list, logger, debug_items=None, prefix_index=None):
     """
     Sort assets into movies, series, and collections
-    
+
     Args:
         assets_list (list): The assets to sort
-        
+
     Returns:
         Dict: A dictionary containing the sorted assets
     """
@@ -972,13 +972,13 @@ def sort_assets(assets_list, logger, debug_items=None, prefix_index=None):
             asset_type = 'collections'
         elif item.get('season_numbers', None):
             asset_type = 'series'
-        
+
         assets_dict[asset_type].append(item)
         debug_sort = debug_items and len(debug_items) > 0 and item['normalized_title'] in debug_items
         if prefix_index:
             if debug_sort:
                 logger.info(f"adding item to index: {item}")
-            build_search_index(prefix_index, item['title'], item, asset_type, logger, debug_items=debug_items)
+            build_search_index(prefix_index, item['normalized_title'], item, asset_type, logger, debug_items=debug_items)
     logger.info(str(progress_bar))
     return assets_dict
 
@@ -1035,7 +1035,7 @@ def is_match(asset, media):
         asset['normalized_title'] == media['normalized_title'] or
         asset['title'] == original_title or
         asset['title'] == folder_title or
-        asset['normalized_title'] == normalized_folder_title or 
+        asset['normalized_title'] == normalized_folder_title or
         (media['title'] in no_prefix) or
         (media['title'] in no_suffix) or
         (media['normalized_title'] in no_prefix_normalized) or
@@ -1050,7 +1050,7 @@ def is_match(asset, media):
         return True
     else:
         return False
-    
+
 def is_match_alternate(asset, media):
     """
     Check if the asset matches the media using alternate titles

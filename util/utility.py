@@ -762,8 +762,6 @@ def handle_starr_data(app, server_name, instance_type, logger, include_episode=F
                 'season_numbers': [season['season_number'] for season in season_list] if instance_type == "sonarr" else None,
             })  # Append the constructed dictionary to media_dict
         logger.info(str(progress_bar))
-    else:
-        return None
 
     return media_dict
 

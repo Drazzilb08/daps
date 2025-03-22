@@ -194,8 +194,23 @@ def notification(output_dict, logger):
             logger.debug("Pausing for 5 seconds to let Discord catch up...")
             time.sleep(5)
 
+def get_count_for_instance_type(count, radarr_count, sonarr_count, instance_type, logger):
+    if instance_type == "radarr":
+        # if it's specified and > 0, override
+        if radarr_count:
+            logger.debug(f"radarr_count found! overriding count from {count} to {radarr_count}")
+            count = radarr_count
+    elif instance_type == "sonarr":
+        # if it's specified and > 0, override
+        if sonarr_count:
+            logger.debug(f"sonarr_count found! overriding count from {count} to {sonarr_count}")
+            count = sonarr_count
 
-def process_instance(app, rename_folders, server_name, instance_type, count, tag_name, logger):
+    logger.info(f"using count= {count} for instance_type= {instance_type}")
+    return count
+
+
+def process_instance(app, rename_folders, server_name, instance_type, count, tag_name, logger, radarr_count=None, sonarr_count=None):
     """
     Processes the data for a specific instance.
 
@@ -215,6 +230,9 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
 
     # Fetch data related to the instance (Sonarr or Radarr)
     media_dict = handle_starr_data(app, server_name, instance_type, logger, include_episode=False)
+    logger.info(f"media_dict: {media_dict}")
+    # fetch what we should actually use for the count object
+    count = get_count_for_instance_type(count, radarr_count, sonarr_count, instance_type, logger)
 
     # If count and tag_name is specified, limit the number of items to process that do not have tag_name
     tag_id = None
@@ -348,8 +366,9 @@ def main(config):
         rename_folders = config.script_config.get('rename_folders', False)
         count = config.script_config.get('count', 0)
         tag_name = config.script_config.get('tag_name', None)
+        radarr_count = config.script_config.get('radarr_count', None)
+        sonarr_count = config.script_config.get('sonarr_count', None)
         valid = validate(config, script_config, logger)
-
         # Log script settings
         table = [
             ["Script Settings"]
@@ -361,6 +380,8 @@ def main(config):
         logger.debug(f'{"Rename Folders:":<20}{rename_folders}')
         logger.debug(f'{"Count:":<20}{count}')
         logger.debug(f'{"Tag Name:":<20}{tag_name}')
+        logger.debug(f'{"Radarr Count:":<20}{radarr_count}')
+        logger.debug(f'{"Sonarr Count:":<20}{sonarr_count}')
         logger.debug(create_bar("-"))
 
         # Handle dry run settings
@@ -384,7 +405,7 @@ def main(config):
                     server_name = app.get_instance_name()
 
                     # Process data for the instance and store in output_dict
-                    data = process_instance(app, rename_folders, server_name, instance_type, count, tag_name, logger)
+                    data = process_instance(app, rename_folders, server_name, instance_type, count, tag_name, logger, radarr_count=radarr_count, sonarr_count=sonarr_count)
                     output_dict[instance] = {
                         "server_name": server_name,
                         "data": data

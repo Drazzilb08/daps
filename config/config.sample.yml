@@ -412,7 +412,13 @@ renameinatorr:
   instances:
     - radarr_2
     - sonarr_3
-
+  # optional flag to process the all items missing a renamed tag in a single run.  If set to true, this will still respect the count options above to create batches.
+  # example: if count=10, this will break a 100 item library into 10 separate batches at a time and loop over each batch.
+  # otherwise if set to false, this will do the normal behavior where it will only process count # of items (single batch) and then exit
+  process_all_single_run: false
+  # if set to true, will always remove all renamed tags and process the entire library.  If set to false, will only look at all of the items that don't have a renamed tag.
+  # If everything already has a renamed tag, then it will remove all tags and process the entire library.
+  process_all_single_run_full: false
 nohl:
   # This script will find all files that are not hardlinked and will process them in radarr
   # and sonarr. This is useful for finding files that are not hardlinked and wish to have 100%

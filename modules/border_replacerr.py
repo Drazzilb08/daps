@@ -165,7 +165,8 @@ def fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_
             current_index = 0  # Index for cycling through border colors
             items = assets_dict[asset_type]
             # Loop through each item in the asset type
-            for data in tqdm(items, desc=f"Processing {asset_type.capitalize()}", total=len(items), unit="items", disable=None, leave=True):
+            progress_bar = tqdm(items, desc=f"Processing {asset_type.capitalize()}", total=len(items), unit="items", disable=None, leave=True)
+            for data in progress_bar:
                 files = data.get('files', None)
                 path = data.get('path', None)
                 year = data.get('year', None)
@@ -218,6 +219,7 @@ def fix_borders(assets_dict, script_config, border_colors, destination_dir, dry_
 
                     if rgb_border_colors:
                         current_index = (current_index + 1) % len(rgb_border_colors)
+            logger.info(str(progress_bar))
         else:
             logger.info(f"No {asset_type} found.")
     return messages
@@ -368,7 +370,8 @@ def copy_files(assets_dict, destination_dir, dry_run, logger):
     for asset_type in asset_types:
         if asset_type in assets_dict:
             items = assets_dict[asset_type]
-            for data in tqdm(items, desc=f"Processing {asset_type.capitalize()}", total=len(items), unit="items", disable=None, leave=True):
+            progress_bar = tqdm(items, desc=f"Processing {asset_type.capitalize()}", total=len(items), unit="items", disable=None, leave=True)
+            for data in progress_bar:
                 files = data.get('files', None)
                 path = data.get('path', None)
                 year = data.get('year', None)
@@ -416,9 +419,10 @@ def copy_files(assets_dict, destination_dir, dry_run, logger):
                             messages.append(f"Copied {data['title']}{year} - {file_name} to {output_basename}")
                     else:
                         messages.append(f"Would have copied {data['title']}{year} - {file_name} to {output_basename}")
+            logger.info(str(progress_bar))
     return messages
 
-def process_files(source_dirs, destination_dir, dry_run, log_level, script_config, logger):
+def process_files(source_dirs, destination_dir, dry_run, log_level, script_config, logger, renamed_assets=None):
     """
     Processes the files in the input directory.
 
@@ -457,6 +461,9 @@ def process_files(source_dirs, destination_dir, dry_run, log_level, script_confi
     
     # Check for a scheduled event to update border colors if provided
     if schedule:
+        if (renamed_assets):
+            renamed_assets = None # if there's a schedule it implies the configuration can change so we should not allow an incremental run
+            logger.info(f"Bypassing incremental run since a schedule is set")
         border_colors, run_holiday, holiday = check_holiday(schedule, border_colors, logger)
     
     if not os.path.exists(destination_dir):
@@ -464,20 +471,26 @@ def process_files(source_dirs, destination_dir, dry_run, log_level, script_confi
         return
 
     assets_list = []
+    incremental_run = False
     # Categorize files in the input directory into assets
-    for path in source_dirs:
-        results = categorize_files(path)
-        if results:
-            assets_list.extend(results)
+    if not renamed_assets:
+        for path in source_dirs:
+            results = categorize_files(path, logger)
+            if results:
+                assets_list.extend(results)
+            else:
+                logger.error(f"No assets found in {path}.")
+
+        if assets_list:
+            assets_dict = sort_assets(assets_list, logger)
+            logger.debug(f"Asset Files:\n{json.dumps(assets_dict, indent=4)}")
         else:
-            logger.error(f"No assets found in {path}.")
-    
-    if assets_list:
-        assets_dict = sort_assets(assets_list)
-        logger.debug(f"Asset Files:\n{json.dumps(assets_dict, indent=4)}")
+            logger.error(f"No assets found in {(', '.join(source_dirs))}, if running Poster Renamerr in dry_run, this is expected")
+            return
     else:
-        logger.error(f"No assets found in {(', '.join(source_dirs))}, if running Poster Renamerr in dry_run, this is expected")
-        return
+        assets_dict = renamed_assets
+        logger.info(f"Doing an incremental run on only assetss that were provided")
+        incremental_run = True
 
     # If Run holiday is False and Skip is set to True, return
     if not run_holiday and skip:
@@ -522,7 +535,10 @@ def process_files(source_dirs, destination_dir, dry_run, log_level, script_confi
             # Log a message if no files were processed
             logger.info(f"\nNo files processed")
     else:
-        logger.error(f"No assets found in {source_dirs}, if running Poster Renamerr in dry_run, this is expected.")
+        if not incremental_run:
+            logger.error(f"No assets found in {source_dirs}, if running Poster Renamerr in dry_run, this is expected.")
+        else:
+            logger.info("No assets passed in while performing an incremental Border Replacerr.")
         return
 
 

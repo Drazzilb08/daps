@@ -201,6 +201,17 @@ poster_renamerr:
     # - sonarr_anime
     # - radarr_2
     # - sonarr_3
+  # when running border_replacerr from within a renamerr run this option will pass in only the files that were identified as new by renamerr.
+  # Otherwise the default behaivor is to always reprocess all posters.
+  # NOTE: if your border_replacerr configuration contains any schedule then this option will always be ignored.
+  incremental_border_replacerr: false
+  # a list of normalized movie names that if they match will print out debug info related to searching for matches.
+  # this is an advanced layer of debugging separate from log levels and these messages will print out at the INFO log level.
+  # this is useful if you're have a very specific problem and want to dig into the advanced logs for just that title.
+  # NOTE: remove special characters and spaces
+  search_index_debug_normalized_items:
+    # - missionimpossible
+    # - missionimpossiblecollection
 
 border_replacerr:
   # This script replaces the border on the posters or removes the border

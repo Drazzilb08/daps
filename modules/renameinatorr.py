@@ -214,7 +214,7 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
     print(create_table(table))
     
     # Fetch data related to the instance (Sonarr or Radarr)
-    media_dict = handle_starr_data(app, server_name, instance_type, include_episode=False)
+    media_dict = handle_starr_data(app, server_name, instance_type, logger, include_episode=False)
 
     # If count and tag_name is specified, limit the number of items to process that do not have tag_name
     tag_id = None
@@ -229,7 +229,7 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
             print(f"Media IDs: {media_ids}")
             logger.info("All media is tagged. Removing tags...")
             app.remove_tags(media_ids, tag_id)
-            media_dict = handle_starr_data(app, server_name, instance_type, include_episode=False)
+            media_dict = handle_starr_data(app, server_name, instance_type, logger, include_episode=False)
             media_dict = [item for item in media_dict if tag_id not in item['tags']][:count]
         else:
             media_dict = media_tmp
@@ -319,7 +319,7 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
                 # Get updated media data and update item with new path names
                 if ready:
                     print(f"Fetching updated data for {server_name}...")
-                    new_media_dict = handle_starr_data(app, server_name, instance_type, include_episode=False)
+                    new_media_dict = handle_starr_data(app, server_name, instance_type, logger, include_episode=False)
                     for new_item in new_media_dict:
                         for old_item in media_dict:
                             if new_item['media_id'] == old_item['media_id']:

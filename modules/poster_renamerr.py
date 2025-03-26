@@ -710,7 +710,6 @@ def main(config):
         else:
             logger.debug(f"Sync posters is disabled. Skipping...")
 
-        logger.info("SPUD_UPDATED_CODE: 3/14/25 4pm")
         print("Gathering all the posters, please wait...")
         assets_list = get_assets_files(source_dirs, logger, debug_items=search_index_debug_normalized_items)
 

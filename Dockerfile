@@ -47,13 +47,19 @@ ENV TZ=America/Los_Angeles
 ENV BRANCH=${BRANCH}
 ENV DOCKER_ENV=true
 
-# 
-# 
 RUN set -eux; \
     rm -f Pipfile Pipfile.lock; \
-    apt-get update; \
-    apt-get install -y --no-install-recommends wget curl unzip p7zip-full tzdata jdupes jq; \
-    curl https://rclone.org/install.sh | bash
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        wget curl unzip p7zip-full tzdata jq git build-essential && \
+    curl https://rclone.org/install.sh | bash && \
+    git clone https://codeberg.org/jbruchon/libjodycode.git /tmp/libjodycode && \
+    make -C /tmp/libjodycode && make -C /tmp/libjodycode install && \
+    ldconfig && \
+    git clone https://codeberg.org/jbruchon/jdupes.git /tmp/jdupes && \
+    make -C /tmp/jdupes && make -C /tmp/jdupes install && \
+    ln -s /usr/local/bin/jdupes /usr/bin/jdupes && \
+    rm -rf /tmp/libjodycode /tmp/jdupes
 
 VOLUME /config
 

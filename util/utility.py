@@ -166,45 +166,43 @@ def search_matches(prefix_index, movie_title, asset_type, logger, debug_search=F
 
 def normalize_file_names(file_name):
     """
-    Normalize file names for comparison
+    Normalize file names for comparison.
 
     Args:
-        file_name (str): The file name to normalize
+        file_name (str): The file name to normalize.
 
     Returns:
-        str: The normalized file name
+        str: The normalized file name.
     """
 
-    # remove extension
+    # Remove extension
     file_name, extension = os.path.splitext(file_name)
 
     # Remove specific words from the title
     for word in words_to_remove:
         file_name = file_name.replace(word, '')
-        if file_name != file_name:
-            break
+
+    # Remove `{}` and `[]` blocks containing any content
+    file_name = re.sub(r'\s*[\{\[][^{}\[\]]*[\}\]]', '', file_name, flags=re.IGNORECASE)
+
     # Remove illegal characters from the file name using regex
     file_name = illegal_chars_regex.sub('', file_name)
 
     # Convert special characters to ASCII equivalent
     file_name = unidecode(html.unescape(file_name))
 
-    # Remove trailing whitespaces
-    file_name = file_name.rstrip()
-
-    # Remove leading whitespaces
-    file_name = file_name.lstrip()
-
     # Replace '&' with 'and'
     file_name = file_name.replace('&', 'and')
 
     # Remove special characters using regex
-    file_name = re.sub(remove_special_chars, '', file_name).lower()
+    file_name = re.sub(remove_special_chars, '', file_name)
 
     # Remove spaces in the file name
-    file_name = file_name.replace(' ', '')
+    file_name = file_name.replace(' ', '').lower()
 
-    return file_name
+    # Final cleanup: Remove leading/trailing spaces
+    return file_name.strip()
+
 
 def normalize_titles(title):
     """
@@ -1013,10 +1011,14 @@ def is_match(asset, media):
     no_suffix = asset.get('no_suffix', [])
     no_prefix_normalized = asset.get('no_prefix_normalized', [])
     no_suffix_normalized = asset.get('no_suffix_normalized', [])
+    asset_tmdb_id = asset.get('tmdb_id', None)
+    asset_tvdb_id = asset.get('tvdb_id', None)
     alternate_titles = media.get('alternate_titles', [])
     normalized_alternate_titles = media.get('normalized_alternate_titles', [])
     secondary_year = media.get('secondary_year', None)
     original_title = media.get('original_title', None)
+    media_tmdb_id = media.get('tmdb_id', None)
+    media_tvdb_id = media.get('tvdb_id', None)
     folder = media.get('folder', None)
     folder_title = None
     folder_year = None
@@ -1036,6 +1038,8 @@ def is_match(asset, media):
         asset['title'] == original_title or
         asset['title'] == folder_title or
         asset['normalized_title'] == normalized_folder_title or
+        asset_tmdb_id == media_tmdb_id or
+        asset_tvdb_id == media_tvdb_id or
         (media['title'] in no_prefix) or
         (media['title'] in no_suffix) or
         (media['normalized_title'] in no_prefix_normalized) or

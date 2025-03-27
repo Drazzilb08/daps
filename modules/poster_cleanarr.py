@@ -37,7 +37,7 @@ except ImportError as e:
 
 script_name = "poster_cleanarr"
 
-def match_assets(assets_list, media_dict, ignore_media):
+def match_assets(assets_list, media_dict, ignore_media, logger):
     """
     Match assets to media.
     
@@ -68,7 +68,7 @@ def match_assets(assets_list, media_dict, ignore_media):
         # Iterate through each media data of the same media type
         for media_data in media_dict:
 
-            if is_match(asset_data, media_data):
+            if is_match(asset_data, media_data, logger):
                 matched = True
                 
                 # For series, check for missing seasons in the media
@@ -326,7 +326,7 @@ def main(config):
             logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
 
         # Match assets with media and log the results
-        unmatched_dict = match_assets(assets_list, media_dict, ignore_media)
+        unmatched_dict = match_assets(assets_list, media_dict, ignore_media, logger)
         if unmatched_dict:
             logger.debug(f"Unmatched:\n{json.dumps(unmatched_dict, indent=4)}")
             remove_data = remove_assets(unmatched_dict, source_dirs, logger)

@@ -93,7 +93,7 @@ def match_assets(assets_dict, media_dict, ignore_root_folders, logger):
                     asset_seasons_numbers = asset_data.get('season_numbers', None)
 
                     # Check if the asset matches the media
-                    if is_match(asset_data, media_data):
+                    if is_match(asset_data, media_data, logger):
                         matched = True
                         if media_type == 'series':
                             if asset_seasons_numbers and media_seasons_numbers:

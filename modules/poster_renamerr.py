@@ -194,7 +194,7 @@ def match_data(media_dict, asset_files, prefix_index, logger=None, debug_items=N
 
                         for search_asset in search_matched_assets:
                             total_comparisons+=1
-                            if is_match(search_asset,media):
+                            if is_match(search_asset,media, logger):
                                 # either the both should be None or they should both be _something_
                                 asset_season_numbers = search_asset.get('season_numbers', None)
                                 if ((asset_season_numbers is None and media_seasons_numbers is None) or (asset_season_numbers and media_seasons_numbers)):
@@ -202,21 +202,25 @@ def match_data(media_dict, asset_files, prefix_index, logger=None, debug_items=N
                                     if asset_season_numbers and media_seasons_numbers:
                                         handle_series_match(search_asset, media_seasons_numbers, asset_season_numbers)
                                     else:
-                                        logger.debug(f"no season numbers found on asset {search_asset}")
-                                        logger.debug(f"for media {media}")
+                                        pass
+                                        # May need to handle this differently
+                                        # logger.debug(f"no season numbers found on asset {search_asset}")
+                                        # logger.debug(f"for media {media}")
                                     search_match = search_asset
                                     break
                                 else:
-                                    logger.debug(f"asset type '{asset_type}' found a match for a different asset type, but we are skipping")
-                                    logger.debug(json.dumps(search_asset, indent=4))
-                                    logger.debug(json.dumps(media, indent=4))
+                                    pass
+                                    # May need to handle this differently
+                                    # logger.debug(f"asset type '{asset_type}' found a match for a different asset type, but we are skipping")
+                                    # logger.debug(json.dumps(search_asset, indent=4))
+                                    # logger.debug(json.dumps(media, indent=4))
 
                         if not matched:
                             # need to do more searches now based on alt titles
                             for alt_title in media.get('alternate_titles', []):
                                 search_matched_assets = search_matches(prefix_index, alt_title, asset_type, logger, debug_search=debug_search)
                                 logger.debug(f"SEARCH ({asset_type}): matched assets for {alt_title} type={asset_type} - Alternate search")
-                                logger.debug(json.dumps(search_matched_assets, indent=4))
+                                # logger.debug(json.dumps(search_matched_assets, indent=4))
                                 for search_asset in search_matched_assets:
                                     total_comparisons+=1
                                     if is_match_alternate(search_asset,media):
@@ -229,9 +233,11 @@ def match_data(media_dict, asset_files, prefix_index, logger=None, debug_items=N
                                             search_match = search_asset
                                             break
                                         else:
-                                            logger.debug(f"asset type '{asset_type}' found a ALT match for a different asset type, but we are skipping")
-                                            logger.debug(json.dumps(search_asset, indent=4))
-                                            logger.debug(json.dumps(media, indent=4))
+                                            pass
+                                            # May need to handle this differently
+                                            # logger.debug(f"asset type '{asset_type}' found a ALT match for a different asset type, but we are skipping")
+                                            # logger.debug(json.dumps(search_asset, indent=4))
+                                            # logger.debug(json.dumps(media, indent=4))
 
                                 if matched:
                                     break
@@ -716,7 +722,7 @@ def main(config):
         prefix_index = create_new_empty_index()
         if assets_list:
             assets_dict = sort_assets(assets_list, logger, debug_items=search_index_debug_normalized_items, prefix_index=prefix_index)
-            logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
+            # logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
         else:
             logger.error("No assets found. Exiting...")
             return
@@ -769,7 +775,8 @@ def main(config):
             logger.error("No media found, Check instances setting in your config. Exiting.")
             return
         else:
-            logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
+            pass
+            # logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
         renamed_assets = None
         if media_dict and assets_dict:
             # Match media data to asset files
@@ -780,7 +787,7 @@ def main(config):
             if any(matched_assets.values()):
                 output, renamed_assets = rename_files(matched_assets, script_config, logger)
                 if any(output.values()):
-                    logger.debug(f"Output:\n{json.dumps(output, indent=4)}")
+                    # logger.debug(f"Output:\n{json.dumps(output, indent=4)}")
                     handle_output(output, asset_folders, logger)
                     if discord_check(script_name):
                         notification(output, logger)

@@ -325,6 +325,22 @@ def categorize_files(folder_path, logger):
                 except:
                     year = None
 
+                # Pull tmdb ID from file name
+                try:
+                    tmdb_id = int(re.search(r'\{tmdb-(\d+)\}', file).group(1))
+                except:
+                    tmdb_id = None
+                # Pull tvdb ID from file name
+                try:
+                    tvdb_id = int(re.search(r'\{tvdb-(\d+)\}', file).group(1))
+                except:
+                    tvdb_id = None
+                # Pull imdb ID from file name
+                try:
+                    imdb_id = int(re.search(r'\{imdb-(\w+)\}', file).group(1))
+                except:
+                    imdb_id = None
+
                 file_path = f"{folder_path}/{file}"  # Full file path
 
                 if not year:  # If year is not found in the file name
@@ -342,6 +358,9 @@ def categorize_files(folder_path, logger):
                         'no_suffix': no_suffix,
                         'no_prefix_normalized': no_prefix_normalized,
                         'no_suffix_normalized': no_suffix_normalized,
+                        'tmdb_id': tmdb_id,
+                        'tvdb_id': tvdb_id,
+                        'imdb_id': imdb_id,
                         'path': None,
                         'files': [file_path],
                     }
@@ -996,7 +1015,7 @@ def compare_strings(string1, string2):
 
     return string1.lower() == string2.lower()
 
-def is_match(asset, media):
+def is_match(asset, media, logger):
     """
     Check if the asset matches the media
 
@@ -1011,49 +1030,61 @@ def is_match(asset, media):
     no_suffix = asset.get('no_suffix', [])
     no_prefix_normalized = asset.get('no_prefix_normalized', [])
     no_suffix_normalized = asset.get('no_suffix_normalized', [])
-    asset_tmdb_id = asset.get('tmdb_id', None)
-    asset_tvdb_id = asset.get('tvdb_id', None)
-    alternate_titles = media.get('alternate_titles', [])
-    normalized_alternate_titles = media.get('normalized_alternate_titles', [])
-    secondary_year = media.get('secondary_year', None)
-    original_title = media.get('original_title', None)
-    media_tmdb_id = media.get('tmdb_id', None)
-    media_tvdb_id = media.get('tvdb_id', None)
-    folder = media.get('folder', None)
-    folder_title = None
-    folder_year = None
-    normalized_folder_title = None
+    asset_tmdb_id = asset.get('tmdb_id')
+    asset_tvdb_id = asset.get('tvdb_id')
+    secondary_year = media.get('secondary_year')
+    original_title = media.get('original_title')
+    media_tmdb_id = media.get('tmdb_id')
+    media_tvdb_id = media.get('tvdb_id')
+    folder = media.get('folder')
+    folder_title, folder_year, normalized_folder_title = None, None, None
+
     if folder:
         folder_base_name = os.path.basename(folder)
         match = re.search(folder_year_regex, folder_base_name)
         if match:
             folder_title, folder_year = match.groups()
-            folder_year = int(folder_year)
+            folder_year = int(folder_year) if folder_year else None
             normalized_folder_title = normalize_titles(folder_title)
 
-    # Matching criteria for media and asset
-    if (
-        asset['title'] == media['title'] or
-        asset['normalized_title'] == media['normalized_title'] or
-        asset['title'] == original_title or
-        asset['title'] == folder_title or
-        asset['normalized_title'] == normalized_folder_title or
-        asset_tmdb_id == media_tmdb_id or
-        asset_tvdb_id == media_tvdb_id or
-        (media['title'] in no_prefix) or
-        (media['title'] in no_suffix) or
-        (media['normalized_title'] in no_prefix_normalized) or
-        (media['normalized_title'] in no_suffix_normalized) or
-        compare_strings(asset['title'], media['title']) or
-        compare_strings(asset['normalized_title'], media['normalized_title'])
-    ) and (
-        asset['year'] == media['year'] or
-        (asset['year'] == secondary_year and secondary_year is not None) or # None = None is not confirmation of a match
-        (asset['year'] == folder_year and folder_year is not None) # None = None is not confirmation of a match
-    ):
-        return True
-    else:
+    def year_matches():
+        if asset['year'] == media['year']:
+            return True
+        if secondary_year is not None and asset['year'] == secondary_year:
+            return True
+        if folder_year is not None and asset['year'] == folder_year:
+            return True
         return False
+
+    match_criteria = [
+        (asset['title'] == media['title'], "Title match"),
+        (asset['normalized_title'] == media['normalized_title'], "Normalized title match"),
+        (asset['title'] == original_title, "Original title match"),
+        (asset['title'] == folder_title, "Folder title match"),
+        (asset['normalized_title'] == normalized_folder_title, "Normalized folder title match"),
+        (media['title'] in no_prefix, "Title in no_prefix"),
+        (media['title'] in no_suffix, "Title in no_suffix"),
+        (media['normalized_title'] in no_prefix_normalized, "Normalized title in no_prefix_normalized"),
+        (media['normalized_title'] in no_suffix_normalized, "Normalized title in no_suffix_normalized"),
+        (compare_strings(asset['title'], media['title']), "String comparison match"),
+        (compare_strings(asset['normalized_title'], media['normalized_title']), "Normalized string comparison match"),
+        # ID matching should have the lowest priority
+        (asset_tmdb_id == media_tmdb_id and asset_tmdb_id is not None and media_tmdb_id is not None, "TMDB ID match"),
+        (asset_tvdb_id == media_tvdb_id and asset_tvdb_id is not None and media_tvdb_id is not None, "TVDB ID match"),
+    ]
+
+    # Check match criteria
+    for condition, message in match_criteria:
+        if condition and year_matches():
+            logger.debug(f"Match found: {message} -> Asset: {asset['title']} ({asset['year']}), Media: {media['title']} ({media['year']})")
+            return True
+
+    # Return False if both asset and media have None IDs for matching criteria
+    if (asset_tmdb_id is None and media_tmdb_id is None) or (asset_tvdb_id is None and media_tvdb_id is None):
+        return False
+
+    return False
+
 
 def is_match_alternate(asset, media):
     """

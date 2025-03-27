@@ -240,7 +240,7 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
     if count and tag_name:
         tag_id = app.get_tag_id_from_name(tag_name)
         if tag_id:
-            chunks_to_process_this_run = get_chunks_for_run(media_dict, tag_id, count, all_in_single_run, logger)
+            chunks_to_process_this_run = get_untagged_chunks_for_run(media_dict, tag_id, count, all_in_single_run, logger)
         # If all media is tagged *or* this is designed to process everyhting in a single run, remove tags and fetch new data
         if not chunks_to_process_this_run or all_in_single_run_full:
             media_ids = [item['media_id'] for item in media_dict]
@@ -251,14 +251,19 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
                 logger.info(f"removing all tags and then will re-process the entire library since process_all_single_run_full={all_in_single_run_full}")
             app.remove_tags(media_ids, tag_id)
             media_dict = handle_starr_data(app, server_name, instance_type, logger, include_episode=False)
-            chunks_to_process_this_run = get_chunks_for_run(media_dict, tag_id, count, all_in_single_run, logger)
+            chunks_to_process_this_run = get_untagged_chunks_for_run(media_dict, tag_id, count, all_in_single_run, logger)
+    else:
+        # otherwise if no count is specified, there's on big chunk to run through.  This keeps the behavior as it stands today...
+        # but I wonder if we should change that to specify a default count and have it loop through everything.
+        # would just do the following with a hard-coded count
+        # chunks_to_process_this_run = get_chunks_for_run(media_dict, tag_id, 100, True, logger)
+        chunks_to_process_this_run = [media_dict] # everything in a single chunk
 
     logger.info(f"num_chunks= {len(chunks_to_process_this_run)}")
     final_media_dict = []
     chunk_progress_bar = tqdm(chunks_to_process_this_run, desc=f"Processing batches for '{server_name}'...", unit="items", disable=None, leave=True)
     for chunk in chunk_progress_bar:
-        media_tmp = chunk
-        media_dict = media_tmp
+        media_dict = chunk
         logger.debug(f"media dict:\n{json.dumps(media_dict, indent=4)}")
         # Process each item in the fetched data
         rename_response = []
@@ -359,20 +364,23 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
     logger.info(str(chunk_progress_bar))
     return final_media_dict
 
-def get_chunks_for_run(media_dict, tag_id, count, all_in_single_run, logger):
-    all_items_without_tags = [item for item in media_dict if tag_id not in item['tags']]
-    logger.debug(f"all_items_without_tags= {all_items_without_tags}")
-    # Chunk size
-    chunk_size = count
-
-    # Initialize an empty list to store chunks
+def get_chunks_for_run(media_dict, chunk_size, all_in_single_run, logger):
     chunks = []
 
     # Iterate and chunk the list
-    for i in range(0, len(all_items_without_tags), chunk_size):
-        chunks.append(all_items_without_tags[i:i + chunk_size])
+    for i in range(0, len(media_dict), chunk_size):
+        chunks.append(media_dict[i:i + chunk_size])
+    # return all of the chunks if everything should be processed in the same run
+    # otherwise just return the first chunk
     chunks_to_process_this_run = chunks if all_in_single_run else ([chunks[0]] if chunks else [])
     return chunks_to_process_this_run
+
+def get_untagged_chunks_for_run(media_dict, tag_id, chunk_size, all_in_single_run, logger):
+    all_items_without_tags = [item for item in media_dict if tag_id not in item['tags']]
+    logger.debug(f"all_items_without_tags= {all_items_without_tags}")
+
+    return get_chunks_for_run(all_items_without_tags, chunk_size, all_in_single_run, logger)
+
 
 def main(config):
     """

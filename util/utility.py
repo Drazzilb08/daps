@@ -313,8 +313,6 @@ def categorize_files(folder_path, logger):
             for file in progress_bar:
                 if file.startswith('.') or "(N-A)" in file:
                     continue  # Skip hidden files or files with "(N-A)" in the name
-                if re.search(r'\{(imdb-\w+|tmdb-\d+|tvdb-\d+)\}', file):
-                    continue
 
                 # Extract information from the file name
                 base_name, extension = os.path.splitext(file)
@@ -326,6 +324,11 @@ def categorize_files(folder_path, logger):
                 except:
                     year = None
 
+                # # Extract ID Data if present
+                tmdb_id = next((int(match.group(1)) for match in [re.search(r'tmdb[-_\s](\d+)', file)] if match), None)
+                tvdb_id = next((int(match.group(1)) for match in [re.search(r'tvdb[-_\s](\d+)', file)] if match), None)
+                imdb_id = next((match.group(1) for match in [re.search(r'imdb[-_\s](tt\d+)', file)] if match), None)
+
                 file_path = f"{folder_path}/{file}"  # Full file path
 
                 if not year:  # If year is not found in the file name
@@ -336,6 +339,7 @@ def categorize_files(folder_path, logger):
                     no_prefix_normalized = [normalize_titles(re.sub(r'\b{}\b'.format(prefix), '', title).strip()) for prefix in prefixes if title.startswith(prefix) and normalize_titles(re.sub(r'\b{}\b'.format(prefix), '', title).strip()) != normalize_title]
                     no_suffix_normalized = [normalize_titles(re.sub(r'\b{}\b'.format(suffix), '', title).strip()) for suffix in suffixes if title.endswith(suffix) and normalize_titles(re.sub(r'\b{}\b'.format(suffix), '', title).strip()) != normalize_title]
                     item = {
+                        'type': 'collection',
                         'title': title,
                         'year': year,
                         'normalized_title': normalize_title,
@@ -351,16 +355,21 @@ def categorize_files(folder_path, logger):
                     build_search_index(prefix_index, item['normalized_title'], item, 'assets', logger)
                 else:
                     # Categorize as a series
-                    if any(file.startswith(base_name) and any(base_name + season_name in file for season_name in season_name_info) for file in search_matches(prefix_index, normalize_title, 'files', logger)):
+                    if any(file.startswith(base_name) and any(base_name + season_name in file for season_name in season_name_info) for file in search_matches(prefix_index, normalize_title, 'files', logger)) or any(word in file for word in season_name_info):
                         # Check if the series entry already exists in the assets dictionary
-                        series_entry = next((d for d in search_matches(prefix_index, normalize_title, 'assets', logger) if d['normalized_title'] == normalize_title and d['year'] == year), None)
+                        series_entry = next((d for d in prefix_index['assets'].get(normalize_title[:prefix_length], []) 
+                                             if d['type'] == 'series' and d['normalized_title'] == normalize_title and d['year'] == year), None)
+                        # series_entry = next((d for d in search_matches(prefix_index, normalize_title, 'assets', logger) if d['normalized_title'] == normalize_title and d['year'] == year), None)
                         if series_entry is None:
                             # If not, add a new series entry
                             series_entry = {
+                                'type': 'series',
                                 'title': title,
                                 'year': year,
                                 'normalized_title': normalize_title,
                                 'files': [file_path],
+                                'tvdb_id': tvdb_id,
+                                'imdb_id': imdb_id,
                                 'season_numbers': []
                             }
                             assets_dict.append(series_entry)
@@ -372,33 +381,16 @@ def categorize_files(folder_path, logger):
                                 if normalize_file_names(file_path) not in [normalize_file_names(f) for f in series_entry['files']]:
                                     series_entry['files'].append(file_path)
 
-                    elif any(word in file for word in season_name_info):
-                        # Check if the series entry already exists in the assets index
-                        series_entry = next((d for d in search_matches(prefix_index, normalize_title, 'assets', logger) if d['normalized_title'] == normalize_title and d['year'] == year), None)
-                        if series_entry is None:
-                            # If not, add a new series entry
-                            series_entry = {
-                                'title': title,
-                                'year': year,
-                                'normalized_title': normalize_title,
-                                'files': [file_path],
-                                'season_numbers': []
-                            }
-                            assets_dict.append(series_entry)
-                            # this index is to store the final asset overall so that lookups can occur much more quickly. Primarily for shows
-                            build_search_index(prefix_index, series_entry['normalized_title'], series_entry, 'assets', logger)
-                        else:
-                            if file_path not in series_entry['files']:
-                                if normalize_file_names(file_path) not in [normalize_file_names(f) for f in series_entry['files']]:
-                                    series_entry['files'].append(file_path)
-
                     # Categorize as a movie
                     else:
                         item = {
+                            'type': 'movie',
                             'title': title,
                             'year': year,
                             'normalized_title': normalize_title,
                             'path': None,
+                            'tmdb_id': tmdb_id,
+                            'imdb_id': imdb_id,
                             'files': [file_path],
                         }
                         assets_dict.append(item)
@@ -1041,6 +1033,8 @@ def is_match(asset, media, logger):
     folder = media.get('folder')
     alternate_titles = media.get('alternate_titles', [])
     normalized_alternate_titles = media.get('normalized_alternate_titles', [])
+    media_id = media.get('db_id', None)
+    asset_id = asset.get('tvdb_id') or asset.get('tmdb_id') or None
     folder_title, folder_year, normalized_folder_title = None, None, None
 
     if folder:
@@ -1061,6 +1055,7 @@ def is_match(asset, media, logger):
         return False
 
     match_criteria = [
+        (media_id is not None and asset_id is not None and media_id == asset_id, f"Media ID {media_id} matches asset ID {asset_id}"),
         (asset['title'] in alternate_titles, "Title in alternate titles"),
         (asset['normalized_title'] in normalized_alternate_titles, "Normalized title in normalized alternate titles"),
         (asset['title'] == media['title'], "Title match"),
@@ -1077,6 +1072,9 @@ def is_match(asset, media, logger):
     ]
 
     # Check match criteria
+    logger.warning(f"Asset: {asset['title']}, Media: {media['title']}")
+    logger.warning(f"IDs: {asset_id} vs {media_id}")
+    logger.warning(f"ID MAtch: {media_id is not None and asset_id is not None and media_id == asset_id}")
     for condition, message in match_criteria:
         if condition and year_matches():
             asset_year = f" ({asset['year']})" if asset.get('year') else ""

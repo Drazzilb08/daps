@@ -163,10 +163,10 @@ def match_data(media_dict, asset_files, prefix_index, logger=None, debug_items=N
 
     # List of asset types to consider
     asset_types = [type for type in media_dict if media_dict[type] is not None]
-    total_comparisons = 0;
-    total_items = 0;
-    matches =0;
-    non_matches=0;
+    total_comparisons = 0
+    total_items = 0
+    matches = 0
+    non_matches = 0
     # Iterate through each asset type
     with tqdm(total=len(asset_types), desc=f"Matching assets...", unit="asset types", leave=True) as pbar_outer:
         for asset_type in asset_types:
@@ -174,77 +174,42 @@ def match_data(media_dict, asset_files, prefix_index, logger=None, debug_items=N
                 unmatched_dict = []
                 matched_dict = []
                 media_data = media_dict[asset_type]
+                start_time = time.time()  # Start time for logging
                 # Iterate through each media entry of the current asset type
                 with tqdm(total=len(media_data), desc=f"Matching {asset_type}", leave=True, disable=None) as pbar_inner:
                     for media in media_data:
-                        search_match = None;
-                        total_items+=1
+                        search_match = None
+                        total_items += 1
                         matched = False
                         # search here to identify matches
                         debug_search = debug_items and len(debug_items) > 0 and media['normalized_title'] in debug_items
                         search_matched_assets = search_matches(prefix_index, media['normalized_title'], asset_type, logger, debug_search=debug_search)
                         logger.debug(f"SEARCH ({asset_type}): matched assets for {media['title']} ({media['normalized_title']}) type={asset_type}")
-
-                        logger.debug(json.dumps(search_matched_assets, indent=4))
+                        # logger.debug(json.dumps(search_matched_assets, indent=4))
                         ## now to loop over each matched asset to determine if it's a match
                         media_seasons_numbers = None
                         if 'seasons' in media and media['seasons']:
                             media_seasons_numbers = [season['season_number'] for season in media.get('seasons', [])]
-                            logger.debug(f"Season Numbers: {media_seasons_numbers}")
 
                         for search_asset in search_matched_assets:
-                            total_comparisons+=1
-                            if is_match(search_asset,media, logger):
-                                # either the both should be None or they should both be _something_
+                            total_comparisons += 1
+                            if is_match(search_asset, media, logger):
+                                logger.debug(f"Media:")
+                                # Remove seasons key from media dict to reduce log size
+                                logger.debug(f"Media: {json.dumps({k: v for k, v in media.items() if k != 'seasons'}, indent=4)}")
+                                logger.debug(f"Asset:")
+                                logger.debug(json.dumps(search_asset, indent=4))
                                 asset_season_numbers = search_asset.get('season_numbers', None)
                                 if ((asset_season_numbers is None and media_seasons_numbers is None) or (asset_season_numbers and media_seasons_numbers)):
-                                    matched=True
+                                    matched = True
                                     if asset_season_numbers and media_seasons_numbers:
                                         handle_series_match(search_asset, media_seasons_numbers, asset_season_numbers)
-                                    else:
-                                        pass
-                                        # May need to handle this differently
-                                        # logger.debug(f"no season numbers found on asset {search_asset}")
-                                        # logger.debug(f"for media {media}")
                                     search_match = search_asset
-                                    break
-                                else:
-                                    pass
-                                    # May need to handle this differently
-                                    # logger.debug(f"asset type '{asset_type}' found a match for a different asset type, but we are skipping")
-                                    # logger.debug(json.dumps(search_asset, indent=4))
-                                    # logger.debug(json.dumps(media, indent=4))
-
-                        if not matched:
-                            # need to do more searches now based on alt titles
-                            for alt_title in media.get('alternate_titles', []):
-                                search_matched_assets = search_matches(prefix_index, alt_title, asset_type, logger, debug_search=debug_search)
-                                logger.debug(f"SEARCH ({asset_type}): matched assets for {alt_title} type={asset_type} - Alternate search")
-                                # logger.debug(json.dumps(search_matched_assets, indent=4))
-                                for search_asset in search_matched_assets:
-                                    total_comparisons+=1
-                                    if is_match_alternate(search_asset,media):
-                                        # either the both should be None or they should both be _something_
-                                        asset_season_numbers = search_asset.get('season_numbers', None)
-                                        if ((asset_season_numbers is None and media_seasons_numbers is None) or (asset_season_numbers and media_seasons_numbers)):
-                                            matched=True
-                                            if asset_season_numbers and media_seasons_numbers:
-                                                handle_series_match(search_asset, media_seasons_numbers, asset_season_numbers)
-                                            search_match = search_asset
-                                            break
-                                        else:
-                                            pass
-                                            # May need to handle this differently
-                                            # logger.debug(f"asset type '{asset_type}' found a ALT match for a different asset type, but we are skipping")
-                                            # logger.debug(json.dumps(search_asset, indent=4))
-                                            # logger.debug(json.dumps(media, indent=4))
-
-                                if matched:
                                     break
 
                         if matched:
-                            matches +=1
-                            matched_dict.append({ # this is the structure where matches go... I think we'd need more info here to help border_replacer?... maybe just add a ref to the entire media as well?
+                            matches += 1
+                            matched_dict.append({
                                 'title': media['title'],
                                 'year': media['year'],
                                 'folder': media['folder'],
@@ -256,26 +221,26 @@ def match_data(media_dict, asset_files, prefix_index, logger=None, debug_items=N
 
                         if not matched:
                             non_matches += 1
-                            # If no match is found, add to unmatched dictionary
                             unmatched_dict.append({
                                 'title': media['title'],
                                 'year': media['year'],
                                 'folder': media['folder'],
                             })
 
-                        # Update combined matched and unmatched dictionaries
                         combined_dict['matched'][asset_type] = matched_dict
                         combined_dict['unmatched'][asset_type] = unmatched_dict
 
                         pbar_inner.update(1)
-                logger.info(str(pbar_inner))
+
+                elapsed_time = time.time() - start_time  # Calculate elapsed time
+                items_per_second = len(media_data) / elapsed_time if elapsed_time > 0 else 0
+                logger.debug(f"Completed matching for {asset_type}: {len(media_data)} items in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s)")
             pbar_outer.update(1)
 
-    logger.info(str(pbar_outer))
-    logger.info(f"{total_items} total_items")
-    logger.info(f"{total_comparisons} total_comparisons")
-    logger.info(f"{matches} total_matches")
-    logger.info(f"{non_matches} non_matches")
+    logger.debug(f"{total_items} total_items")
+    logger.debug(f"{total_comparisons} total_comparisons")
+    logger.debug(f"{matches} total_matches")
+    logger.debug(f"{non_matches} non_matches")
     return combined_dict
 
 def process_file(file, new_file_path, action_type, logger):
@@ -355,111 +320,115 @@ def rename_files(matched_assets, script_config, logger):
         output[asset_type] = []
         # If assets to rename
         if matched_assets[asset_type]:
-            progress_bar = tqdm(matched_assets[asset_type], desc=f"Renaming {asset_type} posters", unit="assets", leave=True, disable=None, total=len(matched_assets[asset_type]))
-            for item in progress_bar:
-                messages = []
-                discord_messages = []
-                files = item['files']
-                folder = item['folder']
+            total_items = len(matched_assets[asset_type])
+            start_time = time.time()  # Start time for logging
+            with tqdm(total=total_items, desc=f"Renaming {asset_type}", unit="item", leave=True) as pbar:
+                for index, item in enumerate(matched_assets[asset_type], start=1):
+                    messages = []
+                    discord_messages = []
+                    files = item['files']
+                    folder = item['folder']
 
-                # Remove any OS illegal characters from the file name
-                if asset_type == "collections":
-                    if not is_valid_filename(folder):
-                        folder = sanitize_filename(folder)
+                    # Remove any OS illegal characters from the file name
+                    if asset_type == "collections":
+                        if not is_valid_filename(folder):
+                            folder = sanitize_filename(folder)
 
-                # Handle asset_folders configuration
-                if asset_folders:
-                    dest_dir = os.path.join(destination_dir, folder)
-                    if not os.path.exists(dest_dir):
-                        if not dry_run:
-                            os.makedirs(dest_dir)
-                else:
-                    dest_dir = destination_dir
-
-                # Iterate through each file in the asset
-                for file in files:
-                    file_name = os.path.basename(file)
-                    file_extension = os.path.splitext(file)[1]
-
-                    # Check for season-related file naming
-                    if re.search(r' - Season| - Specials', file_name):
-                        try:
-                            season_number = (re.search(r"Season (\d+)", file_name).group(1) if "Season" in file_name else "00").zfill(2)
-                        except AttributeError:
-                            logger.debug(f"Error extracting season number from {file_name}")
-                            continue
-                        if asset_folders:
-                            new_file_name = f"Season{season_number}{file_extension}"
-                        else:
-                            new_file_name = f"{folder}_Season{season_number}{file_extension}"
-                        new_file_path = os.path.join(dest_dir, new_file_name)
+                    # Handle asset_folders configuration
+                    if asset_folders:
+                        dest_dir = os.path.join(destination_dir, folder)
+                        if not os.path.exists(dest_dir):
+                            if not dry_run:
+                                os.makedirs(dest_dir)
                     else:
-                        if asset_folders:
-                            new_file_name = f"poster{file_extension}"
+                        dest_dir = destination_dir
+
+                    # Iterate through each file in the asset
+                    for file in files:
+                        file_name = os.path.basename(file)
+                        file_extension = os.path.splitext(file)[1]
+
+                        # Check for season-related file naming
+                        if re.search(r' - Season| - Specials', file_name):
+                            try:
+                                season_number = (re.search(r"Season (\d+)", file_name).group(1) if "Season" in file_name else "00").zfill(2)
+                            except AttributeError:
+                                logger.debug(f"Error extracting season number from {file_name}")
+                                continue
+                            if asset_folders:
+                                new_file_name = f"Season{season_number}{file_extension}"
+                            else:
+                                new_file_name = f"{folder}_Season{season_number}{file_extension}"
+                            new_file_path = os.path.join(dest_dir, new_file_name)
                         else:
-                            new_file_name = f"{folder}{file_extension}"
-                        new_file_path = os.path.join(dest_dir, new_file_name)
+                            if asset_folders:
+                                new_file_name = f"poster{file_extension}"
+                            else:
+                                new_file_name = f"{folder}{file_extension}"
+                            new_file_path = os.path.join(dest_dir, new_file_name)
 
-                    # Check if the new file path already exists
-                    if os.path.lexists(new_file_path):
-                        existing_file = os.path.join(dest_dir, new_file_name)
-                        try:
-                            # Check if the existing file is the same as the new file True = same, False = different
-                            if not filecmp.cmp(file, existing_file):
-                                if file_name != new_file_name:
-                                    messages.append(f"{file_name} -renamed-> {new_file_name}")
-                                    discord_messages.append(f"{new_file_name}")
-                                else:
-                                    if not print_only_renames:
-                                        messages.append(f"{file_name} -not-renamed-> {new_file_name}")
+                        # Check if the new file path already exists
+                        if os.path.lexists(new_file_path):
+                            existing_file = os.path.join(dest_dir, new_file_name)
+                            try:
+                                # Check if the existing file is the same as the new file True = same, False = different
+                                if not filecmp.cmp(file, existing_file):
+                                    if file_name != new_file_name:
+                                        messages.append(f"{file_name} -renamed-> {new_file_name}")
                                         discord_messages.append(f"{new_file_name}")
-                                if not dry_run:
-                                    if action_type in ["hardlink", "symlink"]:
-                                        os.remove(new_file_path)
+                                    else:
+                                        if not print_only_renames:
+                                            messages.append(f"{file_name} -not-renamed-> {new_file_name}")
+                                            discord_messages.append(f"{new_file_name}")
+                                    if not dry_run:
+                                        if action_type in ["hardlink", "symlink"]:
+                                            os.remove(new_file_path)
 
-                                    process_file(file, new_file_path, action_type, logger) # any place that has process_file we need to track
+                                        process_file(file, new_file_path, action_type, logger)
+                                        renamed_item = copy.deepcopy(item)
+                                        renamed_item['files'] = [new_file_path]
+                                        renamed_item['path'] = os.path.join(destination_dir, folder)
+                                        renamed_assets[asset_type].append(renamed_item)
+                            except FileNotFoundError:
+                                # Handle the case where existing_file is a broken symlink
+                                if not dry_run:
+                                    os.remove(new_file_path)
+                                    process_file(file, new_file_path, action_type, logger)
                                     renamed_item = copy.deepcopy(item)
                                     renamed_item['files'] = [new_file_path]
                                     renamed_item['path'] = os.path.join(destination_dir, folder)
-                                    renamed_assets[asset_type].append(renamed_item) # append here, but need to change file and folder attrs... which means copy (I think)
-                        except FileNotFoundError:
-                            # Handle the case where existing_file is a broken symlink
+                                    renamed_assets[asset_type].append(renamed_item)
+                        else:
+                            if file_name != new_file_name:
+                                messages.append(f"{file_name} -renamed-> {new_file_name}")
+                                discord_messages.append(f"{new_file_name}")
+                            else:
+                                if not print_only_renames:
+                                    messages.append(f"{file_name} -not-renamed-> {new_file_name}")
+                                    discord_messages.append(f"{new_file_name}")
                             if not dry_run:
-                                os.remove(new_file_path)
                                 process_file(file, new_file_path, action_type, logger)
                                 renamed_item = copy.deepcopy(item)
                                 renamed_item['files'] = [new_file_path]
                                 renamed_item['path'] = os.path.join(destination_dir, folder)
-                                renamed_assets[asset_type].append(renamed_item) # append here, but need to change file and folder attrs... which means copy (I think)
-                    else:
-                        if file_name != new_file_name:
-                            messages.append(f"{file_name} -renamed-> {new_file_name}")
-                            discord_messages.append(f"{new_file_name}")
-                        else:
-                            if not print_only_renames:
-                                messages.append(f"{file_name} -not-renamed-> {new_file_name}")
-                                discord_messages.append(f"{new_file_name}")
-                        if not dry_run:
-                            process_file(file, new_file_path, action_type, logger)
-                            renamed_item = copy.deepcopy(item)
-                            renamed_item['files'] = [new_file_path]
-                            renamed_item['path'] = os.path.join(destination_dir, folder)
-                            renamed_assets[asset_type].append(renamed_item) # append here, but need to change file and folder attrs... which means copy (I think)
+                                renamed_assets[asset_type].append(renamed_item)
 
-                # Append the messages to the output
-                if messages or discord_messages:
-                    output[asset_type].append({
-                        'title': item['title'],
-                        'year': item['year'],
-                        'folder': item['folder'],
-                        'messages': messages,
-                        'discord_messages': discord_messages,
-                    })
-            logger.info(str(progress_bar))
+                    # Append the messages to the output
+                    if messages or discord_messages:
+                        output[asset_type].append({
+                            'title': item['title'],
+                            'year': item['year'],
+                            'folder': item['folder'],
+                            'messages': messages,
+                            'discord_messages': discord_messages,
+                        })
+
+                    # Update progress bar
+                    pbar.update(1)
+
         else:
             print(f"No {asset_type} to rename")
 
-    logger.debug(f"RENAMED_ASSETS: {renamed_assets}")
     return output, renamed_assets
 
 def handle_output(output, asset_folders, logger):
@@ -782,7 +751,8 @@ def main(config):
             # Match media data to asset files
             print(f"Matching media to assets, please wait...")
             combined_dict = match_data(media_dict, assets_dict, prefix_index, logger, debug_items=search_index_debug_normalized_items)
-            logger.debug(f"Matched and Unmatched media:\n{json.dumps(combined_dict, indent=4)}")
+            if any(combined_dict.get('unmatched', {}).values()):
+                logger.debug("Unmatched media found.")
             matched_assets = combined_dict.get('matched', None)
             if any(matched_assets.values()):
                 output, renamed_assets = rename_files(matched_assets, script_config, logger)

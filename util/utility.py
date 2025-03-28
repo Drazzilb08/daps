@@ -69,8 +69,6 @@ def create_new_empty_index():
     }
     return prefix_index
 
-
-
 def preprocess_name(name: str) -> str:
     """
     Preprocess a name for consistent matching:
@@ -127,38 +125,38 @@ def build_search_index(prefix_index, title, asset, asset_type, logger, debug_ite
 
     return
 
-def search_matches(prefix_index, movie_title, asset_type, logger, debug_search=False):
-    """ search for matches in the index """
-    matches = list()
+def search_matches(prefix_index, title, asset_type, logger, debug_search=False):
+    """Search for matches in the index."""
+    matches = []
 
-    processed_filename = preprocess_name(movie_title)
+    processed_title = preprocess_name(title)
     asset_type_processed_forms = prefix_index[asset_type]
 
-    if (debug_search):
+    if debug_search:
         logger.info('debug_search_matches')
-        logger.info(processed_filename)
+        logger.info(processed_title)
 
-    words = processed_filename.split()
-    if (debug_search):
+    words = processed_title.split()
+    if debug_search:
         logger.info(words)
+
     # Try word-level matches
     for word in words:
-        # first add any prefix matches to the beginning of the list.
+        # Add prefix matches for words longer than the prefix length
         if len(word) > prefix_length:
-            prefix = word[0:prefix_length]
-            if (debug_search):
+            prefix = word[:prefix_length]
+            if debug_search:
                 logger.info(prefix)
                 logger.info(prefix in asset_type_processed_forms)
 
             if prefix in asset_type_processed_forms:
                 matches.extend(asset_type_processed_forms[prefix])
 
-        # then add the full word matches as items.
-        # TODO: is this even needed any more given everything would grab the prefix
-        #       or maybe this is an else to the above?
+        # Add full word matches regardless of length
         if word in asset_type_processed_forms:
             matches.extend(asset_type_processed_forms[word])
-        if (debug_search):
+
+        if debug_search:
             logger.info(matches)
         break
 
@@ -311,9 +309,12 @@ def categorize_files(folder_path, logger):
                 build_search_index(prefix_index, normalize_title, file, 'files', logger)
             # Loop through each file in the folder
             progress_bar = tqdm(files, desc=f"Processing '{base_name}' folder", total=len(files), disable=None, leave=True)
+            start_time = datetime.datetime.now()
             for file in progress_bar:
                 if file.startswith('.') or "(N-A)" in file:
                     continue  # Skip hidden files or files with "(N-A)" in the name
+                if re.search(r'\{(imdb-\w+|tmdb-\d+|tvdb-\d+)\}', file):
+                    continue
 
                 # Extract information from the file name
                 base_name, extension = os.path.splitext(file)
@@ -324,22 +325,6 @@ def categorize_files(folder_path, logger):
                     year = int(year_regex.search(base_name).group(1))
                 except:
                     year = None
-
-                # Pull tmdb ID from file name
-                try:
-                    tmdb_id = int(re.search(r'\{tmdb-(\d+)\}', file).group(1))
-                except:
-                    tmdb_id = None
-                # Pull tvdb ID from file name
-                try:
-                    tvdb_id = int(re.search(r'\{tvdb-(\d+)\}', file).group(1))
-                except:
-                    tvdb_id = None
-                # Pull imdb ID from file name
-                try:
-                    imdb_id = int(re.search(r'\{imdb-(\w+)\}', file).group(1))
-                except:
-                    imdb_id = None
 
                 file_path = f"{folder_path}/{file}"  # Full file path
 
@@ -358,9 +343,6 @@ def categorize_files(folder_path, logger):
                         'no_suffix': no_suffix,
                         'no_prefix_normalized': no_prefix_normalized,
                         'no_suffix_normalized': no_suffix_normalized,
-                        'tmdb_id': tmdb_id,
-                        'tvdb_id': tvdb_id,
-                        'imdb_id': imdb_id,
                         'path': None,
                         'files': [file_path],
                     }
@@ -422,7 +404,10 @@ def categorize_files(folder_path, logger):
                         assets_dict.append(item)
                         # this index is to store the final asset overall so that lookups can occur much more quickly. Primarily for shows
                         build_search_index(prefix_index, item['normalized_title'], item, 'assets', logger)
-            logger.info(str(progress_bar))
+            end_time = datetime.datetime.now()
+            elapsed_time = (end_time - start_time).total_seconds()
+            items_per_second = len(files) / elapsed_time if elapsed_time > 0 else 0
+            logger.debug(f"Processed {len(files)} files in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s) in folder '{os.path.basename(folder_path.rstrip('/'))}'")
         else:
             return None
 
@@ -452,6 +437,7 @@ def categorize_files(folder_path, logger):
     else:  # If asset_folders is True, sort assets based on folders
         try:
             progress_bar = tqdm(os.scandir(folder_path), desc='Processing posters', total=len(os.listdir(folder_path)), disable=None)
+            start_time = datetime.datetime.now()
             for dir_entry in progress_bar:
                 if dir_entry.is_dir():
                     dir = dir_entry.path
@@ -533,7 +519,10 @@ def categorize_files(folder_path, logger):
                                 'path': dir,
                                 'files': files,
                             })
-            logger.info(str(progress_bar))
+            end_time = datetime.datetime.now()
+            elapsed_time = (end_time - start_time).total_seconds()
+            items_per_second = len(os.listdir(folder_path)) / elapsed_time if elapsed_time > 0 else 0
+            logger.debug(f"Processed {len(os.listdir(folder_path))} folders in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s)")
         except FileNotFoundError:
             return None
 
@@ -634,6 +623,7 @@ def get_media_folders(paths, logger):
 
         # Iterate through items in the directory
         progress_bar = tqdm(os.listdir(path), desc=f"Getting media folders for '{base_name}'", disable=None, leave=True)
+        start_time = datetime.datetime.now()
         for item in progress_bar:
             if item.startswith('.') or item.startswith('@'):
                 continue  # Skip hidden files/folders
@@ -680,7 +670,10 @@ def get_media_folders(paths, logger):
                     'path': os.path.join(path, item),
                     'location': base_name,
                 })
-        logger.info(str(progress_bar))
+        end_time = datetime.datetime.now()
+        elapsed_time = (end_time - start_time).total_seconds()
+        items_per_second = len(os.listdir(path)) / elapsed_time if elapsed_time > 0 else 0
+        logger.debug(f"Processed {len(os.listdir(path))} items in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s)")
 
     return media_dict
 
@@ -700,6 +693,7 @@ def handle_starr_data(app, server_name, instance_type, logger, include_episode=F
     media = app.get_media()  # Fetch media data from the Radarr or Sonarr instance
     if media:
         progress_bar = tqdm(media, desc=f"Getting {server_name.capitalize()} data", total=len(media), disable=None, leave=True)
+        start_time = datetime.datetime.now()
         for item in progress_bar:
             # Fetch relevant data based on the instance type (Radarr or Sonarr)
             if instance_type == "radarr":
@@ -778,7 +772,10 @@ def handle_starr_data(app, server_name, instance_type, logger, include_episode=F
                 'seasons': season_list if instance_type == "sonarr" else None,  # Add season_list for Sonarr items
                 'season_numbers': [season['season_number'] for season in season_list] if instance_type == "sonarr" else None,
             })  # Append the constructed dictionary to media_dict
-        logger.info(str(progress_bar))
+        end_time = datetime.datetime.now()
+        elapsed_time = (end_time - start_time).total_seconds()
+        items_per_second = len(media) / elapsed_time if elapsed_time > 0 else 0
+        logger.debug(f"Processed {len(media)} items in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s)")
     else:
         return None
 
@@ -822,13 +819,10 @@ def get_plex_data(plex, library_names, logger, include_smart, collections_only):
         # Process collection data
         for library_name, collection_names in collection_names.items():
             progress_bar = tqdm(collection_names, desc=f"Processing Plex collection data for '{library_name}'", total=len(collection_names), disable=None, leave=True)
+            start_time = datetime.datetime.now()
             for collection in progress_bar:
                 title = normalize_titles(collection)
                 alternate_titles = []
-                # collections are special as they can be 'X.jpg' or 'X Collection.jpg'.  This is adding the alernate titles to the objects here
-                # as these are what are used to perform lookups in the index.
-                # This helps when a main title lookup doesn't find matches but using the alternate titles (w/ or w/out the suffix) would help
-                # we add the same normalized versions to both alternate and normalized variations since we are controlling the content, not externals
                 if title.endswith(" collection"):
                     alternate_titles.append(title.removesuffix(" collection"))
                 else:
@@ -841,22 +835,30 @@ def get_plex_data(plex, library_names, logger, include_smart, collections_only):
                     'folder': collection,
                     'alternate_titles': alternate_titles,
                     'normalized_alternate_titles': alternate_titles
-                })  # Append collection information to plex_dict
-            logger.info(str(progress_bar))
+                })
+            end_time = datetime.datetime.now()
+            elapsed_time = (end_time - start_time).total_seconds()
+            items_per_second = len(collection_names) / elapsed_time if elapsed_time > 0 else 0
+            logger.debug(f"Processed {len(collection_names)} collections in library '{library_name}' in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s)")
+
     else:
-        # Process library item data
         for library_name, library_data in library_data.items():
             progress_bar = tqdm(library_data, desc=f"Processing {library_name} data", total=len(library_data), disable=None, leave=True)
+            start_time = datetime.datetime.now()
             for item in progress_bar:
-                labels = [str(label).lower() for label in item.labels]  # Get lowercase labels
+                labels = [str(label).lower() for label in item.labels]
                 plex_dict.append({
                     'title': item.title,
                     'normalized_title': normalize_titles(item.title),
                     'year': item.year,
                     'labels': labels,
-                })  # Append item information to plex_dict
-            logger.info(str(progress_bar))
-    return plex_dict  # Return the constructed Plex data dictionary
+                })
+            end_time = datetime.datetime.now()
+            elapsed_time = (end_time - start_time).total_seconds()
+            items_per_second = len(library_data) / elapsed_time if elapsed_time > 0 else 0
+            logger.debug(f"Processed {len(collection_names)} collections in library '{library_name}' in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s)")
+
+    return plex_dict
 
 
 def validate(config, script_config, logger):
@@ -982,6 +984,7 @@ def sort_assets(assets_list, logger, debug_items=None, prefix_index=None):
         'series': [],
         'collections': []
     }
+    start_time = datetime.datetime.now()
     progress_bar = tqdm(assets_list, desc="Categorizing assets", total=len(assets_list), disable=None, leave=True)
     for item in progress_bar:
         asset_type = 'movies'
@@ -996,7 +999,10 @@ def sort_assets(assets_list, logger, debug_items=None, prefix_index=None):
             if debug_sort:
                 logger.info(f"adding item to index: {item}")
             build_search_index(prefix_index, item['normalized_title'], item, asset_type, logger, debug_items=debug_items)
-    logger.info(str(progress_bar))
+    end_time = datetime.datetime.now()
+    elapsed_time = (end_time - start_time).total_seconds()
+    items_per_second = len(assets_list) / elapsed_time if elapsed_time > 0 else 0
+    logger.debug(f"Categorized {len(assets_list)} assets in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s)")
     return assets_dict
 
 def compare_strings(string1, string2):
@@ -1030,13 +1036,11 @@ def is_match(asset, media, logger):
     no_suffix = asset.get('no_suffix', [])
     no_prefix_normalized = asset.get('no_prefix_normalized', [])
     no_suffix_normalized = asset.get('no_suffix_normalized', [])
-    asset_tmdb_id = asset.get('tmdb_id')
-    asset_tvdb_id = asset.get('tvdb_id')
     secondary_year = media.get('secondary_year')
     original_title = media.get('original_title')
-    media_tmdb_id = media.get('tmdb_id')
-    media_tvdb_id = media.get('tvdb_id')
     folder = media.get('folder')
+    alternate_titles = media.get('alternate_titles', [])
+    normalized_alternate_titles = media.get('normalized_alternate_titles', [])
     folder_title, folder_year, normalized_folder_title = None, None, None
 
     if folder:
@@ -1057,6 +1061,8 @@ def is_match(asset, media, logger):
         return False
 
     match_criteria = [
+        (asset['title'] in alternate_titles, "Title in alternate titles"),
+        (asset['normalized_title'] in normalized_alternate_titles, "Normalized title in normalized alternate titles"),
         (asset['title'] == media['title'], "Title match"),
         (asset['normalized_title'] == media['normalized_title'], "Normalized title match"),
         (asset['title'] == original_title, "Original title match"),
@@ -1068,56 +1074,16 @@ def is_match(asset, media, logger):
         (media['normalized_title'] in no_suffix_normalized, "Normalized title in no_suffix_normalized"),
         (compare_strings(asset['title'], media['title']), "String comparison match"),
         (compare_strings(asset['normalized_title'], media['normalized_title']), "Normalized string comparison match"),
-        # ID matching should have the lowest priority
-        (asset_tmdb_id == media_tmdb_id and asset_tmdb_id is not None and media_tmdb_id is not None, "TMDB ID match"),
-        (asset_tvdb_id == media_tvdb_id and asset_tvdb_id is not None and media_tvdb_id is not None, "TVDB ID match"),
     ]
 
     # Check match criteria
     for condition, message in match_criteria:
         if condition and year_matches():
-            logger.debug(f"Match found: {message} -> Asset: {asset['title']} ({asset['year']}), Media: {media['title']} ({media['year']})")
-            return True
+            asset_year = f" ({asset['year']})" if asset.get('year') else ""
+            media_year = f" ({media['year']})" if media.get('year') else ""
 
-    # Return False if both asset and media have None IDs for matching criteria
-    if (asset_tmdb_id is None and media_tmdb_id is None) or (asset_tvdb_id is None and media_tvdb_id is None):
-        return False
+            logger.debug(f"Match found: {message} -> Asset: {asset['title']}{asset_year}, Media: {media['title']}{media_year}")
+            return True
 
     return False
 
-
-def is_match_alternate(asset, media):
-    """
-    Check if the asset matches the media using alternate titles
-
-    Args:
-        asset (dict): The asset to check
-        media (dict): The media to check
-
-    Returns:
-        bool: True if the asset matches the media, False otherwise
-    """
-    alternate_titles = media.get('alternate_titles', [])
-    normalized_alternate_titles = media.get('normalized_alternate_titles', [])
-    secondary_year = media.get('secondary_year', None)
-    folder = media.get('folder', None)
-    folder_year = None
-    if folder:
-        folder_base_name = os.path.basename(folder)
-        match = re.search(folder_year_regex, folder_base_name)
-        if match:
-            folder_title, folder_year = match.groups()
-            folder_year = int(folder_year)
-
-    # Matching criteria for media and asset
-    if (
-        asset['title'] in alternate_titles or
-        asset['normalized_title'] in normalized_alternate_titles
-    ) and (
-        asset['year'] == media['year'] or
-        (asset['year'] == secondary_year and secondary_year is not None) or # None = None is not confirmation of a match
-        (asset['year'] == folder_year and folder_year is not None) # None = None is not confirmation of a match
-    ):
-        return True
-    else:
-        return False

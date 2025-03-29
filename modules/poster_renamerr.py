@@ -114,11 +114,10 @@ def get_assets_files(source_dirs, logger, debug_items=None):
                         logger.info("didn't find a match, appending")
                         logger.info(new)
                     final_assets.append(new)
-                    build_search_index(prefix_index, new['normalized_title'], new, 'posters', logger)
+                    build_search_index(prefix_index, new['title'], new, 'posters', logger)
 
         else:
             logger.error(f"No assets found in {source_dir}")
-
     return final_assets
 
 def handle_series_match(asset, media_seasons_numbers, asset_season_numbers):
@@ -183,9 +182,7 @@ def match_data(media_dict, asset_files, prefix_index, logger=None, debug_items=N
                         matched = False
                         # search here to identify matches
                         debug_search = debug_items and len(debug_items) > 0 and media['normalized_title'] in debug_items
-                        search_matched_assets = search_matches(prefix_index, media['normalized_title'], asset_type, logger, debug_search=debug_search)
-                        logger.debug(f"SEARCH ({asset_type}): matched assets for {media['title']} ({media['normalized_title']}) type={asset_type}")
-                        # logger.debug(json.dumps(search_matched_assets, indent=4))
+                        search_matched_assets = search_matches(prefix_index, media['title'], asset_type, logger, debug_search=debug_search)
                         ## now to loop over each matched asset to determine if it's a match
                         media_seasons_numbers = None
                         if 'seasons' in media and media['seasons']:
@@ -194,11 +191,6 @@ def match_data(media_dict, asset_files, prefix_index, logger=None, debug_items=N
                         for search_asset in search_matched_assets:
                             total_comparisons += 1
                             if is_match(search_asset, media, logger):
-                                logger.debug(f"Media:")
-                                # Remove seasons key from media dict to reduce log size
-                                logger.debug(f"Media: {json.dumps({k: v for k, v in media.items() if k != 'seasons'}, indent=4)}")
-                                logger.debug(f"Asset:")
-                                logger.debug(json.dumps(search_asset, indent=4))
                                 asset_season_numbers = search_asset.get('season_numbers', None)
                                 if ((asset_season_numbers is None and media_seasons_numbers is None) or (asset_season_numbers and media_seasons_numbers)):
                                     matched = True
@@ -691,7 +683,6 @@ def main(config):
         prefix_index = create_new_empty_index()
         if assets_list:
             assets_dict = sort_assets(assets_list, logger, debug_items=search_index_debug_normalized_items, prefix_index=prefix_index)
-            # logger.debug(f"Asset files:\n{json.dumps(assets_dict, indent=4)}")
         else:
             logger.error("No assets found. Exiting...")
             return
@@ -744,15 +735,21 @@ def main(config):
             logger.error("No media found, Check instances setting in your config. Exiting.")
             return
         else:
-            pass
-            # logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
+            # Create duplicate dictionary and remove season key from each item for logging
+            media_dict_copy = copy.deepcopy(media_dict)
+            for media_type, media_list in media_dict_copy.items():
+                for media in media_list:
+                    if 'seasons' in media:
+                        del media['seasons']
+            logger.debug(f"Media Dictionary:\n{json.dumps(media_dict_copy, indent=4)}")
+    
         renamed_assets = None
         if media_dict and assets_dict:
             # Match media data to asset files
             print(f"Matching media to assets, please wait...")
             combined_dict = match_data(media_dict, assets_dict, prefix_index, logger, debug_items=search_index_debug_normalized_items)
             if any(combined_dict.get('unmatched', {}).values()):
-                logger.debug("Unmatched media found.")
+                logger.debug(f"Unmatched Dictionary.\n{json.dumps(combined_dict['unmatched'], indent=4)}")
             matched_assets = combined_dict.get('matched', None)
             if any(matched_assets.values()):
                 output, renamed_assets = rename_files(matched_assets, script_config, logger)

@@ -151,6 +151,7 @@ def search_matches(prefix_index, title, asset_type, logger, debug_search=False):
 
             if prefix in asset_type_processed_forms:
                 matches.extend(asset_type_processed_forms[prefix])
+                return matches
 
         # Add full word matches regardless of length
         if word in asset_type_processed_forms:
@@ -303,10 +304,10 @@ def categorize_files(folder_path, logger):
             prefix_index['files'] = {}
             prefix_index['assets'] = {}
             for file in files:
-                mybase, extension = os.path.splitext(file)
-                normalize_title = normalize_titles(mybase)
+                base_name, extension = os.path.splitext(file)
+                title = re.sub(year_regex, '', base_name)
                 # this index is just based on the poster files we are reading in to make looking up what we've processed so far in this dir much faster.
-                build_search_index(prefix_index, normalize_title, file, 'files', logger)
+                build_search_index(prefix_index, title, file, 'files', logger)
             # Loop through each file in the folder
             progress_bar = tqdm(files, desc=f"Processing '{base_name}' folder", total=len(files), disable=None, leave=True)
             start_time = datetime.datetime.now()
@@ -355,11 +356,10 @@ def categorize_files(folder_path, logger):
                     build_search_index(prefix_index, item['normalized_title'], item, 'assets', logger)
                 else:
                     # Categorize as a series
-                    if any(file.startswith(base_name) and any(base_name + season_name in file for season_name in season_name_info) for file in search_matches(prefix_index, normalize_title, 'files', logger)) or any(word in file for word in season_name_info):
+                    if any(file.startswith(base_name) and any(base_name + season_name in file for season_name in season_name_info) for file in search_matches(prefix_index, title, 'files', logger)) or any(word in file for word in season_name_info):
                         # Check if the series entry already exists in the assets dictionary
                         series_entry = next((d for d in prefix_index['assets'].get(normalize_title[:prefix_length], []) 
-                                             if d['type'] == 'series' and d['normalized_title'] == normalize_title and d['year'] == year), None)
-                        # series_entry = next((d for d in search_matches(prefix_index, normalize_title, 'assets', logger) if d['normalized_title'] == normalize_title and d['year'] == year), None)
+                                            if d['type'] == 'series' and d['normalized_title'] == normalize_title and d['year'] == year), None)
                         if series_entry is None:
                             # If not, add a new series entry
                             series_entry = {
@@ -395,7 +395,7 @@ def categorize_files(folder_path, logger):
                         }
                         assets_dict.append(item)
                         # this index is to store the final asset overall so that lookups can occur much more quickly. Primarily for shows
-                        build_search_index(prefix_index, item['normalized_title'], item, 'assets', logger)
+                        build_search_index(prefix_index, item['title'], item, 'assets', logger)
             end_time = datetime.datetime.now()
             elapsed_time = (end_time - start_time).total_seconds()
             items_per_second = len(files) / elapsed_time if elapsed_time > 0 else 0
@@ -517,7 +517,6 @@ def categorize_files(folder_path, logger):
             logger.debug(f"Processed {len(os.listdir(folder_path))} folders in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s)")
         except FileNotFoundError:
             return None
-
     return assets_dict
 
 def create_table(data):
@@ -990,7 +989,7 @@ def sort_assets(assets_list, logger, debug_items=None, prefix_index=None):
         if prefix_index:
             if debug_sort:
                 logger.info(f"adding item to index: {item}")
-            build_search_index(prefix_index, item['normalized_title'], item, asset_type, logger, debug_items=debug_items)
+            build_search_index(prefix_index, item['title'], item, asset_type, logger, debug_items=debug_items)
     end_time = datetime.datetime.now()
     elapsed_time = (end_time - start_time).total_seconds()
     items_per_second = len(assets_list) / elapsed_time if elapsed_time > 0 else 0
@@ -1024,64 +1023,45 @@ def is_match(asset, media, logger):
     Returns:
         bool: True if the asset matches the media, False otherwise
     """
-    no_prefix = asset.get('no_prefix', [])
-    no_suffix = asset.get('no_suffix', [])
-    no_prefix_normalized = asset.get('no_prefix_normalized', [])
-    no_suffix_normalized = asset.get('no_suffix_normalized', [])
-    secondary_year = media.get('secondary_year')
-    original_title = media.get('original_title')
-    folder = media.get('folder')
-    alternate_titles = media.get('alternate_titles', [])
-    normalized_alternate_titles = media.get('normalized_alternate_titles', [])
-    media_id = media.get('db_id', None)
-    asset_id = asset.get('tvdb_id') or asset.get('tmdb_id') or None
-    folder_title, folder_year, normalized_folder_title = None, None, None
-
-    if folder:
-        folder_base_name = os.path.basename(folder)
+    if media.get('folder'):
+        folder_base_name = os.path.basename(media['folder'])
         match = re.search(folder_year_regex, folder_base_name)
         if match:
-            folder_title, folder_year = match.groups()
-            folder_year = int(folder_year) if folder_year else None
-            normalized_folder_title = normalize_titles(folder_title)
+            media['folder_title'], media['folder_year'] = match.groups()
+            media['folder_year'] = int(media['folder_year']) if media['folder_year'] else None
+            media['normalized_folder_title'] = normalize_titles(media['folder_title'])
 
     def year_matches():
-        if asset['year'] == media['year']:
+        asset_year = asset.get('year')
+        media_years = [media.get(year_key) for year_key in ['year', 'secondary_year', 'folder_year']]
+
+        # If both asset_year and all media_years are None, return True
+        if asset_year is None and all(year is None for year in media_years):
             return True
-        if secondary_year is not None and asset['year'] == secondary_year:
-            return True
-        if folder_year is not None and asset['year'] == folder_year:
-            return True
-        return False
+
+        return any(asset_year == year for year in media_years if year is not None)
 
     match_criteria = [
-        (media_id is not None and asset_id is not None and media_id == asset_id, f"Media ID {media_id} matches asset ID {asset_id}"),
-        (asset['title'] in alternate_titles, "Title in alternate titles"),
-        (asset['normalized_title'] in normalized_alternate_titles, "Normalized title in normalized alternate titles"),
-        (asset['title'] == media['title'], "Title match"),
-        (asset['normalized_title'] == media['normalized_title'], "Normalized title match"),
-        (asset['title'] == original_title, "Original title match"),
-        (asset['title'] == folder_title, "Folder title match"),
-        (asset['normalized_title'] == normalized_folder_title, "Normalized folder title match"),
-        (media['title'] in no_prefix, "Title in no_prefix"),
-        (media['title'] in no_suffix, "Title in no_suffix"),
-        (media['normalized_title'] in no_prefix_normalized, "Normalized title in no_prefix_normalized"),
-        (media['normalized_title'] in no_suffix_normalized, "Normalized title in no_suffix_normalized"),
-        (compare_strings(asset['title'], media['title']), "String comparison match"),
-        (compare_strings(asset['normalized_title'], media['normalized_title']), "Normalized string comparison match"),
+        (media.get('db_id') is not None and (asset.get('tvdb_id') or asset.get('tmdb_id')) is not None and media['db_id'] == (asset.get('tvdb_id') or asset.get('tmdb_id')), f"Media ID {media.get('db_id')} matches asset ID {asset.get('tvdb_id') or asset.get('tmdb_id')}"),
+        (media.get('title') == asset.get('title'), "Title match"),
+        (media.get('title') in asset.get('no_prefix', []), "Title in no_prefix"),
+        (media.get('title') in asset.get('no_suffix', []), "Title in no_suffix"),
+        (media.get('title') in asset.get('alternate_titles', []), "Title in alternate titles"),
+        (media.get('original_title') == asset.get('title'), "Original title match"),
+        (media.get('folder_title') == asset.get('title'), "Folder title match"),
+        (media.get('normalized_title') == asset.get('normalized_title'), "Normalized title match"),
+        (media.get('normalized_title') == asset.get('normalized_folder_title'), "Normalized folder title match"),
+        (media.get('normalized_title') in asset.get('no_prefix_normalized', []), "Normalized title in no_prefix_normalized"),
+        (media.get('normalized_title') in asset.get('no_suffix_normalized', []), "Normalized title in no_suffix_normalized"),
+        (media.get('normalized_title') in asset.get('normalized_alternate_titles', []), "Normalized title in normalized alternate titles"),
+        (compare_strings(media.get('title', ''), asset.get('title', '')), "String comparison match"),
+        (compare_strings(media.get('normalized_title', ''), asset.get('normalized_title', '')), "Normalized string comparison match"),
     ]
 
     # Check match criteria
-    logger.warning(f"Asset: {asset['title']}, Media: {media['title']}")
-    logger.warning(f"IDs: {asset_id} vs {media_id}")
-    logger.warning(f"ID MAtch: {media_id is not None and asset_id is not None and media_id == asset_id}")
     for condition, message in match_criteria:
         if condition and year_matches():
-            asset_year = f" ({asset['year']})" if asset.get('year') else ""
-            media_year = f" ({media['year']})" if media.get('year') else ""
-
-            logger.debug(f"Match found: {message} -> Asset: {asset['title']}{asset_year}, Media: {media['title']}{media_year}")
+            logger.debug(f"Match found: {message} -> Asset: {asset.get('title', '')} ({asset.get('year', '')}), Media: {media.get('title', '')} ({media.get('year', '')})")
             return True
 
     return False
-

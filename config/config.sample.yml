@@ -404,7 +404,7 @@ renameinatorr:
   rename_folders: true
   # Tag name and count are optional, if you don't want to use them leave them blank
   # The reason for count and tag is if you want to perform renaming actions in batches or in bulk
-  count: 10
+  count: 100
   # optionally you can specify different counts for different instance types.  If specified and > 0, these will override the "count" option above
   radarr_count: 0
   sonarr_count: 0
@@ -412,6 +412,15 @@ renameinatorr:
   instances:
     - radarr_2
     - sonarr_3
+  # By default, batches are enabled and will process your library in chunks equal to the correct count options specified above.
+  # If all counts are 0, then a default batch size will be applied
+  # If batching is disabled, this will process up to N items as defined by the count options above and exit.
+  # If batching is disabled and all count values are 0, this will process all items in a single batch.  All items will either be your entire library (if no tag_name
+  # is specified) or it will be all untagged items.
+  # If a tag name is specified and all items are already tagged, it will remove all tags first and then process your library.
+  disable_batching: False
+
+
   # optional flag to process the all items missing a renamed tag in a single run.  If set to true, this will still respect the count options above to create batches.
   # example: if count=10, this will break a 100 item library into 10 separate batches at a time and loop over each batch.
   # otherwise if set to false, this will do the normal behavior where it will only process count # of items (single batch) and then exit

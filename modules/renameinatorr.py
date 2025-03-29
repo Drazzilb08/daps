@@ -211,7 +211,7 @@ def get_count_for_instance_type(count, radarr_count, sonarr_count, instance_type
 
 
 def process_instance(app, rename_folders, server_name, instance_type, count, tag_name, logger,
-                     radarr_count=None, sonarr_count=None, all_in_single_run=False, all_in_single_run_full=False):
+                     radarr_count=None, sonarr_count=None, disable_batching=False):
     """
     Processes the data for a specific instance.
 
@@ -228,6 +228,7 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
         [f"Processing {server_name}"]
     ]
     logger.debug(create_table(table))
+    default_batch_size = 100
 
     # Fetch data related to the instance (Sonarr or Radarr)
     media_dict = handle_starr_data(app, server_name, instance_type, logger, include_episode=False)
@@ -235,29 +236,35 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
     # fetch what we should actually use for the count object
     count = get_count_for_instance_type(count, radarr_count, sonarr_count, instance_type, logger)
 
-    # If count and tag_name is specified, limit the number of items to process that do not have tag_name
     tag_id = None
-    if count and tag_name:
+
+    # if the user specified a tag, get the untagged items
+    if tag_name:
         tag_id = app.get_tag_id_from_name(tag_name)
+        all_items_without_tags = None
         if tag_id:
-            chunks_to_process_this_run = get_untagged_chunks_for_run(media_dict, tag_id, count, all_in_single_run, logger)
-        # If all media is tagged *or* this is designed to process everyhting in a single run, remove tags and fetch new data
-        if not chunks_to_process_this_run or all_in_single_run_full:
+            all_items_without_tags = [item for item in media_dict if tag_id not in item['tags']]
+
+        # if no untagged items, remove all the tags and re-fetch data
+        if not all_items_without_tags:
             media_ids = [item['media_id'] for item in media_dict]
-            logger.debug(f"Media IDs: {media_ids}")
-            if not chunks_to_process_this_run:
-                logger.info("All media is tagged. Removing tags...")
-            else:
-                logger.info(f"removing all tags and then will re-process the entire library since process_all_single_run_full={all_in_single_run_full}")
+            logger.info("All media is tagged. Removing tags...")
             app.remove_tags(media_ids, tag_id)
-            media_dict = handle_starr_data(app, server_name, instance_type, logger, include_episode=False)
-            chunks_to_process_this_run = get_untagged_chunks_for_run(media_dict, tag_id, count, all_in_single_run, logger)
-    else:
-        # otherwise if no count is specified, there's on big chunk to run through.  This keeps the behavior as it stands today...
-        # but I wonder if we should change that to specify a default count and have it loop through everything.
-        # would just do the following with a hard-coded count
-        # chunks_to_process_this_run = get_chunks_for_run(media_dict, tag_id, 100, True, logger)
-        chunks_to_process_this_run = [media_dict] # everything in a single chunk
+            all_items_without_tags = handle_starr_data(app, server_name, instance_type, logger, include_episode=False)
+
+        media_dict = all_items_without_tags
+
+    # if we don't want batching then do it all in one shot
+    if disable_batching:
+        # at this point the media_dict is either the _entire library_ or the untagged items only (which also might be the entire library)
+        if not count:
+            chunks_to_process_this_run = [media_dict] # everything in a single chunk
+        else: # if user specified any count, then grab just a first chunk of that size
+            chunks_to_process_this_run = get_chunks_for_run(media_dict, count, logger)
+            chunks_to_process_this_run = [chunks_to_process_this_run[0]] if chunks_to_process_this_run else []
+    else: # we are doing batching
+        count = count if count else default_batch_size # assign default count in case none was specified
+        chunks_to_process_this_run = get_chunks_for_run(media_dict, count, logger)
 
     logger.info(f"num_chunks= {len(chunks_to_process_this_run)}")
     final_media_dict = []
@@ -316,7 +323,7 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
                 else:
                     logger.info(f"No media to rename on {server_name}...")
 
-                if tag_id and count and tag_name:
+                if tag_id and tag_name:
                     # Add tag to items that were renamed
                     logger.info(f"Adding tag '{tag_name}' to items in {server_name}...")
                     app.add_tags(media_ids, tag_id)
@@ -364,20 +371,18 @@ def process_instance(app, rename_folders, server_name, instance_type, count, tag
     logger.info(str(chunk_progress_bar))
     return final_media_dict
 
-def get_chunks_for_run(media_dict, chunk_size, all_in_single_run, logger):
+def get_chunks_for_run(media_dict, chunk_size, logger):
     chunks = []
 
     # Iterate and chunk the list
     for i in range(0, len(media_dict), chunk_size):
         chunks.append(media_dict[i:i + chunk_size])
-    # return all of the chunks if everything should be processed in the same run
-    # otherwise just return the first chunk
-    chunks_to_process_this_run = chunks if all_in_single_run else ([chunks[0]] if chunks else [])
-    return chunks_to_process_this_run
+
+    return chunks
 
 def get_untagged_chunks_for_run(media_dict, tag_id, chunk_size, all_in_single_run, logger):
     all_items_without_tags = [item for item in media_dict if tag_id not in item['tags']]
-    logger.debug(f"all_items_without_tags= {all_items_without_tags}")
+    # logger.debug(f"all_items_without_tags= {all_items_without_tags}")
 
     return get_chunks_for_run(all_items_without_tags, chunk_size, all_in_single_run, logger)
 
@@ -403,8 +408,7 @@ def main(config):
         tag_name = config.script_config.get('tag_name', None)
         radarr_count = config.script_config.get('radarr_count', None)
         sonarr_count = config.script_config.get('sonarr_count', None)
-        process_all_single_run = config.script_config.get('process_all_single_run', False)
-        process_all_single_run_full = config.script_config.get('process_all_single_run_full', False)
+        disable_batching = config.script_config.get('disable_batching', False)
 
         valid = validate(config, script_config, logger)
         # Log script settings
@@ -420,8 +424,7 @@ def main(config):
         logger.debug(f'{"Tag Name:":<20}{tag_name}')
         logger.debug(f'{"Radarr Count:":<20}{radarr_count}')
         logger.debug(f'{"Sonarr Count:":<20}{sonarr_count}')
-        logger.debug(f'{"All In Single Run:":<20}{process_all_single_run}')
-        logger.debug(f'{"All In Single Run Full":<20}{process_all_single_run_full}')
+        logger.debug(f'{"Disable Batching":<20}{disable_batching}')
         logger.debug(create_bar("-"))
 
         # Handle dry run settings
@@ -446,8 +449,7 @@ def main(config):
 
                     # Process data for the instance and store in output_dict
                     data = process_instance(app, rename_folders, server_name, instance_type, count, tag_name, logger,
-                                            radarr_count=radarr_count, sonarr_count=sonarr_count, all_in_single_run=process_all_single_run,
-                                            all_in_single_run_full=process_all_single_run_full)
+                                            radarr_count=radarr_count, sonarr_count=sonarr_count, disable_batching=disable_batching)
                     output_dict[instance] = {
                         "server_name": server_name,
                         "data": data

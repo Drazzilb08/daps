@@ -1153,9 +1153,6 @@ def is_match(asset, media, logger):
      f"Media ID {media.get('imdb_id')} matches asset IMDB ID {asset.get('imdb_id')}")
     ]
 
-    # logger.warning(json.dumps(asset, indent=4))
-    # logger.warning(json.dumps(media, indent=4))
-
     for condition, message in id_match_criteria:
         if condition:  # Ensure the condition is checked
             logger.debug(f"Match found: {message} -> Asset: {asset.get('title', '')} ({asset.get('year', '')}), Media: {media.get('title', '')} ({media.get('year', '')})")

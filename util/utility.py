@@ -93,7 +93,7 @@ def build_search_index(prefix_index, title, asset, asset_type, logger, debug_ite
     asset_type_processed_forms = prefix_index[asset_type]
     processed = preprocess_name(title)
     debug_build_index = debug_items and len(debug_items) > 0 and processed in debug_items
-
+    
     if debug_build_index:
         logger.info('debug_build_search_index')
         logger.info(processed)
@@ -112,6 +112,7 @@ def build_search_index(prefix_index, title, asset, asset_type, logger, debug_ite
         if word not in asset_type_processed_forms:
             asset_type_processed_forms[word] = list() #maybe consider moving to dequeue?
         asset_type_processed_forms[word].append(asset)
+        
 
         # also add the prefix.  if shorter than prefix_length then it was already added above.
         if len(word) > prefix_length:
@@ -129,8 +130,10 @@ def search_matches(prefix_index, title, asset_type, logger, debug_search=False):
     """Search for matches in the index."""
     matches = []
 
+
     processed_title = preprocess_name(title)
     asset_type_processed_forms = prefix_index[asset_type]
+    
 
     if debug_search:
         logger.info('debug_search_matches')
@@ -287,7 +290,7 @@ def categorize_files(folder_path, logger):
 
     # Define asset types to categorize
     folder_path = folder_path.rstrip('/')  # Remove trailing slash from folder path
-    base_name = os.path.basename(folder_path)  # Get the base folder name
+    folder_name = os.path.basename(folder_path)  # Get the base folder name
 
     # If asset_folders is False, categorize files within the folder
     if not asset_folders:
@@ -309,7 +312,7 @@ def categorize_files(folder_path, logger):
                 # this index is just based on the poster files we are reading in to make looking up what we've processed so far in this dir much faster.
                 build_search_index(prefix_index, title, file, 'files', logger)
             # Loop through each file in the folder
-            progress_bar = tqdm(files, desc=f"Processing '{base_name}' folder", total=len(files), disable=None, leave=True)
+            progress_bar = tqdm(files, desc=f"Processing '{folder_name}' folder", total=len(files), disable=None, leave=True)
             start_time = datetime.datetime.now()
             for file in progress_bar:
                 if file.startswith('.') or "(N-A)" in file:
@@ -996,6 +999,86 @@ def sort_assets(assets_list, logger, debug_items=None, prefix_index=None):
     logger.debug(f"Categorized {len(assets_list)} assets in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s)")
     return assets_dict
 
+def get_assets_files(source_dirs, logger, debug_items=None):
+    """
+    Get assets files from source directories
+
+    Args:
+        source_dir (list): Path to source directory
+    Returns:
+        list: List of dictionaries containing assets files
+    """
+
+    # Convert source_dirs to list if it's a string
+    source_dirs = [source_dirs] if isinstance(source_dirs, str) else source_dirs
+
+    # Initialize final_assets list
+    final_assets = []
+    prefix_index = create_new_empty_index()
+    prefix_index['posters'] = {}
+    # Iterate through each source directory
+    for source_dir in source_dirs:
+        new_assets = categorize_files(source_dir, logger)
+        
+        if new_assets:
+            # Merge new_assets with final_assets
+            for new in new_assets:
+                found_match = False
+                debug_assets = debug_items and len(debug_items) > 0 and (debug_item in new['normalized_title'] for debug_item in debug_items)
+                if debug_assets:
+                    logger.info(f"found new asset: {new}")
+                search_matched_assets = search_matches(prefix_index, new['title'], 'posters', logger)
+                for final in search_matched_assets:
+                    if debug_assets:
+                        logger.info(f"comparing to final asset {final}")
+                    if final['normalized_title'] == new['normalized_title'] and final['year'] == new['year']:
+                        if debug_assets:
+                            logger.info('found a match')
+                            logger.info(final)
+                        found_match = True
+                        # Compare normalized file names between final and new assets
+                        for new_file in new['files']:
+                            normalized_new_file = normalize_file_names(os.path.basename(new_file))
+                            for final_file in final['files']:
+                                normalized_final_file = normalize_file_names(os.path.basename(final_file))
+                                # Replace final file with new file if the filenames match
+                                if normalized_final_file == normalized_new_file:
+                                    if debug_assets:
+                                        logger.info('swapping file')
+                                        logger.info(f"replacing {final_file}")
+                                        logger.info(f"with {new_file}")
+                                        logger.info(f"files before: {final['files']}")
+                                    final['files'].remove(final_file)
+                                    final['files'].append(new_file)
+                                    break
+                            else:
+                                # Add new file to final asset if the filenames don't match
+                                if debug_assets:
+                                    logger.info("files did not match")
+                                    logger.info(normalized_final_file)
+                                    logger.info(normalized_new_file)
+                                    logger.info(f"adding to files: {new_file}")
+                                final['files'].append(new_file)
+                        # Merge season_numbers from new asset to final asset
+                        new_season_numbers = new.get('season_numbers', None)
+                        if new_season_numbers:
+                            final_season_numbers = final.get('season_numbers', None)
+                            if final_season_numbers:
+                                final['season_numbers'] = list(set(final_season_numbers + new_season_numbers))
+                            else:
+                                final['season_numbers'] = new_season_numbers
+                        break
+                if not found_match:
+                    if debug_assets:
+                        logger.info("didn't find a match, appending")
+                        logger.info(new)
+                    final_assets.append(new)
+                    build_search_index(prefix_index, new['title'], new, 'posters', logger)
+
+        else:
+            logger.error(f"No assets found in {source_dir}")
+    return final_assets
+
 def compare_strings(string1, string2):
     """
     Compare two strings for equality
@@ -1042,21 +1125,26 @@ def is_match(asset, media, logger):
         return any(asset_year == year for year in media_years if year is not None)
 
     match_criteria = [
-        (media.get('db_id') is not None and (asset.get('tvdb_id') or asset.get('tmdb_id')) is not None and media['db_id'] == (asset.get('tvdb_id') or asset.get('tmdb_id')), f"Media ID {media.get('db_id')} matches asset ID {asset.get('tvdb_id') or asset.get('tmdb_id')}"),
-        (media.get('title') == asset.get('title'), "Title match"),
-        (media.get('title') in asset.get('no_prefix', []), "Title in no_prefix"),
-        (media.get('title') in asset.get('no_suffix', []), "Title in no_suffix"),
-        (media.get('title') in asset.get('alternate_titles', []), "Title in alternate titles"),
-        (media.get('original_title') == asset.get('title'), "Original title match"),
-        (media.get('folder_title') == asset.get('title'), "Folder title match"),
-        (media.get('normalized_title') == asset.get('normalized_title'), "Normalized title match"),
-        (media.get('normalized_title') == asset.get('normalized_folder_title'), "Normalized folder title match"),
+        (asset.get('normalized_title') == media.get('normalized_title'), "Normalized title match"),
+        (asset.get('normalized_title') == media.get('normalized_folder_title'), "Normalized folder title match"),
+        (asset.get('normalized_title') in media.get('normalized_alternate_titles', []), "Normalized title in normalized alternate titles"),
+        (asset.get('normalized_title') in media.get('no_prefix_normalized', []), "Normalized title in no_prefix_normalized"),
+        (asset.get('normalized_title') in media.get('no_suffix_normalized', []), "Normalized title in no_suffix_normalized"),
+        (asset.get('title') == media.get('title'), "Title match"),
+        (asset.get('title') in media.get('no_prefix', []), "Title in no_prefix"),
+        (asset.get('title') in media.get('no_suffix', []), "Title in no_suffix"),
+        (asset.get('title') in media.get('alternate_titles', []), "Title in alternate titles"),
+        (asset.get('original_title') == media.get('title'), "Original title match"),
+        (asset.get('folder_title') == media.get('title'), "Folder title match"),
         (media.get('normalized_title') in asset.get('no_prefix_normalized', []), "Normalized title in no_prefix_normalized"),
         (media.get('normalized_title') in asset.get('no_suffix_normalized', []), "Normalized title in no_suffix_normalized"),
-        (media.get('normalized_title') in asset.get('normalized_alternate_titles', []), "Normalized title in normalized alternate titles"),
         (compare_strings(media.get('title', ''), asset.get('title', '')), "String comparison match"),
         (compare_strings(media.get('normalized_title', ''), asset.get('normalized_title', '')), "Normalized string comparison match"),
     ]
+
+    if media.get('db_id') is not None and (asset.get('tvdb_id') or asset.get('tmdb_id')) is not None and media['db_id'] == (asset.get('tvdb_id') or asset.get('tmdb_id')):
+        logger.debug(f"ID Match {media.get('db_id')} matches asset ID {asset.get('tvdb_id') or asset.get('tmdb_id')}")
+        return True
 
     # Check match criteria
     for condition, message in match_criteria:

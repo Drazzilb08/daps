@@ -105,6 +105,9 @@ discord:
     # Will notify if a label has been added/removed to a movie or series
     discord_webhook:
     channel_id:
+  health_checkarr:
+    discord_webhook:
+    channel_id:
   nohl_bash:
     # Will notify if a non-hardlinked file has been found
     discord_webhook:

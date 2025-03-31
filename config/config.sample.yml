@@ -105,6 +105,9 @@ discord:
     # Will notify if a label has been added/removed to a movie or series
     discord_webhook: 
     channel_id: 
+  health_checkarr:
+    discord_webhook:
+    channel_id:
   nohl_bash:
     # Will notify if a non-hardlinked file has been found
     discord_webhook: 
@@ -131,7 +134,7 @@ sync_gdrive:
   # NOTE: Include the curly braces
   token: { "access_token": "value", "token_type": "Bearer", "refresh_token": "value", "expiry": "value" }
   # The location of your rclone service account file (JSON)
-  gdrive_sa_location: /config/rclone_sa.json 
+  gdrive_sa_location: # /config/rclone_sa.json 
   gdrive_sync: # example of multiple gdrive_id's with multiple sync_locations as objects, we have deprecated gdrive_id and sync_location so please use this instead
       # id: The ID of the folder you want to sync from
       # location: Where you want to sync the posters to

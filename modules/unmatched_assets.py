@@ -91,7 +91,6 @@ def match_assets(assets_dict, media_dict, ignore_root_folders, logger):
                 # Compare media data with each asset data for the same media type
                 for asset_data in assets_dict[media_type]:
                     asset_seasons_numbers = asset_data.get('season_numbers', None)
-
                     # Check if the asset matches the media
                     if is_match(asset_data, media_data, logger):
                         matched = True
@@ -274,12 +273,15 @@ def main(config):
             else:
                 logger.error(f"No assets found in {path}.")
         
-        # Checking for assets and logging
+        print("Gathering all the posters, please wait...")
+        assets_list = get_assets_files(source_dirs, logger, debug_items=None)
+
+        prefix_index = create_new_empty_index()
         if assets_list:
-            assets_dict = sort_assets(assets_list, logger)
-            logger.debug(f"Assets:\n{json.dumps(assets_dict, indent=4)}")
+            assets_dict = sort_assets(assets_list, logger, debug_items=None, prefix_index=prefix_index)
+            logger.debug(f"Assets Dictionary:\n{json.dumps(assets_dict, indent=4)}")
         else:
-            logger.error("No assets found, Check source_dirs setting in your config. Exiting.")
+            logger.error("No assets found. Exiting...")
             return
 
         # Fetch information from Plex and StARR

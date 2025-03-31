@@ -41,85 +41,6 @@ script_name = "poster_renamerr"
 
 year_regex = re.compile(r"\s?\((\d{4})\).*")
 
-def get_assets_files(source_dirs, logger, debug_items=None):
-    """
-    Get assets files from source directories
-
-    Args:
-        source_dir (list): Path to source directory
-    Returns:
-        list: List of dictionaries containing assets files
-    """
-
-    # Convert source_dirs to list if it's a string
-    source_dirs = [source_dirs] if isinstance(source_dirs, str) else source_dirs
-
-    # Initialize final_assets list
-    final_assets = []
-    prefix_index = create_new_empty_index()
-    prefix_index['posters'] = {}
-    # Iterate through each source directory
-    for source_dir in source_dirs:
-        new_assets = categorize_files(source_dir, logger)
-        if new_assets:
-            # Merge new_assets with final_assets
-            for new in new_assets:
-                found_match = False
-                debug_assets = debug_items and len(debug_items) > 0 and (debug_item in new['normalized_title'] for debug_item in debug_items)
-                if debug_assets:
-                    logger.info(f"found new asset: {new}")
-                search_matched_assets = search_matches(prefix_index, new['normalized_title'], 'posters', logger)
-                for final in search_matched_assets:
-                    if debug_assets:
-                        logger.info(f"comparing to final asset {final}")
-                    if final['normalized_title'] == new['normalized_title'] and final['year'] == new['year']:
-                        if debug_assets:
-                            logger.info('found a match')
-                            logger.info(final)
-                        found_match = True
-                        # Compare normalized file names between final and new assets
-                        for new_file in new['files']:
-                            normalized_new_file = normalize_file_names(os.path.basename(new_file))
-                            for final_file in final['files']:
-                                normalized_final_file = normalize_file_names(os.path.basename(final_file))
-                                # Replace final file with new file if the filenames match
-                                if normalized_final_file == normalized_new_file:
-                                    if debug_assets:
-                                        logger.info('swapping file')
-                                        logger.info(f"replacing {final_file}")
-                                        logger.info(f"with {new_file}")
-                                        logger.info(f"files before: {final['files']}")
-                                    final['files'].remove(final_file)
-                                    final['files'].append(new_file)
-                                    break
-                            else:
-                                # Add new file to final asset if the filenames don't match
-                                if debug_assets:
-                                    logger.info("files did not match")
-                                    logger.info(normalized_final_file)
-                                    logger.info(normalized_new_file)
-                                    logger.info(f"adding to files: {new_file}")
-                                final['files'].append(new_file)
-                        # Merge season_numbers from new asset to final asset
-                        new_season_numbers = new.get('season_numbers', None)
-                        if new_season_numbers:
-                            final_season_numbers = final.get('season_numbers', None)
-                            if final_season_numbers:
-                                final['season_numbers'] = list(set(final_season_numbers + new_season_numbers))
-                            else:
-                                final['season_numbers'] = new_season_numbers
-                        break
-                if not found_match:
-                    if debug_assets:
-                        logger.info("didn't find a match, appending")
-                        logger.info(new)
-                    final_assets.append(new)
-                    build_search_index(prefix_index, new['title'], new, 'posters', logger)
-
-        else:
-            logger.error(f"No assets found in {source_dir}")
-    return final_assets
-
 def handle_series_match(asset, media_seasons_numbers, asset_season_numbers):
     # Iterate through each file in the asset
         files_to_remove = []
@@ -213,11 +134,7 @@ def match_data(media_dict, asset_files, prefix_index, logger=None, debug_items=N
 
                         if not matched:
                             non_matches += 1
-                            unmatched_dict.append({
-                                'title': media['title'],
-                                'year': media['year'],
-                                'folder': media['folder'],
-                            })
+                            unmatched_dict.append(media)
 
                         combined_dict['matched'][asset_type] = matched_dict
                         combined_dict['unmatched'][asset_type] = unmatched_dict
@@ -683,6 +600,8 @@ def main(config):
         prefix_index = create_new_empty_index()
         if assets_list:
             assets_dict = sort_assets(assets_list, logger, debug_items=search_index_debug_normalized_items, prefix_index=prefix_index)
+            logger.debug(f"Assets Dictionary:\n{json.dumps(assets_dict, indent=4)}")
+
         else:
             logger.error("No assets found. Exiting...")
             return

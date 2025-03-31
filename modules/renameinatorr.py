@@ -1,9 +1,9 @@
-#   _____                                 _             _                  
-#  |  __ \                               (_)           | |                 
-#  | |__) |___ _ __   __ _ _ __ ___   ___ _ _ __   __ _| |_ ___  _ __ _ __ 
+#   _____                                 _             _
+#  |  __ \                               (_)           | |
+#  | |__) |___ _ __   __ _ _ __ ___   ___ _ _ __   __ _| |_ ___  _ __ _ __
 #  |  _  // _ \ '_ \ / _` | '_ ` _ \ / _ \ | '_ \ / _` | __/ _ \| '__| '__|
-#  | | \ \  __/ | | | (_| | | | | | |  __/ | | | | (_| | || (_) | |  | |   
-#  |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|_| |_|\__,_|\__\___/|_|  |_|   
+#  | | \ \  __/ | | | (_| | | | | | |  __/ | | | | (_| | || (_) | |  | |
+#  |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|_| |_|\__,_|\__\___/|_|  |_|
 # ===================================================================================================
 # Author: Drazzilb
 # Description: This script will rename all series in Sonarr/Radarr to match the naming scheme of the
@@ -36,10 +36,10 @@ script_name = "renameinatorr"
 def print_output(output_dict, logger):
     """
     Prints the output of the script to the console.
-    
+
     Args:
         output_dict (dict): Dictionary containing the output of the script.
-        
+
     Returns:
         None
     """
@@ -50,30 +50,30 @@ def print_output(output_dict, logger):
             [f"{instance_data['server_name'].capitalize()} Rename List"],
         ]
         logger.info(create_table(table))
-        
+
         # Iterate through each item in the instance's data
         for item in instance_data['data']:
             # Display title and year if available
             if item['file_info'] or item['new_path_name']:
                 logger.info(f"{item['title']} ({item['year']})")
-            
+
             # Display folder rename information if available
             if item['new_path_name']:
                 if item['new_path_name']:
                     logger.info(f"\tFolder Renamed: {item['path_name']} -> {item['new_path_name']}")
-            
+
             # Display file information if available
             if item['file_info']:
                 logger.info(f"\tFiles:")
                 for existing_path, new_path in item['file_info'].items():
                     logger.info(f"\t\tOriginal: {existing_path}\n\t\tNew: {new_path}\n")
         logger.info('')
-        
+
         # Calculate total counts for various rename items
         total_items = len(instance_data['data'])
         total_rename_items = len([value['file_info'] for value in instance_data['data'] if value['file_info']])
         total_folder_rename = len([value['new_path_name'] for value in instance_data['data'] if value['new_path_name']])
-        
+
         # Display summary of rename actions if any rename occurred
         if any(value['file_info'] or value['new_path_name'] for value in instance_data['data']):
             table = [
@@ -92,10 +92,10 @@ def print_output(output_dict, logger):
 def notification(output_dict, logger):
     """
     Sends a notification to Discord with the output of the script.
-    
+
     Args:
         output_dict (dict): Dictionary containing the output of the script.
-        
+
     Returns:
         None
     """
@@ -105,7 +105,7 @@ def notification(output_dict, logger):
 
     # Process each instance's data in the output dictionary
     for instance, instance_data in output_dict.items():
-        
+
         # Iterate through each item in the instance's data
         for item in instance_data['data']:
             # Prepare information for Discord message fields for each item (file renames and folder renames)
@@ -113,20 +113,20 @@ def notification(output_dict, logger):
                 current_field = ""
                 name = f"{item['title']} ({item['year']})"
                 item_messages = []
-                
+
                 # Collect folder rename information if available
                 if item['new_path_name']:
                     item_messages.append(f"Folder:\n{item['path_name']} -> {item['new_path_name']}\n")
-                
+
                 # Collect file rename information if available
                 if item['file_info']:
                     for existing_path, new_path in item['file_info'].items():
                         item_messages.append(f"{existing_path}\n\n{new_path}\n")
-                
+
                 # Split collected messages into multiple fields if exceeding character limits
                 for message in item_messages:
                     if len(current_field) + len(message) + len("\t\n") <= 1000:
-                        current_field += message + "\n" 
+                        current_field += message + "\n"
                     else:
                         fields.append({
                             "name": name,
@@ -134,7 +134,7 @@ def notification(output_dict, logger):
                         })
                         current_field = message + "\n"
                         name = ""
-                
+
                 # Append the last remaining field or set of fields
                 if current_field:
                     fields.append({
@@ -188,145 +188,204 @@ def notification(output_dict, logger):
     for key, value in discord_dict.items():
         total_character_count_per_key[key] = sum(len(field['value']) for field in value)
     for key, value in discord_dict.items():
-        print(f"Sending message {key} of {len(discord_dict)}")
+        logger.debug(f"Sending message {key} of {len(discord_dict)}")
         discord(fields=value, logger=logger, script_name=script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
         if key % 5 == 0:
-            print("Pausing for 5 seconds to let Discord catch up...")
+            logger.debug("Pausing for 5 seconds to let Discord catch up...")
             time.sleep(5)
 
+def get_count_for_instance_type(count, radarr_count, sonarr_count, instance_type, logger):
+    if instance_type == "radarr":
+        # if it's specified and > 0, override
+        if radarr_count:
+            logger.debug(f"radarr_count found! overriding count from {count} to {radarr_count}")
+            count = radarr_count
+    elif instance_type == "sonarr":
+        # if it's specified and > 0, override
+        if sonarr_count:
+            logger.debug(f"sonarr_count found! overriding count from {count} to {sonarr_count}")
+            count = sonarr_count
 
-def process_instance(app, rename_folders, server_name, instance_type, count, tag_name, logger):
+    logger.info(f"using count= {count} for instance_type= {instance_type}")
+    return count
+
+
+def process_instance(app, rename_folders, server_name, instance_type, count, tag_name, logger,
+                     radarr_count=None, sonarr_count=None, disable_batching=False):
     """
     Processes the data for a specific instance.
-    
+
     Args:
         app (StARR): StARR object for the instance.
         rename_folders (bool): Whether or not to rename folders.
         server_name (str): Name of the instance.
         instance_type (str): Type of instance (Sonarr or Radarr).
-        
+
     Returns:
         list: List of dictionaries containing the data for each item.
     """
     table = [
         [f"Processing {server_name}"]
     ]
-    print(create_table(table))
-    
+    logger.debug(create_table(table))
+    default_batch_size = 100
+
     # Fetch data related to the instance (Sonarr or Radarr)
     media_dict = handle_starr_data(app, server_name, instance_type, logger, include_episode=False)
 
-    # If count and tag_name is specified, limit the number of items to process that do not have tag_name
-    tag_id = None
-    if count and tag_name:
-        tag_id = app.get_tag_id_from_name(tag_name)
-        if tag_id:
-            media_tmp = [item for item in media_dict if tag_id not in item['tags']][:count]
+    # fetch what we should actually use for the count object
+    count = get_count_for_instance_type(count, radarr_count, sonarr_count, instance_type, logger)
 
-        # If all media is tagged, remove tags and fetch new data
-        if not media_tmp:
+    tag_id = None
+
+    # if the user specified a tag, get the untagged items
+    if tag_name:
+        tag_id = app.get_tag_id_from_name(tag_name)
+        all_items_without_tags = None
+        if tag_id:
+            all_items_without_tags = [item for item in media_dict if tag_id not in item['tags']]
+
+        # if no untagged items, remove all the tags and re-fetch data
+        if not all_items_without_tags:
             media_ids = [item['media_id'] for item in media_dict]
-            print(f"Media IDs: {media_ids}")
             logger.info("All media is tagged. Removing tags...")
             app.remove_tags(media_ids, tag_id)
-            media_dict = handle_starr_data(app, server_name, instance_type, logger, include_episode=False)
-            media_dict = [item for item in media_dict if tag_id not in item['tags']][:count]
-        else:
-            media_dict = media_tmp
-    
-    logger.debug(f"media dict:\n{json.dumps(media_dict, indent=4)}")
+            all_items_without_tags = handle_starr_data(app, server_name, instance_type, logger, include_episode=False)
 
-    # Process each item in the fetched data
-    rename_response = []
-    if media_dict:
-        print("Processing data... This may take a while.")
-        for item in tqdm(media_dict, desc=f"Processing '{server_name}' Media", unit="items", disable=None, leave=True):
-            file_info = {}
-            # Fetch rename list and sort it by existingPath
-            rename_response = app.get_rename_list(item['media_id'])
-            rename_response.sort(key=lambda x: x['existingPath'])
+        media_dict = all_items_without_tags
 
-            # Process each item in the rename list to get file rename information
-            for items in rename_response:
-                existing_path = items.get('existingPath', None)
-                new_path = items.get('newPath', None)
-                
-                # Remove 'Season' folders from paths if they exist
-                pattern = r"Season \d{1,2}/" 
-                if re.search(pattern, existing_path) or re.search(pattern, new_path):
-                    existing_path = re.sub(pattern, "", existing_path)
-                    new_path = re.sub(pattern, "", new_path)
-                
-                file_info[existing_path] = new_path
-            
-            # Update item with file rename information
-            item["new_path_name"] = None
-            item["file_info"] = file_info
-        
-        # If not in dry run, perform file renaming
-        if not dry_run:
-            # Get media IDs and initiate file renaming
-            media_ids = []
-            media_ids = [item['media_id'] for item in media_dict]
+    # if we don't want batching then do it all in one shot
+    if disable_batching:
+        # at this point the media_dict is either the _entire library_ or the untagged items only (which also might be the entire library)
+        if not count:
+            chunks_to_process_this_run = [media_dict] # everything in a single chunk
+        else: # if user specified any count, then grab just a first chunk of that size
+            chunks_to_process_this_run = get_chunks_for_run(media_dict, count, logger)
+            chunks_to_process_this_run = [chunks_to_process_this_run[0]] if chunks_to_process_this_run else []
+    else: # we are doing batching
+        count = count if count else default_batch_size # assign default count in case none was specified
+        chunks_to_process_this_run = get_chunks_for_run(media_dict, count, logger)
 
-            if media_ids:
-                # Rename files and wait for media refresh
-                app.rename_media(media_ids)              
-                
-                # Refresh media and wait for it to be ready
-                print(f"Refreshing {server_name}...")
-                response = app.refresh_items(media_ids)
-                
-                # Wait for media to be ready
-                ready = app.wait_for_command(response['id'])
+    logger.info(f"num_chunks= {len(chunks_to_process_this_run)}")
+    final_media_dict = []
+    chunk_progress_bar = tqdm(chunks_to_process_this_run, desc=f"Processing batches for '{server_name}'...", unit="items", disable=None, leave=True)
+    for chunk in chunk_progress_bar:
+        media_dict = chunk
+        logger.debug(f"media dict:\n{json.dumps(media_dict, indent=4)}")
+        # Process each item in the fetched data
+        rename_response = []
+        if media_dict:
+            logger.info("Processing data... This may take a while.")
+            progress_bar = tqdm(media_dict, desc=f"Processing single batch for '{server_name}'...", unit="items", disable=None, leave=True)
+            for item in progress_bar:
+                file_info = {}
+                # Fetch rename list and sort it by existingPath
+                rename_response = app.get_rename_list(item['media_id'])
+                rename_response.sort(key=lambda x: x['existingPath'])
 
-                if ready:
-                    logger.info(f"Media refreshed on {server_name}...")
-                    ready = False
-            else:
-                logger.info(f"No media to rename on {server_name}...")
+                # Process each item in the rename list to get file rename information
+                for items in rename_response:
+                    existing_path = items.get('existingPath', None)
+                    new_path = items.get('newPath', None)
 
-            if tag_id and count and tag_name:
-                # Add tag to items that were renamed
-                print(f"Adding tag '{tag_name}' to items in {server_name}...")
-                app.add_tags(media_ids, tag_id)
-            
-            # Group and rename root folders if necessary
-            grouped_root_folders = {}
+                    # Remove 'Season' folders from paths if they exist
+                    pattern = r"Season \d{1,2}/"
+                    if re.search(pattern, existing_path) or re.search(pattern, new_path):
+                        existing_path = re.sub(pattern, "", existing_path)
+                        new_path = re.sub(pattern, "", new_path)
 
-            # Group root folders by root folder name
-            if rename_folders:
-                print(f"Renaming folders in {server_name}...")
-                for item in media_dict:
-                    root_folder = item["root_folder"]
-                    if root_folder not in grouped_root_folders:
-                        grouped_root_folders[root_folder] = []
-                    grouped_root_folders[root_folder].append(item['media_id'])
-                
-                # Rename folders and wait for media refresh
-                for root_folder, media_ids in grouped_root_folders.items():
-                    app.rename_folders(media_ids, root_folder)
-                
-                # Refresh media and wait for it to be ready
-                print(f"Refreshing {server_name}...")
-                response = app.refresh_items(media_ids)
+                    file_info[existing_path] = new_path
 
-                # Wait for media to be ready
-                print(f"Waiting for {server_name} to refresh...")
-                ready = app.wait_for_command(response['id'])
-                
-                print(f"Folders renamed in {server_name}...")
-                # Get updated media data and update item with new path names
-                if ready:
-                    print(f"Fetching updated data for {server_name}...")
-                    new_media_dict = handle_starr_data(app, server_name, instance_type, logger, include_episode=False)
-                    for new_item in new_media_dict:
-                        for old_item in media_dict:
-                            if new_item['media_id'] == old_item['media_id']:
-                                if new_item['path_name'] != old_item['path_name']:
-                                    old_item['new_path_name'] = new_item['path_name']
-    
-    return media_dict
+                # Update item with file rename information
+                item["new_path_name"] = None
+                item["file_info"] = file_info
+            logger.info(str(progress_bar))
+            # If not in dry run, perform file renaming
+            if not dry_run:
+                # Get media IDs and initiate file renaming
+                media_ids = []
+                media_ids = [item['media_id'] for item in media_dict]
+
+                if media_ids:
+                    # Rename files and wait for media refresh
+                    app.rename_media(media_ids)
+
+                    # Refresh media and wait for it to be ready
+                    logger.info(f"Refreshing {server_name}...")
+                    response = app.refresh_items(media_ids)
+
+                    # Wait for media to be ready
+                    ready = app.wait_for_command(response['id'])
+
+                    if ready:
+                        logger.info(f"Media refreshed on {server_name}...")
+                        ready = False
+                else:
+                    logger.info(f"No media to rename on {server_name}...")
+
+                if tag_id and tag_name:
+                    # Add tag to items that were renamed
+                    logger.info(f"Adding tag '{tag_name}' to items in {server_name}...")
+                    app.add_tags(media_ids, tag_id)
+
+                # Group and rename root folders if necessary
+                grouped_root_folders = {}
+
+                # Group root folders by root folder name
+                if rename_folders:
+                    logger.info(f"Renaming folders in {server_name}...")
+                    for item in media_dict:
+                        root_folder = item["root_folder"]
+                        if root_folder not in grouped_root_folders:
+                            grouped_root_folders[root_folder] = []
+                        grouped_root_folders[root_folder].append(item['media_id'])
+
+                    # Rename folders and wait for media refresh
+                    for root_folder, media_ids in grouped_root_folders.items():
+                        logger.debug(f"renaming root folder {root_folder}")
+                        app.rename_folders(media_ids, root_folder)
+
+                    # Refresh media and wait for it to be ready
+                    logger.info(f"Refreshing {server_name}...")
+                    response = app.refresh_items(media_ids)
+
+                    # Wait for media to be ready
+                    logger.info(f"Waiting for {server_name} to refresh...")
+                    ready = app.wait_for_command(response['id'])
+
+                    logger.info(f"Folders renamed in {server_name}...")
+                    # Get updated media data and update item with new path names
+                    if ready:
+                        logger.info(f"Fetching updated data for {server_name}...")
+                        new_media_dict = handle_starr_data(app, server_name, instance_type, logger, include_episode=False)
+                        for new_item in new_media_dict:
+                            for old_item in media_dict:
+                                if new_item['media_id'] == old_item['media_id']:
+                                    logger.debug(f"checking if item {new_item['media_id']} changed...")
+                                    if new_item['path_name'] != old_item['path_name']:
+                                        logger.debug(f"item {new_item['media_id']} changed from {old_item['path_name']} to {new_item['path_name']}")
+                                        old_item['new_path_name'] = new_item['path_name']
+        final_media_dict.extend(media_dict)
+        logger.info(str(chunk_progress_bar))
+
+    logger.info(str(chunk_progress_bar))
+    return final_media_dict
+
+def get_chunks_for_run(media_dict, chunk_size, logger):
+    chunks = []
+
+    # Iterate and chunk the list
+    for i in range(0, len(media_dict), chunk_size):
+        chunks.append(media_dict[i:i + chunk_size])
+
+    return chunks
+
+def get_untagged_chunks_for_run(media_dict, tag_id, chunk_size, all_in_single_run, logger):
+    all_items_without_tags = [item for item in media_dict if tag_id not in item['tags']]
+    # logger.debug(f"all_items_without_tags= {all_items_without_tags}")
+
+    return get_chunks_for_run(all_items_without_tags, chunk_size, all_in_single_run, logger)
+
 
 def main(config):
     """
@@ -347,8 +406,11 @@ def main(config):
         rename_folders = config.script_config.get('rename_folders', False)
         count = config.script_config.get('count', 0)
         tag_name = config.script_config.get('tag_name', None)
+        radarr_count = config.script_config.get('radarr_count', None)
+        sonarr_count = config.script_config.get('sonarr_count', None)
+        disable_batching = config.script_config.get('disable_batching', False)
+
         valid = validate(config, script_config, logger)
-        
         # Log script settings
         table = [
             ["Script Settings"]
@@ -360,8 +422,11 @@ def main(config):
         logger.debug(f'{"Rename Folders:":<20}{rename_folders}')
         logger.debug(f'{"Count:":<20}{count}')
         logger.debug(f'{"Tag Name:":<20}{tag_name}')
+        logger.debug(f'{"Radarr Count:":<20}{radarr_count}')
+        logger.debug(f'{"Sonarr Count:":<20}{sonarr_count}')
+        logger.debug(f'{"Disable Batching":<20}{disable_batching}')
         logger.debug(create_bar("-"))
-        
+
         # Handle dry run settings
         if dry_run:
             table = [
@@ -370,10 +435,10 @@ def main(config):
             ]
             logger.info(create_table(table))
             logger.info('')
-        
+
         # Output dictionary to store processed data
         output_dict = {}
-        
+
         # Process instances and gather data
         for instance_type, instance_data in config.instances_config.items():
             for instance in instances:
@@ -381,14 +446,15 @@ def main(config):
                     # Initialize StARR object for the instance
                     app = StARR(instance_data[instance]['url'], instance_data[instance]['api'], logger)
                     server_name = app.get_instance_name()
-                    
+
                     # Process data for the instance and store in output_dict
-                    data = process_instance(app, rename_folders, server_name, instance_type, count, tag_name, logger)
+                    data = process_instance(app, rename_folders, server_name, instance_type, count, tag_name, logger,
+                                            radarr_count=radarr_count, sonarr_count=sonarr_count, disable_batching=disable_batching)
                     output_dict[instance] = {
                         "server_name": server_name,
                         "data": data
                     }
-        
+
         # Print output and send notifications if data exists
         if any(value['data'] for value in output_dict.values()):
             print_output(output_dict, logger)

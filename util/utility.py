@@ -749,6 +749,7 @@ def handle_starr_data(app, server_name, instance_type, logger, include_episode=F
                 'year': year,
                 'media_id': item['id'],
                 'db_id': item['tmdbId'] if instance_type == "radarr" else item['tvdbId'],
+                'imdb_id': item['imdbId'],
                 'monitored': item['monitored'],
                 'status': item['status'],
                 'root_folder': item['rootFolderPath'],
@@ -1141,10 +1142,24 @@ def is_match(asset, media, logger):
         (compare_strings(media.get('title', ''), asset.get('title', '')), "String comparison match"),
         (compare_strings(media.get('normalized_title', ''), asset.get('normalized_title', '')), "Normalized string comparison match"),
     ]
+    id_match_criteria = [
+    (media.get('db_id') is not None and asset.get('tvdb_id') is not None and media['db_id'] == asset.get('tvdb_id'), 
+     f"Media ID {media.get('db_id')} matches asset TVDB ID {asset.get('tvdb_id')}"),
+    
+    (media.get('db_id') is not None and asset.get('tmdb_id') is not None and media['db_id'] == asset.get('tmdb_id'), 
+     f"Media ID {media.get('db_id')} matches asset TMDB ID {asset.get('tmdb_id')}"),
+    
+    (media.get('imdb_id') is not None and asset.get('imdb_id') is not None and media['imdb_id'] == asset.get('imdb_id'), 
+     f"Media ID {media.get('imdb_id')} matches asset IMDB ID {asset.get('imdb_id')}")
+    ]
 
-    if media.get('db_id') is not None and (asset.get('tvdb_id') or asset.get('tmdb_id')) is not None and media['db_id'] == (asset.get('tvdb_id') or asset.get('tmdb_id')):
-        logger.debug(f"ID Match {media.get('db_id')} matches asset ID {asset.get('tvdb_id') or asset.get('tmdb_id')}")
-        return True
+    # logger.warning(json.dumps(asset, indent=4))
+    # logger.warning(json.dumps(media, indent=4))
+
+    for condition, message in id_match_criteria:
+        if condition:  # Ensure the condition is checked
+            logger.debug(f"Match found: {message} -> Asset: {asset.get('title', '')} ({asset.get('year', '')}), Media: {media.get('title', '')} ({media.get('year', '')})")
+            return True
 
     # Check match criteria
     for condition, message in match_criteria:

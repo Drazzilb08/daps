@@ -749,7 +749,7 @@ def handle_starr_data(app, server_name, instance_type, logger, include_episode=F
                 'year': year,
                 'media_id': item['id'],
                 'db_id': item['tmdbId'] if instance_type == "radarr" else item['tvdbId'],
-                'imdb_id': item['imdbId'],
+                'imdb_id': item.get('imdbId', None),
                 'monitored': item['monitored'],
                 'status': item['status'],
                 'root_folder': item['rootFolderPath'],

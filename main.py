@@ -14,6 +14,9 @@ import datetime
 # Set the current time
 current_time = datetime.datetime.now().strftime("%H:%M")
 
+#TODO: Remove me
+logger.info("Development Version")
+
 already_run = {}
 
 list_of_python_scripts = [

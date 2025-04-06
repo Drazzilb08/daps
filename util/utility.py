@@ -1119,46 +1119,54 @@ def is_match(asset, media, logger):
         asset_year = asset.get('year')
         media_years = [media.get(year_key) for year_key in ['year', 'secondary_year', 'folder_year']]
 
-        # If both asset_year and all media_years are None, return True
         if asset_year is None and all(year is None for year in media_years):
             return True
 
         return any(asset_year == year for year in media_years if year is not None)
 
+    # Check if both have any ID (TVDB, TMDB, or IMDB)
+    has_asset_ids = any(asset.get(k) for k in ['tvdb_id', 'tmdb_id', 'imdb_id'])
+    has_media_ids = any(media.get(k) for k in ['db_id', 'imdb_id'])
+
+    if has_asset_ids and has_media_ids:
+        id_match_criteria = [
+            (media.get('db_id') is not None and asset.get('tvdb_id') is not None and media['db_id'] == asset['tvdb_id'], 
+             f"Media ID {media.get('db_id')} matches asset TVDB ID {asset.get('tvdb_id')}"),
+
+            (media.get('db_id') is not None and asset.get('tmdb_id') is not None and media['db_id'] == asset['tmdb_id'], 
+             f"Media ID {media.get('db_id')} matches asset TMDB ID {asset.get('tmdb_id')}"),
+
+            (media.get('imdb_id') is not None and asset.get('imdb_id') is not None and media['imdb_id'] == asset['imdb_id'], 
+             f"Media ID {media.get('imdb_id')} matches asset IMDB ID {asset.get('imdb_id')}")
+        ]
+
+        for condition, message in id_match_criteria:
+            if condition:
+                logger.debug(f"Match found: {message} -> Asset: {asset.get('title', '')} ({asset.get('year', '')}), Media: {media.get('title', '')} ({media.get('year', '')})")
+                return True
+
+        # If both had IDs but none matched, skip further matching
+        return False
+
+    # Fallback to metadata-based matching
     match_criteria = [
         (asset.get('normalized_title') == media.get('normalized_title'), "Normalized title match"),
+        (asset.get('title') == media.get('title'), "Title match"),
+        (asset.get('title') in media.get('alternate_titles', []), "Title in alternate titles"),
         (asset.get('normalized_title') == media.get('normalized_folder_title'), "Normalized folder title match"),
         (asset.get('normalized_title') in media.get('normalized_alternate_titles', []), "Normalized title in normalized alternate titles"),
         (asset.get('normalized_title') in media.get('no_prefix_normalized', []), "Normalized title in no_prefix_normalized"),
         (asset.get('normalized_title') in media.get('no_suffix_normalized', []), "Normalized title in no_suffix_normalized"),
-        (asset.get('title') == media.get('title'), "Title match"),
         (asset.get('title') in media.get('no_prefix', []), "Title in no_prefix"),
         (asset.get('title') in media.get('no_suffix', []), "Title in no_suffix"),
-        (asset.get('title') in media.get('alternate_titles', []), "Title in alternate titles"),
         (asset.get('original_title') == media.get('title'), "Original title match"),
         (asset.get('folder_title') == media.get('title'), "Folder title match"),
-        (media.get('normalized_title') in asset.get('no_prefix_normalized', []), "Normalized title in no_prefix_normalized"),
-        (media.get('normalized_title') in asset.get('no_suffix_normalized', []), "Normalized title in no_suffix_normalized"),
+        (media.get('normalized_title') in asset.get('no_prefix_normalized', []), "Normalized title in asset no_prefix_normalized"),
+        (media.get('normalized_title') in asset.get('no_suffix_normalized', []), "Normalized title in asset no_suffix_normalized"),
         (compare_strings(media.get('title', ''), asset.get('title', '')), "String comparison match"),
         (compare_strings(media.get('normalized_title', ''), asset.get('normalized_title', '')), "Normalized string comparison match"),
     ]
-    id_match_criteria = [
-    (media.get('db_id') is not None and asset.get('tvdb_id') is not None and media['db_id'] == asset.get('tvdb_id'), 
-     f"Media ID {media.get('db_id')} matches asset TVDB ID {asset.get('tvdb_id')}"),
-    
-    (media.get('db_id') is not None and asset.get('tmdb_id') is not None and media['db_id'] == asset.get('tmdb_id'), 
-     f"Media ID {media.get('db_id')} matches asset TMDB ID {asset.get('tmdb_id')}"),
-    
-    (media.get('imdb_id') is not None and asset.get('imdb_id') is not None and media['imdb_id'] == asset.get('imdb_id'), 
-     f"Media ID {media.get('imdb_id')} matches asset IMDB ID {asset.get('imdb_id')}")
-    ]
 
-    for condition, message in id_match_criteria:
-        if condition:  # Ensure the condition is checked
-            logger.debug(f"Match found: {message} -> Asset: {asset.get('title', '')} ({asset.get('year', '')}), Media: {media.get('title', '')} ({media.get('year', '')})")
-            return True
-
-    # Check match criteria
     for condition, message in match_criteria:
         if condition and year_matches():
             logger.debug(f"Match found: {message} -> Asset: {asset.get('title', '')} ({asset.get('year', '')}), Media: {media.get('title', '')} ({media.get('year', '')})")

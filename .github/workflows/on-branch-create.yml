@@ -1,24 +1,12 @@
-name: Docker Latest Release
+name: Tag Docker Image for New Branch
 
 on:
-  push:
+  create:
     branches:
-      - "master"
-    paths-ignore:
-      - "**/README.md"
-      - "**/.github/**"
-  pull_request:
-    types:
-      - closed
-    branches:
-      - "master"
-    paths-ignore:
-      - "**/README.md"
-      - "**/.github/**"
+      - '*'  # Triggers on branch creation
 
 jobs:
-  docker-latest:
-    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+  docker-tag:
     runs-on: ubuntu-latest
 
     steps:
@@ -30,6 +18,10 @@ jobs:
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
+      - name: Get the new branch name
+        id: get_branch
+        run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -44,15 +36,15 @@ jobs:
           username: ${{ secrets.GH_USERNAME }}
           password: ${{ secrets.GH_TOKEN }}
 
-      - name: Build and push Docker images
+      - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           file: ./Dockerfile
           platforms: linux/amd64,linux/arm64
           build-args: |
-            BRANCH=master
+            "BRANCH=${{ steps.get_branch.outputs.BRANCH_NAME }}"
           push: true
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/daps:latest
-            ghcr.io/drazzilb08/daps:latest
+            ${{ secrets.DOCKER_USERNAME }}/daps:${{ steps.get_branch.outputs.BRANCH_NAME }}
+            ghcr.io/drazzilb08/daps:${{ steps.get_branch.outputs.BRANCH_NAME }}

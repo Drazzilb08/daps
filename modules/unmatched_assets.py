@@ -23,6 +23,7 @@ import sys
 from util.utility import *
 from util.arrpy import StARR
 from util.logger import setup_logger
+import copy
 
 try:
     from plexapi.server import PlexServer
@@ -34,7 +35,7 @@ except ImportError as e:
 
 script_name = "unmatched_assets"
 
-def match_assets(assets_dict, media_dict, ignore_root_folders, logger):
+def match_data(media_dict, assets_dict, prefix_index, ignore_root_folders, logger):
     """
     Matches assets to media and returns a dictionary of unmatched assets.
     
@@ -46,6 +47,7 @@ def match_assets(assets_dict, media_dict, ignore_root_folders, logger):
     Returns:
         dict: Dictionary of unmatched assets.
     """
+
     
     # Initialize dictionary to store unmatched assets by media types
     unmatched_assets = {}
@@ -87,9 +89,9 @@ def match_assets(assets_dict, media_dict, ignore_root_folders, logger):
                 if media_type == 'series':
                     media_seasons_numbers = [season['season_number'] for season in media_data.get('seasons', []) if season['season_has_episodes']]
 
-                
+                search_matched_assets = search_matches(prefix_index, media_data['title'], media_type, logger)
                 # Compare media data with each asset data for the same media type
-                for asset_data in assets_dict[media_type]:
+                for asset_data in search_matched_assets:
                     asset_seasons_numbers = asset_data.get('season_numbers', None)
                     # Check if the asset matches the media
                     if is_match(asset_data, media_data, logger):
@@ -249,7 +251,6 @@ def main(config):
         ignore_collections = script_config.get('ignore_collections', [])
         instances = script_config.get('instances', None)
         ignore_root_folders = script_config.get('ignore_root_folders', [])
-        valid = validate(config, script_config, logger)
 
         # Logging script settings
         table = [
@@ -263,28 +264,12 @@ def main(config):
         logger.debug(f'{"Instances:":<20}{instances}')
         logger.debug(create_bar("-"))
 
-        source_dirs = [source_dirs] if isinstance(source_dirs, str) else source_dirs 
-
-        assets_list = []
-        for path in source_dirs:
-            results = categorize_files(path, logger)
-            if results:
-                assets_list.extend(results)
-            else:
-                logger.error(f"No assets found in {path}.")
-        
-        print("Gathering all the posters, please wait...")
-        assets_list = get_assets_files(source_dirs, logger, debug_items=None)
-
         prefix_index = create_new_empty_index()
-        if assets_list:
-            assets_dict = sort_assets(assets_list, logger, debug_items=None, prefix_index=prefix_index)
-            logger.debug(f"Assets Dictionary:\n{json.dumps(assets_dict, indent=4)}")
-        else:
-            logger.error("No assets found. Exiting...")
+        print("Gathering all the posters, please wait...")
+        assets_dict, prefix_index = get_assets_files(source_dirs, logger)
+        if not assets_dict:
             return
-
-        # Fetch information from Plex and StARR
+        logger.debug(f"Assets Dictionary:\n{json.dumps(assets_dict, indent=4)}")
         media_dict = {
             'movies': [],
             'series': [],
@@ -338,9 +323,16 @@ def main(config):
             logger.error("No media found, Check instances setting in your config. Exiting.")
             return
         else:
-            logger.debug(f"Media:\n{json.dumps(media_dict, indent=4)}")
+            # Create duplicate dictionary and remove season key from each item for logging
+            media_dict_copy = copy.deepcopy(media_dict)
+            for media_type, media_list in media_dict_copy.items():
+                for media in media_list:
+                    if 'seasons' in media:
+                        del media['seasons']
+            logger.debug(f"Media Dictionary:\n{json.dumps(media_dict_copy, indent=4)}")
+
         # Matching assets and printing output
-        unmatched_dict, skipped = match_assets(assets_dict, media_dict, ignore_root_folders, logger)
+        unmatched_dict, skipped = match_data(media_dict, assets_dict, prefix_index, ignore_root_folders, logger)
         if skipped:
             logger.debug("The following media was skipped due to it not being released, ended, or continuing:")
             for item in skipped:

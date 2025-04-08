@@ -40,7 +40,7 @@ def notification(output, logger):
     delete_list = []
 
     for item in output:
-        delete_list.append(f"**{item['title']}**\t\t{item['db_id']}")
+        delete_list.append(f"**{item['title']}**\t\t{item['tvdb_id'] if item['instance_type'] == "sonarr" else item['tmdb_id']}")
     # convert delete_list to a string
     delete_list = "\n".join(delete_list)
     fields = {
@@ -108,8 +108,8 @@ def main(config):
                     logger.debug(f"id_list:\n{json.dumps(id_list, indent=4)}")
                     output = []
                     for item in tqdm(media_dict, desc=f"Processing {instance_type}", unit="items", disable=None, total=len(media_dict)):
-                        if item['db_id'] in id_list:
-                            logger.debug(f"Found {item['title']} with: {item['db_id']}")
+                        if item['tvdb_id'] if item['instance_type'] == "sonarr" else item['tmdb_id'] in id_list:
+                            logger.debug(f"Found {item['title']} with: {item['tvdb_id'] if item['instance_type'] == "sonarr" else item['tmdb_id']}")
                             output.append(item)
                     logger.debug(f"output:\n{json.dumps(output, indent=4)}")
 
@@ -117,7 +117,7 @@ def main(config):
                         logger.info(f"Deleting {len(output)} {instance_type} items from {server_name}")
                         for item in tqdm(output, desc=f"Deleting {instance_type} items", unit="items", disable=None, total=len(output)):
                             if not dry_run:
-                                logger.info(f"{item['title']} deleted with id: {item['media_id']} and tvdb/tmdb id: {item['db_id']}")
+                                logger.info(f"{item['title']} deleted with id: {item['media_id']} and tvdb/tmdb id: {item['tvdb_id'] if item['instance_type'] == "sonarr" else item['tmdb_id']}")
                                 app.delete_media(item['media_id'])
                             else:
                                 logger.info(f"{item['title']} would have been deleted with id: {item['media_id']}")

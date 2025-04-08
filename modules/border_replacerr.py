@@ -64,7 +64,6 @@ def check_holiday(data, border_colors, logger):
 
         # If schedule exists for the holiday
         if schedule:
-            
             # Check if the schedule matches the range pattern
             if re.match(pattern, schedule):
                 
@@ -82,15 +81,13 @@ def check_holiday(data, border_colors, logger):
                         ]
                         logger.info(create_table(table))
                         logger.info(f"Schedule: {holiday.capitalize()} | Using {', '.join(holiday_colors)} border colors.")
-                    
-                    return holiday_colors, True, holiday  # Return the colors for the holiday
-                    
+                    return holiday_colors, True  # Return the colors for the holiday
             else:
                 # Log an error if the schedule doesn't match the expected pattern
                 logger.error(f"Error: {schedule} is not a valid range schedule.")
     
     # Return the original border colors if no range schedule was found or executed
-    return border_colors, False, None
+    return border_colors, False
 
 
 def convert_to_rgb(hex_color, logger):
@@ -464,32 +461,20 @@ def process_files(source_dirs, destination_dir, dry_run, log_level, script_confi
         if (renamed_assets):
             renamed_assets = None # if there's a schedule it implies the configuration can change so we should not allow an incremental run
             logger.info(f"Bypassing incremental run since a schedule is set")
-        border_colors, run_holiday, holiday = check_holiday(schedule, border_colors, logger)
+        border_colors, run_holiday = check_holiday(schedule, border_colors, logger)
     
     if not os.path.exists(destination_dir):
         logger.error(f"Output directory {destination_dir} does not exist.")
         return
 
-    assets_list = []
     incremental_run = False
     # Categorize files in the input directory into assets
     if not renamed_assets:
         for path in source_dirs:
-            results = categorize_files(path, logger)
-            if results:
-                assets_list.extend(results)
-            else:
-                logger.error(f"No assets found in {path}.")
-
-        if assets_list:
-            assets_dict = sort_assets(assets_list, logger)
-            logger.debug(f"Asset Files:\n{json.dumps(assets_dict, indent=4)}")
-        else:
-            logger.error(f"No assets found in {(', '.join(source_dirs))}, if running Poster Renamerr in dry_run, this is expected")
-            return
+            assets_dict, prefix_index = get_assets_files(path, logger)
     else:
         assets_dict = renamed_assets
-        logger.info(f"Doing an incremental run on only assetss that were provided")
+        logger.info(f"\nDoing an incremental run on only assets that were provided\n")
         incremental_run = True
 
     # If Run holiday is False and Skip is set to True, return

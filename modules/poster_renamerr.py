@@ -594,18 +594,12 @@ def main(config):
         else:
             logger.debug(f"Sync posters is disabled. Skipping...")
 
-        print("Gathering all the posters, please wait...")
-        assets_list = get_assets_files(source_dirs, logger, debug_items=search_index_debug_normalized_items)
-
         prefix_index = create_new_empty_index()
-        if assets_list:
-            assets_dict = sort_assets(assets_list, logger, debug_items=search_index_debug_normalized_items, prefix_index=prefix_index)
-            logger.debug(f"Assets Dictionary:\n{json.dumps(assets_dict, indent=4)}")
-
-        else:
-            logger.error("No assets found. Exiting...")
+        print("Gathering all the posters, please wait...")
+        assets_dict, prefix_index = get_assets_files(source_dirs, logger)
+        if not assets_dict:
             return
-
+        logger.debug(f"Assets Dictionary:\n{json.dumps(assets_dict, indent=4)}")
         media_dict = {
             'movies': [],
             'series': [],
@@ -668,7 +662,15 @@ def main(config):
             print(f"Matching media to assets, please wait...")
             combined_dict = match_data(media_dict, assets_dict, prefix_index, logger, debug_items=search_index_debug_normalized_items)
             if any(combined_dict.get('unmatched', {}).values()):
-                logger.debug(f"Unmatched Dictionary.\n{json.dumps(combined_dict['unmatched'], indent=4)}")
+                # Create duplicate dictionary and remove season key from each item for logging
+                combined_dict_copy = copy.deepcopy(combined_dict)
+                for media_type, media_list in combined_dict_copy['unmatched'].items():
+                    for media in media_list:
+                        if 'seasons' in media:
+                            del media['seasons']
+                logger.debug(f"Unmatched Dictionary:\n{json.dumps(combined_dict_copy, indent=4)}")
+            else:
+                logger.debug(f"No unmatched assets found.")
             matched_assets = combined_dict.get('matched', None)
             if any(matched_assets.values()):
                 output, renamed_assets = rename_files(matched_assets, script_config, logger)
@@ -690,6 +692,8 @@ def main(config):
             from util.config import Config
             replacerr_config = Config("border_replacerr")
             replacerr_script_config = replacerr_config.script_config
+            renamed_assets=(renamed_assets if incremental_border_replacerr else None)
+            logger.debug(f"Renamed assets:\n{json.dumps(renamed_assets, indent=4)}")
             process_files(tmp_dir, destination_dir, dry_run, log_level, replacerr_script_config, logger, renamed_assets=(renamed_assets if incremental_border_replacerr else None)) # pass in renamed_assets here
             logger.info(f"Finished running border_replacerr.py")
         else:

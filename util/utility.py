@@ -6,6 +6,7 @@ import subprocess
 import math
 import pathlib
 import datetime
+from collections import defaultdict
 
 try:
     import html
@@ -26,14 +27,10 @@ folder_year_regex = re.compile(r"(.*)\s\((\d{4})\)")
 # Regex to remove special characters from the title
 remove_special_chars = re.compile(r'[^a-zA-Z0-9\s]+')
 # Season number regex
-season_number_regex = re.compile(r'[-_]\s*Season\s*(\d+)')
+season_number_regex = re.compile(r'(?:[-\s_]+)?Season\s*(\d{1,2})', re.IGNORECASE)
+# Regex for season patterns
+season_pattern = re.compile(r"(?:\s*-\s*Season\s*\d+|_Season\d{1,2}|\s*-\s*Specials|_Specials)", re.IGNORECASE)
 
-# List of season name info to match against
-season_name_info = [
-    "_Season",
-    " - Season ",
-    " - Specials"
-]
 
 # List of words to remove from titles
 words_to_remove = [
@@ -43,6 +40,7 @@ words_to_remove = [
     "(CA)",
     "(NZ)",
     "(FR)",
+    "(NL)",
 ]
 
 # List of prefixes and suffixes to remove from titles for comparison
@@ -58,7 +56,7 @@ suffixes = [
 ]
 
 # length to use as a prefix.  anything shorter than this will be used as-is
-prefix_length = 3
+prefix_length = 4
 
 def create_new_empty_index():
     # dict per asset type to map asset prefixes to the assets, themselves.
@@ -80,6 +78,9 @@ def preprocess_name(name: str) -> str:
     name = re.sub(r'[^a-zA-Z0-9\s]', '', name.lower())
     # Remove extra whitespace
     name = ' '.join(name.split())
+
+    # Convert special characters to ASCII equivalent
+    name = unidecode(html.unescape(name))
 
     # Optionally remove common words
     common_words = {'the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to'}
@@ -129,7 +130,6 @@ def build_search_index(prefix_index, title, asset, asset_type, logger, debug_ite
 def search_matches(prefix_index, title, asset_type, logger, debug_search=False):
     """Search for matches in the index."""
     matches = []
-
 
     processed_title = preprocess_name(title)
     asset_type_processed_forms = prefix_index[asset_type]
@@ -272,7 +272,8 @@ def _is_asset_folders(folder_path):
                 return True
         return False
 
-def categorize_files(folder_path, logger):
+
+def process_files(folder_path, logger):
     """
     Categorize files into movies, collections, and series
 
@@ -285,150 +286,118 @@ def categorize_files(folder_path, logger):
     """
 
     asset_folders = _is_asset_folders(folder_path)
-
+    start_time = datetime.datetime.now()
     assets_dict = []
-
-    # Define asset types to categorize
-    folder_path = folder_path.rstrip('/')  # Remove trailing slash from folder path
-    folder_name = os.path.basename(folder_path)  # Get the base folder name
-
-    # If asset_folders is False, categorize files within the folder
+    groups = None
     if not asset_folders:
-        # Get list of files in the folder
-        try:
-            files = [f.name for f in os.scandir(folder_path) if f.is_file()]
-        except FileNotFoundError:
-            return None
-        files = sorted(files, key=lambda x: x.lower())  # Sort files alphabetically
-        # loop over all files here and build a file index
-        if files:
-            # initialize the indices for this directory
-            prefix_index = create_new_empty_index()
-            prefix_index['files'] = {}
-            prefix_index['assets'] = {}
-            for file in files:
-                base_name, extension = os.path.splitext(file)
-                title = re.sub(year_regex, '', base_name)
-                # this index is just based on the poster files we are reading in to make looking up what we've processed so far in this dir much faster.
-                build_search_index(prefix_index, title, file, 'files', logger)
-            # Loop through each file in the folder
-            progress_bar = tqdm(files, desc=f"Processing '{folder_name}' folder", total=len(files), disable=None, leave=True)
-            start_time = datetime.datetime.now()
-            for file in progress_bar:
-                if file.startswith('.') or "(N-A)" in file:
-                    continue  # Skip hidden files or files with "(N-A)" in the name
+        files = os.listdir(folder_path)
+        groups = defaultdict(list)
 
-                # Extract information from the file name
-                base_name, extension = os.path.splitext(file)
-                title = re.sub(year_regex, '', base_name)
-                normalize_title = normalize_titles(base_name)
+        normalized_map = {}
 
+        for file in files:
+            if file.startswith('.'):
+                continue  # Skip hidden files
+
+            title = file.rsplit('.', 1)[0]
+            title = unidecode(html.unescape(title))
+            raw_title = season_pattern.split(title)[0].strip()
+            normalized_title = re.sub(r'[^a-zA-Z0-9]', '', raw_title).lower()
+            # Check if we've already seen a normalized title
+            if normalized_title in normalized_map:
+                match_key = normalized_map[normalized_title]
+                groups[match_key].append(file)
+            else:
+                # First time seeing this normalized title
+                groups[raw_title].append(file)
+                normalized_map[normalized_title] = raw_title
+
+        # Sort the groups by title
+        groups = dict(sorted(groups.items(), key=lambda x: x[0].lower()))
+        
+        assets_dict = []
+        with tqdm(total=len(groups), desc=f"Processing files in '{os.path.basename(folder_path)}'", leave=True) as pbar:
+            for base_name, files in groups.items():
+                tmdb_id = None
+                tvdb_id = None
+                imdb_id = None
+
+                title = re.sub(year_regex, '', base_name)
+                # Extract year from the file name
                 try:
                     year = int(year_regex.search(base_name).group(1))
                 except:
                     year = None
+                
+                # Extract IDs from the file name
+                tmdb_id = next((int(match.group(1)) for match in [re.search(r'tmdb[-_\s](\d+)', base_name)] if match), None)
+                tvdb_id = next((int(match.group(1)) for match in [re.search(r'tvdb[-_\s](\d+)', base_name)] if match), None)
+                imdb_id = next((match.group(1) for match in [re.search(r'imdb[-_\s](tt\d+)', base_name)] if match), None)
 
-                # # Extract ID Data if present
-                tmdb_id = next((int(match.group(1)) for match in [re.search(r'tmdb[-_\s](\d+)', file)] if match), None)
-                tvdb_id = next((int(match.group(1)) for match in [re.search(r'tvdb[-_\s](\d+)', file)] if match), None)
-                imdb_id = next((match.group(1) for match in [re.search(r'imdb[-_\s](tt\d+)', file)] if match), None)
 
-                file_path = f"{folder_path}/{file}"  # Full file path
-
-                if not year:  # If year is not found in the file name
-                    # Categorize as a collection
-                    # Additional processing for collection items
-                    no_prefix = [re.sub(r'\b{}\b'.format(prefix), '', title).strip() for prefix in prefixes if title.startswith(prefix) and re.sub(r'\b{}\b'.format(prefix), '', title).strip() != title]
-                    no_suffix = [re.sub(r'\b{}\b'.format(suffix), '', title).strip() for suffix in suffixes if title.endswith(suffix) and re.sub(r'\b{}\b'.format(suffix), '', title).strip() != title]
-                    no_prefix_normalized = [normalize_titles(re.sub(r'\b{}\b'.format(prefix), '', title).strip()) for prefix in prefixes if title.startswith(prefix) and normalize_titles(re.sub(r'\b{}\b'.format(prefix), '', title).strip()) != normalize_title]
-                    no_suffix_normalized = [normalize_titles(re.sub(r'\b{}\b'.format(suffix), '', title).strip()) for suffix in suffixes if title.endswith(suffix) and normalize_titles(re.sub(r'\b{}\b'.format(suffix), '', title).strip()) != normalize_title]
+                # Check for series keywords or if any file in the group contains season info
+                is_series = any(season_pattern.search(file) for file in files)
+                # Check if any file has 'Collection' or is missing a year
+                is_collection = not year
+                # Normalize the title for comparison
+                normalize_title = normalize_titles(base_name)
+                # alphabetize files
+                # Extract year from the file name
+                files.sort()
+                files = [os.path.join(folder_path, file) for file in files if not file.startswith('.')]
+                if is_collection:
+                    asset_type = 'collections'
                     item = {
-                        'type': 'collection',
-                        'title': title,
-                        'year': year,
+                        'type': asset_type,
+                        'title': unidecode(html.unescape(title)),
                         'normalized_title': normalize_title,
-                        'no_prefix': no_prefix,
-                        'no_suffix': no_suffix,
-                        'no_prefix_normalized': no_prefix_normalized,
-                        'no_suffix_normalized': no_suffix_normalized,
+                        'no_prefix': [re.sub(r'\b{}\b'.format(prefix), '', title).strip() for prefix in prefixes if title.startswith(prefix) and re.sub(r'\b{}\b'.format(prefix), '', title).strip() != title],
+                        'no_suffix': [re.sub(r'\b{}\b'.format(suffix), '', title).strip() for suffix in suffixes if title.endswith(suffix) and re.sub(r'\b{}\b'.format(suffix), '', title).strip() != title],
+                        'no_prefix_normalized': [normalize_titles(re.sub(r'\b{}\b'.format(prefix), '', title).strip()) for prefix in prefixes if title.startswith(prefix) and normalize_titles(re.sub(r'\b{}\b'.format(prefix), '', title).strip()) != normalize_title],
+                        'no_suffix_normalized': [normalize_titles(re.sub(r'\b{}\b'.format(suffix), '', title).strip()) for suffix in suffixes if title.endswith(suffix) and normalize_titles(re.sub(r'\b{}\b'.format(suffix), '', title).strip()) != normalize_title],
                         'path': None,
-                        'files': [file_path],
+                        'files': files,
                     }
                     assets_dict.append(item)
-                    # this index is to store the final asset overall, primarily for use with shows, but worth being consistent for movies & collections, too
-                    build_search_index(prefix_index, item['normalized_title'], item, 'assets', logger)
-                else:
-                    # Categorize as a series
-                    if any(file.startswith(base_name) and any(base_name + season_name in file for season_name in season_name_info) for file in search_matches(prefix_index, title, 'files', logger)) or any(word in file for word in season_name_info):
-                        # Check if the series entry already exists in the assets dictionary
-                        series_entry = next((d for d in prefix_index['assets'].get(normalize_title[:prefix_length], []) 
-                                            if d['type'] == 'series' and d['normalized_title'] == normalize_title and d['year'] == year), None)
-                        if series_entry is None:
-                            # If not, add a new series entry
-                            series_entry = {
-                                'type': 'series',
-                                'title': title,
-                                'year': year,
-                                'normalized_title': normalize_title,
-                                'files': [file_path],
-                                'tvdb_id': tvdb_id,
-                                'imdb_id': imdb_id,
-                                'season_numbers': []
-                            }
-                            assets_dict.append(series_entry)
-                            # this index is to store the final asset overall so that lookups can occur much more quickly. Primarily for shows
-                            build_search_index(prefix_index, series_entry['normalized_title'], series_entry, 'assets', logger)
-                        else:
-                            # Add the file path to the current series entry
-                            if file_path not in series_entry['files']:
-                                if normalize_file_names(file_path) not in [normalize_file_names(f) for f in series_entry['files']]:
-                                    series_entry['files'].append(file_path)
-
-                    # Categorize as a movie
-                    else:
-                        item = {
-                            'type': 'movie',
-                            'title': title,
+                elif is_series:
+                    # Check if the series entry already exists in the assets dictionary
+                    # If not, add a new series entry
+                    asset_type = 'series'
+                    item = {
+                            'type': asset_type,
+                            'title': unidecode(html.unescape(title)),
                             'year': year,
-                            'normalized_title': normalize_title,
-                            'path': None,
-                            'tmdb_id': tmdb_id,
+                            'tvdb_id': tvdb_id,
                             'imdb_id': imdb_id,
-                            'files': [file_path],
+                            'normalized_title': normalize_title,
+                            'files': files,
+                            'season_numbers': []
                         }
-                        assets_dict.append(item)
-                        # this index is to store the final asset overall so that lookups can occur much more quickly. Primarily for shows
-                        build_search_index(prefix_index, item['title'], item, 'assets', logger)
-            end_time = datetime.datetime.now()
-            elapsed_time = (end_time - start_time).total_seconds()
-            items_per_second = len(files) / elapsed_time if elapsed_time > 0 else 0
-            logger.debug(f"Processed {len(files)} files in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s) in folder '{os.path.basename(folder_path.rstrip('/'))}'")
-        else:
-            return None
-
-        # Add Season number information to the series entries
-        if assets_dict:
-            # Get Season numbers from each series entry
-            series = [d for d in assets_dict if 'season_numbers' in d]
-            if series:
-                for series_entry in series:
-                    for file in series_entry['files']:
+                    # Check for season numbers in the file name using regex
+                    for file in files:
                         if " - Specials" in file:
-                            series_entry['season_numbers'].append(0)
-
-                        # Check for season numbers in the file name using regex
+                            item['season_numbers'].append(0)
                         elif re.search(season_number_regex, file):
                             match = re.search(season_number_regex, file)
                             if match:
-                                series_entry['season_numbers'].append(int(match.group(1)))
-                    # Sort the season numbers and file paths for the current series entry
-                    if series_entry is not None:
-                        # Remove duplicates
-                        series_entry['season_numbers'] = list(set(map(int, series_entry['season_numbers'])))
-                        series_entry['season_numbers'].sort()
-                        # Remove duplicates
-                        series_entry['files'] = list(set(series_entry['files']))
-                        series_entry['files'].sort()
+                                item['season_numbers'].append(int(match.group(1)))
+                    assets_dict.append(item)
+                else:
+                    # Categorize as a movie
+                    asset_type = 'movies'
+                    item = {
+                        'type': asset_type,
+                        'title': unidecode(html.unescape(title)),
+                        'year': year,
+                        'tmdb_id': tmdb_id,
+                        'imdb_id': imdb_id,
+                        'normalized_title': normalize_title,
+                        'path': None,
+                        'files': files,
+                    }
+                    assets_dict.append(item)
+                # Update the progress bar
+                pbar.update(1)
     else:  # If asset_folders is True, sort assets based on folders
         try:
             progress_bar = tqdm(os.scandir(folder_path), desc='Processing posters', total=len(os.listdir(folder_path)), disable=None)
@@ -444,12 +413,30 @@ def categorize_files(folder_path, logger):
                     title = re.sub(year_regex, '', base_name)
                     normalize_title = normalize_titles(base_name)
 
+                    tmdb_id = None
+                    tvdb_id = None
+                    imdb_id = None
+
+                    title = re.sub(year_regex, '', base_name)
+                    # Extract year from the file name
                     try:
                         year = int(year_regex.search(base_name).group(1))
                     except:
                         year = None
+                    
+                    # Extract IDs from the file name
+                    tmdb_id = next((int(match.group(1)) for match in [re.search(r'tmdb[-_\s](\d+)', base_name)] if match), None)
+                    tvdb_id = next((int(match.group(1)) for match in [re.search(r'tvdb[-_\s](\d+)', base_name)] if match), None)
+                    imdb_id = next((match.group(1) for match in [re.search(r'imdb[-_\s](tt\d+)', base_name)] if match), None)
 
-                    if not year:  # If year is not found in the folder name
+
+                    # Check for series keywords or if any file in the group contains season info
+                    is_series = any("Season" in file for file in files)
+                    # Check if any file has 'Collection' or is missing a year
+                    is_collection = not year
+                    # Normalize the title for comparison
+
+                    if is_collection:  # If year is not found in the folder name
                         # Categorize as a collection
                         # Process files within the folder and add to the collection
                         files = []
@@ -458,7 +445,8 @@ def categorize_files(folder_path, logger):
                                 continue
                             files.append(f"{dir}/{file}")
                         assets_dict.append({
-                            'title': title,
+                            'type': 'collections',
+                            'title': unidecode(html.unescape(title)),
                             'year': year,
                             'normalized_title': normalize_title,
                             'no_prefix': [title.replace(prefix, '').strip() for prefix in prefixes if title.startswith(prefix)],
@@ -468,58 +456,65 @@ def categorize_files(folder_path, logger):
                             'path': dir,
                             'files': files,
                         })
-                    else:
-                        # If year is found in the folder name
-                        # Check if the folder contains series or movies based on certain criteria
-                        # (presence of Season information for series, etc. - specific to the context)
-                        if any("Season" in file for file in files):
-                            list_of_season_numbers = []
-                            list_of_files = []
-                            for file in files:
-                                if file.startswith('.'):
-                                    continue
-                                if "season" in file.lower():
-                                    season_numbers = int(re.search(r'Season\s*(\d+)', file).group(1))
-                                    if season_numbers not in list_of_season_numbers:
-                                        list_of_season_numbers.append(season_numbers)
-                                    if file not in list_of_files:
-                                        list_of_files.append(f"{dir}/{file}")
-                                if "poster" in file.lower():
+                    elif is_series:
+                        list_of_season_numbers = []
+                        list_of_files = []
+                        for file in files:
+                            if file.startswith('.'):
+                                continue
+                            if "season" in file.lower():
+                                season_numbers = int(re.search(r'Season\s*(\d+)', file).group(1))
+                                if season_numbers not in list_of_season_numbers:
+                                    list_of_season_numbers.append(season_numbers)
+                                if file not in list_of_files:
                                     list_of_files.append(f"{dir}/{file}")
+                            if "poster" in file.lower():
+                                list_of_files.append(f"{dir}/{file}")
 
-                            # sort the season numbers and files
-                            list_of_season_numbers.sort()
-                            list_of_files.sort()
+                        # sort the season numbers and files
+                        list_of_season_numbers.sort()
+                        list_of_files.sort()
 
-                            # Add series data to the assets dictionary
-                            assets_dict.append({
-                                'title': title,
-                                'year': year,
-                                'normalized_title': normalize_title,
-                                'season_numbers': list_of_season_numbers,
-                                'path': dir,
-                                'files': list_of_files,
-                            })
+                        # Add series data to the assets dictionary
+                        assets_dict.append({
+                            'type': 'series',
+                            'title': unidecode(html.unescape(title)),
+                            'year': year,
+                            'normalized_title': normalize_title,
+                            'tvdb_id': tvdb_id,
+                            'imdb_id': imdb_id,
+                            'season_numbers': list_of_season_numbers,
+                            'path': dir,
+                            'files': list_of_files,
+                        })
 
-                        else:
-                            files = []
-                            for file in os.listdir(dir):
-                                if file.startswith('.'):
-                                    continue
-                                files.append(f"{dir}/{file}")
-                            assets_dict.append({
-                                'title': title,
-                                'year': year,
-                                'normalized_title': normalize_title,
-                                'path': dir,
-                                'files': files,
-                            })
-            end_time = datetime.datetime.now()
-            elapsed_time = (end_time - start_time).total_seconds()
-            items_per_second = len(os.listdir(folder_path)) / elapsed_time if elapsed_time > 0 else 0
-            logger.debug(f"Processed {len(os.listdir(folder_path))} folders in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s)")
+                    else:
+                        files = []
+                        for file in os.listdir(dir):
+                            if file.startswith('.'):
+                                continue
+                            files.append(f"{dir}/{file}")
+                        assets_dict.append({
+                            'type': 'movies',
+                            'title': unidecode(html.unescape(title)),
+                            'year': year,
+                            'normalized_title': normalize_title,
+                            'tmdb_id': tmdb_id,
+                            'imdb_id': imdb_id,
+                            'path': dir,
+                            'files': files,
+                        })
         except FileNotFoundError:
-            return None
+            return None, None  # Handle the case where the folder does not exist
+    end_time = datetime.datetime.now()
+    elapsed_time = (end_time - start_time).total_seconds()
+    items_per_second = 0
+    if groups:
+        items_per_second = len(groups) / elapsed_time if elapsed_time > 0 else 0
+        logger.info(f"Processed {len(groups)} files in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s) in folder '{os.path.basename(folder_path.rstrip('/'))}'")
+    else:
+        items_per_second - len(os.listdir(folder_path)) / elapsed_time if elapsed_time > 0 else 0
+        logger.info(f"Processed {len(os.listdir(folder_path))} files in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s) in folder '{os.path.basename(folder_path.rstrip('/'))}'")
     return assets_dict
 
 def create_table(data):
@@ -648,7 +643,7 @@ def get_media_folders(paths, logger):
 
                 # Add series data to the media dictionary
                 media_dict['series'].append({
-                    'title': title,
+                    'title': unidecode(html.unescape(title)),
                     'year': year,
                     'normalized_title': normalized_title,
                     'season_numbers': season_numbers,
@@ -658,7 +653,7 @@ def get_media_folders(paths, logger):
             else:
                 # Add movie data to the media dictionary
                 media_dict['movies'].append({
-                    'title': title,
+                    'title': unidecode(html.unescape(title)),
                     'year': year,
                     'normalized_title': normalized_title,
                     'path': os.path.join(path, item),
@@ -745,10 +740,10 @@ def handle_starr_data(app, server_name, instance_type, logger, include_episode=F
                 folder = os.path.basename(os.path.normpath(item['path']))
             # Construct a dictionary for each item and append it to media_dict
             media_dict.append({
-                'title': title,
+                'title': unidecode(html.unescape(title)),
                 'year': year,
                 'media_id': item['id'],
-                'db_id': item['tmdbId'] if instance_type == "radarr" else item['tvdbId'],
+                'tmdb_id' if instance_type == "radarr" else 'tvdb_id': item['tmdbId'] if instance_type == "radarr" else item['tvdbId'],
                 'imdb_id': item.get('imdbId', None),
                 'monitored': item['monitored'],
                 'status': item['status'],
@@ -816,12 +811,13 @@ def get_plex_data(plex, library_names, logger, include_smart, collections_only):
             progress_bar = tqdm(collection_names, desc=f"Processing Plex collection data for '{library_name}'", total=len(collection_names), disable=None, leave=True)
             start_time = datetime.datetime.now()
             for collection in progress_bar:
+                collection = unidecode(html.unescape(collection))
                 title = normalize_titles(collection)
                 alternate_titles = []
-                if title.endswith(" collection"):
-                    alternate_titles.append(title.removesuffix(" collection"))
+                if title.endswith(" Collection"):
+                    alternate_titles.append(title.removesuffix(" Collection"))
                 else:
-                    alternate_titles.append(normalize_titles(title + " collection"))
+                    alternate_titles.append(normalize_titles(title + " Collection"))
                 plex_dict.append({
                     'title': collection,
                     'normalized_title': title,
@@ -843,7 +839,7 @@ def get_plex_data(plex, library_names, logger, include_smart, collections_only):
             for item in progress_bar:
                 labels = [str(label).lower() for label in item.labels]
                 plex_dict.append({
-                    'title': item.title,
+                    'title': unidecode(html.unescape(item.title)),
                     'normalized_title': normalize_titles(item.title),
                     'year': item.year,
                     'labels': labels,
@@ -964,43 +960,8 @@ def redact_sensitive_info(text):
 
     return text
 
-def sort_assets(assets_list, logger, debug_items=None, prefix_index=None):
-    """
-    Sort assets into movies, series, and collections
 
-    Args:
-        assets_list (list): The assets to sort
-
-    Returns:
-        Dict: A dictionary containing the sorted assets
-    """
-    assets_dict = {
-        'movies': [],
-        'series': [],
-        'collections': []
-    }
-    start_time = datetime.datetime.now()
-    progress_bar = tqdm(assets_list, desc="Categorizing assets", total=len(assets_list), disable=None, leave=True)
-    for item in progress_bar:
-        asset_type = 'movies'
-        if not item['year']:
-            asset_type = 'collections'
-        elif item.get('season_numbers', None):
-            asset_type = 'series'
-
-        assets_dict[asset_type].append(item)
-        debug_sort = debug_items and len(debug_items) > 0 and item['normalized_title'] in debug_items
-        if prefix_index:
-            if debug_sort:
-                logger.info(f"adding item to index: {item}")
-            build_search_index(prefix_index, item['title'], item, asset_type, logger, debug_items=debug_items)
-    end_time = datetime.datetime.now()
-    elapsed_time = (end_time - start_time).total_seconds()
-    items_per_second = len(assets_list) / elapsed_time if elapsed_time > 0 else 0
-    logger.debug(f"Categorized {len(assets_list)} assets in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s)")
-    return assets_dict
-
-def get_assets_files(source_dirs, logger, debug_items=None):
+def get_assets_files(source_dirs, logger):
     """
     Get assets files from source directories
 
@@ -1012,73 +973,81 @@ def get_assets_files(source_dirs, logger, debug_items=None):
 
     # Convert source_dirs to list if it's a string
     source_dirs = [source_dirs] if isinstance(source_dirs, str) else source_dirs
+    assets_dict = {
+        'movies': [],
+        'series': [],
+        'collections': []
+    }
 
     # Initialize final_assets list
     final_assets = []
-    prefix_index = create_new_empty_index()
-    prefix_index['posters'] = {}
     # Iterate through each source directory
+    start_time = datetime.datetime.now()
+    prefix_index = create_new_empty_index()
     for source_dir in source_dirs:
-        new_assets = categorize_files(source_dir, logger)
-        
+        new_assets = process_files(source_dir, logger)
         if new_assets:
             # Merge new_assets with final_assets
-            for new in new_assets:
-                found_match = False
-                debug_assets = debug_items and len(debug_items) > 0 and (debug_item in new['normalized_title'] for debug_item in debug_items)
-                if debug_assets:
-                    logger.info(f"found new asset: {new}")
-                search_matched_assets = search_matches(prefix_index, new['title'], 'posters', logger)
-                for final in search_matched_assets:
-                    if debug_assets:
-                        logger.info(f"comparing to final asset {final}")
-                    if final['normalized_title'] == new['normalized_title'] and final['year'] == new['year']:
-                        if debug_assets:
-                            logger.info('found a match')
-                            logger.info(final)
-                        found_match = True
-                        # Compare normalized file names between final and new assets
-                        for new_file in new['files']:
-                            normalized_new_file = normalize_file_names(os.path.basename(new_file))
-                            for final_file in final['files']:
-                                normalized_final_file = normalize_file_names(os.path.basename(final_file))
-                                # Replace final file with new file if the filenames match
-                                if normalized_final_file == normalized_new_file:
-                                    if debug_assets:
-                                        logger.info('swapping file')
-                                        logger.info(f"replacing {final_file}")
-                                        logger.info(f"with {new_file}")
-                                        logger.info(f"files before: {final['files']}")
-                                    final['files'].remove(final_file)
+            with tqdm(total=len(new_assets), desc="Processing assets", leave=False) as progress_bar:
+                for new in new_assets:
+                    search_matched_assets = search_matches(prefix_index, new['title'], new['type'], logger)
+                    for final in search_matched_assets:
+                        if is_match(final, new, logger, log=True) and final['type'] == new['type']:
+                            # Compare normalized file names between final and new assets
+                            for new_file in new['files']:
+                                normalized_new_file = normalize_file_names(os.path.basename(new_file))
+                                for final_file in final['files']:
+                                    normalized_final_file = normalize_file_names(os.path.basename(final_file))
+                                    # Replace final file with new file if the filenames match
+                                    if normalized_final_file == normalized_new_file:
+                                        final['files'].remove(final_file)
+                                        final['files'].append(new_file)
+                                        break
+                                else:
+                                    # Add new file to final asset if the filenames don't match
                                     final['files'].append(new_file)
-                                    break
-                            else:
-                                # Add new file to final asset if the filenames don't match
-                                if debug_assets:
-                                    logger.info("files did not match")
-                                    logger.info(normalized_final_file)
-                                    logger.info(normalized_new_file)
-                                    logger.info(f"adding to files: {new_file}")
-                                final['files'].append(new_file)
-                        # Merge season_numbers from new asset to final asset
-                        new_season_numbers = new.get('season_numbers', None)
-                        if new_season_numbers:
-                            final_season_numbers = final.get('season_numbers', None)
-                            if final_season_numbers:
-                                final['season_numbers'] = list(set(final_season_numbers + new_season_numbers))
-                            else:
-                                final['season_numbers'] = new_season_numbers
-                        break
-                if not found_match:
-                    if debug_assets:
-                        logger.info("didn't find a match, appending")
-                        logger.info(new)
-                    final_assets.append(new)
-                    build_search_index(prefix_index, new['title'], new, 'posters', logger)
+                            # Merge season_numbers from new asset to final asset
+                            new_season_numbers = new.get('season_numbers', None)
+                            if new_season_numbers:
+                                final_season_numbers = final.get('season_numbers', None)
+                                if final_season_numbers:
+                                    final['season_numbers'] = list(set(final_season_numbers + new_season_numbers))
+                                else:
+                                    final['season_numbers'] = new_season_numbers
+                            final['files'].sort()
+                            break
+                    else:
+                        new['files'].sort()
+                        final_assets.append(new)
+                        build_search_index(prefix_index, new['title'], new, new['type'], logger)
 
+                    progress_bar.update(1)
         else:
-            logger.error(f"No assets found in {source_dir}")
-    return final_assets
+            logger.warning(f"No files found in the folder: {os.path.basename(source_dir)}")
+    # Sort assets into movies, series, and collections
+    for item in final_assets:
+        if item['type'] == 'movies':
+            # add item to movies of assets_dict
+            assets_dict['movies'].append(item)
+        elif item['type'] == 'series':
+            # add item to series of assets_dict
+            # sort files in files alphabetically by file name
+            item['files'].sort(key=lambda x: os.path.basename(x).lower())
+            assets_dict['series'].append(item)
+        elif item['type'] == 'collections':
+            # add item to collections of assets_dict
+            assets_dict['collections'].append(item)
+    if all(not v for v in assets_dict.values()):
+        logger.warning(f"No files were found in any of the source directories: {source_dirs}")
+        return None, None
+    end_time = datetime.datetime.now()
+    elapsed_time = (end_time - start_time).total_seconds()
+    items_per_second = len(source_dirs) / elapsed_time if elapsed_time > 0 else 0
+    logger.debug(f"Processed {len(source_dirs)} source directories in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s)")
+    
+    return assets_dict, prefix_index
+
+
 
 def compare_strings(string1, string2):
     """
@@ -1096,7 +1065,7 @@ def compare_strings(string1, string2):
 
     return string1.lower() == string2.lower()
 
-def is_match(asset, media, logger):
+def is_match(asset, media, logger, log=True):
     """
     Check if the asset matches the media
 
@@ -1125,16 +1094,17 @@ def is_match(asset, media, logger):
         return any(asset_year == year for year in media_years if year is not None)
 
     # Check if both have any ID (TVDB, TMDB, or IMDB)
-    has_asset_ids = any(asset.get(k) for k in ['tvdb_id', 'tmdb_id', 'imdb_id'])
-    has_media_ids = any(media.get(k) for k in ['db_id', 'imdb_id'])
 
+    has_asset_ids = any(asset.get(k) for k in ['tvdb_id', 'tmdb_id', 'imdb_id'])
+    has_media_ids = any(media.get(k) for k in ['tvdb_id', 'tmdb_id', 'imdb_id'])
+    
     if has_asset_ids and has_media_ids:
         id_match_criteria = [
-            (media.get('db_id') is not None and asset.get('tvdb_id') is not None and media['db_id'] == asset['tvdb_id'], 
-             f"Media ID {media.get('db_id')} matches asset TVDB ID {asset.get('tvdb_id')}"),
+            (media.get('tvdb_id') is not None and asset.get('tvdb_id') is not None and media['tvdb_id'] == asset['tvdb_id'], 
+             f"Media ID {media.get('tvdb_id')} matches asset TVDB ID {asset.get('tvdb_id')}"),
 
-            (media.get('db_id') is not None and asset.get('tmdb_id') is not None and media['db_id'] == asset['tmdb_id'], 
-             f"Media ID {media.get('db_id')} matches asset TMDB ID {asset.get('tmdb_id')}"),
+            (media.get('tmdb_id') is not None and asset.get('tmdb_id') is not None and media['tmdb_id'] == asset['tmdb_id'], 
+             f"Media ID {media.get('tmdb_id')} matches asset TMDB ID {asset.get('tmdb_id')}"),
 
             (media.get('imdb_id') is not None and asset.get('imdb_id') is not None and media['imdb_id'] == asset['imdb_id'], 
              f"Media ID {media.get('imdb_id')} matches asset IMDB ID {asset.get('imdb_id')}")
@@ -1142,34 +1112,37 @@ def is_match(asset, media, logger):
 
         for condition, message in id_match_criteria:
             if condition:
-                logger.debug(f"Match found: {message} -> Asset: {asset.get('title', '')} ({asset.get('year', '')}), Media: {media.get('title', '')} ({media.get('year', '')})")
+                if log:
+                    logger.debug(f"Match found: {message} -> Asset: {asset.get('title', '')} ({asset.get('year', '')}), Media: {media.get('title', '')} ({media.get('year', '')})")
                 return True
 
         # If both had IDs but none matched, skip further matching
         return False
+    else:
+        # Fallback to metadata-based matching
+        match_criteria = [
+            (asset.get('normalized_title') == media.get('normalized_title'), "Normalized title match"),
+            (asset.get('title') == media.get('title'), "Title match"),
+            (asset.get('title') in media.get('alternate_titles', []), "Title in alternate titles"),
+            (asset.get('normalized_title') == media.get('normalized_folder_title'), "Normalized folder title match"),
+            (asset.get('normalized_title') in media.get('normalized_alternate_titles', []), "Normalized title in normalized alternate titles"),
+            (asset.get('normalized_title') in media.get('no_prefix_normalized', []), "Normalized title in no_prefix_normalized"),
+            (asset.get('normalized_title') in media.get('no_suffix_normalized', []), "Normalized title in no_suffix_normalized"),
+            (asset.get('title') in media.get('no_prefix', []), "Title in no_prefix"),
+            (asset.get('title') in media.get('no_suffix', []), "Title in no_suffix"),
+            (asset.get('original_title') == media.get('title'), "Original title match"),
+            (asset.get('folder_title') == media.get('title'), "Folder title match"),
+            (media.get('normalized_title') in asset.get('no_prefix_normalized', []), "Normalized title in asset no_prefix_normalized"),
+            (media.get('normalized_title') in asset.get('no_suffix_normalized', []), "Normalized title in asset no_suffix_normalized"),
+            (compare_strings(media.get('title', ''), asset.get('title', '')), "String comparison match"),
+            (compare_strings(media.get('normalized_title', ''), asset.get('normalized_title', '')), "Normalized string comparison match"),
+        ]
 
-    # Fallback to metadata-based matching
-    match_criteria = [
-        (asset.get('normalized_title') == media.get('normalized_title'), "Normalized title match"),
-        (asset.get('title') == media.get('title'), "Title match"),
-        (asset.get('title') in media.get('alternate_titles', []), "Title in alternate titles"),
-        (asset.get('normalized_title') == media.get('normalized_folder_title'), "Normalized folder title match"),
-        (asset.get('normalized_title') in media.get('normalized_alternate_titles', []), "Normalized title in normalized alternate titles"),
-        (asset.get('normalized_title') in media.get('no_prefix_normalized', []), "Normalized title in no_prefix_normalized"),
-        (asset.get('normalized_title') in media.get('no_suffix_normalized', []), "Normalized title in no_suffix_normalized"),
-        (asset.get('title') in media.get('no_prefix', []), "Title in no_prefix"),
-        (asset.get('title') in media.get('no_suffix', []), "Title in no_suffix"),
-        (asset.get('original_title') == media.get('title'), "Original title match"),
-        (asset.get('folder_title') == media.get('title'), "Folder title match"),
-        (media.get('normalized_title') in asset.get('no_prefix_normalized', []), "Normalized title in asset no_prefix_normalized"),
-        (media.get('normalized_title') in asset.get('no_suffix_normalized', []), "Normalized title in asset no_suffix_normalized"),
-        (compare_strings(media.get('title', ''), asset.get('title', '')), "String comparison match"),
-        (compare_strings(media.get('normalized_title', ''), asset.get('normalized_title', '')), "Normalized string comparison match"),
-    ]
+        for condition, message in match_criteria:
+            if condition and year_matches():
+                if log:
+                    logger.debug(f"Match found: {message} -> Asset: {asset.get('title', '')} ({asset.get('year', '')}), Media: {media.get('title', '')} ({media.get('year', '')})")
+                return True
 
-    for condition, message in match_criteria:
-        if condition and year_matches():
-            logger.debug(f"Match found: {message} -> Asset: {asset.get('title', '')} ({asset.get('year', '')}), Media: {media.get('title', '')} ({media.get('year', '')})")
-            return True
+        return False
 
-    return False

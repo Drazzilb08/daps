@@ -314,8 +314,7 @@ def process_files(folder_path, logger):
 
         # Sort the groups by title
         groups = dict(sorted(groups.items(), key=lambda x: x[0].lower()))
-        logger.warning(f"groups: {json.dumps(groups, indent=4)}")
-        exit()
+        
         assets_dict = []
         with tqdm(total=len(groups), desc=f"Processing files in '{os.path.basename(folder_path)}'", leave=True) as pbar:
             for base_name, files in groups.items():

@@ -40,6 +40,7 @@ words_to_remove = [
     "(CA)",
     "(NZ)",
     "(FR)",
+    "(NL)",
 ]
 
 # List of prefixes and suffixes to remove from titles for comparison
@@ -291,13 +292,30 @@ def process_files(folder_path, logger):
     if not asset_folders:
         files = os.listdir(folder_path)
         groups = defaultdict(list)
+
+        normalized_map = {}
+
         for file in files:
             if file.startswith('.'):
                 continue  # Skip hidden files
-            title = file.rsplit('.', 1)[0]
-            title = season_pattern.split(title)[0].strip()
-            groups[title].append(file)
 
+            title = file.rsplit('.', 1)[0]
+            title = unidecode(html.unescape(title))
+            raw_title = season_pattern.split(title)[0].strip()
+            normalized_title = re.sub(r'[^a-zA-Z0-9]', '', raw_title).lower()
+            # Check if we've already seen a normalized title
+            if normalized_title in normalized_map:
+                match_key = normalized_map[normalized_title]
+                groups[match_key].append(file)
+            else:
+                # First time seeing this normalized title
+                groups[raw_title].append(file)
+                normalized_map[normalized_title] = raw_title
+
+        # Sort the groups by title
+        groups = dict(sorted(groups.items(), key=lambda x: x[0].lower()))
+        logger.warning(f"groups: {json.dumps(groups, indent=4)}")
+        exit()
         assets_dict = []
         with tqdm(total=len(groups), desc=f"Processing files in '{os.path.basename(folder_path)}'", leave=True) as pbar:
             for base_name, files in groups.items():

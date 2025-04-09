@@ -380,14 +380,15 @@ def main(config):
                 if instance in instance_data:
                     # Initialize StARR object for the instance
                     app = StARR(instance_data[instance]['url'], instance_data[instance]['api'], logger)
-                    server_name = app.get_instance_name()
-                    
-                    # Process data for the instance and store in output_dict
-                    data = process_instance(app, rename_folders, server_name, instance_type, count, tag_name, logger)
-                    output_dict[instance] = {
-                        "server_name": server_name,
-                        "data": data
-                    }
+                    if app.connect_status:
+                        server_name = app.get_instance_name()
+                        
+                        # Process data for the instance and store in output_dict
+                        data = process_instance(app, rename_folders, server_name, instance_type, count, tag_name, logger)
+                        output_dict[instance] = {
+                            "server_name": server_name,
+                            "data": data
+                        }
         
         # Print output and send notifications if data exists
         if any(value['data'] for value in output_dict.values()):

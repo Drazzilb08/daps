@@ -390,10 +390,10 @@ def main(config):
                     url = instance_data[instance]['url']
                     api = instance_data[instance]['api']
                     app = StARR(url, api, logger)
-                    
-                    # Process instance and get output
-                    output = process_instance(instance_type, instance_settings, app, logger)
-                    final_output_dict[instance] = output
+                    if app.connect_status:
+                        # Process instance and get output
+                        output = process_instance(instance_type, instance_settings, app, logger)
+                        final_output_dict[instance] = output
         
         # Debug log of the final output dictionary
         logger.debug(f"final_output_dict:\n{json.dumps(final_output_dict, indent=4)}")

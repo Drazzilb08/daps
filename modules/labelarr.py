@@ -20,7 +20,6 @@ from util.discord import discord, discord_check
 from util.arrpy import StARR
 from util.utility import *
 from util.logger import setup_logger
-import re
     
 try:
     from plexapi.server import PlexServer
@@ -192,47 +191,48 @@ def main(config):
                     
                     # Create StARR object and get instance name
                     app = StARR(instance_data[instance]['url'], instance_data[instance]['api'], logger)
-                    starr_server_name = app.get_instance_name()
-                    
-                    # Fetch and process media data from the StARR instance
-                    media_dict = handle_starr_data(app, starr_server_name, instance_type, include_episode=False)
-                    
-                    # If media data is found
-                    if media_dict:
-                        # Logging settings and instance information
-                        logger.debug(f"Media Data:\n{json.dumps(media_dict, indent=4)}")
-                        # (Additional logging and table creation omitted for brevity)
+                    if app.connect_status:
+                        starr_server_name = app.get_instance_name()
                         
-                        # Iterate through Plex instances associated with the current StARR instance
-                        for plex_instance in plex_instances:
-                            if plex_instance in config.plex_config:
-                                # Connect to the Plex server
-                                try:
-                                    logger.info("Connecting to Plex...")
-                                    plex = PlexServer(config.plex_config[plex_instance]['url'], config.plex_config[plex_instance]['api'], timeout=180)
-                                except BadRequest:
-                                    logger.error(f"Error connecting to Plex instance: {plex_instance}")
-                                    continue
-                                server_name = plex.friendlyName
-                                # Process data for syncing to Plex
-                                if library_names:
-                                    logger.info("Syncing labels to Plex")
-                                    data_dict = sync_to_plex(plex, labels, media_dict, app, starr_server_name, logger, library_names)
-                                else:
-                                    logger.error(f"No library names provided for {server_name}. Skipping...")
-                                    continue
-                                
-                                # Handle messages related to syncing actions
-                                if data_dict:
-                                    handle_messages(data_dict, logger)
+                        # Fetch and process media data from the StARR instance
+                        media_dict = handle_starr_data(app, starr_server_name, instance_type, include_episode=False)
+                        
+                        # If media data is found
+                        if media_dict:
+                            # Logging settings and instance information
+                            logger.debug(f"Media Data:\n{json.dumps(media_dict, indent=4)}")
+                            # (Additional logging and table creation omitted for brevity)
+                            
+                            # Iterate through Plex instances associated with the current StARR instance
+                            for plex_instance in plex_instances:
+                                if plex_instance in config.plex_config:
+                                    # Connect to the Plex server
+                                    try:
+                                        logger.info("Connecting to Plex...")
+                                        plex = PlexServer(config.plex_config[plex_instance]['url'], config.plex_config[plex_instance]['api'], timeout=180)
+                                    except BadRequest:
+                                        logger.error(f"Error connecting to Plex instance: {plex_instance}")
+                                        continue
+                                    server_name = plex.friendlyName
+                                    # Process data for syncing to Plex
+                                    if library_names:
+                                        logger.info("Syncing labels to Plex")
+                                        data_dict = sync_to_plex(plex, labels, media_dict, app, starr_server_name, logger, library_names)
+                                    else:
+                                        logger.error(f"No library names provided for {server_name}. Skipping...")
+                                        continue
                                     
-                                    # Send notifications related to syncing actions
-                                    if discord_check(script_name):
-                                        notification(data_dict, logger)
-                                else:
-                                    logger.info(f"No items to sync from {starr_server_name} to {server_name}.\n")
-                        else:
-                            continue
+                                    # Handle messages related to syncing actions
+                                    if data_dict:
+                                        handle_messages(data_dict, logger)
+                                        
+                                        # Send notifications related to syncing actions
+                                        if discord_check(script_name):
+                                            notification(data_dict, logger)
+                                    else:
+                                        logger.info(f"No items to sync from {starr_server_name} to {server_name}.\n")
+                            else:
+                                continue
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()

@@ -671,36 +671,37 @@ def main(config):
                     data_list = {'search_media': [], 'filtered_media': []}
                     instance_settings = instance_data.get(instance, None)
                     app = StARR(instance_settings['url'], instance_settings['api'], logger)
-                    server_name = app.get_instance_name()
-                    exclude_profiles = filters.get('exclude_profiles', [])
-                    table = [
-                        [f"{server_name}"],
-                    ]
-                    logger.info(create_table(table))
-                    if instance_type == "radarr" and not nohl_list['movies'] or instance_type == "sonarr" and not nohl_list['series']:
-                        logger.info(f"No non-hardlinked files found for server: {server_name}")
-                    exclude_media = filters.get('exclude_movies', []) if instance_type == 'radarr' else filters.get('exclude_series', [])
-                    nohl_data = nohl_list['movies'] if instance_type == "radarr" else nohl_list['series'] if instance_type == "sonarr" else None
-                    if nohl_data:
-                        media_list = handle_starr_data(app, server_name, instance_type, logger, include_episode=True)
-                        if media_list:
-                            data_list = filter_media(app, media_list, nohl_data, instance_type, exclude_profiles, exclude_media, max_search, logger)
-                        else:
-                            logger.info(f"No media found for server: {server_name}")
-                        if data_list:
-                            logger.debug(f"Data Media:\n{json.dumps(data_list, indent=4)}")
-                        search_list = data_list.get('search_media', [])
-                        if search_list:
-                            # Conduct searches if not a dry run
-                            if not dry_run:
-                                search_list = handle_searches(app, search_list, instance_type)
-                                data_list['search_media'] = search_list
-                        # Prepare output data
-                    output_dict[instance] = {
-                        'server_name': server_name,
-                        'instance_type': instance_type,
-                        'data': data_list
-                    }
+                    if app.connect_status:
+                        server_name = app.get_instance_name()
+                        exclude_profiles = filters.get('exclude_profiles', [])
+                        table = [
+                            [f"{server_name}"],
+                        ]
+                        logger.info(create_table(table))
+                        if instance_type == "radarr" and not nohl_list['movies'] or instance_type == "sonarr" and not nohl_list['series']:
+                            logger.info(f"No non-hardlinked files found for server: {server_name}")
+                        exclude_media = filters.get('exclude_movies', []) if instance_type == 'radarr' else filters.get('exclude_series', [])
+                        nohl_data = nohl_list['movies'] if instance_type == "radarr" else nohl_list['series'] if instance_type == "sonarr" else None
+                        if nohl_data:
+                            media_list = handle_starr_data(app, server_name, instance_type, include_episode=True)
+                            if media_list:
+                                data_list = filter_media(app, media_list, nohl_data, instance_type, exclude_profiles, exclude_media, max_search, logger)
+                            else:
+                                logger.info(f"No media found for server: {server_name}")
+                            if data_list:
+                                logger.debug(f"Data Media:\n{json.dumps(data_list, indent=4)}")
+                            search_list = data_list.get('search_media', [])
+                            if search_list:
+                                # Conduct searches if not a dry run
+                                if not dry_run:
+                                    search_list = handle_searches(app, search_list, instance_type)
+                                    data_list['search_media'] = search_list
+                            # Prepare output data
+                        output_dict[instance] = {
+                            'server_name': server_name,
+                            'instance_type': instance_type,
+                            'data': data_list
+                        }
         logger.debug(f"Output Data:\n{json.dumps(output_dict, indent=4)}")
         # Display command-line output about processed files and excluded media
         handle_messages(output_dict, logger)

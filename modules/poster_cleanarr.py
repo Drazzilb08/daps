@@ -17,9 +17,7 @@
 # ===========================================================================================================
 
 import os
-import re
 import json
-import logging
 import shutil
 import sys
 
@@ -303,8 +301,8 @@ def main(config):
                             url = instance_data[instance]['url']
                             api = instance_data[instance]['api']
                             app = StARR(url, api, logger)
-                            server_name = app.get_instance_name()
-                            if app:
+                            if app.connect_status:
+                                server_name = app.get_instance_name()
                                 print(f"Getting {instance_type.capitalize()} data...")
                                 results = handle_starr_data(app, server_name, instance_type, logger, include_episode=False)
                                 if results:

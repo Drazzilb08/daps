@@ -92,39 +92,36 @@ def main(config):
             for instance in instances:
                 if instance in instance_data:
                     app = StARR(instance_data[instance]['url'], instance_data[instance]['api'], logger)
-                    server_name = app.get_instance_name()
-                    health = app.get_health()
-                    media_dict = handle_starr_data(app, server_name, instance_type, logger, include_episode=False)
-                    id_list = []
-                    if health:
-                        for health_item in health:
-                            if health_item['source'] == "RemovedMovieCheck" or health_item['source'] == "RemovedSeriesCheck":
-                                if instance_type == "radarr":
-                                    for m in re.finditer(tmdb_id_extractor, health_item['message']):
-                                        id_list.append(int(m.group(1)))
-                                if instance_type == "sonarr":
-                                    for m in re.finditer(tvdb_id_extractor, health_item['message']):
-                                        id_list.append(int(m.group(1)))
-                    logger.debug(f"id_list:\n{json.dumps(id_list, indent=4)}")
-                    output = []
-                    for item in tqdm(media_dict, desc=f"Processing {instance_type}", unit="items", disable=None, total=len(media_dict)):
-                        if item['tvdb_id'] if item['instance_type'] == "sonarr" else item['tmdb_id'] in id_list:
-                            logger.debug(f"Found {item['title']} with: {item['tvdb_id'] if item['instance_type'] == "sonarr" else item['tmdb_id']}")
-                            output.append(item)
-                    logger.debug(f"output:\n{json.dumps(output, indent=4)}")
+                    if app.connect_status:
+                        server_name = app.get_instance_name()
+                        health = app.get_health()
+                        media_dict = handle_starr_data(app, server_name, instance_type, include_episode=False)
+                        id_list = []
+                        if health:
+                            for health_item in health:
+                                if health_item['source'] == "RemovedMovieCheck" or health_item['source'] == "RemovedSeriesCheck":
+                                    if instance_type == "radarr":
+                                        for m in re.finditer(tmdb_id_extractor, health_item['message']):
+                                            id_list.append(int(m.group(1)))
+                                    if instance_type == "sonarr":
+                                        for m in re.finditer(tvdb_id_extractor, health_item['message']):
+                                            id_list.append(int(m.group(1)))
+                        logger.debug(f"id_list:\n{json.dumps(id_list, indent=4)}")
+                        output = []
+                        for item in tqdm(media_dict, desc=f"Processing {instance_type}", unit="items", disable=None, total=len(media_dict)):
+                            if item['db_id'] in id_list:
+                                logger.debug(f"Found {item['title']} with: {item['db_id']}")
+                                output.append(item)
+                        logger.debug(f"output:\n{json.dumps(output, indent=4)}")
 
-                    if output:
-                        logger.info(f"Deleting {len(output)} {instance_type} items from {server_name}")
-                        for item in tqdm(output, desc=f"Deleting {instance_type} items", unit="items", disable=None, total=len(output)):
-                            if not dry_run:
-                                logger.info(f"{item['title']} deleted with id: {item['media_id']} and tvdb/tmdb id: {item['tvdb_id'] if item['instance_type'] == "sonarr" else item['tmdb_id']}")
-                                app.delete_media(item['media_id'])
-                            else:
-                                logger.info(f"{item['title']} would have been deleted with id: {item['media_id']}")
-                        if notifications:
-                            if discord_check(script_name):
-                                notification(output, logger)
-
+                        if output:
+                            logger.info(f"Deleting {len(output)} {instance_type} items from {server_name}")
+                            for item in tqdm(output, desc=f"Deleting {instance_type} items", unit="items", disable=None, total=len(output)):
+                                if not dry_run:
+                                    logger.info(f"{item['title']} deleted with id: {item['media_id']} and tvdb/tmdb id: {item['db_id']}")
+                                    app.delete_media(item['media_id'])
+                                else:
+                                    logger.info(f"{item['title']} would have been deleted with id: {item['media_id']}")
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()

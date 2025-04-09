@@ -65,6 +65,7 @@ class StARR:
     def make_get_request(self, endpoint, headers=None):
         return self._request_with_retries("GET", endpoint, headers=headers)
 
+
     def make_post_request(self, endpoint, headers=None, json=None):
         return self._request_with_retries("POST", endpoint, headers=headers, json=json)
 
@@ -124,6 +125,7 @@ class StARR:
         """
         Centralized exception logger for failed requests.
         """
+        
         status_code = response.status_code if response is not None and response.status_code else "No response"
         hint = self._get_error_hint(status_code) if isinstance(status_code, int) else "No HTTP response received, check URL"
 
@@ -242,7 +244,7 @@ class StARR:
         self.logger.debug(f"Remove tag payload: {payload}")
         endpoint = f"{self.url}/api/v3/{media_type}/editor"
         return self.make_put_request(endpoint, json=payload)
-    
+
     def get_rename_list(self, media_id):
         """
         Get a list of media items to rename.
@@ -299,10 +301,10 @@ class StARR:
             "moveFiles": True,
             "rootFolderPath": root_folder_path,
         }
-        self.logger.debug(f"Payload: {payload}")
+        self.logger.debug(f"Rename Folder Payload: {payload}")
         endpoint = f"{self.url}/api/v3/{media_type}/editor"
         return self.make_put_request(endpoint, json=payload)
-    
+
     def wait_for_command(self, command_id):
         """
         Wait for a refresh to complete.
@@ -320,7 +322,7 @@ class StARR:
             elif response['status'] == 'failed':
                 return False
             time.sleep(5)
-    
+
     def refresh_items(self, media_ids):
         """
         Refresh a media item.
@@ -342,7 +344,7 @@ class StARR:
         self.logger.debug(f"Refresh payload: {payload}")
         endpoint = f"{self.url}/api/v3/command"
         return self.make_post_request(endpoint, headers=self.headers, json=payload)
-    
+
     def refresh_media(self):
         """
         Refresh a media item.
@@ -359,7 +361,7 @@ class StARR:
         self.logger.debug(f"Refresh payload: {payload}")
         endpoint = f"{self.url}/api/v3/command"
         return self.make_post_request(endpoint, headers=self.headers, json=payload)
-    
+
     def search_media(self, media_ids):
         """
         Search for a media item.
@@ -396,7 +398,7 @@ class StARR:
         else:
             self.logger.error(f"Search failed for media ID: {media_ids}")
             return None
-    
+
     def search_season(self, media_id, season_number):
         """
         Search for a series by ID.
@@ -412,7 +414,7 @@ class StARR:
             }
         endpoint = f"{self.url}/api/v3/command"
         return self.make_post_request(endpoint, json=payload)
-    
+
     def get_episode_data(self, media_id):
         """
         Get data for an episode.
@@ -423,7 +425,7 @@ class StARR:
         """
         endpoint = f"{self.url}/api/v3/episodefile?seriesId={media_id}"
         return self.make_get_request(endpoint, headers=self.headers)
-    
+
     def get_episode_data_by_season(self, media_id, season_number):
         """
         Get data for an episode.
@@ -434,7 +436,7 @@ class StARR:
         """
         endpoint = f"{self.url}/api/v3/episode?seriesId={media_id}&seasonNumber={season_number}"
         return self.make_get_request(endpoint, headers=self.headers)
-    
+
     def get_season_data(self, media_id):
         """
         Get data for a season.
@@ -445,7 +447,7 @@ class StARR:
         """
         endpoint = f"{self.url}/api/v3/episode?seriesId={media_id}"
         return self.make_get_request(endpoint, headers=self.headers)
-    
+
     def delete_episode_file(self, episode_file_id):
         """
         Delete an episode file.
@@ -493,7 +495,7 @@ class StARR:
         }
         self.logger.debug(f"Search payload: {payload}")
         return self.make_post_request(endpoint, json=payload)
-    
+
     def get_movie_data(self, media_id):
         """
         Get data for a movie.
@@ -504,14 +506,14 @@ class StARR:
         """
         endpoint = f"{self.url}/api/v3/moviefile?movieId={media_id}"
         return self.make_get_request(endpoint, headers=self.headers)
-    
+
     def get_grab_history(self, media_id, instance_type):
         """
         Get grab history.
         Args:
             media_id (int): The ID of the media item to get the history for.
             instance_type (str): The type of instance to get the history for.
-        
+
         Returns:
             dict: A dictionary representing the history.
         """
@@ -521,7 +523,7 @@ class StARR:
             url_addon = f"series?seriesId={media_id}&eventType=grabbed&includeSeries=false&includeEpisode=false"
         endpoint = f"{self.url}/api/v3/history/{url_addon}"
         return self.make_get_request(endpoint, headers=self.headers)
-    
+
     def get_import_history(self, media_id, instance_type):
         """
         Get import history.
@@ -538,7 +540,7 @@ class StARR:
             url_addon = f"series?seriesId={media_id}&eventType=downloadFolderImported&includeSeries=false&includeEpisode=false"
         endpoint = f"{self.url}/api/v3/history/{url_addon}"
         return self.make_get_request(endpoint, headers=self.headers)
-    
+
     def get_season_grab_history(self, media_id, season):
         """
         Get season grab history.
@@ -552,7 +554,7 @@ class StARR:
         url_addon = f"series?seriesId={media_id}&seasonNumber={season}&eventType=grabbed&includeSeries=false&includeEpisode=false"
         endpoint = f"{self.url}/api/v3/history/{url_addon}"
         return self.make_get_request(endpoint, headers=self.headers)
-    
+
     def get_season_import_history(self, media_id, season):
         """
         Get season import history.
@@ -566,7 +568,7 @@ class StARR:
         url_addon = f"series?seriesId={media_id}&seasonNumber={season}&eventType=downloadFolderImported&includeSeries=false&includeEpisode=false"
         endpoint = f"{self.url}/api/v3/history/{url_addon}"
         return self.make_get_request(endpoint, headers=self.headers)
-    
+
     def get_import_history(self, media_id, instance_type):
         """
         Get import history.
@@ -583,7 +585,7 @@ class StARR:
             url_addon = f"series?seriesId={media_id}&eventType=downloadFolderImported&includeSeries=false&includeEpisode=false"
         endpoint = f"{self.url}/api/v3/history/{url_addon}"
         return self.make_get_request(endpoint, headers=self.headers)
-    
+
     def get_queue(self, instance_type):
         """
         Get the queue.
@@ -599,13 +601,13 @@ class StARR:
 
         endpoint = f"{self.url}/api/v3/queue?{url_addon}"
         return self.make_get_request(endpoint, headers=self.headers)
-    
+
     def get_quality_profile_names(self):
         """
         Get the names of all quality profiles.
         Returns:
             dict: A dictionary of quality profile names and IDs.
-        
+
         returns:
             dict: A dictionary of quality profile names and IDs.
         """
@@ -634,12 +636,12 @@ class StARR:
     def get_health(self):
         """
         Get the health status.
-        Returns:    
+        Returns:
             dict: A dictionary representing the health status.
         """
         endpoint = f"{self.url}/api/v3/health"
         return self.make_get_request(endpoint, headers=self.headers)
-    
+
     def delete_media(self, media_id):
         """
         Delete a media item.
@@ -673,7 +675,7 @@ class StARR:
         # If the tag doesn't already exist, create it.
         tag_id = self.create_tag(tag_name)
         return tag_id
-    
+
     def remove_item_from_queue(self, queue_ids):
         """
         Remove an item from the queue.

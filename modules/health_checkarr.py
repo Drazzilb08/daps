@@ -18,6 +18,7 @@ import json
 import re
 import sys
 
+from util.discord import discord, discord_check
 from util.arrpy import StARR
 from util.utility import *
 from util.discord import discord
@@ -35,6 +36,23 @@ script_name = "health_checkarr"
 tmdb_id_extractor = re.compile(r"tmdbid (\d+)")
 tvdb_id_extractor = re.compile(r"tvdbid (\d+)")
 
+def notification(output, logger):
+    delete_list = []
+
+    for item in output:
+        delete_list.append(f"**{item['title']}**\t\t{item['tvdb_id'] if item['instance_type'] == "sonarr" else item['tmdb_id']}")
+    # convert delete_list to a string
+    delete_list = "\n".join(delete_list)
+    fields = {
+            "name": "Items below have been deleted from Radarr/Sonarr",
+            "value": f"```{delete_list}```",
+            "inline": False
+        }
+    # Convert the fields to a list
+    fields = [fields]
+    print(f"Sending Discord notification with {len(delete_list)} items")
+    discord(fields, logger, script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
+
 def main(config):
     """
     Main function.
@@ -50,6 +68,7 @@ def main(config):
         health = None
         script_config = config.script_config
         instances = script_config.get('instances', None)
+        notifications = script_config.get('notifications', None)
         valid = validate(config, script_config, logger)
         # Log script settings
         table = [
@@ -59,8 +78,8 @@ def main(config):
         logger.debug(f'{"Dry_run:":<20}{dry_run if dry_run else "False"}')
         logger.debug(f'{"Log level:":<20}{log_level if log_level else "INFO"}')
         logger.debug(f'{"Instances:":<20}{instances if instances else "Not Set"}')
+        logger.debug(f'{"Notifications:":<20}{script_config.get("notifications", "Not Set")}')
         logger.debug(create_bar("-"))
-        
         if dry_run:
             table = [
                 ["Dry Run"],

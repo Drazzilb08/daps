@@ -1,7 +1,7 @@
-import sys
 import time
 import json
 import logging
+import time
 
 try:
     import requests
@@ -16,17 +16,18 @@ class StARR:
     def __init__(self, url, api, logger):
         """
         Initialize the StARR class.
+        
         Args:
-            url (str): The URL of the ARR instance.
-            api (str): The API key to use to connect to the ARR instance.
-            logger (logging.Logger): a logger object for logging debug messages.
-        Raises:
-            ValueError: If the URL does not point to a valid ARR instance.
+            url (str): The base URL of the ARR instance (Sonarr/Radarr).
+            api (str): The API key for authenticating with the ARR instance.
+            logger (logging.Logger): Logger for debug and error messages.
+            connect_status (bool): Connection status to the ARR instance.
+            instance_type (str): Type of ARR instance (Sonarr or Radarr).
         """
         self.logger = logger
         self.max_retries = 5
         self.timeout = 60
-        self.url = url
+        self.url = url.rstrip('/')
         self.api = api
         self.headers = {
             "Accept": "application/json",
@@ -35,140 +36,120 @@ class StARR:
         }
         self.session = requests.Session()
         self.session.headers.update({"X-Api-Key": self.api})
-        try:
-            status = self.get_system_status()
-            app_name = status.get("appName")
-            app_version = status.get("version")
-            if app_name == 'Radarr':
-                self.instance_type = 'Radarr'
-            elif app_name == 'Sonarr':
-                self.instance_type = 'Sonarr'
-            self.logger.debug(f"Connected to {app_name} v{app_version} at {self.url}")
-        except requests.exceptions.ConnectionError as e:
-            self.logger.error(f"Could not connect to {self.url}: {e}")
-            return None
-            
-    
+
+        status = self.get_system_status()
+        if not status:
+            self.connect_status = False
+            return
+        app_name = status.get("appName")
+        app_version = status.get("version")
+
+        if app_name == 'Radarr':
+            self.instance_type = 'Radarr'
+        elif app_name == 'Sonarr':
+            self.instance_type = 'Sonarr'
+
+        self.connect_status = True
+        self.logger.debug(f"Connected to {app_name} v{app_version} at {self.url}")
+
     def get_instance_name(self):
-        """
-        Get the name of the ARR instance.
-        Returns:
-            str: The name of the ARR instance.
-        """
+        """Retrieve the instance name from system status."""
         status = self.get_system_status()
         return status.get("instanceName")
 
     def get_system_status(self):
-        """
-        Get the system status of the ARR instance.
-        Returns:
-            dict: The JSON response from the GET request.
-        """
+        """Get ARR system status info."""
         endpoint = f"{self.url}/api/v3/system/status"
         return self.make_get_request(endpoint)
-    
+
     def make_get_request(self, endpoint, headers=None):
-        """
-        Make a GET request to the ARR instance.
-        Args:
-            url (str): The URL to make the GET request to.
-            params (dict): The Args to pass to the GET request.
-        Returns:
-            dict: The JSON response from the GET request.
-        Raises:
-            requests.exceptions.ConnectionError: If the GET request fails.
-        """
-        response = None
-        for i in range(self.max_retries):
-            try:
-                response = self.session.get(endpoint, headers=headers, timeout=self.timeout)
-                response.raise_for_status()
-                return response.json()
-            except (requests.exceptions.Timeout, requests.exceptions.HTTPError) as ex:
-                self.logger.warning(f'GET request failed ({ex}), retrying ({i+1}/{self.max_retries})...')
-        self.logger.error(f'GET request failed after {self.max_retries} retries.')
-        self.logger.error(f"endpoint: {endpoint}")
-        self.logger.error(f"response: {response.text}")
-        return None
-    
+        return self._request_with_retries("GET", endpoint, headers=headers)
+
     def make_post_request(self, endpoint, headers=None, json=None):
-        """
-        Make a POST request to the ARR instance.
-        Args:
-            url (str): The URL to make the POST request to.
-            headers (dict): The headers to pass to the POST request.
-            json (dict): The JSON data to pass to the POST request.
-        Returns:
-            dict: The JSON response from the POST request.
-        Raises:
-            requests.exceptions.ConnectionError: If the POST request fails.
-        """
-        response = None
-        for i in range(self.max_retries):
-            try:
-                response = self.session.post(endpoint, headers=headers, json=json, timeout=self.timeout)
-                response.raise_for_status()
-                return response.json()
-            except (requests.exceptions.Timeout, requests.exceptions.HTTPError) as ex:
-                self.logger.warning(f'POST request failed ({ex}), retrying ({i+1}/{self.max_retries})...')
-        self.logger.error(f'GET request failed after {self.max_retries} retries.')
-        self.logger.error(f"endpoint: {endpoint}")
-        self.logger.error(f"Payload: {json}")
-        self.logger.error(f"response: {response.text}")
-        return None
+        return self._request_with_retries("POST", endpoint, headers=headers, json=json)
 
-    
     def make_put_request(self, endpoint, headers=None, json=None):
+        return self._request_with_retries("PUT", endpoint, headers=headers, json=json)
+
+    def make_delete_request(self, endpoint, headers=None, json=None):
+        return self._request_with_retries("DELETE", endpoint, headers=headers, json=json)
+
+    def _request_with_retries(self, method, endpoint, headers=None, json=None):
         """
-        Make a PUT request to the ARR instance.
+        Perform HTTP request with retry logic.
+
         Args:
-            url (str): The URL to make the PUT request to.
-            headers (dict): The headers to pass to the PUT request.
-            json (dict): The JSON data to pass to the PUT request.
+            method (str): HTTP method (GET, POST, PUT, DELETE).
+            endpoint (str): Full API endpoint URL.
+            headers (dict): Optional headers for the request.
+            json (dict): Optional JSON payload.
+
         Returns:
-            dict: The JSON response from the PUT request.
-        Raises:
-            requests.exceptions.ConnectionError: If the PUT request fails.
+            dict or response object or None: Response content or None if failed.
         """
         response = None
         for i in range(self.max_retries):
             try:
-                response = self.session.put(endpoint, headers=headers, json=json, timeout=self.timeout)
+                # Make the request according to method
+                if method == "GET":
+                    response = self.session.get(endpoint, headers=headers, timeout=self.timeout)
+                elif method == "POST":
+                    response = self.session.post(endpoint, headers=headers, json=json, timeout=self.timeout)
+                elif method == "PUT":
+                    response = self.session.put(endpoint, headers=headers, json=json, timeout=self.timeout)
+                elif method == "DELETE":
+                    response = self.session.delete(endpoint, headers=headers, json=json, timeout=self.timeout)
+                else:
+                    raise ValueError(f"Unsupported method: {method}")
+
+                # Raise an HTTPError if the response was unsuccessful
                 response.raise_for_status()
-                return response.json()
-            except (requests.exceptions.Timeout, requests.exceptions.HTTPError) as ex:
-                self.logger.warning(f'PUT request failed ({ex}), retrying ({i+1}/{self.max_retries})...')
-        self.logger.error(f'GET request failed after {self.max_retries} retries.')
-        self.logger.error(f"endpoint: {endpoint}")
-        self.logger.error(f"Payload: {json}")
-        self.logger.error(f"response: {response.text}")
+
+                # Return raw response for DELETE; JSON for everything else
+                return response if method == "DELETE" else response.json()
+
+            except (requests.exceptions.Timeout,
+                    requests.exceptions.HTTPError,
+                    requests.exceptions.RequestException) as ex:
+                if i < self.max_retries - 1:
+                    self.logger.warning(f'{method} request failed ({ex}), retrying ({i+1}/{self.max_retries})...')
+                    time.sleep(1)  # Throttle retries to avoid server overload
+                else:
+                    # Final failure after all retries
+                    self._handle_request_exception(method, endpoint, ex, response, json)
+
         return None
 
-    def make_delete_request(self, endpoint, json=None, headers=None):
+    def _handle_request_exception(self, method, endpoint, ex, response, payload=None):
         """
-        Make a DELETE request to the ARR instance.
-        Args:
-            url (str): The URL to make the DELETE request to.
-            headers (dict): The headers to pass to the DELETE request.
-        Returns:
-            dict: The JSON response from the DELETE request.
-        Raises:
-            requests.exceptions.ConnectionError: If the DELETE request fails.
+        Centralized exception logger for failed requests.
         """
-        response = None
-        for i in range(self.max_retries):
-            try:
-                response = self.session.delete(endpoint, headers=headers, json=json, timeout=self.timeout)
-                response.raise_for_status()
-                return response
-            except (requests.exceptions.Timeout, requests.exceptions.HTTPError) as ex:
-                self.logger.warning(f'DELETE request failed ({ex}), retrying ({i+1}/{self.max_retries})...')
-        self.logger.error(f'GET request failed after {self.max_retries} retries.')
-        self.logger.error(f"endpoint: {endpoint}")
-        self.logger.error(f"Payload: {json}")
-        self.logger.error(f"response: {response.text}")
-        return None
-    
+        status_code = response.status_code if response is not None and response.status_code else "No response"
+        hint = self._get_error_hint(status_code) if isinstance(status_code, int) else "No HTTP response received, check URL"
+
+        self.logger.error(f'{method} request failed after {self.max_retries} retries.')
+        self.logger.error(f"Endpoint: {endpoint}")
+        if payload:
+            self.logger.error(f"Payload: {payload}")
+        if response is not None:
+            self.logger.error(f"Response: {response.text} Code: {status_code}")
+        self.logger.error(f"Status: {status_code}, Error: {ex}")
+        self.logger.error(f"\nHint: {hint}\n")
+
+    def _get_error_hint(self, status_code):
+        """
+        Return a human-readable explanation for common HTTP errors.
+        """
+        hints = {
+            400: "Bad Request – likely malformed or missing parameters.",
+            401: "Unauthorized – check that your API key is correct.",
+            403: "Forbidden – the API key may not have the necessary permissions.",
+            404: "Not Found – the endpoint may be incorrect or the resource doesn't exist.",
+            429: "Too Many Requests – you may have hit a rate limit.",
+            500: "Internal Server Error – something went wrong on the server.",
+            503: "Service Unavailable – the server is currently down or overloaded."
+        }
+        return hints.get(status_code, "Unknown error – check logs for more info.")
 
     def get_media(self):
         """

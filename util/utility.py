@@ -56,7 +56,7 @@ suffixes = [
 ]
 
 # length to use as a prefix.  anything shorter than this will be used as-is
-prefix_length = 4
+prefix_length = 3
 
 def create_new_empty_index():
     # dict per asset type to map asset prefixes to the assets, themselves.

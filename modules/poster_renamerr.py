@@ -103,22 +103,26 @@ def match_data(media_dict, asset_files, prefix_index, logger=None, debug_items=N
                         matched = False
                         # search here to identify matches
                         debug_search = debug_items and len(debug_items) > 0 and media['normalized_title'] in debug_items
-                        search_matched_assets = search_matches(prefix_index, media['title'], asset_type, logger, debug_search=debug_search)
-                        ## now to loop over each matched asset to determine if it's a match
-                        media_seasons_numbers = None
-                        if 'seasons' in media and media['seasons']:
-                            media_seasons_numbers = [season['season_number'] for season in media.get('seasons', [])]
+                        media_seasons_numbers = [season['season_number'] for season in media.get('seasons', [])] if 'seasons' in media else None
 
-                        for search_asset in search_matched_assets:
-                            total_comparisons += 1
-                            if is_match(search_asset, media, logger):
-                                asset_season_numbers = search_asset.get('season_numbers', None)
-                                if ((asset_season_numbers is None and media_seasons_numbers is None) or (asset_season_numbers and media_seasons_numbers)):
-                                    matched = True
-                                    if asset_season_numbers and media_seasons_numbers:
-                                        handle_series_match(search_asset, media_seasons_numbers, asset_season_numbers)
-                                    search_match = search_asset
-                                    break
+                        titles_to_check = [media['title']] 
+                        titles_to_check.extend(media.get('alternate_titles', [])) 
+
+                        for title in titles_to_check:
+                            search_matched_assets = search_matches(prefix_index, title, asset_type, logger, debug_search=debug_search)
+
+                            for search_asset in search_matched_assets:
+                                total_comparisons += 1
+                                if is_match(search_asset, media, logger):
+                                    asset_season_numbers = search_asset.get('season_numbers', None)
+                                    if not asset_season_numbers or not media_seasons_numbers or asset_season_numbers and media_seasons_numbers:
+                                        matched = True
+                                        if asset_season_numbers and media_seasons_numbers:
+                                            handle_series_match(search_asset, media_seasons_numbers, asset_season_numbers)
+                                        search_match = search_asset
+                                        break
+                            if matched:
+                                break
 
                         if matched:
                             matches += 1

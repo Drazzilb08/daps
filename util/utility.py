@@ -1121,19 +1121,22 @@ def is_match(asset, media, logger, log=True):
     else:
         # Fallback to metadata-based matching
         match_criteria = [
-            (asset.get('normalized_title') == media.get('normalized_title'), "Normalized title match"),
+            # Title Matching
             (asset.get('title') == media.get('title'), "Title match"),
             (asset.get('title') in media.get('alternate_titles', []), "Title in alternate titles"),
+            (asset.get('title') == media.get('folder_title'), "Folder title match"),
+            (asset.get('title') == media.get('original_title'), "Original title match"),
+            (asset.get('normalized_title') == media.get('normalized_title'), "Normalized title match"),
             (asset.get('normalized_title') == media.get('normalized_folder_title'), "Normalized folder title match"),
-            (asset.get('normalized_title') in media.get('normalized_alternate_titles', []), "Normalized title in normalized alternate titles"),
-            (asset.get('normalized_title') in media.get('no_prefix_normalized', []), "Normalized title in no_prefix_normalized"),
-            (asset.get('normalized_title') in media.get('no_suffix_normalized', []), "Normalized title in no_suffix_normalized"),
-            (asset.get('title') in media.get('no_prefix', []), "Title in no_prefix"),
-            (asset.get('title') in media.get('no_suffix', []), "Title in no_suffix"),
-            (asset.get('original_title') == media.get('title'), "Original title match"),
-            (asset.get('folder_title') == media.get('title'), "Folder title match"),
+            (asset.get('normalized_title') in media.get('normalized_alternate_titles', []), "Normalized title in alternate titles"),
+
+            # Collection Matching
+            (media.get('title') in asset.get('no_prefix', []), "Title in asset no_prefix"),
+            (media.get('title') in asset.get('no_suffix', []), "Title in asset no_suffix"),
             (media.get('normalized_title') in asset.get('no_prefix_normalized', []), "Normalized title in asset no_prefix_normalized"),
             (media.get('normalized_title') in asset.get('no_suffix_normalized', []), "Normalized title in asset no_suffix_normalized"),
+
+            # String comparison
             (compare_strings(media.get('title', ''), asset.get('title', '')), "String comparison match"),
             (compare_strings(media.get('normalized_title', ''), asset.get('normalized_title', '')), "Normalized string comparison match"),
         ]

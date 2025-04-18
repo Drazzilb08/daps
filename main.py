@@ -1,20 +1,18 @@
-import json
+import time
+import datetime
+import multiprocessing
+import importlib
 import sys
-import os
+from prettytable import PrettyTable
 from util.config import Config
 from util.scheduler import check_schedule
 from util.logger import setup_logger
 from util.utility import *
-from prettytable import PrettyTable
-import importlib
-import multiprocessing
-import time
-import datetime
+from util.version import version_check
+from watchdog.observers import Observer
+from watchdog.events import FileSystemEventHandler
+import threading
 
-# Set the current time
-current_time = datetime.datetime.now().strftime("%H:%M")
-
-already_run = {}
 
 list_of_python_scripts = [
     "border_replacerr",
@@ -34,128 +32,139 @@ list_of_bash_scripts = [
     "nohl_bash",
 ]
 
-ran_modules = {}
 
-branch = get_current_git_branch()
+class ScheduleFileHandler(FileSystemEventHandler):
+    def __init__(self, callback, debounce_interval=1):
+        super().__init__()
+        self.callback = callback
+        self.last_modified = 0
+        self.debounce_interval = debounce_interval
 
-def get_logger(config, script_name):
-    """
-    Get the logger for the script
+    def on_modified(self, event):
+        if event.src_path.endswith("config.yml"):
+            now = time.time()
+            if now - self.last_modified > self.debounce_interval:
+                self.last_modified = now
+                self.callback()
 
-    Args:
-        log_level (str): The log level to use
-        script_name (str): The name of the script
-        config (dict): The config file
+def start_schedule_watcher(callback):
+    observer = Observer()
+    handler = ScheduleFileHandler(callback)
+    observer.schedule(handler, path="config", recursive=False)
+    observer.start()
+    return observer
 
-    Returns:
-        logger: The logger for the script
-    """
-    # Get loglevel from script config
-    log_level = config.log_level
-    logger = setup_logger(log_level, script_name)
+class ScriptManager:
+    def __init__(self, logger):
+        self.already_run = {}
+        self.running_scripts = {}
+        self.script_start_times = {}
+        self.logger = logger
 
-    return logger
+    def run(self, script_name, run_module):
+        process = run_module(script_name, self.logger)
+        if process:
+            self.running_scripts[script_name] = process
+            self.script_start_times[script_name] = time.time()
+            self.logger.debug(f"Setting already_run[{script_name}] to True")
+            self.already_run[script_name] = True
 
-def get_config(script_to_run):
-    """
-    Get the config for the script
+    def run_if_due(self, script_name, schedule_time, check_schedule_func, run_module):
+        if schedule_time == "run":
+            if not self.already_run.get(script_name, False):
+                self.run(script_name, run_module)
+                self.already_run[script_name] = True
+        elif check_schedule_func(script_name, schedule_time, self.logger):
+            self.run(script_name, run_module)
 
-    Args:
-        script_name (str): The name of the script
+    def is_already_running(self, script_name):
+        return script_name in self.running_scripts
 
-    Returns:
-        dict: The config for the script
-    """
+    def cleanup(self):
+        processes_to_remove = []
+        for script_name, process in self.running_scripts.items():
+            if process and not process.is_alive():
+                duration = time.time() - self.script_start_times.pop(script_name)
+                self.logger.info(f"Script: {script_name.upper()} has finished in {duration:.2f} seconds")
+                processes_to_remove.append(script_name)
 
-    # Load the config file
-    config = Config(script_to_run)
+        for script_name in processes_to_remove:
+            del self.running_scripts[script_name]
 
-    return config
+    def reset_flags(self, script_name):
+        if script_name in self.already_run:
+            if self.already_run[script_name]:
+                self.logger.debug(f"Script: {script_name} has already run setting already_run[{script_name}] to False")
+            self.already_run[script_name] = False
 
-def run_module(script_to_run, logger):
-    process = None
-    if script_to_run in list_of_python_scripts:
-        try:
-            config = get_config(script_to_run)
-            module = importlib.import_module(f"modules.{script_to_run}")
-            process = multiprocessing.Process(target=module.main, args=(config,))
-            if process:
-                if script_to_run == "poster_renamerr":
-                    config = Config(script_to_run)
-                    script_config = config.script_config
-                    sync_posters = script_config.get("sync_posters", False)
-                    border_replacerr = script_config.get("border_replacerr", False)
-                    posters = ", also running gdrive_sync" if sync_posters else ""
-                    border = ", also running border_replacerr" if border_replacerr else ""
-                    additional_scripts = f"{posters}{border}"
-                    if logger: logger.info(f"Running script: {script_to_run}{additional_scripts}.")
-                    else: print(f"Running script: {script_to_run}{additional_scripts}.")
-                else:
-                    if logger: logger.info(f"Running script: {script_to_run}.")
-                    else: print(f"Running script: {script_to_run}.")
-                process.start()
-                return process
-        except ModuleNotFoundError:
-            if logger: logger.error(f"Script: {script_to_run} does not exist")
-            else: print(f"Script: {script_to_run} does not exist")
-            return
-        except Exception as e:
-            if logger: logger.error(f"An error occurred while running the script: {script_to_run}.", exc_info=True)
-            else: print(f"An error occurred while running the script: {script_to_run}.\n{e}")
-            return
-    elif script_to_run in list_of_bash_scripts:
-        module = "bash_scripts"
-        try:
-            config = get_config(module)
-            module = importlib.import_module(f"modules.{module}")
-            process = multiprocessing.Process(target=module.main, args=(script_to_run, config))
-            if process:
-                if logger: logger.info(f"Running script: {script_to_run}")
-                else: print(f"Running script: {script_to_run}")
-                process.start()
-                return process
-        except ModuleNotFoundError:
-            if logger: logger.error(f"Script: {script_to_run} does not exist in the list of bash scripts.")
-            else: print(f"Script: {script_to_run} does not exist in the list of bash scripts.")
-            return
-        except Exception as e:
-            if logger: logger.error(f"An error occurred while running the script: {script_to_run}.", exc_info=True)
-            else: print(f"An error occurred while running the script: {script_to_run}.\n{e}")
-            return
-    else:
-        if logger: logger.error(f"Script: {script_to_run} does not exist in either bash or python scripts")
-        else: print(f"Script: {script_to_run} does not exist in either bash or python scripts")
-        return
+    def has_running_scripts(self):
+        return bool(self.running_scripts)
+
 
 def load_schedule():
-    """
-    Load the schedule from the config file
-
-    Returns:
-        dict: The schedule from the config file
-    """
-
-    # Load the config file
     config = Config("main")
-
-    # Get the schedule from the config
     schedule = config.scheduler
-
     return schedule
+
+def run_module(script_to_run, logger):
+    def run_python_module(script_to_run):
+        config = Config(script_to_run)
+        module = importlib.import_module(f"modules.{script_to_run}")
+        process = multiprocessing.Process(target=module.main, args=(config,))
+        process.start()
+        return process
+
+    def run_bash_module(script_to_run):
+        config = Config("bash_scripts")
+        module = importlib.import_module("modules.bash_scripts")
+        process = multiprocessing.Process(target=module.main, args=(script_to_run, config))
+        process.start()
+        return process
+
+    if script_to_run in list_of_python_scripts:
+        return run_python_module(script_to_run)
+    elif script_to_run in list_of_bash_scripts:
+        return run_bash_module(script_to_run)
+    else:
+        if logger:
+            logger.error(f"Script: {script_to_run} not found in known script lists.")
+        return None
+
+def print_schedule(logger, scripts_schedules):
+    logger.info(create_bar("SCHEDULE"))
+    table = PrettyTable(["Script", "Schedule"])
+    table.align = "l"
+    table.padding_width = 1
+    for script_name, schedule_time in scripts_schedules.items():
+        table.add_row([script_name, schedule_time])
+    logger.info(f"{table}")
+    logger.info(create_bar("SCHEDULE"))
+
+def should_check_version(last_check):
+    return last_check is None or last_check.date() < datetime.datetime.now().date()
 
 
 def main():
-    """
-    Main function
-    """
-    # Set the script name
-
     initial_run = True
     last_check = None
-    old_schedule = None
-    running_scripts = {}
     waiting_message_shown = False
-    scripts_schedules=load_schedule()
+
+    # Start schedule watcher
+    current_schedule = load_schedule()
+    schedule_changed = threading.Event()
+
+    def on_schedule_change():
+        new_schedule = load_schedule()
+        nonlocal current_schedule
+        if new_schedule != current_schedule:
+            current_schedule = new_schedule
+            schedule_changed.set()
+    observer = start_schedule_watcher(on_schedule_change)
+
+    if "--help" in sys.argv:
+        print("Usage: python main.py [script_name ...]")
+        sys.exit()
+
     if len(sys.argv) > 1:
         for input_name in sys.argv[1:]:
             if input_name in list_of_bash_scripts or input_name in list_of_python_scripts:
@@ -169,93 +178,58 @@ def main():
             log_level = main_config.log_level
             logger = setup_logger(log_level, "main")
             logger.info("Starting the script...")
-            # If config file is not found
+            manager = ScriptManager(logger)
+
+            branch = get_current_git_branch()
+
             while True:
-                scripts_schedules= load_schedule()
-                
-                # Check for new version
-                if last_check is None or last_check.date() < datetime.datetime.now().date():
-                    from util.version import version_check
+                if should_check_version(last_check):
                     version_check(logger, branch)
                     last_check = datetime.datetime.now()
                     next_check = (last_check + datetime.timedelta(days=1)).strftime("%A %I:%M %p")
                     logger.info(f"Next version check: {next_check}")
-                # Print the start message on the first run
-                if initial_run or old_schedule != scripts_schedules:
+
+                if initial_run or schedule_changed.is_set():
                     if initial_run:
                         logger.info(create_bar("START"))
-
-                    # Print the schedule
-                    logger.info(create_bar("SCHEDULE"))
-                    table = PrettyTable(["Script", "Schedule"])
-                    table.align = "l"
-                    table.padding_width = 1
-                    for script_name, schedule_time in scripts_schedules.items():
-                        table.add_row([script_name, schedule_time])
-                    logger.info(f"{table}")
-                    logger.info(create_bar("SCHEDULE"))
+                    for script in current_schedule:
+                        manager.reset_flags(script)
+                    print_schedule(logger, current_schedule)
+                    schedule_changed.clear()
                     initial_run = False
                     waiting_message_shown = False
 
                 if not waiting_message_shown:
                     logger.info("Waiting for scheduled scripts...")
                     waiting_message_shown = True
-                
-                # Check for scheduled scripts
-                for script_name, schedule_time in scripts_schedules.items():
 
-                    # Check if script_name is in already_run or not
-                    if script_name in already_run and schedule_time != "run" and already_run[script_name]:
-                        logger.debug(f"Script: {script_name} has already run setting already_run[{script_name}] to False")
-                        already_run[script_name] = False
-                    elif script_name in already_run and schedule_time == "run" and already_run[script_name]:
-                        logger.debug(f"Script is still set to run: {script_name}")
-                    
-                    if script_name in running_scripts or not schedule_time:
+                for script_name, schedule_time in current_schedule.items():
+                    manager.reset_flags(script_name)
+ 
+                    if manager.is_already_running(script_name) or not schedule_time:
                         continue
-
+ 
                     if script_name in list_of_python_scripts or script_name in list_of_bash_scripts:
-                        if schedule_time == "run" and (script_name not in already_run or not already_run[script_name]):
-                            process = run_module(script_name, logger)
-                            running_scripts[script_name] = process
-                            logger.debug(f"Setting already_run[{script_name}] to True")
-                            already_run[script_name] = True
-                        elif schedule_time != "run" and check_schedule(script_name, schedule_time, logger):
-                            process = run_module(script_name, logger)
-                            running_scripts[script_name] = process
+                        manager.run_if_due(script_name, schedule_time, check_schedule, run_module)
+                    elif not manager.is_already_running(script_name) and schedule_time:
+                        logger.debug(f"Skipping script: {script_name}, reason: {schedule_time}")
+                    else:
+                        logger.debug(f"Skipping script: {script_name}, reason: {schedule_time} (unknown script)")
 
-                # Remove the from running_scripts if the process is done
-                processes_to_remove = []
-                for script_name, process in running_scripts.items():
-                    if process and not process.is_alive():
-                        processes_to_remove.append(script_name)
-                logger.debug(f"already_run:\n{json.dumps(already_run, indent=4)}")
-                for script_name in processes_to_remove:
-                    logger.info(f"Script: {script_name.upper()} has finished")
-                    if script_name in running_scripts:
-                        del running_scripts[script_name]
-                        waiting_message_shown = False
+                manager.cleanup()
 
-                old_schedule = scripts_schedules
-                time.sleep(30)
-        
-        # If the script is interrupted
+                
+                time.sleep(5)
+
         except KeyboardInterrupt:
-            print("Keyboard Interrupt detected. Exiting...")
+            logger.info("Keyboard Interrupt detected. Exiting...")
             sys.exit()
-        
-        # If an error occurs
+
         except Exception:
             logger.error(f"\n\nAn error occurred:\n", exc_info=True)
-            logger.error(f"\n\n")
 
-        # If the script is stopped
         finally:
             logger.info(create_bar("END"))
 
-
 if __name__ == '__main__':
-    """
-    Main function
-    """
     main()

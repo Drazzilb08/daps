@@ -40,7 +40,7 @@ def notification(output, logger):
     delete_list = []
 
     for item in output:
-        delete_list.append(f"**{item['title']}**\t\t{item['tvdb_id'] if item['instance_type'] == "sonarr" else item['tmdb_id']}")
+        delete_list.append(f"**{item['title']}**\t\t{item['tvdb_id'] if item['instance_type'] == 'sonarr' else item['tmdb_id']}")
     # convert delete_list to a string
     delete_list = "\n".join(delete_list)
     fields = {
@@ -95,7 +95,7 @@ def main(config):
                     if app.connect_status:
                         server_name = app.get_instance_name()
                         health = app.get_health()
-                        media_dict = handle_starr_data(app, server_name, instance_type, include_episode=False)
+                        media_dict = handle_starr_data(app, server_name, instance_type, logger, include_episode=False)
                         id_list = []
                         if health:
                             for health_item in health:
@@ -109,7 +109,7 @@ def main(config):
                         logger.debug(f"id_list:\n{json.dumps(id_list, indent=4)}")
                         output = []
                         for item in tqdm(media_dict, desc=f"Processing {instance_type}", unit="items", disable=None, total=len(media_dict)):
-                            if item['db_id'] in id_list:
+                            if (instance_type == "radarr" and item['tmdb_id'] in id_list) or (instance_type == "sonarr" and item['tvdb_id'] in id_list):
                                 logger.debug(f"Found {item['title']} with: {item['db_id']}")
                                 output.append(item)
                         logger.debug(f"output:\n{json.dumps(output, indent=4)}")

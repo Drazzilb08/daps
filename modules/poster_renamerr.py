@@ -103,7 +103,8 @@ def match_data(media_dict, asset_files, prefix_index, logger=None, debug_items=N
                         matched = False
                         # search here to identify matches
                         debug_search = debug_items and len(debug_items) > 0 and media['normalized_title'] in debug_items
-                        media_seasons_numbers = [season['season_number'] for season in media.get('seasons', [])] if 'seasons' in media else None
+                        seasons = media.get('seasons') or []
+                        media_seasons_numbers = [season['season_number'] for season in seasons]
 
                         titles_to_check = [media['title']] 
                         titles_to_check.extend(media.get('alternate_titles', [])) 

@@ -20,9 +20,12 @@
 import json
 import os
 import sys
-from util.utility import *
+from util.utility import create_bar, create_table, handle_starr_data, get_plex_data
 from util.arrpy import StARR
 from util.logger import setup_logger
+from util.index import search_matches, create_new_empty_index
+from util.match import is_match
+from util.assets import get_assets_files
 import copy
 
 try:
@@ -307,7 +310,7 @@ def main(config):
                                 server_name = app.get_instance_name()
                                 if app:
                                     print(f"Getting {instance_type.capitalize()} data...")
-                                    results = handle_starr_data(app, server_name, instance_type, include_episode=False)
+                                    results = handle_starr_data(app, server_name, instance_type,logger, include_episode=False)
                                     if results:
                                         if instance_type == "radarr":
                                             media_dict['movies'].extend(results)

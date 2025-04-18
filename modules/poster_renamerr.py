@@ -27,6 +27,10 @@ from util.utility import *
 from util.discord import discord, discord_check
 from util.arrpy import StARR
 from util.logger import setup_logger
+from util.index import create_new_empty_index, search_matches
+from util.match import is_match
+from util.assets import get_assets_files
+from util.constants import year_regex
 
 try:
     from plexapi.server import PlexServer
@@ -38,8 +42,6 @@ except ImportError as e:
     exit(1)
 
 script_name = "poster_renamerr"
-
-year_regex = re.compile(r"\s?\((\d{4})\).*")
 
 def handle_series_match(asset, media_seasons_numbers, asset_season_numbers):
     # Iterate through each file in the asset
@@ -108,10 +110,8 @@ def match_data(media_dict, asset_files, prefix_index, logger=None, debug_items=N
 
                         titles_to_check = [media['title']] 
                         titles_to_check.extend(media.get('alternate_titles', [])) 
-
                         for title in titles_to_check:
                             search_matched_assets = search_matches(prefix_index, title, asset_type, logger, debug_search=debug_search)
-
                             for search_asset in search_matched_assets:
                                 total_comparisons += 1
                                 if is_match(search_asset, media, logger):
@@ -533,7 +533,6 @@ def main(config):
     logger = setup_logger(log_level, script_name)
 
     script_config = config.script_config
-    config_dir_path = os.path.dirname(config.config_path)
     name = script_name.replace("_", " ").upper()
     logger.info(f"Running {name}")
     try:

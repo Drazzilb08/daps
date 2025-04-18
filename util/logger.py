@@ -33,7 +33,6 @@ def setup_logger(log_level, script_name, max_logs=9):
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
     
-    
     # Define the log file path with the current date
     log_file = f"{log_dir}/{script_name}.log"
     
@@ -50,7 +49,8 @@ def setup_logger(log_level, script_name, max_logs=9):
     logger = logging.getLogger(script_name)
     logger.propagate = False 
     
-    # Set the log level based on the provided parameter
+    # Clear existing handlers and set the log level based on the provided parameter
+    logger.handlers.clear()
     log_level = log_level.upper()
     if log_level == 'DEBUG':
         logger.setLevel(logging.DEBUG)
@@ -84,15 +84,9 @@ def setup_logger(log_level, script_name, max_logs=9):
     # Add the console handler to the logger
     logger.addHandler(console_handler)
 
-    # Overwrite previous logger if exists
-    logging.getLogger(script_name).handlers.clear()
-    logging.getLogger(script_name).addHandler(handler)
-    logging.getLogger(script_name).addHandler(console_handler)
-
     # Insert version number at the head of every log file   
     version = get_version()
     name = script_name.replace("_", " ").upper()
     logger.info(create_bar(f"{name} Version: {version}"))
-
 
     return logger

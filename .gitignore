@@ -61,5 +61,6 @@ web/
 **/config.yml
 **/.DS_Store
 **/TODO.*
-**test**
+**test.**
 **side-projects**
+test2.py

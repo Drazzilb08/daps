@@ -43,9 +43,9 @@ def check_schedule(script_name, schedule, logger):
             if now.strftime("%A").lower() in days:
                 for time, day in zip(times, days):
                     hour, minute = map(int, time.split(":"))
-                if now.hour == hour and now.minute == minute and (now.strftime("%A").lower() == day or
-                (now.strftime("%A").lower() == "sunday" and day == "saturday")):
-                    return True
+                    if now.hour == hour and now.minute == minute and (now.strftime("%A").lower() == day or
+                    (now.strftime("%A").lower() == "sunday" and day == "saturday")):
+                        return True
         elif frequency == "monthly":
             day, time = data.split("@")
             if now.day == int(day) and now.hour == int(time.split(":")[0]) and now.minute == int(time.split(":")[1]):
@@ -86,8 +86,7 @@ def check_schedule(script_name, schedule, logger):
                 return False
             
 
-
     except ValueError as e:
         logger.error(f"Invalid schedule: {schedule} for script: {script_name}")
-        logger.error (f"Error: {e}")
+        logger.error(f"Error: {e}")
         return False

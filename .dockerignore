@@ -13,6 +13,7 @@
 !/spud
 !/start.sh
 !/exclude-file.txt
+!/tests
 
 # Ignore unnecessary files inside allowed directories
 # This should go after the allowed directories

@@ -1,8 +1,8 @@
-import requests
 import os
 import pathlib
-from util.discord import discord
 
+import requests
+from util.discord import discord
 
 try:
     import requests
@@ -11,8 +11,7 @@ except ImportError:
     print("Please install the required modules with 'pip install -r requirements.txt'")
     exit(1)
 
-
-script_dir = pathlib.Path(__file__).parents[1]  # Get the path to the script directory (one level up from this file
+script_dir = pathlib.Path(__file__).parents[1]  # Get the path to the script directory (one level up from this file)
 
 def version_check(logger, branch):
     """
@@ -77,7 +76,7 @@ def version_check(logger, branch):
             "value": f"```{github_script_version}```"
         }]
         
-        print("Sending Discord notification")
+        logger.info("Sending Discord notification")
         # Call function to send Discord notification with script details
         discord(field, logger=logger, script_name="main", description=f"__**Drazzilb's Scripts**__", color=0xff0000, content=None)
 

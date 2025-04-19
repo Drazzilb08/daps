@@ -2,13 +2,13 @@ import re
 import html
 import os
 from unidecode import unidecode
-from util.constants import common_words, words_to_remove, illegal_chars_regex, remove_special_chars, year_regex, suffixes
+from util.constants import common_words, words_to_remove, illegal_chars_regex, remove_special_chars, year_regex
 
-def preprocess_name(title: str) -> str:
-    title = re.sub(r'[^a-zA-Z0-9\s]', '_', title.lower())
-    title = ' '.join(title.split())
-    title = unidecode(html.unescape(title))
-    return ''.join(word for word in title.split() if word not in common_words)
+def preprocess_name(name: str) -> str:
+    name = re.sub(r'[^a-zA-Z0-9\s]', '', name.lower())
+    name = ' '.join(name.split())
+    name = unidecode(html.unescape(name))
+    return ''.join(word for word in name.split() if word not in common_words)
 
 def normalize_file_names(file_name: str) -> str:
     file_name, _ = os.path.splitext(file_name)

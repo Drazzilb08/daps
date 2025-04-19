@@ -4,13 +4,14 @@ import html
 from tqdm import tqdm
 from unidecode import unidecode
 import datetime
+from typing import Any
 
 from util.normalization import normalize_titles
 from util.construct import create_collection, create_series, create_movie
 from util.extract import extract_year, extract_ids
 from util.constants import year_regex, season_pattern
 
-def scan_files_in_flat_folder(folder_path, logger):
+def scan_files_in_flat_folder(folder_path: str) -> list[dict]:
     from collections import defaultdict
 
     files = os.listdir(folder_path)
@@ -42,7 +43,7 @@ def scan_files_in_flat_folder(folder_path, logger):
 
     return assets_dict
 
-def scan_files_in_nested_folders(folder_path, logger):
+def scan_files_in_nested_folders(folder_path: str, logger: Any) -> list[dict]:
     assets_dict = []
     try:
         entries = list(os.scandir(folder_path))
@@ -60,7 +61,7 @@ def scan_files_in_nested_folders(folder_path, logger):
 
     return assets_dict
 
-def parse_folder_group(folder_path, base_name, files):
+def parse_folder_group(folder_path: str, base_name: str, files: list[str]) -> dict:
     title = re.sub(year_regex, '', base_name)
     year = extract_year(base_name)
     tmdb_id, tvdb_id, imdb_id = extract_ids(base_name)
@@ -77,7 +78,7 @@ def parse_folder_group(folder_path, base_name, files):
     else:
         return create_movie(title, year, tmdb_id, imdb_id, normalize_title, full_paths)
 
-def parse_file_group(folder_path, base_name, files):
+def parse_file_group(folder_path: str, base_name: str, files: list[str]) -> dict:
     # Shared title/year/ID extraction
     title = re.sub(year_regex, '', base_name)
     year = extract_year(base_name)
@@ -98,7 +99,7 @@ def parse_file_group(folder_path, base_name, files):
         return create_movie(title, year, tmdb_id, imdb_id, normalize_title, files)
 
 
-def process_files(folder_path, logger):
+def process_files(folder_path: str, logger: Any) -> list[dict]:
     """
     Categorize files into movies, collections, and series.
     """
@@ -118,7 +119,7 @@ def process_files(folder_path, logger):
 
     return assets_dict
 
-def _is_asset_folders(folder_path):
+def _is_asset_folders(folder_path: str) -> bool:
     """
     Check if the folder contains asset folders
 

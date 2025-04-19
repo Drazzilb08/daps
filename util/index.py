@@ -1,16 +1,20 @@
-import re
 from util.normalization import preprocess_name
+from typing import Any, Dict, List, Optional
+
+# Type aliases for clarity
+Asset = Dict[str, Any]
+PrefixIndex = Dict[str, Dict[str, List[Asset]]]
 
 prefix_length = 3
 
-def create_new_empty_index():
+def create_new_empty_index() -> PrefixIndex:
     return {
         'movies': {},
         'series': {},
         'collections': {},
     }
 
-def build_search_index(prefix_index, title, asset, asset_type, logger, debug_items=None):
+def build_search_index(prefix_index: PrefixIndex, title: str, asset: Asset, asset_type: str, logger: Optional[Any], debug_items: Optional[List[str]] = None) -> None:
     """
     Build an index of preprocessed movie names for efficient lookup
     Returns both the index and preprocessed forms
@@ -51,7 +55,7 @@ def build_search_index(prefix_index, title, asset, asset_type, logger, debug_ite
 
     return
 
-def search_matches(prefix_index, title, asset_type, logger, debug_search=False):
+def search_matches(prefix_index: PrefixIndex, title: str, asset_type: str, logger: Optional[Any], debug_search: bool = False) -> List[Asset]:
     matches = []
     processed_title = preprocess_name(title)
     asset_type_processed_forms = prefix_index[asset_type]

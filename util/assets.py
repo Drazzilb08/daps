@@ -1,4 +1,3 @@
-
 import os
 import datetime
 from tqdm import tqdm
@@ -12,9 +11,10 @@ from util.match import is_match
 from util.normalization import (
     normalize_file_names,
 )
+from typing import Any, Dict, List, Tuple, Union, Optional
 
 
-def get_assets_files(source_dirs, logger):
+def get_assets_files(source_dirs: Union[str, List[str]], logger: Any) -> Tuple[Optional[Dict[str, List[dict]]], Optional[Dict[str, Any]]]:
     """
     Get assets files from source directories.
 
@@ -50,7 +50,7 @@ def get_assets_files(source_dirs, logger):
 
     return assets_dict, prefix_index
 
-def merge_assets(new_assets, final_assets, prefix_index, logger):
+def merge_assets(new_assets: List[dict], final_assets: List[dict], prefix_index: Dict[str, Any], logger: Any) -> None:
     """Merge and deduplicate new assets into the final asset list."""
     with tqdm(total=len(new_assets), desc="Processing assets", leave=False) as progress_bar:
         for new in new_assets:
@@ -83,7 +83,7 @@ def merge_assets(new_assets, final_assets, prefix_index, logger):
                 build_search_index(prefix_index, new['title'], new, new['type'], logger)
             progress_bar.update(1)
 
-def categorize_assets(final_assets):
+def categorize_assets(final_assets: List[dict]) -> Dict[str, List[dict]]:
     """Organize final assets into categorized dictionary."""
     assets_dict = {'movies': [], 'series': [], 'collections': []}
     for item in final_assets:

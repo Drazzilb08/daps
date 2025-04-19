@@ -2,13 +2,14 @@ import re
 import os
 from util.normalization import normalize_titles
 from util.constants import folder_year_regex
+from typing import Any, Dict
 
-def compare_strings(string1, string2):
+def compare_strings(string1: str, string2: str) -> bool:
     string1 = re.sub(r'\W+', '', string1)
     string2 = re.sub(r'\W+', '', string2)
     return string1.lower() == string2.lower()
 
-def is_match(asset, media, logger, log=True):
+def is_match(asset: Dict[str, Any], media: Dict[str, Any], logger: Any, log: bool = True) -> bool:
     """
     Check if the asset matches the media
 

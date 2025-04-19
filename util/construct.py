@@ -1,6 +1,7 @@
 
 from util.normalization import normalize_titles
 from util.constants import prefixes, suffixes
+from typing import Optional
 
 def generate_title_variants(title: str) -> dict[str, str]:
     stripped_prefix = next((title[len(p):].strip() for p in prefixes if title.startswith(p + " ")), title)
@@ -27,7 +28,7 @@ def create_collection(title: str, normalized_title: str, files: list[str]) -> di
         'no_suffix_normalized': [variants['no_suffix_normalized']],
     }
 
-def create_series(title: str, year: int | None, tvdb_id: int | None, imdb_id: str | None, normalized_title: str, files: list[str]) -> dict:
+def create_series(title: str, year: Optional[int], tvdb_id: Optional[int], imdb_id: Optional[str], normalized_title: str, files: list[str]) -> dict:
     return {
         'type': 'series',
         'title': title,
@@ -39,7 +40,7 @@ def create_series(title: str, year: int | None, tvdb_id: int | None, imdb_id: st
         'season_numbers': [],
     }
 
-def create_movie(title: str, year: int | None, tmdb_id: int | None, imdb_id: str | None, normalized_title: str, files: list[str]) -> dict:
+def create_movie(title: str, year: Optional[int], tmdb_id: Optional[int], imdb_id: Optional[str], normalized_title: str, files: list[str]) -> dict:
     return {
         'type': 'movies',
         'title': title,

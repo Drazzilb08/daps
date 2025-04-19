@@ -107,9 +107,9 @@ def process_files(folder_path: str, logger: Any) -> list[dict]:
     start_time = datetime.datetime.now()
 
     if not asset_folders:
-        assets_dict = scan_files_in_flat_folder(folder_path, logger)
+        assets_dict = scan_files_in_flat_folder(folder_path)
     else:
-        assets_dict = scan_files_in_nested_folders(folder_path, logger)
+        assets_dict = scan_files_in_nested_folders(folder_path)
 
     end_time = datetime.datetime.now()
     elapsed_time = (end_time - start_time).total_seconds()

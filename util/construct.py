@@ -1,4 +1,3 @@
-
 from util.normalization import normalize_titles
 from util.constants import prefixes, suffixes
 from typing import Optional
@@ -8,6 +7,11 @@ def generate_title_variants(title: str) -> dict[str, str]:
     stripped_suffix = next((title[:-(len(s) + 1)].strip() for s in suffixes if title.endswith(" " + s)), title)
     stripped_both = next((stripped_prefix[:-(len(s) + 1)].strip() for s in suffixes if stripped_prefix.endswith(" " + s)), stripped_prefix)
     alternate_titles = [stripped_prefix, stripped_suffix, stripped_both]
+    title_with_collection = None
+    if not title.lower().endswith('collection'):
+        title_with_collection = f"{title} Collection"
+    if title_with_collection:
+        alternate_titles.append(title_with_collection)
     normalized_alternate_titles = [normalize_titles(alt) for alt in alternate_titles]
     alternate_titles = list(dict.fromkeys(alternate_titles))
     normalized_alternate_titles = list(dict.fromkeys(normalized_alternate_titles))

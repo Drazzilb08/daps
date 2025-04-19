@@ -115,7 +115,8 @@ def process_files(folder_path: str, logger: Any) -> list[dict]:
     elapsed_time = (end_time - start_time).total_seconds()
     item_count = len(assets_dict) if assets_dict else 0
     items_per_second = item_count / elapsed_time if elapsed_time > 0 else 0
-    logger.info(f"Processed {item_count} files in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s) in folder '{os.path.basename(folder_path.rstrip('/'))}'")
+    if logger:
+        logger.info(f"Processed {item_count} files in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s) in folder '{os.path.basename(folder_path.rstrip('/'))}'")
 
     return assets_dict
 

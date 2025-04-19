@@ -8,6 +8,7 @@ import datetime
 from util.normalization import normalize_titles
 from util.extract import extract_year
 from util.constants import year_regex
+from util.construct import generate_title_variants
 
 try:
     import html
@@ -312,22 +313,18 @@ def get_plex_data(plex, library_names, logger, include_smart, collections_only):
         for library_name, collection_names in collection_names.items():
             progress_bar = tqdm(collection_names, desc=f"Processing Plex collection data for '{library_name}'", total=len(collection_names), disable=None, leave=True)
             start_time = datetime.datetime.now()
-            for collection in progress_bar:
-                collection = unidecode(html.unescape(collection))
-                title = normalize_titles(collection)
-                alternate_titles = []
-                if title.endswith(" Collection"):
-                    alternate_titles.append(title.removesuffix(" Collection"))
-                else:
-                    alternate_titles.append(normalize_titles(title + " Collection"))
+            for title in progress_bar:
+                title = unidecode(html.unescape(title))
+                normalized_title = normalize_titles(title)
+                alternate_titles = generate_title_variants(title)
                 plex_dict.append({
-                    'title': collection,
-                    'normalized_title': title,
-                    'location': library_name,
+                    'title': title,
+                    'normalized_title': normalized_title,
+                    'location': library_name, # Library name
                     'year': None,
-                    'folder': collection,
-                    'alternate_titles': alternate_titles,
-                    'normalized_alternate_titles': alternate_titles
+                    'folder': title,
+                    'alternate_titles': alternate_titles['alternate_titles'],
+                    'normalized_alternate_titles': alternate_titles['normalized_alternate_titles'],
                 })
             end_time = datetime.datetime.now()
             elapsed_time = (end_time - start_time).total_seconds()

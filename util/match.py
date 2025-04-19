@@ -54,28 +54,31 @@ def is_match(asset: Dict[str, Any], media: Dict[str, Any], logger: Any, log: boo
 
         for condition, message in id_match_criteria:
             if condition:
-                if log:
+                if log and logger:
                     logger.debug(f"Match found: {message} -> Asset: {asset.get('title', '')} ({asset.get('year', '')}), Media: {media.get('title', '')} ({media.get('year', '')})")
                 return True
 
         return False
     else:
         match_criteria = [
-            (asset.get('title') == media.get('title'), "Title match"),
-            (asset.get('title') in media.get('alternate_titles', []), "Title in alternate titles"),
-            (asset.get('title') == media.get('folder_title'), "Folder title match"),
-            (asset.get('title') == media.get('original_title'), "Original title match"),
-            (asset.get('normalized_title') == media.get('normalized_title'), "Normalized title match"),
-            (asset.get('normalized_title') == media.get('normalized_folder_title'), "Normalized folder title match"),
-            (asset.get('normalized_title') in media.get('normalized_alternate_titles', []), "Normalized title in alternate titles"),
-
-            (compare_strings(media.get('title', ''), asset.get('title', '')), "String comparison match"),
-            (compare_strings(media.get('normalized_title', ''), asset.get('normalized_title', '')), "Normalized string comparison match"),
-        ]
+                (asset.get('title') == media.get('title'), "Asset title equals media title"),
+                (asset.get('title') in media.get('alternate_titles', []), "Asset title found in media's alternate titles"),
+                (asset.get('title') == media.get('folder_title'), "Asset title equals media folder title"),
+                (asset.get('title') == media.get('original_title'), "Asset title equals media original title"),
+                (asset.get('normalized_title') == media.get('normalized_title'), "Asset normalized title equals media normalized title"),
+                (asset.get('normalized_title') == media.get('normalized_folder_title'), "Asset normalized title equals media folder title"),
+                (asset.get('normalized_title') in media.get('normalized_alternate_titles', []), "Asset normalized title found in media's normalized alternate titles"),
+                (any(assets == media.get('title') for assets in asset.get('alternate_titles', [])), "One of asset's alternate_titles matches media title"),
+                (any(assets == media.get('normalized_title') for assets in asset.get('normalized_alternate_titles', [])), "One of asset's normalized_alternate_titles matches media normalized title"),
+                (any(media_alt == asset.get('title') for media_alt in media.get('alternate_titles', [])), "One of media's alternate_titles matches asset title"),
+                (any(media_alt == asset.get('normalized_title') for media_alt in media.get('normalized_alternate_titles', [])), "One of media's normalized_alternate_titles matches asset normalized title"),
+                (compare_strings(media.get('title', ''), asset.get('title', '')), "Titles match under loose string comparison"),
+                (compare_strings(media.get('normalized_title', ''), asset.get('normalized_title', '')), "Normalized titles match under loose string comparison"),
+            ]
 
         for condition, message in match_criteria:
             if condition and year_matches():
-                if log:
+                if log and logger:
                     logger.debug(f"Match found: {message} -> Asset: {asset.get('title', '')} ({asset.get('year', '')}), Media: {media.get('title', '')} ({media.get('year', '')})")
                 return True
 

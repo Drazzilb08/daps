@@ -6,6 +6,7 @@ from util.scanner import process_files
 from util.index import build_search_index, search_matches
 from util.match import is_match
 from util.normalization import normalize_file_names
+from util.construct import generate_title_variants
 from typing import Any, Dict, List, Tuple, Union, Optional
 
 
@@ -30,18 +31,21 @@ def get_assets_files(source_dirs: Union[str, List[str]], logger: Any) -> Tuple[O
         if new_assets:
             merge_assets(new_assets, final_assets, prefix_index, logger)
         else:
-            logger.warning(f"No files found in the folder: {os.path.basename(source_dir)}")
+            if logger:
+                logger.warning(f"No files found in the folder: {os.path.basename(source_dir)}")
 
     assets_dict = categorize_assets(final_assets)
 
     if all(not v for v in assets_dict.values()):
-        logger.warning(f"No files were found in any of the source directories: {source_dirs}")
+        if logger:
+            logger.warning(f"No files were found in any of the source directories: {source_dirs}")
         return None, None
 
     end_time = datetime.datetime.now()
     elapsed_time = (end_time - start_time).total_seconds()
     items_per_second = len(source_dirs) / elapsed_time if elapsed_time > 0 else 0
-    logger.debug(f"Processed {len(source_dirs)} source directories in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s)")
+    if logger:
+        logger.debug(f"Processed {len(source_dirs)} source directories in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s)")
 
     return assets_dict, prefix_index
 
@@ -56,7 +60,13 @@ def merge_assets(new_assets: List[dict], final_assets: List[dict], prefix_index:
                         normalized_new_file = normalize_file_names(os.path.basename(new_file))
                         for final_file in final['files']:
                             normalized_final_file = normalize_file_names(os.path.basename(final_file))
-                            if normalized_final_file == normalized_new_file:
+                            if final.get('type') == 'collections':   
+                                final_base = os.path.splitext(os.path.basename(final_file))[0]
+                                final_file_variants = generate_title_variants(final_base)['normalized_alternate_titles']
+                            if (
+                                normalized_final_file == normalized_new_file
+                                or (final.get('type') == 'collections' and normalized_new_file in final_file_variants)
+                            ):
                                 final['files'].remove(final_file)
                                 final['files'].append(new_file)
                                 break

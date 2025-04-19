@@ -5,6 +5,7 @@ year_regex = re.compile(r"\s?\((\d{4})\)(?!.*Collection).*")
 
 # Regex to match common season patterns
 season_pattern = re.compile(r"(?:\s*-\s*Season\s*\d+|_Season\d{1,2}|\s*-\s*Specials|_Specials)", re.IGNORECASE)
+season_number_regex = re.compile(r'(?:[-\s_]+)?Season\s*(\d{1,2})', re.IGNORECASE)
 
 # Regex to extract the year from parentheses in the folder name
 folder_year_regex = re.compile(r"(.*)\s\((\d{4})\)")

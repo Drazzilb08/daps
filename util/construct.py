@@ -1,6 +1,8 @@
 from util.normalization import normalize_titles
-from util.constants import prefixes, suffixes
+from util.constants import prefixes, suffixes, season_number_regex
 from typing import Optional
+import os
+import re
 
 def generate_title_variants(title: str) -> dict[str, str]:
     stripped_prefix = next((title[len(p) + 1:].strip() for p in prefixes if title.startswith(p + " ")), title)
@@ -34,6 +36,20 @@ def create_collection(title: str, normalized_title: str, files: list[str]) -> di
     }
 
 def create_series(title: str, year: Optional[int], tvdb_id: Optional[int], imdb_id: Optional[str], normalized_title: str, files: list[str]) -> dict:
+    # Extract season numbers from file names
+    season_numbers = []
+    for file_path in files:
+        base = os.path.basename(file_path)
+        if "Specials" in base:
+            season_numbers.append(0)
+        else:
+            match = re.search(season_number_regex, base)
+            if match:
+                season_numbers.append(int(match.group(1)))
+
+    # Remove duplicates and sort
+    season_numbers = sorted(set(season_numbers))
+
     return {
         'type': 'series',
         'title': title,
@@ -42,7 +58,7 @@ def create_series(title: str, year: Optional[int], tvdb_id: Optional[int], imdb_
         'imdb_id': imdb_id,
         'normalized_title': normalized_title,
         'files': files,
-        'season_numbers': [],
+        'season_numbers': season_numbers,
     }
 
 def create_movie(title: str, year: Optional[int], tmdb_id: Optional[int], imdb_id: Optional[str], normalized_title: str, files: list[str]) -> dict:

@@ -3,14 +3,9 @@ import datetime
 from tqdm import tqdm
 from util.index import create_new_empty_index
 from util.scanner import process_files
-from util.index import (
-    build_search_index,
-    search_matches,
-)
+from util.index import build_search_index, search_matches
 from util.match import is_match
-from util.normalization import (
-    normalize_file_names,
-)
+from util.normalization import normalize_file_names
 from typing import Any, Dict, List, Tuple, Union, Optional
 
 

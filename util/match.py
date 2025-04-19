@@ -69,11 +69,6 @@ def is_match(asset: Dict[str, Any], media: Dict[str, Any], logger: Any, log: boo
             (asset.get('normalized_title') == media.get('normalized_folder_title'), "Normalized folder title match"),
             (asset.get('normalized_title') in media.get('normalized_alternate_titles', []), "Normalized title in alternate titles"),
 
-            (media.get('title') in asset.get('no_prefix', []), "Title in asset no_prefix"),
-            (media.get('title') in asset.get('no_suffix', []), "Title in asset no_suffix"),
-            (media.get('normalized_title') in asset.get('no_prefix_normalized', []), "Normalized title in asset no_prefix_normalized"),
-            (media.get('normalized_title') in asset.get('no_suffix_normalized', []), "Normalized title in asset no_suffix_normalized"),
-
             (compare_strings(media.get('title', ''), asset.get('title', '')), "String comparison match"),
             (compare_strings(media.get('normalized_title', ''), asset.get('normalized_title', '')), "Normalized string comparison match"),
         ]

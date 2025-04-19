@@ -6,12 +6,13 @@ from typing import Optional
 def generate_title_variants(title: str) -> dict[str, str]:
     stripped_prefix = next((title[len(p):].strip() for p in prefixes if title.startswith(p + " ")), title)
     stripped_suffix = next((title[:-len(s)].strip() for s in suffixes if title.endswith(" " + s)), title)
+    stripped_both = next((stripped_prefix[len(s):].strip() for s in suffixes if stripped_prefix.endswith(" " + s)), stripped_prefix)
+    alternate_titles = [stripped_prefix, stripped_suffix, stripped_both]
+    normalized_alternate_titles = [normalize_titles(title) for title in stripped_both]
 
     return {
-        'no_prefix': stripped_prefix,
-        'no_suffix': stripped_suffix,
-        'no_prefix_normalized': normalize_titles(stripped_prefix),
-        'no_suffix_normalized': normalize_titles(stripped_suffix)
+        'alternate_titles': alternate_titles,
+        'normalized_alternate_titles': normalized_alternate_titles
     }
 
 def create_collection(title: str, normalized_title: str, files: list[str]) -> dict:
@@ -22,10 +23,8 @@ def create_collection(title: str, normalized_title: str, files: list[str]) -> di
         'year': None,
         'normalized_title': normalized_title,
         'files': files,
-        'no_prefix': [variants['no_prefix']],
-        'no_suffix': [variants['no_suffix']],
-        'no_prefix_normalized': [variants['no_prefix_normalized']],
-        'no_suffix_normalized': [variants['no_suffix_normalized']],
+        'alternate_titles': [variants['alternate_titles']],
+        'normalized_alternate_titles': [variants['normalized_alternate_titles']],
     }
 
 def create_series(title: str, year: Optional[int], tvdb_id: Optional[int], imdb_id: Optional[str], normalized_title: str, files: list[str]) -> dict:

@@ -7,7 +7,6 @@ from util.constants import common_words, words_to_remove, illegal_chars_regex, r
 def preprocess_name(title: str) -> str:
     title = re.sub(r'[^a-zA-Z0-9\s]', '_', title.lower())
     title = title.replace(' ', '')
-    title = ' '.join(title.split())
     title = unidecode(html.unescape(title))
     return ''.join(word for word in title.split() if word not in common_words)
 

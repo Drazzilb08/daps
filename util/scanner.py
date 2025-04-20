@@ -25,7 +25,7 @@ def scan_files_in_flat_folder(folder_path: str) -> list[dict]:
         title = file.rsplit('.', 1)[0]
         title = unidecode(html.unescape(title))
         raw_title = season_pattern.split(title)[0].strip()
-        normalized_title = re.sub(r'[^a-zA-Z0-9]', '', raw_title).lower()
+        normalized_title = normalize_titles(raw_title)
 
         if normalized_title in normalized_map:
             match_key = normalized_map[normalized_title]
@@ -88,8 +88,6 @@ def parse_file_group(folder_path: str, base_name: str, files: list[str]) -> dict
 
     is_series = any(season_pattern.search(file) for file in files)
     is_collection = not year
-
-   
 
     if is_collection:
         return create_collection(title, normalize_title, files)

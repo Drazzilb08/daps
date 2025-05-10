@@ -1,80 +1,145 @@
 import pathlib
 import yaml
 import os
+import json
 from pathlib import Path
 from util.utility import *
-import time
+from copy import deepcopy
+from types import SimpleNamespace
+import sys
 
-# Set the config file path
+
+def load_user_config(path: str) -> dict:
+    """
+    Load YAML configuration from the specified file path.
+
+    Args:
+        path (str): Path to the YAML configuration file.
+
+    Returns:
+        dict: Parsed configuration dictionary, or empty dict if file is missing or invalid.
+    """
+    try:
+        with open(path, "r") as f:
+            raw = f.read()
+        data = yaml.safe_load(raw)
+        return data or {}
+    except FileNotFoundError:
+        sys.stderr.write("[CONFIG] config file not found\n")
+        return {}
+    except yaml.YAMLError as e:
+        sys.stderr.write(f"[CONFIG] Error parsing config file: {e}\n")
+        print(f"Error parsing config file: {e}")
+        return {}
+
+
+def merge_with_template(path: str, config: dict) -> dict:
+    """
+    Merge missing keys from the JSON template into the user's config and save if changed.
+
+    Args:
+        path (str): Path to the user's YAML config file.
+        config (dict): User's current configuration dictionary.
+
+    Returns:
+        dict: Merged configuration dictionary.
+    """
+    with open(TEMPLATE_PATH, "r") as tf:
+        default_cfg = json.load(tf)
+    original = deepcopy(config)
+    merged = _deep_merge(default_cfg, config)
+    if merged != original:
+        with open(path, "w") as wf:
+            yaml.safe_dump(merged, wf, sort_keys=False)
+    return merged
+
+
+TEMPLATE_PATH = Path(__file__).parent / "template" / "config_template.json"
+
+
+def _deep_merge(default: dict, user: dict) -> dict:
+    """
+    Recursively merge missing keys from default into user dictionary.
+
+    Args:
+        default (dict): Default dictionary from template.
+        user (dict): User's current configuration.
+
+    Returns:
+        dict: Updated user dictionary with defaults filled in.
+    """
+    for key, val in default.items():
+        if key not in user:
+            user[key] = val
+        else:
+            if isinstance(val, dict) and isinstance(user[key], dict):
+                _deep_merge(val, user[key])
+    return user
+
+
+# Determine config file path depending on whether Docker is used
 if os.environ.get('DOCKER_ENV'):
-    # Set the config path
+    # Use Docker config directory or default to /config
     config_path = os.getenv('CONFIG_DIR', '/config')
-    # Set the config file path
     config_file_path = os.path.join(config_path, "config.yml")
 else:
-    # Set the config file path
     config_file_path = os.path.join(pathlib.Path(__file__).parents[1], "config/config.yml")
 
-
-# Wait for the config file to be created
-while not os.path.isfile(config_file_path):
-    print(f"Config file not found. Retrying in 60 seconds...")
-    time.sleep(60)
+# Bootstrap config file from JSON template if missing
+if not os.path.exists(config_file_path):
+    from json import load as _json_load
+    with open(TEMPLATE_PATH, 'r') as tf:
+        default_cfg = _json_load(tf)
+    with open(config_file_path, 'w') as wf:
+        yaml.safe_dump(default_cfg, wf, sort_keys=False)
 
 
 class Config:
     """
-    A class to represent the config file
+    Manages loading and accessing configuration for a given module.
+    Supports merging defaults and provides module-specific configuration access.
     """
-    def __init__(self, script_name):
+
+    def __init__(self, module_name: str, merge_defaults: bool = False) -> None:
         """
-        Initialize the config file
+        Initialize Config with module name and optional merging of default keys.
+
+        Args:
+            module_name (str): Name of the module requesting configuration.
+            merge_defaults (bool): If True, merge missing keys from template and save.
         """
-        self.config_path = config_file_path
-        self.script_name = script_name
+        self.config_path: str = config_file_path
+        self.module_name: str = module_name
+        self.merge_defaults: bool = merge_defaults
         self.load_config()
 
-    def load_config(self):
+    def load_config(self) -> None:
         """
-        Load the config file
-        
-        Args:
-            None
-            
-        Returns:
-            None
+        Load the YAML configuration, optionally merging missing keys from template.
+        Sets attributes for scheduler, discord, notifications, instances, and module config.
         """
-        # Open the YAML config file and load its contents
         try:
-            with open(self.config_path, "r") as file:
-                config = yaml.safe_load(file)
-        except FileNotFoundError:
-            print(f"Config file not found at {self.config_path}")
-            return
-        except yaml.parser.ParserError as e:
-            print(f"Error parsing config file: {e}")
+            config = load_user_config(self.config_path)
+            if self.merge_defaults:
+                config = merge_with_template(self.config_path, config)
+        except Exception:
             return
 
-        # Set various attributes from the loaded config
-        self.instances_config = config['instances']  # Instance configurations
-        self.bash_config = config.get('bash_scripts', {})  # Bash script configurations
-        self.scheduler = config['schedule']  # Scheduler configurations
-        self.discord = config.get('discord', {})  # Discord configurations, if available
+        self._config = config
 
-        # If the script_name attribute exists, set script-specific configurations
-        if self.script_name:
-            self.script_config = config.get(f'{self.script_name}', None)  # Script-specific config
-            try:
-                self.log_level = self.script_config.get('log_level', 'info').lower()  # Log level
-            except AttributeError:
-                print(f"Invalid log level '{self.script_config.get('log_level', 'info')}', defaulting to 'info'")
-                self.log_level = 'info'
-            self.dry_run = self.script_config.get('dry_run', False)  # Dry run setting
-            self.sync_gdrive = self.script_config.get('sync_gdrive', False)  # Google Drive sync setting
+        if 'schedule' not in config:
+            print("[CONFIG] Warning: 'schedule' key missing in config; defaulting to empty schedule")
+        self.scheduler = config.get('schedule', {})
+        self.discord = config.get('discord', {})
+        self.notifications = config.get('notifications', [])
+        if 'instances' not in config:
+            sys.stderr.write(f"[CONFIG] Missing 'instances' key! Config keys: {list(config.keys())}\n")
+        self.instances_config = config.get('instances', {})
 
-        # Set specific configurations for different services
-        self.radarr_config = self.instances_config.get('radarr', {})  # Radarr configurations
-        self.sonarr_config = self.instances_config.get('sonarr', {})  # Sonarr configurations
-        self.qbit_config = self.instances_config.get('qbittorrent', {})  # qBittorrent configurations
-        self.plex_config = self.instances_config.get('plex', {})  # Plex configurations
-    
+        if self.module_name:
+            self.module_config = self._config.get(self.module_name, {})
+            self.module_config = SimpleNamespace(**self.module_config)
+            self.module_config.module_name = self.module_name
+            module_notifications = self._config.get("notifications", {}).get(self.module_name, {})
+            setattr(self.module_config, "notifications", module_notifications)
+            return

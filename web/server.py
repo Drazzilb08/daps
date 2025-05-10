@@ -3,8 +3,8 @@ import multiprocessing
 import time
 from pathlib import Path
 from threading import Thread
+from typing import Union
 import os
-import json
 import requests
 import uvicorn
 import yaml
@@ -48,8 +48,8 @@ def log_route(logger, path: str, method: str = "GET") -> None:
     logger.debug(f"[WEB] Serving {method} {path}")
 
 
-@app.get("/api/version")
-async def get_version() -> PlainTextResponse | JSONResponse:
+@app.get("/api/version", response_model=None)
+async def get_version():
     """Returns the current version string from the VERSION file."""
     version_file = Path(__file__).parent.parent / "VERSION"
     if not version_file.exists():
@@ -60,8 +60,8 @@ async def get_version() -> PlainTextResponse | JSONResponse:
     return PlainTextResponse(version_file.read_text().strip())
 
 
-@app.post("/api/test-notification")
-async def test_notification(req: Request) -> dict | JSONResponse:
+@app.post("/api/test-notification", response_model=None)
+async def test_notification(req: Request):
     """Sends a test notification and returns the result."""
     data = await req.json()
     app.state.logger.debug(
@@ -85,8 +85,8 @@ app.mount(
 )
 
 
-@app.get("/", response_class=HTMLResponse)
-async def root() -> HTMLResponse | JSONResponse:
+@app.get("/", response_class=HTMLResponse, response_model=None)
+async def root():
     """Serves the main index.html page."""
     html_path = Path(__file__).parent / "templates" / "index.html"
     try:
@@ -95,8 +95,8 @@ async def root() -> HTMLResponse | JSONResponse:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
-@app.get("/api/config")
-async def get_config() -> dict | JSONResponse:
+@app.get("/api/config", response_model=None)
+async def get_config():
     """Returns the current configuration as a dictionary."""
     log_route(app.state.logger, "/api/config")
     try:
@@ -108,8 +108,8 @@ async def get_config() -> dict | JSONResponse:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
-@app.get("/api/list")
-async def list_dir(path: str = "/") -> dict | JSONResponse:
+@app.get("/api/list", response_model=None)
+async def list_dir(path: str = "/"):
     """Returns subdirectories for a given path."""
     resolved = Path(path).expanduser().resolve()
     if not resolved.exists() or not resolved.is_dir():
@@ -124,8 +124,8 @@ async def list_dir(path: str = "/") -> dict | JSONResponse:
     return {"directories": dirs}
 
 
-@app.get("/api/plex/libraries")
-async def get_plex_libraries(instance: str) -> list | JSONResponse:
+@app.get("/api/plex/libraries", response_model=None)
+async def get_plex_libraries(instance: str):
     """Returns library names for a specific Plex instance."""
     try:
         config = yaml.safe_load(open(Config("main").config_path))
@@ -171,8 +171,8 @@ async def get_plex_libraries(instance: str) -> list | JSONResponse:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
-@app.post("/api/config")
-async def update_config(request: Request) -> dict | JSONResponse:
+@app.post("/api/config", response_model=None)
+async def update_config(request: Request):
     """Updates the configuration file with provided values."""
     try:
         incoming = await request.json()
@@ -219,8 +219,8 @@ async def update_config(request: Request) -> dict | JSONResponse:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
-@app.post("/api/run")
-async def run_module(data: RunRequest) -> dict | JSONResponse:
+@app.post("/api/run", response_model=None)
+async def run_module(data: RunRequest):
     """Starts a module process if not already running."""
     from main import run_module, list_of_python_modules
     module = data.module
@@ -249,8 +249,8 @@ async def run_module(data: RunRequest) -> dict | JSONResponse:
         return JSONResponse(status_code=500, content={"error": "Failed to start"})
 
 
-@app.get("/api/status")
-async def module_status(module: str) -> dict | JSONResponse:
+@app.get("/api/status", response_model=None)
+async def module_status(module: str):
     """Queries the running status of a given module."""
     proc = run_processes.get(module)
     if not proc and getattr(app.state, "manager", None):
@@ -280,8 +280,8 @@ async def module_status(module: str) -> dict | JSONResponse:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
-@app.post("/api/cancel")
-async def cancel_module(data: CancelRequest) -> dict | JSONResponse:
+@app.post("/api/cancel", response_model=None)
+async def cancel_module(data: CancelRequest):
     """Cancels a running module."""
     module = data.module
     proc = run_processes.get(module)
@@ -305,8 +305,8 @@ async def cancel_module(data: CancelRequest) -> dict | JSONResponse:
     return {"status": "cancelled", "module": module}
 
 
-@app.post("/api/test-instance")
-async def test_instance(data: TestInstanceRequest) -> dict | JSONResponse:
+@app.post("/api/test-instance", response_model=None)
+async def test_instance(data: TestInstanceRequest):
     """Tests the connection to a service instance and returns the result."""
     service = data.service
     name = data.name
@@ -349,8 +349,8 @@ async def test_instance(data: TestInstanceRequest) -> dict | JSONResponse:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
-@app.post("/api/create-folder")
-async def create_folder(path: str) -> dict | JSONResponse:
+@app.post("/api/create-folder", response_model=None)
+async def create_folder(path: str):
     """Creates a folder at the given path."""
     resolved = Path(path).expanduser().resolve()
     try:
@@ -361,8 +361,8 @@ async def create_folder(path: str) -> dict | JSONResponse:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
-@app.get("/fragments/{fragment_name}", response_class=HTMLResponse)
-async def serve_fragment(fragment_name: str) -> HTMLResponse | JSONResponse:
+@app.get("/fragments/{fragment_name}", response_class=HTMLResponse, response_model=None)
+async def serve_fragment(fragment_name: str):
     """Serves a named HTML fragment from the fragments directory."""
     html_path = (
         Path(__file__).parent

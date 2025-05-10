@@ -43,6 +43,8 @@ ENV LOG_DIR=/config/logs
 ENV TZ=America/Los_Angeles
 ENV BRANCH=${BRANCH}
 ENV DOCKER_ENV=true
+ENV PORT=8000
+ENV HOST=0.0.0.0
 
 VOLUME /config
 
@@ -56,4 +58,4 @@ RUN groupadd -g 99 dockeruser; \
     chown -R dockeruser:dockeruser /app; 
 
 # Entrypoint script
-ENTRYPOINT ["bash", "start.sh"]
+CMD ["bash", "start.sh"]

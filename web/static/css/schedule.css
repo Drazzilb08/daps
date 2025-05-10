@@ -1,0 +1,172 @@
+/* ===== Global Schedule Help Styles ===== */
+.schedule-help {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  background: var(--card-bg);
+  border-left: 4px solid var(--accent);
+  border-radius: var(--border-radius);
+  box-shadow: none;
+}
+
+.help-toggle {
+  display: inline-block;
+  background: linear-gradient(to right, var(--accent), var(--accent-dark));
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: var(--border-radius);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background 0.3s ease, transform 0.2s ease;
+  border-radius: var(--border-radius);
+}
+
+.help-toggle:hover {
+  background: linear-gradient(to right, var(--accent-dark), var(--accent));
+  transform: scale(1.05);
+}
+
+.help-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.help-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.4s ease;
+  opacity: 0;
+  white-space: pre-wrap;
+  background: var(--input-bg);
+  padding: 0 0.75rem;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: var(--fg);
+}
+
+.help-content.show {
+  max-height: 1000px; /* large enough to accommodate content */
+  opacity: 1;
+  padding: 0.75rem;
+}
+/* ===== Schedule Page Fields ===== */
+#scheduleForm .field {
+  position: relative;
+  display: grid;
+  grid-template-columns: 200px 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+}
+
+/* ===== Run Button Style ===== */
+.run-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 100px;
+  padding: 0.5rem 1rem;
+  background: var(--btn-bg);
+  color: var(--primary-bg);
+  text-align: center;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s ease;
+}
+
+/* Container for Run Now and View Logs buttons */
+.run-btn-container {
+  display: flex;
+  gap: 0.75rem;
+  margin-left: auto;       /* push to the right */
+  align-items: center;
+}
+
+.run-btn:hover {
+  background: var(--btn-hover-bg);
+  transform: translateY(-1px);
+}
+
+.run-btn.running {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: var(--success);
+  color: var(--primary-bg);
+  cursor: default;
+}
+
+.run-btn.running.cancel-hover {
+  background: var(--error) !important;
+  color: var(--primary-bg) !important;
+  cursor: pointer;
+}
+
+/* ===== Status Display ===== */
+#status {
+  margin-top: 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+#status.error {
+  color: var(--error);
+}
+
+/* ===== Schedule Card Style ===== */
+.schedule-card {
+  background: var(--card-bg);
+  padding: 1.25rem 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: var(--card-margin-btm);
+  transition: background 0.2s ease;
+}
+
+.schedule-card:hover {
+  background: var(--input-bg);
+}
+
+.schedule-card label {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+  color: var(--fg);
+}
+
+
+.schedule-card .run-btn {
+  margin-left: auto;
+  margin-top: 0.5rem;
+}
+
+/* ===== Run Button Spinner ===== */
+.run-btn.running::after {
+  content: '';
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  margin-left: 0.5rem;
+  border: 2px solid var(--primary-bg);
+  border-top: 2px solid var(--btn-hover-bg);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

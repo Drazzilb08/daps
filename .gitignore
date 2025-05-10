@@ -54,7 +54,7 @@ ENV/
 .extra_scripts/
 screenshots/
 logs/
-web/
+tests/
 
 
 # Ignore Files
@@ -64,4 +64,4 @@ web/
 **test.**
 **side-projects**
 test2.py
-/tests
+.env

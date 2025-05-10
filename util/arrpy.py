@@ -1,7 +1,13 @@
+import os
+import html
+from typing import Any, Dict, List, Optional, Union
+from unidecode import unidecode
+from util.normalization import normalize_titles
+from util.extract import extract_year
+from util.constants import year_regex, year_regex_search, year_removal_regex, windows_path_regex
 import time
 import json
 import logging
-import time
 
 try:
     import requests
@@ -12,17 +18,18 @@ except ImportError as e:
 
 logging.getLogger("requests").setLevel(logging.WARNING)
 
-class StARR:
-    def __init__(self, url, api, logger):
+class BaseARRClient:
+    """
+    Base class for interacting with ARR (Radarr/Sonarr) instances, providing
+    common methods for requests, tag management, and instance metadata.
+    """
+    def __init__(self, url: str, api: str, logger: Any) -> None:
         """
-        Initialize the StARR class.
-        
+        Initialize the base ARR client with common setup for headers, URL, session, and logging.
         Args:
-            url (str): The base URL of the ARR instance (Sonarr/Radarr).
-            api (str): The API key for authenticating with the ARR instance.
-            logger (logging.Logger): Logger for debug and error messages.
-            connect_status (bool): Connection status to the ARR instance.
-            instance_type (str): Type of ARR instance (Sonarr or Radarr).
+            url (str): The API URL for the ARR instance.
+            api (str): The API key for authentication.
+            logger (Any): Logger instance to capture output.
         """
         self.logger = logger
         self.max_retries = 5
@@ -36,111 +43,200 @@ class StARR:
         }
         self.session = requests.Session()
         self.session.headers.update({"X-Api-Key": self.api})
-
+        self.connect_status = False
+        self.instance_type = None
+        self.instance_name = None
+        self.app_name = None
+        self.app_version = None
         status = self.get_system_status()
         if not status:
-            self.connect_status = False
             return
-        app_name = status.get("appName")
-        app_version = status.get("version")
-
-        if app_name == 'Radarr':
-            self.instance_type = 'Radarr'
-        elif app_name == 'Sonarr':
-            self.instance_type = 'Sonarr'
-
+        self.app_name = status.get("appName")
+        self.app_version = status.get("version")
+        self.instance_name = status.get("instanceName")
         self.connect_status = True
-        self.logger.debug(f"Connected to {app_name} v{app_version} at {self.url}")
+        self.logger.debug(f"Connected to {self.app_name} v{self.app_version} at {self.url}")
 
-    def get_instance_name(self):
-        """Retrieve the instance name from system status."""
+    def get_health(self) -> Optional[dict]:
+        """
+        Get the health status of the ARR instance.
+        Returns:
+            Optional[dict]: Health status dictionary.
+        """
+        endpoint = f"{self.url}/api/v3/health"
+        return self.make_get_request(endpoint, headers=self.headers)
+
+    def wait_for_command(self, command_id: int) -> bool:
+        """
+        Poll the given command ID until it completes, fails, or times out.
+        Args:
+            command_id (int): The ID of the command to wait for.
+        Returns:
+            bool: True if the command completed successfully, False if it failed or timed out.
+        """
+        self.logger.info("Waiting for command to complete...")
+        cycle = 0
+        while True:
+            endpoint = f"{self.url}/api/v3/command/{command_id}"
+            response = self.make_get_request(endpoint)
+            if response and response.get('status') == 'completed':
+                return True
+            elif response and response.get('status') == 'failed':
+                return False
+            time.sleep(5)
+            cycle += 1
+            if cycle % 5 == 0:
+                self.logger.info(f"Still waiting for command {command_id}... (cycle {cycle})")
+            if cycle > 60:
+                self.logger.error(f"Command {command_id} timed out after 5 minutes.")
+                return False
+
+    def create_tag(self, tag: str) -> int:
+        """
+        Create a new tag.
+        Args:
+            tag (str): The tag to create.
+        Returns:
+            int: The ID of the created tag.
+        """
+        payload = {"label": tag}
+        self.logger.debug(f"Create tag payload: {payload}")
+        endpoint = f"{self.url}/api/v3/tag"
+        response = self.make_post_request(endpoint, json=payload)
+        return response['id']
+
+    def get_instance_name(self) -> Optional[str]:
+        """
+        Retrieve the instance name from system status.
+        Returns:
+            Optional[str]: The instance name.
+        """
         status = self.get_system_status()
-        return status.get("instanceName")
+        return status.get("instanceName") if status else None
 
-    def get_system_status(self):
-        """Get ARR system status info."""
+    def get_system_status(self) -> Optional[dict]:
+        """
+        Get ARR system status info.
+        Returns:
+            Optional[dict]: System status.
+        """
         endpoint = f"{self.url}/api/v3/system/status"
         return self.make_get_request(endpoint)
 
-    def make_get_request(self, endpoint, headers=None):
+    def make_get_request(self, endpoint: str, headers: Optional[dict] = None) -> Any:
+        """
+        Make a GET request to the given endpoint.
+        Args:
+            endpoint (str): API endpoint.
+            headers (Optional[dict]): Optional headers.
+        Returns:
+            Any: Response object or JSON.
+        """
         return self._request_with_retries("GET", endpoint, headers=headers)
 
-
-    def make_post_request(self, endpoint, headers=None, json=None):
+    def make_post_request(self, endpoint: str, headers: Optional[dict] = None, json: Any = None) -> Any:
+        """
+        Make a POST request to the given endpoint.
+        Args:
+            endpoint (str): API endpoint.
+            headers (Optional[dict]): Optional headers.
+            json (Any): JSON payload.
+        Returns:
+            Any: Response object or JSON.
+        """
         return self._request_with_retries("POST", endpoint, headers=headers, json=json)
 
-    def make_put_request(self, endpoint, headers=None, json=None):
+    def make_put_request(self, endpoint: str, headers: Optional[dict] = None, json: Any = None) -> Any:
+        """
+        Make a PUT request to the given endpoint.
+        Args:
+            endpoint (str): API endpoint.
+            headers (Optional[dict]): Optional headers.
+            json (Any): JSON payload.
+        Returns:
+            Any: Response object or JSON.
+        """
         return self._request_with_retries("PUT", endpoint, headers=headers, json=json)
 
-    def make_delete_request(self, endpoint, headers=None, json=None):
-        return self._request_with_retries("DELETE", endpoint, headers=headers, json=json)
+    def make_delete_request(self, endpoint: str, json: Any = None) -> Any:
+        """
+        Make a DELETE request to the given endpoint.
+        Args:
+            endpoint (str): API endpoint.
+            json (Any): JSON payload.
+        Returns:
+            Any: Response object or JSON.
+        """
+        return self._request_with_retries("DELETE", endpoint, json=json)
 
-    def _request_with_retries(self, method, endpoint, headers=None, json=None):
+    def _request_with_retries(
+        self,
+        method: str,
+        endpoint: str,
+        headers: Optional[dict] = None,
+        json: Any = None
+    ) -> Any:
         """
         Perform HTTP request with retry logic.
-
         Args:
-            method (str): HTTP method (GET, POST, PUT, DELETE).
-            endpoint (str): Full API endpoint URL.
-            headers (dict): Optional headers for the request.
-            json (dict): Optional JSON payload.
-
+            method (str): HTTP method.
+            endpoint (str): API endpoint.
+            headers (Optional[dict]): Optional headers.
+            json (Any): JSON payload.
         Returns:
-            dict or response object or None: Response content or None if failed.
+            Any: Response object or JSON.
         """
         response = None
         for i in range(self.max_retries):
             try:
-                # Make the request according to method
-                if method == "GET":
-                    response = self.session.get(endpoint, headers=headers, timeout=self.timeout)
-                elif method == "POST":
-                    response = self.session.post(endpoint, headers=headers, json=json, timeout=self.timeout)
-                elif method == "PUT":
-                    response = self.session.put(endpoint, headers=headers, json=json, timeout=self.timeout)
-                elif method == "DELETE":
-                    response = self.session.delete(endpoint, headers=headers, json=json, timeout=self.timeout)
-                else:
-                    raise ValueError(f"Unsupported method: {method}")
-
-                # Raise an HTTPError if the response was unsuccessful
+                response = self.session.request(method, endpoint, headers=headers, json=json, timeout=self.timeout)
                 response.raise_for_status()
-
-                # Return raw response for DELETE; JSON for everything else
                 return response if method == "DELETE" else response.json()
-
             except (requests.exceptions.Timeout,
                     requests.exceptions.HTTPError,
                     requests.exceptions.RequestException) as ex:
                 if i < self.max_retries - 1:
                     self.logger.warning(f'{method} request failed ({ex}), retrying ({i+1}/{self.max_retries})...')
-                    time.sleep(1)  # Throttle retries to avoid server overload
+                    time.sleep(1)
                 else:
-                    # Final failure after all retries
                     self._handle_request_exception(method, endpoint, ex, response, json)
-
         return None
 
-    def _handle_request_exception(self, method, endpoint, ex, response, payload=None):
+    def _handle_request_exception(
+        self,
+        method: str,
+        endpoint: str,
+        ex: Exception,
+        response: Any,
+        payload: Any = None
+    ) -> None:
         """
-        Centralized exception logger for failed requests.
+        Handle exceptions raised during an HTTP request.
+        Args:
+            method (str): HTTP method.
+            endpoint (str): API endpoint.
+            ex (Exception): Exception instance.
+            response (Any): Response object.
+            payload (Any): Payload data.
         """
-        
-        status_code = response.status_code if response is not None and response.status_code else "No response"
+        status_code = response.status_code if response is not None and hasattr(response, "status_code") and response.status_code else "No response"
         hint = self._get_error_hint(status_code) if isinstance(status_code, int) else "No HTTP response received, check URL"
-
         self.logger.error(f'{method} request failed after {self.max_retries} retries.')
         self.logger.error(f"Endpoint: {endpoint}")
         if payload:
             self.logger.error(f"Payload: {payload}")
-        if response is not None:
+        if response is not None and hasattr(response, "text"):
             self.logger.error(f"Response: {response.text} Code: {status_code}")
         self.logger.error(f"Status: {status_code}, Error: {ex}")
         self.logger.error(f"\nHint: {hint}\n")
 
-    def _get_error_hint(self, status_code):
+    def _get_error_hint(self, status_code: int) -> str:
         """
-        Return a human-readable explanation for common HTTP errors.
+        Get a user-friendly hint for a given HTTP status code.
+        Args:
+            status_code (int): HTTP status code.
+        Returns:
+            str: Hint string.
         """
         hints = {
             400: "Bad Request – likely malformed or missing parameters.",
@@ -153,244 +249,203 @@ class StARR:
         }
         return hints.get(status_code, "Unknown error – check logs for more info.")
 
-    def get_media(self):
+    def get_tag_id_from_name(self, tag_name: str) -> int:
         """
-        Get all media from the ARR instance.
+        Retrieve a tag ID by its name; create the tag if it does not exist.
+        Args:
+            tag_name (str): The name of the tag.
         Returns:
-            list: A list of media objects.
+            int: The ID of the tag.
         """
-        media = None
-        if self.instance_type == 'Sonarr':
-            media = "series"
-        elif self.instance_type == 'Radarr':
-            media = "movie"
-        endpoint = f"{self.url}/api/v3/{media}"
-        return self.make_get_request(endpoint)
+        all_tags = self.get_all_tags() or []
+        tag_name = tag_name.lower()
+        for tag in all_tags:
+            if tag["label"] == tag_name:
+                tag_id = tag["id"]
+                return tag_id
+        tag_id = self.create_tag(tag_name)
+        return tag_id
 
-    def get_all_tags(self):
+    def get_all_tags(self) -> Optional[List[dict]]:
         """
         Get all tags from the ARR instance.
         Returns:
-            list: A list of tag objects.
+            Optional[List[dict]]: List of tags.
         """
         endpoint = f"{self.url}/api/v3/tag"
         return self.make_get_request(endpoint)
 
-    def create_tag(self, tag):
+    def get_quality_profile_names(self) -> Optional[Dict[str, int]]:
         """
-        Create a tag on the ARR instance.
-        Args:
-            tag (dict): The tag to create.
+        Get the names of all quality profiles.
         Returns:
-            int: The ID of the created tag.
+            Optional[Dict[str, int]]: Dictionary of quality profile names and IDs.
         """
-        payload = {
-            "label": tag
-        }
-        self.logger.debug(f"Create tag payload: {payload}")
-        endpoint = f"{self.url}/api/v3/tag"
-        response = self.make_post_request(endpoint, json=payload)
-        return response['id']
+        dict_of_names_and_ids = {}
+        endpoint = f"{self.url}/api/v3/qualityprofile"
+        response = self.make_get_request(endpoint, headers=self.headers)
+        if response:
+            for profile in response:
+                dict_of_names_and_ids[profile["name"]] = profile["id"]
+            return dict_of_names_and_ids
 
-    def add_tags(self, media_id, tag_id):
+class RadarrClient(BaseARRClient):
+    """
+    Client for interacting with Radarr API, providing media management methods for movies.
+    """
+    def __init__(self, url: str, api: str, logger: Any) -> None:
         """
-        Add a tag to a media item.
+        Initialize the Radarr client.
         Args:
-            media_id (int): The ID of the media item to add the tag to.
-            tag_id (int): The ID of the tag to add to the media item.
-        Returns:
-            dict: The JSON response from the POST request.
+            url (str): API URL.
+            api (str): API key.
+            logger (Any): Logger instance.
         """
-        id_type = None
+        super().__init__(url, api, logger)
+        self.instance_type = 'Radarr'
+
+    def get_media(self) -> Optional[List[dict]]:
+        """
+        Get all movies from Radarr.
+        Returns:
+            Optional[List[dict]]: List of movies.
+        """
+        endpoint = f"{self.url}/api/v3/movie"
+        return self.make_get_request(endpoint)
+
+    def add_tags(self, media_id: Union[int, List[int]], tag_id: int) -> Any:
+        """
+        Add a tag to one or more movies.
+        Args:
+            media_id (Union[int, List[int]]): Movie ID(s).
+            tag_id (int): Tag ID.
+        Returns:
+            Any: API response.
+        """
         if isinstance(media_id, int):
             media_id = [media_id]
-        if self.instance_type == 'Sonarr':
-            media_type = "series"
-            id_type = "seriesIds"
-        elif self.instance_type == 'Radarr':
-            media_type = "movie"
-            id_type = "movieIds"
         payload = {
-            id_type: media_id,
+            "movieIds": media_id,
             "tags": [tag_id],
             "applyTags": "add"
         }
         self.logger.debug(f"Add tag payload: {payload}")
-        endpoint = f"{self.url}/api/v3/{media_type}/editor"
+        endpoint = f"{self.url}/api/v3/movie/editor"
         return self.make_put_request(endpoint, json=payload)
 
-    def remove_tags(self, media_ids, tag_id):
+    def remove_tags(self, media_ids: List[int], tag_id: int) -> Any:
         """
-        Remove a tag from all media.
+        Remove a tag from movies.
         Args:
-            media_ids (list): A list of media IDs to remove the tag from.
-            tag_id (int): The ID of the tag to remove from the media.
+            media_ids (List[int]): Movie IDs.
+            tag_id (int): Tag ID.
         Returns:
-            dict: The JSON response from the POST request.
+            Any: API response.
         """
-        id_type = None
-        media = None
-        if self.instance_type == 'Sonarr':
-            media_type = "series"
-            id_type = "seriesIds"
-        elif self.instance_type == 'Radarr':
-            media_type = "movie"
-            id_type = "movieIds"
         payload = {
-            id_type: media_ids,
+            "movieIds": media_ids,
             "tags": [tag_id],
             "applyTags": "remove"
         }
         self.logger.debug(f"Remove tag payload: {payload}")
-        endpoint = f"{self.url}/api/v3/{media_type}/editor"
+        endpoint = f"{self.url}/api/v3/movie/editor"
         return self.make_put_request(endpoint, json=payload)
 
-    def get_rename_list(self, media_id):
+    def get_rename_list(self, media_id: int) -> Any:
         """
-        Get a list of media items to rename.
+        Preview renaming for a movie.
         Args:
-            all_media (list): A list of media objects.
+            media_id (int): Movie ID.
         Returns:
-            list: A list of media items to rename.
+            Any: API response.
         """
-        rename_endpoint = None
-        if self.instance_type == 'Sonarr':
-            rename_endpoint = "seriesId"
-        elif self.instance_type == 'Radarr':
-            rename_endpoint = "movieId"
-        endpoint = f"{self.url}/api/v3/rename?{rename_endpoint}={media_id}"
+        endpoint = f"{self.url}/api/v3/rename?movieId={media_id}"
         return self.make_get_request(endpoint, headers=self.headers)
 
-    def rename_media(self, media_ids):
+    def rename_media(self, media_ids: List[int]) -> Any:
         """
-        Rename a media item.
+        Trigger renaming of movies.
         Args:
-            media_ids (list): A list of media IDs to attempt rename.
+            media_ids (List[int]): Movie IDs.
+        Returns:
+            Any: API response.
         """
-        id_type = None
-        name = None
-        if self.instance_type == 'Sonarr':
-            name = "RenameSeries"
-            id_type = "seriesIds"
-        elif self.instance_type == 'Radarr':
-            name = "RenameMovie"
-            id_type = "movieIds"
         payload = {
-            "name": name,
-            id_type: media_ids,
+            "name": "RenameMovie",
+            "movieIds": media_ids,
         }
         self.logger.debug(f"Rename payload: {payload}")
         endpoint = f"{self.url}/api/v3/command"
         return self.make_post_request(endpoint, json=payload)
 
-    def rename_folders(self, media_ids, root_folder_path):
+    def rename_folders(self, media_ids: List[int], root_folder_path: str) -> Any:
         """
-        Rename a media item.
+        Rename folders for given movies.
         Args:
-            media_ids (list): A list of media IDs to attempt rename.
+            media_ids (List[int]): Movie IDs.
+            root_folder_path (str): Root folder path.
+        Returns:
+            Any: API response.
         """
-        id_type = None
-        if self.instance_type == 'Sonarr':
-            media_type = "series"
-            id_type = "seriesIds"
-        elif self.instance_type == 'Radarr':
-            media_type = "movie"
-            id_type = "movieIds"
         payload = {
-            id_type: media_ids,
+            "movieIds": media_ids,
             "moveFiles": True,
             "rootFolderPath": root_folder_path,
         }
         self.logger.debug(f"Rename Folder Payload: {payload}")
-        endpoint = f"{self.url}/api/v3/{media_type}/editor"
+        endpoint = f"{self.url}/api/v3/movie/editor"
         return self.make_put_request(endpoint, json=payload)
 
-    def wait_for_command(self, command_id):
+    def refresh_items(self, media_ids: Union[int, List[int]]) -> Any:
         """
-        Wait for a refresh to complete.
+        Refresh one or more movies.
         Args:
-            command_id (int): The ID of the refresh command.
+            media_ids (Union[int, List[int]]): Movie IDs.
         Returns:
-            bool: True if the refresh was successful, False otherwise.
-        """
-        print(f"Waiting for command to complete...")
-        while True:
-            endpoint = f"{self.url}/api/v3/command/{command_id}"
-            response = self.make_get_request(endpoint)
-            if response['status'] == 'completed':
-                return True
-            elif response['status'] == 'failed':
-                return False
-            time.sleep(5)
-
-    def refresh_items(self, media_ids):
-        """
-        Refresh a media item.
-        Args:
-            media_id (int): The ID of the media item to refresh.
+            Any: API response.
         """
         if isinstance(media_ids, int):
             media_ids = [media_ids]
-        if self.instance_type == 'Sonarr':
-            name_type = "RefreshSeries"
-            media_type = "seriesIds"
-        elif self.instance_type == 'Radarr':
-            name_type = "RefreshMovie"
-            media_type = "movieIds"
         payload = {
-            "name": name_type,
-            media_type: media_ids
+            "name": "RefreshMovie",
+            "movieIds": media_ids
         }
         self.logger.debug(f"Refresh payload: {payload}")
         endpoint = f"{self.url}/api/v3/command"
         return self.make_post_request(endpoint, headers=self.headers, json=payload)
 
-    def refresh_media(self):
+    def refresh_media(self) -> Any:
         """
-        Refresh a media item.
-        Args:
-            media_id (int): The ID of the media item to refresh.
+        Refresh all movies.
+        Returns:
+            Any: API response.
         """
-        if self.instance_type == 'Sonarr':
-            name_type = "RefreshSeries"
-        elif self.instance_type == 'Radarr':
-            name_type = "RefreshMovie"
         payload = {
-            "name": name_type,
+            "name": "RefreshMovie",
         }
         self.logger.debug(f"Refresh payload: {payload}")
         endpoint = f"{self.url}/api/v3/command"
         return self.make_post_request(endpoint, headers=self.headers, json=payload)
 
-    def search_media(self, media_ids):
+    def search_media(self, media_ids: Union[int, List[int]]) -> Optional[Any]:
         """
-        Search for a media item.
+        Trigger a search for one or more movies.
         Args:
-            media_id (int): The ID of the media item to search for.
+            media_ids (Union[int, List[int]]): Movie IDs.
+        Returns:
+            Optional[Any]: API response or None if search fails.
         """
-        name_type = None
-        id_type = None
         self.logger.debug(f"Media ID: {media_ids}")
         endpoint = f"{self.url}/api/v3/command"
         payloads = []
         if isinstance(media_ids, int):
             media_ids = [media_ids]
-        if self.instance_type == 'Sonarr':
-            name_type = "SeriesSearch"
-            id_type = "seriesId"
-            for id in media_ids:
-                payloads.append({
-                    "name": name_type,
-                    id_type: id
-                })
-        elif self.instance_type == 'Radarr':
-            name_type = "MoviesSearch"
-            id_type = "movieIds"
-            payloads.append({
-                "name": name_type,
-                id_type: media_ids
-            })
+        payloads.append({
+            "name": "MoviesSearch",
+            "movieIds": media_ids
+        })
         self.logger.debug(f"Search payload: {payloads}")
+        result = None
         for payload in payloads:
             result = self.make_post_request(endpoint, headers=self.headers, json=payload)
         if result:
@@ -399,69 +454,362 @@ class StARR:
             self.logger.error(f"Search failed for media ID: {media_ids}")
             return None
 
-    def search_season(self, media_id, season_number):
+    def get_movie_data(self, media_id: int) -> Any:
         """
-        Search for a series by ID.
+        Get movie file data for a specific movie.
         Args:
-            media_id (int): The ID of the series to search for
-            Raises:
-                Exception: If the API call to search for the series fails
+            media_id (int): Movie ID.
+        Returns:
+            Any: API response.
+        """
+        endpoint = f"{self.url}/api/v3/moviefile?movieId={media_id}"
+        return self.make_get_request(endpoint, headers=self.headers)
+
+    def get_grab_history(self, media_id: int) -> Any:
+        """
+        Get grab history for a movie.
+        Args:
+            media_id (int): Movie ID.
+        Returns:
+            Any: API response.
+        """
+        url_addon = f"movie?movieId={media_id}&eventType=grabbed&includeMovie=false"
+        endpoint = f"{self.url}/api/v3/history/{url_addon}"
+        return self.make_get_request(endpoint, headers=self.headers)
+
+    def get_import_history(self, media_id: int) -> Any:
+        """
+        Get import history for a movie.
+        Args:
+            media_id (int): Movie ID.
+        Returns:
+            Any: API response.
+        """
+        url_addon = f"movie?movieId={media_id}&eventType=downloadFolderImported&includeMovie=false"
+        endpoint = f"{self.url}/api/v3/history/{url_addon}"
+        return self.make_get_request(endpoint, headers=self.headers)
+
+    def get_queue(self) -> Any:
+        """
+        Get the current queue from Radarr.
+        Returns:
+            Any: API response.
+        """
+        url_addon = "page=1&pageSize=200&includeMovie=true"
+        endpoint = f"{self.url}/api/v3/queue?{url_addon}"
+        return self.make_get_request(endpoint, headers=self.headers)
+
+    def delete_media(self, media_id: int) -> Any:
+        """
+        Delete a movie from Radarr.
+        Args:
+            media_id (int): Movie ID.
+        Returns:
+            Any: API response.
+        """
+        endpoint = f"{self.url}/api/v3/movie/{media_id}"
+        return self.make_delete_request(endpoint)
+
+    def delete_movie_file(self, media_id: int) -> Any:
+        """
+        Delete a movie file by file ID.
+        Args:
+            media_id (int): Movie file ID.
+        Returns:
+            Any: API response.
+        """
+        endpoint = f"{self.url}/api/v3/moviefile/{media_id}"
+        return self.make_delete_request(endpoint)
+
+    def get_parsed_media(self, include_episode: bool = False) -> List[Dict[str, Any]]:
+        """
+        Normalize and return a structured list of movie items suitable for internal processing.
+        Args:
+            include_episode (bool): Unused for Radarr.
+        Returns:
+            List[Dict[str, Any]]: List of structured media entries with normalized fields.
+        """
+        media_dict = []
+        media = self.get_media()
+        if not media:
+            return media_dict
+        for item in media:
+            file_id = item.get('movieFile', {}).get('id', None)
+            alternate_titles = [t['title'] for t in item['alternateTitles']]
+            normalized_alternate_titles = [normalize_titles(t['title']) for t in item['alternateTitles']]
+            # Remove year from title if present
+            if year_regex_search.search(item['title']):
+                title = year_removal_regex.sub("", item['title'])
+                year = extract_year(item['title'])
+            else:
+                title = item['title']
+                year = item['year']
+            # Check Windows path for folder name
+            reg = windows_path_regex.match(item['path'])
+            if reg and reg.group(1):
+                folder = item['path'][item['path'].rfind("\\")+1:]
+            else:
+                folder = os.path.basename(os.path.normpath(item['path']))
+            media_dict.append({
+                'title': unidecode(html.unescape(title)),
+                'year': year,
+                'media_id': item['id'],
+                'tmdb_id': item['tmdbId'],
+                'imdb_id': item.get('imdbId', None),
+                'monitored': item['monitored'],
+                'status': item['status'],
+                'root_folder': item['rootFolderPath'],
+                'quality_profile': item['qualityProfileId'],
+                'normalized_title': normalize_titles(item['title']),
+                'path_name': os.path.basename(item['path']),
+                'original_title': item.get('originalTitle', None),
+                'secondary_year': item.get('secondaryYear', None),
+                'alternate_titles': alternate_titles,
+                'normalized_alternate_titles': normalized_alternate_titles,
+                'file_id': file_id,
+                'folder': folder,
+                'has_file': item['hasFile'],
+                'tags': item['tags'],
+                'seasons': None,
+                'season_numbers': None,
+            })
+        return media_dict
+
+class SonarrClient(BaseARRClient):
+    """
+    Client for interacting with Sonarr API, providing media management methods for series and episodes.
+    """
+    def __init__(self, url: str, api: str, logger: Any) -> None:
+        """
+        Initialize the Sonarr client.
+        Args:
+            url (str): API URL.
+            api (str): API key.
+            logger (Any): Logger instance.
+        """
+        super().__init__(url, api, logger)
+        self.instance_type = 'Sonarr'
+
+    def get_media(self) -> Optional[List[dict]]:
+        """
+        Get all series from Sonarr.
+        Returns:
+            Optional[List[dict]]: List of series.
+        """
+        endpoint = f"{self.url}/api/v3/series"
+        return self.make_get_request(endpoint)
+
+    def add_tags(self, media_id: Union[int, List[int]], tag_id: int) -> Any:
+        """
+        Add a tag to one or more series.
+        Args:
+            media_id (Union[int, List[int]]): Series ID(s).
+            tag_id (int): Tag ID.
+        Returns:
+            Any: API response.
+        """
+        if isinstance(media_id, int):
+            media_id = [media_id]
+        payload = {
+            "seriesIds": media_id,
+            "tags": [tag_id],
+            "applyTags": "add"
+        }
+        self.logger.debug(f"Add tag payload: {payload}")
+        endpoint = f"{self.url}/api/v3/series/editor"
+        return self.make_put_request(endpoint, json=payload)
+
+    def remove_tags(self, media_ids: List[int], tag_id: int) -> Any:
+        """
+        Remove a tag from series.
+        Args:
+            media_ids (List[int]): Series IDs.
+            tag_id (int): Tag ID.
+        Returns:
+            Any: API response.
+        """
+        payload = {
+            "seriesIds": media_ids,
+            "tags": [tag_id],
+            "applyTags": "remove"
+        }
+        self.logger.debug(f"Remove tag payload: {payload}")
+        endpoint = f"{self.url}/api/v3/series/editor"
+        return self.make_put_request(endpoint, json=payload)
+
+    def get_rename_list(self, media_id: int) -> Any:
+        """
+        Preview renaming for a series.
+        Args:
+            media_id (int): Series ID.
+        Returns:
+            Any: API response.
+        """
+        endpoint = f"{self.url}/api/v3/rename?seriesId={media_id}"
+        return self.make_get_request(endpoint, headers=self.headers)
+
+    def rename_media(self, media_ids: List[int]) -> Any:
+        """
+        Trigger renaming of series.
+        Args:
+            media_ids (List[int]): Series IDs.
+        Returns:
+            Any: API response.
+        """
+        payload = {
+            "name": "RenameSeries",
+            "seriesIds": media_ids,
+        }
+        self.logger.debug(f"Rename payload: {payload}")
+        endpoint = f"{self.url}/api/v3/command"
+        return self.make_post_request(endpoint, json=payload)
+
+    def rename_folders(self, media_ids: List[int], root_folder_path: str) -> Any:
+        """
+        Rename folders for given series.
+        Args:
+            media_ids (List[int]): Series IDs.
+            root_folder_path (str): Root folder path.
+        Returns:
+            Any: API response.
+        """
+        payload = {
+            "seriesIds": media_ids,
+            "moveFiles": True,
+            "rootFolderPath": root_folder_path,
+        }
+        self.logger.debug(f"Rename Folder Payload: {payload}")
+        endpoint = f"{self.url}/api/v3/series/editor"
+        return self.make_put_request(endpoint, json=payload)
+
+    def refresh_items(self, media_ids: Union[int, List[int]]) -> Any:
+        """
+        Refresh one or more series.
+        Args:
+            media_ids (Union[int, List[int]]): Series IDs.
+        Returns:
+            Any: API response.
+        """
+        if isinstance(media_ids, int):
+            media_ids = [media_ids]
+        payload = {
+            "name": "RefreshSeries",
+            "seriesIds": media_ids
+        }
+        self.logger.debug(f"Refresh payload: {payload}")
+        endpoint = f"{self.url}/api/v3/command"
+        return self.make_post_request(endpoint, headers=self.headers, json=payload)
+
+    def refresh_media(self) -> Any:
+        """
+        Refresh all series.
+        Returns:
+            Any: API response.
+        """
+        payload = {
+            "name": "RefreshSeries",
+        }
+        self.logger.debug(f"Refresh payload: {payload}")
+        endpoint = f"{self.url}/api/v3/command"
+        return self.make_post_request(endpoint, headers=self.headers, json=payload)
+
+    def search_media(self, media_ids: Union[int, List[int]]) -> Optional[Any]:
+        """
+        Trigger a search for one or more series.
+        Args:
+            media_ids (Union[int, List[int]]): Series IDs.
+        Returns:
+            Optional[Any]: API response or None if search fails.
+        """
+        self.logger.debug(f"Media ID: {media_ids}")
+        endpoint = f"{self.url}/api/v3/command"
+        payloads = []
+        if isinstance(media_ids, int):
+            media_ids = [media_ids]
+        for id in media_ids:
+            payloads.append({
+                "name": "SeriesSearch",
+                "seriesId": id
+            })
+        self.logger.debug(f"Search payload: {payloads}")
+        result = None
+        for payload in payloads:
+            result = self.make_post_request(endpoint, headers=self.headers, json=payload)
+        if result:
+            return result
+        else:
+            self.logger.error(f"Search failed for media ID: {media_ids}")
+            return None
+
+    def search_season(self, media_id: int, season_number: int) -> Any:
+        """
+        Trigger a search for a specific season of a series.
+        Args:
+            media_id (int): Series ID.
+            season_number (int): Season number.
+        Returns:
+            Any: API response.
         """
         payload = {
             "name": "SeasonSearch",
             "seriesId": media_id,
             "SeasonNumber": season_number
-            }
+        }
         endpoint = f"{self.url}/api/v3/command"
         return self.make_post_request(endpoint, json=payload)
 
-    def get_episode_data(self, media_id):
+    def get_episode_data(self, media_id: int) -> Any:
         """
-        Get data for an episode.
+        Get episode file data for a specific series.
         Args:
-            media_id (int): The ID of the series to get data for
+            media_id (int): Series ID.
         Returns:
-            list: A list of dictionaries representing the episodes for the series
+            Any: API response.
         """
         endpoint = f"{self.url}/api/v3/episodefile?seriesId={media_id}"
         return self.make_get_request(endpoint, headers=self.headers)
 
-    def get_episode_data_by_season(self, media_id, season_number):
+    def get_episode_data_by_season(self, media_id: int, season_number: int) -> Any:
         """
-        Get data for an episode.
+        Get episode data for a specific season of a series.
         Args:
-            media_id (int): The ID of the series to get data for
+            media_id (int): Series ID.
+            season_number (int): Season number.
         Returns:
-            list: A list of dictionaries representing the episodes for the series
+            Any: API response.
         """
         endpoint = f"{self.url}/api/v3/episode?seriesId={media_id}&seasonNumber={season_number}"
         return self.make_get_request(endpoint, headers=self.headers)
 
-    def get_season_data(self, media_id):
+    def get_season_data(self, media_id: int) -> Any:
         """
-        Get data for a season.
+        Get all episode data for a specific series.
         Args:
-            media_id (int): The ID of the series to get data for
+            media_id (int): Series ID.
         Returns:
-            list: A list of dictionaries representing the episodes for the season
+            Any: API response.
         """
         endpoint = f"{self.url}/api/v3/episode?seriesId={media_id}"
         return self.make_get_request(endpoint, headers=self.headers)
 
-    def delete_episode_file(self, episode_file_id):
+    def delete_episode_file(self, episode_file_id: int) -> Any:
         """
-        Delete an episode file.
+        Delete an episode file by file ID.
         Args:
-            episode_file_id (int): The ID of the episode file to delete.
+            episode_file_id (int): Episode file ID.
+        Returns:
+            Any: API response.
         """
         endpoint = f"{self.url}/api/v3/episodefile/{episode_file_id}"
         return self.make_delete_request(endpoint)
 
-    def delete_episode_files(self, episode_file_ids):
+    def delete_episode_files(self, episode_file_ids: Union[int, List[int]]) -> Any:
         """
-        Delete all episode files for a series.
+        Delete multiple episode files by their IDs.
         Args:
-            media_id (int): The ID of the series to delete episode files for
+            episode_file_ids (Union[int, List[int]]): Episode file IDs.
+        Returns:
+            Any: API response.
         """
         if isinstance(episode_file_ids, int):
             episode_file_ids = [episode_file_ids]
@@ -472,21 +820,13 @@ class StARR:
         endpoint = f"{self.url}/api/v3/episodefile/bulk"
         return self.make_delete_request(endpoint, payload)
 
-    def delete_movie_file(self, media_id):
+    def search_episodes(self, episode_ids: List[int]) -> Any:
         """
-        Delete a media item.
+        Trigger a search for specific episodes.
         Args:
-            media_id (int): The ID of the media item to delete.
-        """
-        endpoint = f"{self.url}/api/v3/moviefile/{media_id}"
-        return self.make_delete_request(endpoint)
-
-    def search_episodes(self, episode_ids):
-        """
-        Search for an episode.
-        Args:
-            media_id (int): The ID of the series to search for
-            fileIds (int): The episode number to search for
+            episode_ids (List[int]): Episode IDs.
+        Returns:
+            Any: API response.
         """
         endpoint = f"{self.url}/api/v3/command"
         payload = {
@@ -496,135 +836,162 @@ class StARR:
         self.logger.debug(f"Search payload: {payload}")
         return self.make_post_request(endpoint, json=payload)
 
-    def get_movie_data(self, media_id):
+    def get_grab_history(self, media_id: int) -> Any:
         """
-        Get data for a movie.
+        Get grab history for a series.
         Args:
-            media_id (int): The ID of the movie to get data for
+            media_id (int): Series ID.
         Returns:
-            dict: A dictionary representing the movie
+            Any: API response.
         """
-        endpoint = f"{self.url}/api/v3/moviefile?movieId={media_id}"
-        return self.make_get_request(endpoint, headers=self.headers)
-
-    def get_grab_history(self, media_id, instance_type):
-        """
-        Get grab history.
-        Args:
-            media_id (int): The ID of the media item to get the history for.
-            instance_type (str): The type of instance to get the history for.
-
-        Returns:
-            dict: A dictionary representing the history.
-        """
-        if instance_type == 'radarr':
-            url_addon = f"movie?movieId={media_id}&eventType=grabbed&includeMovie=false"
-        elif instance_type == 'sonarr':
-            url_addon = f"series?seriesId={media_id}&eventType=grabbed&includeSeries=false&includeEpisode=false"
+        url_addon = f"series?seriesId={media_id}&eventType=grabbed&includeSeries=false&includeEpisode=false"
         endpoint = f"{self.url}/api/v3/history/{url_addon}"
         return self.make_get_request(endpoint, headers=self.headers)
 
-    def get_import_history(self, media_id, instance_type):
+    def get_import_history(self, media_id: int) -> Any:
         """
-        Get import history.
+        Get import history for a series.
         Args:
-            media_id (int): The ID of the media item to get the history for.
-            instance_type (str): The type of instance to get the history for.
-
+            media_id (int): Series ID.
         Returns:
-            dict: A dictionary representing the history.
+            Any: API response.
         """
-        if instance_type == 'radarr':
-            url_addon = f"movie?movieId={media_id}&eventType=downloadFolderImported&includeMovie=false"
-        elif instance_type == 'sonarr':
-            url_addon = f"series?seriesId={media_id}&eventType=downloadFolderImported&includeSeries=false&includeEpisode=false"
+        url_addon = f"series?seriesId={media_id}&eventType=downloadFolderImported&includeSeries=false&includeEpisode=false"
         endpoint = f"{self.url}/api/v3/history/{url_addon}"
         return self.make_get_request(endpoint, headers=self.headers)
 
-    def get_season_grab_history(self, media_id, season):
+    def get_season_grab_history(self, media_id: int, season: int) -> Any:
         """
-        Get season grab history.
+        Get grab history for a specific season of a series.
         Args:
-            media_id (int): The ID of the media item to get the history for.
-            season (int): The season to get the history for.
-
+            media_id (int): Series ID.
+            season (int): Season number.
         Returns:
-            dict: A dictionary representing the history.
+            Any: API response.
         """
         url_addon = f"series?seriesId={media_id}&seasonNumber={season}&eventType=grabbed&includeSeries=false&includeEpisode=false"
         endpoint = f"{self.url}/api/v3/history/{url_addon}"
         return self.make_get_request(endpoint, headers=self.headers)
 
-    def get_season_import_history(self, media_id, season):
+    def get_season_import_history(self, media_id: int, season: int) -> Any:
         """
-        Get season import history.
+        Get import history for a specific season of a series.
         Args:
-            media_id (int): The ID of the media item to get the history for.
-            season (int): The season to get the history for.
-
+            media_id (int): Series ID.
+            season (int): Season number.
         Returns:
-            dict: A dictionary representing the history.
+            Any: API response.
         """
         url_addon = f"series?seriesId={media_id}&seasonNumber={season}&eventType=downloadFolderImported&includeSeries=false&includeEpisode=false"
         endpoint = f"{self.url}/api/v3/history/{url_addon}"
         return self.make_get_request(endpoint, headers=self.headers)
 
-    def get_import_history(self, media_id, instance_type):
+    def get_queue(self) -> Any:
         """
-        Get import history.
-        Args:
-            media_id (int): The ID of the media item to get the history for.
-            instance_type (str): The type of instance to get the history for.
-
+        Get the current queue from Sonarr.
         Returns:
-            dict: A dictionary representing the history.
+            Any: API response.
         """
-        if instance_type == 'radarr':
-            url_addon = f"movie?movieId={media_id}&eventType=downloadFolderImported&includeMovie=false"
-        elif instance_type == 'sonarr':
-            url_addon = f"series?seriesId={media_id}&eventType=downloadFolderImported&includeSeries=false&includeEpisode=false"
-        endpoint = f"{self.url}/api/v3/history/{url_addon}"
-        return self.make_get_request(endpoint, headers=self.headers)
-
-    def get_queue(self, instance_type):
-        """
-        Get the queue.
-        Args:
-            instance_type (str): The type of instance to get the queue for.
-        Returns:
-            dict: A dictionary representing the queue.
-        """
-        if instance_type == 'radarr':
-            url_addon = "page=1&pageSize=200&includeMovie=true"
-        elif instance_type == 'sonarr':
-            url_addon = "page=1&pageSize=200&includeSeries=true"
-
+        url_addon = "page=1&pageSize=200&includeSeries=true"
         endpoint = f"{self.url}/api/v3/queue?{url_addon}"
         return self.make_get_request(endpoint, headers=self.headers)
 
-    def get_quality_profile_names(self):
+    def delete_media(self, media_id: int) -> Any:
         """
-        Get the names of all quality profiles.
+        Delete a series from Sonarr.
+        Args:
+            media_id (int): Series ID.
         Returns:
-            dict: A dictionary of quality profile names and IDs.
-
-        returns:
-            dict: A dictionary of quality profile names and IDs.
+            Any: API response.
         """
-        dict_of_names_and_ids = {}
-        endpoint = f"{self.url}/api/v3/qualityprofile"
-        response = self.make_get_request(endpoint, headers=self.headers)
-        if response:
-            for profile in response:
-                dict_of_names_and_ids[profile["name"]] = profile["id"]
-            return dict_of_names_and_ids
+        endpoint = f"{self.url}/api/v3/series/{media_id}"
+        return self.make_delete_request(endpoint)
 
-    def refresh_queue(self):
+    def get_parsed_media(self, include_episode: bool = False) -> List[Dict[str, Any]]:
         """
-        Refresh the queue.
-
+        Normalize and return a structured list of series items suitable for internal processing.
+        Args:
+            include_episode (bool): If True, include episode-level metadata.
         Returns:
-            dict: A dictionary representing the queue.
+            List[Dict[str, Any]]: List of structured media entries with normalized fields.
+        """
+        media_dict = []
+        media = self.get_media()
+        if not media:
+            return media_dict
+        for item in media:
+            season_data = item.get('seasons', [])
+            season_list = []
+            for season in season_data:
+                if include_episode:
+                    episode_data = self.get_episode_data_by_season(item['id'], season['seasonNumber'])
+                    episode_list = [{
+                        'episode_number': ep['episodeNumber'],
+                        'monitored': ep['monitored'],
+                        'episode_file_id': ep['episodeFileId'],
+                        'episode_id': ep['id'],
+                        'has_file': ep['hasFile'],
+                    } for ep in episode_data]
+                else:
+                    episode_list = []
+                try:
+                    status = season['statistics']['episodeCount'] == season['statistics']['totalEpisodeCount']
+                except Exception:
+                    status = False
+                try:
+                    season_stats = season['statistics']['episodeCount']
+                except Exception:
+                    season_stats = 0
+                season_list.append({
+                    'season_number': season['seasonNumber'],
+                    'monitored': season['monitored'],
+                    'season_pack': status,
+                    'season_has_episodes': season_stats,
+                    'episode_data': episode_list,
+                })
+            alternate_titles = [t['title'] for t in item['alternateTitles']]
+            normalized_alternate_titles = [normalize_titles(t['title']) for t in item['alternateTitles']]
+            if year_regex_search.search(item['title']):
+                title = year_removal_regex.sub("", item['title'])
+                year = extract_year(item['title'])
+            else:
+                title = item['title']
+                year = item['year']
+            reg = windows_path_regex.match(item['path'])
+            if reg and reg.group(1):
+                folder = item['path'][item['path'].rfind("\\")+1:]
+            else:
+                folder = os.path.basename(os.path.normpath(item['path']))
+            media_dict.append({
+                'title': unidecode(html.unescape(title)),
+                'year': year,
+                'media_id': item['id'],
+                'tvdb_id': item['tvdbId'],
+                'imdb_id': item.get('imdbId', None),
+                'monitored': item['monitored'],
+                'status': item['status'],
+                'root_folder': item['rootFolderPath'],
+                'quality_profile': item['qualityProfileId'],
+                'normalized_title': normalize_titles(item['title']),
+                'path_name': os.path.basename(item['path']),
+                'original_title': item.get('originalTitle', None),
+                'secondary_year': item.get('secondaryYear', None),
+                'alternate_titles': alternate_titles,
+                'normalized_alternate_titles': normalized_alternate_titles,
+                'file_id': None,
+                'folder': folder,
+                'has_file': None,
+                'tags': item['tags'],
+                'seasons': season_list,
+                'season_numbers': [s['season_number'] for s in season_list],
+            })
+        return media_dict
+
+    def refresh_queue(self) -> Any:
+        """
+        Refresh the queue in Sonarr.
+        Returns:
+            Any: API response.
         """
         endpoint = f"{self.url}/api/v3/command"
         payload = {
@@ -633,56 +1000,14 @@ class StARR:
         self.logger.debug(f"Refresh queue payload: {payload}")
         return self.make_post_request(endpoint, json=payload)
 
-    def get_health(self):
+    def remove_item_from_queue(self, queue_ids: Union[int, List[int]]) -> Any:
         """
-        Get the health status.
+        Remove an item or items from the queue.
+        Args:
+            queue_ids (Union[int, List[int]]): Queue item IDs.
         Returns:
-            dict: A dictionary representing the health status.
+            Any: API response.
         """
-        endpoint = f"{self.url}/api/v3/health"
-        return self.make_get_request(endpoint, headers=self.headers)
-
-    def delete_media(self, media_id):
-        """
-        Delete a media item.
-        Args:
-            media_id (int): The ID of the media item to delete.
-        """
-        endpoint = None
-        if self.instance_type == 'Sonarr':
-            endpoint = f"{self.url}/api/v3/series/{media_id}"
-        elif self.instance_type == 'Radarr':
-            endpoint = f"{self.url}/api/v3/movie/{media_id}"
-        return self.make_delete_request(endpoint)
-
-    def get_tag_id_from_name(self, tag_name):
-        """
-        Get the ID of a tag from its name. If the tag does not yet
-        exist, it will be created.
-        Args:
-            tag_name (str): The name of the tag to get the ID for.
-        Returns:
-            int: The ID of the tag.
-        """
-        all_tags = self.get_all_tags() or []
-        tag_name = tag_name.lower()
-
-        for tag in all_tags:
-            if tag["label"] == tag_name:
-                tag_id = tag["id"]
-                return tag_id
-
-        # If the tag doesn't already exist, create it.
-        tag_id = self.create_tag(tag_name)
-        return tag_id
-
-    def remove_item_from_queue(self, queue_ids):
-        """
-        Remove an item from the queue.
-        Args:
-            queue_id (int): The ID of the queue item to remove.
-        """
-        # if one item in list, convert to int
         if isinstance(queue_ids, int):
             queue_ids = [queue_ids]
         payload = {
@@ -690,3 +1015,35 @@ class StARR:
         }
         endpoint = f"{self.url}/api/v3/queue/bulk?removeFromClient=false&blocklist=false&skipRedownload=false&changeCategory=false"
         return self.make_delete_request(endpoint, payload)
+
+
+def create_arr_client(
+    url: str,
+    api: str,
+    logger: Any
+) -> Optional[Union[RadarrClient, SonarrClient]]:
+    """
+    Factory function to create a Radarr or Sonarr client based on the instance type.
+    Args:
+        url (str): API URL.
+        api (str): API key.
+        logger (Any): Logger instance.
+    Returns:
+        Optional[Union[RadarrClient, SonarrClient]]: The appropriate client or None if connection fails.
+    """
+    class SilentLogger:
+        def debug(self, *args, **kwargs): pass
+        def info(self, *args, **kwargs): pass
+        def warning(self, *args, **kwargs): pass
+        def error(self, *args, **kwargs): pass
+
+    temp = BaseARRClient(url, api, SilentLogger())
+    if not temp.connect_status:
+        return None
+    if temp.app_name == "Radarr":
+        return RadarrClient(url, api, logger)
+    elif temp.app_name == "Sonarr":
+        return SonarrClient(url, api, logger)
+    else:
+        logger.error("Unknown ARR type")
+        return None

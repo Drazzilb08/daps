@@ -1,44 +1,43 @@
 import os
 import datetime
-from tqdm import tqdm
+from util.utility import progress
 from util.index import create_new_empty_index
 from util.scanner import process_files
 from util.index import build_search_index, search_matches
 from util.match import is_match
 from util.normalization import normalize_file_names
 from util.construct import generate_title_variants
-from typing import Any, Dict, List, Tuple, Union, Optional
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 
 def get_assets_files(source_dirs: Union[str, List[str]], logger: Any) -> Tuple[Optional[Dict[str, List[dict]]], Optional[Dict[str, Any]]]:
     """
-    Get assets files from source directories.
+    Process one or more directories to extract and organize media assets.
 
     Args:
-        source_dirs (list): List of paths to source directories.
-        logger (logger): Logger for output.
+        source_dirs (Union[str, List[str]]): One or more paths to media source directories.
+        logger (Any): Logger instance for debug/info messages.
 
     Returns:
-        tuple: (assets_dict, prefix_index)
+        Tuple[Optional[Dict[str, List[dict]]], Optional[Dict[str, Any]]]: 
+            A tuple containing categorized assets and a search index.
     """
     source_dirs = [source_dirs] if isinstance(source_dirs, str) else source_dirs
-    final_assets = []
-    prefix_index = create_new_empty_index()
+    final_assets: List[dict] = []
+    prefix_index: Dict[str, Any] = create_new_empty_index()
+
     start_time = datetime.datetime.now()
 
     for source_dir in source_dirs:
         new_assets = process_files(source_dir, logger)
         if new_assets:
             merge_assets(new_assets, final_assets, prefix_index, logger)
-        else:
-            if logger:
-                logger.warning(f"No files found in the folder: {os.path.basename(source_dir)}")
 
     assets_dict = categorize_assets(final_assets)
 
     if all(not v for v in assets_dict.values()):
         if logger:
-            logger.warning(f"No files were found in any of the source directories: {source_dirs}")
+            logger.warning(f"No valid files were found in any of the source directories: {source_dirs}")
         return None, None
 
     end_time = datetime.datetime.now()
@@ -49,10 +48,19 @@ def get_assets_files(source_dirs: Union[str, List[str]], logger: Any) -> Tuple[O
 
     return assets_dict, prefix_index
 
+
 def merge_assets(new_assets: List[dict], final_assets: List[dict], prefix_index: Dict[str, Any], logger: Any) -> None:
-    """Merge and deduplicate new assets into the final asset list."""
-    with tqdm(total=len(new_assets), desc="Processing assets", leave=False) as progress_bar:
-        for new in new_assets:
+    """
+    Merge newly discovered assets into the main asset list, deduplicating by content and title match.
+
+    Args:
+        new_assets (List[dict]): Newly discovered assets.
+        final_assets (List[dict]): Aggregated list of final assets to update.
+        prefix_index (Dict[str, Any]): Title prefix index to accelerate lookups.
+        logger (Any): Logger instance for debug/info messages.
+    """
+    with progress(new_assets, desc="Processing assets", total=len(new_assets), unit="asset", logger=logger, leave=False) as pbar:
+        for new in pbar:
             search_matched_assets = search_matches(prefix_index, new['title'], new['type'], logger)
             for final in search_matched_assets:
                 if is_match(final, new, logger, log=True) and final['type'] == new['type']:
@@ -60,7 +68,8 @@ def merge_assets(new_assets: List[dict], final_assets: List[dict], prefix_index:
                         normalized_new_file = normalize_file_names(os.path.basename(new_file))
                         for final_file in final['files']:
                             normalized_final_file = normalize_file_names(os.path.basename(final_file))
-                            if final.get('type') == 'collections':   
+                            # Handle collections with variant titles for deduplication
+                            if final.get('type') == 'collections':
                                 final_base = os.path.splitext(os.path.basename(final_file))[0]
                                 final_file_variants = generate_title_variants(final_base)['normalized_alternate_titles']
                             if (
@@ -73,24 +82,34 @@ def merge_assets(new_assets: List[dict], final_assets: List[dict], prefix_index:
                         else:
                             final['files'].append(new_file)
 
-                    new_season_numbers = new.get('season_numbers', None)
+                    new_season_numbers = new.get('season_numbers')
                     if new_season_numbers:
-                        final_season_numbers = final.get('season_numbers', None)
+                        final_season_numbers = final.get('season_numbers')
                         if final_season_numbers:
+                            # Merge season numbers ensuring uniqueness
                             final['season_numbers'] = list(set(final_season_numbers + new_season_numbers))
                         else:
                             final['season_numbers'] = new_season_numbers
                     final['files'].sort()
                     break
             else:
+                # Add new asset if no match found and index it
                 new['files'].sort()
                 final_assets.append(new)
                 build_search_index(prefix_index, new['title'], new, new['type'], logger)
-            progress_bar.update(1)
+
 
 def categorize_assets(final_assets: List[dict]) -> Dict[str, List[dict]]:
-    """Organize final assets into categorized dictionary."""
-    assets_dict = {'movies': [], 'series': [], 'collections': []}
+    """
+    Sort assets into categories: movies, series, or collections.
+
+    Args:
+        final_assets (List[dict]): All deduplicated and merged assets.
+
+    Returns:
+        Dict[str, List[dict]]: Assets grouped into 'movies', 'series', and 'collections'.
+    """
+    assets_dict: Dict[str, List[dict]] = {'movies': [], 'series': [], 'collections': []}
     for item in final_assets:
         item['files'].sort(key=lambda x: os.path.basename(x).lower())
         if item['type'] in assets_dict:

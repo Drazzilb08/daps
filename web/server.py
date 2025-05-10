@@ -1,0 +1,439 @@
+import copy
+import multiprocessing
+import time
+from pathlib import Path
+from threading import Thread
+import os
+import json
+import requests
+import uvicorn
+import yaml
+from fastapi import FastAPI, Request, APIRouter, HTTPException
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
+from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
+from util.config import Config
+from util.utility import redact_apis
+
+if os.environ.get("DOCKER_ENV") == "1":
+    LOG_BASE_DIR = "/config/logs"
+else:
+    LOG_BASE_DIR = str((Path(__file__).parent.parent / "logs").resolve())
+
+run_processes: dict[str, multiprocessing.Process] = {}
+run_time = {}
+
+
+app = FastAPI()
+router = APIRouter()
+app.state.logger = None
+
+class RunRequest(BaseModel):
+    module: str
+
+
+class CancelRequest(BaseModel):
+    module: str
+
+
+class TestInstanceRequest(BaseModel):
+    service: str
+    name: str
+    url: str
+    api: str | None = None
+
+
+def log_route(logger, path: str, method: str = "GET") -> None:
+    """Logs route access with method and path."""
+    logger.debug(f"[WEB] Serving {method} {path}")
+
+
+@app.get("/api/version")
+async def get_version() -> PlainTextResponse | JSONResponse:
+    """Returns the current version string from the VERSION file."""
+    version_file = Path(__file__).parent.parent / "VERSION"
+    if not version_file.exists():
+        try:
+            return PlainTextResponse("unknown", status_code=404)
+        except Exception as e:
+            return JSONResponse(status_code=500, content={"error": str(e)})
+    return PlainTextResponse(version_file.read_text().strip())
+
+
+@app.post("/api/test-notification")
+async def test_notification(req: Request) -> dict | JSONResponse:
+    """Sends a test notification and returns the result."""
+    data = await req.json()
+    app.state.logger.debug(
+        "[WEB] Serving POST /api/test-notification for module: %s", data.get("module")
+    )
+    from util.notification import send_test_notification
+    try:
+        results = send_test_notification(data, app.state.logger)
+        app.state.logger.debug("[WEB] Test notification results: %s", results)
+        return results
+    except Exception as e:
+        app.state.logger.error("[WEB] Test notification failed: %s", e)
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+# Mount static directory
+app.mount(
+    "/web/static",
+    StaticFiles(directory=Path(__file__).parent / "static"),
+    name="static",
+)
+
+
+@app.get("/", response_class=HTMLResponse)
+async def root() -> HTMLResponse | JSONResponse:
+    """Serves the main index.html page."""
+    html_path = Path(__file__).parent / "templates" / "index.html"
+    try:
+        return HTMLResponse(content=html_path.read_text(), status_code=200)
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.get("/api/config")
+async def get_config() -> dict | JSONResponse:
+    """Returns the current configuration as a dictionary."""
+    log_route(app.state.logger, "/api/config")
+    try:
+        config_path = Config("main").config_path
+        with open(config_path, "r") as f:
+            data = yaml.safe_load(f)
+        return data
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.get("/api/list")
+async def list_dir(path: str = "/") -> dict | JSONResponse:
+    """Returns subdirectories for a given path."""
+    resolved = Path(path).expanduser().resolve()
+    if not resolved.exists() or not resolved.is_dir():
+        try:
+            return JSONResponse(status_code=400, content={"error": "Invalid path"})
+        except Exception as e:
+            return JSONResponse(status_code=500, content={"error": str(e)})
+    dirs = [
+        p.name for p in resolved.iterdir() if p.is_dir() and not p.name.startswith(".")
+    ]
+    dirs.sort()
+    return {"directories": dirs}
+
+
+@app.get("/api/plex/libraries")
+async def get_plex_libraries(instance: str) -> list | JSONResponse:
+    """Returns library names for a specific Plex instance."""
+    try:
+        config = yaml.safe_load(open(Config("main").config_path))
+        plex_data = config.get("instances", {}).get("plex", {}).get(instance)
+        if not plex_data:
+            return JSONResponse(
+                status_code=404, content={"error": "Plex instance not found"}
+            )
+        base_url = plex_data.get("url")
+        token = plex_data.get("api")
+        if not base_url or not token:
+            return JSONResponse(
+                status_code=400, content={"error": "Missing Plex API credentials"}
+            )
+        headers = {"X-Plex-Token": token}
+        url = f"{base_url}/library/sections"
+        try:
+            app.state.logger.debug(
+                "[WEB] Serving GET /api/plex/libraries for instance: %s", instance
+            )
+            res = requests.get(url, headers=headers, timeout=5)
+        except requests.exceptions.RequestException as req_exc:
+            app.state.logger.error(f"[WEB] Plex request failed: {req_exc}")
+            return JSONResponse(
+                status_code=502,
+                content={"error": f"Failed to connect to Plex server: {req_exc}"},
+            )
+        if not res.ok:
+            return JSONResponse(
+                status_code=res.status_code, content={"error": res.text}
+            )
+        xml = res.text
+        import xml.etree.ElementTree as ET
+        root = ET.fromstring(xml)
+        libraries = [
+            el.attrib["title"]
+            for el in root.findall(".//Directory")
+            if "title" in el.attrib
+        ]
+        return libraries
+    except Exception as e:
+        app.state.logger.error(f"[WEB] Unexpected error in /api/plex/libraries: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.post("/api/config")
+async def update_config(request: Request) -> dict | JSONResponse:
+    """Updates the configuration file with provided values."""
+    try:
+        incoming = await request.json()
+        incoming_copy = copy.deepcopy(incoming)
+        if "instances" in incoming_copy:
+            redact_apis(incoming_copy["instances"])
+        app.state.logger.debug(
+            "[WEB] Serving POST /api/config with payload: %s", incoming_copy
+        )
+        new_schedule = incoming.get("schedule")
+        new_instances = incoming.get("instances")
+        new_notifications = incoming.get("notifications")
+        config_path = Config("main").config_path
+        with open(config_path, "r") as f:
+            current_config = yaml.safe_load(f)
+        if new_schedule is not None:
+            if "schedule" not in current_config:
+                current_config["schedule"] = {}
+            for key, value in new_schedule.items():
+                current_config["schedule"][key] = value
+        if new_instances is not None:
+            if "instances" not in current_config:
+                current_config["instances"] = {}
+            current_config["instances"] = new_instances
+        if new_notifications is not None:
+            current_config["notifications"] = new_notifications
+        for mod_name, mod_payload in incoming.items():
+            if mod_name in ("schedule", "instances", "notifications"):
+                continue
+            if (
+                "bash_scripts" in current_config
+                and mod_name in current_config["bash_scripts"]
+            ):
+                target = current_config["bash_scripts"][mod_name]
+            else:
+                target = current_config.setdefault(mod_name, {})
+            for field, val in mod_payload.items():
+                target[field] = val
+        with open(config_path, "w") as f:
+            yaml.safe_dump(current_config, f, sort_keys=False)
+        app.state.logger.info("[WEB] Config entries updated")
+        return {"status": "success"}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.post("/api/run")
+async def run_module(data: RunRequest) -> dict | JSONResponse:
+    """Starts a module process if not already running."""
+    from main import run_module, list_of_python_modules
+    module = data.module
+    app.state.logger.debug("[WEB] Serving POST /api/run for module: %s", module)
+    if module not in list_of_python_modules:
+        app.state.logger.error(f"[WEB] Unknown module: {module}")
+        try:
+            return JSONResponse(
+                status_code=400, content={"error": f"Unknown module: {module}"}
+            )
+        except Exception as e:
+            return JSONResponse(status_code=500, content={"error": str(e)})
+    app.state.logger.info(f"[WEB] Manually starting module: {module}")
+    start = time.time()
+    run_time[module] = start
+    if module in run_processes:
+        app.state.logger.error(f"[WEB] Module {module} is already running")
+        return JSONResponse(
+            status_code=400, content={"error": f"Module {module} is already running"}
+        )
+    proc = run_module(module)
+    if proc:
+        run_processes[module] = proc
+        return {"status": "started", "module": module}
+    else:
+        return JSONResponse(status_code=500, content={"error": "Failed to start"})
+
+
+@app.get("/api/status")
+async def module_status(module: str) -> dict | JSONResponse:
+    """Queries the running status of a given module."""
+    proc = run_processes.get(module)
+    if not proc and getattr(app.state, "manager", None):
+        proc = app.state.manager.running_modules.get(module)
+    alive = False
+    if proc:
+        alive = proc.is_alive()
+        if not alive:
+            duration = time.time() - run_time[module]
+            hours, rem = divmod(duration, 3600)
+            minutes, seconds = divmod(rem, 60)
+            human_duration = f"{int(hours)}:{int(minutes):02d}:{int(seconds):02d}"
+            app.state.logger.info(
+                f"[WEB] Module: {module} finished in {human_duration} (raw: {duration:.2f} seconds)"
+            )
+            del run_time[module]
+            if proc in run_processes.values():
+                del run_processes[module]
+            elif (
+                getattr(app.state, "manager", None)
+                and module in app.state.manager.running_modules
+            ):
+                del app.state.manager.running_modules[module]
+    try:
+        return {"module": module, "running": alive}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.post("/api/cancel")
+async def cancel_module(data: CancelRequest) -> dict | JSONResponse:
+    """Cancels a running module."""
+    module = data.module
+    proc = run_processes.get(module)
+    scheduled = False
+    if not proc and getattr(app.state, "manager", None):
+        proc = app.state.manager.running_modules.get(module)
+        scheduled = True
+    if not proc:
+        try:
+            return JSONResponse(
+                status_code=400, content={"error": "Module not running"}
+            )
+        except Exception as e:
+            return JSONResponse(status_code=500, content={"error": str(e)})
+    proc.terminate()
+    app.state.logger.info(f"[WEB] Manually cancelled module: {module}")
+    if scheduled:
+        del app.state.manager.running_modules[module]
+    else:
+        del run_processes[module]
+    return {"status": "cancelled", "module": module}
+
+
+@app.post("/api/test-instance")
+async def test_instance(data: TestInstanceRequest) -> dict | JSONResponse:
+    """Tests the connection to a service instance and returns the result."""
+    service = data.service
+    name = data.name
+    url = data.url
+    api = data.api
+    if not url:
+        return JSONResponse(status_code=400, content={"error": "Missing URL"})
+    try:
+        url = url.rstrip("/")
+        if service == "plex":
+            headers = {"X-Plex-Token": api} if api else {}
+            test_url = f"{url}/library/sections"
+        else:
+            headers = {"X-Api-Key": api} if api else {}
+            test_url = f"{url}/api/v3/system/status"
+        app.state.logger.info(f"[WEB] Testing: {name.upper()} - URL: {test_url}")
+        resp = requests.get(test_url, headers=headers, timeout=5)
+        if resp.ok:
+            app.state.logger.info(f"[WEB] Connection test: OK")
+            return {"ok": True, "status": resp.status_code}
+        elif resp.status_code == 401:
+            app.state.logger.error(
+                f"[WEB] Connection test code 401: Unauthorized - Invalid credentials"
+            )
+            return JSONResponse(status_code=401, content={"error": "Unauthorized"})
+        elif resp.status_code == 404:
+            app.state.logger.error(
+                f"[WEB] Connection test code 404: Not Found - Invalid URL"
+            )
+            return JSONResponse(status_code=404, content={"error": "Not Found"})
+        else:
+            app.state.logger.error(
+                f"[WEB] Connection test code {resp.status_code}: {resp.text}"
+            )
+            return JSONResponse(
+                status_code=resp.status_code, content={"error": resp.text}
+            )
+    except Exception as e:
+        app.state.logger.error(f"[WEB] Connection test failed for {name} ({url}): {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.post("/api/create-folder")
+async def create_folder(path: str) -> dict | JSONResponse:
+    """Creates a folder at the given path."""
+    resolved = Path(path).expanduser().resolve()
+    try:
+        app.state.logger.info(f"[WEB] Creating folder: {resolved}")
+        resolved.mkdir(parents=True, exist_ok=False)
+        return {"status": "created"}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.get("/fragments/{fragment_name}", response_class=HTMLResponse)
+async def serve_fragment(fragment_name: str) -> HTMLResponse | JSONResponse:
+    """Serves a named HTML fragment from the fragments directory."""
+    html_path = (
+        Path(__file__).parent
+        / "templates"
+        / "fragments"
+        / f"{fragment_name}_fragment.html"
+    )
+    if not html_path.exists():
+        raise HTTPException(status_code=404, detail="Fragment not found")
+    try:
+        return HTMLResponse(content=html_path.read_text(), status_code=200)
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@router.get("/api/logs")
+async def list_logs() -> dict:
+    """Lists available log files for each module."""
+    app.state.logger.info("[WEB] Listing logs in %s", LOG_BASE_DIR)
+    logs_data = {}
+    if not os.path.exists(LOG_BASE_DIR):
+        app.state.logger.error("[WEB] Log directory not found: %s", LOG_BASE_DIR)
+        raise HTTPException(status_code=404, detail="Log directory not found.")
+    for module in os.listdir(LOG_BASE_DIR):
+        if module == "debug":
+            app.state.logger.debug(f"[WEB] Skipping {module} folder")
+            continue
+        module_path = os.path.join(LOG_BASE_DIR, module)
+        if os.path.isdir(module_path):
+            files = sorted(
+                f
+                for f in os.listdir(module_path)
+                if os.path.isfile(os.path.join(module_path, f))
+            )
+            logs_data[module] = files
+    app.state.logger.info("[WEB] Logs listed: %s", list(logs_data.keys()))
+    return logs_data
+
+
+@router.get("/api/logs/{module}/{filename}", response_class=PlainTextResponse)
+async def read_log(module: str, filename: str) -> str:
+    """Reads a specific log file and returns its content as plain text."""
+    safe_module = os.path.basename(module)
+    safe_filename = os.path.basename(filename)
+    if safe_module == "debug":
+        raise HTTPException(status_code=404, detail="Log file not found.")
+    log_path = os.path.join(LOG_BASE_DIR, safe_module, safe_filename)
+    if "debug" in os.path.relpath(log_path, LOG_BASE_DIR).split(os.sep):
+        raise HTTPException(status_code=404, detail="Log file not found.")
+    if not os.path.exists(log_path):
+        raise HTTPException(status_code=404, detail="Log file not found.")
+    with open(log_path, "r", encoding="utf-8", errors="ignore") as f:
+        content = f.read()
+    return content
+
+
+def start_web_server(logger) -> None:
+    """Starts the web server in a background thread and stores logger in app state."""
+    app.state.logger = logger
+    try:
+        with open(Config("main").config_path, "r") as f:
+            app.state.config_data = yaml.safe_load(f)
+    except Exception as e:
+        logger.error(f"[WEB] Failed to load config: {e}")
+        app.state.config_data = {}
+    port = int(os.environ.get("PORT", 8000))
+    host = os.environ.get("HOST", "127.0.0.1")
+    app.state.logger.info(f"[WEB] Starting web server on {host}:{port}")
+    web_thread = Thread(
+        target=lambda: uvicorn.run(app, host=host, port=port, log_level="warning"),
+        daemon=True,
+    )
+    web_thread.start()
+    app.include_router(router)

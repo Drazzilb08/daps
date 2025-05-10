@@ -22,11 +22,15 @@ def test_assets(tmp_path):
     # In DirA, pretend these are “movie” posters
     for fname in [
         # "Disney.jpg",
-        "Disney+.jpg",
+        # "Disney+.jpg",
+        "Willow (1988) {tmdb-847}.jpg",
+        "Willow (2022) {tvdb-393192}.jpg",
+        "Willow (2022) {tvdb-393192}_Season00.jpg",
+        "Willow (2022) {tvdb-393192}_Season01.jpg"
         # "Mission- Impossible.jpg",
         # "Mission Impossible Collection.jpg",
         # "The Lord of the Rings Collection.jpg",
-        "FX Collection.jpg",
+        # "FX Collection.jpg",
         # "FXX Collection.jpg",
         ]:
         _write_empty(dir_a / fname)
@@ -35,7 +39,7 @@ def test_assets(tmp_path):
     for fname in [
         # "Disney.jpg",
         # "Mission- Impossible.jpg",
-        "Disney+.jpg",
+        # "Disney+.jpg",
         # "Disney.jpg",
         # "F-X Collection.jpg"
         # "Mission Impossible Collection.jpg",

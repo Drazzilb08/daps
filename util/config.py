@@ -55,6 +55,7 @@ def merge_with_template(path: str, config: dict) -> dict:
 
 
 TEMPLATE_PATH = Path(__file__).parent / "template" / "config_template.json"
+  
 
 
 def _deep_merge(default: dict, user: dict) -> dict:
@@ -83,7 +84,9 @@ if os.environ.get('DOCKER_ENV'):
     config_path = os.getenv('CONFIG_DIR', '/config')
     config_file_path = os.path.join(config_path, "config.yml")
 else:
-    config_file_path = os.path.join(pathlib.Path(__file__).parents[1], "config/config.yml")
+    config_dir = pathlib.Path(__file__).parents[1] / "config"
+    config_dir.mkdir(parents=True, exist_ok=True)
+    config_file_path = config_dir / "config.yml"
 
 # Bootstrap config file from JSON template if missing
 if not os.path.exists(config_file_path):

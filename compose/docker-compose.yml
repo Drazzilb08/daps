@@ -7,7 +7,10 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - ./config:/app/config
+      - /path/to/config:/config
+      - /path/to/kometa/assets/:/kometa
+      - /path/to/posters:/posters
+      - /path/to/media:/media
     environment:
       - PUID=${PUID}
       - PGID=${PGID}

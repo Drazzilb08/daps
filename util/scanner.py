@@ -4,6 +4,7 @@ import html
 from unidecode import unidecode
 import datetime
 from typing import Any, Optional, List, Dict
+from collections import defaultdict
 from util.utility import progress
 
 from util.normalization import normalize_titles
@@ -23,7 +24,6 @@ def scan_files_in_flat_folder(folder_path: str, logger: Any) -> List[Dict]:
     Returns:
         List[Dict]: List of parsed media asset dictionaries.
     """
-    from collections import defaultdict
 
     try:
         files = os.listdir(folder_path)

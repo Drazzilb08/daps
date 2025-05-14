@@ -377,6 +377,12 @@ window.loadNotifications = async function()
             });
         });
     }
+    // Bind the Save button
+    const saveBtn = document.getElementById('saveBtn');
+    if (saveBtn) {
+    saveBtn.type = 'button';
+    saveBtn.onclick = window.saveChanges;
+    }
 };
 /**
  * Constructs the full notification settings payload from the form inputs.
@@ -458,36 +464,27 @@ async function buildNotificationPayload()
  *
  * @returns {Promise<void>}
  */
-window.saveChanges = async function()
-{
-    const payload = await buildNotificationPayload();
-    if (!payload) return;
-    try
-    {
-        const res = await fetch('/api/config',
-        {
-            method: 'POST',
-            headers:
-            {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
-        if (res.ok)
-        {
-            window.showToast('✅ Notifications updated!', 'success');
-        }
-        else
-        {
-            const err = await res.json();
-            window.showToast('❌ Failed to update notifications: ' + (err.error || res.statusText), 'error');
-        }
-    }
-    catch (err)
-    {
-        window.showToast('❌ Failed to update notifications: ' + err.message, 'error');
-    }
-};
+/**
+ * Save handler for notification settings, mirroring saveSettings style.
+ */
+async function saveNotifications() {
+  const payload = await buildNotificationPayload();
+  if (!payload) return;
+  try {
+    const res = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw res;
+    window.showToast('✅ Notifications updated!', 'success');
+  } catch (err) {
+    let msg = err.statusText || 'Save failed';
+    try { const data = await err.json(); msg = data.error || msg; } catch {}
+    window.showToast(`❌ ${msg}`, 'error');
+  }
+}
+window.saveChanges = saveNotifications;
 // ===== Toggle Expand/Collapse Handler =====
 document.querySelectorAll('.notification-toggle').forEach(toggle =>
 {

@@ -2359,7 +2359,7 @@ window.loadSettings = async function(moduleName)
  * their updated values from the form and modal.
  * @returns {Object|null} The payload for POST, or null if validation fails.
  */
-function buildPayload()
+function buildPayload(moduleName) 
 {
     function fillPayloadFromFormData(data, payload, excludeKeys = [])
     {
@@ -2427,7 +2427,6 @@ function buildPayload()
             return normalized;
         }
     }
-    const moduleName = window.currentModuleName;
     const form = document.getElementById('settings-form');
     if (!form) return null;
     const data = new FormData(form);
@@ -2551,7 +2550,7 @@ function buildPayload()
 async function saveSettings()
 {
     const moduleName = window.currentModuleName;
-    const payload = buildPayload();
+    const payload = buildPayload(moduleName);
     if (!payload) return;
     try
     {
@@ -2584,40 +2583,5 @@ async function saveSettings()
         window.showToast?.(`❌ ${msg}`, 'error');
     }
 }
-async function saveSettings()
-{
-    const moduleName = window.currentModuleName;
-    const payload = buildPayload();
-    if (!payload) return;
-    try
-    {
-        const resp = await fetch('/api/config',
-        {
-            method: 'POST',
-            headers:
-            {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(
-            {
-                [moduleName]: payload
-            })
-        });
-        if (!resp.ok) throw resp;
-        window.isDirty = false;
-        window.showToast?.('✅ Settings saved', 'success');
-    }
-    catch (err)
-    {
-        let msg = err.statusText || 'Save failed';
-        try
-        {
-            const json = await err.json();
-            msg = json.error || msg;
-        }
-        catch
-        {}
-        window.showToast?.(`❌ ${msg}`, 'error');
-    }
-}
+
 window.saveChanges = saveSettings;

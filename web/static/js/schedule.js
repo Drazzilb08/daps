@@ -241,82 +241,99 @@ window.loadSchedule = async function()
                 });
         });
     }, 3000);
+document.addEventListener('DOMContentLoaded', () => {
+  window.loadSchedule();
+  const saveBtn = document.getElementById('saveBtn');
+  if (saveBtn) {
+    saveBtn.type = 'button';
+    saveBtn.onclick = window.saveChanges;
+  }
+});
 // ===== Save Schedule Changes =====
-    /**
-     * Builds the updated schedule payload from the form inputs.
-     *
-     * @returns {Object|null} The schedule payload object or null if the form is missing.
-     */
-    async function buildPayload()
+/**
+ * Builds the updated schedule payload from the form inputs.
+ *
+ * @returns {Object|null} The schedule payload object or null if the form is missing.
+ */
+async function buildSchedulePayload()
+{
+    const form = document.getElementById('scheduleForm');
+    if (!form) return null;
+    const data = new FormData(form);
+    const updatedSchedule = {};
+    for (const [key, value] of data.entries())
     {
-        const form = document.getElementById('scheduleForm');
-        if (!form) return null;
-        const data = new FormData(form);
-        const updatedSchedule = {};
-        for (const [key, value] of data.entries())
-        {
-            updatedSchedule[key] = value.trim() || null;
-        }
-        return {
-            schedule: updatedSchedule
-        };
+        updatedSchedule[key] = value.trim() || null;
     }
-
-    /**
-     * Sends the updated schedule payload to the backend API.
-     *
-     * @param {Object} payload - The schedule payload to save.
-     * @returns {Promise<void>}
-     */
-    async function savePayload(payload)
-    {
-        const res = await fetch('/api/config',
-        {
-            method: 'POST',
-            headers:
-            {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
-        if (res.ok)
-        {
-            window.showToast('✅ Schedule updated successfully!', 'success');
-        }
-        else
-        {
-            const err = await res.json();
-            window.showToast('❌ Failed to update schedule: ' + (err.error || res.statusText), 'error');
-        }
-    }
-
-    /**
-     * Top-level save handler triggered from UI. Builds and saves the schedule.
-     *
-     * @returns {Promise<void>}
-     */
-    window.saveChanges = async function()
-    {
-        const payload = await buildPayload();
-        if (payload)
-        {
-            await savePayload(payload);
-        }
+    return {
+        schedule: updatedSchedule
     };
-// ===== Schedule Search Input Filtering =====
-    const searchInput = document.getElementById("schedule-search");
-    if (searchInput)
+}
+
+/**
+ * Sends the updated schedule payload to the backend API.
+ *
+ * @param {Object} payload - The schedule payload to save.
+ * @returns {Promise<void>}
+ */
+async function savePayload(payload)
+{
+    console.log(paylaod)
+    const res = await fetch('/api/config',
     {
-        searchInput.addEventListener("input", (e) =>
+        method: 'POST',
+        headers:
         {
-            window.skipDirtyCheck = true;
-            searchInput.defaultValue = searchInput.value;
-            const query = e.target.value.toLowerCase();
-            document.querySelectorAll(".schedule-card").forEach((card) =>
-            {
-                const text = card.textContent.toLowerCase();
-                card.style.display = text.includes(query) ? "flex" : "none";
-            });
-        });
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    });
+    if (res.ok)
+    {
+        window.showToast('✅ Schedule updated successfully!', 'success');
     }
+    else
+    {
+        const err = await res.json();
+        window.showToast('❌ Failed to update schedule: ' + (err.error || res.statusText), 'error');
+    }
+}
+
+/*
+ * Save handler for schedule settings, mirroring saveSettings style.
+ */
+async function saveSchedule() {
+  const payload = await buildSchedulePayload();
+  if (!payload) return;
+  try {
+    const res = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw res;
+    window.showToast('✅ Schedule updated successfully!', 'success');
+  } catch (err) {
+    let msg = err.statusText || 'Save failed';
+    try { const data = await err.json(); msg = data.error || msg; } catch {}
+    window.showToast(`❌ ${msg}`, 'error');
+  }
+}
+window.saveChanges = saveSchedule;
+// ===== Schedule Search Input Filtering =====
+const searchInput = document.getElementById("schedule-search");
+if (searchInput)
+{
+    searchInput.addEventListener("input", (e) =>
+    {
+        window.skipDirtyCheck = true;
+        searchInput.defaultValue = searchInput.value;
+        const query = e.target.value.toLowerCase();
+        document.querySelectorAll(".schedule-card").forEach((card) =>
+        {
+            const text = card.textContent.toLowerCase();
+            card.style.display = text.includes(query) ? "flex" : "none";
+        });
+    });
+}
 };

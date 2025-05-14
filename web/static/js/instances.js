@@ -1,3 +1,54 @@
+// ===== Save Payload =====
+/**
+ * Saves the given payload to the server configuration endpoint.
+ *
+ * @param {Object} payload - The payload object containing instances data.
+ * @returns {Promise<void>} Resolves when the save operation completes.
+ */
+async function savePayload(payload)
+{
+    console.log(paylaod)
+    const res = await fetch('/api/config',
+    {
+        method: 'POST',
+        headers:
+        {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    });
+    if (res.ok)
+    {
+        window.showToast('✅ Schedule updated successfully!', 'success');
+    }
+    else
+    {
+        const err = await res.json();
+        window.showToast('❌ Failed to update schedule: ' + (err.error || res.statusText), 'error');
+    }
+}
+/**
+ * Save handler for instances settings, mirroring saveSettings style.
+ */
+async function saveInstances() {
+    console.log('[DEBUG] saveInstances invoked');
+  const payload = await buildInstancesPayload();
+  if (!payload) return;
+  try {
+    const res = await fetch('/api/config', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) throw res;
+    window.showToast('✅ Instances updated!', 'success');
+  } catch (err) {
+    let msg = err.statusText || 'Save failed';
+    try { const data = await err.json(); msg = data.error || msg; } catch {}
+    window.showToast(`❌ ${msg}`, 'error');
+  }
+}
+
 // ===== Load Instances =====
 /**
  * Loads instances from the configuration and populates the form UI.
@@ -38,6 +89,12 @@ window.loadInstances = async function() {
         section.appendChild(listDiv);
         section.appendChild(addBtn);
         form.appendChild(section);
+    }
+    // Bind the Save button now that the fragment is loaded
+    const saveBtn = document.getElementById('saveBtn');
+    if (saveBtn) {
+        saveBtn.type = 'button';
+        saveBtn.onclick = saveInstances;
     }
 };
 
@@ -181,7 +238,7 @@ function createEntry(service, name, settings, isNew = false) {
  *
  * @returns {Promise<Object|null>} The payload object containing instances or null if invalid.
  */
-async function buildPayload() {
+async function buildInstancesPayload() {
     const form = document.getElementById('instancesForm');
     if (!form) return null;
     const data = new FormData(form);
@@ -211,43 +268,5 @@ async function buildPayload() {
     };
 }
 
-// ===== Save Payload =====
-/**
- * Saves the given payload to the server configuration endpoint.
- *
- * @param {Object} payload - The payload object containing instances data.
- * @returns {Promise<void>} Resolves when the save operation completes.
- */
-async function savePayload(payload) {
-    const res = await fetch('/api/config', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-    });
-    if (res.ok) {
-        window.showToast('✅ Instances updated!', 'success');
-    } else {
-        const err = await res.json();
-        window.showToast('❌ Failed to update instances: ' + (err.error || res.statusText), 'error');
-    }
-}
-
-// ===== Save Changes Binding =====
-/**
- * Handles saving changes by building the payload and sending it to the server.
- *
- * @returns {Promise<void>} Resolves when save operation completes or is aborted.
- */
-window.saveChanges = async function() {
-    const payload = await buildPayload();
-    if (payload) {
-        await savePayload(payload);
-    }
-};
-
-// ===== DOMContentLoaded Initialization =====
-document.addEventListener('DOMContentLoaded', () => {
-    window.loadInstances();
-});
+// Remove DOMContentLoaded block: Instances page is loaded dynamically.
+window.saveChanges = saveInstances;

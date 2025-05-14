@@ -41,6 +41,7 @@ async function saveInstances() {
       body: JSON.stringify(payload)
     });
     if (!res.ok) throw res;
+    window.isDirty = false;
     window.showToast('✅ Instances updated!', 'success');
   } catch (err) {
     let msg = err.statusText || 'Save failed';

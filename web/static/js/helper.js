@@ -207,6 +207,7 @@ window.NOTIFICATION_DEFINITIONS = {
 // ===== Notification Type Restrictions =====
 window.NOTIFICATION_TYPES_PER_MODULE = {
     unmatched_assets: ['email'],
+    main: [],
 };
 // ===== Config Fetch Utility =====
 window.fetchConfig = async function()

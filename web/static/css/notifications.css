@@ -18,6 +18,15 @@
 }
 
 /* ===== Notification Card ===== */
+#notificationsForm .fields {
+  position: relative;
+  display: grid;
+  grid-template-columns: 200px 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+}
 .notification-card
 {
     transform: scale(0.98);

@@ -12,7 +12,7 @@ window.loadSchedule = async function()
     const form = document.getElementById("scheduleForm");
     if (!form) return;
     form.innerHTML = "";
-// ===== Global Help Section =====
+    // ===== Global Help Section =====
     const helpWrapper = document.createElement("div");
     helpWrapper.className = "schedule-help";
     const helpToggle = document.createElement("button");
@@ -28,7 +28,7 @@ window.loadSchedule = async function()
     helpWrapper.appendChild(helpToggle);
     helpWrapper.appendChild(helpContent);
     form.before(helpWrapper);
-// ===== Render Schedule Fields =====
+    // ===== Render Schedule Fields =====
     const orderedModules = (window.moduleOrder || Object.keys(schedule)).filter(m => schedule.hasOwnProperty(m));
     for (const module of orderedModules)
     {
@@ -65,7 +65,7 @@ window.loadSchedule = async function()
                 runBtn.classList.remove("cancel-hover");
             }
         });
-// ===== Run Button Logic =====
+        // ===== Run Button Logic =====
         runBtn.addEventListener("click", async () =>
         {
             const statusDiv = document.getElementById("status");
@@ -151,7 +151,7 @@ window.loadSchedule = async function()
         btnContainer.className = "run-btn-container";
         btnContainer.appendChild(runBtn);
         field.appendChild(btnContainer);
-// ===== Initialize Run Button Status on Load =====
+        // ===== Initialize Run Button Status on Load =====
         (async () =>
         {
             const resStatus = await fetch(`/api/status?module=${module}`);
@@ -187,7 +187,7 @@ window.loadSchedule = async function()
             setTimeout(() => el.classList.add('show-card'), i * 80);
         });
     }
-// ===== Periodic Status Update for Run Buttons =====
+    // ===== Periodic Status Update for Run Buttons =====
     if (window._scheduleRunInterval)
     {
         clearInterval(window._scheduleRunInterval);
@@ -241,99 +241,113 @@ window.loadSchedule = async function()
                 });
         });
     }, 3000);
-document.addEventListener('DOMContentLoaded', () => {
-  window.loadSchedule();
-  const saveBtn = document.getElementById('saveBtn');
-  if (saveBtn) {
-    saveBtn.type = 'button';
-    saveBtn.onclick = window.saveChanges;
-  }
-});
-// ===== Save Schedule Changes =====
-/**
- * Builds the updated schedule payload from the form inputs.
- *
- * @returns {Object|null} The schedule payload object or null if the form is missing.
- */
-async function buildSchedulePayload()
-{
-    const form = document.getElementById('scheduleForm');
-    if (!form) return null;
-    const data = new FormData(form);
-    const updatedSchedule = {};
-    for (const [key, value] of data.entries())
+    document.addEventListener('DOMContentLoaded', () =>
     {
-        updatedSchedule[key] = value.trim() || null;
-    }
-    return {
-        schedule: updatedSchedule
-    };
-}
-
-/**
- * Sends the updated schedule payload to the backend API.
- *
- * @param {Object} payload - The schedule payload to save.
- * @returns {Promise<void>}
- */
-async function savePayload(payload)
-{
-    console.log(paylaod)
-    const res = await fetch('/api/config',
-    {
-        method: 'POST',
-        headers:
+        window.loadSchedule();
+        const saveBtn = document.getElementById('saveBtn');
+        if (saveBtn)
         {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
+            saveBtn.type = 'button';
+            saveBtn.onclick = window.saveChanges;
+        }
     });
-    if (res.ok)
+    // ===== Save Schedule Changes =====
+    /**
+     * Builds the updated schedule payload from the form inputs.
+     *
+     * @returns {Object|null} The schedule payload object or null if the form is missing.
+     */
+    async function buildSchedulePayload()
     {
-        window.showToast('✅ Schedule updated successfully!', 'success');
-    }
-    else
-    {
-        const err = await res.json();
-        window.showToast('❌ Failed to update schedule: ' + (err.error || res.statusText), 'error');
-    }
-}
-
-/*
- * Save handler for schedule settings, mirroring saveSettings style.
- */
-async function saveSchedule() {
-  const payload = await buildSchedulePayload();
-  if (!payload) return;
-  try {
-    const res = await fetch('/api/config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    if (!res.ok) throw res;
-    window.showToast('✅ Schedule updated successfully!', 'success');
-  } catch (err) {
-    let msg = err.statusText || 'Save failed';
-    try { const data = await err.json(); msg = data.error || msg; } catch {}
-    window.showToast(`❌ ${msg}`, 'error');
-  }
-}
-window.saveChanges = saveSchedule;
-// ===== Schedule Search Input Filtering =====
-const searchInput = document.getElementById("schedule-search");
-if (searchInput)
-{
-    searchInput.addEventListener("input", (e) =>
-    {
-        window.skipDirtyCheck = true;
-        searchInput.defaultValue = searchInput.value;
-        const query = e.target.value.toLowerCase();
-        document.querySelectorAll(".schedule-card").forEach((card) =>
+        const form = document.getElementById('scheduleForm');
+        if (!form) return null;
+        const data = new FormData(form);
+        const updatedSchedule = {};
+        for (const [key, value] of data.entries())
         {
-            const text = card.textContent.toLowerCase();
-            card.style.display = text.includes(query) ? "flex" : "none";
+            updatedSchedule[key] = value.trim() || null;
+        }
+        return {
+            schedule: updatedSchedule
+        };
+    }
+    /**
+     * Sends the updated schedule payload to the backend API.
+     *
+     * @param {Object} payload - The schedule payload to save.
+     * @returns {Promise<void>}
+     */
+    async function savePayload(payload)
+    {
+        console.log(paylaod)
+        const res = await fetch('/api/config',
+        {
+            method: 'POST',
+            headers:
+            {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
         });
-    });
-}
+        if (res.ok)
+        {
+            window.showToast('✅ Schedule updated successfully!', 'success');
+        }
+        else
+        {
+            const err = await res.json();
+            window.showToast('❌ Failed to update schedule: ' + (err.error || res.statusText), 'error');
+        }
+    }
+    /*
+     * Save handler for schedule settings, mirroring saveSettings style.
+     */
+    async function saveSchedule()
+    {
+        const payload = await buildSchedulePayload();
+        if (!payload) return;
+        try
+        {
+            const res = await fetch('/api/config',
+            {
+                method: 'POST',
+                headers:
+                {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw res;
+            window.showToast('✅ Schedule updated successfully!', 'success');
+        }
+        catch (err)
+        {
+            let msg = err.statusText || 'Save failed';
+            try
+            {
+                const data = await err.json();
+                msg = data.error || msg;
+            }
+            catch
+            {}
+            window.showToast(`❌ ${msg}`, 'error');
+        }
+    }
+    window.saveChanges = saveSchedule;
+    // ===== Schedule Search Input Filtering =====
+    const searchInput = document.getElementById("schedule-search");
+    if (searchInput)
+    {
+        searchInput.addEventListener("input", (e) =>
+        {
+            window.skipDirtyCheck = true;
+            searchInput.defaultValue = searchInput.value;
+            const query = e.target.value.toLowerCase();
+            document.querySelectorAll(".schedule-card").forEach((card) =>
+            {
+                const text = card.textContent.toLowerCase();
+                card.style.display = text.includes(query) ? "flex" : "none";
+            });
+        });
+    }
 };

@@ -4,7 +4,7 @@
  */
 window.loadNotifications = async function()
 {
-    const form = document.getElementById('scheduleForm');
+    const form = document.getElementById('notificationsForm');
     if (!form) return;
     const config = await window.fetchConfig();
     window.DAPS = window.DAPS ||
@@ -380,8 +380,8 @@ window.loadNotifications = async function()
     // Bind the Save button
     const saveBtn = document.getElementById('saveBtn');
     if (saveBtn) {
-    saveBtn.type = 'button';
-    saveBtn.onclick = window.saveChanges;
+        saveBtn.type = 'button';
+        saveBtn.onclick = saveNotifications;
     }
 };
 /**
@@ -391,7 +391,7 @@ window.loadNotifications = async function()
  */
 async function buildNotificationPayload()
 {
-    const form = document.getElementById('scheduleForm');
+    const form = document.getElementById('notificationsForm');
     if (!form) return null;
     const result = {};
     const DEFINITIONS = window.NOTIFICATION_DEFINITIONS ||
@@ -468,8 +468,9 @@ async function buildNotificationPayload()
  * Save handler for notification settings, mirroring saveSettings style.
  */
 async function saveNotifications() {
-  const payload = await buildNotificationPayload();
-  if (!payload) return;
+  const wrapper = await buildNotificationPayload();
+  if (!wrapper || typeof wrapper.notifications !== 'object') return;
+  const payload = { notifications: wrapper.notifications };
   try {
     const res = await fetch('/api/config', {
       method: 'POST',
@@ -477,6 +478,7 @@ async function saveNotifications() {
       body: JSON.stringify(payload)
     });
     if (!res.ok) throw res;
+    window.isDirty = false;
     window.showToast('✅ Notifications updated!', 'success');
   } catch (err) {
     let msg = err.statusText || 'Save failed';
@@ -484,21 +486,29 @@ async function saveNotifications() {
     window.showToast(`❌ ${msg}`, 'error');
   }
 }
-window.saveChanges = saveNotifications;
 // ===== Toggle Expand/Collapse Handler =====
 document.querySelectorAll('.notification-toggle').forEach(toggle =>
 {
     toggle.addEventListener('change', (e) =>
     {
         const container = e.target.closest('.notification-module');
-        const content = container.querySelector('.toggle-content');
-        if (e.target.checked)
-        {
-            content.classList.add('open');
-        }
-        else
-        {
-            content.classList.remove('open');
+        const content = container && container.querySelector('.toggle-content');
+        if (content) {
+            if (e.target.checked)
+            {
+                content.classList.add('open');
+            }
+            else
+            {
+                content.classList.remove('open');
+            }
         }
     });
+});
+
+// Initialize notifications page on load
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof window.loadNotifications === 'function') {
+        window.loadNotifications();
+    }
 });

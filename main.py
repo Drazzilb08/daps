@@ -47,7 +47,7 @@ def start_schedule_watcher(callback):
     observer = Observer()
     observer.daemon = True
     handler = ScheduleFileHandler(callback)
-    observer.schedule(handler, path=".", recursive=False)
+    observer.schedule(handler, path="./config", recursive=False)
     observer.start()
     return observer
 

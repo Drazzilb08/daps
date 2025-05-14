@@ -133,7 +133,8 @@ def parse_file_group(folder_path: str, base_name: str, files: List[str]) -> Dict
     Returns:
         Dict: Structured media dictionary.
     """
-    title = re.sub(year_regex, '', base_name)
+    id_cleaned_name = re.sub(r"\{(?:tmdb|tvdb|imdb)-\w+\}", "", base_name).strip()
+    title = re.sub(year_regex, '', id_cleaned_name).strip()
     year = extract_year(base_name)
     tmdb_id, tvdb_id, imdb_id = extract_ids(base_name)
     normalize_title = normalize_titles(base_name)

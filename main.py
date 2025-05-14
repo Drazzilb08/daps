@@ -53,7 +53,6 @@ def start_schedule_watcher(callback):
 
 class ModuleManager:
     def __init__(self, logger):
-        import multiprocessing
         self.running_modules = {}
         self.module_start_times = {}
         self.logger = logger

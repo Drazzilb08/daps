@@ -47,7 +47,10 @@ def start_schedule_watcher(callback):
     observer = Observer()
     observer.daemon = True
     handler = ScheduleFileHandler(callback)
-    observer.schedule(handler, path="./config", recursive=False)
+    if os.environ.get('DOCKER_ENV'):
+        observer.schedule(handler, path="/app/config", recursive=False)
+    else:
+        observer.schedule(handler, path="./config", recursive=False)
     observer.start()
     return observer
 

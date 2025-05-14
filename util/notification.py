@@ -68,71 +68,66 @@ def send_and_log_response(logger: Any, label: str, hook: str, payload: Dict[str,
         logger.error(f"[Notification] {label} send exception: {e}")
 
 
-def send_notifiarr_notification(
-    logger: Any,
-    config: Any,
-    hook: str,
-    module_title: str,
-    output: Any
-) -> None:
+def send_notifiarr_notification(logger, config, auth_data, module_title, output) -> None:
     """
-    Send structured notifications to Notifiarr via HTTP POST.
-
-    Args:
-        logger (Any): Logger instance.
-        config (Any): Configuration object.
-        hook (str): Notifiarr webhook URL.
-        module_title (str): Title of the module sending the notification.
-        output (Any): Output data to format and send.
-
-    Returns:
-        None
+    Send structured notifications to Notifiarr via Passthrough API.
     """
-    url = hook.rstrip("/")
     from util.notification_formatting import format_for_discord
 
-    embeds, _ = format_for_discord(config, output)
-    timestamp = datetime.utcnow().isoformat()
+    # Unpack webhook and channel ID
+    hook = auth_data.get("webhook", "").rstrip("/")
+    cid = int(auth_data.get("channel_id", 0))
 
-    # Convert dict embeds to list format with part info if needed
-    if isinstance(embeds, dict):
-        embeds = [
-            {
+    # Get Discord-formatted parts
+    data, _ = format_for_discord(config, output)
+
+    # Normalize to a list of parts
+    parts = []
+    if isinstance(data, dict):
+        for idx, fields in data.items():
+            parts.append({
+                "embed": True,
                 "fields": fields,
-                "part": f" (Part {idx} of {len(embeds)})" if len(embeds) > 1 else ""
-            }
-            for idx, fields in embeds.items()
-        ]
+                "part": f" (Part {idx} of {len(data)})" if len(data) > 1 else ""
+            })
+    else:
+        parts = data
 
-    for part in embeds:
-        # Prepare payload structure expected by Notifiarr
+    # Send one Notifiarr Passthrough per part
+    for part in parts:
+        # Build Passthrough envelope
         payload = {
-            "notification": {
-                "name": module_title
-            },
+            "notification": {"update": False, "name": module_title, "event": ""},
             "discord": {
-                "text": {},
-                "ids": {
-                    "channel": int(module_title) if module_title.isdigit() else 0
-                }
+                "color": "",
+                "ping": {"pingUser": 0, "pingRole": 0},
+                "images": {"thumbnail": "", "image": ""},
+                "ids": {"channel": cid}
             }
         }
-
-        if "fields" in part:
+        # Populate text block per Notifiarr schema
+        if part.get("embed"):
+            fields = [
+                {"title": f.get("name", ""), "text": f.get("value", ""), "inline": bool(f.get("inline", False))}
+                for f in part.get("fields", [])
+            ]
             payload["discord"]["text"] = {
-                "title": f"{module_title} Notification{part.get('part', '')}",
-                "fields": part["fields"],
-                "footer": f"Powered by: Drazzilb | {get_random_joke()}"
+                "title": f"{module_title} Notification{part.get('part','')}",
+                "fields": fields,
+                "footer": get_random_joke()
+            }
+        else:
+            content = part.get("content")
+
+            payload["discord"]["text"] = {
+                # "title": f"{module_title} Notification",
+                "description": " ",
+                "content": content,
             }
 
-        if "content" in part:
-            payload["discord"]["text"] = {
-                "title": f"{module_title} Notification",
-                "text": part["content"],
-                "footer": f"Powered by: Drazzilb | {get_random_joke()}"
-            }
+        # Send the payload
+        send_and_log_response(logger, "Notifiarr", hook, payload)
 
-        send_and_log_response(logger, "Notifiarr", url, payload)
 
 
 def send_discord_notification(
@@ -296,26 +291,25 @@ def collect_valid_targets(
                         target_data["discord"] = msg
                 else:
                     hook = target.get("webhook", "").rstrip("/")
-                    target_data[ttype] = hook
+                    if hook:
+                        target_data[ttype] = hook
+                    else:
+                        msg = "Invalid Notifiarr configuration"
+                        logger.warning(msg)
+                        target_data[ttype] = msg
 
             elif ttype == "notifiarr":
-                if test:
-                    hook = target.get("webhook", "").rstrip("/")
-                    parts = hook.rstrip("/").split("/")
-                    if len(parts) >= 7 and parts[4] == "webhooks":
-                        api_key = parts[5]
-                        channel_id = parts[6]
-                        apprise_url = f"notifiarr://{api_key}/{channel_id}"
-                        target_data["notifiarr"] = apprise_url
-                    else:
-                        msg = "Invalid Notifiarr webhook URL"
-                        logger.warning(msg)
-                        target_data["notifiarr"] = msg
+                # in collect_valid_targets, non-test branch:
+                hook = target.get("webhook", "").rstrip("/")
+                cid  = target.get("channel_id")
+                if hook and cid is not None:
+                    target_data["notifiarr"] = {
+                        "webhook":    hook,
+                        "channel_id": int(cid),
+                    }
                 else:
-                    hook = target.get("webhook", "").rstrip("/")
-                    cid = target.get("channel_id")
-                    if hook and cid is not None:
-                        target_data[ttype] = (hook, cid)
+                    logger.warning("Invalid Notifiarr configuration")
+                    target_data["notifiarr"] = "Invalid Notifiarr configuration"
 
             elif ttype == "email":
                 smtp_server = target.get("smtp_server")
@@ -377,6 +371,34 @@ def send_test_notification(payload: Dict[str, Any], logger: Any) -> Dict[str, Un
         if not data or (isinstance(data, str) and data.startswith("Invalid")):
             entry["message"] = data if isinstance(data, str) else f"No valid URL for '{target.upper()}'"
             entry["result"] = False
+            entry["type"] = target
+            return entry
+        # Special handling for Notifiarr: send test notification via Passthrough
+        if target == "notifiarr":
+            # Send a lightweight test notification via Notifiarr Passthrough
+            hook = data.get("webhook", "").rstrip("/")
+            cid = int(data.get("channel_id", 0))
+            payload_obj = {
+                "notification": {"update": False, "name": "Test", "event": "0"},
+                "discord": {
+                    "color": "",
+                    "ping": {"pingUser": 0, "pingRole": 0},
+                    "images": {"thumbnail": "", "image": ""},
+                    "text": {
+                        "title": "Test Notification",
+                        "icon": "",
+                        "content": "This is a test notification.",
+                        "description": "This is a test notification.",
+                        "fields": [],
+                        "footer": ""
+                    },
+                    "ids": {"channel": cid}
+                }
+            }
+            # Use the existing helper to send and log
+            send_and_log_response(logger, "Notifiarr Test", hook, payload_obj)
+            entry["message"] = "Test notification sent via Notifiarr."
+            entry["result"] = True
             entry["type"] = target
             return entry
         apprise = Apprise()

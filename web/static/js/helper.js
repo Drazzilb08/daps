@@ -37,9 +37,6 @@ window.help = {
                 url: "https://github.com/Drazzilb08/daps/wiki/rclone-configuration"
             }
         ],
-        main: [
-            "this is a test"
-        ]
     }]
 };
 // ===== Placeholder Text per Module =====

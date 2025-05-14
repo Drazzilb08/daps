@@ -39,81 +39,6 @@ def print_output(output: list[dict], logger: Logger) -> None:
     logger.info(f"Total items relinked: {count}")
 
 
-def run_rclone(config: SimpleNamespace, logger: Logger) -> None:
-    """
-    Build and execute the rclone sync command using subprocess and log success or failure.
-
-    Args:
-        config (SimpleNamespace): Configuration object containing rclone and Google Drive settings.
-        logger (Logger): Logger instance for logging output.
-    """
-    # Ensure gdrive_list is always a list for iteration
-    sync_list = config.gdrive_list if isinstance(config.gdrive_list, list) else [config.gdrive_list]
-
-    # Validate service account file path if provided
-    if config.gdrive_sa_location and not os.path.isfile(config.gdrive_sa_location):
-        logger.warning(
-            f"\nGoogle service account file '{config.gdrive_sa_location}' does not exist\n"
-            "Please verify the path or remove it from config\n"
-        )
-        config.gdrive_sa_location = None
-
-    for sync_item in sync_list:
-        sync_location = sync_item['location']
-        sync_id = sync_item['id']
-
-        if not sync_location or not sync_id:
-            logger.error("Sync location or GDrive folder ID not provided.")
-            continue
-
-        # Create sync directory if it does not exist
-        if not os.path.exists(sync_location):
-            try:
-                os.makedirs(sync_location)
-                logger.info(f"Created sync location: {sync_location}")
-            except Exception as e:
-                logger.error(f"Failed to create sync location '{sync_location}': {e}")
-                continue
-
-        # Construct the rclone command with appropriate flags and options
-        cmd = [
-            'rclone', 'sync',
-            '--drive-client-id', config.client_id or '',
-            '--drive-client-secret', config.client_secret or '',
-            '--drive-token', json.dumps(config.token) if config.token else '',
-            '--drive-root-folder-id', sync_id,
-            '--fast-list',
-            '--tpslimit=5',
-            '--no-update-modtime',
-            '--drive-use-trash=false',
-            '--drive-chunk-size=512M',
-            '--exclude=**.partial',
-            '--check-first',
-            '--bwlimit=80M',
-            '--size-only',
-            '--delete-after',
-            '-v'
-        ]
-
-        if config.gdrive_sa_location:
-            cmd.extend(['--drive-service-account-file', config.gdrive_sa_location])
-
-        cmd.extend(['posters:', sync_location])
-
-        try:
-            logger.debug(f"Running rclone command: {' '.join(shlex.quote(arg) for arg in cmd)}")
-            process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-            for line in process.stdout:
-                logger.info(line.strip())
-            process.wait()
-            if process.returncode == 0:
-                logger.info("✅ RClone sync completed successfully.")
-            else:
-                logger.error(f"❌ RClone sync failed with return code {process.returncode}")
-        except Exception as e:
-            logger.error(f"Exception occurred while running rclone: {e}")
-
-
 def main(config: SimpleNamespace) -> None:
     """
     Main execution function for identifying and hardlinking duplicate media files using jdupes.
@@ -178,9 +103,6 @@ def main(config: SimpleNamespace) -> None:
             config,
             output
         )
-
-        # Perform rclone sync after processing duplicates
-        run_rclone(config, logger)
 
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")

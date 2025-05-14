@@ -434,6 +434,10 @@ async function buildNotificationPayload()
                     {
                         val = input.value.trim();
                     }
+                    // Ensure channel_id is stored as a number
+                    if (field.key === 'channel_id') {
+                        val = Number(val) || 0;
+                    }
                     if (field.required && (val === "" || (Array.isArray(val) && val.length === 0)))
                     {
                         missingFields.push(`${module}: ${type} – ${field.label}`);

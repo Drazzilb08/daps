@@ -428,11 +428,12 @@ def start_web_server(logger) -> None:
     except Exception as e:
         logger.error(f"[WEB] Failed to load config: {e}")
         app.state.config_data = {}
-    port = int(os.environ.get("PORT", 8000))
-    host = os.environ.get("HOST", "127.0.0.1")
-    app.state.logger.info(f"[WEB] Starting web server on {host}:{port}")
+    PORT = int(os.environ.get("PORT", 8000))
+    HOST = os.environ.get("HOST", "127.0.0.1")
+
+    app.state.logger.info(f"[WEB] Starting web server on {HOST}:{PORT}")
     web_thread = Thread(
-        target=lambda: uvicorn.run(app, host=host, port=port, log_level="warning"),
+        target=lambda: uvicorn.run(app, host=HOST, port=PORT, log_level="warning"),
         daemon=True,
     )
     web_thread.start()

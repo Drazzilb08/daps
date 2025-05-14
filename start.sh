@@ -5,6 +5,7 @@ set -euo pipefail
 PUID=${PUID:-99}
 PGID=${PGID:-100}
 UMASK=${UMASK:-002}
+BRANCH=${BRANCH:-master}
 
 export RCLONE_CONFIG="${CONFIG_DIR}/rclone/rclone.conf"
 
@@ -24,6 +25,7 @@ echo "
         PGID:           ${PGID}
         UMASK:          ${UMASK}
         BRANCH:         ${BRANCH}
+        DOCKER:         ${DOCKER_ENV}
         VERSION:        ${VERSION}
         CONFIG_DIR:     ${CONFIG_DIR}
         RCLONE_CONFIG:  ${RCLONE_CONFIG}

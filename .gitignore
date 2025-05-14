@@ -54,12 +54,14 @@ ENV/
 .extra_scripts/
 screenshots/
 logs/
-web/
+tests/
 
 
 # Ignore Files
 **/config.yml
 **/.DS_Store
 **/TODO.*
-**test**
+**test.**
 **side-projects**
+test2.py
+.env

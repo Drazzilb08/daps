@@ -1,0 +1,252 @@
+/* ===== API Key Wrapper ===== */
+.api-wrapper
+{
+    position: relative;
+    width: 100%;
+}
+
+.api-wrapper input.masked-input,
+.api-wrapper input
+{
+    padding-right: 2.5rem;
+    box-sizing: border-box;
+}
+
+.api-wrapper .toggle-api
+{
+    position: absolute;
+    top: 50%;
+    right: 0.75rem;
+    transform: translateY(-50%);
+    cursor: pointer;
+    user-select: none;
+    font-size: 1.2rem;
+    line-height: 1;
+}
+
+/* ===== Animations ===== */
+@keyframes pulse
+{
+    0%
+    {
+        transform: scale(1);
+    }
+
+    50%
+    {
+        transform: scale(1.08);
+    }
+
+    100%
+    {
+        transform: scale(1);
+    }
+}
+
+@keyframes fadeOut
+{
+    to
+    {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+}
+
+@keyframes instanceFadeIn
+{
+    from
+    {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to
+    {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== Instance Card Layout ===== */
+.instance-entries
+{
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+
+}
+
+/* ===== Instance Entry ===== */
+.instance-entry
+{
+    animation: instanceFadeIn 0.3s ease-out;
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px var(--shadow);
+    display: grid;
+    grid-template-columns: 1.5fr 3fr 3fr auto auto;
+    align-items: start;
+    gap: 1rem;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+    padding: 1rem 1.5rem;
+}
+
+.instance-entry.removing
+{
+    animation: fadeOut 0.3s ease forwards;
+}
+
+.instance-entry:hover
+{
+    background: var(--card-hover-bg);
+}
+
+.instance-entry .entry-actions
+{
+    margin-left: auto;
+    align-self: center;
+}
+
+.instance-entry .instance-subfield
+{
+    flex: 1;
+}
+
+/* ===== Instance Subfields ===== */
+.instance-subfield
+{
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.instance-subfield.api-wrapper
+{
+    position: relative;
+    display: flex;
+    flex-direction: column;
+}
+
+.instance-subfield.api-wrapper input[type="text"]
+{
+    padding-right: 2.5rem;
+    box-sizing: border-box;
+}
+
+.instance-subfield.api-wrapper input
+{
+    margin-top: 0.25rem;
+}
+
+.instance-subfield.api-wrapper .toggle-api
+{
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    right: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    user-select: none;
+    font-size: 1.2rem;
+    height: 100%;
+}
+
+.masked-input
+{
+    font-family: 'text-security-disc', sans-serif;
+    -webkit-text-security: disc;
+}
+
+.instance-subfield label
+{
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--fg);
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.instance-subfield input[type="text"]
+{
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background: var(--input-bg);
+    border: 1px solid #333;
+    border-radius: 4px;
+    color: var(--fg);
+    font-size: 1rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    height: 2.5rem;
+}
+
+.instance-subfield input[type="text"]:focus
+{
+    outline: none;
+    border-color: var(--focus);
+    box-shadow: 0 0 0 3px var(--focus);
+}
+
+/* ===== Entry Actions ===== */
+.entry-actions
+{
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    align-items: flex-start;
+    padding-top: 1.25rem;
+}
+
+/* ===== Buttons (Test, Remove, Add) ===== */
+.test-btn
+{
+    min-width: 60px;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s ease;
+}
+
+.test-btn.success
+{
+    animation: pulse 0.3s ease;
+}
+
+.remove-btn
+{
+    min-width: 40px;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s ease;
+}
+
+.instance-btn
+{
+    background: var(--btn-bg);
+    color: var(--primary-bg);
+    padding: 0.6rem 1.2rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    min-width: 140px;
+    text-align: center;
+    margin-top: 1rem;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.instance-btn:hover
+{
+    background: var(--btn-hover-bg);
+    transform: translateY(-2px);
+}

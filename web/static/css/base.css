@@ -1,0 +1,213 @@
+/* ===== Font Imports ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+/* ===== Root Variables ===== */
+:root
+{
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+    --font-size-base: 17px;
+    --font-size-heading: 32px;
+    --font-size-subheading: 20px;
+    --line-height: 1.5;
+    --font-weight-base: 400;
+    --font-weight-heading: 600;
+    --text-color: #E5E5E5;
+    --primary-bg: #141414;
+    --secondary-bg: #1e1e1e;
+    --card-bg: #242424;
+    --border-radius: 8px;
+    --shadow: rgba(0, 0, 0, 0.2);
+    --highlight: #0069f2;
+    --container-bg: #141414;
+    --view-frame-bg: #141414;
+    --card-hover-bg: #2c2c2c;
+    --input-bg: #2f2f2f;
+    --success: #32d74b;
+    --success-highlight: #30d158;
+    --error: #ff375f;
+    --error-highlight: #ff3b30;
+    --caution: #ff9f0a;
+    --info: #5ac8fa;
+    --save-btn-bg: #007aff;
+    --save-btn-hover-bg: #0051ba;
+    --btn-bg: #007aff;
+    --btn-hover-bg: #0069f2;
+    --card-margin-btm: 1.5rem;
+    --link-color: #5ac8fa;
+    --link-hover-color: #007aff;
+    --margin-vertical: 1rem 0;
+    --font-size-base-plus: 1.2rem;
+    --border-radius-default: 6px;
+    --transition-fade: opacity 0.3s ease;
+    --padding-standard: 0.75rem 1rem;
+    --translate-neutral: translateY(0);
+    --overlay-bg: rgba(0, 0, 0, 0.5);
+    --grid-columns-auto-180: repeat(auto-fit, minmax(180px, 1fr));
+    --form-padding: 0.6rem 1rem;
+    --form-bg: var(--input-bg);
+    --form-color: var(--fg);
+    --form-border: 1px solid var(--shadow);
+    --form-radius: 4px;
+    --form-font-size: 0.95rem;
+    --form-height: 2.5rem;
+}
+
+/* ===== Box Sizing Reset ===== */
+*,
+*::before,
+*::after
+{
+    box-sizing: border-box;
+}
+
+/* ===== Scrollbar Settings ===== */
+html,
+body
+{
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overflow: hidden;
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar
+{
+    width: 0;
+    height: 0;
+}
+
+/* ===== Base Body Styling ===== */
+body
+{
+    font-size: 1.1rem;
+    font-family: var(--font);
+    background: var(--bg);
+    color: var(--fg);
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+    position: relative;
+    overflow: hidden;
+}
+
+/* ===== View Frame Styling ===== */
+#viewFrame
+{
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 80vh;
+    background: var(--view-frame-bg);
+    border-radius: 8px;
+    padding: 2rem;
+    overflow-y: auto;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    scrollbar-color: transparent transparent;
+    outline: none;
+}
+
+#viewFrame::-webkit-scrollbar
+{
+    width: 0;
+    height: 0;
+}
+
+/* ===== Form Controls ===== */
+.input,
+.select
+{
+    display: block;
+    width: 100%;
+    padding: var(--form-padding);
+    height: var(--form-height);
+    background: var(--form-bg);
+    color: var(--form-color);
+    border: var(--form-border);
+    border-radius: var(--form-radius);
+    font-size: var(--form-font-size);
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+/* Arrow icon for selects */
+.select
+{
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ff7300'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 0.65rem auto;
+}
+
+.input:focus,
+.select:focus
+{
+    outline: none;
+    border-color: var(--focus);
+    box-shadow: 0 0 0 3px var(--focus);
+}
+
+.textarea
+{
+    display: block;
+    width: 100%;
+    padding: 0.75rem;
+    background: var(--input-bg);
+    color: var(--fg);
+    border: var(--form-border);
+    border-radius: var(--form-radius);
+    font-size: 1rem;
+    line-height: 1.2;
+    box-sizing: border-box;
+    resize: vertical;
+    min-height: 4rem;
+}
+
+.textarea:focus
+{
+    outline: none;
+    border-color: var(--focus);
+    box-shadow: 0 0 0 3px var(--focus);
+}
+
+/* ===== Animations ===== */
+@keyframes pageFadeIn
+{
+    from
+    {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to
+    {
+        opacity: 1;
+        transform: var(--translate-neutral)
+    }
+}
+
+.view-frame.fade-in
+{
+    animation: pageFadeIn 0.3s ease-out forwards;
+}
+
+/* ===== Link Styling ===== */
+a
+{
+    color: var(--link-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a:hover,
+a:focus
+{
+    color: var(--link-hover-color);
+    text-decoration: underline;
+}

@@ -1,0 +1,327 @@
+/* ===== Toast Notifications ===== */
+#toast-container
+{
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem;
+    z-index: 9999;
+}
+
+.toast
+{
+    background: var(--card-bg);
+    color: var(--fg);
+    padding: 1rem 1.5rem;
+    border-radius: 6px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.toast.show
+{
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.toast.success
+{
+    background: var(--success);
+    color: var(--primary-bg);
+}
+
+.toast.error
+{
+    background: var(--error);
+    color: var(--primary-bg);
+}
+
+.toast.info
+{
+    background: var(--info);
+    color: var(--primary-bg);
+}
+
+/* ===== Save Button ===== */
+#saveBtn,
+section>button
+{
+    display: inline-block;
+    padding: 0.6rem 1.2rem;
+    background: var(--btn-bg);
+    color: var(--primary-bg);
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease;
+    box-shadow: 0 2px 6px var(--shadow);
+    margin-top: 1rem;
+}
+
+#saveBtn:hover,
+section>button:hover
+{
+    background: var(--btn-hover-bg);
+    transform: translateY(-1px);
+}
+
+/* ===== Unsaved Changes Modal ===== */
+#unsavedModal
+{
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    z-index: 10000;
+    font-family: var(--font);
+}
+
+#unsavedModal.show
+{
+    visibility: visible;
+    opacity: 1;
+}
+
+#unsavedModal .modal-content
+{
+    background: var(--card-bg);
+    color: var(--fg);
+    padding: 2rem 2.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px var(--shadow);
+    max-width: 400px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#unsavedModal .modal-content p
+{
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+#unsavedModal button
+{
+    padding: 0.6rem 1.25rem;
+    font-size: 1rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    margin: 0.5rem 0;
+    font-weight: 600;
+    transition: background 0.2s ease, transform 0.1s ease;
+    display: block;
+}
+
+#unsavedModal .modal-content button
+{
+    width: 100%;
+    max-width: 240px;
+}
+
+#unsavedModal .save-btn
+{
+    background: var(--success);
+    color: var(--primary-bg);
+}
+
+#unsavedModal .discard-btn
+{
+    background: #ffd700;
+    color: #000;
+}
+
+#unsavedModal .cancel-btn
+{
+    background: var(--error);
+    color: var(--primary-bg);
+}
+
+#unsavedModal button:hover
+{
+    transform: translateY(-1px);
+}
+
+/* ===== Password Wrapper (API Key Input) ===== */
+.password-wrapper
+{
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.password-wrapper input
+{
+    flex: 1 1 auto;
+    width: 100%;
+    padding-right: 2rem;
+    background: var(--input-bg);
+    color: var(--fg);
+    border: 1px solid #333;
+    border-radius: 4px;
+}
+
+.password-wrapper input.masked-input
+{
+    -webkit-text-security: disc;
+}
+
+.password-wrapper .toggle-password
+{
+    position: absolute;
+    top: 50%;
+    right: 0.5rem;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 1rem;
+    opacity: 0.7;
+    transition: opacity 0.2s, color 0.2s;
+}
+
+.password-wrapper .toggle-password:hover
+{
+    color: var(--focus);
+    opacity: 1;
+}
+
+/* ===== Base Layout (Body, Container) ===== */
+body
+{
+    font: var(--font-size-base)/var(--line-height) var(--font);
+    color: var(--text-color);
+    background: var(--primary-bg);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.container
+{
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem;
+    width: 100%;
+}
+
+.view-frame
+{
+    padding: var(--padding);
+}
+
+/* ===== Card Component ===== */
+.card
+{
+    background: var(--secondary-bg);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 14px var(--shadow);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover
+{
+    background: var(--card-hover-bg);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px var(--shadow);
+}
+
+/* ===== Typography (Headings) ===== */
+h1
+{
+    font-size: var(--font-size-heading);
+    font-weight: var(--font-weight-heading);
+    margin-bottom: 1rem;
+}
+
+h2
+{
+    font-size: var(--font-size-subheading);
+    font-weight: var(--font-weight-heading);
+    margin-bottom: 0.75rem;
+}
+
+/* ===== Buttons (Generic, Test, Remove) ===== */
+.btn
+{
+    background: var(--btn-hover-bg);
+    color: var(--primary-bg);
+    transition: box-shadow 0.2s ease;
+}
+
+.test-btn
+{
+    min-width: 60px;
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    background: linear-gradient(to bottom, var(--highlight), var(--highlight-dark, #0078d7));
+    color: var(--primary-bg);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+    transition: background 0.2s, transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+.test-btn:hover
+{
+    background: linear-gradient(to bottom, var(--highlight-hover, #3192e0), var(--highlight-dark, #0078d7));
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+}
+
+.test-btn.success
+{
+    background: var(--success);
+    color: var(--primary-bg);
+    animation: pulse 0.3s ease;
+}
+
+.test-btn.error
+{
+    background: var(--error);
+    color: var(--primary-bg);
+}
+
+.test-btn.testing
+{
+    background: var(--btn-hover-bg);
+    color: var(--primary-bg);
+    cursor: progress;
+}
+
+.remove-btn
+{
+    background: var(--error);
+    color: var(--primary-bg);
+}
+
+.remove-btn:hover
+{
+    background: var(--error-highlight);
+    transform: translateY(-1px);
+}

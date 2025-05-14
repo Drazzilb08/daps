@@ -23,12 +23,6 @@ I do my best to keep up with everything
 2. 0.X.0 versions are minor changes
 3. X.0.0 versions are major changes
 
-## Schema Validation
-
-### Overview
-
-Schema validation is a method to ensure that data follows a predefined structure, data types, and constraints set by a Schema document. It compares the document against the schema rules, highlighting any deviations from the expected format or content.
-
 ### How to use it
 
 - If you haven't already, install [VSCode](https://code.visualstudio.com/docs/setup/setup-overview).

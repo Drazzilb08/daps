@@ -1,55 +1,69 @@
+from typing import Dict
+from logging import Logger
 from datetime import datetime
 from croniter import croniter
 from dateutil import tz
 
-next_run_times = {}
+"""
+Module to determine if the current time matches specified scheduling criteria for scripts.
+Supports multiple scheduling strategies including hourly, daily, weekly, monthly, range, and cron expressions.
+"""
 
-def check_schedule(script_name, schedule, logger):
+next_run_times: Dict[str, datetime] = {}
+
+def check_schedule(script_name: str, schedule: str, logger: Logger) -> bool:
     """
-    Checks if a given name is currently active based on its schedule.
+    Check if the current time matches the given schedule for a script.
 
     Args:
-        name: Name of the schedule.
-        script_name: Name of the script. (Used for cron schedule)
-        schedule: Schedule string in the format "frequency(data)".
-        - frequency: Can be "hourly", "daily", "weekly", or "monthly".
-        - data: Depends on the frequency:
-            - hourly: Hour of the day (e.g., "10").
-            - daily: Time of the day (e.g., "11:05"). Can be multiple times separated by commas.
-            - weekly: Day of the week and time of the day (e.g., "monday@12:00", "tuesday@12:30"). Can be multiple times separated by commas.
-            - monthly: Day of the month and time of the day (e.g., "15@12:00").
-            - range: Date range (e.g., "01/01-12/31"). Can be multiple ranges separated by pipes.
-            - cron: Cron expression (e.g., "0 0 * * *").
+        script_name (str): The name of the script being checked.
+        schedule (str): The scheduling string defining when the script should run.
+        logger (Logger): Logger instance for logging debug and error messages.
 
     Returns:
-        bool: True if the schedule is active, False otherwise.
+        bool: True if the current time matches the schedule, False otherwise.
     """
-    
     try:
-        now = datetime.now()
-        frequency, data = schedule.split("(")
+        now: datetime = datetime.now()
+        try:
+            frequency, data = schedule.split("(")
+        except ValueError:
+            logger.error(f"Invalid schedule format: {schedule} for script: {script_name}")
+            return False
         data = data[:-1]
+
+        # Hourly: match if current minute equals scheduled minute
         if frequency == "hourly":
             return int(data) == now.minute
+
+        # Daily: check against one or more HH:MM entries
         elif frequency == "daily":
             times = data.split("|")
             for time in times:
                 hour, minute = map(int, time.split(":"))
                 if now.hour == hour and now.minute == minute:
                     return True
+
+        # Weekly: check against weekday and time (e.g., monday@14:00)
         elif frequency == "weekly":
             days = [day.split("@")[0] for day in data.split("|")]
             times = [day.split("@")[1] for day in data.split("|")]
-            if now.strftime("%A").lower() in days:
-                for time, day in zip(times, days):
-                    hour, minute = map(int, time.split(":"))
-                if now.hour == hour and now.minute == minute and (now.strftime("%A").lower() == day or
-                (now.strftime("%A").lower() == "sunday" and day == "saturday")):
-                    return True
+            current_day = now.strftime("%A").lower()
+            for day, time in zip(days, times):
+                hour, minute = map(int, time.split(":"))
+                if (current_day == day or (current_day == "sunday" and day == "saturday")):
+                    if now.hour == hour and now.minute == minute:
+                        return True
+
+        # Monthly: match if today is the correct day and time
         elif frequency == "monthly":
-            day, time = data.split("@")
-            if now.day == int(day) and now.hour == int(time.split(":")[0]) and now.minute == int(time.split(":")[1]):
+            day_str, time_str = data.split("@")
+            day = int(day_str)
+            hour, minute = map(int, time_str.split(":"))
+            if now.day == day and now.hour == hour and now.minute == minute:
                 return True
+
+        # Range: check if current date is within specified MM/DD-MM/DD ranges
         elif frequency == "range":
             ranges = data.split("|")
             for start_end in ranges:
@@ -60,34 +74,30 @@ def check_schedule(script_name, schedule, logger):
                 end_date = datetime(now.year, end_month, end_day)
                 if start_date <= now <= end_date:
                     return True
+
+        # Cron: use croniter to determine if current time matches cron schedule
         elif frequency == "cron":
             local_tz = tz.tzlocal()
             local_date = datetime.now(local_tz)
-
-            current_time = datetime.now(local_tz).replace(second=0, microsecond=0)
-
+            current_time = local_date.replace(second=0, microsecond=0)
             logger.debug(f"Local time: {current_time}")
-
             next_run = next_run_times.get(script_name)
             if next_run is None:
                 next_run = croniter(data, local_date).get_next(datetime)
                 next_run_times[script_name] = next_run
-
                 logger.debug(f"Next run for {script_name}: {next_run}")
-
             if next_run <= current_time:
                 next_run = croniter(data, local_date).get_next(datetime)
                 next_run_times[script_name] = next_run
-
                 logger.debug(f"Next run for {script_name}: {next_run}\n")
                 return True
             else:
                 logger.debug(f"Next run time for script {script_name}: {next_run} is in the future\n")
                 return False
-            
 
+        return False
 
     except ValueError as e:
         logger.error(f"Invalid schedule: {schedule} for script: {script_name}")
-        logger.error (f"Error: {e}")
+        logger.error(f"Error: {e}", exc_info=True)
         return False

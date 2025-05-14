@@ -1,22 +1,19 @@
-# Set PIPENV_VERBOSITY to suppress verbosity of pipenv commands
-export PIPENV_VERBOSITY=-1
-
-# Define a phony target 'install' to create a virtual environment and install dependencies
-.PHONY: install
-install: venv
-	. venv/bin/activate && pipenv install --dev
-
-# Define a phony target 'venv' to create a virtual environment if it doesn't exist
+# Create venv if it doesn't exist
 .PHONY: venv
 venv:
 	test -d venv || python3 -m venv venv
 
-# Define a phony target 'lock' to lock dependencies using pipenv
+# Install requirements
+.PHONY: install
+install: venv
+	. venv/bin/activate && pip install --upgrade pip && pip install -r requirements.txt
+
+# Freeze current venv into requirements.txt
 .PHONY: lock
 lock:
-	. venv/bin/activate && pipenv lock
+	. venv/bin/activate && pip freeze > requirements.txt
 
-# Define a phony target 'lint' to run linting using flake8
+# Lint using flake8 (must be installed in requirements.txt)
 .PHONY: lint
 lint:
-	. venv/bin/activate && pipenv run flake8
+	. venv/bin/activate && flake8

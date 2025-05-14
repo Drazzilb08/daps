@@ -91,6 +91,10 @@ def merge_assets(new_assets: List[dict], final_assets: List[dict], prefix_index:
                         else:
                             final['season_numbers'] = new_season_numbers
                     final['files'].sort()
+                    # Ensure ID data is preserved from the file that exists
+                    for key in ['tmdb_id', 'tvdb_id', 'imdb_id']:
+                        if not final.get(key) and new.get(key):
+                            final[key] = new[key]
                     break
             else:
                 # Add new asset if no match found and index it

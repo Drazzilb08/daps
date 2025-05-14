@@ -3,7 +3,6 @@ import multiprocessing
 import time
 from pathlib import Path
 from threading import Thread
-from typing import Union
 import os
 import requests
 import uvicorn
@@ -14,6 +13,8 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from util.config import Config
 from util.utility import redact_apis
+from dotenv import load_dotenv
+load_dotenv(override=True)
 
 if os.environ.get("DOCKER_ENV") == "1":
     LOG_BASE_DIR = "/config/logs"

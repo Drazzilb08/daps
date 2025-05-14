@@ -34,6 +34,8 @@ LABEL maintainer="Drazzilb" \
       org.opencontainers.image.title="daps"
 
 ARG BRANCH="master"
+# Pass the build-time BRANCH arg into a runtime environment variable
+ENV BRANCH=${BRANCH}
 ARG CONFIG_DIR=/config
 
 # Set script environment variables
@@ -41,10 +43,12 @@ ENV CONFIG_DIR=/config
 ENV APPDATA_PATH=/appdata
 ENV LOG_DIR=/config/logs
 ENV TZ=America/Los_Angeles
-ENV BRANCH=${BRANCH}
-ENV DOCKER_ENV=true
 ENV PORT=8000
 ENV HOST=0.0.0.0
+ENV DOCKER_ENV=true
+
+# Expose the application port
+EXPOSE ${PORT}
 
 VOLUME /config
 

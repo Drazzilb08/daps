@@ -219,7 +219,7 @@ def main(config: SimpleNamespace) -> None:
 
         if any(unmatched_dict.values()):
             output = print_output(unmatched_dict, media_dict, logger)
-            if config.notification and output:
+            if config.notifications and output:
                 logger.info("Sending notification...")
                 send_notification(
                     logger=logger,

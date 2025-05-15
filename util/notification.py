@@ -56,6 +56,7 @@ def send_and_log_response(logger: Any, label: str, hook: str, payload: Dict[str,
         None
     """
     try:
+        logger.debug(json.dumps(payload, indent=2))
         resp = safe_post(hook, payload)
         if resp.status_code not in (200, 204):
             logger.error(

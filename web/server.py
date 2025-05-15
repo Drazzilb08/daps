@@ -16,7 +16,7 @@ from util.utility import redact_apis
 from dotenv import load_dotenv
 load_dotenv(override=True)
 
-if os.environ.get("DOCKER_ENV") == "1":
+if os.environ.get("DOCKER_ENV"):
     LOG_BASE_DIR = "/config/logs"
 else:
     LOG_BASE_DIR = str((Path(__file__).parent.parent / "logs").resolve())

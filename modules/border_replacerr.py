@@ -436,6 +436,11 @@ def process_files(
         assets_dict = renamed_assets
         logger.info(f"\nDoing an incremental run on only assets that were provided\n")
         incremental_run = True
+        # When using renamed assets and asset_folders disabled, flatten output
+        if renamerr_config and not renamerr_config.asset_folders:
+            for key, items in assets_dict.items():
+                for item in items:
+                    item['path'] = None
     if not assets_dict:
         logger.info(f"\nNo assets found in the input directory")
         logger.info(f"Please check the input directory and try again.")

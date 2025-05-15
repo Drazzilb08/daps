@@ -414,18 +414,7 @@ window.loadLogs = async function()
     const scrollBadge = document.createElement('div');
     scrollBadge.id = 'scroll-badge';
     scrollBadge.textContent = 'Auto-Scrolling';
-    scrollBadge.style.position = 'absolute';
-    scrollBadge.style.bottom = '20px';
-    scrollBadge.style.right = '20px';
-    scrollBadge.style.background = 'rgba(0,0,0,0.7)';
-    scrollBadge.style.color = 'white';
-    scrollBadge.style.padding = '5px 10px';
-    scrollBadge.style.borderRadius = '5px';
-    scrollBadge.style.fontSize = '0.8rem';
-    scrollBadge.style.display = 'none';
-    scrollBadge.style.zIndex = '9999';
-    scrollBadge.style.transition = 'opacity 0.5s';
-    scrollBadge.style.opacity = '0';
+    scrollBadge.className = 'scroll-badge';
     document.body.appendChild(scrollBadge);
     // --- create scroll buttons once ---
     if (!document.getElementById('scroll-to-top'))

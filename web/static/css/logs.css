@@ -79,7 +79,7 @@
 #scroll-to-bottom {
     position: absolute;
     right: 1rem;
-    background: var(--primary);
+    background: var(--card-bg);
     color: var(--link-color);
     padding: 0.4rem 0.9rem;
     border-radius: 20px;

@@ -1,7 +1,5 @@
 let preMode = false;
-
 // ===== Globals and Helpers =====
-
 /**
  * Escapes HTML special characters in a string to prevent HTML injection.
  *
@@ -17,7 +15,6 @@ function escapeHtml(unsafe)
         .replace(/"/g, "&quot;")
         .replace(/'/g, "&#039;");
 }
-
 /**
  * Escapes special characters in a string to safely use it in a regular expression.
  *
@@ -28,7 +25,6 @@ function escapeRegex(text)
 {
     return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
-
 /**
  * Filters the preformatted log output based on the search input, highlighting matches.
  *
@@ -57,9 +53,7 @@ function filterPre()
     logOutputEl.scrollTop = logOutputEl.scrollHeight;
     if (typeof updateScrollBadge === 'function') updateScrollBadge();
 }
-
 // ===== Preformatted Log Rendering =====
-
 /**
  * Renders the log text inside a preformatted block with syntax highlighting for log levels.
  *
@@ -72,7 +66,14 @@ function renderPre(text)
     const prevScrollTop = logOutput.scrollTop;
     const prevScrollHeight = logOutput.scrollHeight;
     const wasAtBottom = (prevScrollTop + logOutput.clientHeight >= prevScrollHeight - 50);
-    logOutput.innerHTML = '';
+    // Remove existing content but preserve scroll buttons
+    Array.from(logOutput.children).forEach(child =>
+    {
+        if (child.id !== 'scroll-to-top' && child.id !== 'scroll-to-bottom')
+        {
+            child.remove();
+        }
+    });
     const newPre = document.createElement('pre');
     newPre.style.whiteSpace = 'pre';
     newPre.style.fontFamily = 'monospace';
@@ -116,10 +117,9 @@ function renderPre(text)
         logOutput.scrollTop = newScrollHeight - distanceFromBottom;
     }
     if (typeof updateScrollBadge === 'function') updateScrollBadge();
+    updateScrollButtons();
 }
-
 // ===== Main Log Loader (window.loadLogs) =====
-
 /**
  * Initializes and manages the log viewer interface, including loading modules, files,
  * rendering logs, filtering, and UI event bindings.
@@ -128,9 +128,16 @@ function renderPre(text)
  */
 window.loadLogs = async function()
 {
+    let currentModule = null;
+    let currentFile = null;
+    let currentLogKey = null;
+    let currentRefreshKey = null;
+    let activeLoadSessionId = null;
+    // Flush out previous intervals/sessions if any
+    if (window._activeLogsDestroy) window._activeLogsDestroy();
     // ===== a. DOM References and Setup =====
-
     document.body.classList.add('logs-open');
+    document.documentElement.classList.add('logs-open');
     const moduleSelect = document.getElementById('module-select');
     if (!moduleSelect) return;
     const logfileSelect = document.getElementById('logfile-select');
@@ -139,11 +146,15 @@ window.loadLogs = async function()
     const clearBtn = document.getElementById('clear-search');
     const downloadBtn = document.getElementById('download-log');
     let refreshInterval = null;
+    // Helper to manage the refresh polling interval
+    function setRefreshTask(callback, delay = 1000)
+    {
+        if (refreshInterval) clearInterval(refreshInterval);
+        refreshInterval = setInterval(callback, delay);
+    }
     const logOutput = document.getElementById('log-output');
     let filterTimeout;
-
     // ===== b. Module and File Loading =====
-
     async function loadModules()
     {
         const res = await fetch('/api/logs');
@@ -165,7 +176,6 @@ window.loadLogs = async function()
             loadLogFiles(preselectedModule);
         }
     }
-
     async function loadLogFiles(moduleName)
     {
         logfileSelect.innerHTML = '<option value="">Select Log File</option>';
@@ -192,20 +202,24 @@ window.loadLogs = async function()
             logfileSelect.value = defaultLog;
             loadLogContent(moduleName, defaultLog);
         }
-        if (refreshInterval) clearInterval(refreshInterval);
         if (defaultLog)
         {
-            refreshInterval = setInterval(() =>
-            {
+            setRefreshTask(() => {
                 loadLogContent(moduleName, defaultLog);
-            }, 1000);
+            });
         }
     }
-
     // ===== c. Log Content Loading =====
-
     async function loadLogContent(moduleName, fileName)
     {
+        const requestKey = `${moduleName}/${fileName}`;
+        currentRefreshKey = requestKey;
+        currentLogKey = requestKey;
+        currentModule = moduleName;
+        currentFile = fileName;
+        // session-based fetch protection
+        const sessionId = Symbol();
+        activeLoadSessionId = sessionId;
         if (!moduleName || !fileName) return;
         const searchValue = document.getElementById('search-logs')?.value.trim();
         if (searchValue)
@@ -223,6 +237,13 @@ window.loadLogs = async function()
         {
             const res = await fetch(`/api/logs/${moduleName}/${fileName}`);
             const text = await res.text();
+            if (activeLoadSessionId !== sessionId) return;
+            if (
+                currentLogKey !== requestKey ||
+                moduleName !== currentModule ||
+                fileName !== currentFile ||
+                currentRefreshKey !== requestKey
+            ) return;
             const lineCount = (text.match(/\n/g) || []).length;
             if (lineCount > 5000)
             {
@@ -241,9 +262,7 @@ window.loadLogs = async function()
             if (spinnerEl) spinnerEl.remove();
         }
     }
-
     // ===== d. Log Rendering =====
-
     /**
      * Renders the log text as individual div elements with log level styling.
      *
@@ -258,7 +277,14 @@ window.loadLogs = async function()
         const existingCount = logOutput.children.length;
         const wasAtBottom = existingCount > 0 &&
             (logOutput.scrollTop + logOutput.clientHeight >= logOutput.scrollHeight - 50);
-        logOutput.innerHTML = '';
+        // Remove existing content but preserve scroll buttons
+        Array.from(logOutput.children).forEach(child =>
+        {
+            if (child.id !== 'scroll-to-top' && child.id !== 'scroll-to-bottom')
+            {
+                child.remove();
+            }
+        });
         for (const line of lines)
         {
             const div = document.createElement('div');
@@ -275,10 +301,9 @@ window.loadLogs = async function()
             logOutput.scrollTop = logOutput.scrollHeight;
         }
         if (typeof updateScrollBadge === 'function') updateScrollBadge();
+        updateScrollButtons();
     }
-
     // ===== e. Log Filtering =====
-
     /**
      * Filters the visible log lines in batches for performance and highlights matches.
      *
@@ -323,23 +348,32 @@ window.loadLogs = async function()
         processBatch();
         updateScrollBadge();
     }
-
     // ===== f. UI Event Bindings =====
-
     moduleSelect.addEventListener('change', e =>
     {
+        if (refreshInterval) clearInterval(refreshInterval);
+        refreshInterval = null;
+        currentRefreshKey = null;
         loadLogFiles(e.target.value);
-        logOutput.innerHTML = '';
+        // Clear existing log lines but keep scroll buttons
+        Array.from(logOutput.children).forEach(child =>
+        {
+            if (child.id !== 'scroll-to-top' && child.id !== 'scroll-to-bottom')
+            {
+                child.remove();
+            }
+        });
     });
     logfileSelect.addEventListener('change', e =>
     {
         if (refreshInterval) clearInterval(refreshInterval);
+        refreshInterval = null;
+        currentRefreshKey = null;
         const selectedFile = e.target.value;
         loadLogContent(moduleSelect.value, selectedFile);
-        refreshInterval = setInterval(() =>
-        {
+        setRefreshTask(() => {
             loadLogContent(moduleSelect.value, selectedFile);
-        }, 1000);
+        });
     });
     searchInput.addEventListener('input', () =>
     {
@@ -376,9 +410,7 @@ window.loadLogs = async function()
         document.body.removeChild(link);
     });
     loadModules();
-
     // ===== g. Auto-Scroll Badge =====
-
     const scrollBadge = document.createElement('div');
     scrollBadge.id = 'scroll-badge';
     scrollBadge.textContent = 'Auto-Scrolling';
@@ -395,7 +427,23 @@ window.loadLogs = async function()
     scrollBadge.style.transition = 'opacity 0.5s';
     scrollBadge.style.opacity = '0';
     document.body.appendChild(scrollBadge);
-
+    // --- create scroll buttons once ---
+    if (!document.getElementById('scroll-to-top'))
+    {
+        const btnTop = document.createElement('button');
+        btnTop.id = 'scroll-to-top';
+        btnTop.textContent = '↑ Top';
+        btnTop.addEventListener('click', () => logOutput.scrollTop = 0);
+        document.getElementById('scroll-output-container').appendChild(btnTop);
+    }
+    if (!document.getElementById('scroll-to-bottom'))
+    {
+        const btnBottom = document.createElement('button');
+        btnBottom.id = 'scroll-to-bottom';
+        btnBottom.textContent = '↓ Bottom';
+        btnBottom.addEventListener('click', () => logOutput.scrollTop = logOutput.scrollHeight);
+        document.getElementById('scroll-output-container').appendChild(btnBottom);
+    }
     /**
      * Updates the visibility and opacity of the auto-scroll badge based on scroll position.
      *
@@ -424,10 +472,45 @@ window.loadLogs = async function()
             }, 500);
         }
     }
+    /**
+     * Updates the visibility of the scroll-to-top and scroll-to-bottom buttons.
+     * The bottom button always remains visible.
+     */
+    function updateScrollButtons()
+    {
+        const topBtn = document.getElementById('scroll-to-top');
+        const bottomBtn = document.getElementById('scroll-to-bottom');
+        if (!topBtn || !bottomBtn) return;
+        const atTop = logOutput.scrollTop <= 10;
+        const atBottom = (logOutput.scrollTop + logOutput.clientHeight) >= (logOutput.scrollHeight - 10);
+        topBtn.style.display = atTop ? 'none' : 'block';
+        bottomBtn.style.display = atBottom ? 'none' : 'block';
+    }
     scrollBadge.addEventListener('click', () =>
     {
         logOutput.scrollTop = logOutput.scrollHeight;
         scrollBadge.style.display = 'none';
     });
     logOutput.addEventListener('scroll', updateScrollBadge);
+    logOutput.addEventListener('scroll', updateScrollButtons);
+    window.addEventListener('popstate', () =>
+    {
+        if (refreshInterval) clearInterval(refreshInterval);
+        refreshInterval = null;
+    });
+    window.addEventListener('beforeunload', () =>
+    {
+        if (refreshInterval) clearInterval(refreshInterval);
+        refreshInterval = null;
+    });
+
+    // ===== h. Cleanup function to flush intervals/sessions =====
+    window._activeLogsDestroy = () =>
+    {
+        if (refreshInterval) clearInterval(refreshInterval);
+        refreshInterval = null;
+        currentRefreshKey = null;
+        currentLogKey = null;
+        activeLoadSessionId = null;
+    };
 };

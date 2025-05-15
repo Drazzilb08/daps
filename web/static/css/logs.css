@@ -70,6 +70,33 @@
     transform: translateY(-1px);
 }
 
+/* ===== Scroll-to-Top & Scroll-to-Bottom Buttons ===== */
+/* ===== Scroll-to-Top & Scroll-to-Bottom Buttons ===== */
+#scroll-output-container {
+    position: relative;
+}
+#scroll-to-top,
+#scroll-to-bottom {
+    position: absolute;
+    right: 1rem;
+    background: var(--primary);
+    color: var(--link-color);
+    padding: 0.4rem 0.9rem;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 0.85rem;
+    border: 1px solid var(--bg);
+    z-index: 1000;
+    display: none;
+    cursor: pointer;
+}
+#scroll-to-top {
+    top: 0.5rem;
+}
+#scroll-to-bottom {
+    bottom: 0.5rem;
+}
+
 /* ===== Logs State Styling ===== */
 body.logs-open
 {

@@ -171,7 +171,7 @@ def process_instance(
     ignore_tag_name: str = instance_settings.get('ignore_tag', "ignore")
     unattended: bool = instance_settings.get('unattended', False)
     season_monitored_threshold: int = instance_settings.get('season_monitored_threshold', 0)
-
+    
     print(f"Gathering media from {app.instance_name}...")
     media_dict: List[Dict[str, Any]] = (
         app.get_parsed_media(include_episode=True)
@@ -179,7 +179,8 @@ def process_instance(
         else app.get_parsed_media()
     )
     checked_tag_id: int = app.get_tag_id_from_name(checked_tag_name)
-    ignore_tag_id: int = app.get_tag_id_from_name(ignore_tag_name)
+    if ignore_tag_name:
+        ignore_tag_id: int = app.get_tag_id_from_name(ignore_tag_name)
 
     filtered_media_dict: List[Dict[str, Any]] = filter_media(
         media_dict, checked_tag_id, ignore_tag_id, count, season_monitored_threshold, logger

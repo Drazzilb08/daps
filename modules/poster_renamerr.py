@@ -399,9 +399,9 @@ def main(config: SimpleNamespace) -> None:
             renamed_assets = (renamed_assets if config.incremental_border_replacerr else None)
             process_files(
                 tmp_dir,
-                replacerr_config,
+                config=replacerr_config,
                 logger=None,
-                config=config,
+                renamerr_config=config,
                 renamed_assets=renamed_assets,
             )
             logger.info("Finished running border_replacerr.py")

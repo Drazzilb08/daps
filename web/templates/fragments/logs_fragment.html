@@ -1,5 +1,4 @@
-
-<div class="container-iframe">
+<div class="container-iframe" style="overflow: hidden; height: 100%;">
   <div id="log-controls" class="log-toolbar">
     <select id="module-select">
       <option value="">Select Module</option>
@@ -11,5 +10,7 @@
     <button id="clear-search">Clear</button>
     <button id="download-log">Download</button>
   </div>
-  <div id="log-output" class="log-output"></div>
+  <div id="scroll-output-container" style="position: relative;">
+    <div id="log-output" class="log-output"></div>
+  </div>
 </div>

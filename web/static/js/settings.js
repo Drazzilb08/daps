@@ -2537,6 +2537,12 @@ function buildPayload(moduleName)
     ];
     excludeKeys.push('instances', ...Array.from(data.keys ? data.keys() : []).filter(k => k.startsWith('instances.')));
     fillPayloadFromFormData(data, payload, excludeKeys);
+    // Collect all source_dirs inputs into an array, overriding any single value
+    if (data.has('source_dirs')) {
+        payload.source_dirs = data.getAll('source_dirs')
+            .map(v => v.trim())
+            .filter(Boolean);
+    }
     if (combinedInstances.length > 0)
     {
         payload.instances = combinedInstances;

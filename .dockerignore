@@ -12,7 +12,6 @@
 !/spud
 !/start.sh
 !/tests
-!/jokes.txt
 !/web
 
 # Ignore unnecessary files inside allowed directories

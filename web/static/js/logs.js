@@ -253,6 +253,7 @@ window.loadLogs = async function()
     function renderLog(text)
     {
         const logOutput = document.getElementById('log-output');
+        if (!logOutput) return;
         const lines = text.split('\n');
         const existingCount = logOutput.children.length;
         const wasAtBottom = existingCount > 0 &&
@@ -332,7 +333,13 @@ window.loadLogs = async function()
     });
     logfileSelect.addEventListener('change', e =>
     {
-        loadLogContent(moduleSelect.value, e.target.value);
+        if (refreshInterval) clearInterval(refreshInterval);
+        const selectedFile = e.target.value;
+        loadLogContent(moduleSelect.value, selectedFile);
+        refreshInterval = setInterval(() =>
+        {
+            loadLogContent(moduleSelect.value, selectedFile);
+        }, 1000);
     });
     searchInput.addEventListener('input', () =>
     {

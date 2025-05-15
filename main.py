@@ -47,10 +47,11 @@ def start_schedule_watcher(callback):
     observer = Observer()
     observer.daemon = True
     handler = ScheduleFileHandler(callback)
-    if os.environ.get('DOCKER_ENV'):
-        observer.schedule(handler, path="/app/config", recursive=False)
-    else:
-        observer.schedule(handler, path="./config", recursive=False)
+    # Determine config directory and ensure it exists
+    config_path = os.environ.get('CONFIG_DIR', './config')
+    if not os.path.isdir(config_path):
+        os.makedirs(config_path, exist_ok=True)
+    observer.schedule(handler, path=config_path, recursive=False)
     observer.start()
     return observer
 
@@ -149,7 +150,6 @@ def main():
 
     # Web mode: no modules passed
     initial_run = True
-    last_check = None
     waiting_message_shown = False
     
     # Load main config once and reuse for scheduling reloads

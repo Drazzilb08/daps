@@ -1,3 +1,18 @@
+/* ===== Auto-Scroll Badge ===== */
+#scroll-badge {
+    position: absolute;
+    bottom: 3rem;
+    right: 20px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+    font-size: 0.8rem;
+    display: none;
+    z-index: 9999;
+    transition: opacity 0.5s;
+    opacity: 0;
+}
 /* ===== Spinner ===== */
 #log-spinner
 {

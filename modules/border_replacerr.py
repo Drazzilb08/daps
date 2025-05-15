@@ -401,10 +401,9 @@ def process_files(
         renamerr_config (Optional[SimpleNamespace]): Optional secondary config.
         renamed_assets (Optional[Dict[str, Any]]): Subset of assets for incremental processing.
     """
+    logger = Logger(config.log_level, config.module_name)
     if config.log_level.lower() == "debug":
         print_settings(logger, config)
-    if renamerr_config and renamerr_config.log_level.lower() == "debug":
-        print_settings(logger, renamerr_config)
     if renamerr_config:
         log_level = renamerr_config.log_level
         dry_run = renamerr_config.dry_run
@@ -495,7 +494,6 @@ def main(config: SimpleNamespace) -> None:
         process_files(
             config.source_dirs,
             config,
-            logger
         )
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")

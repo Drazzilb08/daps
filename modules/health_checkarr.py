@@ -92,8 +92,9 @@ def main(config: SimpleNamespace) -> None:
                             with progress(media_dict, desc=f"Processing {instance_type}", unit="items", logger=logger, leave=True) as pbar:
                                 for item in pbar:
                                     if (instance_type == "radarr" and item['tmdb_id'] in id_list) or \
-                                       (instance_type == "sonarr" and item['tvdb_id'] in id_list):
-                                        logger.debug(f"Found {item['title']} with: {item['db_id']}")
+                                        (instance_type == "sonarr" and item['tvdb_id'] in id_list):
+                                        db_id = item['tmdb_id'] if instance_type == "radarr" else item['tvdb_id']
+                                        logger.debug(f"Found {item['title']} with: {db_id}")
                                         output.append(item)
 
                             logger.debug(f"output:\n{json.dumps(output, indent=4)}")

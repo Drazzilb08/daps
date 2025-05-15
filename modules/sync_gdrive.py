@@ -20,21 +20,31 @@ def run_rclone(config: SimpleNamespace, logger: Logger) -> None:
         )
         config.gdrive_sa_location = None
 
+    # Ensure rclone remote 'posters' exists by creating it if missing
+    try:
+        logger.debug("Ensuring rclone remote 'posters' exists")
+        subprocess.run([
+            'rclone', 'config', 'create', 'posters', 'drive', 'config_is_local=false'
+        ], check=False)
+    except Exception as e:
+        logger.error(f"Error ensuring rclone remote 'posters' exists: {e}")
+
     for sync_item in sync_list:
         sync_location: Optional[str] = sync_item.get('location')
+        
         sync_id: Optional[str] = sync_item.get('id')
 
         if not sync_location or not sync_id:
             logger.error("Sync location or GDrive folder ID not provided.")
             continue
 
-        if not os.path.exists(sync_location):
-            try:
-                os.makedirs(sync_location)  # Create directory if it doesn't exist
-                logger.info(f"Created sync location: {sync_location}")
-            except Exception as e:
-                logger.error(f"Failed to create sync location '{sync_location}': {e}")
-                continue
+        # Ensure local sync directory exists
+        try:
+            os.makedirs(sync_location, exist_ok=True)
+            logger.info(f"Ensured sync location exists: {sync_location}")
+        except OSError as e:
+            logger.error(f"Could not create sync location '{sync_location}': {e}")
+            continue
 
         # Build rclone command with necessary flags and credentials
         cmd = [
@@ -64,6 +74,7 @@ def run_rclone(config: SimpleNamespace, logger: Logger) -> None:
         try:
             logger.debug("Running rclone command:")
             logger.debug("\n" + " \\\n    ".join(shlex.quote(arg) for arg in cmd))
+            # exit()
             process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
             for line in process.stdout:
                 # Clean rclone output by removing timestamp and log level prefixes

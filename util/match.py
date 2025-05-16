@@ -4,7 +4,7 @@ import time
 from util.utility import progress
 from util.normalization import normalize_titles
 from util.index import search_matches
-from util.constants import folder_year_regex
+from util.constants import folder_year_regex, season_pattern
 from typing import Any, Dict, List, Tuple, Optional
 
 def compare_strings(string1: str, string2: str) -> bool:
@@ -149,7 +149,7 @@ def match_media_to_assets(
                 found = False
                 titles_to_try = [media_data.get('title')] + media_data.get('alternate_titles', [])
                 for title in titles_to_try:
-                    for asset_data in search_matches(prefix_index, title, media_type, logger):
+                    for asset_data in search_matches(prefix_index, title, logger):
                         if is_match(asset_data, media_data, logger):
                             found = True
                             if media_type == 'series' and media_seasons:
@@ -159,11 +159,18 @@ def match_media_to_assets(
                                     if s not in asset_data.get('season_numbers', [])
                                 ]
                                 if missing:
+                                    # Check for a main series poster (any file without season indicator)
+                                    has_main_poster = any(
+                                        not season_pattern.search(os.path.basename(f))
+                                        for f in asset_data.get('files', [])
+                                    )
+                                    missing_main_poster = not has_main_poster
                                     unmatched[media_type][location].append({
                                         'title': media_data.get('title'),
                                         'year': media_data.get('year'),
                                         'missing_seasons': missing,
-                                        'season_numbers': media_seasons
+                                        'season_numbers': media_seasons,
+                                        'missing_main_poster': missing_main_poster
                                     })
                             break
                     if found:
@@ -216,8 +223,15 @@ def match_assets_to_media(
                         media_seasons_numbers = [season['season_number'] for season in seasons]
                         titles_to_check = [media['title']] + media.get('alternate_titles', [])
                         for title in titles_to_check:
-                            search_matched_assets = search_matches(prefix_index, title, asset_type, logger)
-                            for search_asset in search_matched_assets:
+                            # Prefer assets originally classified as this media type
+                            candidates = [
+                                a for a in search_matches(prefix_index, title, logger)
+                                if a.get('type') == asset_type
+                            ]
+                            # Fallback to any asset if none of the correct type are found
+                            if not candidates:
+                                candidates = search_matches(prefix_index, title, logger)
+                            for search_asset in candidates:
                                 total_comparisons += 1
                                 if is_match(search_asset, media, logger):
                                     asset_season_numbers = search_asset.get('season_numbers', None)
@@ -239,7 +253,7 @@ def match_assets_to_media(
                                 'files': search_match['files'],
                                 'seasons_numbers': search_match.get('season_numbers', None) if search_match else None,
                                 'asset_ref': search_match,
-                                'asset_type': asset_type,
+                                # 'asset_type': asset_type,
                             })
                         else:
                             non_matches += 1

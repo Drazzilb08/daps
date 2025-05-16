@@ -33,20 +33,19 @@ def get_assets_files(source_dirs: Union[str, List[str]], logger: Any) -> Tuple[O
         if new_assets:
             merge_assets(new_assets, final_assets, prefix_index, logger)
 
-    assets_dict = categorize_assets(final_assets)
-
-    if all(not v for v in assets_dict.values()):
-        if logger:
-            logger.warning(f"No valid files were found in any of the source directories: {source_dirs}")
-        return None, None
-
     end_time = datetime.datetime.now()
     elapsed_time = (end_time - start_time).total_seconds()
     items_per_second = len(source_dirs) / elapsed_time if elapsed_time > 0 else 0
     if logger:
         logger.debug(f"Processed {len(source_dirs)} source directories in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s)")
 
-    return assets_dict, prefix_index
+    # Return flat assets list and flat prefix index
+    if not final_assets:
+        if logger:
+            logger.warning(f"No valid files were found in any of the source directories: {source_dirs}")
+        return None, None
+
+    return final_assets, prefix_index
 
 
 def merge_assets(new_assets: List[dict], final_assets: List[dict], prefix_index: Dict[str, Any], logger: Any) -> None:
@@ -61,9 +60,12 @@ def merge_assets(new_assets: List[dict], final_assets: List[dict], prefix_index:
     """
     with progress(new_assets, desc="Processing assets", total=len(new_assets), unit="asset", logger=logger, leave=False) as pbar:
         for new in pbar:
-            search_matched_assets = search_matches(prefix_index, new['title'], new['type'], logger)
+            search_matched_assets = search_matches(prefix_index, new['title'], logger)
             for final in search_matched_assets:
-                if is_match(final, new, logger, log=True) and final['type'] == new['type']:
+                if is_match(final, new, logger, log=True) and (final['type'] == new['type'] or final.get('season_numbers') or new.get('season_numbers')):
+                    # Promote to series if either asset has seasons
+                    if new.get('season_numbers') or final.get('season_numbers'):
+                        final['type'] = 'series'
                     for new_file in new['files']:
                         normalized_new_file = normalize_file_names(os.path.basename(new_file))
                         for final_file in final['files']:
@@ -100,7 +102,7 @@ def merge_assets(new_assets: List[dict], final_assets: List[dict], prefix_index:
                 # Add new asset if no match found and index it
                 new['files'].sort()
                 final_assets.append(new)
-                build_search_index(prefix_index, new['title'], new, new['type'], logger)
+                build_search_index(prefix_index, new['title'], new, logger)
 
 
 def categorize_assets(final_assets: List[dict]) -> Dict[str, List[dict]]:

@@ -114,12 +114,8 @@ class Logger:
             self.logger.warning(f"Invalid log level '{self.log_level}', defaulting to INFO")
 
         # Log header
-        version_file = os.path.join(pathlib.Path(__file__).parents[1], 'VERSION')
-        try:
-            with open(version_file, 'r') as vf:
-                version = vf.read().strip()
-        except Exception:
-            version = "unknown"
+        from util.version import get_version
+        version = get_version()
         self.start = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.logger.info(create_bar(f"{self.module_name.replace('_', ' ').upper()} Version: {version}"))
         self.is_setup = True

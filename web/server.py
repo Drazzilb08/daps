@@ -14,6 +14,7 @@ from pydantic import BaseModel
 from util.config import Config
 from util.utility import redact_apis
 from dotenv import load_dotenv
+from util.version import get_version
 load_dotenv(override=True)
 
 if os.environ.get("DOCKER_ENV"):
@@ -50,15 +51,13 @@ def log_route(logger, path: str, method: str = "GET") -> None:
 
 
 @app.get("/api/version", response_model=None)
-async def get_version():
-    """Returns the current version string from the VERSION file."""
-    version_file = Path(__file__).parent.parent / "VERSION"
-    if not version_file.exists():
-        try:
-            return PlainTextResponse("unknown", status_code=404)
-        except Exception as e:
-            return JSONResponse(status_code=500, content={"error": str(e)})
-    return PlainTextResponse(version_file.read_text().strip())
+async def get_version_route():
+    """Returns the current version string."""
+    try:
+        version = get_version()
+    except Exception:
+        version = "unknown"
+    return PlainTextResponse(version)
 
 
 @app.post("/api/test-notification", response_model=None)

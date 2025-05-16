@@ -33,9 +33,12 @@ LABEL maintainer="Drazzilb" \
       org.opencontainers.image.authors="Drazzilb" \
       org.opencontainers.image.title="daps"
 
+# Branch and build number arguments
 ARG BRANCH="master"
+ARG BUILD_NUMBER=""
 # Pass the build-time BRANCH arg into a runtime environment variable
 ENV BRANCH=${BRANCH}
+ENV BUILD_NUMBER=${BUILD_NUMBER}
 ARG CONFIG_DIR=/config
 
 # Set script environment variables

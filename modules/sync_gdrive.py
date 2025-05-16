@@ -4,14 +4,26 @@ import shlex
 import json
 import os
 import re
-from util.logger import Logger
-from util.utility import print_settings
 import sys
 import subprocess
+from shutil import which
+from util.logger import Logger
+from util.utility import print_settings
+
+
+def get_rclone_path() -> str:
+    """Find the full path to the rclone binary, or raise an error if not found."""
+    rclone_path = which("rclone")
+    if rclone_path is None:
+        raise FileNotFoundError("rclone binary not found in PATH. Ensure it is installed and accessible.")
+    return rclone_path
+
 
 def run_rclone(config: SimpleNamespace, logger: Logger) -> None:
     """Run rclone sync for each configured Google Drive folder and log output."""
     sync_list: List[dict] = config.gdrive_list if isinstance(config.gdrive_list, list) else [config.gdrive_list]
+    rclone_path = get_rclone_path()
+    logger.debug(f"Using rclone binary at: {rclone_path}")
 
     if config.gdrive_sa_location and not os.path.isfile(config.gdrive_sa_location):
         logger.warning(
@@ -24,14 +36,13 @@ def run_rclone(config: SimpleNamespace, logger: Logger) -> None:
     try:
         logger.debug("Ensuring rclone remote 'posters' exists")
         subprocess.run([
-            'rclone', 'config', 'create', 'posters', 'drive', 'config_is_local=false'
+            rclone_path, 'config', 'create', 'posters', 'drive', 'config_is_local=false'
         ], check=False)
     except Exception as e:
         logger.error(f"Error ensuring rclone remote 'posters' exists: {e}")
 
     for sync_item in sync_list:
         sync_location: Optional[str] = sync_item.get('location')
-        
         sync_id: Optional[str] = sync_item.get('id')
 
         if not sync_location or not sync_id:
@@ -48,7 +59,7 @@ def run_rclone(config: SimpleNamespace, logger: Logger) -> None:
 
         # Build rclone command with necessary flags and credentials
         cmd = [
-            'rclone', 'sync',
+            rclone_path, 'sync',
             '--drive-client-id', config.client_id or '',
             '--drive-client-secret', config.client_secret or '',
             '--drive-token', json.dumps(config.token) if config.token else '',
@@ -74,7 +85,6 @@ def run_rclone(config: SimpleNamespace, logger: Logger) -> None:
         try:
             logger.debug("Running rclone command:")
             logger.debug("\n" + " \\\n    ".join(shlex.quote(arg) for arg in cmd))
-            # exit()
             process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
             for line in process.stdout:
                 # Clean rclone output by removing timestamp and log level prefixes

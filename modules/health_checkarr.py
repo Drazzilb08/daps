@@ -12,7 +12,7 @@ from util.utility import (
     print_settings
 )
 from util.notification import send_notification
-from util.constants import tmdb_id_extractor, tvdb_id_extractor
+from util.constants import tmdb_id_regex, tvdb_id_regex
 from tqdm import tqdm
 
 
@@ -78,10 +78,10 @@ def main(config: SimpleNamespace) -> None:
                             for health_item in health:
                                 if health_item['source'] == "RemovedMovieCheck" or health_item['source'] == "RemovedSeriesCheck":
                                     if instance_type == "radarr":
-                                        for m in re.finditer(tmdb_id_extractor, health_item['message']):
+                                        for m in re.finditer(tmdb_id_regex, health_item['message']):
                                             id_list.append(int(m.group(1)))
                                     if instance_type == "sonarr":
-                                        for m in re.finditer(tvdb_id_extractor, health_item['message']):
+                                        for m in re.finditer(tvdb_id_regex, health_item['message']):
                                             id_list.append(int(m.group(1)))
 
                             logger.debug(f"id_list:\n{json.dumps(id_list, indent=4)}")

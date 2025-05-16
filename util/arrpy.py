@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional, Union
 from unidecode import unidecode
 from util.normalization import normalize_titles
 from util.extract import extract_year
-from util.constants import year_regex, year_regex_search, year_removal_regex, windows_path_regex
+from util.constants import year_regex, windows_path_regex
 import time
 import json
 import logging
@@ -538,8 +538,8 @@ class RadarrClient(BaseARRClient):
             alternate_titles = [t['title'] for t in item['alternateTitles']]
             normalized_alternate_titles = [normalize_titles(t['title']) for t in item['alternateTitles']]
             # Remove year from title if present
-            if year_regex_search.search(item['title']):
-                title = year_removal_regex.sub("", item['title'])
+            if year_regex.search(item['title']):
+                title = year_regex.sub("", item['title'])
                 year = extract_year(item['title'])
             else:
                 title = item['title']
@@ -951,8 +951,8 @@ class SonarrClient(BaseARRClient):
                 })
             alternate_titles = [t['title'] for t in item['alternateTitles']]
             normalized_alternate_titles = [normalize_titles(t['title']) for t in item['alternateTitles']]
-            if year_regex_search.search(item['title']):
-                title = year_removal_regex.sub("", item['title'])
+            if year_regex.search(item['title']):
+                title = year_regex.sub("", item['title'])
                 year = extract_year(item['title'])
             else:
                 title = item['title']

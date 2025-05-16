@@ -118,7 +118,7 @@ def main(config: SimpleNamespace) -> None:
                                     output=output,
                                 )
                         else:
-                            logger.info(f"No health data returned for {app.instance_name}. Skipping deletion checks.")
+                            logger.info(f"No health data returned for {app.instance_name}, this is fine if there was nothing to delete. Skipping deletion checks.")
 
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")

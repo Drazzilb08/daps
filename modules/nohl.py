@@ -21,7 +21,7 @@ from util.constants import (
 
 VIDEO_EXTS = ('.mkv', '.mp4')
 
-from typing import TYPE_CHECKING, List, Dict, Any, Optional
+from typing import TYPE_CHECKING, List, Dict, Any, Optional, Tuple
 if TYPE_CHECKING:
     from util.arrpy import BaseARRClient
 
@@ -246,7 +246,7 @@ def filter_media(
             if profile in quality_profiles:
                 exclude_profile_ids.append(quality_profiles[profile])
 
-    def build_season_filtering(media_season: Dict[str, Any], file_season: Dict[str, Any]) -> (List[Dict[str, Any]], List[Dict[str, Any]]):
+    def build_season_filtering(media_season: Dict[str, Any], file_season: Dict[str, Any]) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
         """
         Split a season into filtered (excluded) and search-needed episodes based on monitoring and matches.
         """

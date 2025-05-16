@@ -10,12 +10,27 @@ from shutil import which
 from util.logger import Logger
 from util.utility import print_settings
 
+# Load environment variables from .env file if available
+try:
+    from dotenv import load_dotenv
+    load_dotenv(override=True)
+except ImportError:
+    pass
+
 
 def get_rclone_path() -> str:
-    """Find the full path to the rclone binary, or raise an error if not found."""
+    """Find the full path to the rclone binary, checking RCLONE_PATH env var first."""
+    # Allow override via environment variable
+    env_path = os.getenv("RCLONE_PATH")
+    if env_path:
+        if os.path.isfile(env_path) and os.access(env_path, os.X_OK):
+            return env_path
+        else:
+            raise FileNotFoundError(f"RCLONE_PATH is set to '{env_path}', but it is not an executable file.")
+    # Fallback to searching in PATH
     rclone_path = which("rclone")
     if rclone_path is None:
-        raise FileNotFoundError("rclone binary not found in PATH. Ensure it is installed and accessible.")
+        raise FileNotFoundError("rclone binary not found in PATH. Ensure it is installed and accessible, or set RCLONE_PATH.")
     return rclone_path
 
 

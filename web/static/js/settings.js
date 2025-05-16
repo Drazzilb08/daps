@@ -1271,7 +1271,7 @@ function renderModals()
         const heading = modal.querySelector('h2');
         if (heading)
         {
-            heading.textContent = (isEdit ? 'Edit' : 'Add') + ' GDrive Sync';
+            heading.textContent = (isEdit ? 'Edit' : 'Add') + ' Upgradinatorr Instance List';
         }
         const saveBtn = modal.querySelector('#upgradinatorr-save-btn');
         if (saveBtn)

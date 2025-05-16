@@ -58,12 +58,22 @@ def print_output(
                             logger.info("")
                         if asset_type == 'series':
                             missing_seasons = item.get('missing_seasons', False)
-                            if missing_seasons:
-                                logger.info(f"\t{item['title']} ({item['year']}) (Seasons listed below have missing posters)")
+                            missing_main = item.get('missing_main_poster', False)
+                            title = item['title']
+                            year = item['year']
+                            # Combined missing info
+                            if missing_seasons and missing_main:
+                                logger.info(f"\t{title} ({year}) (Seasons below missing posters; main series poster missing)")
                                 for season in item['missing_seasons']:
                                     logger.info(f"\t\tSeason: {season} <- Missing")
+                            elif missing_seasons:
+                                logger.info(f"\t{title} ({year}) (Seasons listed below have missing posters)")
+                                for season in item['missing_seasons']:
+                                    logger.info(f"\t\tSeason: {season} <- Missing")
+                            elif missing_main:
+                                logger.info(f"\t{title} ({year}) (Missing main series poster)")
                             else:
-                                logger.info(f"\t{item['title']} ({item['year']})")
+                                logger.info(f"\t{title} ({year})")
                                 for season in item.get('season_numbers', []):
                                     logger.info(f"\t\tSeason: {season}")
                         else:
@@ -216,7 +226,6 @@ def main(config: SimpleNamespace) -> None:
 
         # Match assets and print output
         unmatched_dict = match_data(media_dict, prefix_index, config.ignore_root_folders, logger)
-
         if any(unmatched_dict.values()):
             output = print_output(unmatched_dict, media_dict, logger)
             if config.notifications and output:

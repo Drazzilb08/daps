@@ -489,7 +489,7 @@ def process_files(
         logger.debug(f"Using {', '.join(border_colors)} border color(s).")
     if destination_dir.endswith("/"):
         destination_dir = destination_dir[:-1]
-    if any(assets_dict['movies']) or any(assets_dict['series']) or any(assets_dict['collections']):
+    if any(assets_dict.get('movies', [])) or any(assets_dict.get('series', [])) or any(assets_dict.get('collections', [])):
         messages = fix_borders(assets_dict, config, border_colors, destination_dir, dry_run, logger, config.exclusion_list)
         if messages:
             table = [

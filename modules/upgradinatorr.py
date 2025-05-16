@@ -178,6 +178,7 @@ def process_instance(
         if app.instance_type.lower() == "sonarr"
         else app.get_parsed_media()
     )
+    ignore_tag_id = None
     checked_tag_id: int = app.get_tag_id_from_name(checked_tag_name)
     if ignore_tag_name:
         ignore_tag_id: int = app.get_tag_id_from_name(ignore_tag_name)

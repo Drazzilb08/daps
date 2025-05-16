@@ -60,6 +60,7 @@ class ModuleManager:
         self.running_modules = {}
         self.module_start_times = {}
         self.logger = logger
+        self.last_run_times = {}
 
     def run(self, module_name, run_module):
         process = run_module(module_name, self.logger)
@@ -69,8 +70,14 @@ class ModuleManager:
 
     def run_if_due(self, module_name, schedule_time, check_schedule_func, run_module):
         if check_schedule_func(module_name, schedule_time, self.logger):
-            self.logger.info(f"[SCHEDULE] Running module: {module_name} at {schedule_time}")
-            self.run(module_name, run_module)
+            import time
+            now = time.time()
+            last_run = self.last_run_times.get(module_name, 0)
+            # Prevent multiple runs within the same schedule window (60 seconds)
+            if now - last_run >= 60:
+                self.logger.info(f"[SCHEDULE] Running module: {module_name} at {schedule_time}")
+                self.last_run_times[module_name] = now
+                self.run(module_name, run_module)
 
     def is_already_running(self, module_name):
         return module_name in self.running_modules

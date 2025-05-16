@@ -1,5 +1,5 @@
 from types import SimpleNamespace
-from typing import List, Tuple, Optional, Dict, Any
+from typing import List, Tuple, Optional, Dict, Any, Union
 
 import os
 import logging
@@ -90,7 +90,7 @@ def convert_to_rgb(hex_color: str, logger: Logger) -> Tuple[int, int, int]:
     return color_code
 
 def fix_borders(
-    assets_dict: Dict[str, List[Dict[str, Any]]],
+    assets_dict: Union[List[Dict[str, Any]], Dict[str, List[Dict[str, Any]]]],
     config: SimpleNamespace,
     border_colors: Optional[List[str]],
     destination_dir: str,
@@ -113,6 +113,13 @@ def fix_borders(
     Returns:
         List[str]: Status messages for each processed asset.
     """
+    # Support flat list or grouped dict by type
+    if isinstance(assets_dict, list):
+        grouped: Dict[str, List[Dict[str, Any]]] = {}
+        for asset in assets_dict:
+            asset_type = asset.get('type')
+            grouped.setdefault(asset_type, []).append(asset)
+        assets_dict = grouped
     rgb_border_colors: List[Tuple[int, int, int]] = []
     if border_colors:
         for color in border_colors:
@@ -427,6 +434,12 @@ def process_files(
     incremental_run = False
     if not renamed_assets or switch['start_today'] or switch['end_yesterday']:
         assets_dict, prefix_index = get_assets_files(source_dirs, logger)
+        if isinstance(assets_dict, list):
+            grouped_assets: Dict[str, List[Dict[str, Any]]] = {}
+            for asset in assets_dict:
+                asset_type = asset.get('type')
+                grouped_assets.setdefault(asset_type, []).append(asset)
+            assets_dict = grouped_assets
         if not assets_dict:
             logger.info(f"\nNo assets found in the input directory")
             logger.info(f"Please check the input directory and try again.")
@@ -434,6 +447,12 @@ def process_files(
             return
     else:
         assets_dict = renamed_assets
+        if isinstance(assets_dict, list):
+            grouped_assets: Dict[str, List[Dict[str, Any]]] = {}
+            for asset in assets_dict:
+                asset_type = asset.get('type')
+                grouped_assets.setdefault(asset_type, []).append(asset)
+            assets_dict = grouped_assets
         logger.info(f"\nDoing an incremental run on only assets that were provided\n")
         incremental_run = True
 

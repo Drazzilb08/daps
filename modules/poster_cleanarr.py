@@ -25,7 +25,7 @@ except ImportError as e:
 
 
 def match_data(
-    assets_dict: Dict[str, List[Dict[str, Union[str, int, List[str]]]]],
+    assets_dict: Union[List[Dict[str, Union[str, int, List[str]]]], Dict[str, List[Dict[str, Union[str, int, List[str]]]]]],
     media_dict: Dict[str, List[Dict[str, Union[str, int]]]],
     config: SimpleNamespace,
     logger: Logger
@@ -42,6 +42,13 @@ def match_data(
     Returns:
         List of unmatched asset dictionaries.
     """
+    # Support flat assets list or grouped dict
+    if isinstance(assets_dict, list):
+        grouped: Dict[str, List[Dict[str, Union[str, int, List[str]]]]] = {}
+        for asset in assets_dict:
+            asset_type = asset.get('type')
+            grouped.setdefault(asset_type, []).append(asset)
+        assets_dict = grouped
     unmatched_assets: List[Dict[str, Union[str, int, List[str], None]]] = []
     asset_types: List[str] = ['movies', 'series', 'collections']
 

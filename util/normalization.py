@@ -32,12 +32,32 @@ def preprocess_name(name: str) -> str:
 
 
 def remove_common_words(text: str) -> str:
-    for word in common_words:
-        text = re.sub(rf'\b{re.escape(word)}\b', '', text, flags=re.IGNORECASE)
-    return text
+    """
+    Remove common filler words from a filename component.
+
+    Args:
+        text (str): The input string to process.
+
+    Returns:
+        str: The string with standalone common words removed.
+    """
+    # Remove standalone common words only at whitespace boundaries
+    pattern = rf'(?:(?<=\s)|(?<=^))(?:{"|".join(re.escape(word) for word in common_words)})(?:(?=\s)|(?=$))'
+    cleaned = re.sub(pattern, '', text, flags=re.IGNORECASE)
+    # Collapse multiple spaces and trim
+    return re.sub(r'\s+', ' ', cleaned).strip()
 
 
 def remove_tokens(text: str) -> str:
+    """
+    Remove specified tokens (e.g., region or language tags) from the text.
+
+    Args:
+        text (str): The input string to process.
+
+    Returns:
+        str: The string with tokens removed.
+    """
     for token in words_to_remove:
         text = text.replace(token, '')
     return text

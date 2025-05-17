@@ -34,30 +34,15 @@ def preprocess_name(name: str) -> str:
 def remove_common_words(text: str) -> str:
     """
     Remove common filler words from a filename component.
-
-    Args:
-        text (str): The input string to process.
-
-    Returns:
-        str: The string with standalone common words removed.
     """
-    # Remove standalone common words only at whitespace boundaries
-    pattern = rf'(?:(?<=\s)|(?<=^))(?:{"|".join(re.escape(word) for word in common_words)})(?:(?=\s)|(?=$))'
+    # Remove standalone common words, allowing punctuation boundaries
+    pattern = rf'(?:(?<=^)|(?<=\W))(?:{"|".join(re.escape(word) for word in common_words)})(?:(?=$)|(?=\W))'
     cleaned = re.sub(pattern, '', text, flags=re.IGNORECASE)
     # Collapse multiple spaces and trim
     return re.sub(r'\s+', ' ', cleaned).strip()
 
 
 def remove_tokens(text: str) -> str:
-    """
-    Remove specified tokens (e.g., region or language tags) from the text.
-
-    Args:
-        text (str): The input string to process.
-
-    Returns:
-        str: The string with tokens removed.
-    """
     for token in words_to_remove:
         text = text.replace(token, '')
     return text
@@ -78,20 +63,20 @@ def normalize_file_names(file_name: str) -> str:
     # 1) Strip extension
     base, _ = os.path.splitext(file_name)
 
-    # 2) Remove curly-brace tags
-    cleaned = id_content_regex.sub('', base)
+    # 2) Convert HTML entities & unicode to ASCII
+    cleaned = unidecode(html.unescape(base))
 
-    # 3) Remove specified unwanted substrings
+    # 3) Remove curly-brace tags
+    cleaned = id_content_regex.sub('', cleaned)
+
+    # 4) Remove specified unwanted substrings
     cleaned = remove_tokens(cleaned)
 
-    # 4) Remove common filler words
+    # 5) Remove common filler words
     cleaned = remove_common_words(cleaned)
 
-    # 5) Remove illegal filename characters
+    # 6) Remove illegal filename characters
     cleaned = illegal_chars_regex.sub('', cleaned)
-
-    # 6) Convert HTML entities & unicode → ASCII
-    cleaned = unidecode(html.unescape(cleaned))
 
     # 7) Strip remaining special characters
     cleaned = re.sub(remove_special_chars, '', cleaned)
@@ -114,13 +99,20 @@ def normalize_titles(title: str) -> str:
     """
     normalized_title = title
     
+    # 1) Remove specified unwanted substrings
     for word in words_to_remove:
         normalized_title = title.replace(word, '')
         if normalized_title != title:
             break
-    normalized_title = year_regex.sub('', normalized_title)              
-    normalized_title = illegal_chars_regex.sub('', normalized_title)     
+    # 2) Strip year tag
+    normalized_title = year_regex.sub('', normalized_title)
+    # 3) Convert HTML entities & unicode to ASCII
     normalized_title = unidecode(html.unescape(normalized_title)).strip()
-    normalized_title = normalized_title.replace('&', 'and')              
-    normalized_title = re.sub(remove_special_chars, '', normalized_title).lower()  
-    return normalized_title.replace(' ', '')                            
+    # 4) Remove illegal filename characters
+    normalized_title = illegal_chars_regex.sub('', normalized_title)
+    # 5) Replace ampersand with 'and'
+    normalized_title = normalized_title.replace('&', 'and')
+    # 6) Strip remaining special characters and lowercase
+    normalized_title = re.sub(remove_special_chars, '', normalized_title).lower()
+    # 7) Eliminate whitespace
+    return normalized_title.replace(' ', '')

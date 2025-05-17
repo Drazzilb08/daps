@@ -10,7 +10,7 @@ from util.utility import progress
 from util.normalization import normalize_titles
 from util.construct import create_collection, create_series, create_movie
 from util.extract import extract_year, extract_ids
-from util.constants import year_regex, season_pattern, illegal_chars_regex
+from util.constants import year_regex, season_pattern, remove_special_chars, illegal_chars_regex
 
 
 def scan_files_in_flat_folder(folder_path: str, logger: Any) -> List[Dict]:
@@ -41,7 +41,7 @@ def scan_files_in_flat_folder(folder_path: str, logger: Any) -> List[Dict]:
         title = unidecode(html.unescape(title))
         title = re.sub(illegal_chars_regex, '', title)
         raw_title = season_pattern.split(title)[0].strip()
-        normalized_title = normalize_titles(raw_title)
+        normalized_title = remove_special_chars.sub('', raw_title.lower())
 
         if normalized_title in normalized_map:
             match_key = normalized_map[normalized_title]
@@ -138,7 +138,6 @@ def parse_file_group(folder_path: str, base_name: str, files: List[str]) -> Dict
     id_cleaned_name = re.sub(r"\{(?:tmdb|tvdb|imdb)-\w+\}", "", base_name).strip()
     title = re.sub(year_regex, '', id_cleaned_name).strip()
     title = unidecode(html.unescape(title))
-    title = re.sub(illegal_chars_regex, '', title)
     year = extract_year(base_name)
     tmdb_id, tvdb_id, imdb_id = extract_ids(base_name)
     normalized_title = normalize_titles(base_name)

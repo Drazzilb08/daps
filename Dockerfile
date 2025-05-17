@@ -26,6 +26,13 @@ RUN set -eux; \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# Install gosu for safe privilege dropping
+RUN set -eux; \
+    dpkgArch="$(dpkg --print-architecture | awk -F- '{ print $NF }')"; \
+    wget -O /usr/local/bin/gosu "https://github.com/tianon/gosu/releases/download/1.14/gosu-${dpkgArch}"; \
+    chmod +x /usr/local/bin/gosu; \
+    gosu nobody true
+
 # Metadata and labels
 LABEL maintainer="Drazzilb" \
       description="daps" \
@@ -55,14 +62,28 @@ EXPOSE ${PORT}
 
 VOLUME /config
 
-WORKDIR /app
+ARG PUID=1000
+ARG PGID=1000
+
+RUN groupadd   -g "${PGID}" dockeruser \
+ && useradd    -u "${PUID}" -g "${PGID}" -m dockeruser \
+ && mkdir -p /config /app \
+ && chown -R dockeruser:dockeruser /config /app
+
+ENV PUID=${PUID} 
+ENV PGID=${PGID}
 
 COPY . .
 
-# Create a new user called dockeruser with the specified PUID and PGID
-RUN groupadd -g 99 dockeruser; \
-    useradd -u 100 -g 99 dockeruser; \
-    chown -R dockeruser:dockeruser /app; 
+# Copy entrypoint helper
+COPY docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+
+USER dockeruser
+
+WORKDIR /app
 
 # Entrypoint script
 CMD ["bash", "start.sh"]

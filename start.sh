@@ -37,13 +37,5 @@ echo "
 echo "Setting umask to ${UMASK}"
 umask "$UMASK"
 
-groupmod -o -g "$PGID" dockeruser
-usermod -o -u "$PUID" dockeruser
-
-echo "Starting daps as $(whoami) with UID: $PUID and GID: $PGID"
-
-chown -R "${PUID}:${PGID}" "${CONFIG_DIR}" /app
-chmod -R 777 "${CONFIG_DIR}"
-[ -f "${CONFIG_DIR}/config.yml" ] && chmod 660 "${CONFIG_DIR}/config.yml"
-
-exec su -s /bin/bash -c "python3 main.py" dockeruser
+umask "${UMASK}"
+exec python3 main.py

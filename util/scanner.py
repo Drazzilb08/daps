@@ -10,7 +10,7 @@ from util.utility import progress
 from util.normalization import normalize_titles
 from util.construct import create_collection, create_series, create_movie
 from util.extract import extract_year, extract_ids
-from util.constants import year_regex, season_pattern, remove_special_chars
+from util.constants import year_regex, season_pattern, illegal_chars_regex
 
 
 def scan_files_in_flat_folder(folder_path: str, logger: Any) -> List[Dict]:
@@ -39,8 +39,9 @@ def scan_files_in_flat_folder(folder_path: str, logger: Any) -> List[Dict]:
             continue
         title = file.rsplit('.', 1)[0]
         title = unidecode(html.unescape(title))
+        title = re.sub(illegal_chars_regex, '', title)
         raw_title = season_pattern.split(title)[0].strip()
-        normalized_title = remove_special_chars.sub('', raw_title.lower())
+        normalized_title = normalize_titles(raw_title)
 
         if normalized_title in normalized_map:
             match_key = normalized_map[normalized_title]
@@ -103,7 +104,7 @@ def parse_folder_group(folder_path: str, base_name: str, files: List[str]) -> Di
     title = unidecode(html.unescape(title))
     year = extract_year(base_name)
     tmdb_id, tvdb_id, imdb_id = extract_ids(base_name)
-    normalize_title = normalize_titles(base_name)
+    normalized_title = normalize_titles(base_name)
     full_paths = sorted([os.path.join(folder_path, file) for file in files if not file.startswith('.')])
     parent_folder = os.path.basename(folder_path)
 
@@ -113,13 +114,13 @@ def parse_folder_group(folder_path: str, base_name: str, files: List[str]) -> Di
 
     if is_collection:
         # Collection: no year detected
-        return create_collection(title, normalize_title, full_paths, parent_folder)
+        return create_collection(title, normalized_title, full_paths, parent_folder)
     elif is_series:
         # Series: multiple files with season indicators
-        return create_series(title, year, tvdb_id, imdb_id, normalize_title, full_paths, parent_folder)
+        return create_series(title, year, tvdb_id, imdb_id, normalized_title, full_paths, parent_folder)
     else:
         # Movie: default case
-        return create_movie(title, year, tmdb_id, imdb_id, normalize_title, full_paths, parent_folder)
+        return create_movie(title, year, tmdb_id, imdb_id, normalized_title, full_paths, parent_folder)
 
 
 def parse_file_group(folder_path: str, base_name: str, files: List[str]) -> Dict:
@@ -137,9 +138,10 @@ def parse_file_group(folder_path: str, base_name: str, files: List[str]) -> Dict
     id_cleaned_name = re.sub(r"\{(?:tmdb|tvdb|imdb)-\w+\}", "", base_name).strip()
     title = re.sub(year_regex, '', id_cleaned_name).strip()
     title = unidecode(html.unescape(title))
+    title = re.sub(illegal_chars_regex, '', title)
     year = extract_year(base_name)
     tmdb_id, tvdb_id, imdb_id = extract_ids(base_name)
-    normalize_title = normalize_titles(base_name)
+    normalized_title = normalize_titles(base_name)
     files = sorted([os.path.join(folder_path, file) for file in files if not file.startswith('.')])
 
     # Determine media type: collection (no year), series (season indicators), or movie
@@ -148,13 +150,13 @@ def parse_file_group(folder_path: str, base_name: str, files: List[str]) -> Dict
 
     if is_collection:
         # Collection: no year detected
-        return create_collection(title, normalize_title, files)
+        return create_collection(title, normalized_title, files)
     elif is_series:
         # Series: season pattern detected in files
-        return create_series(title, year, tvdb_id, imdb_id, normalize_title, files)
+        return create_series(title, year, tvdb_id, imdb_id, normalized_title, files)
     else:
         # Movie: default case
-        return create_movie(title, year, tmdb_id, imdb_id, normalize_title, files)
+        return create_movie(title, year, tmdb_id, imdb_id, normalized_title, files)
 
 
 def process_files(folder_path: str, logger: Any) -> Optional[List[Dict]]:

@@ -46,7 +46,14 @@ imdb_id_regex: Pattern = re.compile(r"imdb[-_\s](tt\d+)")
 windows_path_regex: Pattern = re.compile(r"^([A-Z]:\\)")
 
 # Remove curly‐brace blocks containing TMDB, TVDB, or IMDb IDs
-id_content_regex = re.compile(r'\s*\{\s*(?:tmdb(?:[-_\s]\d+)|tvdb(?:[-_\s]\d+)|imdb(?:[-_\s]tt\d+))\s*\}', flags=re.IGNORECASE)
+id_content_regex = re.compile(
+    r'\s*\{\s*(?:'
+      r'tmdb(?:[-_\s]\d+)|'
+      r'tvdb(?:[-_\s]\d+)|'
+      r'imdb(?:[-_\s](?:tt)?\d+)'
+    r')\s*\}',
+    flags=re.IGNORECASE
+)
 
 words_to_remove: List[str] = [
     "(US)", "(UK)", "(AU)", "(CA)", "(NZ)", "(FR)", "(NL)"

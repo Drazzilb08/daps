@@ -1,8 +1,3 @@
-"""
-Constants and regular expressions for parsing and cleaning media titles,
-extracting season and episode information, and handling IDs and years.
-"""
-
 import re
 from typing import List, Set, Pattern
 

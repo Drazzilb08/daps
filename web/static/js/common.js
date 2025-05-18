@@ -1,3 +1,72 @@
+// ===== Payload Builders & Validation (moved to payload.js) =====
+
+// Universal save binding helper
+window.DAPS.bindSaveButton = function(saveBtn, buildPayloadFn, key, postSave) {
+    if (!saveBtn) return;
+    saveBtn.type = 'button';
+    saveBtn.onclick = async () => {
+        await window.saveSection(buildPayloadFn, key, postSave);
+    };
+};
+// ===== Universal Save Button UX and Handler =====
+
+/**
+ * Universal Save button state handler for all forms.
+ * Usage: window.setSaveButtonState(saveBtn, state, label)
+ */
+window.setSaveButtonState = function(saveBtn, state, label = "Save") {
+    if (!saveBtn) return;
+    if (state === "saving") {
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saving...";
+    } else if (state === "success") {
+        saveBtn.disabled = true;
+        saveBtn.textContent = "Saved!";
+        setTimeout(() => {
+            saveBtn.disabled = false;
+            saveBtn.textContent = label;
+        }, 2000);
+    } else {
+        saveBtn.disabled = false;
+        saveBtn.textContent = label;
+    }
+};
+
+
+/**
+ * Common save handler for all config sections.
+ * @param {() => Promise<Object|null>} buildPayload - async builder returning {key: value} to save
+ * @param {string} key - config key, e.g. "schedule", "instances", "notifications"
+ * @param {() => void} [postSave] - optional callback after success
+ * @param {HTMLButtonElement} [saveBtn] - button element to show progress
+ * @returns {Promise<void>}
+ */
+window.saveSection = async function(buildPayload, key, postSave, saveBtn) {
+    if (!saveBtn) saveBtn = document.getElementById('saveBtn');
+    window.setSaveButtonState(saveBtn, "saving");
+    const payload = await buildPayload();
+    if (!payload || typeof payload[key] === 'undefined') {
+        window.setSaveButtonState(saveBtn, "default");
+        return;
+    }
+    try {
+        const res = await fetch('/api/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw res;
+        window.isDirty = false;
+        window.showToast(`✅ ${key.charAt(0).toUpperCase() + key.slice(1)} updated!`, 'success');
+        window.setSaveButtonState(saveBtn, "success");
+        if (typeof postSave === 'function') postSave();
+    } catch (err) {
+        let msg = err.statusText || 'Save failed';
+        try { const data = await err.json(); msg = data.error || msg; } catch {}
+        window.showToast(`❌ ${msg}`, 'error');
+        window.setSaveButtonState(saveBtn, "default");
+    }
+};
 // ===== Dirty State Tracking =====
 window.isDirty = false;
 window.skipDirtyCheck = false;
@@ -89,10 +158,15 @@ function showUnsavedModal()
             unsavedModal.classList.remove('show');
             resolve(choice);
         }
-        saveBtn.addEventListener('click', () => cleanup('save'),
-        {
-            once: true
-        });
+        saveBtn.addEventListener('click', async () => {
+            window.setSaveButtonState(saveBtn, "saving", "Save");
+            await window.DAPS.saveCurrentPage();
+            window.setSaveButtonState(saveBtn, "success", "Save");
+            setTimeout(() => {
+                unsavedModal.classList.remove('show');
+                resolve('save');
+            }, 700);
+        }, { once: true });
         discardBtn.addEventListener('click', () => cleanup('discard'),
         {
             once: true
@@ -165,15 +239,6 @@ document.addEventListener('click', async function(e)
     }
     if (!dirty || choice === 'save' || skip)
     {
-        if (dirty && choice === 'save' && typeof window.saveChanges === 'function')
-        {
-            await window.saveChanges();
-            window.isDirty = false;
-            if (iframe && iframe.contentWindow)
-            {
-                iframe.contentWindow.isDirty = false;
-            }
-        }
         window.DAPS.navigateTo(anchor);
     }
     else if (choice === 'discard')

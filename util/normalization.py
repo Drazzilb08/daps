@@ -89,30 +89,43 @@ def normalize_file_names(file_name: str) -> str:
 
 def normalize_titles(title: str) -> str:
     """
-    Normalize a media title by stripping common phrases, special characters, years, and formatting.
+    Normalize a media title for robust matching and indexing by:
+    1. Converting HTML entities and unicode to ASCII.
+    2. Removing ID tokens enclosed in curly braces (e.g., "{tmdb-12345}").
+    3. Removing known unwanted substrings (from `words_to_remove`).
+    4. Removing common filler words (from `common_words`).
+    5. Removing illegal filename characters.
+    6. Removing miscellaneous special symbols.
+    7. Eliminating all spaces and converting to lowercase for uniformity.
 
     Args:
         title (str): The media title to normalize.
 
     Returns:
-        str: A normalized, lowercase, symbol-free title string.
+        str: A normalized, lowercase, symbol-free title string suitable for matching.
     """
-    normalized_title = title
+    # 1) Strip year tag
+    normalized_title = year_regex.sub('', title)
     
-    # 1) Remove specified unwanted substrings
-    for word in words_to_remove:
-        normalized_title = title.replace(word, '')
-        if normalized_title != title:
-            break
-    # 2) Strip year tag
-    normalized_title = year_regex.sub('', normalized_title)
-    # 3) Convert HTML entities & unicode to ASCII
+    # 2) Convert HTML entities & unicode to ASCII
     normalized_title = unidecode(html.unescape(normalized_title)).strip()
-    # 4) Remove illegal filename characters
+
+    # 3) Remove ID tokens in curly braces (e.g., {tmdb-12345})
+    normalized_title = id_content_regex.sub('', normalized_title)
+
+    # 4) Remove specified unwanted substrings (tags, encoding notes, etc.)
+    normalized_title = remove_tokens(normalized_title)
+
+    # 5) Remove common filler words (from known media/common word lists)
+    normalized_title = remove_common_words(normalized_title)
+
+    # 6) Remove illegal filename characters (for cross-platform safety)
     normalized_title = illegal_chars_regex.sub('', normalized_title)
-    # 5) Replace ampersand with 'and'
-    normalized_title = normalized_title.replace('&', 'and')
-    # 6) Strip remaining special characters and lowercase
-    normalized_title = re.sub(remove_special_chars, '', normalized_title).lower()
-    # 7) Eliminate whitespace
-    return normalized_title.replace(' ', '')
+
+    # 7) Remove miscellaneous special symbols (punctuation, etc.)
+    normalized_title = re.sub(remove_special_chars, '', normalized_title)
+
+    # 8) Eliminate all whitespace and lowercase for consistent matching
+    normalized_title = normalized_title.replace(' ', '').lower()
+
+    return normalized_title.strip()

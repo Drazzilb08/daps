@@ -73,11 +73,13 @@ RUN groupadd   -g "${PGID}" dockeruser \
 ENV PUID=${PUID} 
 ENV PGID=${PGID}
 
+ # Set working directory and copy application code
+WORKDIR /app
 COPY . .
+# Ensure start.sh is executable
+RUN chmod +x start.sh
 
 USER dockeruser
-
-WORKDIR /app
 
 # Entrypoint script
 CMD ["bash", "start.sh"]

@@ -86,11 +86,7 @@ def rename_files(
         Tuple of output message dict and renamed assets dict.
     """
     output: Dict[str, List[Dict[str, Any]]] = {}
-    renamed_assets: Dict[str, List[Dict[str, Any]]] = {
-        'movies': [],
-        'series': [],
-        'collections': []
-    }
+    renamed_files = []
     # Determine destination based on dry run and border replacer
     if config.run_border_replacerr:
         tmp_dir = os.path.join(config.destination_dir, 'tmp')
@@ -175,18 +171,12 @@ def rename_files(
                                         if config.action_type in ["hardlink", "symlink"]:
                                             os.remove(new_file_path)
                                         process_file(file, new_file_path, config.action_type, logger)
-                                        renamed_item = copy.deepcopy(item)
-                                        renamed_item['files'] = [new_file_path]
-                                        renamed_item['path'] = os.path.join(destination_dir, folder)
-                                        renamed_assets[asset_type].append(renamed_item)
+                                        renamed_files.append(new_file_path)
                             except FileNotFoundError:
                                 if not config.dry_run:
                                     os.remove(new_file_path)
                                     process_file(file, new_file_path, config.action_type, logger)
-                                    renamed_item = copy.deepcopy(item)
-                                    renamed_item['files'] = [new_file_path]
-                                    renamed_item['path'] = os.path.join(destination_dir, folder)
-                                    renamed_assets[asset_type].append(renamed_item)
+                                    renamed_files.append(new_file_path)
                         else:
                             if file_name != new_file_name:
                                 messages.append(f"{file_name} -renamed-> {new_file_name}")
@@ -197,10 +187,7 @@ def rename_files(
                                     discord_messages.append(f"{new_file_name}")
                             if not config.dry_run:
                                 process_file(file, new_file_path, config.action_type, logger)
-                                renamed_item = copy.deepcopy(item)
-                                renamed_item['files'] = [new_file_path]
-                                renamed_item['path'] = os.path.join(destination_dir, folder)
-                                renamed_assets[asset_type].append(renamed_item)
+                                renamed_files.append(new_file_path)
                     if messages or discord_messages:
                         output[asset_type].append({
                             'title': item['title'],
@@ -211,7 +198,7 @@ def rename_files(
                         })
         else:
             print(f"No {asset_type} to rename")
-    return output, renamed_assets
+    return output, renamed_files
 
 
 def handle_output(
@@ -377,7 +364,7 @@ def main(config: SimpleNamespace) -> None:
                 logger.debug("No unmatched assets found.")
             matched_assets = combined_dict.get('matched', None)
             if matched_assets and any(matched_assets.values()):
-                output, renamed_assets = rename_files(matched_assets, config, logger)
+                output, renamed_files = rename_files(matched_assets, config, logger)
                 if any(output.values()):
                     handle_output(output, config, logger)
                     send_notification(
@@ -395,8 +382,13 @@ def main(config: SimpleNamespace) -> None:
             tmp_dir = os.path.join(config.destination_dir, 'tmp')
             from modules.border_replacerr import process_files
             from util.config import Config
+            from util.scanner import process_selected_files
             replacerr_config = Config("border_replacerr").module_config
-            renamed_assets = (renamed_assets if config.incremental_border_replacerr else None)
+            renamed_files = (renamed_files if config.incremental_border_replacerr else None)
+
+            if renamed_files:
+                renamed_assets = process_selected_files(renamed_files, logger, asset_folders=config.asset_folders)
+
             process_files(
                 tmp_dir,
                 config=replacerr_config,

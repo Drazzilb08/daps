@@ -1,4 +1,4 @@
-from util.normalization import preprocess_name
+from util.normalization import normalize_titles
 from typing import Any, Dict, List, Optional
 
 Asset = Dict[str, Any]
@@ -25,7 +25,7 @@ def build_search_index(prefix_index: PrefixIndex, title: str, asset: Asset, logg
         logger (Optional[Any]): Logger instance for debug output.
         debug_items (Optional[List[str]]): List of normalized titles to enable debug logging on.
     """
-    processed: str = preprocess_name(title)
+    processed: str = normalize_titles(title)
     debug_build_index: bool = bool(debug_items and len(debug_items) > 0 and processed in debug_items)
 
     if debug_build_index and logger:
@@ -58,7 +58,7 @@ def search_matches(prefix_index: PrefixIndex, title: str, logger: Optional[Any])
     Returns:
         List[Asset]: List of matching assets from the index.
     """
-    processed_title = preprocess_name(title)
+    processed_title = normalize_titles(title)
     words = processed_title.split()
     matches: List[Asset] = []
     for word in words:

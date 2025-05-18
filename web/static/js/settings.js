@@ -1285,6 +1285,7 @@ function renderModals()
     window.borderReplacerrModal = borderReplacerrModal;
     window.labelarrModal = labelarrModal;
     window.upgradinatorrModal = upgradinatorrModal;
+    
 }
 renderModals();
 /**
@@ -2339,20 +2340,17 @@ window.loadSettings = async function(moduleName)
     }
     window.isDirty = false;
     const settingsForm = document.getElementById('settings-form');
-    if (settingsForm)
-    {
-        settingsForm.onsubmit = (e) =>
-        {
-            e.preventDefault();
-            saveSettings();
-        };
-    }
-    const saveBtn = document.getElementById('save-btn');
-    if (saveBtn)
-    {
-        saveBtn.type = 'button';
-        saveBtn.onclick = () => saveSettings();
-    }
+    
+    const saveBtn = document.getElementById('saveBtn');
+    window.DAPS.bindSaveButton(
+    saveBtn,
+    () => Promise.resolve(window.DAPS.buildSettingsPayload(window.currentModuleName)),
+    window.currentModuleName
+    );
+    window.saveChanges = async () => window.saveSection(
+    () => Promise.resolve(window.DAPS.buildSettingsPayload(window.currentModuleName)),
+    window.currentModuleName
+    );
 };
 /**
  * Build a payload object containing only the original config keys with
@@ -2553,41 +2551,3 @@ function buildPayload(moduleName)
  * Send the current module’s settings payload to the backend API.
  * Shows a toast notification on success or error and clears the dirty flag.
  */
-async function saveSettings()
-{
-    const moduleName = window.currentModuleName;
-    const payload = buildPayload(moduleName);
-    if (!payload) return;
-    try
-    {
-        const resp = await fetch('/api/config',
-        {
-            method: 'POST',
-            headers:
-            {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(
-            {
-                [moduleName]: payload
-            })
-        });
-        if (!resp.ok) throw resp;
-        window.isDirty = false;
-        window.showToast?.('✅ Settings saved', 'success');
-    }
-    catch (err)
-    {
-        let msg = err.statusText || 'Save failed';
-        try
-        {
-            const json = await err.json();
-            msg = json.error || msg;
-        }
-        catch
-        {}
-        window.showToast?.(`❌ ${msg}`, 'error');
-    }
-}
-
-window.saveChanges = saveSettings;

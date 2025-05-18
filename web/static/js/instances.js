@@ -27,28 +27,6 @@ async function savePayload(payload)
         window.showToast('❌ Failed to update schedule: ' + (err.error || res.statusText), 'error');
     }
 }
-/**
- * Save handler for instances settings, mirroring saveSettings style.
- */
-async function saveInstances() {
-    console.log('[DEBUG] saveInstances invoked');
-  const payload = await buildInstancesPayload();
-  if (!payload) return;
-  try {
-    const res = await fetch('/api/config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
-    if (!res.ok) throw res;
-    window.isDirty = false;
-    window.showToast('✅ Instances updated!', 'success');
-  } catch (err) {
-    let msg = err.statusText || 'Save failed';
-    try { const data = await err.json(); msg = data.error || msg; } catch {}
-    window.showToast(`❌ ${msg}`, 'error');
-  }
-}
 
 // ===== Load Instances =====
 /**
@@ -93,10 +71,8 @@ window.loadInstances = async function() {
     }
     // Bind the Save button now that the fragment is loaded
     const saveBtn = document.getElementById('saveBtn');
-    if (saveBtn) {
-        saveBtn.type = 'button';
-        saveBtn.onclick = saveInstances;
-    }
+    window.DAPS.bindSaveButton(saveBtn, window.DAPS.buildInstancesPayload, "instances");
+    window.saveChanges = async () => window.saveSection(window.DAPS.buildInstancesPayload, "instances");
 };
 
 // ===== Create Entry UI =====
@@ -234,40 +210,3 @@ function createEntry(service, name, settings, isNew = false) {
 }
 
 // ===== Build Payload =====
-/**
- * Builds the payload object from the current form state for saving instances.
- *
- * @returns {Promise<Object|null>} The payload object containing instances or null if invalid.
- */
-async function buildInstancesPayload() {
-    const form = document.getElementById('instancesForm');
-    if (!form) return null;
-    const data = new FormData(form);
-    const newInstances = {};
-    document.querySelectorAll('.category').forEach(section => {
-        const service = section.querySelector('h2').textContent.toLowerCase().replace(/ /g, '_');
-        newInstances[service] = {};
-        section.querySelectorAll('.instance-entries .instance-entry').forEach(entryDiv => {
-            const name = entryDiv.querySelector('input[name$="__name"]').value.trim();
-            const url = entryDiv.querySelector('input[name$="__url"]').value.trim();
-            const api = entryDiv.querySelector('input[name$="__api"]').value.trim();
-            if (name) {
-                newInstances[service][name] = {
-                    url,
-                    api
-                };
-            }
-        });
-    });
-    const hasAny = Object.values(newInstances).some(serviceObj => Object.keys(serviceObj).length > 0);
-    if (!hasAny) {
-        alert('You must define at least one instance before saving.');
-        return null;
-    }
-    return {
-        instances: newInstances
-    };
-}
-
-// Remove DOMContentLoaded block: Instances page is loaded dynamically.
-window.saveChanges = saveInstances;

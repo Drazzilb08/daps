@@ -42,7 +42,7 @@ def scan_files_in_flat_folder(folder_path: str, logger: Any) -> List[Dict]:
         title = re.sub(illegal_chars_regex, '', title)
         raw_title = season_pattern.split(title)[0].strip()
         normalized_title = remove_special_chars.sub('', raw_title.lower())
-
+        print(f"normalized_title: {normalized_title}")
         if normalized_title in normalized_map:
             match_key = normalized_map[normalized_title]
             groups[match_key].append(file)
@@ -211,3 +211,45 @@ def _is_asset_folders(folder_path: str, logger: Any) -> bool:
             logger.debug(f"Found asset folder: {item}")
             return True
     return False
+def process_selected_files(file_paths: List[str], logger: Any, asset_folders: bool = False) -> List[Dict]:
+    """
+    Given a list of file paths, group and parse them into assets_dict (as get_assets_files would return).
+    """
+    from collections import defaultdict
+    assets_dict = []
+    if asset_folders:
+        # Group by parent directory name
+        folder_groups = defaultdict(list)
+        for file_path in file_paths:
+            if file_path.startswith('.'):
+                continue
+            folder_name = os.path.basename(os.path.dirname(file_path))
+            folder_groups[folder_name].append(file_path)
+        for folder_name, files in folder_groups.items():
+            folder_path = os.path.dirname(files[0])
+            base_files = [os.path.basename(f) for f in files]
+            assets_dict.append(parse_folder_group(folder_path, folder_name, base_files))
+    else:
+        # Flat file grouping (original)
+        groups = defaultdict(list)
+        normalized_map = {}
+        for file_path in file_paths:
+            filename = os.path.basename(file_path)
+            if filename.startswith('.'):
+                continue
+            title = filename.rsplit('.', 1)[0]
+            title = unidecode(html.unescape(title))
+            title = re.sub(illegal_chars_regex, '', title)
+            raw_title = season_pattern.split(title)[0].strip()
+            normalized_title = remove_special_chars.sub('', raw_title.lower())
+            if normalized_title in normalized_map:
+                match_key = normalized_map[normalized_title]
+                groups[match_key].append(file_path)
+            else:
+                groups[raw_title].append(file_path)
+                normalized_map[normalized_title] = raw_title
+        for base_name, files in groups.items():
+            folder = os.path.dirname(files[0]) if files else ""
+            base_files = [os.path.basename(f) for f in files]
+            assets_dict.append(parse_file_group(folder, base_name, base_files))
+    return assets_dict

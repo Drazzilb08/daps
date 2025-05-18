@@ -75,7 +75,7 @@ def rename_files(
     matched_assets: Dict[str, List[Dict[str, Any]]],
     config: SimpleNamespace,
     logger: Any
-) -> Tuple[Dict[str, List[Dict[str, Any]]], Dict[str, List[Dict[str, Any]]]]:
+) -> Tuple[Dict[str, List[Dict[str, Any]]], List[str]]:
     """
     Rename matched assets to Plex-compatible filenames and handle folder structure.
     Args:

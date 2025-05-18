@@ -472,7 +472,7 @@ def process_files(
         logger.error(f"Output directory {destination_dir} does not exist.")
         return
     incremental_run = False
-    if not renamed_assets or switch['start_today'] or switch['end_yesterday']:
+    if not renamed_assets or switch['start_since_last_run'] or switch['end_since_last_run']:
         assets_dict, prefix_index = get_assets_files(source_dirs, logger)
         if isinstance(assets_dict, list):
             grouped_assets: Dict[str, List[Dict[str, Any]]] = {}

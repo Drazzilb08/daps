@@ -325,3 +325,10 @@ h2
     background: var(--error-highlight);
     transform: translateY(-1px);
 }
+
+.input-invalid {
+    outline: 2px solid #ff9900 !important;
+    background: rgba(255, 223, 164, 0.7) !important;
+    color: #222 !important;
+    transition: background 0.5s, outline 0.5s;
+}

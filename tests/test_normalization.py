@@ -12,7 +12,7 @@ from util.normalization import normalize_titles, normalize_file_names
 #     assert preprocess_name("The Fast and the Furious") == "fastfurious"
 
 
-def test_normalize_file_names_strips_tags():
+def test_normalize_file():
     data = [
         "M*A*S*H (1972) - Season 1.jpg",
         "MASH (1972) - Season 1.jpg",

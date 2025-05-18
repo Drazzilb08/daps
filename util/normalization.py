@@ -13,30 +13,18 @@ from util.constants import (
     id_content_regex
 )
 
-
-def preprocess_name(name: str) -> str:
-    """
-    Simplify a name string by removing special characters, lowercasing, and removing common words.
-
-    Args:
-        name (str): The input name string.
-
-    Returns:
-        str: A normalized string with common words and special characters removed.
-    """
-    
-    name = re.sub(remove_special_chars, '', name.lower())
-    name = ' '.join(name.split())
-    name = unidecode(html.unescape(name))
-    return ''.join(word for word in name.split() if word not in common_words)
-
-
 def remove_common_words(text: str) -> str:
     """
-    Remove common filler words from a filename component.
+    Remove common filler words from a filename component if standalone (i.e., surrounded by spaces, start/end, or punctuation except * and -),
+    or immediately following a parenthesis (e.g., '(and').
     """
-    # Remove standalone common words, allowing punctuation boundaries
-    pattern = rf'(?:(?<=^)|(?<=\W))(?:{"|".join(re.escape(word) for word in common_words)})(?:(?=$)|(?=\W))'
+    # Remove common words immediately after '(' (case-insensitive)
+    for word in common_words:
+        text = re.sub(rf'(\()({re.escape(word)})(?=\W|$)', r'\1', text, flags=re.IGNORECASE)
+    # Remove standalone common words, but not if next to * or -
+    pattern = rf'(?:(?<=^)|(?<=[\s.,;:!?"\'()\[\]{{}}|\\/]))' \
+              rf'(?:{"|".join(re.escape(word) for word in common_words)})' \
+              rf'(?:(?=$)|(?=[\s.,;:!?"\'()\[\]{{}}|\\/]))'
     cleaned = re.sub(pattern, '', text, flags=re.IGNORECASE)
     # Collapse multiple spaces and trim
     return re.sub(r'\s+', ' ', cleaned).strip()
@@ -71,7 +59,7 @@ def normalize_file_names(file_name: str) -> str:
 
     # 4) Remove specified unwanted substrings
     cleaned = remove_tokens(cleaned)
-
+    
     # 5) Remove common filler words
     cleaned = remove_common_words(cleaned)
 
@@ -84,7 +72,9 @@ def normalize_file_names(file_name: str) -> str:
     # 8) Eliminate whitespace and lowercase
     cleaned = cleaned.replace(' ', '').lower()
 
-    return cleaned.strip()
+    result = cleaned.strip()
+
+    return result
 
 
 def normalize_titles(title: str) -> str:

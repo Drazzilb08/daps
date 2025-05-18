@@ -6,6 +6,7 @@ import logging
 import filecmp
 import shutil
 import sys
+import pathlib
 
 from util.logger import Logger
 from util.utility import (
@@ -27,38 +28,88 @@ except ImportError as e:
 
 logging.getLogger("PIL").setLevel(logging.WARNING)
 
-def check_holiday(config: SimpleNamespace, logger: Logger) -> Tuple[bool, Optional[List[str]], Dict[str, bool]]:
+
+from datetime import datetime
+from typing import Optional, List, Dict, Tuple
+
+def load_last_run(log_dir: str) -> Optional[datetime]:
+    """
+    Load the last run timestamp from the .last_run file in the log directory.
+    """
+    last_run_file = os.path.join(log_dir, ".last_run")
+    if os.path.exists(last_run_file):
+        with open(last_run_file, "r") as f:
+            ts = f.read().strip()
+            try:
+                return datetime.fromisoformat(ts)
+            except Exception:
+                pass
+    return None
+
+def save_last_run(log_dir: str, dt: Optional[datetime] = None) -> None:
+    """
+    Save the current timestamp (or provided datetime) to the .last_run file in the log directory.
+    """
+    last_run_file = os.path.join(log_dir, ".last_run")
+    now = dt or datetime.now()
+    with open(last_run_file, "w") as f:
+        f.write(now.isoformat())
+
+def check_holiday(
+    config: SimpleNamespace,
+    logger: Logger,
+    last_run: Optional[datetime] = None
+) -> Tuple[bool, Optional[List[str]], Dict[str, bool]]:
     """
     Determines if today falls within a holiday schedule and returns applicable border colors and switch flags.
+    Now supports modules run less than daily by checking if a holiday started or ended since the last run.
 
     Args:
         config (SimpleNamespace): Configuration object containing holidays.
         logger (Logger): Logger instance for logging messages.
+        last_run (Optional[datetime]): Timestamp of last module run.
 
     Returns:
         Tuple[bool, Optional[List[str]], Dict[str, bool]]:
             - True if today is a holiday, else False.
             - List of border colors if a holiday is active, else None.
-            - Dictionary indicating if today starts or ends a holiday period.
+            - Dictionary indicating if a holiday started or ended since last run.
     """
     holiday_switch: Dict[str, bool] = {
-        "start_today": False,
-        "end_yesterday": False,
+        "start_since_last_run": False,
+        "end_since_last_run": False,
     }
+    now = datetime.now()
     for holiday, schedule_color in config.holidays.items():
         schedule = schedule_color.get('schedule')
-        if not schedule:
+        if not schedule or not schedule.startswith("range("):
             continue
-        if schedule.startswith("range("):
-            inside = schedule[len("range("):-1]
-            start_str, end_str = inside.split("-", 1)
-            sm, sd = map(int, start_str.split("/"))
-            em, ed = map(int, end_str.split("/"))
-            now = datetime.now()
-            yesterday = now - timedelta(days=1)
-            holiday_switch["start_today"] = (now.month == sm and now.day == sd)
-            holiday_switch["end_yesterday"] = (yesterday.month == em and yesterday.day == ed)
-        if check_schedule(config.module_name, schedule, logger):
+        inside = schedule[len("range("):-1]
+        start_str, end_str = inside.split("-", 1)
+        sm, sd = map(int, start_str.split("/"))
+        em, ed = map(int, end_str.split("/"))
+        year = now.year
+        # Handle ranges that cross the year boundary
+        start_date = datetime(year, sm, sd)
+        end_date = datetime(year, em, ed)
+        if end_date < start_date:
+            # Range crosses new year
+            if now.month < sm:
+                start_date = start_date.replace(year=year-1)
+            else:
+                end_date = end_date.replace(year=year+1)
+        # Check if holiday started or ended since last run
+        if last_run:
+            if start_date > last_run and start_date <= now:
+                holiday_switch["start_since_last_run"] = True
+            if end_date > last_run and end_date <= now:
+                holiday_switch["end_since_last_run"] = True
+        else:
+            # On first run, treat as start if within holiday
+            if start_date <= now <= end_date:
+                holiday_switch["start_since_last_run"] = True
+        # Is today inside the holiday range?
+        if start_date <= now <= end_date:
             holiday_colors = schedule_color.get('color', config.border_colors)
             if isinstance(holiday_colors, str):
                 holiday_colors = [holiday_colors]
@@ -390,6 +441,14 @@ def process_files(
         renamed_assets (Optional[Dict[str, Any]]): Subset of assets for incremental processing.
     """
     logger = Logger(config.log_level, config.module_name)
+    # Derive log_dir based on logger setup (replicating util.logger logic)
+    if os.environ.get('DOCKER_ENV'):
+        config_dir = os.getenv('CONFIG_DIR', '/config')
+        log_dir = f"{config_dir}/logs/{config.module_name}"
+    else:
+        log_dir = os.path.join(pathlib.Path(__file__).parents[1], 'logs', config.module_name)
+
+    last_run = load_last_run(log_dir)
     if config.log_level.lower() == "debug":
         print_settings(logger, config)
     if renamerr_config:
@@ -404,9 +463,9 @@ def process_files(
         print_settings(logger, config)
     run_holiday = False
     border_colors = None
-    switch = {"start_today": False, "end_yesterday": False}
+    switch = {"start_since_last_run": False, "end_since_last_run": False}
     if config.holidays:
-        run_holiday, border_colors, switch = check_holiday(config, logger)
+        run_holiday, border_colors, switch = check_holiday(config, logger, last_run=last_run)
     if not border_colors:
         border_colors = config.border_colors
     if not os.path.exists(destination_dir):
@@ -495,6 +554,9 @@ def main(config: SimpleNamespace) -> None:
         process_files(
             config.source_dirs,
             config,
+            logger=logger,
+            renamed_assets=None,
+            renamerr_config=None
         )
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")

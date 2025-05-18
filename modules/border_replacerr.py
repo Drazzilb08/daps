@@ -145,7 +145,6 @@ def fix_borders(
         with progress(items, desc=f"Processing {key.capitalize()}", total=len(items), unit=" items", logger=logger, leave=True) as pbar:
             for data in pbar:
                 files = data.get('files', None)
-                path = data.get('path', None)
                 year = data.get('year', None)
                 folder = data.get('folder', None)
                 if year:
@@ -157,13 +156,7 @@ def fix_borders(
                     excluded = True
                     logger.debug(f"Excluding {data['title']} {year_str}")
                 # Prepare output directory for saving processed files
-                if path:
-                    path_basename = os.path.basename(path)
-                    output_path = f"{destination_dir}/{path_basename}"
-                    if not os.path.exists(output_path):
-                        os.makedirs(output_path)
-                else:
-                    output_path = destination_dir
+                output_path = destination_dir
                 for input_file in files:
                     file_name, extension = os.path.splitext(input_file)
                     if extension not in [".jpg", ".png", ".jpeg", ".JPG", ".PNG", ".JPEG"]:
@@ -180,10 +173,7 @@ def fix_borders(
                         else:
                             results = remove_border(input_file, output_path, config.border_width, logger, excluded, folder)
                         if results:
-                            if path:
-                                messages.append(f"{action} {data['title']}{year_str} - {file_name}")
-                            else:
-                                messages.append(f"{action} {file_name}")
+                            messages.append(f"{action} {file_name}")
                     else:
                         messages.append(f"Would have {action} {file_name}")
                     if rgb_border_colors:
@@ -347,21 +337,12 @@ def copy_files(
             with progress(items, desc=f"Processing {asset_type.capitalize()}", total=len(items), unit=" items", logger=logger, leave=True) as pbar:
                 for data in pbar:
                     files = data.get('files', None)
-                    path = data.get('path', None)
                     year = data.get('year', None)
                     if year:
                         year_str = f"({year})"
                     else:
                         year_str = ""
-                    if path:
-                        path_basename = os.path.basename(path)
-                        output_path = f"{destination_dir}/{path_basename}"
-                        if not dry_run and not os.path.exists(output_path):
-                            os.makedirs(output_path)
-                        elif dry_run:
-                            logger.debug(f"Would have created {output_path}")
-                    else:
-                        output_path = destination_dir
+                    output_path = destination_dir
                     for input_file in files:
                         file_name, extension = os.path.splitext(input_file)
                         if extension not in [".jpg", ".png", ".jpeg", ".JPG", ".PNG", ".JPEG"]:
@@ -455,16 +436,6 @@ def process_files(
             assets_dict = grouped_assets
         logger.info(f"\nDoing an incremental run on only assets that were provided\n")
         incremental_run = True
-
-        # When using renamed assets and asset_folders enabled, remove `folder` as that is already
-        # part of both the input and output information
-        if renamerr_config and renamerr_config.asset_folders:
-            for key, items in assets_dict.items():
-                asset_items = []
-                for item in items:
-                    item['folder'] = None
-                    asset_items.append(item)
-                assets_dict[key] = asset_items
 
     if not assets_dict:
         logger.info(f"\nNo assets found in the input directory")

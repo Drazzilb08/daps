@@ -2,6 +2,7 @@
  * Loads and renders the schedule form, including help section,
  * schedule inputs, run/cancel buttons, and real-time status polling.
  */
+// ===== Schedule Format Validation =====
 // ===== Fetch Config and Setup Form =====
 window.loadSchedule = async function()
 {
@@ -45,6 +46,14 @@ window.loadSchedule = async function()
         field.className = "field";
         field.appendChild(label);
         field.appendChild(input);
+    // ===== Live (as-you-type) Validation =====
+    input.addEventListener('input', () => {
+        if (!input.value.trim() || window.DAPS.isValidSchedule(input.value.trim())) {
+            input.classList.remove('input-invalid');
+        } else {
+            input.classList.add('input-invalid');
+        }
+    });
         const runBtn = document.createElement("button");
         runBtn.type = "button";
         runBtn.textContent = "Run Now";
@@ -241,99 +250,9 @@ window.loadSchedule = async function()
                 });
         });
     }, 3000);
-    document.addEventListener('DOMContentLoaded', () =>
-    {
-        window.loadSchedule();
-        const saveBtn = document.getElementById('saveBtn');
-        if (saveBtn)
-        {
-            saveBtn.type = 'button';
-            saveBtn.onclick = window.saveChanges;
-        }
-    });
-    // ===== Save Schedule Changes =====
-    /**
-     * Builds the updated schedule payload from the form inputs.
-     *
-     * @returns {Object|null} The schedule payload object or null if the form is missing.
-     */
-    async function buildSchedulePayload()
-    {
-        const form = document.getElementById('scheduleForm');
-        if (!form) return null;
-        const data = new FormData(form);
-        const updatedSchedule = {};
-        for (const [key, value] of data.entries())
-        {
-            updatedSchedule[key] = value.trim() || null;
-        }
-        return {
-            schedule: updatedSchedule
-        };
-    }
-    /**
-     * Sends the updated schedule payload to the backend API.
-     *
-     * @param {Object} payload - The schedule payload to save.
-     * @returns {Promise<void>}
-     */
-    async function savePayload(payload)
-    {
-        console.log(paylaod)
-        const res = await fetch('/api/config',
-        {
-            method: 'POST',
-            headers:
-            {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-        });
-        if (res.ok)
-        {
-            window.showToast('✅ Schedule updated successfully!', 'success');
-        }
-        else
-        {
-            const err = await res.json();
-            window.showToast('❌ Failed to update schedule: ' + (err.error || res.statusText), 'error');
-        }
-    }
-    /*
-     * Save handler for schedule settings, mirroring saveSettings style.
-     */
-    async function saveSchedule()
-    {
-        const payload = await buildSchedulePayload();
-        if (!payload) return;
-        try
-        {
-            const res = await fetch('/api/config',
-            {
-                method: 'POST',
-                headers:
-                {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(payload)
-            });
-            if (!res.ok) throw res;
-            window.showToast('✅ Schedule updated successfully!', 'success');
-        }
-        catch (err)
-        {
-            let msg = err.statusText || 'Save failed';
-            try
-            {
-                const data = await err.json();
-                msg = data.error || msg;
-            }
-            catch
-            {}
-            window.showToast(`❌ ${msg}`, 'error');
-        }
-    }
-    window.saveChanges = saveSchedule;
+    const saveBtn = document.getElementById('saveBtn');
+    window.DAPS.bindSaveButton(saveBtn, window.DAPS.buildSchedulePayload, "schedule");
+    window.saveChanges = async () => window.saveSection(window.DAPS.buildSchedulePayload, "schedule");
     // ===== Schedule Search Input Filtering =====
     const searchInput = document.getElementById("schedule-search");
     if (searchInput)

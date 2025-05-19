@@ -21,5 +21,4 @@ def test_normalize_file():
     ]
     print("")
     for i in data:
-        normalize_file_names(i)
-        print("")
+        print(normalize_file_names(i))

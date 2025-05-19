@@ -15,19 +15,12 @@ from util.constants import (
 
 def remove_common_words(text: str) -> str:
     """
-    Remove common filler words from a filename component if standalone (i.e., surrounded by spaces, start/end, or punctuation except * and -),
-    or immediately following a parenthesis (e.g., '(and').
+    Remove any word that matches an entry in common_words (case-insensitive).
+    Only removes complete words, does not touch substrings or special characters.
     """
-    # Remove common words immediately after '(' (case-insensitive)
-    for word in common_words:
-        text = re.sub(rf'(\()({re.escape(word)})(?=\W|$)', r'\1', text, flags=re.IGNORECASE)
-    # Remove standalone common words, but not if next to * or -
-    pattern = rf'(?:(?<=^)|(?<=[\s.,;:!?"\'()\[\]{{}}|\\/]))' \
-              rf'(?:{"|".join(re.escape(word) for word in common_words)})' \
-              rf'(?:(?=$)|(?=[\s.,;:!?"\'()\[\]{{}}|\\/]))'
-    cleaned = re.sub(pattern, '', text, flags=re.IGNORECASE)
-    # Collapse multiple spaces and trim
-    return re.sub(r'\s+', ' ', cleaned).strip()
+    words = text.split()
+    filtered = [word for word in words if word.lower() not in {w.lower() for w in common_words}]
+    return " ".join(filtered)
 
 
 def remove_tokens(text: str) -> str:
@@ -54,22 +47,22 @@ def normalize_file_names(file_name: str) -> str:
     # 2) Convert HTML entities & unicode to ASCII
     cleaned = unidecode(html.unescape(base))
 
-    # 3) Remove curly-brace tags
+    # 3) Remove ID tokens in curly braces (e.g., {tmdb-12345})
     cleaned = id_content_regex.sub('', cleaned)
 
-    # 4) Remove specified unwanted substrings
-    cleaned = remove_tokens(cleaned)
-    
-    # 5) Remove common filler words
-    cleaned = remove_common_words(cleaned)
-
-    # 6) Remove illegal filename characters
+    # 4) Remove illegal filename characters (for cross-platform safety)
     cleaned = illegal_chars_regex.sub('', cleaned)
 
-    # 7) Strip remaining special characters
+    # 5) Remove miscellaneous special symbols (punctuation, etc.)
     cleaned = re.sub(remove_special_chars, '', cleaned)
 
-    # 8) Eliminate whitespace and lowercase
+    # 6) Remove specified unwanted substrings (tags, encoding notes, etc.)
+    cleaned = remove_tokens(cleaned)
+    
+    # 7) Remove common filler words (from known media/common word lists)
+    cleaned = remove_common_words(cleaned)
+
+    # 8) Eliminate all whitespace and lowercase for consistent matching
     cleaned = cleaned.replace(' ', '').lower()
 
     result = cleaned.strip()
@@ -103,17 +96,17 @@ def normalize_titles(title: str) -> str:
     # 3) Remove ID tokens in curly braces (e.g., {tmdb-12345})
     normalized_title = id_content_regex.sub('', normalized_title)
 
-    # 4) Remove specified unwanted substrings (tags, encoding notes, etc.)
-    normalized_title = remove_tokens(normalized_title)
-
-    # 5) Remove common filler words (from known media/common word lists)
-    normalized_title = remove_common_words(normalized_title)
-
-    # 6) Remove illegal filename characters (for cross-platform safety)
+    # 4) Remove illegal filename characters (for cross-platform safety)
     normalized_title = illegal_chars_regex.sub('', normalized_title)
 
-    # 7) Remove miscellaneous special symbols (punctuation, etc.)
+    # 5) Remove miscellaneous special symbols (punctuation, etc.)
     normalized_title = re.sub(remove_special_chars, '', normalized_title)
+
+    # 6) Remove specified unwanted substrings (tags, encoding notes, etc.)
+    normalized_title = remove_tokens(normalized_title)
+
+    # 7) Remove common filler words (from known media/common word lists)
+    normalized_title = remove_common_words(normalized_title)
 
     # 8) Eliminate all whitespace and lowercase for consistent matching
     normalized_title = normalized_title.replace(' ', '').lower()

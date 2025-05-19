@@ -13,6 +13,7 @@ from util.utility import (
     create_bar,
 )
 import multiprocessing
+from util.version import get_version
 
 list_of_python_modules = [
     "border_replacerr",
@@ -129,6 +130,8 @@ def main():
     # CLI argument parsing
     parser = argparse.ArgumentParser(description="Run DAPS modules or start web UI.")
     parser.add_argument("modules", nargs="*", help="Module names to run once (cli mode).")
+    parser.add_argument('--version', action='version', version=f"%(prog)s {get_version()}", help="Show the DAPS version and exit.")
+
     args = parser.parse_args()
 
     # Set console logging: modules only when explicitly requested via CLI,

@@ -42,7 +42,6 @@ def scan_files_in_flat_folder(folder_path: str, logger: Any) -> List[Dict]:
         title = re.sub(illegal_chars_regex, '', title)
         raw_title = season_pattern.split(title)[0].strip()
         normalized_title = remove_special_chars.sub('', raw_title.lower())
-        print(f"normalized_title: {normalized_title}")
         if normalized_title in normalized_map:
             match_key = normalized_map[normalized_title]
             groups[match_key].append(file)

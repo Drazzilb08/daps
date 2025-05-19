@@ -5,7 +5,7 @@ from util.utility import progress
 from util.normalization import normalize_titles
 from util.index import search_matches
 from util.constants import folder_year_regex, season_pattern
-from typing import Any, Dict, List, Tuple, Optional
+from typing import Any, Dict, List, Optional
 
 def compare_strings(string1: str, string2: str) -> bool:
     """
@@ -147,9 +147,45 @@ def match_media_to_assets(
                         if s.get('season_has_episodes')
                     ]
                 found = False
-                titles_to_try = [media_data.get('title')] + media_data.get('alternate_titles', [])
-                for title in titles_to_try:
-                    for asset_data in search_matches(prefix_index, title, logger):
+                # Try ID-based search first, fallback to title search if not found
+                tmdb_id = media_data.get('tmdb_id')
+                tvdb_id = media_data.get('tvdb_id')
+                assets_found = []
+                id_assets_found = []
+                if tmdb_id or tvdb_id:
+                    id_assets_found = search_matches(prefix_index, media_data.get('title', ''), logger, tmdb_id=tmdb_id, tvdb_id=tvdb_id)
+                if id_assets_found:
+                    # Accept first ID match as authoritative, bypass is_match
+                    asset_data = id_assets_found[0]
+                    found = True
+                    if media_type == 'series' and media_seasons:
+                        # Identify missing seasons
+                        missing = [
+                            s for s in media_seasons
+                            if s not in asset_data.get('season_numbers', [])
+                        ]
+                        if missing:
+                            # Check for a main series poster (any file without season indicator)
+                            has_main_poster = any(
+                                not season_pattern.search(os.path.basename(f))
+                                for f in asset_data.get('files', [])
+                            )
+                            missing_main_poster = not has_main_poster
+                            unmatched[media_type][location].append({
+                                'title': media_data.get('title'),
+                                'year': media_data.get('year'),
+                                'missing_seasons': missing,
+                                'season_numbers': media_seasons,
+                                'missing_main_poster': missing_main_poster
+                            })
+                else:
+                    # Fallback to title search
+                    titles_to_try = [media_data.get('title')] + media_data.get('alternate_titles', [])
+                    for title in titles_to_try:
+                        assets_found = search_matches(prefix_index, title, logger)
+                        if assets_found:
+                            break
+                    for asset_data in assets_found:
                         if is_match(asset_data, media_data, logger):
                             found = True
                             if media_type == 'series' and media_seasons:
@@ -173,8 +209,6 @@ def match_media_to_assets(
                                         'missing_main_poster': missing_main_poster
                                     })
                             break
-                    if found:
-                        break
                 if not found:
                     entry = {'title': media_data.get('title'), 'year': media_data.get('year')}
                     if media_type == 'series':
@@ -221,38 +255,50 @@ def match_assets_to_media(
                         matched = False
                         seasons = media.get('seasons') or []
                         media_seasons_numbers = [season['season_number'] for season in seasons]
-                        titles_to_check = [media['title']] + media.get('alternate_titles', [])
-                        for title in titles_to_check:
-                            # Prefer assets originally classified as this media type
-                            candidates = [
-                                a for a in search_matches(prefix_index, title, logger)
-                                if a.get('type') == asset_type
-                            ]
-                            # Fallback to any asset if none of the correct type are found
-                            if not candidates:
+                        # Try ID-based search first, fallback to title search if not found
+                        tmdb_id = media.get('tmdb_id')
+                        tvdb_id = media.get('tvdb_id')
+                        candidates = []
+                        id_candidates = []
+                        if tmdb_id or tvdb_id:
+                            id_candidates = search_matches(prefix_index, media.get('title', ''), logger, tmdb_id=tmdb_id, tvdb_id=tvdb_id)
+                        if id_candidates:
+                            # Accept first ID match as authoritative, bypass is_match
+                            search_asset = id_candidates[0]
+                            matched = True
+                            asset_season_numbers = search_asset.get('season_numbers', None)
+                            if asset_season_numbers and media_seasons_numbers:
+                                handle_series_match(search_asset, media_seasons_numbers, asset_season_numbers)
+                        else:
+                            # Fallback to title search
+                            titles_to_check = [media['title']] + media.get('alternate_titles', [])
+                            for title in titles_to_check:
                                 candidates = search_matches(prefix_index, title, logger)
+                                if candidates:
+                                    break
+                            # Prefer assets originally classified as this media type
+                            type_candidates = [a for a in candidates if a.get('type') == asset_type]
+                            if type_candidates:
+                                candidates = type_candidates
                             for search_asset in candidates:
                                 total_comparisons += 1
                                 if is_match(search_asset, media, logger):
                                     asset_season_numbers = search_asset.get('season_numbers', None)
                                     # Only consider series match if seasons are compatible
-                                    if not asset_season_numbers or not media_seasons_numbers or asset_season_numbers and media_seasons_numbers:
+                                    if not asset_season_numbers or not media_seasons_numbers or (asset_season_numbers and media_seasons_numbers):
                                         matched = True
                                         if asset_season_numbers and media_seasons_numbers:
                                             handle_series_match(search_asset, media_seasons_numbers, asset_season_numbers)
-                                        search_match = search_asset
                                         break
-                            if matched:
-                                break
                         if matched:
                             matches += 1
                             matched_dict.append({
                                 'title': media['title'],
                                 'year': media['year'],
                                 'folder': media.get('folder'),
-                                'files': search_match['files'],
-                                'seasons_numbers': search_match.get('season_numbers', None) if search_match else None,
-                                'asset_ref': search_match,
+                                'files': search_asset['files'],
+                                'seasons_numbers': search_asset.get('season_numbers', None) if search_asset else None,
+                                'asset_ref': search_asset,
                                 # 'asset_type': asset_type,
                             })
                         else:

@@ -73,5 +73,6 @@ window.gdrivePresets = {
     "kalyanrajnish": "1Kb1kFZzzKKlq5N_ob8AFxJvStvm9PdiL",
     "theotherguy": "1TYVIGKpSwhipLyVQQn_OJHTobM6KaokB",
     "reitenth": "1cqDinU27cnHf5sL5rSlfO7o_T6LSxG77",
-    "wenisinmood": "1Wz0S18sKOeyBURkJ1uT3RtkEmSsK1-PG"
+    "wenisinmood": "1Wz0S18sKOeyBURkJ1uT3RtkEmSsK1-PG",
+    "dweagle79": "1XXZL-TpqWqfbKBWCifN2-MRdGDbSzHTj"
 };

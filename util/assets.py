@@ -50,7 +50,7 @@ def get_assets_files(source_dirs: Union[str, List[str]], logger: Any) -> Tuple[O
 
 def merge_assets(new_assets: List[dict], final_assets: List[dict], prefix_index: Dict[str, Any], logger: Any) -> None:
     """
-    Merge newly discovered assets into the main asset list, deduplicating by ID and title match using the search index.
+    Merge newly discovered assets into the main asset list, deduplicating by ID and title match.
 
     Args:
         new_assets (List[dict]): Newly discovered assets.
@@ -60,18 +60,8 @@ def merge_assets(new_assets: List[dict], final_assets: List[dict], prefix_index:
     """
     with progress(new_assets, desc="Processing assets", total=len(new_assets), unit="asset", logger=logger, leave=False) as pbar:
         for new in pbar:
-            # ID-based search first (strict: only if tmdb_id or tvdb_id present)
-            tmdb_id = new.get("tmdb_id")
-            tvdb_id = new.get("tvdb_id")
-            if tmdb_id or tvdb_id:
-                search_matched_assets = search_matches(
-                    prefix_index, new['title'], logger, tmdb_id=tmdb_id, tvdb_id=tvdb_id
-                )
-            else:
-                # Fallback to title-based search
-                search_matched_assets = search_matches(prefix_index, new['title'], logger)
-
-            for final in search_matched_assets:
+            matched = False
+            for final in final_assets:
                 if is_match(final, new, logger, log=True) and (
                     final['type'] == new['type'] or
                     final.get('season_numbers') or new.get('season_numbers')
@@ -110,8 +100,9 @@ def merge_assets(new_assets: List[dict], final_assets: List[dict], prefix_index:
                     for key in ['tmdb_id', 'tvdb_id', 'imdb_id']:
                         if not final.get(key) and new.get(key):
                             final[key] = new[key]
+                    matched = True
                     break
-            else:
+            if not matched:
                 # Add new asset if no match found and index it
                 new['files'].sort()
                 final_assets.append(new)

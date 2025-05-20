@@ -50,7 +50,7 @@ def get_assets_files(source_dirs: Union[str, List[str]], logger: Any) -> Tuple[O
 
 def merge_assets(new_assets: List[dict], final_assets: List[dict], prefix_index: Dict[str, Any], logger: Any) -> None:
     """
-    Merge newly discovered assets into the main asset list, deduplicating by ID and title match.
+    Merge newly discovered assets into the main asset list, deduplicating by content and title match.
 
     Args:
         new_assets (List[dict]): Newly discovered assets.
@@ -60,12 +60,9 @@ def merge_assets(new_assets: List[dict], final_assets: List[dict], prefix_index:
     """
     with progress(new_assets, desc="Processing assets", total=len(new_assets), unit="asset", logger=logger, leave=False) as pbar:
         for new in pbar:
-            matched = False
-            for final in final_assets:
-                if is_match(final, new, logger, log=True) and (
-                    final['type'] == new['type'] or
-                    final.get('season_numbers') or new.get('season_numbers')
-                ):
+            search_matched_assets = search_matches(prefix_index, new['title'], logger)
+            for final in search_matched_assets:
+                if is_match(final, new, logger, log=True) and (final['type'] == new['type'] or final.get('season_numbers') or new.get('season_numbers')):
                     # Promote to series if either asset has seasons
                     if new.get('season_numbers') or final.get('season_numbers'):
                         final['type'] = 'series'
@@ -100,9 +97,8 @@ def merge_assets(new_assets: List[dict], final_assets: List[dict], prefix_index:
                     for key in ['tmdb_id', 'tvdb_id', 'imdb_id']:
                         if not final.get(key) and new.get(key):
                             final[key] = new[key]
-                    matched = True
                     break
-            if not matched:
+            else:
                 # Add new asset if no match found and index it
                 new['files'].sort()
                 final_assets.append(new)

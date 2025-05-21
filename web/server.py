@@ -292,14 +292,15 @@ async def module_status(
     if proc:
         alive = proc.is_alive()
         if not alive:
-            duration = time.time() - run_time[module]
-            hours, rem = divmod(duration, 3600)
-            minutes, seconds = divmod(rem, 60)
-            human_duration = f"{int(hours)}:{int(minutes):02d}:{int(seconds):02d}"
-            logger.info(
-                f"[WEB] Module: {module} finished in {human_duration} (raw: {duration:.2f} seconds)"
-            )
-            del run_time[module]
+            start_time = run_time.pop(module, None)
+            if start_time is not None:
+                duration = time.time() - start_time
+                hours, rem = divmod(duration, 3600)
+                minutes, seconds = divmod(rem, 60)
+                human_duration = f"{int(hours)}:{int(minutes):02d}:{int(seconds):02d}"
+                logger.info(
+                    f"[WEB] Module: {module} finished in {human_duration} (raw: {duration:.2f} seconds)"
+                )
             if proc in run_processes.values():
                 del run_processes[module]
             elif (

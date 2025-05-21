@@ -232,7 +232,7 @@ def fix_borders(
             pbar.update(1)
     return messages
 
-                    
+
 def replace_border(
     input_file: str,
     output_path: str,
@@ -472,7 +472,7 @@ def process_files(
         logger.error(f"Output directory {destination_dir} does not exist.")
         return
     incremental_run = False
-    if not renamed_assets or switch['start_since_last_run'] or switch['end_since_last_run']:
+    if renamed_assets is None or switch['start_since_last_run'] or switch['end_since_last_run']:
         assets_dict, prefix_index = get_assets_files(source_dirs, logger)
         if isinstance(assets_dict, list):
             grouped_assets: Dict[str, List[Dict[str, Any]]] = {}

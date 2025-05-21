@@ -58,7 +58,7 @@ def create_collection(
         'title': title,
         'year': None,
         'normalized_title': normalized_title,
-        'files': files,
+       'files': [files[-1]],
         'alternate_titles': variants['alternate_titles'],
         'normalized_alternate_titles': variants['normalized_alternate_titles'],
         'folder': parent_folder,
@@ -88,18 +88,25 @@ def create_series(
     Returns:
         dict: Dictionary with metadata fields for a series.
     """
-    season_numbers: list[int] = []
+    season_numbers_dict = {}
+    series_poster = None
     for file_path in files:
         base = os.path.basename(file_path)
         if "Specials" in base:
-            season_numbers.append(0)
+            season_numbers_dict[0] = file_path
         else:
             # Extract season number using season_number_regex
             match = re.search(season_number_regex, base)
             if match:
-                season_numbers.append(int(match.group(1)))
+                season_numbers_dict[int(match.group(1))] = file_path
+            else:
+                series_poster = file_path
+
+                
     # Remove duplicates and sort
-    season_numbers = sorted(set(season_numbers))
+    season_numbers = sorted(season_numbers_dict.keys())
+    final_files = list(season_numbers_dict.values())
+    final_files.append(series_poster) if series_poster else None
     return {
         'type': 'series',
         'title': title,
@@ -107,7 +114,7 @@ def create_series(
         'tvdb_id': tvdb_id,
         'imdb_id': imdb_id,
         'normalized_title': normalized_title,
-        'files': files,
+       'files': final_files,
         'season_numbers': season_numbers,
         'folder': parent_folder,
     }
@@ -143,6 +150,6 @@ def create_movie(
         'tmdb_id': tmdb_id,
         'imdb_id': imdb_id,
         'normalized_title': normalized_title,
-        'files': files,
+       'files': [files[-1]],
         'folder': parent_folder,
     }

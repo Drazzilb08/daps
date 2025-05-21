@@ -180,21 +180,13 @@ def send_discord_notification(
     output: Any
 ) -> None:
     """Format output and send one or more Discord messages."""
-    def send_discord_notification(
-        logger: Any,
-        config: Any,
-        hook: str,
-        module_title: str,
-        output: Any
-    ) -> None:
-        """Format output and send one or more Discord messages."""
-        from util.notification_formatting import format_for_discord
-        from datetime import datetime
-        data, _ = format_for_discord(config, output)
-        timestamp = datetime.utcnow().isoformat()
-        dry_run = getattr(config, "dry_run", False)
-        for payload in build_discord_payload(module_title, data, timestamp, dry_run=dry_run):
-            send_and_log_response(logger, "Discord", hook, payload)
+    from util.notification_formatting import format_for_discord
+    from datetime import datetime
+    data, _ = format_for_discord(config, output)
+    timestamp = datetime.utcnow().isoformat()
+    dry_run = getattr(config, "dry_run", False)
+    for payload in build_discord_payload(module_title, data, timestamp, dry_run=dry_run):
+        send_and_log_response(logger, "Discord", hook, payload)
 
 def extract_apprise_errors(apprise: Apprise) -> str:
     """

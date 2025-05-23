@@ -63,19 +63,15 @@ def print_output(
                             year = item['year']
                             # Combined missing info
                             if missing_seasons and missing_main:
-                                logger.info(f"\t{title} ({year}) (Seasons below missing posters; main series poster missing)")
-                                for season in item['missing_seasons']:
-                                    logger.info(f"\t\tSeason: {season} <- Missing")
+                                logger.info(f"\t{title} ({year})")
+                                for season in item.get('missing_seasons', []):
+                                    logger.info(f"\t\tSeason: {season}")
                             elif missing_seasons:
                                 logger.info(f"\t{title} ({year}) (Seasons listed below have missing posters)")
                                 for season in item['missing_seasons']:
-                                    logger.info(f"\t\tSeason: {season} <- Missing")
-                            elif missing_main:
-                                logger.info(f"\t{title} ({year}) (Missing main series poster)")
-                            else:
-                                logger.info(f"\t{title} ({year})")
-                                for season in item.get('season_numbers', []):
                                     logger.info(f"\t\tSeason: {season}")
+                            elif missing_main:
+                                logger.info(f"\t{title} ({year})  Main series poster missing")
                         else:
                             year = f" ({item['year']})" if item.get('year') else ""
                             logger.info(f"\t{item['title']}{year}")
@@ -86,20 +82,22 @@ def print_output(
     unmatched_movies_total = sum(len(data) for data in unmatched_dict.get('movies', {}).values())
     total_movies = len(media_dict.get('movies', [])) if media_dict.get('movies') else 0
     percent_movies_complete = ((total_movies - unmatched_movies_total) / total_movies * 100) if total_movies else 0
+    # Calculate statistics for series (count only series with missing main poster)
+    unmatched_series_total = 0
+    for data in unmatched_dict.get('series', {}).values():
+        for item in data:
+            if item.get('missing_main_poster', False):
+                unmatched_series_total += 1
 
-    # Calculate statistics for series
-    unmatched_series_total = sum(len(data) for data in unmatched_dict.get('series', {}).values())
     total_series = len(media_dict.get('series', [])) if media_dict.get('series') else 0
     series_percent_complete = ((total_series - unmatched_series_total) / total_series * 100) if total_series else 0
 
-    # Calculate unmatched seasons count
+    # Calculate unmatched seasons count (sum all missing season posters)
     unmatched_seasons_total = 0
     for data in unmatched_dict.get('series', {}).values():
         for item in data:
-            if item.get('missing_season'):
-                unmatched_seasons_total += len(item.get('missing_seasons', []))
-            elif item.get('season_numbers'):
-                unmatched_seasons_total += len(item.get('season_numbers', []))
+            missing_seasons = item.get('missing_seasons', [])
+            unmatched_seasons_total += len(missing_seasons)
 
     # Calculate total seasons with episodes present
     total_seasons = 0
@@ -150,7 +148,7 @@ def main(config: SimpleNamespace) -> None:
 
         prefix_index = create_new_empty_index()
         print("Gathering all the posters, please wait...")
-        assets_dict, prefix_index = get_assets_files(config.source_dirs, logger)
+        assets_dict, prefix_index = get_assets_files(config.source_dirs, logger, merge=False)
         if not assets_dict:
             return
 

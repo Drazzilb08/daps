@@ -10,28 +10,40 @@ from util.construct import generate_title_variants
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 
-def get_assets_files(source_dirs: Union[str, List[str]], logger: Any) -> Tuple[Optional[Dict[str, List[dict]]], Optional[Dict[str, Any]]]:
+def get_assets_files(
+    source_dirs: str | list[str],
+    logger: Any,
+    merge: bool = True
+) -> tuple[list[dict] | None, dict[str, Any] | None]:
     """
     Process one or more directories to extract and organize media assets.
 
     Args:
-        source_dirs (Union[str, List[str]]): One or more paths to media source directories.
+        source_dirs (str | list[str]): One or more paths to media source directories.
         logger (Any): Logger instance for debug/info messages.
+        merge (bool): Whether to merge/deduplicate assets by content and title (default True).
 
     Returns:
-        Tuple[Optional[Dict[str, List[dict]]], Optional[Dict[str, Any]]]: 
-            A tuple containing categorized assets and a search index.
+        tuple[list[dict] | None, dict[str, Any] | None]:
+            A tuple containing a flat asset list and a search index.
     """
     source_dirs = [source_dirs] if isinstance(source_dirs, str) else source_dirs
-    final_assets: List[dict] = []
-    prefix_index: Dict[str, Any] = create_new_empty_index()
+    final_assets: list[dict] = []
+    prefix_index: dict[str, Any] = create_new_empty_index()
 
     start_time = datetime.datetime.now()
 
     for source_dir in source_dirs:
         new_assets = process_files(source_dir, logger)
         if new_assets:
-            merge_assets(new_assets, final_assets, prefix_index, logger)
+            if merge:
+                merge_assets(new_assets, final_assets, prefix_index, logger)
+            else:
+                # Just add them and index individually (no deduplication)
+                for asset in new_assets:
+                    asset['files'].sort()
+                    final_assets.append(asset)
+                    build_search_index(prefix_index, asset['title'], asset, logger)
 
     end_time = datetime.datetime.now()
     elapsed_time = (end_time - start_time).total_seconds()

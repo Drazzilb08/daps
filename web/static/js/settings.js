@@ -1,4 +1,12 @@
 // ===== Config Field Type Definitions =====
+// TODO: Remove legacy window.gdrivePresets support after updates on presets repo.
+if (!Array.isArray(window.gdrivePresets)) {
+    if (window.gdrivePresets && typeof window.gdrivePresets === 'object') {
+        window.gdrivePresets = Object.entries(window.gdrivePresets).map(([name, id]) => ({ name, id }));
+    } else {
+        window.gdrivePresets = [];
+    }
+}
 window.fetchConfig = async function()
 {
     try
@@ -587,24 +595,110 @@ function renderModals()
         modal.style.display = 'flex';
     }
 
-    function populateGDrivePresetsDropdown()
-    {
-        const presetSelect = document.getElementById('gdrive-sync-preset');
-        if (!presetSelect) return;
-        const entries = window.gdrivePresets ||
-        {};
-        presetSelect.innerHTML = '<option value="">Select preset...</option>' + Object.entries(entries).map(([name, id]) => `<option value="${id}">${name}</option>`).join('');
-        presetSelect.onchange = (e) =>
-        {
-            const id = e.target.value;
-            const name = Object.keys(entries).find(key => entries[key] === id) || '';
-            if (id)
-            {
-                document.getElementById('gdrive-id').value = id;
-                document.getElementById('gdrive-name').value = name;
+function populateGDrivePresetsDropdown() {
+    const presetSelect = document.getElementById('gdrive-sync-preset');
+    const presetDetail = document.getElementById('gdrive-preset-detail');
+    const searchBox = document.getElementById('gdrive-preset-search');
+    if (!presetSelect) return;
+
+    const entries = window.gdrivePresets || [];
+    presetSelect.innerHTML = '<option value="">— No Preset —</option>' +
+        entries.map(drive =>
+            `<option value="${drive.id}" data-name="${drive.name}">${drive.name}</option>`
+        ).join('');
+    // Initialize or re-initialize Select2 for better UX
+    setTimeout(function() {
+        if ($('#gdrive-sync-preset').data('select2')) {
+            $('#gdrive-sync-preset').select2('destroy');
+        }
+        $('#gdrive-sync-preset').select2({
+            placeholder: "Select a GDrive preset",
+            allowClear: true,
+            width: '100%',
+            dropdownParent: $('#gdrive-sync-preset').closest('.modal-content'),
+            language: {
+                searching: function() {
+                    return "Type to filter drives…";
+                },
+                noResults: function() {
+                    return "No matching presets";
+                },
+                inputTooShort: function() {
+                    return "Type to search…";
+                }
             }
-        };
+        });
+        $('#gdrive-sync-preset').on('select2:open', function () {
+            setTimeout(function() {
+                $('.select2-search__field').attr('placeholder', 'Type to search presets…');
+            }, 0);
+        });
+    }, 0);
+
+    function updatePresetDetail() {
+    const id = presetSelect.value;
+    const drive = entries.find(d => d.id === id);
+    if (id && drive) {
+        document.getElementById('gdrive-id').value = drive.id;
+        document.getElementById('gdrive-name').value = drive.name;
+        document.getElementById('gdrive-location').value = drive.location || '';
+        if (presetDetail) {
+            let metaLines = '';
+            // Show 'Type' first if present
+            if ('type' in drive) {
+                metaLines += `Type: <span class="preset-type">${drive.type}</span><br>`;
+            }
+            // Remarks section for 'content'
+            if ('content' in drive && drive.content) {
+                metaLines += `Remarks:<br>`;
+                if (Array.isArray(drive.content)) {
+                    for (const line of drive.content) {
+                        metaLines += `<div style="margin-left:1em;">${line}</div>`;
+                    }
+                } else {
+                    metaLines += `<div style="margin-left:1em;">${drive.content}</div>`;
+                }
+            }
+            // Show other fields except id, name, type, content
+            for (const key of Object.keys(drive)) {
+                if (['name', 'id', 'content', 'type'].includes(key)) continue;
+                let label = key.charAt(0).toUpperCase() + key.slice(1) + ':';
+                metaLines += `${label} ${drive[key]}<br>`;
+            }
+            presetDetail.innerHTML = `
+            <div class="preset-card">
+                ${metaLines}
+            </div>`;
+        }
+    } else if (presetDetail) {
+        presetDetail.innerHTML = '';
     }
+}
+
+    presetSelect.onchange = updatePresetDetail;
+    updatePresetDetail();
+
+    if (searchBox) {
+        searchBox.addEventListener('input', () => {
+            const filter = searchBox.value.toLowerCase();
+            Array.from(presetSelect.options).forEach(opt => {
+                if (!opt.value) return;
+                opt.style.display = opt.text.toLowerCase().includes(filter) ? '' : 'none';
+            });
+            let firstVisible = Array.from(presetSelect.options).find(
+                opt => opt.style.display !== 'none' && opt.value
+            );
+            if (firstVisible) {
+                presetSelect.value = firstVisible.value;
+                updatePresetDetail();
+            } else {
+                presetSelect.value = '';
+                updatePresetDetail();
+            }
+        });
+    }
+}
+
 
     function gdriveSyncModal(editIdx)
     {
@@ -620,8 +714,9 @@ function renderModals()
           <div class="modal-content">
             <label>Preset (optional)</label>
             <select id="gdrive-sync-preset" class="select">
-              <option value="">Select preset...</option>
+              <option value="">— No Preset —</option>
             </select>
+            <div id="gdrive-preset-detail" style="margin-bottom: 0.75rem;"></div>
             <label>Name</label><input type="text" id="gdrive-name" class="input" placeholder="${window.PLACEHOLDER_TEXT[moduleName]?.name ?? ''}" />
             <label>GDrive ID</label><input type="text" id="gdrive-id" class="input" placeholder="${window.PLACEHOLDER_TEXT[moduleName]?.id ?? ''}" />
             <label>Location</label><input type="text" id="gdrive-location" class="input" readonly placeholder="${window.PLACEHOLDER_TEXT[moduleName]?.location ?? ''}" />

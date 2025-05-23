@@ -202,3 +202,65 @@ body.modal-open .overlay
     gap: 0.5rem;
     align-items: center;
 }
+
+/* --- Select2 Custom Styling for DAPS --- */
+.select2-container .select2-selection--single {
+    min-height: 48px;
+    height: 48px !important;
+    background: var(--input-bg, #222);
+    border: 1.5px solid var(--form-border, #383d44);
+    border-radius: 7px;
+    color: var(--form-color, #eee);
+    font-size: 1.12rem;
+    font-weight: 500;
+    box-shadow: none;
+    display: flex;
+    align-items: center;
+    transition: border 0.18s;
+}
+.select2-container--default .select2-selection--single:focus,
+.select2-container--default .select2-selection--single.select2-selection--focus {
+    border-color: var(--accent, #3e7bfa);
+    outline: none;
+    box-shadow: 0 0 0 2px var(--accent, #375ea3, 0.08);
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: var(--form-color, #eee);
+    line-height: 48px;
+    padding-left: 1rem;
+    font-size: 1.11rem;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 100%;
+    right: 0.75rem;
+    width: 36px;
+    top: 0;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow b {
+    border-width: 8px 6px 0 6px;
+    border-color: var(--accent, #3e7bfa) transparent transparent transparent !important;
+    margin-left: 8px;
+    margin-top: 6px;
+}
+.select2-dropdown {
+    background: var(--card-bg, #181a1b);
+    border-radius: 0 0 10px 10px;
+    border: 1.5px solid var(--form-border, #525867);
+    /* NEW: Stronger shadow and separation */
+    box-shadow:
+        0 8px 32px 0 rgba(40,60,90,0.34),
+        0 2px 8px 0 rgba(60,80,120,0.10);
+    color: var(--fg, #eee);
+    margin-top: 6px !important;
+    z-index: 1050 !important;
+    backdrop-filter: blur(2.5px) saturate(120%);
+}
+.select2-results__option {
+    padding: 1rem 1.2rem;
+    font-size: 1.08rem;
+    border-radius: 3px;
+}
+.select2-results__option--highlighted {
+    background: var(--accent, #3e7bfa);
+    color: var(--primary-bg, #fff);
+}

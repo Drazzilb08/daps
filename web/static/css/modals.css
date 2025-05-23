@@ -205,48 +205,55 @@ body.modal-open .overlay
 
 /* --- Select2 Custom Styling for DAPS --- */
 .select2-container .select2-selection--single {
-    min-height: 48px;
-    height: 48px !important;
-    background: var(--input-bg, #222);
-    border: 1.5px solid var(--form-border, #383d44);
-    border-radius: 7px;
-    color: var(--form-color, #eee);
-    font-size: 1.12rem;
+    background: var(--form-bg);
+    color: var(--form-color);
+    border: var(--form-border);
+    border-radius: var(--form-radius);
+    font-size: var(--form-font-size);
     font-weight: 500;
-    box-shadow: none;
+    height: var(--form-height);
+    min-height: var(--form-height);
+    padding-left: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
     display: flex;
     align-items: center;
-    transition: border 0.18s;
+    box-shadow: none;
 }
 .select2-container--default .select2-selection--single:focus,
 .select2-container--default .select2-selection--single.select2-selection--focus {
-    border-color: var(--accent, #3e7bfa);
+    border-color: var(--focus);
     outline: none;
-    box-shadow: 0 0 0 2px var(--accent, #375ea3, 0.08);
+    box-shadow: 0 0 0 3px var(--focus);
 }
 .select2-container--default .select2-selection--single .select2-selection__rendered {
-    color: var(--form-color, #eee);
-    line-height: 48px;
-    padding-left: 1rem;
-    font-size: 1.11rem;
+    color: var(--form-color);
+    line-height: var(--form-height);
+    font-size: var(--form-font-size);
+    padding-left: 0;
+    font-weight: 500;
 }
 .select2-container--default .select2-selection--single .select2-selection__arrow {
-    height: 100%;
-    right: 0.75rem;
-    width: 36px;
-    top: 0;
+    position: absolute;
+    top: 50%;
+    right: 1.3rem;
+    width: 18px;
+    height: 18px;
+    pointer-events: none;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .select2-container--default .select2-selection--single .select2-selection__arrow b {
     border-width: 8px 6px 0 6px;
     border-color: var(--accent, #3e7bfa) transparent transparent transparent !important;
-    margin-left: 8px;
-    margin-top: 6px;
+    margin: 0;
 }
 .select2-dropdown {
     background: var(--card-bg, #181a1b);
     border-radius: 0 0 10px 10px;
     border: 1.5px solid var(--form-border, #525867);
-    /* NEW: Stronger shadow and separation */
     box-shadow:
         0 8px 32px 0 rgba(40,60,90,0.34),
         0 2px 8px 0 rgba(60,80,120,0.10);

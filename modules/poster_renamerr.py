@@ -378,25 +378,36 @@ def main(config: SimpleNamespace) -> None:
             else:
                 logger.info("No assets matched to media.")
         if config.run_border_replacerr:
-            logger.info("Running border_replacerr.py")
             tmp_dir = os.path.join(config.destination_dir, 'tmp')
             from modules.border_replacerr import process_files
             from util.config import Config
             from util.scanner import process_selected_files
             replacerr_config = Config("border_replacerr").module_config
-            renamed_files = (renamed_files if config.incremental_border_replacerr else None)
-
-            if renamed_files:
-                renamed_assets = process_selected_files(renamed_files, logger, asset_folders=config.asset_folders)
-
-            process_files(
-                tmp_dir,
-                config=replacerr_config,
-                logger=None,
-                renamerr_config=config,
-                renamed_assets=renamed_assets,
-            )
-            logger.info("Finished running border_replacerr.py")
+            # Simplified conditional logic for incremental/full run
+            if config.incremental_border_replacerr:
+                if renamed_files:
+                    renamed_assets = process_selected_files(renamed_files, logger, asset_folders=config.asset_folders)
+                    logger.info("\nDoing an incremental run on only assets that were provided\nStarting Border Replacerr...\n")
+                    process_files(
+                        tmp_dir,
+                        config=replacerr_config,
+                        logger=None,
+                        renamerr_config=config,
+                        renamed_assets=renamed_assets,
+                        incremental_run=True
+                    )
+                else:
+                    logger.info("\nNo new assets to incrementally perform with border_replacerr.\nSkipping Border Replacerr..")
+            else:
+                logger.info("\nDoing a full run with Border Replacerr\nStarting Border Replacerr...\n")
+                process_files(
+                    tmp_dir,
+                    config=replacerr_config,
+                    logger=None,
+                    renamerr_config=config,
+                    renamed_assets=renamed_assets,
+                    incremental_run=False
+                )
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()

@@ -428,7 +428,8 @@ def process_files(
     config: SimpleNamespace,
     logger: Optional[Logger] = None,
     renamerr_config: Optional[SimpleNamespace] = None,
-    renamed_assets: Optional[Dict[str, Any]] = None
+    renamed_assets: Optional[Dict[str, Any]] = None,
+    incremental_run: Optional[bool] = False,
 ) -> None:
     """
     Main processor for applying or removing borders to media assets.
@@ -471,7 +472,6 @@ def process_files(
     if not os.path.exists(destination_dir):
         logger.error(f"Output directory {destination_dir} does not exist.")
         return
-    incremental_run = False
     if renamed_assets is None or switch['start_since_last_run'] or switch['end_since_last_run']:
         assets_dict, prefix_index = get_assets_files(source_dirs, logger)
         if isinstance(assets_dict, list):
@@ -485,7 +485,7 @@ def process_files(
             logger.info(f"Please check the input directory and try again.")
             logger.info(f"Exiting...")
             return
-    else:
+    elif renamed_assets and incremental_run:
         assets_dict = renamed_assets
         if isinstance(assets_dict, list):
             grouped_assets: Dict[str, List[Dict[str, Any]]] = {}
@@ -493,8 +493,6 @@ def process_files(
                 asset_type = asset.get('type')
                 grouped_assets.setdefault(asset_type, []).append(asset)
             assets_dict = grouped_assets
-        logger.info(f"\nDoing an incremental run on only assets that were provided\n")
-        incremental_run = True
 
     if not assets_dict:
         logger.info(f"\nNo assets found in the input directory")
@@ -532,12 +530,9 @@ def process_files(
             print_json(assets_dict, logger, config.module_name, "assets_dict")
             print_json(messages, logger, config.module_name, "messages")
     else:
-        if incremental_run:
-            logger.info(f"\nNo assets found for an incremental run")
-        else:
-            logger.info(f"\nNo assets found in the input directory")
-            logger.info(f"Please check the input directory and try again.")
-            logger.info(f"Exiting...")
+        logger.info(f"\nNo assets found in the input directory")
+        logger.info(f"Please check the input directory and try again.")
+        logger.info(f"Exiting...")
         return
     
 # --- Formatting function for border actions output ---

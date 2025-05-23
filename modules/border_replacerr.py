@@ -177,10 +177,10 @@ def fix_borders(
             rgb_color = convert_to_rgb(color, logger)
             rgb_border_colors.append(rgb_color)
     if not border_colors:
-        action = "Removed border on"
+        action = "Removed border"
         banner = "Removing Borders"
     else:
-        action = "Replacing border on"
+        action = "Replaced border"
         banner = "Replacing Borders"
     if action:
         table = [
@@ -224,9 +224,9 @@ def fix_borders(
                         else:
                             results = remove_border(input_file, output_path, config.border_width, logger, excluded, folder)
                         if results:
-                            messages.append(f"{action} {file_name}")
+                            messages.append(f"{action} on {file_name}")
                     else:
-                        messages.append(f"Would have {action} {file_name}")
+                        messages.append(f"Would have {action} on {file_name}")
                     if rgb_border_colors:
                         current_index = (current_index + 1) % len(rgb_border_colors)
             pbar.update(1)
@@ -522,12 +522,10 @@ def process_files(
     if any(assets_dict.get('movies', [])) or any(assets_dict.get('series', [])) or any(assets_dict.get('collections', [])):
         messages = fix_borders(assets_dict, config, border_colors, destination_dir, dry_run, logger, config.exclusion_list)
         if messages:
-            table = [
-                ["Processed Files", f"{len(messages)}"],
-            ]
+            table = [["Processed Files", f"{len(messages)}"]]
             logger.info(create_table(table))
-            for message in messages:
-                logger.info(message)
+            formatted = print_output(assets_dict, "removed border" if not border_colors else "replaced border", dry_run)
+            logger.info(formatted)
         else:
             logger.info(f"\nNo files processed")
         if config.log_level == "debug":
@@ -541,6 +539,41 @@ def process_files(
             logger.info(f"Please check the input directory and try again.")
             logger.info(f"Exiting...")
         return
+    
+# --- Formatting function for border actions output ---
+def print_output(
+    assets_dict: Dict[str, List[Dict[str, Any]]],
+    action: str,
+    dry_run: bool
+) -> str:
+    """
+    Groups output by asset title and lists all processed files per asset.
+
+    Args:
+        assets_dict: Dictionary grouped by type, each with a list of asset dicts.
+        action: 'Removed border' or 'Replaced border'.
+        dry_run: If True, prefix with 'Would have'.
+
+    Returns:
+        str: Formatted output for logging or CLI.
+    """
+    output_lines = []
+    for asset_type, assets in assets_dict.items():
+        for asset in assets:
+            title = asset.get("title")
+            year = asset.get("year")
+            if year:
+                display = f"{title} ({year})"
+            else:
+                display = f"{title}"
+            prefix = f"Would have {action} on" if dry_run else f"{action} on"
+            output_lines.append(f"{prefix} '{display}'")
+            files = asset.get("files", [])
+            for file_path in files:
+                file_name = os.path.basename(file_path)
+                output_lines.append(f"    {file_name}")
+    return "\n".join(output_lines)
+
 
 def main(config: SimpleNamespace) -> None:
     """

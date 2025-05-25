@@ -1,5 +1,6 @@
 from util.normalization import normalize_titles
 from typing import Any, Dict, List, Optional
+from util.constants import common_words
 
 Asset = Dict[str, Any]
 PrefixIndex = Dict[str, List[Asset]]
@@ -13,6 +14,15 @@ def create_new_empty_index() -> PrefixIndex:
         PrefixIndex: An empty dictionary.
     """
     return {}
+
+def remove_common_words(text: str) -> str:
+    """
+    Remove any word that matches an entry in common_words (case-insensitive).
+    Only removes complete words, does not touch substrings or special characters.
+    """
+    words = text.split()
+    filtered = [word for word in words if word.lower() not in {w.lower() for w in common_words}]
+    return " ".join(filtered)
 
 def build_search_index(
     prefix_index: PrefixIndex, 
@@ -31,6 +41,8 @@ def build_search_index(
         logger (Optional[Any]): Logger instance for debug output.
         debug_items (Optional[List[str]]): List of normalized titles to enable debug logging on.
     """
+    # remove all words w/in  title that are in common_words
+    title = remove_common_words(title)
     processed: str = normalize_titles(title)
     debug_build_index: bool = bool(debug_items and len(debug_items) > 0 and processed in debug_items)
 

@@ -74,6 +74,11 @@ def merge_assets(new_assets: List[dict], final_assets: List[dict], prefix_index:
         for new in pbar:
             search_matched_assets = search_matches(prefix_index, new['title'], logger)
             for final in search_matched_assets:
+                # Skip merging if both new and final assets come from the same directory
+                new_dirs = {os.path.dirname(f) for f in new['files']}
+                final_dirs = {os.path.dirname(f) for f in final['files']}
+                if new_dirs & final_dirs:
+                    continue
                 if is_match(final, new, logger, log=True) and (final['type'] == new['type'] or final.get('season_numbers') or new.get('season_numbers')):
                     # Promote to series if either asset has seasons
                     if new.get('season_numbers') or final.get('season_numbers'):

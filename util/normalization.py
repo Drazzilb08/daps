@@ -105,9 +105,6 @@ def normalize_titles(title: str) -> str:
     # 5) Remove miscellaneous special symbols (punctuation, etc.)
     normalized_title = re.sub(remove_special_chars, '', normalized_title)
 
-    # 7) Remove common filler words (from known media/common word lists)
-    normalized_title = remove_common_words(normalized_title)
-
     # 8) Eliminate all whitespace and lowercase for consistent matching
     normalized_title = normalized_title.replace(' ', '').lower()
 

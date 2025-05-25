@@ -284,8 +284,6 @@ def match_assets_to_media(
                             titles_to_check = [media['title']] + media.get('alternate_titles', [])
                             for title in titles_to_check:
                                 candidates = search_matches(prefix_index, title, logger)  # no tmdb_id or tvdb_id
-                                if candidates:
-                                    break
                             # Prefer assets originally classified as this media type
                             type_candidates = [a for a in candidates if a.get('type') == asset_type]
                             if type_candidates:

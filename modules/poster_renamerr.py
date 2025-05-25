@@ -409,7 +409,7 @@ def main(config: SimpleNamespace) -> None:
                     renamed_assets=renamed_assets,
                     incremental_run=False
                 )
-                logger.info(f"Finished running border_replacerr.pyu")
+                logger.info(f"Finished running border_replacerr.py")
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()

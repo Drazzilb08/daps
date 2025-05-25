@@ -149,7 +149,7 @@ def match_media_to_assets(
                 # Try ID-based search first, fallback to title search if not found
                 tmdb_id = media_data.get('tmdb_id')
                 tvdb_id = media_data.get('tvdb_id')
-                assets_found = []
+                candidates = []
                 id_assets_found = []
                 if tmdb_id or tvdb_id:
                     id_assets_found = search_matches(prefix_index, media_data.get('title', ''), logger, tmdb_id=tmdb_id, tvdb_id=tvdb_id)
@@ -181,9 +181,8 @@ def match_media_to_assets(
                     titles_to_try = [media_data.get('title')] + media_data.get('alternate_titles', [])
                     for title in titles_to_try:
                         assets_found = search_matches(prefix_index, title, logger)
-                        if assets_found:
-                            break
-                    for asset_data in assets_found:
+                        candidates.extend(assets_found)
+                    for asset_data in candidates:
                         if is_match(asset_data, media_data, logger):
                             found = True
                             if media_type == 'series' and media_seasons:
@@ -283,7 +282,8 @@ def match_assets_to_media(
                         if not matched:
                             titles_to_check = [media['title']] + media.get('alternate_titles', [])
                             for title in titles_to_check:
-                                candidates = search_matches(prefix_index, title, logger)  # no tmdb_id or tvdb_id
+                                candidate_list = search_matches(prefix_index, title, logger)  # no tmdb_id or tvdb_id
+                                candidates.extend(candidate_list)
                             # Prefer assets originally classified as this media type
                             type_candidates = [a for a in candidates if a.get('type') == asset_type]
                             if type_candidates:

@@ -54,29 +54,38 @@ def is_match(
         if asset_year is None and all(year is None for year in media_years):
             return True
         return any(asset_year == year for year in media_years if year is not None)
+    
+    def has_any_valid_id(d: dict) -> bool:
+        for k in ['tmdb_id', 'tvdb_id', 'imdb_id']:
+            v = d.get(k)
+            if k == 'imdb_id':
+                if v and isinstance(v, str) and v.startswith('tt'):
+                    return True
+            else:
+                if v and str(v).isdigit() and int(v) > 0:
+                    return True
+        return False
 
-    has_asset_ids = any(asset.get(k) for k in ['tvdb_id', 'tmdb_id', 'imdb_id'])
-    has_media_ids = any(media.get(k) for k in ['tvdb_id', 'tmdb_id', 'imdb_id'])
+    has_asset_ids = has_any_valid_id(asset)
+    has_media_ids = has_any_valid_id(media)
+    print(f"has_asset_ids: {has_asset_ids}")
+    print(f"has_media_ids: {has_media_ids}")
 
     if has_asset_ids and has_media_ids:
-        # Prefer direct ID matches if IDs are available
         id_match_criteria = [
-            (media.get('tvdb_id') is not None and asset.get('tvdb_id') is not None and media['tvdb_id'] == asset['tvdb_id'],
-             f"Media ID {media.get('tvdb_id')} matches asset TVDB ID {asset.get('tvdb_id')}"),
-            (media.get('tmdb_id') is not None and asset.get('tmdb_id') is not None and media['tmdb_id'] == asset['tmdb_id'],
-             f"Media ID {media.get('tmdb_id')} matches asset TMDB ID {asset.get('tmdb_id')}"),
-            (media.get('imdb_id') is not None and asset.get('imdb_id') is not None and media['imdb_id'] == asset['imdb_id'],
-             f"Media ID {media.get('imdb_id')} matches asset IMDB ID {asset.get('imdb_id')}")
+            media.get('tvdb_id') and asset.get('tvdb_id') and media['tvdb_id'] == asset['tvdb_id'],
+            media.get('tmdb_id') and asset.get('tmdb_id') and media['tmdb_id'] == asset['tmdb_id'],
+            media.get('imdb_id') and asset.get('imdb_id') and media['imdb_id'] == asset['imdb_id'],
         ]
-        for condition, message in id_match_criteria:
-            if condition:
-                if log and logger:
-                    logger.debug(
-                        f"Match found: {message} -> Asset: {asset.get('title', '')} ({asset.get('year', '')}), "
-                        f"Media: {media.get('title', '')} ({media.get('year', '')})"
-                    )
-                return True
-
+        if any(id_match_criteria):
+            if log and logger:
+                logger.debug(
+                    f"ID match: Asset: {asset.get('title')} [{asset.get('tmdb_id')},{asset.get('tvdb_id')},{asset.get('imdb_id')}] | "
+                    f"Media: {media.get('title')} [{media.get('tmdb_id')},{media.get('tvdb_id')},{media.get('imdb_id')}]"
+                )
+            return True
+        return False
+    
     # Title-based matching heuristics
     match_criteria = [
         (asset.get('title') == media.get('title'), "Asset title equals media title"),
@@ -103,6 +112,7 @@ def is_match(
                 )
             return True
     return False
+
 def match_media_to_assets(
     media_dict: Dict[str, List[Dict[str, Any]]],
     prefix_index: Dict[str, Any],

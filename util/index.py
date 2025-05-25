@@ -133,6 +133,7 @@ def search_matches(
         return filtered_assets
 
     # Only perform title-based search if neither ID is provided
+    title = remove_common_words(title)
     processed_title = normalize_titles(title)
     words = processed_title.split()
     matches: List[Asset] = []

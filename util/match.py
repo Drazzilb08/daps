@@ -278,8 +278,9 @@ def match_assets_to_media(
                                     if asset_season_numbers and media_seasons_numbers:
                                         handle_series_match(search_asset, media_seasons_numbers, asset_season_numbers)
                                     break
-                        # 2. Fallback: Try title-based search (DO NOT pass IDs)
-                        if not matched:
+                        # 2. Fallback: Try title-based search ONLY if asset has no IDs at all
+                        # Only allow name-based fallback if the asset has no IDs at all
+                        if not matched and not id_candidates:
                             titles_to_check = [media['title']] + media.get('alternate_titles', [])
                             for title in titles_to_check:
                                 candidate_list = search_matches(prefix_index, title, logger)  # no tmdb_id or tvdb_id

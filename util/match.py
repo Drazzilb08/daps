@@ -68,8 +68,6 @@ def is_match(
 
     has_asset_ids = has_any_valid_id(asset)
     has_media_ids = has_any_valid_id(media)
-    print(f"has_asset_ids: {has_asset_ids}")
-    print(f"has_media_ids: {has_media_ids}")
 
     if has_asset_ids and has_media_ids:
         id_match_criteria = [

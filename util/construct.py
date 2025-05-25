@@ -36,6 +36,7 @@ def generate_title_variants(title: str) -> dict[str, list[str]]:
 
 def create_collection(
     title: str,
+    tmdb_id: int,
     normalized_title: str,
     files: list[str],
     parent_folder: Optional[str] = None
@@ -58,9 +59,10 @@ def create_collection(
         'title': title,
         'year': None,
         'normalized_title': normalized_title,
-       'files': [files[-1]],
+        'files': [files[-1]],
         'alternate_titles': variants['alternate_titles'],
         'normalized_alternate_titles': variants['normalized_alternate_titles'],
+        'tmdb_id': tmdb_id,
         'folder': parent_folder,
     }
 

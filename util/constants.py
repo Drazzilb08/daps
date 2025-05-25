@@ -51,7 +51,7 @@ id_content_regex = re.compile(
 )
 
 words_to_remove: List[str] = [
-    "(US)", "(UK)", "(AU)", "(CA)", "(NZ)", "(FR)", "(NL)", "DC's"
+    "(US)", "(UK)", "(AU)", "(CA)", "(NZ)", "(FR)", "(NL)", "DC's", "Collection"
 ]
 
 common_words: Set[str] = {

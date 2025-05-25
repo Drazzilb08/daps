@@ -113,7 +113,7 @@ def parse_folder_group(folder_path: str, base_name: str, files: List[str]) -> Di
 
     if is_collection:
         # Collection: no year detected
-        return create_collection(title, normalized_title, full_paths, parent_folder)
+        return create_collection(title, tmdb_id, normalized_title, full_paths, parent_folder)
     elif is_series:
         # Series: multiple files with season indicators
         return create_series(title, year, tvdb_id, imdb_id, normalized_title, full_paths, parent_folder)
@@ -148,7 +148,7 @@ def parse_file_group(folder_path: str, base_name: str, files: List[str]) -> Dict
 
     if is_collection:
         # Collection: no year detected
-        return create_collection(title, normalized_title, files)
+        return create_collection(title, tmdb_id, normalized_title, files)
     elif is_series:
         # Series: season pattern detected in files
         return create_series(title, year, tvdb_id, imdb_id, normalized_title, files)
@@ -203,7 +203,7 @@ def _is_asset_folders(folder_path: str, logger: Any) -> bool:
     if not os.path.exists(folder_path):
         return False
     for item in os.listdir(folder_path):
-        if item.startswith('.') or item.startswith('@') or item == "tmp":
+        if (len(item) > 1 and item[0] == '.' and item[1] != '.') or item.startswith('@') or item == "tmp":
             logger.debug(f"Skipping hidden item: {item}")
             continue
         if os.path.isdir(os.path.join(folder_path, item)):

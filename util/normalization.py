@@ -50,14 +50,14 @@ def normalize_file_names(file_name: str) -> str:
     # 3) Remove ID tokens in curly braces (e.g., {tmdb-12345})
     cleaned = id_content_regex.sub('', cleaned)
 
+    # 6) Remove specified unwanted substrings (tags, encoding notes, etc.)
+    cleaned = remove_tokens(cleaned)
+
     # 4) Remove illegal filename characters (for cross-platform safety)
     cleaned = illegal_chars_regex.sub('', cleaned)
 
     # 5) Remove miscellaneous special symbols (punctuation, etc.)
     cleaned = re.sub(remove_special_chars, '', cleaned)
-
-    # 6) Remove specified unwanted substrings (tags, encoding notes, etc.)
-    cleaned = remove_tokens(cleaned)
     
     # 7) Remove common filler words (from known media/common word lists)
     cleaned = remove_common_words(cleaned)
@@ -95,15 +95,15 @@ def normalize_titles(title: str) -> str:
 
     # 3) Remove ID tokens in curly braces (e.g., {tmdb-12345})
     normalized_title = id_content_regex.sub('', normalized_title)
+    
+    # 6) Remove specified unwanted substrings (tags, encoding notes, etc.)
+    normalized_title = remove_tokens(normalized_title)
 
     # 4) Remove illegal filename characters (for cross-platform safety)
     normalized_title = illegal_chars_regex.sub('', normalized_title)
 
     # 5) Remove miscellaneous special symbols (punctuation, etc.)
     normalized_title = re.sub(remove_special_chars, '', normalized_title)
-
-    # 6) Remove specified unwanted substrings (tags, encoding notes, etc.)
-    normalized_title = remove_tokens(normalized_title)
 
     # 7) Remove common filler words (from known media/common word lists)
     normalized_title = remove_common_words(normalized_title)

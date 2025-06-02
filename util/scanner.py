@@ -114,7 +114,7 @@ def parse_folder_group(folder_path: str, base_name: str, files: List[str]) -> Di
     if is_collection:
         # Collection: no year detected
         return create_collection(title, tmdb_id, normalized_title, full_paths, parent_folder)
-    elif is_series:
+    elif is_series or tvdb_id:
         # Series: multiple files with season indicators
         return create_series(title, year, tvdb_id, imdb_id, normalized_title, full_paths, parent_folder)
     else:
@@ -149,7 +149,7 @@ def parse_file_group(folder_path: str, base_name: str, files: List[str]) -> Dict
     if is_collection:
         # Collection: no year detected
         return create_collection(title, tmdb_id, normalized_title, files)
-    elif is_series:
+    elif is_series or tvdb_id:
         # Series: season pattern detected in files
         return create_series(title, year, tvdb_id, imdb_id, normalized_title, files)
     else:

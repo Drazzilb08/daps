@@ -88,10 +88,10 @@ def is_match(
     match_criteria = [
         (asset.get('title') == media.get('title'), "Asset title equals media title"),
         (asset.get('title') in media.get('alternate_titles', []), "Asset title found in media's alternate titles"),
-        (asset.get('title') == media.get('folder_title'), "Asset title equals media folder title"),
+        (asset.get('title') == media.get('folder'), "Asset title equals media folder"),
         (asset.get('title') == media.get('original_title'), "Asset title equals media original title"),
         (asset.get('normalized_title') == media.get('normalized_title'), "Asset normalized title equals media normalized title"),
-        (asset.get('normalized_title') == media.get('normalized_folder_title'), "Asset normalized title equals media folder title"),
+        (asset.get('normalized_title') == media.get('normalized_folder'), "Asset normalized title equals media folder normalized"),
         (asset.get('normalized_title') in media.get('normalized_alternate_titles', []), "Asset normalized title found in media's normalized alternate titles"),
         (any(assets == media.get('title') for assets in asset.get('alternate_titles', [])), "One of asset's alternate_titles matches media title"),
         (any(assets == media.get('normalized_title') for assets in asset.get('normalized_alternate_titles', [])), "One of asset's normalized_alternate_titles matches media normalized title"),

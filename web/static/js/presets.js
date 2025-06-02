@@ -60,7 +60,7 @@ window.holidayPresets = {
 window.gdrivePresets = async function() {
     if (window._gdrivePresetsCache) return window._gdrivePresetsCache; // use cache
     try {
-        const response = await fetch("https://raw.githubusercontent.com/Drazzilb08/daps-gdrive-presets/refs/heads/beta/presets.json");
+        const response = await fetch("https://raw.githubusercontent.com/Drazzilb08/daps-gdrive-presets/refs/heads/main/presets.json");
         if (!response.ok) throw new Error("Failed to fetch GDrive presets");
         const data = await response.json();
         // If it's an array, use directly; if object, convert to array

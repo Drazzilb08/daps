@@ -1,12 +1,4 @@
 // ===== Config Field Type Definitions =====
-// TODO: Remove legacy window.gdrivePresets support after updates on presets repo.
-if (!Array.isArray(window.gdrivePresets)) {
-    if (window.gdrivePresets && typeof window.gdrivePresets === 'object') {
-        window.gdrivePresets = Object.entries(window.gdrivePresets).map(([name, id]) => ({ name, id }));
-    } else {
-        window.gdrivePresets = [];
-    }
-}
 window.fetchConfig = async function()
 {
     try
@@ -50,7 +42,6 @@ const MODULE_RENDERERS = {
     'unmatched_assets': renderUnmatchedAssetsSettings,
     'main': renderMain
 };
-
 // ===== Global Help Renderer =====
 function renderGlobalHelp(moduleName = window.currentModuleName)
 {
@@ -594,111 +585,123 @@ function renderModals()
         }
         modal.style.display = 'flex';
     }
-
-function populateGDrivePresetsDropdown() {
-    const presetSelect = document.getElementById('gdrive-sync-preset');
-    const presetDetail = document.getElementById('gdrive-preset-detail');
-    const searchBox = document.getElementById('gdrive-preset-search');
-    if (!presetSelect) return;
-
-    const entries = window.gdrivePresets || [];
-    presetSelect.innerHTML = '<option value="">— No Preset —</option>' +
-        entries.map(drive =>
-            `<option value="${drive.id}" data-name="${drive.name}">${drive.name}</option>`
-        ).join('');
-    // Initialize or re-initialize Select2 for better UX
-    setTimeout(function() {
-        if ($('#gdrive-sync-preset').data('select2')) {
-            $('#gdrive-sync-preset').select2('destroy');
-        }
-        $('#gdrive-sync-preset').select2({
-            placeholder: "Select a GDrive preset",
-            allowClear: true,
-            width: '100%',
-            dropdownParent: $('#gdrive-sync-preset').closest('.modal-content'),
-            language: {
-                searching: function() {
-                    return "Type to filter drives…";
-                },
-                noResults: function() {
-                    return "No matching presets";
-                },
-                inputTooShort: function() {
-                    return "Type to search…";
+    async function populateGDrivePresetsDropdown()
+    {
+        const presetSelect = document.getElementById('gdrive-sync-preset');
+        const presetDetail = document.getElementById('gdrive-preset-detail');
+        const searchBox = document.getElementById('gdrive-preset-search');
+        if (!presetSelect) return;
+        // Always fetch/await presets from remote
+        const entries = await window.gdrivePresets();
+        // Clear and fill dropdown
+        presetSelect.innerHTML = '<option value="">— No Preset —</option>' +
+            entries.map(drive =>
+                `<option value="${drive.id}" data-name="${drive.name}">${drive.name}</option>`
+            ).join('');
+        // Re-init Select2 for better UX
+        setTimeout(function()
+        {
+            if ($('#gdrive-sync-preset').data('select2'))
+            {
+                $('#gdrive-sync-preset').select2('destroy');
+            }
+            $('#gdrive-sync-preset').select2(
+            {
+                placeholder: "Select a GDrive preset",
+                allowClear: true,
+                width: '100%',
+                dropdownParent: $('#gdrive-sync-preset').closest('.modal-content'),
+                language:
+                {
+                    searching: () => "Type to filter drives…",
+                    noResults: () => "No matching presets",
+                    inputTooShort: () => "Type to search…"
                 }
-            }
-        });
-        $('#gdrive-sync-preset').on('select2:open', function () {
-            setTimeout(function() {
-                $('.select2-search__field').attr('placeholder', 'Type to search presets…');
-            }, 0);
-        });
-    }, 0);
-
-    function updatePresetDetail() {
-    const id = presetSelect.value;
-    const drive = entries.find(d => d.id === id);
-    if (id && drive) {
-        document.getElementById('gdrive-id').value = drive.id;
-        document.getElementById('gdrive-name').value = drive.name;
-        document.getElementById('gdrive-location').value = drive.location || '';
-        if (presetDetail) {
-            let metaLines = '';
-            // Show 'Type' first if present
-            if ('type' in drive) {
-                metaLines += `Type: <span class="preset-type">${drive.type}</span><br>`;
-            }
-            // Remarks section for 'content'
-            if ('content' in drive && drive.content) {
-                metaLines += `Remarks:<br>`;
-                if (Array.isArray(drive.content)) {
-                    for (const line of drive.content) {
-                        metaLines += `<div style="margin-left:1em;">${line}</div>`;
-                    }
-                } else {
-                    metaLines += `<div style="margin-left:1em;">${drive.content}</div>`;
-                }
-            }
-            // Show other fields except id, name, type, content
-            for (const key of Object.keys(drive)) {
-                if (['name', 'id', 'content', 'type'].includes(key)) continue;
-                let label = key.charAt(0).toUpperCase() + key.slice(1) + ':';
-                metaLines += `${label} ${drive[key]}<br>`;
-            }
-            presetDetail.innerHTML = `
-            <div class="preset-card">
-                ${metaLines}
-            </div>`;
-        }
-    } else if (presetDetail) {
-        presetDetail.innerHTML = '';
-    }
-}
-
-    presetSelect.onchange = updatePresetDetail;
-    updatePresetDetail();
-
-    if (searchBox) {
-        searchBox.addEventListener('input', () => {
-            const filter = searchBox.value.toLowerCase();
-            Array.from(presetSelect.options).forEach(opt => {
-                if (!opt.value) return;
-                opt.style.display = opt.text.toLowerCase().includes(filter) ? '' : 'none';
             });
-            let firstVisible = Array.from(presetSelect.options).find(
-                opt => opt.style.display !== 'none' && opt.value
-            );
-            if (firstVisible) {
-                presetSelect.value = firstVisible.value;
-                updatePresetDetail();
-            } else {
-                presetSelect.value = '';
-                updatePresetDetail();
-            }
-        });
-    }
-}
+            $('#gdrive-sync-preset').on('select2:open', function()
+            {
+                setTimeout(() =>
+                {
+                    $('.select2-search__field').attr('placeholder', 'Type to search presets…');
+                }, 0);
+            });
+        }, 0);
 
+        function updatePresetDetail()
+        {
+            const id = presetSelect.value;
+            const drive = entries.find(d => String(d.id) === String(id));
+            if (id && drive)
+            {
+                // Fill in the modal's input fields if present
+                if (document.getElementById('gdrive-id')) document.getElementById('gdrive-id').value = drive.id ?? '';
+                if (document.getElementById('gdrive-name')) document.getElementById('gdrive-name').value = drive.name ?? '';
+                if (document.getElementById('gdrive-location')) document.getElementById('gdrive-location').value = drive.location ?? '';
+                // Build detail panel showing all fields
+                if (presetDetail)
+                {
+                    let metaLines = '';
+                    // Type (subtle highlight)
+                    if ('type' in drive)
+                    {
+                        metaLines += `<div class="preset-field"><span class="preset-label">Type:</span> <span class="preset-type">${drive.type}</span></div>`;
+                    }
+                    // Content/Remarks, light blue block
+                    if ('content' in drive && drive.content)
+                    {
+                        metaLines += `<div class="preset-field"><span class="preset-label">Content:</span></div>`;
+                        if (Array.isArray(drive.content))
+                        {
+                            metaLines += `<div class="preset-content">${drive.content.map(line => `<div>${line}</div>`).join('')}</div>`;
+                        }
+                        else
+                        {
+                            metaLines += `<div class="preset-content">${drive.content}</div>`;
+                        }
+                    }
+                    // All other fields, show in a muted label/value pair
+                    for (const key of Object.keys(drive))
+                    {
+                        if (['name', 'id', 'type', 'content'].includes(key)) continue;
+                        metaLines += `<div class="preset-field"><span class="preset-label">${key.charAt(0).toUpperCase() + key.slice(1)}:</span> <span>${drive[key]}</span></div>`;
+                    }
+                    presetDetail.innerHTML = `<div class="preset-card">${metaLines || "<i>No extra metadata</i>"}</div>`;
+                }
+            }
+            else if (presetDetail)
+            {
+                presetDetail.innerHTML = '';
+            }
+        }
+        presetSelect.onchange = updatePresetDetail;
+        updatePresetDetail();
+        // Search box filter (if present)
+        if (searchBox)
+        {
+            searchBox.addEventListener('input', () =>
+            {
+                const filter = searchBox.value.toLowerCase();
+                Array.from(presetSelect.options).forEach(opt =>
+                {
+                    if (!opt.value) return;
+                    opt.style.display = opt.text.toLowerCase().includes(filter) ? '' : 'none';
+                });
+                let firstVisible = Array.from(presetSelect.options).find(
+                    opt => opt.style.display !== 'none' && opt.value
+                );
+                if (firstVisible)
+                {
+                    presetSelect.value = firstVisible.value;
+                    updatePresetDetail();
+                }
+                else
+                {
+                    presetSelect.value = '';
+                    updatePresetDetail();
+                }
+            });
+        }
+    }
 
     function gdriveSyncModal(editIdx)
     {
@@ -734,6 +737,21 @@ function populateGDrivePresetsDropdown() {
             };
             setTimeout(populateGDrivePresetsDropdown, 0);
         }
+        const presetSelect = modal.querySelector('#gdrive-sync-preset');
+        const presetDetail = modal.querySelector('#gdrive-preset-detail');
+        if (presetSelect)
+        {
+            // If using Select2, clear UI
+            if ($(presetSelect).data('select2'))
+            {
+                $(presetSelect).val('').trigger('change');
+            }
+            else
+            {
+                presetSelect.value = '';
+            }
+        }
+        if (presetDetail) presetDetail.innerHTML = '';
         const nameInput = modal.querySelector('#gdrive-name');
         const idInput = modal.querySelector('#gdrive-id');
         const locInput = modal.querySelector('#gdrive-location');
@@ -1380,7 +1398,6 @@ function populateGDrivePresetsDropdown() {
     window.borderReplacerrModal = borderReplacerrModal;
     window.labelarrModal = labelarrModal;
     window.upgradinatorrModal = upgradinatorrModal;
-    
 }
 renderModals();
 /**
@@ -1566,7 +1583,6 @@ function renderPosterRenamerrSettings(formFields, config, rootConfig)
     });
     formFields.appendChild(wrapper);
 }
-
 /**
  * Render the settings UI for the Labelarr module.
  *
@@ -1668,7 +1684,6 @@ function renderLabelarrSettings(formFields, config, rootConfig)
     updateMappings();
     formFields.appendChild(wrapper);
 }
-
 /**
  * Render the settings UI for the Border Replacerr module.
  *
@@ -1786,7 +1801,6 @@ function renderReplacerrSettings(formFields, config, rootConfig)
     updateBorderReplacerrUI();
     formFields.appendChild(wrapper);
 }
-
 /**
  * Render the settings UI for the Upgradinatorr module.
  *
@@ -1900,7 +1914,6 @@ function renderUpgradinatorrSettings(formFields, config, rootConfig)
     updateTable();
     formFields.appendChild(wrapper);
 }
-
 /**
  * Render the settings UI for the Nohl module.
  *
@@ -1932,7 +1945,6 @@ function renderNohlSettings(formFields, config, rootConfig)
     });
     formFields.appendChild(wrapper);
 }
-
 /**
  * Render the settings UI for the Jduparr module.
  *
@@ -1953,7 +1965,6 @@ function renderJduparrSettings(formFields, config, rootConfig)
     });
     formFields.appendChild(wrapper);
 }
-
 /**
  * Render the settings UI for the Health Checkarr module.
  *
@@ -1981,7 +1992,6 @@ function renderHealthCheckarrSettings(formFields, config, rootConfig)
     });
     formFields.appendChild(wrapper);
 }
-
 /**
  * Render the settings UI for the Poster Cleanarr module.
  *
@@ -2009,7 +2019,6 @@ function renderPosterCleanarrSettings(formFields, config, rootConfig)
     });
     formFields.appendChild(wrapper);
 }
-
 /**
  * Render the settings UI for the Renameinatorr module.
  *
@@ -2037,7 +2046,6 @@ function renderRenameinatorrSettings(formFields, config, rootConfig)
     });
     formFields.appendChild(wrapper);
 }
-
 /**
  * Render the settings UI for the Unmatched Assets module.
  *
@@ -2065,7 +2073,6 @@ function renderUnmatchedAssetsSettings(formFields, config, rootConfig)
     });
     formFields.appendChild(wrapper);
 }
-
 /**
  * Render the settings UI for the Main module.
  *
@@ -2435,16 +2442,15 @@ window.loadSettings = async function(moduleName)
     }
     window.isDirty = false;
     const settingsForm = document.getElementById('settings-form');
-    
     const saveBtn = document.getElementById('saveBtn');
     window.DAPS.bindSaveButton(
-    saveBtn,
-    () => Promise.resolve(window.DAPS.buildSettingsPayload(window.currentModuleName)),
-    window.currentModuleName
+        saveBtn,
+        () => Promise.resolve(window.DAPS.buildSettingsPayload(window.currentModuleName)),
+        window.currentModuleName
     );
     window.saveChanges = async () => window.saveSection(
-    () => Promise.resolve(window.DAPS.buildSettingsPayload(window.currentModuleName)),
-    window.currentModuleName
+        () => Promise.resolve(window.DAPS.buildSettingsPayload(window.currentModuleName)),
+        window.currentModuleName
     );
 };
 /**
@@ -2452,7 +2458,7 @@ window.loadSettings = async function(moduleName)
  * their updated values from the form and modal.
  * @returns {Object|null} The payload for POST, or null if validation fails.
  */
-function buildPayload(moduleName) 
+function buildPayload(moduleName)
 {
     function fillPayloadFromFormData(data, payload, excludeKeys = [])
     {
@@ -2631,7 +2637,8 @@ function buildPayload(moduleName)
     excludeKeys.push('instances', ...Array.from(data.keys ? data.keys() : []).filter(k => k.startsWith('instances.')));
     fillPayloadFromFormData(data, payload, excludeKeys);
     // Collect all source_dirs inputs into an array, overriding any single value
-    if (data.has('source_dirs')) {
+    if (data.has('source_dirs'))
+    {
         payload.source_dirs = data.getAll('source_dirs')
             .map(v => v.trim())
             .filter(Boolean);
@@ -2642,7 +2649,3 @@ function buildPayload(moduleName)
     }
     return payload;
 }
-/**
- * Send the current module’s settings payload to the backend API.
- * Shows a toast notification on success or error and clears the dirty flag.
- */

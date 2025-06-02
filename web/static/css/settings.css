@@ -233,17 +233,6 @@ label {
   left: 0;
 }
 
-/* Card Component */
-.card {
-  background: var(--card-bg);
-  padding: var(--card-padding);
-  border-radius: var(--card-radius);
-  box-shadow: var(--card-shadow);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-/* ===== Layout Helpers ===== */
-
 /* ===== Labelarr Mappings Table ===== */
 .settings-table {
   width: 100%;

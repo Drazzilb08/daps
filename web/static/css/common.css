@@ -245,7 +245,6 @@ body
 .card:hover
 {
     background: var(--card-hover-bg);
-    transform: translateY(-3px);
     box-shadow: 0 6px 20px var(--shadow);
 }
 

@@ -33,13 +33,13 @@ def normalize_file_names(file_name: str) -> str:
     """
     Normalize a filename for indexing by:
     1. Stripping extension
-    2. Removing release tags in curly braces
-    3. Removing known unwanted substrings (e.g., encoding tags)
-    4. Removing common filler words
-    5. Removing illegal filename characters
-    6. Converting HTML entities and unicode to ASCII
-    7. Removing miscellaneous special symbols
-    8. Eliminating whitespace and lowercasing for a uniform key
+    2. Converting HTML entities and unicode to ASCII
+    3. Removing ID tokens in curly braces (e.g., {tmdb-12345})
+    4. Removing specified unwanted substrings (tags, encoding notes, etc.)
+    5. Removing illegal filename characters (for cross-platform safety)
+    6. Removing miscellaneous special symbols (punctuation, etc.)
+    7. Removing common filler words (from known media/common word lists)
+    8. Eliminating all whitespace and lowercasing for a uniform key
     """
     # 1) Strip extension
     base, _ = os.path.splitext(file_name)
@@ -50,13 +50,13 @@ def normalize_file_names(file_name: str) -> str:
     # 3) Remove ID tokens in curly braces (e.g., {tmdb-12345})
     cleaned = id_content_regex.sub('', cleaned)
 
-    # 6) Remove specified unwanted substrings (tags, encoding notes, etc.)
+    # 4) Remove specified unwanted substrings (tags, encoding notes, etc.)
     cleaned = remove_tokens(cleaned)
 
-    # 4) Remove illegal filename characters (for cross-platform safety)
+    # 5) Remove illegal filename characters (for cross-platform safety)
     cleaned = illegal_chars_regex.sub('', cleaned)
 
-    # 5) Remove miscellaneous special symbols (punctuation, etc.)
+    # 6) Remove miscellaneous special symbols (punctuation, etc.)
     cleaned = re.sub(remove_special_chars, '', cleaned)
     
     # 7) Remove common filler words (from known media/common word lists)
@@ -73,13 +73,13 @@ def normalize_file_names(file_name: str) -> str:
 def normalize_titles(title: str) -> str:
     """
     Normalize a media title for robust matching and indexing by:
-    1. Converting HTML entities and unicode to ASCII.
-    2. Removing ID tokens enclosed in curly braces (e.g., "{tmdb-12345}").
-    3. Removing known unwanted substrings (from `words_to_remove`).
-    4. Removing common filler words (from `common_words`).
-    5. Removing illegal filename characters.
-    6. Removing miscellaneous special symbols.
-    7. Eliminating all spaces and converting to lowercase for uniformity.
+    1. Strip year tag (e.g., " (2020)").
+    2. Convert HTML entities & unicode to ASCII.
+    3. Remove ID tokens in curly braces (e.g., "{tmdb-12345}").
+    4. Remove specified unwanted substrings (tags, encoding notes, etc.).
+    5. Remove illegal filename characters (for cross-platform safety).
+    6. Remove miscellaneous special symbols (punctuation, etc.).
+    7. Eliminate all whitespace and lowercase for consistent matching.
 
     Args:
         title (str): The media title to normalize.
@@ -96,16 +96,16 @@ def normalize_titles(title: str) -> str:
     # 3) Remove ID tokens in curly braces (e.g., {tmdb-12345})
     normalized_title = id_content_regex.sub('', normalized_title)
     
-    # 6) Remove specified unwanted substrings (tags, encoding notes, etc.)
+    # 4) Remove specified unwanted substrings (tags, encoding notes, etc.)
     normalized_title = remove_tokens(normalized_title)
 
-    # 4) Remove illegal filename characters (for cross-platform safety)
+    # 5) Remove illegal filename characters (for cross-platform safety)
     normalized_title = illegal_chars_regex.sub('', normalized_title)
 
-    # 5) Remove miscellaneous special symbols (punctuation, etc.)
+    # 6) Remove miscellaneous special symbols (punctuation, etc.)
     normalized_title = re.sub(remove_special_chars, '', normalized_title)
 
-    # 8) Eliminate all whitespace and lowercase for consistent matching
+    # 7) Eliminate all whitespace and lowercase for consistent matching
     normalized_title = normalized_title.replace(' ', '').lower()
 
     return normalized_title.strip()

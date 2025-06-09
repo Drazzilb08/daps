@@ -74,7 +74,7 @@ class BaseARRClient:
         Returns:
             bool: True if the command completed successfully, False if it failed or timed out.
         """
-        self.logger.info("Waiting for command to complete...")
+        self.logger.debug("Waiting for command to complete...")
         cycle = 0
         while True:
             endpoint = f"{self.url}/api/v3/command/{command_id}"
@@ -86,7 +86,7 @@ class BaseARRClient:
             time.sleep(5)
             cycle += 1
             if cycle % 5 == 0:
-                self.logger.info(f"Still waiting for command {command_id}... (cycle {cycle})")
+                self.logger.debug(f"Still waiting for command {command_id}... (cycle {cycle})")
             if cycle > 60:
                 self.logger.error(f"Command {command_id} timed out after 5 minutes.")
                 return False

@@ -5,6 +5,9 @@ import logging
 import atexit
 from datetime import datetime
 from typing import Optional, ClassVar
+from pathlib import Path
+from logging.handlers import RotatingFileHandler
+from util.utility import create_bar
 
 class Logger:
     """
@@ -57,16 +60,13 @@ class Logger:
         """
         Set up file and console logging handlers, rotate old logs, and emit versioned header.
         """
-        import pathlib
-        from logging.handlers import RotatingFileHandler
-        from util.utility import create_bar
 
         # Determine appropriate logging directory (supporting Docker or local)
-        if os.environ.get('DOCKER_ENV'):
-            config_dir = os.getenv('CONFIG_DIR', '/config')
-            log_dir = f"{config_dir}/logs/{self.module_name}"
+        log_base = os.getenv('LOG_DIR')
+        if log_base:
+            log_dir = Path(log_base) / self.module_name
         else:
-            log_dir = os.path.join(pathlib.Path(__file__).parents[1], 'logs', self.module_name)
+            log_dir = Path(__file__).resolve().parents[1] / 'logs' / self.module_name
 
         os.makedirs(log_dir, exist_ok=True)
 

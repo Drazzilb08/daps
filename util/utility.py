@@ -22,13 +22,19 @@ except ImportError as e:
     exit(1)
 
 def print_json(data: Any, logger: Any, module_name: str, type: str) -> None:
-    debug_dir = Path(__file__).parents[1] / 'logs' / module_name / 'debug'
+    
+    log_base = os.getenv('LOG_DIR')
+    if log_base:
+        debug_dir = Path(log_base) / module_name / 'debug'
+    else:
+        debug_dir = Path(__file__).resolve().parents[1] / 'logs' / module_name / 'debug'
+
     debug_dir.mkdir(parents=True, exist_ok=True)
 
     assets_file = debug_dir / f'{type}.json'
     with open(assets_file, 'w') as f:
         json.dump(data, f, indent=2)
-        logger.debug(f"Wrote {type} to {assets_file}")
+    logger.debug(f"Wrote {type} to {assets_file}")
 
 
 def print_settings(logger: Any, module_config: SimpleNamespace) -> None:

@@ -117,7 +117,7 @@ discord:
 sync_gdrive:
   # THIS SCRIPT SYNCS GDRIVE TO A LOCAL FOLDER. ANYTHING UNIQUE IN THE FOLDER WILL BE DELETED.
   # -> You can use client_id, client_secret, and token to authenticate, or you can use gdrive_sa_location to use a service account.
-  # DRAZZILB GDRIVE ID: 1VeeQ_frBFpp6AZLimaJSSr0Qsrl6Tb7z
+  # DRAZZILB GDRIVE ID: 1fKRkx4Yine5cqkH411FmShdd-wHRMBIF
   # Below are others that have been shared around Discord. If you have your own and would like to share it please contact me.
   # This script is meant to be used in conjunction with Plex-Meta-Manager, however, it can be used on its own.
   # This is a script base of this one: https://discord.com/channels/492590071455940612/1124032073557086258/1126226814629576858
@@ -135,7 +135,7 @@ sync_gdrive:
   gdrive_sync: # example of multiple gdrive_id's with multiple sync_locations as objects, we have deprecated gdrive_id and sync_location so please use this instead
       # id: The ID of the folder you want to sync from
       # location: Where you want to sync the posters to
-    - id: 1VeeQ_frBFpp6AZLimaJSSr0Qsrl6Tb7z # drazzilb
+    - id: 1fKRkx4Yine5cqkH411FmShdd-wHRMBIF # drazzilb
       location: /path/to/location/drazzilb # Where you want to sync the posters to
 
     # Below is a list of other GDRIVE_ID's that have been shared around Discord. If you have your own and would like to share it please contact me.

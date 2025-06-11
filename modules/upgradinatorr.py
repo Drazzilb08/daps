@@ -66,7 +66,7 @@ def filter_media(
                 else:
                     logger.debug(f"Skipping {item['title']} ({item['year']}), Season {i} unmonitored. Reason: No episodes in season.")
                     continue
-                if monitored_percentage < season_monitored_threshold:
+                if season_monitored_threshold is not None and monitored_percentage < season_monitored_threshold:
                     item['seasons'][i]['monitored'] = False
                     logger.debug(
                         f"{item['title']}, Season {i} unmonitored. Reason: monitored percentage {int(monitored_percentage)}% less than season_monitored_threshold {int(season_monitored_threshold)}%"
@@ -173,6 +173,10 @@ def process_instance(
     season_monitored_threshold: int = instance_settings.get('season_monitored_threshold', 0)
     
     print(f"Gathering media from {app.instance_name}...")
+    # Set default for season_monitored_threshold to 1 if not provided
+    if season_monitored_threshold is None:
+        logger.warning(f"No 'season_monitored_threshold' provided for {app.instance_name}. Defaulting to 1.")
+        season_monitored_threshold = 1
     media_dict: List[Dict[str, Any]] = (
         app.get_parsed_media(include_episode=True)
         if app.instance_type.lower() == "sonarr"

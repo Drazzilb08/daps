@@ -35,7 +35,7 @@ def scan_files_in_flat_folder(folder_path: str, logger: Any) -> List[Dict]:
     assets_dict = []
 
     for file in files:
-        if file.startswith('.'):
+        if re.match(r'^\.[^.]', file):
             continue
         title = file.rsplit('.', 1)[0]
         title = unidecode(html.unescape(title))

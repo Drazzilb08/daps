@@ -140,8 +140,7 @@ def parse_file_group(folder_path: str, base_name: str, files: List[str]) -> Dict
     year = extract_year(base_name)
     tmdb_id, tvdb_id, imdb_id = extract_ids(base_name)
     normalized_title = normalize_titles(base_name)
-    files = sorted([os.path.join(folder_path, file) for file in files if not file.startswith('.')])
-
+    files = sorted([os.path.join(folder_path, file) for file in files if not re.match(r'^\.[^.]', file)])
     # Determine media type: collection (no year), series (season indicators), or movie
     is_series = any(season_pattern.search(file) for file in files)
     is_collection = not year

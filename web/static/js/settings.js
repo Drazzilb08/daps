@@ -1925,7 +1925,7 @@ function renderUpgradinatorrSettings(formFields, config, rootConfig)
 function renderNohlSettings(formFields, config, rootConfig)
 {
     const wrapper = document.createElement('div');
-    const help = renderGlobalHelp('renameinatorr');
+    const help = renderGlobalHelp('nohl');
     if (help) wrapper.appendChild(help);
     wrapper.className = 'settings-wrapper module--poster_renamerr';
     Object.entries(config).forEach(([key, value]) =>

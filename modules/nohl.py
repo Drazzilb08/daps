@@ -320,6 +320,12 @@ def filter_media(
                         ),
                         'quality_profile': quality_profiles.get(media_item['quality_profile']) if media_item['quality_profile'] in exclude_profile_ids else None
                     })
+                    logger.debug(
+                        f"Filtered out: {media_item['title']} ({media_item['year']}), reason(s): "
+                        f"{'not monitored' if media_item['monitored'] is False else ''}"
+                        f"{', excluded' if (instance_type == 'radarr' and config.exclude_movies and media_item['title'] in config.exclude_movies) or (instance_type == 'sonarr' and config.exclude_series and media_item['title'] in config.exclude_series) else ''}"
+                        f"{', quality profile' if media_item['quality_profile'] in exclude_profile_ids else ''}"
+                    )
                     continue
                 if instance_type == 'radarr':
                     # Add movie to search list
@@ -330,6 +336,9 @@ def filter_media(
                         'year': media_item['year'],
                         'file_ids': file_ids
                     })
+                    logger.debug(
+                        f"Radarr: Will resolve {media_item['title']} ({media_item['year']}), file_ids={file_ids}"
+                    )
                 elif instance_type == 'sonarr':
                     # Season filtering for Sonarr: build per-season search/exclude lists
                     media_seasons_info = media_item.get('seasons', {})
@@ -348,6 +357,12 @@ def filter_media(
                             'year': media_item['year'],
                             'seasons': filtered_seasons
                         })
+                        logger.debug(
+                            f"Filtered out: {media_item['title']} ({media_item['year']}), reason(s): "
+                            f"{'not monitored' if media_item['monitored'] is False else ''}"
+                            f"{', excluded' if (instance_type == 'radarr' and config.exclude_movies and media_item['title'] in config.exclude_movies) or (instance_type == 'sonarr' and config.exclude_series and media_item['title'] in config.exclude_series) else ''}"
+                            f"{', quality profile' if media_item['quality_profile'] in exclude_profile_ids else ''}"
+                        )
                     if season_data:
                         logger.debug(f"{media_item['title']} ({media_item['year']}): {len(season_data)} seasons selected for search")
                         data_list['search_media'].append({
@@ -357,6 +372,10 @@ def filter_media(
                             'monitored': media_item['monitored'],
                             'seasons': season_data
                         })
+                        logger.debug(
+                            f"Sonarr: Will resolve {media_item['title']} ({media_item['year']}), seasons: "
+                            f"{[s['season_number'] for s in season_data]}"
+                        )
     # Limit number of searches if configured
     if len(data_list['search_media']) >= config.searches:
         data_list['search_media'] = data_list['search_media'][:config.searches]
@@ -567,12 +586,24 @@ def main(config) -> None:
             print_json(media_dict, logger, config.module_name, 'media_dict')
             print_json(nohl_data, logger, config.module_name, 'nohl_data')
             print_json(output_dict, logger, config.module_name, 'output_dict')
-        # Prepare summary for output reporting
+        # Prepare summary for output reporting (only count actual resolved items in search_media)
+        resolved_movies = 0
+        resolved_episodes = 0
+        for instance, instance_data in output_dict.items():
+            search_media = instance_data['data'].get('search_media', [])
+            if instance_data['instance_type'] == 'radarr':
+                resolved_movies += len(search_media)
+            elif instance_data['instance_type'] == 'sonarr':
+                for search_item in search_media:
+                    # Only count episodes in search_media (i.e., actually resolved)
+                    if 'seasons' in search_item:
+                        for season in search_item['seasons']:
+                            resolved_episodes += len(season.get('episode_data', []))
         summary = {
             'total_scanned_movies': total_scanned_movies,
             'total_scanned_series': total_scanned_series,
-            'total_resolved_movies': total_nohl_movies,
-            'total_resolved_series': total_nohl_series
+            'total_resolved_movies': resolved_movies,
+            'total_resolved_series': resolved_episodes
         }
         # Combine scan and resolve results for reporting and notification
         final_output = {

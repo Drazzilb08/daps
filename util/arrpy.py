@@ -87,8 +87,8 @@ class BaseARRClient:
             cycle += 1
             if cycle % 5 == 0:
                 self.logger.debug(f"Still waiting for command {command_id}... (cycle {cycle})")
-            if cycle > 60:
-                self.logger.error(f"Command {command_id} timed out after 5 minutes.")
+            if cycle > 120:
+                self.logger.error(f"Command {command_id} timed out after 10 minutes.")
                 return False
 
     def create_tag(self, tag: str) -> int:

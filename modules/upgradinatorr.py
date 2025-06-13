@@ -79,6 +79,7 @@ def filter_media(
                 )
                 continue
         filtered_media_dict.append(item)
+        logger.info(f"Queued for upgrade: {item['title']} ({item['year']}) [ID: {item['media_id']}]")
         filter_count += 1
     return filtered_media_dict
 
@@ -172,7 +173,7 @@ def process_instance(
     unattended: bool = instance_settings.get('unattended', False)
     season_monitored_threshold: int = instance_settings.get('season_monitored_threshold', 0)
     
-    print(f"Gathering media from {app.instance_name}...")
+    logger.info(f"Gathering media from {app.instance_name} ({instance_type})")
     # Set default for season_monitored_threshold to 1 if not provided
     if season_monitored_threshold is None:
         logger.warning(f"No 'season_monitored_threshold' provided for {app.instance_name}. Defaulting to 1.")
@@ -191,6 +192,7 @@ def process_instance(
         media_dict, checked_tag_id, ignore_tag_id, count, season_monitored_threshold, logger
     )
     if not filtered_media_dict and unattended:
+        logger.info(f"All media for {app.instance_name} is already tagged—removing tags for unattended operation.")
         media_ids = [item['media_id'] for item in media_dict]
         logger.info("All media is tagged. Removing tags...")
         app.remove_tags(media_ids, checked_tag_id)
@@ -204,6 +206,7 @@ def process_instance(
         )
 
     if not filtered_media_dict and not unattended:
+        logger.info(f"No media left to process for {app.instance_name}.")
         logger.warning(f"No media found for {app.instance_name}. Reason: nothing left to tag.")
         return None
 
@@ -229,6 +232,7 @@ def process_instance(
         media_ids: List[int] = [item['media_id'] for item in filtered_media_dict]
         # Search logic: trigger searches and tag after search
         for item in filtered_media_dict:
+            logger.info(f"Processing: {item['title']} ({item['year']}) [ID: {item['media_id']}]")
             # ══════════════════════════════════════════════════════════════════════
             logger.debug("═" * 70)
             logger.debug(f"[PROCESSING] {item['title']} ({item['year']}) | ID: {item['media_id']}")
@@ -264,7 +268,9 @@ def process_instance(
             logger.debug(f"  [TAG] Adding tag {checked_tag_id} to media ID: {item['media_id']}")
             app.add_tags(item['media_id'], checked_tag_id)
             logger.debug(f"[END] Finished: {item['title']} ({item['year']}) | ID: {item['media_id']}\n")
+            logger.info(f"Finished processing: {item['title']} ({item['year']})")
 
+        logger.info(f"Completed upgrade operations for {app.instance_name}. Now retrieving download queue...")
         queue = app.get_queue()
         logger.debug(f"Queue item count: {len(queue.get('records', []))}")
         queue_dict: List[Dict[str, Any]] = process_queue(queue, instance_type, media_ids)
@@ -318,6 +324,7 @@ def print_output(
                     [f"{run_data['server_name']}"]
                 ]
                 logger.info(create_table(table))
+                logger.info(f"Upgrade summary for {run_data['server_name']}: {run_data.get('untagged_count', 0)} untagged, {run_data.get('tagged_count', 0)} tagged, {run_data.get('total_count', 0)} total.")
                 for item in instance_data:
                     logger.info(f"{item['title']} ({item['year']})")
                     if item['download']:

@@ -109,3 +109,6 @@ def main(config: SimpleNamespace) -> None:
         sys.exit()
     except Exception:
         logger.error("An error occurred:", exc_info=True)
+    finally:
+        # Log outro message with run time
+        logger.log_outro()

@@ -282,7 +282,7 @@ def main(config: SimpleNamespace) -> None:
         else:
             logger.debug("Sync posters is disabled. Skipping...")
         prefix_index = create_new_empty_index()
-        print("Gathering all the posters, please wait...")
+        logger.info("Gathering all the posters, please wait...")
         assets_dict, prefix_index = get_assets_files(config.source_dirs, logger)
         if not assets_dict:
             logger.error("No assets found in the source directories. Exiting module...")
@@ -292,6 +292,7 @@ def main(config: SimpleNamespace) -> None:
             'series': [],
             'collections': []
         }
+        
         if config.instances:
             for instance in config.instances:
                 if isinstance(instance, dict):
@@ -304,6 +305,7 @@ def main(config: SimpleNamespace) -> None:
                     if instance_name in instance_data:
                         found = True
                         break
+                logger.info(f"Processing instance: {instance_name} of type {instance_type}")
                 if not found:
                     logger.warning(f"Instance '{instance_name}' not found in config.instances_config. Skipping.")
                     continue
@@ -396,7 +398,7 @@ def main(config: SimpleNamespace) -> None:
                         renamed_assets=renamed_assets,
                         incremental_run=True
                     )
-                    logger.info(f"Finished running border_replacerr.pyu")
+                    logger.info(f"Finished running border_replacerr")
                 else:
                     logger.info("\nNo new assets to incrementally perform with border_replacerr.\nSkipping Border Replacerr..")
             else:

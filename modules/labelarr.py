@@ -1,6 +1,7 @@
 import sys
 from typing import List, Dict, Optional
 from types import SimpleNamespace
+from collections import defaultdict
 
 from util.logger import Logger
 from util.arrpy import create_arr_client, BaseARRClient
@@ -146,7 +147,6 @@ def handle_messages(data_dict: List[Dict], logger: Logger) -> None:
         data_dict (List[Dict]): List of dictionaries containing sync results.
         logger (Logger): Logger instance for output.
     """
-    from collections import defaultdict
 
     table: List[List[str]] = [["Results"]]
     logger.info(create_table(table))
@@ -272,3 +272,6 @@ def main(config: SimpleNamespace) -> None:
     except Exception:
         logger.error(f"\n\nAn error occurred:\n", exc_info=True)
         logger.error(f"\n\n")
+    finally:
+        # Log outro message with run time
+        logger.log_outro()

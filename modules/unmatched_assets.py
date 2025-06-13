@@ -250,3 +250,6 @@ def main(config: SimpleNamespace) -> None:
         logger.error("\n\nAn error occurred:\n", exc_info=True)
         logger.error("\n\n")
         return
+    finally:
+        # Log outro message with run time
+        logger.log_outro()

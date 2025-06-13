@@ -128,3 +128,6 @@ def main(config: SimpleNamespace, logger: Optional[Logger] = None) -> None:
     except Exception:
         logger.error(f"\n\nAn error occurred:\n", exc_info=True)
         logger.error(f"\n\n")
+    finally:
+        # Log outro message with run time
+        logger.log_outro()

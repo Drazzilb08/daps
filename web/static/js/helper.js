@@ -67,6 +67,7 @@ window.help = {
 
     border_replacerr: [
       "Adds or replaces borders on posters. Supports holiday presets and custom colors.",
+      "Source/Destination Dirs: These fields is not required if you're planning on running border_replacerr in line with poster_renaemrr.",
       "border_colors: Array of colors (HEX codes) for the border.",
       "skip: Skips running border replacerr until a Holiday",
       "exclusion_list: List of items to exclude from border replacement.",

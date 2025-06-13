@@ -1,3 +1,10 @@
+/* ===== Main Log Container Structure ===== */
+.container-iframe {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* Assumes parent allows this */
+}
+
 /* ===== Auto-Scroll Badge ===== */
 #scroll-badge {
     position: absolute;
@@ -43,21 +50,13 @@
 }
 
 /* ===== General Log Output Container ===== */
-#log-output
-{
-    position: relative;
-    background: #121212;
-    padding: 1.5rem;
-    height: 600px;
-    overflow-y: auto;
-    font-family: monospace;
-    font-size: 0.9rem;
-    border: 1px solid var(--shadow);
-    white-space: pre;
-    overflow-x: auto;
-    border-radius: 8px;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5);
+#log-output {
+    width: 100%;
+    height: 100%;
+    overflow: hidden; /* Crucial: xterm.js manages its own scrolling within these bounds */
+    /* Let the xterm.js theme handle background, padding, font, etc. */
 }
+
 
 /* ===== Jump to Bottom Button ===== */
 #jump-to-bottom
@@ -89,6 +88,9 @@
 /* ===== Scroll-to-Top & Scroll-to-Bottom Buttons ===== */
 #scroll-output-container {
     position: relative;
+    flex-grow: 1; /* Allows this container to take available vertical space */
+    overflow: hidden; /* Ensures children (like log-output) are clipped */
+    min-height: 0; /* Important for flex children to not overflow their container */
 }
 #scroll-to-top,
 #scroll-to-bottom {
@@ -106,10 +108,10 @@
     cursor: pointer;
 }
 #scroll-to-top {
-    top: 0.5rem;
+    top: 1rem;
 }
 #scroll-to-bottom {
-    bottom: 0.5rem;
+    bottom: 1rem;
 }
 
 /* ===== Logs State Styling ===== */

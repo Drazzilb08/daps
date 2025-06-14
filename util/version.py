@@ -6,18 +6,24 @@ BASE = Path(__file__).parents[1] / "VERSION"
 
 def get_version() -> str:
     base = BASE.read_text().strip()
-    # 1) Try CI env var
     ci_build = os.getenv("BUILD_NUMBER")
-    if ci_build:
-        return f"{base}.build{ci_build}"
-    # 2) Fallback to git commit count
+    ci_branch = os.getenv("BRANCH")
+    if ci_build and ci_branch:
+        return f"{base}.{ci_branch}{ci_build}"
+    # If BUILD_NUMBER is set but BRANCH is not, fall through to git fallback.
     try:
+        branch = (
+            subprocess
+            .check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"], stderr=subprocess.DEVNULL)
+            .decode()
+            .strip()
+        )
         cnt = (
             subprocess
             .check_output(["git", "rev-list", "--count", "HEAD"], stderr=subprocess.DEVNULL)
             .decode()
             .strip()
         )
-        return f"{base}.dev{cnt}"
+        return f"{base}.{branch}{cnt}"
     except Exception:
         return base

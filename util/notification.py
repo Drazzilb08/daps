@@ -70,6 +70,7 @@ def build_discord_payload(module_title: str, data: Any, timestamp: str, dry_run:
             payload["content"] = f"__**Dry Run**__\n{part['content']}" if dry_run else part["content"]
         elif dry_run:
             payload["content"] = "__**Dry Run**__"
+        payload["username"] = "Notification Bot"
         payloads.append(payload)
     return payloads
 

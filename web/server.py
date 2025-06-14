@@ -88,10 +88,11 @@ def log_route(logger: Any, path: str, method: str = "GET") -> None:
 
 # ==== Routes ====
 @app.get("/api/version", response_model=None)
-async def get_version_route() -> PlainTextResponse:
+async def get_version_route(request: Request, logger: Any = Depends(get_logger)) -> PlainTextResponse:
     """Returns the current version string."""
     try:
         version = get_version()
+        logger.debug(f"[WEB] Serving GET /api/version: {version}")
     except Exception:
         version = "unknown"
     return PlainTextResponse(version)

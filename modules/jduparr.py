@@ -35,7 +35,7 @@ def print_output(output: list[dict], logger: Logger) -> None:
             count += 1
             logger.info(f"\t\t{i}")
         count += sub_count
-        logger.info(f"\tTotal items for '{os.path.basename(path)}': {sub_count}")
+        logger.info(f"\tTotal items for '{os.path.basename(os.path.normpath(path))}': {sub_count}")
     logger.info(f"Total items relinked: {count}")
 
 
@@ -50,7 +50,7 @@ def main(config: SimpleNamespace) -> None:
         None
     """
     logger = Logger(config.log_level, config.module_name)
-
+    results = None
     try:
         # If dry run, display a notice table
         if config.dry_run:
@@ -63,6 +63,9 @@ def main(config: SimpleNamespace) -> None:
         output = []
 
         # Iterate over each source directory to find duplicates
+        if not config.source_dirs:
+            logger.error(f"No source directories provided in config: {config.source_dirs}")
+            return
         for path in config.source_dirs:
             if config.log_level.lower() == "debug":
                 print_settings(logger, config)
@@ -91,9 +94,9 @@ def main(config: SimpleNamespace) -> None:
                 "sub_count": sub_count
             }
             output.append(output_data)
-
-        logger.debug(f"jdupes output: {result}")
-        logger.debug(f"Parsed log: {parsed_files}")
+        if results:
+            logger.debug(f"jdupes output: {result}")
+            logger.debug(f"Parsed log: {parsed_files}")
 
         # Print summarized output and send notification
         print_output(output, logger)

@@ -88,7 +88,7 @@ def get_random_joke() -> str:
             jokes = [line.strip() for line in f if line.strip()]
             if jokes:
                 return random.choice(jokes)
-    return "Powered by: Drazzilb"
+    return ""
 
 def send_and_log_response(
     logger: Any,

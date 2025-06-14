@@ -1877,8 +1877,8 @@ if (
         fields.forEach(field => {
             field.disabled = true;
             field.value = '';
-            field.placeholder = '🔒 Managed by Poster Renamerr';
-            field.title = 'Managed by Poster Renamerr';
+            field.placeholder = '🔒 Managed by Poster Renamerr with \'Run Border Replacerr\'';
+            field.title = 'Managed by Poster Renamerr with \'Run Border Replacerr\'';
 
             // For source_dirs, hide add/remove buttons
             if (fieldKey === 'source_dirs') {

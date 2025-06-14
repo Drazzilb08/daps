@@ -1866,6 +1866,35 @@ function renderReplacerrSettings(formFields, config, rootConfig)
 
     // 5. (Border Colors field is already appended above)
 
+    // --- PATCH: Native lock icon placeholder for managed fields ---
+if (
+    (rootConfig?.poster_renamerr?.run_border_replacerr === true) ||
+    (window.run_border_replacerr === true)
+) {
+    ['source_dirs', 'destination_dir'].forEach(fieldKey => {
+        // There may be multiple inputs for source_dirs
+        const fields = wrapper.querySelectorAll(`[name="${fieldKey}"]`);
+        fields.forEach(field => {
+            field.disabled = true;
+            field.value = '';
+            field.placeholder = '🔒 Managed by Poster Renamerr';
+            field.title = 'Managed by Poster Renamerr';
+
+            // For source_dirs, hide add/remove buttons
+            if (fieldKey === 'source_dirs') {
+                const fieldContainer = field.closest('.field');
+                if (fieldContainer) {
+                    // Hide add button
+                    const addBtn = fieldContainer.querySelector('.add-control-btn');
+                    if (addBtn) addBtn.style.display = 'none';
+                    // Hide remove buttons
+                    fieldContainer.querySelectorAll('.remove-item').forEach(btn => btn.style.display = 'none');
+                }
+            }
+        });
+    });
+}
+
 
     // 5. Render Holidays field
     const holidaysField = document.createElement('div');

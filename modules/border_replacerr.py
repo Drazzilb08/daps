@@ -220,9 +220,9 @@ def fix_borders(
                         rgb_border_color = None
                     if not dry_run:
                         if rgb_border_color:
-                            results = replace_border(input_file, output_path, rgb_border_color, config.border_width, folder, logger)
+                            results = replace_borders(input_file, output_path, rgb_border_color, config.border_width, folder, logger)
                         else:
-                            results = remove_border(input_file, output_path, config.border_width, logger, excluded, folder)
+                            results = remove_borders(input_file, output_path, config.border_width, logger, excluded, folder)
                         if results:
                             messages.append(f"{action} on {file_name}")
                     else:
@@ -233,7 +233,7 @@ def fix_borders(
     return messages
 
 
-def replace_border(
+def replace_borders(
     input_file: str,
     output_path: str,
     border_colors: Tuple[int, int, int],
@@ -296,7 +296,7 @@ def replace_border(
         logger.error(f"Error processing {input_file}")
         return False
 
-def remove_border(
+def remove_borders(
     input_file: str,
     output_path: str,
     border_width: int,
@@ -431,20 +431,19 @@ def process_files(
     renamed_assets: Optional[Dict[str, Any]] = None,
     incremental_run: Optional[bool] = False,
 ) -> None:
-    """
-    Main processor for applying or removing borders to media assets.
-
-    Args:
-        source_dirs (str): Path(s) to the input directories.
-        config (SimpleNamespace): Main configuration object.
-        logger (Optional[Logger]): Logger for output.
-        renamerr_config (Optional[SimpleNamespace]): Optional secondary config.
-        renamed_assets (Optional[Dict[str, Any]]): Subset of assets for incremental processing.
-    """
+    """Main processor for applying or removing borders to media assets."""
     logger = Logger(config.log_level, config.module_name)
-    # Derive log_dir based on logger setup (replicating util.logger logic)
+
+    def no_assets_exit():
+        logger.info("\nNo assets found in the input directory")
+        logger.info("Please check the input directory and try again.")
+        logger.info("Exiting...")
+        return
+
+
+    # Get log_dir
+    config_dir = os.getenv('CONFIG_DIR', '/config')
     if os.environ.get('DOCKER_ENV'):
-        config_dir = os.getenv('CONFIG_DIR', '/config')
         log_dir = f"{config_dir}/logs/{config.module_name}"
     else:
         log_dir = os.path.join(pathlib.Path(__file__).parents[1], 'logs', config.module_name)
@@ -452,88 +451,88 @@ def process_files(
     last_run = load_last_run(log_dir)
     if config.log_level.lower() == "debug":
         print_settings(logger, config)
-    if renamerr_config:
-        log_level = renamerr_config.log_level
-        dry_run = renamerr_config.dry_run
-        destination_dir = renamerr_config.destination_dir
-    else:
-        log_level = config.log_level
-        dry_run = config.dry_run
-        destination_dir = config.destination_dir
-    if log_level.lower() == "debug":
-        print_settings(logger, config)
-    run_holiday = False
-    border_colors = None
-    switch = {"start_since_last_run": False, "end_since_last_run": False}
-    if config.holidays:
-        run_holiday, border_colors, switch = check_holiday(config, logger, last_run=last_run)
-    if not border_colors:
-        border_colors = config.border_colors
+
+    # Set key variables from config or renamerr_config
+    merged = renamerr_config if renamerr_config else config
+    dry_run = getattr(merged, "dry_run", False)
+    destination_dir = getattr(merged, "destination_dir", None)
     if not os.path.exists(destination_dir):
         logger.error(f"Output directory {destination_dir} does not exist.")
         return
-    if renamed_assets is None or switch['start_since_last_run'] or switch['end_since_last_run']:
-        assets_dict, prefix_index = get_assets_files(source_dirs, logger)
-        if isinstance(assets_dict, list):
-            grouped_assets: Dict[str, List[Dict[str, Any]]] = {}
-            for asset in assets_dict:
-                asset_type = asset.get('type')
-                grouped_assets.setdefault(asset_type, []).append(asset)
-            assets_dict = grouped_assets
-        if not assets_dict:
-            logger.info(f"\nNo assets found in the input directory")
-            logger.info(f"Please check the input directory and try again.")
-            logger.info(f"Exiting...")
-            return
-    elif renamed_assets and incremental_run:
-        assets_dict = renamed_assets
-        if isinstance(assets_dict, list):
-            grouped_assets: Dict[str, List[Dict[str, Any]]] = {}
-            for asset in assets_dict:
-                asset_type = asset.get('type')
-                grouped_assets.setdefault(asset_type, []).append(asset)
-            assets_dict = grouped_assets
 
-    if not assets_dict:
-        logger.info(f"\nNo assets found in the input directory")
-        logger.info(f"Please check the input directory and try again.")
-        logger.info(f"Exiting...")
-        return
-    # If not scheduled to run today, just copy files
-    if not run_holiday and config.skip:
+    # Get border colors and schedule
+    border_colors = None
+    run_holiday = False
+    switch = {"start_since_last_run": False, "end_since_last_run": False}
+    if getattr(config, "holidays", None):
+        run_holiday, border_colors, switch = check_holiday(config, logger, last_run=last_run)
+    if not border_colors:
+        border_colors = getattr(config, "border_colors", None)
+
+    # Get and group assets
+    def group_assets(assets):
+        if isinstance(assets, list):
+            grouped = {}
+            for asset in assets:
+                asset_type = asset.get('type')
+                grouped.setdefault(asset_type, []).append(asset)
+            return grouped
+        return assets
+
+    if (renamed_assets is None or switch['start_since_last_run'] or switch['end_since_last_run']):
+        assets_dict, _ = get_assets_files(source_dirs, logger)
+        assets_dict = group_assets(assets_dict)
+    elif renamed_assets and incremental_run:
+        assets_dict = group_assets(renamed_assets)
+    else:
+        assets_dict = None
+
+    if not assets_dict or not any(assets_dict.values()):
+        return no_assets_exit()
+
+    # Just copy files if not scheduled to run
+    if not run_holiday and getattr(config, "skip", False):
         messages = copy_files(assets_dict, destination_dir, dry_run, logger)
         logger.info(f"Skipping {config.module_name} as it is not scheduled to run today.")
         if messages:
-            table = [
-                ["Processed Files", f"{len(messages)}"],
-            ]
-            logger.info(create_table(table))
+            logger.info(create_table([["Processed Files", f"{len(messages)}"]]))
             for message in messages:
                 logger.info(message)
         return
-    if not border_colors:
-        logger.info(f"No border colors set, removing border instead.")
-    else:
-        logger.debug(f"Using {', '.join(border_colors)} border color(s).")
+
     if destination_dir.endswith("/"):
         destination_dir = destination_dir[:-1]
-    if any(assets_dict.get('movies', [])) or any(assets_dict.get('series', [])) or any(assets_dict.get('collections', [])):
-        messages = fix_borders(assets_dict, config, border_colors, destination_dir, dry_run, logger, config.exclusion_list)
-        if messages:
-            table = [["Processed Files", f"{len(messages)}"]]
-            logger.info(create_table(table))
-            formatted = print_output(assets_dict, "removed border" if not border_colors else "replaced border", dry_run)
-            logger.info(formatted)
-        else:
-            logger.info(f"\nNo files processed")
-        if config.log_level == "debug":
-            print_json(assets_dict, logger, config.module_name, "assets_dict")
-            print_json(messages, logger, config.module_name, "messages")
+
+    # Border logic
+    if not border_colors:
+        border_args = None
+        action_label = "removed border"
+        logger.info("No border colors set, removing borders from assets.")
+        logger.info("Executing border removal mode (removing all borders from assets).")
     else:
-        logger.info(f"\nNo assets found in the input directory")
-        logger.info(f"Please check the input directory and try again.")
-        logger.info(f"Exiting...")
-        return
+        border_args = border_colors
+        action_label = "replaced border"
+        logger.info(f"Using {', '.join(border_colors)} border color(s).")
+        logger.info("Executing border replacement mode (replacing borders with configured colors).")
+
+    messages = fix_borders(
+        assets_dict,
+        config,
+        border_args,
+        destination_dir,
+        dry_run,
+        logger,
+        getattr(config, "exclusion_list", None)
+    )
+
+    if messages:
+        logger.info(create_table([["Processed Files", f"{len(messages)}"]]))
+        logger.info(print_output(assets_dict, action_label, dry_run))
+    else:
+        logger.info("\nNo files processed")
+    if config.log_level == "debug":
+        print_json(assets_dict, logger, config.module_name, "assets_dict")
+        print_json(messages, logger, config.module_name, "messages")
     
 # --- Formatting function for border actions output ---
 def print_output(

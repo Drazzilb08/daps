@@ -6,7 +6,7 @@ from prettytable import PrettyTable
 import json
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
-from util.config import Config
+from util.config import Config, manage_config
 from util.logger import Logger
 from util.scheduler import check_schedule
 from util.utility import (
@@ -99,7 +99,7 @@ class ModuleManager:
 
 def load_schedule():
     # Do not merge defaults here; only read existing config
-    config = Config("main", merge_defaults=False)
+    config = Config("main")
     schedule = config.scheduler
     return schedule
 
@@ -152,18 +152,18 @@ def main():
         return
 
     try:
-        main_config = Config("main", merge_defaults=False).module_config
+        main_config = Config("main").module_config
     except Exception as e:
         print(f"Error loading main config for logger: {e}")
         sys.exit(1)
     logger = Logger(main_config.log_level, "main")
-
+    manage_config(logger)
     # Web mode: no modules passed
     initial_run = True
     waiting_message_shown = False
     
     # Load main config once and reuse for scheduling reloads
-    main_cfg = Config("main", merge_defaults=False)
+    main_cfg = Config("main")
     def on_schedule_change():
         try:
             main_cfg.load_config()

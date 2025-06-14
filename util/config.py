@@ -7,7 +7,54 @@ from util.utility import *
 from copy import deepcopy
 from types import SimpleNamespace
 import sys
+from util.logger import Logger # For type hinting
 
+class Config:
+    """
+    Manages loading and accessing configuration for a given module.
+    Supports merging defaults and provides module-specific configuration access.
+    """
+
+    def __init__(self, module_name: str) -> None:
+        """
+        Initialize Config with module name and optional merging of default keys.
+
+        Args:
+            module_name (str): Name of the module requesting configuration.
+            merge_defaults (bool): If True, merge missing keys from template and save.
+        """
+        self.config_path: str = config_file_path
+        self.module_name: str = module_name
+        self.load_config()
+
+    def load_config(self) -> None:
+        """
+        Load the YAML configuration, optionally merging missing keys from template.
+        Sets attributes for scheduler, discord, notifications, instances, and module config.
+        """
+        try:
+            config = load_user_config(self.config_path)
+        except Exception:
+            return
+
+        self._config = config
+
+        if 'schedule' not in config:
+            print("[CONFIG] Warning: 'schedule' key missing in config; defaulting to empty schedule")
+        self.scheduler = config.get('schedule', {})
+        self.discord = config.get('discord', {})
+        self.notifications = config.get('notifications', [])
+        if 'instances' not in config:
+            sys.stderr.write(f"[CONFIG] Missing 'instances' key! Config keys: {list(config.keys())}\n")
+        self.instances_config = config.get('instances', {})
+
+        if self.module_name:
+            self.module_config = self._config.get(self.module_name, {})
+            self.module_config = SimpleNamespace(**self.module_config)
+            self.module_config.module_name = self.module_name
+            module_notifications = self._config.get("notifications", {}).get(self.module_name, {})
+            setattr(self.module_config, "notifications", module_notifications)
+            return
 
 def load_user_config(path: str) -> dict:
     """
@@ -33,51 +80,7 @@ def load_user_config(path: str) -> dict:
         return {}
 
 
-def merge_with_template(path: str, config: dict) -> dict:
-    """
-    Merge missing keys from the JSON template into the user's config and save if changed.
-
-    Args:
-        path (str): Path to the user's YAML config file.
-        config (dict): User's current configuration dictionary.
-
-    Returns:
-        dict: Merged configuration dictionary.
-    """
-    with open(TEMPLATE_PATH, "r") as tf:
-        default_cfg = json.load(tf)
-    original = deepcopy(config)
-    merged = _deep_merge(default_cfg, config)
-    if merged != original:
-        with open(path, "w") as wf:
-            yaml.safe_dump(merged, wf, sort_keys=False)
-    return merged
-
-
 TEMPLATE_PATH = Path(__file__).parent / "template" / "config_template.json"
-  
-
-
-def _deep_merge(default: dict, user: dict) -> dict:
-    """
-    Recursively merge missing keys from default into user dictionary.
-
-    Args:
-        default (dict): Default dictionary from template.
-        user (dict): User's current configuration.
-
-    Returns:
-        dict: Updated user dictionary with defaults filled in.
-    """
-    for key, val in default.items():
-        if key not in user:
-            user[key] = val
-        else:
-            if isinstance(val, dict) and isinstance(user[key], dict):
-                _deep_merge(val, user[key])
-    return user
-
-
 # Determine config file path depending on whether Docker is used
 if os.environ.get('DOCKER_ENV'):
     # Use Docker config directory or default to /config
@@ -97,52 +100,77 @@ if not os.path.exists(config_file_path):
         yaml.safe_dump(default_cfg, wf, sort_keys=False)
 
 
-class Config:
+def _reconcile_config_data(template_data: dict, user_data: dict):
     """
-    Manages loading and accessing configuration for a given module.
-    Supports merging defaults and provides module-specific configuration access.
+    Recursively reconciles user configuration with a template.
+    Returns: (reconciled_dict, added_keys, removed_keys)
     """
+    reconciled_dict = {}
+    added_keys = []
+    removed_keys = []
+    # Keys present in template but missing from user (added)
+    for key, template_value in template_data.items():
+        if key in user_data:
+            user_value = user_data[key]
+            if isinstance(template_value, dict):
+                if isinstance(user_value, dict):
+                    if not template_value:
+                        reconciled_dict[key] = deepcopy(user_value)
+                    else:
+                        rec, add, rem = _reconcile_config_data(template_value, user_value)
+                        reconciled_dict[key] = rec
+                        added_keys.extend([f"{key}.{k}" for k in add])
+                        removed_keys.extend([f"{key}.{k}" for k in rem])
+                else:
+                    reconciled_dict[key] = deepcopy(template_value)
+            else:
+                reconciled_dict[key] = user_value
+        else:
+            reconciled_dict[key] = deepcopy(template_value)
+            added_keys.append(key)
+    # Keys present in user but missing from template (removed)
+    for key in user_data.keys():
+        if key not in template_data:
+            removed_keys.append(key)
+    return reconciled_dict, added_keys, removed_keys
 
-    def __init__(self, module_name: str, merge_defaults: bool = False) -> None:
-        """
-        Initialize Config with module name and optional merging of default keys.
+def manage_config(logger: Logger):
+    """
+    Updates the user's config.yml based on config_template.json.
+    Logs keys that are added or removed.
+    """
+    global TEMPLATE_PATH, config_file_path
+    try:
+        with open(TEMPLATE_PATH, 'r', encoding='utf-8') as f:
+            template_data = json.load(f)
+    except FileNotFoundError:
+        logger.error(f"[CONFIG] Template configuration file not found at {TEMPLATE_PATH}")
+        return
+    except json.JSONDecodeError as e:
+        logger.error(f"[CONFIG] Could not parse template configuration file {TEMPLATE_PATH}: {e}")
+        return
 
-        Args:
-            module_name (str): Name of the module requesting configuration.
-            merge_defaults (bool): If True, merge missing keys from template and save.
-        """
-        self.config_path: str = config_file_path
-        self.module_name: str = module_name
-        self.merge_defaults: bool = merge_defaults
-        self.load_config()
-
-    def load_config(self) -> None:
-        """
-        Load the YAML configuration, optionally merging missing keys from template.
-        Sets attributes for scheduler, discord, notifications, instances, and module config.
-        """
+    user_data = {}
+    if os.path.exists(config_file_path):
         try:
-            config = load_user_config(self.config_path)
-            if self.merge_defaults:
-                config = merge_with_template(self.config_path, config)
-        except Exception:
-            return
+            with open(config_file_path, "r", encoding='utf-8') as f:
+                user_data = yaml.safe_load(f) or {}
+        except yaml.YAMLError as e:
+            logger.error(f"[CONFIG] Could not parse user configuration file {config_file_path}: {e}")
+            logger.warning("[CONFIG] Proceeding with an empty user configuration for reconciliation.")
+    if not isinstance(user_data, dict):
+        logger.warning(f"User configuration at {config_file_path} is not a dictionary. Treating as empty.")
+        user_data = {}
 
-        self._config = config
+    reconciled_data, added_keys, removed_keys = _reconcile_config_data(template_data, user_data)
 
-        if 'schedule' not in config:
-            print("[CONFIG] Warning: 'schedule' key missing in config; defaulting to empty schedule")
-        self.scheduler = config.get('schedule', {})
-        self.discord = config.get('discord', {})
-        self.notifications = config.get('notifications', [])
-        if 'instances' not in config:
-            sys.stderr.write(f"[CONFIG] Missing 'instances' key! Config keys: {list(config.keys())}\n")
-        self.instances_config = config.get('instances', {})
-
-        if self.module_name:
-            self.module_config = self._config.get(self.module_name, {})
-            self.module_config = SimpleNamespace(**self.module_config)
-            self.module_config.module_name = self.module_name
-            module_notifications = self._config.get("notifications", {}).get(self.module_name, {})
-            setattr(self.module_config, "notifications", module_notifications)
-            return
+    try:
+        with open(config_file_path, 'w', encoding='utf-8') as f:
+            yaml.safe_dump(reconciled_data, f, sort_keys=False, indent=2, default_flow_style=False, allow_unicode=True)
+        logger.info(f"[CONFIG] Configuration file {config_file_path} updated successfully based on template.")
+        if added_keys:
+            logger.info(f"[CONFIG] Keys ADDED to config: {added_keys}")
+        if removed_keys:
+            logger.info(f"[CONFIG] Keys REMOVED from config: {removed_keys}")
+    except IOError as e:
+        logger.error(f"[CONFIG] Could not write to configuration file {config_file_path}: {e}")

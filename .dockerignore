@@ -4,6 +4,7 @@
 # Allow files and directories
 !/main.py
 !/requirements.txt
+!/jokes.txt
 !/modules
 !/util
 !/scripts
@@ -11,7 +12,6 @@
 !/VERSION
 !/spud
 !/start.sh
-!/tests
 !/web
 
 # Ignore unnecessary files inside allowed directories

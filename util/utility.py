@@ -6,10 +6,11 @@ import json
 from pathlib import Path
 import math
 import datetime
-from util.normalization import normalize_titles
-from util.construct import generate_title_variants
 import yaml
 import copy
+from util.normalization import normalize_titles
+from util.construct import generate_title_variants
+from util.constants import illegal_chars_regex
 
 try:
     import html
@@ -242,12 +243,13 @@ def get_plex_data(
                             title = unidecode(html.unescape(title))
                             normalized_title = normalize_titles(title)
                             alternate_titles = generate_title_variants(title)
+                            folder = illegal_chars_regex.sub('', title)
                             plex_dict.append({
                                 'title': title,
                                 'normalized_title': normalized_title,
                                 'location': library_name,
                                 'year': None,
-                                'folder': title,
+                                'folder': folder,
                                 'alternate_titles': alternate_titles['alternate_titles'],
                                 'normalized_alternate_titles': alternate_titles['normalized_alternate_titles'],
                             })

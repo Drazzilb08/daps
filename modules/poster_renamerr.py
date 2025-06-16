@@ -54,23 +54,6 @@ def process_file(file: str, new_file_path: str, action_type: str, logger: Any) -
         logger.error(f"Error {action_type}ing file: {e}")
 
 
-def match_data(
-    media_dict: Dict[str, List[Dict[str, Any]]],
-    prefix_index: Dict[str, Dict[str, Any]],
-    logger: Any
-) -> Dict[str, Dict[str, List[Dict[str, Any]]]]:
-    """
-    Match assets against media using title/index similarity.
-    Args:
-        media_dict: Media categorized by type.
-        prefix_index: Index for prefix/title lookup.
-        logger: Logger for logging.
-    Returns:
-        Dictionary of matched/unmatched assets.
-    """
-    return match_assets_to_media(media_dict, prefix_index, logger)
-
-
 def rename_files(
     matched_assets: Dict[str, List[Dict[str, Any]]],
     config: SimpleNamespace,
@@ -305,7 +288,6 @@ def main(config: SimpleNamespace) -> None:
                     if instance_name in instance_data:
                         found = True
                         break
-                logger.info(f"Processing instance: {instance_name} of type {instance_type}")
                 if not found:
                     logger.warning(f"Instance '{instance_name}' not found in config.instances_config. Skipping.")
                     continue
@@ -320,7 +302,7 @@ def main(config: SimpleNamespace) -> None:
                     if app:
                         library_names = instance_settings.get('library_names', [])
                         if library_names:
-                            print("Getting Plex data...")
+                            logger.info("Fetching Plex collections...")
                             results = get_plex_data(app, library_names, logger, include_smart=True, collections_only=True)
                             media_dict['collections'].extend(results)
                         else:
@@ -330,7 +312,7 @@ def main(config: SimpleNamespace) -> None:
                     api = instance_data[instance_name]['api']
                     app = create_arr_client(url, api, logger)
                     if app and app.connect_status:
-                        print(f"Getting {app.instance_name} data...")
+                        logger.info(f"Fetching {app.instance_name} data...")
                         results = app.get_parsed_media(include_episode=False)
                         if results:
                             if instance_type == "radarr":
@@ -346,39 +328,34 @@ def main(config: SimpleNamespace) -> None:
             logger.error("No media found, Check instances setting in your config. Exiting.")
             return
         renamed_assets = None
-        if media_dict and assets_dict:
-            print("Matching media to assets please wait...")
-            combined_dict = match_data(media_dict, prefix_index, logger)
-            if any(combined_dict.get('unmatched', {}).values()):
-                combined_dict_copy = copy.deepcopy(combined_dict)
-                for key in ['matched', 'unmatched']:
-                    for media_type, media_list in combined_dict_copy[key].items():
-                        for media in media_list:
-                            if 'seasons' in media:
-                                del media['seasons']
-                if config.log_level == "debug":
-                    print_json(assets_dict, logger, config.module_name, "assets_dict")
-                    print_json(media_dict, logger, config.module_name, "media_dict")
-                    print_json(prefix_index, logger, config.module_name, "prefix_index")
-                    print_json(combined_dict_copy['matched'], logger, config.module_name, "matched")
-                    print_json(combined_dict_copy['unmatched'], logger, config.module_name, "unmatched")
+        if media_dict and prefix_index:
+            logger.info("Matching assets to media, please wait...")
+            matched_assets = match_assets_to_media(media_dict, prefix_index, logger, return_unmatched_assets=False, config=config)
+        if matched_assets and any(matched_assets.values()):
+            # Optionally deep copy to strip heavy keys for debug (example for 'seasons')
+            matched_assets_copy = copy.deepcopy(matched_assets)
+            for media_type, media_list in matched_assets_copy.items():
+                for media in media_list:
+                    if 'seasons' in media:
+                        del media['seasons']
+            if config.log_level == "debug":
+                print_json(assets_dict, logger, config.module_name, "assets_dict")
+                print_json(media_dict, logger, config.module_name, "media_dict")
+                print_json(prefix_index, logger, config.module_name, "prefix_index")
+                print_json(matched_assets_copy, logger, config.module_name, "matched_assets")
+            output, renamed_files = rename_files(matched_assets, config, logger)
+            if any(output.values()):
+                handle_output(output, config, logger)
+                send_notification(
+                    logger=logger,
+                    module_name=config.module_name,
+                    config=config,
+                    output=output,
+                )
             else:
-                logger.debug("No unmatched assets found.")
-            matched_assets = combined_dict.get('matched', None)
-            if matched_assets and any(matched_assets.values()):
-                output, renamed_files = rename_files(matched_assets, config, logger)
-                if any(output.values()):
-                    handle_output(output, config, logger)
-                    send_notification(
-                        logger=logger,
-                        module_name=config.module_name,
-                        config=config,
-                        output=output,
-                    )
-                else:
-                    logger.info("No new posters to rename.")
-            else:
-                logger.info("No assets matched to media.")
+                logger.info("No new posters to rename.")
+        else:
+            logger.info("No assets matched to media.")
         if config.run_border_replacerr:
             tmp_dir = os.path.join(config.destination_dir, 'tmp')
             from modules.border_replacerr import process_files

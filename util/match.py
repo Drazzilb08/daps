@@ -218,7 +218,7 @@ def match_media_to_assets(
                         'title': media_data.get('title'),
                         'year': media_data.get('year'),
                         # If no asset at all, the main poster is definitely missing
-                        'missing_main_poster': has_main_poster
+                        'missing_main_poster': True,
                     }
                     if media_type == 'series':
                         entry['missing_seasons'] = media_seasons
@@ -341,6 +341,9 @@ def match_assets_to_media(
         unmatched_assets = {atype: [] for atype in asset_types}
         for atype in asset_types:
             for asset in all_assets[atype]:
+                # Skip standalone 'tmp' assets
+                if asset.get('title', '').lower() == 'tmp':
+                    continue
                 key = (asset.get('title'), asset.get('year'), tuple(asset.get('files') or []), asset.get('path'))
                 if key in matched_asset_keys:
                     continue

@@ -348,10 +348,13 @@ def match_assets_to_media(
                 if key in matched_asset_keys:
                     continue
                 # Ignore if in config.ignore_media
-                if config and getattr(config, "ignore_media", None) and f"{asset['title']} ({asset['year']})" in config.ignore_media:
-                    if logger:
-                        logger.debug(f"{asset['title']} ({asset['year']}) is in ignore_media, skipping...")
-                    continue
+                if config and getattr(config, "ignore_media", None):
+                    ignore_title = asset['title']
+                    ignore_title_year = f"{asset['title']} ({asset['year']})"
+                    if ignore_title in config.ignore_media or ignore_title_year in config.ignore_media:
+                        if logger:
+                            logger.debug(f"{asset['title']} ({asset['year']}) is in ignore_media, skipping...")
+                        continue
                 unmatched_assets[atype].append({
                     'title': asset['title'],
                     'year': asset['year'],

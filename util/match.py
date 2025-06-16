@@ -5,7 +5,8 @@ from util.utility import progress
 from util.normalization import normalize_titles
 from util.index import search_matches
 from util.constants import folder_year_regex, season_pattern
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
+from types import SimpleNamespace
 
 def compare_strings(string1: str, string2: str) -> bool:
     """
@@ -116,9 +117,9 @@ def match_media_to_assets(
     prefix_index: Dict[str, Any],
     ignore_root_folders: List[str],
     logger: Any
-) -> Dict[str, Dict[str, List[Dict[str, Any]]]]:
+) -> Dict[str, List[Dict[str, Any]]]:
     """
-    Match media entries against known asset entries and return unmatched assets by type.
+    Match media entries against known asset entries and return unmatched assets by type as flat lists.
 
     Args:
         media_dict: Dictionary of media grouped by type.
@@ -127,11 +128,10 @@ def match_media_to_assets(
         logger: Logger instance.
 
     Returns:
-        Dictionary of unmatched entries by type and location.
+        Dictionary of unmatched entries by type as flat lists.
     """
-    unmatched: Dict[str, Dict[str, List[Dict[str, Any]]]] = {'movies': {}, 'series': {}, 'collections': {}}
+    unmatched: Dict[str, List[Dict[str, Any]]] = {'movies': [], 'series': [], 'collections': []}
     for media_type in ['movies', 'series', 'collections']:
-        unmatched[media_type] = {}
         media_list = media_dict.get(media_type, [])
         with progress(media_list, desc=f"Matching {media_type}", total=len(media_list), unit="media", logger=logger) as pbar:
             for media_data in pbar:
@@ -145,7 +145,6 @@ def match_media_to_assets(
                 root = os.path.basename(location.rstrip('/')).lower()
                 if ignore_root_folders and (root in ignore_root_folders or location in ignore_root_folders):
                     continue
-                unmatched[media_type].setdefault(location, [])
                 media_seasons: List[int] = []
                 if media_type == 'series':
                     media_seasons = [
@@ -183,7 +182,7 @@ def match_media_to_assets(
                                 'missing_seasons': missing,
                                 'missing_main_poster': missing_main_poster
                             }
-                            unmatched[media_type][location].append(entry)
+                            unmatched[media_type].append(entry)
                 else:
                     # Fallback to title search
                     titles_to_try = [media_data.get('title')] + media_data.get('alternate_titles', [])
@@ -206,7 +205,7 @@ def match_media_to_assets(
                                         for f in asset_data.get('files', [])
                                     )
                                     missing_main_poster = not has_main_poster
-                                    unmatched[media_type][location].append({
+                                    unmatched[media_type].append({
                                         'title': media_data.get('title'),
                                         'year': media_data.get('year'),
                                         'missing_seasons': missing,
@@ -214,10 +213,7 @@ def match_media_to_assets(
                                     })
                             break
                 if not found:
-                    has_main_poster = any(
-                                        not season_pattern.search(os.path.basename(f))
-                                        for f in asset_data.get('files', [])
-                                    )
+                    # There is no asset_data in this case, so missing main poster is always True
                     entry = {
                         'title': media_data.get('title'),
                         'year': media_data.get('year'),
@@ -226,46 +222,52 @@ def match_media_to_assets(
                     }
                     if media_type == 'series':
                         entry['missing_seasons'] = media_seasons
-                    unmatched[media_type][location].append(entry)
+                    unmatched[media_type].append(entry)
     return unmatched
+
 
 def match_assets_to_media(
     media_dict: Dict[str, List[Dict[str, Any]]],
     prefix_index: Dict[str, Any],
-    logger: Optional[Any] = None
-) -> Dict[str, Dict[str, List[Dict[str, Any]]]]:
+    logger: Optional[Any] = None,
+    return_unmatched_assets: bool = False,
+    config: Optional[SimpleNamespace] = None
+) -> Dict[str, List[Dict[str, Any]]]:
     """
-    Match asset files against known media entries using title and ID heuristics.
-
-    Args:
-        media_dict: Dictionary of media data by type.
-        prefix_index: Asset search index.
-        logger: Logger instance.
-
-    Returns:
-        Dictionary with matched and unmatched media entries by type.
+    Match assets to media. Optionally, return unmatched assets instead of matched.
     """
-    combined_dict: Dict[str, Dict[str, List[Dict[str, Any]]]] = {
-        'matched': {'collections': [], 'movies': [], 'series': []},
-        'unmatched': {'collections': [], 'movies': [], 'series': []}
-    }
-    asset_types = [t for t in media_dict if media_dict[t] is not None]
+    asset_types = ['movies', 'series', 'collections']
+    # Gather all unique assets by type (copy from match_assets_for_cleanarr)
+    all_assets = {atype: [] for atype in asset_types}
+    asset_key_to_asset = {}
+    for asset_list in prefix_index.values():
+        for asset in asset_list:
+            atype = asset.get('type')
+            if atype in asset_types:
+                key = (asset.get('title'), asset.get('year'), tuple(asset.get('files') or []), asset.get('path'))
+                if key not in asset_key_to_asset:
+                    all_assets[atype].append(asset)
+                    asset_key_to_asset[key] = asset
+
+    matched_asset_keys = set()
+
+    matched: Dict[str, List[Dict[str, Any]]] = {atype: [] for atype in asset_types}
+    # Only operate on types present in media_dict with non-None values
+    use_asset_types = [t for t in media_dict if media_dict[t] is not None]
     total_comparisons = 0
     total_items = 0
     matches = 0
     non_matches = 0
-    with progress(asset_types, desc="Matching assets...", total=len(asset_types), unit="asset types", logger=logger) as pbar_outer:
+    with progress(use_asset_types, desc="Matching assets...", total=len(use_asset_types), unit="asset types", logger=logger) as pbar_outer:
         for asset_type in pbar_outer:
             if asset_type in media_dict:
-                unmatched_media: List[Dict[str, Any]] = []
                 matched_dict: List[Dict[str, Any]] = []
                 media_data = media_dict[asset_type]
                 start_time = time.time()
                 with progress(media_data, desc=f"Matching {asset_type}", total=len(media_data), unit="media", logger=logger) as pbar_inner:
                     for media in pbar_inner:
-                        search_match = None
                         total_items += 1
-                        matched = False
+                        found_match = False
                         search_asset = None
                         seasons = media.get('seasons') or []
                         media_seasons_numbers = [season['season_number'] for season in seasons]
@@ -281,17 +283,19 @@ def match_assets_to_media(
                                 result = is_match(candidate, media, logger)
                                 if result:
                                     search_asset = candidate
-                                    matched = True
+                                    found_match = True
                                     asset_season_numbers = search_asset.get('season_numbers', None)
                                     if asset_season_numbers and media_seasons_numbers:
                                         handle_series_match(search_asset, media_seasons_numbers, asset_season_numbers)
+                                    # Mark asset as matched
+                                    key = (search_asset.get('title'), search_asset.get('year'), tuple(search_asset.get('files') or []), search_asset.get('path'))
+                                    matched_asset_keys.add(key)
                                     break
                         # 2. Fallback: Try title-based search ONLY if asset has no IDs at all
-                        # Only allow name-based fallback if the asset has no IDs at all
-                        if not matched and not id_candidates:
+                        if not found_match and not id_candidates:
                             titles_to_check = [media['title']] + media.get('alternate_titles', [])
                             for title in titles_to_check:
-                                candidate_list = search_matches(prefix_index, title, logger)  # no tmdb_id or tvdb_id
+                                candidate_list = search_matches(prefix_index, title, logger)
                                 candidates.extend(candidate_list)
                             # Prefer assets originally classified as this media type
                             type_candidates = [a for a in candidates if a.get('type') == asset_type]
@@ -302,13 +306,15 @@ def match_assets_to_media(
                                 result = is_match(search_asset, media, logger)
                                 if result:
                                     asset_season_numbers = search_asset.get('season_numbers', None)
-                                    # Only consider series match if seasons are compatible
                                     if not asset_season_numbers or not media_seasons_numbers or (asset_season_numbers and media_seasons_numbers):
-                                        matched = True
+                                        found_match = True
                                         if asset_season_numbers and media_seasons_numbers:
                                             handle_series_match(search_asset, media_seasons_numbers, asset_season_numbers)
+                                        # Mark asset as matched
+                                        key = (search_asset.get('title'), search_asset.get('year'), tuple(search_asset.get('files') or []), search_asset.get('path'))
+                                        matched_asset_keys.add(key)
                                         break
-                        if matched:
+                        if found_match:
                             matches += 1
                             matched_dict.append({
                                 'title': media['title'],
@@ -320,17 +326,38 @@ def match_assets_to_media(
                             })
                         else:
                             non_matches += 1
-                            unmatched_media.append(media)
-                        combined_dict['matched'][asset_type] = matched_dict
-                        combined_dict['unmatched'][asset_type] = unmatched_media
+                matched[asset_type] = matched_dict
                 elapsed_time = time.time() - start_time
                 items_per_second = len(media_data) / elapsed_time if elapsed_time > 0 else 0
-                logger.debug(f"Completed matching for {asset_type}: {len(media_data)} items in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s)")
-    logger.debug(f"{total_items} total_items")
-    logger.debug(f"{total_comparisons} total_comparisons")
-    logger.debug(f"{matches} total_matches")
-    logger.debug(f"{non_matches} non_matches")
-    return combined_dict
+                if logger:
+                    logger.debug(f"Completed matching for {asset_type}: {len(media_data)} items in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s)")
+    if logger:
+        logger.debug(f"{total_items} total_items")
+        logger.debug(f"{total_comparisons} total_comparisons")
+        logger.debug(f"{matches} total_matches")
+        logger.debug(f"{non_matches} non_matches")
+
+    if return_unmatched_assets:
+        unmatched_assets = {atype: [] for atype in asset_types}
+        for atype in asset_types:
+            for asset in all_assets[atype]:
+                key = (asset.get('title'), asset.get('year'), tuple(asset.get('files') or []), asset.get('path'))
+                if key in matched_asset_keys:
+                    continue
+                # Ignore if in config.ignore_media
+                if config and getattr(config, "ignore_media", None) and f"{asset['title']} ({asset['year']})" in config.ignore_media:
+                    if logger:
+                        logger.debug(f"{asset['title']} ({asset['year']}) is in ignore_media, skipping...")
+                    continue
+                unmatched_assets[atype].append({
+                    'title': asset['title'],
+                    'year': asset['year'],
+                    'files': asset['files'],
+                    'path': asset.get('path', None)
+                })
+        return unmatched_assets
+    else:
+        return matched
 
 def handle_series_match(
     asset: Dict[str, Any],

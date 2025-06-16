@@ -1,0 +1,49 @@
+name: Tag Docker Image for New Branch
+
+on:
+  create:
+    branches:
+      - '*'  # Triggers on branch creation
+
+jobs:
+  docker-tag:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Get the new branch name
+        id: get_branch
+        run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
+
+      - name: Set build number
+        run: echo "BUILD_NUMBER=$(git rev-list --count HEAD)" >> $GITHUB_ENV
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.GH_USERNAME }}
+          password: ${{ secrets.GH_TOKEN }}
+
+      - name: Build and push Docker image to GHCR
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            "BRANCH=${{ steps.get_branch.outputs.BRANCH_NAME }}"
+            "BUILD_NUMBER=${{ env.BUILD_NUMBER }}"
+          push: true
+          tags: |
+            ghcr.io/drazzilb08/daps:${{ steps.get_branch.outputs.BRANCH_NAME }}

@@ -20,18 +20,8 @@ except ImportError as e:
     exit(1)
 
 
-def match_data(
-    media_dict: Dict[str, List[Dict]],
-    prefix_index: Dict,
-    ignore_root_folders: List[str],
-    logger: Logger,
-) -> Dict[str, Dict[str, List[Dict]]]:
-    """Match media entries to assets and return unmatched assets by type."""
-    return match_media_to_assets(media_dict, prefix_index, ignore_root_folders, logger)
-
-
 def print_output(
-    unmatched_dict: Dict[str, Dict[str, List[Dict]]],
+    unmatched_dict: Dict[str, List[Dict]],
     media_dict: Dict[str, List[Dict]],
     logger: Logger,
 ) -> Dict[str, List[List[Union[str, int]]]]:
@@ -44,60 +34,51 @@ def print_output(
         if data_set:
             table = [[f"Unmatched {asset_type.capitalize()}"]]
             logger.info(create_table(table))
-            for location, data in data_set.items():
-                location = location.rstrip('/')
-                location_base = os.path.basename(location)
-                if data:
-                    suffix = " Library" if asset_type == "collections" else ""
-                    table = [[f"{location_base.title()}{suffix}", len(data)]]
-                    logger.info(create_table(table))
-                    logger.info("")
-                    for idx, item in enumerate(data):
-                        if idx % 10 == 0:
-                            logger.info(f"\t*** {location_base.title()}{suffix} {idx + 1} - {min(idx + 10, len(data))} ***")
-                            logger.info("")
-                        if asset_type == 'series':
-                            missing_seasons = item.get('missing_seasons', False)
-                            missing_main = item.get('missing_main_poster', False)
-                            title = item['title']
-                            year = item['year']
-                            # Combined missing info
-                            if missing_seasons and missing_main:
-                                logger.info(f"\t{title} ({year})")
-                                for season in item.get('missing_seasons', []):
-                                    logger.info(f"\t\tSeason: {season}")
-                            elif missing_seasons:
-                                logger.info(f"\t{title} ({year}) (Seasons listed below have missing posters)")
-                                for season in item['missing_seasons']:
-                                    logger.info(f"\t\tSeason: {season}")
-                            elif missing_main:
-                                logger.info(f"\t{title} ({year})  Main series poster missing")
-                        else:
-                            year = f" ({item['year']})" if item.get('year') else ""
-                            logger.info(f"\t{item['title']}{year}")
+            if data_set:
+                for idx, item in enumerate(data_set):
+                    if idx % 10 == 0:
+                        logger.info(f"\t*** {asset_type.title()} {idx + 1} - {min(idx + 10, len(data_set))} ***")
                         logger.info("")
+                    if asset_type == 'series':
+                        missing_seasons = item.get('missing_seasons', False)
+                        missing_main = item.get('missing_main_poster', False)
+                        title = item['title']
+                        year = item['year']
+                        # Combined missing info
+                        if missing_seasons and missing_main:
+                            logger.info(f"\t{title} ({year})")
+                            for season in item.get('missing_seasons', []):
+                                logger.info(f"\t\tSeason: {season}")
+                        elif missing_seasons:
+                            logger.info(f"\t{title} ({year}) (Seasons listed below have missing posters)")
+                            for season in item['missing_seasons']:
+                                logger.info(f"\t\tSeason: {season}")
+                        elif missing_main:
+                            logger.info(f"\t{title} ({year})  Main series poster missing")
+                    else:
+                        year = f" ({item['year']})" if item.get('year') else ""
+                        logger.info(f"\t{item['title']}{year}")
+                    logger.info("")
             logger.info("")
 
     # Calculate statistics for movies
-    unmatched_movies_total = sum(len(data) for data in unmatched_dict.get('movies', {}).values())
+    unmatched_movies_total = len(unmatched_dict.get('movies', []))
     total_movies = len(media_dict.get('movies', [])) if media_dict.get('movies') else 0
     percent_movies_complete = ((total_movies - unmatched_movies_total) / total_movies * 100) if total_movies else 0
     # Calculate statistics for series (count only series with missing main poster)
     unmatched_series_total = 0
-    for data in unmatched_dict.get('series', {}).values():
-        for item in data:
-            if item.get('missing_main_poster', False):
-                unmatched_series_total += 1
+    for item in unmatched_dict.get('series', []):
+        if item.get('missing_main_poster', False):
+            unmatched_series_total += 1
 
     total_series = len(media_dict.get('series', [])) if media_dict.get('series') else 0
     series_percent_complete = ((total_series - unmatched_series_total) / total_series * 100) if total_series else 0
 
     # Calculate unmatched seasons count (sum all missing season posters)
     unmatched_seasons_total = 0
-    for data in unmatched_dict.get('series', {}).values():
-        for item in data:
-            missing_seasons = item.get('missing_seasons', [])
-            unmatched_seasons_total += len(missing_seasons)
+    for item in unmatched_dict.get('series', []):
+        missing_seasons = item.get('missing_seasons', [])
+        unmatched_seasons_total += len(missing_seasons)
 
     # Calculate total seasons with episodes present
     total_seasons = 0
@@ -111,7 +92,7 @@ def print_output(
     season_total_percent_complete = ((total_seasons - unmatched_seasons_total) / total_seasons * 100) if total_seasons else 0
 
     # Calculate statistics for collections
-    unmatched_collections_total = sum(len(data) for data in unmatched_dict.get('collections', {}).values())
+    unmatched_collections_total = len(unmatched_dict.get('collections', []))
     total_collections = len(media_dict.get('collections', [])) if media_dict.get('collections') else 0
     collection_percent_complete = ((total_collections - unmatched_collections_total) / total_collections * 100) if total_collections else 0
 
@@ -184,7 +165,7 @@ def main(config: SimpleNamespace) -> None:
                     if app:
                         library_names = instance_settings.get('library_names', [])
                         if library_names:
-                            print("Getting Plex data...")
+                            logger.info("Fetching Plex collections...")
                             results = get_plex_data(app, library_names, logger, include_smart=True, collections_only=True)
                             media_dict['collections'].extend(results)
                         else:
@@ -198,7 +179,7 @@ def main(config: SimpleNamespace) -> None:
                         logger.error(f"Failed to connect to {instance_name}, skipping.")
                         continue
                     if app.connect_status:
-                        print(f"Getting {instance_type.capitalize()} data...")
+                        logger.info(f"Fetching {app.instance_name} data...")
                         results = app.get_parsed_media(include_episode=False)
                         if results:
                             if instance_type == "radarr":
@@ -223,7 +204,9 @@ def main(config: SimpleNamespace) -> None:
                     del media['seasons']
 
         # Match assets and print output
-        unmatched_dict = match_data(media_dict, prefix_index, config.ignore_root_folders, logger)
+        if media_dict and prefix_index:
+            logger.info("Matching assets to media, please wait...")
+            unmatched_dict = match_media_to_assets(media_dict, prefix_index, config.ignore_root_folders, logger)
         if any(unmatched_dict.values()):
             output = print_output(unmatched_dict, media_dict, logger)
             if config.notifications and output:

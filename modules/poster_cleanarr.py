@@ -238,7 +238,12 @@ def main(config: SimpleNamespace) -> None:
             return
         if media_dict and prefix_index:
             logger.info("Matching assets to media, please wait...")
-            unmatched_dict = match_assets_to_media(media_dict, prefix_index, logger, return_unmatched_assets=True, config=config)
+            unmatched_dict = match_assets_to_media(
+                media_dict, prefix_index, logger,
+                return_unmatched_assets=True,
+                config=config,
+                strict_folder_match=True
+            )
             
         if any(unmatched_dict.values()):
             remove_data = remove_assets(unmatched_dict, config, logger)

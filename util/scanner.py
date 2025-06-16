@@ -159,16 +159,23 @@ def parse_file_group(folder_path: str, base_name: str, files: List[str]) -> Dict
         # Determine media type: collection (no year), series (season indicators), or movie
         is_series = any(season_pattern.search(file) for file in files)
         is_collection = not year
+        # parent_folder should be the base name (minus extension) of the first file not matching season_pattern
+        non_season_file = next((f for f in files if not season_pattern.search(f)), None)
+        if non_season_file:
+            parent_folder = os.path.splitext(os.path.basename(non_season_file))[0]
+        else:
+            # Fallback: just use the base name of the first file
+            parent_folder = os.path.splitext(os.path.basename(files[0]))[0] if files else ""
 
         if is_collection:
             # Collection: no year detected
-            return create_collection(title, tmdb_id, normalized_title, files)
+            return create_collection(title, tmdb_id, normalized_title, files, parent_folder)
         elif is_series or tvdb_id:
             # Series: season pattern detected in files
-            return create_series(title, year, tvdb_id, imdb_id, normalized_title, files)
+            return create_series(title, year, tvdb_id, imdb_id, normalized_title, files, parent_folder)
         else:
             # Movie: default case
-            return create_movie(title, year, tmdb_id, imdb_id, normalized_title, files)
+            return create_movie(title, year, tmdb_id, imdb_id, normalized_title, files, parent_folder)
     except Exception as exc:
         raise ValueError(f"Error parsing file group. Folder: {folder_path}, Base name: {base_name}, Exception: {exc}")
 

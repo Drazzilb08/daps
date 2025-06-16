@@ -26,6 +26,7 @@ def compare_strings(string1: str, string2: str) -> bool:
 def is_match(
     asset: Dict[str, Any],
     media: Dict[str, Any],
+    strict_folder_match: bool = False
 ) -> Tuple[bool, str]:
     """
     Determine if a media entry and an asset match based on ID, title, and year heuristics.
@@ -33,11 +34,11 @@ def is_match(
     Args:
         asset: Asset dictionary.
         media: Media dictionary.
+        strict_folder_match: If True, only consider ID a match if the asset's file/folder matches the media's folder name.
 
     Returns:
         (True, reason) if asset matches media, otherwise (False, "").
     """
-
     # Pull folder-based year/title if present
     if media.get('folder'):
         folder_base_name = os.path.basename(media['folder'])
@@ -53,7 +54,7 @@ def is_match(
         if asset_year is None and all(year is None for year in media_years):
             return True
         return any(asset_year == year for year in media_years if year is not None)
-    
+
     def has_any_valid_id(d: dict) -> bool:
         for k in ['tmdb_id', 'tvdb_id', 'imdb_id']:
             v = d.get(k)
@@ -74,7 +75,17 @@ def is_match(
     has_asset_ids = has_any_valid_id(asset)
     has_media_ids = has_any_valid_id(media)
 
-    # ID-based matching
+    if strict_folder_match:
+        match_criteria = [
+            (asset.get('folder') == media.get('folder'), "Asset folder equals media folder"),
+        ]
+        for condition, reason in match_criteria:
+            if condition and year_matches():
+                return True, reason
+
+        return False, ""
+        
+
     if has_asset_ids and has_media_ids:
         id_match_criteria = [
             (media.get('tvdb_id') and asset.get('tvdb_id') and media['tvdb_id'] == asset['tvdb_id'], "ID match: tvdb_id"),
@@ -229,7 +240,8 @@ def match_assets_to_media(
     prefix_index: Dict[str, Any],
     logger: Optional[Any] = None,
     return_unmatched_assets: bool = False,
-    config: Optional[SimpleNamespace] = None
+    config: Optional[SimpleNamespace] = None,
+    strict_folder_match: bool = False,
 ) -> Dict[str, List[Dict[str, Any]]]:
     """
     Match assets to media. Optionally, return unmatched assets instead of matched.
@@ -278,7 +290,7 @@ def match_assets_to_media(
                             id_candidates = search_matches(prefix_index, media.get('title', ''), logger, tmdb_id=tmdb_id, tvdb_id=tvdb_id)
                             for candidate in id_candidates:
                                 total_comparisons += 1
-                                is_matched, reason = is_match(candidate, media)
+                                is_matched, reason = is_match(candidate, media, strict_folder_match)
                                 if is_matched:
                                     logger.debug(f"✓ Matched: {reason}: {media['title']} ({media['year']}) <-> {candidate['title']} ({candidate.get('year')})")
                                     search_asset = candidate
@@ -302,7 +314,7 @@ def match_assets_to_media(
                                 candidates = type_candidates
                             for search_asset in candidates:
                                 total_comparisons += 1
-                                is_matched, reason = is_match(search_asset, media)
+                                is_matched, reason = is_match(search_asset, media, strict_folder_match)
                                 if is_matched:
                                     logger.debug(f"✓ Matched: {reason}: {media['title']} ({media['year']}) <-> {search_asset['title']} ({search_asset.get('year')})")
                                     asset_season_numbers = search_asset.get('season_numbers', None)

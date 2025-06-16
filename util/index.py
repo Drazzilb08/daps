@@ -106,30 +106,10 @@ def search_matches(
     if tmdb_id is not None:
         key = f"tmdb:{tmdb_id}"
         filtered_assets = [a for a in prefix_index.get(key, []) if a.get("tmdb_id") == tmdb_id]
-        if filtered_assets and logger:
-            titles = [a.get('title', '<no-title>') for a in filtered_assets]
-            msg = (
-                f"[ID-MATCH] Type: tmdb_id | Value: {tmdb_id} | "
-                f"Matches: {len(filtered_assets)} | Titles: {titles} | Searched title: '{title}'"
-            )
-            if hasattr(logger, "debug"):
-                logger.debug(msg)
-            else:
-                logger.info(msg)
         return filtered_assets
     if tvdb_id is not None:
         key = f"tvdb:{tvdb_id}"
         filtered_assets = [a for a in prefix_index.get(key, []) if a.get("tvdb_id") == tvdb_id]
-        if filtered_assets and logger:
-            titles = [a.get('title', '<no-title>') for a in filtered_assets]
-            msg = (
-                f"[ID-MATCH] Type: tvdb_id | Value: {tvdb_id} | "
-                f"Matches: {len(filtered_assets)} | Titles: {titles} | Searched title: '{title}'"
-            )
-            if hasattr(logger, "debug"):
-                logger.debug(msg)
-            else:
-                logger.info(msg)
         return filtered_assets
 
     # Only perform title-based search if neither ID is provided

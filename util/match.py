@@ -5,7 +5,7 @@ from util.utility import progress
 from util.normalization import normalize_titles
 from util.index import search_matches
 from util.constants import folder_year_regex, season_pattern
-from typing import Any, Dict, List, Optional, Union
+from typing import Tuple, Optional, Dict, Any, List
 from types import SimpleNamespace
 
 def compare_strings(string1: str, string2: str) -> bool:
@@ -26,21 +26,19 @@ def compare_strings(string1: str, string2: str) -> bool:
 def is_match(
     asset: Dict[str, Any],
     media: Dict[str, Any],
-    logger: Any,
-    log: bool = True
-) -> bool:
+) -> Tuple[bool, str]:
     """
     Determine if a media entry and an asset match based on ID, title, and year heuristics.
 
     Args:
         asset: Asset dictionary.
         media: Media dictionary.
-        logger: Logger instance.
-        log: If True, logs match information.
 
     Returns:
-        True if asset matches media, otherwise False.
+        (True, reason) if asset matches media, otherwise (False, "").
     """
+
+    # Pull folder-based year/title if present
     if media.get('folder'):
         folder_base_name = os.path.basename(media['folder'])
         match = re.search(folder_year_regex, folder_base_name)
@@ -67,24 +65,27 @@ def is_match(
                     return True
         return False
 
+    def compare_strings(string1: str, string2: str) -> bool:
+        import re
+        string1 = re.sub(r'\W+', '', string1)
+        string2 = re.sub(r'\W+', '', string2)
+        return string1.lower() == string2.lower()
+
     has_asset_ids = has_any_valid_id(asset)
     has_media_ids = has_any_valid_id(media)
 
+    # ID-based matching
     if has_asset_ids and has_media_ids:
         id_match_criteria = [
-            media.get('tvdb_id') and asset.get('tvdb_id') and media['tvdb_id'] == asset['tvdb_id'],
-            media.get('tmdb_id') and asset.get('tmdb_id') and media['tmdb_id'] == asset['tmdb_id'],
-            media.get('imdb_id') and asset.get('imdb_id') and media['imdb_id'] == asset['imdb_id'],
+            (media.get('tvdb_id') and asset.get('tvdb_id') and media['tvdb_id'] == asset['tvdb_id'], "ID match: tvdb_id"),
+            (media.get('tmdb_id') and asset.get('tmdb_id') and media['tmdb_id'] == asset['tmdb_id'], "ID match: tmdb_id"),
+            (media.get('imdb_id') and asset.get('imdb_id') and media['imdb_id'] == asset['imdb_id'], "ID match: imdb_id"),
         ]
-        if any(id_match_criteria):
-            if log and logger:
-                logger.debug(
-                    f"ID match: Asset: {asset.get('title')} [{asset.get('tmdb_id')},{asset.get('tvdb_id')},{asset.get('imdb_id')}] | "
-                    f"Media: {media.get('title')} [{media.get('tmdb_id')},{media.get('tvdb_id')},{media.get('imdb_id')}]"
-                )
-            return True
-        return False
-    
+        for matched, reason in id_match_criteria:
+            if matched:
+                return True, reason
+        return False, ""
+
     # Title-based matching heuristics
     match_criteria = [
         (asset.get('title') == media.get('title'), "Asset title equals media title"),
@@ -101,16 +102,11 @@ def is_match(
         (compare_strings(media.get('title', ''), asset.get('title', '')), "Titles match under loose string comparison"),
         (compare_strings(media.get('normalized_title', ''), asset.get('normalized_title', '')), "Normalized titles match under loose string comparison"),
     ]
-    for condition, message in match_criteria:
-        # Only consider title matches if years match as well
+    for condition, reason in match_criteria:
         if condition and year_matches():
-            if log and logger:
-                logger.debug(
-                    f"Match found: {message} -> Asset: {asset.get('title', '')} ({asset.get('year', '')}), "
-                    f"Media: {media.get('title', '')} ({media.get('year', '')})"
-                )
-            return True
-    return False
+            return True, reason
+
+    return False, ""
 
 def match_media_to_assets(
     media_dict: Dict[str, List[Dict[str, Any]]],
@@ -190,7 +186,9 @@ def match_media_to_assets(
                         assets_found = search_matches(prefix_index, title, logger)
                         candidates.extend(assets_found)
                     for asset_data in candidates:
-                        if is_match(asset_data, media_data, logger):
+                        is_matched, reason = is_match(asset_data, media_data)
+                        if is_matched:
+                            logger.debug(f"✓ Fallback match: {reason}: {media_data.get('title')} ({media_data.get('year')}) <-> {asset_data.get('title')} ({asset_data.get('year')})")
                             found = True
                             if media_type == 'series' and media_seasons:
                                 # Identify missing seasons
@@ -280,8 +278,9 @@ def match_assets_to_media(
                             id_candidates = search_matches(prefix_index, media.get('title', ''), logger, tmdb_id=tmdb_id, tvdb_id=tvdb_id)
                             for candidate in id_candidates:
                                 total_comparisons += 1
-                                result = is_match(candidate, media, logger)
-                                if result:
+                                is_matched, reason = is_match(candidate, media)
+                                if is_matched:
+                                    logger.debug(f"✓ Matched: {reason}: {media['title']} ({media['year']}) <-> {candidate['title']} ({candidate.get('year')})")
                                     search_asset = candidate
                                     found_match = True
                                     asset_season_numbers = search_asset.get('season_numbers', None)
@@ -303,8 +302,9 @@ def match_assets_to_media(
                                 candidates = type_candidates
                             for search_asset in candidates:
                                 total_comparisons += 1
-                                result = is_match(search_asset, media, logger)
-                                if result:
+                                is_matched, reason = is_match(search_asset, media)
+                                if is_matched:
+                                    logger.debug(f"✓ Matched: {reason}: {media['title']} ({media['year']}) <-> {search_asset['title']} ({search_asset.get('year')})")
                                     asset_season_numbers = search_asset.get('season_numbers', None)
                                     if not asset_season_numbers or not media_seasons_numbers or (asset_season_numbers and media_seasons_numbers):
                                         found_match = True
@@ -326,16 +326,39 @@ def match_assets_to_media(
                             })
                         else:
                             non_matches += 1
+                            candidate_titles = []
+                            if id_candidates or candidates:
+                                for c in (id_candidates or []) + (candidates or []):
+                                    ct = c.get('title')
+                                    cy = c.get('year')
+                                    if ct:
+                                        candidate_titles.append(f"{ct} ({cy})" if cy else str(ct))
+                                if candidate_titles:
+                                    col_width = max(len(s) for s in candidate_titles) + 2
+                                    rows = []
+                                    for i in range(0, len(candidate_titles), 3):
+                                        chunk = candidate_titles[i:i+3]
+                                        # Pad each candidate for alignment, then join with separator
+                                        row = " | ".join(c.ljust(col_width) for c in chunk)
+                                        rows.append(row)
+                                    candidates_str = "\n      ".join(rows)
+                                    logger.debug(
+                                        f"✗ No match: {media['title']} ({media['year']})\n"
+                                        f"  Candidates checked:\n"
+                                        f"      {candidates_str}"
+                                    )
+                                else:
+                                    logger.debug(f"✗ No match: {media['title']} ({media['year']}) | No candidates found")
+                            else:
+                                logger.debug(f"✗ No match: {media['title']} ({media['year']}) | No candidates found")
                 matched[asset_type] = matched_dict
                 elapsed_time = time.time() - start_time
                 items_per_second = len(media_data) / elapsed_time if elapsed_time > 0 else 0
-                if logger:
-                    logger.debug(f"Completed matching for {asset_type}: {len(media_data)} items in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s)")
-    if logger:
-        logger.debug(f"{total_items} total_items")
-        logger.debug(f"{total_comparisons} total_comparisons")
-        logger.debug(f"{matches} total_matches")
-        logger.debug(f"{non_matches} non_matches")
+                logger.debug(f"Completed matching for {asset_type}: {len(media_data)} items in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s)")
+    logger.debug(f"{total_items} total_items")
+    logger.debug(f"{total_comparisons} total_comparisons")
+    logger.debug(f"{matches} total_matches")
+    logger.debug(f"{non_matches} non_matches")
 
     if return_unmatched_assets:
         unmatched_assets = {atype: [] for atype in asset_types}
@@ -352,8 +375,7 @@ def match_assets_to_media(
                     ignore_title = asset['title']
                     ignore_title_year = f"{asset['title']} ({asset['year']})"
                     if ignore_title in config.ignore_media or ignore_title_year in config.ignore_media:
-                        if logger:
-                            logger.debug(f"{asset['title']} ({asset['year']}) is in ignore_media, skipping...")
+                        logger.debug(f"{asset['title']} ({asset['year']}) is in ignore_media, skipping...")
                         continue
                 unmatched_assets[atype].append({
                     'title': asset['title'],

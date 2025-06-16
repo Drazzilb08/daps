@@ -60,29 +60,35 @@ def get_assets_files(
     return final_assets, prefix_index
 
 
-def merge_assets(new_assets: List[dict], final_assets: List[dict], prefix_index: Dict[str, Any], logger: Any) -> None:
+def merge_assets(new_assets: list, final_assets: list, prefix_index: dict, logger: any) -> None:
     """
-    Merge newly discovered assets into the main asset list, deduplicating by content and title match.
+    Merge new asset entries into the final asset list, collapsing duplicates, handling upgrades, and indexing.
 
     Args:
-        new_assets (List[dict]): Newly discovered assets.
-        final_assets (List[dict]): Aggregated list of final assets to update.
-        prefix_index (Dict[str, Any]): Title prefix index to accelerate lookups.
-        logger (Any): Logger instance for debug/info messages.
+        new_assets: List of new asset dictionaries.
+        final_assets: List to append/merge assets into.
+        prefix_index: Index for fast search/lookup.
+        logger: Logger instance.
     """
+
     with progress(new_assets, desc="Processing assets", total=len(new_assets), unit="asset", logger=logger, leave=False) as pbar:
         for new in pbar:
             search_matched_assets = search_matches(prefix_index, new['title'], logger)
+            merged = False
             for final in search_matched_assets:
                 # Skip merging if both new and final assets come from the same directory
                 new_dirs = {os.path.dirname(f) for f in new['files']}
                 final_dirs = {os.path.dirname(f) for f in final['files']}
                 if new_dirs & final_dirs:
                     continue
-                if is_match(final, new, logger, log=True) and (final['type'] == new['type'] or final.get('season_numbers') or new.get('season_numbers')):
+
+                is_matched, reason = is_match(final, new)
+                if is_matched and (final['type'] == new['type'] or final.get('season_numbers') or new.get('season_numbers')):
                     # Promote to series if either asset has seasons
                     if new.get('season_numbers') or final.get('season_numbers'):
                         final['type'] = 'series'
+                    pre_files = list(final['files'])
+                    upgrades = []
                     for new_file in new['files']:
                         normalized_new_file = normalize_file_names(os.path.basename(new_file))
                         for final_file in final['files']:
@@ -97,6 +103,7 @@ def merge_assets(new_assets: List[dict], final_assets: List[dict], prefix_index:
                             ):
                                 final['files'].remove(final_file)
                                 final['files'].append(new_file)
+                                upgrades.append((final_file, new_file))
                                 break
                         else:
                             final['files'].append(new_file)
@@ -114,9 +121,49 @@ def merge_assets(new_assets: List[dict], final_assets: List[dict], prefix_index:
                     for key in ['tmdb_id', 'tvdb_id', 'imdb_id']:
                         if not final.get(key) and new.get(key):
                             final[key] = new[key]
+                    post_files = list(final['files'])
+                    src_parent = os.path.basename(os.path.dirname(new['files'][0]))
+                    reason_str = f"  Reason: {reason}."
+                    files_str = f"  Files: {len(pre_files)} → {len(post_files)}"
+
+                    # Prepare upgrades log lines
+                    pre_basenames = {os.path.basename(f): f for f in pre_files}
+                    post_basenames = {os.path.basename(f): f for f in post_files}
+                    new_basenames = {os.path.basename(f): f for f in new['files']}
+
+                    upgrade_lines = []
+                    # Replaced files
+                    for pre_base, pre_full in pre_basenames.items():
+                        if pre_base in new_basenames:
+                            new_full = new_basenames[pre_base]
+                            pre_dir = os.path.basename(os.path.dirname(pre_full))
+                            new_dir = os.path.basename(os.path.dirname(new_full))
+                            if pre_full != new_full:
+                                upgrade_lines.append(
+                                    f"    - Replaced: {pre_base} [{pre_dir}]\n"
+                                    f"        → {os.path.basename(new_full)} [{new_dir}]"
+                                )
+                    # Added files (in post, not in pre)
+                    for post_base, post_full in post_basenames.items():
+                        if post_base not in pre_basenames:
+                            post_dir = os.path.basename(os.path.dirname(post_full))
+                            upgrade_lines.append(
+                                f"    - Added:    {post_base} [{post_dir}]"
+                            )
+
+                    logger.debug(
+                        f"[MERGE] '{final['title']}' ({final['type']}) from [{src_parent}]\n"
+                        f"{reason_str}\n"
+                        f"{files_str}\n"
+                        + ("\n".join(upgrade_lines) if upgrade_lines else "")
+                    )
+                    merged = True
                     break
-            else:
-                # Add new asset if no match found and index it
+            if not merged:
                 new['files'].sort()
                 final_assets.append(new)
                 build_search_index(prefix_index, new['title'], new, logger)
+                src_parent = os.path.basename(os.path.dirname(new['files'][0]))
+                logger.debug(
+                    f"[ADD] New asset '{new['title']}' ({new['type']}), {len(new['files'])} file(s), from {src_parent}"
+                )

@@ -57,7 +57,8 @@ window.help = {
     ],
 
     poster_cleanarr: [
-      "Ignore Media: List of media to ignore during cleaning of posters from your assets directory."
+      "Ignore Media: List of media to ignore during cleaning of posters from your assets directory.",
+      "Source Dirs: Folders to scan for posters to clean, typically your Kometa assets directory.",
     ],
 
     unmatched_assets: [

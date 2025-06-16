@@ -1,57 +1,52 @@
 
 <div align="center">
 
-Collection of Scripts I've written or found useful
+# DAPS
+
+Automate, optimize, and take control of your media libraries.
 
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
-[![GitHub issues](https://img.shields.io/github/issues/Drazzilb08/daps.svg)](https://github.com/Drazzilb08/daps/issues)
-[![GitHub pull requests](https://img.shields.io/github/issues-pr/Drazzilb08/daps.svg)](https://github.com/Drazzilb08/daps/pulls)
-[![GitHub stars](https://img.shields.io/github/stars/Drazzilb08/daps.svg)](https://github.com/Drazzilb08/daps/stargazers)
-[![Python](https://img.shields.io/badge/python-3.8-blue.svg)](https://www.python.org/downloads/release/python-380/)
-[![Bash](https://img.shields.io/badge/bash-5.0-green.svg)](https://www.gnu.org/software/bash/)
-
-To help with documentation of the collections of these scripts, I've created a [WIKI](https://github.com/Drazzilb08/daps/wiki) If there are any questions or concerns please let me know with a [GitHub issue](https://github.com/Drazzilb08/daps/issues).
+[![GitHub Issues](https://img.shields.io/github/issues/Drazzilb08/daps.svg)](https://github.com/Drazzilb08/daps/issues)
+[![GitHub PRs](https://img.shields.io/github/issues-pr/Drazzilb08/daps.svg)](https://github.com/Drazzilb08/daps/pulls)
+[![GitHub Stars](https://img.shields.io/github/stars/Drazzilb08/daps.svg)](https://github.com/Drazzilb08/daps/stargazers)
+[![Python](https://img.shields.io/badge/python-3.8%2B-blue.svg)](https://www.python.org/)
+[![Bash](https://img.shields.io/badge/bash-5.0%2B-green.svg)](https://www.gnu.org/software/bash/)
 
 </div>
 
-## Versioning
+---
+## 🚀 Quickstart
 
-I've started to put version numbers on each of my scripts, you can find the version at the top of every script.
-I do my best to keep up with everything
+See [Wiki](https://github.com/Drazzilb08/daps/wiki) for full install docs.
 
-1. 0.0.X versions are bug fixes
-2. 0.X.0 versions are minor changes
-3. X.0.0 versions are major changes
-
-### How to use it
-
-- If you haven't already, install [VSCode](https://code.visualstudio.com/docs/setup/setup-overview).
-- Install the [YAML extension](https://marketplace.visualstudio.com/items?itemName=redhat.vscode-yaml)
-- Include the following line at the top of your config file (already present if you're modifying the config sample):
-```yaml
-# yaml-language-server: $schema=https://raw.githubusercontent.com/Drazzilb08/daps/master/schemas/config-schema.json
+**Docker (recommended):**
+```bash
+docker run -d -v /path/to/config:/config -v /path/to/posters:/posters -p 8000:8000 drazzilb08/daps
 ```
-- Once added, any invalid fields or values will be flagged as errors, and hovering over the fields will provide descriptions.
 
-## Submitting Pull Requests
+**Local:**
+```bash
+git clone https://github.com/Drazzilb08/daps.git
+cd daps
+python3 -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
+python3 main.py poster_renamerr
+```
 
-Please feel free to make a pull request if you see something that could be improved. I'm always looking for ways to make my scripts better.
+and use the built-in Web UI: [http://localhost:8000](http://localhost:8000)
 
-**Please note that these scripts are tested by me and a few friends. They very well may work for you but they are not tested under all conditions.**
+---
 
-<br>
+## 🙋‍♂️ Contributing & Support
 
-**Please test and use at your own risk.**
+Pull requests are welcome for fixes, docs, or new module ideas.  
+If you spot a bug or want a feature, open an [Issue](https://github.com/Drazzilb08/daps/issues) or jump into a PR.
 
-Thanks
+---
 
-## Neat scripts I've found
+<div align="center">
+  
+Made with ❤️ by Drazzilb  
+If this saved you time, star the repo, tell a friend, or buy yourself a cookie.
 
-1. bullmoose20 has some amazing scripts he writes, most importantly the plex-bloat-fix.py script [here](https://github.com/bullmoose20/Plex-Stuff) I find especially useful.
-2. You can't have a list of scripts to use without including [JBOPS](https://github.com/blacktwin/JBOPS). I specifically use the Inactive User script and the kill stream script.
-3. [qBitManager](https://github.com/StuffAnThings/qbit_manage) Amazing bit of python scripting that makes managing qBittorrent much easier
-4. [Upgradinatorr](https://github.com/angrycuban13/Just-A-Bunch-Of-Starr-Scripts/tree/main/Upgradinatorr) An amazing bit of powershell writing by AngryCuban meant to keep your movie library as up to date as possible
-5. [Homepage](https://github.com/benphelps/homepage) Probably one of the best HomeLab dashboard around IMO.
-6. [reTraktArr](https://github.com/zakkarry/reTraktarr) Here is a neat script that will help you keep your Radarr and Sonarr libraries in sync with your Trakt lists. The way I'm using this is to have my entire library visible on trakt and visible to anybody I want to show my collection to
-
-If you think there are some other neat ones I should include or try out please let me know.
+</div>

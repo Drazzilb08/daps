@@ -6,7 +6,8 @@ let lastRenderedFileKey = null; // Tracks the key of the last rendered file to d
 
 // ===== Scroll Buttons and "No logs" message helpers =====
 function ensureLogControls() {
-    const scrollContainer = document.getElementById('scroll-output-container') || document.body;
+    const scrollContainer = document.getElementById('scroll-output-container');
+    if (!scrollContainer) return;
     // Add empty message
     if (!document.getElementById('log-empty-msg')) {
         const msg = document.createElement('div');
@@ -424,6 +425,17 @@ window.loadLogs = async function()
         window.removeEventListener('resize', handleResize); // Ensure listener is removed
         if (term) { term.dispose(); term = null; }
         if (fitAddon) { fitAddon.dispose(); fitAddon = null; }
+        // Remove scroll controls and empty message from scroll-output-container
+        const scrollContainer = document.getElementById('scroll-output-container');
+        if (scrollContainer) {
+            const idsToRemove = ['scroll-to-top', 'scroll-to-bottom', 'log-empty-msg'];
+            for (const id of idsToRemove) {
+                const el = document.getElementById(id);
+                if (el && el.parentNode === scrollContainer) {
+                    scrollContainer.removeChild(el);
+                }
+            }
+        }
     };
 
     // Attach scroll event and set initial button state

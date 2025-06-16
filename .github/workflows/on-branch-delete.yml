@@ -1,12 +1,12 @@
-name: Delete Docker Image Tags for Deleted Branches (Except dev and master)
+name: Delete GHCR Docker Tag for Deleted Branch
 
 on:
   delete:
     branches:
-      - '*'  # Triggered on branch deletion
+      - '*'  # Triggers on branch deletion
 
 jobs:
-  docker-delete-tag:
+  ghcr-delete-tag:
     runs-on: ubuntu-latest
 
     steps:
@@ -15,32 +15,27 @@ jobs:
         run: echo "BRANCH_NAME=${GITHUB_REF#refs/heads/}" >> $GITHUB_OUTPUT
 
       - name: Check if branch is not dev or master
-        id: check_branch
         run: |
           if [[ "${{ steps.get_branch.outputs.BRANCH_NAME }}" == "dev" || "${{ steps.get_branch.outputs.BRANCH_NAME }}" == "master" ]]; then
             echo "Skipping deletion for branch: ${{ steps.get_branch.outputs.BRANCH_NAME }}"
-            exit 0  # Skip if the branch is dev or master
+            exit 0
           fi
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
-
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
-        with:
-          registry: ghcr.io
-          username: ${{ secrets.GH_USERNAME }}
-          password: ${{ secrets.GH_TOKEN }}
-
-      - name: Delete Docker tag from Docker Hub
+      - name: Delete tag from GHCR
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+          TAG_NAME: ${{ steps.get_branch.outputs.BRANCH_NAME }}
         run: |
-          docker rmi ${{ secrets.DOCKER_USERNAME }}/daps:${{ steps.get_branch.outputs.BRANCH_NAME }} || echo "Tag not found on Docker Hub"
-        continue-on-error: true
-
-      - name: Delete Docker tag from GitHub Container Registry
-        run: |
-          docker rmi ghcr.io/drazzilb08/daps:${{ steps.get_branch.outputs.BRANCH_NAME }} || echo "Tag not found on GitHub Container Registry"
-        continue-on-error: true
+          REPO="drazzilb08/daps"
+          # Get the tag digest
+          DIGEST=$(curl -s -H "Authorization: Bearer $GH_TOKEN" \
+            "https://ghcr.io/v2/${REPO}/manifests/${TAG_NAME}" \
+            -I | grep -i 'docker-content-digest:' | awk '{print $2}' | tr -d '\r')
+          if [[ -z "$DIGEST" ]]; then
+            echo "Tag not found on GHCR"
+            exit 0
+          fi
+          # Delete the tag
+          curl -s -X DELETE -H "Authorization: Bearer $GH_TOKEN" \
+            "https://ghcr.io/v2/${REPO}/manifests/${DIGEST}" \
+            && echo "Deleted GHCR tag: ${TAG_NAME}" || echo "Failed to delete GHCR tag: ${TAG_NAME}"

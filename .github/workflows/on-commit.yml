@@ -4,6 +4,20 @@ on:
   push:
     branches:
       - '*'  # Triggers on push to any branch
+    paths:
+      - 'Dockerfile'
+      - 'main.py'
+      - 'requirements.txt'
+      - 'jokes.txt'
+      - 'modules/**'
+      - 'util/**'
+      - 'scripts/**'
+      - 'config/**'
+      - 'spud/**'
+      - 'web/**'
+      - 'VERSION'
+      - 'start.sh'
+      - '.github/workflows/on-commit.yml'
 
 jobs:
   docker-tag:

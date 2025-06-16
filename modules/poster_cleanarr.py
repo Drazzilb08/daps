@@ -62,7 +62,15 @@ def remove_assets(
             # Remove individual files for asset
             for file in asset_data['files']:
                 remove_list.append(file)
-                messages.append(f"Removing file: {os.path.basename(file)}")
+                # Compose tmp path
+                asset_dir = os.path.dirname(file)
+                basename = os.path.basename(file)
+                tmp_path = os.path.join(asset_dir, 'tmp', basename)
+                if os.path.isfile(tmp_path):
+                    remove_list.append(tmp_path)
+                    if config.log_level.lower() == 'debug':
+                        messages.append(f"Removing duplicate in tmp: {tmp_path}")
+                messages.append(f"Removing file: {basename}")
 
         remove_data.append({
             'title': asset_data['title'],

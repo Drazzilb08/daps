@@ -1,30 +1,34 @@
 import os
 import re
 import html
-from unidecode import unidecode
 import datetime
-from typing import Any, Optional, List, Dict
+from typing import Any, Dict, List, Optional
 from collections import defaultdict
-from util.utility import progress
 
+from unidecode import unidecode
+
+from util.utility import progress
 from util.normalization import normalize_titles
 from util.construct import create_collection, create_series, create_movie
 from util.extract import extract_year, extract_ids
-from util.constants import year_regex, season_pattern, remove_special_chars, illegal_chars_regex
+from util.constants import (
+    year_regex,
+    season_pattern,
+    remove_special_chars,
+    illegal_chars_regex,
+)
 
 
 def scan_files_in_flat_folder(folder_path: str, logger: Any) -> List[Dict]:
-    """
-    Scan a flat directory structure (no subfolders) for media assets.
+    """Scan a flat directory structure (no subfolders) for media assets.
 
     Args:
-        folder_path (str): Path to the folder containing files.
-        logger (Any): Logger instance for progress and debugging.
+      folder_path (str): Path to the folder containing files.
+      logger (Any): Logger instance for progress and debugging.
 
     Returns:
-        List[Dict]: List of parsed media asset dictionaries.
+      List[Dict]: List of parsed media asset dictionaries.
     """
-
     try:
         files = os.listdir(folder_path)
     except FileNotFoundError:
@@ -39,13 +43,13 @@ def scan_files_in_flat_folder(folder_path: str, logger: Any) -> List[Dict]:
 
     for file in files:
         try:
-            if re.match(r'^\.[^.]', file):
+            if re.match(r"^\.[^.]", file):
                 continue
-            title = file.rsplit('.', 1)[0]
+            title = file.rsplit(".", 1)[0]
             title = unidecode(html.unescape(title))
-            title = re.sub(illegal_chars_regex, '', title)
+            title = re.sub(illegal_chars_regex, "", title)
             raw_title = season_pattern.split(title)[0].strip()
-            normalized_title = remove_special_chars.sub('', raw_title.lower())
+            normalized_title = remove_special_chars.sub("", raw_title.lower())
             if normalized_title in normalized_map:
                 match_key = normalized_map[normalized_title]
                 groups[match_key].append(file)
@@ -53,46 +57,68 @@ def scan_files_in_flat_folder(folder_path: str, logger: Any) -> List[Dict]:
                 groups[raw_title].append(file)
                 normalized_map[normalized_title] = raw_title
         except Exception as exc:
-            logger.error(f"Error processing file '{file}' in folder {folder_path}: {exc}")
+            logger.error(
+                f"Error processing file '{file}' in folder {folder_path}: {exc}"
+            )
             continue
 
     groups = dict(sorted(groups.items(), key=lambda x: x[0].lower()))
 
-    with progress(groups.items(), desc=f'Processing files {os.path.basename(folder_path)}', total=len(groups), unit='file', logger=logger) as pbar:
+    with progress(
+        groups.items(),
+        desc=f"Processing files {os.path.basename(folder_path)}",
+        total=len(groups),
+        unit="file",
+        logger=logger,
+    ) as pbar:
         for base_name, files in groups.items():
             try:
                 assets_dict.append(parse_file_group(folder_path, base_name, files))
             except Exception as exc:
-                logger.error(f"Error parsing file group '{base_name}' in folder {folder_path}: {exc}")
+                logger.error(
+                    f"Error parsing file group '{base_name}' in folder {folder_path}: {exc}"
+                )
                 continue
             pbar.update(1)
 
     return assets_dict
 
+
 def scan_files_in_nested_folders(folder_path: str, logger: Any) -> Optional[List[Dict]]:
-    """
-    Scan a directory with subfolders representing grouped assets (e.g., per movie/series).
+    """Scan a directory with subfolders representing grouped assets (e.g., per movie/series).
 
     Args:
-        folder_path (str): Path to the base folder.
-        logger (Any): Logger instance.
+      folder_path (str): Path to the base folder.
+      logger (Any): Logger instance.
 
     Returns:
-        Optional[List[Dict]]: List of parsed asset dictionaries from subfolders, or None on error.
+      Optional[List[Dict]]: List of parsed asset dictionaries from subfolders, or None on error.
     """
     assets_dict = []
     try:
         entries = list(os.scandir(folder_path))
-        progress_bar = progress(entries, desc='Processing posters', total=len(entries), unit='folder', logger=logger)
+        progress_bar = progress(
+            entries,
+            desc="Processing posters",
+            total=len(entries),
+            unit="folder",
+            logger=logger,
+        )
 
         for dir_entry in progress_bar:
-            if not dir_entry.is_dir() or dir_entry.name.startswith('.') or dir_entry.name == "tmp":
+            if (
+                not dir_entry.is_dir()
+                or dir_entry.name.startswith(".")
+                or dir_entry.name == "tmp"
+            ):
                 continue
             base_name = os.path.basename(dir_entry.path)
             try:
                 files = [f.name for f in os.scandir(dir_entry.path) if f.is_file()]
             except Exception as exc:
-                logger.error(f"Failed to scan nested folder: {dir_entry.path} | Exception: {exc}")
+                logger.error(
+                    f"Failed to scan nested folder: {dir_entry.path} | Exception: {exc}"
+                )
                 continue
             if not files:
                 logger.debug(f"Skipping empty folder: {dir_entry.path}")
@@ -100,7 +126,9 @@ def scan_files_in_nested_folders(folder_path: str, logger: Any) -> Optional[List
             try:
                 assets_dict.append(parse_folder_group(dir_entry.path, base_name, files))
             except Exception as exc:
-                logger.error(f"Failed to parse folder group: {dir_entry.path} | Exception: {exc}")
+                logger.error(
+                    f"Failed to parse folder group: {dir_entry.path} | Exception: {exc}"
+                )
                 continue
     except Exception as exc:
         logger.error(f"Error scanning folder {folder_path}: {exc}")
@@ -109,87 +137,123 @@ def scan_files_in_nested_folders(folder_path: str, logger: Any) -> Optional[List
 
 
 def parse_folder_group(folder_path: str, base_name: str, files: List[str]) -> Dict:
-    """
-    Parse metadata and build a structured dictionary for assets within a folder.
+    """Parse metadata and build a structured dictionary for assets within a folder.
+
+    Args:
+      folder_path (str): Path to the folder.
+      base_name (str): Base name of the folder.
+      files (List[str]): List of file names.
+
+    Returns:
+      Dict: Structured asset dictionary.
     """
     try:
-        title = re.sub(year_regex, '', base_name)
+        title = re.sub(year_regex, "", base_name)
         title = unidecode(html.unescape(title))
         year = extract_year(base_name)
         tmdb_id, tvdb_id, imdb_id = extract_ids(base_name)
         normalized_title = normalize_titles(base_name)
-        full_paths = sorted([os.path.join(folder_path, file) for file in files if not file.startswith('.')])
+        full_paths = sorted(
+            [
+                os.path.join(folder_path, file)
+                for file in files
+                if not file.startswith(".")
+            ]
+        )
         parent_folder = os.path.basename(folder_path)
 
         if not full_paths:
             raise ValueError(f"No valid files found in folder")
 
-        is_series = len(files) > 1 and any("Season" in os.path.basename(file) for file in files)
+        is_series = len(files) > 1 and any(
+            "Season" in os.path.basename(file) for file in files
+        )
         is_collection = not year
 
         if is_collection:
-            return create_collection(title, tmdb_id, normalized_title, full_paths, parent_folder)
-        elif is_series or tvdb_id:
-            return create_series(title, year, tvdb_id, imdb_id, normalized_title, full_paths, parent_folder)
-        else:
-            return create_movie(title, year, tmdb_id, imdb_id, normalized_title, full_paths, parent_folder)
+            return create_collection(
+                title, tmdb_id, normalized_title, full_paths, parent_folder
+            )
+        if is_series or tvdb_id:
+            return create_series(
+                title,
+                year,
+                tvdb_id,
+                imdb_id,
+                normalized_title,
+                full_paths,
+                parent_folder,
+            )
+        return create_movie(
+            title, year, tmdb_id, imdb_id, normalized_title, full_paths, parent_folder
+        )
     except Exception as exc:
-        raise ValueError(f"Error parsing folder group. Folder: {folder_path}, Base name: {base_name}, Exception: {exc}")
+        raise ValueError(
+            f"Error parsing folder group. Folder: {folder_path}, Base name: {base_name}, Exception: {exc}"
+        )
+
 
 def parse_file_group(folder_path: str, base_name: str, files: List[str]) -> Dict:
-    """
-    Parse a group of files in a flat folder into structured metadata.
+    """Parse a group of files in a flat folder into structured metadata.
 
     Args:
-        folder_path (str): Path to the containing folder.
-        base_name (str): Group title.
-        files (List[str]): List of file names.
+      folder_path (str): Path to the containing folder.
+      base_name (str): Group title.
+      files (List[str]): List of file names.
 
     Returns:
-        Dict: Structured media dictionary.
+      Dict: Structured media dictionary.
     """
     try:
         id_cleaned_name = re.sub(r"\{(?:tmdb|tvdb|imdb)-\w+\}", "", base_name).strip()
-        title = re.sub(year_regex, '', id_cleaned_name).strip()
+        title = re.sub(year_regex, "", id_cleaned_name).strip()
         title = unidecode(html.unescape(title))
         year = extract_year(base_name)
         tmdb_id, tvdb_id, imdb_id = extract_ids(base_name)
         normalized_title = normalize_titles(base_name)
-        files = sorted([os.path.join(folder_path, file) for file in files if not re.match(r'^\.[^.]', file)])
-        # Determine media type: collection (no year), series (season indicators), or movie
+        files = sorted(
+            [
+                os.path.join(folder_path, file)
+                for file in files
+                if not re.match(r"^\.[^.]", file)
+            ]
+        )
         is_series = any(season_pattern.search(file) for file in files)
         is_collection = not year
-        # parent_folder should be the base name (minus extension) of the first file not matching season_pattern
         non_season_file = next((f for f in files if not season_pattern.search(f)), None)
         if non_season_file:
             parent_folder = os.path.splitext(os.path.basename(non_season_file))[0]
         else:
-            # Fallback: just use the base name of the first file
-            parent_folder = os.path.splitext(os.path.basename(files[0]))[0] if files else ""
+            parent_folder = (
+                os.path.splitext(os.path.basename(files[0]))[0] if files else ""
+            )
 
         if is_collection:
-            # Collection: no year detected
-            return create_collection(title, tmdb_id, normalized_title, files, parent_folder)
-        elif is_series or tvdb_id:
-            # Series: season pattern detected in files
-            return create_series(title, year, tvdb_id, imdb_id, normalized_title, files, parent_folder)
-        else:
-            # Movie: default case
-            return create_movie(title, year, tmdb_id, imdb_id, normalized_title, files, parent_folder)
+            return create_collection(
+                title, tmdb_id, normalized_title, files, parent_folder
+            )
+        if is_series or tvdb_id:
+            return create_series(
+                title, year, tvdb_id, imdb_id, normalized_title, files, parent_folder
+            )
+        return create_movie(
+            title, year, tmdb_id, imdb_id, normalized_title, files, parent_folder
+        )
     except Exception as exc:
-        raise ValueError(f"Error parsing file group. Folder: {folder_path}, Base name: {base_name}, Exception: {exc}")
+        raise ValueError(
+            f"Error parsing file group. Folder: {folder_path}, Base name: {base_name}, Exception: {exc}"
+        )
 
 
 def process_files(folder_path: str, logger: Any) -> Optional[List[Dict]]:
-    """
-    Determine folder structure and route to the appropriate scanning logic.
+    """Determine folder structure and route to the appropriate scanning logic.
 
     Args:
-        folder_path (str): Path to the folder to scan.
-        logger (Any): Logger instance.
+      folder_path (str): Path to the folder to scan.
+      logger (Any): Logger instance.
 
     Returns:
-        Optional[List[Dict]]: List of structured asset dictionaries, or None on failure.
+      Optional[List[Dict]]: List of structured asset dictionaries, or None on failure.
     """
     asset_folders = _is_asset_folders(folder_path, logger)
     logger.debug(f"Folder Path: {folder_path} | Asset Folder: {asset_folders}")
@@ -203,31 +267,40 @@ def process_files(folder_path: str, logger: Any) -> Optional[List[Dict]]:
     end_time = datetime.datetime.now()
     if assets_dict:
         elapsed_time = (end_time - start_time).total_seconds()
-        item_count = sum(len(asset.get('files', [])) for asset in assets_dict) if assets_dict else 0
+        item_count = (
+            sum(len(asset.get("files", [])) for asset in assets_dict)
+            if assets_dict
+            else 0
+        )
         items_per_second = item_count / elapsed_time if elapsed_time > 0 else 0
         if logger:
-            logger.info(f"Processed {item_count} files in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s) in folder '{os.path.basename(folder_path.rstrip('/'))}'")
+            logger.info(
+                f"Processed {item_count} files in {elapsed_time:.2f} seconds ({items_per_second:.2f} items/s) "
+                f"in folder '{os.path.basename(folder_path.rstrip('/'))}'"
+            )
         return assets_dict
-    else:
-        return None
+    return None
 
 
 def _is_asset_folders(folder_path: str, logger: Any) -> bool:
-    """
-    Check if the folder contains asset folders.
+    """Check if the folder contains asset folders.
 
     Args:
-        folder_path (str): The path to the folder to check.
-        logger (Any): Logger instance for debug output.
+      folder_path (str): The path to the folder to check.
+      logger (Any): Logger instance for debug output.
 
     Returns:
-        bool: True if the folder contains asset folders, False otherwise.
+      bool: True if the folder contains asset folders, False otherwise.
     """
     try:
         if not os.path.exists(folder_path):
             return False
         for item in os.listdir(folder_path):
-            if (len(item) > 1 and item[0] == '.' and item[1] != '.') or item.startswith('@') or item == "tmp":
+            if (
+                (len(item) > 1 and item[0] == "." and item[1] != ".")
+                or item.startswith("@")
+                or item == "tmp"
+            ):
                 logger.debug(f"Skipping hidden item: {item}")
                 continue
             if os.path.isdir(os.path.join(folder_path, item)):
@@ -237,17 +310,25 @@ def _is_asset_folders(folder_path: str, logger: Any) -> bool:
         logger.error(f"Error checking asset folders in {folder_path}: {exc}")
         return False
 
-def process_selected_files(file_paths: List[str], logger: Any, asset_folders: bool = False) -> List[Dict]:
+
+def process_selected_files(
+    file_paths: List[str], logger: Any, asset_folders: bool = False
+) -> List[Dict]:
+    """Group and parse selected file paths into assets_dict.
+
+    Args:
+      file_paths (List[str]): List of file paths.
+      logger (Any): Logger instance.
+      asset_folders (bool): Whether files are grouped in asset folders.
+
+    Returns:
+      List[Dict]: List of structured asset dictionaries.
     """
-    Given a list of file paths, group and parse them into assets_dict (as get_assets_files would return).
-    """
-    from collections import defaultdict
     assets_dict = []
     if asset_folders:
-        # Group by parent directory name
         folder_groups = defaultdict(list)
         for file_path in file_paths:
-            if file_path.startswith('.'):
+            if file_path.startswith("."):
                 continue
             folder_name = os.path.basename(os.path.dirname(file_path))
             folder_groups[folder_name].append(file_path)
@@ -255,23 +336,26 @@ def process_selected_files(file_paths: List[str], logger: Any, asset_folders: bo
             folder_path = os.path.dirname(files[0])
             base_files = [os.path.basename(f) for f in files]
             try:
-                assets_dict.append(parse_folder_group(folder_path, folder_name, base_files))
+                assets_dict.append(
+                    parse_folder_group(folder_path, folder_name, base_files)
+                )
             except Exception as exc:
-                logger.error(f"Error parsing folder group '{folder_name}' in folder '{folder_path}': {exc}")
+                logger.error(
+                    f"Error parsing folder group '{folder_name}' in folder '{folder_path}': {exc}"
+                )
                 continue
     else:
-        # Flat file grouping (original)
         groups = defaultdict(list)
         normalized_map = {}
         for file_path in file_paths:
             filename = os.path.basename(file_path)
-            if filename.startswith('.'):
+            if filename.startswith("."):
                 continue
-            title = filename.rsplit('.', 1)[0]
+            title = filename.rsplit(".", 1)[0]
             title = unidecode(html.unescape(title))
-            title = re.sub(illegal_chars_regex, '', title)
+            title = re.sub(illegal_chars_regex, "", title)
             raw_title = season_pattern.split(title)[0].strip()
-            normalized_title = remove_special_chars.sub('', raw_title.lower())
+            normalized_title = remove_special_chars.sub("", raw_title.lower())
             if normalized_title in normalized_map:
                 match_key = normalized_map[normalized_title]
                 groups[match_key].append(file_path)
@@ -284,6 +368,8 @@ def process_selected_files(file_paths: List[str], logger: Any, asset_folders: bo
             try:
                 assets_dict.append(parse_file_group(folder, base_name, base_files))
             except Exception as exc:
-                logger.error(f"Error parsing file group '{base_name}' in folder '{folder}': {exc}")
+                logger.error(
+                    f"Error parsing file group '{base_name}' in folder '{folder}': {exc}"
+                )
                 continue
     return assets_dict

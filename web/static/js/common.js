@@ -1,38 +1,43 @@
 // ===== Payload Builders & Validation (moved to payload.js) =====
-
 // Universal save binding helper
-window.DAPS.bindSaveButton = function(saveBtn, buildPayloadFn, key, postSave) {
+window.DAPS.bindSaveButton = function(saveBtn, buildPayloadFn, key, postSave)
+{
     if (!saveBtn) return;
     saveBtn.type = 'button';
-    saveBtn.onclick = async () => {
+    saveBtn.onclick = async () =>
+    {
         await window.saveSection(buildPayloadFn, key, postSave);
     };
 };
 // ===== Universal Save Button UX and Handler =====
-
 /**
  * Universal Save button state handler for all forms.
  * Usage: window.setSaveButtonState(saveBtn, state, label)
  */
-window.setSaveButtonState = function(saveBtn, state, label = "Save") {
+window.setSaveButtonState = function(saveBtn, state, label = "Save")
+{
     if (!saveBtn) return;
-    if (state === "saving") {
+    if (state === "saving")
+    {
         saveBtn.disabled = true;
         saveBtn.textContent = "Saving...";
-    } else if (state === "success") {
+    }
+    else if (state === "success")
+    {
         saveBtn.disabled = true;
         saveBtn.textContent = "Saved!";
-        setTimeout(() => {
+        setTimeout(() =>
+        {
             saveBtn.disabled = false;
             saveBtn.textContent = label;
         }, 2000);
-    } else {
+    }
+    else
+    {
         saveBtn.disabled = false;
         saveBtn.textContent = label;
     }
 };
-
-
 /**
  * Common save handler for all config sections.
  * @param {() => Promise<Object|null>} buildPayload - async builder returning {key: value} to save
@@ -41,18 +46,25 @@ window.setSaveButtonState = function(saveBtn, state, label = "Save") {
  * @param {HTMLButtonElement} [saveBtn] - button element to show progress
  * @returns {Promise<void>}
  */
-window.saveSection = async function(buildPayload, key, postSave, saveBtn) {
+window.saveSection = async function(buildPayload, key, postSave, saveBtn)
+{
     if (!saveBtn) saveBtn = document.getElementById('saveBtn');
     window.setSaveButtonState(saveBtn, "saving");
     const payload = await buildPayload();
-    if (!payload || typeof payload[key] === 'undefined') {
+    if (!payload || typeof payload[key] === 'undefined')
+    {
         window.setSaveButtonState(saveBtn, "default");
         return;
     }
-    try {
-        const res = await fetch('/api/config', {
+    try
+    {
+        const res = await fetch('/api/config',
+        {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers:
+            {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(payload)
         });
         if (!res.ok) throw res;
@@ -60,9 +72,17 @@ window.saveSection = async function(buildPayload, key, postSave, saveBtn) {
         window.showToast(`✅ ${key.charAt(0).toUpperCase() + key.slice(1)} updated!`, 'success');
         window.setSaveButtonState(saveBtn, "success");
         if (typeof postSave === 'function') postSave();
-    } catch (err) {
+    }
+    catch (err)
+    {
         let msg = err.statusText || 'Save failed';
-        try { const data = await err.json(); msg = data.error || msg; } catch {}
+        try
+        {
+            const data = await err.json();
+            msg = data.error || msg;
+        }
+        catch
+        {}
         window.showToast(`❌ ${msg}`, 'error');
         window.setSaveButtonState(saveBtn, "default");
     }
@@ -123,7 +143,6 @@ function openModal(modal)
         document.body.classList.add('modal-open');
     });
 }
-
 /**
  * Closes the specified modal dialog.
  *
@@ -138,7 +157,6 @@ function closeModal(modal)
         modal.style.display = 'none';
     }, 250);
 }
-
 /**
  * Shows a modal dialog prompting the user about unsaved changes.
  *
@@ -158,15 +176,20 @@ function showUnsavedModal()
             unsavedModal.classList.remove('show');
             resolve(choice);
         }
-        saveBtn.addEventListener('click', async () => {
+        saveBtn.addEventListener('click', async () =>
+        {
             window.setSaveButtonState(saveBtn, "saving", "Save");
             await window.DAPS.saveCurrentPage();
             window.setSaveButtonState(saveBtn, "success", "Save");
-            setTimeout(() => {
+            setTimeout(() =>
+            {
                 unsavedModal.classList.remove('show');
                 resolve('save');
             }, 700);
-        }, { once: true });
+        },
+        {
+            once: true
+        });
         discardBtn.addEventListener('click', () => cleanup('discard'),
         {
             once: true

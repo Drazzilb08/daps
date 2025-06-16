@@ -9,12 +9,7 @@ import sys
 import pathlib
 
 from util.logger import Logger
-from util.utility import (
-    print_settings,
-    create_table,
-    print_json,
-    progress
-)
+from util.utility import print_settings, create_table, print_json, progress
 from util.scheduler import check_schedule
 from util.assets import get_assets_files
 from datetime import datetime, timedelta
@@ -32,6 +27,7 @@ logging.getLogger("PIL").setLevel(logging.WARNING)
 from datetime import datetime
 from typing import Optional, List, Dict, Tuple
 
+
 def load_last_run(log_dir: str) -> Optional[datetime]:
     """
     Load the last run timestamp from the .last_run file in the log directory.
@@ -46,6 +42,7 @@ def load_last_run(log_dir: str) -> Optional[datetime]:
                 pass
     return None
 
+
 def save_last_run(log_dir: str, dt: Optional[datetime] = None) -> None:
     """
     Save the current timestamp (or provided datetime) to the .last_run file in the log directory.
@@ -55,10 +52,9 @@ def save_last_run(log_dir: str, dt: Optional[datetime] = None) -> None:
     with open(last_run_file, "w") as f:
         f.write(now.isoformat())
 
+
 def check_holiday(
-    config: SimpleNamespace,
-    logger: Logger,
-    last_run: Optional[datetime] = None
+    config: SimpleNamespace, logger: Logger, last_run: Optional[datetime] = None
 ) -> Tuple[bool, Optional[List[str]], Dict[str, bool]]:
     """
     Determines if today falls within a holiday schedule and returns applicable border colors and switch flags.
@@ -81,10 +77,10 @@ def check_holiday(
     }
     now = datetime.now()
     for holiday, schedule_color in config.holidays.items():
-        schedule = schedule_color.get('schedule')
+        schedule = schedule_color.get("schedule")
         if not schedule or not schedule.startswith("range("):
             continue
-        inside = schedule[len("range("):-1]
+        inside = schedule[len("range(") : -1]
         start_str, end_str = inside.split("-", 1)
         sm, sd = map(int, start_str.split("/"))
         em, ed = map(int, end_str.split("/"))
@@ -95,9 +91,9 @@ def check_holiday(
         if end_date < start_date:
             # Range crosses new year
             if now.month < sm:
-                start_date = start_date.replace(year=year-1)
+                start_date = start_date.replace(year=year - 1)
             else:
-                end_date = end_date.replace(year=year+1)
+                end_date = end_date.replace(year=year + 1)
         # Check if holiday started or ended since last run
         if last_run:
             if start_date > last_run and start_date <= now:
@@ -110,11 +106,13 @@ def check_holiday(
                 holiday_switch["start_since_last_run"] = True
         # Is today inside the holiday range?
         if start_date <= now <= end_date:
-            holiday_colors = schedule_color.get('color', config.border_colors)
+            holiday_colors = schedule_color.get("color", config.border_colors)
             if isinstance(holiday_colors, str):
                 holiday_colors = [holiday_colors]
             logger.info(create_table([[f"Running {holiday.capitalize()} Schedule"]]))
-            logger.info(f"Schedule: {holiday.capitalize()} | Using {', '.join(holiday_colors)} border colors.")
+            logger.info(
+                f"Schedule: {holiday.capitalize()} | Using {', '.join(holiday_colors)} border colors."
+            )
             return True, holiday_colors, holiday_switch
     return False, None, holiday_switch
 
@@ -134,11 +132,14 @@ def convert_to_rgb(hex_color: str, logger: Logger) -> Tuple[int, int, int]:
     if len(hex_color) == 3:
         hex_color = hex_color * 2
     try:
-        color_code = tuple(int(hex_color[i: i + 2], 16) for i in (0, 2, 4))
+        color_code = tuple(int(hex_color[i : i + 2], 16) for i in (0, 2, 4))
     except ValueError:
-        logger.error(f"Error: {hex_color} is not a valid hexadecimal color code.\nDefaulting to white.")
+        logger.error(
+            f"Error: {hex_color} is not a valid hexadecimal color code.\nDefaulting to white."
+        )
         return (255, 255, 255)
     return color_code
+
 
 def fix_borders(
     assets_dict: Union[List[Dict[str, Any]], Dict[str, List[Dict[str, Any]]]],
@@ -147,7 +148,7 @@ def fix_borders(
     destination_dir: str,
     dry_run: bool,
     logger: Logger,
-    exclusion_list: Optional[List[str]]
+    exclusion_list: Optional[List[str]],
 ) -> List[str]:
     """
     Processes image assets and applies or removes borders based on configuration.
@@ -168,7 +169,7 @@ def fix_borders(
     if isinstance(assets_dict, list):
         grouped: Dict[str, List[Dict[str, Any]]] = {}
         for asset in assets_dict:
-            asset_type = asset.get('type')
+            asset_type = asset.get("type")
             grouped.setdefault(asset_type, []).append(asset)
         assets_dict = grouped
     rgb_border_colors: List[Tuple[int, int, int]] = []
@@ -193,11 +194,18 @@ def fix_borders(
         if not items:
             logger.info(f"No {key} found in the input directory")
             continue
-        with progress(items, desc=f"Processing {key.capitalize()}", total=len(items), unit=" items", logger=logger, leave=True) as pbar:
+        with progress(
+            items,
+            desc=f"Processing {key.capitalize()}",
+            total=len(items),
+            unit=" items",
+            logger=logger,
+            leave=True,
+        ) as pbar:
             for data in pbar:
-                files = data.get('files', None)
-                year = data.get('year', None)
-                folder = data.get('folder', None)
+                files = data.get("files", None)
+                year = data.get("year", None)
+                folder = data.get("folder", None)
                 if year:
                     year_str = f"({year})"
                 else:
@@ -210,8 +218,17 @@ def fix_borders(
                 output_path = destination_dir
                 for input_file in files:
                     file_name, extension = os.path.splitext(input_file)
-                    if extension not in [".jpg", ".png", ".jpeg", ".JPG", ".PNG", ".JPEG"]:
-                        logger.warning(f"Skipping {input_file} as it is not a jpg or png file.")
+                    if extension not in [
+                        ".jpg",
+                        ".png",
+                        ".jpeg",
+                        ".JPG",
+                        ".PNG",
+                        ".JPEG",
+                    ]:
+                        logger.warning(
+                            f"Skipping {input_file} as it is not a jpg or png file."
+                        )
                         continue
                     file_name = os.path.basename(input_file)
                     if rgb_border_colors:
@@ -220,9 +237,23 @@ def fix_borders(
                         rgb_border_color = None
                     if not dry_run:
                         if rgb_border_color:
-                            results = replace_borders(input_file, output_path, rgb_border_color, config.border_width, folder, logger)
+                            results = replace_borders(
+                                input_file,
+                                output_path,
+                                rgb_border_color,
+                                config.border_width,
+                                folder,
+                                logger,
+                            )
                         else:
-                            results = remove_borders(input_file, output_path, config.border_width, logger, excluded, folder)
+                            results = remove_borders(
+                                input_file,
+                                output_path,
+                                config.border_width,
+                                logger,
+                                excluded,
+                                folder,
+                            )
                         if results:
                             messages.append(f"{action} on {file_name}")
                     else:
@@ -239,7 +270,7 @@ def replace_borders(
     border_colors: Tuple[int, int, int],
     border_width: int,
     folder: Optional[str],
-    logger: Logger
+    logger: Logger,
 ) -> bool:
     """
     Removes the existing border and applies a new one with the specified color.
@@ -259,7 +290,14 @@ def replace_borders(
         with Image.open(input_file) as image:
             width, height = image.size
             # Remove border by cropping
-            cropped_image = image.crop((border_width, border_width, width - border_width, height - border_width))
+            cropped_image = image.crop(
+                (
+                    border_width,
+                    border_width,
+                    width - border_width,
+                    height - border_width,
+                )
+            )
             # Add border by expanding the canvas
             new_width = cropped_image.width + 2 * border_width
             new_height = cropped_image.height + 2 * border_width
@@ -296,13 +334,14 @@ def replace_borders(
         logger.error(f"Error processing {input_file}")
         return False
 
+
 def remove_borders(
     input_file: str,
     output_path: str,
     border_width: int,
     logger: Logger,
     exclude: bool,
-    folder: Optional[str]
+    folder: Optional[str],
 ) -> bool:
     """
     Crops an image to remove its borders and optionally adds a black bottom border.
@@ -323,13 +362,24 @@ def remove_borders(
             width, height = image.size
             if not exclude:
                 # Remove top, left, right borders, add black bottom border
-                final_image = image.crop((border_width, border_width, width - border_width, height))
-                bottom_border = Image.new("RGB", (width - 2 * border_width, border_width), color='black')
+                final_image = image.crop(
+                    (border_width, border_width, width - border_width, height)
+                )
+                bottom_border = Image.new(
+                    "RGB", (width - 2 * border_width, border_width), color="black"
+                )
                 bottom_border_position = (0, height - border_width - border_width)
                 final_image.paste(bottom_border, bottom_border_position)
             else:
                 # Remove all borders
-                final_image = image.crop((border_width, border_width, width - border_width, height - border_width))
+                final_image = image.crop(
+                    (
+                        border_width,
+                        border_width,
+                        width - border_width,
+                        height - border_width,
+                    )
+                )
             final_image = final_image.resize((1000, 1500)).convert("RGB")
             file_name = os.path.basename(input_file)
             if folder:
@@ -360,11 +410,12 @@ def remove_borders(
         logger.error(f"Error processing {input_file}")
         return False
 
+
 def copy_files(
     assets_dict: Dict[str, List[Dict[str, Any]]],
     destination_dir: str,
     dry_run: bool,
-    logger: Logger
+    logger: Logger,
 ) -> List[str]:
     """
     Copies asset files from the input to the output directory with change detection.
@@ -379,16 +430,23 @@ def copy_files(
         List[str]: A list of copy operations performed or simulated.
     """
     messages: List[str] = []
-    if destination_dir.endswith('/'):
-        destination_dir = destination_dir.rstrip('/')
+    if destination_dir.endswith("/"):
+        destination_dir = destination_dir.rstrip("/")
     asset_types = ["movies", "series", "collections"]
     for asset_type in asset_types:
         if asset_type in assets_dict:
             items = assets_dict[asset_type]
-            with progress(items, desc=f"Processing {asset_type.capitalize()}", total=len(items), unit=" items", logger=logger, leave=True) as pbar:
+            with progress(
+                items,
+                desc=f"Processing {asset_type.capitalize()}",
+                total=len(items),
+                unit=" items",
+                logger=logger,
+                leave=True,
+            ) as pbar:
                 for data in pbar:
-                    files = data.get('files', None)
-                    year = data.get('year', None)
+                    files = data.get("files", None)
+                    year = data.get("year", None)
                     if year:
                         year_str = f"({year})"
                     else:
@@ -396,8 +454,17 @@ def copy_files(
                     output_path = destination_dir
                     for input_file in files:
                         file_name, extension = os.path.splitext(input_file)
-                        if extension not in [".jpg", ".png", ".jpeg", ".JPG", ".PNG", ".JPEG"]:
-                            logger.warning(f"Skipping {input_file} as it is not a jpg or png file.")
+                        if extension not in [
+                            ".jpg",
+                            ".png",
+                            ".jpeg",
+                            ".JPG",
+                            ".PNG",
+                            ".JPEG",
+                        ]:
+                            logger.warning(
+                                f"Skipping {input_file} as it is not a jpg or png file."
+                            )
                             continue
                         file_name = os.path.basename(input_file)
                         final_path = f"{output_path}/{file_name}"
@@ -408,20 +475,35 @@ def copy_files(
                                     try:
                                         shutil.copy(input_file, final_path)
                                     except shutil.SameFileError:
-                                        logger.debug(f"Input file {input_file} is the same as {final_path}, skipping")
-                                    logger.debug(f"Input file {input_file} is different from {final_path}, copying to {output_basename}")
-                                    messages.append(f"Copied {data['title']}{year_str} - {file_name} to {output_basename}")
+                                        logger.debug(
+                                            f"Input file {input_file} is the same as {final_path}, skipping"
+                                        )
+                                    logger.debug(
+                                        f"Input file {input_file} is different from {final_path}, copying to {output_basename}"
+                                    )
+                                    messages.append(
+                                        f"Copied {data['title']}{year_str} - {file_name} to {output_basename}"
+                                    )
                             else:
                                 try:
                                     shutil.copy(input_file, final_path)
                                 except shutil.SameFileError:
-                                    logger.debug(f"Input file {input_file} is the same as {final_path}, skipping")
-                                logger.debug(f"Input file {input_file} does not exist in {output_path}, copying to {output_basename}")
-                                messages.append(f"Copied {data['title']}{year_str} - {file_name} to {output_basename}")
+                                    logger.debug(
+                                        f"Input file {input_file} is the same as {final_path}, skipping"
+                                    )
+                                logger.debug(
+                                    f"Input file {input_file} does not exist in {output_path}, copying to {output_basename}"
+                                )
+                                messages.append(
+                                    f"Copied {data['title']}{year_str} - {file_name} to {output_basename}"
+                                )
                         else:
-                            messages.append(f"Would have copied {data['title']}{year_str} - {file_name} to {output_basename}")
+                            messages.append(
+                                f"Would have copied {data['title']}{year_str} - {file_name} to {output_basename}"
+                            )
                 pbar.update(1)
     return messages
+
 
 def process_files(
     source_dirs: str,
@@ -440,13 +522,14 @@ def process_files(
         logger.info("Exiting...")
         return
 
-
     # Get log_dir
-    config_dir = os.getenv('CONFIG_DIR', '/config')
-    if os.environ.get('DOCKER_ENV'):
+    config_dir = os.getenv("CONFIG_DIR", "/config")
+    if os.environ.get("DOCKER_ENV"):
         log_dir = f"{config_dir}/logs/{config.module_name}"
     else:
-        log_dir = os.path.join(pathlib.Path(__file__).parents[1], 'logs', config.module_name)
+        log_dir = os.path.join(
+            pathlib.Path(__file__).parents[1], "logs", config.module_name
+        )
 
     last_run = load_last_run(log_dir)
     if config.log_level.lower() == "debug":
@@ -465,7 +548,9 @@ def process_files(
     run_holiday = False
     switch = {"start_since_last_run": False, "end_since_last_run": False}
     if getattr(config, "holidays", None):
-        run_holiday, border_colors, switch = check_holiday(config, logger, last_run=last_run)
+        run_holiday, border_colors, switch = check_holiday(
+            config, logger, last_run=last_run
+        )
     if not border_colors:
         border_colors = getattr(config, "border_colors", None)
 
@@ -474,12 +559,16 @@ def process_files(
         if isinstance(assets, list):
             grouped = {}
             for asset in assets:
-                asset_type = asset.get('type')
+                asset_type = asset.get("type")
                 grouped.setdefault(asset_type, []).append(asset)
             return grouped
         return assets
 
-    if (renamed_assets is None or switch['start_since_last_run'] or switch['end_since_last_run']):
+    if (
+        renamed_assets is None
+        or switch["start_since_last_run"]
+        or switch["end_since_last_run"]
+    ):
         assets_dict, _ = get_assets_files(source_dirs, logger)
         assets_dict = group_assets(assets_dict)
     elif renamed_assets and incremental_run:
@@ -493,7 +582,9 @@ def process_files(
     # Just copy files if not scheduled to run
     if not run_holiday and getattr(config, "skip", False):
         messages = copy_files(assets_dict, destination_dir, dry_run, logger)
-        logger.info(f"Skipping {config.module_name} as it is not scheduled to run today.")
+        logger.info(
+            f"Skipping {config.module_name} as it is not scheduled to run today."
+        )
         if messages:
             logger.info(create_table([["Processed Files", f"{len(messages)}"]]))
             for message in messages:
@@ -513,7 +604,9 @@ def process_files(
         border_args = border_colors
         action_label = "replaced border"
         logger.info(f"Using {', '.join(border_colors)} border color(s).")
-        logger.info("Executing border replacement mode (replacing borders with configured colors).")
+        logger.info(
+            "Executing border replacement mode (replacing borders with configured colors)."
+        )
 
     messages = fix_borders(
         assets_dict,
@@ -522,7 +615,7 @@ def process_files(
         destination_dir,
         dry_run,
         logger,
-        getattr(config, "exclusion_list", None)
+        getattr(config, "exclusion_list", None),
     )
 
     if messages:
@@ -533,12 +626,11 @@ def process_files(
     if config.log_level == "debug":
         print_json(assets_dict, logger, config.module_name, "assets_dict")
         print_json(messages, logger, config.module_name, "messages")
-    
+
+
 # --- Formatting function for border actions output ---
 def print_output(
-    assets_dict: Dict[str, List[Dict[str, Any]]],
-    action: str,
-    dry_run: bool
+    assets_dict: Dict[str, List[Dict[str, Any]]], action: str, dry_run: bool
 ) -> str:
     """
     Groups output by asset title and lists all processed files per asset.
@@ -583,7 +675,7 @@ def main(config: SimpleNamespace) -> None:
             config,
             logger=logger,
             renamed_assets=None,
-            renamerr_config=None
+            renamerr_config=None,
         )
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")

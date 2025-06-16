@@ -3,13 +3,14 @@ let fitAddon = null; // xterm-addon-fit instance
 let currentFullLogText = ''; // Stores the complete log text for filtering and re-rendering
 let lastWrittenLineCount = 0; // Tracks number of lines written to xterm for current view
 let lastRenderedFileKey = null; // Tracks the key of the last rendered file to detect file changes
-
 // ===== Scroll Buttons and "No logs" message helpers =====
-function ensureLogControls() {
+function ensureLogControls()
+{
     const scrollContainer = document.getElementById('scroll-output-container');
     if (!scrollContainer) return;
     // Add empty message
-    if (!document.getElementById('log-empty-msg')) {
+    if (!document.getElementById('log-empty-msg'))
+    {
         const msg = document.createElement('div');
         msg.id = 'log-empty-msg';
         msg.textContent = 'No logs available.';
@@ -17,7 +18,8 @@ function ensureLogControls() {
         scrollContainer.appendChild(msg);
     }
     // Add scroll-to-top button
-    if (!document.getElementById('scroll-to-top')) {
+    if (!document.getElementById('scroll-to-top'))
+    {
         const btn = document.createElement('button');
         btn.id = 'scroll-to-top';
         btn.innerHTML = '↑ Top';
@@ -26,7 +28,8 @@ function ensureLogControls() {
         scrollContainer.appendChild(btn);
     }
     // Add scroll-to-bottom button
-    if (!document.getElementById('scroll-to-bottom')) {
+    if (!document.getElementById('scroll-to-bottom'))
+    {
         const btn = document.createElement('button');
         btn.id = 'scroll-to-bottom';
         btn.innerHTML = '↓ Bottom';
@@ -35,8 +38,6 @@ function ensureLogControls() {
         scrollContainer.appendChild(btn);
     }
 }
-
-
 // ===== Globals and Helpers =====
 /**
  * Escapes special characters in a string to safely use it in a regular expression.
@@ -48,7 +49,6 @@ function escapeRegex(text)
 {
     return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
-
 const ANSI_COLORS = {
     RESET: '\x1b[0m',
     RED: '\x1b[31m',
@@ -63,27 +63,35 @@ const ANSI_COLORS = {
     HIGHLIGHT: '\x1b[7m', // Reverse video
     // You can add more colors as needed
 };
-
 /**
  * Applies ANSI color codes to a log line based on keywords.
  * @param {string} line - The log line.
  * @returns {string} The line with ANSI color codes.
  */
-function applyLogLevelAnsiColors(line) {
-    if (line.includes('CRITICAL')) {
+function applyLogLevelAnsiColors(line)
+{
+    if (line.includes('CRITICAL'))
+    {
         return `${ANSI_COLORS.BRIGHT_RED}${line}${ANSI_COLORS.RESET}`;
-    } else if (line.includes('ERROR')) {
+    }
+    else if (line.includes('ERROR'))
+    {
         return `${ANSI_COLORS.RED}${line}${ANSI_COLORS.RESET}`;
-    } else if (line.includes('WARNING')) {
+    }
+    else if (line.includes('WARNING'))
+    {
         return `${ANSI_COLORS.YELLOW}${line}${ANSI_COLORS.RESET}`;
-    } else if (line.includes('INFO')) {
+    }
+    else if (line.includes('INFO'))
+    {
         return `${ANSI_COLORS.GREEN}${line}${ANSI_COLORS.RESET}`;
-    } else if (line.includes('DEBUG')) {
+    }
+    else if (line.includes('DEBUG'))
+    {
         return `${ANSI_COLORS.CYAN}${line}${ANSI_COLORS.RESET}`;
     }
     return line;
 }
-
 /**
  * Renders log text to the xterm.js terminal.
  * Preserves and restores scroll position unless user was at bottom.
@@ -93,39 +101,46 @@ function applyLogLevelAnsiColors(line) {
  * @param {boolean} [options.forceClear=false] - True to force clear even if fileKey matches.
  * @param {string|null} [options.fileKey=null] - Key representing the current log file.
  */
-function renderToXTerm(text, options = {}) {
+function renderToXTerm(text, options = {})
+{
     ensureLogControls();
     if (!term) return;
-    if (!text || !text.trim()) {
+    if (!text || !text.trim())
+    {
         term.clear();
         return;
     }
-
-    const {
+    const
+    {
         isFiltered = false,
-        forceClear = false,
-        fileKey = null
+            forceClear = false,
+            fileKey = null
     } = options;
-
     const lines = text.split('\n');
-
-    if (isFiltered || forceClear || fileKey !== lastRenderedFileKey) {
+    if (isFiltered || forceClear || fileKey !== lastRenderedFileKey)
+    {
         term.clear();
-        lines.forEach(line => {
+        lines.forEach(line =>
+        {
             let processedLine = line;
             // If not filtered, apply log level colors. If filtered, text already has highlights.
-            if (!isFiltered) {
+            if (!isFiltered)
+            {
                 processedLine = applyLogLevelAnsiColors(line);
             }
             term.writeln(processedLine);
         });
         lastWrittenLineCount = lines.length;
-        if (fileKey) { // Only update if a valid fileKey is provided
+        if (fileKey)
+        { // Only update if a valid fileKey is provided
             lastRenderedFileKey = fileKey;
         }
-    } else { // Appending to the same, non-filtered log
+    }
+    else
+    { // Appending to the same, non-filtered log
         // Only write new lines
-        for (let i = lastWrittenLineCount; i < lines.length; i++) {
+        for (let i = lastWrittenLineCount; i < lines.length; i++)
+        {
             let processedLine = lines[i];
             // Always apply log level colors when appending raw lines
             processedLine = applyLogLevelAnsiColors(processedLine);
@@ -136,21 +151,19 @@ function renderToXTerm(text, options = {}) {
     }
     setTimeout(handleXTermScroll, 25);
 }
-
 // ===== Scroll Buttons & Jump Logic =====
-function handleXTermScroll() {
+function handleXTermScroll()
+{
     if (!term) return;
     const topBtn = document.getElementById('scroll-to-top');
     const botBtn = document.getElementById('scroll-to-bottom');
     const jumpBtn = document.getElementById('jump-to-bottom');
     const viewportY = term.buffer.active.viewportY;
     const maxScroll = term.buffer.active.length - term.rows;
-
     if (topBtn) topBtn.style.display = viewportY > 0 ? 'block' : 'none';
     if (botBtn) botBtn.style.display = viewportY < maxScroll ? 'block' : 'none';
     if (jumpBtn) jumpBtn.style.display = (viewportY < maxScroll - 2) ? 'block' : 'none';
 }
-
 // ===== Main Log Loader (window.loadLogs) =====
 /**
  * Initializes and manages the log viewer interface, including loading modules, files,
@@ -166,10 +179,17 @@ window.loadLogs = async function()
     let currentLogKey = null;
     let currentRefreshKey = null;
     let activeLoadSessionId = Symbol(); // Initialize for the first load
-
     // Clear previous term if exists
-    if (term) { term.dispose(); term = null; }
-    if (fitAddon) { fitAddon.dispose(); fitAddon = null; }
+    if (term)
+    {
+        term.dispose();
+        term = null;
+    }
+    if (fitAddon)
+    {
+        fitAddon.dispose();
+        fitAddon = null;
+    }
     // Flush out previous intervals/sessions if any
     if (window._activeLogsDestroy) window._activeLogsDestroy();
     // ===== a. DOM References and Setup =====
@@ -191,14 +211,15 @@ window.loadLogs = async function()
     }
     const logOutput = document.getElementById('log-output');
     if (!logOutput) return;
-
     logOutput.innerHTML = ''; // Clear any previous content
-    term = new Terminal({
+    term = new Terminal(
+    {
         cursorBlink: true,
         convertEol: true, // Convert \n to \r\n for proper line endings in terminal
-        wordWrap: false,  // Explicitly disable line wrapping
+        wordWrap: false, // Explicitly disable line wrapping
         scrollback: 10000, // Number of lines to keep in scrollback buffer
-        theme: { // Basic theme, can be customized
+        theme:
+        { // Basic theme, can be customized
             background: '#1e1e1e',
             foreground: '#d4d4d4',
         }
@@ -206,14 +227,26 @@ window.loadLogs = async function()
     fitAddon = new FitAddon.FitAddon();
     term.loadAddon(fitAddon);
     term.open(logOutput);
-    try { // Add try-catch for fitAddon as it can sometimes error on rapid reloads
+    try
+    { // Add try-catch for fitAddon as it can sometimes error on rapid reloads
         fitAddon.fit();
-    } catch (e) {
+    }
+    catch (e)
+    {
         console.error("Error fitting terminal on initial load:", e);
     }
-    const handleResize = () => { if (fitAddon) try { fitAddon.fit(); } catch(e) { console.error("Error fitting terminal on resize:", e);}};
+    const handleResize = () =>
+    {
+        if (fitAddon) try
+        {
+            fitAddon.fit();
+        }
+        catch (e)
+        {
+            console.error("Error fitting terminal on resize:", e);
+        }
+    };
     window.addEventListener('resize', handleResize);
-
     let filterTimeout;
     // ===== b. Module and File Loading =====
     async function loadModules()
@@ -265,7 +298,8 @@ window.loadLogs = async function()
         }
         if (defaultLog)
         {
-            setRefreshTask(() => {
+            setRefreshTask(() =>
+            {
                 loadLogContent(moduleName, defaultLog);
             });
         }
@@ -281,34 +315,45 @@ window.loadLogs = async function()
         // session-based fetch protection
         const sessionId = Symbol();
         activeLoadSessionId = sessionId;
-        if (!moduleName || !fileName) {
+        if (!moduleName || !fileName)
+        {
             currentFullLogText = ''; // Clear log text if no file
-            renderToXTerm('', { forceClear: true, fileKey: null });
+            renderToXTerm('',
+            {
+                forceClear: true,
+                fileKey: null
+            });
             return;
         }
-
         let spinner = document.getElementById('log-spinner');
-        if (!spinner) {
+        if (!spinner)
+        {
             spinner = document.createElement('div');
             spinner.id = 'log-spinner';
             logOutput.appendChild(spinner);
         }
-        try {
+        try
+        {
             const res = await fetch(`/api/logs/${moduleName}/${fileName}`);
             const text = await res.text();
             // Check session ID and if the context (module/file) has changed during fetch
-            if (activeLoadSessionId !== sessionId || moduleName !== currentModule || fileName !== currentFile) {
+            if (activeLoadSessionId !== sessionId || moduleName !== currentModule || fileName !== currentFile)
+            {
                 return; // Stale request or context changed
             }
-
             currentFullLogText = text; // Store the full raw log text
             const fileKeyForRender = `${moduleName}/${fileName}`;
             const searchValue = searchInput.value.trim();
-
-            if (searchValue) {
+            if (searchValue)
+            {
                 filterLogs(); // filterLogs will use currentFullLogText and render
-            } else {
-                renderToXTerm(currentFullLogText, { fileKey: fileKeyForRender });
+            }
+            else
+            {
+                renderToXTerm(currentFullLogText,
+                {
+                    fileKey: fileKeyForRender
+                });
             }
         }
         finally
@@ -316,39 +361,46 @@ window.loadLogs = async function()
             const spinnerEl = document.getElementById('log-spinner');
             if (spinnerEl) spinnerEl.remove();
         }
-    const fileKey = `${moduleName}/${fileName}`;
+        const fileKey = `${moduleName}/${fileName}`;
     }
     // ===== e. Log Filtering =====
     /**
      * Filters logs based on search input and re-renders to xterm.
      * @returns {void}
      */
-    function filterLogs() {
-    if (!term) return;
-    const search = searchInput.value.toLowerCase();
-    
-    if (!search) {
-        // Render the full log, force clear because we are transitioning from filtered to non-filtered
-        renderToXTerm(currentFullLogText, { forceClear: true, fileKey: lastRenderedFileKey });
-        return;
+    function filterLogs()
+    {
+        if (!term) return;
+        const search = searchInput.value.toLowerCase();
+        if (!search)
+        {
+            // Render the full log, force clear because we are transitioning from filtered to non-filtered
+            renderToXTerm(currentFullLogText,
+            {
+                forceClear: true,
+                fileKey: lastRenderedFileKey
+            });
+            return;
+        }
+        const searchRegex = new RegExp(`(${escapeRegex(search)})`, 'gi');
+        const filteredLines = currentFullLogText
+            .split('\n')
+            .filter(line => line.toLowerCase().includes(search));
+        const highlightedAndColoredLines = filteredLines.map(line =>
+        {
+            let processedLine = applyLogLevelAnsiColors(line); // Color first
+            return processedLine.replace(
+                searchRegex,
+                match => `${ANSI_COLORS.HIGHLIGHT}${match}${ANSI_COLORS.RESET}`
+            );
+        });
+        // Render the filtered and highlighted text. isFiltered = true means text is pre-processed.
+        renderToXTerm(highlightedAndColoredLines.join('\n'),
+        {
+            isFiltered: true,
+            fileKey: lastRenderedFileKey
+        });
     }
-    
-    const searchRegex = new RegExp(`(${escapeRegex(search)})`, 'gi');
-    const filteredLines = currentFullLogText
-        .split('\n')
-        .filter(line => line.toLowerCase().includes(search));
-    
-    const highlightedAndColoredLines = filteredLines.map(line => {
-        let processedLine = applyLogLevelAnsiColors(line); // Color first
-        return processedLine.replace(
-            searchRegex,
-            match => `${ANSI_COLORS.HIGHLIGHT}${match}${ANSI_COLORS.RESET}`
-        );
-    });
-    
-    // Render the filtered and highlighted text. isFiltered = true means text is pre-processed.
-    renderToXTerm(highlightedAndColoredLines.join('\n'), { isFiltered: true, fileKey: lastRenderedFileKey });
-}
     // ===== f. UI Event Bindings =====
     moduleSelect.addEventListener('change', e =>
     {
@@ -368,10 +420,11 @@ window.loadLogs = async function()
         currentRefreshKey = null;
         const selectedFile = e.target.value;
         loadLogContent(moduleSelect.value, selectedFile);
-        setRefreshTask(() => {
+        setRefreshTask(() =>
+        {
             loadLogContent(moduleSelect.value, selectedFile);
         });
-    });    
+    });
     searchInput.addEventListener('input', () =>
     {
         clearTimeout(filterTimeout);
@@ -414,36 +467,46 @@ window.loadLogs = async function()
         if (refreshInterval) clearInterval(refreshInterval);
         refreshInterval = null;
     });
-
     // ===== h. Cleanup function to flush intervals/sessions =====
-    window._activeLogsDestroy = () => {
+    window._activeLogsDestroy = () =>
+    {
         if (refreshInterval) clearInterval(refreshInterval);
         refreshInterval = null;
         currentRefreshKey = null;
         currentLogKey = null; // Reset current log key
         activeLoadSessionId = null;
         window.removeEventListener('resize', handleResize); // Ensure listener is removed
-        if (term) { term.dispose(); term = null; }
-        if (fitAddon) { fitAddon.dispose(); fitAddon = null; }
+        if (term)
+        {
+            term.dispose();
+            term = null;
+        }
+        if (fitAddon)
+        {
+            fitAddon.dispose();
+            fitAddon = null;
+        }
         // Remove scroll controls and empty message from scroll-output-container
         const scrollContainer = document.getElementById('scroll-output-container');
-        if (scrollContainer) {
+        if (scrollContainer)
+        {
             const idsToRemove = ['scroll-to-top', 'scroll-to-bottom', 'log-empty-msg'];
-            for (const id of idsToRemove) {
+            for (const id of idsToRemove)
+            {
                 const el = document.getElementById(id);
-                if (el && el.parentNode === scrollContainer) {
+                if (el && el.parentNode === scrollContainer)
+                {
                     scrollContainer.removeChild(el);
                 }
             }
         }
     };
-
     // Attach scroll event and set initial button state
-    if (term && term.element) {
+    if (term && term.element)
+    {
         term.element.addEventListener('scroll', handleXTermScroll);
     }
     // Call after render to ensure initial button state is correct
     setTimeout(handleXTermScroll, 250);
-
     loadModules();
 };

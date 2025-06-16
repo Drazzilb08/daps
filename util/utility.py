@@ -6,11 +6,8 @@ import json
 from pathlib import Path
 import math
 import datetime
-import yaml
 import copy
-from util.normalization import normalize_titles
-from util.construct import generate_title_variants
-from util.constants import illegal_chars_regex
+import yaml
 
 try:
     import html
@@ -22,47 +19,52 @@ except ImportError as e:
     print("Please install the required modules with 'pip install -r requirements.txt'")
     exit(1)
 
-def print_json(data: Any, logger: Any, module_name: str, type: str) -> None:
-    
-    log_base = os.getenv('LOG_DIR')
+from util.normalization import normalize_titles
+from util.construct import generate_title_variants
+from util.constants import illegal_chars_regex
+
+
+def print_json(data: Any, logger: Any, module_name: str, type_: str) -> None:
+    """Write data as JSON to a debug file and log the action.
+
+    Args:
+        data (Any): Data to write as JSON.
+        logger (Any): Logger instance.
+        module_name (str): Module name for directory path.
+        type_ (str): Type used for filename.
+    """
+    log_base = os.getenv("LOG_DIR")
     if log_base:
-        debug_dir = Path(log_base) / module_name / 'debug'
+        debug_dir = Path(log_base) / module_name / "debug"
     else:
-        debug_dir = Path(__file__).resolve().parents[1] / 'logs' / module_name / 'debug'
+        debug_dir = Path(__file__).resolve().parents[1] / "logs" / module_name / "debug"
 
     debug_dir.mkdir(parents=True, exist_ok=True)
 
-    assets_file = debug_dir / f'{type}.json'
-    with open(assets_file, 'w') as f:
+    assets_file = debug_dir / f"{type_}.json"
+    with open(assets_file, "w") as f:
         json.dump(data, f, indent=2)
-    logger.debug(f"Wrote {type} to {assets_file}")
+    logger.debug(f"Wrote {type_} to {assets_file}")
 
 
 def print_settings(logger: Any, module_config: SimpleNamespace) -> None:
-    """
-    Print the settings from the provided module_config in YAML format,
-    but:
-      - Never mutate the real config object
-      - Redact any 'password' fields entirely
-      - Redact any 'webhook' fields via redact_sensitive_info
-    Handles nested dict/list layouts, including notification configs.
+    """Print sanitized settings from module_config in YAML format.
+
+    Args:
+        logger (Any): Logger instance.
+        module_config (SimpleNamespace): Configuration object.
     """
     logger.debug(create_table([["Script Settings"]]))
 
-    # Print all attributes of module_config for debugging
-
-    # Convert SimpleNamespace to dict recursively
-    def ns_to_dict(obj):
+    def ns_to_dict(obj: Any) -> Any:
         if isinstance(obj, SimpleNamespace):
             return {k: ns_to_dict(v) for k, v in vars(obj).items()}
-        elif isinstance(obj, dict):
+        if isinstance(obj, dict):
             return {k: ns_to_dict(v) for k, v in obj.items()}
-        elif isinstance(obj, list):
+        if isinstance(obj, list):
             return [ns_to_dict(i) for i in obj]
-        else:
-            return obj
+        return obj
 
-    # Exclude internal attrs
     raw = {
         k: v
         for k, v in vars(module_config).items()
@@ -70,8 +72,7 @@ def print_settings(logger: Any, module_config: SimpleNamespace) -> None:
     }
     sanitized = copy.deepcopy(ns_to_dict(raw))
 
-    # Recursively walk and redact
-    def _redact(obj: Any):
+    def _redact(obj: Any) -> None:
         if isinstance(obj, dict):
             for key, val in obj.items():
                 kl = key.lower()
@@ -84,58 +85,57 @@ def print_settings(logger: Any, module_config: SimpleNamespace) -> None:
                 else:
                     _redact(val)
         elif isinstance(obj, list):
-            for idx, item in enumerate(obj):
+            for item in obj:
                 if isinstance(item, (dict, list)):
                     _redact(item)
 
     _redact(sanitized)
 
-    # Dump to YAML for display
     try:
         yaml_output = yaml.dump(
             {getattr(module_config, "module_name", "settings"): sanitized},
             sort_keys=False,
             allow_unicode=True,
-            default_flow_style=False
+            default_flow_style=False,
         )
         logger.debug("\n" + yaml_output)
     except Exception:
-        logger.warning("Failed to render config as YAML; falling back to key:value lines.")
+        logger.warning(
+            "Failed to render config as YAML; falling back to key:value lines."
+        )
         for key, value in sanitized.items():
             display = value if isinstance(value, str) else str(value)
             logger.debug(f"{key}: {display}")
 
     logger.debug(create_bar("-"))
 
+
 def create_table(data: List[List[Any]]) -> str:
-    """
-    Create a formatted table string from the provided 2D data list.
+    """Create a formatted table string from 2D data list.
 
     Args:
-        data (List[List[Any]]): The data to create the table from.
+        data (List[List[Any]]): Data to create the table from.
 
     Returns:
-        str: The formatted table string.
+        str: Formatted table string.
     """
-
     if not data:
         return "No data provided."
 
     num_rows = len(data)
     num_cols = len(data[0])
 
-    # Calculate column widths with two spaces padding per cell, min width 5
-    col_widths = [max(len(str(data[row][col])) for row in range(num_rows)) for col in range(num_cols)]
+    col_widths = [
+        max(len(str(data[row][col])) for row in range(num_rows))
+        for col in range(num_cols)
+    ]
     col_widths = [max(width + 2, 5) for width in col_widths]
 
-    # Calculate total table width (sum of col_widths plus separators)
     total_width = sum(col_widths) + num_cols - 1
+    min_width = 76
 
-    width = 76  # Target minimum table width
-
-    # If table is narrower than minimum, distribute extra width evenly
-    if total_width < width:
-        additional_width = width - total_width
+    if total_width < min_width:
+        additional_width = min_width - total_width
         extra_width_per_col = additional_width // num_cols
         remainder = additional_width % num_cols
         for i in range(num_cols):
@@ -144,13 +144,9 @@ def create_table(data: List[List[Any]]) -> str:
                 col_widths[i] += 1
                 remainder -= 1
 
-    # Recalculate total table width after adjustments
     total_width = sum(col_widths) + num_cols - 1
 
-    # Create the table
     table = "\n"
-
-    # Top border
     table += "_" * (total_width + 2) + "\n"
 
     for row in range(num_rows):
@@ -160,119 +156,119 @@ def create_table(data: List[List[Any]]) -> str:
             padding = col_widths[col] - len(cell_content)
             left_padding = padding // 2
             right_padding = padding - left_padding
-
-            # Determine the separator for the cell
-            separator = '|' if col < num_cols - 1 else '|'
-
-            table += f"{' ' * left_padding}{cell_content}{' ' * right_padding}{separator}"
+            separator = "|" if col < num_cols - 1 else "|"
+            table += (
+                f"{' ' * left_padding}{cell_content}{' ' * right_padding}{separator}"
+            )
         table += "\n"
         if row < num_rows - 1:
-            table += "|" + "-" * (total_width) + "|\n"
+            table += "|" + "-" * total_width + "|\n"
 
-    # Bottom border
-    table += "‾" * (total_width + 2) + ""
-
+    table += "‾" * (total_width + 2)
     return table
+
 
 def get_plex_data(
     plex: Any,
     library_names: List[str],
     logger: Any,
     include_smart: bool,
-    collections_only: bool
+    collections_only: bool,
 ) -> List[Dict[str, Any]]:
-    """
-    Retrieve data from Plex libraries or collections.
+    """Retrieve data from Plex libraries or collections.
 
     Args:
-        plex (Plex): The Plex instance.
-        library_names (List[str]): The names of the libraries to get data from.
-        logger (Logger): Logger to use for output.
+        plex (Any): Plex instance.
+        library_names (List[str]): Names of libraries to get data from.
+        logger (Any): Logger instance.
         include_smart (bool): Whether to include smart collections.
         collections_only (bool): If True, only retrieve collection data.
 
     Returns:
-        List[Dict[str, Any]]: A list of dictionaries containing Plex data.
+        List[Dict[str, Any]]: List of dictionaries containing Plex data.
     """
+    plex_list: List[Dict[str, Any]] = []
+    collection_names: Dict[str, List[str]] = {}
+    library_data: Dict[str, Any] = {}
 
-    plex_dict = []  # Initialize an empty list to hold Plex data
-    collection_names = {}  # Initialize an empty dictionary to hold raw collection data
-    library_data = {}  # Initialize an empty dictionary to hold library data
-    # Loop through each library name provided
     for library_name in library_names:
         try:
-            library = plex.library.section(library_name)  # Get the library instance
+            library = plex.library.section(library_name)
         except NotFound:
-            logger.error(f"Error: Library '{library_name}' not found, check your settings and try again.")
+            logger.error(
+                f"Error: Library '{library_name}' not found, check your settings and try again."
+            )
             continue
 
         if collections_only:
             if include_smart:
-                collection_names[library_name] = [collection.title for collection in library.search(libtype="collection")]
+                collection_names[library_name] = [
+                    c.title for c in library.search(libtype="collection")
+                ]
             else:
-                collection_names[library_name] = [collection.title for collection in library.search(libtype="collection") if not collection.smart]
+                collection_names[library_name] = [
+                    c.title for c in library.search(libtype="collection") if not c.smart
+                ]
         else:
-            library_data[library_name] = library.all()  # Get all items from the library
+            library_data[library_name] = library.all()
 
     if collections_only:
-        # Process collection data
-        if collections_only:
-            # Build a list of (library_name, titles) pairs
-            libraries = list(collection_names.items())
-            # Outer bar: one step per library
-            with progress(
-                libraries,
-                desc="Libraries",
-                total=len(libraries),
-                unit="library",
-                logger=logger
-            ) as outer:
-                for library_name, titles in outer:
-                    start_time = datetime.datetime.now()
+        libraries = list(collection_names.items())
+        with progress(
+            libraries,
+            desc="Libraries",
+            total=len(libraries),
+            unit="library",
+            logger=logger,
+        ) as outer:
+            for library_name, titles in outer:
+                start_time = datetime.datetime.now()
+                with progress(
+                    titles,
+                    desc=f"Processing Plex collections in '{library_name}'",
+                    total=len(titles),
+                    unit="collection",
+                    logger=logger,
+                    leave=False,
+                ) as inner:
+                    for title in inner:
+                        title_unescaped = unidecode(html.unescape(title))
+                        normalized_title = normalize_titles(title_unescaped)
+                        alternate_titles = generate_title_variants(title_unescaped)
+                        folder = illegal_chars_regex.sub("", title_unescaped)
+                        plex_list.append(
+                            {
+                                "title": title_unescaped,
+                                "normalized_title": normalized_title,
+                                "location": library_name,
+                                "year": None,
+                                "folder": folder,
+                                "alternate_titles": alternate_titles[
+                                    "alternate_titles"
+                                ],
+                                "normalized_alternate_titles": alternate_titles[
+                                    "normalized_alternate_titles"
+                                ],
+                            }
+                        )
+                end_time = datetime.datetime.now()
+                elapsed = (end_time - start_time).total_seconds()
+                rate = len(titles) / elapsed if elapsed > 0 else 0
+                logger.debug(
+                    f"Processed {len(titles)} collections in '{library_name}' in {elapsed:.2f}s ({rate:.2f} items/s)"
+                )
 
-                    # Inner bar: one step per title in this library
-                    with progress(
-                        titles,
-                        desc=f"Processing Plex collections in '{library_name}'",
-                        total=len(titles),
-                        unit="collection",
-                        logger=logger,
-                        leave=False
-                    ) as inner:
-                        for title in inner:
-                            title = unidecode(html.unescape(title))
-                            normalized_title = normalize_titles(title)
-                            alternate_titles = generate_title_variants(title)
-                            folder = illegal_chars_regex.sub('', title)
-                            plex_dict.append({
-                                'title': title,
-                                'normalized_title': normalized_title,
-                                'location': library_name,
-                                'year': None,
-                                'folder': folder,
-                                'alternate_titles': alternate_titles['alternate_titles'],
-                                'normalized_alternate_titles': alternate_titles['normalized_alternate_titles'],
-                            })
+    return plex_list
 
-                    end_time = datetime.datetime.now()
-                    elapsed = (end_time - start_time).total_seconds()
-                    rate = len(titles) / elapsed if elapsed > 0 else 0
-                    logger.debug(
-                        f"Processed {len(titles)} collections in '{library_name}' "
-                        f"in {elapsed:.2f}s ({rate:.2f} items/s)"
-                    )
-
-    return plex_dict
 
 def create_bar(middle_text: str) -> str:
-    """
-    Create a separation bar with the provided text in the center.
+    """Create a separation bar with text centered.
 
     Args:
-        middle_text (str): The text to place in the center of the separation bar.
+        middle_text (str): Text to place in center of bar.
 
     Returns:
-        str: The formatted separation bar.
+        str: Formatted separation bar.
     """
     total_length = 80
     if len(middle_text) == 1:
@@ -280,83 +276,50 @@ def create_bar(middle_text: str) -> str:
         left_side_length = 0
         right_side_length = remaining_length
         return f"\n{middle_text * left_side_length}{middle_text}{middle_text * right_side_length}\n"
-    else:
-        remaining_length = total_length - len(middle_text) - 4
-        left_side_length = math.floor(remaining_length / 2)
-        right_side_length = remaining_length - left_side_length
-        return f"\n{'*' * left_side_length} {middle_text} {'*' * right_side_length}\n"
+    remaining_length = total_length - len(middle_text) - 4
+    left_side_length = math.floor(remaining_length / 2)
+    right_side_length = remaining_length - left_side_length
+    return f"\n{'*' * left_side_length} {middle_text} {'*' * right_side_length}\n"
+
 
 def redact_sensitive_info(text: str, password: bool = False) -> str:
-    """
-    Redact sensitive information from the provided text.
+    """Redact sensitive info from text.
 
-    If `password` is True, the entire text is replaced with '[redacted]'.
-    Otherwise, the function uses regular expressions to redact specific
-    patterns such as Discord webhooks, OAuth tokens, file IDs, and file paths.
+    Args:
+        text (str): Text to redact.
+        password (bool): If True, redact entire text.
 
-    Redaction rules:
-      - Discord webhook URLs are replaced with a generic '[redacted]' path.
-      - Google OAuth client IDs, refresh tokens, and access tokens are redacted.
-      - Google Drive file IDs (33-char base64url) are replaced.
-      - GOCSPX-* tokens are masked.
-      - Command-line arguments for client IDs (-i) and file paths/tokens (-f) are redacted.
+    Returns:
+        str: Redacted text.
     """
     if password:
         return "[redacted]"
 
-    # Redact Discord webhook URLs
     text = re.sub(
-        r'https://discord\.com/api/webhooks/[^/]+/\S+',
-        r'https://discord.com/api/webhooks/[redacted]',
-        text
+        r"https://discord\.com/api/webhooks/[^/]+/\S+",
+        r"https://discord.com/api/webhooks/[redacted]",
+        text,
     )
-
-    # Redact Google OAuth client IDs
     text = re.sub(
-        r'\b(\w{24})-[a-zA-Z0-9_-]{24}\.apps\.googleusercontent\.com\b',
-        r'[redacted].apps.googleusercontent.com',
-        text
+        r"\b(\w{24})-[a-zA-Z0-9_-]{24}\.apps\.googleusercontent\.com\b",
+        r"[redacted].apps.googleusercontent.com",
+        text,
     )
-
-    # Redact Google OAuth refresh tokens
+    text = re.sub(r'(?<=refresh_token": ")([^"]+)(?=")', r"[redacted]", text)
+    text = re.sub(r"(\b[A-Za-z0-9_-]{33}\b)", r"[redacted]", text)
+    text = re.sub(r'(?<=access_token": ")([^"]+)(?=")', r"[redacted]", text)
+    text = re.sub(r"GOCSPX-\S+", r"GOCSPX-[redacted]", text)
+    pattern_client_id = r"(-i).*?(\.apps\.googleusercontent\.com)"
     text = re.sub(
-        r'(?<=refresh_token": ")([^"]+)(?=")',
-        r'[redacted]',
-        text
+        pattern_client_id, r"\1 [redacted]\2", text, flags=re.DOTALL | re.IGNORECASE
     )
-
-    # Redact Google Drive file IDs (33-char base64url)
+    pattern_file_arg = r"(-f)\s\S+"
     text = re.sub(
-        r'(\b[A-Za-z0-9_-]{33}\b)',
-        r'[redacted]',
-        text
+        pattern_file_arg, r"\1 [redacted]", text, flags=re.DOTALL | re.IGNORECASE
     )
-
-    # Redact Discord access tokens
-    text = re.sub(
-        r'(?<=access_token": ")([^"]+)(?=")',
-        r'[redacted]',
-        text
-    )
-
-    # Redact GOCSPX-* tokens
-    text = re.sub(
-        r'GOCSPX-\S+',
-        r'GOCSPX-[redacted]',
-        text
-    )
-
-    # Redact Google client IDs passed with -i argument
-    # Example: -i <client-id>.apps.googleusercontent.com
-    pattern = r'(-i).*?(\.apps\.googleusercontent\.com)'
-    text = re.sub(pattern, r'\1 [redacted]\2', text, flags=re.DOTALL | re.IGNORECASE)
-
-    # Redact file paths or tokens passed with -f argument
-    # Example: -f /path/to/file or -f <token>
-    pattern = r'(-f)\s\S+'
-    text = re.sub(pattern, r'\1 [redacted]', text, flags=re.DOTALL | re.IGNORECASE)
 
     return text
+
 
 def progress(
     iterable: Any,
@@ -365,49 +328,50 @@ def progress(
     unit: Optional[str] = None,
     logger: Optional[Any] = None,
     leave: bool = True,
-    **kwargs: Any
+    **kwargs: Any,
 ) -> Any:
-    """
-    Wrap tqdm to toggle progress bars based on LOG_TO_CONSOLE environment variable.
-    When console logging is disabled, returns a dummy context manager.
+    """Wrap tqdm to toggle progress bars based on LOG_TO_CONSOLE env var.
 
     Args:
         iterable (Any): Iterable to wrap.
-        desc (Optional[str]): Description for the progress bar.
-        total (Optional[int]): Total number of iterations.
+        desc (Optional[str]): Description for progress bar.
+        total (Optional[int]): Total iterations.
         unit (Optional[str]): Unit of progress.
-        logger (Optional[Any]): Logger instance (unused).
-        leave (bool): Whether to keep the progress bar after completion.
-        **kwargs: Additional keyword arguments for tqdm.
+        logger (Optional[Any]): Logger instance.
+        leave (bool): Keep progress bar after completion.
+        **kwargs: Additional tqdm args.
 
     Returns:
-        tqdm or DummyProgress: A progress bar or dummy context manager.
+        tqdm or DummyProgress: Progress bar or dummy context manager.
     """
-    log_console = os.environ.get('LOG_TO_CONSOLE', '').lower() in ('1', 'true', 'yes')
+    log_console = os.environ.get("LOG_TO_CONSOLE", "").lower() in ("1", "true", "yes")
 
     class DummyProgress:
-        def __init__(self, iterable):
+        def __init__(self, iterable: Any) -> None:
             self.iterable = iterable
-        def __enter__(self):
+
+        def __enter__(self) -> "DummyProgress":
             return self
-        def __exit__(self, exc_type, exc_val, exc_tb):
+
+        def __exit__(self, exc_type, exc_val, exc_tb) -> None:
             pass
+
         def __iter__(self):
             return iter(self.iterable)
-        def update(self, n=1):
+
+        def update(self, n: int = 1) -> None:
             pass
 
     if not log_console:
         return DummyProgress(iterable)
-    else:
-        return tqdm(iterable, desc=desc, total=total, unit=unit, leave=leave, **kwargs)
+    return tqdm(iterable, desc=desc, total=total, unit=unit, leave=leave, **kwargs)
+
 
 def redact_apis(obj: Any) -> None:
-    """
-    Recursively redact any 'api' keys in dictionaries or nested lists.
+    """Recursively redact any 'api' keys in dicts or nested lists.
 
     Args:
-        obj (Any): The object (dict or list) to redact API keys in-place.
+        obj (Any): Object to redact API keys in-place.
     """
     if isinstance(obj, dict):
         for key, value in obj.items():

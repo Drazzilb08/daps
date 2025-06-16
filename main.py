@@ -29,6 +29,7 @@ list_of_python_modules = [
     "jduparr",
 ]
 
+
 class ScheduleFileHandler(FileSystemEventHandler):
     def __init__(self, callback, debounce_interval=1):
         super().__init__()
@@ -44,17 +45,19 @@ class ScheduleFileHandler(FileSystemEventHandler):
                 self.last_modified = now
                 self.callback()
 
+
 def start_schedule_watcher(callback):
     observer = Observer()
     observer.daemon = True
     handler = ScheduleFileHandler(callback)
     # Determine config directory and ensure it exists
-    config_path = os.environ.get('CONFIG_DIR', './config')
+    config_path = os.environ.get("CONFIG_DIR", "./config")
     if not os.path.isdir(config_path):
         os.makedirs(config_path, exist_ok=True)
     observer.schedule(handler, path=config_path, recursive=False)
     observer.start()
     return observer
+
 
 class ModuleManager:
     def __init__(self, logger):
@@ -72,11 +75,14 @@ class ModuleManager:
     def run_if_due(self, module_name, schedule_time, check_schedule_func, run_module):
         if check_schedule_func(module_name, schedule_time, self.logger):
             import time
+
             now = time.time()
             last_run = self.last_run_times.get(module_name, 0)
             # Prevent multiple runs within the same schedule window (60 seconds)
             if now - last_run >= 60:
-                self.logger.info(f"[SCHEDULE] Running module: {module_name} at {schedule_time}")
+                self.logger.info(
+                    f"[SCHEDULE] Running module: {module_name} at {schedule_time}"
+                )
                 self.last_run_times[module_name] = now
                 self.run(module_name, run_module)
 
@@ -88,7 +94,9 @@ class ModuleManager:
         for module_name, process in self.running_modules.items():
             if process and not process.is_alive():
                 duration = time.time() - self.module_start_times.pop(module_name)
-                self.logger.info(f"[SCHEDULE] module: {module_name.upper()} has finished in {duration:.2f} seconds")
+                self.logger.info(
+                    f"[SCHEDULE] module: {module_name.upper()} has finished in {duration:.2f} seconds"
+                )
                 processes_to_remove.append(module_name)
 
         for module_name in processes_to_remove:
@@ -97,23 +105,27 @@ class ModuleManager:
     def has_running_modules(self):
         return bool(self.running_modules)
 
+
 def load_schedule():
     # Do not merge defaults here; only read existing config
     config = Config("main")
     schedule = config.scheduler
     return schedule
 
+
 def run_module(module_to_run, output=False, logger=None):
     config = Config(module_to_run).module_config
+
     def run_python_module(module_to_run):
         config.instances_config = Config(module_to_run).instances_config
         module = importlib.import_module(f"modules.{module_to_run}")
-        process = multiprocessing.Process(target=module.main, args=(config, ))
+        process = multiprocessing.Process(target=module.main, args=(config,))
         process.start()
         return process
 
     if module_to_run in list_of_python_modules:
         return run_python_module(module_to_run)
+
 
 def print_schedule(logger, modules_schedules):
     logger.info(create_bar("SCHEDULE"))
@@ -125,21 +137,30 @@ def print_schedule(logger, modules_schedules):
     logger.info(f"{table}")
     logger.info(create_bar("SCHEDULE"))
 
+
 def main():
     import argparse
+
     # CLI argument parsing
     parser = argparse.ArgumentParser(description="Run DAPS modules or start web UI.")
-    parser.add_argument("modules", nargs="*", help="Module names to run once (cli mode).")
-    parser.add_argument('--version', action='version', version=f"%(prog)s {get_version()}", help="Show the DAPS version and exit.")
+    parser.add_argument(
+        "modules", nargs="*", help="Module names to run once (cli mode)."
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"%(prog)s {get_version()}",
+        help="Show the DAPS version and exit.",
+    )
 
     args = parser.parse_args()
 
     # Set console logging: modules only when explicitly requested via CLI,
     # main always logs (handled in logger logic).
     if args.modules:
-        os.environ['LOG_TO_CONSOLE'] = 'true'
+        os.environ["LOG_TO_CONSOLE"] = "true"
     else:
-        os.environ['LOG_TO_CONSOLE'] = 'false'
+        os.environ["LOG_TO_CONSOLE"] = "false"
 
     if args.modules:
         # CLI mode: run specified modules and exit
@@ -161,9 +182,10 @@ def main():
     # Web mode: no modules passed
     initial_run = True
     waiting_message_shown = False
-    
+
     # Load main config once and reuse for scheduling reloads
     main_cfg = Config("main")
+
     def on_schedule_change():
         try:
             main_cfg.load_config()
@@ -175,6 +197,7 @@ def main():
         if new_schedule != current_schedule:
             current_schedule = new_schedule
             schedule_changed.set()
+
     try:
         current_schedule = main_cfg.scheduler
     except Exception as e:
@@ -186,6 +209,7 @@ def main():
 
     import threading
     import atexit
+
     schedule_changed = threading.Event()
     observer = start_schedule_watcher(on_schedule_change)
     atexit.register(observer.stop)
@@ -194,6 +218,7 @@ def main():
 
     try:
         from web.server import start_web_server
+
         start_web_server(logger)
     except Exception as e:
         logger.error(f"Error starting web server: {e}", exc_info=True)
@@ -203,13 +228,15 @@ def main():
         manager = ModuleManager(logger)
         # Expose the ModuleManager to the web server for status/cancel of scheduled tasks
         import web.server
+
         web.server.app.state.manager = manager
 
         while True:
-
             if initial_run or schedule_changed.is_set():
                 print_schedule(logger, current_schedule)
-                logger.debug(f"📋 Current schedule contents:\n{json.dumps(current_schedule, indent=4)}")
+                logger.debug(
+                    f"📋 Current schedule contents:\n{json.dumps(current_schedule, indent=4)}"
+                )
                 schedule_changed.clear()
                 initial_run = False
                 waiting_message_shown = False
@@ -224,7 +251,9 @@ def main():
                     continue
 
                 if module_name in list_of_python_modules:
-                    manager.run_if_due(module_name, schedule_time, check_schedule, run_module)
+                    manager.run_if_due(
+                        module_name, schedule_time, check_schedule, run_module
+                    )
 
             manager.cleanup()
 
@@ -237,5 +266,6 @@ def main():
     except Exception:
         logger.error(f"\n\nAn error occurred:\n", exc_info=True)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

@@ -1,52 +1,66 @@
 // ===== Payload Builders & Validation =====
-window.DAPS = window.DAPS || {};
-
+window.DAPS = window.DAPS ||
+{};
 // Notifications
-window.DAPS.buildNotificationPayload = async function() {
+window.DAPS.buildNotificationPayload = async function()
+{
     const form = document.getElementById('notificationsForm');
     if (!form) return null;
-    const DEFINITIONS = window.NOTIFICATION_DEFINITIONS || {};
+    const DEFINITIONS = window.NOTIFICATION_DEFINITIONS ||
+    {};
     const result = {};
     const missing = [];
-    document.querySelectorAll('.notification-card').forEach(card => {
+    document.querySelectorAll('.notification-card').forEach(card =>
+    {
         const module = card.querySelector('.notification-card-header')?.textContent
             ?.toLowerCase().replace(/\s+/g, '_');
         if (!module) return;
         const moduleObj = {};
         const toggles = Array.from(card.querySelectorAll('.toggle-switch input'));
-        toggles.forEach(toggle => {
+        toggles.forEach(toggle =>
+        {
             const m = toggle.name.match(new RegExp(`^${module}_(.+)$`));
             if (!m) return;
-            const type = m[1], def = DEFINITIONS[type], fields = {};
-            if (def?.fields && toggle.checked) {
-                def.fields.forEach(fd => {
+            const type = m[1],
+                def = DEFINITIONS[type],
+                fields = {};
+            if (def?.fields && toggle.checked)
+            {
+                def.fields.forEach(fd =>
+                {
                     const input = form.querySelector(`[name="${type}_${fd.key}_${module}"]`);
                     if (!input) return;
-                    let val = input.type === 'checkbox' ? input.checked
-                        : input.tagName === 'TEXTAREA' ? input.value.split(/[\n,]+/).map(s=>s.trim()).filter(Boolean)
-                        : input.type === 'number' ? Number(input.value)
-                        : input.value.trim();
-                    if (fd.required && (val === "" || (Array.isArray(val)&&!val.length))) {
+                    let val = input.type === 'checkbox' ? input.checked :
+                        input.tagName === 'TEXTAREA' ? input.value.split(/[\n,]+/).map(s => s.trim()).filter(Boolean) :
+                        input.type === 'number' ? Number(input.value) :
+                        input.value.trim();
+                    if (fd.required && (val === "" || (Array.isArray(val) && !val.length)))
+                    {
                         missing.push(`${module}: ${type} – ${fd.label}`);
                     }
-                    if (fd.key === 'channel_id' && (isNaN(val) || !Number.isInteger(Number(val)))) {
+                    if (fd.key === 'channel_id' && (isNaN(val) || !Number.isInteger(Number(val))))
+                    {
                         missing.push(`${module}: ${type} – ${fd.label} must be integer`);
                     }
                     fields[fd.key] = val;
                 });
                 moduleObj[type] = fields;
-            } else if (toggle.checked) {
+            }
+            else if (toggle.checked)
+            {
                 moduleObj[type] = {};
             }
         });
         result[module] = moduleObj;
     });
     if (missing.length) return null;
-    return { notifications: result };
+    return {
+        notifications: result
+    };
 };
-
 // Schedule validator + builder
-window.DAPS.isValidSchedule = function(val) {
+window.DAPS.isValidSchedule = function(val)
+{
     if (!val) return true;
     if (/^hourly\(\d{2}\)$/i.test(val)) return true;
     if (/^daily\(\d{2}:\d{2}(?:\|\d{2}:\d{2})*\)$/i.test(val)) return true;
@@ -55,46 +69,61 @@ window.DAPS.isValidSchedule = function(val) {
     if (/^cron\([^\)]+\)$/i.test(val)) return true;
     return false;
 };
-window.DAPS.buildSchedulePayload = async function() {
+window.DAPS.buildSchedulePayload = async function()
+{
     const form = document.getElementById('scheduleForm');
     if (!form) return null;
-    const data = new FormData(form), out = {}, missing = [], firstEl = null;
-    for (const [k,v] of data.entries()) {
-        out[k] = v.trim()||null;
-        if (v.trim() && !window.DAPS.isValidSchedule(v.trim())) {
+    const data = new FormData(form),
+        out = {},
+        missing = [],
+        firstEl = null;
+    for (const [k, v] of data.entries())
+    {
+        out[k] = v.trim() || null;
+        if (v.trim() && !window.DAPS.isValidSchedule(v.trim()))
+        {
             const inp = form.querySelector(`[name="${k}"]`);
-            if (inp) {
+            if (inp)
+            {
                 inp.classList.add('input-invalid');
                 if (!firstEl) firstEl = inp;
-                setTimeout(()=>inp.classList.remove('input-invalid'),2000);
+                setTimeout(() => inp.classList.remove('input-invalid'), 2000);
             }
             missing.push(k);
         }
     }
     if (missing.length) return null;
-    return { schedule: out };
+    return {
+        schedule: out
+    };
 };
-
 // Instances builder
-window.DAPS.buildInstancesPayload = async function() {
+window.DAPS.buildInstancesPayload = async function()
+{
     const form = document.getElementById('instancesForm');
     if (!form) return null;
     const out = {};
-    document.querySelectorAll('.category').forEach(sec => {
-        const svc = sec.querySelector('h2')?.textContent.toLowerCase().replace(/ /g,'_');
+    document.querySelectorAll('.category').forEach(sec =>
+    {
+        const svc = sec.querySelector('h2')?.textContent.toLowerCase().replace(/ /g, '_');
         out[svc] = {};
-        sec.querySelectorAll('.instance-entry').forEach(ent => {
+        sec.querySelectorAll('.instance-entry').forEach(ent =>
+        {
             const name = ent.querySelector('input[name$="__name"]').value.trim();
-            const url  = ent.querySelector('input[name$="__url"]').value.trim();
-            const api  = ent.querySelector('input[name$="__api"]').value.trim();
-            if (name) out[svc][name] = {url, api};
+            const url = ent.querySelector('input[name$="__url"]').value.trim();
+            const api = ent.querySelector('input[name$="__api"]').value.trim();
+            if (name) out[svc][name] = {
+                url,
+                api
+            };
         });
     });
-    if (!Object.values(out).some(o=>Object.keys(o).length)) return null;
-    return { instances: out };
+    if (!Object.values(out).some(o => Object.keys(o).length)) return null;
+    return {
+        instances: out
+    };
 };
-
-window.DAPS.buildSettingsPayload = function(moduleName) 
+window.DAPS.buildSettingsPayload = function(moduleName)
 {
     function fillPayloadFromFormData(data, payload, excludeKeys = [])
     {
@@ -273,7 +302,8 @@ window.DAPS.buildSettingsPayload = function(moduleName)
     excludeKeys.push('instances', ...Array.from(data.keys ? data.keys() : []).filter(k => k.startsWith('instances.')));
     fillPayloadFromFormData(data, payload, excludeKeys);
     // Collect all source_dirs inputs into an array, overriding any single value
-    if (data.has('source_dirs')) {
+    if (data.has('source_dirs'))
+    {
         payload.source_dirs = data.getAll('source_dirs')
             .map(v => v.trim())
             .filter(Boolean);
@@ -282,5 +312,7 @@ window.DAPS.buildSettingsPayload = function(moduleName)
     {
         payload.instances = combinedInstances;
     }
-    return { [moduleName]: payload };
+    return {
+        [moduleName]: payload
+    };
 };

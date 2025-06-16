@@ -1,16 +1,18 @@
-from typing import Any, Dict, List, Tuple
 import os
+from typing import Any, Dict, List, Tuple
+
 from util.notification import get_random_joke
+
 
 def format_for_discord(
     config: Any, output: Any
 ) -> Tuple[Dict[int, List[Dict[str, Any]]], bool]:
-    """
-    Format notification output for Discord, including chunking and embed logic.
-    Handles per-module formatting and splits fields and embeds to respect Discord's limits.
+    """Format notification output for Discord embeds and chunking.
+
     Args:
         config: Module config object (must have 'module_name').
         output: Output from the module to be formatted.
+
     Returns:
         Tuple of (embed field dict, success bool).
     """
@@ -18,15 +20,18 @@ def format_for_discord(
     DISCORD_EMBED_CHAR_LIMIT = 5000
     DISCORD_FIELD_COUNT_LIMIT = 25
 
-    def chunk_code_fields(name: str, text: str, inline: bool = False) -> List[Dict[str, Any]]:
-        """
-        Split a string into multiple Discord embed fields, chunking to respect the field character limit.
+    def chunk_code_fields(
+        name: str, text: str, inline: bool = False
+    ) -> List[Dict[str, Any]]:
+        """Chunk a string into Discord embed fields by char limit.
+
         Args:
-            name: Name of the field (used for the first chunk).
-            text: The code/text to chunk.
-            inline: Whether this field should be inline.
+          name: Name of the field (used for the first chunk).
+          text: The code/text to chunk.
+          inline: Whether this field should be inline.
+
         Returns:
-            List of Discord embed field dicts.
+          List of Discord embed field dicts.
         """
         fields: List[Dict[str, Any]] = []
         lines = text.split("\n")
@@ -38,7 +43,7 @@ def format_for_discord(
                 # Discord embed field value chunk limit reached.
                 field = {
                     "name": name if first else "",
-                    "value": f"```{buffer.rstrip()}```"
+                    "value": f"```{buffer.rstrip()}```",
                 }
                 if inline:
                     field["inline"] = True
@@ -48,22 +53,20 @@ def format_for_discord(
             else:
                 buffer = candidate
         if buffer:
-            field = {
-                "name": name if first else "",
-                "value": f"```{buffer.rstrip()}```"
-            }
+            field = {"name": name if first else "", "value": f"```{buffer.rstrip()}```"}
             if inline:
                 field["inline"] = True
             fields.append(field)
         return fields
 
     def split_fields(fields: List[Dict[str, Any]]) -> Dict[int, List[Dict[str, Any]]]:
-        """
-        Split a list of embed fields into multiple Discord embeds, respecting field and embed char limits.
+        """Split embed fields into multiple Discord embeds by char and field limits.
+
         Args:
-            fields: List of Discord embed field dicts.
+          fields: List of Discord embed field dicts.
+
         Returns:
-            Dict mapping embed index to list of fields for that embed.
+          Dict mapping embed index to list of fields for that embed.
         """
         expanded: List[Dict[str, Any]] = []
         for f in fields:
@@ -77,7 +80,9 @@ def format_for_discord(
                 expanded.append(chunk)
                 continue
             # Unwrap code block if present
-            content = val[3:-3] if val.startswith("```") and val.endswith("```") else val
+            content = (
+                val[3:-3] if val.startswith("```") and val.endswith("```") else val
+            )
             lines = content.split("\n")
             buffer = ""
             first = True
@@ -86,7 +91,7 @@ def format_for_discord(
                 if len(candidate) > DISCORD_FIELD_CHAR_LIMIT:
                     chunk = {
                         "name": name if first else "",
-                        "value": f"```{buffer.strip()}```"
+                        "value": f"```{buffer.strip()}```",
                     }
                     if inline:
                         chunk["inline"] = True
@@ -98,7 +103,7 @@ def format_for_discord(
             if buffer:
                 chunk = {
                     "name": name if first else "",
-                    "value": f"```{buffer.strip()}```"
+                    "value": f"```{buffer.strip()}```",
                 }
                 if inline:
                     chunk["inline"] = True
@@ -108,7 +113,9 @@ def format_for_discord(
         batch: List[Dict[str, Any]] = []
         size_acc = 0
         idx = 1
-        limit = DISCORD_EMBED_CHAR_LIMIT + 500  # Discord embed character limit (buffered)
+        limit = (
+            DISCORD_EMBED_CHAR_LIMIT + 500
+        )  # Discord embed character limit (buffered)
         for f in expanded:
             est = len(f.get("name", "")) + len(f.get("value", "")) + 30
             if len(batch) >= DISCORD_FIELD_COUNT_LIMIT or size_acc + est > limit:
@@ -122,21 +129,25 @@ def format_for_discord(
             result[idx] = batch
         return result
 
-    def chunk_flat_content(header: str, content: str, footer: str = "") -> List[Dict[str, Any]]:
-        """
-        Chunk plain content into Discord message blocks under 1900 chars.
+    def chunk_flat_content(
+        header: str, content: str, footer: str = ""
+    ) -> List[Dict[str, Any]]:
+        """Chunk plain content into Discord message blocks under 1900 chars.
+
         Args:
-            header: Header to prepend to the first chunk.
-            content: The content to chunk.
-            footer: Footer to append to the last chunk.
+          header: Header to prepend to the first chunk.
+          content: The content to chunk.
+          footer: Footer to append to the last chunk.
+
         Returns:
-            List of Discord message dicts (with 'content' key).
+          List of Discord message dicts (with 'content' key).
         """
         CHUNK_LIMIT = 1900
         lines = content.split("\n")
         results = []
         buffer_lines: List[str] = []
         first_chunk = True
+
         def flush_chunk(buf_lines: List[str], is_last: bool) -> None:
             chunk_text = "\n".join(buf_lines)
             parts: List[str] = []
@@ -146,6 +157,7 @@ def format_for_discord(
             if is_last and footer:
                 parts.append(footer)
             results.append({"content": "\n".join(parts)})
+
         for line in lines:
             buffer_lines.append(line)
             total_len = sum(len(l) for l in buffer_lines) + len(buffer_lines) - 1
@@ -159,12 +171,13 @@ def format_for_discord(
         return results
 
     def fmt_poster_renamerr(o: Any) -> List[Dict[str, Any]]:
-        """
-        Format poster_renamerr output for Discord embeds.
+        """Format poster_renamerr output for Discord embeds.
+
         Args:
-            o: Output data for poster_renamerr.
+          o: Output data for poster_renamerr.
+
         Returns:
-            List of Discord embed field dicts.
+          List of Discord embed field dicts.
         """
         fields: List[Dict[str, Any]] = []
         for assets in o.values():
@@ -177,12 +190,13 @@ def format_for_discord(
         return fields
 
     def fmt_renameinatorr(o: Any) -> List[Dict[str, Any]]:
-        """
-        Format renameinatorr output for Discord embeds.
+        """Format renameinatorr output for Discord embeds.
+
         Args:
-            o: Output data for renameinatorr.
+          o: Output data for renameinatorr.
+
         Returns:
-            List of Discord embed field dicts.
+          List of Discord embed field dicts.
         """
         grouped: Dict[str, List[str]] = {}
         for inst in o.values():
@@ -191,8 +205,10 @@ def format_for_discord(
                 year = item.get("year")
                 name = f"{title}{f' ({year})' if year else ''}"
                 lst = grouped.setdefault(name, [])
-                if (np := item.get("new_path_name")):
-                    lst.append(f"Folder:\n{item.get('path_name','').lstrip('/')} -> {np.lstrip('/')}")
+                if np := item.get("new_path_name"):
+                    lst.append(
+                        f"Folder:\n{item.get('path_name','').lstrip('/')} -> {np.lstrip('/')}"
+                    )
                 for old, new in item.get("file_info", {}).items():
                     lst.append(old.lstrip("/"))
                     lst.append(new.lstrip("/"))
@@ -205,20 +221,27 @@ def format_for_discord(
         return fields
 
     def fmt_health_checkarr(o: Any) -> List[Dict[str, Any]]:
-        """
-        Format health_checkarr output for Discord embeds.
+        """Format health_checkarr output for Discord embeds.
+
         Args:
-            o: Output data for health_checkarr.
+          o: Output data for health_checkarr.
+
         Returns:
-            List of Discord embed field dicts.
+          List of Discord embed field dicts.
         """
         fields: List[Dict[str, Any]] = []
         grouped: Dict[str, List[str]] = {}
         for item in output:
             title = item.get("title", "Untitled")
             year = f" ({item.get('year')})" if item.get("year") else ""
-            db_id = item["tvdb_id"] if item["instance_type"] == "sonarr" else item.get("tmdb_id")
-            grouped.setdefault(item["instance_name"], []).append(f"{title}{year}\t{db_id}")
+            db_id = (
+                item["tvdb_id"]
+                if item["instance_type"] == "sonarr"
+                else item.get("tmdb_id")
+            )
+            grouped.setdefault(item["instance_name"], []).append(
+                f"{title}{year}\t{db_id}"
+            )
         for instance, lines in grouped.items():
             text = "\n".join(lines)
             fields.extend(chunk_code_fields(instance, text))
@@ -232,44 +255,49 @@ def format_for_discord(
         return fields
 
     def fmt_nohl(o: Any) -> List[Dict[str, Any]]:
-        """
-        Format nohl output for Discord embeds.
+        """Format nohl output for Discord embeds.
+
         Args:
-            o: Output data for nohl.
+          o: Output data for nohl.
+
         Returns:
-            List of Discord embed field dicts.
+          List of Discord embed field dicts.
         """
         fields: List[Dict[str, Any]] = []
-        scanned = o.get('scanned', {})
+        scanned = o.get("scanned", {})
         for path, results in scanned.items():
             title = f"Scanned: {os.path.basename(path).capitalize()}"
             lines: List[str] = []
-            for item in results.get('movies', []):
+            for item in results.get("movies", []):
                 lines.append(f"{item['title']} ({item['year']})")
-            for item in results.get('series', []):
+            for item in results.get("series", []):
                 lines.append(f"{item['title']} ({item['year']})")
-                for season in item.get('season_info', []):
+                for season in item.get("season_info", []):
                     lines.append(f"\tSeason: {season['season_number']}")
-                    for episode in season.get('episodes', []):
+                    for episode in season.get("episodes", []):
                         lines.append(f"\t\tEpisode: {episode}")
             if lines:
                 fields.extend(chunk_code_fields(title, "\n".join(lines)))
             else:
-                fields.append({
-                    "name": "✅ All Scanned files are hardlinked!",
-                    "value": "",
-                })
-        resolved = o.get('resolved', {})
+                fields.append(
+                    {
+                        "name": "✅ All Scanned files are hardlinked!",
+                        "value": "",
+                    }
+                )
+        resolved = o.get("resolved", {})
         for instance, data in resolved.items():
             srv = data.get("server_name", instance)
             inst_type = data.get("instance_type", "")
             title = f"Resolved: {srv}"
             sm = data.get("data", {}).get("search_media", [])
             if not sm:
-                fields.append({
-                    "name": f"✅ {srv} all resolve files are hardlinked!",
-                    "value": "",
-                })
+                fields.append(
+                    {
+                        "name": f"✅ {srv} all resolve files are hardlinked!",
+                        "value": "",
+                    }
+                )
                 continue
             lines: List[str] = []
             for item in sm:
@@ -285,25 +313,26 @@ def format_for_discord(
                 lines.append("")
             if lines:
                 fields.extend(chunk_code_fields(title, "\n".join(lines)))
-        summary = o.get('summary', {})
+        summary = o.get("summary", {})
         if not all(value == 0 for value in summary.values()):
             title = "Summary"
             lines = [
                 f"Total Non-Hardlinked Scanned Movies: {summary.get('total_scanned_movies', 0)}",
                 f"Total Non-Hardlinked Scanned Series: {summary.get('total_scanned_series', 0)}",
                 f"Total Non-Hardlinked Resolved Movies: {summary.get('total_resolved_movies', 0)}",
-                f"Total Non-Hardlinked Resolved Series: {summary.get('total_resolved_series', 0)}"
+                f"Total Non-Hardlinked Resolved Series: {summary.get('total_resolved_series', 0)}",
             ]
             fields.extend(chunk_code_fields(title, "\n".join(lines)))
         return fields
 
     def fmt_upgradinatorr(o: Any) -> List[Dict[str, Any]]:
-        """
-        Format upgradinatorr output for Discord embeds.
+        """Format upgradinatorr output for Discord embeds.
+
         Args:
-            o: Output data for upgradinatorr.
+          o: Output data for upgradinatorr.
+
         Returns:
-            List of Discord embed field dicts.
+          List of Discord embed field dicts.
         """
         fields: List[Dict[str, Any]] = []
         for inst, data in o.items():
@@ -324,40 +353,43 @@ def format_for_discord(
         return fields
 
     def fmt_labelarr(o: Any) -> List[Dict[str, Any]]:
-        """
-        Format labelarr output for Discord embeds.
+        """Format labelarr output for Discord embeds.
+
         Args:
-            o: Output data for labelarr.
+          o: Output data for labelarr.
+
         Returns:
-            List of Discord embed field dicts.
+          List of Discord embed field dicts.
         """
         fields: List[Dict[str, Any]] = []
         summary = f"Synced {len(o)} items across configured Plex libraries."
-        fields.append({
-            "name": "Summary",
-            "value": f"```{summary}```"
-        })
+        fields.append({"name": "Summary", "value": f"```{summary}```"})
         label_changes: Dict[Tuple[str, str], List[str]] = {}
         for item in o:
-            for label, action in item['add_remove'].items():
+            for label, action in item["add_remove"].items():
                 key = (label, action)
-                label_changes.setdefault(key, []).append(f"{item['title']} ({item['year']})")
+                label_changes.setdefault(key, []).append(
+                    f"{item['title']} ({item['year']})"
+                )
         for (label, action), items in label_changes.items():
             verb = "added to" if action == "add" else "removed from"
-            fields.append({
-                "name": f"Label: `{label}` has been {verb}:",
-                "value": f"```{chr(10).join(items)}```",
-                "inline": False
-            })
+            fields.append(
+                {
+                    "name": f"Label: `{label}` has been {verb}:",
+                    "value": f"```{chr(10).join(items)}```",
+                    "inline": False,
+                }
+            )
         return fields
 
     def fmt_jduparr(o: Any) -> List[Dict[str, Any]]:
-        """
-        Format jduparr output for Discord flat messages.
+        """Format jduparr output for Discord flat messages.
+
         Args:
-            o: Output data for jduparr.
+          o: Output data for jduparr.
+
         Returns:
-            List of Discord message dicts (with 'content' key).
+          List of Discord message dicts (with 'content' key).
         """
         results: List[Dict[str, Any]] = []
         for item in o:
@@ -393,50 +425,55 @@ def format_for_discord(
         return formatted_output, True
     return split_fields(formatted_output), True
 
-def format_for_email(
-    config: Any, output: Any
-) -> Tuple[str, bool]:
-    """
-    Format notification output for email (HTML).
-    Handles per-module formatting and wraps output in a styled HTML template.
+
+def format_for_email(config: Any, output: Any) -> Tuple[str, bool]:
+    """Format notification output for email (HTML).
+
     Args:
-        config: Module config object (must have 'module_name').
-        output: Output from the module to be formatted.
+      config: Module config object (must have 'module_name').
+      output: Output from the module to be formatted.
+
     Returns:
-        Tuple of (HTML email body, success bool).
+      Tuple of (HTML email body, success bool).
     """
+
     def fmt_labelarr(o: Any) -> str:
-        """
-        Format labelarr output for email.
+        """Format labelarr output for email.
+
         Args:
-            o: Output data for labelarr.
+          o: Output data for labelarr.
+
         Returns:
-            HTML string.
+          HTML string.
         """
         from collections import defaultdict
+
         summary_html = f"<div class='summary'><strong>Synced {len(o)} items across configured Plex libraries.</strong></div>"
         label_changes = defaultdict(list)
         for item in o:
-            for label, action in item['add_remove'].items():
+            for label, action in item["add_remove"].items():
                 key = (label, action)
                 label_changes[key].append(f"{item['title']} ({item['year']})")
         blocks = []
         for (label, action), items in label_changes.items():
             verb = "added to" if action == "add" else "removed from"
-            blocks.append(f"<div class='group'><h3>Label: {label} has been {verb}</h3><ul>")
+            blocks.append(
+                f"<div class='group'><h3>Label: {label} has been {verb}</h3><ul>"
+            )
             for entry in items:
                 blocks.append(f"<li>{entry}</li>")
             blocks.append("</ul></div>")
         return summary_html + "\n" + "\n".join(blocks)
 
     def wrap_email(title: str, body: str) -> str:
-        """
-        Wrap formatted output in an HTML email template.
+        """Wrap formatted output in an HTML email template.
+
         Args:
-            title: Email subject/title.
-            body: HTML content.
+          title: Email subject/title.
+          body: HTML content.
+
         Returns:
-            HTML string.
+          HTML string.
         """
         return f"""
         <html>
@@ -470,49 +507,57 @@ def format_for_email(
         """.strip()
 
     def fmt_poster_renamerr(o: Any) -> str:
-        """
-        Format poster_renamerr output for email (HTML).
+        """Format poster_renamerr output for email (HTML).
+
         Args:
-            o: Output data for poster_renamerr.
+          o: Output data for poster_renamerr.
+
         Returns:
-            HTML string.
+          HTML string.
         """
+
         def render_group(title: str, assets: List[Dict[str, Any]]) -> str:
             if not assets:
                 return ""
-            block = [f"<div class='group'><h3>{title}</h3>"]
+            block: List[str] = [f"<div class='group'><h3>{title}</h3>"]
             for asset in assets:
                 name = asset.get("title", "")
                 year = f" ({asset.get('year')})" if asset.get("year") else ""
                 renamed = sorted(asset.get("messages", []))
                 if not renamed:
                     continue
-                block.append(f"<div class='item'><div class='title'><strong>{name}{year}</strong></div>")
+                block.append(
+                    f"<div class='item'><div class='title'><strong>{name}{year}</strong></div>"
+                )
                 block.append("<div class='files'><ul>")
                 for msg in renamed:
                     block.append(f"<li>{msg}</li>")
                 block.append("</ul></div></div>")
             block.append("</div>")
             return "\n".join(block)
-        return "\n".join([
-            render_group("Collections", o.get("collections", [])),
-            render_group("Movies", o.get("movies", [])),
-            render_group("Series", o.get("series", [])),
-        ])
+
+        return "\n".join(
+            [
+                render_group("Collections", o.get("collections", [])),
+                render_group("Movies", o.get("movies", [])),
+                render_group("Series", o.get("series", [])),
+            ]
+        )
 
     def fmt_renameinatorr(o: Any) -> str:
-        """
-        Format renameinatorr output for email (HTML).
+        """Format renameinatorr output for email (HTML).
+
         Args:
-            o: Output data for renameinatorr.
+          o: Output data for renameinatorr.
+
         Returns:
-            HTML string.
+          HTML string.
         """
-        sections = []
+        sections: List[str] = []
         for inst, inst_data in o.items():
             server_name = inst_data.get("server_name", inst).capitalize()
             title_header = f"{server_name} Rename List"
-            section = [
+            section: List[str] = [
                 f"<div class='instance'>",
                 f"<h3>{title_header}</h3>",
             ]
@@ -526,14 +571,20 @@ def format_for_email(
                 if not file_info and not folder_renamed:
                     continue
                 section.append(f"<div class='media'>")
-                section.append(f"<div class='title'><strong>{title}{year}</strong></div>")
+                section.append(
+                    f"<div class='title'><strong>{title}{year}</strong></div>"
+                )
                 if folder_renamed:
-                    section.append(f"<div class='folder-rename'>📁 Folder Renamed:<br><span>{item['path_name']}</span> ➜ <span>{folder_renamed}</span></div>")
+                    section.append(
+                        f"<div class='folder-rename'>📁 Folder Renamed:<br><span>{item['path_name']}</span> ➜ <span>{folder_renamed}</span></div>"
+                    )
                     folder_renamed_count += 1
                 if file_info:
                     section.append("<div class='files'><strong>🎬 Files:</strong><ul>")
                     for old, new in file_info.items():
-                        section.append(f"<li><span class='label'>Original:</span> {old}<br><span class='label'>New:</span> {new}</li>")
+                        section.append(
+                            f"<li><span class='label'>Original:</span> {old}<br><span class='label'>New:</span> {new}</li>"
+                        )
                         renamed_count += 1
                     section.append("</ul></div>")
                 section.append("</div>")
@@ -546,36 +597,41 @@ def format_for_email(
                 if renamed_count:
                     summary.append(f"<p>Total Renamed Items: {renamed_count}</p>")
                 if folder_renamed_count:
-                    summary.append(f"<p>Total Folder Renames: {folder_renamed_count}</p>")
+                    summary.append(
+                        f"<p>Total Folder Renames: {folder_renamed_count}</p>"
+                    )
                 summary.append("</div>")
                 section.extend(summary)
             else:
-                section.append(f"<div class='no-change'>No items renamed in {server_name}.</div>")
+                section.append(
+                    f"<div class='no-change'>No items renamed in {server_name}.</div>"
+                )
             section.append("</div>")
             sections.append("\n".join(section))
         return "".join(sections)
 
     def fmt_health_checkarr(o: Any) -> str:
-        """
-        Format health_checkarr output for email (HTML).
+        """Format health_checkarr output for email (HTML).
+
         Args:
-            o: Output data for health_checkarr.
+          o: Output data for health_checkarr.
+
         Returns:
-            HTML string.
+          HTML string.
         """
-        grouped = {}
+        grouped: Dict[str, List[str]] = {}
         for item in o:
             name = item.get("title", "Untitled")
             year = f" ({item.get('year')})" if item.get("year") else ""
             db_id = item.get("tvdb_id") or item.get("tmdb_id")
             key = item["instance_name"]
             grouped.setdefault(key, []).append(f"{name}{year} - {db_id}")
-        sections = []
+        sections: List[str] = []
         for instance, entries in grouped.items():
-            block = [
+            block: List[str] = [
                 f"<div class='instance'>",
                 f"<h3>{instance}</h3>",
-                "<ul>"
+                "<ul>",
             ]
             for entry in entries:
                 block.append(f"<li>{entry}</li>")
@@ -584,17 +640,18 @@ def format_for_email(
         return "".join(sections)
 
     def fmt_upgradinatorr(o: Any) -> str:
-        """
-        Format upgradinatorr output for email (HTML).
+        """Format upgradinatorr output for email (HTML).
+
         Args:
-            o: Output data for upgradinatorr.
+          o: Output data for upgradinatorr.
+
         Returns:
-            HTML string.
+          HTML string.
         """
-        sections = []
+        sections: List[str] = []
         for inst, data in o.items():
             server_name = data.get("server_name", inst).capitalize()
-            section = [
+            section: List[str] = [
                 f"<div class='instance'>",
                 f"<h3>{server_name}</h3>",
             ]
@@ -605,10 +662,14 @@ def format_for_email(
                 if not downloads:
                     continue
                 section.append(f"<div class='media'>")
-                section.append(f"<div class='title'><strong>{title}{year}</strong></div>")
+                section.append(
+                    f"<div class='title'><strong>{title}{year}</strong></div>"
+                )
                 section.append("<div class='files'><ul>")
                 for quality, score in downloads.items():
-                    section.append(f"<li><span class='label'>{quality}:</span> CF Score: {score}</li>")
+                    section.append(
+                        f"<li><span class='label'>{quality}:</span> CF Score: {score}</li>"
+                    )
                 section.append("</ul></div>")
                 section.append("</div>")
             section.append("</div>")
@@ -616,23 +677,28 @@ def format_for_email(
         return "".join(sections)
 
     def fmt_nohl(o: Any) -> str:
-        """
-        Format nohl output for email (HTML).
+        """Format nohl output for email (HTML).
+
         Args:
-            o: Output data for nohl.
+          o: Output data for nohl.
+
         Returns:
-            HTML string.
+          HTML string.
         """
-        sections = []
+        sections: List[str] = []
         for inst_name, inst_data in o.items():
             server_name = inst_data.get("server_name", inst_name).capitalize()
-            section = [f"<div class='instance'><h3>{server_name}</h3>"]
+            section: List[str] = [f"<div class='instance'><h3>{server_name}</h3>"]
             search_media = inst_data.get("data", {}).get("search_media", [])
             filtered_media = inst_data.get("data", {}).get("filtered_media", [])
             if not search_media:
-                section.append("<div class='all-linked'>✅ All files are already hardlinked.</div>")
+                section.append(
+                    "<div class='all-linked'>✅ All files are already hardlinked.</div>"
+                )
             else:
-                section.append("<div class='media'><div class='title'><strong>❌ Non-hardlinked Files:</strong></div><ul>")
+                section.append(
+                    "<div class='media'><div class='title'><strong>❌ Non-hardlinked Files:</strong></div><ul>"
+                )
                 for item in search_media:
                     title = item.get("title", "Unknown")
                     year = f" ({item.get('year')})" if item.get("year") else ""
@@ -646,14 +712,18 @@ def format_for_email(
                             if episodes:
                                 section.append("<ul>")
                                 for ep in episodes:
-                                    section.append(f"<li>Episode {ep.get('episode_number')}</li>")
+                                    section.append(
+                                        f"<li>Episode {ep.get('episode_number')}</li>"
+                                    )
                                 section.append("</ul>")
                             section.append("</li>")
                         section.append("</ul>")
                     section.append("</li>")
                 section.append("</ul></div>")
             if filtered_media:
-                section.append("<div class='media'><div class='title'><strong>🎛️ Filtered Media:</strong></div><ul>")
+                section.append(
+                    "<div class='media'><div class='title'><strong>🎛️ Filtered Media:</strong></div><ul>"
+                )
                 for item in filtered_media:
                     title = item.get("title", "Unknown")
                     year = f" ({item.get('year')})" if item.get("year") else ""
@@ -663,7 +733,9 @@ def format_for_email(
                     elif item.get("exclude_media"):
                         section.append("<li>⛔ Skipped (excluded)</li>")
                     elif item.get("quality_profile"):
-                        section.append(f"<li>📉 Skipped (quality: {item['quality_profile']})</li>")
+                        section.append(
+                            f"<li>📉 Skipped (quality: {item['quality_profile']})</li>"
+                        )
                     section.append("</ul></li>")
                 section.append("</ul></div>")
             section.append("</div>")
@@ -671,54 +743,57 @@ def format_for_email(
         return "".join(sections)
 
     def fmt_unmatched_assets(output: Any) -> str:
-        """
-        Format unmatched_assets output for email (HTML).
+        """Format unmatched_assets output for email (HTML).
+
         Args:
-            output: Output data for unmatched_assets.
+          output: Output data for unmatched_assets.
+
         Returns:
-            HTML string.
+          HTML string.
         """
         o = output.get("unmatched_dict", {})
-        sections = []
-        asset_types = ['movies', 'series', 'collections']
+        sections: List[str] = []
+        asset_types = ["movies", "series", "collections"]
         for asset_type in asset_types:
             data_set = o.get(asset_type, None)
             if data_set:
                 for location, data in data_set.items():
-                    location = location.rstrip('/')
+                    location = location.rstrip("/")
                     location_base = location.split("/")[-1]
                     if data:
-                        if asset_type == "collections":
-                            suffix = " Library"
-                        else:
-                            suffix = ""
-                        block = [
+                        suffix = " Library" if asset_type == "collections" else ""
+                        block: List[str] = [
                             f"<div class='group'>",
                             f"<h3>{location_base.title()}{suffix} ({asset_type.title()})</h3>",
                             "<ul>",
                         ]
                         for item in data:
-                            if asset_type == 'series':
-                                missing_seasons = item.get('missing_seasons', False)
+                            if asset_type == "series":
+                                missing_seasons = item.get("missing_seasons", False)
                                 if missing_seasons:
-                                    block.append(f"<li><strong>{item['title']} ({item['year']})</strong><ul>")
-                                    for season in item['missing_seasons']:
-                                        block.append(f"<li>Season: {season} <span style='color:#e74c3c;'>&larr; Missing</span></li>")
+                                    block.append(
+                                        f"<li><strong>{item['title']} ({item['year']})</strong><ul>"
+                                    )
+                                    for season in item["missing_seasons"]:
+                                        block.append(
+                                            f"<li>Season: {season} <span style='color:#e74c3c;'>&larr; Missing</span></li>"
+                                        )
                                     block.append("</ul></li>")
                                 else:
-                                    block.append(f"<li><strong>{item['title']} ({item['year']})</strong><ul>")
-                                    for season in item.get('season_numbers', []):
+                                    block.append(
+                                        f"<li><strong>{item['title']} ({item['year']})</strong><ul>"
+                                    )
+                                    for season in item.get("season_numbers", []):
                                         block.append(f"<li>Season: {season}</li>")
                                     block.append("</ul></li>")
                             else:
-                                year = f" ({item['year']})" if item.get('year') else ""
+                                year = f" ({item['year']})" if item.get("year") else ""
                                 block.append(f"<li>{item['title']}{year}</li>")
                         block.append("</ul></div>")
                         sections.append("".join(block))
-        # Summary block for unmatched_assets
         summary_data = output.get("summary")
         if summary_data:
-            summary_block = [
+            summary_block: List[str] = [
                 "<div class='summary'>",
                 "<h4>Statistics</h4>",
                 "<table>",
@@ -735,35 +810,40 @@ def format_for_email(
         return "".join(sections)
 
     def fmt_jduparr(output: Any) -> str:
-        """
-        Format jduparr output for email (HTML).
+        """Format jduparr output for email (HTML).
+
         Args:
-            output: Output data for jduparr.
+          output: Output data for jduparr.
+
         Returns:
-            HTML string.
+          HTML string.
         """
         total_count = 0
-        blocks = []
+        blocks: List[str] = []
         for item in output:
             path = item.get("source_dir", "Unknown Path")
             field_message = item.get("field_message", "")
             parsed_files = item.get("output", [])
             sub_count = item.get("sub_count", 0)
             total_count += sub_count
-            block = [f"<div class='group'><h3>{os.path.basename(path)}</h3>"]
+            block: List[str] = [f"<div class='group'><h3>{os.path.basename(path)}</h3>"]
             block.append(f"<div class='summary'>{field_message}</div>")
             if parsed_files:
                 block.append("<div class='files'><ul>")
                 for fname in parsed_files:
                     block.append(f"<li>{fname}</li>")
                 block.append("</ul></div>")
-            block.append(f"<div class='summary'><strong>Total items for '{os.path.basename(path)}': {sub_count}</strong></div>")
+            block.append(
+                f"<div class='summary'><strong>Total items for '{os.path.basename(path)}': {sub_count}</strong></div>"
+            )
             block.append("</div>")
             blocks.append("".join(block))
-        blocks.append(f"<div class='summary'><strong>Total items relinked: {total_count}</strong></div>")
+        blocks.append(
+            f"<div class='summary'><strong>Total items relinked: {total_count}</strong></div>"
+        )
         return "\n".join(blocks)
 
-    registry = {
+    registry: Dict[str, Any] = {
         "poster_renamerr": fmt_poster_renamerr,
         "renameinatorr": fmt_renameinatorr,
         "health_checkarr": fmt_health_checkarr,

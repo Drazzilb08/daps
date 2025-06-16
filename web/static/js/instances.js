@@ -27,20 +27,22 @@ async function savePayload(payload)
         window.showToast('❌ Failed to update schedule: ' + (err.error || res.statusText), 'error');
     }
 }
-
 // ===== Load Instances =====
 /**
  * Loads instances from the configuration and populates the form UI.
  *
  * @returns {Promise<void>} Resolves when instances are loaded and UI is updated.
  */
-window.loadInstances = async function() {
+window.loadInstances = async function()
+{
     const config = await window.fetchConfig();
-    const instances = config.instances || {};
+    const instances = config.instances ||
+    {};
     const form = document.getElementById('instancesForm');
     if (!form) return;
     form.innerHTML = '';
-    for (const [service, items] of Object.entries(instances)) {
+    for (const [service, items] of Object.entries(instances))
+    {
         const section = document.createElement('div');
         section.className = 'category';
         const h2 = document.createElement('h2');
@@ -48,7 +50,8 @@ window.loadInstances = async function() {
         section.appendChild(h2);
         const listDiv = document.createElement('div');
         listDiv.className = 'instance-entries';
-        for (const [name, settings] of Object.entries(items)) {
+        for (const [name, settings] of Object.entries(items))
+        {
             const entry = createEntry(service, name, settings);
             listDiv.appendChild(entry);
         }
@@ -56,11 +59,15 @@ window.loadInstances = async function() {
         addBtn.type = 'button';
         addBtn.className = 'instance-btn';
         addBtn.textContent = `+ Add ${window.humanize(service)}`;
-        addBtn.addEventListener('click', () => {
+        addBtn.addEventListener('click', () =>
+        {
             const newEntry = createEntry(
                 service,
                 '',
-                { url: '', api: '' },
+                {
+                    url: '',
+                    api: ''
+                },
                 true
             );
             listDiv.appendChild(newEntry);
@@ -74,7 +81,6 @@ window.loadInstances = async function() {
     window.DAPS.bindSaveButton(saveBtn, window.DAPS.buildInstancesPayload, "instances");
     window.saveChanges = async () => window.saveSection(window.DAPS.buildInstancesPayload, "instances");
 };
-
 // ===== Create Entry UI =====
 /**
  * Creates a DOM element representing an instance entry for a given service.
@@ -85,7 +91,8 @@ window.loadInstances = async function() {
  * @param {boolean} [isNew=false] - Whether the entry is a newly added one.
  * @returns {HTMLElement} The DOM element representing the instance entry.
  */
-function createEntry(service, name, settings, isNew = false) {
+function createEntry(service, name, settings, isNew = false)
+{
     const div = document.createElement('div');
     div.className = 'instance-entries';
     const contentDiv = document.createElement('div');
@@ -133,7 +140,8 @@ function createEntry(service, name, settings, isNew = false) {
     const toggle = document.createElement('span');
     toggle.className = 'toggle-api';
     toggle.textContent = '👁️';
-    toggle.addEventListener('click', () => {
+    toggle.addEventListener('click', () =>
+    {
         const isMasked = apiInput.classList.toggle('masked-input');
         toggle.textContent = isMasked ? '👁️' : '🙈';
     });
@@ -147,36 +155,44 @@ function createEntry(service, name, settings, isNew = false) {
     testBtn.type = 'button';
     testBtn.textContent = 'Test';
     testBtn.className = 'test-btn';
-    testBtn.addEventListener('click', async () => {
+    testBtn.addEventListener('click', async () =>
+    {
         testBtn.classList.remove('success', 'error');
         testBtn.textContent = 'Testing...';
         testBtn.classList.add('testing');
         testBtn.disabled = true;
-        const res = await fetch('/api/test-instance', {
+        const res = await fetch('/api/test-instance',
+        {
             method: 'POST',
-            headers: {
+            headers:
+            {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
+            body: JSON.stringify(
+            {
                 service,
                 name: nameInput.value.trim(),
                 url: urlInput.value.trim(),
                 api: apiInput.value.trim()
             })
         });
-        if (res.ok) {
+        if (res.ok)
+        {
             window.showToast(`✅ ${nameInput.value.trim()} connection successful`, 'success');
             testBtn.textContent = 'Success';
             testBtn.classList.remove('testing');
             testBtn.classList.add('success');
-        } else {
+        }
+        else
+        {
             const err = await res.json();
             window.showToast(`❌ ${nameInput.value.trim()} test failed: ${err.error || res.statusText}`, 'error');
             testBtn.textContent = 'Fail';
             testBtn.classList.remove('testing');
             testBtn.classList.add('error');
         }
-        setTimeout(() => {
+        setTimeout(() =>
+        {
             testBtn.textContent = 'Test';
             testBtn.classList.remove('success', 'error', 'testing');
             testBtn.disabled = false;
@@ -187,9 +203,11 @@ function createEntry(service, name, settings, isNew = false) {
     removeBtn.type = 'button';
     removeBtn.textContent = '✖';
     removeBtn.className = 'remove-btn';
-    removeBtn.addEventListener('click', () => {
+    removeBtn.addEventListener('click', () =>
+    {
         const instanceName = nameInput.value || '<unnamed>';
-        if (confirm(`Are you sure you want to remove instance "${instanceName}"?`)) {
+        if (confirm(`Are you sure you want to remove instance "${instanceName}"?`))
+        {
             window.markDirty();
             contentDiv.classList.add('removing');
             setTimeout(() => div.remove(), 300);
@@ -198,15 +216,16 @@ function createEntry(service, name, settings, isNew = false) {
     actionsDiv.appendChild(removeBtn);
     contentDiv.appendChild(actionsDiv);
     div.appendChild(contentDiv);
-    if (isNew) {
+    if (isNew)
+    {
         setTimeout(() => nameInput.focus(), 50);
     }
     [nameInput, urlInput, apiInput].forEach(input =>
-        input.addEventListener('keydown', e => {
+        input.addEventListener('keydown', e =>
+        {
             if (e.key === 'Enter') testBtn.click();
         })
     );
     return div;
 }
-
 // ===== Build Payload =====

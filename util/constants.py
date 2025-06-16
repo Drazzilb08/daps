@@ -2,10 +2,14 @@ import re
 from typing import List, Set, Pattern
 
 # Matches suffixes like " - Season X" or "_SeasonX" (where X is 1–4 digits), as well as "- Specials" or "_Specials" (case-insensitive)
-season_pattern: Pattern = re.compile(r"(?:\s*-\s*Season\s*\d+|_Season\d{1,4}|\s*-\s*Specials|_Specials)", re.IGNORECASE)
+season_pattern: Pattern = re.compile(
+    r"(?:\s*-\s*Season\s*\d+|_Season\d{1,4}|\s*-\s*Specials|_Specials)", re.IGNORECASE
+)
 
 # Matches optional leading hyphens, underscores, or spaces before "Season" followed by 1–4 digits (e.g. "- Season 2", "_Season10"), capturing the digits as group 1
-season_number_regex: Pattern = re.compile(r"(?:[-\s_]+)?Season\s*(\d{1,4})", re.IGNORECASE)
+season_number_regex: Pattern = re.compile(
+    r"(?:[-\s_]+)?Season\s*(\d{1,4})", re.IGNORECASE
+)
 
 # Matches the literal "Season " followed by 1–4 digits (e.g. "Season 1", "Season 12", up to "Season 9999"), capturing those digits as group 1
 season_regex: str = r"Season (\d{1,4})"
@@ -42,21 +46,26 @@ windows_path_regex: Pattern = re.compile(r"^([A-Z]:\\)")
 
 # Remove curly‐brace blocks containing TMDB, TVDB, or IMDb IDs
 id_content_regex = re.compile(
-    r'\s*\{\s*(?:'
-      r'tmdb(?:[-_\s]\d+)|'
-      r'tvdb(?:[-_\s]\d+)|'
-      r'imdb(?:[-_\s](?:tt)?\d+)'
-    r')\s*\}',
-    flags=re.IGNORECASE
+    r"\s*\{\s*(?:"
+    r"tmdb(?:[-_\s]\d+)|"
+    r"tvdb(?:[-_\s]\d+)|"
+    r"imdb(?:[-_\s](?:tt)?\d+)"
+    r")\s*\}",
+    flags=re.IGNORECASE,
 )
 
 words_to_remove: List[str] = [
-    "(US)", "(UK)", "(AU)", "(CA)", "(NZ)", "(FR)", "(NL)", "DC's"
+    "(US)",
+    "(UK)",
+    "(AU)",
+    "(CA)",
+    "(NZ)",
+    "(FR)",
+    "(NL)",
+    "DC's",
 ]
 
-common_words: Set[str] = {
-    "the", "a", "an", "and", "or", "but", "in", "on", "at", "to"
-}
+common_words: Set[str] = {"the", "a", "an", "and", "or", "but", "in", "on", "at", "to"}
 
 prefixes: List[str] = [
     "The",

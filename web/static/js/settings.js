@@ -282,7 +282,6 @@ function renderBooleanField(name, value)
     const label = window.humanize(name);
     return createField(label, boolDropdown(name, value === true || value === 'true'));
 }
-
 /**
  * Render a special boolean field for remove_borders, enforcing logic based on border_colors.
  * - If border_colors is non-empty, remove_borders is forced false and cannot be toggled true (with warning).
@@ -298,19 +297,20 @@ function renderRemoveBordersBooleanField(config)
     const label = window.humanize(name);
     const borderColors = Array.isArray(config.border_colors) ? config.border_colors.filter(Boolean) : [];
     let forcedValue, disabled, warning = "";
-
-    if (borderColors.length === 0) {
+    if (borderColors.length === 0)
+    {
         // No colors: always True, disabled
         forcedValue = true;
         disabled = true;
         warning = "Borders will be removed because no border colors are set. Add a border color to disable this option.";
-    } else {
+    }
+    else
+    {
         // One or more colors: always False, disabled
         forcedValue = false;
         disabled = true;
         warning = "Cannot remove borders while custom border colors are set. Remove all border colors to enable this option.";
     }
-
     // The rest stays the same
     let html = `<select class="select" name="${name}"${disabled ? " disabled" : ""}>
         <option value="true"${forcedValue ? ' selected' : ''}>True</option>
@@ -1741,11 +1741,14 @@ function renderLabelarrSettings(formFields, config, rootConfig)
  * @param {Object} config - The config object.
  * @param {HTMLElement} wrapper - The settings wrapper DOM node.
  */
-function rerenderRemoveBordersField(config, wrapper) {
+function rerenderRemoveBordersField(config, wrapper)
+{
     // Remove any existing Remove Borders field
-    Array.from(wrapper.querySelectorAll('.field')).forEach(field => {
+    Array.from(wrapper.querySelectorAll('.field')).forEach(field =>
+    {
         const label = field.querySelector('label');
-        if (label && label.textContent.trim().toLowerCase() === 'remove borders') {
+        if (label && label.textContent.trim().toLowerCase() === 'remove borders')
+        {
             field.remove();
         }
     });
@@ -1760,7 +1763,6 @@ function renderReplacerrSettings(formFields, config, rootConfig)
     const help = renderGlobalHelp('border_replacerr');
     if (help) wrapper.appendChild(help);
     wrapper.className = 'settings-wrapper module--poster_renamerr';
-
     // 1. Render all fields except holidays, border_colors, remove_borders, exclusion_list, exclude
     Object.entries(config).forEach(([key, value]) =>
     {
@@ -1769,7 +1771,6 @@ function renderReplacerrSettings(formFields, config, rootConfig)
             renderField(wrapper, key, value);
         }
     });
-
     // 2. Render Border Colors field
     const borderColorField = document.createElement('div');
     borderColorField.className = 'field';
@@ -1780,61 +1781,73 @@ function renderReplacerrSettings(formFields, config, rootConfig)
   `;
     // 3. Render Exclusion List fields (if present) before Remove Borders and Border Colors
     let exclusionFields = [];
-    ['exclusion_list', 'exclude'].forEach(fieldKey => {
-        if (fieldKey in config) {
+    ['exclusion_list', 'exclude'].forEach(fieldKey =>
+    {
+        if (fieldKey in config)
+        {
             exclusionFields.push(renderTextareaArrayField(fieldKey, config[fieldKey]));
         }
     });
-
     // 4. Render Remove Borders field (after exclusion fields, before border colors)
     // Remove any existing Remove Borders field (should not exist yet, but for safety)
-    Array.from(wrapper.querySelectorAll('.field')).forEach(field => {
+    Array.from(wrapper.querySelectorAll('.field')).forEach(field =>
+    {
         const label = field.querySelector('label');
-        if (label && label.textContent.trim().toLowerCase() === 'remove borders') {
+        if (label && label.textContent.trim().toLowerCase() === 'remove borders')
+        {
             field.remove();
         }
     });
     const removeBordersField = renderRemoveBordersBooleanField(config);
-
     // Insert exclusion fields and Remove Borders before Border Colors
-    if (exclusionFields.length > 0) {
-        exclusionFields.forEach(fieldNode => {
+    if (exclusionFields.length > 0)
+    {
+        exclusionFields.forEach(fieldNode =>
+        {
             wrapper.appendChild(fieldNode);
         });
     }
     wrapper.appendChild(removeBordersField);
-
     // 5. Render Border Colors field
     wrapper.appendChild(borderColorField);
     const borderColorsContainer = borderColorField.querySelector('#border-colors-container');
-
     // Helper to update config.border_colors and rerender Remove Borders field
-    function updateBorderColorsFromDOM() {
+    function updateBorderColorsFromDOM()
+    {
         config.border_colors = Array.from(borderColorsContainer.querySelectorAll('input[type="color"]')).map(input => input.value);
         // Remove and re-insert Remove Borders field after exclusion fields
-        Array.from(wrapper.querySelectorAll('.field')).forEach(field => {
+        Array.from(wrapper.querySelectorAll('.field')).forEach(field =>
+        {
             const label = field.querySelector('label');
-            if (label && label.textContent.trim().toLowerCase() === 'remove borders') {
+            if (label && label.textContent.trim().toLowerCase() === 'remove borders')
+            {
                 field.remove();
             }
         });
         // Insert Remove Borders field after exclusion fields
         let insertAfter = null;
         // Find last exclusion field
-        for (let i = wrapper.children.length - 1; i >= 0; i--) {
+        for (let i = wrapper.children.length - 1; i >= 0; i--)
+        {
             const node = wrapper.children[i];
             const label = node.querySelector && node.querySelector('label');
-            if (label && (label.textContent.trim().toLowerCase() === 'exclusion list' || label.textContent.trim().toLowerCase() === 'exclude')) {
+            if (label && (label.textContent.trim().toLowerCase() === 'exclusion list' || label.textContent.trim().toLowerCase() === 'exclude'))
+            {
                 insertAfter = node;
                 break;
             }
         }
         const removeBordersField = renderRemoveBordersBooleanField(config);
-        if (insertAfter && insertAfter.nextSibling) {
+        if (insertAfter && insertAfter.nextSibling)
+        {
             wrapper.insertBefore(removeBordersField, insertAfter.nextSibling);
-        } else if (insertAfter) {
+        }
+        else if (insertAfter)
+        {
             wrapper.appendChild(removeBordersField);
-        } else {
+        }
+        else
+        {
             // fallback: before borderColorField
             wrapper.insertBefore(removeBordersField, borderColorField);
         }
@@ -1850,10 +1863,12 @@ function renderReplacerrSettings(formFields, config, rootConfig)
       <button type="button" class="btn remove-color">−</button>
     `;
         const colorInput = subfield.querySelector('input[type="color"]');
-        colorInput.addEventListener('input', () => {
+        colorInput.addEventListener('input', () =>
+        {
             updateBorderColorsFromDOM();
         });
-        subfield.querySelector('.remove-color').onclick = () => {
+        subfield.querySelector('.remove-color').onclick = () =>
+        {
             subfield.remove();
             updateBorderColorsFromDOM();
         };
@@ -1863,39 +1878,39 @@ function renderReplacerrSettings(formFields, config, rootConfig)
     // Initial render
     (config.border_colors || []).forEach(color => addColorPicker(borderColorsContainer, color));
     borderColorField.querySelector('#addBorderColor').onclick = () => addColorPicker(borderColorsContainer, '#ffffff');
-
     // 5. (Border Colors field is already appended above)
-
     // --- PATCH: Native lock icon placeholder for managed fields ---
-if (
-    (rootConfig?.poster_renamerr?.run_border_replacerr === true) ||
-    (window.run_border_replacerr === true)
-) {
-    ['source_dirs', 'destination_dir'].forEach(fieldKey => {
-        // There may be multiple inputs for source_dirs
-        const fields = wrapper.querySelectorAll(`[name="${fieldKey}"]`);
-        fields.forEach(field => {
-            field.disabled = true;
-            field.value = '';
-            field.placeholder = '🔒 Managed by Poster Renamerr with \'Run Border Replacerr\'';
-            field.title = 'Managed by Poster Renamerr with \'Run Border Replacerr\'';
-
-            // For source_dirs, hide add/remove buttons
-            if (fieldKey === 'source_dirs') {
-                const fieldContainer = field.closest('.field');
-                if (fieldContainer) {
-                    // Hide add button
-                    const addBtn = fieldContainer.querySelector('.add-control-btn');
-                    if (addBtn) addBtn.style.display = 'none';
-                    // Hide remove buttons
-                    fieldContainer.querySelectorAll('.remove-item').forEach(btn => btn.style.display = 'none');
+    if (
+        (rootConfig?.poster_renamerr?.run_border_replacerr === true) ||
+        (window.run_border_replacerr === true)
+    )
+    {
+        ['source_dirs', 'destination_dir'].forEach(fieldKey =>
+        {
+            // There may be multiple inputs for source_dirs
+            const fields = wrapper.querySelectorAll(`[name="${fieldKey}"]`);
+            fields.forEach(field =>
+            {
+                field.disabled = true;
+                field.value = '';
+                field.placeholder = '🔒 Managed by Poster Renamerr with \'Run Border Replacerr\'';
+                field.title = 'Managed by Poster Renamerr with \'Run Border Replacerr\'';
+                // For source_dirs, hide add/remove buttons
+                if (fieldKey === 'source_dirs')
+                {
+                    const fieldContainer = field.closest('.field');
+                    if (fieldContainer)
+                    {
+                        // Hide add button
+                        const addBtn = fieldContainer.querySelector('.add-control-btn');
+                        if (addBtn) addBtn.style.display = 'none';
+                        // Hide remove buttons
+                        fieldContainer.querySelectorAll('.remove-item').forEach(btn => btn.style.display = 'none');
+                    }
                 }
-            }
+            });
         });
-    });
-}
-
-
+    }
     // 5. Render Holidays field
     const holidaysField = document.createElement('div');
     holidaysField.className = 'field field--three-col setting-field setting-field--three-col';

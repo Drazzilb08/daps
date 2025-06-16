@@ -23,10 +23,11 @@ except ImportError as e:
     print("Please install the required modules with 'pip install -r requirements.txt'")
     exit(1)
 
+
 def remove_assets(
     unmatched_dict: List[Dict[str, Union[str, int, List[str], None]]],
     config: SimpleNamespace,
-    logger: Logger
+    logger: Logger,
 ) -> List[Dict[str, Union[str, int, List[str]]]]:
     """
     Remove unmatched assets from disk or simulate removal.
@@ -54,29 +55,33 @@ def remove_assets(
     for asset_data in unmatched_list:
         messages: List[str] = []
 
-        if not asset_data['files'] and asset_data.get('path'):
+        if not asset_data["files"] and asset_data.get("path"):
             # Remove empty folder asset
-            remove_list.append(asset_data['path'])
-            messages.append(f"Removing empty folder: {os.path.basename(asset_data['path'])}")
+            remove_list.append(asset_data["path"])
+            messages.append(
+                f"Removing empty folder: {os.path.basename(asset_data['path'])}"
+            )
         else:
             # Remove individual files for asset
-            for file in asset_data['files']:
+            for file in asset_data["files"]:
                 remove_list.append(file)
                 # Compose tmp path
                 asset_dir = os.path.dirname(file)
                 basename = os.path.basename(file)
-                tmp_path = os.path.join(asset_dir, 'tmp', basename)
+                tmp_path = os.path.join(asset_dir, "tmp", basename)
                 if os.path.isfile(tmp_path):
                     remove_list.append(tmp_path)
-                    if config.log_level.lower() == 'debug':
+                    if config.log_level.lower() == "debug":
                         messages.append(f"Removing duplicate in tmp: {tmp_path}")
                 messages.append(f"Removing file: {basename}")
 
-        remove_data.append({
-            'title': asset_data['title'],
-            'year': asset_data['year'],
-            'messages': messages
-        })
+        remove_data.append(
+            {
+                "title": asset_data["title"],
+                "year": asset_data["year"],
+                "messages": messages,
+            }
+        )
 
     if not config.dry_run:
         for path in remove_list:
@@ -111,7 +116,9 @@ def remove_assets(
     return remove_data
 
 
-def print_output(remove_data: List[Dict[str, Union[str, int, List[str]]]], logger: Logger) -> None:
+def print_output(
+    remove_data: List[Dict[str, Union[str, int, List[str]]]], logger: Logger
+) -> None:
     """
     Print summary of removed assets and messages.
 
@@ -126,14 +133,14 @@ def print_output(remove_data: List[Dict[str, Union[str, int, List[str]]]], logge
     count: int = 0
 
     for data in remove_data:
-        title: str = data['title']
-        year: Optional[int] = data.get('year')
+        title: str = data["title"]
+        year: Optional[int] = data.get("year")
         if year:
             logger.info(f"• {title} ({year})")
         else:
             logger.info(f"• {title}")
 
-        asset_messages: List[str] = data['messages']
+        asset_messages: List[str] = data["messages"]
         for message in asset_messages:
             logger.info(f"   - {message}")
             count += 1
@@ -156,23 +163,18 @@ def main(config: SimpleNamespace) -> None:
             print_settings(logger, config)
 
         if config.dry_run:
-            table = [
-                ["Dry Run"],
-                ["NO CHANGES WILL BE MADE"]
-            ]
+            table = [["Dry Run"], ["NO CHANGES WILL BE MADE"]]
             logger.info(create_table(table))
         # Load assets from source directories
         prefix_index = create_new_empty_index()
         assets_dict, prefix_index = get_assets_files(config.source_dirs, logger)
         if not assets_dict:
-            logger.error(f"No assets found in the source directories: {config.source_dirs}")
+            logger.error(
+                f"No assets found in the source directories: {config.source_dirs}"
+            )
             return
 
-        media_dict = {
-            'movies': [],
-            'series': [],
-            'collections': []
-        }
+        media_dict = {"movies": [], "series": [], "collections": []}
 
         if not config.instances:
             logger.error("No instances found. Exiting script.")
@@ -197,12 +199,14 @@ def main(config: SimpleNamespace) -> None:
                     break
 
             if not found or instance_type is None or instance_data is None:
-                logger.warning(f"Instance '{instance_name}' not found in config.instances_config. Skipping.")
+                logger.warning(
+                    f"Instance '{instance_name}' not found in config.instances_config. Skipping."
+                )
                 continue
 
             if instance_type == "plex":
-                url = instance_data[instance_name]['url']
-                api = instance_data[instance_name]['api']
+                url = instance_data[instance_name]["url"]
+                api = instance_data[instance_name]["api"]
                 try:
                     app = PlexServer(url, api)
                 except Exception as e:
@@ -210,16 +214,24 @@ def main(config: SimpleNamespace) -> None:
                     app = None
 
                 if app:
-                    library_names = instance_settings.get('library_names', [])
+                    library_names = instance_settings.get("library_names", [])
                     if library_names:
                         logger.info("Fetching Plex collections...")
-                        results = get_plex_data(app, library_names, logger, include_smart=True, collections_only=True)
-                        media_dict['collections'].extend(results)
+                        results = get_plex_data(
+                            app,
+                            library_names,
+                            logger,
+                            include_smart=True,
+                            collections_only=True,
+                        )
+                        media_dict["collections"].extend(results)
                     else:
-                        logger.warning(f"No library names specified for Plex instance '{instance_name}'. Skipping.")
+                        logger.warning(
+                            f"No library names specified for Plex instance '{instance_name}'. Skipping."
+                        )
             else:
-                url = instance_data[instance_name]['url']
-                api = instance_data[instance_name]['api']
+                url = instance_data[instance_name]["url"]
+                api = instance_data[instance_name]["api"]
                 app = create_arr_client(url, api, logger)
 
                 if app and app.connect_status:
@@ -227,24 +239,30 @@ def main(config: SimpleNamespace) -> None:
                     results = app.get_parsed_media(include_episode=False)
                     if results:
                         if instance_type == "radarr":
-                            media_dict['movies'].extend(results)
+                            media_dict["movies"].extend(results)
                         elif instance_type == "sonarr":
-                            media_dict['series'].extend(results)
+                            media_dict["series"].extend(results)
                     else:
-                        logger.warning(f"No {instance_type.capitalize()} data found for instance '{instance_name}'.")
-        
+                        logger.warning(
+                            f"No {instance_type.capitalize()} data found for instance '{instance_name}'."
+                        )
+
         if not any(media_dict.values()):
-            logger.error("No media found. Check 'instances' setting in your config. Exiting.")
+            logger.error(
+                "No media found. Check 'instances' setting in your config. Exiting."
+            )
             return
         if media_dict and prefix_index:
             logger.info("Matching assets to media, please wait...")
             unmatched_dict = match_assets_to_media(
-                media_dict, prefix_index, logger,
+                media_dict,
+                prefix_index,
+                logger,
                 return_unmatched_assets=True,
                 config=config,
-                strict_folder_match=True
+                strict_folder_match=True,
             )
-            
+
         if any(unmatched_dict.values()):
             remove_data = remove_assets(unmatched_dict, config, logger)
             if remove_data:

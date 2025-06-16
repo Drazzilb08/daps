@@ -2,27 +2,46 @@ import json
 import os
 import random
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, Optional, Tuple, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
+from urllib.parse import quote
+
 import requests
 from apprise import Apprise
 from ratelimit import limits, sleep_and_retry
-from urllib.parse import quote
+
 
 @dataclass
 class NotifiarrConfig:
     webhook: str
     channel_id: int
 
+
 def extract_error(resp: requests.Response) -> str:
-    """Extract a user-friendly error message from an HTTP response."""
+    """Extract a user-friendly error message from an HTTP response.
+
+    Args:
+      resp: HTTP response object.
+
+    Returns:
+      User-friendly error message.
+    """
     try:
         data = resp.json()
         return data.get("error", resp.text)
     except ValueError:
         return resp.text
 
+
 def build_notifiarr_payload(module_title: str, cid: int) -> Dict[str, Any]:
-    """Builds the JSON payload for Notifiarr Passthrough."""
+    """Build the JSON payload for Notifiarr Passthrough.
+
+    Args:
+      module_title: Title of the module.
+      cid: Channel ID.
+
+    Returns:
+      Notifiarr payload dict.
+    """
     return {
         "notification": {"update": False, "name": module_title, "event": "0"},
         "discord": {
@@ -35,53 +54,85 @@ def build_notifiarr_payload(module_title: str, cid: int) -> Dict[str, Any]:
                 "content": "This is a test notification.",
                 "description": "This is a test notification.",
                 "fields": [],
-                "footer": ""
+                "footer": "",
             },
-            "ids": {"channel": cid}
-        }
+            "ids": {"channel": cid},
+        },
     }
 
-def build_discord_payload(module_title: str, data: Any, timestamp: str, dry_run: bool = False) -> list[Dict[str, Any]]:
+
+def build_discord_payload(
+    module_title: str,
+    data: Any,
+    timestamp: str,
+    dry_run: bool = False,
+) -> List[Dict[str, Any]]:
+    """Build Discord payload(s) for embeds/content.
+
+    Args:
+      module_title: Title of the module.
+      data: Data for the payload.
+      timestamp: ISO timestamp string.
+      dry_run: If True, marks as dry run.
+
+    Returns:
+      List of Discord payload dicts.
     """
-    Builds Discord payload(s) for embeds/content.
-    """
-    payloads: list[Dict[str, Any]] = []
+    payloads: List[Dict[str, Any]] = []
     if isinstance(data, dict):
         data = [
             {
                 "embed": True,
                 "fields": fields,
-                "part": f" (Part {idx} of {len(data)})" if len(data) > 1 else ""
+                "part": f" (Part {idx} of {len(data)})" if len(data) > 1 else "",
             }
             for idx, fields in data.items()
         ]
     for part in data:
         payload: Dict[str, Any] = {}
         if "embed" in part:
-            payload["embeds"] = [{
-                "title": f"{module_title} Notification{part.get('part', '')}",
-                "description": None,
-                "color": 0x00FF00,
-                "timestamp": timestamp,
-                "fields": part.get("fields", []),
-                "footer": {"text": f"Powered by: Drazzilb | {get_random_joke()}"}
-            }]
+            payload["embeds"] = [
+                {
+                    "title": f"{module_title} Notification{part.get('part', '')}",
+                    "description": None,
+                    "color": 0x00FF00,
+                    "timestamp": timestamp,
+                    "fields": part.get("fields", []),
+                    "footer": {"text": f"Powered by: Drazzilb | {get_random_joke()}"},
+                }
+            ]
         if "content" in part:
-            payload["content"] = f"__**Dry Run**__\n{part['content']}" if dry_run else part["content"]
+            payload["content"] = (
+                f"__**Dry Run**__\n{part['content']}" if dry_run else part["content"]
+            )
         elif dry_run:
             payload["content"] = "__**Dry Run**__"
         payload["username"] = "Notification Bot"
         payloads.append(payload)
     return payloads
 
+
 @sleep_and_retry
 @limits(calls=5, period=5)
 def safe_post(url: str, payload: Dict[str, Any]) -> requests.Response:
-    """Send a POST request with a JSON payload to the specified URL."""
+    """Send a POST request with a JSON payload.
+
+    Args:
+      url: Target URL.
+      payload: Payload dict.
+
+    Returns:
+      HTTP response.
+    """
     return requests.post(url, json=payload)
 
+
 def get_random_joke() -> str:
-    """Retrieve a random joke from the jokes.txt file in the parent directory."""
+    """Retrieve a random joke from jokes.txt in the parent directory.
+
+    Returns:
+      A random joke string, or empty string if not found.
+    """
     root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
     jokes_path = os.path.join(root_dir, "jokes.txt")
     if os.path.exists(jokes_path):
@@ -91,15 +142,19 @@ def get_random_joke() -> str:
                 return random.choice(jokes)
     return ""
 
+
 def send_and_log_response(
-    logger: Any,
-    label: str,
-    hook: str,
-    payload: Dict[str, Any]
+    logger: Any, label: str, hook: str, payload: Dict[str, Any]
 ) -> None:
-    """Send a POST request and log the response status."""
+    """Send a POST request and log the response status.
+
+    Args:
+      logger: Logger instance.
+      label: Notification label.
+      hook: Webhook URL.
+      payload: Payload dict.
+    """
     try:
-        # logger.debug(json.dumps(payload, indent=2))
         resp = safe_post(hook, payload)
         if resp.status_code not in (200, 204):
             err = format_notification_error(resp, label)
@@ -112,17 +167,27 @@ def send_and_log_response(
     except Exception as e:
         logger.error(f"[Notification] {label} send exception: {e}")
 
+
 def send_notifiarr_notification(
     logger: Any,
     config: Any,
     auth_data: NotifiarrConfig,
     module_title: str,
     output: Any,
-    test: bool = False
+    test: bool = False,
 ) -> Optional[Tuple[bool, str]]:
-    """
-    Send structured notifications to Notifiarr via Passthrough API.
-    If test is True, sends a test notification and returns (success, msg).
+    """Send structured notifications to Notifiarr via Passthrough API.
+
+    Args:
+      logger: Logger instance.
+      config: Configuration object.
+      auth_data: NotifiarrConfig instance.
+      module_title: Module title.
+      output: Output data.
+      test: Whether to send a test notification.
+
+    Returns:
+      (success, message) if test, else None.
     """
     hook = auth_data.webhook.rstrip("/")
     cid = auth_data.channel_id
@@ -130,18 +195,25 @@ def send_notifiarr_notification(
     if test:
         resp = safe_post(hook, payload)
         success = resp.status_code in (200, 204)
-        msg = "Test notification sent via Notifiarr." if success else f"Notifiarr Test failed ({resp.status_code}): {extract_error(resp)}"
+        msg = (
+            "Test notification sent via Notifiarr."
+            if success
+            else f"Notifiarr Test failed ({resp.status_code}): {extract_error(resp)}"
+        )
         return success, msg
     from util.notification_formatting import format_for_discord
+
     data, _ = format_for_discord(config, output)
-    parts = []
+    parts: List[Dict[str, Any]] = []
     if isinstance(data, dict):
         for idx, fields in data.items():
-            parts.append({
-                "embed": True,
-                "fields": fields,
-                "part": f" (Part {idx} of {len(data)})" if len(data) > 1 else ""
-            })
+            parts.append(
+                {
+                    "embed": True,
+                    "fields": fields,
+                    "part": f" (Part {idx} of {len(data)})" if len(data) > 1 else "",
+                }
+            )
     else:
         parts = data
     for part in parts:
@@ -151,18 +223,22 @@ def send_notifiarr_notification(
                 "color": "",
                 "ping": {"pingUser": 0, "pingRole": 0},
                 "images": {"thumbnail": "", "image": ""},
-                "ids": {"channel": cid}
-            }
+                "ids": {"channel": cid},
+            },
         }
         if part.get("embed"):
             fields = [
-                {"title": f.get("name", ""), "text": f.get("value", ""), "inline": bool(f.get("inline", False))}
+                {
+                    "title": f.get("name", ""),
+                    "text": f.get("value", ""),
+                    "inline": bool(f.get("inline", False)),
+                }
                 for f in part.get("fields", [])
             ]
             pt_payload["discord"]["text"] = {
                 "title": f"{module_title} Notification{part.get('part','')}",
                 "fields": fields,
-                "footer": get_random_joke()
+                "footer": get_random_joke(),
             }
         else:
             content = part.get("content")
@@ -173,33 +249,51 @@ def send_notifiarr_notification(
         send_and_log_response(logger, "Notifiarr", hook, pt_payload)
     return None
 
+
 def send_discord_notification(
     logger: Any,
     config: Any,
     hook: str,
     module_title: str,
-    output: Any
+    output: Any,
 ) -> None:
-    """Format output and send one or more Discord messages."""
+    """Format output and send one or more Discord messages.
+
+    Args:
+      logger: Logger instance.
+      config: Configuration object.
+      hook: Discord webhook URL.
+      module_title: Module title.
+      output: Output data.
+    """
     from util.notification_formatting import format_for_discord
     from datetime import datetime
+
     data, _ = format_for_discord(config, output)
     timestamp = datetime.utcnow().isoformat()
     dry_run = getattr(config, "dry_run", False)
-    for payload in build_discord_payload(module_title, data, timestamp, dry_run=dry_run):
+    for payload in build_discord_payload(
+        module_title, data, timestamp, dry_run=dry_run
+    ):
         send_and_log_response(logger, "Discord", hook, payload)
 
+
 def extract_apprise_errors(apprise: Apprise) -> str:
+    """Extract concise error messages from Apprise services.
+
+    Args:
+      apprise: Apprise instance.
+
+    Returns:
+      Concatenated error message string.
     """
-    Extracts concise error messages from Apprise services, if available.
-    """
-    errors = []
+    errors: List[str] = []
     for service in apprise:
-        if hasattr(service, 'last_response') and service.last_response:
+        if hasattr(service, "last_response") and service.last_response:
             errors.append(f"Last response: {service.last_response}")
-        if hasattr(service, 'response') and service.response:
+        if hasattr(service, "response") and service.response:
             errors.append(f"Response: {service.response}")
-        if hasattr(service, 'details') and callable(service.details):
+        if hasattr(service, "details") and callable(service.details):
             try:
                 details = service.details()
                 if details:
@@ -209,9 +303,16 @@ def extract_apprise_errors(apprise: Apprise) -> str:
         errors.append(f"Service config: {service}")
     return "; ".join(errors) if errors else "Unknown error"
 
+
 def format_notification_error(source: Any, label: str = "") -> str:
-    """
-    Returns a user-friendly error message from a requests.Response or an Apprise instance.
+    """Return a user-friendly error message from a response or Apprise.
+
+    Args:
+      source: requests.Response or Apprise instance.
+      label: Optional label.
+
+    Returns:
+      Error message string.
     """
     if isinstance(source, requests.Response):
         return extract_error(source)
@@ -222,9 +323,18 @@ def format_notification_error(source: Any, label: str = "") -> str:
         pass
     return f"{label} unknown error"
 
+
 def format_module_title(name: str) -> str:
-    """Converts a module name (e.g. 'poster_renamerr') to a human-readable title."""
+    """Convert a module name to a human-readable title.
+
+    Args:
+      name: Module name.
+
+    Returns:
+      Title string.
+    """
     return name.replace("_", " ").title()
+
 
 def send_apprise_notification(
     logger: Any,
@@ -232,11 +342,20 @@ def send_apprise_notification(
     apprise: Apprise,
     title: str,
     body: str,
-    body_format: str = "text"
+    body_format: str = "text",
 ) -> bool:
-    """
-    Send a notification via Apprise and log the result.
-    Returns True on success, False on failure.
+    """Send a notification via Apprise and log the result.
+
+    Args:
+      logger: Logger instance.
+      label: Notification label.
+      apprise: Apprise instance.
+      title: Notification title.
+      body: Notification body.
+      body_format: Body format.
+
+    Returns:
+      True on success, False on failure.
     """
     try:
         success = apprise.notify(title=title, body=body, body_format=body_format)
@@ -247,7 +366,9 @@ def send_apprise_notification(
             logger.error(f"[Notification] ❌ {label} failed via Apprise: {err_msg}")
         return success
     except Exception as e:
-        logger.error(f"[Notification] ❌ {label} exception via Apprise: {e}", exc_info=True)
+        logger.error(
+            f"[Notification] ❌ {label} exception via Apprise: {e}", exc_info=True
+        )
         return False
 
 
@@ -256,28 +377,48 @@ def send_email_notification(
     config: Any,
     apprise: Apprise,
     module_title: str,
-    output: Any
+    output: Any,
 ) -> None:
-    """Send an HTML formatted email using Apprise."""
+    """Send an HTML formatted email using Apprise.
+
+    Args:
+      logger: Logger instance.
+      config: Configuration object.
+      apprise: Apprise instance.
+      module_title: Module title.
+      output: Output data.
+    """
     from util.notification_formatting import format_for_email
+
     try:
         body, success = format_for_email(config, output)
         if not success:
             logger.warning("[Notification] Email skipped: no formatter found.")
             return
         subject = f"{module_title} Notification"
-        # Send email via Apprise
-        send_apprise_notification(logger, f"{module_title} Email", apprise, subject, body, "html")
+        send_apprise_notification(
+            logger, f"{module_title} Email", apprise, subject, body, "html"
+        )
     except Exception as e:
-        logger.error(f"[Notification] Unhandled exception during email notification: {e}", exc_info=True)
+        logger.error(
+            f"[Notification] Unhandled exception during email notification: {e}",
+            exc_info=True,
+        )
 
 
 def collect_valid_targets(
-    config: Any,
-    logger: Any,
-    test: bool = False
+    config: Any, logger: Any, test: bool = False
 ) -> Dict[str, Union[str, Tuple[str, Union[str, int]]]]:
-    """Collect and format valid notification targets from the configuration."""
+    """Collect and format valid notification targets from the configuration.
+
+    Args:
+      config: Configuration object.
+      logger: Logger instance.
+      test: If True, format for test mode.
+
+    Returns:
+      Dictionary of notification targets.
+    """
     target_data: Dict[str, Union[str, Tuple[str, Union[str, int]]]] = {}
     notification_targets = getattr(config, "notifications", None)
     if notification_targets is None and isinstance(config, dict):
@@ -340,7 +481,9 @@ def collect_valid_targets(
                         auth = ""
                     host_part = f"{smtp_server}:{smtp_port}"
                     params = []
-                    to_addrs_list = [to_addrs] if isinstance(to_addrs, str) else to_addrs
+                    to_addrs_list = (
+                        [to_addrs] if isinstance(to_addrs, str) else to_addrs
+                    )
                     params.append("to=" + quote(",".join(to_addrs_list)))
                     params.append("from=" + quote(from_addr))
                     query = "&".join(params)
@@ -359,34 +502,61 @@ def collect_valid_targets(
 
 
 def send_test_notification(
-    payload: Dict[str, Any],
-    logger: Any
+    payload: Dict[str, Any], logger: Any
 ) -> Dict[str, Union[str, bool, None]]:
-    """Send a simple test notification using Apprise."""
+    """Send a simple test notification using Apprise.
+
+    Args:
+      payload: Payload dict.
+      logger: Logger instance.
+
+    Returns:
+      Result dict with type, message, and result.
+    """
     module_name = payload.get("module", "Unknown")
     module_title = format_module_title(module_name)
     target_data = collect_valid_targets(payload, logger=logger, test=True)
     for target, data in target_data.items():
-        entry = {"type": target, "message": None, "result": False}
+        entry: Dict[str, Union[str, bool, None]] = {
+            "type": target,
+            "message": None,
+            "result": False,
+        }
         if not data or (isinstance(data, str) and data.startswith("Invalid")):
-            entry["message"] = data if isinstance(data, str) else f"No valid URL for '{target.upper()}'"
+            entry["message"] = (
+                data
+                if isinstance(data, str)
+                else f"No valid URL for '{target.upper()}'"
+            )
             entry["result"] = False
             entry["type"] = target
             return entry
         if target == "notifiarr":
             cfg = NotifiarrConfig(**data)
-            success, msg = send_notifiarr_notification(logger, None, cfg, module_title, None, test=True)
+            success, msg = send_notifiarr_notification(
+                logger, None, cfg, module_title, None, test=True
+            )
             return {"type": target, "message": msg, "result": success}
         apprise = Apprise()
         apprise.add(data)
         subject = f"{target} Notification Test"
         body = "This is a test notification."
-        success = send_apprise_notification(logger, f"{target} Notification Test", apprise, subject, body, "text")
-        entry["message"] = "Notification sent successfully." if success else extract_apprise_errors(apprise)
+        success = send_apprise_notification(
+            logger, f"{target} Notification Test", apprise, subject, body, "text"
+        )
+        entry["message"] = (
+            "Notification sent successfully."
+            if success
+            else extract_apprise_errors(apprise)
+        )
         entry["result"] = success
         entry["type"] = target
         return entry
-    return {"type": None, "message": "No valid notification targets found.", "result": False}
+    return {
+        "type": None,
+        "message": "No valid notification targets found.",
+        "result": False,
+    }
 
 
 SEND_HANDLERS: Dict[str, Callable[..., Any]] = {
@@ -395,13 +565,16 @@ SEND_HANDLERS: Dict[str, Callable[..., Any]] = {
     "email": send_email_notification,
 }
 
-def send_notification(
-    logger: Any,
-    module_name: str,
-    config: Any,
-    output: Any
-) -> None:
-    """Dispatch notifications to Discord, Notifiarr, and other Apprise targets."""
+
+def send_notification(logger: Any, module_name: str, config: Any, output: Any) -> None:
+    """Dispatch notifications to Discord, Notifiarr, and other Apprise targets.
+
+    Args:
+      logger: Logger instance.
+      module_name: Module name.
+      config: Configuration object.
+      output: Output data.
+    """
     target_data = collect_valid_targets(config, logger)
     module_title = format_module_title(module_name)
     for target, data in target_data.items():

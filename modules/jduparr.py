@@ -1,9 +1,6 @@
 from types import SimpleNamespace
 from util.logger import Logger
-from util.utility import (
-    create_table,
-    print_settings
-)
+from util.utility import create_table, print_settings
 from util.notification import send_notification
 
 import os
@@ -24,10 +21,10 @@ def print_output(output: list[dict], logger: Logger) -> None:
     """
     count = 0
     for item in output:
-        path = item.get('source_dir')
-        field_message = item.get('field_message')
-        files = item.get('output')
-        sub_count = item.get('sub_count')
+        path = item.get("source_dir")
+        field_message = item.get("field_message")
+        files = item.get("output")
+        sub_count = item.get("sub_count")
 
         logger.info(f"Findings for path: {path}")
         logger.info(f"\t{field_message}")
@@ -35,7 +32,9 @@ def print_output(output: list[dict], logger: Logger) -> None:
             count += 1
             logger.info(f"\t\t{i}")
         count += sub_count
-        logger.info(f"\tTotal items for '{os.path.basename(os.path.normpath(path))}': {sub_count}")
+        logger.info(
+            f"\tTotal items for '{os.path.basename(os.path.normpath(path))}': {sub_count}"
+        )
     logger.info(f"Total items relinked: {count}")
 
 
@@ -54,17 +53,16 @@ def main(config: SimpleNamespace) -> None:
     try:
         # If dry run, display a notice table
         if config.dry_run:
-            table = [
-                ["Dry Run"],
-                ["NO CHANGES WILL BE MADE"]
-            ]
+            table = [["Dry Run"], ["NO CHANGES WILL BE MADE"]]
             logger.info(create_table(table))
 
         output = []
 
         # Iterate over each source directory to find duplicates
         if not config.source_dirs:
-            logger.error(f"No source directories provided in config: {config.source_dirs}")
+            logger.error(
+                f"No source directories provided in config: {config.source_dirs}"
+            )
             return
         for path in config.source_dirs:
             if config.log_level.lower() == "debug":
@@ -75,23 +73,34 @@ def main(config: SimpleNamespace) -> None:
                 return
 
             # Run jdupes to find duplicate media files with specified extensions
-            result = subprocess.getoutput(f"jdupes -r -M -X onlyext:mp4,mkv,avi '{path}' 2>/dev/null")
+            result = subprocess.getoutput(
+                f"jdupes -r -M -X onlyext:mp4,mkv,avi '{path}' 2>/dev/null"
+            )
 
             # If not dry run and duplicates found, hardlink duplicates
             if not config.dry_run:
                 if "No duplicates found." not in result:
-                    subprocess.run(f"jdupes -r -L -X onlyext:mp4,mkv,avi '{path}' 2>/dev/null", shell=True)
+                    subprocess.run(
+                        f"jdupes -r -L -X onlyext:mp4,mkv,avi '{path}' 2>/dev/null",
+                        shell=True,
+                    )
 
             # Parse filenames from jdupes output
-            parsed_files = sorted(set(line.split("/")[-1] for line in result.splitlines() if "/" in line))
-            field_message = "✅ No unlinked files discovered..." if not parsed_files else "❌ Unlinked files discovered..."
+            parsed_files = sorted(
+                set(line.split("/")[-1] for line in result.splitlines() if "/" in line)
+            )
+            field_message = (
+                "✅ No unlinked files discovered..."
+                if not parsed_files
+                else "❌ Unlinked files discovered..."
+            )
             sub_count = len(parsed_files)
 
             output_data = {
                 "source_dir": path,
                 "field_message": field_message,
                 "output": parsed_files,
-                "sub_count": sub_count
+                "sub_count": sub_count,
             }
             output.append(output_data)
         if results:
@@ -100,12 +109,7 @@ def main(config: SimpleNamespace) -> None:
 
         # Print summarized output and send notification
         print_output(output, logger)
-        send_notification(
-            logger,
-            config.module_name,
-            config,
-            output
-        )
+        send_notification(logger, config.module_name, config, output)
 
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")

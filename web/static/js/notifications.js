@@ -189,7 +189,6 @@ window.loadNotifications = async function()
                     typeTestBtn.disabled = false;
                 }, 1000);
             });
-
             /**
              * Resets the visual state of a test notification button.
              */
@@ -389,7 +388,8 @@ document.querySelectorAll('.notification-toggle').forEach(toggle =>
     {
         const container = e.target.closest('.notification-module');
         const content = container && container.querySelector('.toggle-content');
-        if (content) {
+        if (content)
+        {
             if (e.target.checked)
             {
                 content.classList.add('open');
@@ -401,10 +401,11 @@ document.querySelectorAll('.notification-toggle').forEach(toggle =>
         }
     });
 });
-
 // Initialize notifications page on load
-document.addEventListener('DOMContentLoaded', () => {
-    if (typeof window.loadNotifications === 'function') {
+document.addEventListener('DOMContentLoaded', () =>
+{
+    if (typeof window.loadNotifications === 'function')
+    {
         window.loadNotifications();
     }
 });

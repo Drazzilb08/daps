@@ -46,14 +46,18 @@ window.loadSchedule = async function()
         field.className = "field";
         field.appendChild(label);
         field.appendChild(input);
-    // ===== Live (as-you-type) Validation =====
-    input.addEventListener('input', () => {
-        if (!input.value.trim() || window.DAPS.isValidSchedule(input.value.trim())) {
-            input.classList.remove('input-invalid');
-        } else {
-            input.classList.add('input-invalid');
-        }
-    });
+        // ===== Live (as-you-type) Validation =====
+        input.addEventListener('input', () =>
+        {
+            if (!input.value.trim() || window.DAPS.isValidSchedule(input.value.trim()))
+            {
+                input.classList.remove('input-invalid');
+            }
+            else
+            {
+                input.classList.add('input-invalid');
+            }
+        });
         const runBtn = document.createElement("button");
         runBtn.type = "button";
         runBtn.textContent = "Run Now";

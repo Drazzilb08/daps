@@ -4,67 +4,63 @@ from datetime import datetime
 from croniter import croniter
 from dateutil import tz
 
-"""
-Module to determine if the current time matches specified scheduling criteria for scripts.
-Supports multiple scheduling strategies including hourly, daily, weekly, monthly, range, and cron expressions.
-"""
+"""Module to determine if the current time matches specified scheduling criteria."""
 
 next_run_times: Dict[str, datetime] = {}
 
+
 def check_schedule(script_name: str, schedule: str, logger: Logger) -> bool:
-    """
-    Check if the current time matches the given schedule for a script.
+    """Check if the current time matches the given schedule for a script.
 
     Args:
-        script_name (str): The name of the script being checked.
-        schedule (str): The scheduling string defining when the script should run.
-        logger (Logger): Logger instance for logging debug and error messages.
+      script_name: The name of the script being checked.
+      schedule: The scheduling string defining when the script should run.
+      logger: Logger instance for logging debug and error messages.
 
     Returns:
-        bool: True if the current time matches the schedule, False otherwise.
+      True if the current time matches the schedule, False otherwise.
     """
     try:
         now: datetime = datetime.now()
         try:
             frequency, data = schedule.split("(")
         except ValueError:
-            logger.error(f"Invalid schedule format: {schedule} for script: {script_name}")
+            logger.error(
+                f"Invalid schedule format: {schedule} for script: {script_name}"
+            )
             return False
         data = data[:-1]
 
-        # Hourly: match if current minute equals scheduled minute
         if frequency == "hourly":
             return int(data) == now.minute
 
-        # Daily: check against one or more HH:MM entries
-        elif frequency == "daily":
+        if frequency == "daily":
             times = data.split("|")
             for time in times:
                 hour, minute = map(int, time.split(":"))
                 if now.hour == hour and now.minute == minute:
                     return True
 
-        # Weekly: check against weekday and time (e.g., monday@14:00)
-        elif frequency == "weekly":
+        if frequency == "weekly":
             days = [day.split("@")[0] for day in data.split("|")]
             times = [day.split("@")[1] for day in data.split("|")]
             current_day = now.strftime("%A").lower()
             for day, time in zip(days, times):
                 hour, minute = map(int, time.split(":"))
-                if (current_day == day or (current_day == "sunday" and day == "saturday")):
+                if current_day == day or (
+                    current_day == "sunday" and day == "saturday"
+                ):
                     if now.hour == hour and now.minute == minute:
                         return True
 
-        # Monthly: match if today is the correct day and time
-        elif frequency == "monthly":
+        if frequency == "monthly":
             day_str, time_str = data.split("@")
             day = int(day_str)
             hour, minute = map(int, time_str.split(":"))
             if now.day == day and now.hour == hour and now.minute == minute:
                 return True
 
-        # Range: check if current date is within specified MM/DD-MM/DD ranges
-        elif frequency == "range":
+        if frequency == "range":
             ranges = data.split("|")
             for start_end in ranges:
                 start, end = start_end.split("-")
@@ -75,8 +71,7 @@ def check_schedule(script_name: str, schedule: str, logger: Logger) -> bool:
                 if start_date <= now <= end_date:
                     return True
 
-        # Cron: use croniter to determine if current time matches cron schedule
-        elif frequency == "cron":
+        if frequency == "cron":
             local_tz = tz.tzlocal()
             local_date = datetime.now(local_tz)
             current_time = local_date.replace(second=0, microsecond=0)
@@ -91,9 +86,10 @@ def check_schedule(script_name: str, schedule: str, logger: Logger) -> bool:
                 next_run_times[script_name] = next_run
                 logger.debug(f"Next run for {script_name}: {next_run}\n")
                 return True
-            else:
-                logger.debug(f"Next run time for script {script_name}: {next_run} is in the future\n")
-                return False
+            logger.debug(
+                f"Next run time for script {script_name}: {next_run} is in the future\n"
+            )
+            return False
 
         return False
 

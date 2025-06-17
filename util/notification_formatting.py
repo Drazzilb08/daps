@@ -685,6 +685,7 @@ def format_for_email(config: Any, output: Any) -> Tuple[str, bool]:
         Returns:
           HTML string.
         """
+        
         sections: List[str] = []
         for inst_name, inst_data in o.items():
             server_name = inst_data.get("server_name", inst_name).capitalize()
@@ -742,58 +743,53 @@ def format_for_email(config: Any, output: Any) -> Tuple[str, bool]:
             sections.append("\n".join(section))
         return "".join(sections)
 
-    def fmt_unmatched_assets(output: Any) -> str:
-        """Format unmatched_assets output for email (HTML).
-
-        Args:
-          output: Output data for unmatched_assets.
-
-        Returns:
-          HTML string.
+    def fmt_unmatched_assets(output: dict) -> str:
         """
+        Format unmatched_assets output for email (HTML).
+        Args:
+            output: Output data for unmatched_assets.
+        Returns:
+            HTML string.
+        """
+        sections = []
         o = output.get("unmatched_dict", {})
-        sections: List[str] = []
-        asset_types = ["movies", "series", "collections"]
+        asset_types = ['movies', 'series', 'collections']
         for asset_type in asset_types:
-            data_set = o.get(asset_type, None)
+            data_set = o.get(asset_type, [])
             if data_set:
-                for location, data in data_set.items():
-                    location = location.rstrip("/")
-                    location_base = location.split("/")[-1]
-                    if data:
-                        suffix = " Library" if asset_type == "collections" else ""
-                        block: List[str] = [
-                            f"<div class='group'>",
-                            f"<h3>{location_base.title()}{suffix} ({asset_type.title()})</h3>",
-                            "<ul>",
-                        ]
-                        for item in data:
-                            if asset_type == "series":
-                                missing_seasons = item.get("missing_seasons", False)
-                                if missing_seasons:
-                                    block.append(
-                                        f"<li><strong>{item['title']} ({item['year']})</strong><ul>"
-                                    )
-                                    for season in item["missing_seasons"]:
-                                        block.append(
-                                            f"<li>Season: {season} <span style='color:#e74c3c;'>&larr; Missing</span></li>"
-                                        )
-                                    block.append("</ul></li>")
-                                else:
-                                    block.append(
-                                        f"<li><strong>{item['title']} ({item['year']})</strong><ul>"
-                                    )
-                                    for season in item.get("season_numbers", []):
-                                        block.append(f"<li>Season: {season}</li>")
-                                    block.append("</ul></li>")
-                            else:
-                                year = f" ({item['year']})" if item.get("year") else ""
-                                block.append(f"<li>{item['title']}{year}</li>")
-                        block.append("</ul></div>")
-                        sections.append("".join(block))
+                block = [
+                    f"<div class='group'>",
+                    f"<h3>Unmatched {asset_type.title()}</h3>",
+                    "<ul>",
+                ]
+                for item in data_set:
+                    title = item.get('title', 'Unknown')
+                    year = f" ({item['year']})" if item.get("year") else ""
+                    if asset_type == "series":
+                        missing_seasons = item.get("missing_seasons", [])
+                        missing_main = item.get("missing_main_poster", False)
+                        if missing_seasons and missing_main:
+                            block.append(f"<li><strong>{title}{year}</strong><ul>")
+                            for season in missing_seasons:
+                                block.append(f"<li>Season: {season} <span style='color:#e74c3c;'>&larr; Missing</span></li>")
+                            block.append("</ul></li>")
+                        elif missing_seasons:
+                            block.append(f"<li><strong>{title}{year}</strong><ul>")
+                            for season in missing_seasons:
+                                block.append(f"<li>Season: {season}</li>")
+                            block.append("</ul></li>")
+                        elif missing_main:
+                            block.append(f"<li><strong>{title}{year}</strong> <span style='color:#e74c3c;'>&larr; Main series poster missing</span></li>")
+                        else:
+                            block.append(f"<li><strong>{title}{year}</strong></li>")
+                    else:
+                        block.append(f"<li>{title}{year}</li>")
+                block.append("</ul></div>")
+                sections.append("".join(block))
+        # Summary block for unmatched_assets
         summary_data = output.get("summary")
         if summary_data:
-            summary_block: List[str] = [
+            summary_block = [
                 "<div class='summary'>",
                 "<h4>Statistics</h4>",
                 "<table>",
@@ -804,6 +800,10 @@ def format_for_email(config: Any, output: Any) -> Tuple[str, bool]:
                 elif len(row) == 4:
                     summary_block.append(
                         f"<tr><td>{row[0]}</td><td>{row[1]}</td><td>{row[2]}</td><td>{row[3]}</td></tr>"
+                    )
+                else:
+                    summary_block.append(
+                        "<tr>" + "".join(f"<td>{cell}</td>" for cell in row) + "</tr>"
                     )
             summary_block.append("</table></div>")
             sections.append("".join(summary_block))

@@ -291,8 +291,8 @@ def main(config: SimpleNamespace) -> None:
             unmatched_dict = match_media_to_assets(
                 media_dict, prefix_index, config.ignore_root_folders, logger
             )
+        output = print_output(unmatched_dict, media_dict, logger)
         if any(unmatched_dict.values()):
-            output = print_output(unmatched_dict, media_dict, logger)
             if config.notifications and output:
                 logger.info("Sending notification...")
                 send_notification(

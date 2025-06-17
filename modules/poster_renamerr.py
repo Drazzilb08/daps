@@ -87,7 +87,7 @@ def rename_files(
         destination_dir = config.destination_dir
 
     asset_types: List[str] = ["collections", "movies", "series"]
-    print("Renaming assets please wait...")
+    logger.info("Renaming assets please wait...")
     for asset_type in asset_types:
         output[asset_type] = []
         if matched_assets[asset_type]:
@@ -208,7 +208,7 @@ def rename_files(
                             }
                         )
         else:
-            print(f"No {asset_type} to rename")
+            logger.info(f"No {asset_type} to rename")
     return output, renamed_files
 
 

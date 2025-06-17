@@ -12,8 +12,8 @@ from util.construct import generate_title_variants
 
 def get_assets_files(
     source_dirs: str | List[str],
+    logger: Optional[Any],
     merge: bool = True,
-    logger: Optional[Any] = None,
 ) -> Tuple[Optional[List[Dict]], Optional[Dict[str, Any]]]:
     """Process one or more directories to extract and organize media assets.
 

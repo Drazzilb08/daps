@@ -68,7 +68,7 @@ def is_match(
     if strict_folder_match:
         match_criteria = [
             (
-                asset.get("folder") == media.get("folder"),
+                asset.get("media_folder") == media.get("folder"),
                 "Asset folder equals media folder",
             ),
         ]

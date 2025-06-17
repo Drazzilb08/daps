@@ -50,6 +50,7 @@ def create_collection(
     normalized_title: str,
     files: List[str],
     parent_folder: Optional[str] = None,
+    media_folder: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Construct a standardized dictionary representing a collection entry.
 
@@ -74,6 +75,7 @@ def create_collection(
         "normalized_alternate_titles": variants["normalized_alternate_titles"],
         "tmdb_id": tmdb_id,
         "folder": parent_folder,
+        "media_folder": media_folder,
     }
 
 
@@ -85,6 +87,7 @@ def create_series(
     normalized_title: str,
     files: List[str],
     parent_folder: Optional[str] = None,
+    media_folder: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Construct a standardized dictionary representing a series entry.
 
@@ -127,6 +130,7 @@ def create_series(
         "files": final_files,
         "season_numbers": season_numbers,
         "folder": parent_folder,
+        "media_folder": media_folder,
     }
 
 
@@ -138,6 +142,7 @@ def create_movie(
     normalized_title: str,
     files: List[str],
     parent_folder: Optional[str] = None,
+    media_folder: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Construct a standardized dictionary representing a movie entry.
 
@@ -162,4 +167,5 @@ def create_movie(
         "normalized_title": normalized_title,
         "files": [files[-1]],
         "folder": parent_folder,
+        "media_folder": media_folder,
     }

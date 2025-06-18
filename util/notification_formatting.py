@@ -685,7 +685,7 @@ def format_for_email(config: Any, output: Any) -> Tuple[str, bool]:
         Returns:
           HTML string.
         """
-        
+
         sections: List[str] = []
         for inst_name, inst_data in o.items():
             server_name = inst_data.get("server_name", inst_name).capitalize()
@@ -753,7 +753,7 @@ def format_for_email(config: Any, output: Any) -> Tuple[str, bool]:
         """
         sections = []
         o = output.get("unmatched_dict", {})
-        asset_types = ['movies', 'series', 'collections']
+        asset_types = ["movies", "series", "collections"]
         for asset_type in asset_types:
             data_set = o.get(asset_type, [])
             if data_set:
@@ -763,7 +763,7 @@ def format_for_email(config: Any, output: Any) -> Tuple[str, bool]:
                     "<ul>",
                 ]
                 for item in data_set:
-                    title = item.get('title', 'Unknown')
+                    title = item.get("title", "Unknown")
                     year = f" ({item['year']})" if item.get("year") else ""
                     if asset_type == "series":
                         missing_seasons = item.get("missing_seasons", [])
@@ -771,7 +771,9 @@ def format_for_email(config: Any, output: Any) -> Tuple[str, bool]:
                         if missing_seasons and missing_main:
                             block.append(f"<li><strong>{title}{year}</strong><ul>")
                             for season in missing_seasons:
-                                block.append(f"<li>Season: {season} <span style='color:#e74c3c;'>&larr; Missing</span></li>")
+                                block.append(
+                                    f"<li>Season: {season} <span style='color:#e74c3c;'>&larr; Missing</span></li>"
+                                )
                             block.append("</ul></li>")
                         elif missing_seasons:
                             block.append(f"<li><strong>{title}{year}</strong><ul>")
@@ -779,7 +781,9 @@ def format_for_email(config: Any, output: Any) -> Tuple[str, bool]:
                                 block.append(f"<li>Season: {season}</li>")
                             block.append("</ul></li>")
                         elif missing_main:
-                            block.append(f"<li><strong>{title}{year}</strong> <span style='color:#e74c3c;'>&larr; Main series poster missing</span></li>")
+                            block.append(
+                                f"<li><strong>{title}{year}</strong> <span style='color:#e74c3c;'>&larr; Main series poster missing</span></li>"
+                            )
                         else:
                             block.append(f"<li><strong>{title}{year}</strong></li>")
                     else:

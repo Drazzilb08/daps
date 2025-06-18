@@ -855,6 +855,7 @@ function renderModals()
                 }
                 window.updateGdriveList();
                 window.isDirty = true;
+                populateGDrivePresetsDropdown();
                 modal.style.display = 'none';
             };
         }

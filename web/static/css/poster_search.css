@@ -1,0 +1,349 @@
+.stats-title
+{
+    font-weight: 600;
+    font-size: 1.15em;
+    margin-bottom: 0.3em;
+    margin-left: 0.2em;
+}
+
+.stats-table
+{
+    width: 100%;
+    border-spacing: 0;
+    margin-bottom: 0.7em;
+}
+
+.stats-table th,
+.stats-table td
+{
+    padding: 0.4em 0.7em;
+    text-align: left;
+    font-size: 1.06em;
+}
+
+.stats-table th
+{
+    color: #91b6fa;
+    font-weight: 700;
+}
+
+.gdrive-name,
+.result-folder
+{
+    color: #79b4fa;
+    font-weight: 700;
+    font-size: 1.08em;
+    font-family: var(--font);
+}
+
+.stats-footer
+{
+    margin-top: 0.7em;
+    font-size: 1.03em;
+    font-weight: 500;
+    color: #c9d0d9;
+}
+
+.stat-bar-bg
+{
+    background: #1b2330;
+    border-radius: 6px;
+    width: 80px;
+    height: 11px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.5em;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-bar-inner
+{
+    background: linear-gradient(90deg, #4fc3f7, #1565c0);
+    height: 100%;
+    border-radius: 7px;
+}
+
+.stat-bar-percent
+{
+    color: #e5e5e5;
+    font-size: 0.97em;
+    margin-left: 0.2em;
+}
+
+.result-group
+{
+    margin-bottom: 1em;
+    /* Less space between groups */
+    padding: 0;
+    border: none;
+    /* Remove any outer border */
+}
+
+.result-folder
+{
+    color: #7cb0fa;
+    font-weight: 600;
+    font-size: 1em;
+    font-family: var(--font);
+    margin: 0 0 0.25em 0.1em;
+    padding-bottom: 0.1em;
+    /* Remove bottom margin for a tighter look */
+    letter-spacing: 0.01em;
+}
+
+.poster-list
+{
+    list-style: none;
+    margin: 0 0 0.25em 0;
+    /* Less space below each group */
+    padding: 0;
+    background: none;
+    /* Remove card background */
+    border-radius: 0;
+    border: none;
+}
+
+.poster-list li
+{
+    display: flex;
+    /* Make li a flex container */
+    align-items: center;
+    justify-content: space-between;
+    /* Pushes label left, copy-btn right */
+    padding: 0.07em 0.2em 0.07em 1em;
+    min-height: 1.7em;
+    border-bottom: 1px solid #232a33;
+    font-size: 1em;
+    line-height: 1.36;
+    background: none;
+    margin: 0;
+    border-radius: 0;
+    transition: background 0.15s;
+}
+
+.poster-list li:last-child
+{
+    border-bottom: none;
+}
+
+.highlight
+{
+    background: #ffeaa7;
+    color: #222;
+    font-weight: 500;
+    border-radius: 2px;
+    padding: 0 2px;
+}
+
+.poster-search-toggle-row
+{
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-bottom: 1.1em;
+    padding-left: 0.1em;
+}
+
+.poster-search-label
+{
+    font-size: 1em;
+    font-weight: 500;
+    color: #aecbfa;
+    margin-right: 0.2em;
+    min-width: 75px;
+    text-align: right;
+    line-height: 1.25;
+}
+
+.poster-search-scope-label
+{
+    font-size: 1em;
+    font-weight: 500;
+    color: #aecbfa;
+    margin-left: 0.2em;
+    min-width: 115px;
+    text-align: left;
+    line-height: 1.25;
+}
+
+.poster-search-toggle-row .toggle-switch
+{
+    margin: 0 2px;
+    /* Keep sizing from .toggle-switch in common.css */
+}
+
+#img-preview-modal
+{
+    display: none;
+    position: fixed;
+    z-index: 12000;
+    inset: 0;
+    justify-content: center;
+    align-items: center;
+}
+
+#img-preview-modal.show
+{
+    display: flex;
+}
+
+.img-modal-bg
+{
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+}
+
+.img-modal-content
+{
+    position: relative;
+    z-index: 1;
+    background: #232323;
+    border-radius: 10px;
+    padding: 1.5em 1.5em 1em 1.5em;
+    box-shadow: 0 8px 32px #000a;
+    max-width: 80vw;
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.img-modal-close
+{
+    position: absolute;
+    right: 0.9em;
+    top: 0.6em;
+    font-size: 2em;
+    background: none;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.img-modal-img
+{
+    max-width: 68vw;
+    max-height: 62vh;
+    margin-bottom: 1em;
+    border-radius: 6px;
+    box-shadow: 0 2px 12px #1117;
+    background: #222;
+}
+
+.img-modal-caption
+{
+    color: #eee;
+    font-size: 1.02em;
+    word-break: break-all;
+    text-align: center;
+    margin-top: 0.5em;
+    opacity: 0.8;
+}
+
+.poster-list li.img-preview-link:hover
+{
+    background: #222c;
+    color: #ffe06f;
+}
+
+.poster-file-label
+{
+    flex: 1 1 auto;
+    /* Take remaining space */
+    cursor: pointer;
+    min-width: 0;
+    word-break: break-all;
+    font-size: 1em;
+    font-weight: 500;
+}
+
+.copy-btn
+{
+    flex: 0 0 auto;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1em;
+    margin-left: 0.35em;
+    color: #9ed2ff;
+    opacity: 0.73;
+    vertical-align: middle;
+    transition: color 0.2s, opacity 0.2s;
+    display: flex;
+    align-items: center;
+    padding: 0.1em 0.25em;
+    border-radius: 4px;
+}
+
+.copy-btn:active
+{
+    background: #252b34;
+}
+
+.copy-btn span
+{
+    vertical-align: middle;
+    line-height: 1.2;
+}
+
+.copy-btn:hover
+{
+    color: #ffe06f;
+    opacity: 1;
+}
+
+.copy-btn-copied
+{
+    color: #b4f7bc;
+    display: none;
+    align-items: center;
+}
+
+.copy-btn-copied svg
+{
+    stroke: #b4f7bc;
+}
+
+.copy-btn-default,
+.copy-btn-copied
+{
+    display: inline-flex;
+    align-items: center;
+}
+
+/* === Ensure Poster Search Uses --font Variable === */
+.poster-list,
+.poster-list li,
+.poster-file-label,
+.copy-btn,
+.copy-btn span,
+.copy-btn svg
+{
+    font-family: var(--font) !important;
+    font-weight: var(--font-weight-base) !important;
+    font-size: 1.1rem !important;
+    line-height: var(--line-height) !important;
+    letter-spacing: normal !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.hover-preview {
+    pointer-events: none;
+    position: fixed;
+    border: 1px solid #444;
+    background: #222;
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 4px;
+    z-index: 13000;
+    display: none;
+    box-shadow: 0 2px 14px #0009;
+}

@@ -1,0 +1,21 @@
+<div class="container-iframe">
+    <div class="content">
+        <div style="margin-bottom:1em;">
+            <button id="toggle-stats-btn" class="btn" style="margin-bottom: 0.8em;">📊 Show Statistics</button>
+        </div>
+        <div id="poster-stats-card" class="card" style="display:none; margin-bottom: 2em;">
+            <div id="poster-gdrive-stats"></div>
+            <div id="poster-assets-stats" style="margin-top:2em;"></div>
+        </div>
+        <div class="poster-search-toggle-row">
+            <span class="poster-search-label">Search in:</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="search-scope-toggle" />
+                <span class="slider"></span>
+            </label>
+            <span id="search-scope-label" class="poster-search-scope-label">GDrive Locations</span>
+        </div>
+        <input type="text" id="poster-search-input" placeholder="🔍 Search posters..." style="width: 100%; padding: 0.75rem; font-size: 1rem; margin-bottom: 1.5rem; border-radius: 6px; border: 1px solid var(--shadow); background: var(--input-bg); color: var(--fg);" autocomplete="off" spellcheck="false" />
+        <div id="poster-search-results" style="margin-top:1.5em;"></div>
+    </div>
+</div>

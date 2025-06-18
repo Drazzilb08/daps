@@ -220,13 +220,35 @@ window.humanize = function(key)
 // ===== Dirty State Tracking (continued) =====
 document.addEventListener('change', function(e)
 {
-    const target = e.target;
-    if (target.id === 'schedule-search' || target.id === 'notifications-search')
-    {
-        return;
+    // Only mark dirty if we are on a config/editable fragment
+    const editableFragments = [
+        '/fragments/settings',
+        '/fragments/instances',
+        '/fragments/schedule',
+        '/fragments/notifications'
+    ];
+    const viewFrame = document.getElementById('viewFrame');
+    const currentUrl = viewFrame && viewFrame.dataset && viewFrame.dataset.currentUrl
+        ? viewFrame.dataset.currentUrl
+        : (window.currentFragmentUrl || '');
+
+    // Try to detect the fragment URL if available
+    let isEditable = false;
+    if (currentUrl) {
+        isEditable = editableFragments.some(frag => currentUrl.startsWith(frag));
+    } else if (viewFrame && viewFrame.innerHTML.includes('settings-section')) {
+        // Fallback: crude check if settings-section present
+        isEditable = true;
     }
-    if (!document.body.classList.contains('logs-open') && target.matches('input, select, textarea'))
-    {
+
+    const target = e.target;
+    if (
+        isEditable &&
+        target &&
+        target.matches('input, select, textarea') &&
+        target.id !== 'schedule-search' &&
+        target.id !== 'notifications-search'
+    ) {
         window.markDirty();
     }
 });
@@ -314,6 +336,8 @@ window.DAPS.navigateTo = async function(link)
         const query = idx !== -1 ? link.href.substring(idx) : '';
         url = '/fragments/settings' + query;
     }
+    if (viewFrame) viewFrame.dataset.currentUrl = url;
+    window.currentFragmentUrl = url;
     try
     {
         const response = await fetch(url);
@@ -403,6 +427,9 @@ window.DAPS.navigateTo = async function(link)
                 {
                     await window.loadLogs();
                 }
+            }
+            if (url.includes('/fragments/poster_search') && typeof window.initPosterSearch === 'function') {
+                await window.initPosterSearch();
             }
         }, 200);
     }

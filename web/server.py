@@ -19,7 +19,12 @@ from fastapi import (
     Request,
 )
 from fastapi.requests import Request as FastAPIRequest
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import (
+    HTMLResponse,
+    JSONResponse,
+    PlainTextResponse,
+    FileResponse,
+)
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -486,6 +491,66 @@ async def read_log(
     with open(log_path, "r", encoding="utf-8", errors="ignore") as f:
         content = f.read()
     return content
+
+
+@app.post("/api/poster-search-stats", response_model=None)
+async def poster_search_stats(request: Request, logger: Any = Depends(get_logger)):
+    """Returns stats and file list for a given poster location directory."""
+    try:
+        data = await request.json()
+        location = data.get("location")
+        if not location or not os.path.isdir(location):
+            return JSONResponse(status_code=400, content={"error": "Invalid location"})
+        total_size = 0
+        poster_files = []
+        for root, dirs, files in os.walk(location):
+            for f in files:
+                fp = os.path.join(root, f)
+                try:
+                    stat = os.stat(fp)
+                    total_size += stat.st_size
+                    rel_path = os.path.relpath(fp, location)
+                    if rel_path.startswith("tmp" + os.sep) or rel_path.startswith(
+                        "tmp/"
+                    ):
+                        continue
+                    poster_files.append(rel_path)
+                except Exception:
+                    logger.error(f"SKIPPED FILE: {fp} | ERROR: {e}")
+                    continue
+        return {
+            "file_count": len(poster_files),
+            "size_bytes": total_size,
+            "files": sorted(poster_files),
+        }
+    except Exception as e:
+        logger.error(f"poster-search-stats error: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+
+@app.get("/api/preview-poster")
+async def preview_poster(location: str, path: str, logger: Any = Depends(get_logger)):
+    """
+    Returns the requested poster image file as a response if it exists within location.
+    """
+    try:
+        base_dir = Path(location).resolve()
+        file_path = (base_dir / path).resolve()
+        # Security: prevent path traversal
+        if not str(file_path).startswith(str(base_dir)):
+            return JSONResponse(status_code=403, content={"error": "Invalid path"})
+        if not file_path.exists() or not file_path.is_file():
+            return JSONResponse(status_code=404, content={"error": "File not found"})
+        # Basic file type check (optional: just for images)
+        if file_path.suffix.lower() not in [".jpg", ".jpeg", ".png", ".webp", ".bmp"]:
+            return JSONResponse(
+                status_code=415, content={"error": "Unsupported file type"}
+            )
+        logger.debug(f"[WEB] Serving image preview: {file_path}")
+        return FileResponse(str(file_path))
+    except Exception as e:
+        logger.error(f"[WEB] Preview poster error: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 # ========== Web Server Startup ==========

@@ -637,10 +637,14 @@ function renderModals()
         if (!presetSelect) return;
         // Always fetch/await presets from remote
         const entries = await window.gdrivePresets();
-        // Clear and fill dropdown
+        // Get IDs in use, except the one being edited (if editing)
+        const editingIdx = typeof window.gdriveEditingIdx === 'number' ? window.gdriveEditingIdx : null;
+        const idsInUse = window.gdriveSyncData
+            .filter((entry, i) => i !== editingIdx)
+            .map(entry => String(entry.id));
         presetSelect.innerHTML = '<option value="">— No Preset —</option>' +
             entries.map(drive =>
-                `<option value="${drive.id}" data-name="${drive.name}">${drive.name}</option>`
+                `<option value="${drive.id}" data-name="${drive.name}"${idsInUse.includes(String(drive.id)) ? ' disabled style="color:#aaa;"' : ''}>${drive.name}${idsInUse.includes(String(drive.id)) ? ' (Already Added)' : ''}</option>`
             ).join('');
         // Re-init Select2 for better UX
         setTimeout(function()
@@ -751,6 +755,7 @@ function renderModals()
     {
         const moduleName = 'sync_gdrive';
         const isEdit = typeof editIdx === 'number';
+        window.gdriveEditingIdx = isEdit ? editIdx : null;
         let modal = document.getElementById('gdrive-sync-modal');
         if (!modal)
         {
@@ -777,6 +782,7 @@ function renderModals()
             modal.querySelector('#gdrive-location').addEventListener('click', () => directoryPickerModal(modal.querySelector('#gdrive-location')));
             modal.querySelector('#gdrive-cancel-btn').onclick = () =>
             {
+                window.gdriveEditingIdx = null;
                 modal.style.display = 'none';
             };
             setTimeout(populateGDrivePresetsDropdown, 0);

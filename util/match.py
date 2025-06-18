@@ -69,7 +69,11 @@ def is_match(
         match_criteria = [
             (
                 asset.get("media_folder") == media.get("folder"),
-                "Asset folder equals media folder",
+                "Asset folder equals media folder (media_folder)",
+            ),
+            (
+                asset.get("folder") == media.get("folder"),
+                "Asset folder equals media folder (folder)",
             ),
         ]
         for condition, reason in match_criteria:

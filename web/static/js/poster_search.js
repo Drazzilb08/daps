@@ -132,35 +132,110 @@ function copyToClipboard(btn, text)
         });
 }
 
+// Sorting state for stats tables
+// (No longer used for GDrive, only for assets if needed)
+const statsSortState = {};
+
+// Given an array and sort mode, sort in-place
+function sortGdriveStats(arr, sortMode, priorityMap) {
+    switch (sortMode) {
+        case 'priority-desc': // highest priority last
+            arr.sort((a, b) => (priorityMap[b.location] ?? -1) - (priorityMap[a.location] ?? -1));
+            break;
+        case 'name-asc':
+            arr.sort((a, b) => String(a.name).localeCompare(b.name));
+            break;
+        case 'name-desc':
+            arr.sort((a, b) => String(b.name).localeCompare(a.name));
+            break;
+        case 'file_count-asc':
+            arr.sort((a, b) => (a.file_count || 0) - (b.file_count || 0));
+            break;
+        case 'file_count-desc':
+            arr.sort((a, b) => (b.file_count || 0) - (a.file_count || 0));
+            break;
+        case 'size_bytes-asc':
+            arr.sort((a, b) => (a.size_bytes || 0) - (b.size_bytes || 0));
+            break;
+        case 'size_bytes-desc':
+            arr.sort((a, b) => (b.size_bytes || 0) - (a.size_bytes || 0));
+            break;
+        default:
+            break;
+    }
+}
+
 function renderStatsTable(statsArr, totals, title, isAssets)
 {
     if (!statsArr.length) return '';
-    let rows = statsArr.map(s =>
-    {
-        let percent = totals.files ? (s.file_count / totals.files * 100) : 0;
-        let folderCol = `<span class="gdrive-name">${s.name}</span>`;
-        return `<tr>
-        <td>${folderCol}</td>
-        <td>${s.file_count || 0}</td>
-        <td>${formatBytes(s.size_bytes || 0)}</td>
-        <td>
-            <div class="stat-bar-bg">
-                <div class="stat-bar-inner" style="width:${percent}%;"></div>
-            </div>
-            <span class="stat-bar-percent">${percent.toFixed(1)}%</span>
-        </td>
-    </tr>`;
-    }).join('\n');
+    // Define columns and accessors
+    const columns = [
+        { key: 'name', label: 'Folder', isNumeric: false },
+        { key: 'file_count', label: 'Files', isNumeric: true },
+        { key: 'size_bytes', label: 'Size', isNumeric: true },
+        { key: 'percent', label: '% of Total', isNumeric: true }
+    ];
+    // Compute % for all rows
+    let arr = statsArr.map(s => ({
+        ...s,
+        percent: totals.files ? (s.file_count / totals.files * 100) : 0
+    }));
+
+    // For GDrive Locations, sorting is handled externally
+    // For other tables, keep previous sort logic if needed
+    if (title !== "GDrive Locations") {
+        // Get current sort state or default
+        let sortKey = statsSortState[title]?.key || 'file_count';
+        let sortAsc = statsSortState[title]?.asc ?? false;
+        arr = arr.slice().sort((a, b) => {
+            if (sortKey === 'percent') {
+                return sortAsc ? a.percent - b.percent : b.percent - a.percent;
+            }
+            if (columns.find(c => c.key === sortKey)?.isNumeric) {
+                return sortAsc ? a[sortKey] - b[sortKey] : b[sortKey] - a[sortKey];
+            }
+            // string compare
+            return sortAsc ? String(a[sortKey]).localeCompare(String(b[sortKey])) : String(b[sortKey]).localeCompare(String(a[sortKey]));
+        });
+    }
+
+    // Remove clickable headers for GDrive Locations
+    let header = columns.map(col => `<th>${col.label}</th>`).join('');
+
+    let rows = arr.map(s => {
+    let badge = '';
+    if (s.isCustom) {
+        badge = ' <span style="font-size:0.88em;color:#7cb0fa;">(Custom)</span>';
+    }
+    let folderCol = '';
+    if (s.notInSource) {
+        folderCol = `
+            <span class="gdrive-tooltip-wrapper">
+                <span class="gdrive-name gdrive-tooltip-red" tabindex="0" style="border-bottom:none;">${s.name}</span>
+                <span class="gdrive-tooltip-content">
+                    This GDrive is <b>not present</b> in Poster Renamerr's Source Directories</span>
+                </span>
+            </span>${badge}`;
+    } else {
+        folderCol = `<span class="gdrive-name">${s.name}</span>${badge}`;
+    }
+    return `<tr>
+    <td>${folderCol}</td>
+    <td>${s.file_count || 0}</td>
+    <td>${formatBytes(s.size_bytes || 0)}</td>
+    <td>
+        <div class="stat-bar-bg">
+            <div class="stat-bar-inner" style="width:${s.percent}%;"></div>
+        </div>
+        <span class="stat-bar-percent">${s.percent.toFixed(1)}%</span>
+    </td>
+</tr>`;
+}).join('\n');
     return `
     <div class="stats-title">${title}</div>
     <table class="stats-table">
         <thead>
-            <tr>
-                <th>Folder</th>
-                <th>Files</th>
-                <th>Size</th>
-                <th>% of Total</th>
-            </tr>
+            <tr>${header}</tr>
         </thead>
         <tbody>${rows}</tbody>
     </table>
@@ -259,6 +334,7 @@ function renderResults(term)
 }
 window.initPosterSearch = async function()
 {
+    document.getElementById('poster-stats-spinner').style.display = '';
     document.getElementById('poster-search-results').innerHTML = '';
     document.getElementById('poster-gdrive-stats').innerHTML = '';
     document.getElementById('poster-assets-stats').innerHTML = '';
@@ -284,6 +360,28 @@ window.initPosterSearch = async function()
         name: g.name,
         location: g.location
     }));
+    const gdriveLocationSet = new Set(gdriveLocations.map(g => g.location));
+    const sourceDirs = config.poster_renamerr.source_dirs || [];
+    const customDirs = sourceDirs.filter(dir => !gdriveLocationSet.has(dir));
+    const sourceDirSet = new Set(sourceDirs);
+
+    // --- Fetch stats for custom dirs
+    let customStatsArr = [];
+    if (customDirs.length) {
+        let statsArr = await Promise.all(customDirs.map(async dir => {
+            let stats = await fetchStats(dir);
+            if (stats && !stats.error && typeof stats.file_count === 'number') {
+                return {
+                    name: dir.split('/').pop(),
+                    location: dir,
+                    ...stats,
+                    isCustom: true
+                };
+            }
+            return null;
+        }));
+        customStatsArr = statsArr.filter(Boolean);
+    }
     assetsDir = config.poster_renamerr.destination_dir;
     // Toggle switch UI
     const toggle = document.getElementById('search-scope-toggle');
@@ -304,26 +402,34 @@ window.initPosterSearch = async function()
             assetsFiles.map(f => `<div>${f}</div>`).join('') + '</div>';
     }
     // Fetch gdrive stats
-    let gdriveStatRaw = await Promise.all(gdriveLocations.map(async l =>
-    {
+    // --- Fetch gdrive stats (not custom)
+    let gdriveStatRaw = await Promise.all(gdriveLocations.map(async l => {
         let stats = await fetchStats(l.location);
-        return stats && !stats.error && typeof stats.file_count === 'number' ?
-            {
-                ...stats,
-                name: l.name
-            } :
-            null;
+        return stats && !stats.error && typeof stats.file_count === 'number'
+            ? { 
+            ...stats, 
+            name: l.name, 
+            location: l.location, 
+            isCustom: false,
+            notInSource: !sourceDirSet.has(l.location) // <--- PATCH
+        }
+        : null;
     }));
     gdriveStats = gdriveStatRaw.filter(Boolean);
-    gdriveTotals.files = gdriveStats.reduce((sum, s) => sum + s.file_count, 0);
-    gdriveTotals.size = gdriveStats.reduce((sum, s) => sum + s.size_bytes, 0);
+
+    // --- Merge customStatsArr into gdriveStats
+    let mergedGdriveStats = [...gdriveStats, ...customStatsArr];
+
+    // --- Totals (include customs)
+    gdriveTotals.files = mergedGdriveStats.reduce((sum, s) => sum + s.file_count, 0);
+    gdriveTotals.size = mergedGdriveStats.reduce((sum, s) => sum + s.size_bytes, 0);
+
+    // --- Include all files for searching
     gdriveFiles = [];
-    gdriveStats.forEach(s =>
-    {
-        (s.files || []).forEach(f => gdriveFiles.push(
-        {
+    mergedGdriveStats.forEach(s => {
+        (s.files || []).forEach(f => gdriveFiles.push({
             file: f,
-            name: s.name
+            name: s.name + (s.isCustom ? ' (Custom)' : '')
         }));
     });
     // Fetch assets stats
@@ -342,18 +448,46 @@ window.initPosterSearch = async function()
             size: 0
         };
     }
+
+    // Build a priority map for all locations (highest = largest index)
+    let priorityMap = {};
+    (sourceDirs || []).forEach((dir, idx) => { priorityMap[dir] = idx; });
+
+    // Initial sort
+    window._gdriveSortMode = document.getElementById('gdrive-sort-select')?.value || 'priority-desc';
+    sortGdriveStats(mergedGdriveStats, window._gdriveSortMode, priorityMap);
+
+    // Set globals for table sorting (and for re-sorting)
+    window._latestGDriveStatsArr = mergedGdriveStats;
+    window._latestGDriveTotals = gdriveTotals;
+    window._latestAssetsStatsArr = assetsStats && !assetsStats.error && typeof assetsStats.file_count === 'number'
+        ? [{ name: "Assets Dir", ...assetsStats }] : [];
+    window._latestAssetsTotals = assetsTotals;
+
     // Render stats tables (hidden by default)
-    document.getElementById('poster-gdrive-stats').innerHTML = renderStatsTable(gdriveStats, gdriveTotals, "GDrive Locations", false);
+    document.getElementById('poster-gdrive-stats').innerHTML = renderStatsTable(
+        window._latestGDriveStatsArr, window._latestGDriveTotals, "GDrive Locations", false
+    );
     document.getElementById('poster-assets-stats').innerHTML = renderStatsTable(
-        assetsStats && !assetsStats.error && typeof assetsStats.file_count === 'number' ? [
-        {
-            name: "Assets Dir",
-            ...assetsStats
-        }] : [],
-        assetsTotals,
+        window._latestAssetsStatsArr,
+        window._latestAssetsTotals,
         "Assets Directory",
         true
     );
+
+    // Wire up the dropdown for GDrive sort
+    const sortSelect = document.getElementById('gdrive-sort-select');
+    if (sortSelect) {
+        sortSelect.value = window._gdriveSortMode;
+        sortSelect.onchange = function() {
+            window._gdriveSortMode = this.value;
+            sortGdriveStats(window._latestGDriveStatsArr, window._gdriveSortMode, priorityMap);
+            document.getElementById('poster-gdrive-stats').innerHTML = renderStatsTable(
+                window._latestGDriveStatsArr, window._latestGDriveTotals, "GDrive Locations", false
+            );
+        };
+    }
+
     // Toggle stats card
     let statsShown = false;
     const card = document.getElementById('poster-stats-card');
@@ -376,6 +510,23 @@ window.initPosterSearch = async function()
     };
     // Expose copyToClipboard globally for onclick
     window.copyToClipboard = copyToClipboard;
+    document.getElementById('poster-stats-spinner').style.display = 'none';
+};
+
+// Table sorting handler (only for assets table now, not GDrive)
+window.sortStatsTable = function(title, key)
+{
+    // Only allow sorting for non-GDrive tables
+    if (title === "GDrive Locations") return;
+    const isNumeric = ['file_count','size_bytes','percent'].includes(key);
+    let prev = statsSortState[title];
+    let asc = prev && prev.key === key ? !prev.asc : !isNumeric;
+    statsSortState[title] = { key, asc };
+    // Re-render the table
+    if (title === "Assets Directory" && window._latestAssetsStatsArr && window._latestAssetsTotals) {
+        document.getElementById('poster-assets-stats').innerHTML =
+            renderStatsTable(window._latestAssetsStatsArr, window._latestAssetsTotals, "Assets Directory", true);
+    }
 };
 // === Hover Preview Logic ===
 let hoverPreview;
@@ -443,11 +594,11 @@ document.addEventListener('mouseover', (e) =>
 });
 document.addEventListener('mousemove', (e) =>
 {
-    if (hoverPreview.style.display === 'block')
-    {
-        hoverPreview.style.left = (e.pageX + 12) + 'px';
-        hoverPreview.style.top = (e.pageY + 12) + 'px';
-    }
+    if (hoverPreview && hoverPreview.style.display === 'block')
+{
+    hoverPreview.style.left = (e.pageX + 12) + 'px';
+    hoverPreview.style.top = (e.pageY + 12) + 'px';
+}
 });
 document.addEventListener('mouseout', (e) =>
 {

@@ -334,3 +334,70 @@
     position: relative;
     top: 2px;
 }
+
+/* Simple spinner loader */
+.loader {
+  display: inline-block;
+  width: 38px;
+  height: 38px;
+  border: 4px solid #e0e6ed;
+  border-top: 4px solid #79b4fa;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg);}
+  100% { transform: rotate(360deg);}
+}
+
+.gdrive-tooltip-wrapper {
+    position: relative;
+    display: inline-block;
+}
+.gdrive-tooltip-red {
+    color: #ff5a5a !important;
+    cursor: help;
+    /* border-bottom: 1px dotted #ff5a5a; */
+}
+.gdrive-tooltip-content {
+    visibility: hidden;
+    opacity: 0;
+    min-width: 290px;
+    background: #21212a;
+    color: #ffd4d4;
+    text-align: left;
+    border-radius: 6px;
+    padding: 0.8em 1em;
+    position: absolute;
+    z-index: 1001;
+    left: 0;
+    right: auto;
+    transform: none;
+    bottom: 110%;
+    box-shadow: 0 2px 12px #111c;
+    font-size: 0.98em;
+    line-height: 1.45;
+    transition: opacity 0.18s;
+    pointer-events: none;
+    font-family: var(--font);
+    white-space: pre-line;
+}
+
+.gdrive-tooltip-wrapper:hover .gdrive-tooltip-content,
+.gdrive-tooltip-wrapper:focus .gdrive-tooltip-content {
+    visibility: visible;
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.gdrive-tooltip-content::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 28px;
+    margin-left: -6px;
+    border-width: 7px;
+    border-style: solid;
+    border-color: #21212a transparent transparent transparent;
+}

@@ -5,22 +5,80 @@
     margin-left: 0.2em;
 }
 
+/* --- Compact, Subtle Stats Table Styling --- */
 .stats-table {
     width: 100%;
+    border-collapse: collapse;
     border-spacing: 0;
     margin-bottom: 0.7em;
+    background: #24272d;
+    border-radius: 9px;
+    overflow: visible; 
+    box-shadow: 0 1px 6px #0002;
+    font-size: 1.01em;
+    table-layout: fixed;
 }
 
 .stats-table th,
 .stats-table td {
-    padding: 0.4em 0.7em;
+    padding: 0.41em 0.55em;
     text-align: left;
-    font-size: 1.06em;
+    font-size: 0.99em;
+    font-family: var(--font);
+    vertical-align: middle;
 }
 
 .stats-table th {
-    color: var(--link-color);
-    font-weight: var(--font-weight-heading);
+    color: #74b9fa;
+    font-weight: 600;
+    border-bottom: 1px solid #232a33;
+    background: #23272d;
+    letter-spacing: 0.01em;
+}
+
+.stats-table tr {
+    border-bottom: 1px solid #22272e;
+    background: #24272d;
+}
+
+.stats-table tr:last-child {
+    border-bottom: none;
+}
+
+.stats-table td {
+    color: var(--text-color);
+    vertical-align: middle;
+    position: relative;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.stats-table td:first-child {
+    min-width: 145px;
+    max-width: 210px;
+    width: 30%;
+}
+
+.stats-table td:nth-child(2),
+.stats-table th:nth-child(2) {
+    width: 16%;
+    text-align: right;
+}
+
+.stats-table td:nth-child(3),
+.stats-table th:nth-child(3) {
+    width: 22%;
+    text-align: right;
+}
+
+.stats-table td:nth-child(4),
+.stats-table th:nth-child(4) {
+    width: 32%;
+    text-align: left;
+}
+
+.stats-table tr:nth-child(even) {
+    background: #23252a;
 }
 
 .gdrive-name,
@@ -370,7 +428,7 @@
     border-radius: 6px;
     padding: 0.8em 1em;
     position: absolute;
-    z-index: 1001;
+    z-index: 13001;
     left: 0;
     right: auto;
     transform: none;

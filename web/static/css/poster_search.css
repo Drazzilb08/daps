@@ -1,53 +1,46 @@
-.stats-title
-{
-    font-weight: 600;
+.stats-title {
+    font-weight: var(--font-weight-heading);
     font-size: 1.15em;
     margin-bottom: 0.3em;
     margin-left: 0.2em;
 }
 
-.stats-table
-{
+.stats-table {
     width: 100%;
     border-spacing: 0;
     margin-bottom: 0.7em;
 }
 
 .stats-table th,
-.stats-table td
-{
+.stats-table td {
     padding: 0.4em 0.7em;
     text-align: left;
     font-size: 1.06em;
 }
 
-.stats-table th
-{
-    color: #91b6fa;
-    font-weight: 700;
+.stats-table th {
+    color: var(--link-color);
+    font-weight: var(--font-weight-heading);
 }
 
 .gdrive-name,
-.result-folder
-{
-    color: #79b4fa;
-    font-weight: 700;
+.result-folder {
+    color: #79b4fa; /* Not defined, leave as-is or define in variables if reused elsewhere */
+    font-weight: var(--font-weight-heading);
     font-size: 1.08em;
     font-family: var(--font);
 }
 
-.stats-footer
-{
+.stats-footer {
     margin-top: 0.7em;
     font-size: 1.03em;
     font-weight: 500;
-    color: #c9d0d9;
+    color: #c9d0d9; /* Use a variable if you want a theme color */
 }
 
-.stat-bar-bg
-{
+.stat-bar-bg {
     background: #1b2330;
-    border-radius: 6px;
+    border-radius: var(--border-radius-default);
     width: 80px;
     height: 11px;
     display: inline-block;
@@ -57,78 +50,65 @@
     overflow: hidden;
 }
 
-.stat-bar-inner
-{
+.stat-bar-inner {
     background: linear-gradient(90deg, #4fc3f7, #1565c0);
     height: 100%;
-    border-radius: 7px;
+    border-radius: var(--border-radius-default);
 }
 
-.stat-bar-percent
-{
-    color: #e5e5e5;
+.stat-bar-percent {
+    color: var(--text-color);
     font-size: 0.97em;
     margin-left: 0.2em;
 }
 
-.result-group
-{
+.result-group {
     margin-bottom: 1em;
-    /* Less space between groups */
     padding: 0;
     border: none;
-    /* Remove any outer border */
 }
 
-.result-folder
-{
-    color: #7cb0fa;
-    font-weight: 600;
+.result-folder {
+    color: #7cb0fa; /* Not in vars, leave as-is or add to root if common */
+    font-weight: var(--font-weight-base);
     font-size: 1em;
     font-family: var(--font);
     margin: 0 0 0.25em 0.1em;
     padding-bottom: 0.1em;
-    /* Remove bottom margin for a tighter look */
     letter-spacing: 0.01em;
 }
 
-.poster-list
-{
+.poster-list {
     list-style: none;
     margin: 0 0 0.25em 0;
-    /* Less space below each group */
     padding: 0;
     background: none;
-    /* Remove card background */
     border-radius: 0;
     border: none;
 }
 
-.poster-list li
-{
+.poster-list li {
     display: flex;
-    /* Make li a flex container */
     align-items: center;
     justify-content: space-between;
-    /* Pushes label left, copy-btn right */
     padding: 0.07em 0.2em 0.07em 1em;
     min-height: 1.7em;
     border-bottom: 1px solid #232a33;
-    font-size: 1em;
-    line-height: 1.36;
+    font-size: var(--font-size-base);
+    line-height: var(--line-height);
     background: none;
     margin: 0;
     border-radius: 0;
     transition: background 0.15s;
+    font-family: var(--font);
+    font-weight: var(--font-weight-base);
 }
 
-.poster-list li:last-child
-{
+.poster-list li:last-child {
     border-bottom: none;
 }
 
-.highlight
-{
+.highlight {
     background: #ffeaa7;
     color: #222;
     font-weight: 500;
@@ -136,8 +116,7 @@
     padding: 0 2px;
 }
 
-.poster-search-toggle-row
-{
+.poster-search-toggle-row {
     display: flex;
     align-items: center;
     gap: 0.5em;
@@ -145,36 +124,31 @@
     padding-left: 0.1em;
 }
 
-.poster-search-label
-{
-    font-size: 1em;
+.poster-search-label,
+.poster-search-scope-label {
+    font-size: var(--font-size-base);
     font-weight: 500;
     color: #aecbfa;
+    line-height: 1.25;
+}
+
+.poster-search-label {
     margin-right: 0.2em;
     min-width: 75px;
     text-align: right;
-    line-height: 1.25;
 }
 
-.poster-search-scope-label
-{
-    font-size: 1em;
-    font-weight: 500;
-    color: #aecbfa;
+.poster-search-scope-label {
     margin-left: 0.2em;
     min-width: 115px;
     text-align: left;
-    line-height: 1.25;
 }
 
-.poster-search-toggle-row .toggle-switch
-{
+.poster-search-toggle-row .toggle-switch {
     margin: 0 2px;
-    /* Keep sizing from .toggle-switch in common.css */
 }
 
-#img-preview-modal
-{
+#img-preview-modal {
     display: none;
     position: fixed;
     z-index: 12000;
@@ -183,29 +157,26 @@
     align-items: center;
 }
 
-#img-preview-modal.show
-{
+#img-preview-modal.show {
     display: flex;
 }
 
-.img-modal-bg
-{
+.img-modal-bg {
     position: absolute;
     left: 0;
     top: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.85);
+    background: var(--overlay-bg);
 }
 
-.img-modal-content
-{
+.img-modal-content {
     position: relative;
     z-index: 1;
-    background: #232323;
-    border-radius: 10px;
+    background: var(--card-bg);
+    border-radius: var(--border-radius);
     padding: 1.5em 1.5em 1em 1.5em;
-    box-shadow: 0 8px 32px #000a;
+    box-shadow: 0 8px 32px var(--shadow);
     max-width: 80vw;
     max-height: 80vh;
     display: flex;
@@ -214,32 +185,29 @@
     justify-content: center;
 }
 
-.img-modal-close
-{
+.img-modal-close {
     position: absolute;
     right: 0.9em;
     top: 0.6em;
     font-size: 2em;
     background: none;
-    color: #fff;
+    color: var(--text-color);
     border: none;
     cursor: pointer;
     z-index: 2;
 }
 
-.img-modal-img
-{
+.img-modal-img {
     max-width: 68vw;
     max-height: 62vh;
     margin-bottom: 1em;
-    border-radius: 6px;
+    border-radius: var(--border-radius-default);
     box-shadow: 0 2px 12px #1117;
-    background: #222;
+    background: var(--card-bg);
 }
 
-.img-modal-caption
-{
-    color: #eee;
+.img-modal-caption {
+    color: var(--text-color);
     font-size: 1.02em;
     word-break: break-all;
     text-align: center;
@@ -247,88 +215,80 @@
     opacity: 0.8;
 }
 
-.poster-list li.img-preview-link:hover
-{
+.poster-list li.img-preview-link:hover {
     background: #222c;
     color: #ffe06f;
 }
 
-.poster-file-label
-{
+.poster-file-label {
     flex: 1 1 auto;
-    /* Take remaining space */
     cursor: pointer;
     min-width: 0;
     word-break: break-all;
-    font-size: 1em;
+    font-size: var(--font-size-base);
     font-weight: 500;
 }
 
-.copy-btn
-{
+.copy-btn {
     flex: 0 0 auto;
     background: none;
     border: none;
     cursor: pointer;
-    font-size: 1em;
+    font-size: var(--font-size-base);
     margin-left: 0.35em;
-    color: #9ed2ff;
+    color: var(--link-color);
     opacity: 0.73;
     vertical-align: middle;
     transition: color 0.2s, opacity 0.2s;
     display: flex;
     align-items: center;
     padding: 0.1em 0.25em;
-    border-radius: 4px;
+    border-radius: var(--border-radius-default);
+    font-family: var(--font);
+    font-weight: var(--font-weight-base);
 }
 
-.copy-btn:active
-{
-    background: #252b34;
+.copy-btn:active {
+    background: var(--input-bg);
 }
 
-.copy-btn span
-{
+.copy-btn span {
     vertical-align: middle;
     line-height: 1.2;
+    font-family: var(--font);
 }
 
-.copy-btn:hover
-{
+.copy-btn:hover {
     color: #ffe06f;
     opacity: 1;
 }
 
-.copy-btn-copied
-{
-    color: #b4f7bc;
+.copy-btn-copied {
+    color: var(--success);
     display: none;
     align-items: center;
 }
 
-.copy-btn-copied svg
-{
-    stroke: #b4f7bc;
+.copy-btn-copied svg {
+    stroke: var(--success);
 }
 
 .copy-btn-default,
-.copy-btn-copied
-{
+.copy-btn-copied {
     display: inline-flex;
     align-items: center;
 }
 
-/* === Ensure Poster Search Uses --font Variable === */
+/* Consistent font and style usage for all poster elements */
 .poster-list,
 .poster-list li,
 .poster-file-label,
 .copy-btn,
 .copy-btn span,
-.copy-btn svg
-{
+.copy-btn svg {
     font-family: var(--font) !important;
     font-weight: var(--font-weight-base) !important;
-    font-size: 1.1rem !important;
+    font-size: var(--font-size-base) !important;
     line-height: var(--line-height) !important;
     letter-spacing: normal !important;
     -webkit-font-smoothing: antialiased;
@@ -339,11 +299,38 @@
     pointer-events: none;
     position: fixed;
     border: 1px solid #444;
-    background: #222;
+    background: var(--card-bg);
     max-width: 200px;
     max-height: 200px;
-    border-radius: 4px;
+    border-radius: var(--border-radius-default);
     z-index: 13000;
     display: none;
-    box-shadow: 0 2px 14px #0009;
+    box-shadow: 0 2px 14px var(--shadow);
+}
+
+/* Copy Button Material Icons Clean Patch */
+.copy-btn,
+.copy-btn span,
+.copy-btn .material-icons {
+    font-family: var(--font) !important;
+    font-weight: var(--font-weight-base) !important;
+    font-size: var(--font-size-base) !important;
+    line-height: var(--line-height) !important;
+    letter-spacing: normal !important;
+    color: inherit !important;
+    vertical-align: middle !important;
+    background: none !important;
+    box-shadow: none !important;
+}
+
+.copy-btn .material-icons {
+    font-family: 'Material Icons', var(--font) !important;
+    font-size: 1.18em !important;
+    font-style: normal;
+    font-weight: normal;
+    line-height: 1;
+    margin-right: 2px;
+    opacity: 0.85;
+    position: relative;
+    top: 2px;
 }

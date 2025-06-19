@@ -499,6 +499,7 @@ async def poster_search_stats(request: Request, logger: Any = Depends(get_logger
     try:
         data = await request.json()
         location = data.get("location")
+        logger.debug(f"[WEB] Serving POST /api/poster-search-stats for location: {location}")
         if not location or not os.path.isdir(location):
             return JSONResponse(status_code=400, content={"error": "Invalid location"})
         total_size = 0

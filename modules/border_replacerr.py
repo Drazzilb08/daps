@@ -9,8 +9,7 @@ import sys
 import pathlib
 
 from util.logger import Logger
-from util.utility import print_settings, create_table, print_json, progress
-from util.scheduler import check_schedule
+from util.utility import print_settings, create_table, print_json, progress, get_log_dir
 from util.assets import get_assets_files
 from datetime import datetime, timedelta
 
@@ -521,16 +520,7 @@ def process_files(
         logger.info("Please check the input directory and try again.")
         logger.info("Exiting...")
         return
-
-    # Get log_dir
-    config_dir = os.getenv("CONFIG_DIR", "/config")
-    if os.environ.get("DOCKER_ENV"):
-        log_dir = f"{config_dir}/logs/{config.module_name}"
-    else:
-        log_dir = os.path.join(
-            pathlib.Path(__file__).parents[1], "logs", config.module_name
-        )
-
+    log_dir = get_log_dir(config.module_name)
     last_run = load_last_run(log_dir)
     if config.log_level.lower() == "debug":
         print_settings(logger, config)
@@ -684,5 +674,7 @@ def main(config: SimpleNamespace) -> None:
         logger.error(f"\n\nAn error occurred:\n", exc_info=True)
         logger.error(f"\n\n")
     finally:
+        log_dir = get_log_dir(config.module_name)
+        save_last_run(log_dir)
         # Log outro message with run time
         logger.log_outro()

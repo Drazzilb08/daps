@@ -383,6 +383,7 @@ def redact_apis(obj: Any) -> None:
         for item in obj:
             redact_apis(item)
 
+
 def get_log_dir(module_name: str) -> str:
     """Return the log directory for a given module."""
     log_base = os.getenv("LOG_DIR")

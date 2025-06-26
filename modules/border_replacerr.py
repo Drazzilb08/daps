@@ -520,6 +520,7 @@ def process_files(
         logger.info("Please check the input directory and try again.")
         logger.info("Exiting...")
         return
+
     log_dir = get_log_dir(config.module_name)
     last_run = load_last_run(log_dir)
     if config.log_level.lower() == "debug":

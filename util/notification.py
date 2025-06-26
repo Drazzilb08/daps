@@ -1,6 +1,8 @@
 import json
+import logging
 import os
 import random
+import traceback
 from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from urllib.parse import quote
@@ -8,6 +10,60 @@ from urllib.parse import quote
 import requests
 from apprise import Apprise
 from ratelimit import limits, sleep_and_retry
+
+
+class ErrorNotifyHandler(logging.Handler):
+    """Custom logging handler to send errors to Discord/Notifiarr via notifications."""
+
+    def __init__(self, config, module_name="main", logger=None):
+        super().__init__(level=logging.ERROR)
+        self.config = config
+        self.module_name = module_name
+        self.logger = logger  # for logging send status, not for the error itself
+
+    def emit(self, record):
+        try:
+            msg = record.getMessage()
+            tb = None
+            error_type_msg = ""
+            if record.exc_info:
+                tb_lines = traceback.format_exception(*record.exc_info)
+                tb = "".join(tb_lines)
+                if tb_lines:
+                    error_type_msg = tb_lines[-1].strip()
+            elif record.stack_info:
+                tb = record.stack_info
+            else:
+                tb = None
+
+            if error_type_msg:
+                error_msg = f"{msg}\n{error_type_msg}"
+            else:
+                error_msg = msg
+
+            output = {
+                "error_message": error_msg,
+                "traceback": tb,
+                "color": "FF0000",
+                "source_module": getattr(record, "module", self.module_name),
+            }
+
+            notify_mod = "error_notify"
+            config = self.config
+            if hasattr(config, "module_name"):
+                old_mod = config.module_name
+                config.module_name = notify_mod
+                send_notification(self.logger or config, notify_mod, config, output)
+                config.module_name = old_mod
+            else:
+                temp_cfg = dict(config)
+                temp_cfg["module_name"] = notify_mod
+                send_notification(self.logger or config, notify_mod, temp_cfg, output)
+        except Exception as e:
+            if self.logger:
+                self.logger.error(
+                    f"[ErrorNotifyHandler] Failed to send error notification: {e}"
+                )
 
 
 @dataclass
@@ -66,6 +122,7 @@ def build_discord_payload(
     data: Any,
     timestamp: str,
     dry_run: bool = False,
+    color: Union[int, str] = 0x00FF00,
 ) -> List[Dict[str, Any]]:
     """Build Discord payload(s) for embeds/content.
 
@@ -74,10 +131,14 @@ def build_discord_payload(
       data: Data for the payload.
       timestamp: ISO timestamp string.
       dry_run: If True, marks as dry run.
+      color: Embed color as int (0xRRGGBB) or hex string ("FF0000" or "#FF0000").
 
     Returns:
       List of Discord payload dicts.
     """
+    # Handle string color input
+    if isinstance(color, str):
+        color = int(color.lstrip("#"), 16)
     payloads: List[Dict[str, Any]] = []
     if isinstance(data, dict):
         data = [
@@ -95,7 +156,7 @@ def build_discord_payload(
                 {
                     "title": f"{module_title} Notification{part.get('part', '')}",
                     "description": None,
-                    "color": 0x00FF00,
+                    "color": color,
                     "timestamp": timestamp,
                     "fields": part.get("fields", []),
                     "footer": {"text": f"Powered by: Drazzilb | {get_random_joke()}"},
@@ -246,6 +307,12 @@ def send_notifiarr_notification(
                 "description": " ",
                 "content": content,
             }
+        color = output.get("color", "00FF00")
+        if isinstance(color, int):
+            color = f"{color:06X}"
+        elif isinstance(color, str):
+            color = color.lstrip("#")
+        pt_payload["discord"]["color"] = color
         send_and_log_response(logger, "Notifiarr", hook, pt_payload)
     return None
 
@@ -266,14 +333,16 @@ def send_discord_notification(
       module_title: Module title.
       output: Output data.
     """
-    from util.notification_formatting import format_for_discord
     from datetime import datetime
+
+    from util.notification_formatting import format_for_discord
 
     data, _ = format_for_discord(config, output)
     timestamp = datetime.utcnow().isoformat()
     dry_run = getattr(config, "dry_run", False)
+    color = output.get("color", 0x00FF00)
     for payload in build_discord_payload(
-        module_title, data, timestamp, dry_run=dry_run
+        module_title, data, timestamp, dry_run=dry_run, color=color
     ):
         send_and_log_response(logger, "Discord", hook, payload)
 

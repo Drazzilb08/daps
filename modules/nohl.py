@@ -1,26 +1,26 @@
 import os
 import re
 import sys
+from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
-from util.logger import Logger
 from util.arrpy import create_arr_client
+from util.constants import (
+    episode_regex,
+    season_regex,
+    year_regex,
+)
+from util.logger import Logger
 from util.notification import send_notification
 from util.utility import (
-    normalize_titles,
     create_table,
+    normalize_titles,
     print_json,
     print_settings,
     progress,
 )
-from util.constants import (
-    season_regex,
-    episode_regex,
-    year_regex,
-)
 
 VIDEO_EXTS = (".mkv", ".mp4")
 
-from typing import TYPE_CHECKING, List, Dict, Any, Optional, Tuple
 
 if TYPE_CHECKING:
     from util.arrpy import BaseARRClient
@@ -538,7 +538,7 @@ def handle_messages(output: Dict[str, Any], logger: Logger) -> None:
             for search_item in search_media:
                 if instance_data["instance_type"] == "radarr":
                     logger.info(f"{search_item['title']} ({search_item['year']})")
-                    logger.info(f"\tDeleted and searched.\n")
+                    logger.info("\tDeleted and searched.\n")
                 else:
                     logger.info(f"{search_item['title']} ({search_item['year']})")
                     if search_item.get("seasons", None):
@@ -562,9 +562,9 @@ def handle_messages(output: Dict[str, Any], logger: Logger) -> None:
                 monitored = filtered_item.get("monitored", None)
                 logger.debug(f"{filtered_item['title']} ({filtered_item['year']})")
                 if monitored is False:
-                    logger.debug(f"\tSkipping, not monitored.")
+                    logger.debug("\tSkipping, not monitored.")
                 elif filtered_item.get("exclude_media", None):
-                    logger.debug(f"\tSkipping, excluded.")
+                    logger.debug("\tSkipping, excluded.")
                 elif filtered_item.get("quality_profile", None):
                     logger.debug(
                         f"\tSkipping, quality profile: {filtered_item['quality_profile']}"
@@ -603,7 +603,7 @@ def handle_messages(output: Dict[str, Any], logger: Logger) -> None:
             )
         )
     else:
-        logger.info(f"\n\n\t\t✅ Congratulations, there is nothing to report.\n\n")
+        logger.info("\n\n\t\t✅ Congratulations, there is nothing to report.\n\n")
 
 
 def main(config) -> None:
@@ -803,8 +803,8 @@ def main(config) -> None:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()
     except Exception:
-        logger.error(f"\n\nAn error occurred:\n", exc_info=True)
-        logger.error(f"\n\n")
+        logger.error("\n\nAn error occurred:\n", exc_info=True)
+        logger.error("\n\n")
     finally:
         # Log outro message with run time
         logger.log_outro()

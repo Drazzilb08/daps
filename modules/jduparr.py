@@ -1,14 +1,11 @@
-from types import SimpleNamespace
-from util.logger import Logger
-from util.utility import create_table, print_settings
-from util.notification import send_notification
-
 import os
-import sys
 import subprocess
-import time
-import json
-import shlex
+import sys
+from types import SimpleNamespace
+
+from util.logger import Logger
+from util.notification import send_notification
+from util.utility import create_table, print_settings
 
 
 def print_output(output: list[dict], logger: Logger) -> None:

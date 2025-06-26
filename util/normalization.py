@@ -1,16 +1,16 @@
+import html
 import os
 import re
-import html
 
 from unidecode import unidecode
 
 from util.constants import (
     common_words,
-    words_to_remove,
+    id_content_regex,
     illegal_chars_regex,
     remove_special_chars,
+    words_to_remove,
     year_regex,
-    id_content_regex,
 )
 
 

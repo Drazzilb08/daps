@@ -1,5 +1,5 @@
 import re
-from typing import List, Set, Pattern
+from typing import List, Pattern, Set
 
 # Matches suffixes like " - Season X" or "_SeasonX" (where X is 1–4 digits), as well as "- Specials" or "_Specials" (case-insensitive)
 season_pattern: Pattern = re.compile(

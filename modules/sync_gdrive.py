@@ -1,12 +1,13 @@
-from types import SimpleNamespace
-from typing import List, Optional
-import shlex
 import json
 import os
 import re
-import sys
+import shlex
 import subprocess
+import sys
 from shutil import which
+from types import SimpleNamespace
+from typing import List, Optional
+
 from util.logger import Logger
 from util.utility import print_settings
 
@@ -156,8 +157,8 @@ def main(config: SimpleNamespace, logger: Optional[Logger] = None) -> None:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()
     except Exception:
-        logger.error(f"\n\nAn error occurred:\n", exc_info=True)
-        logger.error(f"\n\n")
+        logger.error("\n\nAn error occurred:\n", exc_info=True)
+        logger.error("\n\n")
     finally:
         # Log outro message with run time
         logger.log_outro()

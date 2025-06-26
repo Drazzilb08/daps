@@ -160,7 +160,7 @@ def format_for_discord(
 
         for line in lines:
             buffer_lines.append(line)
-            total_len = sum(len(l) for l in buffer_lines) + len(buffer_lines) - 1
+            total_len = sum(len(line) for line in buffer_lines) + len(buffer_lines) - 1
             if total_len > CHUNK_LIMIT:
                 overflow_line = buffer_lines.pop()
                 flush_chunk(buffer_lines, is_last=False)
@@ -406,6 +406,28 @@ def format_for_discord(
             results.extend(chunk_flat_content(header, content, footer))
         return results
 
+    def fmt_version_check(o: dict) -> list:
+        # o = {"local_version": "...", "remote_version": "..."}
+        fields = [
+            {"name": "Update Available", "value": "🚨 A new update is available!"},
+            {"name": "Your Version", "value": o.get("local_version", "")},
+            {"name": "Latest Version", "value": o.get("remote_version", "")},
+        ]
+        return fields
+
+    def fmt_error_notify(o: dict) -> list:
+        fields = [
+            {"name": "Error", "value": o.get("error_message", "")},
+            {"name": "Module", "value": o.get("source_module", "")},
+        ]
+        tb = o.get("traceback")
+        if tb:
+            # Truncate traceback if too long for Discord embed field
+            if len(tb) > 1800:
+                tb = tb[:1800] + "\n...truncated..."
+            fields.append({"name": "Traceback", "value": f"```{tb}```"})
+        return fields
+
     registry: Dict[str, Dict[str, Any]] = {
         "poster_renamerr": {"formatter": fmt_poster_renamerr, "type": "embedded"},
         "renameinatorr": {"formatter": fmt_renameinatorr, "type": "embedded"},
@@ -414,6 +436,8 @@ def format_for_discord(
         "upgradinatorr": {"formatter": fmt_upgradinatorr, "type": "embedded"},
         "labelarr": {"formatter": fmt_labelarr, "type": "embedded"},
         "jduparr": {"formatter": fmt_jduparr, "type": "flat"},
+        "version_check": {"formatter": fmt_version_check, "type": "embedded"},
+        "error_notify": {"formatter": fmt_error_notify, "type": "embedded"},
     }
     formatter_entry = registry.get(config.module_name)
     if not formatter_entry:
@@ -558,7 +582,7 @@ def format_for_email(config: Any, output: Any) -> Tuple[str, bool]:
             server_name = inst_data.get("server_name", inst).capitalize()
             title_header = f"{server_name} Rename List"
             section: List[str] = [
-                f"<div class='instance'>",
+                "<div class='instance'>",
                 f"<h3>{title_header}</h3>",
             ]
             renamed_count = 0
@@ -570,7 +594,7 @@ def format_for_email(config: Any, output: Any) -> Tuple[str, bool]:
                 folder_renamed = item.get("new_path_name")
                 if not file_info and not folder_renamed:
                     continue
-                section.append(f"<div class='media'>")
+                section.append("<div class='media'>")
                 section.append(
                     f"<div class='title'><strong>{title}{year}</strong></div>"
                 )
@@ -590,7 +614,7 @@ def format_for_email(config: Any, output: Any) -> Tuple[str, bool]:
                 section.append("</div>")
             if renamed_count or folder_renamed_count:
                 summary = [
-                    f"<div class='summary'>",
+                    "<div class='summary'>",
                     f"<h4>{server_name} Rename Summary</h4>",
                     f"<p>Total Items: {len(inst_data['data'])}</p>",
                 ]
@@ -629,7 +653,7 @@ def format_for_email(config: Any, output: Any) -> Tuple[str, bool]:
         sections: List[str] = []
         for instance, entries in grouped.items():
             block: List[str] = [
-                f"<div class='instance'>",
+                "<div class='instance'>",
                 f"<h3>{instance}</h3>",
                 "<ul>",
             ]
@@ -652,7 +676,7 @@ def format_for_email(config: Any, output: Any) -> Tuple[str, bool]:
         for inst, data in o.items():
             server_name = data.get("server_name", inst).capitalize()
             section: List[str] = [
-                f"<div class='instance'>",
+                "<div class='instance'>",
                 f"<h3>{server_name}</h3>",
             ]
             for item in data.get("data", []):
@@ -661,7 +685,7 @@ def format_for_email(config: Any, output: Any) -> Tuple[str, bool]:
                 downloads = item.get("download", {})
                 if not downloads:
                     continue
-                section.append(f"<div class='media'>")
+                section.append("<div class='media'>")
                 section.append(
                     f"<div class='title'><strong>{title}{year}</strong></div>"
                 )
@@ -758,7 +782,7 @@ def format_for_email(config: Any, output: Any) -> Tuple[str, bool]:
             data_set = o.get(asset_type, [])
             if data_set:
                 block = [
-                    f"<div class='group'>",
+                    "<div class='group'>",
                     f"<h3>Unmatched {asset_type.title()}</h3>",
                     "<ul>",
                 ]

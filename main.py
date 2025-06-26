@@ -1,19 +1,21 @@
-import time
+import argparse
 import importlib
-import sys
-import os
-from prettytable import PrettyTable
 import json
-from watchdog.observers import Observer
+import multiprocessing
+import os
+import sys
+import time
+
+from prettytable import PrettyTable
 from watchdog.events import FileSystemEventHandler
+from watchdog.observers import Observer
+
 from util.config import Config, manage_config
 from util.logger import Logger
+from util.notification import ErrorNotifyHandler
 from util.scheduler import check_schedule
-from util.utility import (
-    create_bar,
-)
-import multiprocessing
-from util.version import get_version
+from util.utility import create_bar
+from util.version import get_version, start_version_check
 
 list_of_python_modules = [
     "border_replacerr",
@@ -139,8 +141,6 @@ def print_schedule(logger, modules_schedules):
 
 
 def main():
-    import argparse
-
     # CLI argument parsing
     parser = argparse.ArgumentParser(description="Run DAPS modules or start web UI.")
     parser.add_argument(
@@ -156,7 +156,6 @@ def main():
     args = parser.parse_args()
 
     # Set console logging: modules only when explicitly requested via CLI,
-    # main always logs (handled in logger logic).
     if args.modules:
         os.environ["LOG_TO_CONSOLE"] = "true"
     else:
@@ -178,6 +177,13 @@ def main():
         print(f"Error loading main config for logger: {e}")
         sys.exit(1)
     logger = Logger(main_config.log_level, "main")
+
+    main_logger = logger._logger if hasattr(logger, "_logger") else logger
+    error_notify_handler = ErrorNotifyHandler(
+        main_config, module_name="main", logger=main_logger
+    )
+    main_logger.addHandler(error_notify_handler)
+
     manage_config(logger)
     # Web mode: no modules passed
     initial_run = True
@@ -207,24 +213,21 @@ def main():
         print(f"❌ Schedule is not a dictionary: {current_schedule}")
         sys.exit(1)
 
-    import threading
     import atexit
+    import threading
 
     schedule_changed = threading.Event()
     observer = start_schedule_watcher(on_schedule_change)
     atexit.register(observer.stop)
     # Give the observer up to 2 seconds to finish
     atexit.register(lambda: observer.join(timeout=2))
-
     try:
         from web.server import start_web_server
 
+        if main_config.update_notifications:
+            start_version_check(main_config, logger, interval=3600)
         start_web_server(logger)
-    except Exception as e:
-        logger.error(f"Error starting web server: {e}", exc_info=True)
-        sys.exit(1)
 
-    try:
         manager = ModuleManager(logger)
         # Expose the ModuleManager to the web server for status/cancel of scheduled tasks
         import web.server
@@ -264,7 +267,7 @@ def main():
         sys.exit()
 
     except Exception:
-        logger.error(f"\n\nAn error occurred:\n", exc_info=True)
+        logger.error("\n\nAn error occurred:\n", exc_info=True)
 
 
 if __name__ == "__main__":

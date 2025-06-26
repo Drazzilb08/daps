@@ -1,8 +1,8 @@
 import os
 import re
 import time
-from typing import Any, Dict, List, Optional, Tuple
 from types import SimpleNamespace
+from typing import Any, Dict, List, Optional, Tuple
 
 from util.constants import folder_year_regex, season_pattern
 from util.index import search_matches

@@ -25,6 +25,7 @@ export const NOTIFICATION_LIST = [
     'labelarr',
     'health_checkarr',
     'jduparr',
+    'main'
 ];
 
 export const NOTIFICATION_DEFINITIONS = {
@@ -126,6 +127,7 @@ export const NOTIFICATION_DEFINITIONS = {
 
 export const NOTIFICATION_TYPES_PER_MODULE = {
     unmatched_assets: ['email'],
+    main: ['discord', 'notifiarr'],
 };
 
 export function renderHelp(sectionName) {

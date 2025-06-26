@@ -1,19 +1,16 @@
-import os
 import html
-import time
 import logging
+import os
+import time
 from typing import Any, Dict, List, Optional, Union
-from unidecode import unidecode
-from util.normalization import normalize_titles
-from util.extract import extract_year
-from util.constants import year_regex, windows_path_regex
 
-try:
-    import requests
-except ImportError as e:
-    print(f"ImportError: {e}")
-    print("Please install the required modules with 'pip install -r requirements.txt'")
-    exit(1)
+import requests
+from unidecode import unidecode
+
+from util.constants import windows_path_regex, year_regex
+from util.extract import extract_year
+from util.normalization import normalize_titles
+
 logging.getLogger("requests").setLevel(logging.WARNING)
 
 

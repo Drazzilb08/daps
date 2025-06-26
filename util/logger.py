@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Optional
 
 from util.utility import create_bar
+from util.version import get_version
 
 
 class Logger:
@@ -65,8 +66,6 @@ class Logger:
 
         if not hasattr(logging, log_level.lower().upper()):
             self._logger.warning(f"Invalid log level '{log_level}', defaulting to INFO")
-
-        from util.version import get_version
 
         version = get_version()
         self.start_time = datetime.now()

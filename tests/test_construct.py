@@ -1,9 +1,17 @@
-import pytest
-import sys
 import os
+import sys
+
+import pytest
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from util.construct import create_collection, create_series, create_movie, generate_title_variants
+from util.construct import (
+    create_collection,
+    create_movie,
+    create_series,
+    generate_title_variants,
+)
+
 
 def test_create_collection():
     result = create_collection("Hulu (US) Shows", "hulushows", ["poster.jpg"])

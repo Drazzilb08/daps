@@ -1,16 +1,15 @@
-import os
-import sys
 import copy
+import sys
 from types import SimpleNamespace
 from typing import Dict, List, Union
 
 from util.arrpy import create_arr_client
-from util.logger import Logger
-from util.notification import send_notification
-from util.utility import print_json, create_table, get_plex_data, print_settings
-from util.index import create_new_empty_index
-from util.match import match_media_to_assets
 from util.assets import get_assets_files
+from util.index import create_new_empty_index
+from util.logger import Logger
+from util.match import match_media_to_assets
+from util.notification import send_notification
+from util.utility import create_table, get_plex_data, print_json, print_settings
 
 try:
     from plexapi.server import PlexServer

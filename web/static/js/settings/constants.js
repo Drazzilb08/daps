@@ -13,6 +13,7 @@ export const BOOL_FIELDS = [
     'silent',
     'disable_batching',
     'replace_border',
+    'update_notifications',
 ];
 
 export const TEXT_FIELDS = [

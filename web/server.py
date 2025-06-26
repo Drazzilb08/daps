@@ -20,10 +20,10 @@ from fastapi import (
 )
 from fastapi.requests import Request as FastAPIRequest
 from fastapi.responses import (
+    FileResponse,
     HTMLResponse,
     JSONResponse,
     PlainTextResponse,
-    FileResponse,
 )
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -295,7 +295,7 @@ async def run_module(
     data: RunRequest, background: BackgroundTasks, logger: Any = Depends(get_logger)
 ) -> Any:
     """Starts a module process in the background if not already running."""
-    from main import run_module, list_of_python_modules
+    from main import list_of_python_modules, run_module
 
     module = data.module
     logger.debug("[WEB] Serving POST /api/run for module: %s", module)
@@ -403,15 +403,15 @@ async def test_instance(
         logger.info(f"[WEB] Testing: {name.upper()} - URL: {test_url}")
         resp = requests.get(test_url, headers=headers, timeout=5)
         if resp.ok:
-            logger.info(f"[WEB] Connection test: OK")
+            logger.info("[WEB] Connection test: OK")
             return {"ok": True, "status": resp.status_code}
         if resp.status_code == 401:
             logger.error(
-                f"[WEB] Connection test code 401: Unauthorized - Invalid credentials"
+                "[WEB] Connection test code 401: Unauthorized - Invalid credentials"
             )
             return JSONResponse(status_code=401, content={"error": "Unauthorized"})
         if resp.status_code == 404:
-            logger.error(f"[WEB] Connection test code 404: Not Found - Invalid URL")
+            logger.error("[WEB] Connection test code 404: Not Found - Invalid URL")
             return JSONResponse(status_code=404, content={"error": "Not Found"})
         logger.error(f"[WEB] Connection test code {resp.status_code}: {resp.text}")
         return JSONResponse(status_code=resp.status_code, content={"error": resp.text})
@@ -513,7 +513,7 @@ async def poster_search_stats(request: Request, logger: Any = Depends(get_logger
                     ):
                         continue
                     poster_files.append(rel_path)
-                except Exception:
+                except Exception as e:
                     logger.error(f"SKIPPED FILE: {fp} | ERROR: {e}")
                     continue
         return {

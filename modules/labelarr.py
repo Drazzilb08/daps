@@ -1,17 +1,17 @@
 import sys
-from typing import List, Dict, Optional
-from types import SimpleNamespace
 from collections import defaultdict
+from types import SimpleNamespace
+from typing import Dict, List, Optional
 
+from util.arrpy import BaseARRClient, create_arr_client
 from util.logger import Logger
-from util.arrpy import create_arr_client, BaseARRClient
-from util.notification import send_notification
 from util.normalization import normalize_titles
-from util.utility import progress, create_table, print_settings
+from util.notification import send_notification
+from util.utility import create_table, print_settings, progress
 
 try:
-    from plexapi.server import PlexServer
     from plexapi.exceptions import BadRequest
+    from plexapi.server import PlexServer
 except ImportError as e:
     print(f"ImportError: {e}")
     print("Please install the required modules with 'pip install -r requirements.txt'")
@@ -332,8 +332,8 @@ def main(config: SimpleNamespace) -> None:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()
     except Exception:
-        logger.error(f"\n\nAn error occurred:\n", exc_info=True)
-        logger.error(f"\n\n")
+        logger.error("\n\nAn error occurred:\n", exc_info=True)
+        logger.error("\n\n")
     finally:
         # Log outro message with run time
         logger.log_outro()

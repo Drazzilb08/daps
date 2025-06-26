@@ -1,12 +1,15 @@
-import pytest
 import os
 import sys
+
+import pytest
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from util.utility import (
-    create_table,
     create_bar,
+    create_table,
     redact_sensitive_info,
 )
+
 # ─── Table and Bar Formatting ──────────────────────────────────
 
 def test_create_table():

@@ -1,8 +1,11 @@
-import pytest
-import sys
 import os
+import sys
+
+import pytest
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from util.match import is_match, compare_strings
+from util.match import compare_strings, is_match
+
 
 def test_compare_strings_loose_match():
     assert compare_strings("Hulu Shows", "hulu shows")

@@ -2,14 +2,15 @@ import json
 import re
 import sys
 from types import SimpleNamespace
-from typing import List, Dict, Optional, Any
+from typing import Any, Dict, List, Optional
+
+from tqdm import tqdm
 
 from util.arrpy import create_arr_client
-from util.logger import Logger
-from util.utility import progress, create_table, print_settings
-from util.notification import send_notification
 from util.constants import tmdb_id_regex, tvdb_id_regex
-from tqdm import tqdm
+from util.logger import Logger
+from util.notification import send_notification
+from util.utility import create_table, print_settings, progress
 
 
 def main(config: SimpleNamespace) -> None:
@@ -157,8 +158,8 @@ def main(config: SimpleNamespace) -> None:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()
     except Exception:
-        logger.error(f"\n\nAn error occurred:\n", exc_info=True)
-        logger.error(f"\n\n")
+        logger.error("\n\nAn error occurred:\n", exc_info=True)
+        logger.error("\n\n")
     finally:
         # Log outro message with run time
         logger.log_outro()

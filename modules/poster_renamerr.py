@@ -1,30 +1,31 @@
-import os
-import sys
-import re
-import filecmp
-import shutil
 import copy
-from typing import List, Dict, Tuple, Any
+import filecmp
+import os
+import re
+import shutil
+import sys
 from types import SimpleNamespace
+from typing import Any, Dict, List, Tuple
 
-from util.logger import Logger
 from util.arrpy import create_arr_client
-from util.utility import (
-    print_json,
-    print_settings,
-    create_table,
-    get_plex_data,
-)
-from util.notification import send_notification
-from util.index import create_new_empty_index
-from util.match import match_assets_to_media
 from util.assets import get_assets_files
 from util.constants import year_regex
+from util.index import create_new_empty_index
+from util.logger import Logger
+from util.match import match_assets_to_media
+from util.notification import send_notification
+from util.utility import (
+    create_table,
+    get_plex_data,
+    print_json,
+    print_settings,
+)
 
 try:
+    from pathvalidate import is_valid_filename, sanitize_filename
     from plexapi.server import PlexServer
+
     from util.utility import progress
-    from pathvalidate import sanitize_filename, is_valid_filename
 except ImportError as e:
     print(f"ImportError: {e}")
     print("Please install the required modules with 'pip install -r requirements.txt'")
@@ -426,7 +427,7 @@ def main(config: SimpleNamespace) -> None:
                         renamed_assets=renamed_assets,
                         incremental_run=True,
                     )
-                    logger.info(f"Finished running border_replacerr")
+                    logger.info("Finished running border_replacerr")
                 else:
                     logger.info(
                         "\nNo new assets to incrementally perform with border_replacerr.\nSkipping Border Replacerr.."
@@ -443,7 +444,7 @@ def main(config: SimpleNamespace) -> None:
                     renamed_assets=renamed_assets,
                     incremental_run=False,
                 )
-                logger.info(f"Finished running border_replacerr.py")
+                logger.info("Finished running border_replacerr.py")
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()

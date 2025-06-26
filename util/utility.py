@@ -382,3 +382,13 @@ def redact_apis(obj: Any) -> None:
     elif isinstance(obj, list):
         for item in obj:
             redact_apis(item)
+
+def get_log_dir(module_name: str) -> str:
+    """Return the log directory for a given module."""
+    log_base = os.getenv("LOG_DIR")
+    if log_base:
+        log_dir = Path(log_base) / module_name
+    else:
+        log_dir = Path(__file__).resolve().parents[1] / "logs" / module_name
+    os.makedirs(log_dir, exist_ok=True)
+    return str(log_dir)

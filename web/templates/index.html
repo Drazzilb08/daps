@@ -2,6 +2,15 @@
 <html lang="en">
 
 <head>
+<script>
+(function() {
+    var t;
+    try { t = localStorage.getItem('theme'); } catch(e){}
+    if (t) {
+        document.documentElement.setAttribute('data-theme', t);
+    }
+})();
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>DAPS</title>
@@ -21,67 +30,22 @@
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script src="/web/static/js/payload.js"></script>
-    <script src="/web/static/js/common.js"></script>
-    <script src="/web/static/js/presets.js"></script>
-    <script src="/web/static/js/helper.js"></script>
-    <script src="/web/static/js/settings.js"></script>
-    <script src="/web/static/js/schedule.js"></script>
-    <script src="/web/static/js/instances.js"></script>
-    <script src="/web/static/js/notifications.js"></script>
-    <script src="/web/static/js/poster_search.js"></script>
-    <script src="/web/static/js/logs.js"></script>
+    <script type="module" src="/web/static/js/main.js"></script>
+    
     <link rel="stylesheet" href="/web/static/css/base.css" />
     <link rel="stylesheet" href="/web/static/css/common.css" />
     <link rel="stylesheet" href="/web/static/css/layout.css" />
     <link rel="stylesheet" href="/web/static/css/navigation.css" />
     <link rel="stylesheet" href="/web/static/css/settings.css" />
     <link rel="stylesheet" href="/web/static/css/instances.css" />
-    <link rel="stylesheet" href="/web/static/css/splash.css" />
+    <link rel="stylesheet" href="/web/static/css/index.css" />
     <link rel="stylesheet" href="/web/static/css/schedule.css" />
     <link rel="stylesheet" href="/web/static/css/modals.css" />
     <link rel="stylesheet" href="/web/static/css/logs.css" />
     <link rel="stylesheet" href="/web/static/css/poster_search.css" />
     <link rel="stylesheet" href="/web/static/css/notifications.css" />
     <style>
-        .has-update-tooltip
-        {
-            position: relative;
-        }
 
-        .update-tooltip
-        {
-            min-width: 225px;
-            background: #191c22;
-            color: #fff;
-            border-radius: 10px;
-            padding: 1em 1.3em 1em 1.1em;
-            font-size: 1.06em;
-            font-weight: 500;
-            box-shadow: 0 6px 24px 0 rgba(0, 0, 0, 0.30), 0 1.5px 0 0 #f44336c0 inset;
-            border: 1.5px solid #2e384a;
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            bottom: 2.4em;
-            z-index: 99999;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.18s, box-shadow 0.2s;
-            text-align: left;
-            white-space: nowrap;
-            display: block;
-            filter: drop-shadow(0 4px 15px #f443362c);
-        }
-
-        .has-update-tooltip:hover .update-tooltip,
-        .has-update-tooltip:focus .update-tooltip
-        {
-            opacity: 1;
-            pointer-events: auto;
-            display: block;
-            box-shadow: 0 10px 30px 0 rgba(244, 67, 54, 0.13), 0 2px 0 0 #f44336d1 inset;
-        }
     </style>
 </head>
 
@@ -89,176 +53,56 @@
 
     <div id="pageOverlay"></div>
     <div class="container">
-        <header style="
-              text-align: center;
-              margin: 1.5rem auto 1rem;
-              font-size: 2.5rem;
-              font-weight: 600;
+        
+<a href="/" class="daps-header-gradient daps-header-link">
+    <span class="daps">DAPS</span>
+    <span class="dashboard-label">Dashboard</span>
+</a>
 
-              background: linear-gradient(90deg, #a6b5c9, #dce3ec);
-              -webkit-background-clip: text;
-              -webkit-text-fill-color: transparent;
-              text-shadow: 0 1px 1px rgba(255,255,255,0.6);
-            ">
-            <a href="/" style="text-decoration: none; background: none;">DAPS Dashboard</a>
-        </header>
-        <nav>
-            <ul class="menu">
-                <li><a id="link-schedule" href="/fragments/schedule" class="active">🗓️ Schedule</a></li>
-                <li><a id="link-instances" href="/fragments/instances">🖥️ Instances</a></li>
-                <li><a id="link-notifications" href="/fragments/notifications">💬 Notifications</a></li>
-                <li><a id="link-poster-search" href="/fragments/poster_search">🎥 Poster Search</a>
-                <li class="dropdown">
-                    <div class="dropdown-toggle">⚙️ Settings</div>
-                    <ul class="dropdown-menu settings-panel" id="settings-dropdown"></ul>
-                </li>
-                <li><a id="link-logs" href="/fragments/logs">📜 Logs</a></li>
-            </ul>
-        </nav>
-        <div class="overlay" id="contentOverlay"></div>
-        <div class="content">
-            <div id="viewFrame" class="view-frame"></div>
-        </div>
-    </div>
-    <div id="toast-container"></div>
-    <footer style="
-          position: fixed;
-          bottom: 0;
-          right: 0;
-          padding: 0.5rem 1rem;
-          background: var(--card-bg);
-          color: var(--fg);
-          font-size: 0.85rem;
-          border-top-left-radius: 8px;
-          box-shadow: -2px -2px 5px rgba(0,0,0,0.1);
-          display: flex;
-          gap: 1rem;
-          align-items: center;
-          z-index: 1000;
-        ">
-        <span id="version" style="font-weight: 500;">📦 Version: ...</span>
-        <span id="update-badge" class="has-update-tooltip" style="display:none; background:#f44336; color:#fff; border-radius:12px; font-size:0.82em; padding:2px 8px 2px 8px; margin-left: 1em; font-weight: 500; vertical-align: middle; cursor:pointer; position:relative;">
-            🚀 Update Available
-            <span class="update-tooltip" id="update-tooltip">
-                <span style="font-size:1.1em; font-weight:600; color:#fff; letter-spacing:0.02em;">Update Available</span><br>
-                <span style="color:#bbb; font-size:0.94em;">
-                    Current: <span id="tooltip-current-version"></span><br>
-                    Latest: <span id="tooltip-latest-version"></span>
-                </span>
+<nav>
+    <ul class="menu">
+<li><a id="link-schedule" href="/pages/schedule">🗓️ Schedule</a></li>
+<li><a id="link-instances" href="/pages/instances">🖥️ Instances</a></li>
+<li><a id="link-notifications" href="/pages/notifications">💬 Notifications</a></li>
+<li><a id="link-poster-search" href="/pages/poster_search">🎥 Poster Search</a></li>
+<li class="dropdown">
+    <div class="dropdown-toggle">⚙️ Settings</div>
+    <ul class="dropdown-menu settings-panel" id="settings-dropdown"></ul>
+</li>
+<li><a id="link-logs" href="/pages/logs">📜 Logs</a></li>
+    </ul>
+</nav>
+<div class="overlay" id="contentOverlay"></div>
+<div class="content">
+    <div id="viewFrame" class="view-frame"></div>
+</div>
+<div id="toast-container"></div>
+
+<footer class="daps-footer">
+    <span id="version" class="footer-version">📦 Version: ...</span>
+    <span id="update-badge" class="has-update-tooltip footer-update-badge">
+        🚀 Update Available
+        <span class="update-tooltip" id="update-tooltip">
+            <span class="update-tooltip-title">Update Available</span><br>
+            <span class="update-tooltip-versions">
+                Current: <span id="tooltip-current-version"></span><br>
+                Latest: <span id="tooltip-latest-version"></span>
             </span>
         </span>
-        <a href="https://github.com/Drazzilb08/daps" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; gap: 0.4rem; color: var(--link-color); text-decoration: none;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M12 .296c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.207 11.387.6.113.793-.258.793-.577v-2.234c-3.338.726-4.033-1.415-4.033-1.415-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.838 1.235 1.838 1.235 1.07 1.834 2.809 1.304 3.495.997.108-.776.419-1.304.762-1.604-2.665-.305-5.467-1.332-5.467-5.93 0-1.31.469-2.381 1.236-3.221-.124-.303-.536-1.527.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.655 1.649.243 2.873.119 3.176.77.84 1.234 1.911 1.234 3.221 0 4.61-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .321.192.694.801.576C20.565 22.092 24 17.592 24 12.296c0-6.627-5.373-12-12-12" />
-            </svg>
-            <span>GitHub</span>
-        </a>
-        <a href="https://trash-guides.info/discord" target="_blank" rel="noopener noreferrer" style="display: flex; align-items: center; gap: 0.4rem; color: var(--link-color); text-decoration: none;">
-            <svg width="18" height="18" viewBox="0 0 71 55" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                <path d="M60.104 4.552A58.121 58.121 0 0 0 46.852.8a41.05 41.05 0 0 0-1.965 4.054 55.048 55.048 0 0 0-16.773 0A41.157 41.157 0 0 0 26.15.8 58.08 58.08 0 0 0 12.9 4.552a61.048 61.048 0 0 0-9.723 44.335A58.674 58.674 0 0 0 21.105 55c1.137-1.553 2.135-3.192 2.982-4.906a36.896 36.896 0 0 1-5.737-2.775c.482-.354.951-.724 1.406-1.108a40.44 40.44 0 0 0 36.487 0c.464.397.94.78 1.428 1.148a36.79 36.79 0 0 1-5.76 2.775c.856 1.714 1.854 3.353 2.97 4.906a58.627 58.627 0 0 0 17.91-6.113 61.046 61.046 0 0 0-9.723-44.335ZM23.725 37.27c-3.357 0-6.103-3.095-6.103-6.906s2.717-6.93 6.103-6.93c3.404 0 6.15 3.12 6.127 6.93 0 3.81-2.717 6.906-6.127 6.906Zm23.55 0c-3.357 0-6.103-3.095-6.103-6.906s2.717-6.93 6.103-6.93c3.404 0 6.15 3.12 6.127 6.93 0 3.81-2.717 6.906-6.127 6.906Z" />
-            </svg>
-            <span>Discord</span>
-        </a>
-    </footer>
-    <script>
-        function parseVersionString(ver)
-        {
-            // Example: "2.0.0.dev1769"
-            if (!ver) return {};
-            const parts = ver.trim().split(".");
-            if (parts.length < 4) return {};
-            const version = parts.slice(0, 3).join(".");
-            const branchAndBuild = parts[3];
-            // Branch is text, build is number at end
-            const m = branchAndBuild.match(/^([a-zA-Z]+)(\d+)$/);
-            let branch, build;
-            if (m)
-            {
-                branch = m[1];
-                build = parseInt(m[2], 10);
-            }
-            else
-            {
-                // fallback: try to get build from end
-                branch = branchAndBuild.replace(/(\d+)$/, '');
-                const buildMatch = branchAndBuild.match(/(\d+)$/);
-                build = buildMatch ? parseInt(buildMatch[1], 10) : null;
-            }
-            return {
-                version,
-                branch,
-                build,
-                full: ver.trim()
-            };
-        }
-        async function getRemoteBuildCount(owner, repo, branch)
-        {
-            // Fetch the commits with per_page=1 to minimize data, then parse last page from Link header
-            const apiUrl = `https://api.github.com/repos/${owner}/${repo}/commits?sha=${branch}&per_page=1`;
-            try
-            {
-                const response = await fetch(apiUrl);
-                if (!response.ok) return null;
-                const link = response.headers.get('Link');
-                if (!link) return 1; // If only one commit
-                const match = link.match(/&page=(\d+)>; rel="last"/);
-                if (match) return parseInt(match[1], 10);
-                return 1;
-            }
-            catch
-            {
-                return null;
-            }
-        }
-        async function mainVersionCheck()
-        {
-            const localVerStr = await fetch('/api/version').then(r => r.text()).catch(() => null);
-            const local = parseVersionString(localVerStr);
-            if (!local.version || !local.branch || local.build === null)
-            {
-                document.getElementById('version').textContent = 'Version: ' + (localVerStr || 'unknown');
-                return;
-            }
-            // Fetch VERSION file for the branch
-            const remoteVersion = await fetch(
-                `https://raw.githubusercontent.com/Drazzilb08/daps/${local.branch}/VERSION`
-            ).then(r => r.ok ? r.text() : null).catch(() => null);
-            // Fetch remote build (commit count) for branch
-            const remoteBuild = await getRemoteBuildCount('Drazzilb08', 'daps', local.branch);
-            let remoteFull = '';
-            let updateAvailable = false;
-            if (remoteVersion && remoteBuild !== null)
-            {
-                remoteFull = `${remoteVersion.trim()}.${local.branch}${remoteBuild}`;
-                if (
-                    remoteVersion.trim() === local.version &&
-                    remoteBuild > local.build
-                )
-                {
-                    updateAvailable = true;
-                }
-                else if (remoteVersion.trim() !== local.version)
-                {
-                    updateAvailable = true;
-                }
-            }
-            document.getElementById('version').textContent = 'Version: ' + local.full;
-            const badge = document.getElementById('update-badge');
-            if (updateAvailable)
-            {
-                badge.style.display = '';
-                badge.title = ""; // Use custom tooltip
-                badge.onclick = () => window.open('https://github.com/Drazzilb08/daps/releases', '_blank');
-                document.getElementById('tooltip-current-version').innerText = local.full;
-                document.getElementById('tooltip-latest-version').innerText = remoteFull;
-            }
-            else
-            {
-                badge.style.display = 'none';
-            }
-        }
-        mainVersionCheck();
-    </script>
+    </span>
+    <a href="https://github.com/Drazzilb08/daps" target="_blank" rel="noopener noreferrer" class="footer-link">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 .296c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.207 11.387.6.113.793-.258.793-.577v-2.234c-3.338.726-4.033-1.415-4.033-1.415-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.838 1.235 1.838 1.235 1.07 1.834 2.809 1.304 3.495.997.108-.776.419-1.304.762-1.604-2.665-.305-5.467-1.332-5.467-5.93 0-1.31.469-2.381 1.236-3.221-.124-.303-.536-1.527.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.655 1.649.243 2.873.119 3.176.77.84 1.234 1.911 1.234 3.221 0 4.61-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .321.192.694.801.576C20.565 22.092 24 17.592 24 12.296c0-6.627-5.373-12-12-12" />
+        </svg>
+        <span>GitHub</span>
+    </a>
+    <a href="https://trash-guides.info/discord" target="_blank" rel="noopener noreferrer" class="footer-link">
+        <svg width="18" height="18" viewBox="0 0 71 55" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M60.104 4.552A58.121 58.121 0 0 0 46.852.8a41.05 41.05 0 0 0-1.965 4.054 55.048 55.048 0 0 0-16.773 0A41.157 41.157 0 0 0 26.15.8 58.08 58.08 0 0 0 12.9 4.552a61.048 61.048 0 0 0-9.723 44.335A58.674 58.674 0 0 0 21.105 55c1.137-1.553 2.135-3.192 2.982-4.906a36.896 36.896 0 0 1-5.737-2.775c.482-.354.951-.724 1.406-1.108a40.44 40.44 0 0 0 36.487 0c.464.397.94.78 1.428 1.148a36.79 36.79 0 0 1-5.76 2.775c.856 1.714 1.854 3.353 2.97 4.906a58.627 58.627 0 0 0 17.91-6.113 61.046 61.046 0 0 0-9.723-44.335ZM23.725 37.27c-3.357 0-6.103-3.095-6.103-6.906s2.717-6.93 6.103-6.93c3.404 0 6.15 3.12 6.127 6.93 0 3.81-2.717 6.906-6.127 6.906Zm23.55 0c-3.357 0-6.103-3.095-6.103-6.906s2.717-6.93 6.103-6.93c3.404 0 6.15 3.12 6.127 6.93 0 3.81-2.717 6.906-6.127 6.906Z" />
+        </svg>
+        <span>Discord</span>
+    </a>
+</footer>
 </body>
 
 </html>

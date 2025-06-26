@@ -2,220 +2,220 @@
    TOAST NOTIFICATIONS
 ====================================================== */
 #toast-container {
-  position: fixed;
-  bottom: var(--toast-position-bottom);
-  right: var(--toast-position-right);
+    position: fixed;
+    bottom: var(--toast-position-bottom);
+    right: var(--toast-position-right);
 
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.75rem;
-  z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 0.75rem;
+    z-index: 9999;
 }
 
 .toast {
-  background: var(--primary-bg);
-  color: var(--text-color);
-  padding: var(--toast-padding);
-  border-radius: var(--toast-radius);
-  box-shadow: var(--toast-shadow);
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.4s ease, transform 0.4s ease;
-  font-size: var(--toast-font-size);
-  font-weight: 600;
+    background: var(--primary-bg);
+    color: var(--text-color);
+    padding: var(--toast-padding);
+    border-radius: var(--toast-radius);
+    box-shadow: var(--toast-shadow);
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+    font-size: var(--toast-font-size);
+    font-weight: 600;
 }
 
 .toast.show {
-  opacity: 1;
-  transform: translateY(0);
+    opacity: 1;
+    transform: translateY(0);
 }
 
 .toast.success {
-  background: var(--success);
-  color: var(--primary-bg);
+    background: var(--success);
+    color: var(--primary-bg);
 }
 
 .toast.error {
-  background: var(--error);
-  color: var(--primary-bg);
+    background: var(--error);
+    color: var(--primary-bg);
 }
 
 .toast.info {
-  background: var(--info);
-  color: var(--primary-bg);
+    background: var(--info);
+    color: var(--primary-bg);
 }
 
 /* ======================================================
    PASSWORD WRAPPER (API Key Input)
 ====================================================== */
 .password-wrapper {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
 }
 
 .password-wrapper input {
-  flex: 1 1 auto;
-  width: 100%;
-  padding-right: 2rem;
-  background: var(--form-bg);
-  color: var(--fg);
-  border: var(--form-border);
-  border-radius: var(--form-radius);
+    flex: 1 1 auto;
+    width: 100%;
+    padding-right: 2rem;
+    background: var(--form-bg);
+    color: var(--fg);
+    border: var(--form-border);
+    border-radius: var(--form-radius);
 }
 
 .password-wrapper input.masked-input {
-  -webkit-text-security: disc;
+    -webkit-text-security: disc;
 }
 
 .password-wrapper .toggle-password {
-  position: absolute;
-  top: 50%;
-  right: 0.5rem;
-  transform: translateY(-50%);
-  cursor: pointer;
-  font-size: 1rem;
-  opacity: 0.7;
-  transition: opacity 0.2s, color 0.2s;
+    position: absolute;
+    top: 50%;
+    right: 0.5rem;
+    transform: translateY(-50%);
+    cursor: pointer;
+    font-size: 1rem;
+    opacity: 0.7;
+    transition: opacity 0.2s, color 0.2s;
 }
 
 .password-wrapper .toggle-password:hover {
-  color: var(--focus);
-  opacity: 1;
+    color: var(--focus);
+    opacity: 1;
 }
 
 /* ======================================================
    BASE LAYOUT (BODY, CONTAINER, VIEW FRAME)
 ====================================================== */
 body {
-  font: var(--font-size-base) / var(--line-height) var(--font);
-  color: var(--text-color);
-  background: var(--primary-bg);
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  font-size: 1.1rem;
-  position: relative;
-  overflow: hidden;
+    font: var(--font-size-base) / var(--line-height) var(--font);
+    color: var(--text-color);
+    background: var(--primary-bg);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    font-size: 1.1rem;
+    position: relative;
+    overflow: hidden;
 }
 
 .container {
-  max-width: var(--container-max-width);
-  margin: 0 auto;
-  padding: var(--container-padding);
-  width: 100%;
+    max-width: var(--container-max-width);
+    margin: 0 auto;
+    padding: var(--container-padding);
+    width: 100%;
 }
 
 .view-frame {
-  padding: var(--view-frame-padding, 2rem);
+    padding: var(--view-frame-padding, 2rem);
 }
 
 .view-frame.fade-in {
-  animation: pageFadeIn 0.3s ease-out forwards;
+    animation: pageFadeIn 0.3s ease-out forwards;
 }
 
 /* ======================================================
    CARD COMPONENT
 ====================================================== */
 .card {
-  background: var(--card-bg);
-  border: var(--card-border, 1px solid rgba(255, 255, 255, 0.1));
-  border-radius: var(--card-radius);
-  box-shadow: var(--card-shadow);
-  padding: var(--card-padding, 1.5rem);
-  margin-bottom: var(--card-margin-btm);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background: var(--card-bg);
+    border: var(--card-border, 1px solid rgba(255, 255, 255, 0.1));
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow);
+    padding: var(--card-padding, 1.5rem);
+    margin-bottom: var(--card-margin-btm);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .card:hover {
-  background: var(--card-hover-bg);
-  box-shadow: var(--card-shadow);
-  filter: brightness(1.01);
+    background: var(--card-hover-bg);
+    box-shadow: var(--card-shadow);
+    filter: brightness(1.01);
 }
 
 /* ======================================================
    TYPOGRAPHY (HEADINGS)
 ====================================================== */
 h1 {
-  font-size: var(--font-size-heading);
-  font-weight: var(--font-weight-heading);
-  margin-bottom: var(--card-margin-btm);
-  color: var(--heading-color);
+    font-size: var(--font-size-heading);
+    font-weight: var(--font-weight-heading);
+    margin-bottom: var(--card-margin-btm);
+    color: var(--heading-color);
 }
 
 h2 {
-  font-size: var(--font-size-subheading);
-  font-weight: var(--font-weight-heading);
-  margin-bottom: 0.75rem;
+    font-size: var(--font-size-subheading);
+    font-weight: var(--font-weight-heading);
+    margin-bottom: 0.75rem;
 }
 
 /* ======================================================
    INPUT ERROR STATE
 ====================================================== */
 .input-invalid {
-  outline: var(--form-invalid-outline) !important;
-  background: var(--form-invalid-bg) !important;
-  color: var(--form-invalid-color) !important;
-  transition: background 0.5s, outline 0.5s;
+    outline: var(--form-invalid-outline) !important;
+    background: var(--form-invalid-bg) !important;
+    color: var(--form-invalid-color) !important;
+    transition: background 0.5s, outline 0.5s;
 }
 
 /* ======================================================
    TOGGLE SWITCH
 ====================================================== */
 .toggle-row {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.75rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
 }
 
 .toggle-switch {
-  position: relative;
-  display: inline-block;
-  width: var(--toggle-width);
-  height: var(--toggle-height);
-  color: var(--primary);
+    position: relative;
+    display: inline-block;
+    width: var(--toggle-width);
+    height: var(--toggle-height);
+    color: var(--primary);
 }
 
 .toggle-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
 .slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: var(--toggle-off);
-  transition: 0.2s;
-  border-radius: var(--toggle-radius);
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: var(--toggle-off);
+    transition: 0.2s;
+    border-radius: var(--toggle-radius);
 }
 
 .slider:before {
-  position: absolute;
-  content: "";
-  height: var(--toggle-slider-size);
-  width: var(--toggle-slider-size);
-  left: var(--toggle-slider-offset);
-  bottom: var(--toggle-slider-offset);
-  background-color: white;
-  transition: 0.2s;
-  border-radius: var(--toggle-slider-radius);
+    position: absolute;
+    content: '';
+    height: var(--toggle-slider-size);
+    width: var(--toggle-slider-size);
+    left: var(--toggle-slider-offset);
+    bottom: var(--toggle-slider-offset);
+    background-color: var(--toggle-thumb-bg);
+    transition: 0.2s;
+    border-radius: var(--toggle-slider-radius);
 }
 
-.toggle-switch input:checked+.slider {
-  background-color: var(--toggle-on);
+.toggle-switch input:checked + .slider {
+    background-color: var(--toggle-on);
 }
 
-.toggle-switch input:checked+.slider:before {
-  transform: translateX(16px);
+.toggle-switch input:checked + .slider:before {
+    transform: translateX(16px);
 }
 
 /* ======================================================
@@ -224,7 +224,7 @@ h2 {
 *,
 *::before,
 *::after {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 /* ======================================================
@@ -232,15 +232,15 @@ h2 {
 ====================================================== */
 html,
 body {
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  overflow: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    overflow: hidden;
 }
 
 html::-webkit-scrollbar,
 body::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+    width: 0;
+    height: 0;
 }
 
 /* ======================================================
@@ -248,156 +248,156 @@ body::-webkit-scrollbar {
 ====================================================== */
 .input,
 .select {
-  display: block;
-  width: 100%;
-  padding: var(--form-padding);
-  height: var(--form-height);
-  background: var(--form-bg);
-  color: var(--form-color);
-  border: var(--form-border);
-  box-shadow: var(--form-shadow);
-  border-radius: var(--form-radius);
-  font-size: var(--form-font-size);
-  box-sizing: border-box;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
+    display: block;
+    width: 100%;
+    padding: var(--form-padding);
+    height: var(--form-height);
+    background: var(--form-bg);
+    color: var(--form-color);
+    border: var(--form-border);
+    box-shadow: var(--form-shadow);
+    border-radius: var(--form-radius);
+    font-size: var(--form-font-size);
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
 }
 
 /* Arrow icon for selects */
 .select {
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ff7300'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 0.75rem center;
-  background-size: 0.65rem auto;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ff7300'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+    background-size: 0.65rem auto;
 }
 
 .input:focus,
 .select:focus {
-  outline: none;
-  border-color: var(--form-focus);
-  box-shadow: 0 0 0 3px var(--form-focus);
+    outline: none;
+    border-color: var(--form-focus);
+    box-shadow: 0 0 0 3px var(--form-focus);
 }
 
 .textarea {
-  display: block;
-  width: 100%;
-  padding: var(--form-padding);
-  background: var(--form-bg);
-  color: var(--form-color);
-  border: var(--form-border);
-  border-radius: var(--form-radius);
-  font-size: 1rem;
-  line-height: 1.2;
-  box-sizing: border-box;
-  resize: vertical;
-  min-height: 4rem;
+    display: block;
+    width: 100%;
+    padding: var(--form-padding);
+    background: var(--form-bg);
+    color: var(--form-color);
+    border: var(--form-border);
+    border-radius: var(--form-radius);
+    font-size: 1rem;
+    line-height: 1.2;
+    box-sizing: border-box;
+    resize: vertical;
+    min-height: 4rem;
 }
 
 .textarea:focus {
-  outline: none;
-  border-color: var(--form-focus);
-  box-shadow: 0 0 0 3px var(--form-focus);
+    outline: none;
+    border-color: var(--form-focus);
+    box-shadow: 0 0 0 3px var(--form-focus);
 }
 
 /* ======================================================
    ANIMATIONS
 ====================================================== */
 @keyframes pageFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
 
-  to {
-    opacity: 1;
-    transform: var(--translate-neutral);
-  }
+    to {
+        opacity: 1;
+        transform: var(--translate-neutral);
+    }
 }
 
 /* ======================================================
    LINK STYLING
 ====================================================== */
 a {
-  color: var(--link-color);
-  text-decoration: none;
-  transition: color 0.2s ease;
+    color: var(--link-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
 }
 
 a:hover,
 a:focus {
-  color: var(--link-hover-color);
-  text-decoration: underline;
+    color: var(--link-hover-color);
+    text-decoration: underline;
 }
 
 /* ======================================================
    BUTTONS
 ====================================================== */
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 100px;
-  padding: var(--btn-padding);
-  background: var(--btn-bg);
-  color: var(--btn-color);
-  text-align: center;
-  font-size: var(--btn-font-size, 0.95rem);
-  font-weight: 600;
-  border: none;
-  border-radius: var(--btn-radius, 4px);
-  cursor: pointer;
-  transition: background 0.2s, transform 0.1s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 100px;
+    padding: var(--btn-padding);
+    background: var(--btn-bg);
+    color: var(--btn-color);
+    text-align: center;
+    font-size: var(--btn-font-size, 0.95rem);
+    font-weight: 600;
+    border: none;
+    border-radius: var(--btn-radius, 4px);
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s ease;
 }
 
 .btn:hover {
-  background: var(--btn-hover-bg);
-  transform: translateY(-1px);
+    background: var(--btn-hover-bg);
+    transform: translateY(-1px);
 }
 
 .btn:active {
-  transform: translateY(1px);
+    transform: translateY(1px);
 }
 
 .btn--success {
-  background: var(--success);
-  color: var(--primary-bg);
+    background: var(--success);
+    color: var(--primary-bg);
 }
 
 .btn--success:hover {
-  background: var(--success-highlight);
-  transform: translateY(-1px);
+    background: var(--success-highlight);
+    transform: translateY(-1px);
 }
 
 .btn--success:active {
-  transform: translateY(1px);
+    transform: translateY(1px);
 }
 
 .btn--cancel {
-  background: var(--error);
-  color: var(--primary-bg);
+    background: var(--error);
+    color: var(--primary-bg);
 }
 
 .btn--cancel:hover {
-  background: var(--error-highlight);
-  transform: translateY(-1px);
+    background: var(--error-highlight);
+    transform: translateY(-1px);
 }
 
 .btn--cancel:active {
-  transform: translateY(1px);
+    transform: translateY(1px);
 }
 
 .btn-container {
-  display: flex;
-  gap: 0.75rem;
-  margin-left: auto;
-  align-items: center;
+    display: flex;
+    gap: 0.75rem;
+    margin-left: auto;
+    align-items: center;
 }
 
 .btn--remove-item {
-  background: var(--error);
-  min-width: 40px;
+    background: var(--error);
+    min-width: 40px;
 }
 
 /* ======================================================
@@ -406,79 +406,79 @@ a:focus {
 
 /* Help wrapper: spacing reset, no border or shadow */
 .help {
-  margin: 1rem 0;
-  padding: 0;
-  background: none;
-  border-left: none;
-  box-shadow: none;
+    margin: 1rem 0;
+    padding: 0;
+    background: none;
+    border-left: none;
+    box-shadow: none;
 }
 
 /* Help button: subtle, inline-flex, icon and text */
 .help-toggle {
-  background: none;
-  color: var(--link-color);
-  font-weight: 500;
-  font-size: 0.98rem;
-  border: none;
-  padding: 0;
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  opacity: 0.85;
-  transition: color 0.18s, opacity 0.18s;
+    background: none;
+    color: var(--link-color);
+    font-weight: 500;
+    font-size: 0.98rem;
+    border: none;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    opacity: 0.85;
+    transition: color 0.18s, opacity 0.18s;
 }
 
 /* SVG icon next to label */
 .help-icon {
-  margin-right: 0.18em;
-  vertical-align: -0.1em;
-  flex-shrink: 0;
+    margin-right: 0.18em;
+    vertical-align: -0.1em;
+    flex-shrink: 0;
 }
 
 /* Remove unwanted pseudo content */
 .help-toggle::before {
-  content: none;
+    content: none;
 }
 
 /* Help button hover/focus: just increase opacity */
 .help-toggle:hover,
 .help-toggle:focus {
-  opacity: 1;
+    opacity: 1;
 }
 
 /* Expandable help content: transitions for smooth expand/collapse */
 .help-content {
-  font: var(--font);
-  word-wrap: break-word;
-  white-space: pre-line;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s,
-    border-width 0.3s, margin-top 0.3s;
-  opacity: 0;
-  background: var(--card-bg);
-  border-left: 0 solid var(--accent);
-  padding: 0 1rem;
-  border-radius: var(--border-radius);
-  margin-top: 0;
+    font: var(--font);
+    word-wrap: break-word;
+    white-space: pre-line;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease, padding 0.3s, border-width 0.3s,
+        margin-top 0.3s;
+    opacity: 0;
+    background: var(--card-bg);
+    border-left: 0 solid var(--accent);
+    padding: 0 1rem;
+    border-radius: var(--border-radius);
+    margin-top: 0;
 }
 
 /* Show expanded help content */
 .help-content.show {
-  max-height: 500px;
-  opacity: 1;
-  border-left: 4px solid var(--accent);
-  padding: 1rem;
-  margin-top: 0.5rem;
+    max-height: 500px;
+    opacity: 1;
+    border-left: 4px solid var(--accent);
+    padding: 1rem;
+    margin-top: 0.5rem;
 }
 
 /* Help label: spacing and color */
 .help-label {
-  margin-left: 0.2em;
-  font-weight: 500;
-  font-size: 0.98em;
-  color: var(--link-color);
-  opacity: 0.88;
+    margin-left: 0.2em;
+    font-weight: 500;
+    font-size: 0.98em;
+    color: var(--link-color);
+    opacity: 0.88;
 }
 
 /* ======================================================
@@ -487,9 +487,9 @@ a:focus {
 #poster-search-input,
 #schedule-search,
 #notifications-search {
-  width: 100%;
-  font-size: 1rem;
-  margin-bottom: 1.5rem;
-  margin-top: 1.5rem;
-  box-sizing: border-box;
+    width: 100%;
+    font-size: 1rem;
+    margin-bottom: 1.5rem;
+    margin-top: 1.5rem;
+    box-sizing: border-box;
 }

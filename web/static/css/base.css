@@ -1,5 +1,5 @@
 /* ===== Font Imports ===== */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
 /* ======================================================
     ROOT VARIABLES (DARK THEME DEFAULT)
@@ -18,8 +18,8 @@
     --card-radius: 8px;
 
     /* ---------- Typography ---------- */
-    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
-        Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell,
+        'Open Sans', 'Helvetica Neue', sans-serif;
     --font-size-base: 17px;
     --font-size-heading: 32px;
     --font-size-subheading: 20px;
@@ -134,7 +134,7 @@
     --log-scroll-btn-radius: 20px;
 }
 
-:root[data-theme="dark"] {
+:root[data-theme='dark'] {
     /* ===== BASE COLORS ===== */
     --bg: #1e262b;
     --fg: #e8e8e8;
@@ -261,16 +261,10 @@
     --log-scroll-btn-border: 1px solid var(--bg);
 
     /* ===== Dashboard & Header ===== */
-    --daps-header-gradient: linear-gradient(90deg,
-            #a6b5c9 0%,
-            #dce3ec 60%,
-            #f4f8fb 100%);
+    --daps-header-gradient: linear-gradient(90deg, #a6b5c9 0%, #dce3ec 60%, #f4f8fb 100%);
     --daps-header-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
     --daps-header-hover: blur(0.8px) brightness(1.12) drop-shadow(0 2px 10px #a6b5c980);
-    --daps-header-underline: linear-gradient(90deg,
-            #a6b5c9 0%,
-            #dce3ec 60%,
-            #f4f8fb 100%);
+    --daps-header-underline: linear-gradient(90deg, #a6b5c9 0%, #dce3ec 60%, #f4f8fb 100%);
     --dashboard-label-color: transparent;
     --dashboard-label-shadow: var(--daps-header-shadow);
 
@@ -284,8 +278,10 @@
     --select2-results--option--highlighted-color: #fff;
 
     /* ===== Toggles ===== */
-    --toggle-on: #0069f2;
-    --toggle-off: rgba(255, 255, 255, 0.2);
+    --toggle-off: rgba(255, 255, 255, 0.13);
+    --toggle-on: #3e7bfa;
+    --toggle-thumb-bg: #222;
+    --toggle-thumb-shadow: 0 1.5px 6px rgba(0, 0, 0, 0.34);
 
     /* ===== Pills ===== */
     --pill-border: 1px solid var(--shadow);
@@ -307,7 +303,7 @@
 /* ======================================================
             LIGHT THEME OVERRIDES
 ====================================================== */
-:root[data-theme="light"] {
+:root[data-theme='light'] {
     /* ====== BASE COLORS ====== */
     --bg: #e3e4e8;
     --fg: #222325;
@@ -343,8 +339,7 @@
     --card-bg: #f5f6f7;
     --card-hover-bg: #e7e9ed;
     --card-hover-shadow: 0 6px 20px rgba(60, 72, 90, 0.05);
-    --card-shadow: 0 1px 8px rgba(60, 72, 90, 0.06),
-        0 4px 24px rgba(60, 72, 90, 0.09);
+    --card-shadow: 0 1px 8px rgba(60, 72, 90, 0.06), 0 4px 24px rgba(60, 72, 90, 0.09);
 
     /* ====== INPUTS & FORMS ====== */
     --form-bg: #f2f2f4;
@@ -374,17 +369,10 @@
     --toast-shadow: 0 0 10px rgba(60, 72, 90, 0.11);
 
     /* ====== DASHBOARD & DAPS HEADER ====== */
-    --daps-header-gradient: linear-gradient(90deg,
-            #343741 0%,
-            #51545c 70%,
-            #b3bac7 100%);
-    --daps-header-shadow: 0 2px 5px rgba(60, 62, 70, 0.13),
-        0 1.5px 6px rgba(90, 90, 90, 0.09);
+    --daps-header-gradient: linear-gradient(90deg, #343741 0%, #51545c 70%, #b3bac7 100%);
+    --daps-header-shadow: 0 2px 5px rgba(60, 62, 70, 0.13), 0 1.5px 6px rgba(90, 90, 90, 0.09);
     --daps-header-hover: blur(0.8px) brightness(1.11) drop-shadow(0 2px 10px #34374160);
-    --daps-header-underline: linear-gradient(90deg,
-            #282a32 0%,
-            #51545c 70%,
-            #b3bac7 100%);
+    --daps-header-underline: linear-gradient(90deg, #282a32 0%, #51545c 70%, #b3bac7 100%);
     --dashboard-label-color: #454852;
     --dashboard-label-background-clip: initial;
     --dashboard-label-text-fill-color: #454852;
@@ -414,6 +402,12 @@
 
     /* ====== NOTIFICATION CARD ====== */
     --notification-card-shadow: 0 2px 6px #c1c5cb;
+
+    /* ===== Toggles ===== */
+    --toggle-off: #d3dae6;
+    --toggle-on: #3e7bfa;
+    --toggle-thumb-bg: #fff;
+    --toggle-thumb-shadow: 0 1.5px 4px rgba(60, 72, 90, 0.18);
 
     /* ===== Navigation ===== */
     --nav-glass-bg: rgba(245, 246, 247, 0.83);

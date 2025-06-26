@@ -1,8 +1,11 @@
-import pytest
-import sys
 import os
+import sys
+
+import pytest
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from util.scanner import parse_file_group, parse_folder_group
+
 
 def test_parse_file_group_basic():
     result = parse_file_group("/fake/path", "Hulu (US) Shows", ["poster.jpg"])

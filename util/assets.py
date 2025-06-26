@@ -1,13 +1,13 @@
-import os
 import datetime
-from typing import Any, List, Dict, Optional, Tuple
+import os
+from typing import Any, Dict, List, Optional, Tuple
 
-from util.utility import progress
-from util.index import create_new_empty_index, build_search_index, search_matches
-from util.scanner import process_files
+from util.construct import generate_title_variants
+from util.index import build_search_index, create_new_empty_index, search_matches
 from util.match import is_match
 from util.normalization import normalize_file_names
-from util.construct import generate_title_variants
+from util.scanner import process_files
+from util.utility import progress
 
 
 def get_assets_files(

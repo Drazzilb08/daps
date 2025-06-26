@@ -1,8 +1,11 @@
-import pytest
-import sys
 import os
+import sys
+
+import pytest
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from util.extract import extract_year, extract_ids
+from util.extract import extract_ids, extract_year
+
 
 def test_extract_year():
     assert extract_year("Inception (2010)") == 2010

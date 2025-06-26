@@ -2,14 +2,14 @@ import re
 import sys
 import time
 from collections import defaultdict
-from typing import List, Dict, Any
 from types import SimpleNamespace
+from typing import Any, Dict, List
 
+from util.arrpy import BaseARRClient, create_arr_client
 from util.constants import season_regex
-from util.arrpy import create_arr_client, BaseARRClient
 from util.logger import Logger
-from util.utility import create_table, print_settings, progress
 from util.notification import send_notification
+from util.utility import create_table, print_settings, progress
 
 
 def print_output(output: Dict[str, Dict[str, Any]], logger: Logger) -> None:
@@ -345,8 +345,8 @@ def main(config: SimpleNamespace) -> None:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()
     except Exception:
-        logger.error(f"\n\nAn error occurred:\n", exc_info=True)
-        logger.error(f"\n\n")
+        logger.error("\n\nAn error occurred:\n", exc_info=True)
+        logger.error("\n\n")
     finally:
         # Log outro message with run time
         logger.log_outro()

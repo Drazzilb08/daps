@@ -1,11 +1,15 @@
 # New test file content for `test_main.py`
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import pytest
 import time
 from multiprocessing import Process
+
+import pytest
+
 from main import ScriptManager
+
 
 class DummyLogger:
     def __init__(self):

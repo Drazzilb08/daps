@@ -1,6 +1,7 @@
-from typing import Dict
-from logging import Logger
 from datetime import datetime
+from logging import Logger
+from typing import Dict
+
 from croniter import croniter
 from dateutil import tz
 

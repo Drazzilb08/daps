@@ -1,5 +1,6 @@
 from typing import Optional, Tuple
-from util.constants import year_regex, tmdb_id_regex, tvdb_id_regex, imdb_id_regex
+
+from util.constants import imdb_id_regex, tmdb_id_regex, tvdb_id_regex, year_regex
 
 
 def extract_year(text: str) -> Optional[int]:

@@ -2,19 +2,19 @@ import os
 import shutil
 import sys
 from types import SimpleNamespace
-from typing import List, Dict, Optional, Union
+from typing import Dict, List, Optional, Union
 
-from util.logger import Logger
 from util.arrpy import create_arr_client
+from util.assets import get_assets_files
+from util.index import create_new_empty_index
+from util.logger import Logger
+from util.match import match_assets_to_media
 from util.utility import (
     create_table,
-    print_settings,
     get_plex_data,
     print_json,
+    print_settings,
 )
-from util.assets import get_assets_files
-from util.match import match_assets_to_media
-from util.index import create_new_empty_index
 
 try:
     from plexapi.server import PlexServer

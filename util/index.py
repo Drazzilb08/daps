@@ -1,4 +1,5 @@
 from typing import Any, Dict, List, Optional
+
 from util.constants import common_words
 from util.normalization import normalize_titles
 

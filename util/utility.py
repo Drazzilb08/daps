@@ -1,27 +1,22 @@
-from types import SimpleNamespace
-from typing import Any, Dict, List, Optional, Union
-import re
-import os
-import json
-from pathlib import Path
-import math
-import datetime
 import copy
+import datetime
+import html
+import json
+import math
+import os
+import re
+from pathlib import Path
+from types import SimpleNamespace
+from typing import Any, Dict, List, Optional
+
 import yaml
+from plexapi.exceptions import NotFound
+from tqdm import tqdm
+from unidecode import unidecode
 
-try:
-    import html
-    from unidecode import unidecode
-    from tqdm import tqdm
-    from plexapi.exceptions import NotFound
-except ImportError as e:
-    print(f"ImportError: {e}")
-    print("Please install the required modules with 'pip install -r requirements.txt'")
-    exit(1)
-
-from util.normalization import normalize_titles
-from util.construct import generate_title_variants
 from util.constants import illegal_chars_regex
+from util.construct import generate_title_variants
+from util.normalization import normalize_titles
 
 
 def print_json(data: Any, logger: Any, module_name: str, type_: str) -> None:

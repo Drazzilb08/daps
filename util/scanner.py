@@ -1,22 +1,22 @@
+import datetime
+import html
 import os
 import re
-import html
-import datetime
-from typing import Any, Dict, List, Optional
 from collections import defaultdict
+from typing import Any, Dict, List, Optional
 
 from unidecode import unidecode
 
-from util.utility import progress
-from util.normalization import normalize_titles
-from util.construct import create_collection, create_series, create_movie
-from util.extract import extract_year, extract_ids
 from util.constants import (
-    year_regex,
-    season_pattern,
-    remove_special_chars,
     illegal_chars_regex,
+    remove_special_chars,
+    season_pattern,
+    year_regex,
 )
+from util.construct import create_collection, create_movie, create_series
+from util.extract import extract_ids, extract_year
+from util.normalization import normalize_titles
+from util.utility import progress
 
 
 def scan_files_in_flat_folder(folder_path: str, logger: Any) -> List[Dict]:
@@ -163,7 +163,7 @@ def parse_folder_group(folder_path: str, base_name: str, files: List[str]) -> Di
         parent_folder = os.path.basename(folder_path)
 
         if not full_paths:
-            raise ValueError(f"No valid files found in folder")
+            raise ValueError("No valid files found in folder")
 
         is_series = len(files) > 1 and any(
             "Season" in os.path.basename(file) for file in files

@@ -1,10 +1,14 @@
 import os
 import sys
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-import pytest
-from util.index import create_new_empty_index, build_search_index, search_matches
-from util.normalization import normalize_titles
 import json
+
+import pytest
+
+from util.index import build_search_index, create_new_empty_index, search_matches
+from util.normalization import normalize_titles
+
 
 def create_mock_asset(title, asset_type="collections"):
     return {

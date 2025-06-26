@@ -1,17 +1,15 @@
-from types import SimpleNamespace
-from typing import List, Tuple, Optional, Dict, Any, Union
-
-import os
-import logging
 import filecmp
+import logging
+import os
 import shutil
 import sys
-import pathlib
+from datetime import datetime
+from types import SimpleNamespace
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-from util.logger import Logger
-from util.utility import print_settings, create_table, print_json, progress, get_log_dir
 from util.assets import get_assets_files
-from datetime import datetime, timedelta
+from util.logger import Logger
+from util.utility import create_table, get_log_dir, print_json, print_settings, progress
 
 try:
     from PIL import Image, UnidentifiedImageError
@@ -21,10 +19,6 @@ except ImportError as e:
     exit(1)
 
 logging.getLogger("PIL").setLevel(logging.WARNING)
-
-
-from datetime import datetime
-from typing import Optional, List, Dict, Tuple
 
 
 def load_last_run(log_dir: str) -> Optional[datetime]:
@@ -672,8 +666,8 @@ def main(config: SimpleNamespace) -> None:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()
     except Exception:
-        logger.error(f"\n\nAn error occurred:\n", exc_info=True)
-        logger.error(f"\n\n")
+        logger.error("\n\nAn error occurred:\n", exc_info=True)
+        logger.error("\n\n")
     finally:
         log_dir = get_log_dir(config.module_name)
         save_last_run(log_dir)

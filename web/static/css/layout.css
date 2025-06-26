@@ -1,27 +1,29 @@
-/***** ===== General Container ===== */
-.container
-{
+/* ======================================================
+   GENERAL CONTAINER
+====================================================== */
+.container {
     position: relative;
     z-index: 1;
     background: var(--container-bg);
-    padding: 2rem;
-    border-radius: 8px;
+    padding: var(--container-padding);
+    border-radius: var(--container-radius);
     padding-top: 0;
     width: 100%;
-    max-width: 70%;
+    max-width: var(--container-max-width);
     margin: 0 auto;
 }
 
-/* ===== Main View Frame ===== */
-#viewFrame
-{
+/* ======================================================
+   MAIN VIEW FRAME
+====================================================== */
+#viewFrame {
     width: 100%;
     height: 80vh;
-    background: var(--bg);
-    border-radius: 8px;
-    padding: 2rem;
+    background: var(--view-frame-bg);
+    border-radius: var(--border-radius);
+    padding: var(--view-frame-padding, 2rem);
     overflow-y: auto;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-top: 1px solid var(--viewframe-border-top);
     border-top-left-radius: var(--border-radius);
     border-top-right-radius: var(--border-radius);
     transition: opacity 0.3s ease, transform 0.3s ease;
@@ -32,28 +34,29 @@
     scrollbar-color: transparent transparent;
 }
 
-#viewFrame::-webkit-scrollbar
-{
+#viewFrame::-webkit-scrollbar {
     width: 0;
     height: 0;
 }
 
-/* ===== Container for Iframes ===== */
-.container-iframe
-{
+/* ======================================================
+   CONTAINER FOR IFRAMES
+====================================================== */
+.container-iframe {
     background: var(--container-bg);
-    padding: 2rem;
+    padding: var(--container-padding);
     width: 100%;
     max-width: 100%;
     scrollbar-width: none;
     -ms-overflow-style: none;
-    padding-bottom: 4rem;
+    padding-bottom: var(--container-padding-bottom);
     padding-top: 0;
 }
 
-/* ===== Content Section ===== */
-.content
-{
+/* ======================================================
+   CONTENT SECTION
+====================================================== */
+.content {
     border-top: none;
     margin-top: 0;
     flex: 1;
@@ -61,11 +64,59 @@
     padding: 0;
 }
 
-/* ===== Page Headings ===== */
-h1
-{
+/* ======================================================
+   PAGE HEADINGS
+====================================================== */
+h1 {
     text-align: center;
-    margin-bottom: 1.5rem;
-    font-size: 1.75rem;
-    color: #ffffff;
+    margin-bottom: var(--card-margin-btm);
+    font-size: var(--heading-font-size-lg);
+    color: var(--heading-color);
+}
+
+/* ======================================================
+   PAGE LAYOUTS
+====================================================== */
+
+/* Schedule Form Fields */
+#scheduleForm .field {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--field-label-width) 1fr auto;
+    align-items: start;
+    gap: 1.5rem;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.75rem;
+}
+
+/* Instances Form Fields */
+#instancesForm .field {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    grid-template-rows: auto auto auto;
+    align-items: start;
+    gap: var(--field-gap);
+}
+
+/* Notifications Form Fields */
+#notificationsForm .field {
+    position: relative;
+    display: flex;
+    gap: var(--field-gap);
+    margin-bottom: 0.13em;
+    padding-bottom: 0;
+    padding-top: 0;
+    transition: margin-bottom 0.24s, padding-bottom 0.24s;
+}
+
+/* Settings Form Fields */
+#settingsForm .field {
+    position: relative;
+    display: grid;
+    grid-template-columns: var(--field-label-width) 1fr auto;
+    align-items: start;
+    gap: var(--field-gap);
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.75rem;
 }

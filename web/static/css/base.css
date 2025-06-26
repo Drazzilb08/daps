@@ -1,213 +1,473 @@
 /* ===== Font Imports ===== */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap");
 
-/* ===== Root Variables ===== */
-:root
-{
-    --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+/* ======================================================
+    ROOT VARIABLES (DARK THEME DEFAULT)
+====================================================== */
+:root {
+    /* ====== NON-COLOR VARIABLES ====== */
+
+    /* ---------- Layout & Container ---------- */
+    --container-max-width: 70%;
+    --container-padding: 2rem;
+    --container-padding-bottom: 4rem;
+    --container-radius: 8px;
+    --view-frame-padding: 2rem;
+    --card-margin-btm: 1.5rem;
+    --card-padding: 1.5rem;
+    --card-radius: 8px;
+
+    /* ---------- Typography ---------- */
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+        Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
     --font-size-base: 17px;
     --font-size-heading: 32px;
     --font-size-subheading: 20px;
+    --font-size-base-plus: 1.2rem;
     --line-height: 1.5;
     --font-weight-base: 400;
     --font-weight-heading: 600;
-    --text-color: #E5E5E5;
-    --primary-bg: #141414;
-    --secondary-bg: #1e1e1e;
-    --card-bg: #242424;
+    --heading-font-size-lg: 1.75rem;
+
+    /* ---------- Form & Fields ---------- */
+    --form-padding: 0.6rem 1rem;
+    --form-radius: 6px;
+    --form-font-size: 0.99rem;
+    --form-height: 2.5rem;
+    --field-label-width: 200px;
+    --field-gap: 0.5rem;
+
+    /* ---------- Button ---------- */
+    --btn-padding: 0.5rem 1rem;
+    --btn-radius: 4px;
+    --btn-font-size: 0.9rem;
+
+    /* ---------- Modal & Toasts ---------- */
+    --overlay-blur: 8px;
+    --toast-position-bottom: 3.3rem;
+    --toast-position-right: 1.5rem;
+    --toast-radius: 6px;
+    --toast-font-size: 0.95rem;
+    --toast-padding: 1rem 1.5rem;
+    --modal-max-width: 600px;
+    --modal-content-width: 50%;
+    --modal-header-font-size: 1.5rem;
+    --modal-header-font-weight: 700;
+    --modal-header-margin: 1rem;
+    --modal-footer-gap: 0.75rem;
+    --modal-footer-margin-top: 1rem;
+    --modal-radius: 8px;
+    --modal-padding: 2rem 2.5rem;
+    --modal-btn-radius: 6px;
+    --modal-btn-padding: 0.6rem 1.25rem;
+    --modal-btn-font-size: 1rem;
+    --modal-btn-font-weight: 600;
+    --modal-btn-margin: 0.5rem 0;
+
+    /* ---------- Navigation/Dropdown ---------- */
+    --nav-menu-gap: 2rem;
+    --nav-border-radius: 8px;
+    --nav-dropdown-radius: 4px;
+    --nav-dropdown-bg: transparent;
+    --nav-dropdown-item-padding: 0.75rem 1.25rem;
+    --nav-dropdown-item-radius: 4px;
+    --nav-glass-blur: 26px;
+    --dropdown-shadow: 0 4px 12px var(--shadow);
+
+    /* ---------- Dashboard/Stats ---------- */
+    --dashboard-label-background-clip: text;
+    --dashboard-label-text-fill-color: transparent;
+    --dashboard-label-filter: blur(0.15px) brightness(1.07);
+    --stat-bar-gradient: linear-gradient(90deg, var(--info, #4c7ad1), #b6d0ff);
+
+    /* ---------- Splash/Welcome ---------- */
+    --splash-card-padding: 2rem 3rem;
+    --splash-card-radius: 12px;
+    --splash-icon-size: 4rem;
+    --splash-header-font-size: 2rem;
+    --splash-header-margin-btm: 0.5rem;
+    --splash-p-opacity: 0.8;
+
+    /* ---------- Status & Labels ---------- */
+    --status-font-size: 1rem;
+    --status-margin-top: 1rem;
+
+    /* ---------- Utility/Transform ---------- */
+    --translate-neutral: translateY(0);
+    --padding-standard: 0.75rem 1rem;
+
+    /* ---------- Border/Radius ---------- */
     --border-radius: 8px;
-    --shadow: rgba(0, 0, 0, 0.2);
-    --highlight: #0069f2;
-    --container-bg: #141414;
-    --view-frame-bg: #141414;
-    --card-hover-bg: #2c2c2c;
-    --input-bg: #2f2f2f;
+    --border-radius-default: 6px;
+
+    /* ---------- Toggle Switch ---------- */
+    --toggle-radius: 24px;
+    --toggle-slider-radius: 50%;
+    --toggle-width: 36px;
+    --toggle-height: 20px;
+    --toggle-slider-size: 14px;
+    --toggle-slider-offset: 3px;
+    --toggle-api-font-size: 1.2rem;
+    --toggle-api-right: 0.75rem;
+    --toggle-api-opacity: 0.7;
+
+    /* ---------- Notification Card ---------- */
+    --notification-fieldset-padding: 0.75rem;
+
+    /* ---------- Log/Log Viewer ---------- */
+    --log-badge-radius: 5px;
+    --log-badge-padding: 5px 10px;
+    --log-badge-font-size: 0.8rem;
+    --log-badge-z: 9999;
+    --log-badge-opacity: 0;
+    --log-badge-transition: opacity 0.5s;
+    --log-spinner-size: 60px;
+    --log-spinner-radius: 50%;
+    --log-spinner-z: 1000;
+    --log-jump-btn-radius: 20px;
+    --log-jump-btn-font-size: 0.85rem;
+    --log-jump-btn-font-weight: bold;
+    --log-jump-btn-padding: 0.4rem 0.9rem;
+    --log-jump-btn-z: 100;
+    --log-toolbar-gap: 0.75rem;
+    --log-controls-radius: 12px;
+    --log-scroll-btn-radius: 20px;
+}
+
+:root[data-theme="dark"] {
+    /* ===== BASE COLORS ===== */
+    --bg: #1e262b;
+    --fg: #e8e8e8;
+    --text-color: #e5e5e5;
+    --heading-color: #ffffff;
+    --fg-secondary: #aaa;
+
+    /* ===== BRAND & ACTION COLORS ===== */
+    --primary: #ff7300;
+    --focus: #ff9500;
+    --accent: #3e7bfa;
+    --accent-dark: #204288;
     --success: #32d74b;
-    --success-highlight: #30d158;
+    --success-highlight: #30d16e;
     --error: #ff375f;
     --error-highlight: #ff3b30;
     --caution: #ff9f0a;
     --info: #5ac8fa;
-    --save-btn-bg: #007aff;
-    --save-btn-hover-bg: #0051ba;
-    --btn-bg: #007aff;
-    --btn-hover-bg: #0069f2;
-    --card-margin-btm: 1.5rem;
+
+    /* ===== LINKS & HIGHLIGHTS ===== */
     --link-color: #5ac8fa;
     --link-hover-color: #007aff;
-    --margin-vertical: 1rem 0;
-    --font-size-base-plus: 1.2rem;
-    --border-radius-default: 6px;
-    --transition-fade: opacity 0.3s ease;
-    --padding-standard: 0.75rem 1rem;
-    --translate-neutral: translateY(0);
-    --overlay-bg: rgba(0, 0, 0, 0.5);
-    --grid-columns-auto-180: repeat(auto-fit, minmax(180px, 1fr));
-    --form-padding: 0.6rem 1rem;
-    --form-bg: var(--input-bg);
-    --form-color: var(--fg);
+    --highlight: #0069f2;
+    --highlight-bg: #ffeaa7;
+    --highlight-color: #222;
+
+    /* ===== BACKGROUNDS ===== */
+    --primary-bg: #141414;
+    --secondary-bg: #1e1e1e;
+    --container-bg: #141414;
+    --view-frame-bg: #141414;
+    --overlay-bg: rgba(0, 0, 0, 0.4);
+
+    /* ===== CARD & CONTAINER ===== */
+    --card-bg: #202228;
+    --card-hover-bg: #272b33;
+    --card-hover-shadow: 0 6px 20px rgba(0, 0, 0, 0.24);
+    --card-shadow: 0 1px 8px rgba(0, 0, 0, 0.12), 0 4px 24px rgba(0, 0, 0, 0.14);
+    --card-shadow: 0 2px 6px var(--shadow);
+    --card-border: 1px solid #26292d;
+    --container-bg: #141414;
+
+    /* ===== INPUTS & FORMS ===== */
+    --form-bg: #2b2e33;
+    --form-shadow: 0 1.5px 8px #0003;
+    --form-focus: #5ac8fa;
     --form-border: 1px solid var(--shadow);
-    --form-radius: 4px;
-    --form-font-size: 0.95rem;
+    --form-color: var(--fg);
+    --form-invalid-outline: 2px solid #ff9900;
+    --form-invalid-bg: rgba(255, 223, 164, 0.7);
+    --form-invalid-color: #222;
+
+    /* ===== BUTTONS ===== */
+    --btn-bg: #007aff;
+    --btn-hover-bg: #0069f2;
+    --btn-color: var(--text-color);
+
+    /* ===== MODALS & TOASTS ===== */
+    --modal-bg: #24292e;
+    --modal-color: #e8e8e8;
+    --modal-shadow: 0 8px 32px rgba(0, 0, 0, 0.22);
+    --modal-preset-type-color: #ffe6b8;
+    --modal-preset-type-background: rgba(190, 160, 80, 0.11);
+    --modal-preset-content-color: #cfdbee;
+    --modal-preset-content-background: rgba(100, 110, 130, 0.07);
+    --toast-shadow: 0 0 10px rgba(0, 0, 0, 0.4);
+
+    /* ===== Shadows & Misc ===== */
+    --shadow: rgba(0, 0, 0, 0.22);
+    --notification-card-shadow: 0 2px 6px var(--shadow);
+    --splash-card-shadow: 0 8px 24px var(--shadow);
+    --hover-preview-border: #b0b8c6;
+    --img-modal-shadow: #c1c5cb;
+    --loader-bg: #dde2ec;
+
+    /* ===== Navigation ===== */
+    --nav-glass-bg: rgba(32, 34, 40, 0.83);
+    --nav-glass-border: 1px solid rgba(255, 255, 255, 0.07);
+    --nav-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    --nav-dropdown-shadow: 0 4px 12px var(--shadow);
+
+    /* ===== Special Effects & Misc ===== */
+    --poster-list-hover-bg: #e7e9ed;
+    --poster-list-hover-color: #2b6cb0;
+    --gdrive-tooltip-bg: #f4f6fb;
+    --gdrive-tooltip-color: #242628;
+    --gdrive-tooltip-shadow: #b0b8c6;
+    --gdrive-tooltip-red: #d13434;
+    --gdrive-tooltip-highlight: #fdbe44;
+    --copy-btn-active-background: #e6b800;
+    --copy-btn-hover-color: #e6b800;
+
+    /* ===== Labelarr & Custom ===== */
+    --labelarr-label-bg: rgba(210, 180, 90, 0.14);
+    --labelarr-label-color: #a78748;
+    --labelarr-label-empty-color: #85898f;
+    --labelarr-library-bg: rgba(60, 120, 160, 0.09);
+    --labelarr-library-color: #7dc4fa;
+    --labelarr-plex-instance-color: #69d46e;
+    --labelarr-arrow-color: #b0b4bb;
+    --mapping-instance-color: #b0b4bb;
+
+    /* ===== Log Level Colors ===== */
+    --log-error: #ff375f;
+    --log-warning: #ffb020;
+    --log-critical: #b1001d;
+    --log-info: #30d16e;
+    --log-debug: #999fa8;
+
+    /* ===== Tables, Stats, Dashboard ===== */
+    --stats-footer-color: #c9d0d9;
+    --stats-table-hover-bg: #f3f4f7;
+    --stats-table-hover-color: #23272e;
+    --stats-row-error-bg: #f7e9e9;
+    --preset-card-border: rgba(80, 90, 110, 0.13);
+
+    /* ===== Logs & Log Viewer ===== */
+    --log-badge-bg: rgba(0, 0, 0, 0.7);
+    --log-spinner-border: 6px solid var(--card-bg);
+    --log-spinner-border-top: 6px solid var(--primary);
+    --log-jump-btn-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    --log-controls-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --log-line-hover-bg: rgba(255, 255, 255, 0.03);
+    --log-scroll-btn-border: 1px solid var(--bg);
+
+    /* ===== Dashboard & Header ===== */
+    --daps-header-gradient: linear-gradient(90deg,
+            #a6b5c9 0%,
+            #dce3ec 60%,
+            #f4f8fb 100%);
+    --daps-header-shadow: 0 1px 1px rgba(255, 255, 255, 0.6);
+    --daps-header-hover: blur(0.8px) brightness(1.12) drop-shadow(0 2px 10px #a6b5c980);
+    --daps-header-underline: linear-gradient(90deg,
+            #a6b5c9 0%,
+            #dce3ec 60%,
+            #f4f8fb 100%);
+    --dashboard-label-color: transparent;
+    --dashboard-label-shadow: var(--daps-header-shadow);
+
+    /* ===== Footer & Misc ===== */
+    --viewframe-border-top: rgba(255, 255, 255, 0.1);
+    --footer-update-badge-color: #fff;
+    --update-tooltip-title-color: #fff;
+    --daps-footer-box-shadow: rgba(0, 0, 0, 0.1);
+    --update-tooltip-versions-color: #bbb;
+    --dir-list-li-hover-background: rgba(0, 0, 0, 0.1);
+    --select2-results--option--highlighted-color: #fff;
+
+    /* ===== Toggles ===== */
+    --toggle-on: #0069f2;
+    --toggle-off: rgba(255, 255, 255, 0.2);
+
+    /* ===== Pills ===== */
+    --pill-border: 1px solid var(--shadow);
+    --pill-hover-bg: #282d33;
+    --pill-active-bg: #25282d;
+    --pill-hover-shadow: 0 2px 8px rgba(40, 64, 96, 0.08);
+
+    --terminal-bg: #1a1a1a;
+    --terminal-border: 0.1em solid #333;
+    --terminal-color: #0f0;
+    --terminal-header-bg: #333;
+    --terminal-title-color: #eee;
+    --terminal-control-close: #e33;
+    --terminal-control-min: #ee0;
+    --terminal-control-max: #0b0;
+    --terminal-cursor-color: #0f0;
+}
+
+/* ======================================================
+            LIGHT THEME OVERRIDES
+====================================================== */
+:root[data-theme="light"] {
+    /* ====== BASE COLORS ====== */
+    --bg: #e3e4e8;
+    --fg: #222325;
+    --text-color: #242628;
+    --heading-color: #23272e;
+    --primary: #3e7bfa;
+    --focus: #2a4b80;
+    --accent: #0073e6;
+    /*     --accent-dark: #204288; */
+
+    /* ====== BRAND & ACTION COLORS ====== */
+    --success: #32b982;
+    --success-highlight: #49e3a2;
+    --error: #e35c67;
+    --error-highlight: #f37c83;
+    --caution: #ffc857;
+    --info: #4c7ad1;
+
+    /* ====== LINKS & HIGHLIGHTS ====== */
+    --link-color: #2b6cb0;
+    --link-hover-color: #417dbe;
+    --highlight: #ff7300;
+    --highlight-bg: #ffeaa7;
+    --highlight-color: #222;
+
+    /* ====== BACKGROUNDS ====== */
+    --primary-bg: #edeef0;
+    --secondary-bg: #dee1e7;
+    --container-bg: #edeef0;
+    --view-frame-bg: #edeef0;
+
+    /* ====== CARD & CONTAINER ====== */
+    --card-bg: #f5f6f7;
+    --card-hover-bg: #e7e9ed;
+    --card-hover-shadow: 0 6px 20px rgba(60, 72, 90, 0.05);
+    --card-shadow: 0 1px 8px rgba(60, 72, 90, 0.06),
+        0 4px 24px rgba(60, 72, 90, 0.09);
+
+    /* ====== INPUTS & FORMS ====== */
+    --form-bg: #f2f2f4;
+    --form-shadow: 0 1.5px 8px #bbb3;
+    --form-focus: #4c7ad1;
+    --form-padding: 0.6rem 1rem;
+    --form-border: 1px solid var(--shadow);
+    --form-radius: 6px;
+    --form-font-size: 0.99rem;
     --form-height: 2.5rem;
-}
+    --form-color: var(--fg);
+    --form-invalid-outline: 2px solid #ff9900;
+    --form-invalid-bg: rgba(255, 223, 164, 0.7);
+    --form-invalid-color: #222;
 
-/* ===== Box Sizing Reset ===== */
-*,
-*::before,
-*::after
-{
-    box-sizing: border-box;
-}
+    /* ====== BUTTONS ====== */
+    --btn-bg: #4c7ad1;
+    --btn-hover-bg: #4166a0;
+    --btn-color: var(--text-color);
 
-/* ===== Scrollbar Settings ===== */
-html,
-body
-{
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    overflow: hidden;
-}
+    /* ====== MODALS & TOASTS ====== */
+    --overlay-blur: 8px;
+    --overlay-bg: rgba(240, 240, 245, 0.1);
+    --modal-bg: #f1f2f4;
+    --modal-color: #23272e;
+    --modal-shadow: 0 8px 32px rgba(60, 72, 90, 0.08);
+    --toast-shadow: 0 0 10px rgba(60, 72, 90, 0.11);
 
-html::-webkit-scrollbar,
-body::-webkit-scrollbar
-{
-    width: 0;
-    height: 0;
-}
+    /* ====== DASHBOARD & DAPS HEADER ====== */
+    --daps-header-gradient: linear-gradient(90deg,
+            #343741 0%,
+            #51545c 70%,
+            #b3bac7 100%);
+    --daps-header-shadow: 0 2px 5px rgba(60, 62, 70, 0.13),
+        0 1.5px 6px rgba(90, 90, 90, 0.09);
+    --daps-header-hover: blur(0.8px) brightness(1.11) drop-shadow(0 2px 10px #34374160);
+    --daps-header-underline: linear-gradient(90deg,
+            #282a32 0%,
+            #51545c 70%,
+            #b3bac7 100%);
+    --dashboard-label-color: #454852;
+    --dashboard-label-background-clip: initial;
+    --dashboard-label-text-fill-color: #454852;
+    --dashboard-label-shadow: none;
+    --dashboard-label-filter: none;
 
-/* ===== Base Body Styling ===== */
-body
-{
-    font-size: 1.1rem;
-    font-family: var(--font);
-    background: var(--bg);
-    color: var(--fg);
-    margin: 0;
-    padding: 0;
-    min-height: 100vh;
-    position: relative;
-    overflow: hidden;
-}
+    /* ====== TABLES & STATS ====== */
+    --stats-footer-color: #362f26;
+    --stats-table-hover-bg: #acacac;
+    --stats-table-hover-color: #f5faff;
+    --stats-row-error-bg: #37242a;
+    --stat-bar-gradient: linear-gradient(90deg, var(--info, #339af0), #1565c0);
 
-/* ===== View Frame Styling ===== */
-#viewFrame
-{
-    position: relative;
-    z-index: 1;
-    width: 100%;
-    height: 80vh;
-    background: var(--view-frame-bg);
-    border-radius: 8px;
-    padding: 2rem;
-    overflow-y: auto;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    scroll-behavior: smooth;
-    overscroll-behavior: contain;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    scrollbar-color: transparent transparent;
-    outline: none;
-}
+    /* ====== SPECIAL EFFECTS & MISC ====== */
+    --splash-particle-color: rgb(0, 0, 0, 0.5);
+    --poster-list-hover-bg: #222c;
+    --poster-list-hover-color: #ffe06f;
+    --gdrive-tooltip-bg: #232c3b;
+    --gdrive-tooltip-color: #e6ecfa;
+    --gdrive-tooltip-shadow: #0006;
+    --gdrive-tooltip-red: #e75b5b;
+    --gdrive-tooltip-highlight: #ffd166;
+    --copy-btn-hover-color: #ffe06f;
+    --loader-bg: #e0e6ed;
+    --img-modal-shadow: #1117;
+    --hover-preview-border: #444;
 
-#viewFrame::-webkit-scrollbar
-{
-    width: 0;
-    height: 0;
-}
+    /* ====== NOTIFICATION CARD ====== */
+    --notification-card-shadow: 0 2px 6px #c1c5cb;
 
-/* ===== Form Controls ===== */
-.input,
-.select
-{
-    display: block;
-    width: 100%;
-    padding: var(--form-padding);
-    height: var(--form-height);
-    background: var(--form-bg);
-    color: var(--form-color);
-    border: var(--form-border);
-    border-radius: var(--form-radius);
-    font-size: var(--form-font-size);
-    box-sizing: border-box;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-}
+    /* ===== Navigation ===== */
+    --nav-glass-bg: rgba(245, 246, 247, 0.83);
+    --nav-glass-border: 1px solid rgba(30, 40, 50, 0.07);
+    --nav-shadow: 0 2px 6px rgba(60, 72, 90, 0.13);
+    --nav-dropdown-shadow: 0 4px 12px rgba(60, 72, 90, 0.09);
 
-/* Arrow icon for selects */
-.select
-{
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ff7300'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    background-size: 0.65rem auto;
-}
+    /* ====== LOGS & LOG VIEWER ====== */
+    --log-badge-bg: rgba(30, 40, 50, 0.06);
+    /*     --log-badge-shadow: 0 2px 6px #c1c5cb; */
+    --log-jump-btn-shadow: 0 2px 6px #c1c5cb;
+    --log-line-hover-bg: rgba(0, 0, 0, 0.018);
 
-.input:focus,
-.select:focus
-{
-    outline: none;
-    border-color: var(--focus);
-    box-shadow: 0 0 0 3px var(--focus);
-}
+    /* ====== SPLASH / WELCOME ====== */
+    --splash-card-shadow: 0 8px 24px #c1c5cb;
 
-.textarea
-{
-    display: block;
-    width: 100%;
-    padding: 0.75rem;
-    background: var(--input-bg);
-    color: var(--fg);
-    border: var(--form-border);
-    border-radius: var(--form-radius);
-    font-size: 1rem;
-    line-height: 1.2;
-    box-sizing: border-box;
-    resize: vertical;
-    min-height: 4rem;
-}
+    /* ====== SHADOWS & BORDERS ====== */
+    --shadow: rgba(60, 72, 90, 0.09);
+    /*     --box-shadow: 0 2px 8px var(--shadow); */
+    --card-border: 1px solid #c1c5cb;
+    --pill-border: 1.5px solid #dde2ec;
+    --pill-hover-bg: #e9eaed;
+    --pill-active-bg: #d8dade;
+    --pill-hover-shadow: 0 2px 8px #c1c5cb;
 
-.textarea:focus
-{
-    outline: none;
-    border-color: var(--focus);
-    box-shadow: 0 0 0 3px var(--focus);
-}
+    /* ====== LABELARR & LIBRARY CUSTOM ====== */
+    --labelarr-label-bg: rgba(200, 200, 200, 0.13);
+    --labelarr-label-color: #967540;
+    --labelarr-label-empty-color: #bcbec4;
+    --labelarr-library-bg: rgba(60, 110, 180, 0.07);
+    --labelarr-library-color: #4c7ad1;
+    --labelarr-arrow-color: #9fa3aa;
+    --labelarr-plex-instance-color: #5ea455;
 
-/* ===== Animations ===== */
-@keyframes pageFadeIn
-{
-    from
-    {
-        opacity: 0;
-        transform: translateY(10px);
-    }
+    --viewframe-border-top: rgba(0, 0, 0, 0.07);
+    --footer-update-badge-color: #23272e;
+    --update-tooltip-title-color: #23272e;
+    --daps-footer-box-shadow: rgba(0, 0, 0, 0.06);
+    --update-tooltip-versions-color: #868e96;
+    --preset-card-border: rgba(30, 40, 60, 0.1);
+    --dir-list-li-hover-background: rgba(50, 60, 80, 0.07);
+    --select2-results--option--highlighted-color: #23272e;
+    --modal-preset-type-color: #a37614;
+    --modal-preset-type-background: rgba(225, 200, 120, 0.19);
+    --modal-preset-content-color: #3a4c67;
+    --modal-preset-content-background: rgba(160, 175, 200, 0.13);
 
-    to
-    {
-        opacity: 1;
-        transform: var(--translate-neutral)
-    }
-}
-
-.view-frame.fade-in
-{
-    animation: pageFadeIn 0.3s ease-out forwards;
-}
-
-/* ===== Link Styling ===== */
-a
-{
-    color: var(--link-color);
-    text-decoration: none;
-    transition: color 0.2s ease;
-}
-
-a:hover,
-a:focus
-{
-    color: var(--link-hover-color);
-    text-decoration: underline;
+    --terminal-bg: #1a1a1a;
+    --terminal-border: 1px solid #c1c5cb;
+    --terminal-color: #0f0;
+    --terminal-header-bg: #dee1e7;
+    --terminal-title-color: #23272e;
+    --terminal-control-close: #e33;
+    --terminal-control-min: #ffc400;
+    --terminal-control-max: #43a047;
+    --terminal-cursor-color: #0f0;
 }

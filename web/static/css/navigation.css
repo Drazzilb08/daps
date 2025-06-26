@@ -1,31 +1,37 @@
-/* ===== Navigation Bar ===== */
-nav
-{
+/* ======================================================
+   NAVIGATION BAR
+====================================================== */
+nav {
     border-bottom: none;
     margin-bottom: 0;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+    box-shadow: var(--nav-shadow);
     position: sticky;
     top: 0;
     z-index: 100;
     background: var(--primary-bg);
 }
 
-/* ===== Top Menu ===== */
-.menu
-{
+/* ======================================================
+   TOP MENU
+====================================================== */
+.menu {
     display: flex;
     justify-content: center;
-    gap: 2rem;
-    background: transparent;
+    gap: var(--nav-menu-gap);
+    background: var(--nav-glass-bg);
     align-items: center;
     list-style: none;
     padding: 0;
     margin: 0;
+    backdrop-filter: blur(var(--nav-glass-blur, 10px));
+    -webkit-backdrop-filter: blur(var(--nav-glass-blur, 10px));
+    border-bottom: var(--nav-glass-border, 1px solid rgba(255, 255, 255, 0.07));
+    box-shadow: var(--nav-shadow);
+    border-radius: var(--nav-border-radius);
 }
 
 .menu a,
-.dropdown-toggle
-{
+.dropdown-toggle {
     color: var(--text-color);
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-base);
@@ -34,15 +40,14 @@ nav
     padding: 0.5rem 0;
     background: none;
     border: none;
-    border-radius: 0;
+    border-radius: var(--nav-border-radius);
     transition: color 0.2s;
     vertical-align: middle;
 }
 
-.menu a.active::after,
-.menu a:hover::after,
-.dropdown-toggle.active::after
-{
+/* Only show underline for top-level horizontal menu items, not dropdowns */
+.menu > li > a.active::after,
+.menu > li > a:hover::after {
     content: '';
     position: absolute;
     bottom: -4px;
@@ -50,18 +55,57 @@ nav
     right: 0;
     height: 2px;
     background: var(--highlight);
+    border-radius: 1px;
+    transition: background 0.18s;
 }
 
-/* ===== Dropdown Wrapper ===== */
-.dropdown
-{
+.menu > li > .dropdown-toggle.active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--highlight);
+    border-radius: 1px;
+    transition: background 0.18s;
+}
+
+/* Prevent underline on dropdown menu links */
+.dropdown-menu li a::after {
+    display: none !important;
+    content: none !important;
+}
+
+.dropdown-toggle.active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 2px;
+}
+
+.dropdown-menu li a.active {
+    background: var(--primary);
+    color: var(--bg);
+    font-weight: 600;
+    opacity: 1;
+    border-left: 3px solid var(--highlight);
+}
+
+/* ======================================================
+   DROPDOWN WRAPPER
+====================================================== */
+.dropdown {
     position: relative;
     display: inline-block;
 }
 
-/* ===== Dropdown Toggle Button ===== */
-.dropdown-toggle
-{
+/* ======================================================
+   DROPDOWN TOGGLE BUTTON
+====================================================== */
+.dropdown-toggle {
     background: none;
     border: none;
     color: var(--text-color);
@@ -71,15 +115,16 @@ nav
     margin-bottom: 0;
     position: relative;
     cursor: pointer;
-    border-radius: 0;
+    border-radius: var(--nav-border-radius);
     transition: color 0.2s;
     display: inline-flex;
     align-items: center;
 }
 
-/* ===== Dropdown Menu ===== */
-.dropdown-menu
-{
+/* ======================================================
+   DROPDOWN MENU
+====================================================== */
+.dropdown-menu {
     position: absolute;
     top: 100%;
     left: 50%;
@@ -87,79 +132,68 @@ nav
     opacity: 0;
     pointer-events: none;
     list-style: none;
-    margin: 0;
+    margin-top: 5px;
     padding: 0;
-    background: transparent;
-    transform-origin: top center;
-    border: none;
-    box-shadow: 0 4px 12px var(--shadow);
-    border-radius: 4px;
+    background: var(--nav-glass-bg);
+    backdrop-filter: blur(var(--nav-glass-blur, 22px)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--nav-glass-blur, 22px)) saturate(180%);
+    border: var(--nav-glass-border, 1.5px solid rgba(255, 255, 255, 0.13));
+    box-shadow: var(--nav-dropdown-shadow), 0 2px 20px 0 rgba(30, 38, 43, 0.09) inset;
+    border-radius: var(--nav-dropdown-radius);
     min-width: 10rem;
     overflow: hidden;
     z-index: 100;
     width: 12rem;
-    transition:
-        opacity 150ms ease-in,
-        transform 200ms ease-out;
+    transition: opacity 150ms ease-in, transform 200ms ease-out;
 }
 
-.dropdown.open .dropdown-menu
-{
+.dropdown.open .dropdown-menu {
     opacity: 1;
     pointer-events: auto;
     transform: translate(-50%, 0) scale(1);
     width: 14rem;
 }
 
-.dropdown:hover .dropdown-menu,
-.dropdown.open .dropdown-menu
-{
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.dropdown-menu li
-{
+.dropdown-menu li {
     margin: 0;
 }
 
-/* ===== Dropdown Menu Items ===== */
-.dropdown-menu li a
-{
+/* ======================================================
+   DROPDOWN MENU ITEMS
+====================================================== */
+.dropdown-menu li a {
+    white-space: nowrap;
     display: block;
-    padding: 0.75rem 1.25rem;
-    background: var(--card-bg);
+    padding: var(--nav-dropdown-item-padding);
+    background: var(--nav-glass-bg);
     color: var(--fg);
     text-decoration: none;
     transform: translateX(0);
     opacity: 0.95;
-    transition:
-        background 150ms ease,
-        color 150ms ease,
-        transform 150ms ease,
-        opacity 150ms ease;
+    border-radius: var(--nav-dropdown-item-radius);
+    transition: background 150ms ease, color 150ms ease, transform 150ms ease, opacity 150ms ease;
 }
 
-.dropdown-menu li a:hover
-{
+.dropdown-menu li a:hover {
     background: var(--primary);
     color: var(--bg);
     transform: translateX(2px);
     opacity: 1;
+    border-left: 3px solid var(--highlight);
 }
 
-.dropdown-menu li:first-child a
-{
-    border-top-left-radius: 4px;
-    border-top-right-radius: 4px;
+.dropdown-menu li:first-child a,
+.dropdown-menu li:last-child a {
+    border-radius: var(--nav-dropdown-item-radius);
 }
 
-/* ===== Settings Panel ===== */
-.settings-panel
-{
+/* ======================================================
+   SETTINGS PANEL
+====================================================== */
+.settings-panel {
     background: var(--card-bg);
     padding: 1rem;
-    border-radius: 8px;
+    border-radius: var(--border-radius-default);
     box-shadow: 0 6px 12px var(--shadow);
     display: flex;
     flex-direction: column;
@@ -167,27 +201,27 @@ nav
     min-width: 14rem;
 }
 
-/* ===== Settings Panel Title ===== */
-.settings-panel .panel-title
-{
+/* ======================================================
+   SETTINGS PANEL TITLE
+====================================================== */
+.settings-panel .panel-title {
     font-size: 1.1rem;
     font-weight: 700;
-    color: var(--primary);
     margin-bottom: 0.5rem;
     padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--shadow);
+    /* border-bottom: 1px solid var(--shadow); */
     text-align: center;
 }
 
-/* ===== Settings Panel Items ===== */
-.settings-panel li
-{
+/* ======================================================
+   SETTINGS PANEL ITEMS
+====================================================== */
+.settings-panel li {
     list-style: none;
     margin: 0;
 }
 
-.settings-panel li a
-{
+.settings-panel li a {
     display: block;
     padding: 0.75rem 1.25rem;
     background: var(--card-bg);
@@ -199,16 +233,7 @@ nav
     transition: background 200ms, border 200ms, color 200ms;
 }
 
-.settings-panel li a:hover
-{
-    background: var(--primary);
+.settings-panel li a:hover,
+.settings-panel li a.active {
     color: var(--bg);
-    border: 1px solid var(--primary);
-}
-
-.settings-panel li a.active
-{
-    background: var(--primary);
-    color: var(--bg);
-    border: 1px solid var(--primary);
 }

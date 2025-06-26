@@ -1,298 +1,192 @@
-/* ===== Main Log Container Structure ===== */
-.container-iframe {
-    display: flex;
-    flex-direction: column;
-    height: 100%; /* Assumes parent allows this */
-}
+/* ======================================================
+   LOG VIEWER: AUTO-SCROLL BADGE & SPINNER
+====================================================== */
 
 /* ===== Auto-Scroll Badge ===== */
-#scroll-badge {
+.log-scroll-badge {
     position: absolute;
     bottom: 3rem;
     right: 20px;
-    background: rgba(0, 0, 0, 0.7);
-    color: white;
-    padding: 5px 10px;
-    border-radius: 5px;
-    font-size: 0.8rem;
+    background: var(--log-badge-bg);
+    color: var(--heading-color);
+    padding: var(--log-badge-padding);
+    border-radius: var(--log-badge-radius);
+    font-size: var(--log-badge-font-size);
     display: none;
-    z-index: 9999;
-    transition: opacity 0.5s;
-    opacity: 0;
+    z-index: var(--log-badge-z);
+    transition: var(--log-badge-transition);
+    opacity: var(--log-badge-opacity);
 }
+
 /* ===== Spinner ===== */
-#log-spinner
-{
+.log-spinner {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 60px;
-    height: 60px;
-    margin: -30px 0 0 -30px;
-    border: 6px solid var(--card-bg);
-    border-top: 6px solid var(--primary);
-    border-radius: 50%;
+    width: var(--log-spinner-size);
+    height: var(--log-spinner-size);
+    margin: calc(var(--log-spinner-size) / -2) 0 0 calc(var(--log-spinner-size) / -2);
+    border: var(--log-spinner-border);
+    border-top: var(--log-spinner-border-top);
+    border-radius: var(--log-spinner-radius);
     animation: spin 1s linear infinite;
-    z-index: 1000;
+    z-index: var(--log-spinner-z);
 }
 
-@keyframes spin
-{
-    from
-    {
+@keyframes spin {
+    from {
         transform: rotate(0deg);
     }
 
-    to
-    {
+    to {
         transform: rotate(360deg);
     }
 }
 
-/* ===== General Log Output Container ===== */
-#log-output {
+/* ======================================================
+   LOG OUTPUT CONTAINER & LINES
+====================================================== */
+
+/* ===== Main Log Output Container ===== */
+.log-output {
     width: 100%;
-    height: 100%;
-    overflow: hidden; /* Crucial: xterm.js manages its own scrolling within these bounds */
-    /* Let the xterm.js theme handle background, padding, font, etc. */
+    height: 600px;
+    overflow: hidden;
 }
 
+/* ===== Log Lines & Animation ===== */
+.log-line {
+    opacity: 1;
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.log-line.new-line {
+    animation: fadeInLine 0.4s ease-out;
+}
+
+.log-line:hover {
+    background: var(--log-line-hover-bg);
+}
+
+@keyframes fadeInLine {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: var(--translate-neutral);
+    }
+}
+
+/* ======================================================
+   SCROLL/JUMP BUTTONS
+====================================================== */
 
 /* ===== Jump to Bottom Button ===== */
-#jump-to-bottom
-{
+.jump-to-bottom {
     position: absolute;
     bottom: 1rem;
     right: 1rem;
     background: var(--primary);
     color: var(--bg);
-    padding: 0.4rem 0.9rem;
-    border-radius: 20px;
+    padding: var(--log-jump-btn-padding);
+    border-radius: var(--log-jump-btn-radius);
     cursor: pointer;
-    font-weight: bold;
-    font-size: 0.85rem;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    font-weight: var(--log-jump-btn-font-weight);
+    font-size: var(--log-jump-btn-font-size);
+    box-shadow: var(--log-jump-btn-shadow);
     display: none;
-    z-index: 100;
+    z-index: var(--log-jump-btn-z);
     transition: all 0.2s ease;
-    border: 2px solid var(--bg);
+    border: var(--log-scroll-btn-border);
 }
 
-#jump-to-bottom:hover
-{
+.jump-to-bottom:hover {
     background: var(--focus);
     transform: translateY(-1px);
 }
 
 /* ===== Scroll-to-Top & Scroll-to-Bottom Buttons ===== */
-/* ===== Scroll-to-Top & Scroll-to-Bottom Buttons ===== */
-#scroll-output-container {
+.scroll-output-container {
     position: relative;
-    flex-grow: 1; /* Allows this container to take available vertical space */
-    overflow: hidden; /* Ensures children (like log-output) are clipped */
-    min-height: 0; /* Important for flex children to not overflow their container */
+    flex-grow: 1;
+    overflow: hidden;
+    min-height: 0;
 }
-#scroll-to-top,
-#scroll-to-bottom {
+
+.scroll-to-top,
+.scroll-to-bottom {
     position: absolute;
     right: 1rem;
     background: var(--card-bg);
     color: var(--link-color);
     padding: 0.4rem 0.9rem;
-    border-radius: 20px;
+    border-radius: var(--log-scroll-btn-radius);
     font-weight: bold;
     font-size: 0.85rem;
-    border: 1px solid var(--bg);
+    border: var(--log-scroll-btn-border);
     z-index: 1000;
     display: none;
     cursor: pointer;
 }
-#scroll-to-top {
+
+.scroll-to-top {
     top: 1rem;
 }
-#scroll-to-bottom {
+
+.scroll-to-bottom {
     bottom: 1rem;
 }
 
-/* ===== Logs State Styling ===== */
-body.logs-open
-{
+/* ======================================================
+   LOG CONTROLS & TOOLBAR
+====================================================== */
+body.logs-open {
     overflow: hidden;
 }
 
-/* ===== Logs Title and Control Panel ===== */
-#log-reader-title
-{
-    font-size: 2rem;
-    text-align: center;
-    margin-bottom: 1rem;
-    color: var(--fg);
-}
-
-#log-controls
-{
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    align-items: center;
-    gap: 1rem;
-    margin: 1.5rem auto 1rem;
-    padding: 1rem 1.5rem;
-    background: var(--card-bg);
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-    max-width: 95%;
-}
-
-/* ===== Toolbar and Filter Elements ===== */
-.log-toolbar
-{
+.log-controls.log-toolbar {
     display: flex;
     flex-direction: row;
-    /* Ensure horizontal layout */
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1rem;
+    align-items: flex-end;
+    justify-content: flex-start;
+    gap: 1.1rem;
+    padding: 1rem 1.5rem;
+    background: var(--card-bg);
+    border-radius: var(--log-controls-radius);
+    box-shadow: var(--log-controls-shadow);
+    max-width: 95%;
+    margin: 1.5rem auto 1rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
 }
 
-.log-toolbar select,
-.log-toolbar input[type="text"]
-{
-    padding: 0.6rem 1rem;
-    background: var(--input-bg);
-    color: var(--fg);
-    border: 1px solid var(--shadow);
-    border-radius: 4px;
-    font-size: 0.95rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    height: 2.5rem;
+.log-toolbar {
+    gap: var(--log-toolbar-gap);
 }
 
-.log-toolbar select
-{
-    appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ff7300'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.75rem center;
-    background-size: 0.65rem auto;
+/* ======================================================
+   LOG LEVELS (COLORS)
+====================================================== */
+.log-error {
+    color: var(--log-error);
 }
 
-.log-toolbar select:hover
-{
-    border-color: var(--focus);
+.log-warning {
+    color: var(--log-warning);
 }
 
-.log-toolbar select:disabled
-{
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.log-toolbar input[type="text"]::placeholder
-{
-    color: #bbb;
-}
-
-.log-toolbar button
-{
-    padding: 0.6rem 1.2rem;
-    font-size: 0.95rem;
-    font-weight: 600;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.2s ease, transform 0.1s ease;
-    background: var(--primary);
-    color: var(--bg);
-}
-
-.log-toolbar button:hover
-{
-    background: var(--focus);
-    transform: translateY(-1px);
-}
-
-/* ===== Buttons (Clear, Download) ===== */
-#clear-search,
-#download-log
-{
-    margin-top: 0;
-    background: var(--btn-bg);
-    color: var(--primary-bg);
-    border: none;
-    border-radius: 5px;
-    padding: 0.5rem 1rem;
-    cursor: pointer;
-    font-weight: bold;
-    height: 40px;
-    /* Match input height */
-}
-
-#clear-search:hover,
-#download-log:hover
-{
-    background: var(--btn-hover-bg);
-}
-
-/* ===== Log Viewer Panel ===== */
-.log-line
-{
-    opacity: 1;
-    transition: opacity 0.3s, transform 0.3s;
-}
-
-.log-line.new-line
-{
-    animation: fadeInLine 0.4s ease-out;
-}
-
-.log-line:hover
-{
-    background: rgba(255, 255, 255, 0.03);
-}
-
-/* ===== Log Levels (Error, Warning, Info, etc.) ===== */
-.log-error
-{
-    color: red;
-}
-
-.log-warning
-{
-    color: orange;
-}
-
-.log-critical
-{
-    color: darkred;
+.log-critical {
+    color: var(--log-critical);
     font-weight: bold;
 }
 
-.log-info
-{
-    color: lightgreen;
+.log-info {
+    color: var(--log-info);
 }
 
-.log-debug
-{
-    color: gray;
-}
-
-/* ===== Animations ===== */
-@keyframes fadeInLine
-{
-    from
-    {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to
-    {
-        opacity: 1;
-        transform: var(--translate-neutral)
-    }
+.log-debug {
+    color: var(--log-debug);
 }

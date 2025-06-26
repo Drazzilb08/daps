@@ -1,0 +1,265 @@
+/* ======================================================
+   SPLASH / NOTIFICATIONS PAGE LAYOUT
+====================================================== */
+.splash-container {
+    z-index: 1;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+/* ======================================================
+   SPLASH PARTICLE ANIMATION
+====================================================== */
+#splash-particles {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    z-index: 0;
+    pointer-events: none;
+}
+
+/* ======================================================
+   SPLASH CARD
+====================================================== */
+.splash-card {
+    background: var(--card-bg);
+    padding: var(--splash-card-padding);
+    border-radius: var(--splash-card-radius);
+    box-shadow: var(--splash-card-shadow);
+    animation: fadeIn 0.6s ease-out forwards;
+}
+
+/* ======================================================
+   SPLASH CARD HEADER
+====================================================== */
+.splash-icon {
+    font-size: var(--splash-icon-size);
+    margin-bottom: 1rem;
+}
+
+.splash-card h1 {
+    font-size: var(--splash-header-font-size);
+    margin-bottom: var(--splash-header-margin-btm);
+    color: var(--primary);
+}
+
+/* ======================================================
+   SPLASH CARD PARAGRAPH / SETTINGS FIELDS
+====================================================== */
+.splash-card p {
+    font-size: var(--font-size-base-plus);
+    color: var(--fg);
+    opacity: var(--splash-p-opacity);
+}
+
+/* ======================================================
+   SPLASH TYPING INDICATOR
+====================================================== */
+.splash-typing::after {
+    content: '|';
+    animation: blink 1s infinite;
+}
+
+/* ======================================================
+   SPLASH KEYFRAMES
+====================================================== */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes blink {
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+}
+
+/* ======================================================
+   UPDATE TOOLTIP & DASHBOARD HEADER/FOOTER
+====================================================== */
+
+/* Tooltip container for update badge */
+.has-update-tooltip {
+    position: relative;
+}
+
+/* Tooltip itself */
+.update-tooltip {
+    min-width: 225px;
+    background: var(--card-bg);
+    color: var(--fg);
+    border-radius: var(--card-radius);
+    padding: var(--card-padding);
+    font-size: 1.06em;
+    font-weight: 500;
+    box-shadow: var(--card-hover-shadow, 0 6px 24px 0 rgba(0, 0, 0, 0.3));
+    border: var(--card-border);
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 2.4em;
+    z-index: 99999;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.18s, box-shadow 0.2s;
+    text-align: left;
+    white-space: nowrap;
+    display: block;
+    filter: drop-shadow(0 4px 15px var(--error, #f443362c));
+}
+
+.has-update-tooltip:hover .update-tooltip,
+.has-update-tooltip:focus .update-tooltip {
+    opacity: 1;
+    pointer-events: auto;
+    display: block;
+    box-shadow: var(--card-hover-shadow, 0 10px 30px 0 rgba(244, 67, 54, 0.13));
+}
+
+.update-tooltip-title {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: var(--update-tooltip-title-color);
+    letter-spacing: 0.02em;
+}
+
+.update-tooltip-versions {
+    color: var(--update-tooltip-versions-color);
+    font-size: 0.94em;
+}
+
+/* Footer (fixed, with card background, rounded) */
+.daps-footer {
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    padding: var(--padding-standard);
+    background: var(--card-bg);
+    color: var(--fg);
+    font-size: 0.85rem;
+    border-top-left-radius: var(--card-radius);
+    box-shadow: -2px -2px 5px var(--daps-footer-box-shadow);
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    z-index: 1000;
+}
+
+/* Footer version label */
+.footer-version {
+    font-weight: 500;
+}
+
+/* Update badge in footer (hidden by default) */
+.footer-update-badge {
+    display: none;
+    background: var(--error);
+    color: var(--footer-update-badge-color);
+    border-radius: 12px;
+    font-size: 0.82em;
+    padding: 2px 8px 2px 8px;
+    margin-left: 1em;
+    font-weight: 500;
+    vertical-align: middle;
+    cursor: pointer;
+    position: relative;
+}
+
+/* Footer external links (GitHub, Discord) */
+.footer-link {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--link-color);
+    text-decoration: none;
+}
+
+.daps-header-gradient {
+    text-align: center;
+    margin: 1.5rem auto 1rem;
+    font-size: 2.5rem;
+    font-weight: 600;
+    background: var(--daps-header-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: var(--daps-header-shadow);
+    letter-spacing: 0.045em;
+    transition: filter 0.2s, letter-spacing 0.18s;
+    filter: blur(0.15px) brightness(1.07);
+}
+
+.daps-header-gradient:hover {
+    filter: var(--daps-header-hover);
+    letter-spacing: 0.09em;
+}
+
+.daps-header-gradient .daps {
+    font-variant: small-caps;
+    font-size: 1.11em;
+    letter-spacing: 0.17em;
+}
+
+.daps-header-gradient .dashboard-label {
+    font-weight: 600;
+    font-size: 0.92em;
+    margin-left: 0.14em;
+    position: relative;
+    display: inline-block;
+    padding-bottom: 2px;
+    color: var(--dashboard-label-color);
+    background: none !important;
+    -webkit-background-clip: var(--dashboard-label-background-clip);
+    background-clip: var(--dashboard-label-background-clip);
+    -webkit-text-fill-color: var(--dashboard-label-text-fill-color);
+    text-shadow: var(--dashboard-label-shadow);
+    filter: var(--dashboard-label-filter);
+    opacity: 0.98;
+}
+
+.daps-header-gradient .dashboard-label::after {
+    content: '';
+    position: absolute;
+    left: 20%;
+    right: 20%;
+    bottom: 0;
+    height: 2px;
+    background: var(--daps-header-underline);
+    opacity: 0.22;
+    border-radius: 2px;
+    transform: scaleX(0);
+    transition: transform 0.23s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+    pointer-events: none;
+}
+
+.daps-header-gradient:hover .dashboard-label::after {
+    transform: scaleX(1);
+}
+
+.daps-header-link {
+    display: block;
+    text-decoration: none !important;
+    color: inherit !important;
+    cursor: pointer;
+}

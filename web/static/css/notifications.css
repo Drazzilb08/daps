@@ -1,302 +1,167 @@
-:root
-{
-    /* ===== Root Variables ===== */
-    --toggle-off: rgba(255, 255, 255, 0.2);
-    --toggle-on: var(--highlight);
-    --form-border-color: #444;
-}
-
-/* ===== Test Button Styles ===== */
-.test-btn.disabled
-{
-    background-color: #555 !important;
-    color: #aaa !important;
-    border: 1px solid #444 !important;
-    cursor: not-allowed !important;
-    opacity: 0.6 !important;
-    pointer-events: none;
-}
-
-/* ===== Notification Card ===== */
-#notificationsForm .fields {
-  position: relative;
-  display: grid;
-  grid-template-columns: 200px 1fr auto;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 1.25rem;
-  padding-bottom: 1rem;
-}
-.notification-card
-{
-    transform: scale(0.98);
+/* ======================================================
+   NOTIFICATIONS CARD
+====================================================== */
+#notificationsForm .card {
+    margin-bottom: var(--card-margin-btm);
     opacity: 0;
-    transition: transform 0.3s ease, opacity 0.3s ease, background 0.2s ease;
-    background: var(--card-bg);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: var(--border-radius);
-    box-shadow: 0 2px 6px var(--shadow);
-    padding: 1.25rem 1.5rem;
-    margin: var(--margin-vertical);
+    transform: translateY(24px) scale(0.98);
+    transition: opacity 0.28s cubic-bezier(0.44, 1.13, 0.73, 0.98),
+        transform 0.28s cubic-bezier(0.44, 1.13, 0.73, 0.98);
+}
+
+#notificationsForm .card.show-card {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+/* ======================================================
+   TOGGLE ROWS (FIELD GROUPS)
+====================================================== */
+#notificationsForm .field.toggle-row--expanded {
+    margin-bottom: 0.44em;
+    padding-bottom: 0.38em;
+    z-index: 2;
+}
+
+#notificationsForm .field.toggle-row {
+    margin-bottom: 0.08em;
+    margin-top: 0.04em;
+    padding-left: 0.07em;
+    gap: var(--field-gap, 0.6em);
+}
+
+/* ======================================================
+   NOTIFICATION TOGGLE GROUP
+====================================================== */
+.notification-toggle-group {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
-    align-items: stretch;
-    position: relative;
+    gap: 0.18em;
+    margin-top: 0.24em;
+    margin-bottom: 0.37em;
 }
 
-.notification-card.show-card
-{
-    transform: scale(1);
-    opacity: 1;
+/* ======================================================
+   TEST BUTTON (VISIBLE ONLY IF ENABLED)
+====================================================== */
+#notificationsForm .field.toggle-row .btn--test.enabled {
+    display: inline-flex;
 }
 
-.notification-card:hover
-{
-    background: var(--card-hover-bg);
-}
-
-.notification-card label
-{
-    font-weight: 600;
-    font-size: 1rem;
-}
-
-.notification-card-header
-{
-    font-size: var(--font-size-base-plus);
+/* ======================================================
+   CARD HEADER
+====================================================== */
+.card-header {
+    padding-bottom: 0.3em;
+    margin-bottom: 0.5em;
+    font-size: 1.2em;
     font-weight: bold;
-    margin-bottom: 0.5rem;
-    display: block;
+    color: var(--primary);
 }
 
-/* ===== Notification Fields Layout ===== */
-.notification-fields
-{
+/* ======================================================
+   NOTIFICATION FIELDSET (COLLAPSIBLE EXPAND/COLLAPSE)
+====================================================== */
+.notification-fieldset {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
-    width: 100%;
+    border-radius: var(--card-radius, 8px);
+    margin: 0.24em 0 0.52em 0;
+    padding: var(--notification-fieldset-padding, 1em 1.3em 1.1em 1.2em);
+    opacity: 0;
+    max-height: 0;
+    pointer-events: none;
+    transform: translateY(18px) scale(0.98);
+    transition: opacity 0.33s cubic-bezier(0.44, 1.13, 0.73, 0.98),
+        max-height 0.33s cubic-bezier(0.44, 1.13, 0.73, 0.98),
+        padding 0.17s cubic-bezier(0.44, 1.13, 0.73, 0.98),
+        transform 0.33s cubic-bezier(0.44, 1.13, 0.73, 0.98);
+    overflow: hidden;
+    box-shadow: var(--notification-card-shadow, 0 2px 10px rgba(0, 0, 0, 0.13));
+    background-color: var(--card-bg);
 }
 
-.notification-toggle-column
-{
-    display: flex;
-    flex-direction: column;
-    row-gap: 0.25rem;
-    width: 100%;
-    padding-top: 0.25rem;
+.notification-fieldset.expanded {
+    opacity: 1;
+    max-height: 2000px;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+    animation: notificationFieldsetIn 0.33s cubic-bezier(0.44, 1.13, 0.73, 0.98);
+    margin-bottom: 1.3em !important;
 }
 
-.notification-fieldsets-column
-{
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+.notification-fieldset.expanded .notification-field-container:last-child {
+    margin-bottom: 1.3em;
 }
 
-.notification-toggle-block
-{
-    width: 100%;
+.notification-fieldset:not(.expanded) {
+    animation: notificationFieldsetOut 0.27s cubic-bezier(0.71, 0, 0.32, 1);
 }
 
-.notification-toggle-block .toggle-row
-{
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    width: 100%;
-}
-
-.inline-test-btn
-{
-    order: 2;
-    margin-left: 1rem;
-}
-
-.test-btn-top-right
-{
-    position: absolute;
-    top: 0.5rem;
-    right: 0.75rem;
-    z-index: 5;
-}
-
-.notification-fields-wrapper
-{
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    margin-top: 0.25rem;
-    padding-left: 0.25rem;
-    padding-right: 0.25rem;
-}
-
-/* ===== Toggle Switch ===== */
-
-.notification-fields .toggle-switch .slider
-{
-    background-color: var(--toggle-off);
-}
-
-.notification-fields .toggle-switch input:checked+.slider
-{
-    background-color: var(--toggle-on);
-}
-
-/* ===== Test Button Styles ===== */
-.test-btn
-{
-    min-width: 60px;
-    padding: 0.5rem 1rem;
-    font-size: 0.95rem;
+/* ======================================================
+   FIELDSET LEGEND
+====================================================== */
+.fieldset-legend {
+    margin-top: 0.6em;
+    margin-bottom: 0.95em;
+    text-align: left;
     font-weight: 600;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.1s ease;
+    /* color: var(--primary); */
+    font-size: 1.11em;
 }
 
-/* ===== Fieldset Styles ===== */
-fieldset
-{
-    overflow: hidden;
-    width: 100%;
-    margin-top: 0.75rem;
-    border: 1px solid var(--shadow);
-    border-radius: var(--border-radius-default);
-    padding: 0.75rem;
-    background: rgba(255, 255, 255, 0.03);
-}
-
-fieldset input,
-fieldset textarea,
-fieldset select
-{
-    width: 100%;
-}
-
-fieldset.expanded
-{
-    max-height: 1000px;
-    opacity: 1;
-    transform: scaleY(1);
-}
-
-fieldset>div
-{
-    padding-left: 0.25rem;
-    padding-right: 0.25rem;
-}
-
-/* ===== Slide Animations ===== */
-.notification-slide
-{
-    max-height: 0;
-    overflow: hidden;
-    opacity: 0;
-    transform: scaleY(0.98);
-    transition: max-height 0.4s ease, opacity 0.3s ease, transform 0.3s ease;
-    background: transparent;
-}
-
-.notification-slide fieldset
-{
-    transition: var(--transition-fade);
-    opacity: 1;
-    background: var(--secondary-bg);
-    border: 1px solid var(--shadow);
-}
-
-.notification-slide:not(.expanded) fieldset
-{
-    opacity: 0;
-}
-
-.notification-slide.expanded
-{
-    max-height: 1000px;
-    opacity: 1;
-    transform: scaleY(1);
-}
-
-.notification-slide:hover,
-.notification-slide.expanded:hover
-{
-    background: transparent;
-}
-
-/* ===== Password Field Wrapper ===== */
-.masked-input
-{
-    font-family: text-security-disc;
-    -webkit-text-security: disc;
-}
-
-.password-wrapper
-{
-    position: relative;
+/* ======================================================
+   FIELD CONTAINER
+====================================================== */
+.notification-field-container {
     display: flex;
-    align-items: center;
+    flex-direction: column;
     width: 100%;
-    height: 2.5rem;
+    margin-bottom: 0.39em;
 }
 
-.password-wrapper input
-{
-    width: 100%;
-    padding: var(--padding-standard);
-    padding-right: 2.5rem;
-    background: var(--form-bg);
-    border: var(--form-border);
-    border-radius: var(--form-radius);
-    color: var(--form-color);
-    font-size: var(--form-font-size);
-    height: 2.5rem;
-    font-family: inherit;
-    -webkit-text-security: disc;
-    line-height: 1.25;
-    box-sizing: border-box;
+.notification-field-container label {
+    font-size: 1em;
+    font-weight: 500;
+    margin-bottom: 0.27em;
+    margin-right: 0;
 }
 
-.password-wrapper input:not(.masked-input)
-{
-    -webkit-text-security: none;
-    font-family: inherit;
+.notification-field-container:last-child {
+    margin-bottom: 0;
 }
 
-.toggle-password
-{
-    position: absolute;
-    right: 0.75rem;
-    top: 0;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    user-select: none;
-    font-size: 1.1rem;
-    color: var(--fg);
+/* ======================================================
+   TEST BUTTON (GLOBAL)
+====================================================== */
+.btn--test {
+    display: none;
+    margin-left: auto;
 }
 
-/* ===== Toggle Header/Content Blocks ===== */
-.toggle-content
-{
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.4s ease;
+/* ======================================================
+   FIELDSET ANIMATIONS
+====================================================== */
+@keyframes notificationFieldsetIn {
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
-.toggle-content.open
-{
-    max-height: 1000px;
-}
+@keyframes notificationFieldsetOut {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 
-.toggle-header
-{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    min-height: 40px;
+    to {
+        opacity: 0;
+        transform: translateY(-11px) scale(0.96);
+    }
 }

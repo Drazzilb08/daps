@@ -432,15 +432,10 @@ async def create_folder(path: str, logger: Any = Depends(get_logger)) -> Any:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
-@app.get("/fragments/{fragment_name}", response_class=HTMLResponse, response_model=None)
+@app.get("/pages/{fragment_name}", response_class=HTMLResponse, response_model=None)
 async def serve_fragment(fragment_name: str, logger: Any = Depends(get_logger)) -> Any:
     """Serves a named HTML fragment from the fragments directory."""
-    html_path = (
-        Path(__file__).parent
-        / "templates"
-        / "fragments"
-        / f"{fragment_name}_fragment.html"
-    )
+    html_path = Path(__file__).parent / "templates" / "pages" / f"{fragment_name}.html"
     if not html_path.exists():
         raise HTTPException(status_code=404, detail="Fragment not found")
     try:
@@ -499,7 +494,9 @@ async def poster_search_stats(request: Request, logger: Any = Depends(get_logger
     try:
         data = await request.json()
         location = data.get("location")
-        logger.debug(f"[WEB] Serving POST /api/poster-search-stats for location: {location}")
+        logger.debug(
+            f"[WEB] Serving POST /api/poster-search-stats for location: {location}"
+        )
         if not location or not os.path.isdir(location):
             return JSONResponse(status_code=400, content={"error": "Invalid location"})
         total_size = 0

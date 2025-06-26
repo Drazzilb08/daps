@@ -1,0 +1,43 @@
+<div class="container-iframe">
+    <div class="poster-search-loader-modal" style="display: none">
+        <div class="terminal-loader">
+            <div class="terminal-header">
+                <div class="terminal-title">Status</div>
+                <div class="terminal-controls">
+                    <div class="control close"></div>
+                    <div class="control minimize"></div>
+                    <div class="control maximize"></div>
+                </div>
+            </div>
+            <div class="text">Loading Posters...</div>
+        </div>
+    </div>
+    <div class="content">
+        <div class="poster-search-btn-row">
+            <button id="toggle-stats-btn" class="poster-search-toggle-btn btn">
+                📊 Show Statistics
+            </button>
+        </div>
+        <div id="poster-stats-card">
+            <div id="gdrive-stats-section"></div>
+            <div id="assets-stats-section"></div>
+        </div>
+        <div class="poster-search-toggle-row">
+            <span class="poster-search-label">Search in:</span>
+            <label class="toggle-switch">
+                <input type="checkbox" id="search-scope-toggle" />
+                <span class="slider"></span>
+            </label>
+            <span id="search-scope-label" class="poster-search-scope-label">GDrive Locations</span>
+        </div>
+        <input
+            type="text"
+            id="poster-search-input"
+            class="input"
+            placeholder="🔍 Search posters..."
+            autocomplete="off"
+            spellcheck="false"
+        />
+        <div id="poster-search-results" class="poster-search-results"></div>
+    </div>
+</div>

@@ -89,19 +89,19 @@
     "radarr_count": 0,
     "sonarr_count": 0,
     "tag_name": "",
-    "instances": [],
-    "enable_batching": false
+    "enable_batching": false,
+    "instances": []
   },
   "nohl": {
     "log_level": "info",
     "dry_run": false,
     "searches": 10,
     "print_files": false,
-    "instances": [],
     "source_dirs": [],
     "exclude_profiles": [],
     "exclude_movies": [],
-    "exclude_series": []
+    "exclude_series": [],
+    "instances": []
 
   },
   "labelarr": {
@@ -120,6 +120,7 @@
     "source_dirs": []
   },
   "main": {
-    "log_level": "info"
+    "log_level": "info",
+    "theme": "dark"
   }
 }

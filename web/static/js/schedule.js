@@ -1,187 +1,133 @@
-/**
- * Loads and renders the schedule form, including help section,
- * schedule inputs, run/cancel buttons, and real-time status polling.
- */
-// ===== Schedule Format Validation =====
-// ===== Fetch Config and Setup Form =====
-window.loadSchedule = async function()
-{
-    const res = await fetch("/api/config");
-    const config = await res.json();
-    const schedule = config.schedule ||
-    {};
-    const form = document.getElementById("scheduleForm");
+import { fetchConfig, renderHelp, moduleOrder } from './helper.js';
+import { buildSchedulePayload } from './payload.js';
+import { navigateTo } from './navigation.js';
+import { DAPS } from './common.js';
+const { bindSaveButton, showToast, humanize } = DAPS;
+
+export async function loadSchedule() {
+    const config = await fetchConfig();
+    const schedule = config.schedule || {};
+    const form = document.getElementById('scheduleForm');
     if (!form) return;
-    form.innerHTML = "";
-    // ===== Global Help Section =====
-    const helpWrapper = document.createElement("div");
-    helpWrapper.className = "schedule-help";
-    const helpToggle = document.createElement("button");
-    helpToggle.className = "help-toggle";
-    helpToggle.innerHTML = "<span class='help-label'>⏰ How to Schedule Tasks</span>";
-    const helpContent = document.createElement("pre");
-    helpContent.className = "help-content";
-    helpContent.textContent = window.help?.schedule?.join("\n") || "See documentation for valid formats";
-    helpToggle.addEventListener("click", () =>
-    {
-        helpContent.classList.toggle("show");
-    });
-    helpWrapper.appendChild(helpToggle);
-    helpWrapper.appendChild(helpContent);
-    form.before(helpWrapper);
-    // ===== Render Schedule Fields =====
-    const orderedModules = (window.moduleOrder || Object.keys(schedule)).filter(m => schedule.hasOwnProperty(m));
-    for (const module of orderedModules)
-    {
+    form.innerHTML = '';
+    const help = renderHelp('schedule');
+    if (help) form.before(help);
+
+    const orderedModules = (moduleOrder || Object.keys(schedule)).filter((m) =>
+        schedule.hasOwnProperty(m)
+    );
+    for (const [i, module] of orderedModules.entries()) {
         const time = schedule[module];
-        const label = document.createElement("label");
-        label.textContent = window.humanize(module);
-        const input = document.createElement("input");
-        input.type = "text";
+        const label = document.createElement('label');
+        label.textContent = humanize(module);
+        const input = document.createElement('input');
+        input.type = 'text';
         input.name = module;
-        input.value = time || "";
-        input.className = "input"
-        input.placeholder = "e.g. hourly(01), daily(12:00|18:00), weekly(Mon@12:00|Tue@18:00)";
-        const field = document.createElement("div");
-        field.className = "field";
+        input.value = time || '';
+        input.className = 'input';
+        input.placeholder = 'e.g. hourly(01), daily(12:00|18:00), weekly(Mon@12:00|Tue@18:00)';
+        const field = document.createElement('div');
+        field.className = 'field';
         field.appendChild(label);
         field.appendChild(input);
-        // ===== Live (as-you-type) Validation =====
-        input.addEventListener('input', () =>
-        {
-            if (!input.value.trim() || window.DAPS.isValidSchedule(input.value.trim()))
-            {
+
+        input.addEventListener('input', () => {
+            if (!input.value.trim() || isValidSchedule(input.value.trim())) {
                 input.classList.remove('input-invalid');
-            }
-            else
-            {
+            } else {
                 input.classList.add('input-invalid');
             }
         });
-        const runBtn = document.createElement("button");
-        runBtn.type = "button";
-        runBtn.textContent = "Run Now";
-        runBtn.className = "run-btn";
-        runBtn.addEventListener("mouseenter", () =>
-        {
-            if (runBtn.classList.contains("running"))
-            {
-                runBtn.textContent = "Cancel";
-                runBtn.classList.add("cancel-hover");
+
+        const runBtn = document.createElement('button');
+        runBtn.type = 'button';
+        runBtn.textContent = 'Run Now';
+        runBtn.className = 'run-btn btn';
+        runBtn.addEventListener('mouseenter', () => {
+            if (runBtn.classList.contains('running')) {
+                runBtn.textContent = 'Cancel';
+                runBtn.classList.add('cancel-hover');
             }
         });
-        runBtn.addEventListener("mouseleave", () =>
-        {
-            if (runBtn.classList.contains("running"))
-            {
-                runBtn.textContent = "Running";
-                runBtn.classList.remove("cancel-hover");
+        runBtn.addEventListener('mouseleave', () => {
+            if (runBtn.classList.contains('running')) {
+                runBtn.textContent = 'Running';
+                runBtn.classList.remove('cancel-hover');
             }
         });
-        // ===== Run Button Logic =====
-        runBtn.addEventListener("click", async () =>
-        {
-            const statusDiv = document.getElementById("status");
-            statusDiv.textContent = "";
-            if (runBtn.classList.contains("running"))
-            {
-                runBtn.textContent = "Canceling";
-                await fetch("/api/cancel",
-                {
-                    method: "POST",
-                    headers:
-                    {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify(
-                    {
-                        module
-                    })
+
+        runBtn.addEventListener('click', async () => {
+            if (runBtn.classList.contains('running')) {
+                runBtn.textContent = 'Canceling';
+                await fetch('/api/cancel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ module }),
                 });
-                runBtn.classList.remove("running");
-                runBtn.textContent = "Run Now";
-                statusDiv.textContent = `🛑 ${window.humanize(module)} cancelled`;
-                statusDiv.className = "error";
-                window.showToast(`🛑 ${window.humanize(module)} cancelled successfully.`, "info");
+                runBtn.classList.remove('running');
+                runBtn.textContent = 'Run Now';
+                showToast(`🛑 ${humanize(module)} cancelled successfully.`, 'info');
                 return;
             }
-            runBtn.textContent = "Running";
-            runBtn.classList.add("running");
-            if (!btnContainer.querySelector('.run-btn + .run-btn'))
-            {
-                const viewLogsBtn = document.createElement("button");
-                viewLogsBtn.type = "button";
-                viewLogsBtn.textContent = "View Logs";
-                viewLogsBtn.className = "run-btn";
-                viewLogsBtn.addEventListener("click", () =>
-                {
+            runBtn.textContent = 'Running';
+            runBtn.classList.add('running');
+            if (!btnContainer.querySelector('.run-btn + .run-btn')) {
+                const viewLogsBtn = document.createElement('button');
+                viewLogsBtn.type = 'button';
+                viewLogsBtn.textContent = 'View Logs';
+                viewLogsBtn.className = 'run-btn btn';
+                viewLogsBtn.addEventListener('click', () => {
                     window._preselectedLogModule = module;
                     window.skipDirtyCheck = true;
                     const link = document.createElement('a');
-                    link.href = '/fragments/logs';
-                    window.DAPS.navigateTo(link);
+                    link.href = '/pages/logs';
+                    navigateTo(link);
                 });
                 btnContainer.appendChild(viewLogsBtn);
             }
-            const res = await fetch("/api/run",
-            {
-                method: "POST",
-                headers:
-                {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(
-                {
-                    module
-                })
+            const res = await fetch('/api/run', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ module }),
             });
-            if (!res.ok)
-            {
+            if (!res.ok) {
                 const err = await res.json();
-                statusDiv.textContent = `❌ Failed to start ${window.humanize(module)}: ${err.error || res.statusText}`;
-                statusDiv.className = "error";
-                runBtn.classList.remove("running");
-                runBtn.textContent = "Run Now";
+                runBtn.classList.remove('running');
+                runBtn.textContent = 'Run Now';
+                showToast(
+                    `❌ Failed to start ${humanize(module)}: ${err.error || res.statusText}`,
+                    'error'
+                );
                 return;
             }
-            window.showToast(`▶️ ${window.humanize(module)} started successfully!`, "success");
-            const interval = setInterval(async () =>
-            {
+            showToast(`▶️ ${humanize(module)} started successfully!`, 'success');
+            const interval = setInterval(async () => {
                 const resStatus = await fetch(`/api/status?module=${module}`);
-                const
-                {
-                    running
-                } = await resStatus.json();
-                if (!running)
-                {
-                    runBtn.classList.remove("running");
-                    runBtn.textContent = "Run Now";
+                const { running } = await resStatus.json();
+                if (!running) {
+                    runBtn.classList.remove('running');
+                    runBtn.textContent = 'Run Now';
                     clearInterval(interval);
                 }
             }, 2000);
         });
-        const btnContainer = document.createElement("div");
-        btnContainer.className = "run-btn-container";
+
+        const btnContainer = document.createElement('div');
+        btnContainer.className = 'btn-container';
         btnContainer.appendChild(runBtn);
         field.appendChild(btnContainer);
-        // ===== Initialize Run Button Status on Load =====
-        (async () =>
-        {
+
+        (async () => {
             const resStatus = await fetch(`/api/status?module=${module}`);
-            const
-            {
-                running
-            } = await resStatus.json();
-            if (running)
-            {
-                runBtn.textContent = "Running";
-                runBtn.classList.add("running");
-                const viewLogsBtn = document.createElement("button");
-                viewLogsBtn.type = "button";
-                viewLogsBtn.textContent = "View Logs";
-                viewLogsBtn.className = "run-btn";
-                viewLogsBtn.addEventListener("click", () =>
-                {
+            const { running } = await resStatus.json();
+            if (running) {
+                runBtn.textContent = 'Running';
+                runBtn.classList.add('running');
+                const viewLogsBtn = document.createElement('button');
+                viewLogsBtn.type = 'button';
+                viewLogsBtn.textContent = 'View Logs';
+                viewLogsBtn.className = 'run-btn btn ';
+                viewLogsBtn.addEventListener('click', () => {
                     window._preselectedLogModule = module;
                     window.skipDirtyCheck = true;
                     const link = document.createElement('a');
@@ -191,50 +137,38 @@ window.loadSchedule = async function()
                 btnContainer.appendChild(viewLogsBtn);
             }
         })();
-        const card = document.createElement("div");
-        card.className = "schedule-card";
+
+        const card = document.createElement('div');
+        card.className = 'card';
         card.appendChild(field);
         form.appendChild(card);
-        document.querySelectorAll('.schedule-card').forEach((el, i) =>
-        {
-            setTimeout(() => el.classList.add('show-card'), i * 80);
-        });
+        setTimeout(() => card.classList.add('show-card'), 40 * i);
     }
-    // ===== Periodic Status Update for Run Buttons =====
-    if (window._scheduleRunInterval)
-    {
+
+    if (window._scheduleRunInterval) {
         clearInterval(window._scheduleRunInterval);
         window._scheduleRunInterval = null;
     }
-    window._scheduleRunInterval = setInterval(() =>
-    {
-        document.querySelectorAll('.field').forEach(field =>
-        {
+    window._scheduleRunInterval = setInterval(() => {
+        document.querySelectorAll('.field').forEach((field) => {
             const inp = field.querySelector('input');
             const runBtn = field.querySelector('button.run-btn');
             if (!inp || !runBtn) return;
             const module = inp.name;
             fetch(`/api/status?module=${module}`)
-                .then(res => res.json())
-                .then((
-                {
-                    running
-                }) =>
-                {
-                    if (running && !runBtn.classList.contains('running'))
-                    {
+                .then((res) => res.json())
+                .then(({ running }) => {
+                    if (running && !runBtn.classList.contains('running')) {
                         runBtn.textContent = 'Running';
                         runBtn.classList.add('running');
                         const btnContainer = runBtn.parentElement;
                         const viewExists = btnContainer.querySelector('.run-btn + .run-btn');
-                        if (!viewExists)
-                        {
-                            const viewLogsBtn = document.createElement("button");
-                            viewLogsBtn.type = "button";
-                            viewLogsBtn.textContent = "View Logs";
-                            viewLogsBtn.className = "run-btn";
-                            viewLogsBtn.addEventListener("click", () =>
-                            {
+                        if (!viewExists) {
+                            const viewLogsBtn = document.createElement('button');
+                            viewLogsBtn.type = 'button';
+                            viewLogsBtn.textContent = 'View Logs';
+                            viewLogsBtn.className = 'run-btn';
+                            viewLogsBtn.addEventListener('click', () => {
                                 window._preselectedLogModule = module;
                                 const link = document.createElement('a');
                                 link.href = '/fragments/logs';
@@ -242,9 +176,7 @@ window.loadSchedule = async function()
                             });
                             btnContainer.appendChild(viewLogsBtn);
                         }
-                    }
-                    else if (!running && runBtn.classList.contains('running'))
-                    {
+                    } else if (!running && runBtn.classList.contains('running')) {
                         runBtn.classList.remove('running');
                         runBtn.textContent = 'Run Now';
                         const btnContainer = runBtn.parentElement;
@@ -254,23 +186,30 @@ window.loadSchedule = async function()
                 });
         });
     }, 3000);
+
     const saveBtn = document.getElementById('saveBtn');
-    window.DAPS.bindSaveButton(saveBtn, window.DAPS.buildSchedulePayload, "schedule");
-    window.saveChanges = async () => window.saveSection(window.DAPS.buildSchedulePayload, "schedule");
-    // ===== Schedule Search Input Filtering =====
-    const searchInput = document.getElementById("schedule-search");
-    if (searchInput)
-    {
-        searchInput.addEventListener("input", (e) =>
-        {
-            window.skipDirtyCheck = true;
+    bindSaveButton(saveBtn, buildSchedulePayload, 'schedule');
+
+    const searchInput = document.getElementById('schedule-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            DAPS.skipDirtyCheck = true;
             searchInput.defaultValue = searchInput.value;
             const query = e.target.value.toLowerCase();
-            document.querySelectorAll(".schedule-card").forEach((card) =>
-            {
+            document.querySelectorAll('.card').forEach((card) => {
                 const text = card.textContent.toLowerCase();
-                card.style.display = text.includes(query) ? "flex" : "none";
+                card.style.display = text.includes(query) ? 'flex' : 'none';
             });
         });
     }
-};
+}
+
+function isValidSchedule(val) {
+    if (!val) return true;
+    if (/^hourly\(\d{2}\)$/i.test(val)) return true;
+    if (/^daily\(\d{2}:\d{2}(?:\|\d{2}:\d{2})*\)$/i.test(val)) return true;
+    if (/^weekly\([a-z]+@\d{2}:\d{2}(?:\|[a-z]+@\d{2}:\d{2})*\)$/i.test(val)) return true;
+    if (/^monthly\(\d{1,2}@\d{2}:\d{2}(?:\|\d{1,2}@\d{2}:\d{2})*\)$/i.test(val)) return true;
+    if (/^cron\([^\)]+\)$/i.test(val)) return true;
+    return false;
+}

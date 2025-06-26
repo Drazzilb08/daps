@@ -1,277 +1,104 @@
-// --- Constants for DOM Selectors
+import { fetchConfig } from './helper.js';
+import { showToast } from './common.js';
+
 const IDS = {
     searchInput: 'poster-search-input',
-    statsCard: 'poster-stats-card',
-    statsSpinner: 'poster-stats-spinner',
-    gdriveStats: 'poster-gdrive-stats',
-    assetsStats: 'poster-assets-stats',
-    searchScopeToggle: 'search-scope-toggle',
-    searchScopeLabel: 'search-scope-label',
-    toggleStatsBtn: 'toggle-stats-btn',
-    gdriveSortSelect: 'gdrive-sort-select',
     searchResults: 'poster-search-results',
+    statsSpinner: 'poster-stats-spinner',
+    scopeToggle: 'search-scope-toggle',
+    scopeLabel: 'search-scope-label',
 };
-// --- Globals
+
+let config = {};
 let gdriveLocations = [];
-let assetsDir = null;
-let gdriveStats = [];
-let assetsStats = null;
+let customLocations = [];
 let gdriveFiles = [];
+let customFiles = [];
+let assetsDir = '';
 let assetsFiles = [];
-let gdriveTotals = {
-    files: 0,
-    size: 0
-};
-let assetsTotals = {
-    files: 0,
-    size: 0
-};
-const statsSortState = {};
-// ========== Utility Functions ==========
-function getById(id)
-{
-    return document.getElementById(id);
-}
+let gdriveStatsData = [];
+let assetsStatsData = [];
+let gdriveTotals = { files: 0, size: 0 };
+let assetsTotals = { files: 0, size: 0 };
+let gdriveSortMode = 'priority-desc';
+let priorityMap = {};
 
-function formatBytes(bytes)
-{
-    if (bytes < 1024) return bytes + " B";
-    let kb = bytes / 1024;
-    if (kb < 1024) return kb.toFixed(1) + " KB";
-    let mb = kb / 1024;
-    if (mb < 1024) return mb.toFixed(1) + " MB";
-    return (mb / 1024).toFixed(2) + " GB";
-}
-
-function highlight(str, term)
-{
-    if (!term) return str;
-    const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&' )})`, 'gi');
-    return str.replace(regex, `<span class="highlight">$1</span>`);
-}
-
-function copyToClipboard(btn, text)
-{
-    navigator.clipboard.writeText(text)
-        .then(() =>
-        {
-            // Show "Copied" state
-            const def = btn.querySelector('.copy-btn-default');
-            const copied = btn.querySelector('.copy-btn-copied');
-            if (def && copied)
-            {
-                def.style.display = 'none';
-                copied.style.display = 'inline-flex';
-                // Reset to default after 1.4s
-                setTimeout(() =>
-                {
-                    def.style.display = '';
-                    copied.style.display = 'none';
-                }, 1400);
-            }
-        })
-        .catch(() =>
-        {
-            window.showToast && window.showToast("Could not copy to clipboard.", "error");
-        });
-}
-
-function sortGdriveStats(statsArr, mode, priorityMap = {})
-{
-    mode = mode || 'priority-desc';
-    if (!Array.isArray(statsArr)) return;
-    let compare;
-
-    function notInSourceRank(a, b)
-    {
-        // Ensure "notInSource" rows sort LAST (bottom)
-        if (a.notInSource && !b.notInSource) return 1;
-        if (!a.notInSource && b.notInSource) return -1;
-        return 0;
-    }
-    if (mode.startsWith('priority'))
-    {
-        const asc = mode.endsWith('asc');
-        compare = (a, b) =>
-        {
-            const missing = notInSourceRank(a, b);
-            if (missing !== 0) return missing;
-            const ap = priorityMap[a.location] ?? 9999;
-            const bp = priorityMap[b.location] ?? 9999;
-            return asc ? ap - bp : bp - ap;
-        };
-    }
-    else if (mode.startsWith('files'))
-    {
-        const asc = mode.endsWith('asc');
-        compare = (a, b) =>
-        {
-            const missing = notInSourceRank(a, b);
-            if (missing !== 0) return missing;
-            return asc ? a.file_count - b.file_count : b.file_count - a.file_count;
-        };
-    }
-    else if (mode.startsWith('size'))
-    {
-        const asc = mode.endsWith('asc');
-        compare = (a, b) =>
-        {
-            const missing = notInSourceRank(a, b);
-            if (missing !== 0) return missing;
-            return asc ? a.size_bytes - b.size_bytes : b.size_bytes - a.size_bytes;
-        };
-    }
-    else
-    {
-        compare = notInSourceRank;
-    }
-    statsArr.sort(compare);
-}
-// ========== API Wrappers ==========
-async function fetchConfig()
-{
-    try
-    {
-        const res = await fetch('/api/config');
-        if (!res.ok) throw new Error('Failed to fetch config');
-        return await res.json();
-    }
-    catch (err)
-    {
-        showError('Could not load configuration.');
-        throw err;
-    }
-}
-async function fetchStats(location)
-{
-    if (!location) return {
-        error: true,
-        file_count: 0,
-        size_bytes: 0,
-        files: []
-    };
-    try
-    {
-        const res = await fetch('/api/poster-search-stats',
-        {
-            method: 'POST',
-            headers:
-            {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(
-            {
-                location
-            }),
-        });
-        if (!res.ok)
-        {
-            return {
-                error: true,
-                file_count: 0,
-                size_bytes: 0,
-                files: []
-            };
+let loaderStartTime = 0;
+function showLoaderModal(show = true) {
+    const container = document.querySelector('.container-iframe');
+    let loader = container.querySelector('.poster-search-loader-modal');
+    if (show) {
+        loaderStartTime = Date.now();
+        if (!loader) {
+            loader = document.createElement('div');
+            loader.className = 'poster-search-loader-modal';
+            loader.innerHTML = `
+              <div class="terminal-loader">
+                <div class="terminal-header">
+                  <div class="terminal-title">Status</div>
+                  <div class="terminal-controls">
+                    <div class="control close"></div>
+                    <div class="control minimize"></div>
+                    <div class="control maximize"></div>
+                  </div>
+                </div>
+                <div class="text">Loading Posters...</div>
+              </div>
+            `;
+            container.insertBefore(loader, container.firstChild);
         }
-        return await res.json();
-    }
-    catch (err)
-    {
-        return {
-            error: true,
-            file_count: 0,
-            size_bytes: 0,
-            files: []
-        };
-    }
-}
-// ========== UI Feedback Functions ==========
-function showError(msg)
-{
-    const el = document.createElement('div');
-    el.className = 'error-banner';
-    el.textContent = msg;
-    el.style.cssText = 'background:#422;padding:0.7em 1.2em;color:#ffeaa7;font-size:1.05em;border-radius:6px;margin:1em 0;';
-    const statsCard = getById(IDS.statsCard);
-    if (statsCard && !statsCard.querySelector('.error-banner'))
-    {
-        statsCard.insertBefore(el, statsCard.firstChild);
+        loader.style.display = 'flex';
+    } else if (loader) {
+        const elapsed = Date.now() - loaderStartTime;
+        const delay = Math.max(0, 4000 - elapsed); // 4s min for 1 cycle
+        setTimeout(() => {
+            loader.style.display = 'none';
+        }, delay);
     }
 }
 
-function clearError()
-{
-    document.querySelectorAll('.error-banner').forEach(el => el.remove());
+function formatBytes(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    let kb = bytes / 1024;
+    if (kb < 1024) return kb.toFixed(1) + ' KB';
+    let mb = kb / 1024;
+    if (mb < 1024) return mb.toFixed(1) + ' MB';
+    return (mb / 1024).toFixed(2) + ' GB';
 }
-// ========== Stats Table Rendering ==========
-function renderStatsTable(statsArr, totals, title, isAssets)
-{
+
+function renderStatsTable(statsArr, totals, title) {
     if (!statsArr.length) return '';
     const columns = [
-    {
-        key: 'name',
-        label: 'Folder',
-        isNumeric: false
-    },
-    {
-        key: 'file_count',
-        label: 'Files',
-        isNumeric: true
-    },
-    {
-        key: 'size_bytes',
-        label: 'Size',
-        isNumeric: true
-    },
-    {
-        key: 'percent',
-        label: '% of Total',
-        isNumeric: true
-    }];
-    let arr = statsArr.map(s => (
-    {
+        { key: 'name', label: 'Folder', isNumeric: false },
+        { key: 'file_count', label: 'Files', isNumeric: true },
+        { key: 'size_bytes', label: 'Size', isNumeric: true },
+        { key: 'percent', label: '% of Total', isNumeric: true },
+    ];
+
+    let arr = statsArr.map((s) => ({
         ...s,
-        percent: totals.files ? (s.file_count / totals.files * 100) : 0
+        percent: totals.files ? (s.file_count / totals.files) * 100 : 0,
     }));
-    if (title !== "GDrive Locations")
-    {
-        let sortKey = statsSortState[title]?.key || 'file_count';
-        let sortAsc = statsSortState[title]?.asc ?? false;
-        arr = arr.slice().sort((a, b) =>
-        {
-            if (sortKey === 'percent')
-            {
-                return sortAsc ? a.percent - b.percent : b.percent - a.percent;
-            }
-            if (columns.find(c => c.key === sortKey)?.isNumeric)
-            {
-                return sortAsc ? a[sortKey] - b[sortKey] : b[sortKey] - a[sortKey];
-            }
-            return sortAsc ? String(a[sortKey]).localeCompare(String(b[sortKey])) : String(b[sortKey]).localeCompare(String(a[sortKey]));
-        });
-    }
-    let header = columns.map(col => `<th>${col.label}</th>`).join('');
-    let rows = arr.map(s =>
-    {
-        let badge = s.isCustom ? ' <span style="font-size:0.88em;color:#7cb0fa;">(Custom)</span>' : '';
-        let folderCol = '';
-        if (s.notInSource)
-        {
-            folderCol = `
+    let header = columns.map((col) => `<th>${col.label}</th>`).join('');
+    let rows = arr
+        .map((s) => {
+            let badge = s.isCustom ? ' <span class="gdrive-custom-badge">(Custom)</span>' : '';
+            let folderCol = '';
+            if (s.notInSource) {
+                folderCol = `
                 <span class="gdrive-tooltip-wrapper">
-                    <span class="gdrive-name gdrive-tooltip-red" tabindex="0" aria-label="Missing from Source">${s.name}</span>
+                    <span class="gdrive-name gdrive-tooltip-red" tabindex="0">${s.name}</span>
                     <span class="gdrive-tooltip-content">
                         This GDrive is <b>not present</b> in Poster Renamerr's Source Directories</span>
                     </span>
-                </span>${badge}`;
-        }
-        else
-        {
-            folderCol = `<span class="gdrive-name">${s.name}</span>${badge}`;
-        }
-        // Error row highlight
-        const rowClass = s.error ? ' style="background:#3a2222;color:#fbb;"' : '';
-        return `<tr${rowClass}>
+                </span>
+            `;
+            } else {
+                folderCol = `<span class="gdrive-name">${s.name}</span>`;
+            }
+
+            const rowClass = s.error ? 'gdrive-row-error' : '';
+            return `<tr class="${rowClass}">
             <td>${folderCol}</td>
             <td>${s.file_count || 0}</td>
             <td>${formatBytes(s.size_bytes || 0)}</td>
@@ -282,110 +109,103 @@ function renderStatsTable(statsArr, totals, title, isAssets)
                 <span class="stat-bar-percent">${s.percent.toFixed(1)}%</span>
             </td>
         </tr>`;
-    }).join('\n');
+        })
+        .join('\n');
     return `
-    <div class="stats-title">${title}</div>
-    <table class="stats-table">
-        <thead>
-            <tr>${header}</tr>
-        </thead>
-        <tbody>${rows}</tbody>
-    </table>
-    <div class="stats-footer">
-        <b>Total files:</b> ${totals.files} &nbsp; <b>Total size:</b> ${formatBytes(totals.size)}
-    </div>
+        <div class="stats-title">${title}</div>
+        <table class="stats-table">
+            <thead>
+                <tr>${header}</tr>
+            </thead>
+            <tbody>${rows}</tbody>
+        </table>
+        <div class="stats-footer">
+            <b>Total files:</b> ${totals.files} &nbsp; <b>Total size:</b> ${formatBytes(
+        totals.size
+    )}
+        </div>
     `;
 }
-/**
- * Renders the GDrive stats sort select dropdown if it doesn't exist yet.
- * Attaches the onchange event handler to sort and rerender.
- */
-function renderGdriveSortDropdown()
-{
-    // Insert above the GDrive stats table
-    let statsContainer = document.getElementById(IDS.gdriveStats);
-    let parent = statsContainer?.parentNode;
-    if (!parent) return;
-    // Check if dropdown already exists
-    let select = document.getElementById(IDS.gdriveSortSelect);
-    if (!select)
-    {
-        select = document.createElement('select');
-        select.id = IDS.gdriveSortSelect;
-        select.style.marginBottom = '0.7em';
-        select.innerHTML = `
-            <option value="priority-desc">Sort: Source Order (desc)</option>
-            <option value="priority-asc">Sort: Source Order (asc)</option>
-            <option value="files-desc">Sort: Files (desc)</option>
-            <option value="files-asc">Sort: Files (asc)</option>
-            <option value="size-desc">Sort: Size (desc)</option>
-            <option value="size-asc">Sort: Size (asc)</option>
-        `;
-        parent.insertBefore(select, statsContainer);
+
+function sortGdriveStats(statsArr, mode, priorityMap = {}) {
+    if (!Array.isArray(statsArr)) return;
+    let compare = () => 0;
+    statsArr.forEach((s) => {
+        s.file_count =
+            typeof s.file_count === 'number' && !isNaN(s.file_count)
+                ? s.file_count
+                : Array.isArray(s.files)
+                ? s.files.length
+                : 0;
+    });
+    if (mode.startsWith('priority')) {
+        const asc = mode.endsWith('asc');
+
+        const inSource = statsArr.filter((s) => !s.notInSource);
+        const notInSource = statsArr.filter((s) => s.notInSource);
+        const compare = (a, b) => {
+            const ap = priorityMap[a.location] ?? 9999;
+            const bp = priorityMap[b.location] ?? 9999;
+            return asc ? ap - bp : bp - ap;
+        };
+        inSource.sort(compare);
+
+        notInSource.sort((a, b) => String(a.name).localeCompare(String(b.name)));
+
+        statsArr.splice(0, statsArr.length, ...inSource, ...notInSource);
+        return;
+    } else if (mode.startsWith('files')) {
+        const asc = mode.endsWith('asc');
+        compare = (a, b) => (asc ? a.file_count - b.file_count : b.file_count - a.file_count);
+    } else if (mode.startsWith('size')) {
+        const asc = mode.endsWith('asc');
+        compare = (a, b) => (asc ? a.size_bytes - b.size_bytes : b.size_bytes - a.size_bytes);
+    } else if (mode.startsWith('name')) {
+        const asc = mode.endsWith('asc');
+        compare = (a, b) =>
+            asc
+                ? String(a.name).localeCompare(String(b.name))
+                : String(b.name).localeCompare(String(a.name));
     }
-    select.value = window._gdriveSortMode || 'priority-desc';
-    select.onchange = function()
-    {
-        window._gdriveSortMode = this.value;
-        sortGdriveStats(window._latestGDriveStatsArr, window._gdriveSortMode,
-        {});
-        document.getElementById(IDS.gdriveStats).innerHTML = renderStatsTable(
-            window._latestGDriveStatsArr, window._latestGDriveTotals, "GDrive Locations", false
-        );
-        renderGdriveSortDropdown();
-    };
+    statsArr.sort(compare);
 }
-// ========== Stats Fetching ==========
-async function fetchAndRenderStats()
-{
-    clearError();
-    getById(IDS.statsSpinner).style.display = '';
-    getById(IDS.gdriveStats).innerHTML = '';
-    getById(IDS.assetsStats).innerHTML = '';
-    gdriveLocations = [];
-    assetsDir = null;
-    gdriveStats = [];
-    assetsStats = null;
-    gdriveFiles = [];
-    assetsFiles = [];
-    gdriveTotals = {
-        files: 0,
-        size: 0
-    };
-    assetsTotals = {
-        files: 0,
-        size: 0
-    };
-    try
-    {
-        const config = await fetchConfig();
-        gdriveLocations = (config.sync_gdrive && config.sync_gdrive.gdrive_list || []).map(g => (
-        {
-            name: g.name,
-            location: g.location
-        }));
-        const gdriveLocationSet = new Set(gdriveLocations.map(g => g.location));
-        const sourceDirs = config.poster_renamerr.source_dirs || [];
-        const customDirs = sourceDirs.filter(dir => !gdriveLocationSet.has(dir));
-        const sourceDirSet = new Set(sourceDirs);
-        // Fetch stats for custom dirs
-        let customStatsArr = [];
-        if (customDirs.length)
-        {
-            let statsArr = await Promise.all(customDirs.map(async dir =>
-            {
-                let stats = await fetchStats(dir);
-                if (stats && !stats.error && typeof stats.file_count === 'number')
-                {
+
+async function fetchAndRenderStats() {
+    showSpinner(true);
+
+    if (!config || !Object.keys(config).length) config = await fetchConfig();
+
+    let gdriveLocations = (config.sync_gdrive?.gdrive_list || []).map((g) => ({
+        name: g.name,
+        location: g.location,
+    }));
+    let gdriveLocSet = new Set(gdriveLocations.map((g) => g.location));
+    let sourceDirs = config.poster_renamerr?.source_dirs || [];
+    let customDirs = sourceDirs.filter((dir) => !gdriveLocSet.has(dir));
+    let sourceDirSet = new Set(sourceDirs);
+    let assetsDir = config.poster_renamerr?.destination_dir || '';
+
+    let customStatsArr = [];
+    let gdriveStatsArr = [];
+
+    if (customDirs.length) {
+        let statsArr = await Promise.all(
+            customDirs.map(async (dir) => {
+                let res = await fetch('/api/poster-search-stats', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ location: dir }),
+                });
+                let stats = await res.json();
+                if (stats && !stats.error && typeof stats.file_count === 'number') {
                     return {
                         name: dir.split('/').pop(),
                         location: dir,
                         ...stats,
-                        isCustom: true
+                        isCustom: true,
                     };
                 }
-                if (stats.error)
-                {
+                if (stats.error) {
                     return {
                         name: dir.split('/').pop(),
                         location: dir,
@@ -393,30 +213,33 @@ async function fetchAndRenderStats()
                         size_bytes: 0,
                         files: [],
                         isCustom: true,
-                        error: true
+                        error: true,
                     };
                 }
                 return null;
-            }));
-            customStatsArr = statsArr.filter(Boolean);
-        }
-        assetsDir = config.poster_renamerr.destination_dir;
-        // Fetch gdrive stats (not custom)
-        let gdriveStatRaw = await Promise.all(gdriveLocations.map(async l =>
-        {
-            let stats = await fetchStats(l.location);
-            if (stats && !stats.error && typeof stats.file_count === 'number')
-            {
+            })
+        );
+        customStatsArr = statsArr.filter(Boolean);
+    }
+
+    let gdriveStatRaw = await Promise.all(
+        gdriveLocations.map(async (l) => {
+            let res = await fetch('/api/poster-search-stats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ location: l.location }),
+            });
+            let stats = await res.json();
+            if (stats && !stats.error && typeof stats.file_count === 'number') {
                 return {
                     ...stats,
                     name: l.name,
                     location: l.location,
                     isCustom: false,
-                    notInSource: !sourceDirSet.has(l.location)
+                    notInSource: !sourceDirSet.has(l.location),
                 };
             }
-            if (stats.error)
-            {
+            if (stats.error) {
                 return {
                     name: l.name,
                     location: l.location,
@@ -425,326 +248,297 @@ async function fetchAndRenderStats()
                     files: [],
                     isCustom: false,
                     notInSource: !sourceDirSet.has(l.location),
-                    error: true
+                    error: true,
                 };
             }
             return null;
-        }));
-        gdriveStats = gdriveStatRaw.filter(Boolean);
-        // Merge customStatsArr into gdriveStats
-        let mergedGdriveStats = [...gdriveStats, ...customStatsArr];
-        // Totals (include customs)
-        gdriveTotals.files = mergedGdriveStats.reduce((sum, s) => sum + s.file_count, 0);
-        gdriveTotals.size = mergedGdriveStats.reduce((sum, s) => sum + s.size_bytes, 0);
-        // Include all files for searching
-        gdriveFiles = [];
-        mergedGdriveStats.forEach(s =>
-        {
-            (s.files || []).forEach(f => gdriveFiles.push(
-            {
-                file: f,
-                name: s.name + (s.isCustom ? ' (Custom)' : '')
-            }));
-        });
-        // Fetch assets stats
-        assetsStats = await fetchStats(assetsDir);
-        if (!assetsStats.error && typeof assetsStats.file_count === 'number')
-        {
-            assetsFiles = assetsStats.files || [];
-            assetsTotals.files = assetsStats.file_count;
-            assetsTotals.size = assetsStats.size_bytes;
-        }
-        else
-        {
-            assetsFiles = [];
-            assetsTotals = {
-                files: 0,
-                size: 0
-            };
-        }
-        // Build a priority map for all locations (highest = largest index)
-        let priorityMap = {};
-        (sourceDirs || []).forEach((dir, idx) =>
-        {
-            priorityMap[dir] = idx;
-        });
-        // Initial sort
-        window._gdriveSortMode = getById(IDS.gdriveSortSelect)?.value || 'priority-desc';
-        sortGdriveStats(mergedGdriveStats, window._gdriveSortMode, priorityMap);
-        // Set globals for table sorting (and for re-sorting)
-        window._latestGDriveStatsArr = mergedGdriveStats;
-        window._latestGDriveTotals = gdriveTotals;
-        window._latestAssetsStatsArr = assetsStats && !assetsStats.error && typeof assetsStats.file_count === 'number' ?
-            [
-            {
-                name: "Assets Dir",
-                ...assetsStats
-            }] : [];
-        window._latestAssetsTotals = assetsTotals;
-        // Render stats tables (hidden by default)
-        getById(IDS.gdriveStats).innerHTML = renderStatsTable(
-            window._latestGDriveStatsArr, window._latestGDriveTotals, "GDrive Locations", false
-        );
-        getById(IDS.assetsStats).innerHTML = renderStatsTable(
-            window._latestAssetsStatsArr,
-            window._latestAssetsTotals,
-            "Assets Directory",
-            true
-        );
-    }
-    catch (err)
-    {
-        showError('An error occurred while loading statistics.');
-    }
-    getById(IDS.statsSpinner).style.display = 'none';
-}
-// ====== IMAGE MODAL PREVIEW ======
-function showImageModal(imgSrc, caption)
-{
-    let oldModal = document.getElementById('img-preview-modal');
-    if (oldModal) oldModal.remove();
-    const modal = document.createElement('div');
-    modal.id = 'img-preview-modal';
-    modal.className = 'show';
-    const bg = document.createElement('div');
-    bg.className = 'img-modal-bg';
-    bg.onclick = closeImageModal;
-    const content = document.createElement('div');
-    content.className = 'img-modal-content';
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'img-modal-close';
-    closeBtn.type = 'button';
-    closeBtn.innerHTML = '&times;';
-    closeBtn.onclick = closeImageModal;
-    const img = document.createElement('img');
-    img.id = 'img-modal-img';
-    img.className = 'img-modal-img';
-    img.src = imgSrc;
-    img.alt = 'Preview';
-    const cap = document.createElement('div');
-    cap.id = 'img-modal-caption';
-    cap.className = 'img-modal-caption';
-    cap.textContent = caption || '';
-    content.appendChild(closeBtn);
-    content.appendChild(img);
-    content.appendChild(cap);
-    modal.appendChild(bg);
-    modal.appendChild(content);
-    document.body.appendChild(modal);
-}
+        })
+    );
+    gdriveStatsArr = gdriveStatRaw.filter(Boolean);
 
-function closeImageModal()
-{
-    let modal = document.getElementById('img-preview-modal');
-    if (modal) modal.remove();
-}
-// Make previewPoster available globally for inline onclicks
-window.previewPoster = function(location, path, caption)
-{
-    const url = `/api/preview-poster?location=${location}&path=${path}`;
-    showImageModal(url, caption);
-};
-// ====== HOVER IMAGE PREVIEW ======
-let hoverPreview;
-
-function setupHoverPreview()
-{
-    hoverPreview = document.querySelector('.hover-preview');
-    if (!hoverPreview)
-    {
-        const el = document.createElement('img');
-        el.className = 'hover-preview';
-        document.body.appendChild(el);
-        hoverPreview = el;
-    }
-}
-if (document.readyState === 'loading')
-{
-    document.addEventListener('DOMContentLoaded', setupHoverPreview);
-}
-else
-{
-    setupHoverPreview();
-}
-
-function showHoverPreview(e, location, path)
-{
-    const url = `/api/preview-poster?location=${location}&path=${path}&thumb=1`;
-    hoverPreview.src = url;
-    hoverPreview.style.left = (e.pageX + 12) + 'px';
-    hoverPreview.style.top = (e.pageY + 12) + 'px';
-    hoverPreview.style.display = 'block';
-}
-
-function hideHoverPreview()
-{
-    hoverPreview.style.display = 'none';
-}
-// Add event listeners for hover preview
-document.addEventListener('mouseover', (e) =>
-{
-    const span = e.target.closest('.poster-file-label');
-    if (span)
-    {
-        const li = span.closest('li.img-preview-link');
-        let location, path;
-        const onclick = span.getAttribute('onclick');
-        if (onclick)
-        {
-            const match = onclick.match(/previewPoster\('([^']+)','([^']+)'/);
-            if (match)
-            {
-                location = match[1];
-                path = match[2];
-            }
-        }
-        if (location && path)
-        {
-            showHoverPreview(e, location, path);
-        }
-    }
-});
-document.addEventListener('mousemove', (e) =>
-{
-    if (hoverPreview && hoverPreview.style.display === 'block')
-    {
-        hoverPreview.style.left = (e.pageX + 12) + 'px';
-        hoverPreview.style.top = (e.pageY + 12) + 'px';
-    }
-});
-document.addEventListener('mouseout', (e) =>
-{
-    if (e.target.closest('.poster-file-label'))
-    {
-        hideHoverPreview();
-    }
-});
-// ========== Main Initialization ==========
-function setupEventListeners()
-{
-    // Toggle search scope
-    const toggle = getById(IDS.searchScopeToggle);
-    const label = getById(IDS.searchScopeLabel);
-    toggle.checked = false;
-    label.textContent = "GDrive Locations";
-    toggle.onchange = () =>
-    {
-        label.textContent = toggle.checked ? "Assets Directory" : "GDrive Locations";
-        getById(IDS.searchInput).value = '';
-        getById(IDS.searchResults).innerHTML = '';
-    };
-    // Stats card toggle
-    let statsShown = false;
-    const card = getById(IDS.statsCard);
-    const toggleBtn = getById(IDS.toggleStatsBtn);
-    toggleBtn.onclick = function()
-    {
-        statsShown = !statsShown;
-        card.style.display = statsShown ? '' : 'none';
-        toggleBtn.textContent = statsShown ? "📊 Hide Statistics" : "📊 Show Statistics";
-    };
-    document.addEventListener('keydown', (e) =>
-    {
-        const input = document.getElementById('poster-search-input');
-        const modal = document.getElementById('img-preview-modal');
-        if ((e.key === '/' && !e.ctrlKey) || (e.key === 'f' && e.ctrlKey))
-        {
-            e.preventDefault();
-            if (input) input.focus();
-        }
-        else if (e.key === 'Escape')
-        {
-            if (modal) closeImageModal();
-            else if (input) input.value = '';
-        }
-        else if (e.key === 'Enter' && document.activeElement === input)
-        {
-            e.preventDefault();
-            renderResults(input.value.trim().toLowerCase());
-        }
+    let mergedGdriveStats = [...gdriveStatsArr, ...customStatsArr];
+    mergedGdriveStats.forEach((s) => {
+        s.file_count = Number(s.file_count) || 0;
+        s.size_bytes = Number(s.size_bytes) || 0;
     });
-    // Search on Enter key
-    const input = getById(IDS.searchInput);
-    input.onkeypress = (e) =>
-    {
-        if (e.key === 'Enter')
-        {
-            e.preventDefault();
-            renderResults(input.value.trim().toLowerCase());
-        }
+
+    let gTotals = {
+        files: mergedGdriveStats.reduce((sum, s) => sum + s.file_count, 0),
+        size: mergedGdriveStats.reduce((sum, s) => sum + s.size_bytes, 0),
     };
-    // Expose copy globally
-    window.copyToClipboard = copyToClipboard;
-    // Dropdown for GDrive sort
-    const sortSelect = getById(IDS.gdriveSortSelect);
-    if (sortSelect)
-    {
-        sortSelect.value = window._gdriveSortMode || 'priority-desc';
-        sortSelect.onchange = function()
-        {
-            window._gdriveSortMode = this.value;
-            sortGdriveStats(window._latestGDriveStatsArr, window._gdriveSortMode,
-            {});
-            getById(IDS.gdriveStats).innerHTML = renderStatsTable(
-                window._latestGDriveStatsArr, window._latestGDriveTotals, "GDrive Locations", false
+    let aStats = null,
+        aTotals = { files: 0, size: 0 };
+    if (assetsDir) {
+        let res = await fetch('/api/poster-search-stats', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ location: assetsDir }),
+        });
+        let stats = await res.json();
+        if (!stats.error && typeof stats.file_count === 'number') {
+            aStats = [
+                {
+                    name: 'Assets Dir',
+                    ...stats,
+                },
+            ];
+            aTotals = { files: stats.file_count, size: stats.size_bytes };
+        }
+    }
+
+    gdriveStatsData = mergedGdriveStats.map((s) => ({ ...s }));
+    gdriveTotals = gTotals;
+    assetsStatsData = aStats || [];
+    assetsTotals = aTotals;
+
+    priorityMap = {};
+    sourceDirs.forEach((dir, idx) => {
+        priorityMap[dir] = idx;
+    });
+
+    sortGdriveStats(gdriveStatsData, gdriveSortMode, priorityMap);
+    renderStatsSection();
+    showSpinner(false);
+}
+
+function renderStatsSection() {
+    const statsCard = document.getElementById('poster-stats-card');
+    if (!statsCard) return;
+    statsCard.className = 'card';
+
+    if (!statsCard.dataset.expanded) {
+        statsCard.style.display = 'none';
+    }
+    statsCard.style.marginBottom = '2em';
+
+    statsCard.innerHTML = `
+        <div id="gdrive-sort-row" class="gdrive-sort-row">
+            <label for="gdrive-sort-select" class="gdrive-sort-label">Sort by:</label>
+            <select id="gdrive-sort-select" class="select gdrive-sort-select">
+                <option value="priority-desc">Source Order (High → Low)</option>
+                <option value="priority-asc">Source Order (Low → High)</option>
+                <option value="files-desc">Files (High → Low)</option>
+                <option value="files-asc">Files (Low → High)</option>
+                <option value="size-desc">Size (High → Low)</option>
+                <option value="size-asc">Size (Low → High)</option>
+                <option value="name-asc">Name (A → Z)</option>
+                <option value="name-desc">Name (Z → A)</option>
+            </select>
+        </div>
+        <div id="gdrive-stats-table">
+            ${renderStatsTable([...gdriveStatsData], gdriveTotals, 'GDrive Locations')}
+        </div>
+        <div id="assets-stats-table" style="margin-top:1.3em;">
+            ${renderStatsTable(assetsStatsData, assetsTotals, 'Assets Directory')}
+        </div>
+    `;
+
+    const select = document.getElementById('gdrive-sort-select');
+    if (select) {
+        select.value = gdriveSortMode;
+        select.onchange = function () {
+            gdriveSortMode = this.value;
+            let arr = gdriveStatsData.map((s) => ({ ...s }));
+            sortGdriveStats(arr, gdriveSortMode, priorityMap);
+            document.getElementById('gdrive-stats-table').innerHTML = renderStatsTable(
+                arr,
+                gdriveTotals,
+                'GDrive Locations'
             );
         };
     }
 }
-// ========== Search Results Rendering ==========
-function renderResults(term)
-{
+
+function setupStatsToggle() {
+    const btn = getById('toggle-stats-btn');
+    const card = getById('poster-stats-card');
+    btn.textContent = '📊 Show Statistics';
+    card.style.display = 'none';
+    card.dataset.expanded = ''; // Not expanded
+    btn.onclick = function () {
+        const expanded = card.style.display !== '' && card.style.display !== 'block';
+        if (expanded) {
+            card.style.display = '';
+            card.dataset.expanded = '1';
+            btn.textContent = '📊 Hide Statistics';
+        } else {
+            card.style.display = 'none';
+            card.dataset.expanded = '';
+            btn.textContent = '📊 Show Statistics';
+        }
+    };
+}
+
+function getById(id) {
+    return document.getElementById(id);
+}
+function highlight(str, term) {
+    if (!term) return str;
+    const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+    return str.replace(regex, `<span class="highlight">$1</span>`);
+}
+function showSpinner(show) {
+    const spinner = getById(IDS.statsSpinner);
+    if (spinner) spinner.style.display = show ? '' : 'none';
+}
+function materialIcon(name, style = '') {
+    return `<span class="material-icons" style="vertical-align:middle;${style}">${name}</span>`;
+}
+
+function showImageModal(imgSrc, caption) {
+    closeImageModal();
+    const modal = document.createElement('div');
+    modal.id = 'img-preview-modal';
+    modal.className = 'show';
+    modal.innerHTML = `
+        <div class="img-modal-bg"></div>
+        <div class="img-modal-content">
+            <button class="img-modal-close" type="button">&times;</button>
+            <img class="img-modal-img" src="${imgSrc}" alt="Preview" />
+            <div class="img-modal-caption">${caption || ''}</div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    modal.querySelector('.img-modal-bg').onclick = closeImageModal;
+    modal.querySelector('.img-modal-close').onclick = closeImageModal;
+}
+function closeImageModal() {
+    const old = document.getElementById('img-preview-modal');
+    if (old) old.remove();
+}
+
+let hoverPreviewImg = null;
+function setupHoverPreview() {
+    hoverPreviewImg = document.querySelector('.hover-preview');
+    if (!hoverPreviewImg) {
+        hoverPreviewImg = document.createElement('img');
+        hoverPreviewImg.className = 'hover-preview';
+        hoverPreviewImg.style.display = 'none';
+        hoverPreviewImg.style.position = 'absolute';
+        hoverPreviewImg.style.pointerEvents = 'none';
+        hoverPreviewImg.style.maxWidth = '200px';
+        hoverPreviewImg.style.maxHeight = '200px';
+        hoverPreviewImg.style.zIndex = '10002';
+        document.body.appendChild(hoverPreviewImg);
+    }
+}
+setupHoverPreview();
+
+async function fetchAllFileLists() {
+    showSpinner(true);
+    config = await fetchConfig();
+
+    gdriveLocations = (config.sync_gdrive?.gdrive_list || []).map((g) => ({
+        name: g.name,
+        location: g.location,
+    }));
+    const gdriveLocSet = new Set(gdriveLocations.map((g) => g.location));
+    const sourceDirs = config.poster_renamerr?.source_dirs || [];
+    customLocations = sourceDirs.filter((dir) => !gdriveLocSet.has(dir));
+    assetsDir = config.poster_renamerr?.destination_dir || '';
+
+    gdriveFiles = [];
+    for (const { name, location } of gdriveLocations) {
+        try {
+            const res = await fetch('/api/poster-search-stats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ location }),
+            });
+            const stats = await res.json();
+            if (Array.isArray(stats.files)) {
+                stats.files.forEach((f) => gdriveFiles.push({ file: f, name, location }));
+            }
+        } catch {}
+    }
+
+    customFiles = [];
+    for (const dir of customLocations) {
+        try {
+            const res = await fetch('/api/poster-search-stats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ location: dir }),
+            });
+            const stats = await res.json();
+            if (Array.isArray(stats.files)) {
+                stats.files.forEach((f) =>
+                    customFiles.push({
+                        file: f,
+                        name: dir.split('/').pop() + ' (Custom)',
+                        location: dir,
+                    })
+                );
+            }
+        } catch {}
+    }
+
+    assetsFiles = [];
+    if (assetsDir) {
+        try {
+            const res = await fetch('/api/poster-search-stats', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ location: assetsDir }),
+            });
+            const stats = await res.json();
+            if (Array.isArray(stats.files)) {
+                assetsFiles = stats.files;
+            }
+        } catch {
+            assetsFiles = [];
+        }
+    }
+    showSpinner(false);
+}
+
+function renderResults(term) {
     const resultsDiv = getById(IDS.searchResults);
     let html = '';
-    let useAssets = getById(IDS.searchScopeToggle).checked;
-    if (!useAssets && gdriveFiles.length)
-    {
-        // GDrive Locations search
-        let groups = {};
-        gdriveFiles.forEach((
-        {
-            file,
-            name
-        }) =>
-        {
-            if (!term || file.toLowerCase().includes(term))
-            {
-                if (!groups[name]) groups[name] = [];
-                groups[name].push(file);
+    let useAssets = getById(IDS.scopeToggle).checked;
+
+    if (!useAssets) {
+        const groups = {};
+        [...gdriveFiles, ...customFiles].forEach(({ file, name, location }) => {
+            if (!term || file.toLowerCase().includes(term)) {
+                const key = name + '||' + location;
+                if (!groups[key]) groups[key] = { name, location, files: [] };
+                groups[key].files.push(file);
             }
         });
-        let nameToLoc = {};
-        gdriveLocations.forEach(g =>
-        {
-            nameToLoc[g.name] = g.location;
-        });
-        Object.entries(groups).forEach(([name, files]) =>
-        {
-            const locate = encodeURIComponent(nameToLoc[name] || "");
+        Object.values(groups).forEach((group) => {
+            const locate = encodeURIComponent(group.location);
             html += `<div class="result-group">
-                <div class="result-folder" tabindex="0" aria-label="${name}">${name}</div>
-                <ul class="poster-list">${files.map(f =>
-                `<li class="img-preview-link">
-                    <span class="poster-file-label" onclick="previewPoster('${locate}','${encodeURIComponent(f)}','${f}')" tabindex="0" aria-label="Preview ${f}">${highlight(f, term)}</span>
-                    <button class="copy-btn" title="Copy filename" aria-label="Copy filename ${f}" onclick="event.stopPropagation(); copyToClipboard(this, '${f}'); return false;">
-                        <span class="copy-btn-default">
-                            <span class="material-icons" style="font-size:1.2em;vertical-align:middle;margin-right:2px;">content_copy</span>
-                            <span style="font-size: 1em; vertical-align: middle;">Copy</span>
-                        </span>
-                        <span class="copy-btn-copied" style="display:none;">
-                            <span class="material-icons" style="font-size:1.2em;vertical-align:middle;margin-right:2px;">check</span>
-                            <span style="font-size: 1em; vertical-align: middle;">Copied</span>
-                        </span>
+                <div class="result-folder" tabindex="0" aria-label="${group.name}">${
+                group.name
+            }</div>
+                <ul class="poster-list">${group.files
+                    .map(
+                        (f) =>
+                            `<li class="img-preview-link">
+                    <span class="poster-file-label"
+                          data-location="${locate}"
+                          data-file="${encodeURIComponent(f)}"
+                          tabindex="0"
+                          aria-label="Preview ${f}">${highlight(f, term)}</span>
+                    <button class="copy-btn" title="Copy filename" aria-label="Copy filename ${f}">
+                        <span class="copy-btn-default">${materialIcon(
+                            'content_copy',
+                            'font-size:1.2em;margin-right:3px;'
+                        )}Copy</span>
+                        <span class="copy-btn-copied" style="display:none;">${materialIcon(
+                            'check',
+                            'font-size:1.2em;margin-right:3px;'
+                        )}Copied</span>
                     </button>
                 </li>`
-                ).join('')}</ul>
+                    )
+                    .join('')}</ul>
             </div>`;
         });
     }
-    if (useAssets && assetsFiles.length)
-    {
-        let matches = assetsFiles.filter(file =>
-        {
+    if (useAssets && assetsFiles.length) {
+        const matches = assetsFiles.filter((file) => {
             if (file.startsWith('tmp/')) return false;
             if (file === '.DS_Store') return false;
             if (!term) return true;
@@ -752,41 +546,171 @@ function renderResults(term)
             const fname = file.split('/').pop().toLowerCase();
             return lower.includes(term) || fname.includes(term);
         });
-        if (matches.length)
-        {
+        if (matches.length) {
             const locate = encodeURIComponent(assetsDir);
             html += `<div class="result-group">
                 <div class="result-folder">Assets Dir</div>
-                <ul class="poster-list">${matches.map(f =>
-                `<li class="img-preview-link">
-                    <span class="poster-file-label" onclick="previewPoster('${locate}','${encodeURIComponent(f)}','${f}')" tabindex="0" aria-label="Preview ${f}">${highlight(f, term)}</span>
-                    <button class="copy-btn" title="Copy filename" aria-label="Copy filename ${f}" onclick="event.stopPropagation(); copyToClipboard(this, '${f}'); return false;">
-                        <span class="copy-btn-default">
-                            <span class="material-icons" style="font-size:1.2em;vertical-align:middle;margin-right:2px;">content_copy</span>
-                            <span style="font-size: 1em; vertical-align: middle;"> Copy</span>
-                        </span>
-                        <span class="copy-btn-copied" style="display:none;">
-                            <span class="material-icons" style="font-size:1.2em;vertical-align:middle;margin-right:2px;">check</span>
-                            <span style="font-size: 1em; vertical-align: middle;"> Copied</span>
-                        </span>
+                <ul class="poster-list">${matches
+                    .map(
+                        (f) =>
+                            `<li class="img-preview-link">
+                    <span class="poster-file-label"
+                          data-location="${locate}"
+                          data-file="${encodeURIComponent(f)}"
+                          tabindex="0"
+                          aria-label="Preview ${f}">${highlight(f, term)}</span>
+                    <button class="copy-btn" title="Copy filename" aria-label="Copy filename ${f}">
+                        <span class="copy-btn-default">${materialIcon(
+                            'content_copy',
+                            'font-size:1.2em;margin-right:3px;'
+                        )}Copy</span>
+                        <span class="copy-btn-copied" style="display:none;">${materialIcon(
+                            'check',
+                            'font-size:1.2em;margin-right:3px;'
+                        )}Copied</span>
                     </button>
                 </li>`
-                ).join('')}</ul>
+                    )
+                    .join('')}</ul>
             </div>`;
         }
     }
-    resultsDiv.innerHTML = html || `<div style="margin-top:2em;">No results found. Try another search or check your filters.</div>`;
+    resultsDiv.innerHTML =
+        html ||
+        `<div style="margin-top:2em;">No results found. Try another search or check your filters.</div>`;
 }
-// ========== Main Entrypoint ==========
-window.initPosterSearch = async function()
-{
-    getById(IDS.statsSpinner).style.display = '';
+
+function copyToClipboard(btn, text) {
+    navigator.clipboard
+        .writeText(text)
+        .then(() => {
+            const def = btn.querySelector('.copy-btn-default');
+            const copied = btn.querySelector('.copy-btn-copied');
+            if (def && copied) {
+                def.style.display = 'none';
+                copied.style.display = 'inline';
+                setTimeout(() => {
+                    def.style.display = '';
+                    copied.style.display = 'none';
+                }, 1400);
+            }
+        })
+        .catch(() => {
+            showToast && showToast('Could not copy to clipboard.', 'error');
+        });
+}
+
+function setupEventListeners() {
+    const toggle = getById(IDS.scopeToggle);
+    const label = getById(IDS.scopeLabel);
+    toggle.checked = false;
+    label.textContent = 'GDrive Locations';
+    toggle.onchange = () => {
+        label.textContent = toggle.checked ? 'Assets Directory' : 'GDrive Locations';
+        getById(IDS.searchInput).value = '';
+        getById(IDS.searchResults).innerHTML = '';
+    };
+
+    document.addEventListener('keydown', (e) => {
+        const input = getById(IDS.searchInput);
+        const modal = document.getElementById('img-preview-modal');
+        if ((e.key === '/' && !e.ctrlKey) || (e.key === 'f' && e.ctrlKey)) {
+            e.preventDefault();
+            input && input.focus();
+        } else if (e.key === 'Escape') {
+            if (modal) closeImageModal();
+            else input && (input.value = '');
+        } else if (e.key === 'Enter' && document.activeElement === input) {
+            e.preventDefault();
+            renderResults(input.value.trim().toLowerCase());
+        }
+    });
+
+    getById(IDS.searchInput).onkeypress = (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            renderResults(e.target.value.trim().toLowerCase());
+        }
+    };
+
+    getById(IDS.searchResults).addEventListener('click', (e) => {
+        const copyBtn = e.target.closest('.copy-btn');
+        if (copyBtn) {
+            e.stopPropagation();
+            let file = copyBtn.getAttribute('aria-label') || '';
+            file = file
+                .replace(/^Copy filename\s*/i, '')
+                .replace(/^Copied\s*/i, '')
+                .trim();
+            if (!file) {
+                const span = copyBtn.closest('li')?.querySelector('.poster-file-label');
+                if (span) file = span.textContent;
+            }
+            copyToClipboard(copyBtn, file);
+            return false;
+        }
+
+        const label = e.target.closest('.poster-file-label');
+        if (label) {
+            let location = decodeURIComponent(label.getAttribute('data-location') || '');
+            let path = decodeURIComponent(label.getAttribute('data-file') || '');
+            let caption = label.textContent;
+            if (location && path) {
+                const url = `/api/preview-poster?location=${encodeURIComponent(
+                    location
+                )}&path=${encodeURIComponent(path)}`;
+                showImageModal(url, caption);
+            }
+            return false;
+        }
+    });
+
+    getById(IDS.searchResults).addEventListener('mouseover', (e) => {
+        const label = e.target.closest('.poster-file-label');
+        if (label) {
+            let location = decodeURIComponent(label.getAttribute('data-location') || '');
+            let path = decodeURIComponent(label.getAttribute('data-file') || '');
+            if (location && path) {
+                const url = `/api/preview-poster?location=${encodeURIComponent(
+                    location
+                )}&path=${encodeURIComponent(path)}&thumb=1`;
+                hoverPreviewImg.src = url;
+                hoverPreviewImg.style.display = 'block';
+            }
+        }
+    });
+    getById(IDS.searchResults).addEventListener('mousemove', (e) => {
+        if (hoverPreviewImg && hoverPreviewImg.style.display === 'block') {
+            const imgWidth = hoverPreviewImg.naturalWidth
+                ? Math.min(hoverPreviewImg.naturalWidth, 200)
+                : 200;
+            const imgHeight = hoverPreviewImg.naturalHeight
+                ? Math.min(hoverPreviewImg.naturalHeight, 200)
+                : 200;
+            const vpWidth = window.innerWidth;
+            const vpHeight = window.innerHeight;
+            let left = e.pageX + 14;
+            let top = e.pageY + 14;
+            if (left + imgWidth > vpWidth - 10) left = Math.max(10, vpWidth - imgWidth - 10);
+            if (top + imgHeight > vpHeight - 10) top = Math.max(10, vpHeight - imgHeight - 10);
+            hoverPreviewImg.style.left = left + 'px';
+            hoverPreviewImg.style.top = top + 'px';
+        }
+    });
+    getById(IDS.searchResults).addEventListener('mouseout', (e) => {
+        if (e.target.closest('.poster-file-label')) {
+            hoverPreviewImg.style.display = 'none';
+        }
+    });
+}
+
+export async function initPosterSearch() {
+    showLoaderModal(true);
     getById(IDS.searchResults).innerHTML = '';
-    getById(IDS.gdriveStats).innerHTML = '';
-    getById(IDS.assetsStats).innerHTML = '';
     getById(IDS.searchInput).value = '';
-    getById(IDS.statsCard).style.display = "none";
-    await fetchAndRenderStats();
+    await fetchAllFileLists();
     setupEventListeners();
-    getById(IDS.statsSpinner).style.display = 'none';
-};
+    showLoaderModal(false);
+    setupStatsToggle();
+    await fetchAndRenderStats();
+}

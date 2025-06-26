@@ -1,411 +1,364 @@
-/**
- * Loads and renders all notification settings UI for each module.
- * Dynamically builds toggle switches, test buttons, and input fields based on definitions.
- */
-window.loadNotifications = async function()
-{
+import {
+    fetchConfig,
+    NOTIFICATION_LIST,
+    NOTIFICATION_DEFINITIONS,
+    NOTIFICATION_TYPES_PER_MODULE,
+} from './helper.js';
+import { buildNotificationPayload } from './payload.js';
+import { DAPS } from './common.js';
+const { bindSaveButton, showToast } = DAPS;
+
+export async function loadNotifications() {
     const form = document.getElementById('notificationsForm');
     if (!form) return;
-    const config = await window.fetchConfig();
-    window.DAPS = window.DAPS ||
-    {};
-    window.DAPS.globalConfig = config;
-    const notifications = config.notifications ||
-    {};
-    const modules = Array.isArray(window.notificationList) ? window.notificationList : Object.keys(notifications);
-    const DEFINITIONS = window.NOTIFICATION_DEFINITIONS ||
-    {};
+    const config = await fetchConfig();
+    const notifications = config.notifications || {};
+    const modules = Array.isArray(NOTIFICATION_LIST)
+        ? NOTIFICATION_LIST
+        : Object.keys(notifications);
+    const DEFINITIONS = NOTIFICATION_DEFINITIONS || {};
     const notifyTypes = Object.keys(DEFINITIONS);
-    const allowedTypesMap = window.NOTIFICATION_TYPES_PER_MODULE ||
-    {};
+    const allowedTypesMap = NOTIFICATION_TYPES_PER_MODULE || {};
+
     form.innerHTML = '';
-    for (const module of modules)
-    {
-        const moduleSettings = notifications[module] ||
-        {};
+    let cardIndex = 0;
+    for (const module of modules) {
+        const moduleSettings = notifications[module] || {};
         const enabledTypes = Object.keys(moduleSettings);
-        // ===== Notification Card and Toggle UI Rendering =====
-        const card = document.createElement("div");
-        card.className = "notification-card";
-        card.style.position = "relative";
-        const header = document.createElement("label");
-        header.textContent = module.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-        header.className = "notification-card-header";
+
+        const card = document.createElement('div');
+        card.className = 'card';
+
+        const header = document.createElement('div');
+        header.className = 'card-header';
+        header.textContent = module.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
         card.appendChild(header);
-        // Notification fields container
-        const field = document.createElement("div");
-        field.className = "notification-fields-wrapper notification-fields";
-        // Container for toggle+fieldset blocks
-        const toggleFieldsetGroup = document.createElement("div");
-        toggleFieldsetGroup.className = "notification-toggle-column";
+
         const moduleAllowedTypes = allowedTypesMap[module] || notifyTypes;
-        for (const type of moduleAllowedTypes)
-        {
-            // Toggle block and fieldset
-            const block = document.createElement("div");
-            block.className = "notification-toggle-block";
-            const wrapper = document.createElement("label");
-            wrapper.className = "toggle-switch";
-            const input = document.createElement("input");
-            input.type = "checkbox";
+        for (const type of moduleAllowedTypes) {
+            const def = DEFINITIONS[type];
+            if (!def || !def.fields) continue;
+
+            const isEnabled = enabledTypes.includes(type);
+            const notifyObj =
+                moduleSettings[type] && typeof moduleSettings[type] === 'object'
+                    ? moduleSettings[type]
+                    : {};
+
+            const fieldRow = document.createElement('div');
+            fieldRow.className = 'field toggle-row';
+
+            const toggleWrapper = document.createElement('label');
+            toggleWrapper.className = 'toggle-switch';
+            const input = document.createElement('input');
+            input.type = 'checkbox';
             input.name = `${module}_${type}`;
-            input.checked = enabledTypes.includes(type);
-            const slider = document.createElement("span");
-            slider.className = "slider";
-            wrapper.appendChild(input);
-            wrapper.appendChild(slider);
-            const toggleLabel = document.createElement("span");
-            toggleLabel.textContent = type.charAt(0).toUpperCase() + type.slice(1);
-            toggleLabel.className = "toggle-label";
-            const row = document.createElement("div");
-            row.className = "toggle-row";
-            row.appendChild(wrapper);
-            // ===== Test Notification Handler =====
-            const typeTestBtn = document.createElement("button");
-            typeTestBtn.type = "button";
-            typeTestBtn.textContent = "Test";
-            typeTestBtn.className = "test-btn inline-test-btn";
-            typeTestBtn.dataset.module = module;
-            typeTestBtn.dataset.type = type;
-            typeTestBtn.addEventListener("click", async () =>
-            {
-                typeTestBtn.classList.remove('success', 'error', 'testing');
-                typeTestBtn.textContent = 'Testing...';
-                typeTestBtn.classList.add('testing');
+            input.checked = isEnabled;
+            const slider = document.createElement('span');
+            slider.className = 'slider';
+            toggleWrapper.appendChild(input);
+            toggleWrapper.appendChild(slider);
+
+            const typeLabel = document.createElement('span');
+            typeLabel.textContent = def.label;
+            typeLabel.className = 'toggle-label';
+
+            const flexSpacer = document.createElement('div');
+            flexSpacer.className = 'flex-spacer';
+
+            const testBtn = document.createElement('button');
+            testBtn.type = 'button';
+            testBtn.textContent = 'Test';
+            testBtn.className = 'btn btn--test';
+            if (isEnabled) testBtn.classList.add('enabled');
+
+            fieldRow.appendChild(toggleWrapper);
+            fieldRow.appendChild(typeLabel);
+            fieldRow.appendChild(flexSpacer);
+            fieldRow.appendChild(testBtn);
+
+            const fieldset = document.createElement('div');
+            fieldset.className = 'field notification-fieldset';
+            if (isEnabled) {
+                fieldset.classList.add('expanded');
+                testBtn.classList.add('enabled');
+                fieldRow.classList.add('toggle-row--expanded');
+            }
+            fieldset.dataset.notifyType = type;
+
+            const legend = document.createElement('div');
+            legend.className = 'fieldset-legend';
+            legend.textContent = `${def.label} Settings`;
+            fieldset.appendChild(legend);
+
+            for (const fieldDef of def.fields) {
+                const fieldContainer = document.createElement('div');
+                fieldContainer.className = 'notification-field-container';
+                const fieldLabel = document.createElement('label');
+                fieldLabel.textContent = fieldDef.label;
+                fieldLabel.setAttribute('for', `${type}_${fieldDef.key}_${module}`);
+                fieldContainer.appendChild(fieldLabel);
+
+                let inputElement;
+                const isPassword = fieldDef.key.toLowerCase().includes('password');
+                if (fieldDef.type === 'checkbox') {
+                    const toggleWrap = document.createElement('label');
+                    toggleWrap.className = 'toggle-switch';
+                    inputElement = document.createElement('input');
+                    inputElement.type = 'checkbox';
+                    inputElement.className = 'toggle-input';
+                    inputElement.name = `${type}_${fieldDef.key}_${module}`;
+                    inputElement.required = fieldDef.required || false;
+                    inputElement.id = `${type}_${fieldDef.key}_${module}`;
+                    inputElement.checked = notifyObj[fieldDef.key] || false;
+                    const toggleSlider = document.createElement('span');
+                    toggleSlider.className = 'slider';
+                    toggleWrap.appendChild(inputElement);
+                    toggleWrap.appendChild(toggleSlider);
+                    fieldContainer.appendChild(toggleWrap);
+                } else if (fieldDef.type === 'textarea') {
+                    inputElement = document.createElement('textarea');
+                    inputElement.name = `${type}_${fieldDef.key}_${module}`;
+                    inputElement.className = 'input textarea-input';
+                    inputElement.required = fieldDef.required || false;
+                    inputElement.id = `${type}_${fieldDef.key}_${module}`;
+                    inputElement.rows = 1;
+                    if (fieldDef.placeholder) inputElement.placeholder = fieldDef.placeholder;
+                    if (notifyObj[fieldDef.key] !== undefined && notifyObj[fieldDef.key] !== null) {
+                        inputElement.value = Array.isArray(notifyObj[fieldDef.key])
+                            ? notifyObj[fieldDef.key].join(', ')
+                            : notifyObj[fieldDef.key];
+                    }
+
+                    function autoExpandTextarea(el) {
+                        el.style.height = 'auto';
+                        el.style.height = el.scrollHeight + 'px';
+                    }
+
+                    inputElement.addEventListener('input', () => autoExpandTextarea(inputElement));
+
+                    setTimeout(() => autoExpandTextarea(inputElement), 0);
+                    fieldContainer.appendChild(inputElement);
+                } else {
+                    inputElement = document.createElement('input');
+                    inputElement.type =
+                        fieldDef.type === 'password'
+                            ? 'password'
+                            : fieldDef.type === 'number'
+                            ? 'number'
+                            : 'text';
+                    inputElement.name = `${type}_${fieldDef.key}_${module}`;
+                    inputElement.className = 'input';
+                    inputElement.required = fieldDef.required || false;
+                    inputElement.id = `${type}_${fieldDef.key}_${module}`;
+                    if (fieldDef.placeholder) inputElement.placeholder = fieldDef.placeholder;
+                    if (notifyObj[fieldDef.key] !== undefined && notifyObj[fieldDef.key] !== null) {
+                        inputElement.value = notifyObj[fieldDef.key];
+                    }
+                }
+                if (isPassword && fieldDef.type !== 'checkbox') {
+                    const wrap = document.createElement('div');
+                    wrap.className = 'password-wrapper';
+                    wrap.style.position = 'relative';
+
+                    inputElement.type = 'password';
+
+                    const toggle = document.createElement('span');
+                    toggle.className = 'toggle-password';
+                    toggle.innerHTML = '👁️';
+                    toggle.style.cursor = 'pointer';
+                    toggle.addEventListener('click', () => {
+                        if (inputElement.type === 'password') {
+                            inputElement.type = 'text';
+                            toggle.textContent = '🙈';
+                        } else {
+                            inputElement.type = 'password';
+                            toggle.textContent = '👁️';
+                        }
+                    });
+                    wrap.appendChild(inputElement);
+                    wrap.appendChild(toggle);
+                    fieldContainer.appendChild(wrap);
+                } else if (fieldDef.type !== 'checkbox') {
+                    fieldContainer.appendChild(inputElement);
+                }
+                fieldset.appendChild(fieldContainer);
+            }
+
+            testBtn.addEventListener('click', async () => {
+                testBtn.classList.remove('btn--success', 'btn--cancel', 'running');
+                testBtn.textContent = 'Testing...';
+                testBtn.classList.add('running');
+                testBtn.disabled = true;
+
                 const missingFields = [];
-                for (const fieldDef of def.fields)
-                {
-                    if (fieldDef.required)
-                    {
+                for (const fieldDef of def.fields) {
+                    if (fieldDef.required) {
                         const name = `${type}_${fieldDef.key}_${module}`;
                         const inputEl = fieldset.querySelector(`[name="${name}"]`);
-                        if (!inputEl)
-                        {
-                            missingFields.push(fieldDef.label);
-                            continue;
-                        }
-                        let value;
-                        if (inputEl.type === 'checkbox')
-                        {
-                            value = inputEl.checked;
-                        }
-                        else if (inputEl.tagName === 'TEXTAREA')
-                        {
-                            value = inputEl.value.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
-                        }
-                        else if (inputEl.type === 'number')
-                        {
-                            value = inputEl.value;
-                        }
-                        else
-                        {
-                            value = inputEl.value.trim();
-                        }
-                        if (
-                            (Array.isArray(value) && value.length === 0) ||
-                            (!Array.isArray(value) && (value === "" || value === null || value === undefined))
-                        )
-                        {
+                        let value =
+                            inputEl?.type === 'checkbox' ? inputEl.checked : inputEl?.value?.trim();
+                        if (inputEl?.tagName === 'TEXTAREA')
+                            value = inputEl.value
+                                .split(/[\n,]+/)
+                                .map((s) => s.trim())
+                                .filter(Boolean);
+                        if (!value || (Array.isArray(value) && value.length === 0)) {
                             missingFields.push(fieldDef.label);
                         }
                     }
                 }
-                if (missingFields.length > 0)
-                {
-                    window.showToast(
-                        "❌ Required fields missing:\n" + missingFields.map(f => `• ${f}`).join("\n"),
+                if (missingFields.length > 0) {
+                    showToast(
+                        '❌ Required fields missing:\n' +
+                            missingFields.map((f) => `• ${f}`).join('\n'),
                         'error',
                         6000
                     );
                     resetTestButton();
                     return;
                 }
+
                 const notifyObj = {};
-                def.fields.forEach(fieldDef =>
-                {
+                def.fields.forEach((fieldDef) => {
                     const name = `${type}_${fieldDef.key}_${module}`;
                     const input = fieldset.querySelector(`[name="${name}"]`);
                     if (!input) return;
                     let val;
                     if (input.type === 'checkbox') val = input.checked;
-                    else if (input.tagName === 'TEXTAREA') val = input.value.split(/[\n,]+/).map(s => s.trim()).filter(Boolean);
+                    else if (input.tagName === 'TEXTAREA')
+                        val = input.value
+                            .split(/[\n,]+/)
+                            .map((s) => s.trim())
+                            .filter(Boolean);
                     else if (input.type === 'number') val = Number(input.value);
                     else val = input.value;
                     notifyObj[fieldDef.key] = val;
                 });
+
                 const payload = {
                     module,
-                    notifications:
-                    {
-                        [type]: notifyObj
-                    }
+                    notifications: { [type]: notifyObj },
                 };
-                const res = await fetch('/api/test-notification',
-                {
+
+                const res = await fetch('/api/test-notification', {
                     method: 'POST',
-                    headers:
-                    {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(payload)
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
                 });
                 let result;
-                try
-                {
+                try {
                     result = await res.json();
-                }
-                catch
-                {
+                } catch {
                     result = null;
                 }
-                if (res.ok && result && typeof result === 'object' && 'result' in result)
-                {
-                    if (result.result)
-                    {
-                        window.showToast(`✅ ${module} (${type}) test notification: ${result.message || 'Success'}`, 'success');
-                        typeTestBtn.textContent = 'Success';
-                        typeTestBtn.classList.remove('testing');
-                        typeTestBtn.classList.add('success');
+
+                if (res.ok && result && typeof result === 'object' && 'result' in result) {
+                    if (result.result) {
+                        showToast(
+                            `✅ ${module} (${type}) test notification: ${
+                                result.message || 'Success'
+                            }`,
+                            'success'
+                        );
+                        testBtn.textContent = 'Success';
+                        testBtn.classList.remove('running');
+                        testBtn.classList.add('btn--success');
+                    } else {
+                        showToast(
+                            `❌ ${module} (${type}) test notification: ${
+                                result.message || 'Failed'
+                            }`,
+                            'error',
+                            6000
+                        );
+                        testBtn.textContent = 'Fail';
+                        testBtn.classList.remove('running');
+                        testBtn.classList.add('btn--cancel');
                     }
-                    else
-                    {
-                        window.showToast(`❌ ${module} (${type}) test notification: ${result.message || 'Failed'}`, 'error', 6000);
-                        typeTestBtn.textContent = 'Fail';
-                        typeTestBtn.classList.remove('testing');
-                        typeTestBtn.classList.add('error');
-                    }
+                } else {
+                    showToast(
+                        `❌ ${module} (${type}) test notification: Unexpected response`,
+                        'error',
+                        6000
+                    );
+                    testBtn.textContent = 'Fail';
+                    testBtn.classList.remove('running');
+                    testBtn.classList.add('btn--cancel');
                 }
-                else
-                {
-                    window.showToast(`❌ ${module} (${type}) test notification: Unexpected response`, 'error', 6000);
-                    typeTestBtn.textContent = 'Fail';
-                    typeTestBtn.classList.remove('testing');
-                    typeTestBtn.classList.add('error');
-                }
-                setTimeout(() =>
-                {
-                    typeTestBtn.textContent = 'Test';
-                    typeTestBtn.classList.remove('success', 'error', 'testing');
-                    typeTestBtn.disabled = false;
-                }, 1000);
+                setTimeout(() => {
+                    testBtn.textContent = 'Test';
+                    testBtn.classList.remove('btn--success', 'btn--cancel', 'running');
+                    testBtn.disabled = false;
+                }, 1200);
             });
-            /**
-             * Resets the visual state of a test notification button.
-             */
-            function resetTestButton()
-            {
-                typeTestBtn.textContent = 'Test';
-                typeTestBtn.classList.remove('success', 'error', 'testing');
-                typeTestBtn.disabled = false;
+
+            function resetTestButton() {
+                testBtn.textContent = 'Test';
+                testBtn.classList.remove('btn--success', 'btn--cancel', 'running');
+                testBtn.disabled = false;
             }
-            // Show button only when its associated toggle is on
-            typeTestBtn.style.display = input.checked ? "inline-block" : "none";
-            row.appendChild(toggleLabel);
-            const isEnabled = enabledTypes.includes(type);
-            const notifyObj = (moduleSettings[type] && typeof moduleSettings[type] === 'object') ? moduleSettings[type] :
-            {};
-            const def = DEFINITIONS[type];
-            if (!def || !def.fields) continue;
-            // ===== Notification Input Fields Rendering =====
-            const fieldset = document.createElement("fieldset");
-            fieldset.style.marginTop = "0.75rem";
-            fieldset.style.border = "1px solid var(--shadow)";
-            fieldset.style.borderRadius = "6px";
-            fieldset.style.padding = "0.75rem";
-            fieldset.style.background = "var(--input-bg)";
-            if (isEnabled) fieldset.classList.add("expanded");
-            fieldset.dataset.notifyType = type;
-            const legend = document.createElement("legend");
-            legend.textContent = def.label + " Settings";
-            legend.style.fontWeight = "bold";
-            fieldset.appendChild(legend);
-            for (const fieldDef of def.fields)
-            {
-                const fieldContainer = document.createElement("div");
-                fieldContainer.style.marginBottom = "0.65rem";
-                const fieldLabel = document.createElement("label");
-                fieldLabel.textContent = fieldDef.label;
-                fieldLabel.style.display = "block";
-                fieldLabel.style.marginBottom = "0.15rem";
-                fieldLabel.setAttribute("for", `${type}_${fieldDef.key}_${module}`);
-                fieldContainer.appendChild(fieldLabel);
-                let inputElement;
-                const isPassword = fieldDef.key.toLowerCase().includes("password");
-                if (fieldDef.type === "checkbox")
-                {
-                    const toggleWrapper = document.createElement("label");
-                    toggleWrapper.className = "toggle-switch";
-                    inputElement = document.createElement("input");
-                    inputElement.type = "checkbox";
-                    inputElement.className = "toggle-input";
-                    inputElement.name = `${type}_${fieldDef.key}_${module}`;
-                    inputElement.required = fieldDef.required || false;
-                    inputElement.id = `${type}_${fieldDef.key}_${module}`;
-                    inputElement.setAttribute("autocomplete", "off");
-                    inputElement.checked = notifyObj[fieldDef.key] || false;
-                    const toggleSlider = document.createElement("span");
-                    toggleSlider.className = "slider";
-                    toggleWrapper.appendChild(inputElement);
-                    toggleWrapper.appendChild(toggleSlider);
-                    fieldContainer.appendChild(toggleWrapper);
+
+            input.addEventListener('change', () => {
+                if (input.checked) {
+                    fieldset.classList.add('expanded');
+                    testBtn.classList.add('enabled');
+                } else {
+                    fieldset.classList.remove('expanded');
+                    testBtn.classList.remove('enabled');
                 }
-                else if (fieldDef.type === "textarea")
-                {
-                    inputElement = document.createElement("textarea");
-                    inputElement.name = `${type}_${fieldDef.key}_${module}`;
-                    inputElement.className = "input textarea-input";
-                    inputElement.required = fieldDef.required || false;
-                    inputElement.id = `${type}_${fieldDef.key}_${module}`;
-                    inputElement.setAttribute("autocomplete", "off");
-                    inputElement.rows = 3;
-                    if (fieldDef.placeholder) inputElement.placeholder = fieldDef.placeholder;
-                    if (notifyObj[fieldDef.key] !== undefined && notifyObj[fieldDef.key] !== null)
-                    {
-                        inputElement.value = Array.isArray(notifyObj[fieldDef.key]) ?
-                            notifyObj[fieldDef.key].join(", ") :
-                            notifyObj[fieldDef.key];
-                    }
-                    fieldContainer.appendChild(inputElement);
-                    inputElement.style.overflow = 'hidden';
-                    inputElement.style.resize = 'none';
-                    const autoResize = (el) =>
-                    {
-                        el.style.height = 'auto';
-                        el.style.height = el.scrollHeight + 'px';
-                    };
-                    inputElement.addEventListener('input', () => autoResize(inputElement));
-                    requestAnimationFrame(() => autoResize(inputElement));
-                }
-                else
-                {
-                    inputElement = document.createElement("input");
-                    inputElement.type = fieldDef.type === "password" ?
-                        "password" :
-                        (fieldDef.type === "number" ? "number" : "text");
-                    inputElement.name = `${type}_${fieldDef.key}_${module}`;
-                    inputElement.className = "input";
-                    inputElement.required = fieldDef.required || false;
-                    inputElement.id = `${type}_${fieldDef.key}_${module}`;
-                    inputElement.setAttribute("autocomplete", "off");
-                    if (fieldDef.placeholder) inputElement.placeholder = fieldDef.placeholder;
-                    if (notifyObj[fieldDef.key] !== undefined && notifyObj[fieldDef.key] !== null)
-                    {
-                        inputElement.value = notifyObj[fieldDef.key];
-                    }
-                }
-                if (isPassword && fieldDef.type !== "checkbox")
-                {
-                    inputElement.classList.add("masked-input");
-                    inputElement.setAttribute("autocomplete", "off");
-                    const wrapper = document.createElement("div");
-                    wrapper.className = "password-wrapper";
-                    const toggle = document.createElement("span");
-                    toggle.className = "toggle-password";
-                    toggle.innerHTML = "👁️";
-                    toggle.addEventListener("click", () =>
-                    {
-                        const isMasked = inputElement.classList.toggle("masked-input");
-                        toggle.textContent = isMasked ? "👁️" : "🙈";
-                    });
-                    wrapper.appendChild(inputElement);
-                    wrapper.appendChild(toggle);
-                    fieldContainer.appendChild(wrapper);
-                }
-                else if (fieldDef.type !== "checkbox")
-                {
-                    fieldContainer.appendChild(inputElement);
-                }
-                fieldset.appendChild(fieldContainer);
-            }
-            // Wrap fieldset in .notification-slide container
-            const slideContainer = document.createElement("div");
-            slideContainer.className = "notification-slide";
-            if (isEnabled) slideContainer.classList.add("expanded");
-            // Move test button to top right of the slide
-            typeTestBtn.classList.remove("inline-test-btn");
-            typeTestBtn.classList.add("test-btn-top-right");
-            slideContainer.appendChild(typeTestBtn);
-            slideContainer.appendChild(fieldset);
-            input.addEventListener("change", () =>
-            {
-                slideContainer.classList.toggle("expanded", input.checked);
-                typeTestBtn.style.display = input.checked ? "inline-block" : "none";
             });
-            // Group toggle and slideContainer vertically
-            block.appendChild(row);
-            block.appendChild(slideContainer);
-            toggleFieldsetGroup.appendChild(block);
+            input.addEventListener('change', () => {
+                if (input.checked) {
+                    fieldRow.classList.add('toggle-row--expanded');
+                    fieldset.classList.add('expanded');
+                    testBtn.classList.add('enabled');
+                } else {
+                    fieldRow.classList.remove('toggle-row--expanded');
+                    fieldset.classList.remove('expanded');
+                    testBtn.classList.remove('enabled');
+                }
+            });
+
+            card.appendChild(fieldRow);
+            card.appendChild(fieldset);
         }
-        // Add vertical group to field container
-        field.appendChild(toggleFieldsetGroup);
-        card.appendChild(field);
+
         form.appendChild(card);
-        requestAnimationFrame(() => card.classList.add("show-card"));
+        setTimeout(() => card.classList.add('show-card'), 40 * cardIndex);
+        cardIndex++;
     }
-    // ===== Notification Search Functionality =====
-    const searchInput = document.getElementById("notifications-search");
-    if (searchInput)
-    {
-        searchInput.addEventListener("input", (e) =>
-        {
+
+    const searchInput = document.getElementById('notifications-search');
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
             window.skipDirtyCheck = true;
             searchInput.defaultValue = searchInput.value;
             const query = e.target.value.toLowerCase();
-            document.querySelectorAll(".notification-card").forEach((card) =>
-            {
-                let text = "";
-                const header = card.querySelector(".notification-card-header");
-                if (header) text += header.textContent + " ";
-                card.querySelectorAll("legend").forEach(leg =>
-                {
-                    text += leg.textContent + " ";
+            document.querySelectorAll('.card').forEach((card) => {
+                let text = '';
+                const header = card.querySelector('.card-header');
+                if (header) text += header.textContent + ' ';
+                card.querySelectorAll('.fieldset-legend').forEach((leg) => {
+                    text += leg.textContent + ' ';
                 });
-                card.querySelectorAll("input, textarea").forEach(input =>
-                {
-                    if (input.tagName === "TEXTAREA" || input.type === "text" || input.type === "number")
-                    {
-                        text += input.value + " ";
-                    }
-                    else if (input.type === "checkbox")
-                    {
-                        text += (input.checked ? "true" : "false") + " ";
+                card.querySelectorAll('input, textarea').forEach((input) => {
+                    if (
+                        input.tagName === 'TEXTAREA' ||
+                        input.type === 'text' ||
+                        input.type === 'number'
+                    ) {
+                        text += input.value + ' ';
+                    } else if (input.type === 'checkbox') {
+                        text += (input.checked ? 'true' : 'false') + ' ';
                     }
                 });
                 text = text.toLowerCase().trim();
-                card.style.display = query === "" || text.includes(query) ? "flex" : "none";
+                card.style.display = query === '' || text.includes(query) ? 'flex' : 'none';
             });
         });
     }
-    // Bind the Save button
+
     const saveBtn = document.getElementById('saveBtn');
-    window.DAPS.bindSaveButton(saveBtn, window.DAPS.buildNotificationPayload, "notifications");
-    window.saveChanges = async () => window.saveSection(window.DAPS.buildNotificationPayload, "notifications");
-};
-// ===== Toggle Expand/Collapse Handler =====
-document.querySelectorAll('.notification-toggle').forEach(toggle =>
-{
-    toggle.addEventListener('change', (e) =>
-    {
-        const container = e.target.closest('.notification-module');
-        const content = container && container.querySelector('.toggle-content');
-        if (content)
-        {
-            if (e.target.checked)
-            {
-                content.classList.add('open');
-            }
-            else
-            {
-                content.classList.remove('open');
-            }
-        }
-    });
-});
-// Initialize notifications page on load
-document.addEventListener('DOMContentLoaded', () =>
-{
-    if (typeof window.loadNotifications === 'function')
-    {
-        window.loadNotifications();
-    }
-});
+    bindSaveButton(saveBtn, buildNotificationPayload, 'notifications');
+}

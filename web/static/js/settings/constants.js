@@ -43,6 +43,7 @@ export const INT_FIELDS = [
     'sonarr_count',
     'season_monitored_threshold',
     'border_width',
+    'searches',
 ];
 
 export const JSON_FIELDS = ['token'];

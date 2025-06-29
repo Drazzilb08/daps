@@ -201,20 +201,22 @@ export async function buildSettingsPayload(moduleName) {
         payload.holidays = holidaysObj;
     }
     if (moduleName === 'nohl') {
+        // Always output source_dirs as array of {path, mode} for nohl, matching fields order
         const sourceFields = form.querySelectorAll('.subfield-list .subfield');
         if (sourceFields.length > 0) {
             payload.source_dirs = Array.from(sourceFields)
                 .map((sub) => {
-                    const path = sub.querySelector('input[name="source_dirs"]')?.value.trim();
-                    const mode = sub.querySelector('select[name="mode"]')?.value || 'resolve';
-                    return path
-                        ? {
-                              path,
-                              mode,
-                          }
-                        : null;
+                    const pathInput = sub.querySelector('input[name="source_dirs"]');
+                    const select = sub.querySelector('select[name="mode"]');
+                    const path = pathInput ? pathInput.value.trim() : '';
+                    // Always default mode to 'scan' if not set
+                    const mode = select && select.value ? select.value : 'scan';
+                    if (!path) return null;
+                    return { path, mode };
                 })
                 .filter(Boolean);
+        } else {
+            payload.source_dirs = [];
         }
     } else if (moduleName === 'jduparr') {
         const sourceFields = form.querySelectorAll('.subfield-list .subfield');
@@ -248,7 +250,8 @@ export async function buildSettingsPayload(moduleName) {
     );
     fillPayloadFromFormData(data, payload, excludeKeys);
 
-    if (data.has('source_dirs')) {
+    // For nohl, do not apply legacy fallback for source_dirs (handled above).
+    if (moduleName !== 'nohl' && data.has('source_dirs')) {
         payload.source_dirs = data
             .getAll('source_dirs')
             .map((v) => v.trim())

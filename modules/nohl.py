@@ -630,10 +630,12 @@ def main(config) -> None:
         if getattr(config, "source_dirs", None):
             for entry in config.source_dirs:
                 if isinstance(entry, dict):
+                    if "mode" not in entry:
+                        logger.warning(f"No 'mode' set for source_dir path '{entry.get('path')}', defaulting to 'scan'.")
                     source_entries.append(
                         {
                             "path": entry.get("path"),
-                            "mode": entry.get("mode", "resolve"),
+                            "mode": entry.get("mode", "scan"),
                         }
                     )
                 else:
@@ -698,11 +700,14 @@ def main(config) -> None:
         data_list: Dict[str, Any] = {}
         media_dict: Any = {}
         nohl_data: Any = {}
-        print(f"nohl_list: {nohl_list}")
         # ARR resolution: for each instance, filter and trigger searches
         for instance_type, instance_data in config.instances_config.items():
             for instance in config.instances:
-                if instance in instance_data:
+                if isinstance(instance, dict):
+                    instance_name = next(iter(instance.keys()))
+                else:
+                    instance_name = instance
+                if instance_name in instance_data:
                     data_list = {"search_media": [], "filtered_media": []}
                     instance_settings = instance_data.get(instance, None)
                     app = create_arr_client(

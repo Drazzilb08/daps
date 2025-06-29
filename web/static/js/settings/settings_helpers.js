@@ -34,7 +34,7 @@ function createListField(name, list) {
             return supportsMode
                 ? {
                       path: entry,
-                      mode: 'resolve',
+                      mode: 'scan',
                   }
                 : {
                       path: entry,
@@ -47,7 +47,7 @@ function createListField(name, list) {
             supportsMode
                 ? {
                       path: '',
-                      mode: 'resolve',
+                      mode: 'scan',
                   }
                 : {
                       path: '',

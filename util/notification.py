@@ -4,6 +4,7 @@ import os
 import random
 import traceback
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 from urllib.parse import quote
 
@@ -324,23 +325,15 @@ def send_discord_notification(
     module_title: str,
     output: Any,
 ) -> None:
-    """Format output and send one or more Discord messages.
-
-    Args:
-      logger: Logger instance.
-      config: Configuration object.
-      hook: Discord webhook URL.
-      module_title: Module title.
-      output: Output data.
-    """
-    from datetime import datetime
-
     from util.notification_formatting import format_for_discord
 
     data, _ = format_for_discord(config, output)
     timestamp = datetime.utcnow().isoformat()
     dry_run = getattr(config, "dry_run", False)
-    color = output.get("color", 0x00FF00)
+    if isinstance(output, dict):
+        color = output.get("color", 0x00FF00)
+    else:
+        color = 0x00FF00
     for payload in build_discord_payload(
         module_title, data, timestamp, dry_run=dry_run, color=color
     ):

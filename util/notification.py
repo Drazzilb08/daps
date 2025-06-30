@@ -308,7 +308,7 @@ def send_notifiarr_notification(
                 "description": " ",
                 "content": content,
             }
-        color = output.get("color", "00FF00")
+        color = output.get("color", "00FF00") if isinstance(output, dict) else "00FF00"
         if isinstance(color, int):
             color = f"{color:06X}"
         elif isinstance(color, str):

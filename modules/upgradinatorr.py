@@ -2,10 +2,11 @@ import sys
 from types import SimpleNamespace
 from typing import Any, Dict, List, Optional
 
-from util.arrpy import BaseARRClient, create_arr_client
+from util.config import Config
+from util.arr import BaseARRClient, create_arr_client
+from util.helper import create_table, print_settings
 from util.logger import Logger
 from util.notification import send_notification
-from util.utility import create_table, print_settings
 
 VALID_STATUSES = {"continuing", "airing", "ended", "canceled", "released"}
 
@@ -404,7 +405,7 @@ def print_output(output_dict: Dict[str, Any], logger: Logger) -> None:
                 logger.info(f"No items found for {instance}.")
 
 
-def main(config: SimpleNamespace) -> None:
+def main() -> None:
     """
     Entrypoint for upgradinatorr. Loads config, processes instances, prints results, and sends notifications.
 
@@ -413,6 +414,7 @@ def main(config: SimpleNamespace) -> None:
     Returns:
         None
     """
+    config = Config("upgradinatorr")
     logger = Logger(config.log_level, config.module_name)
     try:
         if config.log_level.lower() == "debug":

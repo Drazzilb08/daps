@@ -8,8 +8,9 @@ from shutil import which
 from types import SimpleNamespace
 from typing import List, Optional
 
+from util.helper import print_settings
 from util.logger import Logger
-from util.utility import print_settings
+from util.config import Config
 
 # Load environment variables from .env file if available
 try:
@@ -146,8 +147,9 @@ def run_rclone(config: SimpleNamespace, logger: Logger) -> None:
             logger.error(f"Exception occurred while running rclone: {e}")
 
 
-def main(config: SimpleNamespace, logger: Optional[Logger] = None) -> None:
+def main(logger: Optional[Logger] = None) -> None:
     """Initialize logger, optionally print config in debug mode, and run rclone sync."""
+    config = Config("sync_gdrive")
     logger = Logger(config.log_level, config.module_name)
     try:
         if config.log_level.lower() == "debug":

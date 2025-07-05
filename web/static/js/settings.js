@@ -7,9 +7,7 @@ import { renderGdriveSettings } from './settings/modules/sync_gdrive.js';
 import { renderNohlSettings } from './settings/modules/nohl.js';
 import { renderJduparrSettings } from './settings/modules/jduparr.js';
 import { renderHealthCheckarrSettings } from './settings/modules/health_checkarr.js';
-import { renderPosterCleanarrSettings } from './settings/modules/poster_cleanarr.js';
 import { renderRenameinatorrSettings } from './settings/modules/renameinatorr.js';
-import { renderUnmatchedAssetsSettings } from './settings/modules/unmatched_assets.js';
 import { buildSettingsPayload } from './payload.js';
 import { renderMain } from './settings/modules/main.js';
 import { DAPS } from './common.js';
@@ -25,9 +23,7 @@ const MODULE_RENDERERS = {
     nohl: renderNohlSettings,
     jduparr: renderJduparrSettings,
     health_checkarr: renderHealthCheckarrSettings,
-    poster_cleanarr: renderPosterCleanarrSettings,
     renameinatorr: renderRenameinatorrSettings,
-    unmatched_assets: renderUnmatchedAssetsSettings,
     main: renderMain,
 };
 

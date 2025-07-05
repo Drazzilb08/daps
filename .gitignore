@@ -63,6 +63,7 @@ tests/
 **/TODO.*
 **test.**
 **side-projects**
+*.db
 test2.py
 .env
 /tests

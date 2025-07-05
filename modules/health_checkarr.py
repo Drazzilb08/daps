@@ -4,38 +4,22 @@ import sys
 from types import SimpleNamespace
 from typing import Any, Dict, List, Optional
 
-from tqdm import tqdm
-
-from util.arrpy import create_arr_client
+from util.arr import create_arr_client
 from util.constants import tmdb_id_regex, tvdb_id_regex
+from util.database import DapsDB
+from util.helper import create_table, print_settings, progress
 from util.logger import Logger
 from util.notification import send_notification
-from util.utility import create_table, print_settings, progress
+from util.config import Config
 
 
-def main(config: SimpleNamespace) -> None:
+def main() -> None:
     """
     Process Radarr and Sonarr instances to identify and delete media items flagged by health checks
     as removed from TMDB or TVDB. Supports dry run mode and logs all actions.
-
-    Args:
-        config (SimpleNamespace): Configuration object containing:
-            - log_level (str): Logging verbosity level.
-            - module_name (str): Name of the module for logging context.
-            - dry_run (bool): If True, no deletions are performed.
-            - instances_config (Dict[str, Dict[str, Dict[str, str]]]): Configuration for each instance type and instance.
-            - instances (List[str]): List of instance names to process.
-
-    Behavior:
-        - Iterates over configured Radarr and Sonarr instances.
-        - Retrieves health check data and media libraries.
-        - Identifies media items flagged as removed.
-        - Deletes flagged media items unless dry run is enabled.
-        - Sends notifications about deleted items.
-        - Logs all key steps and errors.
     """
-    logger: Logger = Logger(config.log_level, config.module_name)
-
+    config = Config("health_checkarr")
+    logger = Logger(config.log_level, config.module_name)
     try:
         # Display configuration settings if in debug mode
         if config.log_level.lower() == "debug":
@@ -47,7 +31,6 @@ def main(config: SimpleNamespace) -> None:
             logger.info(create_table(table))
             logger.info("")
 
-        # Iterate over each instance type (radarr/sonarr)
         for instance_type, instance_data in config.instances_config.items():
             # Iterate over each configured instance for this type
             for instance in config.instances:
@@ -60,12 +43,10 @@ def main(config: SimpleNamespace) -> None:
                     )
                     if app and app.connect_status:
                         # Retrieve health check warnings
-                        health: Optional[List[Dict[str, Any]]] = app.get_health()
+                        health = app.get_health()
 
                         # Retrieve current media library without episode details
-                        media_dict: List[Dict[str, Any]] = app.get_parsed_media(
-                            include_episode=False
-                        )
+                        media_dict: List[Dict[str, Any]] = app.get_all_media()
 
                         id_list: List[int] = []
 
@@ -125,22 +106,23 @@ def main(config: SimpleNamespace) -> None:
                                 )
 
                                 # Delete each matched item unless dry run is enabled
-                                for item in tqdm(
+                                with progress(
                                     output,
                                     desc=f"Deleting {instance_type} items",
                                     unit="items",
-                                    disable=None,
-                                    total=len(output),
-                                ):
-                                    if not config.dry_run:
-                                        logger.info(
-                                            f"{item['title']} deleted with id: {item['media_id']} and tvdb/tmdb id: {item['db_id']}"
-                                        )
-                                        app.delete_media(item["media_id"])
-                                    else:
-                                        logger.info(
-                                            f"{item['title']} would have been deleted with id: {item['media_id']}"
-                                        )
+                                    logger=logger,
+                                    leave=True,
+                                ) as pbar:
+                                    for item in pbar:
+                                        if not config.dry_run:
+                                            logger.info(
+                                                f"{item['title']} deleted with id: {item['media_id']} and tvdb/tmdb id: {item.get('db_id', '')}"
+                                            )
+                                            app.delete_media(item["media_id"])
+                                        else:
+                                            logger.info(
+                                                f"{item['title']} would have been deleted with id: {item['media_id']}"
+                                            )
 
                                 # Send notification with deleted items
                                 send_notification(

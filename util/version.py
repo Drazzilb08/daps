@@ -121,9 +121,8 @@ def start_version_check(config, logger, interval=3600):
                 output = {
                     "local_version": local_version,
                     "remote_version": remote_full,
-                    "color": "FF0000",  # Red hex string (or 0xFF0000 as int, but string is flexible)
+                    "color": "FF0000",
                 }
-                # Make sure config.module_name = "version_check" or similar for formatting to work
                 config.module_name = "version_check"
                 send_notification(logger, "version_check", config, output)
             else:

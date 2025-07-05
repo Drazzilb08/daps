@@ -14,6 +14,8 @@ export const BOOL_FIELDS = [
     'disable_batching',
     'replace_border',
     'update_notifications',
+    'run_cleanarr',
+    'report_unmatched_assets'
 ];
 
 export const TEXT_FIELDS = [
@@ -43,6 +45,7 @@ export const INT_FIELDS = [
     'sonarr_count',
     'season_monitored_threshold',
     'border_width',
+    'searches',
 ];
 
 export const JSON_FIELDS = ['token'];
@@ -80,8 +83,6 @@ export const ARR_AND_PLEX_INSTANCES = [
     'border_replacerr',
     'sync_gdrive',
     'nohl',
-    'unmatched_assets',
-    'poster_cleanarr',
     'health_checkarr',
     'renameinatorr',
 ];
@@ -91,8 +92,6 @@ export const DRAG_AND_DROP = {
 };
 
 export const LIST_FIELD = {
-    unmatched_assets: ['source_dirs'],
-    poster_cleanarr: ['source_dirs'],
     nohl: ['source_dirs'],
 };
 

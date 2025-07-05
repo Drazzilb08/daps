@@ -236,11 +236,31 @@ export async function buildSettingsPayload(moduleName) {
             nestedInstances[inst].library_names.push(val);
         }
     }
+    if (moduleName === 'poster_renamerr') {
+        // Find all keys like add_posters_{plexname} in form data
+        const allPlex = Object.keys(nestedInstances);
+        allPlex.forEach((plex) => {
+            // For each plex instance, set add_posters to true/false
+            // If checkbox is not present (not checked), default to false
+            const checked = data.get(`add_posters_${plex}`) === 'on';
+            nestedInstances[plex].add_posters = checked;
+        });
+        // Exclude all add_posters_* keys from payload to avoid flat fields like add_posters_plex_1: 'on'
+        for (const key of data.keys()) {
+            if (key.startsWith('add_posters_')) {
+                excludeKeys.push(key);
+            }
+        }
+    }
     const combinedInstances = [
         ...scalarInstances,
-        ...Object.entries(nestedInstances).map(([k, v]) => ({
-            [k]: v,
-        })),
+        ...Object.entries(nestedInstances).map(([k, v]) => {
+            // Build new obj with desired key order
+            const o = {};
+            if (typeof v.add_posters !== 'undefined') o.add_posters = v.add_posters;
+            if (Array.isArray(v.library_names)) o.library_names = v.library_names;
+            return { [k]: o };
+        }),
     ];
     excludeKeys.push(
         'instances',

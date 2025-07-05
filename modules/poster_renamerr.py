@@ -1,35 +1,25 @@
-import copy
 import filecmp
 import os
-import re
 import shutil
 import sys
 from types import SimpleNamespace
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List
 
-from util.arrpy import create_arr_client
-from util.assets import get_assets_files
-from util.constants import year_regex
-from util.index import create_new_empty_index
-from util.logger import Logger
-from util.match import match_assets_to_media
-from util.notification import send_notification
-from util.utility import (
+from pathvalidate import is_valid_filename, sanitize_filename
+
+from util.connector import update_client_databases, update_collections_database
+from util.database import DapsDB
+from util.config import Config
+from util.poster_import import merge_assets
+from util.helper import (
     create_table,
-    get_plex_data,
-    print_json,
+    match_assets_to_media,
     print_settings,
+    progress,
 )
-
-try:
-    from pathvalidate import is_valid_filename, sanitize_filename
-    from plexapi.server import PlexServer
-
-    from util.utility import progress
-except ImportError as e:
-    print(f"ImportError: {e}")
-    print("Please install the required modules with 'pip install -r requirements.txt'")
-    exit(1)
+from util.logger import Logger
+from util.notification import send_notification
+from util.upload_posters import upload_posters
 
 
 def process_file(file: str, new_file_path: str, action_type: str, logger: Any) -> None:
@@ -57,400 +47,329 @@ def process_file(file: str, new_file_path: str, action_type: str, logger: Any) -
 
 
 def rename_files(
-    matched_assets: Dict[str, List[Dict[str, Any]]],
     config: SimpleNamespace,
     logger: Any,
-) -> Tuple[Dict[str, List[Dict[str, Any]]], List[str]]:
+    db: Any,
+) -> tuple:
     """
-    Rename matched assets to Plex-compatible filenames and handle folder structure.
-    Args:
-        matched_assets: Dictionary of matched poster assets.
-        config: Module configuration.
-        logger: Logger instance.
-    Returns:
-        Tuple of output message dict and renamed assets dict.
+    Prepares assets for renaming or generates a manifest of asset IDs for border replacerr.
+    - Always builds and returns the manifest (list of IDs).
+    - Only performs file operations if NOT running border_replacerr.
+    - Always updates the renamed_file column in the database for each asset.
+    - Always reports output.
     """
-    output: Dict[str, List[Dict[str, Any]]] = {}
-    renamed_files = []
-    # Determine destination based on dry run and border replacer
-    if config.run_border_replacerr:
-        tmp_dir = os.path.join(config.destination_dir, "tmp")
-        if not config.dry_run:
-            if not os.path.exists(tmp_dir):
-                os.makedirs(tmp_dir)
-            else:
-                logger.debug(f"{tmp_dir} already exists")
-            destination_dir = tmp_dir
-        else:
-            logger.debug(f"Would create folder {tmp_dir}")
-            destination_dir = tmp_dir
-    else:
-        destination_dir = config.destination_dir
+    output: Dict[str, List[Dict[str, Any]]] = {
+        "collection": [],
+        "movie": [],
+        "show": [],
+    }
+    manifest = {
+        "media_cache": [],
+        "collections_cache": []
+    }
+    matched_assets = []
 
-    asset_types: List[str] = ["collections", "movies", "series"]
-    logger.info("Renaming assets please wait...")
-    for asset_type in asset_types:
-        output[asset_type] = []
-        if matched_assets[asset_type]:
-            with progress(
-                matched_assets[asset_type],
-                desc=f"Renaming {asset_type}",
-                total=len(matched_assets[asset_type]),
-                unit="item",
-                logger=logger,
-            ) as pbar:
-                for item in pbar:
-                    messages: List[str] = []
-                    discord_messages: List[str] = []
-                    files = item["files"]
-                    folder = item["folder"]
-                    # Sanitize folder name for collections
-                    if asset_type == "collections":
-                        if not is_valid_filename(folder):
-                            folder = sanitize_filename(folder)
-                    # Construct destination folder
-                    if config.asset_folders:
-                        dest_dir = os.path.join(destination_dir, folder)
-                        if not os.path.exists(dest_dir):
-                            if not config.dry_run:
-                                os.makedirs(dest_dir)
+    # --- Gather matched/unrenamed media assets ---
+    for inst in config.instances:
+        if isinstance(inst, str):
+            # Radarr/Sonarr/other non-Plex
+            instance_name = inst
+            for row in db.get_media_cache_by_instance(instance_name):
+                if row.get("matched") and (not row.get("renamed_file") or not os.path.exists(row.get("renamed_file"))):
+                    matched_assets.append(row)
+        elif isinstance(inst, dict):
+            for instance_name, params in inst.items():
+                library_names = params.get("library_names", [])
+                if library_names:
+                    for library_name in library_names:
+                        # Add matched, not-yet-renamed collections
+                        for row in db.get_collections_cache_by_instance_and_library(instance_name, library_name):
+                            if row.get("matched") and (not row.get("renamed_file") or not os.path.exists(row.get("renamed_file"))):
+                                matched_assets.append(row)
+                # If you want to support Plex media as well, add that here if needed
+
+    if matched_assets:
+        logger.info("Renaming assets please wait...")
+        with progress(
+            matched_assets,
+            desc="Renaming assets",
+            total=len(matched_assets),
+            unit="assets",
+            logger=logger,
+        ) as bar:
+            for item in bar:
+                asset_type = item.get("asset_type")
+                if asset_type not in output:
+                    logger.debug(f"Skipping unknown asset_type: {asset_type}")
+                    continue
+
+                file = item.get("original_file") or item.get("file")
+                folder = item.get("folder", item.get("media_folder", "")) or ""
+                # Sanitize folder for collections
+                if asset_type == "collection" and not is_valid_filename(folder):
+                    folder = sanitize_filename(folder)
+
+                # Destination folder
+                if getattr(config, "asset_folders", False):
+                    dest_dir = os.path.join(config.destination_dir, folder)
+                    if (
+                        not os.path.exists(dest_dir)
+                        and not config.dry_run
+                        and not config.run_border_replacerr
+                    ):
+                        os.makedirs(dest_dir)
+                else:
+                    dest_dir = config.destination_dir
+
+                file_name = os.path.basename(file)
+                file_extension = os.path.splitext(file)[1]
+                season_number = item.get("season_number")
+                if asset_type == "show" and season_number is not None:
+                    season_str = str(season_number).zfill(2)
+                    if getattr(config, "asset_folders", False):
+                        new_file_name = f"Season{season_str}{file_extension}"
                     else:
-                        dest_dir = destination_dir
-                    # Rename each asset file
-                    for file in files:
-                        file_name = os.path.basename(file)
-                        file_extension = os.path.splitext(file)[1]
-                        if re.search(r" - Season| - Specials", file_name):
-                            try:
-                                season_number = (
-                                    re.search(r"Season (\d+)", file_name).group(1)
-                                    if "Season" in file_name
-                                    else "00"
-                                ).zfill(2)
-                            except AttributeError:
-                                logger.debug(
-                                    f"Error extracting season number from {file_name}"
-                                )
-                                continue
-                            if config.asset_folders:
-                                new_file_name = f"Season{season_number}{file_extension}"
-                            else:
-                                new_file_name = (
-                                    f"{folder}_Season{season_number}{file_extension}"
-                                )
-                            new_file_path = os.path.join(dest_dir, new_file_name)
+                        new_file_name = f"{folder}_Season{season_str}{file_extension}"
+                    new_file_path = os.path.join(dest_dir, new_file_name)
+                else:
+                    if getattr(config, "asset_folders", False):
+                        new_file_name = f"poster{file_extension}"
+                    else:
+                        new_file_name = f"{folder}{file_extension}"
+                    new_file_path = os.path.join(dest_dir, new_file_name)
+
+                # Always update the intended path in the DB
+                item["renamed_file"] = new_file_path
+
+                if asset_type == "collection":
+                    db.update_collections_cache_item(
+                        title=item.get("title"),
+                        year=item.get("year"),
+                        library_name=item.get("library_name"),
+                        instance_name=item.get("instance_name"),
+                        matched_value=None,
+                        original_file=None,
+                        renamed_file=new_file_path,
+                    )
+                else:
+                    db.update_media_cache_item(
+                        asset_type=asset_type,
+                        title=item.get("title"),
+                        year=item.get("year"),
+                        instance_name = item.get("instance_name"),
+                        matched_value=None,
+                        season_number=item.get("season_number"),
+                        original_file=None,
+                        renamed_file=new_file_path,
+                    )
+
+                if asset_type == "collection":
+                    manifest["collections_cache"].append(item.get("id"))
+                else:
+                    manifest["media_cache"].append(item.get("id"))
+                messages = []
+                discord_messages = []
+
+                # --- Output/report logic, but skip file ops if inline mode ---
+                # Only do file ops if not run_border_replacerr
+                file_ops_enabled = not getattr(config, "run_border_replacerr", False)
+
+                if os.path.lexists(new_file_path):
+                    existing_file = os.path.join(dest_dir, new_file_name)
+                    if not filecmp.cmp(file, existing_file):
+                        if file_name != new_file_name:
+                            messages.append(f"{file_name} -renamed-> {new_file_name}")
+                            discord_messages.append(f"{new_file_name}")
                         else:
-                            if config.asset_folders:
-                                new_file_name = f"poster{file_extension}"
-                            else:
-                                new_file_name = f"{folder}{file_extension}"
-                            new_file_path = os.path.join(dest_dir, new_file_name)
-                        # Check if destination exists and is different
-                        if os.path.lexists(new_file_path):
-                            existing_file = os.path.join(dest_dir, new_file_name)
-                            try:
-                                if not filecmp.cmp(file, existing_file):
-                                    if file_name != new_file_name:
-                                        messages.append(
-                                            f"{file_name} -renamed-> {new_file_name}"
-                                        )
-                                        discord_messages.append(f"{new_file_name}")
-                                    else:
-                                        if not config.print_only_renames:
-                                            messages.append(
-                                                f"{file_name} -not-renamed-> {new_file_name}"
-                                            )
-                                            discord_messages.append(f"{new_file_name}")
-                                    if not config.dry_run:
-                                        if config.action_type in [
-                                            "hardlink",
-                                            "symlink",
-                                        ]:
-                                            os.remove(new_file_path)
-                                        process_file(
-                                            file,
-                                            new_file_path,
-                                            config.action_type,
-                                            logger,
-                                        )
-                                        renamed_files.append(new_file_path)
-                            except FileNotFoundError:
-                                if not config.dry_run:
-                                    os.remove(new_file_path)
-                                    process_file(
-                                        file, new_file_path, config.action_type, logger
-                                    )
-                                    renamed_files.append(new_file_path)
-                        else:
-                            if file_name != new_file_name:
+                            if not getattr(config, "print_only_renames", False):
                                 messages.append(
-                                    f"{file_name} -renamed-> {new_file_name}"
+                                    f"{file_name} -not-renamed-> {new_file_name}"
                                 )
                                 discord_messages.append(f"{new_file_name}")
-                            else:
-                                if not config.print_only_renames:
-                                    messages.append(
-                                        f"{file_name} -not-renamed-> {new_file_name}"
-                                    )
-                                    discord_messages.append(f"{new_file_name}")
-                            if not config.dry_run:
-                                process_file(
-                                    file, new_file_path, config.action_type, logger
-                                )
-                                renamed_files.append(new_file_path)
-                    if messages or discord_messages:
-                        output[asset_type].append(
-                            {
-                                "title": item["title"],
-                                "year": item["year"],
-                                "folder": item["folder"],
-                                "messages": messages,
-                                "discord_messages": discord_messages,
-                            }
-                        )
+                        if file_ops_enabled and not config.dry_run:
+                            if getattr(config, "action_type", None) in [
+                                "hardlink",
+                                "symlink",
+                            ]:
+                                os.remove(new_file_path)
+                            process_file(
+                                file, new_file_path, config.action_type, logger
+                            )
+                else:
+                    if file_name != new_file_name:
+                        messages.append(f"{file_name} -renamed-> {new_file_name}")
+                        discord_messages.append(f"{new_file_name}")
+                    else:
+                        if not getattr(config, "print_only_renames", False):
+                            messages.append(
+                                f"{file_name} -not-renamed-> {new_file_name}"
+                            )
+                            discord_messages.append(f"{new_file_name}")
+                    if file_ops_enabled and not config.dry_run:
+                        process_file(file, new_file_path, config.action_type, logger)
+
+                if messages or discord_messages:
+                    output[asset_type].append(
+                        {
+                            "title": item.get("title"),
+                            "year": item.get("year"),
+                            "folder": folder,
+                            "messages": messages,
+                            "discord_messages": discord_messages,
+                        }
+                    )
+    return output, manifest
+
+
+def handle_output(output: Dict[str, List[Dict[str, Any]]], logger: Any) -> None:
+    """
+    Print final rename results to the logger by asset type in a clean, grouped format.
+    Groups shows by (title, year, folder) with all their messages together.
+    """
+    headers = {"collection": "Collection", "movie": "Movie", "show": "Show"}
+
+    for asset_type in ["collection", "movie", "show"]:
+        assets = output.get(asset_type, [])
+        header = f"{headers.get(asset_type, asset_type.capitalize())}s"
+        logger.info(create_table([[header]]))
+
+        if not assets:
+            logger.info(f"No {header.lower()}s to rename\n")
+            continue
+
+        # ---- GROUPING LOGIC FOR SHOWS ----
+        if asset_type == "show":
+            grouped = {}
+            for asset in assets:
+                key = (asset.get("title"), asset.get("year"), asset.get("folder"))
+                grouped.setdefault(key, {"messages": [], "discord_messages": []})
+                grouped[key]["messages"].extend(asset.get("messages", []))
+                grouped[key]["discord_messages"].extend(
+                    asset.get("discord_messages", [])
+                )
+
+            for (title, year, folder), data in grouped.items():
+                display = f"{title} ({year})" if year else f"{title}"
+                logger.info(display)
+                for msg in data["messages"]:
+                    logger.info(f"\t{msg}")
+                logger.info("")  # Spacing
+
         else:
-            logger.info(f"No {asset_type} to rename")
-    return output, renamed_files
+            # No grouping needed for movie/collection
+            for asset in assets:
+                title = asset.get("title") or ""
+                year = asset.get("year")
+                display = f"{title} ({year})" if year else f"{title}"
+                logger.info(display)
+                for msg in asset.get("messages", []):
+                    logger.info(f"\t{msg}")
+                logger.info("")
 
 
-def handle_output(
-    output: Dict[str, List[Dict[str, Any]]], config: SimpleNamespace, logger: Any
+def ensure_destination_dir(config: SimpleNamespace, logger: Any) -> None:
+    if not os.path.exists(config.destination_dir):
+        logger.info(f"Creating destination directory: {config.destination_dir}")
+        os.makedirs(config.destination_dir)
+    else:
+        logger.debug(f"Destination directory already exists: {config.destination_dir}")
+
+
+def sync_posters(config: SimpleNamespace, logger: Any) -> None:
+    if getattr(config, "sync_posters", False):
+        logger.info("Running sync_gdrive")
+        from modules.sync_gdrive import main as gdrive_main
+        from util.config import Config
+
+        gdrive_config = Config("sync_gdrive").module_config
+        gdrive_main(gdrive_config)
+        logger.info("Finished running sync_gdrive")
+    else:
+        logger.debug("Sync posters is disabled. Skipping...")
+
+
+def run_border_replacerr(
+    db: DapsDB, config: SimpleNamespace, manifest: List[int], logger: Any
 ) -> None:
     """
-    Print final rename results to the logger by asset type.
-    Args:
-        output: Collected messages by asset type.
-        config: Configuration settings.
-        logger: Logger for printing.
-    Returns:
-        None
+    Orchestrates calling border_replacerr in manifest/inline mode, passing only the list of asset IDs.
+    - Manifest is a list of media_cache IDs that require border replacement.
+    - All file handling is controlled via the DB, no temp dirs or legacy file lists are used.
     """
-    for asset_type, assets in output.items():
-        if assets:
-            table = [
-                [f"{asset_type.capitalize()}"],
-            ]
-            if any(asset["messages"] for asset in assets):
-                logger.info(create_table(table))
-            for asset in assets:
-                title = asset["title"]
-                title = year_regex.sub("", title).strip()
-                year = asset["year"]
-                folder = asset["folder"]
-                messages = asset["messages"]
-                if year:
-                    year = f" ({year})"
-                else:
-                    year = ""
-                messages.sort()
-                if messages:
-                    logger.info(f"{title}{year}")
-                    if config.asset_folders:
-                        if config.dry_run:
-                            logger.info(f"\tWould create folder '{folder}'")
-                        else:
-                            logger.info(f"\tCreated folder '{folder}'")
-                    for message in messages:
-                        logger.info(f"\t{message}")
-                    logger.info("")
-        else:
-            logger.info(f"No {asset_type} to rename")
+    from modules.border_replacerr import run_replacerr
+
+    logger.debug(
+        "\nRunning border replacerr:\n"
+        f"  Media assets to process: {len(manifest.get('media_cache', []))}\n"
+        f"  Collection assets to process: {len(manifest.get('collections_cache', []))}\n"
+        f"  Total assets to process: {len(manifest.get('media_cache', [])) + len(manifest.get('collections_cache', []))}\n"
+    )
+
+    run_replacerr(
+        db,
+        config,
+        manifest,
+        logger,
+    )
+    logger.info("Finished running border_replacerr.")
 
 
-def main(config: SimpleNamespace) -> None:
+def main() -> None:
     """
-    Entrypoint for poster_renamerr.py.
-    Loads configuration, fetches media and assets, matches posters, performs renames,
-    and optionally syncs to Google Drive and runs border replacerr if enabled.
-    Args:
-        config: Parsed config from user settings.
-    Returns:
-        None
+    Orchestrator entrypoint for poster_renamerr.
+    Handles setup, sequencing, error handling, and cleanup.
+    Actual sync/match/rename/etc is delegated to helpers.
     """
+
+    config = Config("poster_renamerr")
     logger = Logger(config.log_level, config.module_name)
+    db = DapsDB()
+
     try:
         if config.log_level.lower() == "debug":
             print_settings(logger, config)
-        if not os.path.exists(config.destination_dir):
-            logger.info(f"Creating destination directory: {config.destination_dir}")
-            os.makedirs(config.destination_dir)
-        else:
-            logger.debug(
-                f"Destination directory already exists: {config.destination_dir}"
-            )
+
+        ensure_destination_dir(config, logger)
+
         if config.dry_run:
-            table = [["Dry Run"], ["NO CHANGES WILL BE MADE"]]
-            logger.info(create_table(table))
-        if config.sync_posters:
-            logger.info("Running sync_gdrive")
-            from modules.sync_gdrive import main as gdrive_main
-            from util.config import Config
+            logger.info(create_table([["Dry Run"], ["NO CHANGES WILL BE MADE"]]))
 
-            gdrive_config = Config("sync_gdrive").module_config
-            gdrive_main(gdrive_config)
-            logger.info("Finished running sync_gdrive")
-        else:
-            logger.debug("Sync posters is disabled. Skipping...")
-        prefix_index = create_new_empty_index()
+        sync_posters(config, logger)
+
         logger.info("Gathering all the posters, please wait...")
-        assets_dict, prefix_index = get_assets_files(config.source_dirs, logger)
-        if not assets_dict:
-            logger.error("No assets found in the source directories. Exiting module...")
-            return
-        media_dict: Dict[str, List[Dict[str, Any]]] = {
-            "movies": [],
-            "series": [],
-            "collections": [],
-        }
+        db.clear_poster_cache()
+        merge_assets(db, config.source_dirs, logger)
+        print(f"Finished gathering posters.")
 
-        if config.instances:
-            for instance in config.instances:
-                if isinstance(instance, dict):
-                    instance_name, instance_settings = next(iter(instance.items()))
-                else:
-                    instance_name = instance
-                    instance_settings = {}
-                found = False
-                for instance_type, instance_data in config.instances_config.items():
-                    if instance_name in instance_data:
-                        found = True
-                        break
-                if not found:
-                    logger.warning(
-                        f"Instance '{instance_name}' not found in config.instances_config. Skipping."
-                    )
-                    continue
-                if instance_type == "plex":
-                    url = instance_data[instance_name]["url"]
-                    api = instance_data[instance_name]["api"]
-                    try:
-                        app = PlexServer(url, api)
-                    except Exception as e:
-                        logger.error(f"Error connecting to Plex: {e}")
-                        app = None
-                    if app:
-                        library_names = instance_settings.get("library_names", [])
-                        if library_names:
-                            logger.info("Fetching Plex collections...")
-                            results = get_plex_data(
-                                app,
-                                library_names,
-                                logger,
-                                include_smart=True,
-                                collections_only=True,
-                            )
-                            media_dict["collections"].extend(results)
-                        else:
-                            logger.warning(
-                                "No library names specified for Plex instance. Skipping Plex."
-                            )
-                else:
-                    url = instance_data[instance_name]["url"]
-                    api = instance_data[instance_name]["api"]
-                    app = create_arr_client(url, api, logger)
-                    if app and app.connect_status:
-                        logger.info(f"Fetching {app.instance_name} data...")
-                        results = app.get_parsed_media(include_episode=False)
-                        if results:
-                            if instance_type == "radarr":
-                                media_dict["movies"].extend(results)
-                            elif instance_type == "sonarr":
-                                media_dict["series"].extend(results)
-                        else:
-                            logger.error(f"No {instance_type.capitalize()} data found.")
-        else:
-            logger.error("No instances found. Exiting module...")
-            return
-        if not any(media_dict.values()):
-            logger.error(
-                "No media found, Check instances setting in your config. Exiting."
-            )
-            return
-        renamed_assets = None
-        if media_dict and prefix_index:
-            logger.info("Matching assets to media, please wait...")
-            matched_assets = match_assets_to_media(
-                media_dict,
-                prefix_index,
-                logger,
-                return_unmatched_assets=False,
-                config=config,
-            )
-        if matched_assets and any(matched_assets.values()):
-            # Optionally deep copy to strip heavy keys for debug (example for 'seasons')
-            matched_assets_copy = copy.deepcopy(matched_assets)
-            for media_type, media_list in matched_assets_copy.items():
-                for media in media_list:
-                    if "seasons" in media:
-                        del media["seasons"]
-            if config.log_level == "debug":
-                print_json(assets_dict, logger, config.module_name, "assets_dict")
-                print_json(media_dict, logger, config.module_name, "media_dict")
-                print_json(prefix_index, logger, config.module_name, "prefix_index")
-                print_json(
-                    matched_assets_copy, logger, config.module_name, "matched_assets"
-                )
-            output, renamed_files = rename_files(matched_assets, config, logger)
-            if any(output.values()):
-                handle_output(output, config, logger)
-                send_notification(
-                    logger=logger,
-                    module_name=config.module_name,
-                    config=config,
-                    output=output,
-                )
-            else:
-                logger.info("No new posters to rename.")
-        else:
-            logger.info("No assets matched to media.")
+        update_client_databases(db, config, logger)
+        update_collections_database(db, config, logger)
+
+        match_assets_to_media(db,logger, config)
+        output, manifest = rename_files(config, logger, db)
+
+        if config.report_unmatched_assets:
+            db.close()
+            from modules.unmatched_assets import main as report_unmatched_assets
+            report_unmatched_assets()
+
+        if config.run_cleanarr:
+            cleanarr_logger = Logger(config.log_level, "cleanarr")
+            db.handle_orphaned_posters(cleanarr_logger, config.dry_run)
+
         if config.run_border_replacerr:
-            tmp_dir = os.path.join(config.destination_dir, "tmp")
-            from modules.border_replacerr import process_files
-            from util.config import Config
-            from util.scanner import process_selected_files
+            run_border_replacerr(db, config, manifest, logger)
 
-            replacerr_config = Config("border_replacerr").module_config
-            # Simplified conditional logic for incremental/full run
-            if config.incremental_border_replacerr:
-                if renamed_files:
-                    renamed_assets = process_selected_files(
-                        renamed_files, logger, asset_folders=config.asset_folders
-                    )
-                    logger.info(
-                        "\nDoing an incremental run on only assets that were provided\nStarting Border Replacerr...\n"
-                    )
-                    process_files(
-                        tmp_dir,
-                        config=replacerr_config,
-                        logger=None,
-                        renamerr_config=config,
-                        renamed_assets=renamed_assets,
-                        incremental_run=True,
-                    )
-                    logger.info("Finished running border_replacerr")
-                else:
-                    logger.info(
-                        "\nNo new assets to incrementally perform with border_replacerr.\nSkipping Border Replacerr.."
-                    )
-            else:
-                logger.info(
-                    "\nDoing a full run with Border Replacerr\nStarting Border Replacerr...\n"
-                )
-                process_files(
-                    tmp_dir,
-                    config=replacerr_config,
-                    logger=None,
-                    renamerr_config=config,
-                    renamed_assets=renamed_assets,
-                    incremental_run=False,
-                )
-                logger.info("Finished running border_replacerr.py")
+        upload_posters(config, db, logger, manifest)
+        
+        if any(output.values()):
+            handle_output(output, logger)
+            send_notification(logger=logger, module_name=config.module_name, config=config, output=output)
+
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()
     except Exception:
         logger.error("\n\nAn error occurred:\n", exc_info=True)
-        logger.error("\n\n")
     finally:
-        # Log outro message with run time
+        db.close()
         logger.log_outro()

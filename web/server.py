@@ -29,7 +29,8 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 from util.config import Config
-from util.utility import redact_apis
+from util.database import DapsDB
+from util.helper import redact_apis
 from util.version import get_version
 
 load_dotenv(override=True)
@@ -551,6 +552,69 @@ async def preview_poster(location: str, path: str, logger: Any = Depends(get_log
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
+@app.get("/api/unmatched")
+async def get_unmatched(logger: Any = Depends(get_logger)):
+    """
+    Logs unmatched assets (for log files) and returns summary stats for frontend.
+    Always logs to files, always returns stats in JSON.
+    """
+    try:
+        logger.debug("[WEB] Serving GET /api/unmatched")
+        db = DapsDB()
+        stats = db.report_unmatched_assets()
+        return JSONResponse(status_code=200, content={"status": "ok", "stats": stats})
+    except Exception as e:
+        logger.error(f"[WEB] Error in /api/unmatched: {e}")
+        return JSONResponse(
+            status_code=500, content={"status": "error", "error": str(e)}
+        )
+
+
+@app.post("/api/run/unmatched")
+async def run_unmatched(logger: Any = Depends(get_logger)):
+    """
+    Returns unmatched assets summary for the API/frontend only.
+    Does NOT log to files.
+    """
+    try:
+        logger.debug("[WEB] Serving POST /api/run/unmatched")
+        db = DapsDB()
+        stats = db.run_unmatched_assets()
+        return JSONResponse(status_code=200, content={"status": "ok", "stats": stats})
+    except Exception as e:
+        logger.error(f"[WEB] Error in /api/run/unmatched: {e}")
+        return JSONResponse(
+            status_code=500, content={"status": "error", "error": str(e)}
+        )
+
+
+@app.get("/api/cleanarr")
+async def get_cleanarr(logger: Any = Depends(get_logger)):
+    pass
+
+
+@app.post("/api/run/cleanarr")
+async def run_cleanarr(logger: Any = Depends(get_logger)):
+    pass
+
+
+@app.put("/api/media_add/")
+async def media_add(logger: Any = Depends(get_logger)):
+    pass
+
+
+@app.post("/api/test-endpoint")
+async def test_endpoint(request: Request, logger: Any = Depends(get_logger)):
+    logger.debug("[WEB] Serving POST /api/test-endpoint")
+    try:
+        data = await request.json()
+        logger.debug(f"[WEB] Received data: {data}")
+        return {"status": "ok", "received": data}
+    except Exception as e:
+        logger.error(f"[WEB] Error reading data: {e}")
+        return {"status": "error", "error": str(e)}
+
+
 # ========== Web Server Startup ==========
 def start_web_server(logger: Any) -> None:
     """Starts the web server in a background thread and stores logger in app state.
@@ -565,7 +629,7 @@ def start_web_server(logger: Any) -> None:
         logger.error(f"[WEB] Failed to load config: {e}")
         app.state.config_data = {}
     PORT = int(os.environ.get("PORT", 8000))
-    HOST = os.environ.get("HOST", "127.0.0.1")
+    HOST = os.environ.get("HOST", "0.0.0.0")
     app.state.logger.info(f"[WEB] Starting web server on {HOST}:{PORT}")
     web_thread = Thread(
         target=lambda: uvicorn.run(app, host=HOST, port=PORT, log_level="warning"),

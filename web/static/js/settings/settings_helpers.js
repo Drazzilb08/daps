@@ -399,20 +399,40 @@ export function renderPlexSonarrRadarrInstancesField(
             listDiv.appendChild(plexWrapper);
             plexInstances.forEach((pi) => {
                 const libs = plexData[pi]?.library_names || [];
+                let addPostersChecked = false;
+                if (moduleName === 'poster_renamerr') {
+                    // Find the matching instance in config for add_posters
+                    const renamerrInst = (rootConfig.poster_renamerr?.instances || []).find(
+                        (i) => typeof i === 'object' && i[pi]
+                    );
+                    addPostersChecked = !!renamerrInst?.[pi]?.add_posters;
+                }
                 const wrapper = document.createElement('div');
+                // Compose the toggle switch HTML for poster_renamerr only (no inline style)
+                const addPostersToggle =
+                    moduleName === "poster_renamerr"
+                        ? `<label class="toggle-row" style="margin-left:1.5em;">
+                                <span>Add Posters</span>
+                                <span class="toggle-switch">
+                                    <input type="checkbox" name="add_posters_${pi}" ${addPostersChecked ? 'checked' : ''}>
+                                    <span class="slider"></span>
+                                </span>
+                            </label>`
+                        : '';
                 wrapper.innerHTML = `
-            <div class="plex-instance-header">
-                <h3>${humanize(pi)}</h3>
-            </div>
-            <div class="library-actions">
-                <div style="display: flex; gap: 0.5rem;">
-                    <button type="button" class="btn select-all-libs" data-inst="${pi}">Select All</button>
-                    <button type="button" class="btn deselect-all-libs" data-inst="${pi}">Deselect All</button>
-                </div>
-                <button type="button" class="btn load-libs-btn plex-instance-header" data-inst="${pi}">Load Libraries</button>
-            </div>
-            <div id="plex-libs-${pi}" class="plex-libraries" style="max-height: 0px;"></div>
-            `;
+                    <div class="plex-instance-header">
+                        <h3>${humanize(pi)}</h3>
+                        ${addPostersToggle}
+                    </div>
+                    <div class="library-actions">
+                        <div class="library-actions-btns">
+                            <button type="button" class="btn select-all-libs" data-inst="${pi}">Select All</button>
+                            <button type="button" class="btn deselect-all-libs" data-inst="${pi}">Deselect All</button>
+                        </div>
+                        <button type="button" class="btn load-libs-btn plex-instance-header" data-inst="${pi}">Load Libraries</button>
+                    </div>
+                    <div id="plex-libs-${pi}" class="plex-libraries"></div>
+                `;
                 plexWrapper.appendChild(wrapper);
                 const loadBtn = wrapper.querySelector('.load-libs-btn');
                 const libsDiv = wrapper.querySelector(`#plex-libs-${pi}`);
@@ -427,13 +447,13 @@ export function renderPlexSonarrRadarrInstancesField(
                         libsDiv.innerHTML = fetchedLibs
                             .map(
                                 (l) => `
-            <label class="library-pill">
-                <input type="checkbox" name="instances.${pi}.library_names" value="${l}" ${
-                                    existing.includes(l) ? 'checked' : ''
-                                }/>
-                ${l}
-            </label>
-        `
+                                    <label class="library-pill">
+                                        <input type="checkbox" name="instances.${pi}.library_names" value="${l}" ${
+                                            existing.includes(l) ? 'checked' : ''
+                                        }/>
+                                        ${l}
+                                    </label>
+                                `
                             )
                             .join('');
 
@@ -464,11 +484,11 @@ export function renderPlexSonarrRadarrInstancesField(
                     libsDiv.innerHTML = libs
                         .map(
                             (l) => `
-                        <label class="library-pill">
-                            <input type="checkbox" name="instances.${pi}.library_names" value="${l}" checked/>
-                            ${l}
-                        </label>
-                    `
+                                <label class="library-pill">
+                                    <input type="checkbox" name="instances.${pi}.library_names" value="${l}" checked/>
+                                    ${l}
+                                </label>
+                            `
                         )
                         .join('');
 
@@ -482,14 +502,14 @@ export function renderPlexSonarrRadarrInstancesField(
             const noPlexCard = document.createElement('div');
             noPlexCard.className = 'card plex-instance-card';
             noPlexCard.innerHTML = `
-              <div class="plex-instance-header">
-                <h3>${humanize('plex')}</h3>
-              </div>
-              <div class="plex-libraries">
-                <p class="no-entries" style="margin: 0.5em 0 0 1em;">🚫 No instances configured for ${humanize(
-                    'plex'
-                )}.</p>
-              </div>
+                <div class="plex-instance-header">
+                    <h3>${humanize('plex')}</h3>
+                </div>
+                <div class="plex-libraries">
+                    <p class="no-entries" style="margin: 0.5em 0 0 1em;">🚫 No instances configured for ${humanize(
+                        'plex'
+                    )}.</p>
+                </div>
             `;
             listDiv.appendChild(noPlexCard);
         }

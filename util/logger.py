@@ -7,7 +7,7 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Optional
 
-from util.utility import create_bar
+from util.helper import create_bar
 from util.version import get_version
 
 

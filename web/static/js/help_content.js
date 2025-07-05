@@ -56,14 +56,6 @@ export const HELP_CONTENT = {
                 'Instances: List the Radarr/Sonarr instances you wish to use as source for renaming of posters,',
                 'Plex is used for collections only and not as a source for Movies/TV Shows.',
             ],
-            poster_cleanarr: [
-                'Ignore Media: List of media to ignore during cleaning of posters from your assets directory.',
-                'Source Dirs: Folders to scan for posters to clean, typically your Kometa assets directory.',
-            ],
-            unmatched_assets: [
-                'Finds assets/posters not matched to any item in your media library.',
-                'source_dirs: Folders to search for unmatched assets. Typically your assets directory.',
-            ],
             border_replacerr: [
                 'Adds or replaces borders on posters. Supports holiday presets and custom colors.',
                 "Source/Destination Dirs: These fields is not required if you're planning on running border_replacerr in line with poster_renaemrr.",

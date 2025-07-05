@@ -4,8 +4,6 @@ import { humanize } from './common.js';
 export const moduleOrder = [
     'sync_gdrive',
     'poster_renamerr',
-    'poster_cleanarr',
-    'unmatched_assets',
     'border_replacerr',
     'renameinatorr',
     'upgradinatorr',
@@ -18,7 +16,7 @@ export const moduleOrder = [
 
 export const NOTIFICATION_LIST = [
     'poster_renamerr',
-    'unmatched_assets',
+    // 'unmatched_assets',
     'renameinatorr',
     'upgradinatorr',
     'nohl',
@@ -126,7 +124,7 @@ export const NOTIFICATION_DEFINITIONS = {
 };
 
 export const NOTIFICATION_TYPES_PER_MODULE = {
-    unmatched_assets: ['email'],
+    // unmatched_assets: ['email'],
     main: ['discord', 'notifiarr'],
 };
 

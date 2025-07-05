@@ -171,22 +171,57 @@ def format_for_discord(
         return results
 
     def fmt_poster_renamerr(o: Any) -> List[Dict[str, Any]]:
-        """Format poster_renamerr output for Discord embeds.
-
-        Args:
-          o: Output data for poster_renamerr.
-
-        Returns:
-          List of Discord embed field dicts.
+        """
+        Format poster_renamerr output for Discord embeds, grouped as in CLI/log output.
         """
         fields: List[Dict[str, Any]] = []
-        for assets in o.values():
-            for a in assets:
-                title = a.get("title", "")
-                year = f" ({a.get('year')})" if a.get("year") else ""
-                msgs = sorted(a.get("discord_messages", []))
-                text = "\n".join([f"{title}{year}"] + [f"\t{m}" for m in msgs])
-                fields.extend(chunk_code_fields(f"{title}{year}", text))
+        had_any = False
+
+        # Helper for Movies/Collections
+        def add_asset_fields(assets, label):
+            nonlocal had_any
+            for asset in assets:
+                title = asset.get("title", "")
+                year = asset.get("year")
+                section_title = f"{title} ({year})" if year else title or label
+                msgs = asset.get("discord_messages") or asset.get("messages") or []
+                if msgs:
+                    had_any = True
+                    text = "\n".join([section_title] + [f"    {m}" for m in msgs])
+                    fields.append({
+                        "name": section_title,
+                        "value": f"```{text}```"
+                    })
+
+        # Collections
+        add_asset_fields(o.get("collection", []), "Collection")
+        # Movies
+        add_asset_fields(o.get("movie", []), "Movie")
+
+        # Shows: group by (title, year)
+        from collections import defaultdict
+        show_assets = o.get("show", [])
+        show_grouped = defaultdict(list)
+        for asset in show_assets:
+            key = (asset.get("title"), asset.get("year"))
+            show_grouped[key].extend(asset.get("discord_messages") or asset.get("messages") or [])
+
+        for (title, year), msgs in show_grouped.items():
+            if not msgs:
+                continue
+            had_any = True
+            section_title = f"{title} ({year})" if year else title or "Show"
+            text = "\n".join([section_title] + [f"    {m}" for m in msgs])
+            fields.append({
+                "name": section_title,
+                "value": f"```{text}```"
+            })
+
+        if not had_any:
+            fields = [{
+                "name": "No files were renamed.",
+                "value": "",
+            }]
         return fields
 
     def fmt_renameinatorr(o: Any) -> List[Dict[str, Any]]:

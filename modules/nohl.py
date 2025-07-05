@@ -3,27 +3,27 @@ import re
 import sys
 from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
 
-from util.arrpy import create_arr_client
+from util.arr import create_arr_client
 from util.constants import (
     episode_regex,
     season_regex,
     year_regex,
 )
-from util.logger import Logger
-from util.notification import send_notification
-from util.utility import (
+from util.helper import (
     create_table,
     normalize_titles,
     print_json,
     print_settings,
     progress,
 )
+from util.logger import Logger
+from util.config import Config
+from util.notification import send_notification
 
 VIDEO_EXTS = (".mkv", ".mp4")
 
-
 if TYPE_CHECKING:
-    from util.arrpy import BaseARRClient
+    from util.arr import BaseARRClient
 
 
 def find_nohl_files(
@@ -188,10 +188,11 @@ def handle_searches(
     Returns:
         List of items that were searched.
     """
-    logger.debug(f"Initiating search for {len(search_list)} items in {instance_type}")
-    print("Searching for files... this may take a while.")
+    logger.debug(f"Initiating search for {len(search_list)} items in {instance_type.title()}.")
     searched_for: List[Dict[str, Any]] = []
     searches = 0
+    per_item_info_logs = []
+
     for item in progress(
         search_list,
         desc="Searching...",
@@ -199,79 +200,87 @@ def handle_searches(
         total=len(search_list),
         logger=logger,
     ):
+        title = item.get('title', 'Unknown')
+        year = item.get('year', 'Unknown')
+
+        # Use debug for all per-item actions in the loop
+        logger.debug(f"Processing [{instance_type}] '{title}' ({year}) [media_id={item.get('media_id')}]")
+
         if instance_type == "radarr":
-            # Radarr: delete file(s) and trigger search for the movie
             if config.dry_run:
-                logger.info(
-                    f"[Dry Run] Would search: {item['title']} ({item['year']}) and delete file IDs: {item['file_ids']}"
-                )
+                logger.debug(f"[Dry Run] Would search and delete: '{title}' ({year}), file IDs: {item.get('file_ids', [])}")
                 searched_for.append(item)
                 searches += 1
+                per_item_info_logs.append(f"[Dry Run] Would search and delete: '{title}' ({year}), file IDs: {item.get('file_ids', [])}")
             else:
+                logger.debug(f" Deleting file IDs: {item.get('file_ids', [])} for '{title}' ({year}) [media_id={item.get('media_id')}]")
                 app.delete_movie_file(item["file_ids"])
+                logger.debug(f" Refreshing movie: '{title}' ({year}) [media_id={item['media_id']}]")
                 results = app.refresh_items(item["media_id"])
                 ready = app.wait_for_command(results["id"])
                 if ready:
-                    logger.debug(
-                        f"Performing a Search for {item['media_id']} ({item['year']})"
-                    )
+                    logger.debug(f" Initiating search for movie: '{title}' ({year}), media_id: {item['media_id']}")
                     app.search_media(item["media_id"])
                     searched_for.append(item)
                     searches += 1
-            logger.debug(f"Searched: {item['title']} ({item['year']})")
+                    per_item_info_logs.append(f" Searched: '{title}' ({year}) [media_id={item['media_id']}]")
+                else:
+                    logger.warning(f" Command for '{title}' ({year}) was not ready in time.")
         elif instance_type == "sonarr":
-            # Sonarr: for each season, trigger episode or season pack search
             seasons = item.get("seasons", [])
-            if seasons:
-                for season in seasons:
-                    season_pack = season["season_pack"]
-                    file_ids = list(
-                        set(
-                            [
-                                episode["episode_file_id"]
-                                for episode in season["episode_data"]
-                            ]
-                        )
-                    )
-                    episode_ids = [
-                        episode["episode_id"] for episode in season["episode_data"]
-                    ]
-                    if season_pack:
-                        if config.dry_run:
-                            logger.info(
-                                f"[Dry Run] Would search season: {season['season_number']} of {item['title']} ({item['year']})"
-                            )
-                        else:
-                            app.delete_episode_files(file_ids)
-                            results = app.refresh_items(item["media_id"])
-                            ready = app.wait_for_command(results["id"])
-                            if ready:
-                                logger.debug(
-                                    f"Performing a season search for {item['media_id']} ({item['year']}) Season Number: {season['season_number']}"
-                                )
-                                app.search_season(
-                                    item["media_id"], season["season_number"]
-                                )
+            if not seasons:
+                logger.warning(f" No seasons found for '{title}' ({year}) - skipping.")
+                continue
+            searched_this_item = False
+            for season in seasons:
+                snum = season.get("season_number", "Unknown")
+                season_pack = season.get("season_pack", False)
+                file_ids = list({ep["episode_file_id"] for ep in season["episode_data"]})
+                episode_ids = [ep["episode_id"] for ep in season["episode_data"]]
+                episode_numbers = [ep.get("episode_number") for ep in season["episode_data"]]
+                if season_pack:
+                    if config.dry_run:
+                        logger.debug(f"[Dry Run] Would search season pack: '{title}' ({year}) Season {snum} [media_id={item.get('media_id')}]")
+                        per_item_info_logs.append(f"[Dry Run] Would search season pack: '{title}' ({year}) Season {snum} [media_id={item.get('media_id')}]")
                     else:
-                        if config.dry_run:
-                            episode_numbers = [
-                                ep["episode_number"] for ep in season["episode_data"]
-                            ]
-                            logger.info(
-                                f"[Dry Run] Would search episodes: {episode_numbers} of {item['title']} ({item['year']})"
-                            )
+                        logger.debug(f" Deleting episode file IDs: {file_ids} for Season {snum} of '{title}' ({year}) [media_id={item.get('media_id')}]")
+                        app.delete_episode_files(file_ids)
+                        logger.debug(f" Refreshing series: '{title}' ({year}) [media_id={item['media_id']}]")
+                        results = app.refresh_items(item["media_id"])
+                        ready = app.wait_for_command(results["id"])
+                        if ready:
+                            logger.debug(f" Initiating season pack search for: '{title}' ({year}) Season {snum} [media_id={item['media_id']}]")
+                            app.search_season(item["media_id"], snum)
+                            per_item_info_logs.append(f" Searched season pack: '{title}' ({year}) Season {snum} [media_id={item['media_id']}]")
                         else:
-                            app.delete_episode_files(file_ids)
-                            results = app.refresh_items(item["media_id"])
-                            ready = app.wait_for_command(results["id"])
-                            if ready:
-                                logger.debug(
-                                    f"Performing an episode search for {item['title']} ({item['year']}), Episodes IDs: {episode_ids}"
-                                )
-                                app.search_episodes(episode_ids)
+                            logger.warning(f" Command for season pack '{title}' ({year}) Season {snum} was not ready in time.")
+                    searched_this_item = True
+                else:
+                    if config.dry_run:
+                        logger.debug(f"[Dry Run] Would search episodes {episode_numbers} of '{title}' ({year}) Season {snum} [media_id={item.get('media_id')}]")
+                        per_item_info_logs.append(f"[Dry Run] Would search episodes {episode_numbers} of '{title}' ({year}) Season {snum} [media_id={item.get('media_id')}]")
+                    else:
+                        logger.debug(f" Deleting episode file IDs: {file_ids} for episodes {episode_numbers} in Season {snum} of '{title}' ({year}) [media_id={item.get('media_id')}]")
+                        app.delete_episode_files(file_ids)
+                        logger.debug(f" Refreshing series: '{title}' ({year}) [media_id={item['media_id']}]")
+                        results = app.refresh_items(item["media_id"])
+                        ready = app.wait_for_command(results["id"])
+                        if ready:
+                            logger.debug(f" Initiating episode search for: '{title}' ({year}) Episodes {episode_ids} in Season {snum} [media_id={item['media_id']}]")
+                            app.search_episodes(episode_ids)
+                            per_item_info_logs.append(f" Searched episodes {episode_numbers} of '{title}' ({year}) Season {snum} [media_id={item['media_id']}]")
+                        else:
+                            logger.warning(f" Command for episodes '{title}' ({year}) Season {snum} was not ready in time.")
+                    searched_this_item = True
+            if searched_this_item:
                 searched_for.append(item)
-            logger.debug(f"Searched: {item['title']} ({item['year']})")
-    print(f"Searches performed: {searches}")
+
+    logger.debug(f"Total searches performed: {searches} for {instance_type.title()}.")
+    # After progress bar, log info summary for searched items (if desired)
+    if per_item_info_logs:
+        logger.debug("Searched items summary:")
+        for msg in per_item_info_logs:
+            logger.debug(msg)
     return searched_for
 
 
@@ -296,77 +305,55 @@ def filter_media(
         Dict with 'search_media' and 'filtered_media' lists.
     """
     logger.debug(
-        f"Filtering {len(nohl_data)} nohl items against {len(media_dict)} media items from {instance_type}"
+        f"Filtering {len(nohl_data)} non-hardlinked items against {len(media_dict)} media items from {instance_type.title()}."
     )
     quality_profiles = app.get_quality_profile_names()
-    exclude_profile_ids = []
-    if config.exclude_profiles:
-        for profile in config.exclude_profiles:
-            if profile in quality_profiles:
-                exclude_profile_ids.append(quality_profiles[profile])
+    exclude_profile_ids = [
+        quality_profiles[profile]
+        for profile in getattr(config, "exclude_profiles", [])
+        if profile in quality_profiles
+    ]
 
-    def build_season_filtering(
-        media_season: Dict[str, Any], file_season: Dict[str, Any]
-    ) -> Tuple[List[Dict[str, Any]], List[Dict[str, Any]]]:
-        """
-        Split a season into filtered (excluded) and search-needed episodes based on monitoring and matches.
-        """
-        season_data: List[Dict[str, Any]] = []
-        filtered_seasons: List[Dict[str, Any]] = []
-        if not media_season["monitored"]:
-            # Unmonitored season, add to filtered
-            filtered_seasons.append(
-                {
-                    "season_number": media_season["season_number"],
-                    "monitored": False,
-                }
-            )
+    def build_season_filtering(media_season, file_season):
+        season_data = []
+        filtered_seasons = []
+        if not media_season.get("monitored"):
+            filtered_seasons.append({
+                "season_number": media_season["season_number"],
+                "monitored": False,
+            })
         else:
-            if media_season["season_pack"]:
-                # Monitored season pack, add all to search
-                season_data.append(
-                    {
-                        "season_number": media_season["season_number"],
-                        "season_pack": True,
-                        "episode_data": media_season["episode_data"],
-                    }
-                )
+            if media_season.get("season_pack"):
+                season_data.append({
+                    "season_number": media_season["season_number"],
+                    "season_pack": True,
+                    "episode_data": media_season["episode_data"],
+                })
             else:
-                # For non-season-pack, filter out unmonitored and select monitored matching episodes
-                episode_set = set(file_season["episodes"])
+                episode_set = set(file_season.get("episodes", []))
                 filtered_episodes = []
                 episode_data = []
-                for episode in media_season["episode_data"]:
-                    if not episode["monitored"]:
-                        # Unmonitored episode, add to filtered
+                for episode in media_season.get("episode_data", []):
+                    if not episode.get("monitored"):
                         filtered_episodes.append(episode)
-                    elif episode["episode_number"] in episode_set:
-                        # Monitored and present in file_season, add to search
+                    elif episode.get("episode_number") in episode_set:
                         episode_data.append(episode)
                 if filtered_episodes:
-                    # Unmonitored chunk
-                    filtered_seasons.append(
-                        {
-                            "season_number": media_season["season_number"],
-                            "monitored": True,
-                            "episodes": filtered_episodes,
-                        }
-                    )
+                    filtered_seasons.append({
+                        "season_number": media_season["season_number"],
+                        "monitored": True,
+                        "episodes": filtered_episodes,
+                    })
                 if episode_data:
-                    # Monitored chunk that needs searching
-                    season_data.append(
-                        {
-                            "season_number": media_season["season_number"],
-                            "season_pack": False,
-                            "episode_data": episode_data,
-                        }
-                    )
+                    season_data.append({
+                        "season_number": media_season["season_number"],
+                        "season_pack": False,
+                        "episode_data": episode_data,
+                    })
         return season_data, filtered_seasons
 
-    data_list: Dict[str, List[Dict[str, Any]]] = {
-        "search_media": [],
-        "filtered_media": [],
-    }
+    data_list = {"search_media": [], "filtered_media": []}
+
     for nohl_item in progress(
         nohl_data,
         desc="Filtering media...",
@@ -375,91 +362,77 @@ def filter_media(
         logger=logger,
     ):
         for media_item in media_dict:
-            # ARR resolution: match normalized title and year
+            # Match normalized title and year
             if (
-                media_item["normalized_title"] == nohl_item["normalized_title"]
-                and media_item["year"] == nohl_item["year"]
+                media_item.get("normalized_title") == nohl_item.get("normalized_title")
+                and media_item.get("year") == nohl_item.get("year")
             ):
                 # Only match root_path if not dry_run
                 if (
-                    nohl_item["root_path"] not in media_item["root_folder"]
+                    nohl_item.get("root_path") not in media_item.get("root_folder", "")
                     and not config.dry_run
                 ):
                     logger.debug(
-                        f"Skipping {media_item['title']} ({media_item['year']}), root folder mismatch."
+                        f"Skipped: '{media_item['title']}' ({media_item['year']}) [root folder mismatch]"
                     )
                     continue
-                # Exclusion checks: monitored, exclusion lists, quality profile
+
+                reasons = []
+                if not media_item.get("monitored", True):
+                    reasons.append("not monitored")
                 if (
-                    media_item["monitored"] is False
-                    or (
-                        instance_type == "radarr"
-                        and config.exclude_movies
-                        and media_item["title"] in config.exclude_movies
-                    )
-                    or (
-                        instance_type == "sonarr"
-                        and config.exclude_series
-                        and media_item["title"] in config.exclude_series
-                    )
-                    or media_item["quality_profile"] in exclude_profile_ids
+                    instance_type == "radarr"
+                    and getattr(config, "exclude_movies", [])
+                    and media_item["title"] in config.exclude_movies
                 ):
-                    data_list["filtered_media"].append(
-                        {
-                            "title": media_item["title"],
-                            "year": media_item["year"],
-                            "monitored": media_item["monitored"],
-                            "excluded": (
-                                (
-                                    instance_type == "radarr"
-                                    and config.exclude_movies
-                                    and media_item["title"] in config.exclude_movies
-                                )
-                                or (
-                                    instance_type == "sonarr"
-                                    and config.exclude_series
-                                    and media_item["title"] in config.exclude_series
-                                )
-                            ),
-                            "quality_profile": (
-                                quality_profiles.get(media_item["quality_profile"])
-                                if media_item["quality_profile"] in exclude_profile_ids
-                                else None
-                            ),
-                        }
-                    )
+                    reasons.append("excluded by title")
+                if (
+                    instance_type == "sonarr"
+                    and getattr(config, "exclude_series", [])
+                    and media_item["title"] in config.exclude_series
+                ):
+                    reasons.append("excluded by title")
+                if media_item.get("quality_profile") in exclude_profile_ids:
+                    reasons.append("excluded by quality profile")
+
+                if reasons:
+                    data_list["filtered_media"].append({
+                        "title": media_item["title"],
+                        "year": media_item["year"],
+                        "monitored": media_item["monitored"],
+                        "excluded": any(x in reasons for x in ["excluded by title"]),
+                        "quality_profile": (
+                            quality_profiles.get(media_item["quality_profile"])
+                            if media_item.get("quality_profile") in exclude_profile_ids
+                            else None
+                        ),
+                    })
                     logger.debug(
-                        f"Filtered out: {media_item['title']} ({media_item['year']}), reason(s): "
-                        f"{'not monitored' if media_item['monitored'] is False else ''}"
-                        f"{', excluded' if (instance_type == 'radarr' and config.exclude_movies and media_item['title'] in config.exclude_movies) or (instance_type == 'sonarr' and config.exclude_series and media_item['title'] in config.exclude_series) else ''}"
-                        f"{', quality profile' if media_item['quality_profile'] in exclude_profile_ids else ''}"
+                        f"Filtered out: '{media_item['title']}' ({media_item['year']}), reasons: {', '.join(reasons)}"
                     )
                     continue
+
                 if instance_type == "radarr":
-                    # Add movie to search list
-                    file_ids = media_item["file_id"]
-                    data_list["search_media"].append(
-                        {
-                            "media_id": media_item["media_id"],
-                            "title": media_item["title"],
-                            "year": media_item["year"],
-                            "file_ids": file_ids,
-                        }
-                    )
+                    file_ids = media_item.get("file_id")
+                    data_list["search_media"].append({
+                        "media_id": media_item["media_id"],
+                        "title": media_item["title"],
+                        "year": media_item["year"],
+                        "file_ids": file_ids,
+                    })
                     logger.debug(
-                        f"Radarr: Will resolve {media_item['title']} ({media_item['year']}), file_ids={file_ids}"
+                        f"Will process '{media_item['title']}' ({media_item['year']}), file_ids={file_ids}, media_id={media_item['media_id']}"
                     )
                 elif instance_type == "sonarr":
-                    # Season filtering for Sonarr: build per-season search/exclude lists
-                    media_seasons_info = media_item.get("seasons", {})
+                    media_seasons_info = media_item.get("seasons", [])
                     file_season_info = nohl_item.get("season_info", [])
                     season_data = []
                     filtered_seasons = []
                     for media_season in media_seasons_info:
                         for file_season in file_season_info:
                             if (
-                                media_season["season_number"]
-                                == file_season["season_number"]
+                                media_season.get("season_number")
+                                == file_season.get("season_number")
                             ):
                                 sdata, sfiltered = build_season_filtering(
                                     media_season, file_season
@@ -467,39 +440,37 @@ def filter_media(
                                 season_data.extend(sdata)
                                 filtered_seasons.extend(sfiltered)
                     if filtered_seasons:
-                        data_list["filtered_media"].append(
-                            {
-                                "title": media_item["title"],
-                                "year": media_item["year"],
-                                "seasons": filtered_seasons,
-                            }
-                        )
+                        data_list["filtered_media"].append({
+                            "title": media_item["title"],
+                            "year": media_item["year"],
+                            "seasons": filtered_seasons,
+                        })
                         logger.debug(
-                            f"Filtered out: {media_item['title']} ({media_item['year']}), reason(s): "
-                            f"{'not monitored' if media_item['monitored'] is False else ''}"
-                            f"{', excluded' if (instance_type == 'radarr' and config.exclude_movies and media_item['title'] in config.exclude_movies) or (instance_type == 'sonarr' and config.exclude_series and media_item['title'] in config.exclude_series) else ''}"
-                            f"{', quality profile' if media_item['quality_profile'] in exclude_profile_ids else ''}"
+                            f"Filtered out: '{media_item['title']}' ({media_item['year']}) -- unmonitored/filtered seasons: {[s['season_number'] for s in filtered_seasons]}"
                         )
                     if season_data:
+                        data_list["search_media"].append({
+                            "media_id": media_item["media_id"],
+                            "title": media_item["title"],
+                            "year": media_item["year"],
+                            "monitored": media_item["monitored"],
+                            "seasons": season_data,
+                        })
                         logger.debug(
-                            f"{media_item['title']} ({media_item['year']}): {len(season_data)} seasons selected for search"
+                            f" Will process '{media_item['title']}' ({media_item['year']}), seasons: {[s['season_number'] for s in season_data]}, media_id={media_item['media_id']}"
                         )
-                        data_list["search_media"].append(
-                            {
-                                "media_id": media_item["media_id"],
-                                "title": media_item["title"],
-                                "year": media_item["year"],
-                                "monitored": media_item["monitored"],
-                                "seasons": season_data,
-                            }
-                        )
-                        logger.debug(
-                            f"Sonarr: Will resolve {media_item['title']} ({media_item['year']}), seasons: "
-                            f"{[s['season_number'] for s in season_data]}"
-                        )
+
     # Limit number of searches if configured
-    if len(data_list["search_media"]) >= config.searches:
-        data_list["search_media"] = data_list["search_media"][: config.searches]
+    search_limit = getattr(config, "searches", None)
+    if search_limit is not None and len(data_list["search_media"]) > search_limit:
+        logger.info(
+            f"Search limit applied: reducing search_media from {len(data_list['search_media'])} to {search_limit}."
+        )
+        data_list["search_media"] = data_list["search_media"][:search_limit]
+
+    logger.debug(
+        f"Filtering complete. Searchable items: {len(data_list['search_media'])}, Filtered/excluded items: {len(data_list['filtered_media'])}"
+    )
     return data_list
 
 
@@ -511,80 +482,86 @@ def handle_messages(output: Dict[str, Any], logger: Logger) -> None:
         logger: Logger instance.
     """
     # Output scanned section: show all non-hardlinked movies and series found
-    logger.info(create_table([["Scanned Non-Hardlinked Files"]]))
-    for path, results in output.get("scanned", {}).items():
-        logger.info(f"Scanning results for: {path}")
-        for item in results.get("movies", []):
-            logger.info(f"{item['title']} ({item['year']})")
-            if item.get("nohl"):
-                for file_path in item["nohl"]:
-                    logger.info(f"\t{os.path.basename(file_path)}")
-            logger.info("")
-        for item in results.get("series", []):
-            logger.info(f"{item['title']} ({item['year']})")
-            for season in item.get("season_info", []):
-                if season.get("nohl"):
-                    logger.info(f"\tSeason {season['season_number']}")
-                    for file_path in season["nohl"]:
-                        logger.info(f"\t\t{os.path.basename(file_path)}")
-            logger.info("")
+    if output.get("scanned", {}):
+        logger.info(create_table([["Scanned Non-Hardlinked Files"]]))
+        for path, results in output.get("scanned", {}).items():
+            logger.info(f"Scanning results for: {path}")
+            for item in results.get("movies", []):
+                logger.info(f"{item['title']} ({item['year']})")
+                if item.get("nohl"):
+                    for file_path in item["nohl"]:
+                        logger.info(f"\t{os.path.basename(file_path)}")
+                logger.info("")
+            for item in results.get("series", []):
+                logger.info(f"{item['title']} ({item['year']})")
+                for season in item.get("season_info", []):
+                    if season.get("nohl"):
+                        logger.info(f"\tSeason {season['season_number']}")
+                        for file_path in season["nohl"]:
+                            logger.info(f"\t\t{os.path.basename(file_path)}")
+                logger.info("")
     # Output resolved section: show all ARR actions performed or skipped
-    logger.info(create_table([["Resolved ARR Actions"]]))
-    for instance, instance_data in output.get("resolved", {}).items():
-        search_media = instance_data["data"]["search_media"]
-        filtered_media = instance_data["data"]["filtered_media"]
-        # Output searched ARR media
-        if search_media:
-            for search_item in search_media:
-                if instance_data["instance_type"] == "radarr":
-                    logger.info(f"{search_item['title']} ({search_item['year']})")
-                    logger.info("\tDeleted and searched.\n")
-                else:
-                    logger.info(f"{search_item['title']} ({search_item['year']})")
-                    if search_item.get("seasons", None):
-                        for season in search_item["seasons"]:
-                            if season["season_pack"]:
-                                logger.info(
-                                    f"\tSeason {season['season_number']}, deleted and searched."
-                                )
-                            else:
-                                logger.info(f"\tSeason {season['season_number']}")
-                                for episode in season["episode_data"]:
+    has_results = any(
+        instance.get("data", {}).get("search_media") or instance.get("data", {}).get("filtered_media")
+        for instance in output.get("resolved", {}).values()
+    )
+    if has_results:
+        logger.info(create_table([["Resolved ARR Actions"]]))
+        for instance, instance_data in output.get("resolved", {}).items():
+            search_media = instance_data["data"]["search_media"]
+            filtered_media = instance_data["data"]["filtered_media"]
+            # Output searched ARR media
+            if search_media:
+                for search_item in search_media:
+                    if instance_data["instance_type"] == "radarr":
+                        logger.info(f"{search_item['title']} ({search_item['year']})")
+                        logger.info("\tDeleted and searched.\n")
+                    else:
+                        logger.info(f"{search_item['title']} ({search_item['year']})")
+                        if search_item.get("seasons", None):
+                            for season in search_item["seasons"]:
+                                if season["season_pack"]:
                                     logger.info(
-                                        f"\t   Episode {episode['episode_number']}, deleted and searched."
+                                        f"\tSeason {season['season_number']}, deleted and searched."
                                     )
-                            logger.info("")
-        # Output filtered ARR media (excluded or unmonitored)
-        table = [["Filtered Media"]]
-        if filtered_media:
-            logger.debug(create_table(table))
-            for filtered_item in filtered_media:
-                monitored = filtered_item.get("monitored", None)
-                logger.debug(f"{filtered_item['title']} ({filtered_item['year']})")
-                if monitored is False:
-                    logger.debug("\tSkipping, not monitored.")
-                elif filtered_item.get("exclude_media", None):
-                    logger.debug("\tSkipping, excluded.")
-                elif filtered_item.get("quality_profile", None):
-                    logger.debug(
-                        f"\tSkipping, quality profile: {filtered_item['quality_profile']}"
-                    )
-                elif filtered_item.get("seasons", None):
-                    for season in filtered_item["seasons"]:
-                        if season["monitored"] is False:
-                            logger.debug(
-                                f"\tSeason {season['season_number']}, skipping, not monitored."
-                            )
-                        elif season.get("episodes", None):
-                            logger.debug(f"\tSeason {season['season_number']}")
-                            for episode in season["episodes"]:
+                                else:
+                                    logger.info(f"\tSeason {season['season_number']}")
+                                    for episode in season["episode_data"]:
+                                        logger.info(
+                                            f"\t   Episode {episode['episode_number']}, deleted and searched."
+                                        )
+                                logger.info("")
+            # Output filtered ARR media (excluded or unmonitored)
+            table = [["Filtered Media"]]
+            if filtered_media:
+                logger.debug(create_table(table))
+                for filtered_item in filtered_media:
+                    monitored = filtered_item.get("monitored", None)
+                    logger.debug(f"{filtered_item['title']} ({filtered_item['year']})")
+                    if monitored is False:
+                        logger.debug("\tSkipping, not monitored.")
+                    elif filtered_item.get("exclude_media", None):
+                        logger.debug("\tSkipping, excluded.")
+                    elif filtered_item.get("quality_profile", None):
+                        logger.debug(
+                            f"\tSkipping, quality profile: {filtered_item['quality_profile']}"
+                        )
+                    elif filtered_item.get("seasons", None):
+                        for season in filtered_item["seasons"]:
+                            if season["monitored"] is False:
                                 logger.debug(
-                                    f"\t   Episode {episode['episode_number']}, skipping, not monitored."
+                                    f"\tSeason {season['season_number']}, skipping, not monitored."
                                 )
-                            logger.debug("")
-        else:
-            logger.debug(f"No filtered files for {instance_data['server_name']}")
-        logger.debug("")
+                            elif season.get("episodes", None):
+                                logger.debug(f"\tSeason {season['season_number']}")
+                                for episode in season["episodes"]:
+                                    logger.debug(
+                                        f"\t   Episode {episode['episode_number']}, skipping, not monitored."
+                                    )
+                                logger.debug("")
+            else:
+                logger.debug(f"No filtered files for {instance_data['server_name']}")
+            logger.debug("")
     # Output summary table
     summary = output.get("summary", {})
     if not all(value == 0 for value in summary.values()):
@@ -606,12 +583,169 @@ def handle_messages(output: Dict[str, Any], logger: Logger) -> None:
         logger.info("\n\n\t\t✅ Congratulations, there is nothing to report.\n\n")
 
 
-def main(config) -> None:
+def build_instance_index(instances, instances_config):
+    """
+    Builds an index mapping each instance name to (instance_type, instance_config)
+    """
+    index = {}
+    # Loop over all instance_types (radarr/sonarr/plex)
+    for instance_type, configs in instances_config.items():
+        for name, cfg in configs.items():
+            index[name] = (instance_type, cfg)
+    # Special handling if Plex is dict-in-list
+    for i in instances:
+        if isinstance(i, dict):
+            for name, value in i.items():
+                # Use type 'plex' since all dicts here are plex by your config
+                index[name] = ("plex", value)
+    return index
+
+
+# Helper functions for refactoring main()
+def parse_source_entries(config):
+    """Parse source_dirs into scan and resolve entries."""
+    source_entries = []
+    if getattr(config, "source_dirs", None):
+        for entry in config.source_dirs:
+            if isinstance(entry, dict):
+                source_entries.append(
+                    {
+                        "path": entry.get("path"),
+                        "mode": entry.get("mode", "resolve"),
+                    }
+                )
+            else:
+                source_entries.append({"path": entry, "mode": "resolve"})
+    scan_entries = [e for e in source_entries if e["mode"] == "scan"]
+    resolve_entries = [e for e in source_entries if e["mode"] == "resolve"]
+    return scan_entries, resolve_entries
+
+def scan_entries(scan_entries, logger):
+    """Gather all non-hardlinked files for reporting."""
+    scanned_results: Dict[str, Any] = {}
+    for entry in scan_entries:
+        path = entry["path"]
+        results = find_nohl_files(path, logger)
+        scanned_results[path] = results or {"movies": [], "series": []}
+    return scanned_results
+
+def aggregate_nohl_results(resolve_entries, logger):
+    """Aggregate all nohl results for ARR resolution."""
+    nohl_list: Dict[str, List[Dict[str, Any]]] = {"movies": [], "series": []}
+    for entry in resolve_entries:
+        path = entry["path"]
+        results = find_nohl_files(path, logger) or {"movies": [], "series": []}
+        if results and (results.get("movies") or results.get("series")):
+            nohl_list["movies"].extend(results.get("movies", []))
+            nohl_list["series"].extend(results.get("series", []))
+        else:
+            logger.warning(
+                f"No non-hardlinked files found in {path}, skipping resolution for this path"
+            )
+            continue
+    return nohl_list
+
+def process_arr_instances(config, nohl_list, logger):
+    """For each instance, filter and trigger searches, returning output_dict, data_list, media_dict, nohl_data."""
+    output_dict: Dict[str, Any] = {}
+    data_list: Dict[str, Any] = {}
+    media_dict: Any = {}
+    nohl_data: Any = {}
+    if config.instances:
+        instance_index = build_instance_index(config.instances, config.instances_config)
+        for instance in config.instances:
+            instance_name = instance if isinstance(instance, str) else list(instance.keys())[0]
+            instance_type, instance_settings = instance_index[instance_name]
+            if instance_type not in ("radarr", "sonarr"):
+                continue  # skip plex here if only working with ARR
+            app = create_arr_client(
+                instance_settings["url"], instance_settings["api"], logger
+            )
+            if not (app and app.connect_status):
+                logger.warning(f"Skipping {instance_name} (not connected)")
+                continue
+            server_name = app.get_instance_name()
+            table = [[f"{server_name}"]]
+            logger.info(create_table(table))
+            nohl_data = (
+                nohl_list["movies"] if instance_type == "radarr"
+                else nohl_list["series"] if instance_type == "sonarr"
+                else None
+            )
+            if not nohl_data:
+                logger.info(f"No non-hardlinked files found for server: {server_name}")
+                # continue
+            media_dict = (
+                app.get_all_media(include_episode=True)
+                if instance_type == "sonarr"
+                else app.get_all_media()
+            )
+            if not media_dict:
+                logger.info(f"No media found for server: {server_name}")
+                continue
+            data_list = filter_media(app, media_dict, nohl_data, instance_type, config, logger)
+            search_list = data_list.get("search_media", [])
+            if search_list:
+                search_list = handle_searches(app, search_list, instance_type, logger, config)
+                data_list["search_media"] = search_list
+            output_dict[instance_name] = {
+                "server_name": server_name,
+                "instance_type": instance_type,
+                "data": data_list,
+            }
+            logger.debug(
+                f"{server_name} processing complete. Search media: {len(data_list['search_media'])}, Filtered: {len(data_list['filtered_media'])}"
+            )
+    return output_dict, data_list, media_dict, nohl_data
+
+def build_summary(scanned_results, output_dict):
+    """Compute summary statistics for output reporting."""
+
+    total_scanned_movies = sum(
+        len(movie.get("nohl", []))
+        for path, results in scanned_results.items()
+        for movie in results.get("movies", [])
+    )
+    total_scanned_series = sum(
+        sum(len(season.get("nohl", [])) for season in series.get("season_info", []))
+        for path, results in scanned_results.items()
+        for series in results.get("series", [])
+    )
+    resolved_movies = 0
+    resolved_episodes = 0
+    for instance, instance_data in output_dict.items():
+        search_media = instance_data["data"].get("search_media", [])
+        if instance_data["instance_type"] == "radarr":
+            resolved_movies += len(search_media)
+        elif instance_data["instance_type"] == "sonarr":
+            for search_item in search_media:
+                # Only count episodes in search_media (i.e., actually resolved)
+                if "seasons" in search_item:
+                    for season in search_item["seasons"]:
+                        resolved_episodes += len(season.get("episode_data", []))
+    summary = {
+        "total_scanned_movies": total_scanned_movies,
+        "total_scanned_series": total_scanned_series,
+        "total_resolved_movies": resolved_movies,
+        "total_resolved_series": resolved_episodes,
+    }
+    return summary
+
+def dump_debug_json(data_list, media_dict, nohl_data, output_dict, logger, config):
+    """Dump debug JSON payloads if needed."""
+    table = [["Debug JSON Payloads"]]
+    logger.debug(create_table(table))
+    print_json(data_list, logger, config.module_name, "data_list")
+    print_json(media_dict, logger, config.module_name, "media_dict")
+    print_json(nohl_data, logger, config.module_name, "nohl_data")
+    print_json(output_dict, logger, config.module_name, "output_dict")
+
+
+def main() -> None:
     """
     Entrypoint for nohl.py. Scans for non-hardlinked files and triggers ARR actions.
-    Args:
-        config: Parsed configuration namespace.
     """
+    config = Config("nohl")
     logger = Logger(config.log_level, config.module_name)
     try:
         if config.log_level.lower() == "debug":
@@ -621,169 +755,20 @@ def main(config) -> None:
             table = [["Dry Run"], ["NO CHANGES WILL BE MADE"]]
             logger.info(create_table(table))
         logger.debug("Logger initialized. Starting main process.")
-        # Ensure ARR instances are configured
-        if config.instances is None:
-            logger.error("No instances set in config file.")
-            return
-        # Parse source_dirs into entries with path+mode
-        source_entries = []
-        if getattr(config, "source_dirs", None):
-            for entry in config.source_dirs:
-                if isinstance(entry, dict):
-                    source_entries.append(
-                        {
-                            "path": entry.get("path"),
-                            "mode": entry.get("mode", "resolve"),
-                        }
-                    )
-                else:
-                    source_entries.append({"path": entry, "mode": "resolve"})
-        # Separate scan vs resolve entries
-        scan_entries = [e for e in source_entries if e["mode"] == "scan"]
-        resolve_entries = [e for e in source_entries if e["mode"] == "resolve"]
-        # Scan-only: gather all non-hardlinked files for reporting
-        scanned_results: Dict[str, Any] = {}
-        for entry in scan_entries:
-            path = entry["path"]
-            results = find_nohl_files(path, logger)
-            scanned_results[path] = results or {"movies": [], "series": []}
-        # Resolve-only: aggregate all nohl results for ARR resolution
-        nohl_list: Dict[str, List[Dict[str, Any]]] = {"movies": [], "series": []}
-        for entry in resolve_entries:
-            path = entry["path"]
-            results = find_nohl_files(path, logger) or {"movies": [], "series": []}
-            if results and (results.get("movies") or results.get("series")):
-                nohl_list["movies"].extend(results.get("movies", []))
-                nohl_list["series"].extend(results.get("series", []))
-            else:
-                logger.warning(
-                    f"No non-hardlinked files found in {path}, skipping resolution for this path"
-                )
-                continue
-        # Compute summary statistics for output reporting
-        total_movies = sum(
-            len(movie.get("nohl", []))
-            for results in scanned_results.values()
-            for movie in results.get("movies", [])
-        )
-        total_series = sum(
-            sum(len(season.get("nohl", [])) for season in series.get("season_info", []))
-            for results in scanned_results.values()
-            for series in results.get("series", [])
-        )
-        total_nohl_movies = sum(
-            len(movie.get("nohl", [])) for movie in nohl_list["movies"]
-        )
-        total_nohl_series = sum(
-            sum(len(season.get("nohl", [])) for season in series.get("season_info", []))
-            for series in nohl_list["series"]
-        )
-        total_scanned_movies = sum(
-            len(movie.get("nohl", []))
-            for path, results in scanned_results.items()
-            for movie in results.get("movies", [])
-        )
-        total_scanned_series = sum(
-            sum(len(season.get("nohl", [])) for season in series.get("season_info", []))
-            for path, results in scanned_results.items()
-            for series in results.get("series", [])
-        )
-        logger.debug(f"Total scanned movie files: {total_movies}")
-        logger.debug(f"Total scanned series files: {total_series}")
-        logger.debug(f"Total non-hardlinked movie files: {total_nohl_movies}")
-        logger.debug(f"Total non-hardlinked series files: {total_nohl_series}")
-        logger.debug(f"Total scanned results - movies: {total_scanned_movies}")
-        logger.debug(f"Total scanned results - series: {total_scanned_series}")
-        output_dict: Dict[str, Any] = {}
-        data_list: Dict[str, Any] = {}
-        media_dict: Any = {}
-        nohl_data: Any = {}
-        print(f"nohl_list: {nohl_list}")
+
+        # Parse source entries
+        scan_entries_list, resolve_entries_list = parse_source_entries(config)
+        # Scan for non-hardlinked files
+        scanned_results = scan_entries(scan_entries_list, logger)
+        # Aggregate nohl results for ARR resolution
+        nohl_list = aggregate_nohl_results(resolve_entries_list, logger)
         # ARR resolution: for each instance, filter and trigger searches
-        for instance_type, instance_data in config.instances_config.items():
-            for instance in config.instances:
-                if instance in instance_data:
-                    data_list = {"search_media": [], "filtered_media": []}
-                    instance_settings = instance_data.get(instance, None)
-                    app = create_arr_client(
-                        instance_settings["url"], instance_settings["api"], logger
-                    )
-                    if app and app.connect_status:
-                        server_name = app.get_instance_name()
-                        table = [[f"{server_name}"]]
-                        logger.info(create_table(table))
-                        if (instance_type == "radarr" and not nohl_list["movies"]) or (
-                            instance_type == "sonarr" and not nohl_list["series"]
-                        ):
-                            logger.info(
-                                f"No non-hardlinked files found for server: {server_name}"
-                            )
-                        nohl_data = (
-                            nohl_list["movies"]
-                            if instance_type == "radarr"
-                            else (
-                                nohl_list["series"]
-                                if instance_type == "sonarr"
-                                else None
-                            )
-                        )
-                        if nohl_data:
-                            # Pull all media from ARR and filter for resolution
-                            if instance_type == "sonarr":
-                                media_dict = app.get_parsed_media(include_episode=True)
-                            else:
-                                media_dict = app.get_parsed_media()
-                            if media_dict:
-                                data_list = filter_media(
-                                    app,
-                                    media_dict,
-                                    nohl_data,
-                                    instance_type,
-                                    config,
-                                    logger,
-                                )
-                            else:
-                                logger.info(f"No media found for server: {server_name}")
-                            search_list = data_list.get("search_media", [])
-                            if search_list:
-                                # Conduct searches, with dry run support
-                                search_list = handle_searches(
-                                    app, search_list, instance_type, logger, config
-                                )
-                                data_list["search_media"] = search_list
-                        output_dict[instance] = {
-                            "server_name": server_name,
-                            "instance_type": instance_type,
-                            "data": data_list,
-                        }
-                        logger.debug(
-                            f"{server_name} processing complete. Search media: {len(data_list['search_media'])}, Filtered: {len(data_list['filtered_media'])}"
-                        )
+        output_dict, data_list, media_dict, nohl_data = process_arr_instances(config, nohl_list, logger)
         # Dump debug JSON payloads if needed
         if config.log_level == "debug":
-            print_json(data_list, logger, config.module_name, "data_list")
-            print_json(media_dict, logger, config.module_name, "media_dict")
-            print_json(nohl_data, logger, config.module_name, "nohl_data")
-            print_json(output_dict, logger, config.module_name, "output_dict")
-        # Prepare summary for output reporting (only count actual resolved items in search_media)
-        resolved_movies = 0
-        resolved_episodes = 0
-        for instance, instance_data in output_dict.items():
-            search_media = instance_data["data"].get("search_media", [])
-            if instance_data["instance_type"] == "radarr":
-                resolved_movies += len(search_media)
-            elif instance_data["instance_type"] == "sonarr":
-                for search_item in search_media:
-                    # Only count episodes in search_media (i.e., actually resolved)
-                    if "seasons" in search_item:
-                        for season in search_item["seasons"]:
-                            resolved_episodes += len(season.get("episode_data", []))
-        summary = {
-            "total_scanned_movies": total_scanned_movies,
-            "total_scanned_series": total_scanned_series,
-            "total_resolved_movies": resolved_movies,
-            "total_resolved_series": resolved_episodes,
-        }
+            dump_debug_json(data_list, media_dict, nohl_data, output_dict, logger, config)
+        # Prepare summary for output reporting
+        summary = build_summary(scanned_results, output_dict)
         # Combine scan and resolve results for reporting and notification
         final_output = {
             "scanned": scanned_results,

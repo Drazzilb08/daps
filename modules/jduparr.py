@@ -3,9 +3,10 @@ import subprocess
 import sys
 from types import SimpleNamespace
 
+from util.helper import create_table, print_settings
 from util.logger import Logger
+from util.config import Config
 from util.notification import send_notification
-from util.utility import create_table, print_settings
 
 
 def print_output(output: list[dict], logger: Logger) -> None:
@@ -35,7 +36,7 @@ def print_output(output: list[dict], logger: Logger) -> None:
     logger.info(f"Total items relinked: {count}")
 
 
-def main(config: SimpleNamespace) -> None:
+def main() -> None:
     """
     Main execution function for identifying and hardlinking duplicate media files using jdupes.
 
@@ -45,6 +46,7 @@ def main(config: SimpleNamespace) -> None:
     Returns:
         None
     """
+    config = Config("jduparr")
     logger = Logger(config.log_level, config.module_name)
     results = None
     try:

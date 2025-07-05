@@ -5,11 +5,12 @@ from collections import defaultdict
 from types import SimpleNamespace
 from typing import Any, Dict, List
 
-from util.arrpy import BaseARRClient, create_arr_client
+from util.arr import BaseARRClient, create_arr_client
 from util.constants import season_regex
+from util.helper import create_table, print_settings, progress
 from util.logger import Logger
 from util.notification import send_notification
-from util.utility import create_table, print_settings, progress
+from util.config import Config
 
 
 def print_output(output: Dict[str, Dict[str, Any]], logger: Logger) -> None:
@@ -301,13 +302,14 @@ def get_untagged_chunks_for_run(
     return get_chunks_for_run(all_items_without_tags, chunk_size, logger)
 
 
-def main(config: SimpleNamespace) -> None:
+def main() -> None:
     """
     Entrypoint for renameinatorr. Loads config, processes enabled instances, prints results.
 
     Args:
         config: Parsed config for renameinatorr.
     """
+    config = Config("renameinatorr")
     logger = Logger(config.log_level, config.module_name)
     try:
         if getattr(config, "log_level", "").lower() == "debug":

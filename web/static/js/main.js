@@ -10,5 +10,6 @@ import './schedule.js';
 import './instances.js';
 import './notifications.js';
 import './poster_search.js';
+import './poster_management.js';
 import './settings.js';
 import './logs.js';

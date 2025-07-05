@@ -8,57 +8,43 @@ from typing import Any, Dict, List, Tuple
 
 import yaml
 
+from util.helper import get_config_dir
 from util.logger import Logger
+
+TEMPLATE_PATH = pathlib.Path(__file__).parent / "template" / "config_template.json"
+config_dir = get_config_dir()
+config_file_path = os.path.join(config_dir, "config.yml")
+
+if not os.path.exists(config_file_path):
+    from json import load as _json_load
+
+    with open(TEMPLATE_PATH, "r") as tf:
+        default_cfg = _json_load(tf)
+    with open(config_file_path, "w") as wf:
+        yaml.safe_dump(default_cfg, wf, sort_keys=False)
 
 
 class Config:
     """Manages loading and accessing configuration for a given module."""
 
-    def __init__(self, module_name: str) -> None:
-        """
-        Initialize Config with module name.
+    def __init__(self, module_name: str):
+        config = load_user_config(config_file_path)
+        self.module_name = module_name
 
-        Args:
-            module_name (str): Name of the module requesting configuration.
-        """
-        self.config_path: str = config_file_path
-        self.module_name: str = module_name
-        self.load_config()
+        # Special case: If user asks for "schedule", only return schedule keys as attributes
+        if module_name == "schedule" and isinstance(config.get("schedule"), dict):
+            for k, v in (config["schedule"] or {}).items():
+                setattr(self, k, v)
+            # Notifications for "schedule" if any
+            self.notifications = (config.get("notifications", {}) or {}).get("schedule", {}) or {}
+            return  # Do not set any globals for schedule
 
-    def load_config(self) -> None:
-        """
-        Load the YAML configuration and set attributes for scheduler, discord,
-        notifications, instances, and module config.
-        """
-        try:
-            config = load_user_config(self.config_path)
-        except Exception:
-            return
-
-        self._config = config
-
-        if "schedule" not in config:
-            print(
-                "[CONFIG] Warning: 'schedule' key missing in config; defaulting to empty schedule"
-            )
-        self.scheduler = config.get("schedule", {})
-        self.discord = config.get("discord", {})
-        self.notifications = config.get("notifications", [])
-        if "instances" not in config:
-            sys.stderr.write(
-                f"[CONFIG] Missing 'instances' key! Config keys: {list(config.keys())}\n"
-            )
+        # Normal behavior for all others (including any top-level key)
+        mod_cfg = config.get(module_name, {}) or {}
+        for k, v in mod_cfg.items():
+            setattr(self, k, v)
         self.instances_config = config.get("instances", {})
-
-        if self.module_name:
-            self.module_config = self._config.get(self.module_name, {})
-            self.module_config = SimpleNamespace(**self.module_config)
-            self.module_config.module_name = self.module_name
-            module_notifications = self._config.get("notifications", {}).get(
-                self.module_name, {}
-            )
-            setattr(self.module_config, "notifications", module_notifications)
-            return
+        self.notifications = (config.get("notifications", {}) or {}).get(module_name, {}) or {}
 
 
 def load_user_config(path: str) -> Dict[str, Any]:
@@ -83,24 +69,6 @@ def load_user_config(path: str) -> Dict[str, Any]:
         sys.stderr.write(f"[CONFIG] Error parsing config file: {e}\n")
         print(f"Error parsing config file: {e}")
         return {}
-
-
-TEMPLATE_PATH = pathlib.Path(__file__).parent / "template" / "config_template.json"
-if os.environ.get("DOCKER_ENV"):
-    config_dir = os.getenv("CONFIG_DIR", "/config")
-    config_file_path = os.path.join(config_dir, "config.yml")
-else:
-    config_dir = pathlib.Path(__file__).parents[1] / "config"
-    config_dir.mkdir(parents=True, exist_ok=True)
-    config_file_path = config_dir / "config.yml"
-
-if not os.path.exists(config_file_path):
-    from json import load as _json_load
-
-    with open(TEMPLATE_PATH, "r") as tf:
-        default_cfg = _json_load(tf)
-    with open(config_file_path, "w") as wf:
-        yaml.safe_dump(default_cfg, wf, sort_keys=False)
 
 
 def _reconcile_config_data(

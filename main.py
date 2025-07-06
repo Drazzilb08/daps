@@ -39,7 +39,7 @@ def main():
         try:
             main_config = Config("main")
             logger = Logger(main_config.log_level, "main")
-            manage_config(main_config, logger)
+            manage_config(logger)
             orchestrator = DapsOrchestrator(logger)
             orchestrator.run(args)
         except Exception as e:

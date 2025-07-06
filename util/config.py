@@ -3,7 +3,6 @@ import os
 import pathlib
 import sys
 from copy import deepcopy
-from types import SimpleNamespace
 from typing import Any, Dict, List, Tuple
 
 import yaml
@@ -46,6 +45,13 @@ class Config:
         self.instances_config = config.get("instances", {})
         self.notifications = (config.get("notifications", {}) or {}).get(module_name, {}) or {}
 
+    @property
+    def data(self):
+        config = load_user_config(config_file_path)
+        if self.module_name == "schedule":
+            return config.get("schedule", {})
+        else:
+            return config.get(self.module_name, {})
 
 def load_user_config(path: str) -> Dict[str, Any]:
     """

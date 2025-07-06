@@ -154,7 +154,7 @@ class DapsOrchestrator:
             raise
 
     def run_schedule(self):
-        schedule = Config("schedule")
+        schedule = Config("schedule").data
 
         self._log("info", "[SCHEDULER] Starting scheduler loop...")
         print_schedule_table(self.logger, schedule)
@@ -215,7 +215,7 @@ class DapsOrchestrator:
             from web.server import start_web_server
 
             web_thread = threading.Thread(
-                target=start_web_server, args=(self.logger,), daemon=True
+                target=start_web_server, args=(self.logger, self), daemon=True
             )
             web_thread.start()
             self._log("info", "[ORCH] Web server started in background thread.")
@@ -228,7 +228,7 @@ class DapsOrchestrator:
             from web.server import start_web_server
 
             self._log("info", "[ORCH] Starting web server (blocking)...")
-            start_web_server(self.logger)
+            start_web_server(self.logger, self)
         except Exception as e:
             self._log("error", f"[ORCH] Failed to start web server: {e}", exc_info=True)
             raise

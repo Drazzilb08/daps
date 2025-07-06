@@ -23,10 +23,8 @@ def get_logger(request: Request) -> Any:
 
 # ==== Exception Handling ====
 @app.exception_handler(Exception)
-async def handle_exception(request: Request, exc: Exception):
-    logger = getattr(request.app.state, "logger", None)
-    if logger:
-        logger.error(f"[WEB] Unhandled Exception: {exc}", exc_info=True)
+async def handle_exception(exc: Exception, logger: Any = Depends(get_logger)):
+    logger.error(f"[WEB] Unhandled Exception: {exc}", exc_info=True)
     return JSONResponse(status_code=500, content={"error": str(exc)})
 
 # ==== Mount API Routers ====
@@ -41,47 +39,43 @@ app.include_router(router)
 # ==== Static and Templates ====
 app.mount(
     "/web/static",
-    StaticFiles(directory=Path(__file__).parent.parent / "static"),
+    StaticFiles(directory=Path(__file__).parents[1] / "static"),
     name="static",
 )
 
 @app.get("/", response_class=HTMLResponse)
 async def root():
     """Serves the main index.html page."""
-    html_path = Path(__file__).parent / "templates" / "index.html"
+    html_path = Path(__file__).parents[1] / "templates" / "index.html"
     try:
         return HTMLResponse(content=html_path.read_text(), status_code=200)
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 @app.get("/pages/{fragment_name}", response_class=HTMLResponse)
-async def serve_fragment(fragment_name: str, request: Request):
+async def serve_fragment(fragment_name: str, logger: Any = Depends(get_logger)):
     """Serves a named HTML fragment from the fragments directory."""
-    html_path = Path(__file__).parent / "templates" / "pages" / f"{fragment_name}.html"
+    html_path = Path(__file__).parents[1] / "templates" / "pages" / f"{fragment_name}.html"
     if not html_path.exists():
         raise HTTPException(status_code=404, detail="Fragment not found")
     try:
         return HTMLResponse(content=html_path.read_text(), status_code=200)
     except Exception as e:
-        logger = getattr(request.app.state, "logger", None)
-        if logger:
-            logger.error(f"[WEB] Error serving fragment {fragment_name}: {e}")
+        logger.error(f"[WEB] Error serving fragment {fragment_name}: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ==== Misc Utility Endpoints ====
 @app.get("/api/version")
-async def get_version_route(request: Request):
-    logger = getattr(request.app.state, "logger", None)
+async def get_version_route(logger: Any = Depends(get_logger)):
     try:
         version = get_version()
-        if logger:
-            logger.debug(f"[WEB] Serving GET /api/version: {version}")
+        logger.debug(f"[WEB] Serving GET /api/version: {version}")
     except Exception:
         version = "unknown"
     return PlainTextResponse(version)
 
 @app.get("/api/list")
-async def list_dir(path: str = "/"):
+async def list_dir(path: str = "/", logger: Any = Depends(get_logger)):
     """Returns subdirectories for a given path."""
     resolved = Path(path).expanduser().resolve()
     if not resolved.exists() or not resolved.is_dir():
@@ -93,29 +87,25 @@ async def list_dir(path: str = "/"):
     return {"directories": dirs}
 
 @app.post("/api/create-folder")
-async def create_folder(path: str, request: Request):
-    logger = getattr(request.app.state, "logger", None)
+async def create_folder(path: str, logger: Any = Depends(get_logger)):
     resolved = Path(path).expanduser().resolve()
     try:
-        if logger:
-            logger.info(f"[WEB] Creating folder: {resolved}")
+        logger.info(f"[WEB] Creating folder: {resolved}")
         resolved.mkdir(parents=True, exist_ok=False)
         return {"status": "created"}
     except Exception as e:
+        logger.error(f"[WEB] Error creating folder {resolved}: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ==== Test and Misc (Optional: Remove/Refactor) ====
 @app.post("/api/test-endpoint")
-async def test_endpoint(request: Request):
-    logger = getattr(request.app.state, "logger", None)
-    if logger:
-        logger.debug("[WEB] Serving POST /api/test-endpoint")
+async def test_endpoint(request: Request, logger: Any = Depends(get_logger)):
+
+    logger.debug("[WEB] Serving POST /api/test-endpoint")
     try:
         data = await request.json()
-        if logger:
-            logger.debug(f"[WEB] Received data: {data}")
+        logger.debug(f"[WEB] Received data: {data}")
         return {"status": "ok", "received": data}
     except Exception as e:
-        if logger:
-            logger.error(f"[WEB] Error reading data: {e}")
+        logger.error(f"[WEB] Error reading data: {e}")
         return {"status": "error", "error": str(e)}

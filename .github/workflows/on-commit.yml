@@ -17,7 +17,6 @@ on:
       - 'web/**'
       - 'VERSION'
       - 'start.sh'
-      - '.github/workflows/on-commit.yml'
 
 jobs:
   docker-tag:

@@ -3,15 +3,16 @@
 
 # Allow files and directories
 !/main.py
-!/Pipfile
-!/Pipfile.lock
+!/requirements.txt
+!/jokes.txt
 !/modules
 !/util
 !/scripts
 !/config
 !/VERSION
+!/spud
 !/start.sh
-!/exclude-file.txt
+!/web
 
 # Ignore unnecessary files inside allowed directories
 # This should go after the allowed directories
@@ -20,3 +21,4 @@
 **/.DS_Store
 **/Thumbs.db
 **/config.yml
+**/Dockerfile

@@ -1,0 +1,363 @@
+/* ======================================================
+   PAGE & MODAL OVERLAYS
+====================================================== */
+#pageOverlay,
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--overlay-bg);
+    backdrop-filter: blur(var(--overlay-blur));
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 400;
+}
+
+body.modal-open #pageOverlay,
+body.modal-open .overlay {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* ======================================================
+   BASE MODAL
+====================================================== */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--overlay-bg);
+    z-index: 1000;
+    backdrop-filter: blur(var(--overlay-blur));
+    padding-top: 0;
+    overflow-y: auto;
+    opacity: 0;
+    pointer-events: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transform: scale(0.97);
+    transition: opacity 0.44s cubic-bezier(0.44, 1.13, 0.73, 0.98),
+        transform 0.48s cubic-bezier(0.44, 1.13, 0.73, 0.98);
+}
+
+.modal.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+}
+
+/* ======================================================
+   MODAL CONTENT
+====================================================== */
+.modal-content {
+    background: var(--card-bg);
+    color: var(--fg);
+    border-radius: var(--modal-radius);
+    padding: var(--modal-padding);
+    width: var(--modal-content-width);
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    box-shadow: var(--dropdown-shadow);
+}
+
+.modal-content h2 {
+    margin: 0;
+    text-align: center;
+    font-size: var(--modal-header-font-size);
+    font-weight: var(--modal-header-font-weight);
+    margin-bottom: var(--modal-header-margin);
+}
+
+/* ======================================================
+   MODAL FOOTER
+====================================================== */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--modal-footer-gap);
+    margin-top: var(--modal-footer-margin-top);
+}
+
+/* ======================================================
+   DIRECTORY MODAL
+====================================================== */
+#dir-list {
+    list-style: none;
+    padding: 0;
+    max-height: 300px;
+    overflow-y: auto;
+    background: var(--form-bg);
+    border: var(--form-border);
+    border-radius: var(--form-radius);
+    margin: 1rem 0;
+    color: white;
+}
+
+#dir-list li {
+    padding: var(--form-padding);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    color: var(--fg);
+}
+
+#dir-list li:hover {
+    background: var(--dir-list-li-hover-background);
+}
+
+#dir-modal .modal-content .h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--fg);
+}
+
+/* ======================================================
+   DIRECTORY BREADCRUMB
+====================================================== */
+#dir-breadcrumb {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+
+/* ======================================================
+   UNSAVED CHANGES MODAL
+====================================================== */
+#unsavedModal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: var(--overlay-bg);
+    z-index: 10000;
+    backdrop-filter: blur(var(--overlay-blur));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.97);
+    transition: opacity 0.44s cubic-bezier(0.44, 1.13, 0.73, 0.98),
+        transform 0.48s cubic-bezier(0.44, 1.13, 0.73, 0.98);
+    font-family: var(--font);
+}
+
+#unsavedModal.show {
+    opacity: 1;
+    pointer-events: auto;
+    transform: scale(1);
+}
+
+#unsavedModal .modal-content {
+    background: var(--modal-bg);
+    color: var(--modal-color);
+    padding: var(--modal-padding);
+    border-radius: var(--modal-radius);
+    box-shadow: var(--modal-shadow);
+    max-width: var(--modal-max-width);
+    width: 25%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#unsavedModal .modal-content p {
+    font-size: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+#unsavedModal button {
+    padding: var(--modal-btn-padding);
+    font-size: var(--modal-btn-font-size);
+    border: none;
+    border-radius: var(--modal-btn-radius);
+    cursor: pointer;
+    margin: var(--modal-btn-margin);
+    font-weight: var(--modal-btn-font-weight);
+    transition: background 0.2s ease, transform 0.1s ease;
+    display: block;
+}
+
+#unsavedModal .modal-content button {
+    width: 100%;
+    max-width: 240px;
+}
+
+#unsavedModal .save-btn {
+    background: var(--success);
+    color: var(--primary-bg);
+}
+
+#unsavedModal .discard-btn {
+    background: var(--caution);
+    color: var(--primary-bg);
+}
+
+#unsavedModal .cancel-btn {
+    background: var(--error);
+    color: var(--primary-bg);
+}
+
+#unsavedModal button:hover {
+    transform: translateY(-1px);
+}
+
+/* ======================================================
+   HOLIDAY MODAL FIELD LAYOUT
+====================================================== */
+#holiday-modal .modal-content .field {
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: none !important;
+}
+
+#holiday-modal .modal-content .field > label,
+#holiday-modal .modal-content .field > input,
+#holiday-modal .modal-content .field > select,
+#holiday-modal .modal-content .field > button {
+    width: 100%;
+}
+
+/* ======================================================
+   LABELARR MODAL PILL OVERRIDES
+====================================================== */
+#labelarr-modal {
+    --pill-padding: 0.5rem 1rem;
+    --pill-radius: 4px;
+    --pill-font-size: 1rem;
+    --pill-font-weight: 400;
+}
+
+/* ======================================================
+   SCHEDULE RANGE FIELD
+====================================================== */
+.schedule-range {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* ======================================================
+   SELECT2 CUSTOM STYLING
+====================================================== */
+.select2-container .select2-selection--single {
+    background: var(--form-bg);
+    color: var(--form-color, var(--fg));
+    border: var(--form-border);
+    border-radius: var(--form-radius);
+    font-size: var(--form-font-size);
+    height: var(--form-height);
+    min-height: var(--form-height);
+    box-shadow: var(--input-shadow, none);
+    display: flex;
+    align-items: center;
+    padding-left: 1rem;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.select2-container--default .select2-selection--single:focus,
+.select2-container--default .select2-selection--single.select2-selection--focus {
+    border-color: var(--form-focus);
+    box-shadow: 0 0 0 3px var(--form-focus);
+    outline: none;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: var(--form-color, var(--fg));
+    font-size: var(--form-font-size);
+    line-height: var(--form-height);
+    padding-left: 0;
+    font-weight: 500;
+}
+
+.select2-dropdown {
+    background: var(--form-bg);
+    color: var(--form-color, var(--fg));
+    border: var(--form-border);
+    border-radius: var(--form-radius);
+    font-size: var(--form-font-size);
+    box-shadow: var(--dropdown-shadow);
+}
+
+.select2-results__option {
+    background: none;
+    color: var(--form-color, var(--fg));
+    padding: 0.55em 1em;
+}
+
+.select2-results__option--highlighted {
+    background: var(--primary);
+    color: var(--select2-results--option--highlighted-color);
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ff7300'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.85em center;
+    background-size: 0.65em auto;
+    width: 2em;
+    height: 100%;
+    border: none;
+}
+
+.select2-container--default .select2-selection__arrow b {
+    display: none;
+}
+
+/* ======================================================
+   PRESET CARD (MODAL CARD-LIKE ELEMENT)
+====================================================== */
+.preset-card {
+    background: var(--card-bg, #23272f);
+    color: var(--fg, #dbe4ee);
+    border-radius: 10px;
+    padding: 1.2rem 1.8rem 1.2rem 1.5rem;
+    margin: 0.5rem 0 1.1rem 0;
+    box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.03) 0px 1px 3px;
+    border: 1px solid var(--preset-card-border);
+    font-size: 1.06rem;
+    transition: box-shadow 0.15s;
+    line-height: 1.6;
+}
+
+.preset-label {
+    color: var(--accent, #82a6d7);
+    font-weight: 500;
+    margin-right: 0.25em;
+}
+
+.preset-field {
+    margin-bottom: 0.45em;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4em;
+    font-size: 1em;
+}
+
+.preset-type {
+    color: var(--modal-preset-type-color);
+    background: var(--modal-preset-type-background);
+    border-radius: 3.5px;
+    font-weight: 500;
+    padding: 0.05em 0.65em 0.08em;
+    margin-left: 0.2em;
+    font-size: 0.98em;
+}
+
+.preset-content {
+    margin: 0.3em 0 0.5em 1em;
+    color: var(--modal-preset-content-color);
+    font-size: 1em;
+    line-height: 1.5;
+    padding-left: 0.7em;
+    background: var(--modal-preset-content-background);
+    border-radius: 2px;
+}

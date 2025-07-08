@@ -1,0 +1,192 @@
+/* ======================================================
+   LOG VIEWER: AUTO-SCROLL BADGE & SPINNER
+====================================================== */
+
+/* ===== Auto-Scroll Badge ===== */
+.log-scroll-badge {
+    position: absolute;
+    bottom: 3rem;
+    right: 20px;
+    background: var(--log-badge-bg);
+    color: var(--heading-color);
+    padding: var(--log-badge-padding);
+    border-radius: var(--log-badge-radius);
+    font-size: var(--log-badge-font-size);
+    display: none;
+    z-index: var(--log-badge-z);
+    transition: var(--log-badge-transition);
+    opacity: var(--log-badge-opacity);
+}
+
+/* ===== Spinner ===== */
+.log-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--log-spinner-size);
+    height: var(--log-spinner-size);
+    margin: calc(var(--log-spinner-size) / -2) 0 0 calc(var(--log-spinner-size) / -2);
+    border: var(--log-spinner-border);
+    border-top: var(--log-spinner-border-top);
+    border-radius: var(--log-spinner-radius);
+    animation: spin 1s linear infinite;
+    z-index: var(--log-spinner-z);
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ======================================================
+   LOG OUTPUT CONTAINER & LINES
+====================================================== */
+
+/* ===== Main Log Output Container ===== */
+.log-output {
+    width: 100%;
+    height: 600px;
+    overflow: hidden;
+}
+
+/* ===== Log Lines & Animation ===== */
+.log-line {
+    opacity: 1;
+    transition: opacity 0.3s, transform 0.3s;
+}
+
+.log-line.new-line {
+    animation: fadeInLine 0.4s ease-out;
+}
+
+.log-line:hover {
+    background: var(--log-line-hover-bg);
+}
+
+@keyframes fadeInLine {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: var(--translate-neutral);
+    }
+}
+
+/* ======================================================
+   SCROLL/JUMP BUTTONS
+====================================================== */
+
+/* ===== Jump to Bottom Button ===== */
+.jump-to-bottom {
+    position: absolute;
+    bottom: 1rem;
+    right: 1rem;
+    background: var(--primary);
+    color: var(--bg);
+    padding: var(--log-jump-btn-padding);
+    border-radius: var(--log-jump-btn-radius);
+    cursor: pointer;
+    font-weight: var(--log-jump-btn-font-weight);
+    font-size: var(--log-jump-btn-font-size);
+    box-shadow: var(--log-jump-btn-shadow);
+    display: none;
+    z-index: var(--log-jump-btn-z);
+    transition: all 0.2s ease;
+    border: var(--log-scroll-btn-border);
+}
+
+.jump-to-bottom:hover {
+    background: var(--focus);
+    transform: translateY(-1px);
+}
+
+/* ===== Scroll-to-Top & Scroll-to-Bottom Buttons ===== */
+.scroll-output-container {
+    position: relative;
+    flex-grow: 1;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.scroll-to-top,
+.scroll-to-bottom {
+    position: absolute;
+    right: 1rem;
+    background: var(--card-bg);
+    color: var(--link-color);
+    padding: 0.4rem 0.9rem;
+    border-radius: var(--log-scroll-btn-radius);
+    font-weight: bold;
+    font-size: 0.85rem;
+    border: var(--log-scroll-btn-border);
+    z-index: 1000;
+    display: none;
+    cursor: pointer;
+}
+
+.scroll-to-top {
+    top: 1rem;
+}
+
+.scroll-to-bottom {
+    bottom: 1rem;
+}
+
+/* ======================================================
+   LOG CONTROLS & TOOLBAR
+====================================================== */
+body.logs-open {
+    overflow: hidden;
+}
+
+.log-controls.log-toolbar {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: flex-start;
+    gap: 1.1rem;
+    padding: 1rem 1.5rem;
+    background: var(--card-bg);
+    border-radius: var(--log-controls-radius);
+    box-shadow: var(--log-controls-shadow);
+    max-width: 95%;
+    margin: 1.5rem auto 1rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+}
+
+.log-toolbar {
+    gap: var(--log-toolbar-gap);
+}
+
+/* ======================================================
+   LOG LEVELS (COLORS)
+====================================================== */
+.log-error {
+    color: var(--log-error);
+}
+
+.log-warning {
+    color: var(--log-warning);
+}
+
+.log-critical {
+    color: var(--log-critical);
+    font-weight: bold;
+}
+
+.log-info {
+    color: var(--log-info);
+}
+
+.log-debug {
+    color: var(--log-debug);
+}

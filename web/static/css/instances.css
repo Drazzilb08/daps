@@ -1,0 +1,61 @@
+/* ======================================================
+   API KEY WRAPPER
+====================================================== */
+.api-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.api-wrapper input.masked-input,
+.api-wrapper input {
+    padding-right: 2.5rem;
+    box-sizing: border-box;
+}
+
+.api-wrapper .toggle-api {
+    position: absolute;
+    top: 50%;
+    right: var(--toggle-api-right);
+    transform: translateY(-50%);
+    cursor: pointer;
+    user-select: none;
+    font-size: var(--toggle-api-font-size);
+    opacity: var(--toggle-api-opacity);
+    line-height: 1;
+}
+
+/* Masked Input */
+.masked-input {
+    font-family: 'text-security-disc', sans-serif;
+    -webkit-text-security: disc;
+}
+
+/* ======================================================
+   INSTANCE BUTTONS (Test, Remove, Add)
+====================================================== */
+.instance-btn {
+    min-width: 130px;
+}
+
+/* ======================================================
+   INSTANCE CARD ANIMATIONS
+====================================================== */
+#instancesForm .card {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+    transition: opacity 0.28s cubic-bezier(0.44, 1.13, 0.73, 0.98),
+        transform 0.28s cubic-bezier(0.44, 1.13, 0.73, 0.98);
+}
+
+#instancesForm .card.show-card {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+#instancesForm .card.removing {
+    opacity: 0 !important;
+    transform: translateY(-32px) scale(0.94) !important;
+    pointer-events: none;
+    transition: opacity 0.25s cubic-bezier(0.71, 0, 0.32, 1),
+        transform 0.25s cubic-bezier(0.71, 0, 0.32, 1);
+}

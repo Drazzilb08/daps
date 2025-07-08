@@ -1,243 +1,339 @@
-#   _           _          _                 
-#  | |         | |        | |                
-#  | |     __ _| |__   ___| | __ _ _ __ _ __ 
-#  | |    / _` | '_ \ / _ \ |/ _` | '__| '__|
-#  | |___| (_| | |_) |  __/ | (_| | |  | |   
-#  |______\__,_|_.__/ \___|_|\__,_|_|  |_|   
-# ======================================================================================
-# Author: Drazzilb
-# Description: A script to sync labels between Plex and Radarr/Sonarr
-# Usage: python3 labelarr.py
-# Requirements: requests, pyyaml, plexapi
-# License: MIT License
-# ======================================================================================
-
-import json
-import time
 import sys
+from collections import defaultdict
+from types import SimpleNamespace
+from typing import Dict, List, Optional
 
-from util.discord import discord, discord_check
-from util.arrpy import StARR
-from util.utility import *
-from util.logger import setup_logger
-import re
-    
+from util.arrpy import BaseARRClient, create_arr_client
+from util.logger import Logger
+from util.normalization import normalize_titles
+from util.notification import send_notification
+from util.utility import create_table, print_settings, progress
+
 try:
-    from plexapi.server import PlexServer
     from plexapi.exceptions import BadRequest
+    from plexapi.server import PlexServer
 except ImportError as e:
     print(f"ImportError: {e}")
     print("Please install the required modules with 'pip install -r requirements.txt'")
     exit(1)
 
-script_name = "labelarr"
 
-def sync_to_plex(plex, labels, media_dict, app, starr_server_name, logger, library_names):
-    
-    tag_ids = {}
+def sync_to_plex(
+    plex: PlexServer,
+    labels: List[str],
+    media_dict: List[Dict],
+    app: BaseARRClient,
+    logger: Logger,
+    library_names: List[str],
+    config: SimpleNamespace,
+) -> List[Dict]:
+    """
+    Synchronize label metadata between an ARR client and Plex libraries.
 
-    for label in labels: 
+    Args:
+        plex (PlexServer): Plex server instance.
+        labels (List[str]): List of label names to sync.
+        media_dict (List[Dict]): List of media entries from ARR.
+        app (BaseARRClient): ARR client instance (Radarr or Sonarr).
+        logger (Logger): Logger instance.
+        library_names (List[str]): Names of Plex libraries to process.
+        config (SimpleNamespace): Configuration object.
+
+    Returns:
+        List[Dict]: List of label changes applied or identified.
+    """
+    tag_ids: Dict[str, Optional[int]] = {}
+    # Map label names to their corresponding tag IDs in ARR
+    for label in labels:
         tag_id = app.get_tag_id_from_name(label)
         if tag_id:
             tag_ids[label] = tag_id
 
-    data_dict = []
-    for library in tqdm(library_names, desc=f"Processing Library", unit="library"):
-        library_data = plex.library.section(library).all()
-        for library_item in tqdm(library_data, desc=f"Syncing labels between {library} and {starr_server_name.capitalize()}"):
-            try:
-                plex_item_labels = [label.tag.lower() for label in library_item.labels]
-            except AttributeError:
-                logger.error(f"Error fetching labels for {library_item.title} ({library_item.year})")
-                continue
-            normalized_title = normalize_titles(library_item.title)
-            for media_item in media_dict:
-                if normalized_title == media_item['normalized_title'] and library_item.year == media_item['year']:
-                    add_remove = {}
-                    for tag, id in tag_ids.items():
-                        if tag not in plex_item_labels and id in media_item['tags']:
-                            add_remove[tag] = 'add'
-                            if not dry_run:
-                                library_item.addLabel(tag)
-                        elif tag in plex_item_labels and id not in media_item['tags']:
-                            add_remove[tag] = 'remove'
-                            if not dry_run:
-                                library_item.removeLabel(tag)
-                    if add_remove:
-                        data_dict.append({
-                            "title": library_item.title,
-                            "year": library_item.year,
-                            "add_remove": add_remove,
-                        })
+    # Create lookup dictionaries for media items based on different IDs
+    tmdb_lookup = {
+        media["tmdb_id"]: media
+        for media in media_dict
+        if media.get("tmdb_id") is not None
+    }
+    tvdb_lookup = {
+        media["tvdb_id"]: media
+        for media in media_dict
+        if media.get("tvdb_id") is not None
+    }
+    imdb_lookup = {
+        media["imdb_id"]: media
+        for media in media_dict
+        if media.get("imdb_id") is not None
+    }
+    fallback_lookup = {
+        (media["normalized_title"], media["year"]): media for media in media_dict
+    }
+
+    data_dict: List[Dict] = []
+
+    with progress(
+        library_names,
+        desc="Processing Libraries",
+        unit="items",
+        logger=logger,
+        leave=True,
+    ) as outer_pbar:
+        for library in outer_pbar:
+            library_data = plex.library.section(library).all()
+
+            with progress(
+                library_data,
+                desc=f"Syncing labels between {app.instance_name.capitalize()} and {library}",
+                unit="items",
+                logger=logger,
+                leave=True,
+            ) as inner_pbar:
+                for library_item in inner_pbar:
+                    try:
+                        plex_item_labels = [
+                            label.tag.lower() for label in library_item.labels
+                        ]
+                    except AttributeError:
+                        logger.error(
+                            f"Error fetching labels for {library_item.title} ({library_item.year})"
+                        )
+                        continue
+
+                    ids: Dict[str, Optional[str]] = {
+                        "tmdb": None,
+                        "tvdb": None,
+                        "imdb": None,
+                    }
+                    # Extract IDs from Plex item's GUIDs for matching
+                    for guid in getattr(library_item, "guids", []):
+                        guid_str = getattr(guid, "id", "")
+                        if guid_str.startswith("tmdb://"):
+                            ids["tmdb"] = guid_str.split("tmdb://")[1]
+                        elif guid_str.startswith("tvdb://"):
+                            ids["tvdb"] = guid_str.split("tvdb://")[1]
+                        elif guid_str.startswith("imdb://"):
+                            ids["imdb"] = guid_str.split("imdb://")[1]
+
+                    media_item: Optional[Dict] = None
+                    match_type: str = "unknown"
+
+                    # Attempt to find media item by TMDB ID if valid
+                    if ids["tmdb"] and ids["tmdb"].isdigit():
+                        media_item = tmdb_lookup.get(int(ids["tmdb"]))
+                        if media_item:
+                            media_id = media_item["tmdb_id"]
+                            plex_id = ids["tmdb"]
+                            match_type = (
+                                f"TMDB Media ID: {media_id} - Plex ID {plex_id}"
+                            )
+
+                    # Fallback to TVDB ID if no TMDB match found
+                    if not media_item and ids["tvdb"] and ids["tvdb"].isdigit():
+                        media_item = tvdb_lookup.get(int(ids["tvdb"]))
+                        if media_item:
+                            media_id = media_item["tvdb_id"]
+                            plex_id = ids["tvdb"]
+                            match_type = (
+                                f"TVDB Media ID: {media_id} - Plex ID {plex_id}"
+                            )
+
+                    # Fallback to IMDB ID if no TMDB or TVDB match found
+                    if not media_item and ids["imdb"]:
+                        media_item = imdb_lookup.get(ids["imdb"])
+                        if media_item:
+                            media_id = media_item["imdb_id"]
+                            plex_id = ids["imdb"]
+                            match_type = (
+                                f"IMDB Media ID: {media_id} - Plex ID {plex_id}"
+                            )
+
+                    # Final fallback to normalized title and year matching
+                    if not media_item:
+                        key = (normalize_titles(library_item.title), library_item.year)
+                        media_item = fallback_lookup.get(key)
+                        if media_item:
+                            match_type = "TITLE/YEAR MATCH"
+
+                    if media_item:
+                        logger.debug(
+                            f"Matched '{library_item.title}' ({library_item.year}) using {match_type} lookup to '{media_item['title']}' ({media_item['year']})"
+                        )
+                        add_remove: Dict[str, str] = {}
+
+                        # Determine which labels to add or remove based on ARR tags and Plex labels
+                        for tag, id in tag_ids.items():
+                            if tag not in plex_item_labels and id in media_item["tags"]:
+                                add_remove[tag] = "add"
+                                if not config.dry_run:
+                                    library_item.addLabel(tag)
+                            elif (
+                                tag in plex_item_labels and id not in media_item["tags"]
+                            ):
+                                add_remove[tag] = "remove"
+                                if not config.dry_run:
+                                    library_item.removeLabel(tag)
+
+                        if add_remove:
+                            data_dict.append(
+                                {
+                                    "title": library_item.title,
+                                    "year": library_item.year,
+                                    "add_remove": add_remove,
+                                }
+                            )
+
     return data_dict
 
-def handle_messages(data_dict, logger):
+
+def handle_messages(data_dict: List[Dict], logger: Logger) -> None:
     """
-    Handle the messages to be sent to Discord.
-    
+    Log label changes from sync results in a grouped, readable format.
+
     Args:
-        data_dict (dict): The data to be synced to Plex.
-        
-    Returns:
-        None
+        data_dict (List[Dict]): List of dictionaries containing sync results.
+        logger (Logger): Logger instance for output.
     """
-    table = [
-        ["Results"],
-    ]
+
+    table: List[List[str]] = [["Results"]]
     logger.info(create_table(table))
-    # Loop through each item in the data_dict
+
+    label_changes: Dict[tuple, List[str]] = defaultdict(list)
+
+    # Group media titles by label and action (add/remove)
     for item in data_dict:
-        # Log the title and year of the item
-        logger.info(f"Title: {item['title']} ({item['year']})")
-        
-        # Iterate through each label and corresponding action (add/remove) in the item
-        for label, action in item['add_remove'].items():
-            # Log information about label addition or removal
-            if action == "add":
-                logger.info(f"\tLabel: {label} added.")
-            elif action == "remove":
-                logger.info(f"\tLabel: {label} removed.")
+        for label, action in item["add_remove"].items():
+            key = (label, action)
+            label_changes[key].append(f"{item['title']} ({item['year']})")
+
+    # Log grouped label changes
+    for (label, action), items in label_changes.items():
+        verb = "added to" if action == "add" else "removed from"
+        logger.info(f"\nLabel: {label} has been {verb}:")
+        for entry in items:
+            logger.info(f"  - {entry}")
 
 
-def notification(data_dict, logger):
+def main(config: SimpleNamespace) -> None:
     """
-    Send the notification to Discord.
+    Main function to sync labels between Plex and Radarr/Sonarr based on configuration.
 
     Args:
-        data_dict (dict): The data to be synced to Plex.
-
-    Returns:
-        None
+        config (SimpleNamespace): Configuration object loaded from user settings.
     """
-
-    fields = []
-    built_fields = {}
-    count = 0
-    message_count = 0
-
-    # Iterate through each item in the data_dict
-    for item in data_dict:
-        actions = []
-        # Extract actions (add or remove labels) for each item
-        for label, action in item['add_remove'].items():
-            if action == "add":
-                action = f"{label} {action}ed"
-            elif action == "remove":
-                action = f"{label} {action}d"
-            actions.append(action)
-        actions = "\n".join(actions)
-        # Create a field for the Discord message
-        field = {
-            "name": f"{item['title']} ({item['year']})",
-            "value": f"```{actions}```",
-            "inline": False
-        }
-        count += 1
-        fields.append(field)
-        # If the count of fields reaches 25, store the current fields and reset the count
-        if count >= 25:
-            count = 0
-            message_count += 1
-            built_fields[message_count] = fields
-            fields = []
-
-    # If there are remaining fields, store them
-    if fields:
-        message_count += 1
-        built_fields[message_count] = fields
-
-    # If there are built_fields, send the notifications
-    if built_fields:
-        for message_number, fields in built_fields.items():
-            print(f"Sending message {message_number} of {message_count}...")
-            discord(fields, logger, script_name, description=f"{'__**Dry Run**__' if dry_run else ''}", color=0x00ff00, content=None)
-            if message_number % 5 == 0:
-                print("Pausing for 5 seconds to let Discord catch up...")
-                time.sleep(5)
-
-def main(config):
-    """
-    Main function.
-    """
-    global dry_run
-    dry_run = config.dry_run
-    log_level = config.log_level
-    logger = setup_logger(log_level, script_name)
-    script_config = config.script_config
-    name = script_name.replace("_", " ").upper()
-
+    logger = Logger(config.log_level, config.module_name)
     try:
-        logger.info(create_bar(f"START {name}"))
-        # If in dry run mode, create a table indicating no changes will be made
-        if dry_run:
-            table = [
-                ["Dry Run"],
-                ["NO CHANGES WILL BE MADE"]
-            ]
+        # Print detailed settings if debug logging is enabled
+        if config.log_level.lower() == "debug":
+            print_settings(logger, config)
+
+        # Notify user if running in dry run mode (no actual changes will be made)
+        if config.dry_run:
+            table = [["Dry Run"], ["NO CHANGES WILL BE MADE"]]
             logger.info(create_table(table))
-        
-        # Fetch script configurations
-        script_config = config.script_config
-        instances = script_config.get('instances', None)
-        valid = validate(config, script_config, logger)
-        
-        # Iterate through instance types and their respective configurations
-        for instance_type, instance_data in config.instances_config.items():
-            for instance, instance_settings in instances.items():
-                if instance in instance_data:
-                    # Extract various settings for the instance
-                    plex_instances = instance_settings.get('plex_instances', None)
-                    labels = instance_settings.get('labels', None)
-                    library_names = instance_settings.get('library_names', None)
-                    
-                    # Create StARR object and get instance name
-                    app = StARR(instance_data[instance]['url'], instance_data[instance]['api'], logger)
-                    starr_server_name = app.get_instance_name()
-                    
-                    # Fetch and process media data from the StARR instance
-                    media_dict = handle_starr_data(app, starr_server_name, instance_type, include_episode=False)
-                    
-                    # If media data is found
-                    if media_dict:
-                        # Logging settings and instance information
-                        logger.debug(f"Media Data:\n{json.dumps(media_dict, indent=4)}")
-                        # (Additional logging and table creation omitted for brevity)
-                        
-                        # Iterate through Plex instances associated with the current StARR instance
-                        for plex_instance in plex_instances:
-                            if plex_instance in config.plex_config:
-                                # Connect to the Plex server
-                                try:
-                                    logger.info("Connecting to Plex...")
-                                    plex = PlexServer(config.plex_config[plex_instance]['url'], config.plex_config[plex_instance]['api'], timeout=180)
-                                except BadRequest:
-                                    logger.error(f"Error connecting to Plex instance: {plex_instance}")
-                                    continue
-                                server_name = plex.friendlyName
-                                # Process data for syncing to Plex
-                                if library_names:
-                                    logger.info("Syncing labels to Plex")
-                                    data_dict = sync_to_plex(plex, labels, media_dict, app, starr_server_name, logger, library_names)
-                                else:
-                                    logger.error(f"No library names provided for {server_name}. Skipping...")
-                                    continue
-                                
-                                # Handle messages related to syncing actions
-                                if data_dict:
-                                    handle_messages(data_dict, logger)
-                                    
-                                    # Send notifications related to syncing actions
-                                    if discord_check(script_name):
-                                        notification(data_dict, logger)
-                                else:
-                                    logger.info(f"No items to sync from {starr_server_name} to {server_name}.\n")
-                        else:
-                            continue
+
+        output: List[Dict] = []
+
+        # Iterate over each mapping configured for syncing
+        for mapping in config.mappings:
+            app_type: str = mapping["app_type"]
+            app_instance: Optional[str] = mapping.get("app_instance")
+            labels: List[str] = mapping["labels"]
+            plex_instances: List[Dict] = mapping["plex_instances"]
+            app: Optional[BaseARRClient] = None
+            media_dict: List[Dict] = []
+
+            # Connect to the ARR client (Radarr or Sonarr) if specified
+            if app_type in ["radarr", "sonarr"] and app_instance:
+                app_config: Optional[Dict] = config.instances_config[app_type].get(
+                    app_instance
+                )
+                if not app_config:
+                    logger.error(
+                        f"No config found for {app_type} instance '{app_instance}'"
+                    )
+                    continue
+
+                app = create_arr_client(app_config["url"], app_config["api"], logger)
+                if not app or not app.connect_status:
+                    logger.error(
+                        f"Failed to connect to {app_type} instance {app_instance}"
+                    )
+                    continue
+
+                # Fetch parsed media list from ARR client, excluding episodes for Sonarr
+                if (
+                    hasattr(app, "instance_type")
+                    and app.instance_type.lower() == "sonarr"
+                ):
+                    media_dict = app.get_parsed_media(include_episode=False)
+                else:
+                    media_dict = app.get_parsed_media()
+
+                if not media_dict:
+                    logger.info(f"No media found for {app_instance}")
+                    continue
+
+            # Process each Plex instance and library associated with the mapping
+            if plex_instances:
+                for mapping_block in plex_instances:
+                    plex_instance: Optional[str] = mapping_block.get("instance")
+                    library_names: List[str] = mapping_block.get("library_names", [])
+
+                    if plex_instance not in config.instances_config.get("plex", {}):
+                        logger.error(
+                            f"No Plex instance found for {plex_instance}. Skipping...\n"
+                        )
+                        continue
+
+                    try:
+                        plex = PlexServer(
+                            config.instances_config["plex"][plex_instance]["url"],
+                            config.instances_config["plex"][plex_instance]["api"],
+                            timeout=180,
+                        )
+                        logger.info(f"Connected to Plex instance '{plex.friendlyName}'")
+
+                    except BadRequest:
+                        logger.error(
+                            f"Error connecting to Plex instance: {plex_instance}"
+                        )
+                        continue
+
+                    if library_names:
+                        label_str = ", ".join(labels)
+                        logger.info(
+                            f"Syncing labels [{label_str}] from {app_type.capitalize()} instance '{app_instance}' to Plex instance '{plex_instance}'"
+                        )
+                        # Collect changes from sync_to_plex and accumulate in output list
+                        data_dict = sync_to_plex(
+                            plex, labels, media_dict, app, logger, library_names, config
+                        )
+                        output.extend(data_dict)
+                    else:
+                        logger.error(
+                            f"No library names provided for {plex_instance}. Skipping..."
+                        )
+                        continue
+
+        # Log and send notifications if any label changes were found
+        if output:
+            handle_messages(output, logger)
+            # Only send notifications if not in dry run mode
+            send_notification(
+                logger=logger,
+                module_name=config.module_name,
+                config=config,
+                output=output,
+            )
+        else:
+            logger.info("No labels to sync to Plex")
+
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()
     except Exception:
-        logger.error(f"\n\nAn error occurred:\n", exc_info=True)
-        logger.error(f"\n\n")
+        logger.error("\n\nAn error occurred:\n", exc_info=True)
+        logger.error("\n\n")
     finally:
-        logger.info(create_bar(f"END {name}"))
+        # Log outro message with run time
+        logger.log_outro()

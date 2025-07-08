@@ -1,144 +1,164 @@
-import shlex
 import json
 import os
-
-from util.call_script import call_script
-from util.utility import create_bar
-from util.logger import setup_logger
+import re
+import shlex
+import subprocess
 import sys
+from shutil import which
+from types import SimpleNamespace
+from typing import List, Optional
+
+from util.logger import Logger
+from util.utility import print_settings
+
+# Load environment variables from .env file if available
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv(override=True)
+except ImportError:
+    pass
 
 
-script_name = "sync_gdrive"
+def get_rclone_path() -> str:
+    """Find the full path to the rclone binary, checking RCLONE_PATH env var first."""
+    # Allow override via environment variable
+    env_path = os.getenv("RCLONE_PATH")
+    if env_path:
+        if os.path.isfile(env_path) and os.access(env_path, os.X_OK):
+            return env_path
+        else:
+            raise FileNotFoundError(
+                f"RCLONE_PATH is set to '{env_path}', but it is not an executable file."
+            )
+    # Fallback to searching in PATH
+    rclone_path = which("rclone")
+    if rclone_path is None:
+        raise FileNotFoundError(
+            "rclone binary not found in PATH. Ensure it is installed and accessible, or set RCLONE_PATH."
+        )
+    return rclone_path
 
-bash_script_file = os.path.realpath(os.path.dirname(os.path.realpath(__file__)) + '/../scripts/rclone.sh')
 
-def output_debug_info(cmd, settings):
-    client_id = settings.get('client_id', None)
-    client_secret = settings.get('client_secret', None)
-    token = settings.get('token', None)
-    debug_cmd = cmd.copy()
-    if '-i' in debug_cmd:
-        debug_cmd[debug_cmd.index('-i') + 1] = '<redacted>' if client_id else 'None'
-    if '-s' in debug_cmd:
-        debug_cmd[debug_cmd.index('-s') + 1] = '<redacted>' if client_secret else 'None'
+def run_rclone(config: SimpleNamespace, logger: Logger) -> None:
+    """Run rclone sync for each configured Google Drive folder and log output."""
+    sync_list: List[dict] = (
+        config.gdrive_list
+        if isinstance(config.gdrive_list, list)
+        else [config.gdrive_list]
+    )
+    rclone_path = get_rclone_path()
+    logger.debug(f"Using rclone binary at: {rclone_path}")
 
-    if '-t' in debug_cmd:
-        debug_cmd[debug_cmd.index('-t') + 1] = '<redacted>' if token else 'None'
+    if config.gdrive_sa_location and not os.path.isfile(config.gdrive_sa_location):
+        logger.warning(
+            f"\nGoogle service account file '{config.gdrive_sa_location}' does not exist\n"
+            "Please verify the path or remove it from config\n"
+        )
+        config.gdrive_sa_location = None
 
-    return debug_cmd
-
-def set_cmd_args(settings, logger):
-    cmds = []
-    cmd = [bash_script_file]
-    sync_list = []
-    client_id = settings.get('client_id', None)
-    client_secret = settings.get('client_secret', None)
-    token = settings.get('token', None)
-    gdrive_sa_location = settings.get('gdrive_sa_location', None)
-    gdrive_sync = settings.get('gdrive_sync', None)
-
-    sync_list = gdrive_sync if isinstance(gdrive_sync, list) else [gdrive_sync]
-
-    if gdrive_sa_location and os.path.isfile(gdrive_sa_location):
-        gdrive_okay = True
-    elif gdrive_sa_location and not os.path.isfile(gdrive_sa_location):
-        gdrive_okay = False
-        logger.warning(f"\nGoogle service account file '{gdrive_sa_location}' does not exist\nPlease make sure you have the correct path to the file or remove the path from the config file\n")
-    else:
-        gdrive_okay = False
-
-    logger.debug(f"Sync list: {sync_list}")
-    for sync_item in sync_list:
-        logger.debug(f"Syncing: {sync_item}")
-        sync_location = sync_item['location']
-        sync_id = sync_item['id']
-
-        sync_cmd = cmd.copy()
-        if not gdrive_sa_location:
-            if client_id:
-                sync_cmd.append('-i')
-                sync_cmd.append(shlex.quote(client_id))
-            else:
-                logger.error("No client id provided")
-                return
-
-            if client_secret:
-                sync_cmd.append('-s')
-                sync_cmd.append(shlex.quote(client_secret))
-            else:
-                logger.error("No client secret provided")
-                return
-
-        if gdrive_sync:
-            if sync_location != '' and os.path.exists(sync_location):
-                sync_cmd.append('-l')
-                sync_cmd.append(shlex.quote(sync_item['location']))
-            else:
-                if not os.path.exists(sync_location):
-                    logger.error(f"Sync location {sync_location} does not exist")
-                    # Create the directory if it doesn't exist
-                    try:
-                        os.makedirs(sync_location)
-                        logger.info(f"Created {sync_location}")
-                        sync_cmd.append('-l')
-                        sync_cmd.append(shlex.quote(sync_item['location']))
-                    except Exception as e:
-                        logger.error(f"Exception occurred while creating {sync_location}: {e}")
-                        return
-                else:
-                    logger.error("No sync location provided")
-                    return
-            if sync_id != '':
-                sync_cmd.append('-f')
-                sync_cmd.append(shlex.quote(sync_item['id']))
-            else:
-                logger.error("No gdrive id provided")
-                return
-        
-        if token:
-            sync_cmd.append('-t')
-            sync_cmd.append(json.dumps(token))
-
-        if gdrive_okay:
-            sync_cmd.append('-g')
-            sync_cmd.append(shlex.quote(gdrive_sa_location))
-
-        cmds.append(sync_cmd)
-
-    return cmds
-
-# run the rclone.sh script
-def run_rclone(cmd, settings, logger):
-    debug_cmd = output_debug_info(cmd, settings)
+    # Ensure rclone remote 'posters' exists by creating it if missing
     try:
-        logger.debug(f"RClone command with args: {debug_cmd}")
-        call_script(cmd, logger)
-        logger.debug(f"RClone command with args: {debug_cmd} --> Success")
+        logger.debug("Ensuring rclone remote 'posters' exists")
+        subprocess.run(
+            [
+                rclone_path,
+                "config",
+                "create",
+                "posters",
+                "drive",
+                "config_is_local=false",
+            ],
+            check=False,
+        )
     except Exception as e:
-        logger.error(f"Exception occurred while running rclone.sh: {e}")
-        logger.error(f"RClone command with args: {debug_cmd} --> Failed")
-        pass
+        logger.error(f"Error ensuring rclone remote 'posters' exists: {e}")
 
-# Main function
-def main(config, logger=None):
-    """
-    Main function.
-    """
-    global dry_run
-    settings = config.script_config
-    log_level = config.log_level
-    logger = setup_logger(log_level, script_name)
-    name = script_name.replace("_", " ").upper()
-    
+    for sync_item in sync_list:
+        sync_location: Optional[str] = sync_item.get("location")
+        sync_id: Optional[str] = sync_item.get("id")
+
+        if not sync_location or not sync_id:
+            logger.error("Sync location or GDrive folder ID not provided.")
+            continue
+
+        # Ensure local sync directory exists
+        try:
+            os.makedirs(sync_location, exist_ok=True)
+            logger.info(f"Ensured sync location exists: {sync_location}")
+        except OSError as e:
+            logger.error(f"Could not create sync location '{sync_location}': {e}")
+            continue
+
+        # Build rclone command with necessary flags and credentials
+        cmd = [
+            rclone_path,
+            "sync",
+            "--drive-client-id",
+            config.client_id or "",
+            "--drive-client-secret",
+            config.client_secret or "",
+            "--drive-token",
+            json.dumps(config.token) if config.token else "",
+            "--drive-root-folder-id",
+            sync_id,
+            "--fast-list",
+            "--tpslimit=5",
+            "--no-update-modtime",
+            "--drive-use-trash=false",
+            "--drive-chunk-size=512M",
+            "--exclude=**.partial",
+            "--check-first",
+            "--bwlimit=80M",
+            "--size-only",
+            "--delete-after",
+            "-v",
+        ]
+
+        if config.gdrive_sa_location:
+            cmd.extend(["--drive-service-account-file", config.gdrive_sa_location])
+
+        cmd.extend(["posters:", sync_location])
+
+        try:
+            logger.debug("Running rclone command:")
+            logger.debug("\n" + " \\\n    ".join(shlex.quote(arg) for arg in cmd))
+            process = subprocess.Popen(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True
+            )
+            for line in process.stdout:
+                # Clean rclone output by removing timestamp and log level prefixes
+                cleaned_line = re.sub(
+                    r"^\d{4}/\d{2}/\d{2} \d{2}:\d{2}:\d{2} (INFO|ERROR|DEBUG) *:?",
+                    "",
+                    line,
+                ).strip()
+                if cleaned_line:
+                    logger.info(cleaned_line)
+            process.wait()
+            if process.returncode == 0:
+                logger.info("✅ RClone sync completed successfully.")
+            else:
+                logger.error(
+                    f"❌ RClone sync failed with return code {process.returncode}"
+                )
+        except Exception as e:
+            logger.error(f"Exception occurred while running rclone: {e}")
+
+
+def main(config: SimpleNamespace, logger: Optional[Logger] = None) -> None:
+    """Initialize logger, optionally print config in debug mode, and run rclone sync."""
+    logger = Logger(config.log_level, config.module_name)
     try:
-        logger.info(create_bar(f"START {name}"))
-        for cmd in set_cmd_args(settings, logger):
-            run_rclone(cmd, settings, logger)
+        if config.log_level.lower() == "debug":
+            print_settings(logger, config)
+        run_rclone(config, logger)
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()
     except Exception:
-        logger.error(f"\n\nAn error occurred:\n", exc_info=True)
-        logger.error(f"\n\n")
+        logger.error("\n\nAn error occurred:\n", exc_info=True)
+        logger.error("\n\n")
     finally:
-        logger.info(create_bar(f"END {name}"))
+        # Log outro message with run time
+        logger.log_outro()

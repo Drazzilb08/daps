@@ -1,0 +1,18 @@
+version: "3.9"
+
+services:
+  daps:
+    container_name: daps
+    image: ghcr.io/drazzilb08/daps:dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - /path/to/config:/config
+      - /path/to/kometa/assets/:/kometa
+      - /path/to/posters:/posters
+      - /path/to/media:/media
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TIMEZONE}
+    restart: unless-stopped

@@ -1,98 +1,110 @@
-import os
-import time
+import builtins
 import logging
-import pathlib
+import os
+import sys
+from datetime import datetime
 from logging.handlers import RotatingFileHandler
-from util.version import get_version
+from pathlib import Path
+from typing import Optional
+
 from util.utility import create_bar
-
-def setup_logger(log_level, script_name, max_logs=9):
-    """
-    Setup the logger.
-    
-    Parameters:
-        log_level (str): The log level to use
-        script_name (str): The name of the script
-        max_logs (int): Maximum number of log files to keep
-    
-    Returns:
-        A logger object for logging messages.
-    """
-
-    if os.environ.get('DOCKER_ENV'):
-        config_dir = os.getenv('CONFIG_DIR', '/config')
-        log_dir = f"{config_dir}/logs/{script_name}"
-    else:
-        log_dir = f"{os.path.join(pathlib.Path(__file__).parents[1], 'logs', script_name)}"
-
-    if log_level not in ['debug', 'info', 'critical']:
-        log_level = 'info'
-        print(f"Invalid log level '{log_level}', defaulting to 'info'")
-    
-    # Create the log directory if it doesn't exist
-    if not os.path.exists(log_dir):
-        os.makedirs(log_dir)
-    
-    
-    # Define the log file path with the current date
-    log_file = f"{log_dir}/{script_name}.log"
-    
-    # Check if log file already exists
-    if os.path.isfile(log_file):
-        for i in range(max_logs - 1, 0, -1):
-            old_log = f"{log_dir}/{script_name}.log.{i}"
-            new_log = f"{log_dir}/{script_name}.log.{i + 1}"
-            if os.path.exists(old_log):
-                os.rename(old_log, new_log)
-        os.rename(log_file, f"{log_dir}/{script_name}.log.1")
-    
-    # Create a logger object with the script name
-    logger = logging.getLogger(script_name)
-    logger.propagate = False 
-    
-    # Set the log level based on the provided parameter
-    log_level = log_level.upper()
-    if log_level == 'DEBUG':
-        logger.setLevel(logging.DEBUG)
-    elif log_level == 'INFO':
-        logger.setLevel(logging.INFO)
-    elif log_level == 'CRITICAL':
-        logger.setLevel(logging.CRITICAL)
-    else:
-        logger.critical(f"Invalid log level '{log_level}', defaulting to 'INFO'")
-        logger.setLevel(logging.INFO)
-    
-    # Define the log message format
-    formatter = logging.Formatter(fmt='%(asctime)s %(levelname)s: %(message)s', datefmt='%m/%d/%y %I:%M %p')
-    
-    # Create a RotatingFileHandler for log files
-    handler = RotatingFileHandler(log_file, delay=True, mode="w", backupCount=max_logs)
-    handler.setFormatter(formatter)
-    
-    # Add the file handler to the logger
-    logger.addHandler(handler)
-
-    # Configure console logging with the specified log level
-    console_handler = logging.StreamHandler()
-    if log_level == 'DEBUG':
-        console_handler.setLevel(logging.DEBUG)
-    elif log_level == 'INFO':
-        console_handler.setLevel(logging.INFO)
-    elif log_level == 'CRITICAL':
-        console_handler.setLevel(logging.CRITICAL)
-    
-    # Add the console handler to the logger
-    logger.addHandler(console_handler)
-
-    # Overwrite previous logger if exists
-    logging.getLogger(script_name).handlers.clear()
-    logging.getLogger(script_name).addHandler(handler)
-    logging.getLogger(script_name).addHandler(console_handler)
-
-    # Insert version number at the head of every log file   
-    version = get_version()
-    name = script_name.replace("_", " ").upper()
-    logger.info(create_bar(f"{name} Version: {version}"))
+from util.version import get_version
 
 
-    return logger
+class Logger:
+    """Logger with file rotation, console output, and versioned header."""
+
+    def __init__(self, log_level: str, module_name: str, max_logs: int = 9):
+        """Set up file and console logging handlers and emit versioned header."""
+        log_base = os.getenv("LOG_DIR")
+        if log_base:
+            log_dir = Path(log_base) / module_name
+        else:
+            log_dir = Path(__file__).resolve().parents[1] / "logs" / module_name
+        os.makedirs(log_dir, exist_ok=True)
+
+        base = os.path.join(log_dir, module_name)
+        log_file = f"{base}.log"
+
+        if os.path.isfile(log_file):
+            for i in range(max_logs - 1, 0, -1):
+                old = f"{base}.{i}.log"
+                new = f"{base}.{i + 1}.log"
+                if os.path.exists(old):
+                    os.rename(old, new)
+            os.rename(log_file, f"{base}.1.log")
+
+        self._logger = logging.getLogger(f"{module_name}_{os.getpid()}")
+        self._logger.handlers.clear()
+        self._logger.propagate = False
+        self._logger.setLevel(getattr(logging, log_level.lower().upper(), logging.INFO))
+
+        formatter = logging.Formatter(
+            fmt="%(asctime)s %(levelname)s: %(message)s", datefmt="%m/%d/%y %I:%M:%S %p"
+        )
+        file_handler = RotatingFileHandler(log_file, mode="w", backupCount=max_logs)
+        file_handler.setFormatter(formatter)
+        self._logger.addHandler(file_handler)
+
+        if module_name == "main" or os.environ.get("LOG_TO_CONSOLE", "").lower() in (
+            "1",
+            "true",
+            "yes",
+        ):
+            console = logging.StreamHandler()
+            console.setLevel(self._logger.level)
+            console.addFilter(lambda record: record.levelno < logging.ERROR)
+            console.setFormatter(logging.Formatter("%(message)s"))
+            self._logger.addHandler(console)
+
+        error_console = logging.StreamHandler()
+        error_console.setLevel(logging.ERROR)
+        error_console.setFormatter(
+            logging.Formatter(f"%(levelname)s [{module_name}]: %(message)s")
+        )
+        self._logger.addHandler(error_console)
+
+        if not hasattr(logging, log_level.lower().upper()):
+            self._logger.warning(f"Invalid log level '{log_level}', defaulting to INFO")
+
+        version = get_version()
+        self.start_time = datetime.now()
+        self._logger.start_time = self.start_time
+        self._logger.info(
+            create_bar(f"{module_name.replace('_', ' ').upper()} Version: {version}")
+        )
+
+    def log_outro(self) -> None:
+        """Log runtime duration since start_time."""
+        start = getattr(self, "start_time", None)
+        if start is None:
+            return
+        duration = datetime.now() - start
+        hours, remainder = divmod(duration.total_seconds(), 3600)
+        minutes, seconds = divmod(remainder, 60)
+        formatted_duration = f"{int(hours)}h {int(minutes)}m {int(seconds)}s"
+        module_name = self._logger.name.rsplit("_", 1)[0].replace("_", " ").upper()
+        self._logger.info(create_bar(f"{module_name} | Run Time: {formatted_duration}"))
+
+    def __getattr__(self, name):
+        return getattr(self._logger, name)
+
+
+_orig_print = builtins.print
+
+
+def _print(*args: object, file: Optional[object] = None, **kwargs: object) -> None:
+    """Custom print respecting LOG_TO_CONSOLE for stdout; always allow stderr."""
+    target = file if file is not None else sys.stdout
+    log_console = os.environ.get("LOG_TO_CONSOLE", "").lower() in ("1", "true", "yes")
+    if target in (sys.stderr, sys.__stderr__):
+        _orig_print(*args, file=target, **kwargs)
+        return
+    if target in (sys.stdout, sys.__stdout__):
+        if log_console:
+            _orig_print(*args, file=target, **kwargs)
+        return
+    _orig_print(*args, file=target, **kwargs)
+
+
+builtins.print = _print

@@ -1,112 +1,165 @@
-#   _    _            _ _   _        _____ _               _                   
-#  | |  | |          | | | | |      / ____| |             | |                  
-#  | |__| | ___  __ _| | |_| |__   | |    | |__   ___  ___| | ____ _ _ __ _ __ 
-#  |  __  |/ _ \/ _` | | __| '_ \  | |    | '_ \ / _ \/ __| |/ / _` | '__| '__|
-#  | |  | |  __/ (_| | | |_| | | | | |____| | | |  __/ (__|   < (_| | |  | |   
-#  |_|  |_|\___|\__,_|_|\__|_| |_|  \_____|_| |_|\___|\___|_|\_\__,_|_|  |_|   
-# ===================================================================================================
-# Author: Drazzilb
-# Description: This script will delete movies and shows from Radarr and Sonarr based on the if they show
-#              up in the health check. This is useful for removing movies and shows that have been removed
-#              from TMDB or TVDB.
-# Usage: python3 health_checkarr.py
-# Requirements: requests
-# License: MIT License
-# ===================================================================================================
-
 import json
 import re
 import sys
+from types import SimpleNamespace
+from typing import Any, Dict, List, Optional
 
-from util.arrpy import StARR
-from util.utility import *
-from util.discord import discord
-from util.logger import setup_logger
+from tqdm import tqdm
 
-try:
-    from tqdm import tqdm
-except ImportError as e:
-    print(f"ImportError: {e}")
-    print("Please install the required modules with 'pip install -r requirements.txt'")
-    exit(1)
+from util.arrpy import create_arr_client
+from util.constants import tmdb_id_regex, tvdb_id_regex
+from util.logger import Logger
+from util.notification import send_notification
+from util.utility import create_table, print_settings, progress
 
-script_name = "health_checkarr"
 
-tmdb_id_extractor = re.compile(r"tmdbid (\d+)")
-tvdb_id_extractor = re.compile(r"tvdbid (\d+)")
-
-def main(config):
+def main(config: SimpleNamespace) -> None:
     """
-    Main function.
+    Process Radarr and Sonarr instances to identify and delete media items flagged by health checks
+    as removed from TMDB or TVDB. Supports dry run mode and logs all actions.
+
+    Args:
+        config (SimpleNamespace): Configuration object containing:
+            - log_level (str): Logging verbosity level.
+            - module_name (str): Name of the module for logging context.
+            - dry_run (bool): If True, no deletions are performed.
+            - instances_config (Dict[str, Dict[str, Dict[str, str]]]): Configuration for each instance type and instance.
+            - instances (List[str]): List of instance names to process.
+
+    Behavior:
+        - Iterates over configured Radarr and Sonarr instances.
+        - Retrieves health check data and media libraries.
+        - Identifies media items flagged as removed.
+        - Deletes flagged media items unless dry run is enabled.
+        - Sends notifications about deleted items.
+        - Logs all key steps and errors.
     """
-    global dry_run
-    dry_run = config.dry_run
-    log_level = config.log_level
-    logger = setup_logger(log_level, script_name)
-    script_config = config.script_config
-    name = script_name.replace("_", " ").upper()
+    logger: Logger = Logger(config.log_level, config.module_name)
+
     try:
-        logger.info(create_bar(f"START {name}"))
-        health = None
-        script_config = config.script_config
-        instances = script_config.get('instances', None)
-        valid = validate(config, script_config, logger)
-        # Log script settings
-        table = [
-            ["Script Settings"]
-        ]
-        logger.debug(create_table(table))
-        logger.debug(f'{"Dry_run:":<20}{dry_run if dry_run else "False"}')
-        logger.debug(f'{"Log level:":<20}{log_level if log_level else "INFO"}')
-        logger.debug(f'{"Instances:":<20}{instances if instances else "Not Set"}')
-        logger.debug(create_bar("-"))
-        
-        if dry_run:
-            table = [
-                ["Dry Run"],
-                ["NO CHANGES WILL BE MADE"]
-            ]
+        # Display configuration settings if in debug mode
+        if config.log_level.lower() == "debug":
+            print_settings(logger, config)
+
+        # Print dry run notice if enabled
+        if config.dry_run:
+            table: List[List[str]] = [["Dry Run"], ["NO CHANGES WILL BE MADE"]]
             logger.info(create_table(table))
-            logger.info('')
+            logger.info("")
 
+        # Iterate over each instance type (radarr/sonarr)
         for instance_type, instance_data in config.instances_config.items():
-            for instance in instances:
+            # Iterate over each configured instance for this type
+            for instance in config.instances:
                 if instance in instance_data:
-                    app = StARR(instance_data[instance]['url'], instance_data[instance]['api'], logger)
-                    server_name = app.get_instance_name()
-                    health = app.get_health()
-                    media_dict = handle_starr_data(app, server_name, instance_type, include_episode=False)
-                    id_list = []
-                    if health:
-                        for health_item in health:
-                            if health_item['source'] == "RemovedMovieCheck" or health_item['source'] == "RemovedSeriesCheck":
-                                if instance_type == "radarr":
-                                    for m in re.finditer(tmdb_id_extractor, health_item['message']):
-                                        id_list.append(int(m.group(1)))
-                                if instance_type == "sonarr":
-                                    for m in re.finditer(tvdb_id_extractor, health_item['message']):
-                                        id_list.append(int(m.group(1)))
-                    logger.debug(f"id_list:\n{json.dumps(id_list, indent=4)}")
-                    output = []
-                    for item in tqdm(media_dict, desc=f"Processing {instance_type}", unit="items", disable=None, total=len(media_dict)):
-                        if item['db_id'] in id_list:
-                            logger.debug(f"Found {item['title']} with: {item['db_id']}")
-                            output.append(item)
-                    logger.debug(f"output:\n{json.dumps(output, indent=4)}")
+                    # Create client for the current instance
+                    app: Optional[Any] = create_arr_client(
+                        instance_data[instance]["url"],
+                        instance_data[instance]["api"],
+                        logger,
+                    )
+                    if app and app.connect_status:
+                        # Retrieve health check warnings
+                        health: Optional[List[Dict[str, Any]]] = app.get_health()
 
-                    if output:
-                        logger.info(f"Deleting {len(output)} {instance_type} items from {server_name}")
-                        for item in tqdm(output, desc=f"Deleting {instance_type} items", unit="items", disable=None, total=len(output)):
-                            if not dry_run:
-                                logger.info(f"{item['title']} deleted with id: {item['media_id']} and tvdb/tmdb id: {item['db_id']}")
-                                app.delete_media(item['media_id'])
-                            else:
-                                logger.info(f"{item['title']} would have been deleted with id: {item['media_id']}")
+                        # Retrieve current media library without episode details
+                        media_dict: List[Dict[str, Any]] = app.get_parsed_media(
+                            include_episode=False
+                        )
+
+                        id_list: List[int] = []
+
+                        # Parse health check messages for removed media IDs
+                        if health:
+                            for health_item in health:
+                                if (
+                                    health_item["source"] == "RemovedMovieCheck"
+                                    or health_item["source"] == "RemovedSeriesCheck"
+                                ):
+                                    if instance_type == "radarr":
+                                        for m in re.finditer(
+                                            tmdb_id_regex, health_item["message"]
+                                        ):
+                                            id_list.append(int(m.group(1)))
+                                    if instance_type == "sonarr":
+                                        for m in re.finditer(
+                                            tvdb_id_regex, health_item["message"]
+                                        ):
+                                            id_list.append(int(m.group(1)))
+
+                            logger.debug(f"id_list:\n{json.dumps(id_list, indent=4)}")
+
+                            output: List[Dict[str, Any]] = []
+
+                            # Match health-check IDs with media library entries
+                            with progress(
+                                media_dict,
+                                desc=f"Processing {instance_type}",
+                                unit="items",
+                                logger=logger,
+                                leave=True,
+                            ) as pbar:
+                                for item in pbar:
+                                    if (
+                                        instance_type == "radarr"
+                                        and item["tmdb_id"] in id_list
+                                    ) or (
+                                        instance_type == "sonarr"
+                                        and item["tvdb_id"] in id_list
+                                    ):
+                                        db_id = (
+                                            item["tmdb_id"]
+                                            if instance_type == "radarr"
+                                            else item["tvdb_id"]
+                                        )
+                                        logger.debug(
+                                            f"Found {item['title']} with: {db_id}"
+                                        )
+                                        output.append(item)
+
+                            logger.debug(f"output:\n{json.dumps(output, indent=4)}")
+
+                            if output:
+                                logger.info(
+                                    f"Deleting {len(output)} {instance_type} items from {app.instance_name}"
+                                )
+
+                                # Delete each matched item unless dry run is enabled
+                                for item in tqdm(
+                                    output,
+                                    desc=f"Deleting {instance_type} items",
+                                    unit="items",
+                                    disable=None,
+                                    total=len(output),
+                                ):
+                                    if not config.dry_run:
+                                        logger.info(
+                                            f"{item['title']} deleted with id: {item['media_id']} and tvdb/tmdb id: {item['db_id']}"
+                                        )
+                                        app.delete_media(item["media_id"])
+                                    else:
+                                        logger.info(
+                                            f"{item['title']} would have been deleted with id: {item['media_id']}"
+                                        )
+
+                                # Send notification with deleted items
+                                send_notification(
+                                    logger=logger,
+                                    module_name=config.module_name,
+                                    config=config,
+                                    output=output,
+                                )
+                        else:
+                            logger.info(
+                                f"No health data returned for {app.instance_name}, this is fine if there was nothing to delete. Skipping deletion checks."
+                            )
+
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()
     except Exception:
-        logger.error(f"\n\nAn error occurred:\n", exc_info=True)
-        logger.error(f"\n\n")
+        logger.error("\n\nAn error occurred:\n", exc_info=True)
+        logger.error("\n\n")
     finally:
-        logger.info(create_bar(f"END {name}"))
+        # Log outro message with run time
+        logger.log_outro()

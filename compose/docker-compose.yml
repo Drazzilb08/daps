@@ -3,7 +3,7 @@ version: "3.9"
 services:
   daps:
     container_name: daps
-    image: ghcr.io/drazzilb08/daps:dev
+    image: ghcr.io/drazzilb08/daps:latest
     ports:
       - "8000:8000"
     volumes:

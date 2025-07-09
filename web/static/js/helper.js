@@ -23,6 +23,7 @@ export const moduleList = [
     'labelarr',
     'health_checkarr',
     'jduparr',
+    'unmatched_assets',
 ]
 
 export const NOTIFICATION_LIST = [

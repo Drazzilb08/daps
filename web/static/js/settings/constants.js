@@ -86,6 +86,11 @@ export const ARR_AND_PLEX_INSTANCES = [
     'health_checkarr',
     'renameinatorr',
 ];
+export const SHOW_PLEX_IN_INSTANCE_FIELD = [
+    'poster_renamerr',
+    'unmatched_assets',
+    'poster_cleanarr'
+];
 
 export const DRAG_AND_DROP = {
     poster_renamerr: ['source_dirs'],

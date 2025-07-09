@@ -343,7 +343,6 @@ def main() -> None:
 
         update_client_databases(db, config, logger)
         update_collections_database(db, config, logger)
-        exit()
 
         match_assets_to_media(db,logger, config)
         output, manifest = rename_files(config, logger, db)

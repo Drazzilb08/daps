@@ -68,3 +68,4 @@ test2.py
 .env
 /tests
 pyproject.toml
+*.db

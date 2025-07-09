@@ -17,7 +17,6 @@ on:
       - 'web/**'
       - 'VERSION'
       - 'start.sh'
-      - '.github/workflows/on-commit.yml'
 
 jobs:
   docker-tag:
@@ -55,7 +54,7 @@ jobs:
           username: ${{ secrets.GH_USERNAME }}
           password: ${{ secrets.GH_TOKEN }}
 
-      - name: Build and push Docker image
+      - name: Build and push Docker image (branch-specific)
         uses: docker/build-push-action@v5
         with:
           context: .
@@ -68,3 +67,18 @@ jobs:
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/daps:${{ steps.get_branch.outputs.BRANCH_NAME }}
             ghcr.io/drazzilb08/daps:${{ steps.get_branch.outputs.BRANCH_NAME }}
+
+      - name: Build and push Docker image (latest tag for master)
+        if: ${{ steps.get_branch.outputs.BRANCH_NAME == 'master' }}
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          build-args: |
+            "BRANCH=master"
+            "BUILD_NUMBER=${{ env.BUILD_NUMBER }}"
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/daps:latest
+            ghcr.io/drazzilb08/daps:latest

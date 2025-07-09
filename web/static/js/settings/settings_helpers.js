@@ -11,6 +11,7 @@ import {
     PLACEHOLDER_TEXT,
     DRAG_AND_DROP,
     LIST_FIELD,
+    SHOW_PLEX_IN_INSTANCE_FIELD,
 } from './constants.js';
 import { humanize, showToast } from '../common.js';
 
@@ -303,7 +304,6 @@ export function renderPlexSonarrRadarrInstancesField(
         const noCard = document.createElement('div');
         noCard.className = 'card plex-instance-card';
         noCard.innerHTML = `
-
           <div class="plex-libraries">
             <p class="no-entries" style="margin: 0.5em 0 0 1em;">
               🚫 No instances configured for ${humanize(moduleName)}.
@@ -352,7 +352,6 @@ export function renderPlexSonarrRadarrInstancesField(
         return card;
     }
 
-    const radarrDefs = rootConfig.instances.radarr || {};
     const radarrInstances = Object.keys(rootConfig.instances.radarr || {});
     if (radarrInstances.length) {
         listDiv.appendChild(renderARRGroupCard('radarr', radarrInstances));
@@ -371,7 +370,6 @@ export function renderPlexSonarrRadarrInstancesField(
         `;
         listDiv.appendChild(noRadarrCard);
     }
-    const sonarrDefs = rootConfig.instances.sonarr || {};
     const sonarrInstances = Object.keys(rootConfig.instances.sonarr || {});
     if (sonarrInstances.length) {
         listDiv.appendChild(renderARRGroupCard('sonarr', sonarrInstances));
@@ -390,7 +388,9 @@ export function renderPlexSonarrRadarrInstancesField(
         `;
         listDiv.appendChild(noSonarrCard);
     }
-    if (ARR_AND_PLEX_INSTANCES.includes(moduleName)) {
+
+    // Only render Plex if SHOW_PLEX_IN_INSTANCE_FIELD includes this module
+    if (SHOW_PLEX_IN_INSTANCE_FIELD.includes(moduleName)) {
         const plexInstances = Object.keys(rootConfig.instances.plex || {});
         if (plexInstances.length) {
             const plexWrapper = document.createElement('div');

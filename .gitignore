@@ -69,3 +69,5 @@ test2.py
 /tests
 pyproject.toml
 *.db
+config/daps.db-shm
+config/daps.db-wal

@@ -6,7 +6,7 @@ from types import SimpleNamespace
 from util.helper import create_table, print_settings
 from util.logger import Logger
 from util.config import Config
-from util.notification import send_notification
+from util.notification import NotificationManager
 
 
 def print_output(output: list[dict], logger: Logger) -> None:
@@ -108,7 +108,8 @@ def main() -> None:
 
         # Print summarized output and send notification
         print_output(output, logger)
-        send_notification(logger, config.module_name, config, output)
+        manager = NotificationManager(config, logger, module_name="health_checkarr")
+        manager.send_notification(output)
 
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")

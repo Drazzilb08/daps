@@ -88,23 +88,3 @@ class Logger:
 
     def __getattr__(self, name):
         return getattr(self._logger, name)
-
-
-_orig_print = builtins.print
-
-
-def _print(*args: object, file: Optional[object] = None, **kwargs: object) -> None:
-    """Custom print respecting LOG_TO_CONSOLE for stdout; always allow stderr."""
-    target = file if file is not None else sys.stdout
-    log_console = os.environ.get("LOG_TO_CONSOLE", "").lower() in ("1", "true", "yes")
-    if target in (sys.stderr, sys.__stderr__):
-        _orig_print(*args, file=target, **kwargs)
-        return
-    if target in (sys.stdout, sys.__stdout__):
-        if log_console:
-            _orig_print(*args, file=target, **kwargs)
-        return
-    _orig_print(*args, file=target, **kwargs)
-
-
-builtins.print = _print

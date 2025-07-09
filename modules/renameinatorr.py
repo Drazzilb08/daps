@@ -9,7 +9,7 @@ from util.arr import BaseARRClient, create_arr_client
 from util.constants import season_regex
 from util.helper import create_table, print_settings, progress
 from util.logger import Logger
-from util.notification import send_notification
+from util.notification import NotificationManager
 from util.config import Config
 
 
@@ -335,12 +335,8 @@ def main() -> None:
                         }
         if any(value["data"] for value in output.values()):
             print_output(output, logger)
-            send_notification(
-                logger=logger,
-                module_name=config.module_name,
-                config=config,
-                output=output,
-            )
+            manager = NotificationManager(config, logger, module_name="renameinatorr")
+            manager.send_notification(output)
         else:
             logger.info("No media items to rename.")
     except KeyboardInterrupt:

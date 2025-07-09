@@ -1,61 +1,70 @@
 /* ======================================================
-   API KEY WRAPPER
+   INSTANCE PAGE – CARD GROUPS AND LAYOUT
 ====================================================== */
-.api-wrapper {
-    position: relative;
-    width: 100%;
+
+#instances-list {
+  display: block;
+  width: 100%;
 }
 
-.api-wrapper input.masked-input,
-.api-wrapper input {
-    padding-right: 2.5rem;
-    box-sizing: border-box;
+.instance-group-header {
+    display: flex;
+    align-items: center;
+    gap: 0.66em;
+    font-size: 1.22rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0 0 0.55em 0.2em;
+    letter-spacing: 0.01em;
+    padding-left: 0.07em;
+}
+.instance-group-icon img,
+.instance-group-icon svg {
+    width: 28px;
+    height: 28px;
+    display: block;
+    filter: drop-shadow(0 0 2px #fff5) drop-shadow(0 0 1px #ffeb3b33);
 }
 
-.api-wrapper .toggle-api {
-    position: absolute;
-    top: 50%;
-    right: var(--toggle-api-right);
-    transform: translateY(-50%);
-    cursor: pointer;
-    user-select: none;
-    font-size: var(--toggle-api-font-size);
-    opacity: var(--toggle-api-opacity);
-    line-height: 1;
-}
-
-/* Masked Input */
-.masked-input {
-    font-family: 'text-security-disc', sans-serif;
-    -webkit-text-security: disc;
+.instance-group {
+  width: 100%;
+  display: block;
+  margin-bottom: 2.1rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1.5px solid var(--divider);
 }
 
 /* ======================================================
-   INSTANCE BUTTONS (Test, Remove, Add)
+   INSTANCE PAGE – CARD VISUALS, THEMED TO MATCH APP
 ====================================================== */
-.instance-btn {
-    min-width: 130px;
+
+
+/* "Service bar" at top of card for grouping (matches header color) */
+
+
+/* Card title styling: bold, bright, app accent color */
+.instance-group .card-title {
+  font-size: 1.13em;
+  font-weight: bold;
+  color: var(--muted);
+  margin-bottom: 0.28em;
+  letter-spacing: 0.01em;
+  text-align: center;
+  margin-top: 25px;
 }
 
-/* ======================================================
-   INSTANCE CARD ANIMATIONS
-====================================================== */
-#instancesForm .card {
-    opacity: 0;
-    transform: translateY(24px) scale(0.98);
-    transition: opacity 0.28s cubic-bezier(0.44, 1.13, 0.73, 0.98),
-        transform 0.28s cubic-bezier(0.44, 1.13, 0.73, 0.98);
+/* Responsive adjustments */
+@media (max-width: 900px) {
+  .instance-group-header {
+    text-align: center;
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 0;
+  }
 }
-
-#instancesForm .card.show-card {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+@media (max-width: 900px){
+  /* Place additional responsive rules here if needed */
 }
-
-#instancesForm .card.removing {
-    opacity: 0 !important;
-    transform: translateY(-32px) scale(0.94) !important;
-    pointer-events: none;
-    transition: opacity 0.25s cubic-bezier(0.71, 0, 0.32, 1),
-        transform 0.25s cubic-bezier(0.71, 0, 0.32, 1);
+@media (max-width: 600px) {
+  /* Place additional responsive rules here if needed */
 }

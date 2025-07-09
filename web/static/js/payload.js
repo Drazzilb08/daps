@@ -1,107 +1,87 @@
 import { BOOL_FIELDS, INT_FIELDS, TEXTAREA_FIELDS, JSON_FIELDS } from './settings/constants.js';
-import { NOTIFICATION_DEFINITIONS } from './helper.js';
 import { getBorderReplacerrData } from './settings/modules/border_replacerr.js';
 import { getLabelarrData } from './settings/modules/labelarr.js';
 import { getGdriveSyncData } from './settings/modules/sync_gdrive.js';
 import { getUpgradinatorrData } from './settings/modules/upgradinatorr.js';
 
 export async function buildNotificationPayload() {
-    const form = document.getElementById('notificationsForm');
+    const form = document.getElementById('notification-modal-form');
     if (!form) return null;
-    const DEFINITIONS = NOTIFICATION_DEFINITIONS || {};
-    const result = {};
-    const missing = [];
 
-    form.querySelectorAll('.card').forEach((card) => {
-        const module = card
-            .querySelector('.card-header')
-            ?.textContent?.toLowerCase()
-            .replace(/\s+/g, '_');
-        if (!module) return;
-        const moduleObj = {};
-        const toggles = Array.from(card.querySelectorAll('.toggle-switch input'));
-        toggles.forEach((toggle) => {
-            const m = toggle.name.match(new RegExp(`^${module}_(.+)$`));
-            if (!m) return;
-            const type = m[1],
-                def = DEFINITIONS[type],
-                fields = {};
-            if (def?.fields && toggle.checked) {
-                def.fields.forEach((fd) => {
-                    const input = form.querySelector(`[name="${type}_${fd.key}_${module}"]`);
-                    if (!input) return;
-                    let val =
-                        input.type === 'checkbox'
-                            ? input.checked
-                            : input.tagName === 'TEXTAREA'
-                            ? input.value
-                                  .split(/[\n,]+/)
-                                  .map((s) => s.trim())
-                                  .filter(Boolean)
-                            : input.type === 'number'
-                            ? Number(input.value)
-                            : input.value.trim();
-                    if (fd.required && (val === '' || (Array.isArray(val) && !val.length))) {
-                        missing.push(`${module}: ${type} – ${fd.label}`);
-                    }
-                    if (fd.key === 'channel_id' && (isNaN(val) || !Number.isInteger(Number(val)))) {
-                        missing.push(`${module}: ${type} – ${fd.label} must be integer`);
-                    }
-                    fields[fd.key] = val;
-                });
-                moduleObj[type] = fields;
-            } else if (toggle.checked) {
-                moduleObj[type] = {};
-            }
-        });
-        result[module] = moduleObj;
-    });
-    if (missing.length) return null;
-    return {
-        notifications: result,
-    };
-}
-
-export async function buildSchedulePayload() {
-    const form = document.getElementById('scheduleForm');
-    if (!form) return null;
-    const data = new FormData(form),
-        out = {};
-    for (const [k, v] of data.entries()) {
-        out[k] = v.trim() || null;
+    // 1. Get the latest notifications config block
+    let notifications = {};
+    try {
+        const res = await fetch('/api/config');
+        const cfg = await res.json();
+        notifications = (cfg.notifications && typeof cfg.notifications === 'object')
+            ? JSON.parse(JSON.stringify(cfg.notifications))
+            : {};
+    } catch {
+        notifications = {};
     }
-    return {
-        schedule: out,
-    };
+
+    // 2. Detect type/module
+    let type = null, module = null;
+    if (form.querySelector('[name="webhook"]')) {
+        type = form.querySelector('[name="channel_id"]') ? 'notifiarr' : 'discord';
+    } else if (form.querySelector('[name="server"]')) {
+        type = 'email';
+    }
+    const header = form.closest('.modal-content')?.querySelector('.modal-header h2');
+    if (header) {
+        const match = header.textContent.match(/(?:Edit|Add) ([^-]+) -/);
+        if (match) module = match[1].trim().toLowerCase().replace(/\s+/g, '_');
+    }
+
+    // 3. Build notification object from form
+    const notif = {};
+    const missing = [];
+    form.querySelectorAll('input, select').forEach(input => {
+        let val = input.value;
+        if (input.type === 'checkbox') {
+            val = input.checked;
+        } else if (input.type === 'number' || input.getAttribute('type') === 'number') {
+            val = val === '' ? null : parseInt(val, 10);
+            if (!isNaN(val) && val !== null) notif[input.name] = val;
+        }
+        if (input.required && (val === '' || val == null || Number.isNaN(val))) {
+            const label = input.closest('label')?.textContent || input.name;
+            missing.push(`"${label}" is required`);
+        }
+        notif[input.name] = val;
+    });
+    if (missing.length) return { error: missing };
+
+    // 4. Replace only the relevant module/type
+    if (!notifications[module]) notifications[module] = {};
+    notifications[module][type] = notif;
+
+    // 5. Return the full notifications object
+    return { notifications };
 }
 
-export async function buildInstancesPayload() {
-    const form = document.getElementById('instancesForm');
-    if (!form) return null;
-    const out = {};
+export async function buildSchedulePayload(module, time, remove = false) {
+    let schedule = {};
+    try {
+        const res = await fetch('/api/config');
+        const cfg = await res.json();
+        schedule = (cfg.schedule && typeof cfg.schedule === 'object')
+            ? JSON.parse(JSON.stringify(cfg.schedule))
+            : {};
+    } catch {
+        schedule = {};
+    }
 
-    form.querySelectorAll('.category').forEach((sec) => {
-        const svc = sec.querySelector('h2')?.textContent.toLowerCase().replace(/ /g, '_');
-        out[svc] = {};
+    if (remove) {
+        delete schedule[module];
+    } else {
+        schedule[module] = time;
+    }
+    return { schedule };
+}
 
-        sec.querySelectorAll('.card').forEach((card) => {
-            const field = card.querySelector('.field');
-            if (!field) return;
-            const name = field.querySelector('input[name$="__name"]')?.value.trim();
-            const url = field.querySelector('input[name$="__url"]')?.value.trim();
-            const api = field.querySelector('input[name$="__api"]')?.value.trim();
-            if (name)
-                out[svc][name] = {
-                    url,
-                    api,
-                };
-        });
-    });
-
-    if (!Object.values(out).some((o) => Object.keys(o).length)) return null;
-    return {
-        instances: out,
-    };
+export async function buildInstancesPayload(instances) {
+    return { instances };
 }
 
 export async function buildSettingsPayload(moduleName) {

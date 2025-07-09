@@ -7,7 +7,7 @@ from pathlib import Path
 
 import requests
 
-from util.notification import send_notification
+from util.notification import NotificationManager
 
 BASE = Path(__file__).parents[1] / "VERSION"
 
@@ -124,7 +124,8 @@ def start_version_check(config, logger, interval=3600):
                     "color": "FF0000",
                 }
                 config.module_name = "version_check"
-                send_notification(logger, "version_check", config, output)
+                manager = NotificationManager(config, logger, module_name="version_check")
+                manager.send_notification(output)
             else:
                 logger.debug(
                     f"[VERSION CHECK] No update. Local: {local_version}, Remote: {remote_full}"

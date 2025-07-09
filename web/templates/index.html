@@ -24,14 +24,11 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css" />
     <script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit/lib/xterm-addon-fit.js"></script>
-    
-
-    <!-- Select2 CSS and jQuery dependencies -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script type="module" src="/web/static/js/main.js"></script>
-    
+
     <link rel="stylesheet" href="/web/static/css/base.css" />
     <link rel="stylesheet" href="/web/static/css/common.css" />
     <link rel="stylesheet" href="/web/static/css/layout.css" />
@@ -44,66 +41,63 @@
     <link rel="stylesheet" href="/web/static/css/logs.css" />
     <link rel="stylesheet" href="/web/static/css/poster_search.css" />
     <link rel="stylesheet" href="/web/static/css/notifications.css" />
-    <style>
-
-    </style>
 </head>
 
 <body>
-
-    <div id="pageOverlay"></div>
-    <div class="container">
-        
-<a href="/" class="daps-header-gradient daps-header-link">
-    <span class="daps">DAPS</span>
-    <span class="dashboard-label">Dashboard</span>
-</a>
-
-<nav>
-    <ul class="menu">
-<li><a id="link-schedule" href="/pages/schedule">🗓️ Schedule</a></li>
-<li><a id="link-instances" href="/pages/instances">🖥️ Instances</a></li>
-<li><a id="link-notifications" href="/pages/notifications">💬 Notifications</a></li>
-<li><a id="link-poster-search" href="/pages/poster_search">🎥 Poster Search</a></li>
-<li><a id="link-poster-management" href="/pages/poster_management">🖼️ Poster Management</a></li>
-<li class="dropdown">
-    <div class="dropdown-toggle">⚙️ Settings</div>
-    <ul class="dropdown-menu settings-panel" id="settings-dropdown"></ul>
-</li>
-<li><a id="link-logs" href="/pages/logs">📜 Logs</a></li>
-    </ul>
-</nav>
-<div class="overlay" id="contentOverlay"></div>
-<div class="content">
-    <div id="viewFrame" class="view-frame"></div>
-</div>
-<div id="toast-container"></div>
-
-<footer class="daps-footer">
-    <span id="version" class="footer-version">📦 Version: ...</span>
-    <span id="update-badge" class="has-update-tooltip footer-update-badge">
-        🚀 Update Available
-        <span class="update-tooltip" id="update-tooltip">
-            <span class="update-tooltip-title">Update Available</span><br>
-            <span class="update-tooltip-versions">
-                Current: <span id="tooltip-current-version"></span><br>
-                Latest: <span id="tooltip-latest-version"></span>
-            </span>
-        </span>
-    </span>
-    <a href="https://github.com/Drazzilb08/daps" target="_blank" rel="noopener noreferrer" class="footer-link">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 .296c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.207 11.387.6.113.793-.258.793-.577v-2.234c-3.338.726-4.033-1.415-4.033-1.415-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.838 1.235 1.838 1.235 1.07 1.834 2.809 1.304 3.495.997.108-.776.419-1.304.762-1.604-2.665-.305-5.467-1.332-5.467-5.93 0-1.31.469-2.381 1.236-3.221-.124-.303-.536-1.527.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.655 1.649.243 2.873.119 3.176.77.84 1.234 1.911 1.234 3.221 0 4.61-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .321.192.694.801.576C20.565 22.092 24 17.592 24 12.296c0-6.627-5.373-12-12-12" />
-        </svg>
-        <span>GitHub</span>
+  <div id="pageOverlay"></div>
+  <!-- Header Bar -->
+  <div class="header-bar">
+    <a href="/" class="nav-logo">
+        <img src="/web/static/img/favicon-32x32.png" alt="DAPS logo" />
+        <span class="daps-title">DAPS</span>
     </a>
-    <a href="https://trash-guides.info/discord" target="_blank" rel="noopener noreferrer" class="footer-link">
-        <svg width="18" height="18" viewBox="0 0 71 55" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-            <path d="M60.104 4.552A58.121 58.121 0 0 0 46.852.8a41.05 41.05 0 0 0-1.965 4.054 55.048 55.048 0 0 0-16.773 0A41.157 41.157 0 0 0 26.15.8 58.08 58.08 0 0 0 12.9 4.552a61.048 61.048 0 0 0-9.723 44.335A58.674 58.674 0 0 0 21.105 55c1.137-1.553 2.135-3.192 2.982-4.906a36.896 36.896 0 0 1-5.737-2.775c.482-.354.951-.724 1.406-1.108a40.44 40.44 0 0 0 36.487 0c.464.397.94.78 1.428 1.148a36.79 36.79 0 0 1-5.76 2.775c.856 1.714 1.854 3.353 2.97 4.906a58.627 58.627 0 0 0 17.91-6.113 61.046 61.046 0 0 0-9.723-44.335ZM23.725 37.27c-3.357 0-6.103-3.095-6.103-6.906s2.717-6.93 6.103-6.93c3.404 0 6.15 3.12 6.127 6.93 0 3.81-2.717 6.906-6.127 6.906Zm23.55 0c-3.357 0-6.103-3.095-6.103-6.906s2.717-6.93 6.103-6.93c3.404 0 6.15 3.12 6.127 6.93 0 3.81-2.717 6.906-6.127 6.906Z" />
-        </svg>
-        <span>Discord</span>
-    </a>
-</footer>
+    <button id="sidebarToggle" class="hamburger" aria-label="Toggle navigation" tabindex="0">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+
+  <!-- Sidebar Navigation -->
+  <nav class="sidebar" id="sidebarNav">
+      <ul class="menu">
+          <li><a id="link-schedule" href="/pages/schedule"><span class="icon material-icons">event_note</span>Schedule</a></li>
+          <li><a id="link-instances" href="/pages/instances"><span class="icon material-icons">desktop_windows</span>Instances</a></li>
+          <li><a id="link-notifications" href="/pages/notifications"><span class="icon material-icons">chat_bubble_outline</span>Notifications</a></li>
+          <li><a id="link-poster-search" href="/pages/poster_search"><span class="icon material-icons">search</span>Poster Search</a></li>
+          <li><a id="link-poster-management" href="/pages/poster_management"><span class="icon material-icons">collections</span>Poster Management</a></li>
+          <li id="settings-section">
+              <a href="/pages/settings" class="main-section">
+                  <span class="icon material-icons">settings</span>Settings
+              </a>
+              <ul class="settings-sub-menu" style="display:none;">
+                  <li><a href="/pages/settings?module_name=sync_gdrive" class="sub-section">Sync Gdrive</a></li>
+                  <li><a href="/pages/settings?module_name=poster_renamerr" class="sub-section">Poster Renamerr</a></li>
+                  <li><a href="/pages/settings?module_name=poster_cleanarr" class="sub-section">Poster Cleanarr</a></li>
+                  <li><a href="/pages/settings?module_name=unmatched_assets" class="sub-section">Unmatched Assets</a></li>
+                  <li><a href="/pages/settings?module_name=border_replacerr" class="sub-section">Border Replacerr</a></li>
+                  <li><a href="/pages/settings?module_name=renameinatorr" class="sub-section">Renameinatorr</a></li>
+                  <li><a href="/pages/settings?module_name=upgradinatorr" class="sub-section">Upgradinatorr</a></li>
+                  <li><a href="/pages/settings?module_name=nohl" class="sub-section">Nohl</a></li>
+                  <li><a href="/pages/settings?module_name=labelarr" class="sub-section">Labelarr</a></li>
+                  <li><a href="/pages/settings?module_name=health_checkarr" class="sub-section">Health Checkarr</a></li>
+                  <li><a href="/pages/settings?module_name=jduparr" class="sub-section">Jduparr</a></li>
+                  <li><a href="/pages/settings?module_name=main" class="sub-section">Main</a></li>
+              </ul>
+          </li>
+          <li><a id="link-logs" href="/pages/logs"><span class="icon material-icons">receipt_long</span>Logs</a></li>
+      </ul>
+      <div class="sidebar-footer">
+          <span id="version" class="footer-version">📦 Version: ...</span>
+      </div>
+  </nav>
+
+  <div class="container">
+      <div class="content">
+          <div id="viewFrame" class="view-frame">
+            <div class="page-content"></div>
+          </div>
+      </div>
+  </div>
+  <div id="toast-container"></div>
+  <span id="update-badge" style="display:none"></span>
 </body>
-
 </html>

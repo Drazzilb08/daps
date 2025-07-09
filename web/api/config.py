@@ -44,39 +44,29 @@ async def update_config_route(
     logger: Any = Depends(get_logger),
     config: Dict[str, Any] = Depends(get_config),
 ) -> Any:
-    """Updates the configuration file with provided values."""
+    """
+    Updates the configuration file with provided values.
+    Replaces whole sections as sent from frontend.
+    """
     try:
         incoming = await request.json()
         incoming_copy = copy.deepcopy(incoming)
         if "instances" in incoming_copy:
             redact_apis(incoming_copy["instances"])
-        if logger:
-            logger.debug("[WEB] Serving POST /api/config with payload: %s", incoming_copy)
+        logger.debug("[WEB] Serving POST /api/config with payload: %s", incoming_copy)
+
         current_config = load_config_dict()
-        new_schedule = incoming.get("schedule")
-        new_instances = incoming.get("instances")
-        new_notifications = incoming.get("notifications")
-        if new_schedule is not None:
-            if "schedule" not in current_config:
-                current_config["schedule"] = {}
-            for key, value in new_schedule.items():
-                current_config["schedule"][key] = value
-        if new_instances is not None:
-            current_config["instances"] = new_instances
-        if new_notifications is not None:
-            current_config["notifications"] = new_notifications
-        for mod_name, mod_payload in incoming.items():
-            if mod_name in ("schedule", "instances", "notifications"):
-                continue
-            if (
-                "bash_scripts" in current_config
-                and mod_name in current_config["bash_scripts"]
-            ):
-                target = current_config["bash_scripts"][mod_name]
-            else:
-                target = current_config.setdefault(mod_name, {})
-            for field, val in mod_payload.items():
-                target[field] = val
+
+        # For each top-level section provided, overwrite it fully
+        for section in ["schedule", "instances", "notifications"]:
+            if section in incoming:
+                current_config[section] = incoming[section]
+
+        # Any other config sections (poster_renamerr, border_replacerr, etc)
+        for k, v in incoming.items():
+            if k not in ("schedule", "instances", "notifications"):
+                current_config[k] = v
+
         save_config_dict(current_config)
         if logger:
             logger.info("[WEB] Config entries updated")

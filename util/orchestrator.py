@@ -1,5 +1,6 @@
 # util/orchestrator.py
 
+from util.database import DapsDB
 import multiprocessing
 import time
 from datetime import datetime
@@ -12,6 +13,34 @@ from prettytable import PrettyTable
 
 from modules import MODULES
 from util.config import Config
+
+def run_and_track(target_func, module_name, origin):
+    import time
+    from util.database import DapsDB
+
+    db = DapsDB()
+    start_time = time.monotonic()
+    success = False
+    message = ""
+    try:
+        target_func()
+        success = True
+        status = "success"
+        message = "Completed successfully"
+    except Exception as e:
+        status = "error"
+        message = str(e)
+    duration = int(time.monotonic() - start_time)
+    db.record_run_finish(
+        module_name, 
+        success=success, 
+        status=status, 
+        message=message, 
+        duration=duration,
+        run_by=origin
+    )
+    if hasattr(db, "close"):
+        db.close()
 
 
 def check_schedule(script_name: str, schedule: str, logger: Logger) -> bool:
@@ -118,6 +147,7 @@ class DapsOrchestrator:
     def __init__(self, logger):
         self.logger = logger
         self.running: Dict[str, multiprocessing.Process] = {}
+        self.db = DapsDB()
 
     def _log(self, level, *args, **kwargs):
         if self.logger:
@@ -192,17 +222,19 @@ class DapsOrchestrator:
                 if (
                     name in self.running
                     and self.running[name] is not None
-                    and self.running[name].is_alive()
+                    and self.running[name]["proc"].is_alive()
                 ):
                     continue
                 if check_schedule(name, sched, self.logger):
                     self._log("info", f"[SCHEDULER] Running scheduled module: {name}")
-                    self.running[name] = self.launch_module(name)
+                    self.running[name] = self.launch_module(name, origin="scheduled")
             # Cleanup finished
             for name in list(self.running):
-                proc = self.running[name]
+                entry = self.running[name]
+                proc = entry["proc"]
+                origin = entry["origin"]
                 if proc is not None and not proc.is_alive():
-                    self._log("info", f"[SCHEDULER] Module {name} finished")
+                    self._log("info", f"[{origin.upper()}] Module {name} finished")
                     del self.running[name]
         except Exception as e:
             self._log("error", f"[SCHEDULER] Exception in tick(): {e}", exc_info=True)
@@ -233,32 +265,37 @@ class DapsOrchestrator:
             self._log("error", f"[ORCH] Failed to start web server: {e}", exc_info=True)
             raise
 
-    def launch_module(self, name):
+    def launch_module(self, name, origin="manual"):
         try:
             if name not in MODULES:
                 self._log("error", f"Unknown module: {name}")
                 return None
 
             target_func = MODULES[name]
-            self._log("info", f"[SCHEDULER] Launching module '{name}'...")
-            proc = multiprocessing.Process(target=target_func)
+            self._log("info", f"[{origin.upper()}] Launching module '{name}'...")
+
+            self.db.record_run_start(name, run_by=origin)
+
+            proc = multiprocessing.Process(
+                target=run_and_track,
+                args=(target_func, name, origin)
+            )
             proc.start()
             self._log(
                 "info",
-                f"[SCHEDULER] Process for '{name}' started: alive={proc.is_alive()}",
+                f"[{origin.upper()}] Process for '{name}' started: alive={proc.is_alive()}",
             )
-            return proc
+            return {"proc": proc, "origin": origin}
         except Exception as e:
             import traceback
-
             self._log(
                 "error",
-                f"[SCHEDULER] Failed to launch module '{name}': {e}",
+                f"[{origin.upper()}] Failed to launch module '{name}': {e}",
                 exc_info=True,
             )
             traceback.print_exc()
             return None
 
     def get_running(self):
-        """Return dict of running module names -> process."""
+        """Return dict of running module names -> {'proc': proc, 'origin': ...}"""
         return self.running.copy()

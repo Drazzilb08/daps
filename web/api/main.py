@@ -109,3 +109,27 @@ async def test_endpoint(request: Request, logger: Any = Depends(get_logger)):
     except Exception as e:
         logger.error(f"[WEB] Error reading data: {e}")
         return {"status": "error", "error": str(e)}
+
+
+@app.get("/api/unmatched")
+async def get_unmatched(logger: Any = Depends(get_logger)):
+    pass
+
+@app.post("/api/run/unmatched")
+async def run_unmatched(logger: Any = Depends(get_logger)):
+    pass
+
+
+@app.get("/api/cleanarr")
+async def get_cleanarr(logger: Any = Depends(get_logger)):
+    pass
+
+
+@app.post("/api/run/cleanarr")
+async def run_cleanarr(logger: Any = Depends(get_logger)):
+    pass
+
+
+@app.put("/api/media_add/")
+async def media_add(logger: Any = Depends(get_logger)):
+    pass

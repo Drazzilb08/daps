@@ -1,51 +1,48 @@
 /* ======================================================
-   PAGE & MODAL OVERLAYS
+   MODAL OVERLAY
 ====================================================== */
 #pageOverlay,
 .overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: var(--overlay-bg);
-    backdrop-filter: blur(var(--overlay-blur));
+    inset: 0;
+    background: rgba(24,25,31,0.64);
+    backdrop-filter: blur(4px);
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s ease;
+    transition: opacity 0.3s;
     z-index: 400;
 }
-
 body.modal-open #pageOverlay,
 body.modal-open .overlay {
     opacity: 1;
     pointer-events: auto;
 }
+body.modal-open,
+html.modal-open {
+    overflow: hidden !important;
+    position: relative;
+    height: 100vh;
+    width: 100vw;
+    overscroll-behavior: contain;
+}
 
 /* ======================================================
-   BASE MODAL
+   MODAL BASE
 ====================================================== */
 .modal {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: var(--overlay-bg);
+    inset: 0;
     z-index: 1000;
-    backdrop-filter: blur(var(--overlay-blur));
-    padding-top: 0;
-    overflow-y: auto;
-    opacity: 0;
-    pointer-events: none;
     display: flex;
     justify-content: center;
     align-items: center;
+    background: rgba(24,25,31,0.64);
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    pointer-events: none;
     transform: scale(0.97);
-    transition: opacity 0.44s cubic-bezier(0.44, 1.13, 0.73, 0.98),
-        transform 0.48s cubic-bezier(0.44, 1.13, 0.73, 0.98);
+    transition: opacity 0.44s, transform 0.48s;
 }
-
 .modal.show {
     opacity: 1;
     pointer-events: auto;
@@ -56,308 +53,300 @@ body.modal-open .overlay {
    MODAL CONTENT
 ====================================================== */
 .modal-content {
-    background: var(--card-bg);
-    color: var(--fg);
-    border-radius: var(--modal-radius);
-    padding: var(--modal-padding);
-    width: var(--modal-content-width);
+    background: var(--surface, #23272b);
+    color: var(--text-color, #e3e3e3);
+    border-radius: 10px;
+    width: 1000px;
+    max-width: 97vw;
+    min-height: 280px;
+    max-height: 92vh;
+    box-shadow: 0 6px 24px 0 rgba(30,32,44,0.18), 0 1.2px 5px rgba(20,20,28,0.10);
     display: flex;
     flex-direction: column;
-    gap: 1rem;
-    box-shadow: var(--dropdown-shadow);
-}
-
-.modal-content h2 {
-    margin: 0;
-    text-align: center;
-    font-size: var(--modal-header-font-size);
-    font-weight: var(--modal-header-font-weight);
-    margin-bottom: var(--modal-header-margin);
-}
-
-/* ======================================================
-   MODAL FOOTER
-====================================================== */
-.modal-footer {
-    display: flex;
-    justify-content: flex-end;
-    gap: var(--modal-footer-gap);
-    margin-top: var(--modal-footer-margin-top);
-}
-
-/* ======================================================
-   DIRECTORY MODAL
-====================================================== */
-#dir-list {
-    list-style: none;
+    overflow: hidden;
+    position: relative;
     padding: 0;
-    max-height: 300px;
-    overflow-y: auto;
-    background: var(--form-bg);
-    border: var(--form-border);
-    border-radius: var(--form-radius);
-    margin: 1rem 0;
-    color: white;
 }
-
-#dir-list li {
-    padding: var(--form-padding);
-    cursor: pointer;
+.modal-header {
     display: flex;
     align-items: center;
-    color: var(--fg);
+    justify-content: space-between;
+    min-height: 2.6em;
+    padding: 1.22rem 2rem 0.5rem 2rem;
+    border-bottom: 1px solid var(--divider, #292c30);
+    background: none;
 }
-
-#dir-list li:hover {
-    background: var(--dir-list-li-hover-background);
+.modal-header h2 {
+    font-size: 1.18rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-color, #e3e3e3);
+    flex: 1;
+    line-height: 1.19;
 }
-
-#dir-modal .modal-content .h2 {
-    font-size: 1.5rem;
-    margin-bottom: 1rem;
-    color: var(--fg);
-}
-
-/* ======================================================
-   DIRECTORY BREADCRUMB
-====================================================== */
-#dir-breadcrumb {
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
-}
-
-/* ======================================================
-   UNSAVED CHANGES MODAL
-====================================================== */
-#unsavedModal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
-    background: var(--overlay-bg);
-    z-index: 10000;
-    backdrop-filter: blur(var(--overlay-blur));
+.modal-close-x {
+    font-size: 1.45rem;
+    color: var(--muted, #a9a9a9);
+    background: none;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    padding: 0.12em 0.22em;
+    line-height: 1;
+    margin-left: 0.7em;
     display: flex;
     align-items: center;
     justify-content: center;
-    opacity: 0;
+    transition: color 0.18s;
+}
+.modal-close-x:hover,
+.modal-close-x:focus {
+    color: var(--error, #ff375f);
+}
+
+.modal-body {
+    flex: 1 1 auto;
+    padding: 1.2rem 2rem 1rem 2rem;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.05rem;
+}
+
+.modal-content label {
+    font-size: 1rem;
+    color: var(--muted, #a9a9a9);
+    font-weight: 500;
+    margin-bottom: 0.18em;
+    margin-top: 0.85em;
+    margin-left: 1.6rem;
+    margin-right: 1.6rem;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.2rem;
+    border-top: 1px solid var(--divider, #292c30);
+    padding: 1.2rem 2rem 1.2rem 2rem;
+    background: none;
+    margin-top: auto;
+    justify-content: space-between;
+}
+.modal-footer button:disabled {
+    opacity: 0.65;
     pointer-events: none;
-    transform: scale(0.97);
-    transition: opacity 0.44s cubic-bezier(0.44, 1.13, 0.73, 0.98),
-        transform 0.48s cubic-bezier(0.44, 1.13, 0.73, 0.98);
-    font-family: var(--font);
 }
 
-#unsavedModal.show {
-    opacity: 1;
-    pointer-events: auto;
-    transform: scale(1);
+/* ======================================================
+   MODAL FIELD OVERRIDES (If needed)
+====================================================== */
+.modal-content label {
+    font-size: 1rem;
+    color: var(--muted, #a9a9a9);
+    font-weight: 500;
+    margin-bottom: 0.2em;
+    margin-top: 0.4em;
+    margin-left: 0;
+    margin-right: 0;
 }
 
-#unsavedModal .modal-content {
-    background: var(--modal-bg);
-    color: var(--modal-color);
-    padding: var(--modal-padding);
-    border-radius: var(--modal-radius);
-    box-shadow: var(--modal-shadow);
-    max-width: var(--modal-max-width);
-    width: 25%;
-    text-align: center;
+/* ======================================================
+   PILLS, TOGGLES, ROWS
+====================================================== */
+.pill-group {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    gap: 0.65em;
+    margin-bottom: 1em;
 }
-
-#unsavedModal .modal-content p {
-    font-size: 1.25rem;
-    margin-bottom: 1.5rem;
-}
-
-#unsavedModal button {
-    padding: var(--modal-btn-padding);
-    font-size: var(--modal-btn-font-size);
+.pill {
+    display: inline-block;
     border: none;
-    border-radius: var(--modal-btn-radius);
+    background: var(--surface-alt, #25292f);
+    color: var(--muted);
+    border-radius: 99px;
+    padding: 0.48em 1.5em;
+    font-size: 1.03rem;
+    font-weight: 600;
     cursor: pointer;
-    margin: var(--modal-btn-margin);
-    font-weight: var(--modal-btn-font-weight);
-    transition: background 0.2s ease, transform 0.1s ease;
-    display: block;
+    transition: background 0.16s, color 0.16s, box-shadow 0.21s, transform 0.16s;
+    outline: none;
+    box-shadow: none;
+    margin-bottom: 0.1em;
 }
-
-#unsavedModal .modal-content button {
-    width: 100%;
-    max-width: 240px;
+.pill.active,
+.pill:focus {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 0 0 2.5px var(--focus, #ff9500);
+    transform: translateY(-1px) scale(1.03);
 }
-
-#unsavedModal .save-btn {
-    background: var(--success);
-    color: var(--primary-bg);
+.pill:hover:not(.active) {
+    background: var(--focus);
+    color: #fff;
+    transform: translateY(-1px) scale(1.03);
 }
-
-#unsavedModal .discard-btn {
-    background: var(--caution);
-    color: var(--primary-bg);
+/* Weekday/monthday pills: */
+.weekday-pills {
+    gap: 0.32em;
+    margin-bottom: 0.6em;
 }
-
-#unsavedModal .cancel-btn {
-    background: var(--error);
-    color: var(--primary-bg);
+.weekday-pill {
+    border: none;
+    border-radius: 18px;
+    background: var(--surface-alt, #25292f);
+    color: var(--muted);
+    font-size: 1.01rem;
+    padding: 0.36em 1.13em;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.14s, color 0.14s, box-shadow 0.18s;
+    margin-bottom: 0.1em;
 }
-
-#unsavedModal button:hover {
-    transform: translateY(-1px);
-}
-
-/* ======================================================
-   HOLIDAY MODAL FIELD LAYOUT
-====================================================== */
-#holiday-modal .modal-content .field {
-    display: flex;
-    flex-direction: column;
-    grid-template-columns: none !important;
-}
-
-#holiday-modal .modal-content .field > label,
-#holiday-modal .modal-content .field > input,
-#holiday-modal .modal-content .field > select,
-#holiday-modal .modal-content .field > button {
-    width: 100%;
-}
-
-/* ======================================================
-   LABELARR MODAL PILL OVERRIDES
-====================================================== */
-#labelarr-modal {
-    --pill-padding: 0.5rem 1rem;
-    --pill-radius: 4px;
-    --pill-font-size: 1rem;
-    --pill-font-weight: 400;
-}
-
-/* ======================================================
-   SCHEDULE RANGE FIELD
-====================================================== */
-.schedule-range {
-    display: flex;
-    gap: 0.5rem;
-    align-items: center;
-}
-
-/* ======================================================
-   SELECT2 CUSTOM STYLING
-====================================================== */
-.select2-container .select2-selection--single {
-    background: var(--form-bg);
-    color: var(--form-color, var(--fg));
-    border: var(--form-border);
-    border-radius: var(--form-radius);
-    font-size: var(--form-font-size);
-    height: var(--form-height);
-    min-height: var(--form-height);
-    box-shadow: var(--input-shadow, none);
-    display: flex;
-    align-items: center;
-    padding-left: 1rem;
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.select2-container--default .select2-selection--single:focus,
-.select2-container--default .select2-selection--single.select2-selection--focus {
-    border-color: var(--form-focus);
-    box-shadow: 0 0 0 3px var(--form-focus);
+.weekday-pill.active,
+.weekday-pill:focus {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 0 2px var(--focus, #ff9500);
     outline: none;
 }
-
-.select2-container--default .select2-selection--single .select2-selection__rendered {
-    color: var(--form-color, var(--fg));
-    font-size: var(--form-font-size);
-    line-height: var(--form-height);
-    padding-left: 0;
-    font-weight: 500;
+.weekday-pill:hover:not(.active) {
+    background: var(--focus);
+    color: #fff;
 }
-
-.select2-dropdown {
-    background: var(--form-bg);
-    color: var(--form-color, var(--fg));
-    border: var(--form-border);
-    border-radius: var(--form-radius);
-    font-size: var(--form-font-size);
-    box-shadow: var(--dropdown-shadow);
+.monthday-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.26em 0.38em;
+    margin-bottom: 0.6em;
+    max-width: 99vw;
 }
-
-.select2-results__option {
-    background: none;
-    color: var(--form-color, var(--fg));
-    padding: 0.55em 1em;
-}
-
-.select2-results__option--highlighted {
-    background: var(--primary);
-    color: var(--select2-results--option--highlighted-color);
-}
-
-.select2-container--default .select2-selection--single .select2-selection__arrow {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ff7300'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 0.85em center;
-    background-size: 0.65em auto;
-    width: 2em;
-    height: 100%;
+.monthday-pill {
     border: none;
+    border-radius: 12px;
+    background: var(--surface-alt, #25292f);
+    color: var(--muted);
+    font-size: 0.98rem;
+    padding: 0.18em 0.68em;
+    min-width: 2.2em;
+    cursor: pointer;
+    font-weight: 500;
+    margin-bottom: 0.1em;
+    transition: background 0.14s, color 0.14s, box-shadow 0.18s;
+}
+.monthday-pill.active,
+.monthday-pill:focus {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 0 0 1.7px var(--focus, #ff9500);
+    outline: none;
+}
+.monthday-pill:hover:not(.active) {
+    background: var(--focus);
+    color: #fff;
 }
 
-.select2-container--default .select2-selection__arrow b {
-    display: none;
+/* === Animations for row/fade-in === */
+.daily-row {
+    opacity: 0;
+    transform: translateY(8px) scale(0.97);
+    animation: fadeInRow 0.25s cubic-bezier(.61,.13,.55,1.21) forwards;
+}
+@keyframes fadeInRow {
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}
+#schedule-fields {
+    transition: background 0.23s;
+}
+#schedule-fields label {
+    margin-bottom: 0.1em;
+}
+.schedule-summary {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+    animation: fadeInRow 0.21s 0.11s cubic-bezier(.61,.13,.55,1.21) forwards;
 }
 
 /* ======================================================
-   PRESET CARD (MODAL CARD-LIKE ELEMENT)
+   MOBILE FULLSCREEN (All modals 100vw/100vh, no double scrollbars)
 ====================================================== */
-.preset-card {
-    background: var(--card-bg, #23272f);
-    color: var(--fg, #dbe4ee);
-    border-radius: 10px;
-    padding: 1.2rem 1.8rem 1.2rem 1.5rem;
-    margin: 0.5rem 0 1.1rem 0;
-    box-shadow: 0 4px 12px 0 rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.03) 0px 1px 3px;
-    border: 1px solid var(--preset-card-border);
-    font-size: 1.06rem;
-    transition: box-shadow 0.15s;
-    line-height: 1.6;
+@media (max-width: 1100px) {
+    .modal-content {
+        width: 100vw;
+        max-width: 100vw;
+        min-height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 0;
+    }
+    .modal-header,
+    .modal-footer {
+        padding-left: 1.1rem;
+        padding-right: 1.1rem;
+    }
+    .modal-body {
+        padding-left: 1.1rem;
+        padding-right: 1.1rem;
+    }
+    .pill,
+    .weekday-pill,
+    .monthday-pill {
+        font-size: 0.92rem !important;
+        padding: 0.34em 0.82em !important;
+    }
+    .monthday-pills {
+        gap: 0.12em 0.16em;
+    }
 }
 
-.preset-label {
-    color: var(--accent, #82a6d7);
-    font-weight: 500;
-    margin-right: 0.25em;
-}
-
-.preset-field {
-    margin-bottom: 0.45em;
-    display: flex;
-    align-items: flex-start;
-    gap: 0.4em;
-    font-size: 1em;
-}
-
-.preset-type {
-    color: var(--modal-preset-type-color);
-    background: var(--modal-preset-type-background);
-    border-radius: 3.5px;
-    font-weight: 500;
-    padding: 0.05em 0.65em 0.08em;
-    margin-left: 0.2em;
-    font-size: 0.98em;
-}
-
-.preset-content {
-    margin: 0.3em 0 0.5em 1em;
-    color: var(--modal-preset-content-color);
-    font-size: 1em;
-    line-height: 1.5;
-    padding-left: 0.7em;
-    background: var(--modal-preset-content-background);
-    border-radius: 2px;
+@media (max-width: 600px) {
+  .pill-group {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.55em 0.5em;
+    margin-bottom: 1.1em;
+    padding: 0 0.6em;
+  }
+  .pill {
+    font-size: 1.07rem;
+    min-width: 128px;
+    padding: 0.54em 0.9em;
+    margin-bottom: 0.32em;
+    text-align: center;
+    flex: 1 1 48%;
+  }
+  .weekday-pills {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.32em 0.26em;
+    margin-bottom: 0.9em;
+    padding: 0 0.12em;
+  }
+  .weekday-pill {
+    font-size: 1.09rem !important;
+    min-width: 64px;
+    flex: 1 1 28%;
+    margin-bottom: 0.23em;
+    text-align: center;
+  }
+  .monthday-pills {
+    gap: 0.16em 0.11em;
+    padding: 0 0.07em;
+    justify-content: center;
+    max-width: 100vw;
+  }
+  .monthday-pill {
+    font-size: 1.01rem !important;
+    min-width: 2.2em;
+    flex: 1 1 17%;
+    margin-bottom: 0.13em;
+    text-align: center;
+    padding-left: 0;
+    padding-right: 0;
+  }
 }

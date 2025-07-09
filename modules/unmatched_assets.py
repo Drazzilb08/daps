@@ -1,7 +1,7 @@
 from util.database import DapsDB
 from util.logger import Logger
 from util.config import Config
-from util.notification import send_notification
+from util.notification import NotificationManager
 
 def get_unmatched_assets_stats(db, config):
     # --- DB fetches ---
@@ -273,5 +273,6 @@ def main():
     db = DapsDB()
     print_unmatched_assets(db, logger, config)
     output = build_unmatched_assets_output(db, config)
-    send_notification(logger, config.module_name, config, output)
+    manager = NotificationManager(config, logger, module_name="unmatched_assets")
+    manager.send_notification(output)
     db.close()

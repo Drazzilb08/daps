@@ -9,7 +9,7 @@ from util.constants import tmdb_id_regex, tvdb_id_regex
 from util.database import DapsDB
 from util.helper import create_table, print_settings, progress
 from util.logger import Logger
-from util.notification import send_notification
+from util.notification import NotificationManager
 from util.config import Config
 
 
@@ -125,12 +125,8 @@ def main() -> None:
                                             )
 
                                 # Send notification with deleted items
-                                send_notification(
-                                    logger=logger,
-                                    module_name=config.module_name,
-                                    config=config,
-                                    output=output,
-                                )
+                                manager = NotificationManager(config, logger, module_name="health_checkarr")
+                                manager.send_notification(output)
                         else:
                             logger.info(
                                 f"No health data returned for {app.instance_name}, this is fine if there was nothing to delete. Skipping deletion checks."

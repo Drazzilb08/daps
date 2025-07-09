@@ -4,6 +4,7 @@ import os
 import sqlite3
 import threading
 from typing import Any, Optional
+import time
 
 from util.helper import get_config_dir
 
@@ -146,13 +147,28 @@ class DapsDB:
             )
             # Holiday status table
             self.conn.execute(
-            """
-            CREATE TABLE IF NOT EXISTS holiday_status (
-                id INTEGER PRIMARY KEY CHECK (id = 1),
-                last_active_holiday TEXT
-            );
-            """
-        )
+                """
+                CREATE TABLE IF NOT EXISTS holiday_status (
+                    id INTEGER PRIMARY KEY CHECK (id = 1),
+                    last_active_holiday TEXT
+                );
+                """
+            )
+            # initiate run state
+            self.conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS run_state (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    module_name TEXT NOT NULL UNIQUE,         
+                    last_run TEXT,                            
+                    last_run_successful INTEGER DEFAULT 0,    
+                    last_run_status TEXT,                     
+                    last_run_message TEXT,                    
+                    last_duration INTEGER,                    
+                    last_run_by TEXT                          
+                );
+                """
+            )
 
     def close(self) -> None:
         if self.conn:
@@ -327,6 +343,9 @@ class DapsDB:
         Used for both DB key and SQL parameter order.
         """
 
+        if asset_type == "movie":
+            item["season_number"] = None
+        
         def norm_int(val):
             if val in (None, "", "None"):
                 return None
@@ -486,6 +505,8 @@ class DapsDB:
         record["last_indexed"] = now
         record["instance_name"] = instance_name
         record["source"] = instance_type
+        if asset_type == "movie":
+            record["season_number"] = None
 
         for field in [
             "year",
@@ -667,7 +688,7 @@ class DapsDB:
             DELETE FROM media_cache
             WHERE asset_type=? AND title=? AND year IS ?
             AND tmdb_id IS ? AND tvdb_id IS ? AND imdb_id IS ?
-            AND library_name IS ? AND season_number IS ? AND instance_name=?
+            AND season_number IS ? AND instance_name=?
         """
 
         renamed_file = item.get("renamed_file")
@@ -801,6 +822,7 @@ class DapsDB:
         Syncs the plex_media_cache table for a specific instance and library to match fresh_media.
         Deletes stale rows, adds new, updates changed. Only for the given instance and library.
         """
+
         with self.lock, self.conn:
             cur = self.conn.execute(
                 "SELECT * FROM plex_media_cache WHERE instance_name=? AND library_name=?",
@@ -862,13 +884,13 @@ class DapsDB:
 
         for key, item in fresh_map.items():
             if key not in db_map:
-                self.upsert_media_record(item, asset_type, instance_type, instance_name, asset_type)
+                self.upsert_media_record(item, asset_type, instance_type, instance_name)
                 if logger:
                     logger.debug(
                         f"[ADD] New asset '{item['title']}' ({asset_type}), {item.get('year')}, from {instance_name}"
                     )
             else:
-                self.upsert_media_record(item, asset_type, instance_type, instance_name, asset_type)
+                self.upsert_media_record(item, asset_type, instance_type, instance_name)
 
         keys_to_remove = set(db_map.keys()) - set(fresh_map.keys())
         if keys_to_remove:
@@ -1303,3 +1325,81 @@ class DapsDB:
             """Delete all rows from poster_cache."""
             with self.lock, self.conn:
                 self.conn.execute("DELETE FROM poster_cache")
+    
+    def clear_media_cache_by_instance_name_and_asset_type(self, instance_name, asset_type) -> None:
+        """Delete all rows from media_cache where instance_name and asset_type match
+        the provided values."""
+        with self.lock, self.conn:
+            self.conn.execute(
+                    "DELETE FROM media_cache WHERE instance_name=? AND asset_type=?",
+                    (instance_name, asset_type)
+                )
+
+    def record_run_start(self, module_name: str, run_by: str = "manual") -> None:
+        """Mark the start of a module run (sets last_run, last_run_by; resets other fields)."""
+        now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        with self.lock, self.conn:
+            self.conn.execute(
+                """
+                INSERT INTO run_state (module_name, last_run, last_run_successful, last_run_status, last_run_message, last_duration, last_run_by)
+                VALUES (?, ?, NULL, NULL, NULL, NULL, ?)
+                ON CONFLICT(module_name) DO UPDATE SET
+                    last_run=excluded.last_run,
+                    last_run_successful=NULL,
+                    last_run_status=NULL,
+                    last_run_message=NULL,
+                    last_duration=NULL,
+                    last_run_by=excluded.last_run_by
+                """,
+                (module_name, now, run_by),
+            )
+
+
+    def record_run_finish(
+        self,
+        module_name: str,
+        success: bool,
+        status: str = None,
+        message: str = None,
+        duration: int = None,
+        run_by: str = None 
+    ) -> None:
+        """Mark the finish of a module run, recording status, message, duration, etc."""
+        with self.lock, self.conn:
+            self.conn.execute(
+                """
+                UPDATE run_state
+                SET last_run_successful = ?,
+                    last_run_status = ?,
+                    last_run_message = ?,
+                    last_duration = ?,
+                    last_run_by = ?
+                WHERE module_name = ?
+                """,
+                (int(success), status, message, duration, run_by, module_name),
+            )
+
+    def get_run_state(self, module_name: str) -> dict:
+        """Return run state for a single module."""
+        with self.lock, self.conn:
+            cur = self.conn.execute(
+                "SELECT * FROM run_state WHERE module_name=?", (module_name,)
+            )
+            row = cur.fetchone()
+            return dict(row) if row else None
+
+    def get_all_run_states(self) -> list:
+        """Return run state for all modules."""
+        with self.lock, self.conn:
+            cur = self.conn.execute("SELECT * FROM run_state")
+            return [dict(row) for row in cur.fetchall()]
+
+    def clear_run_state(self) -> None:
+        """Delete all rows from run_state (for testing/dev)."""
+        with self.lock, self.conn:
+            self.conn.execute("DELETE FROM run_state")
+
+    def get_run_states(self):
+        """Return a dict of {module_name: run_state_dict} for UI/API."""
+        all_states = self.db.get_all_run_states()
+        return {row["module_name"]: row for row in all_states}

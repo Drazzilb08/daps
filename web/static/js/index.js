@@ -69,6 +69,7 @@ async function mainVersionCheck() {
     }
     document.getElementById('version').textContent = 'Version: ' + local.full;
     const badge = document.getElementById('update-badge');
+    
     if (updateAvailable) {
         badge.style.display = '';
         badge.title = ''; // Use custom tooltip
@@ -132,20 +133,16 @@ function showSplashScreen() {
     const viewFrame = document.getElementById('viewFrame');
     if (!viewFrame) return;
     viewFrame.innerHTML = `
-      <div class="splash-container">
+
         <canvas id="splash-particles" style="display:none;"></canvas>
         <div class="splash-card">
-          <div class="splash-icon">🚀</div>
-          <h1 class="splash-title">Welcome to DAPS</h1>
-          <p>Select one of the options above to get started.</p>
+          <div class="splash-icon" style="text-align: center;">🚀</div>
+          <h1 class="splash-title" style="text-align: center;">Welcome to DAPS</h1>
+          <p style="text-align: center;">Select one of the options on the side to get started.</p>
         </div>
-      </div>
+
     `;
     viewFrame.classList.add('splash-mask', 'fade-in');
-
-    const canvas = document.getElementById('splash-particles');
-    if (canvas) animateSplashParticles(canvas);
-
     const title = document.querySelector('.splash-title');
     if (title) {
         const text = title.textContent;
@@ -164,43 +161,6 @@ function showSplashScreen() {
     if (icon) {
         icon.classList.add('pulse');
     }
-}
-
-function animateSplashParticles(canvas) {
-    canvas.style.display = 'block';
-    const ctx = canvas.getContext('2d');
-    function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
-
-    const particles = Array.from({ length: 60 }, () => ({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        r: Math.random() * 2 + 1,
-        dx: (Math.random() - 0.5) * 0.5,
-        dy: (Math.random() - 0.5) * 0.5,
-    }));
-
-    function animateParticlesFrame() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.fillStyle = getComputedStyle(document.documentElement)
-            .getPropertyValue('--splash-particle-color')
-            .trim();
-        particles.forEach((p) => {
-            ctx.beginPath();
-            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-            ctx.fill();
-            p.x += p.dx;
-            p.y += p.dy;
-            if (p.x < 0 || p.x > canvas.width) p.dx *= -1;
-            if (p.y < 0 || p.y > canvas.height) p.dy *= -1;
-        });
-        requestAnimationFrame(animateParticlesFrame);
-    }
-    animateParticlesFrame();
 }
 
 setTheme();

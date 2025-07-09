@@ -18,50 +18,60 @@ export const PAGE_LOADERS = {
 
 const EDITABLE_PAGES = [
     '/pages/settings',
-    '/pages/instances',
-    '/pages/schedule',
-    '/pages/notifications',
 ];
 
 function isEditablePage(currentUrl) {
     return EDITABLE_PAGES.some((page) => currentUrl && currentUrl.includes(page));
 }
 
+// --- HIGHLIGHT ACTIVE MAIN + SUB-NAV (SETTINGS) & CONTROL SUBMENU VISIBILITY ---
 function highlightNav(frag, url) {
+    // Remove all highlights and section classes
     document
-        .querySelectorAll('.menu a, .dropdown-toggle, .dropdown-menu li a, .dropdown')
-        .forEach((el) => {
-            el.classList.remove('active');
-        });
+        .querySelectorAll('.menu a, .menu .sub-menu a, .menu .settings-sub-menu a, .dropdown-toggle, .dropdown-menu li a, .dropdown')
+        .forEach((el) => el.classList.remove('active'));
+    document.querySelectorAll('.menu > li').forEach(li => li.classList.remove('active-section'));
 
-    if (!frag || frag === 'index' || !PAGE_LOADERS.hasOwnProperty(frag)) {
-        return;
-    }
-
+    // Accent bar and highlight for main nav
     const linkIdMap = {
         schedule: 'link-schedule',
         instances: 'link-instances',
         notifications: 'link-notifications',
         logs: 'link-logs',
         poster_search: 'link-poster-search',
+        poster_management: 'link-poster-management',
     };
 
+    // Main page highlight
     if (frag in linkIdMap) {
-        document.getElementById(linkIdMap[frag])?.classList.add('active');
+    const link = document.getElementById(linkIdMap[frag]);
+    if (link) {
+        link.classList.add('active');
+        const li = link.closest('li');
+        if (li) li.classList.add('active-section');
     }
+}
 
-    if (frag === 'settings') {
-        const dropdown = document.querySelector('.dropdown');
-        dropdown?.classList.add('active');
-        const settingsToggle = document.querySelector('.dropdown-toggle');
-        settingsToggle?.classList.add('active');
+    // SETTINGS submenu control
+    const settingsLi = document.getElementById('settings-section');
+    const settingsSubMenu = settingsLi?.querySelector('.settings-sub-menu');
+    const settingsSection = settingsLi?.querySelector('a.main-section');
+    let isSettings = (frag === 'settings');
 
+    // Show/hide settings submenu and accent-section
+    if (settingsSubMenu) settingsSubMenu.style.display = isSettings ? 'block' : 'none';
+    if (isSettings && settingsLi) settingsLi.classList.add('active-section');
+    if (isSettings && settingsSection) settingsSection.classList.add('active');
+
+    // Highlight selected settings sub-section
+    if (isSettings && settingsSubMenu) {
         const moduleParam = new URL(url, window.location.origin).searchParams.get('module_name');
         if (moduleParam) {
-            const moduleLink = document.querySelector(
-                `#settings-dropdown li a[href*="module_name=${moduleParam}"]`
-            );
-            moduleLink?.classList.add('active');
+            settingsSubMenu.querySelectorAll('a.sub-section').forEach(a => {
+                if (a.href.includes(`module_name=${moduleParam}`)) {
+                    a.classList.add('active');
+                }
+            });
         }
     }
 }
@@ -114,6 +124,8 @@ export async function navigateTo(link) {
             }
 
             setupDropdownMenus();
+            // Sub-menu highlight on navigation for SPA
+            highlightNav(frag, url);
         }, 200);
     } catch (err) {
         if (typeof DAPS?.showToast === 'function') DAPS.showToast('Failed to load page', 'error');
@@ -121,40 +133,9 @@ export async function navigateTo(link) {
     }
 }
 
-async function populateSettingsDropdown() {
-    const res = await fetch('/api/config');
-    const config = await res.json();
-    const dropdown = document.getElementById('settings-dropdown');
-    if (!dropdown) return;
-    dropdown.innerHTML = '';
 
-    let currentModule = null;
-    const url = window.currentFragmentUrl || '';
-    if (url.includes('/pages/settings')) {
-        const params = new URLSearchParams(url.split('?')[1] || '');
-        currentModule = params.get('module_name');
-    }
 
-    (moduleOrder || Object.keys(config))
-        .filter(
-            (key) =>
-                config.hasOwnProperty(key) &&
-                !Object.keys(PAGE_LOADERS).includes(key) &&
-                key !== 'discord'
-        )
-        .forEach((module) => {
-            const li = document.createElement('li');
-            const a = document.createElement('a');
-            a.href = `/pages/settings?module_name=${module}`;
-            a.textContent = humanize(module);
-            if (currentModule && module === currentModule) {
-                a.classList.add('active');
-            }
-            li.appendChild(a);
-            dropdown.appendChild(li);
-        });
-}
-
+// Dirty check for forms
 document.addEventListener('change', function (e) {
     const viewFrame = document.getElementById('viewFrame');
     const currentUrl = viewFrame?.dataset?.currentUrl || window.currentFragmentUrl || '';
@@ -214,12 +195,22 @@ document.addEventListener('click', async function (e) {
     }
     if (!dirty || choice === 'save' || skip) {
         await navigateTo(anchor);
+
+        // ---- AUTO-CLOSE SIDEBAR ON MOBILE ----
+        if (window.innerWidth <= 1000) {
+            document.body.classList.remove('sidebar-open');
+        }
     } else if (choice === 'discard') {
         DAPS.isDirty = false;
         if (iframe && iframe.contentWindow && iframe.contentWindow.DAPS) {
             iframe.contentWindow.DAPS.isDirty = false;
         }
         await navigateTo(anchor);
+
+        // ---- AUTO-CLOSE SIDEBAR ON MOBILE ----
+        if (window.innerWidth <= 1000) {
+            document.body.classList.remove('sidebar-open');
+        }
     }
 });
 
@@ -266,10 +257,9 @@ function setupDropdownMenus() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    await populateSettingsDropdown();
     setupDropdownMenus();
 
-    let path = window.location.pathname;
+    let path = window.location.pathname + window.location.search;
     let frag = '';
     if (/\/pages\/([a-zA-Z0-9_\-]+)/.test(path)) {
         frag = path.match(/\/pages\/([a-zA-Z0-9_\-]+)/)[1];
@@ -295,4 +285,23 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 });
 
-export { populateSettingsDropdown };
+// /web/static/js/navigation.js
+document.addEventListener("DOMContentLoaded", () => {
+  const hamburger = document.getElementById("sidebarToggle");
+  const overlay = document.getElementById("pageOverlay");
+  const body = document.body;
+
+  if (hamburger && overlay) {
+    hamburger.addEventListener("click", () => {
+      body.classList.toggle("sidebar-open");
+    });
+    overlay.addEventListener("click", () => {
+      body.classList.remove("sidebar-open");
+    });
+  }
+
+  // Optionally: close on ESC key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") body.classList.remove("sidebar-open");
+  });
+});

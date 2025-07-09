@@ -1,193 +1,291 @@
-import { fetchConfig } from './helper.js';
-import { buildInstancesPayload } from './payload.js';
-
-import { DAPS } from './common.js';
-const { bindSaveButton, showToast, humanize, markDirty } = DAPS;
+import { fetchConfig, setupPasswordToggles, getIcon } from './helper.js';
+import { humanize, showToast } from './common.js';
+import { modalHeaderHtml, modalFooterHtml } from './settings/modals.js';
 
 export async function loadInstances() {
     const config = await fetchConfig();
     const instances = config.instances || {};
-    const form = document.getElementById('instancesForm');
-    if (!form) return;
-    form.innerHTML = '';
-    for (const [service, items] of Object.entries(instances)) {
-        const section = document.createElement('div');
-        section.className = 'category';
-        const h2 = document.createElement('h2');
-        h2.textContent = humanize(service);
-        section.appendChild(h2);
-        const listDiv = document.createElement('div');
-        for (const [name, settings] of Object.entries(items)) {
-            const entry = createEntry(service, name, settings);
-            listDiv.appendChild(entry);
-        }
-        const addBtn = document.createElement('button');
-        addBtn.type = 'button';
-        addBtn.className = 'instance-btn btn';
-        addBtn.textContent = `+ Add ${humanize(service)}`;
-        addBtn.addEventListener('click', () => {
-            const newEntry = createEntry(
-                service,
-                '',
-                {
-                    url: '',
-                    api: '',
-                },
-                true
-            );
-            listDiv.appendChild(newEntry);
-            setTimeout(() => newEntry.classList.add('show-card'), 10);
+    const root = document.getElementById('instances-list');
+    if (!root) return;
+    root.innerHTML = '';
+
+    // For each group (Radarr/Sonarr/Plex)
+    Object.entries(instances).forEach(([service, items]) => {
+        // Create the group container (like notifications/schedule)
+        const group = document.createElement('div');
+        group.className = 'instance-group';
+
+        // Group header with icon
+        const header = document.createElement('div');
+        header.className = 'instance-group-header';
+        header.innerHTML = `
+            <span>${humanize(service)}</span>
+            <span class="instance-group-icon icon">${getIcon(service) || ''}</span>
+        `;
+        group.appendChild(header);
+
+        // .card-list section
+        const groupGrid = document.createElement('div');
+        groupGrid.className = 'card-list';
+
+        // Add instance cards
+        Object.entries(items).forEach(([name, settings]) => {
+            groupGrid.appendChild(makeCard(service, name, settings, config));
         });
-        section.appendChild(listDiv);
-        section.appendChild(addBtn);
-        form.appendChild(section);
-    }
 
-    document.querySelectorAll('.card').forEach((el, i) => {
-        setTimeout(() => el.classList.add('show-card'), i * 80);
+        // Always add "+" at end
+        groupGrid.appendChild(makeAddCard(service, config));
+
+        group.appendChild(groupGrid);
+        root.appendChild(group);
     });
-
-    const saveBtn = document.getElementById('saveBtn');
-    bindSaveButton(saveBtn, buildInstancesPayload, 'instances');
 }
 
-/**
- * Creates a DOM element representing an instance entry for a given service.
- *
- * @param {string} service - The service name.
- * @param {string} name - The instance name.
- * @param {Object} settings - The instance settings containing url and api key.
- * @param {boolean} [isNew=false] - Whether the entry is a newly added one.
- * @returns {HTMLElement} The DOM element representing the instance entry.
- */
-function createEntry(service, name, settings, isNew = false) {
+function makeCard(service, name, settings, config) {
     const card = document.createElement('div');
     card.className = 'card';
+    card.tabIndex = 0;
 
-    const field = document.createElement('div');
-    field.className = 'field';
+    const title = document.createElement('div');
+    title.className = 'card-title';
+    title.textContent = name;
+    card.appendChild(title);
 
-    const nameLabel = document.createElement('label');
-    nameLabel.textContent = 'Name';
-    const urlLabel = document.createElement('label');
-    urlLabel.textContent = 'URL';
-    const apiLabel = document.createElement('label');
-    apiLabel.textContent = 'API Key';
 
-    field.appendChild(nameLabel); // col 1
-    field.appendChild(urlLabel); // col 2
-    field.appendChild(apiLabel); // col 3
-    field.appendChild(document.createElement('div')); // col 4 (empty)
-
-    const nameInput = document.createElement('input');
-    nameInput.type = 'text';
-    nameInput.name = `${service}__name`;
-    nameInput.value = name;
-    nameInput.required = true;
-    nameInput.placeholder = 'Instance Name';
-    nameInput.className = 'input';
-    field.appendChild(nameInput);
-
-    const urlInput = document.createElement('input');
-    urlInput.type = 'text';
-    urlInput.name = `${service}__url`;
-    urlInput.value = settings.url || '';
-    urlInput.placeholder = 'Instance URL';
-    urlInput.className = 'input';
-    field.appendChild(urlInput);
-
-    const apiWrap = document.createElement('div');
-    apiWrap.className = 'password-wrapper';
-    const apiInput = document.createElement('input');
-    apiInput.type = 'text';
-    apiInput.name = `${service}__api`;
-    apiInput.value = settings.api || '';
-    apiInput.className = 'input masked-input';
-    apiInput.autocomplete = 'off';
-    apiInput.placeholder = 'Paste API Key here';
-    const toggle = document.createElement('span');
-    toggle.className = 'toggle-password';
-    toggle.textContent = '👁️';
-    toggle.addEventListener('click', () => {
-        const masked = apiInput.classList.toggle('masked-input');
-        toggle.textContent = masked ? '👁️' : '🙈';
-    });
-    apiWrap.appendChild(apiInput);
-    apiWrap.appendChild(toggle);
-    field.appendChild(apiWrap);
-
-    const btnContainer = document.createElement('div');
-    btnContainer.className = 'btn-container';
-
-    const testBtn = document.createElement('button');
-    testBtn.type = 'button';
-    testBtn.textContent = 'Test';
-    testBtn.className = 'btn run-btn';
-    testBtn.addEventListener('click', async () => {
-        testBtn.classList.remove('btn--success', 'btn--cancel', 'error');
-        testBtn.textContent = 'Testing...';
-        testBtn.classList.add('running');
-        testBtn.disabled = true;
-        const res = await fetch('/api/test-instance', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                service,
-                name: nameInput.value.trim(),
-                url: urlInput.value.trim(),
-                api: apiInput.value.trim(),
-            }),
+    card.onclick = () => {
+        instanceModal({
+            service,
+            name,
+            settings,
+            config,
+            onReload: loadInstances,
         });
-        if (res.ok) {
-            showToast(`✅ ${nameInput.value.trim()} connection successful`, 'success');
-            testBtn.textContent = 'Success';
-            testBtn.classList.remove('running');
-            testBtn.classList.add('btn--success');
-        } else {
-            const err = await res.json();
-            showToast(
-                `❌ ${nameInput.value.trim()} test failed: ${err.error || res.statusText}`,
-                'error'
-            );
-            testBtn.textContent = 'Fail';
-            testBtn.classList.remove('running');
-            testBtn.classList.add('btn--cancel', 'error');
-        }
-        setTimeout(() => {
-            testBtn.textContent = 'Test';
-            testBtn.classList.remove('btn--success', 'btn--cancel', 'error', 'running');
-            testBtn.disabled = false;
-        }, 2500);
-    });
-    btnContainer.appendChild(testBtn);
+    };
+    return card;
+}
 
-    const removeBtn = document.createElement('button');
-    removeBtn.type = 'button';
-    removeBtn.textContent = '✖';
-    removeBtn.className = 'btn btn--cancel remove-instance';
-    removeBtn.addEventListener('click', () => {
-        const instanceName = nameInput.value || '<unnamed>';
-        if (confirm(`Are you sure you want to remove instance "${instanceName}"?`)) {
-            markDirty();
-            card.classList.add('removing');
-            setTimeout(() => card.remove(), 350);
-        }
-    });
-    btnContainer.appendChild(removeBtn);
+function makeAddCard(service, config) {
+    const card = document.createElement('div');
+    card.className = 'card card-add';
+    card.tabIndex = 0;
+    card.onclick = () => {
+        instanceModal({
+            service,
+            name: '',
+            settings: {},
+            config,
+            onReload: loadInstances,
+        });
+    };
 
-    field.appendChild(btnContainer); // col 4, row 2
-
-    for (let i = 0; i < 4; ++i) field.appendChild(document.createElement('div'));
-
-    card.appendChild(field);
-
-    if (isNew) setTimeout(() => nameInput.focus(), 50);
-
-    [nameInput, urlInput, apiInput].forEach((input) =>
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') testBtn.click();
-        })
-    );
+    const plus = document.createElement('div');
+    plus.className = 'card-add-plus';
+    plus.innerHTML = '&#43;';
+    card.appendChild(plus);
 
     return card;
+}
+
+if (document.getElementById('instances-list')) {
+    loadInstances();
+}
+
+function instanceModal({ service, name = '', settings = {}, config, onReload }) {
+    const isEdit = !!name;
+    const modalId = 'instance-modal-edit';
+    let modal = document.getElementById(modalId);
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = modalId;
+        modal.className = 'modal show';
+        document.body.appendChild(modal);
+    }
+
+    // Footer buttons config (Delete always left, others right)
+    const footerButtons = [
+        ...(isEdit ? [{ id: 'delete-modal-btn', label: 'Delete', class: 'btn--remove-item', type: 'button' }] : []),
+        { id: 'test-btn', label: 'Test', class: '', type: 'button' },
+        { id: 'cancel-modal-btn', label: 'Cancel', class: 'btn--cancel', type: 'button' },
+        { id: isEdit ? 'save-btn' : 'add-btn', label: isEdit ? 'Save' : 'Add', class: 'btn--success', type: 'submit' }
+    ];
+
+    modal.innerHTML = `
+    <div class="modal-content">
+        ${modalHeaderHtml({ title: isEdit ? `Edit ${service}` : `Add ${service}` })}
+        <form class="modal-body" id="instance-modal-form" autocomplete="off">
+            <label>Instance Name</label>
+            <input type="text" id="instance-modal-name" class="input" placeholder="e.g. radarr_hd" value="${name || ''}" />
+            <label>URL</label>
+            <input type="text" id="instance-modal-url" class="input" placeholder="http://host:port" value="${settings.url || ''}" />
+            <label>API Key
+            <div class="password-wrapper">
+                <input
+                type="password"
+                id="instance-modal-api"
+                class="input masked-input"
+                autocomplete="off"
+                placeholder="API Key"
+                value="${settings.api || ''}"
+                />
+                <span
+                class="toggle-password"
+                tabindex="0"
+                role="button"
+                aria-label="Show/hide API key"
+                data-input="instance-modal-api"
+                >&#128065;</span>
+            </div>
+            </label>
+            <!-- Footer goes *inside* form so submit/enter triggers save -->
+            ${modalFooterHtml(footerButtons, ['delete-modal-btn'])}
+        </form>
+    </div>
+    `;
+    setupPasswordToggles(modal);
+    modal.classList.add('show');
+    document.body.classList.add('modal-open');
+    document.documentElement.classList.add('modal-open');
+
+    setTimeout(() => {
+        const firstInput = modal.querySelector('input, select, textarea, button:not([disabled])');
+        if (firstInput) firstInput.focus();
+    }, 100);
+
+    function closeModal() {
+        modal.classList.remove('show');
+        document.body.classList.remove('modal-open');
+        document.documentElement.classList.remove('modal-open');
+    }
+
+    modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+    modal.querySelector('.modal-close-x').onclick = closeModal;
+    modal.querySelector('#cancel-modal-btn').onclick = closeModal;
+
+    const nameInput = modal.querySelector('#instance-modal-name');
+    const urlInput = modal.querySelector('#instance-modal-url');
+    const apiInput = modal.querySelector('#instance-modal-api');
+    const form = modal.querySelector('#instance-modal-form');
+    const testBtn = modal.querySelector('#test-btn');
+    const deleteBtn = modal.querySelector('#delete-modal-btn');
+
+    // Test button handler
+    testBtn.onclick = async () => {
+        testBtn.disabled = true;
+        testBtn.textContent = 'Testing...';
+        try {
+            const res = await fetch('/api/test-instance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    service,
+                    name: nameInput.value.trim(),
+                    url: urlInput.value.trim(),
+                    api: apiInput.value.trim(),
+                }),
+            });
+            if (res.ok) {
+                showToast('Connection successful!', 'success');
+            } else {
+                const err = await res.json();
+                showToast(`Test failed: ${err.error || res.statusText}`, 'error');
+            }
+        } catch (err) {
+            showToast('Test failed', 'error');
+        } finally {
+            testBtn.disabled = false;
+            testBtn.textContent = 'Test';
+        }
+    };
+
+    // Save/Add handler (submit on form)
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+
+        const n = nameInput.value.trim();
+        const u = urlInput.value.trim();
+        const a = apiInput.value.trim();
+        if (!n || !u || !a) {
+            showToast('All fields required', 'error');
+            return;
+        }
+
+        // Run test *first* before saving
+        testBtn.disabled = true;
+        testBtn.textContent = 'Testing...';
+        let testRes;
+        try {
+            testRes = await fetch('/api/test-instance', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    service,
+                    name: n,
+                    url: u,
+                    api: a,
+                }),
+            });
+        } catch (err) {
+            showToast('Cannot save: Test failed', 'error');
+            testBtn.disabled = false;
+            testBtn.textContent = 'Test';
+            return;
+        }
+        if (!testRes.ok) {
+            const err = await testRes.json().catch(() => ({}));
+            showToast(`Cannot save: Test failed: ${err.error || testRes.statusText}`, 'error');
+            testBtn.disabled = false;
+            testBtn.textContent = 'Test';
+            return;
+        }
+        testBtn.disabled = false;
+        testBtn.textContent = 'Test';
+
+        // Now save if test passed
+        const newConfig = JSON.parse(JSON.stringify(config));
+        newConfig.instances = newConfig.instances || {};
+        newConfig.instances[service] = newConfig.instances[service] || {};
+        if (isEdit && n !== name) {
+            delete newConfig.instances[service][name];
+        }
+        newConfig.instances[service][n] = { url: u, api: a };
+
+        const payload = await buildInstancesPayload(newConfig.instances);
+        const res = await fetch('/api/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        if (res.ok) {
+            showToast('Instance saved!', 'success');
+            closeModal();
+            if (typeof onReload === 'function') onReload();
+        } else {
+            showToast('Failed to save instance', 'error');
+        }
+    };
+
+    // Delete button handler
+    if (deleteBtn) {
+        deleteBtn.onclick = async () => {
+            if (!confirm(`Delete ${service} instance "${name}"?`)) return;
+            const newConfig = JSON.parse(JSON.stringify(config));
+            newConfig.instances = newConfig.instances || {};
+            newConfig.instances[service] = newConfig.instances[service] || {};
+            delete newConfig.instances[service][name];
+
+            const payload = await buildInstancesPayload(newConfig.instances);
+            const res = await fetch('/api/config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            if (res.ok) {
+                showToast('Instance deleted!', 'success');
+                closeModal();
+                if (typeof onReload === 'function') onReload();
+            } else {
+                showToast('Failed to delete instance', 'error');
+            }
+        };
+    }
 }

@@ -6,7 +6,7 @@ from util.config import Config
 from util.arr import BaseARRClient, create_arr_client
 from util.helper import create_table, print_settings
 from util.logger import Logger
-from util.notification import send_notification
+from util.notification import NotificationManager
 
 VALID_STATUSES = {"continuing", "airing", "ended", "canceled", "released"}
 
@@ -445,12 +445,8 @@ def main() -> None:
         logger.debug(f"Processed instances: {list(final_output_dict.keys())}")
         if final_output_dict:
             print_output(final_output_dict, logger)
-            send_notification(
-                logger=logger,
-                module_name=config.module_name,
-                config=config,
-                output=final_output_dict,
-            )
+            manager = NotificationManager(config, logger, module_name="upgradinatorr")
+            manager.send_notification(final_output_dict)
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()

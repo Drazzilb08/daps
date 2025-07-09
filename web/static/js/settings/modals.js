@@ -1,19 +1,71 @@
 import { PLACEHOLDER_TEXT } from './constants.js';
+import { buildSchedulePayload, buildInstancesPayload } from '../payload.js';
+import { moduleList } from '../helper.js';
 import {
     populateScheduleDropdowns,
     loadHolidayPresets,
     populateGDrivePresetsDropdown,
+    isValidSchedule,
 } from './modal_helpers.js';
 import { DAPS } from '../common.js';
-const { markDirty, humanize } = DAPS;
+const { markDirty, humanize, showToast } = DAPS;
 
 const directoryCache = {};
 
-function modalFooterHtml(saveId, cancelId, saveLabel = 'Save') {
+export function setupModalCloseOnOutsideClick(modal) {
+    function handler(e) {
+        // If click is directly on .modal (the overlay), not the inner .modal-content
+        if (e.target === modal) {
+            modal.remove();
+            document.body.classList.remove('modal-open');
+        }
+    }
+    modal.addEventListener('mousedown', handler);
+
+    // Optional: remove handler if modal is removed
+    modal.addEventListener('DOMNodeRemoved', function cleanup() {
+        modal.removeEventListener('mousedown', handler);
+    });
+}
+
+// buttons: array of button descriptors {id, label, class, type, disabled}
+// leftBtnId: string or array of string ids for leftmost button(s) (e.g., "delete-modal-btn")
+export function modalFooterHtml(buttons = [], leftBtnIds = ['delete-modal-btn']) {
+    // Always supports one or more left-anchored button(s)
+    const left = buttons.filter(b => leftBtnIds.includes(b.id));
+    const right = buttons.filter(b => !leftBtnIds.includes(b.id));
+
     return `
         <div class="modal-footer">
-          <button class="btn btn--success" id="${saveId}">${saveLabel}</button>
-          <button class="btn btn--cancel" id="${cancelId}">Cancel</button>
+            <div>
+                ${left.map(btn => `
+                    <button
+                        class="btn ${btn.class || ''}"
+                        type="${btn.type || 'button'}"
+                        id="${btn.id || ''}"
+                        ${btn.disabled ? 'disabled' : ''}
+                    >${btn.label}</button>
+                `).join('')}
+            </div>
+            <div style="display: flex; gap: 0.7em;">
+                ${right.map(btn => `
+                    <button
+                        class="btn ${btn.class || ''}"
+                        type="${btn.type || 'button'}"
+                        id="${btn.id || ''}"
+                        ${btn.disabled ? 'disabled' : ''}
+                    >${btn.label}</button>
+                `).join('')}
+            </div>
+        </div>
+    `;
+}
+export function modalHeaderHtml({ title, closeId = 'modal-close-x', extra = '' } = {}) {
+    return `
+        <div class="modal-header">
+            <h2>${title || ''}</h2>
+            ${extra}
+            <button class="modal-close-x" id="${closeId}" aria-label="Close">&times;</button>
         </div>
     `;
 }
@@ -109,6 +161,7 @@ export function gdriveSyncModal(editIdx, gdriveSyncData, updateGdriveList) {
     }
     attachModalSaveCancel(modal, '#gdrive-save-btn', '#gdrive-cancel-btn', handleGDriveSave);
     modal.classList.add('show');
+    document.body.classList.add('modal-open');
 }
 
 export function borderReplacerrModal(editIdx, borderReplacerrData, onUpdate) {

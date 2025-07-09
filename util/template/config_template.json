@@ -1,17 +1,5 @@
 {
-  "schedule": {
-    "border_replacerr": "",
-    "health_checkarr": "",
-    "labelarr": "",
-    "nohl": "",
-    "sync_gdrive": "",
-    "poster_cleanarr": "",
-    "poster_renamerr": "",
-    "renameinatorr": "",
-    "unmatched_assets": "",
-    "upgradinatorr": "",
-    "jduparr": ""
-  },
+  "schedule": {},
   "instances": {
     "radarr": {},
     "sonarr": {},
@@ -46,6 +34,8 @@
     "print_only_renames": false,
     "run_border_replacerr": false,
     "incremental_border_replacerr": false,
+    "run_cleanarr": false,
+    "report_unmatched_assets": false,
     "source_dirs": [],
     "destination_dir": "",
     "instances": []
@@ -60,22 +50,6 @@
     "exclusion_list": [],
     "border_colors": [],
     "holidays": {}
-  },
-  "unmatched_assets": {
-    "log_level": "info",
-    "source_dirs": [],
-    "instances": [],
-    "ignore_root_folders": [],
-    
-    "ignore_collections": []
-  },
-  "poster_cleanarr": {
-    "log_level": "info",
-    "dry_run": true,
-    "source_dirs": [],
-    "instances": [],
-    
-    "ignore_media": []
   },
   "upgradinatorr": {
     "log_level": "info",

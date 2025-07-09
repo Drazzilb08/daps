@@ -1,9 +1,9 @@
 import os
-from typing import Dict, List
-from fastapi import APIRouter, Depends, HTTPException
+from typing import List, Any
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import PlainTextResponse
 
-def get_logger(request):
+def get_logger(request: Request) -> Any:
     return request.app.state.logger
 
 # You may want to DRY this up with a helper, for now duplicate as in server.py
@@ -13,34 +13,36 @@ from pathlib import Path
 if os.environ.get("DOCKER_ENV"):
     LOG_BASE_DIR = "/config/logs"
 else:
-    LOG_BASE_DIR = str((Path(__file__).parent.parent.parent / "logs").resolve())
+    LOG_BASE_DIR = str((Path(__file__).parents[2] / "logs").resolve())
 
 router = APIRouter()
 
 @router.get("/api/logs")
-async def list_logs(request, logger=Depends(get_logger)) -> Dict[str, List[str]]:
-    logger.info("[WEB] Listing logs in %s", LOG_BASE_DIR)
-    logs_data: Dict[str, List[str]] = {}
-    if not os.path.exists(LOG_BASE_DIR):
-        logger.error("[WEB] Log directory not found: %s", LOG_BASE_DIR)
-        raise HTTPException(status_code=404, detail="Log directory not found.")
-    for module in os.listdir(LOG_BASE_DIR):
-        if module == "debug":
-            logger.debug(f"[WEB] Skipping {module} folder")
-            continue
-        module_path = os.path.join(LOG_BASE_DIR, module)
-        if os.path.isdir(module_path):
-            files = sorted(
-                f
-                for f in os.listdir(module_path)
-                if os.path.isfile(os.path.join(module_path, f))
-            )
-            logs_data[module] = files
-    logger.info("[WEB] Logs listed: %s", list(logs_data.keys()))
-    return logs_data
+async def list_logs(logger=Depends(get_logger)) -> List[str]:
+    logger.debug(f"[WEB] Listing log modules in {LOG_BASE_DIR}")
+    modules = [
+        module for module in os.listdir(LOG_BASE_DIR)
+        if os.path.isdir(os.path.join(LOG_BASE_DIR, module)) and module != "debug"
+    ]
+    logger.debug("[WEB] Log modules listed: %s", modules)
+    return modules
+
+@router.get("/api/logs/{module_name}")
+async def list_logs_for_module(module_name: str, logger=Depends(get_logger)) -> List[str]:
+    logger.debug(f"[WEB] Listing logs for module: {module_name}")
+    module_path = os.path.join(LOG_BASE_DIR, module_name)
+    if not os.path.isdir(module_path):
+        logger.error(f"[WEB] Module {module_name} not found")
+        raise HTTPException(status_code=404, detail="Module not found.")
+    files = sorted(
+        f
+        for f in os.listdir(module_path)
+        if os.path.isfile(os.path.join(module_path, f))
+    )
+    return files
 
 @router.get("/api/logs/{module}/{filename}", response_class=PlainTextResponse)
-async def read_log(module: str, filename: str, request, logger=Depends(get_logger)) -> str:
+async def read_log(module: str, filename: str, logger=Depends(get_logger)) -> str:
     safe_module = os.path.basename(module)
     safe_filename = os.path.basename(filename)
     if safe_module == "debug":

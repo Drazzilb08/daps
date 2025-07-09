@@ -1,69 +1,114 @@
-/* ======================================================
-   RUN BUTTON
-====================================================== */
-.run-btn.running {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    background: var(--success);
-    color: var(--primary-bg);
-    cursor: default;
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 900px;
+  margin: 0 auto 2.2rem auto;
+  padding: 2rem 1rem 0 1rem;
 }
 
-.run-btn.running.cancel-hover {
-    background: var(--error) !important;
-    color: var(--primary-bg) !important;
-    cursor: pointer;
+#schedule-list.card-list {
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-/* ======================================================
-   STATUS DISPLAY
-====================================================== */
-#status {
-    margin-top: var(--status-margin-top, 1rem);
-    font-size: var(--status-font-size, 1rem);
-    font-weight: 600;
-    text-align: center;
+.page-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin: 0;
 }
 
-#status.error {
-    color: var(--error);
+.card-pill {
+  display: inline-block;
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface) 90%);
+  color: var(--accent);
+  border-radius: 999px;
+  padding: 0.16em 0.9em;
+  font-size: 0.94rem;
+  margin: 0 0.18em 0.18em 0;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  border: 1px solid var(--accent-dark);
+  opacity: 0.94;
 }
 
-/* ======================================================
-   RUN BUTTON SPINNER
-====================================================== */
-.run-btn.running::after {
-    content: '';
-    display: inline-block;
-    width: 1em;
-    height: 1em;
-    margin-left: 0.5rem;
-    border: 2px solid var(--primary-bg);
-    border-top: 2px solid var(--btn-hover-bg);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    vertical-align: middle;
+/* Icon button danger variant (schedule-specific) */
+.btn--icon.btn--danger {
+  color: var(--error);
+}
+.btn--icon.btn--danger:hover,
+.btn--icon.btn--danger:focus {
+  background: color-mix(in srgb, var(--error) 16%, transparent 84%);
+  color: var(--error-highlight);
+}
+
+/* Show stop icon on hover/focus for desktop, always stop on mobile */
+.btn--icon.show-stop .spinner { display: none !important; }
+.btn--icon.show-stop svg { display: inline-block !important; }
+
+/* On mobile (touch), always show stop icon when running */
+@media (hover: none) {
+  .btn--icon .spinner { display: none !important; }
+  .btn--icon svg { display: inline-block !important; }
 }
 
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+  to { transform: rotate(360deg);}
 }
 
-/* ======================================================
-   SCHEDULE FORM CARD ANIMATION
-====================================================== */
-#scheduleForm .card {
-    opacity: 0;
-    transform: translateY(24px) scale(0.98);
-    transition: opacity 0.28s cubic-bezier(0.44, 1.13, 0.73, 0.98),
-        transform 0.28s cubic-bezier(0.44, 1.13, 0.73, 0.98);
+.card-action-btn:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.card-bottom-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.7em;
+  padding: 0 1em;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
+  justify-content: space-between;
+  pointer-events: auto;    /* CHANGED: now children can receive clicks */
+  z-index: 2;
+  width: auto;
+  margin: 0;
 }
 
-#scheduleForm .card.show-card {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+.card-last-run {
+  font-size: 0.87em;     /* was 0.97em */
+  color: var(--text-secondary, #bdbdbd);
+  display: flex;
+  align-items: center;
+  gap: 0.18em;           /* tighten gap */
+  pointer-events: none;
+  user-select: none;
+  min-width: 0;
+  font-weight: 400;      /* optional: lighter font */
 }
+
+.schedule-btn-wrap {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  flex-direction: row;
+  flex: 0 1 auto;      /* let it shrink/grow as needed */
+  min-width: 40px;
+  margin-left: 0.35em;
+  pointer-events: auto;
+}
+
+.card-action-btn {
+  pointer-events: auto;
+}
+
+.card-last-run .material-icons {
+  font-size: 1em !important; /* was 1.09em, match text */
+  vertical-align: middle;
+  opacity: .77;         /* slightly lighter icon */
+  line-height: 1;
+}
+

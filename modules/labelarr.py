@@ -9,7 +9,7 @@ from util.database import DapsDB
 from util.helper import create_table, print_settings, progress
 from util.logger import Logger
 from util.normalization import normalize_titles
-from util.notification import send_notification
+from util.notification import NotificationManager
 from util.plex import PlexClient
 from util.config import Config
 
@@ -227,12 +227,8 @@ def main() -> None:
         if output:
             handle_messages(output, logger)
             # Only send notifications if not in dry run mode
-            send_notification(
-                logger=logger,
-                module_name=config.module_name,
-                config=config,
-                output=output,
-            )
+            manager = NotificationManager(config, logger, module_name="labelarr")
+            manager.send_notification(output)
         else:
             logger.info("No labels to sync to Plex")
 

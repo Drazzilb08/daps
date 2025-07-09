@@ -31,10 +31,10 @@
    SPLASH CARD
 ====================================================== */
 .splash-card {
-    background: var(--card-bg);
-    padding: var(--splash-card-padding);
-    border-radius: var(--splash-card-radius);
-    box-shadow: var(--splash-card-shadow);
+    background: var(--surface);
+    padding: 2.5rem 3.5rem;
+    border-radius: 14px;
+    box-shadow: 0 2px 32px rgba(0,0,0,0.18);
     animation: fadeIn 0.6s ease-out forwards;
 }
 
@@ -42,13 +42,13 @@
    SPLASH CARD HEADER
 ====================================================== */
 .splash-icon {
-    font-size: var(--splash-icon-size);
+    font-size: 3.2rem;
     margin-bottom: 1rem;
 }
 
 .splash-card h1 {
-    font-size: var(--splash-header-font-size);
-    margin-bottom: var(--splash-header-margin-btm);
+    font-size: 2.2rem;
+    margin-bottom: 0.5rem;
     color: var(--primary);
 }
 
@@ -56,9 +56,9 @@
    SPLASH CARD PARAGRAPH / SETTINGS FIELDS
 ====================================================== */
 .splash-card p {
-    font-size: var(--font-size-base-plus);
-    color: var(--fg);
-    opacity: var(--splash-p-opacity);
+    font-size: 1.12rem;
+    color: var(--text-color);
+    opacity: 0.89;
 }
 
 /* ======================================================
@@ -107,14 +107,14 @@
 /* Tooltip itself */
 .update-tooltip {
     min-width: 225px;
-    background: var(--card-bg);
-    color: var(--fg);
-    border-radius: var(--card-radius);
-    padding: var(--card-padding);
+    background: var(--surface-alt);
+    color: var(--text-color);
+    border-radius: 14px;
+    padding: 1.5rem;
     font-size: 1.06em;
     font-weight: 500;
-    box-shadow: var(--card-hover-shadow, 0 6px 24px 0 rgba(0, 0, 0, 0.3));
-    border: var(--card-border);
+    box-shadow: 0 6px 24px 0 rgba(0, 0, 0, 0.3);
+    border: 1.5px solid var(--sidebar-divider);
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
@@ -134,18 +134,18 @@
     opacity: 1;
     pointer-events: auto;
     display: block;
-    box-shadow: var(--card-hover-shadow, 0 10px 30px 0 rgba(244, 67, 54, 0.13));
+    box-shadow: 0 10px 30px 0 rgba(244, 67, 54, 0.13);
 }
 
 .update-tooltip-title {
     font-size: 1.1em;
     font-weight: 600;
-    color: var(--update-tooltip-title-color);
+    color: var(--sidebar-highlight);
     letter-spacing: 0.02em;
 }
 
 .update-tooltip-versions {
-    color: var(--update-tooltip-versions-color);
+    color: var(--sidebar-fg);
     font-size: 0.94em;
 }
 
@@ -154,12 +154,12 @@
     position: fixed;
     bottom: 0;
     right: 0;
-    padding: var(--padding-standard);
-    background: var(--card-bg);
-    color: var(--fg);
+    padding: 1.3rem;
+    background: var(--surface-alt);
+    color: var(--text-color);
     font-size: 0.85rem;
-    border-top-left-radius: var(--card-radius);
-    box-shadow: -2px -2px 5px var(--daps-footer-box-shadow);
+    border-top-left-radius: 14px;
+    box-shadow: -2px -2px 5px rgba(0,0,0,0.15);
     display: flex;
     gap: 1rem;
     align-items: center;
@@ -174,8 +174,8 @@
 /* Update badge in footer (hidden by default) */
 .footer-update-badge {
     display: none;
-    background: var(--error);
-    color: var(--footer-update-badge-color);
+    background: var(--error, #f44336);
+    color: var(--sidebar-fg);
     border-radius: 12px;
     font-size: 0.82em;
     padding: 2px 8px 2px 8px;
@@ -200,18 +200,18 @@
     margin: 1.5rem auto 1rem;
     font-size: 2.5rem;
     font-weight: 600;
-    background: var(--daps-header-gradient);
+    background: linear-gradient(90deg, #FFD233, #FFE277 60%, #FFD233);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-shadow: var(--daps-header-shadow);
+    text-shadow: 0 2px 8px #ffd23355;
     letter-spacing: 0.045em;
     transition: filter 0.2s, letter-spacing 0.18s;
     filter: blur(0.15px) brightness(1.07);
 }
 
 .daps-header-gradient:hover {
-    filter: var(--daps-header-hover);
+    filter: brightness(1.18);
     letter-spacing: 0.09em;
 }
 
@@ -228,13 +228,13 @@
     position: relative;
     display: inline-block;
     padding-bottom: 2px;
-    color: var(--dashboard-label-color);
+    color: var(--sidebar-highlight);
     background: none !important;
-    -webkit-background-clip: var(--dashboard-label-background-clip);
-    background-clip: var(--dashboard-label-background-clip);
-    -webkit-text-fill-color: var(--dashboard-label-text-fill-color);
-    text-shadow: var(--dashboard-label-shadow);
-    filter: var(--dashboard-label-filter);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 1px 3px #ffd23322;
+    filter: none;
     opacity: 0.98;
 }
 
@@ -245,7 +245,7 @@
     right: 20%;
     bottom: 0;
     height: 2px;
-    background: var(--daps-header-underline);
+    background: var(--sidebar-highlight);
     opacity: 0.22;
     border-radius: 2px;
     transform: scaleX(0);

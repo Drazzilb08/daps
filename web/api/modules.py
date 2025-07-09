@@ -1,4 +1,4 @@
-from fastapi import APIRouter, BackgroundTasks, Depends, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from typing import Any
@@ -19,7 +19,6 @@ def get_logger(request: Request) -> Any:
 async def run_module(
     request: Request,
     data: RunRequest,
-    background: BackgroundTasks,
     logger: Any = Depends(get_logger),
 ):
     module = data.module
@@ -29,17 +28,16 @@ async def run_module(
         logger.error("[WEB] Orchestrator not available in app state")
         return JSONResponse(status_code=500, content={"error": "Orchestrator not available"})
     running = orchestrator.get_running()
-    if module in running and running[module] is not None and running[module].is_alive():
+    if module in running and running[module] is not None and running[module]["proc"].is_alive():
         logger.error(f"[WEB] Module {module} is already running")
         return JSONResponse(
             status_code=400, content={"error": f"Module {module} is already running"}
         )
-    def background_run():
-        logger.info(f"[WEB] Background starting module: {module}")
-        proc = orchestrator.launch_module(module)
-        if proc is None:
-            logger.error(f"[WEB] Failed to start module: {module}")
-    background.add_task(background_run)
+    proc_entry = orchestrator.launch_module(module, origin="web")
+    if proc_entry is None:
+        logger.error(f"[WEB] Failed to start module: {module}")
+        return JSONResponse(status_code=500, content={"error": f"Failed to start module: {module}"})
+    orchestrator.running[module] = proc_entry
     return {"status": "starting", "module": module}
 
 @router.get("/api/status")
@@ -51,10 +49,17 @@ async def module_status(
         logger.error("[WEB] Orchestrator not available in app state")
         return JSONResponse(status_code=500, content={"error": "Orchestrator not available"})
     running = orchestrator.get_running()
-    proc = running.get(module)
-    alive = proc.is_alive() if proc else False
+    entry = running.get(module)
+    if entry is not None:
+        proc = entry["proc"]
+        origin = entry["origin"]
+        alive = proc.is_alive()
+    else:
+        proc = None
+        origin = None
+        alive = False
     try:
-        return {"module": module, "running": alive}
+        return {"module": module, "running": alive, "origin": origin}
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
 
@@ -68,12 +73,28 @@ async def cancel_module(
         logger.error("[WEB] Orchestrator not available in app state")
         return JSONResponse(status_code=500, content={"error": "Orchestrator not available"})
     running = orchestrator.get_running()
-    proc = running.get(module)
-    if not proc or not proc.is_alive():
+    entry = running.get(module)
+    if not entry or not entry["proc"].is_alive():
         return JSONResponse(
             status_code=400, content={"error": "Module not running"}
         )
-    proc.terminate()
+    entry["proc"].terminate()
     logger.info(f"[WEB] Manually cancelled module: {module}")
     del orchestrator.running[module]
     return {"status": "cancelled", "module": module}
+
+@router.get("/api/run_state")
+async def get_all_run_states(request: Request, logger: Any = Depends(get_logger)):
+    """Get last run status for all modules (for schedule cards)."""
+    orchestrator = getattr(request.app.state, "orchestrator", None)
+    if orchestrator is None:
+        logger.error("[WEB] Orchestrator not available in app state")
+        return JSONResponse(status_code=500, content={"error": "Orchestrator not available"})
+    try:
+        db = orchestrator.db if hasattr(orchestrator, "db") else None
+        if db is None:
+            return JSONResponse(status_code=500, content={"error": "DB not available on orchestrator"})
+        run_states = db.get_all_run_states()
+        return {"run_states": run_states}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})

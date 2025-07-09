@@ -7,6 +7,15 @@ let currentFullLogText = '';
 let lastWrittenLineCount = 0;
 let lastRenderedFileKey = null;
 
+function getUrlParams() {
+    const params = new URLSearchParams(window.location.search);
+    return {
+        module_name: params.get('module_name') || '',
+        log_file: params.get('log_file') || ''
+    };
+}
+
+
 export function buildLogControls() {
     const controlsDiv = document.createElement('div');
     controlsDiv.className = 'log-controls log-toolbar';
@@ -52,26 +61,6 @@ function ensureLogControls() {
         msg.textContent = 'No logs available.';
         msg.style.display = 'none';
         scrollContainer.appendChild(msg);
-    }
-
-    if (!document.getElementById('scroll-to-top')) {
-        const btn = document.createElement('button');
-        btn.id = 'scroll-to-top';
-        btn.className = 'scroll-to-top';
-        btn.innerHTML = '↑ Top';
-        btn.style.display = 'none';
-        btn.onclick = () => term && term.scrollToTop && term.scrollToTop();
-        scrollContainer.appendChild(btn);
-    }
-
-    if (!document.getElementById('scroll-to-bottom')) {
-        const btn = document.createElement('button');
-        btn.id = 'scroll-to-bottom';
-        btn.className = 'scroll-to-bottom';
-        btn.innerHTML = '↓ Bottom';
-        btn.style.display = 'none';
-        btn.onclick = () => term && term.scrollToBottom && term.scrollToBottom();
-        scrollContainer.appendChild(btn);
     }
 }
 
@@ -129,24 +118,15 @@ function renderToXTerm(text, options = {}) {
         }
         lastWrittenLineCount = lines.length;
     }
-    setTimeout(handleXTermScroll, 25);
-}
-
-function handleXTermScroll() {
-    if (!term) return;
-    const topBtn = document.getElementById('scroll-to-top');
-    const botBtn = document.getElementById('scroll-to-bottom');
-
-    const viewportY = term.buffer.active.viewportY;
-    const maxScroll = term.buffer.active.length - term.rows;
-    if (topBtn) topBtn.style.display = viewportY > 0 ? 'block' : 'none';
-    if (botBtn) botBtn.style.display = viewportY < maxScroll ? 'block' : 'none';
 }
 
 export async function loadLogs() {
     let currentModule = null;
     let currentFile = null;
     let activeLoadSessionId = Symbol();
+
+    // Get preselected values from URL params
+    const { module_name: preselectedModule, log_file: preselectedFile } = getUrlParams();
 
     if (term) {
         term.dispose();
@@ -163,6 +143,7 @@ export async function loadLogs() {
 
     const oldControls = containerIframe.querySelector('.log-controls');
     if (oldControls) oldControls.remove();
+    
 
     const controlsDiv = buildLogControls();
     containerIframe.insertBefore(controlsDiv, containerIframe.firstChild);
@@ -177,6 +158,19 @@ export async function loadLogs() {
     const clearBtn = document.querySelector('.clear-search');
     const downloadBtn = document.querySelector('.download-log');
     const logOutput = document.querySelector('.log-output');
+    const collapseBtn = document.createElement('button');
+    collapseBtn.className = 'btn toolbar-collapse-btn';
+    collapseBtn.type = 'button';
+    collapseBtn.innerHTML = '<span class="toolbar-collapse-icon">▾</span> Hide Controls';
+    controlsDiv.insertBefore(collapseBtn, controlsDiv.firstChild);
+
+    if (window.innerWidth <= 1000) {
+        controlsDiv.classList.add('collapsed');
+        collapseBtn.setAttribute('aria-expanded', 'false');
+        collapseBtn.innerHTML = '<span class="toolbar-collapse-icon">▸</span> Show Controls';
+    }
+
+
 
     if (!logOutput) return;
     logOutput.innerHTML = '';
@@ -202,6 +196,10 @@ export async function loadLogs() {
                 fitAddon.fit();
             } catch (e) {}
     };
+    setTimeout(() => {
+        const xtermDiv = logOutput.querySelector('.xterm');
+        if (xtermDiv) xtermDiv.style.maxWidth = "100%";
+    }, 50);
     window.addEventListener('resize', handleResize);
 
     let refreshInterval = null;
@@ -214,32 +212,70 @@ export async function loadLogs() {
 
     async function loadModules() {
         const res = await fetch('/api/logs');
-        const data = await res.json();
-        const availableModules = Object.keys(data);
-        const orderedModules = (moduleOrder || []).filter((m) => availableModules.includes(m));
+        const availableModules = await res.json();
+
+        
+        moduleSelect.innerHTML = '<option value="">Select Module</option>'; // Reset options
+
+        // Show splash if nothing to show
+        if (!availableModules.length) {
+            if (emptyMsg) emptyMsg.style.display = '';
+            if (logOutput) logOutput.classList.add('hide-xterm');
+            logfileSelect.innerHTML = '<option value="">Select Log File</option>';
+            logfileSelect.disabled = true;
+            renderToXTerm('', { forceClear: true, fileKey: null });
+            return;
+        } else {
+            
+            
+        }
+
+        const orderedModules = (moduleOrder || []).filter((m) => availableModules.includes(m))
+            .concat(availableModules.filter((m) => !(moduleOrder || []).includes(m)));
         for (const module of orderedModules) {
             const opt = document.createElement('option');
             opt.value = module;
             opt.textContent = humanize?.(module) || module;
             moduleSelect.appendChild(opt);
         }
-        const preselectedModule =
-            window._preselectedLogModule ||
-            new URLSearchParams(window.location.search).get('module');
-        window._preselectedLogModule = null;
-        if (preselectedModule) {
+        // Preselect if requested via query param
+        if (preselectedModule && availableModules.includes(preselectedModule)) {
             moduleSelect.value = preselectedModule;
-            loadLogFiles(preselectedModule);
+            await loadLogFiles(preselectedModule);
+            // Only fetch files for the selected module
+            const res2 = await fetch(`/api/logs/${preselectedModule}`);
+            const files = await res2.json();
+            if (preselectedFile && files.includes(preselectedFile)) {
+                logfileSelect.value = preselectedFile;
+                loadLogContent(preselectedModule, preselectedFile);
+                setRefreshTask(() => loadLogContent(preselectedModule, preselectedFile));
+            }
         }
     }
 
+    
     async function loadLogFiles(moduleName) {
+        
+        
         logfileSelect.innerHTML = '<option value="">Select Log File</option>';
         logfileSelect.disabled = true;
-        if (!moduleName) return;
-        const res = await fetch('/api/logs');
-        const data = await res.json();
-        const files = data[moduleName] || [];
+        if (!moduleName) {
+            
+            
+            renderToXTerm('', { forceClear: true, fileKey: null });
+            return;
+        }
+        const res = await fetch(`/api/logs/${moduleName}`);
+        const files = await res.json();
+        if (files.length === 0) {
+            if (emptyMsg) emptyMsg.style.display = '';
+            if (logOutput) logOutput.classList.add('hide-xterm');
+            renderToXTerm('', { forceClear: true, fileKey: null });
+            return;
+        } else {
+            
+            
+        }
         let defaultLog = null;
         for (const file of files) {
             const opt = document.createElement('option');
@@ -257,6 +293,10 @@ export async function loadLogs() {
     }
 
     async function loadLogContent(moduleName, fileName) {
+        
+        
+        
+        
         const requestKey = `${moduleName}/${fileName}`;
         currentModule = moduleName;
         currentFile = fileName;
@@ -376,6 +416,14 @@ export async function loadLogs() {
         link.click();
         document.body.removeChild(link);
     });
+    
+    collapseBtn.addEventListener('click', () => {
+        controlsDiv.classList.toggle('collapsed');
+        const isCollapsed = controlsDiv.classList.contains('collapsed');
+        collapseBtn.innerHTML = isCollapsed
+            ? '<span class="toolbar-collapse-icon">▸</span> Show Controls'
+            : '<span class="toolbar-collapse-icon">▾</span> Hide Controls';
+    });
 
     window.addEventListener('popstate', () => {
         if (refreshInterval) clearInterval(refreshInterval);
@@ -411,9 +459,5 @@ export async function loadLogs() {
         }
     };
 
-    if (term && typeof term.onScroll === 'function') {
-        term.onScroll(handleXTermScroll);
-    }
-    setTimeout(handleXTermScroll, 250);
     loadModules();
 }

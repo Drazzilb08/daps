@@ -1,167 +1,179 @@
-/* ======================================================
-   NOTIFICATIONS CARD
-====================================================== */
-#notificationsForm .card {
-    margin-bottom: var(--card-margin-btm);
-    opacity: 0;
-    transform: translateY(24px) scale(0.98);
-    transition: opacity 0.28s cubic-bezier(0.44, 1.13, 0.73, 0.98),
-        transform 0.28s cubic-bezier(0.44, 1.13, 0.73, 0.98);
+#notifications-list {
+  display: block;
+  width: 100%;
 }
 
-#notificationsForm .card.show-card {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+.notification-group {
+  width: 100%;
+  display: block;
+  margin-bottom: 2.1rem;
+  padding-bottom: 0.4rem;
+  border-bottom: 1.5px solid var(--divider);
 }
 
-/* ======================================================
-   TOGGLE ROWS (FIELD GROUPS)
-====================================================== */
-#notificationsForm .field.toggle-row--expanded {
-    margin-bottom: 0.44em;
-    padding-bottom: 0.38em;
-    z-index: 2;
+/* GROUP HEADER */
+.notification-group-header {
+  font-size: 1.22rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0 0 0.55em 0.2em;
+  letter-spacing: 0.01em;
+  padding-left: 0.07em;
 }
 
-#notificationsForm .field.toggle-row {
-    margin-bottom: 0.08em;
-    margin-top: 0.04em;
-    padding-left: 0.07em;
-    gap: var(--field-gap, 0.6em);
-}
-
-/* ======================================================
-   NOTIFICATION TOGGLE GROUP
-====================================================== */
-.notification-toggle-group {
-    display: flex;
-    flex-direction: column;
-    gap: 0.18em;
-    margin-top: 0.24em;
-    margin-bottom: 0.37em;
-}
-
-/* ======================================================
-   TEST BUTTON (VISIBLE ONLY IF ENABLED)
-====================================================== */
-#notificationsForm .field.toggle-row .btn--test.enabled {
-    display: inline-flex;
-}
-
-/* ======================================================
-   CARD HEADER
-====================================================== */
-.card-header {
-    padding-bottom: 0.3em;
-    margin-bottom: 0.5em;
-    font-size: 1.2em;
-    font-weight: bold;
-    color: var(--primary);
-}
-
-/* ======================================================
-   NOTIFICATION FIELDSET (COLLAPSIBLE EXPAND/COLLAPSE)
-====================================================== */
-.notification-fieldset {
-    display: flex;
-    flex-direction: column;
-    border-radius: var(--card-radius, 8px);
-    margin: 0.24em 0 0.52em 0;
-    padding: var(--notification-fieldset-padding, 1em 1.3em 1.1em 1.2em);
-    opacity: 0;
-    max-height: 0;
-    pointer-events: none;
-    transform: translateY(18px) scale(0.98);
-    transition: opacity 0.33s cubic-bezier(0.44, 1.13, 0.73, 0.98),
-        max-height 0.33s cubic-bezier(0.44, 1.13, 0.73, 0.98),
-        padding 0.17s cubic-bezier(0.44, 1.13, 0.73, 0.98),
-        transform 0.33s cubic-bezier(0.44, 1.13, 0.73, 0.98);
-    overflow: hidden;
-    box-shadow: var(--notification-card-shadow, 0 2px 10px rgba(0, 0, 0, 0.13));
-    background-color: var(--card-bg);
-}
-
-.notification-fieldset.expanded {
-    opacity: 1;
-    max-height: 2000px;
-    pointer-events: auto;
-    transform: translateY(0) scale(1);
-    animation: notificationFieldsetIn 0.33s cubic-bezier(0.44, 1.13, 0.73, 0.98);
-    margin-bottom: 1.3em !important;
-}
-
-.notification-fieldset.expanded .notification-field-container:last-child {
-    margin-bottom: 1.3em;
-}
-
-.notification-fieldset:not(.expanded) {
-    animation: notificationFieldsetOut 0.27s cubic-bezier(0.71, 0, 0.32, 1);
-}
-
-/* ======================================================
-   FIELDSET LEGEND
-====================================================== */
-.fieldset-legend {
-    margin-top: 0.6em;
-    margin-bottom: 0.95em;
-    text-align: left;
-    font-weight: 600;
-    /* color: var(--primary); */
-    font-size: 1.11em;
-}
-
-/* ======================================================
-   FIELD CONTAINER
-====================================================== */
-.notification-field-container {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-    margin-bottom: 0.39em;
-}
-
-.notification-field-container label {
-    font-size: 1em;
-    font-weight: 500;
-    margin-bottom: 0.27em;
+@media (max-width: 900px) {
+  .notification-group-header {
+    text-align: center;
+    margin-left: 0;
     margin-right: 0;
+    padding-left: 0;
+  }
 }
 
-.notification-field-container:last-child {
-    margin-bottom: 0;
+/* CARD: Center icon & label, notification specific */
+.notification-card {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
 
-/* ======================================================
-   TEST BUTTON (GLOBAL)
-====================================================== */
-.btn--test {
-    display: none;
-    margin-left: auto;
+.notification-card .notification-type-label {
+  text-align: center;
 }
 
-/* ======================================================
-   FIELDSET ANIMATIONS
-====================================================== */
-@keyframes notificationFieldsetIn {
-    from {
-        opacity: 0;
-        transform: translateY(18px) scale(0.98);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+/* Card Icon and Label */
+.notification-type-icon {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.notification-type-label {
+  font-size: 1.09rem;
+  font-weight: 600;
+  flex-grow: 1;
+  color: var(--text-color);
+  text-align: left;
+  letter-spacing: 0.01em;
+  margin-right: 0.6em;
 }
 
-@keyframes notificationFieldsetOut {
-    from {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+/* Test Button Positioning in Card */
+.notification-btn-wrap {
+  position: absolute;
+  left: 50%;
+  bottom: 1.05rem;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 1;
+}
 
-    to {
-        opacity: 0;
-        transform: translateY(-11px) scale(0.96);
-    }
+/* --- "Add" type modal and buttons --- */
+.notify-type-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1em;
+  margin-top: 1.1em;
+  margin-bottom: 1.2em;
+}
+.notify-type-btn {
+  font-size: 1.13em;
+  padding: 1.1em 2.2em;
+  border-radius: 7px;
+  background: var(--surface-alt);
+  border: 1.5px solid var(--divider);
+  color: var(--text-color);
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.18s, border-color 0.18s;
+}
+.notify-type-btn:hover {
+  background: var(--focus);
+  color: #fff;
+  border-color: var(--focus);
+}
+.notify-type-btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Small modal override */
+.small-modal {
+  max-width: 440px !important;
+  min-width: 260px !important;
+}
+
+/* Color badge (for color field) */
+.color-badge {
+  display: inline-block;
+  border-radius: 4px;
+  padding: 0 7px;
+  margin-left: 5px;
+  min-width: 64px;
+  color: var(--text-color);
+  background: var(--surface-alt);
+  border: 1px solid var(--divider);
+  font-family: monospace;
+  font-size: 0.97em;
+}
+
+/* Modal color input field row */
+.color-input-row {
+  display: flex;
+  align-items: center;
+  gap: 0.7em;
+  margin-bottom: 0.4em;
+}
+
+/* Inputs */
+input[type="color"] {
+  border: 1.5px solid var(--divider);
+  border-radius: 4px;
+  background: var(--surface-alt);
+  width: 2.7em;
+  height: 2.2em;
+  padding: 0.07em;
+  margin-top: 0.3em;
+  cursor: pointer;
+  transition: border-color 0.13s;
+}
+input[type="color"]:focus {
+  border-color: var(--focus);
+}
+
+/* Notification modal form labels */
+.notify-settings-form label {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.28em;
+  font-weight: 500;
+}
+
+/* --- Notification Modal: Slider/toggle switch field --- */
+.toggle-switch-block {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-bottom: 1.15em;
+  gap: 0.16em;
+}
+
+.toggle-switch-block .form-toggle-label {
+  font-weight: 500;
+  font-size: 1.06rem;
+  color: var(--text-color);
+  margin-bottom: 0.19em;
+}
+
+.toggle-switch-block .toggle-switch-label {
+  margin-left: 0;
+  align-items: center;
+  display: flex;
 }

@@ -18,7 +18,7 @@ from util.helper import (
 )
 from util.logger import Logger
 from util.config import Config
-from util.notification import send_notification
+from util.notification import NotificationManager
 
 VIDEO_EXTS = (".mkv", ".mp4")
 
@@ -778,12 +778,8 @@ def main() -> None:
         # Output results to console/log
         handle_messages(final_output, logger)
         # Send notification with scan+resolve results
-        send_notification(
-            logger=logger,
-            module_name=config.module_name,
-            config=config,
-            output=final_output,
-        )
+        manager = NotificationManager(config, logger, module_name="health_checkarr")
+        manager.send_notification(final_output)
     except KeyboardInterrupt:
         print("Keyboard Interrupt detected. Exiting...")
         sys.exit()

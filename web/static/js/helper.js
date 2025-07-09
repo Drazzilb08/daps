@@ -14,6 +14,17 @@ export const moduleOrder = [
     'main',
 ];
 
+export const moduleList = [
+    'sync_gdrive',
+    'poster_renamerr',
+    'renameinatorr',
+    'upgradinatorr',
+    'nohl',
+    'labelarr',
+    'health_checkarr',
+    'jduparr',
+]
+
 export const NOTIFICATION_LIST = [
     'poster_renamerr',
     // 'unmatched_assets',
@@ -283,5 +294,45 @@ export async function fetchStats(location) {
             size_bytes: 0,
             files: [],
         };
+    }
+}
+
+export function setupPasswordToggles(scope = document) {
+    scope.querySelectorAll('.toggle-password').forEach(btn => {
+        btn.onclick = () => {
+            const inputId = btn.getAttribute('data-input');
+            const input = scope.querySelector(`#${inputId}`);
+            if (!input) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                input.classList.remove('masked-input');
+                btn.innerHTML = '<i class="material-icons">visibility_off</i>';
+            } else {
+                input.type = 'password';
+                input.classList.add('masked-input');
+                btn.innerHTML = '<i class="material-icons">visibility</i>';
+            }
+        };
+        // On initial load, ensure eye icon matches input type
+        const inputId = btn.getAttribute('data-input');
+        const input = scope.querySelector(`#${inputId}`);
+        if (input && input.type === 'password') {
+            btn.innerHTML = '<i class="material-icons">visibility</i>';
+        } else {
+            btn.innerHTML = '<i class="material-icons">visibility_off</i>';
+        }
+    });
+}
+
+export function getIcon(type)
+{
+    if (type === 'radarr') {
+            return `<img src="/web/static/icons/radarr.svg" alt="Radarr logo" />`;
+    }
+    if (type === 'sonarr') {
+        return `<img src="/web/static/icons/sonarr.svg" alt="Sonarr logo" />`;
+    }
+    if (type === 'plex') {
+        return `<img src="/web/static/icons/plex.svg" alt="Plex logo" />`;
     }
 }

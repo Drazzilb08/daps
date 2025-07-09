@@ -215,3 +215,14 @@ async function gdrivePresets() {
     }
     return window._gdrivePresetsCache;
 }
+
+// Add this somewhere globally accessible or move to common.js if you want re-use
+export function isValidSchedule(val) {
+    if (!val) return true;
+    if (/^hourly\(\d{2}\)$/i.test(val)) return true;
+    if (/^daily\(\d{2}:\d{2}(?:\|\d{2}:\d{2})*\)$/i.test(val)) return true;
+    if (/^weekly\([a-z]+@\d{2}:\d{2}(?:\|[a-z]+@\d{2}:\d{2})*\)$/i.test(val)) return true;
+    if (/^monthly\(\d{1,2}@\d{2}:\d{2}(?:\|\d{1,2}@\d{2}:\d{2})*\)$/i.test(val)) return true;
+    if (/^cron\([^\)]+\)$/i.test(val)) return true;
+    return false;
+}

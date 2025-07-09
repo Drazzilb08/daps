@@ -1,239 +1,224 @@
-/* ======================================================
-   NAVIGATION BAR
-====================================================== */
-nav {
-    border-bottom: none;
-    margin-bottom: 0;
-    box-shadow: var(--nav-shadow);
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: var(--primary-bg);
-}
-
-/* ======================================================
-   TOP MENU
-====================================================== */
-.menu {
+nav.sidebar {
+    position: fixed;
+    top: 64px;
+    left: 0;
+    width: 256px;
+    height: calc(100vh - 64px);
+    background: var(--sidebar-bg);
+    color: var(--sidebar-fg);
     display: flex;
-    justify-content: center;
-    gap: var(--nav-menu-gap);
-    background: var(--nav-glass-bg);
+    flex-direction: column;
+    z-index: 200;
+    border-right: none;
+    box-shadow: none;
+    transition: left 0.28s cubic-bezier(.5,0,.5,1), box-shadow 0.2s;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.nav-logo {
+    display: flex;
     align-items: center;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    backdrop-filter: blur(var(--nav-glass-blur, 10px));
-    -webkit-backdrop-filter: blur(var(--nav-glass-blur, 10px));
-    border-bottom: var(--nav-glass-border, 1px solid rgba(255, 255, 255, 0.07));
-    box-shadow: var(--nav-shadow);
-    border-radius: var(--nav-border-radius);
-}
-
-.menu a,
-.dropdown-toggle {
-    color: var(--text-color);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-base);
+    padding: 0 1.2rem 0 0.6rem;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--primary);
+    background: transparent;
+    letter-spacing: 0.02em;
     text-decoration: none;
-    position: relative;
-    padding: 0.5rem 0;
+    height: 64px;
+}
+
+.nav-logo img {
+    display: block;
+    width: 38px;
+    height: 38px;
+    margin: 0;
+    margin-right: 0.5em;
+}
+
+.daps-title {
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    margin-left: 0.08em;
+    transition: opacity 0.2s;
+}
+
+.menu {
+    flex: 1;
+    list-style: none;
+    padding: 0.7rem 0 0 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
     background: none;
+    gap: 0;
+    position: relative;
+}
+
+.menu > li {
+    position: relative;
+}
+
+.menu > li > a,
+.menu > li > a.main-section {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--sidebar-fg);
+    background: transparent;
+    padding: 0.26em 1.1em 0.36em 0.65em;
+    min-height: 28px;
+    display: flex;
+    align-items: center;
+    gap: 0.66em;
+    text-decoration: none;
+    border-radius: 0 6px 6px 0;
+    position: relative;
+    cursor: pointer;
+    letter-spacing: 0.01em;
+    transition: background 0.1s, color 0.1s;
+    z-index: 1;
+    outline: none;
     border: none;
-    border-radius: var(--nav-border-radius);
-    transition: color 0.2s;
-    vertical-align: middle;
+    box-shadow: none;
+    line-height: 1.22;
 }
 
-/* Only show underline for top-level horizontal menu items, not dropdowns */
-.menu > li > a.active::after,
-.menu > li > a:hover::after {
+.menu .icon {
+    font-size: 1.34em;
+    min-width: 1.5em;
+    text-align: center;
+    color: inherit;
+    opacity: 0.87;
+    flex-shrink: 0;
+    margin-right: 0.1em;
+}
+
+.menu > li.active-section::before {
     content: '';
     position: absolute;
-    bottom: -4px;
     left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--highlight);
-    border-radius: 1px;
-    transition: background 0.18s;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    background: var(--primary);
+    border-radius: 0 8px 8px 0;
+    z-index: 2;
+    box-shadow: none;
 }
 
-.menu > li > .dropdown-toggle.active::after {
-    content: '';
-    position: absolute;
-    bottom: -4px;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--highlight);
-    border-radius: 1px;
-    transition: background 0.18s;
-}
-
-/* Prevent underline on dropdown menu links */
-.dropdown-menu li a::after {
+.menu > li.active-section > a.active::before,
+.menu > li.active-section > a.main-section.active::before {
     display: none !important;
     content: none !important;
 }
 
-.dropdown-toggle.active::after {
+.menu > li > a.active::before,
+.menu > li > a.main-section.active::before {
     content: '';
     position: absolute;
-    bottom: -4px;
-    left: 0;
-    right: 0;
-    height: 2px;
-}
-
-.dropdown-menu li a.active {
+    left: -16px;
+    top: 0;
+    bottom: 0;
+    width: 6px;
     background: var(--primary);
-    color: var(--bg);
-    font-weight: 600;
-    opacity: 1;
-    border-left: 3px solid var(--highlight);
+    border-radius: 0 8px 8px 0;
+    z-index: 3;
+    box-shadow: none;
 }
 
-/* ======================================================
-   DROPDOWN WRAPPER
-====================================================== */
-.dropdown {
-    position: relative;
-    display: inline-block;
-}
-
-/* ======================================================
-   DROPDOWN TOGGLE BUTTON
-====================================================== */
-.dropdown-toggle {
-    background: none;
-    border: none;
-    color: var(--text-color);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-base);
-    padding: 0.5rem 0 0.5rem 0;
-    margin-bottom: 0;
-    position: relative;
-    cursor: pointer;
-    border-radius: var(--nav-border-radius);
-    transition: color 0.2s;
-    display: inline-flex;
-    align-items: center;
-}
-
-/* ======================================================
-   DROPDOWN MENU
-====================================================== */
-.dropdown-menu {
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translate(-50%, -8px) scale(0.95);
-    opacity: 0;
-    pointer-events: none;
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    background: var(--nav-glass-bg);
-    backdrop-filter: blur(var(--nav-glass-blur, 22px)) saturate(180%);
-    -webkit-backdrop-filter: blur(var(--nav-glass-blur, 22px)) saturate(180%);
-    border: var(--nav-glass-border, 1.5px solid rgba(255, 255, 255, 0.13));
-    box-shadow: var(--nav-dropdown-shadow), 0 2px 20px 0 rgba(30, 38, 43, 0.09) inset;
-    border-radius: var(--nav-dropdown-radius);
-    min-width: 10rem;
-    overflow: hidden;
-    z-index: 100;
-    width: 12rem;
-    transition: opacity 150ms ease-in, transform 200ms ease-out;
-}
-
-.dropdown.open .dropdown-menu {
-    opacity: 1;
-    pointer-events: auto;
-    transform: translate(-50%, 0) scale(1);
-    width: 14rem;
-}
-
-.dropdown-menu li {
-    margin: 0;
-}
-
-/* ======================================================
-   DROPDOWN MENU ITEMS
-====================================================== */
-.dropdown-menu li a {
-    white-space: nowrap;
-    display: block;
-    padding: var(--nav-dropdown-item-padding);
-    background: var(--nav-glass-bg);
-    color: var(--fg);
-    text-decoration: none;
-    transform: translateX(0);
-    opacity: 0.95;
-    border-radius: var(--nav-dropdown-item-radius);
-    transition: background 150ms ease, color 150ms ease, transform 150ms ease, opacity 150ms ease;
-}
-
-.dropdown-menu li a:hover {
-    background: var(--primary);
-    color: var(--bg);
-    transform: translateX(2px);
-    opacity: 1;
-    border-left: 3px solid var(--highlight);
-}
-
-.dropdown-menu li:first-child a,
-.dropdown-menu li:last-child a {
-    border-radius: var(--nav-dropdown-item-radius);
-}
-
-/* ======================================================
-   SETTINGS PANEL
-====================================================== */
-.settings-panel {
-    background: var(--card-bg);
-    padding: 1rem;
-    border-radius: var(--border-radius-default);
-    box-shadow: 0 6px 12px var(--shadow);
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    min-width: 14rem;
-}
-
-/* ======================================================
-   SETTINGS PANEL TITLE
-====================================================== */
-.settings-panel .panel-title {
-    font-size: 1.1rem;
+.menu > li > a.active,
+.menu > li > a.main-section.active {
+    color: var(--primary);
     font-weight: 700;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.5rem;
-    /* border-bottom: 1px solid var(--shadow); */
-    text-align: center;
+    background: transparent;
+    box-shadow: none;
 }
 
-/* ======================================================
-   SETTINGS PANEL ITEMS
-====================================================== */
-.settings-panel li {
+.menu > li > a:hover,
+.menu > li > a.main-section:hover {
+    background: transparent;
+    color: var(--primary);
+    box-shadow: none;
+}
+
+.menu > li.active-section > a.main-section {
+    color: var(--primary);
+    font-weight: 700;
+    background: transparent;
+    box-shadow: none;
+}
+
+.menu .settings-sub-menu {
+    display: none;
     list-style: none;
+    padding: 0.1em 0 0 3.8em;
     margin: 0;
+    flex-direction: column;
+    background: none;
 }
 
-.settings-panel li a {
+.menu .settings-sub-menu li {
+    margin-bottom: 0.02em;
+}
+
+.menu .settings-sub-menu a.sub-section {
+    font-size: 0.99rem;
+    color: var(--sidebar-fg);
+    font-weight: 400;
+    background: transparent;
+    padding: 0.31em 0.2em 0.31em 0.4em;
+    border-radius: 3px;
     display: block;
-    padding: 0.75rem 1.25rem;
-    background: var(--card-bg);
-    color: var(--fg);
-    border-radius: var(--border-radius-default);
     text-decoration: none;
-    font-weight: 500;
-    text-align: center;
-    transition: background 200ms, border 200ms, color 200ms;
+    cursor: pointer;
+    min-height: 34px;
+    margin-left: 0;
+    position: relative;
+    transition: color 0.12s, font-weight 0.12s, background 0.12s;
+    outline: none;
+    border: none;
+    box-shadow: none;
 }
 
-.settings-panel li a:hover,
-.settings-panel li a.active {
-    color: var(--bg);
+.menu .settings-sub-menu a.sub-section.active,
+.menu .settings-sub-menu a.sub-section:hover {
+    color: var(--primary);
+    background: transparent;
+    font-weight: 700;
+    box-shadow: none;
+}
+
+.sidebar-footer {
+    margin-top: auto;
+    padding: 1em 1.3em 1.5em 1.3em;
+    color: var(--sidebar-fg);
+    font-size: 1em;
+    border-top: 1.5px solid var(--sidebar-divider);
+    background: var(--sidebar-bg);
+    text-align: center;
+    user-select: none;
+    letter-spacing: 0.04em;
+}
+
+@media (max-width: 1100px) {
+    nav.sidebar {
+        left: -256px;
+        box-shadow: 2px 0 16px 0 rgba(0,0,0,0.24);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        height: calc(100dvh - 64px);
+        min-height: 0;
+        max-height: none;
+    }
+    body.sidebar-open nav.sidebar {
+        left: 0;
+    }
+    .daps-title {
+        display: none !important;
+    }
+    .nav-logo {
+        padding-right: 0;
+    }
 }

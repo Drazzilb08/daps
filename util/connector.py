@@ -27,24 +27,18 @@ def update_client_databases(
 
         if instance_type in ["radarr", "sonarr"]:
             app = create_arr_client(url, api, logger)
-            if not app.is_connected():
+            if app is None or not app.is_connected():
                 logger.error(f"[{instance_type}] Connection failed for '{instance_name}'. Skipping.")
                 continue
 
             asset_type = "movie" if app.instance_type == "Radarr" else "show"
-            if force_reindex:
-                logger.debug(f"[{instance_type}] Force reindex: clearing '{asset_type}' cache for '{instance_name}'.")
-                db.conn.execute(
-                    "DELETE FROM media_cache WHERE instance_name=? AND asset_type=?",
-                    (instance_name, asset_type)
-                )
-            else:
+            if not force_reindex:
                 cache = db.get_media_cache_for_instance(instance_name, asset_type, max_age_hours=max_age_hours)
                 if cache:
                     logger.debug(f"[{instance_type}] Instance '{instance_name}' is fresh. Skipping reindex.")
                     continue
 
-            logger.info(f"Fetching media data for '{instance_name}'...")
+            logger.info(f"Indexing '{instance_name}'...")
             fresh_media = app.get_all_media()
             db.sync_media_cache_for_instance(instance_name, app.instance_type, asset_type, fresh_media, logger)
 
@@ -85,7 +79,7 @@ def update_plex_database(db, config, logger, max_age_hours=6, force_reindex=Fals
                     logger.debug(f"[plex] Library '{library_name}' for '{instance_name}' is fresh. Skipping reindex.")
                     continue
 
-            logger.info(f"Reindexing library '{library_name}' for '{instance_name}'...")
+            logger.info(f"Indexing library '{library_name}' for '{instance_name}'...")
             try:
                 fresh_media = plex_client.get_all_plex_media(
                     db=db,
@@ -150,7 +144,7 @@ def update_collections_database(db, config, logger, max_age_hours=6, force_reind
                         logger.debug(f"[plex] Collections cache for library '{library_name}' in '{instance_name}' is fresh. Skipping reindex.")
                         continue
 
-                logger.info(f"Reindexing collections for library '{library_name}' in '{instance_name}'...")
+                logger.info(f"Indexing collections for library '{library_name}' in '{instance_name}'...")
                 try:
                     db.sync_collections_cache(instance_name, library_name, collections, logger)
                 except Exception as e:

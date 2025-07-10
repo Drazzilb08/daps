@@ -1,4 +1,4 @@
-import { humanize } from './common.js';
+import { humanize } from './util.js';
 import { moduleOrder } from './helper.js';
 
 let term = null; // xterm.js instance
@@ -11,10 +11,9 @@ function getUrlParams() {
     const params = new URLSearchParams(window.location.search);
     return {
         module_name: params.get('module_name') || '',
-        log_file: params.get('log_file') || ''
+        log_file: params.get('log_file') || '',
     };
 }
-
 
 export function buildLogControls() {
     const controlsDiv = document.createElement('div');
@@ -143,7 +142,6 @@ export async function loadLogs() {
 
     const oldControls = containerIframe.querySelector('.log-controls');
     if (oldControls) oldControls.remove();
-    
 
     const controlsDiv = buildLogControls();
     containerIframe.insertBefore(controlsDiv, containerIframe.firstChild);
@@ -169,8 +167,6 @@ export async function loadLogs() {
         collapseBtn.setAttribute('aria-expanded', 'false');
         collapseBtn.innerHTML = '<span class="toolbar-collapse-icon">▸</span> Show Controls';
     }
-
-
 
     if (!logOutput) return;
     logOutput.innerHTML = '';
@@ -198,7 +194,7 @@ export async function loadLogs() {
     };
     setTimeout(() => {
         const xtermDiv = logOutput.querySelector('.xterm');
-        if (xtermDiv) xtermDiv.style.maxWidth = "100%";
+        if (xtermDiv) xtermDiv.style.maxWidth = '100%';
     }, 50);
     window.addEventListener('resize', handleResize);
 
@@ -214,7 +210,6 @@ export async function loadLogs() {
         const res = await fetch('/api/logs');
         const availableModules = await res.json();
 
-        
         moduleSelect.innerHTML = '<option value="">Select Module</option>'; // Reset options
 
         // Show splash if nothing to show
@@ -226,11 +221,10 @@ export async function loadLogs() {
             renderToXTerm('', { forceClear: true, fileKey: null });
             return;
         } else {
-            
-            
         }
 
-        const orderedModules = (moduleOrder || []).filter((m) => availableModules.includes(m))
+        const orderedModules = (moduleOrder || [])
+            .filter((m) => availableModules.includes(m))
             .concat(availableModules.filter((m) => !(moduleOrder || []).includes(m)));
         for (const module of orderedModules) {
             const opt = document.createElement('option');
@@ -253,15 +247,10 @@ export async function loadLogs() {
         }
     }
 
-    
     async function loadLogFiles(moduleName) {
-        
-        
         logfileSelect.innerHTML = '<option value="">Select Log File</option>';
         logfileSelect.disabled = true;
         if (!moduleName) {
-            
-            
             renderToXTerm('', { forceClear: true, fileKey: null });
             return;
         }
@@ -273,8 +262,6 @@ export async function loadLogs() {
             renderToXTerm('', { forceClear: true, fileKey: null });
             return;
         } else {
-            
-            
         }
         let defaultLog = null;
         for (const file of files) {
@@ -293,10 +280,6 @@ export async function loadLogs() {
     }
 
     async function loadLogContent(moduleName, fileName) {
-        
-        
-        
-        
         const requestKey = `${moduleName}/${fileName}`;
         currentModule = moduleName;
         currentFile = fileName;
@@ -416,7 +399,7 @@ export async function loadLogs() {
         link.click();
         document.body.removeChild(link);
     });
-    
+
     collapseBtn.addEventListener('click', () => {
         controlsDiv.classList.toggle('collapsed');
         const isCollapsed = controlsDiv.classList.contains('collapsed');

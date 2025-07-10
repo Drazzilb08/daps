@@ -1,5 +1,5 @@
 import { fetchConfig, setupPasswordToggles, getIcon } from './helper.js';
-import { humanize, showToast } from './common.js';
+import { humanize, showToast } from './util.js';
 import { modalHeaderHtml, modalFooterHtml } from './settings/modals.js';
 
 export async function loadInstances() {
@@ -50,7 +50,6 @@ function makeCard(service, name, settings, config) {
     title.className = 'card-title';
     title.textContent = name;
     card.appendChild(title);
-
 
     card.onclick = () => {
         instanceModal({
@@ -103,10 +102,24 @@ function instanceModal({ service, name = '', settings = {}, config, onReload }) 
 
     // Footer buttons config (Delete always left, others right)
     const footerButtons = [
-        ...(isEdit ? [{ id: 'delete-modal-btn', label: 'Delete', class: 'btn--remove-item', type: 'button' }] : []),
+        ...(isEdit
+            ? [
+                  {
+                      id: 'delete-modal-btn',
+                      label: 'Delete',
+                      class: 'btn--remove-item',
+                      type: 'button',
+                  },
+              ]
+            : []),
         { id: 'test-btn', label: 'Test', class: '', type: 'button' },
         { id: 'cancel-modal-btn', label: 'Cancel', class: 'btn--cancel', type: 'button' },
-        { id: isEdit ? 'save-btn' : 'add-btn', label: isEdit ? 'Save' : 'Add', class: 'btn--success', type: 'submit' }
+        {
+            id: isEdit ? 'save-btn' : 'add-btn',
+            label: isEdit ? 'Save' : 'Add',
+            class: 'btn--success',
+            type: 'submit',
+        },
     ];
 
     modal.innerHTML = `
@@ -114,9 +127,13 @@ function instanceModal({ service, name = '', settings = {}, config, onReload }) 
         ${modalHeaderHtml({ title: isEdit ? `Edit ${service}` : `Add ${service}` })}
         <form class="modal-body" id="instance-modal-form" autocomplete="off">
             <label>Instance Name</label>
-            <input type="text" id="instance-modal-name" class="input" placeholder="e.g. radarr_hd" value="${name || ''}" />
+            <input type="text" id="instance-modal-name" class="input" placeholder="e.g. radarr_hd" value="${
+                name || ''
+            }" />
             <label>URL</label>
-            <input type="text" id="instance-modal-url" class="input" placeholder="http://host:port" value="${settings.url || ''}" />
+            <input type="text" id="instance-modal-url" class="input" placeholder="http://host:port" value="${
+                settings.url || ''
+            }" />
             <label>API Key
             <div class="password-wrapper">
                 <input
@@ -157,7 +174,9 @@ function instanceModal({ service, name = '', settings = {}, config, onReload }) 
         document.documentElement.classList.remove('modal-open');
     }
 
-    modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+    modal.onclick = (e) => {
+        if (e.target === modal) closeModal();
+    };
     modal.querySelector('.modal-close-x').onclick = closeModal;
     modal.querySelector('#cancel-modal-btn').onclick = closeModal;
 

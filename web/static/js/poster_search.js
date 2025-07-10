@@ -1,5 +1,5 @@
 import { fetchConfig } from './helper.js';
-import { showToast } from './common.js';
+import { showToast } from './util.js';
 
 const IDS = {
     searchInput: 'poster-search-input',

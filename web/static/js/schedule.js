@@ -1,8 +1,7 @@
 import { fetchConfig, moduleList } from './helper.js';
-import { humanize, showToast } from './common.js';
+import { humanize, showToast } from './util.js';
 import { modalHeaderHtml, modalFooterHtml } from './settings/modals.js';
 import { buildSchedulePayload } from './payload.js';
-
 
 let allRunStates = {};
 
@@ -14,9 +13,9 @@ function formatLastRun(dt) {
     const now = new Date();
     const today = now.toDateString();
     const runDay = date.toDateString();
-    let dayStr = (today === runDay) ? "Today" : runDay;
-    let h = date.getHours().toString().padStart(2, "0");
-    let m = date.getMinutes().toString().padStart(2, "0");
+    let dayStr = today === runDay ? 'Today' : runDay;
+    let h = date.getHours().toString().padStart(2, '0');
+    let m = date.getMinutes().toString().padStart(2, '0');
     return `${dayStr} at ${h}:${m}`;
 }
 
@@ -26,7 +25,7 @@ async function fetchAllRunStates() {
         if (!res.ok) return;
         const data = await res.json();
         allRunStates = {};
-        (data.run_states || []).forEach(r => {
+        (data.run_states || []).forEach((r) => {
             allRunStates[r.module_name] = r;
         });
     } catch {}
@@ -45,7 +44,7 @@ export async function loadSchedule() {
 
     // Only show "+" if there's at least one unscheduled module
     const scheduledModules = Object.keys(schedule);
-    const unscheduled = moduleList.filter(m => !scheduledModules.includes(m));
+    const unscheduled = moduleList.filter((m) => !scheduledModules.includes(m));
     if (unscheduled.length > 0) {
         list.appendChild(makeAddCard(schedule));
     }
@@ -55,7 +54,7 @@ export async function loadSchedule() {
 async function getModuleStatus(module) {
     try {
         const res = await fetch(`/api/status?module=${encodeURIComponent(module)}`);
-        if (!res.ok) throw new Error("Failed to check status");
+        if (!res.ok) throw new Error('Failed to check status');
         const data = await res.json();
         return !!data.running;
     } catch (err) {
@@ -68,7 +67,7 @@ async function makeCard(module, time, scheduleConfig) {
     const card = document.createElement('div');
     card.className = 'card';
     card.tabIndex = 0;
-    card.onclick = e => {
+    card.onclick = (e) => {
         if (!e.target.classList.contains('card-action-btn')) {
             scheduleModal(module, time, loadSchedule, scheduleConfig);
         }
@@ -139,15 +138,13 @@ async function makeCard(module, time, scheduleConfig) {
         running = isRunning;
         btn.className = `btn--icon card-action-btn${isRunning ? ' btn--danger' : ''}`;
         btn.disabled = isCanceling;
-        btn.setAttribute('aria-label',
-            isRunning
-                ? `Cancel ${humanize(module)} Run`
-                : `Run ${humanize(module)} Now!`
+        btn.setAttribute(
+            'aria-label',
+            isRunning ? `Cancel ${humanize(module)} Run` : `Run ${humanize(module)} Now!`
         );
-        btnTooltip.textContent =
-            isRunning
-                ? `Cancel ${humanize(module)} Run`
-                : `Run ${humanize(module)} Now!`;
+        btnTooltip.textContent = isRunning
+            ? `Cancel ${humanize(module)} Run`
+            : `Run ${humanize(module)} Now!`;
 
         if (isRunning) {
             if (isMobile() || showStop) {
@@ -188,7 +185,7 @@ async function makeCard(module, time, scheduleConfig) {
     // Poll for module status every second while running
     async function pollStatus() {
         while (running && !destroyed) {
-            await new Promise(r => setTimeout(r, 1000));
+            await new Promise((r) => setTimeout(r, 1000));
             if (destroyed) return;
             const status = await getModuleStatus(module);
             if (status !== running) {
@@ -211,7 +208,7 @@ async function makeCard(module, time, scheduleConfig) {
             await fetch('/api/run', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ module })
+                body: JSON.stringify({ module }),
             });
             // Begin polling
             running = true;
@@ -222,7 +219,7 @@ async function makeCard(module, time, scheduleConfig) {
             await fetch('/api/cancel', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ module })
+                body: JSON.stringify({ module }),
             });
             running = false;
             setBtnState(false);
@@ -232,7 +229,9 @@ async function makeCard(module, time, scheduleConfig) {
 
     btnWrap.appendChild(btn);
 
-    card._destroy = () => { destroyed = true; };
+    card._destroy = () => {
+        destroyed = true;
+    };
 
     // -- Add left/right to bottom bar --
     bottomBar.appendChild(lastRunDisplay);
@@ -272,9 +271,18 @@ export function scheduleModal(module = '', value = '', onReload = null, schedule
 
     // Build footer buttons for standardized modalFooterHtml
     const footerButtons = [
-        ...(module ? [{ id: 'schedule-modal-delete', label: 'Delete', class: 'btn--remove-item', type: 'button' }] : []),
+        ...(module
+            ? [
+                  {
+                      id: 'schedule-modal-delete',
+                      label: 'Delete',
+                      class: 'btn--remove-item',
+                      type: 'button',
+                  },
+              ]
+            : []),
         { id: 'schedule-modal-cancel', label: 'Cancel', class: 'btn--cancel', type: 'button' },
-        { id: 'schedule-modal-save', label: 'Save', class: 'btn--success', type: 'submit' }
+        { id: 'schedule-modal-save', label: 'Save', class: 'btn--success', type: 'submit' },
     ];
 
     modal.innerHTML = `
@@ -324,8 +332,13 @@ export function scheduleModal(module = '', value = '', onReload = null, schedule
     let optionsHTML = '';
     moduleList.forEach((mod) => {
         let isDisabled = scheduleConfig[mod] && mod !== module;
-        optionsHTML += `<option value="${mod}"${isDisabled ? ' disabled style="color: var(--muted);"' : ''}${mod === module ? ' selected' : ''}>` +
-            `${window.DAPS && DAPS.humanize ? DAPS.humanize(mod) : mod}${isDisabled ? ' (already scheduled)' : ''}` +
+        optionsHTML +=
+            `<option value="${mod}"${isDisabled ? ' disabled style="color: var(--muted);"' : ''}${
+                mod === module ? ' selected' : ''
+            }>` +
+            `${window.DAPS && DAPS.humanize ? DAPS.humanize(mod) : mod}${
+                isDisabled ? ' (already scheduled)' : ''
+            }` +
             `</option>`;
     });
     select.innerHTML = optionsHTML;
@@ -334,10 +347,14 @@ export function scheduleModal(module = '', value = '', onReload = null, schedule
         if (typeof $ !== 'undefined' && $(select).data('select2')) $(select).select2('destroy');
         if (typeof $ !== 'undefined' && $(select).select2) {
             $(select).select2({ width: '100%', theme: 'default' });
-            $(select).on('select2:selecting', function(e) {
+            $(select).on('select2:selecting', function (e) {
                 if (e.params.args.data.element.disabled) {
                     e.preventDefault();
-                    if (window.DAPS && DAPS.showToast) DAPS.showToast("That module is already scheduled and cannot be selected.", "error");
+                    if (window.DAPS && DAPS.showToast)
+                        DAPS.showToast(
+                            'That module is already scheduled and cannot be selected.',
+                            'error'
+                        );
                 }
             });
         }
@@ -350,11 +367,11 @@ export function scheduleModal(module = '', value = '', onReload = null, schedule
 
     function setActivePill(type) {
         selectedType = type;
-        pills.forEach(p => p.classList.toggle('active', p.dataset.type === type));
+        pills.forEach((p) => p.classList.toggle('active', p.dataset.type === type));
         updateFields(type);
         updateSummary();
     }
-    pills.forEach(p => p.onclick = () => setActivePill(p.dataset.type));
+    pills.forEach((p) => (p.onclick = () => setActivePill(p.dataset.type)));
 
     function updateFields(type) {
         let html = '';
@@ -368,18 +385,26 @@ export function scheduleModal(module = '', value = '', onReload = null, schedule
         } else if (type === 'weekly') {
             html = `<label>Day(s):</label>
                 <div class="weekday-pills" style="display:flex;gap:0.4em;margin-bottom:0.6em;">
-                    ${['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map((d,i) =>
-                        `<button type="button" class="weekday-pill" data-day="${i}">${d}</button>`
-                    ).join('')}
+                    ${['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+                        .map(
+                            (d, i) =>
+                                `<button type="button" class="weekday-pill" data-day="${i}">${d}</button>`
+                        )
+                        .join('')}
                 </div>
                 <label>At:</label>
                 <input type="time" id="weekly-time" class="input" value="12:00">`;
         } else if (type === 'monthly') {
             html = `<label>Day(s) of month:</label>
                 <div class="monthday-pills" style="display:flex;flex-wrap:wrap;gap:0.28em 0.4em;margin-bottom:0.6em;">
-                    ${Array.from({length:31}).map((_,i) =>
-                        `<button type="button" class="monthday-pill" data-day="${i+1}">${i+1}</button>`
-                    ).join('')}
+                    ${Array.from({ length: 31 })
+                        .map(
+                            (_, i) =>
+                                `<button type="button" class="monthday-pill" data-day="${i + 1}">${
+                                    i + 1
+                                }</button>`
+                        )
+                        .join('')}
                 </div>
                 <label>At:</label>
                 <input type="time" id="monthly-time" class="input" value="12:00">`;
@@ -395,23 +420,29 @@ export function scheduleModal(module = '', value = '', onReload = null, schedule
         if (type === 'daily') {
             const timesDiv = fieldsDiv.querySelector('.daily-times');
             function addTimeRow(val = '') {
-                const idx = Date.now() + Math.floor(Math.random()*10000);
+                const idx = Date.now() + Math.floor(Math.random() * 10000);
                 const html = `<div class="daily-row" data-idx="${idx}" style="display:flex;align-items:center;gap:0.5em;margin-bottom:0.2em;">
                     <input type="time" class="input" value="${val}">
                     <button type="button" class="btn btn--remove-item" title="Remove">&#x2212;</button>
                 </div>`;
                 timesDiv.insertAdjacentHTML('beforeend', html);
                 const row = timesDiv.querySelector(`[data-idx="${idx}"]`);
-                row.querySelector('button').onclick = () => { row.remove(); updateSummary(); };
+                row.querySelector('button').onclick = () => {
+                    row.remove();
+                    updateSummary();
+                };
                 row.querySelector('input[type="time"]').onchange = updateSummary;
             }
             addTimeRow('12:00');
-            fieldsDiv.querySelector('#add-daily-time').onclick = () => { addTimeRow(''); updateSummary(); };
+            fieldsDiv.querySelector('#add-daily-time').onclick = () => {
+                addTimeRow('');
+                updateSummary();
+            };
         }
         if (type === 'weekly') {
             const dayPills = Array.from(fieldsDiv.querySelectorAll('.weekday-pill'));
-            dayPills.forEach((btn,i) => {
-                btn.onclick = function() {
+            dayPills.forEach((btn, i) => {
+                btn.onclick = function () {
                     btn.classList.toggle('active');
                     updateSummary();
                 };
@@ -419,8 +450,8 @@ export function scheduleModal(module = '', value = '', onReload = null, schedule
         }
         if (type === 'monthly') {
             const mdPills = Array.from(fieldsDiv.querySelectorAll('.monthday-pill'));
-            mdPills.forEach((btn,i) => {
-                btn.onclick = function() {
+            mdPills.forEach((btn, i) => {
+                btn.onclick = function () {
                     btn.classList.toggle('active');
                     updateSummary();
                 };
@@ -447,18 +478,21 @@ export function scheduleModal(module = '', value = '', onReload = null, schedule
             summary = `Will run at minute ${m} of every hour.`;
         } else if (selectedType === 'daily') {
             const times = Array.from(fieldsDiv.querySelectorAll('.daily-times input[type="time"]'))
-                .map(inp => inp.value.trim()).filter(Boolean);
+                .map((inp) => inp.value.trim())
+                .filter(Boolean);
             summary = `Will run daily at ${times.join(', ') || '[no times set]'}`;
         } else if (selectedType === 'weekly') {
-            const days = Array.from(fieldsDiv.querySelectorAll('.weekday-pill.active'))
-                .map(btn => btn.textContent);
+            const days = Array.from(fieldsDiv.querySelectorAll('.weekday-pill.active')).map(
+                (btn) => btn.textContent
+            );
             const time = modal.querySelector('#weekly-time')?.value || '';
             summary = days.length
                 ? `Will run every ${days.join(', ')} at ${time || '[time]'}`
                 : 'Pick at least one day of the week.';
         } else if (selectedType === 'monthly') {
-            const days = Array.from(fieldsDiv.querySelectorAll('.monthday-pill.active'))
-                .map(btn => btn.textContent);
+            const days = Array.from(fieldsDiv.querySelectorAll('.monthday-pill.active')).map(
+                (btn) => btn.textContent
+            );
             const time = fieldsDiv.querySelector('#monthly-time')?.value || '';
             summary = days.length
                 ? `Will run on day(s) ${days.join(', ')} of the month at ${time || '[time]'}`
@@ -471,7 +505,10 @@ export function scheduleModal(module = '', value = '', onReload = null, schedule
     }
 
     function tryParseAndPrefill() {
-        if (!value) { setActivePill('daily'); return; }
+        if (!value) {
+            setActivePill('daily');
+            return;
+        }
         let match;
         if ((match = value.match(/^hourly\((\d{2})\)$/))) {
             setActivePill('hourly');
@@ -481,23 +518,23 @@ export function scheduleModal(module = '', value = '', onReload = null, schedule
             const times = match[1].split('|');
             const timesDiv = fieldsDiv.querySelector('.daily-times');
             timesDiv.innerHTML = '';
-            times.forEach(t => {
+            times.forEach((t) => {
                 const addBtn = fieldsDiv.querySelector('#add-daily-time');
                 addBtn.click();
                 const inputs = timesDiv.querySelectorAll('input[type="time"]');
-                inputs[inputs.length-1].value = t;
+                inputs[inputs.length - 1].value = t;
             });
         } else if ((match = value.match(/^weekly\(([\w,]+)@([\d:]+)\)$/))) {
             setActivePill('weekly');
-            const days = match[1].split(',').map(d => d.toLowerCase());
-            Array.from(fieldsDiv.querySelectorAll('.weekday-pill')).forEach(btn => {
+            const days = match[1].split(',').map((d) => d.toLowerCase());
+            Array.from(fieldsDiv.querySelectorAll('.weekday-pill')).forEach((btn) => {
                 if (days.includes(btn.textContent.toLowerCase())) btn.classList.add('active');
             });
             fieldsDiv.querySelector('#weekly-time').value = match[2];
         } else if ((match = value.match(/^monthly\(([\d,]+)@([\d:]+)\)$/))) {
             setActivePill('monthly');
             const days = match[1].split(',').map(Number);
-            Array.from(fieldsDiv.querySelectorAll('.monthday-pill')).forEach(btn => {
+            Array.from(fieldsDiv.querySelectorAll('.monthday-pill')).forEach((btn) => {
                 if (days.includes(Number(btn.textContent))) btn.classList.add('active');
             });
             fieldsDiv.querySelector('#monthly-time').value = match[2];
@@ -529,15 +566,17 @@ export function scheduleModal(module = '', value = '', onReload = null, schedule
             schedString = `hourly(${String(min).padStart(2, '0')})`;
         } else if (selectedType === 'daily') {
             const times = Array.from(fieldsDiv.querySelectorAll('.daily-times input[type="time"]'))
-                .map(inp => inp.value.trim()).filter(Boolean);
+                .map((inp) => inp.value.trim())
+                .filter(Boolean);
             if (!times.length) {
                 showToast('At least one time is required', 'error');
                 return;
             }
             schedString = `daily(${times.join('|')})`;
         } else if (selectedType === 'weekly') {
-            const days = Array.from(fieldsDiv.querySelectorAll('.weekday-pill.active'))
-                .map(btn => btn.textContent.toLowerCase());
+            const days = Array.from(fieldsDiv.querySelectorAll('.weekday-pill.active')).map((btn) =>
+                btn.textContent.toLowerCase()
+            );
             const time = fieldsDiv.querySelector('#weekly-time')?.value || '';
             if (!days.length || !time) {
                 showToast('Pick days and time', 'error');
@@ -546,7 +585,8 @@ export function scheduleModal(module = '', value = '', onReload = null, schedule
             schedString = `weekly(${days.join(',')}@${time})`;
         } else if (selectedType === 'monthly') {
             const days = Array.from(fieldsDiv.querySelectorAll('.monthday-pill.active'))
-                .map(btn => btn.textContent).filter(Boolean);
+                .map((btn) => btn.textContent)
+                .filter(Boolean);
             const time = fieldsDiv.querySelector('#monthly-time')?.value || '';
             if (!days.length || !time) {
                 showToast('Pick days and time', 'error');
@@ -567,7 +607,7 @@ export function scheduleModal(module = '', value = '', onReload = null, schedule
             const res = await fetch('/api/config', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
+                body: JSON.stringify(payload),
             });
             if (res.ok) {
                 showToast('Schedule updated!', 'success');
@@ -590,7 +630,7 @@ export function scheduleModal(module = '', value = '', onReload = null, schedule
                 const res = await fetch('/api/config', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify(payload),
                 });
                 if (res.ok) {
                     showToast('Schedule deleted!', 'success');
@@ -610,4 +650,3 @@ export function scheduleModal(module = '', value = '', onReload = null, schedule
     fieldsDiv.addEventListener('input', updateSummary);
     fieldsDiv.addEventListener('change', updateSummary);
 }
-

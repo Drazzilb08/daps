@@ -173,7 +173,6 @@
 
 /* Update badge in footer (hidden by default) */
 .footer-update-badge {
-    display: none;
     background: var(--error);
     color: var(--footer-update-badge-color);
     border-radius: 12px;

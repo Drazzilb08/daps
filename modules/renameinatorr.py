@@ -108,6 +108,17 @@ def process_instance(
     media_dict: List[Dict[str, Any]] = app.get_parsed_media()
     count: int = get_count_for_instance_type(config, instance_type, logger)
     tag_id: Any = None
+
+    # Ignore-tag filtering: skip items with the ignore tag, if configured
+    skipped_count = 0
+    if getattr(config, "ignore_tag", None):
+        ignore_tag_id = app.get_tag_id_from_name(config.ignore_tag)
+        if ignore_tag_id:
+            before_count = len(media_dict)
+            media_dict = [item for item in media_dict if ignore_tag_id not in item.get("tags", [])]
+            skipped_count = before_count - len(media_dict)
+            if skipped_count > 0:
+                logger.info(f"Skipped {skipped_count} items due to ignore tag '{config.ignore_tag}'.")
     # Tagging logic: filter untagged, clear if all tagged
     if getattr(config, "tag_name", None):
         tag_id = app.get_tag_id_from_name(config.tag_name)

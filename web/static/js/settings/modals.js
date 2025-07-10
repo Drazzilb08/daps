@@ -1,20 +1,13 @@
-import { PLACEHOLDER_TEXT } from './constants.js';
-import { buildSchedulePayload, buildInstancesPayload } from '../payload.js';
-import { moduleList } from '../helper.js';
+import { SETTINGS_SCHEMA } from './settings_schema.js';
 import {
     populateScheduleDropdowns,
     loadHolidayPresets,
     populateGDrivePresetsDropdown,
-    isValidSchedule,
 } from './modal_helpers.js';
-import { DAPS } from '../common.js';
-const { markDirty, humanize, showToast } = DAPS;
-
-const directoryCache = {};
+import { humanize } from '../util.js';
 
 export function setupModalCloseOnOutsideClick(modal) {
     function handler(e) {
-        // If click is directly on .modal (the overlay), not the inner .modal-content
         if (e.target === modal) {
             modal.remove();
             document.body.classList.remove('modal-open');
@@ -28,34 +21,40 @@ export function setupModalCloseOnOutsideClick(modal) {
     });
 }
 
-// buttons: array of button descriptors {id, label, class, type, disabled}
-// leftBtnId: string or array of string ids for leftmost button(s) (e.g., "delete-modal-btn")
 export function modalFooterHtml(buttons = [], leftBtnIds = ['delete-modal-btn']) {
     // Always supports one or more left-anchored button(s)
-    const left = buttons.filter(b => leftBtnIds.includes(b.id));
-    const right = buttons.filter(b => !leftBtnIds.includes(b.id));
+    const left = buttons.filter((b) => leftBtnIds.includes(b.id));
+    const right = buttons.filter((b) => !leftBtnIds.includes(b.id));
 
     return `
         <div class="modal-footer">
             <div>
-                ${left.map(btn => `
+                ${left
+                    .map(
+                        (btn) => `
                     <button
                         class="btn ${btn.class || ''}"
                         type="${btn.type || 'button'}"
                         id="${btn.id || ''}"
                         ${btn.disabled ? 'disabled' : ''}
                     >${btn.label}</button>
-                `).join('')}
+                `
+                    )
+                    .join('')}
             </div>
             <div style="display: flex; gap: 0.7em;">
-                ${right.map(btn => `
+                ${right
+                    .map(
+                        (btn) => `
                     <button
                         class="btn ${btn.class || ''}"
                         type="${btn.type || 'button'}"
                         id="${btn.id || ''}"
                         ${btn.disabled ? 'disabled' : ''}
                     >${btn.label}</button>
-                `).join('')}
+                `
+                    )
+                    .join('')}
             </div>
         </div>
     `;
@@ -70,174 +69,234 @@ export function modalHeaderHtml({ title, closeId = 'modal-close-x', extra = '' }
     `;
 }
 
-function attachModalSaveCancel(modal, saveSelector, cancelSelector, onSave) {
-    const saveBtn = modal.querySelector(saveSelector);
-    const cancelBtn = modal.querySelector(cancelSelector);
-    if (saveBtn) saveBtn.onclick = onSave;
-    if (cancelBtn) cancelBtn.onclick = () => modal.classList.remove('show');
+export function createModal(id, title, contentHtml, footerButtons = [], onClose = null) {
+    let modal = document.getElementById(id);
+    if (modal) modal.remove();
+
+    modal = document.createElement('div');
+    modal.id = id;
+    modal.className = 'modal';
+    modal.innerHTML = `
+        <div class="modal-content">
+            ${modalHeaderHtml({ title })}
+            ${contentHtml}
+            ${modalFooterHtml(footerButtons)}
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    // Helper to close modal and cleanup overlay state
+    function closeModal() {
+        modal.remove();
+        document.body.classList.remove('modal-open');
+        if (typeof onClose === 'function') onClose();
+    }
+
+    setupModalCloseOnOutsideClick(modal);
+
+    // Replace default .show/class logic with safer approach
+    requestAnimationFrame(() => {
+        modal.classList.add('show');
+        document.body.classList.add('modal-open');
+    });
+
+    const closeBtn = modal.querySelector('.modal-close-x');
+    if (closeBtn) {
+        closeBtn.onclick = closeModal;
+    }
+
+    // Patch all cancel/dismiss footer buttons to use closeModal
+    footerButtons.forEach((btn) => {
+        if (/cancel|close/i.test(btn.label || btn.id || '')) {
+            const el = modal.querySelector(`#${btn.id}`);
+            if (el) el.onclick = closeModal;
+        }
+    });
+
+    // Expose for others if they want it
+    modal._closeModal = closeModal;
+    return modal;
 }
 
 export function gdriveSyncModal(editIdx, gdriveSyncData, updateGdriveList) {
     const moduleName = 'sync_gdrive';
     const isEdit = typeof editIdx === 'number';
-    let modal = document.getElementById('gdrive-sync-modal');
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'gdrive-sync-modal';
-        modal.className = 'modal';
-        modal.innerHTML = `
-        <div class="modal-content">
+    const entry = isEdit ? gdriveSyncData[editIdx] : { name: '', id: '', location: '' };
+
+    // Get schema for placeholder support
+    const schemaObj = SETTINGS_SCHEMA.find((s) => s.key === moduleName);
+    const gdriveFieldSchema = schemaObj?.fields?.find((f) => f.key === 'gdrive_list');
+    const placeholders = {};
+    if (gdriveFieldSchema && Array.isArray(gdriveFieldSchema.fields)) {
+        for (const f of gdriveFieldSchema.fields) {
+            placeholders[f.key] = f.placeholder || '';
+        }
+    }
+
+    const contentHtml = `
         <label>Preset (optional)</label>
-        <select id="gdrive-sync-preset" class="select"> 
+        <select id="gdrive-sync-preset" class="select">
             <option value="">— No Preset —</option>
         </select>
         <div id="gdrive-preset-detail" style="margin-bottom: 0.75rem;"></div>
-        <label>Name</label><input type="text" id="gdrive-name" class="input" placeholder="${
-            PLACEHOLDER_TEXT[moduleName]?.name ?? ''
+        <label>Name</label>
+        <input type="text" id="gdrive-name" class="input" placeholder="${
+            placeholders.name || ''
         }" />
-        <label>GDrive ID</label><input type="text" id="gdrive-id" class="input" placeholder="${
-            PLACEHOLDER_TEXT[moduleName]?.id ?? ''
+        <label>GDrive ID</label>
+        <input type="text" id="gdrive-id" class="input" placeholder="${placeholders.id || ''}" />
+        <label>Location</label>
+        <input type="text" id="gdrive-location" class="input" readonly placeholder="${
+            placeholders.location || ''
         }" />
-        <label>Location</label><input type="text" id="gdrive-location" class="input" readonly placeholder="${
-            PLACEHOLDER_TEXT[moduleName]?.location ?? ''
-        }" />
-        ${modalFooterHtml('gdrive-save-btn', 'gdrive-cancel-btn', isEdit ? 'Save' : 'Add')}
-        </div>
     `;
-        document.body.appendChild(modal);
-        modal
-            .querySelector('#gdrive-location')
-            .addEventListener('click', () =>
-                directoryPickerModal(modal.querySelector('#gdrive-location'))
-            );
-        setTimeout(() => populateGDrivePresetsDropdown(gdriveSyncData, modal.editingIdx), 0);
-    }
-    modal.editingIdx = isEdit ? editIdx : null;
-    const presetSelect = modal.querySelector('#gdrive-sync-preset');
-    const presetDetail = modal.querySelector('#gdrive-preset-detail');
-    if (presetSelect) {
-        if ($(presetSelect).data('select2')) {
-            $(presetSelect).val('').trigger('change');
-        } else {
-            presetSelect.value = '';
-        }
-    }
-    if (presetDetail) presetDetail.innerHTML = '';
-    const nameInput = modal.querySelector('#gdrive-name');
-    const idInput = modal.querySelector('#gdrive-id');
-    const locInput = modal.querySelector('#gdrive-location');
-    if (isEdit) {
-        const entry = gdriveSyncData[editIdx];
-        nameInput.value = entry.name || '';
-        idInput.value = entry.id || '';
-        locInput.value = entry.location || '';
-    } else {
-        nameInput.value = '';
-        idInput.value = '';
-        locInput.value = '';
-    }
-    const heading = modal.querySelector('h2');
-    if (heading) {
-        heading.textContent = (isEdit ? 'Edit' : 'Add') + ' GDrive Sync';
-    }
 
-    function handleGDriveSave() {
+    const modal = createModal(
+        'gdrive-sync-modal',
+        `${isEdit ? 'Edit' : 'Add'} GDrive Sync`,
+        contentHtml,
+        [
+            { id: 'gdrive-save-btn', label: isEdit ? 'Save' : 'Add', class: 'btn--success' },
+            { id: 'gdrive-cancel-btn', label: 'Cancel', class: 'btn--cancel' },
+        ]
+    );
+
+    // Set values if editing
+    modal.querySelector('#gdrive-name').value = entry.name || '';
+    modal.querySelector('#gdrive-id').value = entry.id || '';
+    modal.querySelector('#gdrive-location').value = entry.location || '';
+
+    // Directory picker
+    modal.querySelector('#gdrive-location').addEventListener('click', () => {
+        directoryPickerModal(modal.querySelector('#gdrive-location'));
+    });
+
+    // Save button
+    modal.querySelector('#gdrive-save-btn').onclick = () => {
         const name = modal.querySelector('#gdrive-name').value.trim();
         const id = modal.querySelector('#gdrive-id').value.trim();
-        const loc = modal.querySelector('#gdrive-location').value.trim();
-        if (!name || !id || !loc) {
-            return alert('All fields must be filled.');
+        const location = modal.querySelector('#gdrive-location').value.trim();
+        if (!name || !id || !location) {
+            alert('All fields must be filled.');
+            return;
         }
-        const entry = { id, location: loc, name };
-        if (typeof editIdx === 'number') {
-            gdriveSyncData[editIdx] = entry;
-        } else {
-            gdriveSyncData.push(entry);
-        }
+        const newEntry = { id, location, name };
+        if (isEdit) gdriveSyncData[editIdx] = newEntry;
+        else gdriveSyncData.push(newEntry);
         if (typeof updateGdriveList === 'function') updateGdriveList();
-        markDirty();
-        populateGDrivePresetsDropdown(gdriveSyncData, modal.editingIdx);
-        modal.classList.remove('show');
-    }
-    attachModalSaveCancel(modal, '#gdrive-save-btn', '#gdrive-cancel-btn', handleGDriveSave);
-    modal.classList.add('show');
-    document.body.classList.add('modal-open');
+        modal._closeModal();
+    };
+
+    // Cancel button
+    modal.querySelector('#gdrive-cancel-btn').onclick = () => modal._closeModal();
+
+    // Populate presets async
+    setTimeout(() => populateGDrivePresetsDropdown(gdriveSyncData, isEdit ? editIdx : null), 0);
 }
 
 export function borderReplacerrModal(editIdx, borderReplacerrData, onUpdate) {
     const moduleName = 'border_replacerr';
     const isEdit = typeof editIdx === 'number';
-    let modal = document.getElementById('border-replacerr-modal');
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'border-replacerr-modal';
-        modal.className = 'modal';
-        modal.innerHTML = `
-          <div class="modal-content">
-          <h2 id="border-replacerr-modal-heading"></h2>
-            <label>Holiday Preset</label>
-            <select id="holiday-preset" class="select">
-              <option value="">Select preset...</option>
-            </select>
-            
-            <label>Holiday Name</label>
-            <input type="text" id="holiday-name" class="input" placeholder="${
-                PLACEHOLDER_TEXT[moduleName]?.holiday_name ?? ''
-            }" />
-            
-            <label>Schedule</label>
-            <div class="schedule-range">
-              <select id="schedule-from-month" class="select"></select>
-              <select id="schedule-from-day" class="select"></select>
-              <span class="schedule-to-label">To</span>
-              <select id="schedule-to-month" class="select"></select>
-              <select id="schedule-to-day" class="select"></select>
-            </div>
-            
-            <label>Colors</label>
-            <div id="border-colors-container" class="border-colors-container"></div>
-            <button type="button" id="addBorderColor" class="btn">➕ Add Color</button>
-            
-            <div class="modal-footer">
-              <button type="button" id="holiday-save-btn" class="btn btn--success"></button>
-              <button type="button" id="holiday-cancel-btn" class="btn btn--cancel">Cancel</button>
-            </div>
-          </div>
-        `;
-        document.body.appendChild(modal);
+    const entry = isEdit ? borderReplacerrData[editIdx] : { name: '', schedule: '', color: [] };
+
+    // Schema-based placeholders
+    const schemaObj = SETTINGS_SCHEMA.find((s) => s.key === moduleName);
+    const holidaysField = schemaObj?.fields?.find((f) => f.key === 'holidays');
+    const subfields = holidaysField?.fields || [];
+    const placeholders = {};
+    for (const sf of subfields) {
+        placeholders[sf.key] = sf.placeholder || '';
     }
+
+    // Compose content HTML
+    const contentHtml = `
+        <label>Holiday Preset</label>
+        <select id="holiday-preset" class="select">
+            <option value="">Select preset...</option>
+        </select>
+        <label>Holiday Name</label>
+        <input type="text" id="holiday-name" class="input" placeholder="${
+            placeholders.name || ''
+        }" />
+        <label>Schedule</label>
+        <div class="schedule-range">
+            <select id="schedule-from-month" class="select"></select>
+            <select id="schedule-from-day" class="select"></select>
+            <span class="schedule-to-label">To</span>
+            <select id="schedule-to-month" class="select"></select>
+            <select id="schedule-to-day" class="select"></select>
+        </div>
+        <label>Colors</label>
+        <div id="border-colors-container" class="border-colors-container"></div>
+        <button type="button" id="addBorderColor" class="btn">➕ Add Color</button>
+    `;
+
+    // Footer buttons
+    const footer = [
+        { id: 'holiday-save-btn', label: isEdit ? 'Save' : 'Add', class: 'btn--success' },
+        { id: 'holiday-cancel-btn', label: 'Cancel', class: 'btn--cancel' },
+    ];
+
+    // Create modal
+    const modal = createModal(
+        'border-replacerr-modal',
+        `${isEdit ? 'Edit' : 'Add'} Holiday`,
+        contentHtml,
+        footer
+    );
+
+    // Setup dropdowns and presets
     loadHolidayPresets();
     populateScheduleDropdowns();
-    const heading = modal.querySelector('h2');
-    if (heading) {
-        heading.textContent = (isEdit ? 'Edit' : 'Add') + ' Holiday';
-    }
-    const saveBtn = modal.querySelector('#holiday-save-btn');
-    if (saveBtn) {
-        saveBtn.textContent = isEdit ? 'Save' : 'Add';
-    }
-    const colorContainer = modal.querySelector('#border-colors-container');
-    const addColorBtn = modal.querySelector('#addBorderColor');
 
+    // Set initial values
+    modal.querySelector('#holiday-name').value = entry.name || '';
+    // Parse schedule to fill from/to
+    let from = '',
+        to = '';
+    if (entry.schedule && entry.schedule.startsWith('range(') && entry.schedule.endsWith(')')) {
+        const range = entry.schedule.slice(6, -1);
+        [from, to] = range.split('-');
+    }
+    if (from) {
+        const [fromMonth, fromDay] = from.split('/');
+        modal.querySelector('#schedule-from-month').value = fromMonth || '';
+        modal.querySelector('#schedule-from-day').value = fromDay || '';
+    }
+    if (to) {
+        const [toMonth, toDay] = to.split('/');
+        modal.querySelector('#schedule-to-month').value = toMonth || '';
+        modal.querySelector('#schedule-to-day').value = toDay || '';
+    }
+
+    // Color logic
+    const colorContainer = modal.querySelector('#border-colors-container');
+    colorContainer.innerHTML = '';
     function addBorderColor(color = '#ffffff') {
         const swatch = document.createElement('div');
         swatch.className = 'subfield';
         swatch.innerHTML = `
-          <input type="color" value="${color}" />
-          <button type="button" class="btn--cancel remove-btn btn--remove-item btn">−</button>
+            <input type="color" value="${color}" />
+            <button type="button" class="btn--cancel remove-btn btn--remove-item btn">−</button>
         `;
         swatch.querySelector('.remove-btn').onclick = () => swatch.remove();
         colorContainer.appendChild(swatch);
     }
-    addColorBtn.onclick = () => addBorderColor();
-    modal.querySelector('#holiday-cancel-btn').onclick = () => {
-        modal.classList.remove('show');
-    };
+    // Fill with initial colors (or one empty)
+    if (Array.isArray(entry.color) && entry.color.length) {
+        entry.color.forEach(addBorderColor);
+    } else {
+        addBorderColor();
+    }
+    modal.querySelector('#addBorderColor').onclick = () => addBorderColor();
+
+    // Save handler
     modal.querySelector('#holiday-save-btn').onclick = () => {
         const name = modal.querySelector('#holiday-name').value.trim();
+        // Validate duplicate name
         const existing = borderReplacerrData || [];
         const duplicate = existing.some(
-            (entry, i) => entry.holiday === name && (!isEdit || i !== editIdx)
+            (entry, i) => entry.name === name && (!isEdit || i !== editIdx)
         );
         if (duplicate) {
             alert('A holiday with this name already exists.');
@@ -249,60 +308,27 @@ export function borderReplacerrModal(editIdx, borderReplacerrData, onUpdate) {
         const scheduleTo = `${modal.querySelector('#schedule-to-month').value}/${
             modal.querySelector('#schedule-to-day').value
         }`;
-        const colors = Array.from(
-            modal.querySelectorAll('#border-colors-container input[type="color"]')
-        ).map((input) => input.value);
+        const colors = Array.from(colorContainer.querySelectorAll('input[type="color"]')).map(
+            (input) => input.value
+        );
+
         if (!name || !scheduleFrom || !scheduleTo || !colors.length) {
             alert('All fields are required.');
             return;
         }
         const schedule = `range(${scheduleFrom}-${scheduleTo})`;
-        const holidayEntry = {
-            holiday: name,
-            schedule,
-            color: colors,
-        };
+        const holidayEntry = { name, schedule, color: colors };
         if (isEdit) {
             borderReplacerrData[editIdx] = holidayEntry;
         } else {
             borderReplacerrData.push(holidayEntry);
         }
-        modal.classList.remove('show');
         if (typeof onUpdate === 'function') onUpdate();
-        markDirty();
+        modal._closeModal();
     };
-    colorContainer.innerHTML = '';
-    if (isEdit) {
-        const entry = borderReplacerrData[editIdx];
-        modal.querySelector('#holiday-name').value = entry.holiday || '';
-        let from = '',
-            to = '';
-        if (entry.schedule && entry.schedule.startsWith('range(') && entry.schedule.endsWith(')')) {
-            const range = entry.schedule.slice(6, -1);
-            const [f, t] = range.split('-');
-            from = f || '';
-            to = t || '';
-        }
-        if (from) {
-            const [fromMonth, fromDay] = from.split('/');
-            modal.querySelector('#schedule-from-month').value = fromMonth || '';
-            modal.querySelector('#schedule-from-day').value = fromDay || '';
-        }
-        if (to) {
-            const [toMonth, toDay] = to.split('/');
-            modal.querySelector('#schedule-to-month').value = toMonth || '';
-            modal.querySelector('#schedule-to-day').value = toDay || '';
-        }
-        (entry.color || []).forEach(addBorderColor);
-    } else {
-        modal.querySelector('#holiday-name').value = '';
-        modal.querySelector('#schedule-from-month').selectedIndex = 0;
-        modal.querySelector('#schedule-from-day').selectedIndex = 0;
-        modal.querySelector('#schedule-to-month').selectedIndex = 0;
-        modal.querySelector('#schedule-to-day').selectedIndex = 0;
-        addBorderColor();
-    }
-    modal.classList.add('show');
+
+    // Cancel handler
+    modal.querySelector('#holiday-cancel-btn').onclick = () => modal._closeModal();
 }
 
 export function labelarrModal(editIdx, labelarrData, rootConfig, updateLabelarrTable) {
@@ -483,7 +509,6 @@ export function labelarrModal(editIdx, labelarrData, rootConfig, updateLabelarrT
             }
             console.log('labelarrData now:', JSON.stringify(labelarrData, null, 2));
             if (typeof updateLabelarrTable === 'function') updateLabelarrTable();
-            markDirty();
             modal.classList.remove('show');
         };
         console.log('Save handler attached to', saveBtn);
@@ -551,324 +576,133 @@ export function labelarrModal(editIdx, labelarrData, rootConfig, updateLabelarrT
     modal.classList.add('show');
 }
 
-export function upgradinatorrModal(editIdx, upgradinatorrData, rootConfig, updateTable) {
-    const moduleName = 'upgradinatorr';
+export function upgradinatorrModal(editIdx, data, rootConfig, onUpdate) {
     const isEdit = typeof editIdx === 'number';
-    let modal = document.getElementById('upgradinatorr-modal');
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'upgradinatorr-modal';
-        modal.className = 'modal';
-        modal.innerHTML = `
-                  <div class="modal-content">
-                    <h2>${isEdit ? 'Edit' : 'Add'} Instance</h2>
-                    <label>Instance</label>
-                    <select id="upgradinatorr-instance" class="select">
-                    <option value="" disabled selected>
-                        ${PLACEHOLDER_TEXT[moduleName]?.instance ?? 'Select an instance'}
-                    </option>
-                    </select>
-                    <label>Count</label>
-                    <input type="number" id="upgradinatorr-count" class="input" placeholder="${
-                        PLACEHOLDER_TEXT[moduleName]?.count ?? ''
-                    }"/>
-                    <label>Tag Name</label>
-                    <input type="text" id="upgradinatorr-tag-name" class="input" placeholder="${
-                        PLACEHOLDER_TEXT[moduleName]?.tag_name ?? ''
-                    }" />
-                    <label>Ignore Tag</label>
-                    <input type="text" id="upgradinatorr-ignore-tag" class="input" placeholder="${
-                        PLACEHOLDER_TEXT[moduleName]?.ignore_tag ?? ''
-                    }" />
-                    <label>Unattended</label>
-                    <select id="upgradinatorr-unattended" class="select">
-                      <option value="true">True</option>
-                      <option value="false">False</option>
-                    </select>
-                    <div id="season-threshold-container" style="display:none;">
-                      <label>Season Monitored Threshold</label>
-                      <input type="number" id="upgradinatorr-season-threshold" class="input" min="0" step="1" />
-                    </div>
-                    <div class="modal-footer">
-                      <button id="upgradinatorr-save-btn" class="btn btn--success">${
-                          isEdit ? 'Save' : 'Add'
-                      }</button>
-                      <button id="upgradinatorr-cancel-btn" class="btn btn--cancel">Cancel</button>
-                    </div>
-                  </div>
-                `;
-        document.body.appendChild(modal);
-        const instSelect = modal.querySelector('#upgradinatorr-instance');
-        const instList = [
-            ...Object.keys(rootConfig.instances.radarr || {}),
-            ...Object.keys(rootConfig.instances.sonarr || {}),
-        ];
-        instList.forEach((inst) => {
-            const opt = document.createElement('option');
-            opt.value = inst;
-            opt.textContent = humanize(inst);
-            instSelect.appendChild(opt);
-        });
-        modal.querySelector('#upgradinatorr-cancel-btn').onclick = () => {
-            modal.classList.remove('show');
-        };
+    const entry = isEdit ? data[editIdx] : {};
+    const moduleName = 'upgradinatorr';
 
-        const thresholdField = modal.querySelector('#season-threshold-container');
-        instSelect.addEventListener('change', () => {
-            const selected = instSelect.value;
-            const isSonarr = Object.keys(rootConfig.instances.sonarr || {}).includes(selected);
-            thresholdField.style.display = isSonarr ? '' : 'none';
-        });
+    const contentHtml = `
+        <label>Instance</label>
+        <select id="upgradinatorr-instance" class="select">
+            ${[
+                ...Object.keys(rootConfig.instances.radarr || {}),
+                ...Object.keys(rootConfig.instances.sonarr || {}),
+            ]
+                .map((inst) => `<option value="${inst}">${humanize(inst)}</option>`)
+                .join('')}
+        </select>
+        <label>Count</label>
+        <input type="number" id="upgradinatorr-count" class="input" />
+        <label>Tag Name</label>
+        <input type="text" id="upgradinatorr-tag-name" class="input" />
+        <label>Ignore Tag</label>
+        <input type="text" id="upgradinatorr-ignore-tag" class="input" />
+        <label>Unattended</label>
+        <select id="upgradinatorr-unattended" class="select">
+            <option value="true">True</option>
+            <option value="false">False</option>
+        </select>
+        <div id="season-threshold-container" style="display:none;">
+            <label>Season Monitored Threshold</label>
+            <input type="number" id="upgradinatorr-season-threshold" class="input" />
+        </div>
+    `;
 
-        instSelect.dispatchEvent(new Event('change'));
-        modal.querySelector('#upgradinatorr-save-btn').onclick = () => {
-            const inst = modal.querySelector('#upgradinatorr-instance').value;
-            const count = parseInt(modal.querySelector('#upgradinatorr-count').value, 10) || 0;
-            const tag_name = modal.querySelector('#upgradinatorr-tag-name').value.trim();
-            const ignore_tag = modal.querySelector('#upgradinatorr-ignore-tag').value.trim();
-            const unattended = modal.querySelector('#upgradinatorr-unattended').value === 'true';
-            const isSonarr = Object.keys(rootConfig.instances.sonarr || {}).includes(inst);
-            const season_threshold = isSonarr
-                ? parseInt(modal.querySelector('#upgradinatorr-season-threshold').value, 10) || 0
-                : undefined;
-            const entry = {
-                instance: inst,
-                count,
-                tag_name,
-                ignore_tag,
-                unattended,
-            };
-            if (isSonarr) entry.season_monitored_threshold = season_threshold;
-
-            const existingIdx = upgradinatorrData.findIndex((e) => e.instance === inst);
-            if (existingIdx !== -1) {
-                upgradinatorrData[existingIdx] = entry;
-            } else {
-                upgradinatorrData.push(entry);
-            }
-            if (typeof updateTable === 'function') updateTable();
-            markDirty();
-            modal.classList.remove('show');
-        };
-    }
-    modal.querySelector('#upgradinatorr-instance').value = isEdit
-        ? upgradinatorrData[editIdx].instance
-        : '';
-    modal.querySelector('#upgradinatorr-count').value = isEdit
-        ? upgradinatorrData[editIdx].count
-        : '';
-    modal.querySelector('#upgradinatorr-tag-name').value = isEdit
-        ? upgradinatorrData[editIdx].tag_name
-        : '';
-    modal.querySelector('#upgradinatorr-ignore-tag').value = isEdit
-        ? upgradinatorrData[editIdx].ignore_tag
-        : '';
-    modal.querySelector('#upgradinatorr-unattended').value = isEdit
-        ? String(upgradinatorrData[editIdx].unattended)
-        : 'false';
-
-    const seasonThresholdInput = modal.querySelector('#upgradinatorr-season-threshold');
-    if (seasonThresholdInput) {
-        seasonThresholdInput.value = isEdit
-            ? typeof upgradinatorrData[editIdx].season_monitored_threshold !== 'undefined'
-                ? upgradinatorrData[editIdx].season_monitored_threshold
-                : ''
-            : '99';
-    }
+    const modal = createModal(
+        'upgradinatorr-modal',
+        `${isEdit ? 'Edit' : 'Add'} Instance`,
+        contentHtml,
+        [
+            { id: 'upgradinatorr-save-btn', label: isEdit ? 'Save' : 'Add', class: 'btn--success' },
+            { id: 'upgradinatorr-cancel-btn', label: 'Cancel', class: 'btn--cancel' },
+        ]
+    );
 
     const instSelect = modal.querySelector('#upgradinatorr-instance');
     const thresholdField = modal.querySelector('#season-threshold-container');
-    if (instSelect && thresholdField) {
-        instSelect.dispatchEvent(new Event('change'));
+    instSelect.onchange = () => {
+        const isSonarr = Object.keys(rootConfig.instances.sonarr || {}).includes(instSelect.value);
+        thresholdField.style.display = isSonarr ? '' : 'none';
+    };
+    instSelect.dispatchEvent(new Event('change'));
+
+    if (isEdit) {
+        modal.querySelector('#upgradinatorr-instance').value = entry.instance;
+        modal.querySelector('#upgradinatorr-count').value = entry.count || '';
+        modal.querySelector('#upgradinatorr-tag-name').value = entry.tag_name || '';
+        modal.querySelector('#upgradinatorr-ignore-tag').value = entry.ignore_tag || '';
+        modal.querySelector('#upgradinatorr-unattended').value = String(entry.unattended);
+        modal.querySelector('#upgradinatorr-season-threshold').value =
+            entry.season_monitored_threshold ?? '';
     }
-    const heading = modal.querySelector('h2');
-    if (heading) {
-        heading.textContent = (isEdit ? 'Edit' : 'Add') + ' Upgradinatorr Instance List';
-    }
-    const saveBtn = modal.querySelector('#upgradinatorr-save-btn');
-    if (saveBtn) {
-        saveBtn.textContent = isEdit ? 'Save' : 'Add';
-    }
-    modal.classList.add('show');
+
+    modal.querySelector('#upgradinatorr-cancel-btn').onclick = () => modal.remove();
+
+    modal.querySelector('#upgradinatorr-save-btn').onclick = () => {
+        const instance = modal.querySelector('#upgradinatorr-instance').value;
+        const count = parseInt(modal.querySelector('#upgradinatorr-count').value, 10) || 0;
+        const tag_name = modal.querySelector('#upgradinatorr-tag-name').value.trim();
+        const ignore_tag = modal.querySelector('#upgradinatorr-ignore-tag').value.trim();
+        const unattended = modal.querySelector('#upgradinatorr-unattended').value === 'true';
+        const isSonarr = Object.keys(rootConfig.instances.sonarr || {}).includes(instance);
+        const season_monitored_threshold = isSonarr
+            ? parseInt(modal.querySelector('#upgradinatorr-season-threshold').value, 10) || 0
+            : undefined;
+
+        const newEntry = {
+            instance,
+            count,
+            tag_name,
+            ignore_tag,
+            unattended,
+        };
+        if (isSonarr) newEntry.season_monitored_threshold = season_monitored_threshold;
+
+        if (isEdit) data[editIdx] = newEntry;
+        else data.push(newEntry);
+
+        if (typeof onUpdate === 'function') onUpdate();
+        modal.remove();
+    };
 }
 
-export function directoryPickerModal(inputElement) {
-    let suggestionTimeout;
-    let modal = document.getElementById('dir-modal');
-    if (!modal) {
+export function unsavedSettingsModal() {
+    return new Promise((resolve) => {
+        let modal = document.getElementById('unsavedSettingsModal');
+        if (modal) modal.remove();
+
         modal = document.createElement('div');
-        modal.id = 'dir-modal';
+        modal.id = 'unsavedSettingsModal';
         modal.className = 'modal';
-        modal.classList.remove('show');
         modal.innerHTML = `
-<div class="modal-content">
-<h2>Select Directory</h2>
-<input type="text" id="dir-path-input" class="input" placeholder="Type or paste a path…" />
-<ul id="dir-list" class="dir-list"></ul>
-<div class="modal-footer">
-    <button type="button" id="dir-create" class="btn">New Folder</button>
-    <button type="button" id="dir-accept" class="btn btn--success">Accept</button>
-    <button type="button" id="dir-cancel" class="btn btn--cancel">Cancel</button>
-</div>
-</div>`;
+            <div class="modal-content">
+                ${modalHeaderHtml({ title: 'Unsaved Changes' })}
+                <div>
+                    <p>You have unsaved changes. What would you like to do?</p>
+                </div>
+                ${modalFooterHtml([
+                    { id: 'unsaved-save-btn', label: 'Save', class: 'btn--success' },
+                    { id: 'unsaved-discard-btn', label: 'Discard', class: 'btn--remove' },
+                    { id: 'unsaved-cancel-btn', label: 'Cancel', class: 'btn--cancel' },
+                ])}
+            </div>
+        `;
         document.body.appendChild(modal);
-        const dirList = modal.querySelector('#dir-list');
-        const pathInput = modal.querySelector('#dir-path-input');
-        async function updateDirList() {
-            const current = modal.currentPath;
-            const list = directoryCache[current] || [];
-            dirList.innerHTML = '';
 
-            const up = document.createElement('li');
-            up.textContent = '..';
-            up.onclick = () => {
-                if (current !== '/') {
-                    modal.currentPath = current.split('/').slice(0, -1).join('/') || '/';
-                    showPath(modal.currentPath);
-                }
-            };
-            dirList.appendChild(up);
+        // Use your close helper
+        setupModalCloseOnOutsideClick(modal);
 
-            (directoryCache[current] || []).sort().forEach((name) => {
-                const li = document.createElement('li');
-                li.textContent = name;
-                li.onclick = () => {
-                    modal.currentPath = current.endsWith('/')
-                        ? current + name
-                        : current + '/' + name;
-                    showPath(modal.currentPath);
-                };
-                li.ondblclick = () => {
-                    inputElement.value = modal.currentPath;
-                    closeModal();
-                };
-                dirList.appendChild(li);
-            });
-        }
+        modal.classList.add('show');
+        document.body.classList.add('modal-open');
 
-        function showPath(val) {
-            modal.currentPath = val;
-            pathInput.value = val;
-            if (!directoryCache[val]) {
-                fetch(`/api/list?path=${encodeURIComponent(val)}`)
-                    .then((res) => res.json())
-                    .then((d) => {
-                        directoryCache[val] = d.directories;
-                        updateDirList();
-                    })
-                    .catch((e) => {
-                        console.error('List error:', e);
-                    });
-            } else {
-                updateDirList();
-            }
-        }
-
-        function closeModal() {
+        function cleanup(choice) {
             modal.classList.remove('show');
-            window.currentInput = null;
+            document.body.classList.remove('modal-open');
+            setTimeout(() => modal.remove(), 250);
+            resolve(choice);
         }
-        pathInput.addEventListener('input', () => {
-            const val = pathInput.value.trim() || '/';
-            modal.currentPath = val;
-            clearTimeout(suggestionTimeout);
-            suggestionTimeout = setTimeout(() => {
-                const parent = val === '/' ? '/' : val.replace(/\/?[^/]+$/, '') || '/';
-                const partial = val.slice(parent.length).replace(/^\/+/, '').toLowerCase();
-                const entries = directoryCache[parent] || [];
-                if (entries.length) {
-                    dirList.innerHTML = '';
-
-                    const up = document.createElement('li');
-                    up.textContent = '..';
-                    up.onclick = () => {
-                        if (parent !== '/') {
-                            modal.currentPath = parent.split('/').slice(0, -1).join('/') || '/';
-                            showPath(modal.currentPath);
-                        }
-                    };
-                    dirList.appendChild(up);
-
-                    entries
-                        .filter((name) => name.toLowerCase().startsWith(partial))
-                        .sort()
-                        .forEach((name) => {
-                            const li = document.createElement('li');
-                            li.textContent = name;
-                            li.onclick = () => {
-                                modal.currentPath = parent.endsWith('/')
-                                    ? parent + name
-                                    : parent + '/' + name;
-                                showPath(modal.currentPath);
-                            };
-                            li.ondblclick = () => {
-                                inputElement.value = modal.currentPath;
-                                closeModal();
-                            };
-                            dirList.appendChild(li);
-                        });
-                }
-
-                const entry = val.slice(parent.length).replace(/^\/+/, '');
-                if (directoryCache[parent]?.includes(entry)) {
-                    showPath(val);
-                }
-            }, 200);
-        });
-        pathInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                showPath(pathInput.value.trim() || '/');
-            }
-        });
-        modal.querySelector('#dir-create').onclick = async () => {
-            const name = prompt('New folder name:');
-            if (!name) return;
-            const newPath = modal.currentPath.endsWith('/')
-                ? modal.currentPath + name
-                : modal.currentPath + '/' + name;
-            try {
-                await fetch(`/api/create-folder?path=${encodeURIComponent(newPath)}`, {
-                    method: 'POST',
-                });
-                if (!directoryCache[modal.currentPath]) directoryCache[modal.currentPath] = [];
-                directoryCache[modal.currentPath].push(name);
-                showPath(newPath);
-            } catch (e) {
-                alert('Create failed: ' + e.message);
-            }
-        };
-        modal.querySelector('#dir-cancel').onclick = closeModal;
-
-        modal.updateDirList = updateDirList;
-        modal.showPath = showPath;
-        modal.closeModal = closeModal;
-    }
-
-    modal.currentInput = inputElement;
-
-    const acceptBtn = modal.querySelector('#dir-accept');
-    acceptBtn.onclick = () => {
-        modal.currentInput.value = modal.currentPath;
-        modal.closeModal();
-    };
-    modal.currentPath = inputElement.value.trim() || '/';
-    const pathInput = modal.querySelector('#dir-path-input');
-    pathInput.value = modal.currentPath;
-
-    if (inputElement.placeholder) {
-        pathInput.placeholder = inputElement.placeholder;
-    }
-
-    if (!directoryCache[modal.currentPath]) {
-        fetch(`/api/list?path=${encodeURIComponent(modal.currentPath)}`)
-            .then((res) => res.json())
-            .then((d) => {
-                directoryCache[modal.currentPath] = d.directories;
-                modal.updateDirList();
-            });
-    } else {
-        modal.updateDirList();
-    }
-    modal.classList.add('show');
+        modal.querySelector('#unsaved-save-btn').onclick = () => cleanup('save');
+        modal.querySelector('#unsaved-discard-btn').onclick = () => cleanup('discard');
+        modal.querySelector('#unsaved-cancel-btn').onclick = () => cleanup('cancel');
+    });
 }

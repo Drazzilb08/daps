@@ -1,4 +1,3 @@
-import { DROP_DOWN_OPTIONS } from './constants.js';
 import { holidayPresets } from './presets.js';
 
 export function populateScheduleDropdowns() {

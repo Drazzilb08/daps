@@ -1,0 +1,169 @@
+import { fetchConfig, postConfig } from '../helper.js';
+import { buildSettingsPayload } from '../payload.js';
+import { renderSettingsForm } from './dynamic_forms.js';
+import { showToast, markDirty, resetDirty, getIsDirty } from '../util.js';
+import { unsavedSettingsModal } from './modals.js';
+import { SETTINGS_SCHEMA } from './settings_schema.js';
+
+// Tracks last loaded values for the current module, for dirty checking
+let currentModule = null;
+let lastLoadedConfig = {};
+let currentConfig = {};
+
+export async function loadSettings(moduleName) {
+    currentModule = moduleName;
+
+    // Fetch config
+    const rootConfig = await fetchConfig();
+    const moduleConfig = rootConfig[moduleName] || {};
+    lastLoadedConfig = JSON.parse(JSON.stringify(moduleConfig));
+    currentConfig = JSON.parse(JSON.stringify(moduleConfig));
+
+    // Render form
+    const formFields = document.getElementById('form-fields');
+    renderSettingsForm(formFields, moduleName, moduleConfig, rootConfig);
+
+    // Set up dirty detection for any field change (for fields in schema)
+    setupFormDirtyDetection(moduleName);
+
+    // === Add this: Set up save button ===
+    setupSettingsFormHandler();
+
+    // Show form, hide splash
+    document.querySelector('.settings-splash')?.classList.add('hidden');
+    document.getElementById('settingsForm')?.classList.remove('hidden');
+    resetDirty();
+}
+
+export async function saveSettings() {
+    if (!currentModule) return;
+    const saveBtn = document.getElementById('saveBtn');
+    if (saveBtn) saveBtn.disabled = true;
+    
+    const payload = await buildSettingsPayload(currentModule);
+    if (!payload) {
+        if (saveBtn) saveBtn.disabled = false;
+        return;
+    }
+
+    const { success, error } = await postConfig(payload);
+    if (success) {
+        showToast('Settings saved!', 'success');
+        lastLoadedConfig = JSON.parse(JSON.stringify(payload[currentModule]));
+        resetDirty();
+    } else {
+        showToast('Save failed: ' + error, 'error');
+    }
+    if (saveBtn) saveBtn.disabled = false;
+}
+
+// Attach this to form submit event
+export function setupSettingsFormHandler() {
+    const form = document.getElementById('settingsForm');
+    if (!form) return;
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        await saveSettings();
+    };
+}
+
+// Check if any schema-defined fields have changed
+function isSettingsDirty(moduleName) {
+    const schemaSection = getSchemaForModule(moduleName);
+    if (!schemaSection) return false;
+    const keys = schemaSection.fields.map(f => f.key);
+    for (const key of keys) {
+        const orig = lastLoadedConfig[key];
+        const curr = getFormValue(key);
+        if (JSON.stringify(orig) !== JSON.stringify(curr)) return true;
+    }
+    return false;
+}
+
+// Helper to fetch current form value for a field
+function getFormValue(key) {
+    const form = document.getElementById('settingsForm');
+    if (!form) return undefined;
+    const el = form.querySelector(`[name="${key}"]`);
+    if (!el) return undefined;
+    if (el.type === 'checkbox') return el.checked;
+    if (el.type === 'number') return el.value === '' ? null : parseInt(el.value, 10);
+    if (el.tagName === 'TEXTAREA') return el.value;
+    return el.value;
+}
+
+// Get the schema section for a module
+function getSchemaForModule(moduleName) {
+    return SETTINGS_SCHEMA.find(s => s.key === moduleName);
+}
+
+// Mark dirty when any schema-relevant field changes
+function setupFormDirtyDetection(moduleName) {
+    const form = document.getElementById('settingsForm');
+    if (!form) return;
+    form.querySelectorAll('input, select, textarea').forEach(el => {
+        el.oninput = null;
+        el.onchange = null;
+    });
+
+    const schema = getSchemaForModule(moduleName);
+    if (!schema) return;
+
+    schema.fields.forEach(field => {
+        const el = form.querySelector(`[name="${field.key}"]`);
+        if (!el) return;
+        el.oninput = el.onchange = () => {
+            if (isSettingsDirty(moduleName)) markDirty();
+            else resetDirty();
+        };
+    });
+}
+
+// Main navigation handler for leaving settings section (call this BEFORE changing module)
+export async function handleSettingsNavigation(newModuleName) {
+    if (!currentModule || !getIsDirty()) {
+        await loadSettings(newModuleName);
+        return;
+    }
+    const choice = await unsavedSettingsModal();
+    if (choice === 'save') {
+        await saveSettings();
+        await loadSettings(newModuleName);
+    } else if (choice === 'discard') {
+        resetDirty();
+        await loadSettings(newModuleName);
+    } // else 'cancel' = do nothing
+}
+
+const SETTINGS_MODULES = [
+  { name: 'Sync Gdrive', key: 'sync_gdrive', description: 'Synchronize your Google Drive with DAPS.' },
+  { name: 'Poster Renamerr', key: 'poster_renamerr', description: 'Automate and configure your poster renaming workflow.' },
+  { name: 'Poster Cleanarr', key: 'poster_cleanarr', description: 'Clean up unused posters and maintain your collection.' },
+  { name: 'Unmatched Assets', key: 'unmatched_assets', description: 'Handle and review assets that couldn’t be matched.' },
+  { name: 'Border Replacerr', key: 'border_replacerr', description: 'Replace and manage borders for your posters.' },
+  { name: 'Renameinatorr', key: 'renameinatorr', description: 'Advanced renaming rules and automation.' },
+  { name: 'Upgradinatorr', key: 'upgradinatorr', description: 'Upgrade your assets with new features.' },
+  { name: 'Nohl', key: 'nohl', description: 'Custom logic module.' },
+  { name: 'Labelarr', key: 'labelarr', description: 'Automated label management.' },
+  { name: 'Health Checkarr', key: 'health_checkarr', description: 'Run health checks on your libraries.' },
+  { name: 'Jduparr', key: 'jduparr', description: 'Find and handle duplicates in your files.' },
+  { name: 'Main', key: 'main', description: 'General DAPS settings.' }
+];
+
+export function renderSettingsSplash() {
+    const container = document.getElementById('settings-section-list');
+    if (!container) return;
+    container.innerHTML = '';
+    SETTINGS_MODULES.forEach((mod) => {
+        const link = document.createElement('a');
+        link.className = 'settings-section-link';
+        link.href = `/pages/settings?module_name=${mod.key}`;
+        link.innerHTML = `
+      <div class="settings-section-title">${mod.name}</div>
+      <div class="settings-section-desc">${mod.description}</div>
+    `;
+        container.appendChild(link);
+    });
+}
+
+

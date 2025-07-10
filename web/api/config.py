@@ -41,8 +41,7 @@ async def get_config_route(
 @router.post("/api/config")
 async def update_config_route(
     request: Request,
-    logger: Any = Depends(get_logger),
-    config: Dict[str, Any] = Depends(get_config),
+    logger: Any = Depends(get_logger)
 ) -> Any:
     """
     Updates the configuration file with provided values.

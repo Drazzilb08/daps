@@ -21,29 +21,36 @@ except ImportError as e:
 logging.getLogger("PIL").setLevel(logging.WARNING)
 
 
-def load_last_run(log_dir: str) -> Optional[datetime]:
+def load_last_run(log_dir: str, logger: Logger = None) -> Optional[datetime]:
     """
     Load the last run timestamp from the .last_run file in the log directory.
     """
-    last_run_file = os.path.join(log_dir, ".last_run")
-    if os.path.exists(last_run_file):
-        with open(last_run_file, "r") as f:
-            ts = f.read().strip()
-            try:
-                return datetime.fromisoformat(ts)
-            except Exception:
-                pass
-    return None
+    try:
+        last_run_file = os.path.join(log_dir, ".last_run")
+
+        if os.path.exists(last_run_file):
+            with open(last_run_file, "r") as f:
+                ts = f.read().strip()
+                try:
+                    return datetime.fromisoformat(ts)
+                except Exception:
+                    pass
+    except Exception as e:
+        logger.error(f"Failed to read file: {e}")
+        return None
 
 
-def save_last_run(log_dir: str, dt: Optional[datetime] = None) -> None:
+def save_last_run(log_dir: str, dt: Optional[datetime] = None, logger: Logger = None) -> None:
     """
     Save the current timestamp (or provided datetime) to the .last_run file in the log directory.
     """
-    last_run_file = os.path.join(log_dir, ".last_run")
-    now = dt or datetime.now()
-    with open(last_run_file, "w") as f:
-        f.write(now.isoformat())
+    try:
+        last_run_file = os.path.join(log_dir, ".last_run")
+        now = dt or datetime.now()
+        with open(last_run_file, "w") as f:
+            f.write(now.isoformat())
+    except Exception as e:
+        logger.error(f"Failed to write file: {e}")
 
 
 def check_holiday(
@@ -516,7 +523,7 @@ def process_files(
         return
 
     log_dir = get_log_dir(config.module_name)
-    last_run = load_last_run(log_dir)
+    last_run = load_last_run(log_dir, logger=logger)
     if config.log_level.lower() == "debug":
         print_settings(logger, config)
 
@@ -611,6 +618,7 @@ def process_files(
     if config.log_level == "debug":
         print_json(assets_dict, logger, config.module_name, "assets_dict")
         print_json(messages, logger, config.module_name, "messages")
+    save_last_run(log_dir, logger=logger)
 
 
 # --- Formatting function for border actions output ---
@@ -669,7 +677,5 @@ def main(config: SimpleNamespace) -> None:
         logger.error("\n\nAn error occurred:\n", exc_info=True)
         logger.error("\n\n")
     finally:
-        log_dir = get_log_dir(config.module_name)
-        save_last_run(log_dir)
         # Log outro message with run time
         logger.log_outro()

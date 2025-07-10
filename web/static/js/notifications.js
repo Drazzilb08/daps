@@ -1,49 +1,40 @@
 import { fetchConfig, moduleList, setupPasswordToggles } from './helper.js';
-import { humanize, showToast } from './common.js';
-import { modalHeaderHtml, modalFooterHtml, setupModalCloseOnOutsideClick } from './settings/modals.js';
+import { humanize, showToast } from './util.js';
+import {
+    modalHeaderHtml,
+    modalFooterHtml,
+    setupModalCloseOnOutsideClick,
+} from './settings/modals.js';
 import { buildNotificationPayload } from './payload.js'; // already present
-
 
 // Add placeholder values as needed per field:
 const NOTIFY_TYPES = [
-    {
-        type: 'discord',
-        label: 'Discord',
-        fields: [
-            { key: 'bot_name', label: 'Bot Name', type: 'text', required: true, placeholder: 'My DAPS Bot' },
-            { key: 'color', label: 'Embed Color', type: 'color', required: false, placeholder: '#7289da' },
-            { key: 'webhook', label: 'Webhook', type: 'text', required: true, placeholder: 'https://discord.com/api/webhooks/...' , validate: v => /^https:\/\/discord(app)?\.com\/api\/webhooks\//.test(v) }
-        ]
-    },
-    {
-        type: 'notifiarr',
-        label: 'Notifiarr',
-        fields: [
-            { key: 'bot_name', label: 'Bot Name', type: 'text', required: true, placeholder: 'My Notifiarr Bot' },
-            { key: 'color', label: 'Embed Color', type: 'color', required: false, placeholder: '#ff7300' },
-            { key: 'webhook', label: 'Webhook', type: 'text', required: true, placeholder: 'https://notifiarr.com/api/...' , validate: v => /^https:\/\/notifiarr\.com\/api\//.test(v) },
-            { key: 'channel_id', label: 'Channel ID', type: 'text', required: true, placeholder: '1234567890', validate: v => /^\d+$/.test(v) }
-        ]
-    },
-    {
-        type: 'email',
-        label: 'Email',
-        fields: [
-            { key: 'smtp_server', label: 'SMTP Server', type: 'text', required: true, placeholder: 'smtp.gmail.com' },
-            { key: 'smtp_port', label: 'Port', type: 'number', required: true, placeholder: '587' },
-            { key: 'use_tls', label: 'Use TLS', type: 'slider', required: true },
-            { key: 'username', label: 'Username', type: 'text', required: true, placeholder: 'user@email.com' },
-            { key: 'password', label: 'Password', type: 'password', required: true, placeholder: '••••••••' },
-            { key: 'to', label: 'From', type: 'text', required: true, placeholder: 'My App <bot@email.com>' },
-            { key: 'from', label: 'Recipients', type: 'text', required: true, placeholder: 'someone@email.com, another@email.com' }
-        ]
-    }
+  { type: 'discord', label: 'Discord', fields: [
+    { key: 'bot_name', label: 'Bot Name', type: 'text', required: true, placeholder: 'My DAPS Bot' },
+    { key: 'color', label: 'Embed Color', type: 'color', required: false, placeholder: '#7289da' },
+    { key: 'webhook', label: 'Webhook', type: 'text', required: true, placeholder: 'https://discord.com/api/webhooks/...', validate: v => /^https:\/\/discord(app)?\.com\/api\/webhooks\//.test(v) }
+  ]},
+  { type: 'notifiarr', label: 'Notifiarr', fields: [
+    { key: 'bot_name', label: 'Bot Name', type: 'text', required: true, placeholder: 'My Notifiarr Bot' },
+    { key: 'color', label: 'Embed Color', type: 'color', required: false, placeholder: '#ff7300' },
+    { key: 'webhook', label: 'Webhook', type: 'text', required: true, placeholder: 'https://notifiarr.com/api/...', validate: v => /^https:\/\/notifiarr\.com\/api\//.test(v) },
+    { key: 'channel_id', label: 'Channel ID', type: 'text', required: true, placeholder: '1234567890', validate: v => /^\d+$/.test(v) }
+  ]},
+  { type: 'email', label: 'Email', fields: [
+    { key: 'smtp_server', label: 'SMTP Server', type: 'text', required: true, placeholder: 'smtp.gmail.com' },
+    { key: 'smtp_port', label: 'Port', type: 'number', required: true, placeholder: '587' },
+    { key: 'use_tls', label: 'Use TLS', type: 'slider', required: true },
+    { key: 'username', label: 'Username', type: 'text', required: true, placeholder: 'user@email.com' },
+    { key: 'password', label: 'Password', type: 'password', required: true, placeholder: '••••••••' },
+    { key: 'to', label: 'From', type: 'text', required: true, placeholder: 'My App <bot@email.com>' },
+    { key: 'from', label: 'Recipients', type: 'text', required: true, placeholder: 'someone@email.com, another@email.com' }
+  ]}
 ];
 
 function getNotificationTypeIcon(type) {
     // Customize SVG for each notification type
     if (type === 'discord') {
-            return `<img src="/web/static/icons/discord.svg" alt="Discord logo" />`;
+        return `<img src="/web/static/icons/discord.svg" alt="Discord logo" />`;
     }
     if (type === 'notifiarr') {
         return `<img src="/web/static/icons/notifiarr.svg" alt="Notifiarr logo" />`;
@@ -65,10 +56,10 @@ function getSpinner() {
 }
 
 function getTypeDef(type) {
-    return NOTIFY_TYPES.find(n => n.type === type);
+    return NOTIFY_TYPES.find((n) => n.type === type);
 }
 function humanizeName(module, type) {
-    const mod = moduleList.find(m => m === module) ? humanize(module) : humanize(module);
+    const mod = moduleList.find((m) => m === module) ? humanize(module) : humanize(module);
     const def = getTypeDef(type);
     return `${mod} - ${def ? def.label : humanize(type)}`;
 }
@@ -99,7 +90,7 @@ export async function loadNotifications() {
             list.appendChild(makeNotificationCard(module, type, settings, notifications));
         });
         const usedTypes = Object.keys(notifTypes || {});
-        const unused = NOTIFY_TYPES.filter(n => !usedTypes.includes(n.type));
+        const unused = NOTIFY_TYPES.filter((n) => !usedTypes.includes(n.type));
         if (unused.length > 0) {
             list.appendChild(makeAddCardForModule(module, notifications));
         }
@@ -153,7 +144,7 @@ function makeNotificationCard(module, type, settings, notifications) {
     testBtn.onfocus = testBtn.onmouseenter;
     testBtn.onblur = testBtn.onmouseleave;
 
-    testBtn.onclick = async e => {
+    testBtn.onclick = async (e) => {
         e.stopPropagation();
         testBtn.disabled = true;
         testBtn.innerHTML = getSpinner();
@@ -162,7 +153,8 @@ function makeNotificationCard(module, type, settings, notifications) {
             const data = settings;
             const res = await runTestNotification(type, data);
             const success = res.ok === true || res.result === true;
-            const msg = res.message || res.error || (success ? 'Test notification sent!' : 'Test failed');
+            const msg =
+                res.message || res.error || (success ? 'Test notification sent!' : 'Test failed');
             tooltip.textContent = msg;
             showToast(msg, success ? 'success' : 'error');
         } finally {
@@ -189,9 +181,7 @@ function makeAddCardForModule(module, notifications) {
     card.tabIndex = 0;
     card.innerHTML = `<div class="card-add-plus">&#43;</div>`;
     card.onclick = () =>
-        module
-            ? showTypePickerModal(module, notifications)
-            : showModulePickerModal(notifications);
+        module ? showTypePickerModal(module, notifications) : showModulePickerModal(notifications);
     return card;
 }
 
@@ -211,12 +201,17 @@ function showModulePickerModal(notifications) {
             ${modalHeaderHtml({ title: 'Select Module' })}
             <div class="modal-body">
                 <div class="notify-type-list">
-                ${moduleList.map(module => {
-                    const disabled = usedPairs[module] && usedPairs[module].size >= NOTIFY_TYPES.length;
-                    return `<button class="notify-type-btn" data-module="${module}" ${disabled ? 'disabled' : ''}>
+                ${moduleList
+                    .map((module) => {
+                        const disabled =
+                            usedPairs[module] && usedPairs[module].size >= NOTIFY_TYPES.length;
+                        return `<button class="notify-type-btn" data-module="${module}" ${
+                            disabled ? 'disabled' : ''
+                        }>
                         ${humanize(module)}
                     </button>`;
-                }).join('')}
+                    })
+                    .join('')}
                 </div>
             </div>
         </div>
@@ -224,7 +219,7 @@ function showModulePickerModal(notifications) {
     document.body.appendChild(modal);
     document.body.classList.add('modal-open');
     setupModalCloseOnOutsideClick(modal);
-    modal.querySelectorAll('.notify-type-btn').forEach(btn => {
+    modal.querySelectorAll('.notify-type-btn').forEach((btn) => {
         if (!btn.disabled) {
             btn.onclick = () => {
                 closeModals();
@@ -238,7 +233,7 @@ function showModulePickerModal(notifications) {
 function showTypePickerModal(module, notifications) {
     closeModals();
     const existing = new Set(
-        (notifications[module] && typeof notifications[module] === 'object')
+        notifications[module] && typeof notifications[module] === 'object'
             ? Object.keys(notifications[module])
             : []
     );
@@ -249,11 +244,15 @@ function showTypePickerModal(module, notifications) {
             ${modalHeaderHtml({ title: 'Select Notification Type' })}
             <div class="modal-body">
                 <div class="notify-type-list">
-                ${NOTIFY_TYPES.map(n => `
-                    <button class="notify-type-btn" data-type="${n.type}" ${existing.has(n.type) ? 'disabled' : ''}>
+                ${NOTIFY_TYPES.map(
+                    (n) => `
+                    <button class="notify-type-btn" data-type="${n.type}" ${
+                        existing.has(n.type) ? 'disabled' : ''
+                    }>
                         ${n.label}
                     </button>
-                `).join('')}
+                `
+                ).join('')}
                 </div>
             </div>
         </div>
@@ -261,7 +260,7 @@ function showTypePickerModal(module, notifications) {
     document.body.appendChild(modal);
     document.body.classList.add('modal-open');
     setupModalCloseOnOutsideClick(modal);
-    modal.querySelectorAll('.notify-type-btn').forEach(btn => {
+    modal.querySelectorAll('.notify-type-btn').forEach((btn) => {
         if (!btn.disabled) {
             btn.onclick = () => {
                 closeModals();
@@ -284,10 +283,20 @@ function showSettingsModal(module, type, editSettings = {}, notifications, isEdi
     const footerButtons = [
         { id: 'test-btn', label: 'Test', class: '', type: 'button' },
         { id: 'cancel-modal-btn', label: 'Cancel', class: 'btn--cancel', type: 'button' },
-        { id: isEdit ? 'save-btn' : 'add-btn', label: isEdit ? 'Save' : 'Add', class: 'btn--success', type: 'submit' },
+        {
+            id: isEdit ? 'save-btn' : 'add-btn',
+            label: isEdit ? 'Save' : 'Add',
+            class: 'btn--success',
+            type: 'submit',
+        },
     ];
     if (isEdit) {
-        footerButtons.push({ id: 'delete-modal-btn', label: 'Delete', class: 'btn--remove-item', type: 'button' });
+        footerButtons.push({
+            id: 'delete-modal-btn',
+            label: 'Delete',
+            class: 'btn--remove-item',
+            type: 'button',
+        });
     }
 
     modal.innerHTML = `
@@ -297,38 +306,55 @@ function showSettingsModal(module, type, editSettings = {}, notifications, isEdi
                 <div>
                     <b>Name:</b> <span>${humanizeName(module, type)}</span>
                 </div>
-                ${def.fields.map(f => {
-                    if (f.type === 'password') {
-                        const pwdId = `pwd-${module}-${type}-${f.key}`;
-                        return `<label>${f.label}
+                ${def.fields
+                    .map((f) => {
+                        if (f.type === 'password') {
+                            const pwdId = `pwd-${module}-${type}-${f.key}`;
+                            return `<label>${f.label}
                             <div class="password-wrapper">
-                                <input type="password" id="${pwdId}" name="${f.key}" class="input masked-input" value="${editSettings[f.key] || ''}" placeholder="${f.placeholder || ''}">
+                                <input type="password" id="${pwdId}" name="${
+                                f.key
+                            }" class="input masked-input" value="${
+                                editSettings[f.key] || ''
+                            }" placeholder="${f.placeholder || ''}">
                                 <span class="toggle-password" tabindex="0" role="button" aria-label="Show/hide password" data-input="${pwdId}">&#128065;</span>
                             </div>
                         </label>`;
-                    }
-                    if (f.type === 'slider') {
-                        const checked = editSettings[f.key] === true || editSettings[f.key] === 'true' || editSettings[f.key] === 'on';
-                        return `
+                        }
+                        if (f.type === 'slider') {
+                            const checked =
+                                editSettings[f.key] === true ||
+                                editSettings[f.key] === 'true' ||
+                                editSettings[f.key] === 'on';
+                            return `
                             <label class="toggle-switch-block">
                                 <span class="form-toggle-label">${f.label}</span>
                                 <span class="toggle-switch-label">
-                                    <input type="checkbox" name="${f.key}" id="${f.key}" class="toggle-switch-input" ${checked ? 'checked' : ''}>
+                                    <input type="checkbox" name="${f.key}" id="${
+                                f.key
+                            }" class="toggle-switch-input" ${checked ? 'checked' : ''}>
                                     <span class="slider"></span>
                                 </span>
                             </label>
                         `;
-                    }
-                    if (f.type === 'color') {
-    const colorId = `color-input-${f.key}`;
-    return `
+                        }
+                        if (f.type === 'color') {
+                            const colorId = `color-input-${f.key}`;
+                            return `
         <div class="color-input-row">
             <label for="${colorId}">${f.label}</label>
-            <input type="color" id="${colorId}" name="${f.key}" class="input" value="${editSettings[f.key] || '#ff7300'}" ${f.required ? 'required' : ''}>
+            <input type="color" id="${colorId}" name="${f.key}" class="input" value="${
+                                editSettings[f.key] || '#ff7300'
+                            }" ${f.required ? 'required' : ''}>
         </div>`;
-}
-return `<label>${f.label}<input type="${f.type}" name="${f.key}" class="input" value="${editSettings[f.key] || ''}" placeholder="${f.placeholder || ''}" ${f.required ? 'required' : ''}></label>`;
-                }).join('')}
+                        }
+                        return `<label>${f.label}<input type="${f.type}" name="${
+                            f.key
+                        }" class="input" value="${editSettings[f.key] || ''}" placeholder="${
+                            f.placeholder || ''
+                        }" ${f.required ? 'required' : ''}></label>`;
+                    })
+                    .join('')}
                 ${modalFooterHtml(footerButtons)}
             </form>
         </div>
@@ -340,8 +366,9 @@ return `<label>${f.label}<input type="${f.type}" name="${f.key}" class="input" v
     // Show/hide password logic (for all .toggle-password)
     setupPasswordToggles(modal);
 
-    modal.querySelector('.modal-close-x').onclick =
-    modal.querySelector('#cancel-modal-btn').onclick = () => closeModals();
+    modal.querySelector('.modal-close-x').onclick = modal.querySelector(
+        '#cancel-modal-btn'
+    ).onclick = () => closeModals();
 
     // Test button
     modal.querySelector('#test-btn').onclick = async () => {
@@ -349,7 +376,8 @@ return `<label>${f.label}<input type="${f.type}" name="${f.key}" class="input" v
         if (!validateNotification(def, data, modal)) return;
         const res = await runTestNotification(type, data);
         const success = res.ok === true || res.result === true;
-        const msg = res.message || res.error || (success ? 'Test notification sent!' : 'Test failed');
+        const msg =
+            res.message || res.error || (success ? 'Test notification sent!' : 'Test failed');
         showToast(msg, success ? 'success' : 'error');
         // Do NOT close modal on error; only if you want to close on success, uncomment below:
         // if (success) closeModals();
@@ -369,7 +397,7 @@ return `<label>${f.label}<input type="${f.type}" name="${f.key}" class="input" v
             const resp = await fetch('/api/config', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(config)
+                body: JSON.stringify(config),
             });
             if (resp.ok) {
                 showToast('Notification deleted', 'success');
@@ -423,10 +451,12 @@ return `<label>${f.label}<input type="${f.type}" name="${f.key}" class="input" v
         const resp = await fetch('/api/config', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
         });
         let respData = {};
-        try { respData = await resp.json(); } catch {}
+        try {
+            respData = await resp.json();
+        } catch {}
 
         if (resp.ok && !respData.error) {
             showToast('Notification saved!', 'success');
@@ -443,7 +473,7 @@ function formToNotificationObj(def, modal) {
     const form = modal.querySelector('form');
     const formData = new FormData(form);
     const obj = {};
-    def.fields.forEach(f => {
+    def.fields.forEach((f) => {
         obj[f.key] = formData.get(f.key) || '';
     });
     return obj;
@@ -466,7 +496,7 @@ function validateNotification(def, obj, modal) {
 }
 
 function closeModals() {
-    document.querySelectorAll('.modal').forEach(m => m.remove());
+    document.querySelectorAll('.modal').forEach((m) => m.remove());
     document.body.classList.remove('modal-open');
 }
 
@@ -474,12 +504,12 @@ async function runTestNotification(type, data) {
     try {
         const payload = {
             module: 'notifications',
-            notifications: { [type]: data }
+            notifications: { [type]: data },
         };
         const res = await fetch('/api/test-notification', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
+            body: JSON.stringify(payload),
         });
         const result = await res.json().catch(() => ({}));
         if (!res.ok) {
@@ -489,14 +519,21 @@ async function runTestNotification(type, data) {
         // New schema: always has 'success' and 'results'
         if (result.results && Array.isArray(result.results)) {
             // If any ok, show as success, else show most relevant error
-            const okTarget = result.results.find(r => r.ok === true);
+            const okTarget = result.results.find((r) => r.ok === true);
             if (okTarget) {
                 return { ok: true, message: okTarget.message || 'Test notification sent!' };
             }
             // Otherwise, show errors for the first failing target
-            const failTarget = result.results.find(r => r.ok === false);
+            const failTarget = result.results.find((r) => r.ok === false);
             if (failTarget) {
-                return { ok: false, error: failTarget.error || failTarget.message || result.error || 'Test notification failed.' };
+                return {
+                    ok: false,
+                    error:
+                        failTarget.error ||
+                        failTarget.message ||
+                        result.error ||
+                        'Test notification failed.',
+                };
             }
         }
         // Fallback if not matching schema

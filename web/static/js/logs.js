@@ -1,5 +1,4 @@
 import { humanize } from './util.js';
-import { moduleOrder } from './helper.js';
 
 let term = null; // xterm.js instance
 let fitAddon = null; // xterm-addon-fit instance
@@ -7,8 +6,21 @@ let currentFullLogText = '';
 let lastWrittenLineCount = 0;
 let lastRenderedFileKey = null;
 
+export const moduleOrder = [
+    'sync_gdrive',
+    'poster_renamerr',
+    'border_replacerr',
+    'renameinatorr',
+    'upgradinatorr',
+    'nohl',
+    'labelarr',
+    'health_checkarr',
+    'jduparr',
+    'main',
+];
+
 function getUrlParams() {
-    const params = new URLSearchParams(window.location.search);
+    const params = new URLSearchParams(location.search);
     return {
         module_name: params.get('module_name') || '',
         log_file: params.get('log_file') || '',
@@ -119,6 +131,8 @@ function renderToXTerm(text, options = {}) {
     }
 }
 
+let _activeLogsDestroy = null;
+
 export async function loadLogs() {
     let currentModule = null;
     let currentFile = null;
@@ -135,7 +149,7 @@ export async function loadLogs() {
         fitAddon.dispose();
         fitAddon = null;
     }
-    if (window._activeLogsDestroy) window._activeLogsDestroy();
+    if (_activeLogsDestroy) _activeLogsDestroy();
 
     const containerIframe = document.querySelector('.container-iframe');
     if (!containerIframe) return;
@@ -162,7 +176,7 @@ export async function loadLogs() {
     collapseBtn.innerHTML = '<span class="toolbar-collapse-icon">▾</span> Hide Controls';
     controlsDiv.insertBefore(collapseBtn, controlsDiv.firstChild);
 
-    if (window.innerWidth <= 1000) {
+    if (innerWidth <= 1000) {
         controlsDiv.classList.add('collapsed');
         collapseBtn.setAttribute('aria-expanded', 'false');
         collapseBtn.innerHTML = '<span class="toolbar-collapse-icon">▸</span> Show Controls';
@@ -196,7 +210,7 @@ export async function loadLogs() {
         const xtermDiv = logOutput.querySelector('.xterm');
         if (xtermDiv) xtermDiv.style.maxWidth = '100%';
     }, 50);
-    window.addEventListener('resize', handleResize);
+    addEventListener('resize', handleResize);
 
     let refreshInterval = null;
     function setRefreshTask(callback, delay = 1000) {
@@ -408,20 +422,20 @@ export async function loadLogs() {
             : '<span class="toolbar-collapse-icon">▾</span> Hide Controls';
     });
 
-    window.addEventListener('popstate', () => {
+    addEventListener('popstate', () => {
         if (refreshInterval) clearInterval(refreshInterval);
         refreshInterval = null;
     });
-    window.addEventListener('beforeunload', () => {
+    addEventListener('beforeunload', () => {
         if (refreshInterval) clearInterval(refreshInterval);
         refreshInterval = null;
     });
 
-    window._activeLogsDestroy = () => {
+    _activeLogsDestroy = () => {
         if (refreshInterval) clearInterval(refreshInterval);
         refreshInterval = null;
         activeLoadSessionId = null;
-        window.removeEventListener('resize', handleResize);
+        removeEventListener('resize', handleResize);
         if (term) {
             term.dispose();
             term = null;

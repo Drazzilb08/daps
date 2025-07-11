@@ -1,16 +1,3 @@
-export const moduleOrder = [
-    'sync_gdrive',
-    'poster_renamerr',
-    'border_replacerr',
-    'renameinatorr',
-    'upgradinatorr',
-    'nohl',
-    'labelarr',
-    'health_checkarr',
-    'jduparr',
-    'main',
-];
-
 export const moduleList = [
     'sync_gdrive',
     'poster_renamerr',

@@ -38,8 +38,11 @@ export async function loadSchedule() {
     const list = document.getElementById('schedule-list');
     if (!list) return;
     list.innerHTML = '';
-    for (const [module, time] of Object.entries(schedule)) {
-        list.appendChild(await makeCard(module, time, schedule));
+    // Only load modules present in moduleList
+    for (const module of moduleList) {
+        if (schedule.hasOwnProperty(module)) {
+            list.appendChild(await makeCard(module, schedule[module], schedule));
+        }
     }
 
     // Only show "+" if there's at least one unscheduled module
@@ -121,9 +124,7 @@ async function makeCard(module, time, scheduleConfig) {
     btnWrap.appendChild(btnTooltip);
 
     // Helpers
-    function isMobile() {
-        return window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-    }
+    const isMobile = () => matchMedia('(hover: none) and (pointer: coarse)').matches;
     function getSpinner() {
         return `<span class="spinner"></span>`;
     }
@@ -176,11 +177,6 @@ async function makeCard(module, time, scheduleConfig) {
     };
     btn.onfocus = btn.onmouseenter;
     btn.onblur = btn.onmouseleave;
-
-    // On mobile, always show stop icon if running
-    window.addEventListener('resize', () => {
-        if (running) setBtnState(running);
-    });
 
     // Poll for module status every second while running
     async function pollStatus() {
@@ -336,7 +332,7 @@ export function scheduleModal(module = '', value = '', onReload = null, schedule
             `<option value="${mod}"${isDisabled ? ' disabled style="color: var(--muted);"' : ''}${
                 mod === module ? ' selected' : ''
             }>` +
-            `${window.DAPS && DAPS.humanize ? DAPS.humanize(mod) : mod}${
+            `${typeof humanize === 'function' ? humanize(mod) : mod}${
                 isDisabled ? ' (already scheduled)' : ''
             }` +
             `</option>`;
@@ -350,8 +346,8 @@ export function scheduleModal(module = '', value = '', onReload = null, schedule
             $(select).on('select2:selecting', function (e) {
                 if (e.params.args.data.element.disabled) {
                     e.preventDefault();
-                    if (window.DAPS && DAPS.showToast)
-                        DAPS.showToast(
+                    if (typeof showToast === 'function')
+                        showToast(
                             'That module is already scheduled and cannot be selected.',
                             'error'
                         );

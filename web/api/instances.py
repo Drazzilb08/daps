@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from typing import Any, Dict, Optional
 import requests
-from util.config import Config
 from pydantic import BaseModel
+
+from util.config import config_file_path
 
 router = APIRouter()
 
@@ -19,10 +20,22 @@ def get_logger(request: Request) -> Any:
     return request.app.state.logger
 
 def get_config() -> Dict[str, Any]:
-    config_path = Config("main").config_path
     import yaml
-    with open(config_path, "r") as f:
+    with open(config_file_path, "r") as f:
         return yaml.safe_load(f)
+
+@router.get("/api/instances/", response_model=None)
+async def get_instances(
+    config: Dict[str, Any] = Depends(get_config),
+    logger: any = Depends(get_logger)
+) -> Any:
+    """Returns dictionary Plex/Radarr/Sonarr instances"""
+    try:
+        logger.debug("[WEB] Serving GET /api/instances")
+        return config.get("instances", {})
+    except Exception as e:
+        logger.error(f"[WEB] Error in /api/instances: {e}")
+
 
 @router.get("/api/plex/libraries", response_model=None)
 async def get_plex_libraries(

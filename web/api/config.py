@@ -6,12 +6,11 @@ from fastapi.responses import JSONResponse
 from typing import Any, Dict
 import copy
 
-from util.config import Config
 from util.helper import redact_apis
 
 from util.config import config_file_path
 
-def load_config_dict() -> Dict[str, Any]:
+def get_config() -> Dict[str, Any]:
     import yaml
     with open(config_file_path, "r") as f:
         return yaml.safe_load(f)
@@ -20,9 +19,6 @@ def save_config_dict(cfg: Dict[str, Any]) -> None:
     import yaml
     with open(config_file_path, "w") as f:
         yaml.safe_dump(cfg, f, sort_keys=False)
-
-def get_config() -> Dict[str, Any]:
-    return load_config_dict()
 
 def get_logger(request: Request) -> Any:
     return request.app.state.logger
@@ -54,7 +50,7 @@ async def update_config_route(
             redact_apis(incoming_copy["instances"])
         logger.debug("[WEB] Serving POST /api/config with payload: %s", incoming_copy)
 
-        current_config = load_config_dict()
+        current_config = get_config()
 
         # For each top-level section provided, overwrite it fully
         for section in ["schedule", "instances", "notifications"]:

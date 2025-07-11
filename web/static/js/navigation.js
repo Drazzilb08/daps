@@ -2,12 +2,11 @@ import { loadSchedule } from './schedule.js';
 import { loadInstances } from './instances.js';
 import { loadLogs } from './logs.js';
 import { loadNotifications } from './notifications.js';
-import { loadSettings } from './settings/settings.js';
 import { initPosterSearch } from './poster_search.js';
-import { handleSettingsNavigation } from './settings/settings.js';
+import { loadSettings, renderSettingsSplash, handleSettingsNavigation } from './settings/settings.js';
 
 
-export const PAGE_LOADERS = {
+const PAGE_LOADERS = {
     schedule: loadSchedule,
     instances: loadInstances,
     logs: loadLogs,
@@ -16,7 +15,7 @@ export const PAGE_LOADERS = {
     poster_search: initPosterSearch,
 };
 
-// --- HIGHLIGHT ACTIVE MAIN + SUB-NAV (SETTINGS) & CONTROL SUBMENU VISIBILITY ---
+// --- HIGHLIGHT ACTIVE NAV LINK AND HANDLE SUBMENUS ---
 function highlightNav(frag, url) {
     // Remove all highlights and section classes
     document
@@ -50,18 +49,20 @@ function highlightNav(frag, url) {
     const settingsLi = document.getElementById('settings-section');
     const settingsSubMenu = settingsLi?.querySelector('.settings-sub-menu');
     const settingsSection = settingsLi?.querySelector('a.main-section');
-    let isSettings = frag === 'settings';
+    const isSettings = frag === 'settings';
 
-    // Show/hide settings submenu and accent-section
     if (settingsSubMenu) settingsSubMenu.style.display = isSettings ? 'block' : 'none';
-    if (isSettings && settingsLi) settingsLi.classList.add('active-section');
-    if (isSettings && settingsSection) settingsSection.classList.add('active');
 
-    // Highlight selected settings sub-section
-    if (isSettings && settingsSubMenu) {
-        const moduleParam = new URL(url, window.location.origin).searchParams.get('module_name');
-        if (moduleParam) {
-            settingsSubMenu.querySelectorAll('a.sub-section').forEach((a) => {
+    // Determine if we are on a settings splash or a module page
+    const moduleParam = new URL(url, location.origin).searchParams.get('module_name');
+    if (isSettings) {
+        if (!moduleParam) {
+            // On splash page – highlight parent only
+            if (settingsLi) settingsLi.classList.add('active-section');
+            if (settingsSection) settingsSection.classList.add('active');
+        } else {
+            // On module page – highlight only the sub-section
+            settingsSubMenu?.querySelectorAll('a.sub-section').forEach((a) => {
                 if (a.href.includes(`module_name=${moduleParam}`)) {
                     a.classList.add('active');
                 }
@@ -70,7 +71,12 @@ function highlightNav(frag, url) {
     }
 }
 
-export async function navigateTo(link) {
+// --- MAIN PAGE NAVIGATION HANDLER ---
+async function navigateTo(link) {
+    // Always close sidebar when navigating (important for mobile)
+    document.body.classList.remove('sidebar-open');
+
+    // Close any open dropdowns
     document.querySelectorAll('.dropdown').forEach((d) => d.classList.remove('open'));
 
     const viewFrame = document.getElementById('viewFrame');
@@ -89,7 +95,6 @@ export async function navigateTo(link) {
     frag = frag.replace(/-/g, '_').replace(/\.html$/, '');
 
     if (viewFrame) viewFrame.dataset.currentUrl = url;
-    window.currentFragmentUrl = url;
 
     highlightNav(frag, url);
 
@@ -113,16 +118,10 @@ export async function navigateTo(link) {
                     const moduleName = params.get('module_name');
                     if (moduleName) {
                         // Show the settings form for the module
-                        document.querySelector('.settings-splash')?.classList.add('hidden');
-                        document.getElementById('settingsForm')?.classList.remove('hidden');
-                        await PAGE_LOADERS[frag](moduleName);
+                        await loadSettings(moduleName);
                     } else {
                         // Show splash, hide form
-                        import('./settings/settings.js').then(({ renderSettingsSplash }) => {
-                            document.querySelector('.settings-splash')?.classList.remove('hidden');
-                            document.getElementById('settingsForm')?.classList.add('hidden');
-                            renderSettingsSplash();
-                        });
+                        renderSettingsSplash();
                     }
                 } else {
                     await PAGE_LOADERS[frag]();
@@ -130,7 +129,6 @@ export async function navigateTo(link) {
             }
 
             setupDropdownMenus();
-            // Sub-menu highlight on navigation for SPA
             highlightNav(frag, url);
         }, 200);
     } catch (err) {
@@ -139,7 +137,7 @@ export async function navigateTo(link) {
     }
 }
 
-
+// --- CLOSE DROPDOWNS ON NAVIGATION ---
 function setupDropdownMenus() {
     document.querySelectorAll('.dropdown').forEach((dropdown) => {
         const oldToggle = dropdown.querySelector('.dropdown-toggle');
@@ -185,7 +183,7 @@ function setupDropdownMenus() {
 document.addEventListener('DOMContentLoaded', async () => {
     setupDropdownMenus();
 
-    let path = window.location.pathname + window.location.search;
+    let path = location.pathname + location.search;
     let frag = '';
     if (/\/pages\/([a-zA-Z0-9_\-]+)/.test(path)) {
         frag = path.match(/\/pages\/([a-zA-Z0-9_\-]+)/)[1];
@@ -196,17 +194,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     highlightNav(frag, path);
 
     document.addEventListener('click', async (e) => {
-        const link = e.target.closest('nav .menu a, .dropdown-toggle');
-        if (!link || !link.href || link.origin !== window.location.origin) return;
+        // Handle sidebar/top-menu AND settings splash links
+        const link = e.target.closest('nav .menu a, .dropdown-toggle, .settings-section-link');
+        if (!link || !link.href || link.origin !== location.origin) return;
         if (e.button !== 0 || e.metaKey || e.ctrlKey) return;
         e.preventDefault();
 
         // Special handling for settings sub-menu navigation (only those with ?module_name=...)
         if (link.href.includes('/pages/settings?module_name=')) {
-            const params = new URL(link.href, window.location.origin).searchParams;
+            const params = new URL(link.href, location.origin).searchParams;
             const moduleName = params.get('module_name');
             if (moduleName) {
-                await handleSettingsNavigation(moduleName); // <-- this is where modal logic happens!
+                await handleSettingsNavigation(moduleName);
+                // --- Highlight after settings nav ---
+                highlightNav('settings', link.href);
                 return;
             }
         }
@@ -225,6 +226,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 });
 
+// --- SIDEBAR TOGGLE VIA HAMBURGER BUTTON ---
 document.addEventListener('DOMContentLoaded', () => {
     const hamburger = document.getElementById('sidebarToggle');
     const overlay = document.getElementById('pageOverlay');
@@ -243,4 +245,16 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') body.classList.remove('sidebar-open');
     });
+});
+
+// If sidebar is open and you click anywhere except the sidebar or hamburger, close sidebar
+document.addEventListener('click', (e) => {
+    if (!document.body.classList.contains('sidebar-open')) return;
+    const sidebar = document.querySelector('nav.sidebar');
+    const hamburger = document.getElementById('sidebarToggle');
+    // If click is inside sidebar or hamburger, do nothing
+    if (sidebar && sidebar.contains(e.target)) return;
+    if (hamburger && hamburger.contains(e.target)) return;
+    // Otherwise, close the sidebar
+    document.body.classList.remove('sidebar-open');
 });

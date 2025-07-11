@@ -1,5 +1,7 @@
 import { fetchConfig } from './helper.js';
 
+let _themeMediaListener = null;
+
 function parseVersionString(ver) {
     if (!ver) return {};
     const parts = ver.trim().split('.');
@@ -73,7 +75,7 @@ async function mainVersionCheck() {
     if (updateAvailable) {
         badge.style.display = '';
         badge.title = ''; // Use custom tooltip
-        badge.onclick = () => window.open('https://github.com/Drazzilb08/daps/releases', '_blank');
+        badge.onclick = () => open('https://github.com/Drazzilb08/daps/releases', '_blank');
         document.getElementById('tooltip-current-version').innerText = local.full;
         document.getElementById('tooltip-latest-version').innerText = remoteFull;
     } else {
@@ -90,26 +92,22 @@ export function setTheme() {
                     : 'light';
 
             function applySystemTheme() {
-                const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const isDark = matchMedia('(prefers-color-scheme: dark)').matches;
                 document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
                 try {
                     localStorage.setItem('theme', isDark ? 'dark' : 'light');
                 } catch {}
             }
 
-            if (window._themeMediaListener) {
-                window
-                    .matchMedia('(prefers-color-scheme: dark)')
-                    .removeEventListener('change', window._themeMediaListener);
-                window._themeMediaListener = null;
+            if (_themeMediaListener) {
+                matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', _themeMediaListener);
+                _themeMediaListener = null;
             }
 
             if (theme === 'auto') {
                 applySystemTheme();
-                window._themeMediaListener = applySystemTheme;
-                window
-                    .matchMedia('(prefers-color-scheme: dark)')
-                    .addEventListener('change', window._themeMediaListener);
+                _themeMediaListener = applySystemTheme;
+                matchMedia('(prefers-color-scheme: dark)').addEventListener('change', _themeMediaListener);
             } else {
                 document.documentElement.setAttribute(
                     'data-theme',

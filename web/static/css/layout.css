@@ -110,6 +110,10 @@ body {
     min-height: 0;
     height: 100%;
 }
+.view-frame, .page-content {
+  overflow-y: auto;
+  padding-top: 0;
+}
 
 h1, .main-header {
     color: var(--header-fg);

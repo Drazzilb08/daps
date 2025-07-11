@@ -1,5 +1,4 @@
 // web/static/js/settings/settings_schema.js
-
 export const SETTINGS_SCHEMA = [
   // --- SYNC GDRIVE ---
   {
@@ -29,11 +28,12 @@ export const SETTINGS_SCHEMA = [
       type: "complex_list",
       required: false,
       description: "Each entry contains id, location, and name.",
-      modal: "gdriveSyncModal",
+      modal: "openModal",
       fields: [
+        { key: "preset", label: "Gdrive Presets", type: "modal_helper", helper: "populateGDrivePresetsDropdown" },
         { key: "name", label: "Name", type: "text", required: true },
         { key: "id", label: "GDrive ID", type: "text", required: true },
-        { key: "location", label: "Location", type: "text", required: true }
+        { key: "location", label: "Location", type: "dir", required: true, modal: "directoryPickerModal" }
       ]
     }
   ]
@@ -68,6 +68,7 @@ export const SETTINGS_SCHEMA = [
         type: "instances",
         required: true,
         description: "Radarr/Sonarr/Plex targets.",
+        add_posters_option: true,
         instance_types: [
           "plex",
           "radarr",
@@ -114,10 +115,11 @@ export const SETTINGS_SCHEMA = [
         type: "complex_list",
         description: "Add holiday color overrides.",
         required: false,
-        modal: "borderReplacerrModal",
+        modal: "openModal",
         fields: [
+            { key: "preset", label: "Holiday Presets", type: "modal_helper", helper: "loadHolidayPresets" },
             { key: "name", label: "Holiday Name", type: "text", required: true },
-            { key: "schedule", label: "Schedule", type: "text", required: true },
+            { key: "schedule", label: "Schedule", type: "modal_helper", helper: "populateScheduleDropdowns", required: true },
             { key: "color", label: "Colors", type: "color_list", required: true } // handle as array of colors
         ]
         }
@@ -137,9 +139,9 @@ export const SETTINGS_SCHEMA = [
         type: "complex_list",
         required: false,
         description: "List of instance configs.",
-        modal: "upgradinatorrModal",
+        modal: "openModal",
         fields: [
-            { key: "instance", label: "Instance", type: "text", required: true },
+            { key: "instance", label: "Instance", type: "instance_dropdown", from:["radarr", "sonarr"], required: true },
             { key: "count", label: "Count", type: "number", required: true },
             { key: "tag_name", label: "Tag Name", type: "text", required: true },
             { key: "ignore_tag", label: "Ignore Tag", type: "text", required: false },
@@ -167,7 +169,12 @@ export const SETTINGS_SCHEMA = [
         label: "Instances",
         type: "instances",
         required: true,
-        description: "Radarr/Sonarr targets.",
+        description: "Radarr/Sonarr",
+        add_posters_option: false,
+        instance_types: [
+          "radarr",
+          "sonarr"
+        ]
       }
     ]
   },
@@ -181,7 +188,7 @@ export const SETTINGS_SCHEMA = [
       { key: "dry_run", label: "Dry Run", type: "slider", required: false },
       { key: "searches", label: "Searches", type: "number", required: false },
       { key: "print_files", label: "Print Files", type: "slider", required: false },
-      { key: "source_dirs", label: "Source Directories", type: "mode_dir_list", required: true, modal: "directoryPickerModal" },
+      { key: "source_dirs", label: "Source Directories", type: "dir_list_options", options: ['scan', 'resolve'], required: true, modal: "directoryPickerModal" },
       { key: "exclude_profiles", label: "Exclude Profiles", type: "textarea", required: false },
       { key: "exclude_movies", label: "Exclude Movies", type: "textarea", required: false },
       { key: "exclude_series", label: "Exclude Series", type: "textarea", required: false },
@@ -190,7 +197,12 @@ export const SETTINGS_SCHEMA = [
         label: "Instances",
         type: "instances",
         required: true,
-        description: "Radarr/Sonarr targets."
+        description: "Radarr/Sonarr",
+        add_posters_option: true,
+        instance_types: [
+          "radarr",
+          "sonarr"
+        ]
       }
     ]
   },
@@ -208,26 +220,25 @@ export const SETTINGS_SCHEMA = [
         type: "complex_list",
         required: false,
         description: "Mappings of app_type, app_instance, labels, plex_instances.",
-        modal: "labelarrModal",
+        modal: "openModal",
         fields: [
-        { key: "app_type", label: "App Type", type: "text", required: true },
-        { key: "app_instance", label: "App Instance", type: "text", required: true },
-        { key: "labels", label: "Labels", type: "text", required: true },
-        {
+          { key: "app_type", label: "App Type", type: "dropdown", options: ["radarr", "sonarr"], required: true },
+          {
+            key: 'app_instance',
+            label: 'App Instance',
+            type: 'instance_dropdown',
+            from: 'app_type', // must match the parent key
+          },
+          { key: "labels", label: "Labels", type: "text", required: true },
+          {
             key: "plex_instances",
             label: "Plex Instances",
-            type: "complex_list",
-            required: false,
-            fields: [
-            { key: "instance", label: "Plex Instance", type: "text", required: true },
-            {
-                key: "library_names",
-                label: "Library Names",
-                type: "textarea",
-                required: true
-            }
-            ]
-        }
+            type: "instances",
+            required: true,
+            description: "Plex targets.",
+            add_posters_option: false,
+            instance_types: [ "plex" ]
+          }
         ]
       }
     ]
@@ -244,7 +255,13 @@ export const SETTINGS_SCHEMA = [
         key: "instances",
         label: "Instances",
         type: "instances",
-        required: true
+        required: true,
+        description: "Radarr/Sonarr",
+        add_posters_option: true,
+        instance_types: [
+          "radarr",
+          "sonarr"
+        ]
       }
     ]
   },

@@ -31,13 +31,14 @@ export async function loadSettings(moduleName) {
 
     // Show form, hide splash
     document.querySelector('.settings-splash')?.classList.add('hidden');
-    document.getElementById('settingsForm')?.classList.remove('hidden');
+    document.getElementById('settingsSaveBar')?.classList.remove('hidden');
+    document.getElementById('settingsViewFrame')?.classList.remove('hidden');
     resetDirty();
 }
 
 export async function saveSettings() {
     if (!currentModule) return;
-    const saveBtn = document.getElementById('saveBtn');
+    const saveBtn = document.getElementById('saveBtnFixed');
     if (saveBtn) saveBtn.disabled = true;
     
     const payload = await buildSettingsPayload(currentModule);
@@ -154,14 +155,35 @@ export function renderSettingsSplash() {
     const container = document.getElementById('settings-section-list');
     if (!container) return;
     container.innerHTML = '';
+
     SETTINGS_MODULES.forEach((mod) => {
         const link = document.createElement('a');
         link.className = 'settings-section-link';
         link.href = `/pages/settings?module_name=${mod.key}`;
-        link.innerHTML = `
-      <div class="settings-section-title">${mod.name}</div>
-      <div class="settings-section-desc">${mod.description}</div>
-    `;
+        link.setAttribute('tabindex', '0'); // For keyboard nav
+
+        // Title
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'settings-section-title';
+        titleDiv.textContent = mod.name;
+
+        // Description
+        const descDiv = document.createElement('div');
+        descDiv.className = 'settings-section-desc';
+        descDiv.textContent = mod.description;
+
+        link.appendChild(titleDiv);
+        link.appendChild(descDiv);
+
+
+        // Optional: Keyboard navigation (Enter triggers click)
+        link.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+
         container.appendChild(link);
     });
 }

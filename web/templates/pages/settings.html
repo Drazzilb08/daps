@@ -1,8 +1,15 @@
+<!-- When splash is visible: -->
 <div class="settings-splash">
   <h1 class="settings-splash-title">Settings</h1>
   <div class="settings-section-list" id="settings-section-list"></div>
 </div>
-<form id="settingsForm" class="hidden" autocomplete="off">
-  <div id="form-fields"></div>
-  <button id="saveBtn" type="submit">Save</button>
-</form>
+
+<!-- When editing settings (show these two): -->
+<div class="settings-save-bar hidden" id="settingsSaveBar">
+  <button id="saveBtnFixed" type="submit" form="settingsForm">Save</button>
+</div>
+<div class="settings-view-frame hidden" id="settingsViewFrame">
+  <form id="settingsForm" autocomplete="off">
+    <div id="form-fields"></div>
+  </form>
+</div>

@@ -71,3 +71,5 @@ pyproject.toml
 *.db
 config/daps.db-shm
 config/daps.db-wal
+config/daps.db
+*.db

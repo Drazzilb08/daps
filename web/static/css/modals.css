@@ -132,7 +132,7 @@ html.modal-open {
     padding: 1.2rem 2rem 1.2rem 2rem;
     background: none;
     margin-top: auto;
-    justify-content: space-between;
+
 }
 .modal-footer button:disabled {
     opacity: 0.65;

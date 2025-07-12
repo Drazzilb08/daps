@@ -1,4 +1,5 @@
 import { SETTINGS_SCHEMA } from './settings/settings_schema.js';
+import { fetchConfig } from './api.js';
 
 export async function buildNotificationPayload() {
     const form = document.getElementById('notification-modal-form');
@@ -6,16 +7,11 @@ export async function buildNotificationPayload() {
 
     // 1. Get the latest notifications config block
     let notifications = {};
-    try {
-        const res = await fetch('/api/config');
-        const cfg = await res.json();
-        notifications =
-            cfg.notifications && typeof cfg.notifications === 'object'
-                ? JSON.parse(JSON.stringify(cfg.notifications))
-                : {};
-    } catch {
-        notifications = {};
-    }
+    const cfg = await fetchConfig();
+    notifications =
+        cfg.notifications && typeof cfg.notifications === 'object'
+            ? JSON.parse(JSON.stringify(cfg.notifications))
+            : {};
 
     // 2. Detect type/module
     let type = null,
@@ -60,16 +56,11 @@ export async function buildNotificationPayload() {
 
 export async function buildSchedulePayload(module, time, remove = false) {
     let schedule = {};
-    try {
-        const res = await fetch('/api/config');
-        const cfg = await res.json();
-        schedule =
-            cfg.schedule && typeof cfg.schedule === 'object'
-                ? JSON.parse(JSON.stringify(cfg.schedule))
-                : {};
-    } catch {
-        schedule = {};
-    }
+    const cfg = await fetchConfig();
+    schedule =
+        cfg.schedule && typeof cfg.schedule === 'object'
+            ? JSON.parse(JSON.stringify(cfg.schedule))
+            : {};
 
     if (remove) {
         delete schedule[module];
@@ -83,20 +74,14 @@ export async function buildInstancesPayload(instances) {
     return { instances };
 }
 
-export async function buildSettingsPayload(moduleName) {
+export async function buildSettingsPayload(moduleName, liveConfig = null) {
     const schema = SETTINGS_SCHEMA.find(s => s.key === moduleName);
     if (!schema) return null;
     const form = document.getElementById('settingsForm');
     if (!form) return null;
 
-    // Get the current backend config, needed for fallback
-    let rootConfig = {};
-    try {
-        const res = await fetch('/api/config');
-        rootConfig = await res.json();
-    } catch {
-        rootConfig = {};
-    }
+    // Get the current backend config for fallback
+    const rootConfig = await fetchConfig();
     const prevConfig = rootConfig[moduleName] || {};
 
     const payload = {};
@@ -104,41 +89,63 @@ export async function buildSettingsPayload(moduleName) {
         let val;
         const el = form.querySelector(`[name="${field.key}"]`);
 
-        // --- COMPLEX LIST HANDLING ---
+        // ----------- COMPLEX LIST LOGIC -----------
         if (field.type === 'complex_list') {
-            // Try UI getter first (for modals)
-            let getterName = null, getterFn = null;
-            switch (moduleName) {
-                case 'sync_gdrive':
-                    if (field.key === 'gdrive_list') getterFn = typeof getGdriveSyncData === 'function' ? getGdriveSyncData : null;
-                    break;
-                case 'labelarr':
-                    if (field.key === 'mappings') getterFn = typeof getLabelarrData === 'function' ? getLabelarrData : null;
-                    break;
-                case 'upgradinatorr':
-                    if (field.key === 'instances_list') getterFn = typeof getUpgradinatorrData === 'function' ? getUpgradinatorrData : null;
-                    break;
-                case 'border_replacerr':
-                    if (field.key === 'holidays') getterFn = typeof getBorderReplacerrData === 'function' ? getBorderReplacerrData : null;
-                    break;
+            // Get the source of truth: liveConfig (modal-edited), else prevConfig, else []
+            let complexList = [];
+            if (liveConfig && Array.isArray(liveConfig[field.key])) {
+                complexList = liveConfig[field.key];
+            } else if (prevConfig[field.key]) {
+                complexList = prevConfig[field.key];
             }
-            if (!getterFn && typeof window === 'object') {
-                getterName = 'get' + moduleName.replace(/(?:^|\_)(\w)/g, (_, c) => c.toUpperCase()) + 'Data';
-                getterFn = window[getterName];
-            }
-            if (typeof getterFn === 'function') {
-                val = getterFn();
-            }
-            // If still no value, fall back to previous config value!
-            if (!val || (Array.isArray(val) && val.length === 0)) {
-                val = prevConfig[field.key] || [];
-            }
+            // Canonicalize: only keep keys in schema.fields, and in defined order
+            const canonicalKeys = (field.fields || []).map(f => f.key);
+
+            val = (complexList || []).map(item => {
+                const out = {};
+                // Special handling for upgradinatorr: do not emit season_monitored_threshold unless Sonarr instance
+                const instanceValue = (item.instance || '').toLowerCase();
+                for (const key of canonicalKeys) {
+                    // Border replacerr holiday: color/colors migration (backcompat)
+                    if (moduleName === 'border_replacerr' && field.key === 'holidays' && key === 'color' && 'colors' in item && !('color' in item)) {
+                        out['color'] = item.colors;
+                    }
+                    // Upgradinatorr: Only keep season_monitored_threshold if instance is sonarr
+                    else if (
+                        moduleName === 'upgradinatorr' &&
+                        field.key === 'instances_list' &&
+                        key === 'season_monitored_threshold' &&
+                        !instanceValue.includes('sonarr')
+                    ) {
+                        continue;
+                    }
+                    else {
+                        out[key] = item[key];
+                    }
+                }
+                return out;
+            });
+            payload[field.key] = val;
+            continue;
+        }
+
+        // --- COLOR LIST FIELD (NEW HANDLING) ---
+        if (field.type === 'color_list') {
+            const colorInputs = form.querySelectorAll(
+                `.field-color-list input[name="${field.key}"], .field-color-list input[type="color"]`
+            );
+            val = Array.from(colorInputs)
+                .map(input => input.value)
+                .filter(Boolean);
+            if (!val.length) val = [];
             payload[field.key] = val;
             continue;
         }
 
         // --- ALL OTHER FIELD TYPES ---
         if (field.type === 'slider') {
+            val = el ? el.checked : false;
+        } else if  (field.type === 'check_box') {
             val = el ? el.checked : false;
         } else if (field.type === 'number') {
             val = el ? parseInt(el.value, 10) : null;
@@ -162,15 +169,14 @@ export async function buildSettingsPayload(moduleName) {
         } else if (field.type === 'dir_list' || field.type === 'dir_list_drag_drop') {
             const dirInputs = form.querySelectorAll(`[name="${field.key}"]`);
             val = Array.from(dirInputs).map(d => d.value.trim()).filter(Boolean);
+            if (!val.length) val = [];
         } else if (field.type === 'instances') {
-            // For multi-select, collect checked/selected
             const instanceInputs = form.querySelectorAll(`[name="instances"]`);
             val = Array.from(instanceInputs).map(i => i.value).filter(Boolean);
         } else {
             val = el ? el.value : '';
         }
 
-        // If value is undefined/null and exists in prevConfig, use previous
         if ((val === undefined || val === null || (Array.isArray(val) && val.length === 0)) && prevConfig[field.key] !== undefined) {
             val = prevConfig[field.key];
         }

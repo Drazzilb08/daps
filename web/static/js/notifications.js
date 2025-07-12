@@ -1,11 +1,12 @@
-import { fetchConfig, moduleList, setupPasswordToggles } from './helper.js';
-import { humanize, showToast } from './util.js';
+import { fetchConfig } from './api.js';
+import { humanize, showToast, setupPasswordToggles } from './util.js';
 import {
     modalHeaderHtml,
     modalFooterHtml,
     setupModalCloseOnOutsideClick,
 } from './settings/modals.js';
 import { buildNotificationPayload } from './payload.js'; // already present
+import { moduleList } from './constants.js';
 
 // Add placeholder values as needed per field:
 const NOTIFY_TYPES = [

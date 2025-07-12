@@ -49,16 +49,11 @@ body, input, select, textarea, button {
   padding: 0 1rem 3rem 1rem;
 }
 
-
+/* BASE CARD: No min/max/width/height or padding! */
 .card {
-  aspect-ratio: 1 / 1;
-  width: 100%;
-  max-width: 180px;
-  min-width: 180px;
   background: var(--surface);
   border-radius: 10px;
   box-shadow: 0 2.5px 13px rgba(0,0,0,0.10);
-  padding: 1.2rem 1.2rem 1.1rem 1.2rem;
   display: flex;
   flex-direction: column;
   gap: 0.32rem;
@@ -88,18 +83,17 @@ body, input, select, textarea, button {
   letter-spacing: 0.01em;
 }
 
-/* Add-card (universal, for + icon) */
+/* Add-card: only visual differences (no sizing!) */
 .card.card-add {
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 116px;
-  cursor: pointer;
   background: color-mix(in srgb, var(--accent) 6%, var(--surface) 94%);
   border: 2.5px dashed var(--accent);
   color: var(--accent);
   transition: border-color 0.19s, background 0.19s, color 0.19s;
 }
+
 .card.card-add:hover,
 .card.card-add:focus {
   background: color-mix(in srgb, var(--accent) 12%, var(--surface) 88%);
@@ -295,11 +289,12 @@ textarea:focus {
 
 textarea {
     min-height: 4rem;
-    height: auto;
+    height: auto;           /* Let JS handle the actual height */
     resize: vertical;
-    line-height: 1.23;
-    padding: 0.5em 1em;
+    overflow-y: hidden !important; /* Prevent vertical scrollbar */
+    box-sizing: border-box;
     font-size: 1.01rem;
+    line-height: 1.23;
 }
 
 
@@ -443,7 +438,6 @@ textarea {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 92px;
     padding: 0.6em 1.6em;
     background: var(--primary);
     color: #fff;
@@ -503,34 +497,13 @@ textarea {
     }
 }
 
-/* --- UNIVERSAL MOBILE CARD LIST FIX --- */
-    @media (max-width: 900px) {
-    .card-list {
+@media (max-width: 900px) {
+  .card-list {
     grid-template-columns: repeat(2, 1fr);
     max-width: 100vw;
     gap: 1.1rem;
     padding: 0 0.4rem 2rem 0.4rem;
     margin: 0 auto;
-    box-sizing: border-box;
-    }
-    }
-    @media (max-width: 600px) {
-    .card-list {
-    grid-template-columns: 1fr;
-    max-width: 100vw;
-    gap: 0.7rem;
-    padding: 0 0.1rem 1.6rem 0.1rem;
-    margin: 0 auto;
-    box-sizing: border-box;
-    justify-items: center;
-    align-items: center;
-    }
-    .card {
-    max-width: 80vw;
-    min-width: 70vw;
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
     box-sizing: border-box;
   }
 }

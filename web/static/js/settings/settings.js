@@ -1,9 +1,10 @@
-import { fetchConfig, postConfig } from '../helper.js';
+import { fetchConfig, postConfig } from '../api.js';
 import { buildSettingsPayload } from '../payload.js';
 import { renderSettingsForm } from './dynamic_forms.js';
 import { showToast, markDirty, resetDirty, getIsDirty } from '../util.js';
 import { unsavedSettingsModal } from './modals.js';
-import { SETTINGS_SCHEMA } from './settings_schema.js';
+import { SETTINGS_SCHEMA, SETTINGS_MODULES } from './settings_schema.js';
+import { setTheme } from '../index.js';
 
 // Tracks last loaded values for the current module, for dirty checking
 let currentModule = null;
@@ -21,7 +22,7 @@ export async function loadSettings(moduleName) {
 
     // Render form
     const formFields = document.getElementById('form-fields');
-    renderSettingsForm(formFields, moduleName, moduleConfig, rootConfig);
+    renderSettingsForm(formFields, moduleName, currentConfig, rootConfig);
 
     // Set up dirty detection for any field change (for fields in schema)
     setupFormDirtyDetection(moduleName);
@@ -40,8 +41,7 @@ export async function saveSettings() {
     if (!currentModule) return;
     const saveBtn = document.getElementById('saveBtnFixed');
     if (saveBtn) saveBtn.disabled = true;
-    
-    const payload = await buildSettingsPayload(currentModule);
+    const payload = await buildSettingsPayload(currentModule, currentConfig);
     if (!payload) {
         if (saveBtn) saveBtn.disabled = false;
         return;
@@ -52,6 +52,8 @@ export async function saveSettings() {
         showToast('Settings saved!', 'success');
         lastLoadedConfig = JSON.parse(JSON.stringify(payload[currentModule]));
         resetDirty();
+        // Add this: re-apply theme if user_interface was updated
+        if (currentModule === 'user_interface') setTheme();
     } else {
         showToast('Save failed: ' + error, 'error');
     }
@@ -135,21 +137,6 @@ export async function handleSettingsNavigation(newModuleName) {
         await loadSettings(newModuleName);
     } // else 'cancel' = do nothing
 }
-
-const SETTINGS_MODULES = [
-  { name: 'Sync Gdrive', key: 'sync_gdrive', description: 'Synchronize your Google Drive with DAPS.' },
-  { name: 'Poster Renamerr', key: 'poster_renamerr', description: 'Automate and configure your poster renaming workflow.' },
-  { name: 'Poster Cleanarr', key: 'poster_cleanarr', description: 'Clean up unused posters and maintain your collection.' },
-  { name: 'Unmatched Assets', key: 'unmatched_assets', description: 'Handle and review assets that couldn’t be matched.' },
-  { name: 'Border Replacerr', key: 'border_replacerr', description: 'Replace and manage borders for your posters.' },
-  { name: 'Renameinatorr', key: 'renameinatorr', description: 'Advanced renaming rules and automation.' },
-  { name: 'Upgradinatorr', key: 'upgradinatorr', description: 'Upgrade your assets with new features.' },
-  { name: 'Nohl', key: 'nohl', description: 'Custom logic module.' },
-  { name: 'Labelarr', key: 'labelarr', description: 'Automated label management.' },
-  { name: 'Health Checkarr', key: 'health_checkarr', description: 'Run health checks on your libraries.' },
-  { name: 'Jduparr', key: 'jduparr', description: 'Find and handle duplicates in your files.' },
-  { name: 'Main', key: 'main', description: 'General DAPS settings.' }
-];
 
 export function renderSettingsSplash() {
     const container = document.getElementById('settings-section-list');

@@ -2,9 +2,20 @@
    INSTANCE PAGE – CARD GROUPS AND LAYOUT
 ====================================================== */
 
+
 #instances-list {
   display: block;
   width: 100%;
+}
+
+#instances-list .card,
+#instances-list .card.card-add {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  min-width: 220px;
+  max-width: 220px;
+  padding: 1.16rem 1.3rem 1.08rem 1.3rem;
+  box-sizing: border-box;
 }
 
 .instance-group-header {
@@ -53,18 +64,47 @@
   margin-top: 25px;
 }
 
-/* Responsive adjustments */
-@media (max-width: 900px) {
+
+/* Tablet: 2 columns */
+@media (max-width: 1100px) {
   .instance-group-header {
     text-align: center;
     margin-left: 0;
     margin-right: 0;
     padding-left: 0;
+    justify-content: center;
+    width: 100%;
+  }
+  .instance-group .card-list {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 720px;
+    gap: 0.7rem;
+    padding: 0 0.1rem 1.6rem 0.1rem;
+    margin: 0 auto;
+    justify-items: center;
+    align-items: center;
   }
 }
-@media (max-width: 900px){
-  /* Place additional responsive rules here if needed */
+
+/* Mobile: 1 column */
+@media (max-width: 900px) {
+  .instance-group .card-list {
+    grid-template-columns: 1fr;
+    max-width: 98vw;
+    gap: 0.7rem;
+    padding: 0 0.1rem 1.6rem 0.1rem;
+    margin: 0 auto;
+    justify-items: center;
+    align-items: center;
+  }
+  .instance-group .card,
+  .instance-group .card.card-add {
+    max-width: 95vw;
+    min-width: 82vw;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+  }
 }
-@media (max-width: 600px) {
-  /* Place additional responsive rules here if needed */
-}
+

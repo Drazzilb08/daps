@@ -1,4 +1,4 @@
-import { fetchConfig } from './helper.js';
+import { fetchConfig } from './api.js';
 
 let _themeMediaListener = null;
 
@@ -87,8 +87,8 @@ export function setTheme() {
     fetchConfig()
         .then((config) => {
             let theme =
-                config && config.main && typeof config.main.theme === 'string'
-                    ? config.main.theme.toLowerCase()
+                config && config.user_interface && typeof config.user_interface.theme === 'string'
+                    ? config.user_interface.theme.toLowerCase()
                     : 'light';
 
             function applySystemTheme() {

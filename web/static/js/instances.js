@@ -1,5 +1,5 @@
-import { fetchConfig, setupPasswordToggles, getIcon } from './helper.js';
-import { humanize, showToast } from './util.js';
+import { fetchConfig } from './api.js';
+import { humanize, showToast, setupPasswordToggles, getIcon } from './util.js';
 import { modalHeaderHtml, modalFooterHtml } from './settings/modals.js';
 
 export async function loadInstances() {

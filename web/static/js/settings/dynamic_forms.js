@@ -1,3 +1,5 @@
+// web/static/js/settings/dynamic_forms.js
+
 import { SETTINGS_SCHEMA } from './settings_schema.js';
 import { renderField } from './field_render.js';
 
@@ -7,13 +9,21 @@ export function renderSettingsForm(formFields, moduleName, config, rootConfig) {
     if (!schema) return;
 
     formFields.innerHTML = '';
-    const wrapper = document.createElement('div');
-    wrapper.className = 'settings-wrapper';
+
+    // Section header (like Radarr)
+    const header = document.createElement('div');
+    header.className = 'settings-section-header';
+    header.textContent = schema.label || moduleName;
+    formFields.appendChild(header);
+
+    // Fields list
+    const fieldsList = document.createElement('div');
+    fieldsList.className = 'settings-fields-list';
 
     schema.fields.forEach(field => {
         const fieldNode = renderField(field, config[field.key], config, rootConfig);
-        if (fieldNode) wrapper.appendChild(fieldNode);
+        if (fieldNode) fieldsList.appendChild(fieldNode);
     });
 
-    formFields.appendChild(wrapper);
+    formFields.appendChild(fieldsList);
 }

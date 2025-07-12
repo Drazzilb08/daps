@@ -1,3 +1,15 @@
+.color-list-swatch {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    margin-right: 6px;
+    margin-bottom: 3px;
+    border: 1.5px solid var(--divider);
+    box-shadow: 0 1.5px 6px rgba(0,0,0,0.07);
+    vertical-align: middle;
+}
+
 .settings-splash {
   max-width: 700px;
   margin: 2.2rem auto 0 auto;
@@ -130,3 +142,182 @@
 }
 
 
+
+
+/* ========== SETTINGS SECTION WRAPPER ========== */
+.settings-section {
+  margin-bottom: 2.6em;
+}
+.settings-section-header {
+  font-size: 1.39rem;
+  font-weight: 700;
+  padding-bottom: 0.28em;
+  border-bottom: 1.5px solid var(--divider);
+  margin-bottom: 1.1em;
+  margin-top: 0.5em;
+  padding-left: 1.1em;
+}
+
+
+/* GDRIVE CUSTOM */
+.gdrive-card-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem 1.2rem;
+    padding: 0;
+    margin: 0.4em 0 1.1em 0;
+}
+
+/* All GDrive cards: shared sizing! */
+.gdrive-entry-card,
+.gdrive-add-card.card.card-add {
+    min-width: 340px;
+    width: 100%;
+    height: 76px;
+    margin: 0;
+    display: flex;
+    position: relative;
+}
+
+/* Entry card layout */
+.gdrive-entry-card {
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 1.04rem 1.1rem 1rem 1.1rem;
+}
+
+/* Add card: only font-size override for plus */
+.gdrive-add-card.card.card-add {
+    align-items: flex-start;
+    justify-content: center;
+    font-size: 2.3rem;
+    padding: 1.04rem 1.1rem 1rem 1.1rem;
+}
+
+/* Plus sign centered */
+.gdrive-add-card .card-add-plus {
+    font-size: inherit;
+    margin: 0;
+    line-height: 1;
+    font-weight: 700;
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Entry field styling inside card */
+.gdrive-entry-field {
+    display: flex;
+    align-items: baseline;
+    font-size: 1.08rem;
+    margin-bottom: 0.17em;
+    gap: 0.44em;
+}
+.gdrive-entry-label {
+    font-weight: 700;
+    color: var(--primary);
+    min-width: 70px;
+    flex-shrink: 0;
+    letter-spacing: 0.01em;
+}
+.gdrive-entry-value {
+    font-weight: 400;
+    color: var(--text-color);
+    word-break: break-all;
+    flex: 1 1 0;
+}
+.gdrive-entry-path .gdrive-entry-value {
+    color: var(--accent);
+}
+.gdrive-entry-id .gdrive-entry-value {
+    color: var(--muted);
+}
+
+/* PATCH: Align Google Drive List cards to label */
+.settings-field-row.field-gdrive-list {
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 0.45em;
+}
+
+.field-gdrive-list > label {
+  text-align: left;
+  min-width: 0;
+  max-width: none;
+  flex: none;
+  margin-right: 0;
+  margin-bottom: 0.38em;
+  padding: 0;
+}
+
+.field-gdrive-list .settings-field-inputwrap {
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.gdrive-card-list {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.settings-field-row {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 38px;
+  margin-bottom: 20px;
+  font-size: 1.06rem;
+  box-sizing: border-box;
+}
+
+.settings-field-labelcol {
+  min-width: 160px;
+  max-width: 260px;
+  flex: 0 0 210px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;      /* aligns label/buttons to right */
+  justify-content: flex-start;
+  padding-right: 20px;
+  box-sizing: border-box;
+}
+
+.settings-field-labelcol label {
+  font-weight: 500;
+  color: var(--primary);
+  padding-top: 0.21em;
+  line-height: 1.3;
+  text-align: right;
+  margin-bottom: 0.18em;
+  width: 100%;
+  display: block;
+}
+
+.settings-field-labelcol .btn {
+  margin-top: 0.5em;
+  align-self: flex-end; /* keeps buttons aligned with label */
+}
+
+.settings-field-inputwrap {
+  flex: 1 1 320px;
+  min-width: 220px;
+  max-width: 70%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15em;
+  box-sizing: border-box;
+  align-items: flex-start;
+}
+.settings-fields-list {
+  max-width: 80%;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 32px;
+  box-sizing: border-box;
+}

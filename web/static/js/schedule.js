@@ -1,7 +1,8 @@
-import { fetchConfig, moduleList } from './helper.js';
+import { fetchConfig } from './api.js';
 import { humanize, showToast } from './util.js';
 import { modalHeaderHtml, modalFooterHtml } from './settings/modals.js';
 import { buildSchedulePayload } from './payload.js';
+import { moduleList } from './constants.js';
 
 let allRunStates = {};
 

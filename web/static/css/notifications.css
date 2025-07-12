@@ -3,6 +3,16 @@
   width: 100%;
 }
 
+#notifications-list .card,
+#notifications-list .card.card-add {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  min-width: 220px;
+  max-width: 220px;
+  padding: 1.16rem 1.3rem 1.08rem 1.3rem;
+  box-sizing: border-box;
+}
+
 .notification-group {
   width: 100%;
   display: block;
@@ -19,15 +29,6 @@
   margin: 0 0 0.55em 0.2em;
   letter-spacing: 0.01em;
   padding-left: 0.07em;
-}
-
-@media (max-width: 900px) {
-  .notification-group-header {
-    text-align: center;
-    margin-left: 0;
-    margin-right: 0;
-    padding-left: 0;
-  }
 }
 
 /* CARD: Center icon & label, notification specific */
@@ -176,4 +177,68 @@ input[type="color"]:focus {
   margin-left: 0;
   align-items: center;
   display: flex;
+}
+
+/* ========== TABLET: 3 → 2 columns at ≤1100px ========== */
+@media (max-width: 1100px) {
+  #notifications-list .card-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
+    max-width: 740px;
+    margin: 0 auto 2rem auto;
+    padding: 0 0 2rem 0;
+    justify-items: center;
+  }
+  #notifications-list .card,
+  #notifications-list .card.card-add {
+    min-width: 210px;
+    max-width: 98vw;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+  }
+}
+
+/* ========== MOBILE: 2 → 1 column at ≤900px ========== */
+@media (max-width: 900px) {
+  #notifications-list .card-list {
+    grid-template-columns: 1fr;
+    max-width: 98vw;
+    gap: 0.8rem;
+    padding: 0 0.1rem 1.5rem 0.1rem;
+    margin: 0 auto;
+    justify-items: center;
+    align-items: center;
+  }
+  #notifications-list .card,
+  #notifications-list .card.card-add {
+    min-width: 82vw;
+    max-width: 95vw;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+  }
+}
+
+/* ========== SMALL MOBILE: stack, reduce padding/font at ≤600px ========== */
+@media (max-width: 600px) {
+  #notifications-list .card-list {
+    gap: 0.5rem;
+    padding: 0 0.01rem 0.6rem 0.01rem;
+    max-width: 100vw;
+  }
+  #notifications-list .card,
+  #notifications-list .card.card-add {
+    min-width: 95vw;
+    max-width: 100vw;
+    font-size: 0.98rem;
+    padding: 0.7rem 0.8rem;
+  }
+  .notification-group-header {
+    font-size: 1.05rem;
+    padding: 0.1em 0;
+  }
 }

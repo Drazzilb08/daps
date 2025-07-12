@@ -1,3 +1,23 @@
+#schedule-list.card-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* desktop: 3 columns */
+  max-width: 1080px;
+  margin: 0 auto 2.5rem auto;
+  gap: 1.5rem 1.5rem;
+  padding: 0 0 3rem 0;
+  justify-items: center;
+}
+
+#schedule-list .card,
+#schedule-list .card.card-add {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  min-width: 220px;
+  max-width: 220px;
+  padding: 1.16rem 1.3rem 1.08rem 1.3rem;
+  box-sizing: border-box;
+}
+
 .page-header {
   display: flex;
   align-items: center;
@@ -111,4 +131,32 @@
   opacity: .77;         /* slightly lighter icon */
   line-height: 1;
 }
+@media (max-width: 900px) {
+  #schedule-list.card-list {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 720px;
+    gap: 1.2rem;
+    padding: 0 0 2rem 0;
+  }
+}
 
+/* 1 column for mobile (≤600px) */
+@media (max-width: 600px) {
+  #schedule-list.card-list {
+    grid-template-columns: 1fr;
+    max-width: 98vw;
+    gap: 0.7rem;
+    padding: 0 0.1rem 1.6rem 0.1rem;
+    margin: 0 auto;
+    justify-items: center;
+    align-items: center;
+  }
+  #schedule-list .card, #schedule-list .card.card-add {
+    max-width: 95vw;
+    min-width: 82vw;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+  }
+}

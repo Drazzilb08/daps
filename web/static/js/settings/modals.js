@@ -242,7 +242,6 @@ export function directoryPickerModal(inputElement, config) {
         if (config && modal.currentInput.name) {
             config[modal.currentInput.name] = modal.currentPath;
             // Optionally debug log:
-            console.log(`[dirpicker] set config[${modal.currentInput.name}] =`, modal.currentPath);
         }
         modal._closeModal();
     };
@@ -359,42 +358,28 @@ export function openModal({
     // Title
     const heading = document.createElement('h2');
     heading.textContent = title;
-    
     contentDiv.appendChild(heading);
 
     // Render fields (fields will *directly mutate* entry)
     schema.forEach(field => {
         const fieldNode = renderField(field, entry[field.key], entry, context.rootConfig);
         contentDiv.appendChild(fieldNode);
-        console.log('[modal field rendered]', field.key, '| entry now:', JSON.stringify(entry));
-
     });
 
-    // Build buttons for footer
+    // Determine footer buttons
     const buttons = footerButtons || [
         ...(isEdit ? [{ id: 'delete-modal-btn', label: 'Delete', class: 'btn--remove' }] : []),
         { id: 'cancel-modal-btn', label: 'Cancel', class: 'btn--cancel' },
         { id: 'save-modal-btn', label: 'Save', class: 'btn--success' },
     ];
 
-    // Footer
-    const footerDiv = document.createElement('div');
-    footerDiv.className = 'modal-footer';
+    // Insert footer markup using modalFooterHtml
+    contentDiv.innerHTML += modalFooterHtml(buttons);
 
-    // Left and right grouping (Delete on left, rest on right)
-    const leftDiv = document.createElement('div');
-    const rightDiv = document.createElement('div');
-    rightDiv.style.display = 'flex';
-    rightDiv.style.gap = '0.7em';
-
+    // Wire up button events *after* HTML is added
     buttons.forEach(btn => {
-        const el = document.createElement('button');
-        el.className = `btn ${btn.class || ''}`;
-        el.type = btn.type || 'button';
-        el.id = btn.id || '';
-        el.disabled = !!btn.disabled;
-        el.textContent = btn.label;
-
+        const el = contentDiv.querySelector(`#${btn.id}`);
+        if (!el) return;
         if (/cancel|close/i.test(btn.label || btn.id)) {
             el.onclick = () => {
                 if (typeof onCancel === 'function') onCancel();
@@ -405,49 +390,47 @@ export function openModal({
                 if (context.onDelete) context.onDelete(entry);
                 closeModal();
             };
-                } else if (/save/i.test(btn.label || btn.id)) {
-    el.onclick = () => {
-        // PATCH: Grab schedule and color helper values for holidays
-        if (Array.isArray(schema) && schema.some(f => f.key === 'schedule')) {
-            const sched = modal.querySelector('#schedule-from-month') && modal.querySelector('#schedule-to-month');
-            if (sched) {
-                const fromMonth = modal.querySelector('#schedule-from-month')?.value;
-                const fromDay = modal.querySelector('#schedule-from-day')?.value;
-                const toMonth = modal.querySelector('#schedule-to-month')?.value;
-                const toDay = modal.querySelector('#schedule-to-day')?.value;
-                if (fromMonth && fromDay && toMonth && toDay) {
-                    entry.schedule = `range(${fromMonth}/${fromDay}-${toMonth}/${toDay})`;
+        } else if (/save/i.test(btn.label || btn.id)) {
+            el.onclick = () => {
+                // PATCH: handle any special save logic (e.g. schedule/color helpers for holidays)
+                if (Array.isArray(schema) && schema.some(f => f.key === 'schedule')) {
+                    const sched = modal.querySelector('#schedule-from-month') && modal.querySelector('#schedule-to-month');
+                    if (sched) {
+                        const fromMonth = modal.querySelector('#schedule-from-month')?.value;
+                        const fromDay = modal.querySelector('#schedule-from-day')?.value;
+                        const toMonth = modal.querySelector('#schedule-to-month')?.value;
+                        const toDay = modal.querySelector('#schedule-to-day')?.value;
+                        if (fromMonth && fromDay && toMonth && toDay) {
+                            entry.schedule = `range(${fromMonth}/${fromDay}-${toMonth}/${toDay})`;
+                        }
+                    }
                 }
-            }
-        }
-        // PATCH: Grab color values
-        if (Array.isArray(schema) && schema.some(f => f.key === 'color')) {
-            const colorInputs = modal.querySelectorAll('.field-color-list input[type="color"]');
-            entry.color = Array.from(colorInputs).map(input => input.value);
-        }
-
-        console.log('[modal save] entry:', JSON.stringify(entry));
-        if (typeof onSave === 'function') onSave(entry);
-        closeModal();
-    };
-} else if (/test/i.test(btn.label || btn.id) && context.onTest) {
+                // PATCH: handle color helpers for holidays
+                if (Array.isArray(schema) && schema.some(f => f.key === 'color')) {
+                    const colorInputs = modal.querySelectorAll('.field-color-list input[type="color"]');
+                    entry.color = Array.from(colorInputs).map(input => input.value);
+                }
+                // Gather all form values into entry
+                const inputs = modal.querySelectorAll('input, textarea, select');
+                inputs.forEach(input => {
+                    if (!input.name) return;
+                    if (input.type === 'checkbox') {
+                        entry[input.name] = input.checked;
+                    } else if (input.type === 'number' || input.getAttribute('type') === 'number') {
+                        entry[input.name] = input.value === '' ? null : parseInt(input.value, 10);
+                    } else {
+                        entry[input.name] = input.value;
+                    }
+                });
+                if (typeof onSave === 'function') onSave(entry);
+                closeModal();
+            };
+        } else if (/test/i.test(btn.label || btn.id) && context.onTest) {
             el.onclick = () => context.onTest(entry);
-        }
-
-        // Put Delete on left, rest on right
-        if (btn.id === 'delete-modal-btn') {
-            leftDiv.appendChild(el);
-        } else {
-            rightDiv.appendChild(el);
         }
     });
 
-    footerDiv.appendChild(leftDiv);
-    footerDiv.appendChild(rightDiv);
-    contentDiv.appendChild(footerDiv);
-
-    modal.appendChild(contentDiv);
-
+    // Any extra field helpers (as before)
     Array.from(contentDiv.querySelectorAll('.field-modal-helper')).forEach(div => {
         const helperName = div.dataset.helper;
         if (
@@ -474,4 +457,6 @@ export function openModal({
         modal.classList.add('show');
         document.body.classList.add('modal-open');
     });
+
+    modal.appendChild(contentDiv);
 }

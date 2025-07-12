@@ -1,4 +1,4 @@
-import { fetchConfig } from './helper.js';
+import { fetchConfig } from './api.js';
 import { showToast } from './util.js';
 
 const IDS = {

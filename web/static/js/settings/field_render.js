@@ -5,90 +5,139 @@ import { markDirty, showToast } from '../util.js';
 
 
 function renderTextField(field, value, config) {
-    const div = document.createElement('div');
-    div.className = 'field';
+    const row = document.createElement('div');
+    row.className = 'settings-field-row';
+
+    // LABEL COLUMN
+    const labelCol = document.createElement('div');
+    labelCol.className = 'settings-field-labelcol';
 
     const label = document.createElement('label');
     label.textContent = field.label;
-    div.appendChild(label);
+    label.htmlFor = field.key;
+    labelCol.appendChild(label);
+
+    row.appendChild(labelCol);
+
+    // INPUT COLUMN
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'settings-field-inputwrap';
 
     const input = document.createElement('input');
     input.type = 'text';
     input.className = 'input';
     input.name = field.key;
+    input.id = field.key;
     input.value = value ?? '';
     if (field.modal === 'directoryPickerModal') input.readOnly = true;
-
     if (config) {
         input.addEventListener('input', () => {
             config[field.key] = input.value;
-            console.log(`[field "${field.key}"] input -> config:`, config);
         });
     }
-    div.appendChild(input);
-    return div;
-}
+    inputWrap.appendChild(input);
 
-function renderDropdownField(field, value, config) {
-    const div = document.createElement('div');
-    div.className = 'field';
-
-    const label = document.createElement('label');
-    label.textContent = field.label;
-    div.appendChild(label);
-
-    const select = document.createElement('select');
-    select.className = 'select';
-    select.name = field.key;
-    field.options.forEach(opt => {
-        const option = document.createElement('option');
-        option.value = opt;
-        option.selected = value === opt;
-        option.textContent = humanize(opt);
-        select.appendChild(option);
-    });
-
-    // ADD THIS:
-    if (config) {
-        select.addEventListener('change', () => {
-            config[field.key] = select.value;
-            console.log(`[field "${field.key}"] select -> config:`, select.value, config);
-        });
+    if (field.description) {
+        const help = document.createElement('div');
+        help.className = 'field-help-text';
+        help.textContent = field.description;
+        inputWrap.appendChild(help);
     }
 
-    div.appendChild(select);
-    return div;
+    row.appendChild(inputWrap);
+    return row;
 }
 
 function renderNumberField(field, value, config) {
-    const div = document.createElement('div');
-    div.className = 'field';
+    const row = document.createElement('div');
+    row.className = 'settings-field-row';
+
+    const labelCol = document.createElement('div');
+    labelCol.className = 'settings-field-labelcol';
 
     const label = document.createElement('label');
     label.textContent = field.label;
-    div.appendChild(label);
+    label.htmlFor = field.key;
+    labelCol.appendChild(label);
+
+    row.appendChild(labelCol);
+
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'settings-field-inputwrap';
 
     const input = document.createElement('input');
     input.type = 'number';
     input.className = 'input';
     input.name = field.key;
+    input.id = field.key;
     input.value = value ?? '';
-
-    // ADD THIS:
     if (config) {
         input.addEventListener('input', () => {
-            config[field.key] = input.value;
-            console.log(`[field "${field.key}"] input -> config:`, input.value, config);
+            config[field.key] = input.value === '' ? null : parseInt(input.value, 10);
         });
     }
+    inputWrap.appendChild(input);
 
-    div.appendChild(input);
-    return div;
+    if (field.description) {
+        const help = document.createElement('div');
+        help.className = 'field-help-text';
+        help.textContent = field.description;
+        inputWrap.appendChild(help);
+    }
+
+    row.appendChild(inputWrap);
+    return row;
+}
+
+function renderDropdownField(field, value, config) {
+    const row = document.createElement('div');
+    row.className = 'settings-field-row';
+
+    const labelCol = document.createElement('div');
+    labelCol.className = 'settings-field-labelcol';
+
+    const label = document.createElement('label');
+    label.textContent = field.label;
+    label.htmlFor = field.key;
+    labelCol.appendChild(label);
+
+    row.appendChild(labelCol);
+
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'settings-field-inputwrap';
+
+    const select = document.createElement('select');
+    select.className = 'select';
+    select.name = field.key;
+    select.id = field.key;
+    field.options.forEach(opt => {
+        const option = document.createElement('option');
+        option.value = opt;
+        option.selected = value === opt;
+        option.textContent = opt;
+        select.appendChild(option);
+    });
+    if (config) {
+        select.addEventListener('change', () => {
+            config[field.key] = select.value;
+        });
+    }
+    inputWrap.appendChild(select);
+
+    if (field.description) {
+        const help = document.createElement('div');
+        help.className = 'field-help-text';
+        help.textContent = field.description;
+        inputWrap.appendChild(help);
+    }
+
+    row.appendChild(inputWrap);
+    return row;
 }
 
 function renderDirField(field, value, config) {
     const div = document.createElement('div');
-    div.className = 'field field-dir';
+    div.className = 'settings-field-row field-dir';
 
     const label = document.createElement('label');
     label.textContent = field.label;
@@ -107,7 +156,6 @@ function renderDirField(field, value, config) {
     if (config) {
         input.addEventListener('input', () => {
             config[field.key] = input.value;
-            console.log(`[field "${field.key}"] input -> config:`, config);
         });
     }
     div.appendChild(input);
@@ -319,204 +367,130 @@ function renderInstancesField(field, value = [], config, rootConfig) {
     return div;
 }
 
-function renderDirListField(field, value = []) {
-    const div = document.createElement('div');
-    div.className = 'field field-dir-list';
+function renderDirListDragDropField(field, value = [], config) {
+    const row = document.createElement('div');
+    row.className = 'settings-field-row field-dir field-dragdrop';
+
+    // --- LABEL COLUMN ---
+    const labelCol = document.createElement('div');
+    labelCol.className = 'dirlist-label-col';
 
     const label = document.createElement('label');
     label.textContent = field.label;
-    div.appendChild(label);
+    label.htmlFor = field.key;
+    labelCol.appendChild(label);
 
-    const list = document.createElement('div');
-    list.className = 'dir-list-area';
-
-    if (!Array.isArray(value) || value.length === 0) value = [''];
-
-    function renderRows() {
-        list.innerHTML = '';
-        value.forEach((dir, idx) => {
-            const row = document.createElement('div');
-            row.className = 'dir-list-row';
-
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'input dir-list-input';
-            input.name = field.key;
-            input.value = dir || '';
-            input.readOnly = !!field.modal;
-            if (field.modal && typeof Modals[field.modal] === 'function') {
-                input.addEventListener('click', () => Modals[field.modal](input, config));
-            }
-            input.addEventListener('input', () => { value[idx] = input.value; });
-            row.appendChild(input);
-
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.className = 'btn btn--cancel remove-btn';
-            removeBtn.textContent = 'Remove';
-            removeBtn.disabled = value.length === 1;
-            removeBtn.onclick = () => {
-                if (value.length > 1) {
-                    value.splice(idx, 1);
-                    renderRows();
-                }
-            };
-            row.appendChild(removeBtn);
-
-            list.appendChild(row);
-        });
-    }
+    // Flex filler pushes button to bottom of label col
+    const filler = document.createElement('div');
+    filler.className = 'dirlist-label-filler';
+    labelCol.appendChild(filler);
 
     const addBtn = document.createElement('button');
     addBtn.type = 'button';
     addBtn.className = 'btn add-btn';
     addBtn.textContent = 'Add Directory';
-    addBtn.onclick = () => { value.push(''); renderRows(); };
+    addBtn.onclick = () => {
+        value.push('');
+        if (config) config[field.key] = [...value];
+        renderRows();
+    };
+    labelCol.appendChild(addBtn);
 
-    renderRows();
-    div.appendChild(list);
-    div.appendChild(addBtn);
-
-    return div;
-}
-
-function renderDirListDragDropField(field, value = []) {
-    const div = document.createElement('div');
-    div.className = 'field field-dir-list-drag';
-
-    const label = document.createElement('label');
-    label.textContent = field.label;
-    div.appendChild(label);
-
-    const list = document.createElement('div');
-    list.className = 'dir-list-area';
+    // --- INPUT COLUMN ---
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'settings-field-inputwrap dirlist-input-col';
 
     if (!Array.isArray(value) || value.length === 0) value = [''];
-
     let dragSrcIdx = null;
 
     function renderRows() {
-        list.innerHTML = '';
+        inputWrap.innerHTML = '';
         value.forEach((dir, idx) => {
-            const row = document.createElement('div');
-            row.className = 'dir-list-row';
-            row.setAttribute('draggable', 'true');
+            const item = document.createElement('div');
+            item.className = 'field-dragdrop-row';
+            item.setAttribute('draggable', 'true');
+
+            const handle = document.createElement('span');
+            handle.className = 'drag-handle';
+            handle.innerText = '⋮⋮';
+            item.appendChild(handle);
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'input field-input';
+            input.name = field.key;
+            input.value = dir || '';
+            if (field.modal === 'directoryPickerModal') {
+                input.readOnly = true;
+                input.addEventListener('click', () => Modals.directoryPickerModal(input, config));
+            }
+            input.addEventListener('input', () => {
+                value[idx] = input.value;
+                if (config) config[field.key] = [...value];
+            });
+            item.appendChild(input);
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn btn--cancel remove-btn';
+            removeBtn.innerText = '−';
+            removeBtn.disabled = value.length === 1;
+            removeBtn.addEventListener('click', () => {
+                if (value.length > 1) {
+                    value.splice(idx, 1);
+                    if (config) config[field.key] = [...value];
+                    renderRows();
+                }
+            });
+            item.appendChild(removeBtn);
 
             // Drag events
-            row.addEventListener('dragstart', (e) => {
+            item.addEventListener('dragstart', () => {
                 dragSrcIdx = idx;
-                
-                e.dataTransfer.effectAllowed = 'move';
+                item.classList.add('dragging');
             });
-
-            row.addEventListener('dragend', () => {
+            item.addEventListener('dragend', () => {
                 dragSrcIdx = null;
-                
+                item.classList.remove('dragging');
             });
-
-            row.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
-            });
-
-            row.addEventListener('drop', (e) => {
+            item.addEventListener('dragover', e => e.preventDefault());
+            item.addEventListener('drop', e => {
                 e.preventDefault();
                 if (dragSrcIdx === null || dragSrcIdx === idx) return;
                 const moved = value.splice(dragSrcIdx, 1)[0];
                 value.splice(idx, 0, moved);
+                if (config) config[field.key] = [...value];
                 renderRows();
                 markDirty();
             });
 
-            // Input
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'input dir-list-input';
-            input.name = field.key;
-            input.value = dir || '';
-            input.readOnly = !!field.modal;
-            if (field.modal && typeof Modals[field.modal] === 'function') {
-                input.addEventListener('click', () => Modals[field.modal](input, config));
-            }
-            input.addEventListener('input', () => { value[idx] = input.value; });
-            row.appendChild(input);
-
-            // Remove button
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.className = 'btn btn--cancel remove-btn';
-            removeBtn.textContent = 'Remove';
-            removeBtn.disabled = value.length === 1;
-            removeBtn.onclick = () => {
-                if (value.length > 1) {
-                    value.splice(idx, 1);
-                    renderRows();
-                }
-            };
-            row.appendChild(removeBtn);
-
-            list.appendChild(row);
+            inputWrap.appendChild(item);
         });
     }
 
-    // Add button
-    const addBtn = document.createElement('button');
-    addBtn.type = 'button';
-    addBtn.className = 'btn add-btn';
-    addBtn.textContent = 'Add Directory';
-    addBtn.onclick = () => { value.push(''); renderRows(); };
-
     renderRows();
-    div.appendChild(list);
-    div.appendChild(addBtn);
 
-    return div;
-}
-
-// -------- FIELD RENDERERS ---------
-function renderSliderField(field, value, config) {
-    const div = document.createElement('div');
-    div.className = 'field';
-
-    const label = document.createElement('span');
-    label.className = 'form-toggle-label';
-    label.textContent = field.label;
-
-    const container = document.createElement('label');
-    container.className = 'toggle-switch-block';
-
-    const input = document.createElement('input');
-    input.type = 'checkbox';
-    input.className = 'toggle-switch-input';
-    input.name = field.key;
-    input.checked = !!value;
-
-    input.addEventListener('change', () => {
-        if (config) {
-            config[field.key] = input.checked;
-            console.log(`[field "${field.key}"] toggle -> config:`, input.checked, config);
-        }
-    });
-
-    const slider = document.createElement('span');
-    slider.className = 'slider';
-
-    container.appendChild(label);
-    container.appendChild(input);
-    container.appendChild(slider);
-
-    div.appendChild(container);
-    return div;
+    row.appendChild(labelCol);
+    row.appendChild(inputWrap);
+    return row;
 }
 
 
 function renderTextareaField(field, value) {
-    const div = document.createElement('div');
-    div.className = 'field';
+    const row = document.createElement('div');
+    row.className = 'settings-field-row';
+
+    const labelCol = document.createElement('div');
+    labelCol.className = 'settings-field-labelcol';
 
     const label = document.createElement('label');
     label.textContent = field.label;
-    div.appendChild(label);
+    labelCol.appendChild(label);
+
+    row.appendChild(labelCol);
+
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'settings-field-inputwrap';
 
     const textarea = document.createElement('textarea');
     textarea.className = 'textarea';
@@ -525,30 +499,37 @@ function renderTextareaField(field, value) {
     textarea.placeholder = field.placeholder || '';
     textarea.value = Array.isArray(value) ? value.join('\n') : (value ?? '');
 
-    setTimeout(() => {
-        
-        
-        textarea.addEventListener('input', () => {
-            
-            
-        });
-    }, 0);
+    autoResizeTextarea(textarea);
 
-    div.appendChild(textarea);
-    return div;
+    inputWrap.appendChild(textarea);
+
+    row.appendChild(inputWrap);
+    return row;
 }
 
-function renderJsonField(field, value) {
-    const div = document.createElement('div');
-    div.className = 'field';
+function renderJsonField(field, value, config) {
+    const row = document.createElement('div');
+    row.className = 'settings-field-row';
+
+    // LEFT COLUMN
+    const labelCol = document.createElement('div');
+    labelCol.className = 'settings-field-labelcol';
 
     const label = document.createElement('label');
     label.textContent = field.label;
-    div.appendChild(label);
+    label.htmlFor = field.key;
+    labelCol.appendChild(label);
+
+    row.appendChild(labelCol);
+
+    // RIGHT COLUMN
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'settings-field-inputwrap';
 
     const textarea = document.createElement('textarea');
     textarea.className = 'textarea';
     textarea.name = field.key;
+    textarea.id = field.key;
     textarea.rows = 6;
     textarea.placeholder = field.placeholder || '';
     if (typeof value === 'object' && value !== null) {
@@ -559,25 +540,80 @@ function renderJsonField(field, value) {
         textarea.value = '';
     }
 
-    setTimeout(() => {
-        
-        
-        textarea.addEventListener('input', () => {
-            
-            
-        });
-    }, 0);
+    autoResizeTextarea(textarea);
 
-    div.appendChild(textarea);
-    return div;
+    // Save changes to config as you type, if config is provided
+    if (config) {
+        textarea.addEventListener('input', () => {
+            try {
+                config[field.key] = JSON.parse(textarea.value);
+            } catch {
+                // Not valid JSON: don't update config
+            }
+        });
+    }
+
+    inputWrap.appendChild(textarea);
+
+    if (field.description) {
+        const help = document.createElement('div');
+        help.className = 'field-help-text';
+        help.textContent = field.description;
+        inputWrap.appendChild(help);
+    }
+
+    row.appendChild(inputWrap);
+    return row;
+}
+
+function renderCheckBoxField(field, value, config) {
+    const row = document.createElement('div');
+    row.className = 'settings-field-row';
+
+    // Label on the left
+    const label = document.createElement('label');
+    label.textContent = field.label;
+    label.htmlFor = field.key;
+    row.appendChild(label);
+
+    // Right side: input + help
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'settings-field-inputwrap';
+
+    // The checkbox itself
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.className = 'settings-checkbox';
+    input.name = field.key;
+    input.id = field.key;
+    input.checked = !!value;
+    input.addEventListener('change', () => {
+        if (config) config[field.key] = input.checked;
+    });
+
+    inputWrap.appendChild(input);
+
+    if (field.description) {
+        const help = document.createElement('div');
+        help.className = 'field-help-text';
+        help.textContent = field.description;
+        inputWrap.appendChild(help);
+    }
+
+    row.appendChild(inputWrap);
+    return row;
 }
 
 
 // -------- COMPLEX LIST FIELD -----------
+// Replace the entire renderComplexListField function:
 function renderComplexListField(field, value = [], rootConfig, config) {
     config = config || arguments[3];
     value = Array.isArray(config?.[field.key]) ? config[field.key] : Array.isArray(value) ? value : [];
     const div = document.createElement('div');
+    if (field.key === "gdrive_list") {
+        div.classList.add("field-gdrive-list");
+    }
     div.className = 'field field-complex-list';
 
     const label = document.createElement('label');
@@ -585,7 +621,6 @@ function renderComplexListField(field, value = [], rootConfig, config) {
     div.appendChild(label);
 
     const listArea = document.createElement('div');
-
     // Safely get subfields array
     const subfields = Array.isArray(field.fields) ? field.fields : [];
 
@@ -598,7 +633,7 @@ function renderComplexListField(field, value = [], rootConfig, config) {
                         '<div>' +
                         Object.entries(obj)
                             .map(([k, v]) =>
-                                `<div><b>${humanize(k)}:</b> ${renderValue(v)}</div>`
+                                `<div><b>${k}:</b> ${renderValue(v)}</div>`
                             ).join('') +
                         '</div>'
                     ).join('')
@@ -611,7 +646,7 @@ function renderComplexListField(field, value = [], rootConfig, config) {
             // Nested object, pretty print key-values
             return (
                 Object.entries(val)
-                    .map(([k, v2]) => `<div><b>${humanize(k)}:</b> ${renderValue(v2)}</div>`)
+                    .map(([k, v2]) => `<div><b>${k}:</b> ${renderValue(v2)}</div>`)
                     .join('')
             );
         }
@@ -622,36 +657,53 @@ function renderComplexListField(field, value = [], rootConfig, config) {
     function renderList() {
         listArea.innerHTML = '';
         (value || []).forEach((item, idx) => {
-            console.log('[renderList] item:', item);
             const entryDiv = document.createElement('div');
             entryDiv.className = 'complex-list-row';
 
             subfields.forEach(subfield => {
+                if (
+                    subfield.type === 'modal_helper' ||
+                    subfield.type === 'helper'
+                ) return;
+                // Only show fields for the correct instance type, if specified
+                if (subfield.show_if_instance && rootConfig && rootConfig.instances) {
+                    const instanceType = subfield.show_if_instance;
+                    const instanceKey = item.instance;
+                    if (!instanceKey) return; // No instance, can't match
+                    // Check if the instance key is under the correct instance type in config
+                    if (!rootConfig.instances[instanceType] || !(instanceKey in rootConfig.instances[instanceType])) {
+                        return; // skip: not a matching instance type
+                    }
+                }
                 const v = item[subfield.key];
                 const fieldSpan = document.createElement('span');
-                fieldSpan.innerHTML = `<b>${subfield.label}:</b> ${renderValue(v, subfield)}`;
+
+                if (subfield.type === 'color_list' && Array.isArray(v)) {
+                    fieldSpan.innerHTML = `<b>${subfield.label}:</b> `;
+                    v.forEach(color => {
+                        const swatch = document.createElement('span');
+                        swatch.className = 'color-list-swatch';
+                        swatch.style.background = color;
+                        swatch.title = color;
+                        fieldSpan.appendChild(swatch);
+                    });
+                } else {
+                    fieldSpan.innerHTML = `<b>${subfield.label}:</b> ${renderValue(v, subfield)}`;
+                }
                 entryDiv.appendChild(fieldSpan);
             });
 
-            // Edit button
-            const editBtn = document.createElement('button');
-            editBtn.type = 'button';
-            editBtn.className = 'btn edit-btn';
-            editBtn.textContent = 'Edit';
-            editBtn.onclick = () => openEditModal(idx);
-            entryDiv.appendChild(editBtn);
-
-            // Delete button
-            const delBtn = document.createElement('button');
-            delBtn.className = 'btn delete-btn';
-            delBtn.textContent = 'Delete';
-            delBtn.onclick = () => {
-                value.splice(idx, 1);
-                config[field.key] = value.slice();
-                renderList();
-                markDirty();
-            };
-            entryDiv.appendChild(delBtn);
+            // CLICK ON CARD TO EDIT
+            entryDiv.tabIndex = 0;
+            entryDiv.setAttribute('role', 'button');
+            entryDiv.setAttribute('aria-label', 'Edit entry');
+            entryDiv.addEventListener('click', () => openEditModal(idx));
+            entryDiv.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openEditModal(idx);
+                }
+            });
 
             listArea.appendChild(entryDiv);
         });
@@ -671,13 +723,21 @@ function renderComplexListField(field, value = [], rootConfig, config) {
             entry,
             title: isEdit ? `Edit ${field.label.replace(/s$/, '')}` : `Add ${field.label.replace(/s$/, '')}`,
             onSave: (newEntry) => {
-                console.log('[complex list onSave] newEntry:', JSON.stringify(newEntry));
-                if (isEdit) value[idx] = newEntry;
-                else value.push(newEntry);
-                config[field.key] = value.slice();
+                if (isEdit) {
+                    value[idx] = newEntry;
+                } else {
+                    value.push(newEntry);
+                }
+                config[field.key] = value.slice(); // Just mutate local config
                 renderList();
                 markDirty();
             },
+            onDelete: isEdit ? () => {
+                value.splice(idx, 1);
+                config[field.key] = value.slice();
+                renderList();
+                markDirty();
+            } : null,
             context: {
                 listInUse: value,
                 editingIdx: isEdit ? idx : null,
@@ -702,81 +762,67 @@ function renderComplexListField(field, value = [], rootConfig, config) {
     return div;
 }
 
-function renderDirListOptionsField(field, value = []) {
+function renderDirListOptionsField(field, value = [], config) {
     const div = document.createElement('div');
-    div.className = 'field field-dir-list-options';
+    div.className = 'settings-field-row field-dir';
 
     const label = document.createElement('label');
-    label.textContent = field.label || 'Source Directories';
+    label.textContent = field.label;
     div.appendChild(label);
 
     const list = document.createElement('div');
     list.className = 'dir-list-area';
 
-    // Accept only array of objects with .path and .mode
-    if (!Array.isArray(value) || value.length === 0) value = [{ path: '', mode: 'scan' }];
-
-    const options = field.options;
-
-    let dragSrcIdx = null;
+    if (!Array.isArray(value) || value.length === 0) value = [''];
 
     function renderRows() {
         list.innerHTML = '';
-        value.forEach((item, idx) => {
+        value.forEach((dir, idx) => {
             const row = document.createElement('div');
             row.className = 'dir-list-row';
-            row.setAttribute('draggable', 'true');
-
-            // Drag logic
-            row.addEventListener('dragstart', (e) => {
-                dragSrcIdx = idx;
-                //  // REMOVE
-                e.dataTransfer.effectAllowed = 'move';
-            });
-            row.addEventListener('dragend', () => {
-                dragSrcIdx = null;
-                //  // REMOVE
-            });
-            row.addEventListener('dragover', (e) => {
-                e.preventDefault();
-                e.dataTransfer.dropEffect = 'move';
-            });
-            row.addEventListener('drop', (e) => {
-                e.preventDefault();
-                if (dragSrcIdx === null || dragSrcIdx === idx) return;
-                const moved = value.splice(dragSrcIdx, 1)[0];
-                value.splice(idx, 0, moved);
-                renderRows();
-            });
 
             // Directory input
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'input dir-list-input';
-            input.name = field.key + '_path';
-            input.value = item.path || '';
-            input.readOnly = !!field.modal;
-            if (field.modal && typeof Modals[field.modal] === 'function') {
-                input.addEventListener('click', () => Modals[field.modal](input, config));
+            input.name = field.key;
+            input.value = dir.path || dir || '';
+            if (field.modal === 'directoryPickerModal') {
+                input.readOnly = true;
+                input.addEventListener('click', () => Modals.directoryPickerModal(input, config));
             }
-            input.addEventListener('input', () => { value[idx].path = input.value; });
+            input.addEventListener('input', () => {
+                if (typeof dir === 'object' && dir !== null) {
+                    dir.path = input.value;
+                } else {
+                    value[idx] = input.value;
+                }
+                if (config) config[field.key] = value.slice();
+            });
             row.appendChild(input);
 
-            // Mode dropdown
-            const select = document.createElement('select');
-            select.className = 'select dir-mode-select';
-            select.name = field.key + '_mode';
-            options.forEach(opt => {
-                const option = document.createElement('option');
-                option.value = opt;
-                option.textContent = opt.charAt(0).toUpperCase() + opt.slice(1);
-                option.selected = item.mode === opt;
-                select.appendChild(option);
-            });
-            select.addEventListener('change', () => { value[idx].mode = select.value; });
-            row.appendChild(select);
+            // Mode select (for options)
+            if (field.options && Array.isArray(field.options)) {
+                const select = document.createElement('select');
+                select.className = 'select dir-list-mode';
+                field.options.forEach(opt => {
+                    const option = document.createElement('option');
+                    option.value = opt;
+                    option.selected = (dir.mode || (typeof dir === 'object' && dir.mode) || field.options[0]) === opt;
+                    option.textContent = humanize(opt);
+                    select.appendChild(option);
+                });
+                select.addEventListener('change', () => {
+                    if (typeof dir === 'object' && dir !== null) {
+                        dir.mode = select.value;
+                    } else {
+                        value[idx] = { path: input.value, mode: select.value };
+                    }
+                    if (config) config[field.key] = value.slice();
+                });
+                row.appendChild(select);
+            }
 
-            // Remove button
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
             removeBtn.className = 'btn btn--cancel remove-btn';
@@ -785,6 +831,7 @@ function renderDirListOptionsField(field, value = []) {
             removeBtn.onclick = () => {
                 if (value.length > 1) {
                     value.splice(idx, 1);
+                    if (config) config[field.key] = value.slice();
                     renderRows();
                 }
             };
@@ -794,12 +841,15 @@ function renderDirListOptionsField(field, value = []) {
         });
     }
 
-    // Add button
     const addBtn = document.createElement('button');
     addBtn.type = 'button';
     addBtn.className = 'btn add-btn';
     addBtn.textContent = 'Add Directory';
-    addBtn.onclick = () => { value.push({ path: '', mode: options[0] }); renderRows(); };
+    addBtn.onclick = () => {
+        value.push(field.options && field.options.length ? { path: '', mode: field.options[0] } : '');
+        if (config) config[field.key] = value.slice();
+        renderRows();
+    };
 
     renderRows();
     div.appendChild(list);
@@ -896,19 +946,53 @@ function renderInstanceDropdownField(field, value, config, rootConfig) {
     select.className = 'select instance-dropdown-select';
     select.name = field.key;
 
-    // Helper to set options, select first by default if none selected
+    // Helper to humanize instance names
+    function humanize(str) {
+        if (!str) return '';
+        return str.replace(/_/g, ' ')
+                  .replace(/\b\w/g, (l) => l.toUpperCase());
+    }
+
+    // Helper to set options
     function setOptions(selectedType) {
         select.innerHTML = '';
-        let options = [];
-        if (rootConfig.instances && selectedType && rootConfig.instances[selectedType]) {
-            options = Object.keys(rootConfig.instances[selectedType]);
+        let types = [];
+
+        // Support "from" as array (static allowed types) or string (dynamic parent)
+        if (Array.isArray(field.from)) {
+            types = field.from;
+        } else if (typeof field.from === 'string') {
+            // Look up parent field value (app_type or other)
+            const parentVal = config[field.from];
+            if (parentVal) types = [parentVal];
+            // Try to get from modal if config doesn't have it
+            if (!parentVal) {
+                const modalDiv = div.closest('.modal-content');
+                if (modalDiv) {
+                    const parentSelect = modalDiv.querySelector(`[name="${field.from}"]`);
+                    if (parentSelect && parentSelect.value) types = [parentSelect.value];
+                }
+            }
+        } else {
+            // fallback: show all
+            types = Object.keys(rootConfig.instances || {});
         }
-        options.forEach((opt, idx) => {
+
+        // Build option list (all instance names for allowed types)
+        let options = [];
+        types.forEach(type => {
+            if (rootConfig.instances && rootConfig.instances[type]) {
+                options.push(...Object.keys(rootConfig.instances[type]));
+            }
+        });
+
+        options.forEach(opt => {
             const option = document.createElement('option');
             option.value = opt;
             option.textContent = humanize(opt);
             select.appendChild(option);
         });
+
         // Auto-select value: prefer config, else first option
         if (options.length > 0) {
             let selected = value || config[field.key];
@@ -922,48 +1006,167 @@ function renderInstanceDropdownField(field, value, config, rootConfig) {
         }
     }
 
-    // Determine parent field key
-    const parentKey = field.from || 'app_type';
-    // Determine initial selectedType (from config or default to first type)
-    let selectedType = config[parentKey];
-    // If not set, try to default to first type available
-    if (!selectedType && rootConfig.instances) {
-        const types = Object.keys(rootConfig.instances);
-        if (types.length > 0) {
-            selectedType = types[0];
-            config[parentKey] = selectedType;
-            // If parent select exists, set its value too (in modal)
-            setTimeout(() => {
-                const modalDiv = div.closest('.modal-content');
-                if (modalDiv) {
-                    const parentSelect = modalDiv.querySelector(`[name="${parentKey}"]`);
-                    if (parentSelect) parentSelect.value = selectedType;
+    // Listen for parent field changes if from is a string
+    if (typeof field.from === 'string') {
+        setTimeout(() => {
+            const modalDiv = div.closest('.modal-content');
+            if (modalDiv) {
+                const parentSelect = modalDiv.querySelector(`[name="${field.from}"]`);
+                if (parentSelect) {
+                    parentSelect.addEventListener('change', () => {
+                        config[field.from] = parentSelect.value;
+                        setOptions(parentSelect.value);
+                    });
                 }
-            }, 0);
-        }
+            }
+        }, 0);
     }
-    setOptions(selectedType);
+
+    setOptions();
 
     select.onchange = () => {
         config[field.key] = select.value;
     };
+
     div.appendChild(select);
-
-    // If inside a modal, listen for changes to parent dropdown
-    setTimeout(() => {
-        const modalDiv = div.closest('.modal-content');
-        if (modalDiv) {
-            const parentSelect = modalDiv.querySelector(`[name="${parentKey}"]`);
-            if (parentSelect) {
-                parentSelect.addEventListener('change', () => {
-                    selectedType = parentSelect.value;
-                    setOptions(selectedType);
-                });
-            }
-        }
-    }, 0);
-
     return div;
+}
+
+function renderGDriveCustomField(field, value = [], rootConfig, config) {
+    config = config || arguments[3];
+    value = Array.isArray(config?.[field.key]) ? config[field.key] : Array.isArray(value) ? value : [];
+    const subfields = Array.isArray(field.fields) ? field.fields : [];
+
+    // --- Outer container: settings field row
+    const row = document.createElement('div');
+    row.className = 'settings-field-row';
+
+    // --- Label column
+    const labelCol = document.createElement('div');
+    labelCol.className = 'settings-field-labelcol';
+
+    const label = document.createElement('label');
+    label.textContent = field.label;
+    label.htmlFor = field.key;
+    labelCol.appendChild(label);
+    row.appendChild(labelCol);
+
+    // --- Main content column
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'settings-field-inputwrap';
+
+    if (field.description) {
+        const desc = document.createElement('div');
+        desc.className = 'field-help-text';
+        desc.textContent = field.description;
+        inputWrap.appendChild(desc);
+    }
+
+    // --- GDrive card-list (flex row of cards)
+    const listArea = document.createElement('div');
+    listArea.className = 'gdrive-card-list';
+    inputWrap.appendChild(listArea);
+
+    function renderList() {
+        listArea.innerHTML = '';
+
+        if (!Array.isArray(value) || !value.length) {
+            // Show add button only if empty
+            listArea.appendChild(createAddCard());
+            return;
+        }
+
+        // Render each GDrive entry as a fat card
+        value.forEach((item, idx) => {
+            const card = document.createElement('div');
+            card.className = 'card gdrive-entry-card';
+
+            // ID row
+            const idRow = document.createElement('div');
+            idRow.className = 'gdrive-entry-field gdrive-entry-id';
+            const idLabel = document.createElement('span');
+            idLabel.className = 'gdrive-entry-label';
+            idLabel.textContent = 'ID:';
+            const idValue = document.createElement('span');
+            idValue.className = 'gdrive-entry-value';
+            idValue.textContent = item.id || '';
+            idRow.appendChild(idLabel);
+            idRow.appendChild(idValue);
+            card.appendChild(idRow);
+
+            // Name row
+            const nameRow = document.createElement('div');
+            nameRow.className = 'gdrive-entry-field gdrive-entry-name';
+            const nameLabel = document.createElement('span');
+            nameLabel.className = 'gdrive-entry-label';
+            nameLabel.textContent = 'Name:';
+            const nameValue = document.createElement('span');
+            nameValue.className = 'gdrive-entry-value';
+            nameValue.textContent = item.name || '';
+            nameRow.appendChild(nameLabel);
+            nameRow.appendChild(nameValue);
+            card.appendChild(nameRow);
+
+            // Location row
+            const locRow = document.createElement('div');
+            locRow.className = 'gdrive-entry-field gdrive-entry-path';
+            const locLabel = document.createElement('span');
+            locLabel.className = 'gdrive-entry-label';
+            locLabel.textContent = 'Location:';
+            const locValue = document.createElement('span');
+            locValue.className = 'gdrive-entry-value';
+            locValue.textContent = item.location || '';
+            locRow.appendChild(locLabel);
+            locRow.appendChild(locValue);
+            card.appendChild(locRow);
+
+            // Make card clickable for editing
+            card.tabIndex = 0;
+            card.setAttribute('role', 'button');
+            card.setAttribute('aria-label', 'Edit Google Drive Entry');
+            card.addEventListener('click', () =>
+                openEditModal(idx, { value, field, config, renderList, subfields, rootConfig })
+            );
+            card.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openEditModal(idx, { value, field, config, renderList, subfields, rootConfig });
+                }
+            });
+
+            listArea.appendChild(card);
+        });
+
+        // Add "fat plus" card at the end
+        listArea.appendChild(createAddCard());
+    }
+
+    // Add card helper
+    function createAddCard() {
+        const addCard = document.createElement('div');
+        addCard.className = 'card card-add gdrive-add-card';
+        addCard.tabIndex = 0;
+        addCard.setAttribute('role', 'button');
+        addCard.setAttribute('aria-label', `Add ${field.label.replace(/s$/, '')}`);
+        addCard.addEventListener('click', () => openEditModal(null, { value, field, config, renderList, subfields, rootConfig }));
+        addCard.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openEditModal(null, { value, field, config, renderList, subfields, rootConfig });
+            }
+        });
+
+        const plus = document.createElement('span');
+        plus.className = 'card-add-plus';
+        plus.textContent = '+';
+        addCard.appendChild(plus);
+
+        return addCard;
+    }
+
+    renderList();
+    row.appendChild(inputWrap);
+    return row;
 }
 
 
@@ -984,7 +1187,63 @@ export function renderField(field, value, config, rootConfig) {
         case 'color_list': return renderColorListField(field, value, config);
         case 'instances': return renderInstancesField(field, value, config, rootConfig);
         case 'modal_helper': return renderModalHelperField(field, value, config, rootConfig);
+        case "check_box": return renderCheckBoxField(field, value, config);
         case 'instance_dropdown': return renderInstanceDropdownField(field, value, config, rootConfig);
+        case 'gdrive_custom': return renderGDriveCustomField(field, value, rootConfig, config);
+
         default: return renderTextField(field, value, config);
     }
+}
+
+
+// ---------- HELPER FUNCTIONS -----------
+
+function autoResizeTextarea(textarea) {
+    setTimeout(() => {
+        if (textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+            textarea.addEventListener('input', () => {
+                textarea.style.height = 'auto';
+                textarea.style.height = textarea.scrollHeight + 'px';
+            });
+        }
+    }, 0);
+}
+
+function openEditModal(idx, { value, field, config, renderList, subfields, rootConfig }) {
+    const isEdit = typeof idx === 'number';
+    const entry = isEdit ? { ...value[idx] } : {};
+    const footerButtons = [
+        ...(isEdit ? [{ id: 'delete-modal-btn', label: 'Delete', class: 'btn--remove' }] : []),
+        { id: 'cancel-modal-btn', label: 'Cancel', class: 'btn--cancel' },
+        { id: 'save-modal-btn', label: 'Save', class: 'btn--success' },
+    ];
+    openModal({
+        schema: subfields || field.fields,
+        entry,
+        title: isEdit 
+            ? `Edit ${field.label.replace(/s$/, '')}` 
+            : `Add ${field.label.replace(/s$/, '')}`,
+        onSave: (newEntry) => {
+            if (isEdit) value[idx] = newEntry;
+            else value.push(newEntry);
+            config[field.key] = value.slice();
+            renderList();
+            markDirty();
+        },
+        onDelete: isEdit ? () => {
+            value.splice(idx, 1);
+            config[field.key] = value.slice();
+            renderList();
+            markDirty();
+        } : null,
+        context: {
+            listInUse: value,
+            editingIdx: isEdit ? idx : null,
+            rootConfig
+        },
+        footerButtons,
+        isEdit
+    });
 }

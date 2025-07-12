@@ -63,13 +63,10 @@ tests/
 **/TODO.*
 **test.**
 **side-projects**
-*.db
 test2.py
 .env
 /tests
 pyproject.toml
-*.db
 config/daps.db-shm
 config/daps.db-wal
 config/daps.db
-*.db

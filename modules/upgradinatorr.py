@@ -271,35 +271,34 @@ def process_instance(
         media_ids: List[int] = [item["media_id"] for item in filtered_media_dict]
         # Search logic: trigger searches and tag after search
         for item in filtered_media_dict:
-            logger.info(
-                f"Processing: {item['title']} ({item['year']}) [ID: {item['media_id']}]"
-            )
-            # ══════════════════════════════════════════════════════════════════════
+            logger.debug("")  # Blank line before block
             logger.debug("═" * 70)
             logger.debug(
                 f"[PROCESSING] {item['title']} ({item['year']}) | ID: {item['media_id']}"
             )
             logger.debug("═" * 70)
-            if search_count >= count:
-                logger.debug(
-                    f"🔁 Reached search count limit ({search_count} >= {count}), stopping early."
-                )
-                break
+
             if item["seasons"] is None:
-                # Search entire media if no seasons
                 logger.debug(
                     f"Searching media without seasons for media ID: {item['media_id']}"
                 )
                 search_response = app.search_media(item["media_id"])
                 process_search_response(search_response, item["media_id"], app, logger)
+                logger.debug(
+                    f"  [TAG] Adding tag {checked_tag_id} to media ID: {item['media_id']}"
+                )
+                app.add_tags(item["media_id"], checked_tag_id)
                 search_count += 1
                 if search_count >= count:
                     logger.debug(
                         f"🔁 Reached search count limit after non-season search ({search_count} >= {count}), breaking."
                     )
+                    logger.debug("─" * 70)
+                    logger.debug(f"[END] Finished: {item['title']} ({item['year']}) | ID: {item['media_id']}")
+                    logger.debug("─" * 70)
+                    logger.debug("")
                     break
             else:
-                # Search monitored seasons
                 searched = False
                 for season in item["seasons"]:
                     if season["monitored"]:
@@ -315,20 +314,25 @@ def process_instance(
                         searched = True
 
                 if searched:
+                    logger.debug(
+                        f"  [TAG] Adding tag {checked_tag_id} to media ID: {item['media_id']}"
+                    )
+                    app.add_tags(item["media_id"], checked_tag_id)
                     search_count += 1
                     if search_count >= count:
                         logger.debug(
                             f"🔁 Reached series-based search count limit ({search_count} >= {count}), breaking."
                         )
+                        logger.debug("─" * 70)
+                        logger.debug(f"[END] Finished: {item['title']} ({item['year']}) | ID: {item['media_id']}")
+                        logger.debug("─" * 70)
+                        logger.debug("")
                         break
-            # Tagging logic: add checked tag after processing
-            logger.debug(
-                f"  [TAG] Adding tag {checked_tag_id} to media ID: {item['media_id']}"
-            )
-            app.add_tags(item["media_id"], checked_tag_id)
-            logger.debug(
-                f"[END] Finished: {item['title']} ({item['year']}) | ID: {item['media_id']}\n"
-            )
+
+            logger.debug("─" * 70)
+            logger.debug(f"[END] Finished: {item['title']} ({item['year']}) | ID: {item['media_id']}")
+            logger.debug("─" * 70)
+            logger.debug("")  # Blank line after block
             logger.info(f"Finished processing: {item['title']} ({item['year']})")
 
         logger.info(

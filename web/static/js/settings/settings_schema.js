@@ -37,7 +37,7 @@ export const SETTINGS_SCHEMA = [
       { key: "report_unmatched_assets", label: "Report Unmatched Assets", type: "check_box", description: "Report assets that could not be matched during renaming." },
       { key: "source_dirs", label: "Source Directories", type: "dir_list_drag_drop", required: true, modal: "directoryPickerModal", description: "Directories to scan for posters to rename." },
       { key: "destination_dir", label: "Destination Directory", type: "dir", required: true, modal: "directoryPickerModal", description: "Directory where renamed posters are placed." },
-      { key: "instances", label: "Instances", type: "instances", required: true, add_posters_option: true, instance_types: ["plex", "radarr", "sonarr"], description: "List of media server instances to apply renaming to." },
+      { key: "instances", label: "Instances", type: "instances", required: true, add_posters_option: true, instance_types: ["plex", "radarr", "sonarr"], description: "List of Plex/Radarr/Sonarr instances to pull renaming data from." },
     ],
   },
 

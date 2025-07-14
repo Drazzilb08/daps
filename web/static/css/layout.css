@@ -96,6 +96,7 @@ body {
     opacity: 1;
     transition: opacity 0.24s cubic-bezier(.4,0,.2,1);
     will-change: opacity;
+    margin-bottom: 1vh;
 }
 
 .view-frame.fading-out {

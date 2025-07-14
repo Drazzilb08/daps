@@ -11,7 +11,7 @@ from web.api import logs as logs_router
 from web.api import modules as modules_router
 from web.api import instances as plex_router
 from web.api import notifications as notifications_router
-from web.api import poster_search as poster_search_router
+from web.api import poster as poster_search_router
 
 # ---- App Construction ----
 app = FastAPI()

@@ -37,8 +37,8 @@ def main():
     else:
         os.environ["LOG_TO_CONSOLE"] = "false"
         try:
-            main_config = Config("main")
-            logger = Logger(main_config.log_level, "main")
+            main_config = Config("general")
+            logger = Logger(main_config.log_level, main_config.module_name)
             manage_config(logger)
             orchestrator = DapsOrchestrator(logger)
             orchestrator.run(args)
@@ -49,7 +49,7 @@ def main():
             print(msg, file=sys.stderr)
             traceback.print_exc()
             if not logger:
-                logger = Logger(main_config.log_level, "main")
+                logger = Logger(main_config.log_level, "general")
             logger.error(msg, exc_info=True)
             sys.exit(1)
 

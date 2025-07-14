@@ -335,6 +335,62 @@ textarea {
   box-shadow: 0 1.5px 4px rgba(0,0,0,0.12);
 }
 
+input[type="checkbox"] {
+  appearance: none;
+  aspect-ratio: 1 / 1;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--divider, #ccc);
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+  margin: 0 10px 0 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.09);
+  position: relative;
+  transition: border-color 0.19s, background 0.19s, box-shadow 0.17s;
+  display: inline-block;
+  vertical-align: middle;
+  overflow: hidden;
+}
+
+input[type="checkbox"]:hover,
+input[type="checkbox"]:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 26%, transparent 74%);
+  outline: none;
+}
+
+input[type="checkbox"]:checked {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+input[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 48%;
+  width: 44%;
+  height: 26%;
+  border-left: 2.2px solid #fff;
+  border-bottom: 2.2px solid #fff;
+  transform: translate(-50%, -50%) scale(0.55) rotate(-45deg);
+  opacity: 0;
+  transition:
+    opacity 0.22s cubic-bezier(.5,1.6,.45,1.04),
+    transform 0.25s cubic-bezier(.33,1.35,.68,1.01);
+  pointer-events: none;
+}
+
+input[type="checkbox"]:checked::after {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1) rotate(-45deg);
+}
+
+input[type="checkbox"]:active {
+  filter: brightness(0.97);
+}
+
 /* Checked (active) state */
 .toggle-switch-input:checked + .slider {
   background: var(--switch-bg-active, #3e7bfa);
@@ -480,7 +536,6 @@ textarea {
 }
 .btn--remove-item {
     background: var(--error);
-    min-width: 40px;
 }
 .btn--remove-item:hover {
     background: var(--error-highlight);

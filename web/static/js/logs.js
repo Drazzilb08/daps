@@ -371,6 +371,11 @@ export async function loadLogs() {
         lastRenderedFileKey = null;
         if (refreshInterval) clearInterval(refreshInterval);
         refreshInterval = null;
+        // --- PATCH: Update URL ---
+        const params = new URLSearchParams(location.search);
+        params.set('module_name', e.target.value);
+        params.delete('log_file'); // Remove log_file if changing module
+        history.pushState({}, '', location.pathname + '?' + params.toString());
         loadLogFiles(e.target.value);
     });
 
@@ -380,6 +385,11 @@ export async function loadLogs() {
         if (refreshInterval) clearInterval(refreshInterval);
         refreshInterval = null;
         const selectedFile = e.target.value;
+        // --- PATCH: Update URL ---
+        const params = new URLSearchParams(location.search);
+        params.set('module_name', moduleSelect.value);
+        params.set('log_file', selectedFile);
+        history.pushState({}, '', location.pathname + '?' + params.toString());
         loadLogContent(moduleSelect.value, selectedFile);
         setRefreshTask(() => loadLogContent(moduleSelect.value, selectedFile));
     });

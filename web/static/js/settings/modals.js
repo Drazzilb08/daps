@@ -163,16 +163,11 @@ export function directoryPickerModal(inputElement, config) {
         <ul id="dir-list" class="dir-list"></ul>
     `;
 
-    modal = createModal(
-        'dir-modal',
-        'Select Directory',
-        contentHtml,
-        [
-            { id: 'dir-create', label: 'New Folder', class: 'btn' },
-            { id: 'dir-accept', label: 'Accept', class: 'btn--success' },
-            { id: 'dir-cancel', label: 'Cancel', class: 'btn--cancel' }
-        ]
-    );
+    modal = createModal('dir-modal', 'Select Directory', contentHtml, [
+        { id: 'dir-create', label: 'New Folder', class: 'btn' },
+        { id: 'dir-accept', label: 'Accept', class: 'btn--success' },
+        { id: 'dir-cancel', label: 'Cancel', class: 'btn--cancel' },
+    ]);
 
     const dirList = modal.querySelector('#dir-list');
     const pathInput = modal.querySelector('#dir-path-input');
@@ -199,14 +194,11 @@ export function directoryPickerModal(inputElement, config) {
             }
         };
         dirList.appendChild(up);
-
         (directoryCache[current] || []).sort().forEach((name) => {
             const li = document.createElement('li');
             li.textContent = name;
             li.onclick = () => {
-                modal.currentPath = current.endsWith('/')
-                    ? current + name
-                    : current + '/' + name;
+                modal.currentPath = current.endsWith('/') ? current + name : current + '/' + name;
                 showPath(modal.currentPath);
             };
             li.ondblclick = () => {
@@ -241,7 +233,6 @@ export function directoryPickerModal(inputElement, config) {
         // PATCH: update config without window/global
         if (config && modal.currentInput.name) {
             config[modal.currentInput.name] = modal.currentPath;
-            // Optionally debug log:
         }
         modal._closeModal();
     };
@@ -355,14 +346,14 @@ export function openModal({
     const contentDiv = document.createElement('div');
     contentDiv.className = 'modal-content';
 
-    // Title
-    const heading = document.createElement('h2');
-    heading.textContent = title;
-    contentDiv.appendChild(heading);
+    // Insert modal header using modalHeaderHtml at the top of contentDiv
+    contentDiv.insertAdjacentHTML('afterbegin', modalHeaderHtml({ title }));
 
     // Render fields (fields will *directly mutate* entry)
-    schema.forEach(field => {
+    schema.forEach((field) => {
         const fieldNode = renderField(field, entry[field.key], entry, context.rootConfig);
+        // Mark required fields for validation
+        if (field.required) fieldNode.dataset.required = "1";
         contentDiv.appendChild(fieldNode);
     });
 
@@ -374,11 +365,65 @@ export function openModal({
     ];
 
     // Insert footer markup using modalFooterHtml
-    contentDiv.innerHTML += modalFooterHtml(buttons);
+    const temp = document.createElement('div');
+    temp.innerHTML = modalFooterHtml(buttons);
+    contentDiv.appendChild(temp.firstElementChild);
 
-    // Wire up button events *after* HTML is added
-    buttons.forEach(btn => {
-        const el = contentDiv.querySelector(`#${btn.id}`);
+    // Now append modal content BEFORE wiring up events
+    modal.appendChild(contentDiv);
+
+    // ---- VALIDATION LOGIC ----
+    function validateFields() {
+        let valid = true;
+        schema.forEach(field => {
+            if (field.required) {
+                // Get input/select/textarea by name
+                const el = contentDiv.querySelector(
+                    `[name="${field.key}"], [name="${field.key}[]"]`
+                );
+                // Special handling for color_list/arrays if needed
+                let value;
+                if (!el) {
+                    // Try for special fields (e.g. color_list)
+                    if (field.type === "color_list") {
+                        const colorInputs = contentDiv.querySelectorAll('.field-color-list input[type="color"]');
+                        value = Array.from(colorInputs).map(i => i.value).filter(Boolean);
+                        if (!value.length) valid = false;
+                    } else {
+                        valid = false;
+                    }
+                    return;
+                }
+                if (el.type === "checkbox") {
+                    value = el.checked;
+                } else {
+                    value = el.value;
+                }
+                // Simple blank/null check
+                if (value === "" || value === null || (Array.isArray(value) && value.length === 0)) {
+                    valid = false;
+                }
+            }
+        });
+        const saveBtn = contentDiv.querySelector('#save-modal-btn');
+        return valid;
+    }
+
+    // ---- MOVE ALL EVENT WIRING BELOW THIS LINE ----
+    function closeModal() {
+        modal.remove();
+        document.body.classList.remove('modal-open');
+    }
+    modal._closeModal = closeModal;
+    setupModalCloseOnOutsideClick(modal);
+
+    // Wire up X button after DOM insert!
+    const closeBtn = modal.querySelector('.modal-close-x');
+    if (closeBtn) closeBtn.onclick = closeModal;
+
+    // Wire up footer buttons after DOM insert!
+    buttons.forEach((btn) => {
+        const el = modal.querySelector(`#${btn.id}`);
         if (!el) return;
         if (/cancel|close/i.test(btn.label || btn.id)) {
             el.onclick = () => {
@@ -391,10 +436,59 @@ export function openModal({
                 closeModal();
             };
         } else if (/save/i.test(btn.label || btn.id)) {
-            el.onclick = () => {
+            el.onclick = (e) => {
+                let errorFields = [];
+                schema.forEach(field => {
+                    if (field.required) {
+                        const input = contentDiv.querySelector(`[name="${field.key}"]`);
+                        // Also handle special field types (e.g. color_list)
+                        let isEmpty = false;
+                        if (input) {
+                            isEmpty = (input.value === "" || input.value == null);
+                        } else if (field.type === "color_list") {
+                            const colorInputs = contentDiv.querySelectorAll('.field-color-list input[type="color"]');
+                            isEmpty = Array.from(colorInputs).filter(i => i.value).length === 0;
+                        } else {
+                            isEmpty = true;
+                        }
+                        // Mark error and show message
+                        const wrapper = input?.closest('.modal-field-inputwrap, .settings-field-inputwrap, .modal-content, div');
+                        if (isEmpty) {
+                            errorFields.push(field.key);
+                            if (input) input.classList.add('input-error');
+                            // Only add error message if not already present
+                            if (wrapper && !wrapper.querySelector('.field-error-text')) {
+                                const err = document.createElement('div');
+                                err.className = 'field-error-text';
+                                err.textContent = field.label
+                                    ? `${field.label} cannot be empty.`
+                                    : "This field cannot be empty.";
+                                wrapper.appendChild(err);
+                            }
+                        } else {
+                            if (input) input.classList.remove('input-error');
+                            // Remove any error messages
+                            if (wrapper) {
+                                const err = wrapper.querySelector('.field-error-text');
+                                if (err) err.remove();
+                            }
+                        }
+                    }
+                });
+                if (errorFields.length) {
+                    // Optionally, scroll to first error:
+                    const first = contentDiv.querySelector('.input-error');
+                    if (first) first.scrollIntoView({ behavior: "smooth", block: "center" });
+                    e.preventDefault();
+                    return;
+                }
+
+                // --- your existing save logic below (unchanged) ---
                 // PATCH: handle any special save logic (e.g. schedule/color helpers for holidays)
-                if (Array.isArray(schema) && schema.some(f => f.key === 'schedule')) {
-                    const sched = modal.querySelector('#schedule-from-month') && modal.querySelector('#schedule-to-month');
+                if (Array.isArray(schema) && schema.some((f) => f.key === 'schedule')) {
+                    const sched =
+                        modal.querySelector('#schedule-from-month') &&
+                        modal.querySelector('#schedule-to-month');
                     if (sched) {
                         const fromMonth = modal.querySelector('#schedule-from-month')?.value;
                         const fromDay = modal.querySelector('#schedule-from-day')?.value;
@@ -406,13 +500,15 @@ export function openModal({
                     }
                 }
                 // PATCH: handle color helpers for holidays
-                if (Array.isArray(schema) && schema.some(f => f.key === 'color')) {
-                    const colorInputs = modal.querySelectorAll('.field-color-list input[type="color"]');
-                    entry.color = Array.from(colorInputs).map(input => input.value);
+                if (Array.isArray(schema) && schema.some((f) => f.key === 'color')) {
+                    const colorInputs = modal.querySelectorAll(
+                        '.field-color-list input[type="color"]'
+                    );
+                    entry.color = Array.from(colorInputs).map((input) => input.value);
                 }
                 // Gather all form values into entry
                 const inputs = modal.querySelectorAll('input, textarea, select');
-                inputs.forEach(input => {
+                inputs.forEach((input) => {
                     if (!input.name) return;
                     if (input.type === 'checkbox') {
                         entry[input.name] = input.checked;
@@ -425,38 +521,36 @@ export function openModal({
                 if (typeof onSave === 'function') onSave(entry);
                 closeModal();
             };
-        } else if (/test/i.test(btn.label || btn.id) && context.onTest) {
-            el.onclick = () => context.onTest(entry);
         }
     });
 
     // Any extra field helpers (as before)
-    Array.from(contentDiv.querySelectorAll('.field-modal-helper')).forEach(div => {
+    Array.from(contentDiv.querySelectorAll('.field-modal-helper')).forEach((div) => {
         const helperName = div.dataset.helper;
-        if (
-            helperName &&
-            typeof ModalHelpers[helperName] === 'function'
-        ) {
+        const key = div.dataset.key;
+        // Find the corresponding field object from the schema by key
+        const fieldObj = Array.isArray(schema) ? schema.find(f => f.key === key) : null;
+        if (helperName && typeof ModalHelpers[helperName] === 'function') {
             ModalHelpers[helperName](
                 div.closest('.modal-content'),
+                fieldObj,
                 context.listInUse,
-                context.editingIdx
+                context.editingIdx,
             );
         }
     });
 
-    // Modal close handler
-    function closeModal() {
-        modal.remove();
-        document.body.classList.remove('modal-open');
-    }
-    modal._closeModal = closeModal;
-    setupModalCloseOnOutsideClick(modal);
+    // --- Attach input listeners for validation ---
+    // Use input, change, or custom events
+    contentDiv.querySelectorAll('input, select, textarea').forEach(input => {
+        input.addEventListener('input', validateFields);
+        input.addEventListener('change', validateFields);
+    });
+    // Call once on open
+    validateFields();
 
     requestAnimationFrame(() => {
         modal.classList.add('show');
         document.body.classList.add('modal-open');
     });
-
-    modal.appendChild(contentDiv);
 }

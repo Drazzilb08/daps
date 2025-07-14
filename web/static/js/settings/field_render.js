@@ -142,7 +142,6 @@ function renderDirField(field, value, config) {
     // LABEL COLUMN
     const labelCol = document.createElement('div');
     labelCol.className = 'settings-field-labelcol';
-
     const label = document.createElement('label');
     label.textContent = field.label;
     label.htmlFor = field.key;
@@ -155,13 +154,19 @@ function renderDirField(field, value, config) {
 
     const input = document.createElement('input');
     input.type = 'text';
-    input.className = 'input dir-input';
     input.name = field.key;
-    input.id = field.key;
-    input.value = value ?? '';
+    input.className = 'input field-input';
     input.readOnly = !!field.modal;
-    if (field.modal && typeof Modals[field.modal] === 'function') {
-        input.addEventListener('click', () => Modals[field.modal](input, config));
+
+    // ***** FORCE-SET VALUE FROM CONFIG IF DEFINED *****
+    let inputValue = (config && config[field.key]) ? config[field.key] : value ?? '';
+    input.value = inputValue;
+
+    // Only add click handler if NOT in a modal
+    if (field.modal && typeof Modals[field.modal] === 'function' && !document.body.classList.contains('modal-open')) {
+        input.addEventListener('click', () => {
+            Modals.directoryPickerModal(input, config)
+        });
     }
     if (config) {
         input.addEventListener('input', () => {
@@ -253,85 +258,86 @@ function renderInstancesField(field, value = [], config, rootConfig) {
     }
 
     // -- Plex libraries list fetcher --
+    // Render the list of libraries for a Plex instance as pills with checkboxes
     function renderPlexLibraries(name, container, checkedLibs) {
-    container.innerHTML = 'Loading libraries...';
-    fetch(`/api/plex/libraries?instance=${encodeURIComponent(name)}`)
-        .then(async r => {
-            let data;
-            try {
-                data = await r.clone().json();
-            } catch {
-                data = await r.text();
-            }
-            if (!r.ok) {
-                let errorMsg = r.statusText;
-                if (data && typeof data === 'object' && data.error) {
-                    errorMsg = data.error;
-                } else if (typeof data === 'string') {
-                    errorMsg = data;
+        container.innerHTML = 'Loading libraries...';
+        fetch(`/api/plex/libraries?instance=${encodeURIComponent(name)}`)
+            .then(async r => {
+                let data;
+                try {
+                    data = await r.clone().json();
+                } catch {
+                    data = await r.text();
                 }
-                throw new Error(errorMsg);
-            }
-            return data;
-        })
-        .then(libraries => {
-            container.innerHTML = '';
-            if (Array.isArray(libraries) && libraries.length) {
-                libraries.forEach(lib => {
-                    const label = document.createElement('label');
-                    label.className = 'plex-library-pill'; // For styling
+                if (!r.ok) {
+                    let errorMsg = r.statusText;
+                    if (data && typeof data === 'object' && data.error) {
+                        errorMsg = data.error;
+                    } else if (typeof data === 'string') {
+                        errorMsg = data;
+                    }
+                    throw new Error(errorMsg);
+                }
+                return data;
+            })
+            .then(libraries => {
+                container.innerHTML = '';
+                if (Array.isArray(libraries) && libraries.length) {
+                    libraries.forEach(lib => {
+                        const label = document.createElement('label');
+                        label.className = 'instance-pill'; // For styling
 
-                    // Hidden checkbox for state
-                    const input = document.createElement('input');
-                    input.type = 'checkbox';
-                    input.checked = checkedLibs.includes(lib);
-                    input.setAttribute('aria-label', lib);
+                        // Hidden checkbox for state
+                        const input = document.createElement('input');
+                        input.type = 'checkbox';
+                        input.checked = checkedLibs.includes(lib);
+                        input.setAttribute('aria-label', lib);
 
-                    // Visual checkmark
-                    const checkmark = document.createElement('span');
-                    checkmark.className = 'pill-checkmark';
+                        // Visual checkmark
+                        const checkmark = document.createElement('span');
+                        checkmark.className = 'pill-checkmark';
 
-                    // Library label
-                    const pillLabel = document.createElement('span');
-                    pillLabel.className = 'pill-label';
-                    pillLabel.textContent = lib;
+                        // Library label
+                        const pillLabel = document.createElement('span');
+                        pillLabel.className = 'pill-label';
+                        pillLabel.textContent = lib;
 
-                    // Toggle checked state & styling
-                    input.onchange = () => {
-                        let libs = getPlexLibraries(name).slice();
-                        if (input.checked) {
-                            if (!libs.includes(lib)) libs.push(lib);
-                            label.classList.add('checked');
-                        } else {
-                            libs = libs.filter(l => l !== lib);
-                            label.classList.remove('checked');
-                        }
-                        setPlexLibraries(name, libs);
-                    };
-                    if (input.checked) label.classList.add('checked');
+                        // Toggle checked state & styling
+                        input.onchange = () => {
+                            let libs = getPlexLibraries(name).slice();
+                            if (input.checked) {
+                                if (!libs.includes(lib)) libs.push(lib);
+                                label.classList.add('checked');
+                            } else {
+                                libs = libs.filter(l => l !== lib);
+                                label.classList.remove('checked');
+                            }
+                            setPlexLibraries(name, libs);
+                        };
+                        if (input.checked) label.classList.add('checked');
 
-                    // Compose pill
-                    label.appendChild(input);
-                    label.appendChild(checkmark);
-                    label.appendChild(pillLabel);
-                    container.appendChild(label);
-                });
-            } else {
-                container.textContent = 'No libraries found for this instance.';
-            }
-        })
-        .catch(e => {
-            showToast('Error loading libraries: ' + e.message, 'error');
-            console.error('Error fetching Plex libraries:', e);
-        });
-}
+                        // Compose pill
+                        label.appendChild(input);
+                        label.appendChild(checkmark);
+                        label.appendChild(pillLabel);
+                        container.appendChild(label);
+                    });
+                } else {
+                    container.textContent = 'No libraries found for this instance.';
+                }
+            })
+            .catch(e => {
+                showToast('Error loading libraries: ' + e.message, 'error');
+                console.error('Error fetching Plex libraries:', e);
+            });
+    }
 
     // -- Main render logic for content column --
 function renderSelf() {
     inputWrap.innerHTML = '';
 
-    // --- 1. Radarr/Sonarr Columns Side-by-Side ---
-    const typeColumns = ['radarr', 'sonarr'];
+    // --- 1. Radarr/Sonarr Columns Side-by-Side (filtered by instanceTypes) ---
+    const typeColumns = instanceTypes.filter(type => type === 'radarr' || type === 'sonarr');
     const columns = {};
 
     typeColumns.forEach(type => {
@@ -352,7 +358,7 @@ function renderSelf() {
 
         all.forEach(instName => {
             const pillLabel = document.createElement('label');
-            pillLabel.className = 'plex-library-pill';
+            pillLabel.className = 'instance-pill';
 
             const chk = document.createElement('input');
             chk.type = 'checkbox';
@@ -393,18 +399,20 @@ function renderSelf() {
         inputWrap.appendChild(columnsWrap);
     }
 
-    // --- 2. Plex: Below, full width, each as a card/block ---
-    if (rootConfig.instances && rootConfig.instances.plex) {
+    // --- 2. Plex: Below, full width, each as a card/block, only if 'plex' in instanceTypes ---
+    if (instanceTypes.includes('plex') && rootConfig.instances && rootConfig.instances.plex) {
         Object.keys(rootConfig.instances.plex).forEach(instName => {
-            const plexBlock = document.createElement('div');
-            plexBlock.className = 'plex-instance-block';
+            // Instance block for each Plex instance
+            const instanceBlock = document.createElement('div');
+            instanceBlock.className = 'instance-block';
 
-            const plexHeader = document.createElement('div');
-            plexHeader.className = 'plex-instance-header';
+            // Instance header row with animated SVG checkbox and instance label
+            const instanceHeader = document.createElement('div');
+            instanceHeader.className = 'instance-header';
 
             // --- Custom animated SVG checkbox ---
             const chkLabel = document.createElement('label');
-            chkLabel.className = 'plex-checkbox-container';
+            chkLabel.className = 'instance-checkbox-container';
 
             // Hidden native checkbox for accessibility/state
             const chk = document.createElement('input');
@@ -419,7 +427,7 @@ function renderSelf() {
             svg.setAttribute("width", "24");
             svg.innerHTML = `<path d="M 0 16 V 56 A 8 8 90 0 0 8 64 H 56 A 8 8 90 0 0 64 56 V 8 A 8 8 90 0 0 56 0 H 8 A 8 8 90 0 0 0 8 V 16 L 32 48 L 64 16 V 8 A 8 8 90 0 0 56 0 H 8 A 8 8 90 0 0 0 8 V 56 A 8 8 90 0 0 8 64 H 56 A 8 8 90 0 0 64 56 V 16"
   pathLength="575.0541381835938"
-  class="plex-checkbox-path"></path>`;
+  class="instance-checkbox-path"></path>`;
 
             chkLabel.appendChild(chk);
             chkLabel.appendChild(svg);
@@ -434,12 +442,12 @@ function renderSelf() {
             }
             // Plex name label
             const lbl = document.createElement('span');
-            lbl.className = 'plex-instance-label';
+            lbl.className = 'instance-label';
             lbl.textContent = instName;
 
             // Use animated SVG checkbox and label
-            plexHeader.appendChild(chkLabel);
-            plexHeader.appendChild(lbl);
+            instanceHeader.appendChild(chkLabel);
+            instanceHeader.appendChild(lbl);
 
             // --- Add Posters text button toggle (Option 4) ---
             // Always create the Add Posters text button for each instance
@@ -472,7 +480,7 @@ function renderSelf() {
 
             // Show/hide the button only if instance is selected
             addPostersBtn.style.display = chk.checked ? '' : 'none';
-            plexHeader.appendChild(addPostersBtn);
+            instanceHeader.appendChild(addPostersBtn);
 
             // When the instance checkbox is toggled, update Add Posters button visibility
             chkLabel.addEventListener('click', (e) => {
@@ -499,12 +507,12 @@ function renderSelf() {
             // Call once for initial state
             updateCheckedClass();
 
-            plexBlock.appendChild(plexHeader);
+            instanceBlock.appendChild(instanceHeader);
 
-            // PATCH: Always render the library list, toggle .expanded for animation.
+            // Always render the library list, toggle .expanded for animation.
             // Always keep libList in DOM
             const libList = document.createElement('div');
-            libList.className = 'plex-library-list';
+            libList.className = 'instance-library-list';
             const libs = getPlexLibraries(instName);
             renderPlexLibraries(instName, libList, libs);
 
@@ -514,9 +522,9 @@ function renderSelf() {
             } else {
                 libList.classList.remove('expanded');
             }
-            plexBlock.appendChild(libList);
+            instanceBlock.appendChild(libList);
 
-            inputWrap.appendChild(plexBlock);
+            inputWrap.appendChild(instanceBlock);
         });
     }
 }
@@ -526,9 +534,377 @@ function renderSelf() {
     return row;
 }
 
+function renderDirListField(field, value = [], config) {
+    const row = document.createElement('div');
+    row.className = 'settings-field-row field-dir-list';
+
+    // --- LABEL COLUMN ---
+    const labelCol = document.createElement('div');
+    labelCol.className = 'settings-field-labelcol dirlist-label-col';
+
+    const label = document.createElement('label');
+    label.textContent = field.label;
+    label.htmlFor = field.key;
+    labelCol.appendChild(label);
+
+    // Filler flex so button is pushed to bottom of labelCol
+    const filler = document.createElement('div');
+    filler.style.flex = "1";
+    labelCol.appendChild(filler);
+
+    // Add Directory button
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'btn add-btn';
+    addBtn.textContent = 'Add Directory';
+    addBtn.onclick = () => {
+        value.push('');
+        if (config) config[field.key] = [...value];
+        renderRows();
+    };
+    labelCol.appendChild(addBtn);
+
+    // --- INPUT COLUMN ---
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'settings-field-inputwrap dirlist-input-col';
+
+    if (!Array.isArray(value) || value.length === 0) value = [''];
+
+    function renderRows() {
+        inputWrap.innerHTML = '';
+        value.forEach((dir, idx) => {
+            const item = document.createElement('div');
+            item.className = 'field-dragdrop-row';
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'input field-input';
+            input.name = field.key;
+            input.value = dir || '';
+            if (field.modal === 'directoryPickerModal') {
+                input.readOnly = true;
+                input.addEventListener('click', () => Modals.directoryPickerModal(input, config));
+            }
+            input.addEventListener('input', () => {
+                value[idx] = input.value;
+                if (config) config[field.key] = [...value];
+            });
+            item.appendChild(input);
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'btn btn--remove-item remove-btn';
+            removeBtn.innerText = '−';
+            removeBtn.disabled = value.length === 1;
+            removeBtn.addEventListener('click', () => {
+                if (value.length > 1) {
+                    value.splice(idx, 1);
+                    if (config) config[field.key] = [...value];
+                    renderRows();
+                }
+            });
+            item.appendChild(removeBtn);
+
+            inputWrap.appendChild(item);
+        });
+
+        if (field.description) {
+            const help = document.createElement('div');
+            help.className = 'field-help-text';
+            help.textContent = field.description;
+            inputWrap.appendChild(help);
+        }
+    }
+
+    renderRows();
+
+    row.appendChild(labelCol);
+    row.appendChild(inputWrap);
+    return row;
+}
+
+function renderColorListField(field, value = [], config) {
+    
+    // Should show poster border preview?
+    const shouldPreview = String(field.preview) === "true";
+
+    // Store available posters (cached)
+    let posterAssets = [];
+    let posterFetchPromise = null;
+
+    // Fetch and cache all poster asset filenames
+    function fetchPosterAssets() {
+        if (posterFetchPromise) return posterFetchPromise;
+        posterFetchPromise = fetch("/api/poster_assets")
+            .then(r => r.json())
+            .then(arr => Array.isArray(arr) ? arr : [])
+            .then(arr => posterAssets = arr)
+            .catch(() => posterAssets = []);
+        return posterFetchPromise;
+    }
+
+    // Utility: Pick random poster asset, never default to poster.jpg
+    function getRandomPoster() {
+        if (posterAssets.length) {
+            return "/web/static/assets/" + posterAssets[Math.floor(Math.random() * posterAssets.length)];
+        }
+        return null;
+    }
+
+    // Utility: Convert hex to RGB
+    function hexToRgb(hex) {
+        hex = hex.replace(/^#/, '');
+        if (hex.length === 3) hex = hex.split('').map(x => x + x).join('');
+        const num = parseInt(hex, 16);
+        return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
+    }
+
+    // Detect artwork bounds inside a white border
+    function detectArtworkBounds(img, cb) {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const data = ctx.getImageData(0, 0, img.width, img.height).data;
+        const whiteT = 235, pad = 0;
+        function isWhite(i) {
+            const r = data[i], g = data[i+1], b = data[i+2];
+            return r > whiteT && g > whiteT && b > whiteT &&
+                Math.abs(r-g) < 14 && Math.abs(r-b) < 14 && Math.abs(g-b) < 14;
+        }
+        let left = 0, right = img.width-1, top = 0, bottom = img.height-1;
+        outer: for (; left < img.width; ++left)  { for (let y=0; y<img.height; ++y) if (!isWhite((y*img.width+left)*4)) break outer; }
+        outer: for (; right > left; --right)     { for (let y=0; y<img.height; ++y) if (!isWhite((y*img.width+right)*4)) break outer; }
+        outer: for (; top < img.height; ++top)   { for (let x=left; x<=right; ++x) if (!isWhite((top*img.width+x)*4)) break outer; }
+        outer: for (; bottom > top; --bottom)    { for (let x=left; x<=right; ++x) if (!isWhite((bottom*img.width+x)*4)) break outer; }
+        left = Math.max(0, left - pad); right = Math.min(img.width-1, right + pad);
+        top  = Math.max(0, top - pad);  bottom = Math.min(img.height-1, bottom + pad);
+        cb({left, right, top, bottom, width: right-left+1, height: bottom-top+1});
+    }
+
+    // Canvas: Replace white border with color
+    function renderPosterPreviewCanvas(imgUrl, borderColor, callback, options = {}) {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new window.Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = function() {
+            const width = options.width || img.width;
+            const height = options.height || img.height;
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+            const imgData = ctx.getImageData(0, 0, width, height);
+            const d = imgData.data;
+            const rgb = hexToRgb(borderColor);
+            const tolerance = 235;
+            const border = 26;
+            for (let y = 0; y < height; ++y) {
+                for (let x = 0; x < width; ++x) {
+                    if (
+                        x < border || x >= width - border ||
+                        y < border || y >= height - border
+                    ) {
+                        const i = (y * width + x) * 4;
+                        if (
+                            d[i] > tolerance && d[i+1] > tolerance && d[i+2] > tolerance &&
+                            Math.abs(d[i] - d[i+1]) < 18 &&
+                            Math.abs(d[i] - d[i+2]) < 18 &&
+                            Math.abs(d[i+1] - d[i+2]) < 18
+                        ) {
+                            d[i]   = rgb.r;
+                            d[i+1] = rgb.g;
+                            d[i+2] = rgb.b;
+                        }
+                    }
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+            callback(canvas);
+        };
+        img.src = imgUrl;
+    }
+
+    // Canvas: Crop to detected artwork only (no border)
+    function renderNoBorderPreview(imgUrl, callback, options = {}) {
+        const img = new window.Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = function() {
+            detectArtworkBounds(img, (bounds) => {
+                const canvas = document.createElement('canvas');
+                canvas.width = bounds.width;
+                canvas.height = bounds.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img,
+                    bounds.left, bounds.top, bounds.width, bounds.height,
+                    0, 0, bounds.width, bounds.height
+                );
+                callback(canvas);
+            });
+        };
+        img.src = imgUrl;
+    }
+
+    // Initialize posters, and color objects
+    async function ensureInitialPostersAndRender() {
+        await fetchPosterAssets();
+        if (!Array.isArray(value)) value = [];
+        value = value.map(v =>
+            typeof v === "string"
+                ? { color: v, poster: getRandomPoster() }
+                : (v && v.color && !v.poster)
+                    ? { color: v.color, poster: getRandomPoster() }
+                    : v
+        );
+        if (value.length && value.some(v => !v.poster)) {
+            value = value.map(v =>
+                v.poster ? v : { ...v, poster: getRandomPoster() }
+            );
+        }
+        renderColors();
+        if (shouldPreview) updateBorderPreview();
+    }
+
+    // UI Structure
+    const row = document.createElement('div');
+    row.className = 'settings-field-row field-dir-list field-color-list';
+    const labelCol = document.createElement('div');
+    labelCol.className = 'settings-field-labelcol dirlist-label-col';
+    const label = document.createElement('label');
+    label.textContent = field.label || 'Colors';
+    labelCol.appendChild(label);
+    const filler = document.createElement('div'); filler.style.flex = "1"; labelCol.appendChild(filler);
+
+    const addBtn = document.createElement('button');
+    addBtn.type = 'button';
+    addBtn.className = 'btn add-btn';
+    addBtn.textContent = 'Add Color';
+    addBtn.onclick = async () => {
+        await fetchPosterAssets();
+        const poster = getRandomPoster();
+        if (!poster) return;
+        value.push({ color: '#ffffff', poster });
+        renderColors();
+        if (config) config[field.key] = value.slice();
+        if (shouldPreview) updateBorderPreview();
+    };
+    labelCol.appendChild(addBtn);
+    row.appendChild(labelCol);
+
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'settings-field-inputwrap dirlist-input-col';
+    const colorsDiv = document.createElement('div');
+    colorsDiv.className = 'color-list-container';
+    inputWrap.appendChild(colorsDiv);
+
+    let previewWrap = null;
+    if (shouldPreview) {
+        previewWrap = document.createElement('div');
+        previewWrap.className = 'poster-border-preview-wrap';
+        inputWrap.appendChild(previewWrap);
+    }
+
+    // --- Help/Description block (always present, always at the bottom) ---
+    const help = document.createElement('div');
+    help.className = 'field-help-text';
+    help.textContent = field.description || '';
+    inputWrap.appendChild(help);
+
+    function renderColors() {
+        colorsDiv.innerHTML = '';
+        value.forEach((v, idx) => {
+            const swatch = document.createElement('div');
+            swatch.className = 'color-picker-swatch';
+
+            const input = document.createElement('input');
+            input.type = 'color';
+            input.value = v.color || '#ffffff';
+            input.addEventListener('change', () => {
+                value[idx].color = input.value;
+                if (config) config[field.key] = value.slice();
+                if (shouldPreview) updateBorderPreview();
+            });
+            input.addEventListener('input', () => {
+                value[idx].color = input.value;
+                if (shouldPreview) updateBorderPreview();
+            });
+
+            const removeBtn = document.createElement('button');
+            removeBtn.type = 'button';
+            removeBtn.className = 'remove-btn';
+            removeBtn.textContent = '−';
+            removeBtn.onclick = () => {
+                value.splice(idx, 1);
+                renderColors();
+                if (config) config[field.key] = value.slice();
+                if (shouldPreview) updateBorderPreview();
+            };
+
+            swatch.appendChild(input);
+            swatch.appendChild(removeBtn);
+            colorsDiv.appendChild(swatch);
+        });
+        if (shouldPreview) updateBorderPreview();
+    }
+
+    function updateBorderPreview() {
+        if (!previewWrap) return;
+        previewWrap.innerHTML = '';
+        // Remove any old notifications before re-adding
+        let oldNote = inputWrap.querySelector('.no-border-notification');
+        if (oldNote) oldNote.remove();
+
+        if (value.length && posterAssets.length) {
+            value.forEach((v) => {
+                if (!v.poster) return;
+                const previewDiv = document.createElement('div');
+                previewDiv.className = 'poster-preview-container';
+                renderPosterPreviewCanvas(
+                    v.poster,
+                    v.color || '#ffffff',
+                    (canvas) => {
+                        canvas.className = 'poster-preview-img';
+                        previewDiv.appendChild(canvas);
+                    },
+                    { width: 156, height: 234 }
+                );
+                previewWrap.appendChild(previewDiv);
+            });
+        } else if (posterAssets.length) {
+            // No colors: show blank artwork, random poster
+            const previewDiv = document.createElement('div');
+            previewDiv.className = 'poster-preview-container';
+            const poster = getRandomPoster();
+            if (!poster) return;
+            renderNoBorderPreview(
+                poster,
+                (canvas) => {
+                    canvas.className = 'poster-preview-img';
+                    previewDiv.appendChild(canvas);
+                },
+                { width: 156, height: 234 }
+            );
+            previewWrap.appendChild(previewDiv);
+
+            // --- Add notification above help text ---
+            const note = document.createElement('div');
+            note.className = 'no-border-notification';
+            note.textContent = 'No colors selected. The white border will be removed.';
+            // Insert notification before help/description
+            inputWrap.insertBefore(note, help);
+        }
+    }
+
+    row.appendChild(inputWrap);
+    // Initial fetch and migration—set up all posters on first load!
+    ensureInitialPostersAndRender();
+    return row;
+}
+
 function renderDirListDragDropField(field, value = [], config) {
     const row = document.createElement('div');
-    row.className = 'settings-field-row field-dir field-dragdrop';
+    row.className = 'settings-field-row field-dir-list';
 
     // --- LABEL COLUMN ---
     const labelCol = document.createElement('div');
@@ -670,6 +1046,13 @@ function renderTextareaField(field, value) {
 
     inputWrap.appendChild(textarea);
 
+    if (field.description) {
+        const help = document.createElement('div');
+        help.className = 'field-help-text';
+        help.textContent = field.description;
+        inputWrap.appendChild(help);
+    }
+
     row.appendChild(inputWrap);
     return row;
 }
@@ -775,188 +1158,68 @@ function renderCheckBoxField(field, value, config) {
 }
 
 
-// -------- COMPLEX LIST FIELD -----------
-// Replace the entire renderComplexListField function:
-function renderComplexListField(field, value = [], rootConfig, config) {
-    config = config || arguments[3];
-    value = Array.isArray(config?.[field.key]) ? config[field.key] : Array.isArray(value) ? value : [];
-    const div = document.createElement('div');
-    if (field.key === "gdrive_list") {
-        div.classList.add("field-gdrive-list");
-    }
-    div.className = 'field field-complex-list';
+function renderDirListOptionsField(field, value = [], config) {
+    // Markup/class structure matches renderDirListDragDropField except: no drag handle, select dropdown for options.
+    const row = document.createElement('div');
+    row.className = 'settings-field-row field-dir-list';
 
+    // --- LABEL COLUMN ---
+    const labelCol = document.createElement('div');
+    labelCol.className = 'settings-field-labelcol dirlist-label-col';
+
+    // 1. Label
     const label = document.createElement('label');
     label.textContent = field.label;
-    div.appendChild(label);
+    label.htmlFor = field.key;
+    labelCol.appendChild(label);
 
-    const listArea = document.createElement('div');
-    // Safely get subfields array
-    const subfields = Array.isArray(field.fields) ? field.fields : [];
+    // 2. Filler flex so button is pushed to bottom of labelCol
+    const filler = document.createElement('div');
+    filler.style.flex = "1";
+    labelCol.appendChild(filler);
 
-    function renderValue(val, fieldDef = null) {
-        if (Array.isArray(val)) {
-            // Array of objects (not scalars)
-            if (val.length && typeof val[0] === 'object' && val[0] !== null) {
-                return (
-                    val.map(obj =>
-                        '<div>' +
-                        Object.entries(obj)
-                            .map(([k, v]) =>
-                                `<div><b>${k}:</b> ${renderValue(v)}</div>`
-                            ).join('') +
-                        '</div>'
-                    ).join('')
-                );
-            }
-            // Array of scalars
-            return val.length ? val.join(', ') : '—';
-        }
-        if (val && typeof val === 'object') {
-            // Nested object, pretty print key-values
-            return (
-                Object.entries(val)
-                    .map(([k, v2]) => `<div><b>${k}:</b> ${renderValue(v2)}</div>`)
-                    .join('')
-            );
-        }
-        // String or primitive
-        return val ?? '';
-    }
-
-    function renderList() {
-        listArea.innerHTML = '';
-        (value || []).forEach((item, idx) => {
-            const entryDiv = document.createElement('div');
-            entryDiv.className = 'complex-list-row';
-
-            subfields.forEach(subfield => {
-                if (
-                    subfield.type === 'modal_helper' ||
-                    subfield.type === 'helper'
-                ) return;
-                // Only show fields for the correct instance type, if specified
-                if (subfield.show_if_instance && rootConfig && rootConfig.instances) {
-                    const instanceType = subfield.show_if_instance;
-                    const instanceKey = item.instance;
-                    if (!instanceKey) return; // No instance, can't match
-                    // Check if the instance key is under the correct instance type in config
-                    if (!rootConfig.instances[instanceType] || !(instanceKey in rootConfig.instances[instanceType])) {
-                        return; // skip: not a matching instance type
-                    }
-                }
-                const v = item[subfield.key];
-                const fieldSpan = document.createElement('span');
-
-                if (subfield.type === 'color_list' && Array.isArray(v)) {
-                    fieldSpan.innerHTML = `<b>${subfield.label}:</b> `;
-                    v.forEach(color => {
-                        const swatch = document.createElement('span');
-                        swatch.className = 'color-list-swatch';
-                        swatch.style.background = color;
-                        swatch.title = color;
-                        fieldSpan.appendChild(swatch);
-                    });
-                } else {
-                    fieldSpan.innerHTML = `<b>${subfield.label}:</b> ${renderValue(v, subfield)}`;
-                }
-                entryDiv.appendChild(fieldSpan);
-            });
-
-            // CLICK ON CARD TO EDIT
-            entryDiv.tabIndex = 0;
-            entryDiv.setAttribute('role', 'button');
-            entryDiv.setAttribute('aria-label', 'Edit entry');
-            entryDiv.addEventListener('click', () => openEditModal(idx));
-            entryDiv.addEventListener('keydown', e => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    openEditModal(idx);
-                }
-            });
-
-            listArea.appendChild(entryDiv);
-        });
-    }
-
-    function openEditModal(idx) {
-        const isEdit = typeof idx === 'number';
-        const entry = isEdit ? { ...value[idx] } : {};
-
-        const footerButtons = [
-            ...(isEdit ? [{ id: 'delete-modal-btn', label: 'Delete', class: 'btn--remove' }] : []),
-            { id: 'cancel-modal-btn', label: 'Cancel', class: 'btn--remove-item' },
-            { id: 'save-modal-btn', label: 'Save', class: 'btn--success' },
-        ];
-        openModal({
-            schema: subfields,
-            entry,
-            title: isEdit ? `Edit ${field.label.replace(/s$/, '')}` : `Add ${field.label.replace(/s$/, '')}`,
-            onSave: (newEntry) => {
-                if (isEdit) {
-                    value[idx] = newEntry;
-                } else {
-                    value.push(newEntry);
-                }
-                config[field.key] = value.slice(); // Just mutate local config
-                renderList();
-                markDirty();
-            },
-            onDelete: isEdit ? () => {
-                value.splice(idx, 1);
-                config[field.key] = value.slice();
-                renderList();
-                markDirty();
-            } : null,
-            context: {
-                listInUse: value,
-                editingIdx: isEdit ? idx : null,
-                rootConfig
-            },
-            footerButtons,
-            isEdit
-        });
-    }
-
-    div.appendChild(listArea);
-
-    // Add button
+    // 3. Add Directory button
     const addBtn = document.createElement('button');
     addBtn.type = 'button';
     addBtn.className = 'btn add-btn';
-    addBtn.textContent = `Add ${field.label.replace(/s$/, '')}`;
-    addBtn.onclick = () => openEditModal(null);
-    div.appendChild(addBtn);
+    addBtn.textContent = 'Add Directory';
+    addBtn.onclick = () => {
+        // If options, store as { path, mode }, else as string
+        if (field.options && field.options.length) {
+            value.push({ path: '', mode: field.options[0] });
+        } else {
+            value.push('');
+        }
+        if (config) config[field.key] = [...value];
+        renderRows();
+    };
+    labelCol.appendChild(addBtn);
 
-    renderList();
-    return div;
-}
+    // --- INPUT COLUMN ---
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'settings-field-inputwrap dirlist-input-col';
 
-function renderDirListOptionsField(field, value = [], config) {
-    const div = document.createElement('div');
-    div.className = 'settings-field-row field-dir';
-
-    const label = document.createElement('label');
-    label.textContent = field.label;
-    div.appendChild(label);
-
-    const list = document.createElement('div');
-    list.className = 'dir-list-area';
-
-    if (!Array.isArray(value) || value.length === 0) value = [''];
+    if (!Array.isArray(value) || value.length === 0) {
+        if (field.options && field.options.length) {
+            value = [{ path: '', mode: field.options[0] }];
+        } else {
+            value = [''];
+        }
+    }
 
     function renderRows() {
-        list.innerHTML = '';
+        inputWrap.innerHTML = '';
         value.forEach((dir, idx) => {
-            const row = document.createElement('div');
-            row.className = 'dir-list-row';
+            const item = document.createElement('div');
+            item.className = 'field-dragdrop-row dir-list-option-row';
+            // No drag handle!
 
             // Directory input
             const input = document.createElement('input');
             input.type = 'text';
-            input.className = 'input dir-list-input';
+            input.className = 'input field-input';
             input.name = field.key;
-            input.value = dir.path || dir || '';
+            input.value = (typeof dir === 'object' && dir !== null) ? (dir.path || '') : (dir || '');
             if (field.modal === 'directoryPickerModal') {
                 input.readOnly = true;
                 input.addEventListener('click', () => Modals.directoryPickerModal(input, config));
@@ -967,9 +1230,9 @@ function renderDirListOptionsField(field, value = [], config) {
                 } else {
                     value[idx] = input.value;
                 }
-                if (config) config[field.key] = value.slice();
+                if (config) config[field.key] = [...value];
             });
-            row.appendChild(input);
+            item.appendChild(input);
 
             // Mode select (for options)
             if (field.options && Array.isArray(field.options)) {
@@ -978,8 +1241,11 @@ function renderDirListOptionsField(field, value = [], config) {
                 field.options.forEach(opt => {
                     const option = document.createElement('option');
                     option.value = opt;
-                    option.selected = (dir.mode || (typeof dir === 'object' && dir.mode) || field.options[0]) === opt;
                     option.textContent = humanize(opt);
+                    if ((typeof dir === 'object' && dir !== null && dir.mode === opt) ||
+                        (typeof dir === 'object' && dir !== null && !dir.mode && field.options[0] === opt)) {
+                        option.selected = true;
+                    }
                     select.appendChild(option);
                 });
                 select.addEventListener('change', () => {
@@ -988,26 +1254,27 @@ function renderDirListOptionsField(field, value = [], config) {
                     } else {
                         value[idx] = { path: input.value, mode: select.value };
                     }
-                    if (config) config[field.key] = value.slice();
+                    if (config) config[field.key] = [...value];
                 });
-                row.appendChild(select);
+                item.appendChild(select);
             }
 
+            // Remove button
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
             removeBtn.className = 'btn btn--remove-item remove-btn';
-            removeBtn.textContent = 'Remove';
+            removeBtn.innerText = '−';
             removeBtn.disabled = value.length === 1;
-            removeBtn.onclick = () => {
+            removeBtn.addEventListener('click', () => {
                 if (value.length > 1) {
                     value.splice(idx, 1);
-                    if (config) config[field.key] = value.slice();
+                    if (config) config[field.key] = [...value];
                     renderRows();
                 }
-            };
-            row.appendChild(removeBtn);
+            });
+            item.appendChild(removeBtn);
 
-            list.appendChild(row);
+            inputWrap.appendChild(item);
         });
         if (field.description) {
             const help = document.createElement('div');
@@ -1017,97 +1284,17 @@ function renderDirListOptionsField(field, value = [], config) {
         }
     }
 
-    const addBtn = document.createElement('button');
-    addBtn.type = 'button';
-    addBtn.className = 'btn add-btn';
-    addBtn.textContent = 'Add Directory';
-    addBtn.onclick = () => {
-        value.push(field.options && field.options.length ? { path: '', mode: field.options[0] } : '');
-        if (config) config[field.key] = value.slice();
-        renderRows();
-    };
+    // Helper to humanize mode option names
+    function humanize(str) {
+        if (!str) return '';
+        return str.replace(/_/g, ' ')
+            .replace(/\b\w/g, (l) => l.toUpperCase());
+    }
 
     renderRows();
-    div.appendChild(list);
-    div.appendChild(addBtn);
-
-    return div;
-}
-
-function renderColorListField(field, value = []) {
-    const div = document.createElement('div');
-    div.className = 'field field-color-list';
-
-    const label = document.createElement('label');
-    label.textContent = field.label || 'Colors';
-    div.appendChild(label);
-
-    const colorsDiv = document.createElement('div');
-    colorsDiv.className = 'color-list-container';
-    div.appendChild(colorsDiv);
-
-    // Ensure value is always an array
-    value = Array.isArray(value) ? value : [];
-
-    function renderColors() {
-        colorsDiv.innerHTML = '';
-        value.forEach((color, idx) => {
-            const swatch = document.createElement('div');
-            swatch.className = 'color-list-swatch';
-
-            const input = document.createElement('input');
-            input.type = 'color';
-            input.value = color || '#ffffff';
-            input.addEventListener('input', () => {
-                value[idx] = input.value;
-            });
-
-            const removeBtn = document.createElement('button');
-            removeBtn.type = 'button';
-            removeBtn.className = 'btn btn--remove-item btn--remove-item remove-btn';
-            removeBtn.textContent = '−';
-            removeBtn.onclick = () => {
-                value.splice(idx, 1);
-                renderColors();
-            };
-
-            swatch.appendChild(input);
-            swatch.appendChild(removeBtn);
-            colorsDiv.appendChild(swatch);
-        });
-    }
-
-    // Add color button
-    const addBtn = document.createElement('button');
-    addBtn.type = 'button';
-    addBtn.className = 'btn add-btn';
-    addBtn.textContent = 'Add Color';
-    addBtn.onclick = () => {
-        value.push('#ffffff');
-        renderColors();
-    };
-
-    div.appendChild(addBtn);
-
-    renderColors();
-    return div;
-}
-
-function renderModalHelperField(field, value, config, rootConfig) {
-    const div = document.createElement('div');
-    div.className = 'field field-modal-helper';
-    div.dataset.helper = field.helper || '';
-    div.dataset.key = field.key || '';
-    if (field.label) {
-        const label = document.createElement('label');
-        label.textContent = field.label;
-        div.appendChild(label);
-    }
-    // Make sure the helper has a real div to hook into!
-    const hookDiv = document.createElement('div');
-    hookDiv.className = 'modal-helper-hook';
-    div.appendChild(hookDiv);
-    return div;
+    row.appendChild(labelCol);
+    row.appendChild(inputWrap);
+    return row;
 }
 
 function renderInstanceDropdownField(field, value, config, rootConfig) {
@@ -1238,62 +1425,42 @@ function renderGDriveCustomField(field, value = [], rootConfig, config) {
         inputWrap.appendChild(desc);
     }
 
-    // --- GDrive card-list (flex row of cards)
+    // --- Card-list (single column, full width)
     const listArea = document.createElement('div');
-    listArea.className = 'gdrive-card-list';
+    listArea.className = 'settings-card-list';
     inputWrap.appendChild(listArea);
 
     function renderList() {
         listArea.innerHTML = '';
 
         if (!Array.isArray(value) || !value.length) {
-            // Show add button only if empty
             listArea.appendChild(createAddCard());
             return;
         }
 
-        // Render each GDrive entry as a fat card
         value.forEach((item, idx) => {
             const card = document.createElement('div');
-            card.className = 'card gdrive-entry-card';
+            card.className = 'settings-entry-card';
 
             // ID row
             const idRow = document.createElement('div');
-            idRow.className = 'gdrive-entry-field gdrive-entry-id';
-            const idLabel = document.createElement('span');
-            idLabel.className = 'gdrive-entry-label';
-            idLabel.textContent = 'ID:';
-            const idValue = document.createElement('span');
-            idValue.className = 'gdrive-entry-value';
-            idValue.textContent = item.id || '';
-            idRow.appendChild(idLabel);
-            idRow.appendChild(idValue);
+            idRow.className = 'settings-entry-row';
+            idRow.innerHTML = `<span class="settings-label">ID:</span>
+                               <span class="settings-value">${item.id || ''}</span>`;
             card.appendChild(idRow);
 
             // Name row
             const nameRow = document.createElement('div');
-            nameRow.className = 'gdrive-entry-field gdrive-entry-name';
-            const nameLabel = document.createElement('span');
-            nameLabel.className = 'gdrive-entry-label';
-            nameLabel.textContent = 'Name:';
-            const nameValue = document.createElement('span');
-            nameValue.className = 'gdrive-entry-value';
-            nameValue.textContent = item.name || '';
-            nameRow.appendChild(nameLabel);
-            nameRow.appendChild(nameValue);
+            nameRow.className = 'settings-entry-row';
+            nameRow.innerHTML = `<span class="settings-label">Name:</span>
+                                 <span class="settings-value">${item.name || ''}</span>`;
             card.appendChild(nameRow);
 
             // Location row
             const locRow = document.createElement('div');
-            locRow.className = 'gdrive-entry-field gdrive-entry-path';
-            const locLabel = document.createElement('span');
-            locLabel.className = 'gdrive-entry-label';
-            locLabel.textContent = 'Location:';
-            const locValue = document.createElement('span');
-            locValue.className = 'gdrive-entry-value';
-            locValue.textContent = item.location || '';
-            locRow.appendChild(locLabel);
-            locRow.appendChild(locValue);
+            locRow.className = 'settings-entry-row';
+            locRow.innerHTML = `<span class="settings-label">Location:</span>
+                                <span class="settings-value">${item.location || ''}</span>`;
             card.appendChild(locRow);
 
             // Make card clickable for editing
@@ -1313,14 +1480,12 @@ function renderGDriveCustomField(field, value = [], rootConfig, config) {
             listArea.appendChild(card);
         });
 
-        // Add "fat plus" card at the end
         listArea.appendChild(createAddCard());
     }
 
-    // Add card helper
     function createAddCard() {
         const addCard = document.createElement('div');
-        addCard.className = 'card card-add gdrive-add-card';
+        addCard.className = 'settings-entry-card settings-add-card';
         addCard.tabIndex = 0;
         addCard.setAttribute('role', 'button');
         addCard.setAttribute('aria-label', `Add ${field.label.replace(/s$/, '')}`);
@@ -1345,13 +1510,496 @@ function renderGDriveCustomField(field, value = [], rootConfig, config) {
     return row;
 }
 
+function renderReplacerrCustomField(field, value = [], rootConfig, config) {
+    config = config || arguments[3];
+    value = Array.isArray(config?.[field.key]) ? config[field.key] : Array.isArray(value) ? value : [];
+    const subfields = Array.isArray(field.fields) ? field.fields : [];
+
+    // --- Outer container: settings field row
+    const row = document.createElement('div');
+    row.className = 'settings-field-row';
+
+    // --- Label column
+    const labelCol = document.createElement('div');
+    labelCol.className = 'settings-field-labelcol';
+    const label = document.createElement('label');
+    label.textContent = field.label;
+    label.htmlFor = field.key;
+    labelCol.appendChild(label);
+    row.appendChild(labelCol);
+
+    // --- Main content column
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'settings-field-inputwrap';
+
+    if (field.description) {
+        const desc = document.createElement('div');
+        desc.className = 'field-help-text';
+        desc.textContent = field.description;
+        inputWrap.appendChild(desc);
+    }
+
+    // --- Holidays card-list (flex row of cards)
+    const listArea = document.createElement('div');
+    listArea.className = 'settings-card-list twocol'
+    inputWrap.appendChild(listArea);
+
+    function renderList() {
+        listArea.innerHTML = '';
+
+        if (!Array.isArray(value) || !value.length) {
+            // Show add button only if empty
+            listArea.appendChild(createAddCard());
+            return;
+        }
+
+        // Render each holiday as a card
+        value.forEach((item, idx) => {
+            const card = document.createElement('div');
+            card.className = 'settings-entry-card';
+
+            // Name row (main)
+            const nameRow = document.createElement('div');
+            nameRow.className = 'settings-entry-row settings-entry-main';
+            const nameVal = document.createElement('span');
+            nameVal.className = 'settings-value';
+            nameVal.textContent = item.name || '';
+            nameRow.appendChild(nameVal);
+            card.appendChild(nameRow);
+
+            // Schedule row
+            const schedRow = document.createElement('div');
+            schedRow.className = 'settings-entry-row';
+            const schedLabel = document.createElement('span');
+            schedLabel.className = 'settings-label';
+            schedLabel.textContent = 'Schedule:';
+            const schedVal = document.createElement('span');
+            schedVal.className = 'settings-value';
+            // Custom rendering for schedule: extract MM/DD–MM/DD if "range(MM/DD-MM/DD)"
+            let schedText = '';
+            if (typeof item.schedule === 'string') {
+                const m = item.schedule.match(/^range\(\s*(\d{2}\/\d{2})\s*-\s*(\d{2}\/\d{2})\s*\)$/);
+                if (m) {
+                    schedText = `${m[1]} – ${m[2]}`;
+                } else {
+                    schedText = item.schedule;
+                }
+            } else {
+                schedText = item.schedule || '';
+            }
+            schedVal.textContent = schedText;
+            schedRow.appendChild(schedLabel);
+            schedRow.appendChild(schedVal);
+            card.appendChild(schedRow);
+
+            // Colors row
+            const colorRow = document.createElement('div');
+            colorRow.className = 'settings-entry-row';
+            const colorLabel = document.createElement('span');
+            colorLabel.className = 'settings-label';
+            colorLabel.textContent = 'Colors:';
+            colorRow.appendChild(colorLabel);
+            const colorsWrap = document.createElement('span');
+            colorsWrap.className = 'settings-entry-swatches';
+            (item.color || []).forEach(color => {
+                const swatch = document.createElement('span');
+                swatch.className = 'color-list-swatch replacerr-swatch';
+                swatch.style.background = color;
+                swatch.title = color;
+                colorsWrap.appendChild(swatch);
+            });
+            colorRow.appendChild(colorsWrap);
+            card.appendChild(colorRow);
+
+            // Make card clickable for editing
+            card.tabIndex = 0;
+            card.setAttribute('role', 'button');
+            card.setAttribute('aria-label', 'Edit Holiday');
+            card.addEventListener('click', () =>
+                openEditModal(idx, { value, field, config, renderList, subfields, rootConfig })
+            );
+            card.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openEditModal(idx, { value, field, config, renderList, subfields, rootConfig });
+                }
+            });
+
+            listArea.appendChild(card);
+        });
+
+        // Add “fat plus” card at the end
+        listArea.appendChild(createAddCard());
+    }
+
+    // Add card helper
+    function createAddCard() {
+        const addCard = document.createElement('div');
+        addCard.className = 'settings-entry-card settings-add-card';
+        addCard.tabIndex = 0;
+        addCard.setAttribute('role', 'button');
+        addCard.setAttribute('aria-label', `Add ${field.label.replace(/s$/, '')}`);
+        addCard.addEventListener('click', () => openEditModal(null, { value, field, config, renderList, subfields, rootConfig }));
+        addCard.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openEditModal(null, { value, field, config, renderList, subfields, rootConfig });
+            }
+        });
+
+        const plus = document.createElement('span');
+        plus.className = 'card-add-plus';
+        plus.textContent = '+';
+        addCard.appendChild(plus);
+
+        return addCard;
+    }
+
+    renderList();
+    row.appendChild(inputWrap);
+    return row;
+}
+
+function renderUpgradinatorrCustomField(field, value = [], rootConfig, config) {
+  config = config || arguments[3];
+  value = Array.isArray(config?.[field.key]) ? config[field.key] : Array.isArray(value) ? value : [];
+  const subfields = Array.isArray(field.fields) ? field.fields : [];
+
+  const row = document.createElement('div');
+  row.className = 'settings-field-row';
+
+  const labelCol = document.createElement('div');
+  labelCol.className = 'settings-field-labelcol';
+  const label = document.createElement('label');
+  label.textContent = field.label;
+  label.htmlFor = field.key;
+  labelCol.appendChild(label);
+  row.appendChild(labelCol);
+
+  const inputWrap = document.createElement('div');
+  inputWrap.className = 'settings-field-inputwrap';
+
+  if (field.description) {
+    const desc = document.createElement('div');
+    desc.className = 'field-help-text';
+    desc.textContent = field.description;
+    inputWrap.appendChild(desc);
+  }
+
+  // Render list container
+  const listArea = document.createElement('div');
+  listArea.className = 'settings-card-list twocol'
+  inputWrap.appendChild(listArea);
+
+  function renderList() {
+    listArea.innerHTML = '';
+
+    if (!Array.isArray(value) || !value.length) {
+      listArea.appendChild(createAddCard());
+      return;
+    }
+
+    value.forEach((item, idx) => {
+      const card = document.createElement('div');
+      card.className = 'settings-entry-card';
+
+      // Render each subfield label and value inside the card
+      subfields.forEach(sf => {
+        if (sf.type === 'modal_helper' || sf.type === 'helper') return;
+
+        // Only show fields for the correct instance type, if specified
+        if (
+            sf.show_if_instance && rootConfig && rootConfig.instances &&
+            item.instance && (
+            !rootConfig.instances[sf.show_if_instance] ||
+            !(item.instance in rootConfig.instances[sf.show_if_instance])
+            )
+        ) {
+            return;
+        }
+
+        // Hide empty/null/undefined fields except for instance, count, tag_name
+        if (
+            (typeof item[sf.key] === 'undefined' || item[sf.key] === null || item[sf.key] === '') &&
+            !['instance', 'count', 'tag_name'].includes(sf.key)
+        ) {
+            return;
+        }
+
+        // Fix Season Monitored Threshold: If array, just show the first value
+        let fieldValue = item[sf.key];
+        if (Array.isArray(fieldValue)) fieldValue = fieldValue[0];
+
+        // Instance label: bold and bigger
+        let fieldDiv, labelSpan, valueSpan;
+        if (sf.key === 'instance') {
+          fieldDiv = document.createElement('div');
+          fieldDiv.className = 'settings-entry-row settings-entry-main';
+          labelSpan = document.createElement('span');
+          labelSpan.className = 'settings-label';
+          labelSpan.textContent = sf.label + ': ';
+          valueSpan = document.createElement('span');
+          valueSpan.className = 'settings-value';
+          valueSpan.textContent = fieldValue ?? '';
+          fieldDiv.appendChild(labelSpan);
+          fieldDiv.appendChild(valueSpan);
+        } else {
+          fieldDiv = document.createElement('div');
+          fieldDiv.className = 'settings-entry-row';
+          labelSpan = document.createElement('span');
+          labelSpan.className = 'settings-label';
+          labelSpan.textContent = sf.label + ': ';
+          valueSpan = document.createElement('span');
+          valueSpan.className = 'settings-value';
+          valueSpan.textContent = fieldValue ?? '';
+          fieldDiv.appendChild(labelSpan);
+          fieldDiv.appendChild(valueSpan);
+        }
+        card.appendChild(fieldDiv);
+      });
+
+      // Make card clickable for editing (call shared openEditModal)
+      card.tabIndex = 0;
+      card.setAttribute('role', 'button');
+      card.setAttribute('aria-label', 'Edit entry');
+      card.addEventListener('click', () =>
+        openEditModal(idx, { value, field, config, renderList, subfields, rootConfig })
+      );
+      card.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          openEditModal(idx, { value, field, config, renderList, subfields, rootConfig });
+        }
+      });
+
+      listArea.appendChild(card);
+    });
+
+    listArea.appendChild(createAddCard());
+  }
+
+  function createAddCard() {
+    const addCard = document.createElement('div');
+    addCard.className = 'settings-entry-card settings-add-card';
+    addCard.tabIndex = 0;
+    addCard.setAttribute('role', 'button');
+    addCard.setAttribute('aria-label', `Add ${field.label.replace(/s$/, '')}`);
+    addCard.addEventListener('click', () =>
+      openEditModal(null, { value, field, config, renderList, subfields, rootConfig })
+    );
+    addCard.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openEditModal(null, { value, field, config, renderList, subfields, rootConfig });
+      }
+    });
+
+    const plus = document.createElement('span');
+    plus.className = 'card-add-plus';
+    plus.textContent = '+';
+    addCard.appendChild(plus);
+
+    return addCard;
+  }
+
+  renderList();
+  row.appendChild(inputWrap);
+  return row;
+}
+
+function renderLabelarrCustomField(field, value = [], rootConfig, config) {
+    config = config || arguments[3];
+    value = Array.isArray(config?.[field.key]) ? config[field.key] : Array.isArray(value) ? value : [];
+    const subfields = Array.isArray(field.fields) ? field.fields : [];
+
+    // --- Outer container: settings field row
+    const row = document.createElement('div');
+    row.className = 'settings-field-row';
+
+    // --- Label column
+    const labelCol = document.createElement('div');
+    labelCol.className = 'settings-field-labelcol';
+
+    const label = document.createElement('label');
+    label.textContent = field.label;
+    label.htmlFor = field.key;
+    labelCol.appendChild(label);
+    row.appendChild(labelCol);
+
+    // --- Main content column
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'settings-field-inputwrap';
+
+    if (field.description) {
+        const desc = document.createElement('div');
+        desc.className = 'field-help-text';
+        desc.textContent = field.description;
+        inputWrap.appendChild(desc);
+    }
+
+    // --- Card-list (single column, full width)
+    const listArea = document.createElement('div');
+    listArea.className = 'settings-card-list';
+    inputWrap.appendChild(listArea);
+
+    function humanize(str) {
+        if (!str) return '';
+        return str.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    function renderList() {
+        listArea.innerHTML = '';
+
+        if (!Array.isArray(value) || !value.length) {
+            listArea.appendChild(createAddCard());
+            return;
+        }
+
+        value.forEach((item, idx) => {
+            const card = document.createElement('div');
+            card.className = 'settings-entry-card';
+
+            // --- App Instance ---
+            const appRow = document.createElement('div');
+            appRow.className = 'settings-entry-row settings-entry-main';
+            appRow.innerHTML = `<span class="settings-label">App Instance:</span>
+                                <span class="settings-value">${humanize(item.app_instance || '')}</span>`;
+            card.appendChild(appRow);
+
+            // --- Labels row ---
+            const labelsRow = document.createElement('div');
+            labelsRow.className = 'settings-entry-row';
+            labelsRow.innerHTML = `<span class="settings-label">Labels:</span>
+                                   <span class="settings-value">${Array.isArray(item.labels) ? item.labels.join(', ') : (item.labels || '')}</span>`;
+            card.appendChild(labelsRow);
+
+            // --- Plex libraries block ---
+            if (Array.isArray(item.plex_instances)) {
+                item.plex_instances.forEach((plex, pidx) => {
+                    const plexRow = document.createElement('div');
+                    plexRow.className = 'settings-entry-row settings-plexmap-block';
+
+                    // Label (same class for width alignment)
+                    const plexLabel = document.createElement('span');
+                    plexLabel.className = 'settings-label';
+                    plexLabel.textContent = 'Plex Libraries:';
+                    plexRow.appendChild(plexLabel);
+
+                    // Value wrap (align pill and names as single value field)
+                    const valueWrap = document.createElement('span');
+                    valueWrap.className = 'settings-value';
+
+                    // Pill
+                    const pill = document.createElement('span');
+                    pill.className = 'settings-plex-name plex-pill';
+                    pill.textContent = plex.instance ? humanize(plex.instance) : `Plex ${pidx + 1}`;
+                    valueWrap.appendChild(pill);
+
+                    // Library names (comma-separated, normal font)
+                    const libNames = document.createElement('span');
+                    libNames.className = 'settings-plex-libs';
+                    libNames.textContent = Array.isArray(plex.library_names) ? ' ' + plex.library_names.join(', ') : '';
+                    valueWrap.appendChild(libNames);
+
+                    plexRow.appendChild(valueWrap);
+                    card.appendChild(plexRow);
+                });
+            }
+
+            // Make card clickable for editing
+            card.tabIndex = 0;
+            card.setAttribute('role', 'button');
+            card.setAttribute('aria-label', 'Edit Mapping');
+            card.addEventListener('click', () => openEditModal(idx));
+            card.addEventListener('keydown', e => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openEditModal(idx);
+                }
+            });
+
+            listArea.appendChild(card);
+        });
+
+        // Add “fat plus” card at the end
+        listArea.appendChild(createAddCard());
+    }
+
+    // Add card helper
+    function createAddCard() {
+        const addCard = document.createElement('div');
+        addCard.className = 'settings-entry-card settings-add-card';
+        addCard.tabIndex = 0;
+        addCard.setAttribute('role', 'button');
+        addCard.setAttribute('aria-label', `Add ${field.label.replace(/s$/, '')}`);
+        addCard.addEventListener('click', () => openEditModal(null));
+        addCard.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                openEditModal(null);
+            }
+        });
+
+        const plus = document.createElement('span');
+        plus.className = 'card-add-plus';
+        plus.textContent = '+';
+        addCard.appendChild(plus);
+
+        return addCard;
+    }
+
+    function openEditModal(idx) {
+        const isEdit = typeof idx === 'number';
+        const entry = isEdit ? { ...value[idx] } : {};
+
+        openModal({
+            schema: subfields,
+            entry,
+            title: isEdit
+                ? `Edit ${field.label.replace(/s$/, '')}`
+                : `Add ${field.label.replace(/s$/, '')}`,
+            onSave: newEntry => {
+                if (isEdit) value[idx] = newEntry;
+                else value.push(newEntry);
+                config[field.key] = value.slice();
+                renderList();
+                markDirty();
+            },
+            onDelete: isEdit
+                ? () => {
+                    value.splice(idx, 1);
+                    config[field.key] = value.slice();
+                    renderList();
+                    markDirty();
+                }
+                : null,
+            context: { listInUse: value, editingIdx: isEdit ? idx : null, rootConfig },
+            isEdit,
+        });
+    }
+
+    renderList();
+    row.appendChild(inputWrap);
+    return row;
+}
+
+function renderModalHelperField(field, value, config, rootConfig) {
+    const div = document.createElement('div');
+    div.className = 'field field-modal-helper';
+    div.dataset.helper = field.helper || '';
+    div.dataset.key = field.key || '';
+    const hookDiv = document.createElement('div');
+    hookDiv.className = 'modal-helper-hook';
+    div.appendChild(hookDiv);
+    return div;
+}
+
 
 // -------- FIELD DISPATCHER ----------
 
 export function renderField(field, value, config, rootConfig) {
     switch (field.type) {
         case 'dropdown': return renderDropdownField(field, value, config);
-        case 'slider': return renderSliderField(field, value, config);
         case 'textarea': return renderTextareaField(field, value, config);
         case 'json': return renderJsonField(field, value, config);
         case 'number': return renderNumberField(field, value, config);
@@ -1359,13 +2007,17 @@ export function renderField(field, value, config, rootConfig) {
         case 'dir_list': return renderDirListField(field, value, config);
         case 'dir_list_drag_drop': return renderDirListDragDropField(field, value, config);
         case 'dir_list_options': return renderDirListOptionsField(field, value, config);
-        case 'complex_list': return renderComplexListField(field, value = [], rootConfig, config);
+
         case 'color_list': return renderColorListField(field, value, config);
         case 'instances': return renderInstancesField(field, value, config, rootConfig);
         case 'modal_helper': return renderModalHelperField(field, value, config, rootConfig);
         case "check_box": return renderCheckBoxField(field, value, config);
         case 'instance_dropdown': return renderInstanceDropdownField(field, value, config, rootConfig);
         case 'gdrive_custom': return renderGDriveCustomField(field, value, rootConfig, config);
+        case 'replacerr_custom': return renderReplacerrCustomField(field, value, rootConfig, config);
+        case 'upgradinatorr_custom': return renderUpgradinatorrCustomField(field, value, rootConfig, config);
+        case 'labelarr_custom': return renderLabelarrCustomField(field, value, rootConfig, config);
+
 
         default: return renderTextField(field, value, config);
     }
@@ -1395,6 +2047,7 @@ function openEditModal(idx, { value, field, config, renderList, subfields, rootC
         { id: 'cancel-modal-btn', label: 'Cancel', class: 'btn--remove-item' },
         { id: 'save-modal-btn', label: 'Save', class: 'btn--success' },
     ];
+    
     openModal({
         schema: subfields || field.fields,
         entry,

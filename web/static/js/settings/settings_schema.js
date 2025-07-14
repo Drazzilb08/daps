@@ -13,7 +13,7 @@ export const SETTINGS_SCHEMA = [
         description: "Each entry contains id, location, and name.",
         modal: "openModal",
         fields: [
-          { key: "preset", label: "Gdrive Presets", type: "modal_helper", helper: "populateGDrivePresetsDropdown", description: "Select a preset configuration for Google Drive." },
+          { key: "preset", label: "", type: "modal_helper", helper: "populateGDrivePresetsDropdown", description: "Select a preset configuration for Google Drive." },
           { key: "name", label: "Name", type: "text", required: true, description: "Friendly name for this Google Drive entry." },
           { key: "id", label: "GDrive ID", type: "text", required: true, description: "Unique ID of the Google Drive folder or file." },
           { key: "location", label: "Location", type: "dir", required: true, modal: "directoryPickerModal", description: "Local directory to sync with the specified Google Drive ID." },
@@ -49,20 +49,18 @@ export const SETTINGS_SCHEMA = [
     fields: [
       { key: "log_level", label: "Log Level", type: "dropdown", options: ["debug", "info"], required: true, description: "Set the logging verbosity for border replacerr." },
       { key: "dry_run", label: "Dry Run", type: "check_box", description: "Simulate border replacement without making changes." },
-      { key: "source_dirs", label: "Source Directories", type: "dir_list", modal: "directoryPickerModal", description: "Directories to scan for posters to process." },
-      { key: "destination_dir", label: "Destination Directory", type: "text", modal: "directoryPickerModal", description: "Directory where processed posters are saved." },
       { key: "border_width", label: "Border Width (px)", type: "number", description: "Width of the border to apply to posters, in pixels." },
-      { key: "skip", label: "Skip", type: "check_box", description: "Skip processing for already processed items." },
+      { key: "skip", label: "Skip", type: "check_box", description: "Skip replacing/updating borders for posters until holidays." },
       { key: "exclusion_list", label: "Exclusion List", type: "textarea", description: "List of items to exclude from border replacement." },
-      { key: "border_colors", label: "Border Colors", type: "color_list", description: "List of colors to use for poster borders." },
+      { key: "border_colors", label: "Border Colors", type: "color_list", preview: "true", description: "List of colors to use for poster borders." },
       {
-        key: "holidays", label: "Holidays", type: "complex_list", modal: "openModal",
+        key: "holidays", label: "Holidays", type: "replacerr_custom", modal: "openModal",
         description: "Add holiday color overrides.",
         fields: [
           { key: "preset", label: "Holiday Presets", type: "modal_helper", helper: "loadHolidayPresets", description: "Select a preset for holiday color overrides." },
           { key: "name", label: "Holiday Name", type: "text", required: true, description: "Name of the holiday for color override." },
           { key: "schedule", label: "Schedule", type: "modal_helper", helper: "populateScheduleDropdowns", required: true, description: "Schedule for when the holiday override is active." },
-          { key: "color", label: "Colors", type: "color_list", required: true, description: "Colors to use for the holiday border override." },
+          { key: "color", label: "Colors", type: "color_list", preview: "false", required: true, description: "Colors to use for the holiday border override." },
         ],
       },
     ],
@@ -74,7 +72,7 @@ export const SETTINGS_SCHEMA = [
       { key: "log_level", label: "Log Level", type: "dropdown", options: ["debug", "info"], required: true, description: "Set the logging verbosity for upgradinatorr." },
       { key: "dry_run", label: "Dry Run", type: "check_box", description: "Simulate upgrade actions without making changes." },
       {
-        key: "instances_list", label: "Instances List", type: "complex_list", modal: "openModal",
+        key: "instances_list", label: "Instances List", type: "upgradinatorr_custom", modal: "openModal",
         description: "List of instance configs.",
         fields: [
           { key: "instance", label: "Instance", type: "instance_dropdown", from: ["radarr", "sonarr"], required: true, description: "Select the instance to upgrade (Radarr or Sonarr)." },
@@ -124,7 +122,7 @@ export const SETTINGS_SCHEMA = [
       { key: "log_level", label: "Log Level", type: "dropdown", options: ["debug", "info"], required: true, description: "Set the logging verbosity for labelarr." },
       { key: "dry_run", label: "Dry Run", type: "check_box", description: "Simulate label management actions without making changes." },
       {
-        key: "mappings", label: "Mappings", type: "complex_list", modal: "openModal",
+        key: "mappings", label: "Mappings", type: "labelarr_custom", modal: "openModal",
         description: "Mappings of app_type, app_instance, labels, plex_instances.",
         fields: [
           { key: "app_type", label: "App Type", type: "dropdown", options: ["radarr", "sonarr"], required: true, description: "Select the application type for this mapping." },

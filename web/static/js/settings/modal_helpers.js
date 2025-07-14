@@ -58,7 +58,40 @@ const months = [
         { value: "12", label: "December", days: 31 }
     ];
 
-export function populateScheduleDropdowns(modalContent) {
+async function gdrivePresets() {
+    if (_gdrivePresetsCache) return _gdrivePresetsCache; // use cache
+    try {
+        const response = await fetch(
+            'https://raw.githubusercontent.com/Drazzilb08/daps-gdrive-presets/main/presets.json'
+        );
+        if (!response.ok) throw new Error('Failed to fetch GDrive presets');
+        const data = await response.json();
+
+        _gdrivePresetsCache = Array.isArray(data)
+            ? data
+            : Object.entries(data).map(([name, value]) =>
+                  typeof value === 'object'
+                      ? {
+                            name,
+                            ...value,
+                        }
+                      : {
+                            name,
+                            id: value,
+                        }
+              );
+    } catch (err) {
+        console.error('Error loading GDrive presets:', err);
+        _gdrivePresetsCache = [];
+    }
+    return _gdrivePresetsCache;
+}
+
+
+export function populateScheduleDropdowns(
+    modalContent,
+    field = null
+)  {
     // Find the .modal-helper-hook in the "Schedule" field
     const scheduleHelperDiv = modalContent.querySelector('[data-key="schedule"] .modal-helper-hook');
     if (!scheduleHelperDiv) return;
@@ -105,27 +138,47 @@ export function populateScheduleDropdowns(modalContent) {
     updateDays(fromMonth, fromDay);
     updateDays(toMonth, toDay);
 
-    // Layout
+    // Create modal/settings styled row for the dropdowns
+    const row = document.createElement('div');
+    row.className = 'settings-field-row modal-field-row';
+
+    // Label column
+    const labelCol = document.createElement('div');
+    labelCol.className = 'settings-field-labelcol modal-field-labelcol';
+    const label = document.createElement('label');
+    label.setAttribute('for', 'schedule-from-month');
+    label.textContent = field.label || 'Schedule';
+    labelCol.appendChild(label);
+    row.appendChild(labelCol);
+
+    // Input column
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'settings-field-inputwrap modal-field-inputwrap';
+
+    // Range inner div (for selects)
     const rangeDiv = document.createElement('div');
     rangeDiv.className = 'schedule-range';
     rangeDiv.appendChild(fromMonth);
     rangeDiv.appendChild(fromDay);
-
     const toLabel = document.createElement('span');
     toLabel.className = 'schedule-to-label';
     toLabel.textContent = 'To';
     rangeDiv.appendChild(toLabel);
-
     rangeDiv.appendChild(toMonth);
     rangeDiv.appendChild(toDay);
 
-    scheduleHelperDiv.appendChild(rangeDiv);
+    inputWrap.appendChild(rangeDiv);
+    row.appendChild(inputWrap);
+
+    // Replace the old helper div with our new, classed row
+    scheduleHelperDiv.parentNode.replaceChild(row, scheduleHelperDiv);
 }
 
 export function loadHolidayPresets(
     modalContent,
+    field = null,
     holidaysInUse = [],
-    editingIdx = null
+    editingIdx = null,
 ) {
     const presetHelperDiv = modalContent.querySelector('[data-key="preset"] .modal-helper-hook');
     if (!presetHelperDiv) return;
@@ -135,9 +188,28 @@ export function loadHolidayPresets(
         ? holidaysInUse.filter((entry, i) => i !== editingIdx).map(entry => entry.name)
         : [];
 
+    // Build the row container
+    const row = document.createElement('div');
+    row.className = 'settings-field-row modal-field-row';
+
+    // Label column
+    const labelCol = document.createElement('div');
+    labelCol.className = 'settings-field-labelcol modal-field-labelcol';
+    const label = document.createElement('label');
+    label.textContent = field.label || 'Preset';
+    label.setAttribute('for', 'holiday-preset');
+    labelCol.appendChild(label);
+    row.appendChild(labelCol);
+
+    // Input column
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'settings-field-inputwrap modal-field-inputwrap';
+
+    // The select itself
     const select = document.createElement('select');
     select.id = 'holiday-preset';
     select.className = 'select';
+
     select.innerHTML =
         '<option value="">Select preset...</option>' +
         Object.keys(holidayPresets || {})
@@ -147,7 +219,14 @@ export function loadHolidayPresets(
                 }>${label}${usedNames.includes(label) ? ' (Already Added)' : ''}</option>`
             )
             .join('');
-    presetHelperDiv.appendChild(select);
+
+    inputWrap.appendChild(select);
+    row.appendChild(inputWrap);
+
+    // Replace the old helper div with our new, classed row
+    presetHelperDiv.parentNode.replaceChild(row, presetHelperDiv);
+
+    // Set current value if editing
     const currentName = (editingIdx !== null && holidaysInUse[editingIdx] && holidaysInUse[editingIdx].name)
         ? holidaysInUse[editingIdx].name
         : null;
@@ -195,7 +274,7 @@ export function loadHolidayPresets(
             colorContainer.innerHTML = '';
             (preset.colors || []).forEach((color) => {
                 const swatch = document.createElement('div');
-                swatch.className = 'color-list-swatch';
+                swatch.className = 'color-picker-swatch';
                 swatch.innerHTML = `
                     <input type="color" value="${color}" />
                     <button type="button" class="btn btn--cancel btn--remove-item remove-btn">−</button>
@@ -212,11 +291,25 @@ export async function populateGDrivePresetsDropdown(
     gdriveSyncData = [],
     editingIdx = null
 ) {
+    // Find the hook div for the preset field
     const presetHelperDiv = modalContent.querySelector('[data-key="preset"] .modal-helper-hook');
     if (!presetHelperDiv) return;
 
-    presetHelperDiv.innerHTML = '';
+    // Build row container (mimics settings-field-row, modal flavor)
+    const row = document.createElement('div');
+    row.className = 'settings-field-row modal-field-row';
 
+    // Label col
+    const labelCol = document.createElement('div');
+    labelCol.className = 'settings-field-labelcol modal-field-labelcol';
+    labelCol.innerHTML = `<label for="gdrive-sync-preset">Gdrive Presets</label>`;
+    row.appendChild(labelCol);
+
+    // Input/Helper col
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'settings-field-inputwrap modal-field-inputwrap';
+
+    // Select and details
     const select = document.createElement('select');
     select.id = 'gdrive-sync-preset';
     select.className = 'select gdrive-preset-select';
@@ -225,10 +318,15 @@ export async function populateGDrivePresetsDropdown(
     detailDiv.id = 'gdrive-preset-detail';
     detailDiv.className = 'gdrive-preset-detail';
 
-    presetHelperDiv.appendChild(select);
-    presetHelperDiv.appendChild(detailDiv);
+    // Append select and detail to inputWrap
+    inputWrap.appendChild(select);
+    inputWrap.appendChild(detailDiv);
+    row.appendChild(inputWrap);
 
-    // Load options
+    // Replace the hook with our new row
+    presetHelperDiv.parentNode.replaceChild(row, presetHelperDiv);
+
+    // Fetch preset options
     const entries = await gdrivePresets();
     const idsInUse = Array.isArray(gdriveSyncData)
         ? gdriveSyncData.filter((entry, i) => i !== editingIdx).map((entry) => String(entry.id))
@@ -244,6 +342,7 @@ export async function populateGDrivePresetsDropdown(
                     }>${drive.name}${idsInUse.includes(String(drive.id)) ? ' (Already Added)' : ''}</option>`
             )
             .join('');
+
     const currentId = (editingIdx !== null && gdriveSyncData[editingIdx] && gdriveSyncData[editingIdx].id)
         ? String(gdriveSyncData[editingIdx].id)
         : null;
@@ -251,7 +350,7 @@ export async function populateGDrivePresetsDropdown(
         select.value = currentId;
     }
 
-    // Select2 logic (if present)
+    // Optional: initialize Select2 if available
     setTimeout(function () {
         if (typeof $ !== 'undefined' && $(select).data('select2')) {
             $(select).select2('destroy');
@@ -259,7 +358,7 @@ export async function populateGDrivePresetsDropdown(
         if (typeof $ !== 'undefined' && $(select).select2) {
             $(select).select2({
                 placeholder: 'Select a GDrive preset',
-                allowClear: true,
+                allowClear: false,
                 width: '100%',
                 dropdownParent: $(select).closest('.modal-content'),
                 language: {
@@ -276,34 +375,35 @@ export async function populateGDrivePresetsDropdown(
         }
     }, 0);
 
-    // Update entry fields on preset select
+    // When the user selects a preset, populate the fields and show metadata
     function updatePresetDetail() {
         const id = select.value;
         const drive = entries.find((d) => String(d.id) === String(id));
         if (id && drive) {
             // Fill corresponding fields in the modal if present
-        const idInput = modalContent.querySelector('input[name="id"]');
-        if (idInput) {
-            idInput.value = drive.id ?? '';
-            // PATCH: update entry object if possible
-            if (idInput.name && modalContent.entry) modalContent.entry[idInput.name] = drive.id ?? '';
-            idInput.dispatchEvent(new Event('input', { bubbles: true }));
-        }
+            const idInput = modalContent.querySelector('input[name="id"]');
+            if (idInput) {
+                idInput.value = drive.id ?? '';
+                // PATCH: update entry object if possible
+                if (idInput.name && modalContent.entry) modalContent.entry[idInput.name] = drive.id ?? '';
+                idInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
 
-        const nameInput = modalContent.querySelector('input[name="name"]');
-        if (nameInput) {
-            nameInput.value = drive.name ?? '';
-            if (nameInput.name && modalContent.entry) modalContent.entry[nameInput.name] = drive.name ?? '';
-            nameInput.dispatchEvent(new Event('input', { bubbles: true }));
-        }
+            const nameInput = modalContent.querySelector('input[name="name"]');
+            if (nameInput) {
+                nameInput.value = drive.name ?? '';
+                if (nameInput.name && modalContent.entry) modalContent.entry[nameInput.name] = drive.name ?? '';
+                nameInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
 
-        const locInput = modalContent.querySelector('input[name="location"]');
-        if (locInput) {
-            locInput.value = drive.location ?? '';
-            if (locInput.name && modalContent.entry) modalContent.entry[locInput.name] = drive.location ?? '';
-            locInput.dispatchEvent(new Event('input', { bubbles: true }));
-        }
-            // Details panel
+            const locInput = modalContent.querySelector('input[name="location"]');
+            if (locInput && drive.location) {
+                // Only update location if user selects a preset AND that preset has a location field!
+                locInput.value = drive.location;
+                if (locInput.name && modalContent.entry) modalContent.entry[locInput.name] = drive.location;
+                locInput.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            // Build detail/meta panel
             if (detailDiv) {
                 let metaLines = '';
                 if ('type' in drive) {
@@ -333,36 +433,6 @@ export async function populateGDrivePresetsDropdown(
             detailDiv.innerHTML = '';
         }
     }
-
     select.onchange = updatePresetDetail;
     updatePresetDetail();
-}
-
-async function gdrivePresets() {
-    if (_gdrivePresetsCache) return _gdrivePresetsCache; // use cache
-    try {
-        const response = await fetch(
-            'https://raw.githubusercontent.com/Drazzilb08/daps-gdrive-presets/main/presets.json'
-        );
-        if (!response.ok) throw new Error('Failed to fetch GDrive presets');
-        const data = await response.json();
-
-        _gdrivePresetsCache = Array.isArray(data)
-            ? data
-            : Object.entries(data).map(([name, value]) =>
-                  typeof value === 'object'
-                      ? {
-                            name,
-                            ...value,
-                        }
-                      : {
-                            name,
-                            id: value,
-                        }
-              );
-    } catch (err) {
-        console.error('Error loading GDrive presets:', err);
-        _gdrivePresetsCache = [];
-    }
-    return _gdrivePresetsCache;
 }

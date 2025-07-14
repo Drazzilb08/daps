@@ -4,6 +4,7 @@ import { loadLogs } from './logs.js';
 import { loadNotifications } from './notifications.js';
 import { initPosterSearch } from './poster_search.js';
 import { loadSettings, renderSettingsSplash, handleSettingsNavigation } from './settings/settings.js';
+import { showSplashScreen } from './index.js';
 
 
 const PAGE_LOADERS = {
@@ -17,6 +18,7 @@ const PAGE_LOADERS = {
 
 // --- HIGHLIGHT ACTIVE NAV LINK AND HANDLE SUBMENUS ---
 function highlightNav(frag, url) {
+    
     // Remove all highlights and section classes
     document
         .querySelectorAll(
@@ -55,6 +57,8 @@ function highlightNav(frag, url) {
 
     // Determine if we are on a settings splash or a module page
     const moduleParam = new URL(url, location.origin).searchParams.get('module_name');
+    
+
     if (isSettings) {
         if (!moduleParam) {
             // On splash page – highlight parent only
@@ -72,42 +76,80 @@ function highlightNav(frag, url) {
 }
 
 // --- MAIN PAGE NAVIGATION HANDLER ---
-async function navigateTo(link) {
-    // Always close sidebar when navigating (important for mobile)
-    document.body.classList.remove('sidebar-open');
-
-    // Close any open dropdowns
-    document.querySelectorAll('.dropdown').forEach((d) => d.classList.remove('open'));
-
+async function navigateTo(link, {pushState = true} = {}) {
+    
     const viewFrame = document.getElementById('viewFrame');
-    if (!viewFrame) return;
+    if (!viewFrame) {
+        console.error("viewFrame not found");
+        return;
+    }
+    viewFrame.style.opacity = "0";
+
+    // --- Close sidebar and dropdowns for navigation (important for mobile) ---
+    document.body.classList.remove('sidebar-open');
+    document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('open'));
+
     viewFrame.classList.remove('fade-in');
+    viewFrame.classList.remove('splash-mask', 'fade-in');
+    const splashCard = viewFrame.querySelector('.splash-card');
+    if (splashCard) splashCard.remove();
     viewFrame.classList.add('fade-out');
     viewFrame.classList.remove('splash-mask');
-    let url = typeof link === 'string' ? link : link.href;
 
+    // --- Normalize the URL string ---
+    let url = typeof link === 'string' ? link : (link && link.href ? link.href : location.pathname + location.search);
+    if (!url.startsWith("/")) url = new URL(url, location.origin).pathname + location.search;
+
+    // --- Extract fragment (e.g., "instances" from "/pages/instances") ---
     let frag = '';
-    if (/\/pages\/([a-zA-Z0-9_\-]+)/.test(url)) {
-        frag = url.match(/\/pages\/([a-zA-Z0-9_\-]+)/)[1];
-    } else if (/\/([a-zA-Z0-9_\-]+)$/.test(url)) {
-        frag = url.match(/\/([a-zA-Z0-9_\-]+)$/)[1];
+    const match = url.match(/\/pages\/([a-zA-Z0-9_\-]+)/);
+    if (match) {
+        frag = match[1];
+    } else {
+        const matchAlt = url.match(/\/([a-zA-Z0-9_\-]+)$/);
+        if (matchAlt) frag = matchAlt[1];
     }
     frag = frag.replace(/-/g, '_').replace(/\.html$/, '');
 
+    // --- Highlight sidebar nav and store current URL for reference ---
     if (viewFrame) viewFrame.dataset.currentUrl = url;
-
     highlightNav(frag, url);
 
+    // --- Only pushState for direct navigation, NOT for reload/initial load ---
+    
+    if (pushState && location.pathname + location.search !== url) {
+        history.pushState({}, '', url);
+    }
+
     try {
-        const response = await fetch(url);
+        const fragmentName = frag;
+        
+
+        // --- Fetch fragment HTML from backend ---
+        const response = await fetch(`/api/page-fragment?name=${encodeURIComponent(fragmentName)}`);
+        if (!response.ok) {
+            const msg = `Failed to load fragment: ${fragmentName} (${response.status})`;
+            if (typeof DAPS?.showToast === 'function') DAPS.showToast(msg, 'error');
+            viewFrame.innerHTML = `<div class="error-msg">${msg}</div>`;
+            viewFrame.style.opacity = "1";
+            viewFrame.classList.remove('fade-out');
+            viewFrame.classList.add('fade-in');
+            return;
+        }
         const html = await response.text();
+
+        // --- Parse HTML fragment (remove <script> tags just in case) ---
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
         let bodyContent = doc.body ? doc.body.innerHTML : html;
-        bodyContent = bodyContent.replace(/<script[^>]*>/g, '').replace(/<\/script>/g, '');
+        bodyContent = bodyContent.replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '');
 
+        // --- Inject fragment content and run page loader if available ---
         setTimeout(async () => {
             viewFrame.innerHTML = bodyContent;
+            setTimeout(() => {
+                viewFrame.style.opacity = "1";
+            }, 30);
             document.body.classList.remove('logs-open');
             viewFrame.classList.remove('fade-out');
             viewFrame.classList.add('fade-in');
@@ -117,10 +159,8 @@ async function navigateTo(link) {
                     const params = new URLSearchParams(url.split('?')[1] || '');
                     const moduleName = params.get('module_name');
                     if (moduleName) {
-                        // Show the settings form for the module
                         await loadSettings(moduleName);
                     } else {
-                        // Show splash, hide form
                         renderSettingsSplash();
                     }
                 } else {
@@ -133,7 +173,12 @@ async function navigateTo(link) {
         }, 200);
     } catch (err) {
         if (typeof DAPS?.showToast === 'function') DAPS.showToast('Failed to load page', 'error');
-        console.error(err);
+        console.error("[navigateTo] Error loading fragment:", err);
+        viewFrame.innerHTML = `<div class="error-msg">Failed to load page fragment.</div>`;
+        viewFrame.style.opacity = "1";
+        
+        viewFrame.classList.remove('fade-out');
+        viewFrame.classList.add('fade-in');
     }
 }
 
@@ -183,7 +228,11 @@ function setupDropdownMenus() {
 document.addEventListener('DOMContentLoaded', async () => {
     setupDropdownMenus();
 
+    // Always use the full path (with query string) for everything
     let path = location.pathname + location.search;
+    
+
+    // -- Extract fragment for main highlight --
     let frag = '';
     if (/\/pages\/([a-zA-Z0-9_\-]+)/.test(path)) {
         frag = path.match(/\/pages\/([a-zA-Z0-9_\-]+)/)[1];
@@ -191,7 +240,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         frag = path.match(/\/([a-zA-Z0-9_\-]+)$/)[1];
     }
     frag = frag.replace(/-/g, '_').replace(/\.html$/, '');
+
+    // -- Always highlight nav with full path --
     highlightNav(frag, path);
+
+    if (path !== "/" && !path.startsWith("/api") && !path.startsWith("/web/static")) {
+        await navigateTo(path);
+    } else {
+        if (typeof showSplashScreen === 'function') {
+            showSplashScreen();
+            const viewFrame = document.getElementById('viewFrame');
+            if (viewFrame) viewFrame.style.opacity = "1";
+        }
+    }
 
     document.addEventListener('click', async (e) => {
         // Handle sidebar/top-menu AND settings splash links
@@ -205,6 +266,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             const params = new URL(link.href, location.origin).searchParams;
             const moduleName = params.get('module_name');
             if (moduleName) {
+                // Always update the address bar with the real URL
+                history.pushState({}, '', `/pages/settings?module_name=${moduleName}`);
                 await handleSettingsNavigation(moduleName);
                 // --- Highlight after settings nav ---
                 highlightNav('settings', link.href);
@@ -213,6 +276,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
 
         // All other navigation
+            history.pushState({}, '', link.href);
         navigateTo(link.href);
     });
 

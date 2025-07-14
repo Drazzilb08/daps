@@ -1,7 +1,7 @@
 from typing import Any
 from pathlib import Path
 from fastapi import FastAPI, APIRouter, Depends, Request, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse
+from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from util.version import get_version
@@ -42,27 +42,6 @@ app.mount(
     StaticFiles(directory=Path(__file__).parents[1] / "static"),
     name="static",
 )
-
-@app.get("/", response_class=HTMLResponse)
-async def root():
-    """Serves the main index.html page."""
-    html_path = Path(__file__).parents[1] / "templates" / "index.html"
-    try:
-        return HTMLResponse(content=html_path.read_text(), status_code=200)
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
-
-@app.get("/pages/{fragment_name}", response_class=HTMLResponse)
-async def serve_fragment(fragment_name: str, logger: Any = Depends(get_logger)):
-    """Serves a named HTML fragment from the fragments directory."""
-    html_path = Path(__file__).parents[1] / "templates" / "pages" / f"{fragment_name}.html"
-    if not html_path.exists():
-        raise HTTPException(status_code=404, detail="Fragment not found")
-    try:
-        return HTMLResponse(content=html_path.read_text(), status_code=200)
-    except Exception as e:
-        logger.error(f"[WEB] Error serving fragment {fragment_name}: {e}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
 
 # ==== Misc Utility Endpoints ====
 @app.get("/api/version")
@@ -133,3 +112,36 @@ async def run_cleanarr(logger: Any = Depends(get_logger)):
 @app.put("/api/media_add/")
 async def media_add(logger: Any = Depends(get_logger)):
     pass
+
+@app.get("/api/page-fragment", response_class=HTMLResponse)
+async def get_page_fragment(name: str, logger: Any = Depends(get_logger)):
+    html_path = Path(__file__).parents[1] / "templates" / "pages" / f"{name}.html"
+    if not html_path.exists():
+        raise HTTPException(status_code=404, detail=f"Fragment not found at {html_path}")
+    try:
+        return HTMLResponse(content=html_path.read_text(), status_code=200)
+    except Exception as e:
+        logger.error(f"[WEB] Error serving fragment {name}: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+    
+
+@app.get("/", response_class=HTMLResponse)
+async def root():
+    """Serves the main index.html page."""
+    html_path = Path(__file__).parents[1] / "templates" / "index.html"
+    try:
+        return HTMLResponse(content=html_path.read_text(), status_code=200)
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+@app.get("/{full_path:path}", response_class=HTMLResponse)
+async def serve_spa(full_path: str):
+    if (
+        full_path.startswith("api/")
+        or full_path == "api"
+        or full_path.startswith("web/static/")
+        or full_path == "web/static"
+    ):
+        raise HTTPException(status_code=404, detail="Not Found")
+    index_path = Path(__file__).parents[1] / "templates" / "index.html"
+    return FileResponse(index_path)

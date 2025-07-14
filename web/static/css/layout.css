@@ -93,6 +93,14 @@ body {
     background: var(--bg);
     box-sizing: border-box;
     padding-bottom: 0;
+    opacity: 1;
+    transition: opacity 0.24s cubic-bezier(.4,0,.2,1);
+    will-change: opacity;
+}
+
+.view-frame.fading-out {
+    opacity: 0;
+    pointer-events: none;
 }
 
 .view-frame.splash-mask {

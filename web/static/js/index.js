@@ -127,7 +127,7 @@ export function setTheme() {
         });
 }
 
-function showSplashScreen() {
+export function showSplashScreen() {
     const viewFrame = document.getElementById('viewFrame');
     if (!viewFrame) return;
     viewFrame.innerHTML = `
@@ -164,3 +164,4 @@ function showSplashScreen() {
 setTheme();
 mainVersionCheck();
 showSplashScreen();
+

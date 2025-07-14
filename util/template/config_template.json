@@ -95,9 +95,11 @@
     "dry_run": false,
     "source_dirs": []
   },
-  "main": {
+  "user_interface": {
+    "theme": "dark"
+  },
+  "general": {
     "log_level": "info",
-    "theme": "dark",
     "update_notifications": false
   }
 }

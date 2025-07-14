@@ -161,7 +161,7 @@ class DapsOrchestrator:
             if args.modules:
                 self.run_cli_modules(args.modules)
             else:
-                self._log("info", "[MAIN] Starting DAPS...")
+                self._log("info", "[GENERAL] Starting DAPS...")
                 self._start_web_thread()
                 self.run_schedule()
         except Exception as e:
@@ -242,14 +242,11 @@ class DapsOrchestrator:
 
     def _start_web_thread(self):
         try:
-            import threading
 
             from web.server import start_web_server
 
-            web_thread = threading.Thread(
-                target=start_web_server, args=(self.logger, self), daemon=True
-            )
-            web_thread.start()
+            start_web_server(self.logger, orchestrator=self)
+            
             self._log("info", "[ORCH] Web server started in background thread.")
         except Exception as e:
             self._log("error", f"[ORCH] Failed to start web server: {e}", exc_info=True)

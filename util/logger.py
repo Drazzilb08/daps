@@ -46,7 +46,7 @@ class Logger:
         file_handler.setFormatter(formatter)
         self._logger.addHandler(file_handler)
 
-        if module_name == "main" or os.environ.get("LOG_TO_CONSOLE", "").lower() in (
+        if module_name == "general" or os.environ.get("LOG_TO_CONSOLE", "").lower() in (
             "1",
             "true",
             "yes",

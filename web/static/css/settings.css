@@ -40,8 +40,7 @@
   transition: border-color 0.18s, box-shadow 0.16s, background 0.16s;
   cursor: pointer;
 }
-.settings-section-link:hover,
-.settings-section-link:focus {
+.settings-section-link:hover{
   border-color: var(--accent);
   background: var(--surface-alt);
   box-shadow: 0 4px 20px rgba(62,123,250,0.08);
@@ -302,6 +301,7 @@
 .settings-field-labelcol .btn {
   margin-top: 0.5em;
   align-self: flex-end; /* keeps buttons aligned with label */
+
 }
 
 .settings-field-inputwrap {
@@ -312,12 +312,358 @@
   flex-direction: column;
   gap: 0.15em;
   box-sizing: border-box;
-  align-items: flex-start;
+  align-items: stretch;
+  
 }
 .settings-fields-list {
-  max-width: 80%;
+  max-width: 950px;
+  width: 100%;
+  align-items: stretch;
   margin-left: auto;
   margin-right: auto;
   padding: 0 32px;
   box-sizing: border-box;
+}
+
+.settings-field-row.field-dir.field-dragdrop {
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+}
+
+.settings-field-labelcol.dirlist-label-col {
+  min-width: 160px;
+  max-width: 260px;
+  flex: 0 0 210px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  padding-right: 20px;
+}
+
+.settings-field-labelcol.dirlist-label-col label {
+  text-align: right;
+  width: 100%;
+  font-weight: 500;
+  color: var(--primary);
+  padding-top: 0.21em;
+  line-height: 1.3;
+}
+
+.settings-field-labelcol.dirlist-label-col .btn.add-btn {
+  margin-top: 0.5em;
+  align-self: flex-end;
+}
+
+.settings-field-inputwrap.dirlist-input-col {
+  flex: 1 1 320px;
+  min-width: 220px;
+  max-width: 70%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+}
+
+.field-dragdrop-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  width: 100%;
+}
+
+.drag-handle {
+  cursor: grab;
+  user-select: none;
+  font-size: 1.2em;
+  color: var(--muted);
+}
+
+.input.field-input {
+  flex: 1;
+}
+
+.btn--remove-item.remove-btn {
+  max-width: 30px;
+  max-height: 30px;
+  padding: 0.25rem 0.5rem;
+}
+
+.field-help-text {
+  color: var(--muted);
+  font-size: 0.97rem;
+  margin-top: 0.2em;
+  margin-bottom: 0.05em;
+  line-height: 1.45;
+  letter-spacing: 0.01em;
+}
+
+/***** INSTANCES FIELD STYLE POLISH *****/
+
+
+/* Plex instance block styling */
+.plex-instance-block {
+  background-color: var(--surface);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 6px 24px 0 var(--primary-fade, #11192813);
+  transition: box-shadow 0.18s, border 0.18s, background 0.2s;
+
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 64px;
+}
+.plex-library-pill {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem 1.1rem;
+}
+
+/* Each library item styled as a pill */
+.plex-library-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.7em;
+  padding: 0.48em 1.1em;
+  background: var(--surface-alt);
+  border: 1px solid rgba(0, 0, 0, 0.22);;
+  border-radius: 0px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--fg);
+  cursor: pointer;
+  margin-bottom: 0.45rem;
+  transition: border-color 0.18s, background 0.2s, box-shadow 0.18s;
+  user-select: none;
+  min-width: 0;
+  min-height: 2.2em;
+}
+.plex-library-pill:hover {
+  border-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(40, 64, 96, 0.08);
+}
+
+/* Checkbox inside each library pill */
+.plex-library-pill input[type="checkbox"] {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
+  max-width: 18px !important;
+  max-height: 18px !important;
+  border-radius: 2px !important;
+  box-shadow: none !important;
+  background: #fff !important;
+  border: 2px solid var(--divider, #ccc) !important;
+  transition: border-color 0.18s, background 0.2s !important;
+  margin: 0 16px 0 0 !important;
+}
+
+.plex-library-pill input[type="checkbox"]:hover,
+.plex-library-pill input[type="checkbox"]:focus {
+  box-shadow: none !important;
+  border-color: none !important;
+  background: #fff !important;
+}
+
+.plex-library-pill input[type="checkbox"]:checked {
+  color: var(--text-color);
+  background: var(--primary) !important;
+  box-shadow: none !important;
+}
+
+.instances-multicol {
+  display: flex;
+  gap: 2.2rem;  /* You can adjust the gap as needed */
+  align-items: stretch;
+  width: 100%;
+  margin-bottom: 2.2rem; /* space below the row of cards */
+}
+
+.instance-type-col {
+  flex: 1 1 0;
+  min-width: 0;
+  background: var(--surface);
+  border-radius: 16px;
+  box-shadow: 0 6px 24px 0 var(--primary-fade, #11192813);
+  padding: 1.2rem 1.2rem 1.3rem 1.2rem;
+  margin: 0; /* let the parent flexbox handle gap */
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  min-height: 120px;
+  height: auto;  
+}
+
+.instance-type-label {
+  font-weight: 700;
+  font-size: 1.35rem;
+  margin-bottom: 1.1rem;
+  color: var(--primary);
+  letter-spacing: 0.01em;
+}
+
+
+
+/* --- Plex Instance Header Modernization --- */
+.plex-instance-header {
+  display: flex;
+  align-items: center;
+  gap: 1.1rem;
+  width: 100%;
+  min-height: 40px;
+  padding-bottom: 0.1rem;
+  position: relative;
+}
+
+.plex-instance-header input[type="checkbox"] {
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--divider, #bbb);
+  border-radius: 6px;
+  background: #fff;
+  transition: border-color 0.19s, background 0.19s, box-shadow 0.15s;
+  margin-right: 0.5rem;
+  cursor: pointer;
+  display: inline-block;
+  position: relative;
+  vertical-align: middle;
+  outline: none;
+}
+.plex-instance-header input[type="checkbox"]:checked {
+  border-color: var(--accent);
+  background: var(--accent);
+}
+.plex-instance-header input[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 10px;
+  height: 6px;
+  border-left: 2.2px solid #fff;
+  border-bottom: 2.2px solid #fff;
+  transform: translate(-50%, -50%) scale(0.3) rotate(-45deg);
+  opacity: 0;
+  transition: opacity 0.18s, transform 0.24s;
+  pointer-events: none;
+}
+.plex-instance-header input[type="checkbox"]:checked::after {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1) rotate(-45deg);
+}
+
+.plex-instance-header label {
+  font-size: 1.11rem;
+  font-weight: 600;
+  color: var(--primary);
+  margin: 0 0.8rem 0 0;
+  padding: 0;
+  cursor: pointer;
+  user-select: text;
+  display: inline-block;
+}
+
+.add-posters-label {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+
+
+  color: var(--muted);
+  gap: 0.4em;
+}
+
+.add-posters-checkbox {
+  accent-color: var(--accent);
+  width: 19px;
+  height: 19px;
+  margin-left: 0.41em;
+}
+
+/* --- Plex Animated Checkbox --- */
+.plex-checkbox-container {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  user-select: none;
+  height: 24px;
+  width: 24px;
+  margin-right: 0.8em;
+}
+.plex-checkbox-container input {
+  display: none;
+}
+.plex-checkbox-container svg {
+  overflow: visible;
+  display: block;
+}
+.plex-checkbox-path {
+  fill: none;
+  stroke: var(--accent, #3183e2);
+  stroke-width: 6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke-dasharray 0.5s cubic-bezier(.58,1.47,.63,1.06), stroke-dashoffset 0.5s cubic-bezier(.58,1.47,.63,1.06);
+  stroke-dasharray: 241 9999999;
+  stroke-dashoffset: 0;
+  filter: drop-shadow(0 2px 7px rgba(34,34,34,0.11));
+}
+.plex-checkbox-container.checked .plex-checkbox-path {
+  stroke-dasharray: 70.5 9999999;
+  stroke-dashoffset: -262.27;
+  stroke: var(--accent, #3183e2);
+}
+
+/* --- Smooth open/close animation for Plex library list --- */
+
+.plex-library-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.8rem 1.1rem;
+}
+
+.plex-library-list {
+  max-height: 0;
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+  transition:
+    max-height 0.38s cubic-bezier(.46,.03,.52,.96),
+    opacity 0.24s cubic-bezier(.53,.15,.45,.96);
+  will-change: max-height, opacity;
+}
+
+.plex-library-list.expanded {
+  max-height: 600px;
+  opacity: 1;
+  pointer-events: auto;
+  transition:
+    max-height 0.51s cubic-bezier(.46,.03,.52,.96),
+    opacity 0.23s cubic-bezier(.53,.15,.45,.96);
+}
+
+
+.add-posters-text-btn {
+  border: none;
+  background: var(--surface-alt);
+  color: var(--primary);
+  border-radius: 4px;
+  padding: 0.35em 1.25em;
+  font-size: 1.01rem;
+  font-weight: 600;
+  margin-left: auto;
+  transition: background 0.18s, color 0.18s;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(30,34,50,0.05);
+  outline: none;
+}
+.add-posters-text-btn[aria-pressed="true"] {
+  background: var(--accent);
+  color: #fff;
+}
+.add-posters-text-btn:focus {
+  /* outline: 2px solid var(--accent); */
+  outline-offset: 1.5px;
 }

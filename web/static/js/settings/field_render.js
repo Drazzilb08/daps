@@ -136,20 +136,30 @@ function renderDropdownField(field, value, config) {
 }
 
 function renderDirField(field, value, config) {
-    const div = document.createElement('div');
-    div.className = 'settings-field-row field-dir';
+    const row = document.createElement('div');
+    row.className = 'settings-field-row field-dir';
+
+    // LABEL COLUMN
+    const labelCol = document.createElement('div');
+    labelCol.className = 'settings-field-labelcol';
 
     const label = document.createElement('label');
     label.textContent = field.label;
-    div.appendChild(label);
+    label.htmlFor = field.key;
+    labelCol.appendChild(label);
+    row.appendChild(labelCol);
+
+    // INPUT COLUMN
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'settings-field-inputwrap';
 
     const input = document.createElement('input');
     input.type = 'text';
     input.className = 'input dir-input';
     input.name = field.key;
+    input.id = field.key;
     input.value = value ?? '';
     input.readOnly = !!field.modal;
-    
     if (field.modal && typeof Modals[field.modal] === 'function') {
         input.addEventListener('click', () => Modals[field.modal](input, config));
     }
@@ -158,16 +168,21 @@ function renderDirField(field, value, config) {
             config[field.key] = input.value;
         });
     }
-    div.appendChild(input);
+    inputWrap.appendChild(input);
 
-    return div;
+    if (field.description) {
+        const help = document.createElement('div');
+        help.className = 'field-help-text';
+        help.textContent = field.description;
+        inputWrap.appendChild(help);
+    }
+
+    row.appendChild(inputWrap);
+    return row;
 }
 
 function renderInstancesField(field, value = [], config, rootConfig) {
-    const div = document.createElement('div');
-    div.className = 'field field-instances';
-
-    // 
+    // Defensive clone for state
     value = (
         Array.isArray(value) &&
         value.length &&
@@ -179,12 +194,38 @@ function renderInstancesField(field, value = [], config, rootConfig) {
             [obj.instance]: { library_names: Array.isArray(obj.library_names) ? obj.library_names : [] }
         }))
         : value;
-    // State
+    // Instance types
     const instanceTypes = field.instance_types && Array.isArray(field.instance_types)
         ? field.instance_types
         : ['radarr', 'sonarr', 'plex'];
     let selected = Array.isArray(value) ? value.slice() : [];
 
+    // ========== CREATE ROW (two columns) ==========
+    const row = document.createElement('div');
+    row.className = 'settings-field-row';
+
+    // ----- LABEL COLUMN -----
+    const labelCol = document.createElement('div');
+    labelCol.className = 'settings-field-labelcol';
+
+    const label = document.createElement('label');
+    label.textContent = field.label || 'Instances';
+    labelCol.appendChild(label);
+
+    // Optional description/help text
+    // if (field.description) {
+    //     const help = document.createElement('div');
+    //     help.className = 'field-help-text';
+    //     help.textContent = field.description;
+    //     labelCol.appendChild(help);
+    // }
+    row.appendChild(labelCol);
+
+    // ----- INPUT COLUMN -----
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'settings-field-inputwrap';
+
+    // -- State helpers --
     function isSelected(type, name) {
         if (type === 'plex') {
             return selected.some(
@@ -211,160 +252,278 @@ function renderInstancesField(field, value = [], config, rootConfig) {
         }
     }
 
+    // -- Plex libraries list fetcher --
     function renderPlexLibraries(name, container, checkedLibs) {
-        container.innerHTML = 'Loading libraries...';
-        fetch(`/api/plex/libraries?instance=${encodeURIComponent(name)}`)
-            .then(async r => {
-                let data;
-                try {
-                    data = await r.clone().json();
-                } catch {
-                    data = await r.text();
+    container.innerHTML = 'Loading libraries...';
+    fetch(`/api/plex/libraries?instance=${encodeURIComponent(name)}`)
+        .then(async r => {
+            let data;
+            try {
+                data = await r.clone().json();
+            } catch {
+                data = await r.text();
+            }
+            if (!r.ok) {
+                let errorMsg = r.statusText;
+                if (data && typeof data === 'object' && data.error) {
+                    errorMsg = data.error;
+                } else if (typeof data === 'string') {
+                    errorMsg = data;
                 }
-                if (!r.ok) {
-                    let errorMsg = r.statusText;
-                    if (data && typeof data === 'object' && data.error) {
-                        errorMsg = data.error;
-                    } else if (typeof data === 'string') {
-                        errorMsg = data;
-                    }
-                    throw new Error(errorMsg);
-                }
-                return data;
-            })
-            .then(libraries => {
-                container.innerHTML = '';
-                if (Array.isArray(libraries) && libraries.length) {
-                    libraries.forEach(lib => {
-                        const label = document.createElement('label');
-                        
-                        const input = document.createElement('input');
-                        input.type = 'checkbox';
-                        input.checked = checkedLibs.includes(lib);
-                        input.onchange = () => {
-                            let libs = getPlexLibraries(name).slice();
-                            if (input.checked) {
-                                if (!libs.includes(lib)) libs.push(lib);
-                            } else {
-                                libs = libs.filter(l => l !== lib);
-                            }
-                            setPlexLibraries(name, libs);
-                        };
-                        label.appendChild(input);
-                        label.appendChild(document.createTextNode(' ' + lib));
-                        container.appendChild(label);
-                    });
+                throw new Error(errorMsg);
+            }
+            return data;
+        })
+        .then(libraries => {
+            container.innerHTML = '';
+            if (Array.isArray(libraries) && libraries.length) {
+                libraries.forEach(lib => {
+                    const label = document.createElement('label');
+                    label.className = 'plex-library-pill'; // For styling
+
+                    // Hidden checkbox for state
+                    const input = document.createElement('input');
+                    input.type = 'checkbox';
+                    input.checked = checkedLibs.includes(lib);
+                    input.setAttribute('aria-label', lib);
+
+                    // Visual checkmark
+                    const checkmark = document.createElement('span');
+                    checkmark.className = 'pill-checkmark';
+
+                    // Library label
+                    const pillLabel = document.createElement('span');
+                    pillLabel.className = 'pill-label';
+                    pillLabel.textContent = lib;
+
+                    // Toggle checked state & styling
+                    input.onchange = () => {
+                        let libs = getPlexLibraries(name).slice();
+                        if (input.checked) {
+                            if (!libs.includes(lib)) libs.push(lib);
+                            label.classList.add('checked');
+                        } else {
+                            libs = libs.filter(l => l !== lib);
+                            label.classList.remove('checked');
+                        }
+                        setPlexLibraries(name, libs);
+                    };
+                    if (input.checked) label.classList.add('checked');
+
+                    // Compose pill
+                    label.appendChild(input);
+                    label.appendChild(checkmark);
+                    label.appendChild(pillLabel);
+                    container.appendChild(label);
+                });
+            } else {
+                container.textContent = 'No libraries found for this instance.';
+            }
+        })
+        .catch(e => {
+            showToast('Error loading libraries: ' + e.message, 'error');
+            console.error('Error fetching Plex libraries:', e);
+        });
+}
+
+    // -- Main render logic for content column --
+function renderSelf() {
+    inputWrap.innerHTML = '';
+
+    // --- 1. Radarr/Sonarr Columns Side-by-Side ---
+    const typeColumns = ['radarr', 'sonarr'];
+    const columns = {};
+
+    typeColumns.forEach(type => {
+        const all = rootConfig.instances && rootConfig.instances[type]
+            ? Object.keys(rootConfig.instances[type])
+            : [];
+        if (!all.length) return;
+
+        // Build a column for each type
+        const col = document.createElement('div');
+        col.className = 'instance-type-col';
+
+        // Heading
+        const typeLabel = document.createElement('div');
+        typeLabel.className = 'instance-type-label';
+        typeLabel.textContent = type.charAt(0).toUpperCase() + type.slice(1);
+        col.appendChild(typeLabel);
+
+        all.forEach(instName => {
+            const pillLabel = document.createElement('label');
+            pillLabel.className = 'plex-library-pill';
+
+            const chk = document.createElement('input');
+            chk.type = 'checkbox';
+            chk.checked = isSelected(type, instName);
+            chk.id = `${type}_${instName}_chk`;
+
+            chk.addEventListener('change', () => {
+                if (chk.checked) {
+                    if (!selected.includes(instName)) selected.push(instName);
                 } else {
-                    container.textContent = 'No libraries found for this instance.';
+                    const idx = selected.indexOf(instName);
+                    if (idx !== -1) selected.splice(idx, 1);
                 }
-            })
-            .catch(e => {
-                showToast('Error loading libraries: ' + e.message, 'error');
-                console.error('Error fetching Plex libraries:', e);
+                config[field.key] = Array.isArray(value) ? selected.slice() : [];
+                markDirty();
             });
+
+            // Optional: visually consistent label text
+            const pillText = document.createElement('span');
+            pillText.className = 'pill-label';
+            pillText.textContent = instName;
+
+            pillLabel.appendChild(chk);
+            pillLabel.appendChild(pillText);
+
+            col.appendChild(pillLabel);
+        });
+
+        columns[type] = col;
+    });
+
+    // Only render columns row if either exists
+    if (columns.radarr || columns.sonarr) {
+        const columnsWrap = document.createElement('div');
+        columnsWrap.className = 'instances-multicol';
+        if (columns.radarr) columnsWrap.appendChild(columns.radarr);
+        if (columns.sonarr) columnsWrap.appendChild(columns.sonarr);
+        inputWrap.appendChild(columnsWrap);
     }
 
-    // -- THE KEY: FULL RE-RENDER LOGIC --
-    function renderSelf() {
-        div.innerHTML = ''; // clear previous content
+    // --- 2. Plex: Below, full width, each as a card/block ---
+    if (rootConfig.instances && rootConfig.instances.plex) {
+        Object.keys(rootConfig.instances.plex).forEach(instName => {
+            const plexBlock = document.createElement('div');
+            plexBlock.className = 'plex-instance-block';
 
-        if (field.add_posters_option) {
-            const postersDiv = document.createElement('div');
-            postersDiv.className = 'field add-posters-toggle';
+            const plexHeader = document.createElement('div');
+            plexHeader.className = 'plex-instance-header';
 
-            const label = document.createElement('label');
-            label.textContent = 'Add Posters';
-            
+            // --- Custom animated SVG checkbox ---
+            const chkLabel = document.createElement('label');
+            chkLabel.className = 'plex-checkbox-container';
 
-            const input = document.createElement('input');
-            input.type = 'checkbox';
-            input.checked = !!config.add_posters;
-            input.addEventListener('change', () => {
-                config.add_posters = input.checked;
-            });
+            // Hidden native checkbox for accessibility/state
+            const chk = document.createElement('input');
+            chk.type = 'checkbox';
+            chk.checked = isSelected('plex', instName);
+            chk.style.display = 'none';
 
-            postersDiv.appendChild(label);
-            postersDiv.appendChild(input);
-            div.appendChild(postersDiv);
-        }
+            // SVG animated checkbox
+            const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+            svg.setAttribute("viewBox", "0 0 64 64");
+            svg.setAttribute("height", "24");
+            svg.setAttribute("width", "24");
+            svg.innerHTML = `<path d="M 0 16 V 56 A 8 8 90 0 0 8 64 H 56 A 8 8 90 0 0 64 56 V 8 A 8 8 90 0 0 56 0 H 8 A 8 8 90 0 0 0 8 V 16 L 32 48 L 64 16 V 8 A 8 8 90 0 0 56 0 H 8 A 8 8 90 0 0 0 8 V 56 A 8 8 90 0 0 8 64 H 56 A 8 8 90 0 0 64 56 V 16"
+  pathLength="575.0541381835938"
+  class="plex-checkbox-path"></path>`;
 
-        const label = document.createElement('label');
-        label.textContent = field.label || 'Instances';
-        div.appendChild(label);
+            chkLabel.appendChild(chk);
+            chkLabel.appendChild(svg);
 
-        instanceTypes.forEach(type => {
-            const all = rootConfig.instances && rootConfig.instances[type]
-                ? Object.keys(rootConfig.instances[type])
-                : [];
-            if (!all.length) return;
-            const typeDiv = document.createElement('div');
-            typeDiv.className = 'instances-type-block';
-
-            const typeLabel = document.createElement('div');
-            typeLabel.textContent = type.charAt(0).toUpperCase() + type.slice(1);
-            
-            typeDiv.appendChild(typeLabel);
-
-            all.forEach(instName => {
-                const row = document.createElement('div');
-                row.className = 'instance-row';
-
-                const chk = document.createElement('input');
-                chk.type = 'checkbox';
-                chk.checked = isSelected(type, instName);
-                chk.id = `${type}_${instName}_chk`;
-
-                chk.addEventListener('change', () => {
-                    // Update selected
-                    if (chk.checked) {
-                        if (type === 'plex') {
-                            selected.push({ [instName]: { library_names: [] } });
-                        } else {
-                            selected.push(instName);
-                        }
-                    } else {
-                        if (type === 'plex') {
-                            const idx = selected.findIndex(
-                                x => typeof x === 'object' && x !== null && Object.keys(x)[0] === instName
-                            );
-                            if (idx !== -1) selected.splice(idx, 1);
-                        } else {
-                            const idx = selected.indexOf(instName);
-                            if (idx !== -1) selected.splice(idx, 1);
-                        }
-                    }
-                    config[field.key] = Array.isArray(value) ? selected.slice() : [];
-                    renderSelf(); // THIS triggers the re-render
-                });
-
-                const lbl = document.createElement('label');
-                lbl.htmlFor = chk.id;
-                lbl.textContent = " " + instName;
-                row.appendChild(chk);
-                row.appendChild(lbl);
-
-                // For plex: libraries UI if selected
-                if (type === 'plex' && chk.checked) {
-                    const libList = document.createElement('div');
-                    libList.className = 'plex-library-list';
-                    // Pull current checked libraries
-                    const libs = getPlexLibraries(instName);
-                    renderPlexLibraries(instName, libList, libs);
-                    row.appendChild(libList);
+            // Animation fix: always update checked class and prevent double-renders
+            function updateCheckedClass() {
+                if (chk.checked) {
+                    chkLabel.classList.add('checked');
+                } else {
+                    chkLabel.classList.remove('checked');
                 }
+            }
+            // Plex name label
+            const lbl = document.createElement('span');
+            lbl.className = 'plex-instance-label';
+            lbl.textContent = instName;
 
-                typeDiv.appendChild(row);
+            // Use animated SVG checkbox and label
+            plexHeader.appendChild(chkLabel);
+            plexHeader.appendChild(lbl);
+
+            // --- Add Posters text button toggle (Option 4) ---
+            // Always create the Add Posters text button for each instance
+            let plexEntry = selected.find(
+                x => typeof x === 'object' && x !== null && Object.keys(x)[0] === instName
+            );
+            const addPostersBtn = document.createElement('button');
+            addPostersBtn.type = 'button';
+            addPostersBtn.className = 'add-posters-text-btn';
+            addPostersBtn.setAttribute('aria-pressed', plexEntry && plexEntry[instName] && plexEntry[instName].add_posters ? 'true' : 'false');
+            addPostersBtn.textContent = 'Upload Posters: ' + (plexEntry && plexEntry[instName] && plexEntry[instName].add_posters ? 'ON' : 'OFF');
+
+            // Button click handler
+            addPostersBtn.onclick = () => {
+                // Ensure config entry
+                let entry = selected.find(
+                    x => typeof x === 'object' && x !== null && Object.keys(x)[0] === instName
+                );
+                if (!entry) {
+                    entry = { [instName]: { library_names: [], add_posters: false } };
+                    selected.push(entry);
+                }
+                const current = !!entry[instName].add_posters;
+                entry[instName].add_posters = !current;
+                addPostersBtn.setAttribute('aria-pressed', entry[instName].add_posters ? 'true' : 'false');
+                addPostersBtn.textContent = 'Upload Posters: ' + (entry[instName].add_posters ? 'ON' : 'OFF');
+                config[field.key] = Array.isArray(value) ? selected.slice() : [];
+                markDirty();
+            };
+
+            // Show/hide the button only if instance is selected
+            addPostersBtn.style.display = chk.checked ? '' : 'none';
+            plexHeader.appendChild(addPostersBtn);
+
+            // When the instance checkbox is toggled, update Add Posters button visibility
+            chkLabel.addEventListener('click', (e) => {
+                e.preventDefault();
+                chk.checked = !chk.checked;
+                updateCheckedClass();
+                if (chk.checked) {
+                    // Ensure config has entry
+                    let entry = selected.find(
+                        x => typeof x === 'object' && x !== null && Object.keys(x)[0] === instName
+                    );
+                    if (!entry) {
+                        entry = { [instName]: { library_names: [], add_posters: false } };
+                        selected.push(entry);
+                        config[field.key] = Array.isArray(value) ? selected.slice() : [];
+                    }
+                    addPostersBtn.style.display = '';
+                    libList.classList.add('expanded');
+                } else {
+                    addPostersBtn.style.display = 'none';
+                    libList.classList.remove('expanded');
+                }
             });
+            // Call once for initial state
+            updateCheckedClass();
 
-            div.appendChild(typeDiv);
+            plexBlock.appendChild(plexHeader);
+
+            // PATCH: Always render the library list, toggle .expanded for animation.
+            // Always keep libList in DOM
+            const libList = document.createElement('div');
+            libList.className = 'plex-library-list';
+            const libs = getPlexLibraries(instName);
+            renderPlexLibraries(instName, libList, libs);
+
+            // Only toggle the class; don't clear out innerHTML
+            if (chk.checked) {
+                libList.classList.add('expanded');
+            } else {
+                libList.classList.remove('expanded');
+            }
+            plexBlock.appendChild(libList);
+
+            inputWrap.appendChild(plexBlock);
         });
     }
-    
+}
 
-    // Initial render
     renderSelf();
-
-    return div;
+    row.appendChild(inputWrap);
+    return row;
 }
 
 function renderDirListDragDropField(field, value = [], config) {
@@ -373,18 +532,19 @@ function renderDirListDragDropField(field, value = [], config) {
 
     // --- LABEL COLUMN ---
     const labelCol = document.createElement('div');
-    labelCol.className = 'dirlist-label-col';
+    labelCol.className = 'settings-field-labelcol dirlist-label-col';
 
     const label = document.createElement('label');
     label.textContent = field.label;
     label.htmlFor = field.key;
     labelCol.appendChild(label);
 
-    // Flex filler pushes button to bottom of label col
+    // Filler flex so button is pushed to bottom of labelCol
     const filler = document.createElement('div');
-    filler.className = 'dirlist-label-filler';
+    filler.style.flex = "1";
     labelCol.appendChild(filler);
 
+    // Add Directory button
     const addBtn = document.createElement('button');
     addBtn.type = 'button';
     addBtn.className = 'btn add-btn';
@@ -399,6 +559,7 @@ function renderDirListDragDropField(field, value = [], config) {
     // --- INPUT COLUMN ---
     const inputWrap = document.createElement('div');
     inputWrap.className = 'settings-field-inputwrap dirlist-input-col';
+    
 
     if (!Array.isArray(value) || value.length === 0) value = [''];
     let dragSrcIdx = null;
@@ -432,7 +593,7 @@ function renderDirListDragDropField(field, value = [], config) {
 
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
-            removeBtn.className = 'btn btn--cancel remove-btn';
+            removeBtn.className = 'btn btn--remove-item remove-btn';
             removeBtn.innerText = '−';
             removeBtn.disabled = value.length === 1;
             removeBtn.addEventListener('click', () => {
@@ -466,6 +627,12 @@ function renderDirListDragDropField(field, value = [], config) {
 
             inputWrap.appendChild(item);
         });
+        if (field.description) {
+            const help = document.createElement('div');
+            help.className = 'field-help-text';
+            help.textContent = field.description;
+            inputWrap.appendChild(help);
+        }
     }
 
     renderRows();
@@ -570,13 +737,17 @@ function renderCheckBoxField(field, value, config) {
     const row = document.createElement('div');
     row.className = 'settings-field-row';
 
-    // Label on the left
+    // LABEL COLUMN
+    const labelCol = document.createElement('div');
+    labelCol.className = 'settings-field-labelcol';
+
     const label = document.createElement('label');
     label.textContent = field.label;
     label.htmlFor = field.key;
-    row.appendChild(label);
+    labelCol.appendChild(label);
+    row.appendChild(labelCol);
 
-    // Right side: input + help
+    // INPUT COLUMN
     const inputWrap = document.createElement('div');
     inputWrap.className = 'settings-field-inputwrap';
 
@@ -590,7 +761,6 @@ function renderCheckBoxField(field, value, config) {
     input.addEventListener('change', () => {
         if (config) config[field.key] = input.checked;
     });
-
     inputWrap.appendChild(input);
 
     if (field.description) {
@@ -715,7 +885,7 @@ function renderComplexListField(field, value = [], rootConfig, config) {
 
         const footerButtons = [
             ...(isEdit ? [{ id: 'delete-modal-btn', label: 'Delete', class: 'btn--remove' }] : []),
-            { id: 'cancel-modal-btn', label: 'Cancel', class: 'btn--cancel' },
+            { id: 'cancel-modal-btn', label: 'Cancel', class: 'btn--remove-item' },
             { id: 'save-modal-btn', label: 'Save', class: 'btn--success' },
         ];
         openModal({
@@ -825,7 +995,7 @@ function renderDirListOptionsField(field, value = [], config) {
 
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
-            removeBtn.className = 'btn btn--cancel remove-btn';
+            removeBtn.className = 'btn btn--remove-item remove-btn';
             removeBtn.textContent = 'Remove';
             removeBtn.disabled = value.length === 1;
             removeBtn.onclick = () => {
@@ -839,6 +1009,12 @@ function renderDirListOptionsField(field, value = [], config) {
 
             list.appendChild(row);
         });
+        if (field.description) {
+            const help = document.createElement('div');
+            help.className = 'field-help-text';
+            help.textContent = field.description;
+            inputWrap.appendChild(help);
+        }
     }
 
     const addBtn = document.createElement('button');
@@ -888,7 +1064,7 @@ function renderColorListField(field, value = []) {
 
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
-            removeBtn.className = 'btn btn--cancel btn--remove-item remove-btn';
+            removeBtn.className = 'btn btn--remove-item btn--remove-item remove-btn';
             removeBtn.textContent = '−';
             removeBtn.onclick = () => {
                 value.splice(idx, 1);
@@ -1216,7 +1392,7 @@ function openEditModal(idx, { value, field, config, renderList, subfields, rootC
     const entry = isEdit ? { ...value[idx] } : {};
     const footerButtons = [
         ...(isEdit ? [{ id: 'delete-modal-btn', label: 'Delete', class: 'btn--remove' }] : []),
-        { id: 'cancel-modal-btn', label: 'Cancel', class: 'btn--cancel' },
+        { id: 'cancel-modal-btn', label: 'Cancel', class: 'btn--remove-item' },
         { id: 'save-modal-btn', label: 'Save', class: 'btn--success' },
     ];
     openModal({

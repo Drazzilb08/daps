@@ -60,7 +60,7 @@ class Logger:
         error_console = logging.StreamHandler()
         error_console.setLevel(logging.ERROR)
         error_console.setFormatter(
-            logging.Formatter(f"%(levelname)s [{module_name}]: %(message)s")
+            logging.Formatter(f"%(levelname)s [{module_name.upper()}]: %(message)s")
         )
         self._logger.addHandler(error_console)
 

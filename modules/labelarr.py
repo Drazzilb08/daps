@@ -19,7 +19,7 @@ def sync_to_plex(
     """
     Synchronize pre-defined labels from ARR data to Plex libraries.
     For each matched item in plex_data, ensures Plex labels match ARR.
-    Output data structure remains unchanged.
+    Prefers TMDB+IMDB for movies, TVDB+IMDB for shows, falls back to TMDB, TVDB, IMDB, then title+year.
     Also updates the plex_media_cache table with the new label state.
     """
     import json
@@ -27,10 +27,13 @@ def sync_to_plex(
     def get_id(val):
         return str(val) if val not in (None, "null", "") else None
 
-    # Prepare lowercase set and original label mapping
     labels_lower = {l.lower(): l for l in labels}  # lowercase: original-case
 
-    # ARR lookup tables
+    # Build ARR lookup tables for dual and single IDs
+    arr_dual_ids = {
+        "tmdb_imdb": {},
+        "tvdb_imdb": {},
+    }
     id_maps = {
         "tmdb": {},
         "tvdb": {},
@@ -39,6 +42,7 @@ def sync_to_plex(
     }
 
     for item in arr_data:
+        # Parse ARR tags
         arr_tags = []
         tags_val = item.get("tags")
         if isinstance(tags_val, str):
@@ -52,16 +56,23 @@ def sync_to_plex(
         arr_item = dict(item)
         arr_item["tags"] = arr_tags
 
-        if (tid := get_id(item.get("tmdb_id"))): id_maps["tmdb"][tid] = arr_item
-        if (tid := get_id(item.get("tvdb_id"))): id_maps["tvdb"][tid] = arr_item
-        if (tid := get_id(item.get("imdb_id"))): id_maps["imdb"][tid] = arr_item
+        tid_tmdb = get_id(item.get("tmdb_id"))
+        tid_tvdb = get_id(item.get("tvdb_id"))
+        tid_imdb = get_id(item.get("imdb_id"))
+        if tid_tmdb and tid_imdb:
+            arr_dual_ids["tmdb_imdb"][(tid_tmdb, tid_imdb)] = arr_item
+        if tid_tvdb and tid_imdb:
+            arr_dual_ids["tvdb_imdb"][(tid_tvdb, tid_imdb)] = arr_item
+        if tid_tmdb: id_maps["tmdb"][tid_tmdb] = arr_item
+        if tid_tvdb: id_maps["tvdb"][tid_tvdb] = arr_item
+        if tid_imdb: id_maps["imdb"][tid_imdb] = arr_item
         key = (normalize_titles(item.get("title", "")), str(item.get("year", "") or ""))
         id_maps["title_year"][key] = arr_item
 
     output = []
 
     for plex_item in plex_data:
-        # Parse Plex fields just once
+        # Parse Plex fields
         plex_labels = []
         guids = {}
         try:
@@ -73,24 +84,48 @@ def sync_to_plex(
         except Exception:
             guids = {}
 
-        # Make a copy to modify
         new_labels = list(plex_labels)
 
-        # Find ARR match
+        # Get all possible IDs from plex
         plex_ids = {
             "tmdb": get_id(guids.get("tmdb") or plex_item.get("tmdb_id")),
             "tvdb": get_id(guids.get("tvdb") or plex_item.get("tvdb_id")),
             "imdb": get_id(guids.get("imdb") or plex_item.get("imdb_id")),
         }
         key = (normalize_titles(plex_item.get("title", "")), str(plex_item.get("year", "") or ""))
-        arr_item = (
-            id_maps["tmdb"].get(plex_ids["tmdb"]) or
-            id_maps["tvdb"].get(plex_ids["tvdb"]) or
-            id_maps["imdb"].get(plex_ids["imdb"]) or
-            id_maps["title_year"].get(key)
-        )
 
-        # Lowercase label sets for fast lookup
+        arr_item = None
+        match_type = "NO MATCH"
+
+        # 1. Prefer TMDB+IMDB dual ID
+        if plex_ids["tmdb"] and plex_ids["imdb"]:
+            arr_item = arr_dual_ids["tmdb_imdb"].get((plex_ids["tmdb"], plex_ids["imdb"]))
+            if arr_item:
+                match_type = "TMDB+IMDB"
+        # 2. Prefer TVDB+IMDB dual ID
+        if not arr_item and plex_ids["tvdb"] and plex_ids["imdb"]:
+            arr_item = arr_dual_ids["tvdb_imdb"].get((plex_ids["tvdb"], plex_ids["imdb"]))
+            if arr_item:
+                match_type = "TVDB+IMDB"
+        # 3. Fallback to single IDs
+        if not arr_item and plex_ids["tmdb"]:
+            arr_item = id_maps["tmdb"].get(plex_ids["tmdb"])
+            if arr_item:
+                match_type = "TMDB"
+        if not arr_item and plex_ids["tvdb"]:
+            arr_item = id_maps["tvdb"].get(plex_ids["tvdb"])
+            if arr_item:
+                match_type = "TVDB"
+        if not arr_item and plex_ids["imdb"]:
+            arr_item = id_maps["imdb"].get(plex_ids["imdb"])
+            if arr_item:
+                match_type = "IMDB"
+        # 4. Last-resort fallback: title+year
+        if not arr_item:
+            arr_item = id_maps["title_year"].get(key)
+            if arr_item:
+                match_type = "TITLE/YEAR"
+
         plex_label_set = set(l.lower() for l in plex_labels if isinstance(l, str))
         add_remove = {}
 
@@ -107,7 +142,6 @@ def sync_to_plex(
                     add_remove[label] = "remove"
                     plex_client.remove_label(plex_item, label, config.dry_run)
                     new_labels = [l for l in new_labels if l.lower() != label_lc]
-            match_type = next((k for k in ("tmdb", "tvdb", "imdb", "title_year") if arr_item in id_maps[k].values()), "unknown")
         else:
             # No ARR match: remove any matching label in Plex
             for label_lc, label in labels_lower.items():
@@ -115,9 +149,8 @@ def sync_to_plex(
                     add_remove[label] = "remove"
                     plex_client.remove_label(plex_item, label, config.dry_run)
                     new_labels = [l for l in new_labels if l.lower() != label_lc]
-            match_type = "NO MATCH"
 
-        # If any label changed, update database too
+        # If any label changed, update DB
         if add_remove:
             output.append({
                 "title": plex_item.get("title"),

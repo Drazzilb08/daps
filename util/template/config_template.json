@@ -90,7 +90,7 @@
     "radarr_count": 0,
     "sonarr_count": 0,
     "tag_name": "",
-    "ignore_tags": "",
+    "ignore_tag": "",
     "enable_batching": false,
     "instances": []
   },

@@ -1,11 +1,10 @@
 import os
 import subprocess
 import sys
-from types import SimpleNamespace
 
+from util.config import Config
 from util.helper import create_table, print_settings
 from util.logger import Logger
-from util.config import Config
 from util.notification import NotificationManager
 
 

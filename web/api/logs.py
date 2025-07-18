@@ -1,13 +1,14 @@
 import os
-from typing import List, Any
+from typing import Any, List
+
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import PlainTextResponse
+
 
 def get_logger(request: Request) -> Any:
     return request.app.state.logger
 
 # You may want to DRY this up with a helper, for now duplicate as in server.py
-import os
 from pathlib import Path
 
 if os.environ.get("DOCKER_ENV"):

@@ -1,6 +1,8 @@
 import sys
+
 from util.arr import create_arr_client
 from util.plex import PlexClient
+
 
 def update_client_databases(
     db, config, logger, max_age_hours=6, force_reindex=False

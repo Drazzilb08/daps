@@ -6,6 +6,7 @@ import uvicorn
 
 from web.api.main import app
 
+
 def start_web_server(logger: Any, orchestrator=None) -> None:
     """
     Starts the web server in a background thread and stores logger in app state.

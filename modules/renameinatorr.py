@@ -6,11 +6,11 @@ from types import SimpleNamespace
 from typing import Any, Dict, List
 
 from util.arr import BaseARRClient, create_arr_client
+from util.config import Config
 from util.constants import season_regex
 from util.helper import create_table, print_settings, progress
 from util.logger import Logger
 from util.notification import NotificationManager
-from util.config import Config
 
 
 def print_output(output: Dict[str, Dict[str, Any]], logger: Logger) -> None:

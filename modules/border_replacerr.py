@@ -2,9 +2,9 @@ import filecmp
 import logging
 import os
 import shutil
+from datetime import datetime
 from types import SimpleNamespace
 from typing import Any, List, Tuple
-from datetime import datetime
 
 from PIL import Image
 

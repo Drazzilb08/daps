@@ -4,7 +4,6 @@ import os
 import sqlite3
 import threading
 from typing import Any, Optional
-import time
 
 from util.helper import get_config_dir
 

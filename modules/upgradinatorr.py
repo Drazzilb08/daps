@@ -2,8 +2,8 @@ import sys
 from types import SimpleNamespace
 from typing import Any, Dict, List, Optional
 
-from util.config import Config
 from util.arr import BaseARRClient, create_arr_client
+from util.config import Config
 from util.helper import create_table, print_settings
 from util.logger import Logger
 from util.notification import NotificationManager

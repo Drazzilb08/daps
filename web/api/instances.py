@@ -1,7 +1,8 @@
+from typing import Any, Dict, Optional
+
+import requests
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
-from typing import Any, Dict, Optional
-import requests
 from pydantic import BaseModel
 
 from util.config import config_file_path

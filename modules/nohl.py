@@ -1,9 +1,10 @@
 import os
 import re
 import sys
-from typing import TYPE_CHECKING, Any, Dict, List, Optional, Tuple
+from typing import TYPE_CHECKING, Any, Dict, List, Optional
 
 from util.arr import create_arr_client
+from util.config import Config
 from util.constants import (
     episode_regex,
     season_regex,
@@ -17,7 +18,6 @@ from util.helper import (
     progress,
 )
 from util.logger import Logger
-from util.config import Config
 from util.notification import NotificationManager
 
 VIDEO_EXTS = (".mkv", ".mp4")

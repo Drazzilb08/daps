@@ -2,11 +2,10 @@ import argparse
 import os
 import sys
 
-from util.config import Config
+from util.config import Config, manage_config
 from util.logger import Logger
 from util.orchestrator import DapsOrchestrator
 from util.version import get_version
-from util.config import manage_config
 
 
 def parse_args():

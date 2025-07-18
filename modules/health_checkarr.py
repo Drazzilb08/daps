@@ -1,16 +1,14 @@
 import json
 import re
 import sys
-from types import SimpleNamespace
 from typing import Any, Dict, List, Optional
 
 from util.arr import create_arr_client
+from util.config import Config
 from util.constants import tmdb_id_regex, tvdb_id_regex
-from util.database import DapsDB
 from util.helper import create_table, print_settings, progress
 from util.logger import Logger
 from util.notification import NotificationManager
-from util.config import Config
 
 
 def main() -> None:

@@ -12,7 +12,6 @@ from apprise import Apprise
 from ratelimit import limits, sleep_and_retry
 
 
-
 @dataclass
 class NotifiarrConfig:
     webhook: str
@@ -214,6 +213,7 @@ class NotificationManager:
         output: Any,
     ) -> Tuple[bool, str]:
         from datetime import datetime
+
         from util.notification_formatting import format_for_discord
 
         data, _ = format_for_discord(self.config, output)
@@ -370,7 +370,6 @@ class NotificationManager:
 
     def send_notification(self, output: Any) -> Dict[str, Any]:
         """Send notifications to all configured targets. Returns standardized result."""
-        import json
         results = []
         target_data = self.collect_valid_targets()
         module_title = self.format_module_title(self.module_name)

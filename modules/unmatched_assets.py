@@ -1,7 +1,8 @@
+from util.config import Config
 from util.database import DapsDB
 from util.logger import Logger
-from util.config import Config
 from util.notification import NotificationManager
+
 
 def get_unmatched_assets_stats(db, config):
     # --- DB fetches ---

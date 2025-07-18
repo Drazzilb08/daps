@@ -7,10 +7,9 @@ from typing import Any, Dict, List
 
 from pathvalidate import is_valid_filename, sanitize_filename
 
+from util.config import Config
 from util.connector import update_client_databases, update_collections_database
 from util.database import DapsDB
-from util.config import Config
-from util.poster_import import merge_assets
 from util.helper import (
     create_table,
     match_assets_to_media,
@@ -19,6 +18,7 @@ from util.helper import (
 )
 from util.logger import Logger
 from util.notification import NotificationManager
+from util.poster_import import merge_assets
 from util.upload_posters import upload_posters
 
 
@@ -339,7 +339,7 @@ def main() -> None:
         logger.info("Gathering all the posters, please wait...")
         db.clear_poster_cache()
         merge_assets(db, config.source_dirs, logger)
-        print(f"Finished gathering posters.")
+        print("Finished gathering posters.")
 
         update_client_databases(db, config, logger)
         update_collections_database(db, config, logger)

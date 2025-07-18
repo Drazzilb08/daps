@@ -1,7 +1,14 @@
 import os
-from typing import List, Any, Optional
-from util.constants import season_number_regex, id_content_regex, year_regex
-from util.helper import extract_year, extract_ids, normalize_titles, generate_title_variants, is_match
+from typing import Any, List, Optional
+
+from util.constants import id_content_regex, season_number_regex, year_regex
+from util.helper import (
+    extract_ids,
+    extract_year,
+    is_match,
+    normalize_titles,
+)
+
 
 def get_assets_files(source_dir: str) -> List[dict]:
     """

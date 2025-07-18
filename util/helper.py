@@ -9,8 +9,6 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import yaml
 from tqdm import tqdm
-import random
-
 
 from util.constants import (
     folder_year_regex,
@@ -24,6 +22,7 @@ from util.constants import (
 from util.normalization import (
     normalize_titles,
 )
+
 
 def print_json(data: Any, logger: Any, module_name: str, type_: str) -> None:
     """Write data as JSON to a debug file and log the action.

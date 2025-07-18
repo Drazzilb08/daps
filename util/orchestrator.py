@@ -1,6 +1,5 @@
 # util/orchestrator.py
 
-from util.database import DapsDB
 import multiprocessing
 import time
 from datetime import datetime
@@ -13,9 +12,12 @@ from prettytable import PrettyTable
 
 from modules import MODULES
 from util.config import Config
+from util.database import DapsDB
+
 
 def run_and_track(target_func, module_name, origin):
     import time
+
     from util.database import DapsDB
 
     db = DapsDB()

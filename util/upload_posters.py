@@ -2,10 +2,10 @@ import hashlib
 import json
 from typing import Any, List, Optional, Tuple
 
+from util.connector import update_plex_database
 from util.helper import progress
 from util.normalization import normalize_titles
 from util.plex import PlexClient
-from util.connector import update_plex_database
 
 
 def upload_posters(config: Any, db: Any, logger: Any, manifest: dict) -> None:

@@ -8,9 +8,9 @@ from shutil import which
 from types import SimpleNamespace
 from typing import List, Optional
 
+from util.config import Config
 from util.helper import print_settings
 from util.logger import Logger
-from util.config import Config
 
 # Load environment variables from .env file if available
 try:

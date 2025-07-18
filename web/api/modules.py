@@ -1,7 +1,9 @@
+from typing import Any
+
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
-from typing import Any
+
 
 # Schemas
 class RunRequest(BaseModel):

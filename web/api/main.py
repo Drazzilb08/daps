@@ -1,15 +1,20 @@
-from typing import Any
 from pathlib import Path
-from fastapi import FastAPI, APIRouter, Depends, Request, HTTPException
-from fastapi.responses import HTMLResponse, JSONResponse, PlainTextResponse, FileResponse
+from typing import Any
+
+from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
+from fastapi.responses import (
+    FileResponse,
+    HTMLResponse,
+    JSONResponse,
+    PlainTextResponse,
+)
 from fastapi.staticfiles import StaticFiles
 
 from util.version import get_version
-
 from web.api import config as config_router
+from web.api import instances as plex_router
 from web.api import logs as logs_router
 from web.api import modules as modules_router
-from web.api import instances as plex_router
 from web.api import notifications as notifications_router
 from web.api import poster as poster_search_router
 

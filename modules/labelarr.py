@@ -1,21 +1,17 @@
+import json
 import sys
 from collections import defaultdict
-from types import SimpleNamespace
-from typing import Dict, List, Optional
-import json
+from typing import Dict, List
 
+from util.config import Config
 from util.connector import update_client_databases, update_plex_database
 from util.database import DapsDB
-from util.helper import create_table, print_settings, progress
+from util.helper import create_table, print_settings
 from util.logger import Logger
 from util.normalization import normalize_titles
 from util.notification import NotificationManager
 from util.plex import PlexClient
-from util.config import Config
 
-
-import json
-from util.normalization import normalize_titles
 
 def sync_to_plex(
     plex_client, arr_data, plex_data, logger, labels, config, db

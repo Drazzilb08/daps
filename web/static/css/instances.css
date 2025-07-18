@@ -1,21 +1,18 @@
-/* ======================================================
-   INSTANCE PAGE – CARD GROUPS AND LAYOUT
-====================================================== */
-
+/* ========== INSTANCE PAGE: LAYOUT & GROUPS ========== */
 
 #instances-list {
-  display: block;
-  width: 100%;
+    display: block;
+    width: 100%;
 }
 
 #instances-list .card,
 #instances-list .card.card-add {
-  aspect-ratio: 1 / 1;
-  width: 100%;
-  min-width: 220px;
-  max-width: 220px;
-  padding: 1.16rem 1.3rem 1.08rem 1.3rem;
-  box-sizing: border-box;
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    min-width: 220px;
+    max-width: 220px;
+    padding: 1.16rem 1.3rem 1.08rem 1.3rem;
+    box-sizing: border-box;
 }
 
 .instance-group-header {
@@ -29,6 +26,7 @@
     letter-spacing: 0.01em;
     padding-left: 0.07em;
 }
+
 .instance-group-icon img,
 .instance-group-icon svg {
     width: 28px;
@@ -38,73 +36,67 @@
 }
 
 .instance-group {
-  width: 100%;
-  display: block;
-  margin-bottom: 2.1rem;
-  padding-bottom: 0.4rem;
-  border-bottom: 1.5px solid var(--divider);
+    width: 100%;
+    display: block;
+    margin-bottom: 2.1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1.5px solid var(--divider);
 }
 
-/* ======================================================
-   INSTANCE PAGE – CARD VISUALS, THEMED TO MATCH APP
-====================================================== */
-
-
-/* "Service bar" at top of card for grouping (matches header color) */
-
-
-/* Card title styling: bold, bright, app accent color */
 .instance-group .card-title {
-  font-size: 1.13em;
-  font-weight: bold;
-  color: var(--muted);
-  margin-bottom: 0.28em;
-  letter-spacing: 0.01em;
-  text-align: center;
-  margin-top: 25px;
-}
-
-
-/* Tablet: 2 columns */
-@media (max-width: 1100px) {
-  .instance-group-header {
+    font-size: 1.13em;
+    font-weight: bold;
+    color: var(--muted);
+    margin-bottom: 0.28em;
+    margin-top: 25px;
+    letter-spacing: 0.01em;
     text-align: center;
-    margin-left: 0;
-    margin-right: 0;
-    padding-left: 0;
-    justify-content: center;
-    width: 100%;
-  }
-  .instance-group .card-list {
-    grid-template-columns: repeat(2, 1fr);
-    max-width: 720px;
-    gap: 0.7rem;
-    padding: 0 0.1rem 1.6rem 0.1rem;
-    margin: 0 auto;
-    justify-items: center;
-    align-items: center;
-  }
 }
 
-/* Mobile: 1 column */
-@media (max-width: 900px) {
-  .instance-group .card-list {
-    grid-template-columns: 1fr;
-    max-width: 98vw;
-    gap: 0.7rem;
-    padding: 0 0.1rem 1.6rem 0.1rem;
-    margin: 0 auto;
-    justify-items: center;
-    align-items: center;
-  }
-  .instance-group .card,
-  .instance-group .card.card-add {
-    max-width: 95vw;
-    min-width: 82vw;
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    box-sizing: border-box;
-  }
+/* ========== RESPONSIVE ========== */
+
+@media (max-width: 1000px) {
+    .instance-group-header {
+        justify-content: center;
+        text-align: center;
+        margin: 0;
+        padding-left: 0;
+        width: 100%;
+    }
+    .instance-group .card-list {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 720px;
+        gap: 0.7rem;
+        padding: 0 0.1rem 1.6rem 0.1rem;
+        margin: 0 auto;
+        justify-items: center;
+        align-items: center;
+    }
 }
 
+@media (max-width: 600px) {
+    #instances-list {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        max-width: 98vw !important;
+        gap: 0.7rem !important;
+        padding: 0 0.1rem 1.6rem 0.1rem !important;
+        margin: 0 auto !important;
+        justify-items: center !important;
+        align-items: center !important;
+    }
+    #instances-list .card,
+    #instances-list .card.card-add {
+        width: 95vw !important;
+        min-width: 82vw !important;
+        max-width: 95vw !important;
+        box-sizing: border-box !important;
+        aspect-ratio: 1 / 1 !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        border-radius: 17px !important;
+        padding: 1.16rem 1.1rem 1.08rem 1.1rem !important;
+        background: var(--surface, #191b22) !important;
+        font-size: 0.98rem !important;
+    }
+}

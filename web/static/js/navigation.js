@@ -3,9 +3,11 @@ import { loadInstances } from './instances.js';
 import { loadLogs } from './logs.js';
 import { loadNotifications } from './notifications.js';
 import { initPosterSearch } from './poster_search.js';
-import { loadSettings, renderSettingsSplash, handleSettingsNavigation } from './settings/settings.js';
+import { loadSettings, renderSettingsSplash } from './settings/settings.js';
 import { showSplashScreen } from './index.js';
-
+import { showToast, getIsDirty, resetDirty } from './util.js';
+import { unsavedSettingsModal } from './settings/modals.js';
+import { saveSettings } from './settings/settings.js';
 
 const PAGE_LOADERS = {
     schedule: loadSchedule,
@@ -18,7 +20,6 @@ const PAGE_LOADERS = {
 
 // --- HIGHLIGHT ACTIVE NAV LINK AND HANDLE SUBMENUS ---
 function highlightNav(frag, url) {
-    
     // Remove all highlights and section classes
     document
         .querySelectorAll(
@@ -57,15 +58,15 @@ function highlightNav(frag, url) {
 
     // Determine if we are on a settings splash or a module page
     const moduleParam = new URL(url, location.origin).searchParams.get('module_name');
-    
 
     if (isSettings) {
+        // Always highlight parent <li> for settings
+        if (settingsLi) settingsLi.classList.add('active-section');
         if (!moduleParam) {
-            // On splash page – highlight parent only
-            if (settingsLi) settingsLi.classList.add('active-section');
+            // On splash page, highlight parent link
             if (settingsSection) settingsSection.classList.add('active');
         } else {
-            // On module page – highlight only the sub-section
+            // On module page, highlight sub-section link
             settingsSubMenu?.querySelectorAll('a.sub-section').forEach((a) => {
                 if (a.href.includes(`module_name=${moduleParam}`)) {
                     a.classList.add('active');
@@ -76,29 +77,47 @@ function highlightNav(frag, url) {
 }
 
 // --- MAIN PAGE NAVIGATION HANDLER ---
-async function navigateTo(link, {pushState = true} = {}) {
-    
+async function navigateTo(link, { pushState = true } = {}) {
     const viewFrame = document.getElementById('viewFrame');
+
     if (!viewFrame) {
-        console.error("viewFrame not found");
+        console.error('[navigateTo] viewFrame not found');
         return;
     }
-    viewFrame.style.opacity = "0";
+
+    // --- DIRTY CHECK (should be in click handler, but keeping here for debug) ---
+    const currentUrl = viewFrame.dataset.currentUrl || location.pathname + location.search;
+
+    viewFrame.style.opacity = '0';
 
     // --- Close sidebar and dropdowns for navigation (important for mobile) ---
     document.body.classList.remove('sidebar-open');
-    document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('open'));
+    const hamburger = document.getElementById('sidebarToggle');
+    if (hamburger) {
+        hamburger.classList.remove('opened');
+        hamburger.setAttribute('aria-expanded', 'false');
+    }
+    document.querySelectorAll('.dropdown').forEach((d) => d.classList.remove('open'));
 
     viewFrame.classList.remove('fade-in');
     viewFrame.classList.remove('splash-mask', 'fade-in');
     const splashCard = viewFrame.querySelector('.splash-card');
-    if (splashCard) splashCard.remove();
+    if (splashCard) {
+        splashCard.remove();
+    }
     viewFrame.classList.add('fade-out');
     viewFrame.classList.remove('splash-mask');
 
     // --- Normalize the URL string ---
-    let url = typeof link === 'string' ? link : (link && link.href ? link.href : location.pathname + location.search);
-    if (!url.startsWith("/")) url = new URL(url, location.origin).pathname + location.search;
+    let url =
+        typeof link === 'string'
+            ? link
+            : link && link.href
+            ? link.href
+            : location.pathname + location.search;
+    if (!url.startsWith('/')) {
+        url = new URL(url, location.origin).pathname + location.search;
+    }
 
     // --- Extract fragment (e.g., "instances" from "/pages/instances") ---
     let frag = '';
@@ -107,33 +126,36 @@ async function navigateTo(link, {pushState = true} = {}) {
         frag = match[1];
     } else {
         const matchAlt = url.match(/\/([a-zA-Z0-9_\-]+)$/);
-        if (matchAlt) frag = matchAlt[1];
+        if (matchAlt) {
+            frag = matchAlt[1];
+        }
     }
     frag = frag.replace(/-/g, '_').replace(/\.html$/, '');
 
     // --- Highlight sidebar nav and store current URL for reference ---
-    if (viewFrame) viewFrame.dataset.currentUrl = url;
+    if (viewFrame) {
+        viewFrame.dataset.currentUrl = url;
+    }
     highlightNav(frag, url);
 
     // --- Only pushState for direct navigation, NOT for reload/initial load ---
-    
     if (pushState && location.pathname + location.search !== url) {
         history.pushState({}, '', url);
     }
 
     try {
         const fragmentName = frag;
-        
 
         // --- Fetch fragment HTML from backend ---
         const response = await fetch(`/api/page-fragment?name=${encodeURIComponent(fragmentName)}`);
         if (!response.ok) {
             const msg = `Failed to load fragment: ${fragmentName} (${response.status})`;
-            if (typeof DAPS?.showToast === 'function') DAPS.showToast(msg, 'error');
+            showToast(msg, 'error');
             viewFrame.innerHTML = `<div class="error-msg">${msg}</div>`;
-            viewFrame.style.opacity = "1";
+            viewFrame.style.opacity = '1';
             viewFrame.classList.remove('fade-out');
             viewFrame.classList.add('fade-in');
+            console.error('[navigateTo] Fetch error:', msg);
             return;
         }
         const html = await response.text();
@@ -147,8 +169,9 @@ async function navigateTo(link, {pushState = true} = {}) {
         // --- Inject fragment content and run page loader if available ---
         setTimeout(async () => {
             viewFrame.innerHTML = bodyContent;
+
             setTimeout(() => {
-                viewFrame.style.opacity = "1";
+                viewFrame.style.opacity = '1';
             }, 30);
             document.body.classList.remove('logs-open');
             viewFrame.classList.remove('fade-out');
@@ -159,24 +182,26 @@ async function navigateTo(link, {pushState = true} = {}) {
                     const params = new URLSearchParams(url.split('?')[1] || '');
                     const moduleName = params.get('module_name');
                     if (moduleName) {
+                        viewFrame.classList.add('is-settings');
                         await loadSettings(moduleName);
                     } else {
                         renderSettingsSplash();
                     }
                 } else {
                     await PAGE_LOADERS[frag]();
+                    viewFrame.classList.remove('is-settings');
                 }
+            } else {
             }
 
             setupDropdownMenus();
             highlightNav(frag, url);
         }, 200);
     } catch (err) {
-        if (typeof DAPS?.showToast === 'function') DAPS.showToast('Failed to load page', 'error');
-        console.error("[navigateTo] Error loading fragment:", err);
+        showToast('Failed to load page', 'error');
+        console.error('[navigateTo] Error loading fragment:', err);
         viewFrame.innerHTML = `<div class="error-msg">Failed to load page fragment.</div>`;
-        viewFrame.style.opacity = "1";
-        
+        viewFrame.style.opacity = '1';
         viewFrame.classList.remove('fade-out');
         viewFrame.classList.add('fade-in');
     }
@@ -230,7 +255,6 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Always use the full path (with query string) for everything
     let path = location.pathname + location.search;
-    
 
     // -- Extract fragment for main highlight --
     let frag = '';
@@ -244,13 +268,13 @@ document.addEventListener('DOMContentLoaded', async () => {
     // -- Always highlight nav with full path --
     highlightNav(frag, path);
 
-    if (path !== "/" && !path.startsWith("/api") && !path.startsWith("/web/static")) {
+    if (path !== '/' && !path.startsWith('/api') && !path.startsWith('/web/static')) {
         await navigateTo(path);
     } else {
         if (typeof showSplashScreen === 'function') {
             showSplashScreen();
             const viewFrame = document.getElementById('viewFrame');
-            if (viewFrame) viewFrame.style.opacity = "1";
+            if (viewFrame) viewFrame.style.opacity = '1';
         }
     }
 
@@ -261,22 +285,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (e.button !== 0 || e.metaKey || e.ctrlKey) return;
         e.preventDefault();
 
+        // Only intercept if on settings page, settings form is dirty, and navigating away
+        const viewFrame = document.getElementById('viewFrame');
+        const currentUrl = viewFrame?.dataset.currentUrl || location.pathname + location.search;
+        const leavingSettings =
+            currentUrl.includes('/pages/settings') &&
+            !link.href.endsWith(currentUrl) && // not just clicking same page
+            typeof getIsDirty === 'function' &&
+            getIsDirty();
+
+        if (leavingSettings) {
+            const action = await unsavedSettingsModal();
+            if (action === 'discard') {
+                history.pushState({}, '', link.href);
+                await navigateTo(link.href);
+            } else if (action === 'save') {
+                const result = await saveSettings();
+                if (result?.success) {
+                    history.pushState({}, '', link.href);
+                    await navigateTo(link.href);
+                }
+                // If not success, stay on the page (errors are already shown by saveSettings)
+            }
+            // cancel: do nothing
+            return;
+        }
+
+        document.body.classList.remove('sidebar-open');
         // Special handling for settings sub-menu navigation (only those with ?module_name=...)
         if (link.href.includes('/pages/settings?module_name=')) {
-            const params = new URL(link.href, location.origin).searchParams;
-            const moduleName = params.get('module_name');
-            if (moduleName) {
-                // Always update the address bar with the real URL
-                history.pushState({}, '', `/pages/settings?module_name=${moduleName}`);
-                await handleSettingsNavigation(moduleName);
-                // --- Highlight after settings nav ---
-                highlightNav('settings', link.href);
-                return;
-            }
+            history.pushState({}, '', link.href);
+            await navigateTo(link.href, { pushState: false }); // Ensure consistent pushState logic
+            highlightNav('settings', link.href);
+            return;
         }
 
         // All other navigation
-            history.pushState({}, '', link.href);
+        history.pushState({}, '', link.href);
         navigateTo(link.href);
     });
 
@@ -297,17 +342,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const body = document.body;
 
     if (hamburger && overlay) {
-        hamburger.addEventListener('click', () => {
-            body.classList.toggle('sidebar-open');
+        hamburger.addEventListener('click', function () {
+            const isOpen = !body.classList.contains('sidebar-open');
+            if (isOpen) {
+                body.classList.add('sidebar-open');
+                this.classList.add('opened');
+                this.setAttribute('aria-expanded', 'true');
+            } else {
+                body.classList.remove('sidebar-open');
+                this.classList.remove('opened');
+                this.setAttribute('aria-expanded', 'false');
+            }
         });
         overlay.addEventListener('click', () => {
             body.classList.remove('sidebar-open');
+            const hamburger = document.getElementById('sidebarToggle');
+            if (hamburger) {
+                hamburger.classList.remove('opened');
+                hamburger.setAttribute('aria-expanded', 'false');
+            }
         });
     }
 
     // Optionally: close on ESC key
     document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') body.classList.remove('sidebar-open');
+        if (e.key === 'Escape') {
+            body.classList.remove('sidebar-open');
+            const hamburger = document.getElementById('sidebarToggle');
+            if (hamburger) {
+                hamburger.classList.remove('opened');
+                hamburger.setAttribute('aria-expanded', 'false');
+            }
+        }
     });
 });
 
@@ -319,6 +385,10 @@ document.addEventListener('click', (e) => {
     // If click is inside sidebar or hamburger, do nothing
     if (sidebar && sidebar.contains(e.target)) return;
     if (hamburger && hamburger.contains(e.target)) return;
-    // Otherwise, close the sidebar
+    // Otherwise, close the sidebar and revert hamburger
     document.body.classList.remove('sidebar-open');
+    if (hamburger) {
+        hamburger.classList.remove('opened');
+        hamburger.setAttribute('aria-expanded', 'false');
+    }
 });

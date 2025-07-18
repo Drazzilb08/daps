@@ -1,15 +1,36 @@
 <!-- When splash is visible: -->
 <div class="settings-splash">
-  <h1 class="settings-splash-title">Settings</h1>
-  <div class="settings-section-list" id="settings-section-list"></div>
+    <h1 class="settings-splash-title">Settings</h1>
+    <div class="settings-section-list" id="settings-section-list"></div>
 </div>
 
 <!-- When editing settings (show these two): -->
-<div class="settings-save-bar hidden" id="settingsSaveBar">
-  <button id="saveBtnFixed" type="submit" form="settingsForm">Save</button>
+<div class="settings-toolbar-bar" id="settingsToolBar">
+    <span class="settings-page-title" id="settingsPageTitle">Settings</span>
+    <button
+        id="saveBtnFixed"
+        type="submit"
+        form="settingsForm"
+        class="settings-toolbar-btn"
+        aria-label="Save"
+        title="Save changes"
+    >
+        <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.9"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            style="margin-right: 7px; vertical-align: middle"
+        >
+            <path d="M17 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7l-4-4z" />
+            <polyline points="17 3 17 8 7 8 7 3" />
+            <rect x="8" y="13" width="8" height="5" rx="1" />
+        </svg>
+        <span class="save-btn-label">Save</span>
+    </button>
 </div>
-<div class="settings-view-frame hidden" id="settingsViewFrame">
-  <form id="settingsForm" autocomplete="off">
-    <div id="form-fields"></div>
-  </form>
-</div>
+<form id="settingsForm" autocomplete="off" class="settings-form"></form>

@@ -1,7 +1,13 @@
-html, body {
-  height: 100%;
-  min-height: 100%;
-  background: var(--bg); /* App background */
+/* ========================
+   CORE LAYOUT & CONTAINERS
+======================== */
+
+html,
+body {
+    height: 100%;
+    min-height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 body {
@@ -10,78 +16,26 @@ body {
     background: var(--bg);
     margin: 0;
     padding: 0;
+    height: 100vh;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    font-size: 14px;
+    line-height: 1.4;
 }
 
-.hamburger {
-    display: none;
-    background: none;
-    border: none;
-    outline: none;
-    cursor: pointer;
-    flex-shrink: 0;
-    width: 38px;
-    height: 38px;
-    margin-right: 1em;
-    z-index: 999;
-    position: relative;
-    padding: 0;
-    opacity: 0.78;
-    transition: opacity 0.18s, filter 0.2s;
-}
-.hamburger:hover,
-.hamburger:focus {
-    opacity: 1;
-    filter: brightness(1.12);
-}
-.hamburger span {
-    display: block;
-    width: 22px;
-    height: 2.2px;
-    background: var(--sidebar-fg);
-    opacity: 0.72;
-    margin: 5.5px 0 5.5px 6px;
-    border-radius: 2.5px;
-    transition: all 0.24s cubic-bezier(.5,0,.5,1);
-}
-
-.header-bar {
-    width: 100%;
-    height: 64px;
-    background: var(--header-bg);
-    color: var(--header-fg);
-    display: flex;
-    align-items: center;
-    padding: 0;
-    border-bottom: 1px solid var(--divider);
-    box-shadow: 0 2px 10px rgba(0,0,0,0.08);
-    z-index: 110;
-    position: fixed;
-    top: 0;
-    left: 0;
-}
+/* ========== MAIN LAYOUT CONTAINERS ========== */
 
 .container {
-    margin-left: 256px;
+    margin-left: 210px;
     margin-top: 64px;
     background: var(--bg);
     min-height: calc(100vh - 64px);
     height: calc(100vh - 64px);
     box-sizing: border-box;
-
     display: flex;
     flex-direction: column;
     flex: 1 1 auto;
-}
-
-.content {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    height: 100%;
 }
 
 .view-frame {
@@ -94,16 +48,39 @@ body {
     box-sizing: border-box;
     padding-bottom: 0;
     opacity: 1;
-    transition: opacity 0.24s cubic-bezier(.4,0,.2,1);
+    transition: opacity 0.24s cubic-bezier(0.4, 0, 0.2, 1);
     will-change: opacity;
-    margin-bottom: 1vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-top: 0;
+}
+
+.view-frame::before {
+    content: '';
+    display: block;
+    position: fixed;
+    top: 64px;
+    left: 0;
+    width: 100vw;
+    height: 36px;
+    pointer-events: none;
+    z-index: 999;
+    background: linear-gradient(
+        to bottom,
+        var(--surface-alt, #23242a) 0%,
+        rgba(35, 36, 42, 0.12) 45%,
+        rgba(35, 36, 42, 0.04) 85%,
+        transparent 100%
+    );
+}
+.view-frame.is-settings::before {
+    display: none;
 }
 
 .view-frame.fading-out {
     opacity: 0;
     pointer-events: none;
 }
-
 .view-frame.splash-mask {
     display: flex;
     flex-direction: column;
@@ -119,12 +96,105 @@ body {
     min-height: 0;
     height: 100%;
 }
-.view-frame, .page-content {
-  overflow-y: auto;
-  padding-top: 0;
+
+/* ========================
+   HEADER
+======================== */
+
+.header-bar {
+    width: 100%;
+    height: 64px;
+    background: var(--header-bg);
+    color: var(--header-fg);
+    display: flex;
+    align-items: center;
+    padding: 0;
+    border-bottom: 1px solid var(--divider);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    z-index: 110;
+    position: fixed;
+    top: 0;
+    left: 0;
 }
 
-h1, .main-header {
+/* ========================
+   HAMBURGER MENU
+======================== */
+
+.hamburger.menu {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    margin-left: 14px;
+    width: 38px;
+    height: 38px;
+    display: none;
+    align-self: center;
+    flex: 0 0 auto;
+}
+.hamburger.menu svg {
+    width: 38px;
+    height: 38px;
+    display: block;
+    margin: 0 auto;
+}
+.line {
+    fill: none;
+    stroke: var(--primary, #ff9500);
+    stroke-width: 6;
+    transition: stroke-dasharray 600ms cubic-bezier(0.4, 0, 0.2, 1),
+        stroke-dashoffset 600ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+.line1 {
+    stroke-dasharray: 60 207;
+}
+.line2 {
+    stroke-dasharray: 60 60;
+}
+.line3 {
+    stroke-dasharray: 60 207;
+}
+.hamburger.menu.opened .line1 {
+    stroke-dasharray: 90 207;
+    stroke-dashoffset: -134;
+}
+.hamburger.menu.opened .line2 {
+    stroke-dasharray: 1 60;
+    stroke-dashoffset: -30;
+}
+.hamburger.menu.opened .line3 {
+    stroke-dasharray: 90 207;
+    stroke-dashoffset: -134;
+}
+
+/* ========================
+   SCROLLBARS
+======================== */
+
+body,
+.view-frame,
+.view-frame * {
+    scrollbar-width: thin;
+    scrollbar-color: #707070 var(--surface, #18191b);
+}
+body::-webkit-scrollbar,
+.view-frame::-webkit-scrollbar {
+    width: 8px;
+    background: var(--surface, #18191b);
+}
+body::-webkit-scrollbar-thumb,
+.view-frame::-webkit-scrollbar-thumb {
+    background: #707070;
+    border-radius: 6px;
+}
+
+/* ========================
+   HEADINGS
+======================== */
+
+h1,
+.main-header {
     color: var(--header-fg);
     font-size: 2.2rem;
     margin-top: 0.7em;
@@ -133,7 +203,6 @@ h1, .main-header {
     text-align: left;
     letter-spacing: -0.3px;
 }
-
 h2 {
     color: var(--text-color);
     font-size: 1.25rem;
@@ -142,24 +211,26 @@ h2 {
     font-weight: 600;
 }
 
-/* Responsive sidebar and mobile support */
+/* ========================
+   RESPONSIVE
+======================== */
+
 @media (max-width: 1100px) {
+    .hamburger.menu {
+        display: block;
+    }
     .container {
         margin-left: 0 !important;
         margin-top: 64px !important;
-        min-height: 100dvh !important;
-        height: auto !important;
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
         flex: 1 1 auto;
     }
-    .content,
     .view-frame,
     .page-content {
         flex: 1 1 auto !important;
         min-height: 0 !important;
-        height: auto !important;
         display: flex !important;
         flex-direction: column !important;
         background: var(--bg);
@@ -169,19 +240,10 @@ h2 {
     }
     nav.sidebar {
         left: -256px;
-        transition: left 0.28s cubic-bezier(.5,0,.5,1);
-        box-shadow: 2px 0 16px 0 rgba(0,0,0,0.24);
+        transition: left 0.28s cubic-bezier(0.5, 0, 0.5, 1);
+        box-shadow: 2px 0 16px 0 rgba(0, 0, 0, 0.24);
     }
     body.sidebar-open nav.sidebar {
         left: 0;
     }
-}
-@media (max-width: 1100px) {
-    .view-frame {
-        background: var(--bg);
-        min-height: 100dvh !important;
-        height: auto !important;
-        flex: 1 1 auto !important;
-    }
- 
 }

@@ -71,7 +71,7 @@ async function mainVersionCheck() {
     }
     document.getElementById('version').textContent = 'Version: ' + local.full;
     const badge = document.getElementById('update-badge');
-    
+
     if (updateAvailable) {
         badge.style.display = '';
         badge.title = ''; // Use custom tooltip
@@ -100,14 +100,20 @@ export function setTheme() {
             }
 
             if (_themeMediaListener) {
-                matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', _themeMediaListener);
+                matchMedia('(prefers-color-scheme: dark)').removeEventListener(
+                    'change',
+                    _themeMediaListener
+                );
                 _themeMediaListener = null;
             }
 
             if (theme === 'auto') {
                 applySystemTheme();
                 _themeMediaListener = applySystemTheme;
-                matchMedia('(prefers-color-scheme: dark)').addEventListener('change', _themeMediaListener);
+                matchMedia('(prefers-color-scheme: dark)').addEventListener(
+                    'change',
+                    _themeMediaListener
+                );
             } else {
                 document.documentElement.setAttribute(
                     'data-theme',
@@ -164,4 +170,3 @@ export function showSplashScreen() {
 setTheme();
 mainVersionCheck();
 showSplashScreen();
-

@@ -1,244 +1,193 @@
 #notifications-list {
-  display: block;
-  width: 100%;
+    display: block;
+    width: 100%;
 }
 
 #notifications-list .card,
 #notifications-list .card.card-add {
-  aspect-ratio: 1 / 1;
-  width: 100%;
-  min-width: 220px;
-  max-width: 220px;
-  padding: 1.16rem 1.3rem 1.08rem 1.3rem;
-  box-sizing: border-box;
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    min-width: 220px;
+    max-width: 220px;
+    padding: 1.16rem 1.3rem 1.08rem 1.3rem;
+    box-sizing: border-box;
 }
 
 .notification-group {
-  width: 100%;
-  display: block;
-  margin-bottom: 2.1rem;
-  padding-bottom: 0.4rem;
-  border-bottom: 1.5px solid var(--divider);
+    width: 100%;
+    display: block;
+    margin-bottom: 2.1rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1.5px solid var(--divider);
 }
 
-/* GROUP HEADER */
 .notification-group-header {
-  font-size: 1.22rem;
-  font-weight: 700;
-  color: var(--primary);
-  margin: 0 0 0.55em 0.2em;
-  letter-spacing: 0.01em;
-  padding-left: 0.07em;
+    font-size: 1.22rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin: 0 0 0.55em 0.2em;
+    letter-spacing: 0.01em;
+    padding-left: 0.07em;
 }
 
-/* CARD: Center icon & label, notification specific */
 .notification-card {
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
 }
-
 .notification-card .notification-type-label {
-  text-align: center;
+    text-align: center;
 }
 
-/* Card Icon and Label */
 .notification-type-icon {
-  flex-shrink: 0;
-  width: 34px;
-  height: 34px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    flex-shrink: 0;
+    width: 34px;
+    height: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 .notification-type-label {
-  font-size: 1.09rem;
-  font-weight: 600;
-  flex-grow: 1;
-  color: var(--text-color);
-  text-align: left;
-  letter-spacing: 0.01em;
-  margin-right: 0.6em;
+    font-size: 1.09rem;
+    font-weight: 600;
+    flex-grow: 1;
+    color: var(--text-color);
+    text-align: left;
+    letter-spacing: 0.01em;
+    margin-right: 0.6em;
 }
 
-/* Test Button Positioning in Card */
 .notification-btn-wrap {
-  position: absolute;
-  left: 50%;
-  bottom: 1.05rem;
-  transform: translateX(-50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  z-index: 1;
+    position: absolute;
+    left: 50%;
+    bottom: 1.05rem;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
 }
 
-/* --- "Add" type modal and buttons --- */
 .notify-type-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1.1em;
-  margin-top: 1.1em;
-  margin-bottom: 1.2em;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1em;
+    margin-top: 1.1em;
+    margin-bottom: 1.2em;
 }
 .notify-type-btn {
-  font-size: 1.13em;
-  padding: 1.1em 2.2em;
-  border-radius: 7px;
-  background: var(--surface-alt);
-  border: 1.5px solid var(--divider);
-  color: var(--text-color);
-  display: flex;
-  align-items: center;
-  gap: 1em;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background 0.18s, border-color 0.18s;
+    font-size: 1.13em;
+    padding: 1.1em 2.2em;
+    border-radius: 7px;
+    background: var(--surface-alt);
+    border: 1.5px solid var(--divider);
+    color: var(--text-color);
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background 0.18s, border-color 0.18s;
 }
 .notify-type-btn:hover {
-  background: var(--focus);
-  color: #fff;
-  border-color: var(--focus);
+    background: var(--focus);
+    color: #fff;
+    border-color: var(--focus);
 }
 .notify-type-btn[disabled] {
-  opacity: 0.5;
-  cursor: not-allowed;
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
-/* Small modal override */
 .small-modal {
-  max-width: 440px !important;
-  min-width: 260px !important;
+    max-width: 440px !important;
+    min-width: 260px !important;
 }
 
-/* Color badge (for color field) */
 .color-badge {
-  display: inline-block;
-  border-radius: 4px;
-  padding: 0 7px;
-  margin-left: 5px;
-  min-width: 64px;
-  color: var(--text-color);
-  background: var(--surface-alt);
-  border: 1px solid var(--divider);
-  font-family: monospace;
-  font-size: 0.97em;
+    display: inline-block;
+    border-radius: 4px;
+    padding: 0 7px;
+    margin-left: 5px;
+    min-width: 64px;
+    color: var(--text-color);
+    background: var(--surface-alt);
+    border: 1px solid var(--divider);
+    font-family: monospace;
+    font-size: 0.97em;
 }
 
-/* Modal color input field row */
 .color-input-row {
-  display: flex;
-  align-items: center;
-  gap: 0.7em;
-  margin-bottom: 0.4em;
-}
-
-/* Inputs */
-input[type="color"] {
-  border: 1.5px solid var(--divider);
-  border-radius: 4px;
-  background: var(--surface-alt);
-  width: 2.7em;
-  height: 2.2em;
-  padding: 0.07em;
-  margin-top: 0.3em;
-  cursor: pointer;
-  transition: border-color 0.13s;
-}
-input[type="color"]:focus {
-  border-color: var(--focus);
-}
-
-/* Notification modal form labels */
-.notify-settings-form label {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 0.28em;
-  font-weight: 500;
-}
-
-/* --- Notification Modal: Slider/toggle switch field --- */
-.toggle-switch-block {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin-bottom: 1.15em;
-  gap: 0.16em;
-}
-
-.toggle-switch-block .form-toggle-label {
-  font-weight: 500;
-  font-size: 1.06rem;
-  color: var(--text-color);
-  margin-bottom: 0.19em;
-}
-
-.toggle-switch-block .toggle-switch-label {
-  margin-left: 0;
-  align-items: center;
-  display: flex;
-}
-
-/* ========== TABLET: 3 → 2 columns at ≤1100px ========== */
-@media (max-width: 1100px) {
-  #notifications-list .card-list {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1.2rem;
-    max-width: 740px;
-    margin: 0 auto 2rem auto;
-    padding: 0 0 2rem 0;
-    justify-items: center;
-  }
-  #notifications-list .card,
-  #notifications-list .card.card-add {
-    min-width: 210px;
-    max-width: 98vw;
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    box-sizing: border-box;
-  }
-}
-
-/* ========== MOBILE: 2 → 1 column at ≤900px ========== */
-@media (max-width: 900px) {
-  #notifications-list .card-list {
-    grid-template-columns: 1fr;
-    max-width: 98vw;
-    gap: 0.8rem;
-    padding: 0 0.1rem 1.5rem 0.1rem;
-    margin: 0 auto;
-    justify-items: center;
+    display: flex;
     align-items: center;
-  }
-  #notifications-list .card,
-  #notifications-list .card.card-add {
-    min-width: 82vw;
-    max-width: 95vw;
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    box-sizing: border-box;
-  }
+    gap: 0.7em;
+    margin-bottom: 0.4em;
 }
 
-/* ========== SMALL MOBILE: stack, reduce padding/font at ≤600px ========== */
+.notify-settings-form label {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.28em;
+    font-weight: 500;
+}
+
+.toggle-switch-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-bottom: 1.15em;
+    gap: 0.16em;
+}
+.toggle-switch-block .form-toggle-label {
+    font-weight: 500;
+    font-size: 1.06rem;
+    color: var(--text-color);
+    margin-bottom: 0.19em;
+}
+.toggle-switch-block .toggle-switch-label {
+    margin-left: 0;
+    align-items: center;
+    display: flex;
+}
+
+/* === Responsive === */
+@media (max-width: 1000px) {
+    .notification-group-header {
+        text-align: center;
+        margin-left: 0;
+        margin-right: 0;
+        padding-left: 0;
+        justify-content: center;
+        width: 100%;
+    }
+}
+
+@media (max-width: 900px) {
+}
+
 @media (max-width: 600px) {
-  #notifications-list .card-list {
-    gap: 0.5rem;
-    padding: 0 0.01rem 0.6rem 0.01rem;
-    max-width: 100vw;
-  }
-  #notifications-list .card,
-  #notifications-list .card.card-add {
-    min-width: 95vw;
-    max-width: 100vw;
-    font-size: 0.98rem;
-    padding: 0.7rem 0.8rem;
-  }
-  .notification-group-header {
-    font-size: 1.05rem;
-    padding: 0.1em 0;
-  }
+    #notification-list .card-list {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        max-width: 98vw !important;
+        gap: 0.7rem !important;
+        padding: 0 0.1rem 1.6rem 0.1rem !important;
+        margin: 0 auto !important;
+        justify-items: center !important;
+        align-items: center !important;
+    }
+    #notifications-list .card,
+    #notifications-list .card.card-add {
+        width: 95vw !important;
+        min-width: 82vw !important;
+        max-width: 95vw !important;
+        box-sizing: border-box !important;
+        aspect-ratio: 1 / 1 !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        border-radius: 17px !important;
+        padding: 1.16rem 1.1rem 1.08rem 1.1rem !important;
+        background: var(--surface, #191b22) !important;
+        font-size: 0.98rem !important;
+    }
 }

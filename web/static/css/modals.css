@@ -1,11 +1,11 @@
-/* ======================================================
+/* ======================
    MODAL OVERLAY
-====================================================== */
+====================== */
 #pageOverlay,
 .overlay {
     position: fixed;
     inset: 0;
-    background: rgba(24,25,31,0.64);
+    background: rgba(24, 25, 31, 0.64);
     backdrop-filter: blur(4px);
     opacity: 0;
     pointer-events: none;
@@ -20,15 +20,14 @@ body.modal-open .overlay {
 body.modal-open,
 html.modal-open {
     overflow: hidden !important;
-    position: relative;
     height: 100vh;
     width: 100vw;
     overscroll-behavior: contain;
 }
 
-/* ======================================================
-   MODAL BASE
-====================================================== */
+/* ======================
+   MODAL BASE & LAYOUT
+====================== */
 .modal {
     position: fixed;
     inset: 0;
@@ -36,7 +35,7 @@ html.modal-open {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(24,25,31,0.64);
+    background: rgba(24, 25, 31, 0.64);
     backdrop-filter: blur(4px);
     opacity: 0;
     pointer-events: none;
@@ -48,10 +47,6 @@ html.modal-open {
     pointer-events: auto;
     transform: scale(1);
 }
-
-/* ======================================================
-   MODAL CONTENT
-====================================================== */
 .modal-content {
     background: var(--surface, #23272b);
     color: var(--text-color, #e3e3e3);
@@ -60,7 +55,7 @@ html.modal-open {
     max-width: 97vw;
     min-height: 280px;
     max-height: 92vh;
-    box-shadow: 0 6px 24px 0 rgba(30,32,44,0.18), 0 1.2px 5px rgba(20,20,28,0.10);
+    box-shadow: 0 6px 24px 0 rgba(30, 32, 44, 0.18), 0 1.2px 5px rgba(20, 20, 28, 0.1);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -68,6 +63,10 @@ html.modal-open {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
 }
+
+/* ======================
+   HEADER & FOOTER
+====================== */
 .modal-header {
     display: flex;
     align-items: center;
@@ -75,7 +74,6 @@ html.modal-open {
     min-height: 2.6em;
     padding: 1.22rem 2rem 0.5rem 2rem;
     border-bottom: 1px solid var(--divider, #292c30);
-    background: none;
 }
 .modal-header h2 {
     font-size: 1.18rem;
@@ -90,7 +88,6 @@ html.modal-open {
     color: var(--muted, #a9a9a9);
     background: none;
     border: none;
-    outline: none;
     cursor: pointer;
     padding: 0.12em 0.22em;
     line-height: 1;
@@ -104,65 +101,95 @@ html.modal-open {
 .modal-close-x:focus {
     color: var(--error, #ff375f);
 }
-
-.modal-body {
-    flex: 1 1 auto;
-    padding: 1.2rem 2rem 1rem 2rem;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 1.05rem;
-}
-
-.modal-content label {
-    font-size: 1rem;
-    color: var(--muted, #a9a9a9);
-    font-weight: 500;
-    margin-bottom: 0.18em;
-    margin-top: 0.85em;
-    margin-left: 1.6rem;
-    margin-right: 1.6rem;
-}
-
 .modal-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1.2rem;
+    display: flex;
+    justify-content: flex-end;
+    gap: 1.2rem;
     border-top: 1px solid var(--divider, #292c30);
-    padding: 1.2rem 2rem 1.2rem 2rem;
-    background: none;
-    margin-top: auto;
-
+    padding: 1.2rem 2rem;
+    background: var(--surface);
+    position: sticky;
+    bottom: 0;
+    z-index: 2;
 }
 .modal-footer button:disabled {
     opacity: 0.65;
     pointer-events: none;
 }
 
-/* ======================================================
-   MODAL FIELD OVERRIDES (If needed)
-====================================================== */
-.modal-content label {
-    font-size: 1rem;
-    color: var(--muted, #a9a9a9);
-    font-weight: 500;
-    margin-bottom: 0.2em;
-    margin-top: 0.4em;
-    margin-left: 0;
-    margin-right: 0;
+/* ======================
+   BODY AND FORM LAYOUT
+====================== */
+.modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.05rem;
+    padding: 1.2rem 2rem 1rem 2rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.modal-body::-webkit-scrollbar {
+    width: 0;
+    height: 0;
+    background: transparent;
+    display: none;
 }
 
-/* ======================================================
-   PILLS, TOGGLES, ROWS
-====================================================== */
+.modal-content .settings-field-labelcol,
+.modal-content .modal-field-labelcol {
+    min-width: 150px;
+    max-width: 240px;
+    flex: 0 0 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-start;
+    padding-right: 16px;
+}
+.modal-content .settings-field-labelcol label,
+.modal-content .modal-field-labelcol label {
+    font-weight: 500;
+    color: var(--primary);
+    padding-top: 0.21em;
+    line-height: 1.3;
+    text-align: right;
+    margin-bottom: 0.13em;
+    font-size: 1.01em;
+}
+.modal-content .settings-field-inputwrap,
+.modal-content .modal-field-inputwrap {
+    flex: 1 1 320px;
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.13em;
+    box-sizing: border-box;
+    align-items: stretch;
+    padding-left: 0.7em;
+    padding-right: 1.7em;
+    max-width: 97%;
+}
+.modal-content .field-help-text {
+    color: var(--muted);
+    font-size: 0.96rem;
+    margin-top: 0.22em;
+    margin-bottom: 0.04em;
+    line-height: 1.4;
+}
+
+/* ======================
+   PILLS & SCHEDULE SELECTS
+====================== */
 .pill-group {
     display: flex;
     gap: 0.65em;
     margin-bottom: 1em;
+    margin-top: 1em;
 }
 .pill {
-    display: inline-block;
     border: none;
     background: var(--surface-alt, #25292f);
     color: var(--muted);
@@ -188,71 +215,56 @@ html.modal-open {
     color: #fff;
     transform: translateY(-1px) scale(1.03);
 }
-/* Weekday/monthday pills: */
-.weekday-pills {
-    gap: 0.32em;
-    margin-bottom: 0.6em;
-}
-.weekday-pill {
-    border: none;
-    border-radius: 18px;
-    background: var(--surface-alt, #25292f);
-    color: var(--muted);
-    font-size: 1.01rem;
-    padding: 0.36em 1.13em;
-    cursor: pointer;
-    font-weight: 500;
-    transition: background 0.14s, color 0.14s, box-shadow 0.18s;
-    margin-bottom: 0.1em;
-}
-.weekday-pill.active,
-.weekday-pill:focus {
-    background: var(--accent);
-    color: #fff;
-    box-shadow: 0 0 0 2px var(--focus, #ff9500);
-    outline: none;
-}
-.weekday-pill:hover:not(.active) {
-    background: var(--focus);
-    color: #fff;
-}
+.weekday-pills,
 .monthday-pills {
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.26em 0.38em;
+    gap: 0.32em;
     margin-bottom: 0.6em;
-    max-width: 99vw;
+    flex-wrap: wrap;
 }
+.weekday-pill,
 .monthday-pill {
     border: none;
     border-radius: 12px;
     background: var(--surface-alt, #25292f);
     color: var(--muted);
     font-size: 0.98rem;
-    padding: 0.18em 0.68em;
-    min-width: 2.2em;
+    padding: 0.22em 0.95em;
     cursor: pointer;
     font-weight: 500;
-    margin-bottom: 0.1em;
     transition: background 0.14s, color 0.14s, box-shadow 0.18s;
+    margin-bottom: 0.1em;
 }
+.weekday-pill.active,
+.weekday-pill:focus,
 .monthday-pill.active,
 .monthday-pill:focus {
     background: var(--accent);
     color: #fff;
-    box-shadow: 0 0 0 1.7px var(--focus, #ff9500);
+    box-shadow: 0 0 0 2px var(--focus, #ff9500);
     outline: none;
 }
+.weekday-pill:hover:not(.active),
 .monthday-pill:hover:not(.active) {
     background: var(--focus);
     color: #fff;
 }
 
-/* === Animations for row/fade-in === */
-.daily-row {
-    opacity: 0;
-    transform: translateY(8px) scale(0.97);
-    animation: fadeInRow 0.25s cubic-bezier(.61,.13,.55,1.21) forwards;
+/* ======================
+   ERRORS & ANIMATIONS
+====================== */
+.input-error {
+    border: 2px solid var(--error, #ff375f) !important;
+    background: rgba(255, 55, 95, 0.07) !important;
+}
+.field-error-text {
+    color: var(--error, #ff375f);
+    font-size: 0.97em;
+    font-weight: 500;
+    margin-top: 0.18em;
+    margin-bottom: 0.07em;
+    padding-left: 1px;
+    letter-spacing: 0.01em;
 }
 @keyframes fadeInRow {
     to {
@@ -260,22 +272,17 @@ html.modal-open {
         transform: none;
     }
 }
-#schedule-fields {
-    transition: background 0.23s;
-}
-#schedule-fields label {
-    margin-bottom: 0.1em;
-}
+.daily-row,
 .schedule-summary {
     opacity: 0;
     transform: translateY(8px) scale(0.98);
-    animation: fadeInRow 0.21s 0.11s cubic-bezier(.61,.13,.55,1.21) forwards;
+    animation: fadeInRow 0.21s 0.11s cubic-bezier(0.61, 0.13, 0.55, 1.21) forwards;
 }
 
-/* ======================================================
-   MOBILE FULLSCREEN (All modals 100vw/100vh, no double scrollbars)
-====================================================== */
-@media (max-width: 1100px) {
+/* ======================
+   MOBILE RESPONSIVENESS
+====================== */
+@media (max-width: 1000px) {
     .modal-content {
         width: 100vw;
         max-width: 100vw;
@@ -306,256 +313,110 @@ html.modal-open {
 }
 
 @media (max-width: 600px) {
-  .pill-group {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.55em 0.5em;
-    margin-bottom: 1.1em;
-    padding: 0 0.6em;
-  }
-  .pill {
-    font-size: 1.07rem;
-    min-width: 128px;
-    padding: 0.54em 0.9em;
-    margin-bottom: 0.32em;
-    text-align: center;
-    flex: 1 1 48%;
-  }
-  .weekday-pills {
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.32em 0.26em;
-    margin-bottom: 0.9em;
-    padding: 0 0.12em;
-  }
-  .weekday-pill {
-    font-size: 1.09rem !important;
-    min-width: 64px;
-    flex: 1 1 28%;
-    margin-bottom: 0.23em;
-    text-align: center;
-  }
-  .monthday-pills {
-    gap: 0.16em 0.11em;
-    padding: 0 0.07em;
-    justify-content: center;
-    max-width: 100vw;
-  }
-  .monthday-pill {
-    font-size: 1.01rem !important;
-    min-width: 2.2em;
-    flex: 1 1 17%;
-    margin-bottom: 0.13em;
-    text-align: center;
-    padding-left: 0;
-    padding-right: 0;
-  }
-}
-
-/* Directory Picker Modal Styling */
-.modal#dir-modal {
-    z-index: 1200 !important; /* Always above other modals */
-    background: rgba(20,22,32,0.85); /* Slightly darker for context */
-}
-
-.modal#dir-modal .modal-content {
-    min-width: 460px;
-    max-width: 98vw;
-    width: 540px;
-    background: var(--surface, #24282c);
-    padding: 0;
-    box-shadow: 0 7px 34px 0 rgba(30,32,44,0.19), 0 1.5px 8px rgba(20,20,28,0.13);
-}
-
-@media (max-width: 600px) {
-    .modal#dir-modal .modal-content {
-        min-width: 98vw;
-        width: 100vw;
+    .modal-content {
+        width: 100vw !important;
+        max-width: 100vw !important;
+        min-height: 100vh !important;
+        max-height: 100vh !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        padding: 0 !important;
     }
-}
+    .modal-header,
+    .modal-footer {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        min-height: 2.3em !important;
+    }
+    .modal-header {
+        padding-top: 1.08rem !important;
+        padding-bottom: 0.7rem !important;
+        font-size: 1.08rem !important;
+    }
+    .modal-footer {
+        padding-top: 0.98rem !important;
+        padding-bottom: 1.04rem !important;
+        gap: 0.85rem !important;
+    }
+    .modal-body {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        gap: 0.88rem !important;
+        font-size: 1.06rem !important;
+    }
 
-/* Directory List UI */
-#dir-list {
-    margin: 1.1em 0 0.3em 0;
-    padding: 0 0 0 0.4em;
-    list-style: none;
-    max-height: 240px;
-    overflow-y: auto;
-    border-radius: 7px;
-    background: var(--surface-alt, #23272b);
-    border: 1px solid var(--divider, #31343a);
-    font-size: 1.08em;
-    box-shadow: 0 1.5px 7px rgba(0,0,0,0.06);
-}
-
-#dir-list li {
-    padding: 0.44em 1em 0.44em 0.7em;
-    margin: 0.05em 0;
-    border-radius: 5px;
-    cursor: pointer;
-    color: var(--text-color, #ebecf0);
-    transition: background 0.13s, color 0.13s;
-    font-size: 1.01em;
-}
-
-#dir-list li:hover {
-    background: var(--accent, #316ee2);
-    color: #fff;
-}
-
-#dir-list li:first-child {
-    font-weight: 700;
-    color: var(--accent, #28aaff);
-}
-
-#dir-path-input {
-    width: 100%;
-    margin-top: 0.4em;
-    margin-bottom: 0.4em;
-    padding: 0.52em 1em;
-    font-size: 1.09em;
-    border: 1.5px solid var(--divider, #323436);
-    border-radius: 6px;
-    background: var(--surface, #1f2124);
-    color: var(--text-color, #e9eaf4);
-    outline: none;
-    box-shadow: 0 1.5px 6px rgba(0,0,0,0.08);
-    transition: border-color 0.16s, background 0.13s;
-}
-#dir-path-input:focus {
-    border-color: var(--accent, #3193e2);
-    background: var(--surface-alt, #24292f);
-}
-
-
-
-/* Modal Form Rows: Mirror settings-field-row but scoped for modals */
-.modal-content .settings-field-row,
-.modal-content .modal-field-row {
-  display: flex;
-  align-items: flex-start;
-  width: 100%;
-  min-height: 38px;
-  margin-bottom: 18px;
-  font-size: 1.04rem;
-  box-sizing: border-box;
-}
-
-.modal-content .settings-field-labelcol,
-.modal-content .modal-field-labelcol {
-  min-width: 150px;
-  max-width: 240px;
-  flex: 0 0 200px;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: flex-start;
-  padding-right: 16px;
-  box-sizing: border-box;
-}
-
-.modal-content .settings-field-labelcol label,
-.modal-content .modal-field-labelcol label {
-  font-weight: 500;
-  color: var(--primary);
-  padding-top: 0.21em;
-  line-height: 1.3;
-  text-align: right;
-  margin-bottom: 0.13em;
-  width: 100%;
-  display: block;
-  font-size: 1.01em;
-}
-
-/* Modal input col mirrors settings but tighter gap */
-.modal-content .settings-field-inputwrap,
-.modal-content .modal-field-inputwrap {
-  flex: 1 1 320px;
-  min-width: 160px;
-  max-width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 0.13em;
-  box-sizing: border-box;
-  align-items: stretch;
-}
-
-/* Helper text under input */
-.modal-content .field-help-text {
-  color: var(--muted);
-  font-size: 0.96rem;
-  margin-top: 0.22em;
-  margin-bottom: 0.04em;
-  line-height: 1.4;
-}
-
-/* Optionally override default modal label if needed */
-.modal-content label {
-  margin-left: 0;
-  margin-right: 0;
-  font-size: 1.01rem;
-  font-weight: 500;
-}
-
-.modal-content .settings-field-inputwrap,
-.modal-content .modal-field-inputwrap {
-    padding-left: 0.7em;
-    padding-right: 1.7em;
-    box-sizing: border-box;
-    max-width: 97%; /* Prevent from touching right edge */
-    margin-right: 0;
-}
-
-.preset-card {
-    background: var(--surface-alt, #22252a);
-    color: var(--text-color, #e3e3e3);
-    border-radius: 7px;
-    box-shadow: 0 1.5px 7px rgba(0,0,0,0.08);
-    padding: 1.1em 1.3em 1em 1.3em;
-    margin-top: 0.55em;
-    margin-bottom: 0.35em;
-    font-size: 1.06em;
-    border: 1.5px solid var(--divider, #282b2f);
-    max-width: 96%;
-    transition: box-shadow 0.13s, border-color 0.13s;
-}
-
-.preset-card .preset-field {
-    display: flex;
-    gap: 0.44em;
-    margin-bottom: 0.23em;
-    font-size: 1.02em;
-}
-
-.preset-card .preset-label {
-    font-weight: 600;
-    color: var(--primary, #ff9500);
-    min-width: 60px;
-}
-
-.preset-card .preset-type {
-    font-weight: 500;
-    color: var(--accent, #3183e2);
-}
-
-.preset-card .preset-content {
-    margin-left: 1.2em;
-    margin-bottom: 0.25em;
-    color: var(--muted, #bcbcbc);
-    font-style: italic;
-    font-size: 0.98em;
-}
-.input-error {
-    border: 2px solid var(--error, #ff375f) !important;
-    background: rgba(255, 55, 95, 0.07) !important;
-    transition: border-color 0.13s, background 0.13s;
-}
-.field-error-text {
-    color: var(--error, #ff375f);
-    font-size: 0.97em;
-    font-weight: 500;
-    margin-top: 0.18em;
-    margin-bottom: 0.07em;
-    padding-left: 1px;
-    letter-spacing: 0.01em;
+    .modal-content .settings-field-labelcol,
+    .modal-content .modal-field-labelcol {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        flex: 0 0 auto !important;
+        align-items: flex-start !important;
+        padding: 0 0 0.08em 0 !important;
+        text-align: left !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+    }
+    .modal-content .settings-field-labelcol label,
+    .modal-content .modal-field-labelcol label {
+        text-align: left !important;
+        font-size: 1.03em !important;
+        font-weight: 600 !important;
+        margin-bottom: 0.11em !important;
+        padding: 0 !important;
+        color: var(--primary);
+        width: 100% !important;
+    }
+    .modal-content .settings-field-inputwrap,
+    .modal-content .modal-field-inputwrap {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-sizing: border-box !important;
+        align-items: stretch !important;
+        gap: 0.13em !important;
+        flex: 0 0 auto !important;
+    }
+    .plex-instance-card {
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100vw !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        box-sizing: border-box !important;
+    }
+    .instance-library-list {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        gap: 0.5rem 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
+    .instance-library-list .instance-pill {
+        width: 100% !important;
+        max-width: 100vw !important;
+        min-width: 0 !important;
+        margin: 0 0 0.32em 0 !important;
+        border-radius: 8px !important;
+        padding: 0.44em 0.8em !important;
+        font-size: 1.02rem !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    .field-help-text {
+        font-size: 0.98em !important;
+        margin-top: 0.21em !important;
+    }
+    .modal-content .settings-field-row,
+    .modal-content .settings-field-inputwrap {
+        min-height: unset !important;
+        height: auto !important;
+        overflow: visible !important;
+        align-items: stretch !important;
+    }
 }

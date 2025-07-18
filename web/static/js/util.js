@@ -32,51 +32,33 @@ export function showToast(message, type = 'info', timeout = 3000) {
 
 export function markDirty() {
     isDirty = true;
-    const saveBtn = document.getElementById('saveBtn');
-    if (saveBtn) saveBtn.disabled = false;
+    const saveBtn = document.getElementById('saveBtnFixed') || document.getElementById('saveBtn');
+    if (saveBtn) {
+        saveBtn.classList.add('dirty');
+        saveBtn.classList.remove('saved');
+        saveBtn.disabled = false;
+        saveBtn.title = 'Save changes';
+    }
 }
 
 export function resetDirty() {
     isDirty = false;
-    const saveBtn = document.getElementById('saveBtn');
-    if (saveBtn) saveBtn.disabled = true;
+    const saveBtn = document.getElementById('saveBtnFixed') || document.getElementById('saveBtn');
+    if (saveBtn) {
+        saveBtn.classList.remove('dirty');
+        saveBtn.classList.add('saved');
+        saveBtn.disabled = true;
+        saveBtn.title = 'All changes saved';
+    }
 }
 
 export function getIsDirty() {
     return isDirty;
 }
 
-export function setupPasswordToggles(scope = document) {
-    scope.querySelectorAll('.toggle-password').forEach(btn => {
-        btn.onclick = () => {
-            const inputId = btn.getAttribute('data-input');
-            const input = scope.querySelector(`#${inputId}`);
-            if (!input) return;
-            if (input.type === 'password') {
-                input.type = 'text';
-                input.classList.remove('masked-input');
-                btn.innerHTML = '<i class="material-icons">visibility_off</i>';
-            } else {
-                input.type = 'password';
-                input.classList.add('masked-input');
-                btn.innerHTML = '<i class="material-icons">visibility</i>';
-            }
-        };
-        // On initial load, ensure eye icon matches input type
-        const inputId = btn.getAttribute('data-input');
-        const input = scope.querySelector(`#${inputId}`);
-        if (input && input.type === 'password') {
-            btn.innerHTML = '<i class="material-icons">visibility</i>';
-        } else {
-            btn.innerHTML = '<i class="material-icons">visibility_off</i>';
-        }
-    });
-}
-
-export function getIcon(type)
-{
+export function getIcon(type) {
     if (type === 'radarr') {
-            return `<img src="/web/static/icons/radarr.svg" alt="Radarr logo" />`;
+        return `<img src="/web/static/icons/radarr.svg" alt="Radarr logo" />`;
     }
     if (type === 'sonarr') {
         return `<img src="/web/static/icons/sonarr.svg" alt="Sonarr logo" />`;
@@ -84,4 +66,21 @@ export function getIcon(type)
     if (type === 'plex') {
         return `<img src="/web/static/icons/plex.svg" alt="Plex logo" />`;
     }
+    if (type === 'discord') {
+        return `<img src="/web/static/icons/discord.svg" alt="Discord logo" />`;
+    }
+    if (type === 'notifiarr') {
+        return `<img src="/web/static/icons/notifiarr.svg" alt="Notifiarr logo" />`;
+    }
+    if (type === 'email') {
+        return `<i class="material-icons">email</i>`;
+    }
+    if (type === 'test') {
+        return `<i class="material-icons">science</i>`;
+    }
+    return `<i class="material-icons">notifications</i>`;
+}
+
+export function getSpinner() {
+    return `<span class="spinner"></span>`;
 }

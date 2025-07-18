@@ -13,7 +13,7 @@ export const SETTINGS_SCHEMA = [
         description: "Each entry contains id, location, and name.",
         modal: "openModal",
         fields: [
-          { key: "preset", label: "", type: "modal_helper", helper: "populateGDrivePresetsDropdown", description: "Select a preset configuration for Google Drive." },
+          { key: "preset", label: "Gdrive Presets", type: "gdrive_presets", required: false, exclude_on_save: true, description: "Select a preset configuration for Google Drive." },
           { key: "name", label: "Name", type: "text", required: true, description: "Friendly name for this Google Drive entry." },
           { key: "id", label: "GDrive ID", type: "text", required: true, description: "Unique ID of the Google Drive folder or file." },
           { key: "location", label: "Location", type: "dir", required: true, modal: "directoryPickerModal", description: "Local directory to sync with the specified Google Drive ID." },
@@ -49,7 +49,7 @@ export const SETTINGS_SCHEMA = [
     fields: [
       { key: "log_level", label: "Log Level", type: "dropdown", options: ["debug", "info"], required: true, description: "Set the logging verbosity for border replacerr." },
       { key: "dry_run", label: "Dry Run", type: "check_box", description: "Simulate border replacement without making changes." },
-      { key: "border_width", label: "Border Width (px)", type: "number", description: "Width of the border to apply to posters, in pixels." },
+      { key: "border_width", label: "Border Width (px)", type: "number", required: true, placeholder: "26px", description: "Width of the border to apply to posters, in pixels." },
       { key: "skip", label: "Skip", type: "check_box", description: "Skip replacing/updating borders for posters until holidays." },
       { key: "exclusion_list", label: "Exclusion List", type: "textarea", description: "List of items to exclude from border replacement." },
       { key: "border_colors", label: "Border Colors", type: "color_list", preview: "true", description: "List of colors to use for poster borders." },
@@ -57,10 +57,10 @@ export const SETTINGS_SCHEMA = [
         key: "holidays", label: "Holidays", type: "replacerr_custom", modal: "openModal",
         description: "Add holiday color overrides.",
         fields: [
-          { key: "preset", label: "Holiday Presets", type: "modal_helper", helper: "loadHolidayPresets", description: "Select a preset for holiday color overrides." },
+          { key: "preset", label: "Holiday Presets", type: "holiday_presets", description: "Select a preset for holiday color overrides." },
           { key: "name", label: "Holiday Name", type: "text", required: true, description: "Name of the holiday for color override." },
-          { key: "schedule", label: "Schedule", type: "modal_helper", helper: "populateScheduleDropdowns", required: true, description: "Schedule for when the holiday override is active." },
-          { key: "color", label: "Colors", type: "color_list", preview: "false", required: true, description: "Colors to use for the holiday border override." },
+          { key: "schedule", label: "Schedule", type: "holiday_schedule", required: false, description: "Schedule for when the holiday override is active." },
+          { key: "color", label: "Colors", type: "color_list", preview: "false", required: false, description: "Colors to use for the holiday border override." },
         ],
       },
     ],
@@ -80,7 +80,7 @@ export const SETTINGS_SCHEMA = [
           { key: "tag_name", label: "Tag Name", type: "text", required: true, description: "Tag name to filter items for upgrade." },
           { key: "ignore_tag", label: "Ignore Tag", type: "text", description: "Tag name to exclude from upgrade." },
           { key: "unattended", label: "Unattended", type: "check_box", description: "Run upgrades without user intervention." },
-          { key: "season_monitored_threshold", label: "Season Monitored Threshold", type: "number", required: true, show_if_instance: "sonarr", description: "Minimum number of monitored seasons required (Sonarr only)." },
+          { key: "season_monitored_threshold", label: "Season Monitored Threshold", type: "number", float: true, required: true, show_if_instance_type: "sonarr", description: "Minimum percentage of monitored seasons required (Sonarr only)." },
         ],
       },
     ],
@@ -106,13 +106,13 @@ export const SETTINGS_SCHEMA = [
     fields: [
       { key: "log_level", label: "Log Level", type: "dropdown", options: ["debug", "info"], required: true, description: "Set the logging verbosity for Nohl module." },
       { key: "dry_run", label: "Dry Run", type: "check_box", description: "Simulate actions without making changes." },
-      { key: "searches", label: "Searches", type: "number", description: "Number of search operations to perform." },
+      { key: "searches", label: "Searches", type: "number", required: true, description: "Number of search operations to perform." },
       { key: "print_files", label: "Print Files", type: "check_box", description: "Print file paths during operation." },
       { key: "source_dirs", label: "Source Directories", type: "dir_list_options", options: ['scan', 'resolve'], required: true, modal: "directoryPickerModal", description: "Directories to scan or resolve for files." },
       { key: "exclude_profiles", label: "Exclude Profiles", type: "textarea", description: "Profiles to exclude from processing." },
       { key: "exclude_movies", label: "Exclude Movies", type: "textarea", description: "Movies to exclude from processing." },
       { key: "exclude_series", label: "Exclude Series", type: "textarea", description: "Series to exclude from processing." },
-      { key: "instances", label: "Instances", type: "instances", required: true, add_posters_option: true, instance_types: ["radarr", "sonarr"], description: "Instances to apply Nohl logic to." },
+      { key: "instances", label: "Instances", type: "instances", required: true, add_posters_option: false, instance_types: ["radarr", "sonarr"], description: "Instances to apply Nohl logic to." },
     ],
   },
 
@@ -125,10 +125,9 @@ export const SETTINGS_SCHEMA = [
         key: "mappings", label: "Mappings", type: "labelarr_custom", modal: "openModal",
         description: "Mappings of app_type, app_instance, labels, plex_instances.",
         fields: [
-          { key: "app_type", label: "App Type", type: "dropdown", options: ["radarr", "sonarr"], required: true, description: "Select the application type for this mapping." },
-          { key: 'app_instance', label: 'App Instance', type: 'instance_dropdown', from: 'app_type', description: "Select the specific app instance for this mapping." },
+          { key: 'app_instance', label: 'App Instance', type: 'instance_dropdown', from: ["radarr", "sonarr"], required: true, description: "Select the specific app instance for this mapping." },
           { key: "labels", label: "Labels", type: "text", required: true, description: "Labels to assign in this mapping." },
-          { key: "plex_instances", label: "Plex Instances", type: "instances", required: true, instance_types: [ "plex" ], description: "List of Plex instances to apply the labels to." },
+          { key: "plex_instances", label: "Plex Instances", type: "instances", required: true, instance_types: [ "plex" ], add_posters_option: false, description: "List of Plex instances to apply the labels to." },
         ],
       },
     ],
@@ -148,7 +147,7 @@ export const SETTINGS_SCHEMA = [
     fields: [
       { key: "log_level", label: "Log Level", type: "dropdown", options: ["debug", "info"], required: true, description: "Set the logging verbosity for jduparr." },
       { key: "dry_run", label: "Dry Run", type: "check_box", description: "Simulate duplicate detection without making changes." },
-      { key: "source_dirs", label: "Source Directories", type: "dir_list", modal: "directoryPickerModal", description: "Directories to scan for duplicate files." },
+      { key: "source_dirs", label: "Source Directories", type: "dir_list", required: true, modal: "directoryPickerModal", description: "Directories to scan for duplicate files." },
     ],
   },
 

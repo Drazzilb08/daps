@@ -34,7 +34,7 @@
     background: var(--surface);
     padding: 2.5rem 3.5rem;
     border-radius: 14px;
-    box-shadow: 0 2px 32px rgba(0,0,0,0.18);
+    box-shadow: 0 2px 32px rgba(0, 0, 0, 0.18);
     animation: fadeIn 0.6s ease-out forwards;
 }
 
@@ -99,12 +99,10 @@
    UPDATE TOOLTIP & DASHBOARD HEADER/FOOTER
 ====================================================== */
 
-/* Tooltip container for update badge */
 .has-update-tooltip {
     position: relative;
 }
 
-/* Tooltip itself */
 .update-tooltip {
     min-width: 225px;
     background: var(--surface-alt);
@@ -149,7 +147,6 @@
     font-size: 0.94em;
 }
 
-/* Footer (fixed, with card background, rounded) */
 .daps-footer {
     position: fixed;
     bottom: 0;
@@ -159,19 +156,17 @@
     color: var(--text-color);
     font-size: 0.85rem;
     border-top-left-radius: 14px;
-    box-shadow: -2px -2px 5px rgba(0,0,0,0.15);
+    box-shadow: -2px -2px 5px rgba(0, 0, 0, 0.15);
     display: flex;
     gap: 1rem;
     align-items: center;
     z-index: 1000;
 }
 
-/* Footer version label */
 .footer-version {
     font-weight: 500;
 }
 
-/* Update badge in footer (hidden by default) */
 .footer-update-badge {
     display: none;
     background: var(--error, #f44336);
@@ -186,7 +181,6 @@
     position: relative;
 }
 
-/* Footer external links (GitHub, Discord) */
 .footer-link {
     display: flex;
     align-items: center;
@@ -200,7 +194,7 @@
     margin: 1.5rem auto 1rem;
     font-size: 2.5rem;
     font-weight: 600;
-    background: linear-gradient(90deg, #FFD233, #FFE277 60%, #FFD233);
+    background: linear-gradient(90deg, #ffd233, #ffe277 60%, #ffd233);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;

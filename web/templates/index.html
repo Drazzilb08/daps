@@ -1,103 +1,203 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <script>
+            (function () {
+                var t;
+                try {
+                    t = localStorage.getItem('theme');
+                } catch (e) {}
+                if (t) {
+                    document.documentElement.setAttribute('data-theme', t);
+                }
+            })();
+        </script>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>DAPS</title>
+        <link rel="icon" href="/web/static/img/favicon.ico" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/web/static/img/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/web/static/img/favicon-16x16.png" />
+        <link rel="icon" type="image/svg+xml" href="/web/static/img/favicon-colored.svg" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/web/static/img/apple-touch-icon.png" />
+        <link rel="mask-icon" href="/web/static/img/mask-icon.svg" color="#5bbad5" />
+        <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css" />
+        <script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit/lib/xterm-addon-fit.js"></script>
+        <link
+            href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css"
+            rel="stylesheet"
+        />
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+        <script type="module" src="/web/static/js/main.js"></script>
 
-<head>
-<script>
-(function() {
-    var t;
-    try { t = localStorage.getItem('theme'); } catch(e){}
-    if (t) {
-        document.documentElement.setAttribute('data-theme', t);
-    }
-})();
-</script>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DAPS</title>
-    <link rel="icon" href="/web/static/img/favicon.ico">
-    <link rel="icon" type="image/png" sizes="32x32" href="/web/static/img/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="/web/static/img/favicon-16x16.png">
-    <link rel="icon" type="image/svg+xml" href="/web/static/img/favicon-colored.svg">
-    <link rel="apple-touch-icon" sizes="180x180" href="/web/static/img/apple-touch-icon.png">
-    <link rel="mask-icon" href="/web/static/img/mask-icon.svg" color="#5bbad5">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/xterm/css/xterm.css" />
-    <script src="https://cdn.jsdelivr.net/npm/xterm/lib/xterm.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/xterm-addon-fit/lib/xterm-addon-fit.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <script type="module" src="/web/static/js/main.js"></script>
+        <link rel="stylesheet" href="/web/static/css/base.css" />
+        <link rel="stylesheet" href="/web/static/css/common.css" />
+        <link rel="stylesheet" href="/web/static/css/layout.css" />
+        <link rel="stylesheet" href="/web/static/css/navigation.css" />
+        <link rel="stylesheet" href="/web/static/css/settings.css" />
+        <link rel="stylesheet" href="/web/static/css/instances.css" />
+        <link rel="stylesheet" href="/web/static/css/index.css" />
+        <link rel="stylesheet" href="/web/static/css/schedule.css" />
+        <link rel="stylesheet" href="/web/static/css/modals.css" />
+        <link rel="stylesheet" href="/web/static/css/logs.css" />
+        <link rel="stylesheet" href="/web/static/css/poster_search.css" />
+        <link rel="stylesheet" href="/web/static/css/notifications.css" />
+    </head>
 
-    <link rel="stylesheet" href="/web/static/css/base.css" />
-    <link rel="stylesheet" href="/web/static/css/common.css" />
-    <link rel="stylesheet" href="/web/static/css/layout.css" />
-    <link rel="stylesheet" href="/web/static/css/navigation.css" />
-    <link rel="stylesheet" href="/web/static/css/settings.css" />
-    <link rel="stylesheet" href="/web/static/css/instances.css" />
-    <link rel="stylesheet" href="/web/static/css/index.css" />
-    <link rel="stylesheet" href="/web/static/css/schedule.css" />
-    <link rel="stylesheet" href="/web/static/css/modals.css" />
-    <link rel="stylesheet" href="/web/static/css/logs.css" />
-    <link rel="stylesheet" href="/web/static/css/poster_search.css" />
-    <link rel="stylesheet" href="/web/static/css/notifications.css" />
-</head>
+    <body>
+        <div id="pageOverlay"></div>
+        <!-- Header Bar -->
+        <div class="header-bar">
+            <a href="/" class="nav-logo">
+                <img src="/web/static/img/favicon-32x32.png" alt="DAPS logo" />
+            </a>
+            <button
+                class="hamburger menu"
+                id="sidebarToggle"
+                aria-label="Main Menu"
+                aria-expanded="false"
+            >
+                <svg width="34" height="34" viewBox="0 0 100 100">
+                    <path
+                        class="line line1"
+                        d="M 20,29.000046 H 80.000231 C 80.000231,29.000046 94.498839,28.817352 94.532987,66.711331 94.543142,77.980673 90.966081,81.670246 85.259173,81.668997 79.552261,81.667751 75.000211,74.999942 75.000211,74.999942 L 25.000021,25.000058"
+                    />
+                    <path class="line line2" d="M 20,50 H 80" />
+                    <path
+                        class="line line3"
+                        d="M 20,70.999954 H 80.000231 C 80.000231,70.999954 94.498839,71.182648 94.532987,33.288669 94.543142,22.019327 90.966081,18.329754 85.259173,18.331003 79.552261,18.332249 75.000211,25.000058 75.000211,25.000058 L 25.000021,74.999942"
+                    />
+                </svg>
+            </button>
+        </div>
 
-<body>
-  <div id="pageOverlay"></div>
-  <!-- Header Bar -->
-  <div class="header-bar">
-    <a href="/" class="nav-logo">
-        <img src="/web/static/img/favicon-32x32.png" alt="DAPS logo" />
-        <span class="daps-title">DAPS</span>
-    </a>
-    <button id="sidebarToggle" class="hamburger" aria-label="Toggle navigation" tabindex="0">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
+        <!-- Sidebar Navigation -->
+        <nav class="sidebar" id="sidebarNav">
+            <ul class="menu">
+                <li>
+                    <a id="link-schedule" href="/pages/schedule"
+                        ><span class="icon material-icons">event_note</span>Schedule</a
+                    >
+                </li>
+                <li>
+                    <a id="link-instances" href="/pages/instances"
+                        ><span class="icon material-icons">desktop_windows</span>Instances</a
+                    >
+                </li>
+                <li>
+                    <a id="link-notifications" href="/pages/notifications"
+                        ><span class="icon material-icons">chat_bubble_outline</span
+                        >Notifications</a
+                    >
+                </li>
+                <li>
+                    <a id="link-poster-search" href="/pages/poster_search"
+                        ><span class="icon material-icons">search</span>Poster Search</a
+                    >
+                </li>
+                <li>
+                    <a id="link-poster-management" href="/pages/poster_management"
+                        ><span class="icon material-icons">collections</span>Poster Management</a
+                    >
+                </li>
+                <li id="settings-section">
+                    <a href="/pages/settings" class="main-section">
+                        <span class="icon material-icons">settings</span>Settings
+                    </a>
+                    <ul class="settings-sub-menu" style="display: none">
+                        <li>
+                            <a href="/pages/settings?module_name=sync_gdrive" class="sub-section"
+                                >Sync Gdrive</a
+                            >
+                        </li>
+                        <li>
+                            <a
+                                href="/pages/settings?module_name=poster_renamerr"
+                                class="sub-section"
+                                >Poster Renamerr</a
+                            >
+                        </li>
+                        <li>
+                            <a
+                                href="/pages/settings?module_name=poster_cleanarr"
+                                class="sub-section"
+                                >Poster Cleanarr</a
+                            >
+                        </li>
+                        <li>
+                            <a
+                                href="/pages/settings?module_name=unmatched_assets"
+                                class="sub-section"
+                                >Unmatched Assets</a
+                            >
+                        </li>
+                        <li>
+                            <a
+                                href="/pages/settings?module_name=border_replacerr"
+                                class="sub-section"
+                                >Border Replacerr</a
+                            >
+                        </li>
+                        <li>
+                            <a href="/pages/settings?module_name=renameinatorr" class="sub-section"
+                                >Renameinatorr</a
+                            >
+                        </li>
+                        <li>
+                            <a href="/pages/settings?module_name=upgradinatorr" class="sub-section"
+                                >Upgradinatorr</a
+                            >
+                        </li>
+                        <li>
+                            <a href="/pages/settings?module_name=nohl" class="sub-section">Nohl</a>
+                        </li>
+                        <li>
+                            <a href="/pages/settings?module_name=labelarr" class="sub-section"
+                                >Labelarr</a
+                            >
+                        </li>
+                        <li>
+                            <a
+                                href="/pages/settings?module_name=health_checkarr"
+                                class="sub-section"
+                                >Health Checkarr</a
+                            >
+                        </li>
+                        <li>
+                            <a href="/pages/settings?module_name=jduparr" class="sub-section"
+                                >Jduparr</a
+                            >
+                        </li>
+                        <li>
+                            <a href="/pages/settings?module_name=main" class="sub-section"
+                                >General</a
+                            >
+                        </li>
+                        <li>
+                            <a href="/pages/settings?module_name=user_interface" class="sub-section"
+                                >UI</a
+                            >
+                        </li>
+                    </ul>
+                </li>
+                <li>
+                    <a id="link-logs" href="/pages/logs"
+                        ><span class="icon material-icons">receipt_long</span>Logs</a
+                    >
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <span id="version" class="footer-version">📦 Version: ...</span>
+            </div>
+        </nav>
 
-  <!-- Sidebar Navigation -->
-  <nav class="sidebar" id="sidebarNav">
-      <ul class="menu">
-          <li><a id="link-schedule" href="/pages/schedule"><span class="icon material-icons">event_note</span>Schedule</a></li>
-          <li><a id="link-instances" href="/pages/instances"><span class="icon material-icons">desktop_windows</span>Instances</a></li>
-          <li><a id="link-notifications" href="/pages/notifications"><span class="icon material-icons">chat_bubble_outline</span>Notifications</a></li>
-          <li><a id="link-poster-search" href="/pages/poster_search"><span class="icon material-icons">search</span>Poster Search</a></li>
-          <li><a id="link-poster-management" href="/pages/poster_management"><span class="icon material-icons">collections</span>Poster Management</a></li>
-          <li id="settings-section">
-              <a href="/pages/settings" class="main-section">
-                  <span class="icon material-icons">settings</span>Settings
-              </a>
-              <ul class="settings-sub-menu" style="display:none;">
-                  <li><a href="/pages/settings?module_name=sync_gdrive" class="sub-section">Sync Gdrive</a></li>
-                  <li><a href="/pages/settings?module_name=poster_renamerr" class="sub-section">Poster Renamerr</a></li>
-                  <li><a href="/pages/settings?module_name=poster_cleanarr" class="sub-section">Poster Cleanarr</a></li>
-                  <li><a href="/pages/settings?module_name=unmatched_assets" class="sub-section">Unmatched Assets</a></li>
-                  <li><a href="/pages/settings?module_name=border_replacerr" class="sub-section">Border Replacerr</a></li>
-                  <li><a href="/pages/settings?module_name=renameinatorr" class="sub-section">Renameinatorr</a></li>
-                  <li><a href="/pages/settings?module_name=upgradinatorr" class="sub-section">Upgradinatorr</a></li>
-                  <li><a href="/pages/settings?module_name=nohl" class="sub-section">Nohl</a></li>
-                  <li><a href="/pages/settings?module_name=labelarr" class="sub-section">Labelarr</a></li>
-                  <li><a href="/pages/settings?module_name=health_checkarr" class="sub-section">Health Checkarr</a></li>
-                  <li><a href="/pages/settings?module_name=jduparr" class="sub-section">Jduparr</a></li>
-                  <li><a href="/pages/settings?module_name=main" class="sub-section">General</a></li>
-                  <li><a href="/pages/settings?module_name=user_interface" class="sub-section">UI</a></li>
-              </ul>
-          </li>
-          <li><a id="link-logs" href="/pages/logs"><span class="icon material-icons">receipt_long</span>Logs</a></li>
-      </ul>
-      <div class="sidebar-footer">
-          <span id="version" class="footer-version">📦 Version: ...</span>
-      </div>
-  </nav>
-
-  <div class="container">
-      <div class="content">
-          <div id="viewFrame" class="view-frame" style="opacity:0;">
-          </div>
-      </div>
-  </div>
-  <div id="toast-container"></div>
-  <span id="update-badge" style="display:none"></span>
-</body>
+        <div class="container">
+            <div id="viewFrame" class="view-frame" style="opacity: 0"></div>
+        </div>
+        <div id="toast-container"></div>
+        <span id="update-badge" style="display: none"></span>
+    </body>
 </html>

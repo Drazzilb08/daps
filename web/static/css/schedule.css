@@ -1,162 +1,172 @@
 #schedule-list.card-list {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr); /* desktop: 3 columns */
-  max-width: 1080px;
-  margin: 0 auto 2.5rem auto;
-  gap: 1.5rem 1.5rem;
-  padding: 0 0 3rem 0;
-  justify-items: center;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 1080px;
+    margin: 0 auto 2.5rem auto;
+    gap: 1.5rem 1.5rem;
+    padding: 0 0 3rem 0;
+    justify-items: center;
 }
 
 #schedule-list .card,
 #schedule-list .card.card-add {
-  aspect-ratio: 1 / 1;
-  width: 100%;
-  min-width: 220px;
-  max-width: 220px;
-  padding: 1.16rem 1.3rem 1.08rem 1.3rem;
-  box-sizing: border-box;
+    aspect-ratio: 1 / 1;
+    width: 100%;
+    min-width: 220px;
+    max-width: 220px;
+    padding: 1.16rem 1.3rem 1.08rem 1.3rem;
+    box-sizing: border-box;
 }
 
 .page-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  max-width: 900px;
-  margin: 0 auto 2.2rem auto;
-  padding: 2rem 1rem 0 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 900px;
+    margin: 0 auto 2.2rem auto;
+    padding: 2rem 1rem 0 1rem;
 }
 
 #schedule-list.card-list {
-  max-width: 900px;
-  margin: 0 auto;
+    max-width: 900px;
+    margin: 0 auto;
 }
 
 .page-header h1 {
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--text-color);
-  margin: 0;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
 }
 
 .card-pill {
-  display: inline-block;
-  background: color-mix(in srgb, var(--accent) 10%, var(--surface) 90%);
-  color: var(--accent);
-  border-radius: 999px;
-  padding: 0.16em 0.9em;
-  font-size: 0.94rem;
-  margin: 0 0.18em 0.18em 0;
-  font-weight: 500;
-  letter-spacing: 0.01em;
-  border: 1px solid var(--accent-dark);
-  opacity: 0.94;
+    display: inline-block;
+    background: color-mix(in srgb, var(--accent) 10%, var(--surface) 90%);
+    color: var(--accent);
+    border-radius: 999px;
+    padding: 0.16em 0.9em;
+    font-size: 0.94rem;
+    margin: 0 0.18em 0.18em 0;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    border: 1px solid var(--accent-dark);
+    opacity: 0.94;
 }
 
-/* Icon button danger variant (schedule-specific) */
 .btn--icon.btn--danger {
-  color: var(--error);
+    color: var(--error);
 }
 .btn--icon.btn--danger:hover,
 .btn--icon.btn--danger:focus {
-  background: color-mix(in srgb, var(--error) 16%, transparent 84%);
-  color: var(--error-highlight);
+    background: color-mix(in srgb, var(--error) 16%, transparent 84%);
+    color: var(--error-highlight);
 }
 
-/* Show stop icon on hover/focus for desktop, always stop on mobile */
-.btn--icon.show-stop .spinner { display: none !important; }
-.btn--icon.show-stop svg { display: inline-block !important; }
+.btn--icon.show-stop .spinner {
+    display: none !important;
+}
+.btn--icon.show-stop svg {
+    display: inline-block !important;
+}
 
-/* On mobile (touch), always show stop icon when running */
 @media (hover: none) {
-  .btn--icon .spinner { display: none !important; }
-  .btn--icon svg { display: inline-block !important; }
+    .btn--icon .spinner {
+        display: none !important;
+    }
+    .btn--icon svg {
+        display: inline-block !important;
+    }
 }
 
 @keyframes spin {
-  to { transform: rotate(360deg);}
+    to {
+        transform: rotate(360deg);
+    }
 }
 
 .card-action-btn:disabled {
-  opacity: 0.5;
-  cursor: wait;
+    opacity: 0.5;
+    cursor: wait;
 }
 .card-bottom-bar {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0.7em;
-  padding: 0 1em;
-  display: flex;
-  flex-direction: row;
-  align-items: flex-end;
-  justify-content: space-between;
-  pointer-events: auto;    /* CHANGED: now children can receive clicks */
-  z-index: 2;
-  width: auto;
-  margin: 0;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0.7em;
+    padding: 0 1em;
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    pointer-events: auto;
+    z-index: 2;
+    width: auto;
+    margin: 0;
 }
 
 .card-last-run {
-  font-size: 0.87em;     /* was 0.97em */
-  color: var(--text-secondary, #bdbdbd);
-  display: flex;
-  align-items: center;
-  gap: 0.18em;           /* tighten gap */
-  pointer-events: none;
-  user-select: none;
-  min-width: 0;
-  font-weight: 400;      /* optional: lighter font */
+    font-size: 0.87em;
+    color: var(--text-secondary, #bdbdbd);
+    display: flex;
+    align-items: center;
+    gap: 0.18em;
+    pointer-events: none;
+    user-select: none;
+    min-width: 0;
+    font-weight: 400;
 }
 
 .schedule-btn-wrap {
-  position: relative;
-  display: flex;
-  align-items: flex-end;
-  justify-content: flex-end;
-  flex-direction: row;
-  flex: 0 1 auto;      /* let it shrink/grow as needed */
-  min-width: 40px;
-  margin-left: 0.35em;
-  pointer-events: auto;
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+    flex-direction: row;
+    flex: 0 1 auto;
+    min-width: 40px;
+    margin-left: 0.35em;
+    pointer-events: auto;
 }
 
 .card-action-btn {
-  pointer-events: auto;
+    pointer-events: auto;
 }
 
 .card-last-run .material-icons {
-  font-size: 1em !important; /* was 1.09em, match text */
-  vertical-align: middle;
-  opacity: .77;         /* slightly lighter icon */
-  line-height: 1;
-}
-@media (max-width: 900px) {
-  #schedule-list.card-list {
-    grid-template-columns: repeat(2, 1fr);
-    max-width: 720px;
-    gap: 1.2rem;
-    padding: 0 0 2rem 0;
-  }
+    font-size: 1em !important;
+    vertical-align: middle;
+    opacity: 0.77;
+    line-height: 1;
 }
 
-/* 1 column for mobile (≤600px) */
+@media (max-width: 1000px) {
+}
+@media (max-width: 900px) {
+}
+
 @media (max-width: 600px) {
-  #schedule-list.card-list {
-    grid-template-columns: 1fr;
-    max-width: 98vw;
-    gap: 0.7rem;
-    padding: 0 0.1rem 1.6rem 0.1rem;
-    margin: 0 auto;
-    justify-items: center;
-    align-items: center;
-  }
-  #schedule-list .card, #schedule-list .card.card-add {
-    max-width: 95vw;
-    min-width: 82vw;
-    width: 100%;
-    margin-left: auto;
-    margin-right: auto;
-    box-sizing: border-box;
-  }
+    #schedule-list.card-list {
+        display: grid !important;
+        grid-template-columns: 1fr !important;
+        max-width: 98vw !important;
+        gap: 0.7rem !important;
+        padding: 0 0.1rem 1.6rem 0.1rem !important;
+        margin: 0 auto !important;
+        justify-items: center !important;
+        align-items: center !important;
+    }
+    #schedule-list .card,
+    #schedule-list .card.card-add {
+        width: 95vw !important;
+        min-width: 82vw !important;
+        max-width: 95vw !important;
+        box-sizing: border-box !important;
+        aspect-ratio: 1 / 1 !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+        border-radius: 17px !important;
+        padding: 1.16rem 1.1rem 1.08rem 1.1rem !important;
+        background: var(--surface, #191b22) !important;
+        font-size: 0.98rem !important;
+    }
 }

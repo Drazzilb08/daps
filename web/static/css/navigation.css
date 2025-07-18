@@ -2,16 +2,16 @@ nav.sidebar {
     position: fixed;
     top: 64px;
     left: 0;
-    width: 256px;
+    width: 210px;
     height: calc(100vh - 64px);
     background: var(--sidebar-bg);
     color: var(--sidebar-fg);
     display: flex;
     flex-direction: column;
     z-index: 200;
-    border-right: none;
     box-shadow: none;
-    transition: left 0.28s cubic-bezier(.5,0,.5,1), box-shadow 0.2s;
+    border-right: none;
+    transition: left 0.28s cubic-bezier(0.5, 0, 0.5, 1), box-shadow 0.2s;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
 }
@@ -19,30 +19,14 @@ nav.sidebar {
 .nav-logo {
     display: flex;
     align-items: center;
-    padding: 0 1.2rem 0 0.6rem;
-    font-size: 1.4rem;
-    font-weight: 700;
+    padding: 0 12px;
     color: var(--primary);
     background: transparent;
-    letter-spacing: 0.02em;
-    text-decoration: none;
     height: 64px;
 }
-
 .nav-logo img {
-    display: block;
     width: 38px;
     height: 38px;
-    margin: 0;
-    margin-right: 0.5em;
-}
-
-.daps-title {
-    font-size: 1.4rem;
-    font-weight: 700;
-    letter-spacing: 1.5px;
-    margin-left: 0.08em;
-    transition: opacity 0.2s;
 }
 
 .menu {
@@ -56,18 +40,15 @@ nav.sidebar {
     gap: 0;
     position: relative;
 }
-
 .menu > li {
     position: relative;
 }
-
 .menu > li > a,
 .menu > li > a.main-section {
-    font-size: 1rem;
     font-weight: 500;
     color: var(--sidebar-fg);
     background: transparent;
-    padding: 0.26em 1.1em 0.36em 0.65em;
+    padding: 0.22em 0.7em 0.22em 0.55em;
     min-height: 28px;
     display: flex;
     align-items: center;
@@ -77,16 +58,14 @@ nav.sidebar {
     position: relative;
     cursor: pointer;
     letter-spacing: 0.01em;
+    line-height: 1.22;
     transition: background 0.1s, color 0.1s;
     z-index: 1;
     outline: none;
     border: none;
     box-shadow: none;
-    line-height: 1.22;
 }
-
 .menu .icon {
-    font-size: 1.34em;
     min-width: 1.5em;
     text-align: center;
     color: inherit;
@@ -129,23 +108,16 @@ nav.sidebar {
 }
 
 .menu > li > a.active,
-.menu > li > a.main-section.active {
-    color: var(--primary);
-    font-weight: 700;
-    background: transparent;
-    box-shadow: none;
-}
-
-.menu > li > a:hover,
-.menu > li > a.main-section:hover {
-    background: transparent;
-    color: var(--primary);
-    box-shadow: none;
-}
-
+.menu > li > a.main-section.active,
 .menu > li.active-section > a.main-section {
     color: var(--primary);
     font-weight: 700;
+    background: transparent;
+    box-shadow: none;
+}
+.menu > li > a:hover,
+.menu > li > a.main-section:hover {
+    color: var(--primary);
     background: transparent;
     box-shadow: none;
 }
@@ -158,13 +130,10 @@ nav.sidebar {
     flex-direction: column;
     background: none;
 }
-
 .menu .settings-sub-menu li {
     margin-bottom: 0.02em;
 }
-
 .menu .settings-sub-menu a.sub-section {
-    font-size: 0.99rem;
     color: var(--sidebar-fg);
     font-weight: 400;
     background: transparent;
@@ -181,7 +150,6 @@ nav.sidebar {
     border: none;
     box-shadow: none;
 }
-
 .menu .settings-sub-menu a.sub-section.active,
 .menu .settings-sub-menu a.sub-section:hover {
     color: var(--primary);
@@ -194,7 +162,6 @@ nav.sidebar {
     margin-top: auto;
     padding: 1em 1.3em 1.5em 1.3em;
     color: var(--sidebar-fg);
-    font-size: 1em;
     border-top: 1.5px solid var(--sidebar-divider);
     background: var(--sidebar-bg);
     text-align: center;
@@ -204,8 +171,8 @@ nav.sidebar {
 
 @media (max-width: 1100px) {
     nav.sidebar {
-        left: -256px;
-        box-shadow: 2px 0 16px 0 rgba(0,0,0,0.24);
+        left: -210px;
+        box-shadow: 2px 0 16px 0 rgba(0, 0, 0, 0.24);
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
         height: calc(100dvh - 64px);
@@ -217,8 +184,5 @@ nav.sidebar {
     }
     .daps-title {
         display: none !important;
-    }
-    .nav-logo {
-        padding-right: 0;
     }
 }

@@ -92,7 +92,6 @@
     min-width: 110px;
 }
 
-/* Error rows */
 .gdrive-row-error td,
 .gdrive-row-error {
     background: var(--stats-row-error-bg, #37242a) !important;
@@ -420,7 +419,7 @@
     background: var(--terminal-bg);
     border: var(--terminal-border);
     color: var(--terminal-color);
-    /* font-family: "Courier New", Courier, monospace; */
+
     font-size: 1em;
     padding: 1.5em 1.5em;
     width: 14em;

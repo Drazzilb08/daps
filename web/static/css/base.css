@@ -2,18 +2,18 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
 /* ======================================================
-    ROOT VARIABLES (DARK THEME DEFAULT)
+   ROOT VARIABLES — THEME DEFAULTS
 ====================================================== */
 
 :root {
     --font-family: 'Inter', 'Roboto', Arial, sans-serif;
 }
 
+/* ========== DARK THEME (default) ========== */
 :root[data-theme='dark'] {
-    /* ===== BRAND & ACTION COLORS ===== */
-    --primary: #ff7300;        /* Main accent (nav bar, active) */
-    --focus: #ff9500;          /* Focus ring, hover, subtle accent */
-    --accent: #3e7bfa;         /* Blue accent (links, badges, info) */
+    --primary: #ff7300;
+    --focus: #ff9500;
+    --accent: #3e7bfa;
     --accent-dark: #204288;
     --success: #32d74b;
     --success-highlight: #30d16e;
@@ -22,31 +22,31 @@
     --caution: #ff9f0a;
     --caution-highlight: #ffcc00;
     --info: #5ac8fa;
-    --input-bg: #21242a;
 
-    /* ===== BACKGROUND & FOREGROUND COLORS ===== */
-
-    --bg: #23272b;             /* App background (body/sidebar) */
-    --surface: #262a30;        /* Main raised area background */
-    --surface-alt: #282c31;    /* Alternate section/card bg */
-    --sidebar-bg: #191b1f;     /* Sidebar background */
-    --sidebar-fg: #f3f3f3;     /* Sidebar text */
-    --sidebar-highlight: var(--primary); /* Sidebar accent bar */
+    --bg: #23272b;
+    --surface: #262a30;
+    --surface-alt: #282c31;
+    --sidebar-bg: #191b1f;
+    --sidebar-fg: #f3f3f3;
+    --sidebar-highlight: var(--primary);
     --sidebar-divider: #292c30;
-    --header-bg: #191b1f;      /* Top bar background */
-    --header-fg: #ffd233;      /* Top bar foreground/accent */
-    --text-color: #e3e3e3;     /* Main text */
-    --muted: #a9a9a9;          /* Less important text */
+    --header-bg: #191b1f;
+    --header-fg: #ffd233;
+    --toolbar: #1f2227;
+
+    --text-color: #e3e3e3;
+    --muted: #a9a9a9;
     --link-color: var(--accent);
     --divider: #292c30;
 
-      --switch-bg: #444952;
-    --switch-bg-active: #3e7bfa;      /* Or match your blue accent */
-    --switch-knob: #1a1a1a;        /* Knob color when off (optional for subtle) */
+    --input-bg: #21242a;
+    --switch-bg: #444952;
+    --switch-bg-active: #3e7bfa;
+    --switch-knob: #1a1a1a;
 }
 
+/* ========== LIGHT THEME ========== */
 :root[data-theme='light'] {
-    /* ===== BRAND & ACTION COLORS ===== */
     --primary: #ff7300;
     --focus: #ff9500;
     --accent: #246ddb;
@@ -58,9 +58,7 @@
     --caution: #e6b500;
     --caution-highlight: #ffcc00;
     --info: #1978d7;
-    --input-bg: #f0f0f4;
 
-    /* ===== BACKGROUND & FOREGROUND COLORS ===== */
     --bg: #fafbfe;
     --surface: #fff;
     --surface-alt: #f7f7fa;
@@ -70,11 +68,14 @@
     --sidebar-divider: #e6e6ea;
     --header-bg: #f5f5f8;
     --header-fg: #ff7300;
+    --toolbar: #e6e6ea;
+
     --text-color: #1a1a1a;
     --muted: #5e5e5e;
     --link-color: var(--accent);
     --divider: #ececf2;
-        
+
+    --input-bg: #f0f0f4;
     --switch-bg: #dadada;
     --switch-bg-active: #3e7bfa;
     --switch-knob: #fff;

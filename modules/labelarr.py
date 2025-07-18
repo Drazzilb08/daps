@@ -43,13 +43,22 @@ def sync_to_plex(
         List[Dict]: List of label changes applied or identified.
     """
     tag_ids: Dict[str, Optional[int]] = {}
-    # Map label names to their corresponding tag IDs in ARR
     for label in labels:
         tag_id = app.get_tag_id_from_name(label)
         if tag_id:
             tag_ids[label] = tag_id
 
-    # Create lookup dictionaries for media items based on different IDs
+    # Create lookups
+    tmdb_imdb_lookup = {
+        (media.get("tmdb_id"), media.get("imdb_id")): media
+        for media in media_dict
+        if media.get("tmdb_id") is not None and media.get("imdb_id")
+    }
+    tvdb_imdb_lookup = {
+        (media.get("tvdb_id"), media.get("imdb_id")): media
+        for media in media_dict
+        if media.get("tvdb_id") is not None and media.get("imdb_id")
+    }
     tmdb_lookup = {
         media["tmdb_id"]: media
         for media in media_dict
@@ -66,7 +75,9 @@ def sync_to_plex(
         if media.get("imdb_id") is not None
     }
     fallback_lookup = {
-        (media["normalized_title"], media["year"]): media for media in media_dict
+        (media["normalized_title"], media["year"]): media
+        for media in media_dict
+        if "normalized_title" in media and "year" in media
     }
 
     data_dict: List[Dict] = []
@@ -95,16 +106,16 @@ def sync_to_plex(
                         ]
                     except AttributeError:
                         logger.error(
-                            f"Error fetching labels for {library_item.title} ({library_item.year})"
+                            f"Error fetching labels for {getattr(library_item, 'title', str(library_item))} (no labels)"
                         )
                         continue
 
+                    # Safely extract IDs
                     ids: Dict[str, Optional[str]] = {
                         "tmdb": None,
                         "tvdb": None,
                         "imdb": None,
                     }
-                    # Extract IDs from Plex item's GUIDs for matching
                     for guid in getattr(library_item, "guids", []):
                         guid_str = getattr(guid, "id", "")
                         if guid_str.startswith("tmdb://"):
@@ -117,50 +128,62 @@ def sync_to_plex(
                     media_item: Optional[Dict] = None
                     match_type: str = "unknown"
 
-                    # Attempt to find media item by TMDB ID if valid
-                    if ids["tmdb"] and ids["tmdb"].isdigit():
-                        media_item = tmdb_lookup.get(int(ids["tmdb"]))
-                        if media_item:
-                            media_id = media_item["tmdb_id"]
-                            plex_id = ids["tmdb"]
-                            match_type = (
-                                f"TMDB Media ID: {media_id} - Plex ID {plex_id}"
-                            )
+                    # 1. Prefer TMDB+IMDB or TVDB+IMDB
+                    tmdb_id = ids.get("tmdb")
+                    imdb_id = ids.get("imdb")
+                    tvdb_id = ids.get("tvdb")
 
-                    # Fallback to TVDB ID if no TMDB match found
-                    if not media_item and ids["tvdb"] and ids["tvdb"].isdigit():
-                        media_item = tvdb_lookup.get(int(ids["tvdb"]))
+                    # Prefer TMDB+IMDB
+                    if tmdb_id and tmdb_id.isdigit() and imdb_id:
+                        key = (int(tmdb_id), imdb_id)
+                        media_item = tmdb_imdb_lookup.get(key)
                         if media_item:
-                            media_id = media_item["tvdb_id"]
-                            plex_id = ids["tvdb"]
-                            match_type = (
-                                f"TVDB Media ID: {media_id} - Plex ID {plex_id}"
-                            )
+                            match_type = f"TMDB+IMDB MATCH: TMDB {tmdb_id} & IMDB {imdb_id}"
 
-                    # Fallback to IMDB ID if no TMDB or TVDB match found
-                    if not media_item and ids["imdb"]:
-                        media_item = imdb_lookup.get(ids["imdb"])
+                    # Next try TVDB+IMDB
+                    if not media_item and tvdb_id and tvdb_id.isdigit() and imdb_id:
+                        key = (int(tvdb_id), imdb_id)
+                        media_item = tvdb_imdb_lookup.get(key)
                         if media_item:
-                            media_id = media_item["imdb_id"]
-                            plex_id = ids["imdb"]
-                            match_type = (
-                                f"IMDB Media ID: {media_id} - Plex ID {plex_id}"
-                            )
+                            match_type = f"TVDB+IMDB MATCH: TVDB {tvdb_id} & IMDB {imdb_id}"
 
-                    # Final fallback to normalized title and year matching
+                    # 2. Fallback to just TMDB, TVDB, IMDB
+                    if not media_item and tmdb_id and tmdb_id.isdigit():
+                        media_item = tmdb_lookup.get(int(tmdb_id))
+                        if media_item:
+                            match_type = f"TMDB MATCH: {tmdb_id}"
+
+                    if not media_item and tvdb_id and tvdb_id.isdigit():
+                        media_item = tvdb_lookup.get(int(tvdb_id))
+                        if media_item:
+                            match_type = f"TVDB MATCH: {tvdb_id}"
+
+                    if not media_item and imdb_id:
+                        media_item = imdb_lookup.get(imdb_id)
+                        if media_item:
+                            match_type = f"IMDB MATCH: {imdb_id}"
+
+                    # 3. Final fallback to normalized title and year
                     if not media_item:
-                        key = (normalize_titles(library_item.title), library_item.year)
-                        media_item = fallback_lookup.get(key)
-                        if media_item:
-                            match_type = "TITLE/YEAR MATCH"
+                        norm_title = normalize_titles(getattr(library_item, "title", ""))
+                        item_year = getattr(library_item, "year", None)
+                        if item_year is not None:
+                            key = (norm_title, item_year)
+                            media_item = fallback_lookup.get(key)
+                            if media_item:
+                                match_type = "TITLE/YEAR MATCH"
+                        else:
+                            logger.debug(
+                                f"Skipping fallback match for '{getattr(library_item, 'title', str(library_item))}' as no 'year' attribute is present (likely not a movie/show item)"
+                            )
 
+                    # 4. Only proceed if a real match was found
                     if media_item:
                         logger.debug(
-                            f"Matched '{library_item.title}' ({library_item.year}) using {match_type} lookup to '{media_item['title']}' ({media_item['year']})"
+                            f"Matched '{getattr(library_item, 'title', str(library_item))}' ({getattr(library_item, 'year', '-')}) using {match_type} to '{media_item.get('title', '-')}' ({media_item.get('year', '-')})"
                         )
                         add_remove: Dict[str, str] = {}
-
-                        # Determine which labels to add or remove based on ARR tags and Plex labels
+                        # Decide add/remove per label
                         for tag, id in tag_ids.items():
                             if tag not in plex_item_labels and id in media_item["tags"]:
                                 add_remove[tag] = "add"
@@ -176,8 +199,8 @@ def sync_to_plex(
                         if add_remove:
                             data_dict.append(
                                 {
-                                    "title": library_item.title,
-                                    "year": library_item.year,
+                                    "title": getattr(library_item, "title", str(library_item)),
+                                    "year": getattr(library_item, "year", None),
                                     "add_remove": add_remove,
                                 }
                             )

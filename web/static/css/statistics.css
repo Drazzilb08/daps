@@ -1,0 +1,151 @@
+
+/* ======================================================
+   STATS HEADER & TITLE
+====================================================== */
+.stats-title {
+    font-weight: 600;
+    font-size: 1.15em;
+    margin-bottom: 0.3em;
+    margin-left: 0.2em;
+    color: var(--text-color);
+}
+
+/* ======================================================
+   STATS TABLE
+====================================================== */
+.stat-card {
+    margin: 0 50px 20px;
+}
+
+.stat-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5em;
+  padding: 1.5em 1.6em 1.2em 1.6em;
+}
+
+.stats-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 0.7em;
+    background: var(--surface);
+    border-radius: 10px;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.12);
+    font-size: 1.03em;
+    table-layout: fixed;
+}
+
+.stats-table th,
+.stats-table td {
+    padding: 0.41em 0.55em;
+    text-align: left;
+    font-family: var(--font-family);
+    vertical-align: middle;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--text-color);
+}
+
+.stats-table th {
+    color: var(--link-color);
+    font-weight: 600;
+    background: var(--surface-alt);
+    border-bottom: 1.5px solid var(--divider);
+    letter-spacing: 0.02em;
+    font-size: 1.07em;
+}
+
+.stats-table td {
+    background: var(--surface);
+    font-size: 0.99em;
+    transition: background 0.12s;
+}
+
+.stats-table tr {
+    border-bottom: 1px solid var(--divider);
+}
+
+.stats-table tr:last-child {
+    border-bottom: none;
+}
+
+.stats-table tr:nth-child(even) td {
+    background: var(--surface-alt);
+}
+
+.stats-table tr:hover td {
+    background: var(--surface-alt);
+    color: var(--link-color);
+}
+
+.stats-table td:first-child {
+    min-width: 145px;
+    max-width: 210px;
+    width: 30%;
+    font-weight: 600;
+}
+
+.stats-table td:nth-child(2),
+.stats-table th:nth-child(2),
+.stats-table td:nth-child(3),
+.stats-table th:nth-child(3),
+.stats-table td:nth-child(4),
+.stats-table th:nth-child(4) {
+    text-align: right;
+}
+
+.gdrive-row-error td,
+.gdrive-row-error {
+    background: var(--surface-alt) !important;
+    color: var(--error) !important;
+}
+
+/* ======================================================
+   STAT BAR
+====================================================== */
+.stat-bar-bg {
+    background: var(--surface-alt);
+    border-radius: 7px;
+    width: 80px;
+    height: 11px;
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0.5em;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-bar-inner {
+    background: linear-gradient(90deg, var(--info), var(--primary));
+    height: 100%;
+    border-radius: 7px;
+}
+
+.stat-bar-percent {
+    color: var(--text-color);
+    font-size: 0.97em;
+    margin-left: 0.2em;
+}
+
+/* ======================================================
+   FOLDER/NAME HIGHLIGHT
+====================================================== */
+.gdrive-name,
+.result-folder {
+    color: var(--link-color);
+    font-weight: 600;
+    font-size: 1.08em;
+    font-family: var(--font-family);
+}
+
+/* ======================================================
+   TABLE FOOTER
+====================================================== */
+.stats-footer {
+    margin-top: 0.7em;
+    font-size: 1.03em;
+    font-weight: 500;
+    color: var(--muted);
+    background: none;
+}

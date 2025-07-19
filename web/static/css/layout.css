@@ -52,29 +52,6 @@ body {
     will-change: opacity;
     overflow-y: auto;
     overflow-x: hidden;
-    padding-top: 0;
-}
-
-.view-frame::before {
-    content: '';
-    display: block;
-    position: fixed;
-    top: 64px;
-    left: 0;
-    width: 100vw;
-    height: 36px;
-    pointer-events: none;
-    z-index: 999;
-    background: linear-gradient(
-        to bottom,
-        var(--surface-alt, #23242a) 0%,
-        rgba(35, 36, 42, 0.12) 45%,
-        rgba(35, 36, 42, 0.04) 85%,
-        transparent 100%
-    );
-}
-.view-frame.is-settings::before {
-    display: none;
 }
 
 .view-frame.fading-out {

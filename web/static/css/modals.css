@@ -1,3 +1,28 @@
+/* .btn--remove-item.remove-btn {
+    max-width: 30px;
+    max-height: 30px;
+    padding: 0.25rem 0.5rem;
+} */
+
+.daily-times-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6em; /* or whatever looks best */
+}
+
+.daily-times-row input[type="time"] {
+  flex: 1 1 auto;
+}
+
+.daily-times-row .remove-btn {
+        max-width: 30px;
+    max-height: 30px;
+    padding: 0.25rem 0.5rem;
+  flex: 0 0 auto;
+
+}
+
+
 /* ======================
    MODAL OVERLAY
 ====================== */
@@ -5,7 +30,7 @@
 .overlay {
     position: fixed;
     inset: 0;
-    background: rgba(24, 25, 31, 0.64);
+    background: var(--overlay-bg);
     backdrop-filter: blur(4px);
     opacity: 0;
     pointer-events: none;
@@ -52,6 +77,22 @@ html.modal-open {
     color: var(--text-color, #e3e3e3);
     border-radius: 10px;
     width: 1000px;
+    max-width: 97vw;
+    min-height: 280px;
+    max-height: 92vh;
+    box-shadow: 0 6px 24px 0 rgba(30, 32, 44, 0.18), 0 1.2px 5px rgba(20, 20, 28, 0.1);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+}
+
+.modal-content-fit {
+    background: var(--surface, #23272b);
+    color: var(--text-color, #e3e3e3);
+    border-radius: 10px;
     max-width: 97vw;
     min-height: 280px;
     max-height: 92vh;
@@ -138,39 +179,54 @@ html.modal-open {
     display: none;
 }
 
+.modal-content .settings-field-row,
+.modal-content .modal-field-row {
+  display: flex;
+  align-items: flex-start;
+  width: 100%;
+  min-height: 38px;
+  margin-bottom: 18px;
+  font-size: 1.04rem;
+  box-sizing: border-box;
+}
+
 .modal-content .settings-field-labelcol,
 .modal-content .modal-field-labelcol {
-    min-width: 150px;
-    max-width: 240px;
-    flex: 0 0 200px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    justify-content: flex-start;
-    padding-right: 16px;
+  min-width: 150px;
+  max-width: 240px;
+  flex: 0 0 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding-right: 16px;
+  box-sizing: border-box;
 }
+
 .modal-content .settings-field-labelcol label,
 .modal-content .modal-field-labelcol label {
-    font-weight: 500;
-    color: var(--primary);
-    padding-top: 0.21em;
-    line-height: 1.3;
-    text-align: right;
-    margin-bottom: 0.13em;
-    font-size: 1.01em;
+  font-weight: 500;
+  color: var(--primary);
+  padding-top: 0.21em;
+  line-height: 1.3;
+  text-align: right;
+  margin-bottom: 0.13em;
+  width: 100%;
+  display: block;
+  font-size: 1.01em;
 }
+
+/* Modal input col mirrors settings but tighter gap */
 .modal-content .settings-field-inputwrap,
 .modal-content .modal-field-inputwrap {
-    flex: 1 1 320px;
-    min-width: 160px;
-    display: flex;
-    flex-direction: column;
-    gap: 0.13em;
-    box-sizing: border-box;
-    align-items: stretch;
-    padding-left: 0.7em;
-    padding-right: 1.7em;
-    max-width: 97%;
+  flex: 1 1 320px;
+  min-width: 160px;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.13em;
+  box-sizing: border-box;
+  align-items: stretch;
 }
 .modal-content .field-help-text {
     color: var(--muted);
@@ -280,6 +336,111 @@ html.modal-open {
 }
 
 /* ======================
+    IMAGE PREIVEW
+========================= */
+
+/* Poster field modal overrides */
+.modal-poster-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-width: 220px;
+    padding: 1.2rem 0.8rem;
+}
+
+.modal-poster-img {
+    max-width: 100%;
+    max-height: 60vh;
+    display: block;
+    cursor: default;
+    border-radius: 7px;
+    box-shadow: 0 2px 18px 0 rgba(30,32,44,0.13);
+    background: var(--surface-alt, #282c31);
+    margin-bottom: 0.75rem;
+}
+
+.modal-poster-caption {
+    text-align: center;
+    font-size: 1.07rem;
+    color: var(--muted, #a9a9a9);
+    margin-top: 0.34em;
+    margin-bottom: 0.18em;
+    max-width: 95%;
+    word-break: break-word;
+}
+
+.modal-poster-ids {
+  display: flex;
+  flex-direction: row;
+  gap: 1.2em;
+  justify-content: center;
+  align-items: center;
+  margin-top: 1.1em;
+  font-size: 1.04em;
+  flex-wrap: wrap;
+}
+.modal-poster-ids span {
+  display: flex;
+  align-items: center;
+  gap: 0.22em;
+  min-width: 0;
+}
+
+.modal-poster-ids a.id-link {
+  display: flex;
+  align-items: center;
+  gap: 0.21em;
+  color: var(--primary, #3391ff);
+  background: none;
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 1em;
+  transition: color 0.12s;
+  line-height: 1;
+  padding: 0.10em 0.14em;
+  border-radius: 7px;
+}
+.modal-poster-ids a.id-link:hover {
+  text-decoration: underline;
+  color: var(--accent, #e09019);
+  background: var(--surface-alt, #21252b);
+}
+
+/* THIS IS THE KEY: Handle both svg and img as icon! */
+.modal-poster-ids svg,
+.modal-poster-ids img {
+  height: 1.55em !important;
+  width: 1.55em !important;
+  min-width: 1.55em !important;
+  min-height: 1.55em !important;
+  max-width: 1.58em !important;
+  max-height: 1.58em !important;
+  vertical-align: middle;
+  display: inline-block;
+  opacity: 0.98;
+  margin-right: 0.13em;
+  margin-left: 0;
+  box-sizing: content-box !important;
+  position: static !important;
+  padding: 0 !important;
+  border-radius: 4px;
+  object-fit: contain;
+  background: none;
+}
+
+/* Ensure ID text never overlaps the icon */
+.modal-poster-ids .id-label {
+  vertical-align: middle;
+  font-size: 0.98em;
+  color: var(--text-color, #e3e3e3);
+  font-family: inherit;
+  letter-spacing: 0.01em;
+  padding-left: 0.04em;
+  line-height: 1.1;
+}
+
+/* ======================
    MOBILE RESPONSIVENESS
 ====================== */
 @media (max-width: 1000px) {
@@ -345,40 +506,40 @@ html.modal-open {
         font-size: 1.06rem !important;
     }
 
-    .modal-content .settings-field-labelcol,
-    .modal-content .modal-field-labelcol {
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        flex: 0 0 auto !important;
-        align-items: flex-start !important;
-        padding: 0 0 0.08em 0 !important;
-        text-align: left !important;
-        margin: 0 !important;
-        box-sizing: border-box !important;
-    }
-    .modal-content .settings-field-labelcol label,
-    .modal-content .modal-field-labelcol label {
-        text-align: left !important;
-        font-size: 1.03em !important;
-        font-weight: 600 !important;
-        margin-bottom: 0.11em !important;
-        padding: 0 !important;
-        color: var(--primary);
-        width: 100% !important;
-    }
-    .modal-content .settings-field-inputwrap,
-    .modal-content .modal-field-inputwrap {
-        width: 100% !important;
-        max-width: 100% !important;
-        min-width: 0 !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        box-sizing: border-box !important;
-        align-items: stretch !important;
-        gap: 0.13em !important;
-        flex: 0 0 auto !important;
-    }
+.modal-content .settings-field-labelcol,
+.modal-content .modal-field-labelcol {
+    min-width: 150px;
+    max-width: 240px;
+    flex: 0 0 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-start;
+    padding-right: 16px;
+}
+.modal-content .settings-field-labelcol label,
+.modal-content .modal-field-labelcol label {
+    font-weight: 500;
+    color: var(--primary);
+    padding-top: 0.21em;
+    line-height: 1.3;
+    text-align: right;
+    margin-bottom: 0.13em;
+    font-size: 1.01em;
+}
+.modal-content .settings-field-inputwrap,
+.modal-content .modal-field-inputwrap {
+    flex: 1 1 320px;
+    min-width: 160px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.13em;
+    box-sizing: border-box;
+    align-items: stretch;
+    padding-left: 0.7em;
+    padding-right: 1.7em;
+    max-width: 97%;
+}
     .plex-instance-card {
         width: 100% !important;
         min-width: 0 !important;
@@ -420,3 +581,5 @@ html.modal-open {
         align-items: stretch !important;
     }
 }
+
+

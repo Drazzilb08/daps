@@ -844,7 +844,7 @@ function ensurePosterSearchDOM() {
 
 export async function initPosterSearch() {
     ensurePosterSearchDOM();
-    showLoaderModal(true, 1);
+    showLoaderModal(true, 2000);
     setupHoverPreview();
     buildPosterSearchUI();
 

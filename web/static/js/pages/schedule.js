@@ -1,9 +1,9 @@
 // --- Imports ---
-import { fetchConfig, postConfig, fetchAllRunStates, getModuleStatus } from './api.js';
-import { buildSchedulePayload } from './payload.js';
-import { showToast, humanize } from './util.js';
-import { openModal } from './settings/modals.js';
-import { moduleList } from './constants.js';
+import { fetchConfig, postConfig, fetchAllRunStates, getModuleStatus } from '../api.js';
+import { buildSchedulePayload } from '../payload.js';
+import { showToast, humanize, getIcon } from '../util.js';
+import { openModal } from '../common/modals.js';
+import { moduleList } from '../constants/constants.js';
 
 function formatLastRun(dt) {
     if (!dt) return '';
@@ -18,7 +18,7 @@ function formatLastRun(dt) {
     return `${dayStr} at ${h}:${m}`;
 }
 
-export async function loadSchedule() {
+async function loadSchedule() {
     const allRunStates = await fetchAllRunStates();
     const config = await fetchConfig();
     const schedule = config.schedule || {};
@@ -64,8 +64,8 @@ async function makeCard(module, time, allRunStates, scheduleConfig) {
     const lastRunDisplay = document.createElement('div');
     lastRunDisplay.className = 'card-last-run';
     lastRunDisplay.innerHTML = runState.last_run
-        ? `<span class="material-icons" style="font-size:1.09em;vertical-align:middle;opacity:.85;">schedule</span>
-           <span>${formatLastRun(runState.last_run)}</span>`
+        ? getIcon('mi:schedule', { style: 'font-size:1.09em;vertical-align:middle;opacity:.85;' }) +
+          `<span>${formatLastRun(runState.last_run)}</span>`
         : `<span style="opacity:.55;">—</span>`;
     bottomBar.appendChild(lastRunDisplay);
 
@@ -98,10 +98,10 @@ async function makeCard(module, time, allRunStates, scheduleConfig) {
 
         if (isRunning) {
             btn.innerHTML = showStop
-                ? `<i class="material-icons">stop</i>`
+                ? getIcon('mi:stop')
                 : `<span class="spinner"></span>`;
         } else {
-            btn.innerHTML = `<i class="material-icons">play_arrow</i>`;
+            btn.innerHTML = getIcon('mi:play_arrow');
         }
     }
 
@@ -322,4 +322,33 @@ function scheduleModalBtnHandler(onSave, entry) {
     };
 }
 
-if (document.getElementById('schedule-list')) loadSchedule();
+function ensureScheduleDOM() {
+    const container = document.getElementById('viewFrame');
+    if (!container) return;
+
+    // Remove all children except loader modal, if any
+    [...container.children].forEach((child) => {
+        if (
+            !child.classList.contains('loader-modal') &&
+            !child.classList.contains('poster-search-loader-modal')
+        ) {
+            container.removeChild(child);
+        }
+    });
+
+    // Card list (if missing)
+    let cardList = container.querySelector('#schedule-list');
+    if (!cardList) {
+        cardList = document.createElement('div');
+        cardList.className = 'card-list';
+        cardList.id = 'schedule-list';
+        container.appendChild(cardList);
+    } else {
+        cardList.innerHTML = '';
+    }
+}
+
+export function initSchedule() {
+    ensureScheduleDOM();
+    loadSchedule();
+}

@@ -1,40 +1,14 @@
 // /web/static/js/instances.js
 
-import { fetchConfig, postConfig, testInstance } from './api.js';
-import { humanize, getIcon, showToast } from './util.js';
-import { openModal } from './settings/modals.js';
-import { buildInstancesPayload } from './payload.js';
+import { fetchConfig, postConfig, testInstance } from '../api.js';
+import { humanize, getIcon, showToast } from '../util.js';
+import { openModal } from '../common/modals.js';
+import { buildInstancesPayload } from '../payload.js';
+import { INSTANCE_SCHEMA } from '../constants/instance_schema.js';
 
-// ----- Instance schema (local only) -----
-const INSTANCE_SCHEMA = [
-    {
-        key: 'name',
-        label: 'Instance Name',
-        type: 'text',
-        required: true,
-        placeholder: 'e.g. radarr_hd',
-        description: 'Unique instance name (e.g. radarr_hd)',
-    },
-    {
-        key: 'url',
-        label: 'URL',
-        type: 'text',
-        required: true,
-        placeholder: 'http://host:port',
-        description: 'Base URL for the instance (e.g. http://host:port)',
-    },
-    {
-        key: 'api',
-        label: 'API Key',
-        type: 'password',
-        required: true,
-        placeholder: 'Paste API Key',
-        description: 'API Key for this instance.',
-    },
-];
 
 // --------- Render all instances (groups/cards) ----------
-export async function loadInstances() {
+async function loadInstances() {
     const config = await fetchConfig();
     const instances = config.instances || {};
     const root = document.getElementById('instances-list');
@@ -304,8 +278,35 @@ function makeAddInstanceCard(service, allInstances) {
     card.appendChild(plus);
     return card;
 }
+// ---- DOM Builder for SPA Page ----
+function ensureInstancesDOM() {
+    const container = document.getElementById('viewFrame');
+    if (!container) return;
 
-// --------- Auto-load if container present ----------
-if (document.getElementById('instances-list')) {
+    // Remove all children except loader modal, if any
+    [...container.children].forEach((child) => {
+        if (
+            !child.classList.contains('loader-modal') &&
+            !child.classList.contains('poster-search-loader-modal')
+        ) {
+            container.removeChild(child);
+        }
+    });
+
+    // Card list (if missing)
+    let cardList = container.querySelector('#instances-list');
+    if (!cardList) {
+        cardList = document.createElement('div');
+        cardList.className = 'card-list';
+        cardList.id = 'instances-list';
+        container.appendChild(cardList);
+    } else {
+        cardList.innerHTML = '';
+    }
+}
+
+// ---- Orchestrator ----
+export function initInstances() {
+    ensureInstancesDOM();
     loadInstances();
 }

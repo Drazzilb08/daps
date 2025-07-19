@@ -1,119 +1,10 @@
-import { fetchConfig, postConfig, runTestNotification } from './api.js';
-import { humanize, showToast, getIcon, getSpinner } from './util.js';
-import { openModal } from './settings/modals.js';
-import { modalHeaderHtml, setupModalCloseOnOutsideClick } from './settings/modal_helpers.js';
-import { buildNotificationPayload } from './payload.js';
+import { fetchConfig, postConfig, runTestNotification } from '../api.js';
+import { humanize, showToast, getIcon, getSpinner } from '../util.js';
+import { openModal } from '../common/modals.js';
+import { modalHeaderHtml, setupModalCloseOnOutsideClick } from '../common/modal_helpers.js';
+import { buildNotificationPayload } from '../payload.js';
+import { NOTIFICATIONS_SCHEMA } from '../constants/notifications_schema.js';
 
-// --- Notification schema (local only) ---
-const NOTIFICATIONS_SCHEMA = [
-    {
-        type: 'discord',
-        label: 'Discord',
-        fields: [
-            {
-                key: 'bot_name',
-                label: 'Bot Name',
-                type: 'text',
-                required: true,
-                placeholder: 'My DAPS Bot',
-            },
-            {
-                key: 'color',
-                label: 'Embed Color',
-                type: 'color',
-                required: false,
-                placeholder: '#7289da',
-            },
-            {
-                key: 'webhook',
-                label: 'Webhook',
-                type: 'text',
-                required: true,
-                placeholder: 'https://discord.com/api/webhooks/...',
-                validate: (v) => /^https:\/\/discord(app)?\.com\/api\/webhooks\//.test(v),
-            },
-        ],
-    },
-    {
-        type: 'notifiarr',
-        label: 'Notifiarr',
-        fields: [
-            {
-                key: 'bot_name',
-                label: 'Bot Name',
-                type: 'text',
-                required: true,
-                placeholder: 'My Notifiarr Bot',
-            },
-            {
-                key: 'color',
-                label: 'Embed Color',
-                type: 'color',
-                required: false,
-                placeholder: '#ff7300',
-            },
-            {
-                key: 'webhook',
-                label: 'Webhook',
-                type: 'text',
-                required: true,
-                placeholder: 'https://notifiarr.com/api/...',
-                validate: (v) => /^https:\/\/notifiarr\.com\/api\//.test(v),
-            },
-            {
-                key: 'channel_id',
-                label: 'Channel ID',
-                type: 'text',
-                required: true,
-                placeholder: '1234567890',
-                validate: (v) => /^\d+$/.test(v),
-            },
-        ],
-    },
-    {
-        type: 'email',
-        label: 'Email',
-        fields: [
-            {
-                key: 'smtp_server',
-                label: 'SMTP Server',
-                type: 'text',
-                required: true,
-                placeholder: 'smtp.gmail.com',
-            },
-            { key: 'smtp_port', label: 'Port', type: 'number', required: true, placeholder: '587' },
-            { key: 'use_tls', label: 'Use TLS', type: 'check_box', required: true },
-            {
-                key: 'username',
-                label: 'Username',
-                type: 'text',
-                required: true,
-                placeholder: 'user@email.com',
-            },
-            {
-                key: 'password',
-                label: 'Password',
-                type: 'password',
-                required: true,
-                placeholder: '••••••••',
-            },
-            {
-                key: 'to',
-                label: 'From',
-                type: 'text',
-                required: true,
-                placeholder: 'My App <bot@email.com>',
-            },
-            {
-                key: 'from',
-                label: 'Recipients',
-                type: 'text',
-                required: true,
-                placeholder: 'someone@email.com, another@email.com',
-            },
-        ],
-    },
-];
 
 // --- Utility to find type def ---
 function getTypeDef(type) {
@@ -296,8 +187,7 @@ function openNotificationModal({
     });
 }
 
-// --- MAIN RENDER FUNCTION ---
-export async function loadNotifications() {
+async function loadNotifications() {
     const root = document.getElementById('notifications-list');
     if (!root) return;
     root.innerHTML = '';
@@ -364,7 +254,7 @@ function makeNotificationCard(module, type, settings, notifications) {
     testBtn.type = 'button';
     testBtn.className = 'btn--icon test-btn';
     testBtn.title = `Test ${humanize(module)} ${getTypeDef(type)?.label || type}`;
-    testBtn.innerHTML = getIcon('test'); // flask/science icon
+    testBtn.innerHTML = getIcon('mi:science'); // flask/science icon
 
     // Tooltip
     const tooltip = document.createElement('div');
@@ -394,7 +284,7 @@ function makeNotificationCard(module, type, settings, notifications) {
             showToast(msg, success ? 'success' : 'error');
         } finally {
             testBtn.disabled = false;
-            testBtn.innerHTML = getIcon('test');
+            testBtn.innerHTML = getIcon('mi:science');
             tooltip.textContent = `Send test to ${getTypeDef(type)?.label || type}`;
         }
     };
@@ -578,8 +468,31 @@ function showTypePickerModal(module, notifications, notify_types, showNotificati
         }
     });
 }
+// --- Page builder for Notifications ---
+function ensureNotificationsDOM() {
+    const container = document.getElementById('viewFrame');
+    if (!container) return;
 
-// --- Auto-load on page ready ---
-if (document.getElementById('notifications-list')) {
+    // Remove all children except loader modal, if any
+    [...container.children].forEach((child) => {
+        if (!child.classList.contains('poster-search-loader-modal')) {
+            container.removeChild(child);
+        }
+    });
+
+    // Card list for notifications
+    let cardList = container.querySelector('#notifications-list');
+    if (!cardList) {
+        cardList = document.createElement('div');
+        cardList.className = 'card-list';
+        cardList.id = 'notifications-list';
+        container.appendChild(cardList);
+    } else {
+        cardList.innerHTML = '';
+    }
+}
+
+export function initNotifications() {
+    ensureNotificationsDOM();
     loadNotifications();
 }

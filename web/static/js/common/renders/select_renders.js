@@ -560,7 +560,7 @@ export function renderScheduleField(field, value, config) {
             const addBtn = document.createElement('button');
             addBtn.type = 'button';
             addBtn.id = 'add-daily-time';
-            addBtn.className = 'add-time-btn';
+            addBtn.className = 'add-time-btn btn';
             addBtn.textContent = '+ Add time';
             addBtn.onclick = () => {
                 addTimeRow('');

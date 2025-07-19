@@ -167,6 +167,7 @@ export function openModal({
     buttonHandler = {},
     value,
     rootConfig,
+    modalClass = 'modal-content',
 }) {
     // Create modal root
     let modal = document.createElement('div');
@@ -176,7 +177,7 @@ export function openModal({
 
     // Modal content wrapper
     const contentDiv = document.createElement('div');
-    contentDiv.className = 'modal-content';
+    contentDiv.className = modalClass || 'modal-content';
 
     // HEADER
     contentDiv.insertAdjacentHTML('beforeend', modalHeaderHtml({ title }));

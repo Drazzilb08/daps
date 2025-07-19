@@ -1,6 +1,6 @@
 // web/static/js/settings/dynamic_forms.js
 
-import { SETTINGS_SCHEMA } from './settings_schema.js';
+import { SETTINGS_SCHEMA } from '../constants/settings_schema.js';
 import { renderField } from './field_render.js';
 
 // -------- MAIN FORM RENDERER -------------

@@ -1,23 +1,124 @@
 import { fetchConfig, postConfig } from '../api.js';
-import { renderSettingsForm } from './dynamic_forms.js';
-import { showToast, markDirty, resetDirty } from '../util.js';
-import { SETTINGS_SCHEMA, SETTINGS_MODULES } from './settings_schema.js';
-import { setTheme } from '../index.js';
+import { renderSettingsForm } from '../common/dynamic_forms.js';
+import { showToast, markDirty, resetDirty, setTheme } from '../util.js';
+import { SETTINGS_SCHEMA, SETTINGS_MODULES } from '../constants/settings_schema.js';
 
 // Tracks last loaded values for the current module, for dirty checking
 let currentModule = null;
-let lastLoadedConfig = {};
 let currentConfig = {};
+let lastLoadedConfig = {};
 
-// --- Load settings for a given module ---
-export async function loadSettings(moduleName) {
+/**
+ * Main entry for settings page.
+ * Call this with moduleName (string) or null for splash.
+ */
+export async function initSettings(moduleName) {
+    ensureSettingsDOM();
+
+    if (moduleName) {
+        await loadSettings(moduleName);
+    } else {
+        renderSettingsSplash();
+    }
+}
+
+/**
+ * Ensures the splash and form DOM structure is present (idempotent).
+ */
+function ensureSettingsDOM() {
+    const container =
+        document.getElementById('viewFrame') || document.querySelector('.container-iframe');
+    if (!container) return;
+
+    // Remove all children except loader modal
+    [...container.children].forEach((child) => {
+        if (!child.classList.contains('poster-search-loader-modal')) {
+            container.removeChild(child);
+        }
+    });
+
+    // Splash (if missing)
+    if (!container.querySelector('.settings-splash')) {
+        const splash = document.createElement('div');
+        splash.className = 'settings-splash';
+
+        const title = document.createElement('h1');
+        title.className = 'settings-splash-title';
+        title.textContent = 'Settings';
+
+        const sectionList = document.createElement('div');
+        sectionList.className = 'settings-section-list';
+        sectionList.id = 'settings-section-list';
+
+        splash.appendChild(title);
+        splash.appendChild(sectionList);
+        container.appendChild(splash);
+    }
+
+    // Form (if missing)
+    if (!container.querySelector('#settingsForm')) {
+        const form = document.createElement('form');
+        form.id = 'settingsForm';
+        form.autocomplete = 'off';
+        form.className = 'settings-form';
+        container.appendChild(form);
+    }
+}
+
+/**
+ * Render the settings splash (module selection page).
+ */
+function renderSettingsSplash() {
+    // Hide toolbar and form, show splash
+    document.getElementById('settingsToolBar')?.classList.add('hidden');
+    document.getElementById('settingsForm')?.classList.add('hidden');
+    document.querySelector('.settings-splash')?.classList.remove('hidden');
+    document.querySelector('.settings-splash-title')?.classList.remove('hidden');
+
+    // Populate splash links
+    const container = document.getElementById('settings-section-list');
+    if (!container) return;
+    container.innerHTML = '';
+    SETTINGS_MODULES.forEach((mod) => {
+        const link = document.createElement('a');
+        link.className = 'settings-section-link';
+        link.href = `/pages/settings?module_name=${mod.key}`;
+        link.setAttribute('tabindex', '0');
+        // Title
+        const titleDiv = document.createElement('div');
+        titleDiv.className = 'settings-section-title';
+        titleDiv.textContent = mod.name;
+        // Description
+        const descDiv = document.createElement('div');
+        descDiv.className = 'settings-section-desc';
+        descDiv.textContent = mod.description;
+        link.appendChild(titleDiv);
+        link.appendChild(descDiv);
+        // Keyboard navigation
+        link.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                this.click();
+            }
+        });
+        container.appendChild(link);
+    });
+}
+
+/**
+ * Load settings page for a given module.
+ */
+async function loadSettings(moduleName) {
     currentModule = moduleName;
+    buildSettingsToolbar();
+
+    // Update title in toolbar
     const schema = SETTINGS_SCHEMA.find((s) => s.key === moduleName);
     if (schema) {
         document.getElementById('settingsPageTitle').textContent = schema.label || moduleName;
     }
 
-    // Fetch config
+    // Fetch and load config
     const rootConfig = await fetchConfig();
     const moduleConfig = rootConfig[moduleName] || {};
     lastLoadedConfig = JSON.parse(JSON.stringify(moduleConfig));
@@ -27,21 +128,65 @@ export async function loadSettings(moduleName) {
     const form = document.getElementById('settingsForm');
     renderSettingsForm(form, moduleName, currentConfig, rootConfig);
 
-    // Set up dirty detection for any field change (for fields in schema)
     setupFormDirtyDetection(moduleName);
-
-    // Set up save button handler
     setupSettingsFormHandler();
 
     // Show form, hide splash
     document.querySelector('.settings-splash')?.classList.add('hidden');
+    document.querySelector('.settings-splash-title')?.classList.add('hidden');
     document.getElementById('settingsToolBar')?.classList.remove('hidden');
     document.getElementById('settingsForm')?.classList.remove('hidden');
 
-    resetDirty(); // Not dirty after initial load
+    resetDirty();
 }
 
-// --- Save settings for current module ---
+/**
+ * Build the settings toolbar with Save button.
+ */
+function buildSettingsToolbar() {
+    const form = document.getElementById('settingsForm');
+    const parent = form.parentNode;
+    // Remove existing
+    const oldToolbar = parent.querySelector('.settings-toolbar-bar');
+    if (oldToolbar) oldToolbar.remove();
+
+    // Build toolbar
+    const toolbar = document.createElement('div');
+    toolbar.className = 'settings-toolbar-bar';
+    toolbar.id = 'settingsToolBar';
+
+    const title = document.createElement('span');
+    title.className = 'settings-page-title';
+    title.id = 'settingsPageTitle';
+
+    const saveBtn = document.createElement('button');
+    saveBtn.id = 'saveBtnFixed';
+    saveBtn.type = 'submit';
+    saveBtn.setAttribute('form', 'settingsForm');
+    saveBtn.className = 'settings-toolbar-btn';
+    saveBtn.setAttribute('aria-label', 'Save');
+    saveBtn.title = 'Save changes';
+    saveBtn.innerHTML = `
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+           stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"
+           style="margin-right: 7px; vertical-align: middle;">
+        <path d="M17 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7l-4-4z"/>
+        <polyline points="17 3 17 8 7 8 7 3"/>
+        <rect x="8" y="13" width="8" height="5" rx="1"/>
+      </svg>
+      <span class="save-btn-label">Save</span>
+    `;
+
+    toolbar.appendChild(title);
+    toolbar.appendChild(saveBtn);
+
+    // Insert before the form
+    parent.insertBefore(toolbar, form);
+}
+
+/**
+ * Save settings for the current module.
+ */
 export async function saveSettings() {
     if (!currentModule) return;
     const saveBtn = document.getElementById('saveBtnFixed');
@@ -79,8 +224,10 @@ export async function saveSettings() {
     return { success, error };
 }
 
-// --- Set up form save button handler ---
-export function setupSettingsFormHandler() {
+/**
+ * Set up form submit/save handler.
+ */
+function setupSettingsFormHandler() {
     const form = document.getElementById('settingsForm');
     if (!form) return;
     form.onsubmit = async (e) => {
@@ -89,12 +236,16 @@ export function setupSettingsFormHandler() {
     };
 }
 
-// --- Get the schema section for a module ---
+/**
+ * Get the schema for a module.
+ */
 function getSchemaForModule(moduleName) {
     return SETTINGS_SCHEMA.find((s) => s.key === moduleName);
 }
 
-// --- Mark dirty when any schema-relevant field changes ---
+/**
+ * Set up dirty detection for any relevant schema field.
+ */
 function setupFormDirtyDetection(moduleName) {
     const form = document.getElementById('settingsForm');
     if (!form) return;
@@ -102,8 +253,7 @@ function setupFormDirtyDetection(moduleName) {
     const schema = getSchemaForModule(moduleName);
     if (!schema) return;
 
-    // --- ADD THIS: ---
-    // Listen for input/change events from any descendant field (including dynamic/array fields)
+    // Listen for input/change events (including dynamic fields)
     form.addEventListener('input', markDirty, true);
     form.addEventListener('change', markDirty, true);
 
@@ -116,93 +266,43 @@ function setupFormDirtyDetection(moduleName) {
         const el = form.querySelector(`[name="${field.key}"]`);
         if (!el) return;
         el.oninput = el.onchange = () => {
-            // Always update currentConfig when a value changes!
             let value = el.type === 'checkbox' ? el.checked : el.value;
             if (el.type === 'number') value = el.value === '' ? null : parseInt(el.value, 10);
             currentConfig[field.key] = value;
-
             markDirty();
         };
     });
 }
 
-// --- Render the splash/settings list ---
-export function renderSettingsSplash() {
-    // Hide toolbar and view frame when showing splash
-    document.getElementById('settingsToolBar')?.classList.add('hidden');
-    document.getElementById('settingsForm')?.classList.add('hidden');
-    // Show splash
-    document.querySelector('.settings-splash')?.classList.remove('hidden');
-
-    const container = document.getElementById('settings-section-list');
-    if (!container) return;
-    container.innerHTML = '';
-
-    SETTINGS_MODULES.forEach((mod) => {
-        const link = document.createElement('a');
-        link.className = 'settings-section-link';
-        link.href = `/pages/settings?module_name=${mod.key}`;
-        link.setAttribute('tabindex', '0'); // For keyboard nav
-
-        // Title
-        const titleDiv = document.createElement('div');
-        titleDiv.className = 'settings-section-title';
-        titleDiv.textContent = mod.name;
-
-        // Description
-        const descDiv = document.createElement('div');
-        descDiv.className = 'settings-section-desc';
-        descDiv.textContent = mod.description;
-
-        link.appendChild(titleDiv);
-        link.appendChild(descDiv);
-
-        // Optional: Keyboard navigation (Enter triggers click)
-        link.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                this.click();
-            }
-        });
-
-        container.appendChild(link);
-    });
-}
-
-// settings_validation.js
-
 /**
  * Validate fields for settings (global, not just modals).
  * Returns an array of error field keys.
  */
-export function validateSettingsFields(schema, container) {
+function validateSettingsFields(schema, container) {
     const errorFields = [];
 
     schema.forEach((field) => {
-        // ---- INSTANCES FIELD (plex/radarr/sonarr special validation) ----
+        // INSTANCES FIELD (plex/radarr/sonarr special validation)
         if (field.type === 'instances' && field.required) {
             let foundValid = false;
 
-            // --- Plex: at least one instance checked and at least one library per checked instance ---
+            // Plex
             if (field.instance_types && field.instance_types.includes('plex')) {
                 const plexBlocks = container.querySelectorAll('.plex-instance-card');
                 let plexInstanceSelected = false;
                 let plexMissingLibraries = false;
 
                 plexBlocks.forEach((block) => {
-                    // Checkbox
                     const chkLabel = block.querySelector('.instance-checkbox-container');
                     const chk = chkLabel ? chkLabel.querySelector('input[type="checkbox"]') : null;
 
                     if (chk && chk.checked) {
                         plexInstanceSelected = true;
-
                         // Library selection
                         const libraryChecks = block.querySelectorAll(
                             '.instance-library-list input[type="checkbox"]'
                         );
                         const anyLibChecked = Array.from(libraryChecks).some((l) => l.checked);
-
                         // Show/hide errors for library selection
                         const libList = block.querySelector('.instance-library-list');
                         if (!anyLibChecked) {
@@ -268,7 +368,7 @@ export function validateSettingsFields(schema, container) {
                 }
             }
 
-            // --- Radarr/Sonarr: at least one checked ---
+            // Radarr/Sonarr: at least one checked
             if (
                 field.instance_types &&
                 (field.instance_types.includes('radarr') || field.instance_types.includes('sonarr'))
@@ -304,9 +404,8 @@ export function validateSettingsFields(schema, container) {
             return; // Skip default logic for this field
         }
 
-        // ---- GENERIC REQUIRED FIELD VALIDATION ----
+        // GENERIC REQUIRED FIELD VALIDATION
         if (field.required) {
-            // Try to find the input(s) for this field
             const input = container.querySelector(`[name="${field.key}"]`);
             let isEmpty = false;
 
@@ -351,46 +450,18 @@ export function validateSettingsFields(schema, container) {
     return errorFields;
 }
 
-function buildSettingsToolbar() {
-    // Remove any existing toolbar in the form (avoid duplicates)
-    const form = document.getElementById('settingsForm');
-    const oldToolbar = form.querySelector('.settings-toolbar-bar');
-    if (oldToolbar) oldToolbar.remove();
+export function buildSidebarSettingsSubMenu() {
+    const subMenu = document.getElementById('sidebarSettingsSubMenu');
+    if (!subMenu) return;
 
-    // Create the toolbar element
-    const toolbar = document.createElement('div');
-    toolbar.className = 'settings-toolbar-bar';
-    toolbar.id = 'settingsToolBar';
-
-    const title = document.createElement('span');
-    title.className = 'settings-page-title';
-    title.id = 'settingsPageTitle';
-    title.textContent = 'Settings'; // Will be updated by loadSettings
-
-    const saveBtn = document.createElement('button');
-    saveBtn.id = 'saveBtnFixed';
-    saveBtn.type = 'submit';
-    saveBtn.form = 'settingsForm';
-    saveBtn.className = 'settings-toolbar-btn';
-    saveBtn.setAttribute('aria-label', 'Save');
-    saveBtn.title = 'Save changes';
-
-    // SVG icon for save
-    saveBtn.innerHTML = `
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-           stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"
-           style="margin-right: 7px; vertical-align: middle;">
-        <path d="M17 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7l-4-4z"/>
-        <polyline points="17 3 17 8 7 8 7 3"/>
-        <rect x="8" y="13" width="8" height="5" rx="1"/>
-      </svg>
-      <span class="save-btn-label">Save</span>
-    `;
-
-    // Assemble toolbar
-    toolbar.appendChild(title);
-    toolbar.appendChild(saveBtn);
-
-    // Insert as first child of settingsForm
-    form.prepend(toolbar);
+    subMenu.innerHTML = '';
+    SETTINGS_MODULES.forEach((mod) => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = `/pages/settings?module_name=${mod.key}`;
+        a.className = 'sub-section';
+        a.textContent = mod.name || mod.key;
+        li.appendChild(a);
+        subMenu.appendChild(li);
+    });
 }

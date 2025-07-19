@@ -31,20 +31,15 @@
         />
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-        <script type="module" src="/web/static/js/main.js"></script>
+        <script type="module" src="/web/static/js/navigation.js"></script>
 
         <link rel="stylesheet" href="/web/static/css/base.css" />
         <link rel="stylesheet" href="/web/static/css/common.css" />
+        <link rel="stylesheet" href="/web/static/css/loaders.css" />
         <link rel="stylesheet" href="/web/static/css/layout.css" />
         <link rel="stylesheet" href="/web/static/css/navigation.css" />
-        <link rel="stylesheet" href="/web/static/css/settings.css" />
-        <link rel="stylesheet" href="/web/static/css/instances.css" />
         <link rel="stylesheet" href="/web/static/css/index.css" />
-        <link rel="stylesheet" href="/web/static/css/schedule.css" />
         <link rel="stylesheet" href="/web/static/css/modals.css" />
-        <link rel="stylesheet" href="/web/static/css/logs.css" />
-        <link rel="stylesheet" href="/web/static/css/poster_search.css" />
-        <link rel="stylesheet" href="/web/static/css/notifications.css" />
     </head>
 
     <body>
@@ -103,85 +98,20 @@
                         ><span class="icon material-icons">collections</span>Poster Management</a
                     >
                 </li>
+                <li>
+                    <a id="link-statistics" href="/pages/statistics"
+                        ><span class="icon material-icons">bar_chart</span>Statistics</a
+                    >
+                </li>
                 <li id="settings-section">
                     <a href="/pages/settings" class="main-section">
                         <span class="icon material-icons">settings</span>Settings
                     </a>
-                    <ul class="settings-sub-menu" style="display: none">
-                        <li>
-                            <a href="/pages/settings?module_name=sync_gdrive" class="sub-section"
-                                >Sync Gdrive</a
-                            >
-                        </li>
-                        <li>
-                            <a
-                                href="/pages/settings?module_name=poster_renamerr"
-                                class="sub-section"
-                                >Poster Renamerr</a
-                            >
-                        </li>
-                        <li>
-                            <a
-                                href="/pages/settings?module_name=poster_cleanarr"
-                                class="sub-section"
-                                >Poster Cleanarr</a
-                            >
-                        </li>
-                        <li>
-                            <a
-                                href="/pages/settings?module_name=unmatched_assets"
-                                class="sub-section"
-                                >Unmatched Assets</a
-                            >
-                        </li>
-                        <li>
-                            <a
-                                href="/pages/settings?module_name=border_replacerr"
-                                class="sub-section"
-                                >Border Replacerr</a
-                            >
-                        </li>
-                        <li>
-                            <a href="/pages/settings?module_name=renameinatorr" class="sub-section"
-                                >Renameinatorr</a
-                            >
-                        </li>
-                        <li>
-                            <a href="/pages/settings?module_name=upgradinatorr" class="sub-section"
-                                >Upgradinatorr</a
-                            >
-                        </li>
-                        <li>
-                            <a href="/pages/settings?module_name=nohl" class="sub-section">Nohl</a>
-                        </li>
-                        <li>
-                            <a href="/pages/settings?module_name=labelarr" class="sub-section"
-                                >Labelarr</a
-                            >
-                        </li>
-                        <li>
-                            <a
-                                href="/pages/settings?module_name=health_checkarr"
-                                class="sub-section"
-                                >Health Checkarr</a
-                            >
-                        </li>
-                        <li>
-                            <a href="/pages/settings?module_name=jduparr" class="sub-section"
-                                >Jduparr</a
-                            >
-                        </li>
-                        <li>
-                            <a href="/pages/settings?module_name=main" class="sub-section"
-                                >General</a
-                            >
-                        </li>
-                        <li>
-                            <a href="/pages/settings?module_name=user_interface" class="sub-section"
-                                >UI</a
-                            >
-                        </li>
-                    </ul>
+                    <ul
+                        class="settings-sub-menu"
+                        id="sidebarSettingsSubMenu"
+                        style="display: none"
+                    ></ul>
                 </li>
                 <li>
                     <a id="link-logs" href="/pages/logs"
@@ -190,12 +120,14 @@
                 </li>
             </ul>
             <div class="sidebar-footer">
-                <span id="version" class="footer-version">📦 Version: ...</span>
+                <!-- Will put notifications here -->
             </div>
         </nav>
 
         <div class="container">
-            <div id="viewFrame" class="view-frame" style="opacity: 0"></div>
+            <div id="viewFrame" class="view-frame" style="opacity: 0">
+                <!-- Content Built Here -->
+            </div>
         </div>
         <div id="toast-container"></div>
         <span id="update-badge" style="display: none"></span>

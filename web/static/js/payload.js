@@ -1,4 +1,4 @@
-import { SETTINGS_SCHEMA } from './settings/settings_schema.js';
+import { SETTINGS_SCHEMA } from './constants/settings_schema.js';
 import { fetchConfig } from './api.js';
 
 export function buildNotificationPayload(notifications, entry, module, type) {

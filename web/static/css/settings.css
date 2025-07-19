@@ -6,27 +6,7 @@
     overflow-y: auto;
     overflow-x: hidden;
     box-sizing: border-box;
-}
-#settingsForm::before {
-    content: '';
-    display: block;
-    position: sticky;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 36px;
-    pointer-events: none;
-    z-index: 999;
-    background: linear-gradient(
-        to bottom,
-        var(--surface-alt, #23242a) 0%,
-        rgba(35, 36, 42, 0.12) 45%,
-        rgba(35, 36, 42, 0.04) 85%,
-        transparent 100%
-    );
-}
-.hidden {
-    display: none !important;
+    padding-top: 25px;
 }
 
 /* =================== SPLASH PANEL =================== */
@@ -251,39 +231,11 @@
     margin-bottom: 0.15em;
     min-height: 38px;
 }
-.color-picker-swatch {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 38px;
-    height: 38px;
-    border-radius: 7px;
-    border: 2px solid var(--divider, #eee);
-    margin: 0 0.33em 0 0;
-    box-shadow: 0 1.5px 6px rgba(0, 0, 0, 0.06);
-    position: relative;
-    overflow: visible;
-    transition: border-color 0.18s, box-shadow 0.16s, transform 0.19s, opacity 0.17s;
-    opacity: 1;
-}
+
 .color-picker-swatch.removing {
     opacity: 0;
     transform: scale(0.9);
     pointer-events: none;
-}
-.color-picker-swatch input[type='color'] {
-    width: 100%;
-    height: 100%;
-    padding: 0;
-    margin: 0;
-    border-radius: 7px;
-    cursor: pointer;
-    border: none;
-    outline: none;
-    background: transparent;
-}
-.color-picker-swatch input[type='color']:focus {
-    box-shadow: 0 0 0 2px var(--accent, #3af) inset;
 }
 .color-picker-swatch .remove-btn {
     position: absolute;

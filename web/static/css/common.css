@@ -3,6 +3,9 @@ body, input, select, textarea, button {
   font-family: var(--font-family);
 }
 
+.hidden {
+    display: none !important;
+}
 
 .btn--icon {
   background: color-mix(in srgb, var(--accent) 14%, transparent 86%);
@@ -198,6 +201,38 @@ input[type="checkbox"]:active { filter: brightness(0.97); }
 }
 .toggle-switch-block .toggle-switch-label { margin-left: 0; align-items: center; display: flex; }
 
+
+/* ========== COLOR PICKER ========== */
+.color-picker-swatch {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 7px;
+    border: 2px solid var(--divider, #eee);
+    margin: 0 0.33em 0 0;
+    box-shadow: 0 1.5px 6px rgba(0, 0, 0, 0.06);
+    position: relative;
+    overflow: visible;
+    transition: border-color 0.18s, box-shadow 0.16s, transform 0.19s, opacity 0.17s;
+    opacity: 1;
+}
+.color-picker-swatch input[type='color'] {
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    margin: 0;
+    border-radius: 7px;
+    cursor: pointer;
+    border: none;
+    outline: none;
+    background: transparent;
+}
+.color-picker-swatch input[type='color']:focus {
+    box-shadow: 0 0 0 2px var(--accent, #3af) inset;
+}
+
 /* ========== SELECT2 CUSTOM STYLING ========== */
 .select2-container .select2-selection--single {
   background: var(--input-bg, var(--surface)) !important;
@@ -283,6 +318,7 @@ input[type="checkbox"]:active { filter: brightness(0.97); }
 .icon img, .icon svg {
   width: 34px; height: 34px; display: block; object-fit: contain; margin: 0 auto;
 }
+
 
 /* ========== RESPONSIVE ========== */
 @media (max-width: 1000px) {

@@ -7,6 +7,7 @@
 
 :root {
     --font-family: 'Inter', 'Roboto', Arial, sans-serif;
+    --overlya-bg: rgba(24, 25, 31, 0.64);
 }
 
 /* ========== DARK THEME (default) ========== */

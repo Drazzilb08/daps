@@ -1,6 +1,8 @@
+
 #notifications-list {
     display: block;
     width: 100%;
+    margin: 4rem auto;
 }
 
 #notifications-list .card,

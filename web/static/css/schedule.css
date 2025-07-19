@@ -2,9 +2,11 @@
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     max-width: 1080px;
-    margin: 0 auto 2.5rem auto;
+    margin: 0 auto 2.2rem auto;
     gap: 1.5rem 1.5rem;
-    padding: 0 0 3rem 0;
+    padding-left: auto;
+    padding-right: auto;
+    padding-top: 4rem;
     justify-items: center;
 }
 
@@ -27,17 +29,18 @@
     padding: 2rem 1rem 0 1rem;
 }
 
-#schedule-list.card-list {
-    max-width: 900px;
-    margin: 0 auto;
-}
-
 .page-header h1 {
     font-size: 2rem;
     font-weight: 700;
     color: var(--text-color);
     margin: 0;
 }
+
+#schedule-list.card-list {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
 
 .card-pill {
     display: inline-block;

@@ -1,3 +1,6 @@
+/* ======================================================
+   POSTER SEARCH: LAYOUT & ROOT
+====================================================== */
 .poster-search-root {
     margin-top: 4rem;
     margin-left: auto;
@@ -5,201 +8,13 @@
     max-width: 900px;
     min-width: 900px;
 }
-
 .modal-content {
     min-width: 0px !important;
 }
 
 /* ======================================================
-   SEARCH TOGGLE ROW & LABELS
+   POSTER SEARCH: CONTROLS (SCOPE/SOURCE, SORT, VIEW)
 ====================================================== */
-.poster-search-toggle-row {
-    display: flex;
-    align-items: center;
-    gap: 0.5em;
-    margin-bottom: 1.1em;
-    padding-left: 0.1em;
-    color: var(--text-color);
-}
-
-.poster-search-label,
-.poster-search-scope-label {
-    font-size: 1em;
-    font-weight: 500;
-    color: var(--text-color);
-    line-height: 1.25;
-}
-
-.poster-search-label {
-    margin-right: 0.2em;
-    min-width: 75px;
-    text-align: right;
-}
-
-.poster-search-scope-label {
-    margin-left: 0.2em;
-    min-width: 115px;
-    text-align: left;
-}
-
-.poster-search-toggle-row .toggle-switch {
-    margin: 0 2px;
-}
-
-/* ======================================================
-   COPY BUTTON
-====================================================== */
-.copy-btn {
-    flex: 0 0 auto;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 1em;
-    margin-left: 0.35em;
-    color: var(--link-color);
-    opacity: 0.73;
-    vertical-align: middle;
-    transition: color 0.2s, opacity 0.2s;
-    display: flex;
-    align-items: center;
-    padding: 0.1em 0.25em;
-    border-radius: 4px;
-    font-family: var(--font-family);
-    font-weight: 400;
-}
-
-.copy-btn:active,
-.copy-btn:focus {
-    background: var(--surface-alt);
-}
-
-.copy-btn span {
-    vertical-align: middle;
-    line-height: 1.2;
-    font-family: var(--font-family);
-}
-
-.copy-btn:hover {
-    color: var(--link-color);
-    opacity: 1;
-}
-
-.copy-btn-copied {
-    color: var(--link-color);
-    display: none;
-    align-items: center;
-}
-
-.copy-btn .material-icons {
-    font-family: 'Material Icons';
-    font-size: 1.18em !important;
-    font-style: normal;
-    font-weight: normal;
-    line-height: 1;
-    margin-right: 2px;
-    opacity: 0.85;
-    position: relative;
-    top: 2px;
-}
-
-.copy-btn-default,
-.copy-btn-copied {
-    display: inline-flex;
-    align-items: center;
-}
-
-/* ======================================================
-   TOOLTIP (GDRIVE ETC)
-====================================================== */
-.gdrive-tooltip-wrapper {
-    position: relative;
-    display: inline-block;
-}
-
-.gdrive-tooltip-content {
-    display: none;
-    position: absolute;
-    border-radius: 8px;
-    left: 50%;
-    top: 120%;
-    transform: translateX(-50%);
-    min-width: 240px;
-    background: var(--surface-alt);
-    color: var(--text-color);
-    padding: 0.82em 0.82em;
-    box-shadow: 0 2px 16px rgba(0,0,0,0.12);
-    font-family: var(--font-family);
-    font-size: 0.99em;
-    font-weight: 500;
-    line-height: 1.4;
-    z-index: 9000;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.18s cubic-bezier(0.7, 1.5, 0.7, 1);
-    white-space: normal;
-}
-
-.gdrive-tooltip-wrapper:hover .gdrive-tooltip-content,
-.gdrive-tooltip-wrapper:focus-within .gdrive-tooltip-content {
-    display: block;
-    opacity: 1;
-    pointer-events: auto;
-}
-
-.gdrive-name.gdrive-tooltip-red {
-    color: var(--error);
-    cursor: help;
-}
-
-.gdrive-tooltip-content b {
-    color: var(--primary);
-    font-weight: 700;
-}
-
-.gdrive-custom-badge {
-    font-size: 0.89em;
-    color: var(--link-color);
-    margin-left: 0.3em;
-    font-weight: 500;
-    opacity: 0.95;
-}
-
-/* ======================================================
-   HOVER PREVIEW IMAGE
-====================================================== */
-.hover-preview {
-    pointer-events: none;
-    position: fixed;
-    border: 1px solid var(--hover-preview-border, #444);
-    background: var(--card-bg);
-    max-width: 200px;
-    max-height: 200px;
-    border-radius: 8px;
-    z-index: 13000;
-    display: none;
-    box-shadow: 0 2px 14px var(--shadow);
-    transition: left 0.13s cubic-bezier(0.3, 1.1, 0.6, 1), top 0.13s cubic-bezier(0.3, 1.1, 0.6, 1);
-}
-
-.poster-search-btn-row {
-    margin: 1.5rem 0;
-}
-
-.poster-search-toggle-btn {
-    margin-bottom: 0.8em;
-}
-
-.poster-search-spinner {
-    display: none;
-    text-align: center;
-    margin-bottom: 1.3em;
-}
-
-.poster-search-results {
-    margin-top: 1.5em;
-}
-
-
 .poster-search-controls {
     display: flex;
     align-items: center;
@@ -207,7 +22,6 @@
     margin-bottom: 1.6em;
     margin-top: 0.2em;
 }
-
 .poster-source-picker {
     display: flex;
     gap: 0.5em;
@@ -215,7 +29,6 @@
     border-radius: 9px;
     padding: 0.19em 0.35em;
 }
-
 .source-picker-btn {
     display: flex;
     align-items: center;
@@ -237,7 +50,6 @@
     color: #fff;
     opacity: 1;
 }
-
 .poster-sort-selector {
     font-size: 1em;
     border-radius: 6px;
@@ -249,13 +61,11 @@
     margin-left: 0.4em;
     margin-right: 0.3em;
 }
-
 .poster-view-mode-group {
     display: flex;
     gap: 0.32em;
     margin-left: 0.9em;
 }
-
 .view-mode-btn {
     background: none;
     border: none;
@@ -273,7 +83,6 @@
     color: #fff;
     opacity: 1;
 }
-
 .poster-search-bar {
     display: block;
     width: 98%;
@@ -287,6 +96,46 @@
     outline: none;
 }
 
+/* ======================================================
+   POSTER SEARCH: EMPTY & LOADING STATE
+====================================================== */
+.poster-search-empty {
+    margin-top: 2em;
+    color: var(--text-muted, #8c8c8c);
+    font-size: 1.12em;
+    text-align: center;
+    font-family: inherit;
+    letter-spacing: 0.01em;
+    font-weight: 500;
+    opacity: 0.85;
+}
+.poster-search-spinner {
+    display: none;
+    text-align: center;
+    margin-bottom: 1.3em;
+}
+
+/* ======================================================
+   POSTER SEARCH: RESULTS GROUPS/OWNERS
+====================================================== */
+.poster-search-results {
+    margin-top: 1.5em;
+}
+.poster-owner-group {
+    margin-bottom: 2.5em;
+}
+.poster-owner-label {
+    font-size: 1.08em;
+    font-weight: 600;
+    margin-bottom: 0.38em;
+    color: var(--primary, #388be5);
+    letter-spacing: 0.01em;
+    padding-left: 0.15em;
+}
+
+/* ======================================================
+   POSTER SEARCH: GRID VIEW
+====================================================== */
 .poster-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -306,11 +155,38 @@
     transition: background 0.14s;
     min-width: 140px;
     max-width: 200px;
+    min-height: 340px;  /* ensures all cards fit thumb+label */
+    box-sizing: border-box;
 }
 .poster-grid-item:hover {
     background: var(--primary, #2456a8);
     color: #fff;
 }
+.poster-thumb-img {
+    width: 100%;
+    max-width: 180px;
+    min-width: 0;
+    object-fit: contain;
+    display: block;
+    margin: 0 auto 0.7em auto;
+    border-radius: 7px;
+    background: #181a1b;
+    box-shadow: 0 1px 5px rgba(0,0,0,0.08);
+}
+.poster-file-label {
+    word-break: break-all;
+    font-size: 0.98em;
+    color: var(--text-color, #e3e3e3);
+    font-family: inherit;
+    letter-spacing: 0.01em;
+    padding-left: 0.04em;
+    line-height: 1.1;
+    margin-top: 0.22em;
+}
+
+/* ======================================================
+   POSTER SEARCH: LIST VIEW
+====================================================== */
 .poster-list {
     list-style: none;
     padding: 0;
@@ -329,40 +205,30 @@
     color: #fff;
 }
 
-.poster-owner-group {
-    margin-bottom: 2.5em;
+/* ======================================================
+   HOVER PREVIEW (LIST ONLY)
+====================================================== */
+.hover-preview {
+    pointer-events: none;
+    position: fixed;
+    border: 1px solid var(--hover-preview-border, #444);
+    background: var(--card-bg);
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    z-index: 13000;
+    display: none;
+    box-shadow: 0 2px 14px var(--shadow);
+    transition: left 0.13s cubic-bezier(0.3, 1.1, 0.6, 1), top 0.13s cubic-bezier(0.3, 1.1, 0.6, 1);
 }
-.poster-owner-label {
-    font-size: 1.08em;
+
+/* ======================================================
+   HIGHLIGHTING
+====================================================== */
+.highlight {
+    background: var(--primary, #2c4e72);
+    color: #fff;
+    border-radius: 3px;
+    padding: 0 0.14em;
     font-weight: 600;
-    margin-bottom: 0.38em;
-    color: var(--primary, #388be5);
-    letter-spacing: 0.01em;
-    padding-left: 0.15em;
-}
-
-.poster-thumb-img {
-    width: 100%;
-    max-width: 170px;
-    min-width: 120px;
-    height: auto;
-    max-height: 230px;
-    min-height: 170px;
-    object-fit: cover;
-    display: block;
-    margin: 0 auto 0.7em auto;
-    border-radius: 7px;
-    background: #222;
-    box-shadow: 0 1px 5px rgba(0,0,0,0.08);
-}
-
-.poster-search-empty {
-    margin-top: 2em;
-    color: var(--text-muted, #8c8c8c);
-    font-size: 1.12em;
-    text-align: center;
-    font-family: inherit;
-    letter-spacing: 0.01em;
-    font-weight: 500;
-    opacity: 0.85;
 }

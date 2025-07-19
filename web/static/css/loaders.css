@@ -1,0 +1,244 @@
+/* ======================================================
+   LOADER SPINNER
+====================================================== */
+/* === Terminal Loader Spinner === */
+@keyframes blinkCursor {
+    50% {
+        border-right-color: transparent;
+    }
+}
+
+@keyframes typeAndDelete {
+    0%,
+    10% {
+        width: 0;
+    }
+
+    45%,
+    85% {
+        width: 11.5em;
+    }
+
+    90%,
+    100% {
+        width: 0;
+    }
+}
+
+.loader-modal {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--overlay-bg);
+    backdrop-filter: blur(1px);
+    z-index: 12000;
+    border-radius: 25px;
+    min-height: 340px;
+}
+
+/* === Bouncing Dots Loader === */
+.loader-dots {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    height: 50px;
+    margin-top: 18px;
+}
+.loader-dots .dot {
+    width: 12px;
+    height: 12px;
+    margin: 0 5px;
+    background: #ddd;
+    border-radius: 50%;
+    animation: loader-dot-bounce 0.6s infinite alternate;
+}
+.loader-dots .dot1 { animation-delay: 0s; }
+.loader-dots .dot2 { animation-delay: 0.2s; }
+.loader-dots .dot3 { animation-delay: 0.4s; }
+@keyframes loader-dot-bounce {
+    from { transform: translateY(0); opacity: 0.7; }
+    to   { transform: translateY(-20px); opacity: 1; }
+}
+
+/* === Rotating Circle Loader === */
+.loader-spinner {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50px;
+    margin-top: 18px;
+}
+.spinner-circle {
+    width: 36px;
+    height: 36px;
+    border: 4px solid #ddd;
+    border-top: 4px solid var(--link-color, #71c1ff);
+    border-radius: 50%;
+    animation: loader-spin 0.85s linear infinite;
+}
+@keyframes loader-spin {
+    0% { transform: rotate(0deg);}
+    100% { transform: rotate(360deg);}
+}
+
+/* From Uiverse.io by aryamitra06 */ 
+.loader {
+  display: flex;
+  align-items: center;
+}
+
+.bar {
+  display: inline-block;
+  width: 3px;
+  height: 20px;
+  background-color: rgba(255, 255, 255, .5);
+  border-radius: 10px;
+  animation: scale-up4 1s linear infinite;
+}
+
+.bar:nth-child(2) {
+  height: 35px;
+  margin: 0 5px;
+  animation-delay: .25s;
+}
+
+.bar:nth-child(3) {
+  animation-delay: .5s;
+}
+
+@keyframes scale-up4 {
+  20% {
+    background-color: #ffff;
+    transform: scaleY(1.5);
+  }
+
+  40% {
+    transform: scaleY(1);
+  }
+}
+/* From Uiverse.io by dimasptrautmaa */ 
+#page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+#h3 {
+  color: white;
+}
+
+#ring {
+  width: 190px;
+  height: 190px;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  position: absolute;
+}
+
+#ring:nth-child(1) {
+  border-bottom: 8px solid rgb(255, 141, 249);
+  animation: rotate1 2s linear infinite;
+}
+
+@keyframes rotate1 {
+  from {
+    transform: rotateX(50deg) rotateZ(110deg);
+  }
+
+  to {
+    transform: rotateX(50deg) rotateZ(470deg);
+  }
+}
+
+#ring:nth-child(2) {
+  border-bottom: 8px solid rgb(255,65,106);
+  animation: rotate2 2s linear infinite;
+}
+
+@keyframes rotate2 {
+  from {
+    transform: rotateX(20deg) rotateY(50deg) rotateZ(20deg);
+  }
+
+  to {
+    transform: rotateX(20deg) rotateY(50deg) rotateZ(380deg);
+  }
+}
+
+#ring:nth-child(3) {
+  border-bottom: 8px solid rgb(0,255,255);
+  animation: rotate3 2s linear infinite;
+}
+
+@keyframes rotate3 {
+  from {
+    transform: rotateX(40deg) rotateY(130deg) rotateZ(450deg);
+  }
+
+  to {
+    transform: rotateX(40deg) rotateY(130deg) rotateZ(90deg);
+  }
+}
+
+#ring:nth-child(4) {
+  border-bottom: 8px solid rgb(252, 183, 55);
+  animation: rotate4 2s linear infinite;
+}
+
+@keyframes rotate4 {
+  from {
+    transform: rotateX(70deg) rotateZ(270deg);
+  }
+
+  to {
+    transform: rotateX(70deg) rotateZ(630deg);
+  }
+}
+
+
+/* === Modern Matrix-Grid Loader Animation === */
+@keyframes loader_5191 {
+  from {
+    opacity: 0.25;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.loader-matrix {
+  position: relative;
+  width: 50px;
+  height: 50px;
+  margin: 0 auto;
+}
+.square {
+  background: #ddd;
+  width: 10px;
+  height: 10px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -5px;
+  margin-left: -5px;
+  border-radius: 2px;
+}
+.square#sq1 { margin-top: -25px; margin-left: -25px; animation: loader_5191 675ms ease-in-out 0s infinite alternate; }
+.square#sq2 { margin-top: -25px;               animation: loader_5191 675ms ease-in-out 75ms infinite alternate; }
+.square#sq3 { margin-top: -25px; margin-left: 15px; animation: loader_5191 675ms ease-in-out 150ms infinite alternate; }
+.square#sq4 {                 margin-left: -25px; animation: loader_5191 675ms ease-in-out 225ms infinite alternate; }
+.square#sq5 {                                 animation: loader_5191 675ms ease-in-out 300ms infinite alternate; }
+.square#sq6 {                 margin-left: 15px;  animation: loader_5191 675ms ease-in-out 375ms infinite alternate; }
+.square#sq7 { margin-top: 15px; margin-left: -25px; animation: loader_5191 675ms ease-in-out 450ms infinite alternate; }
+.square#sq8 { margin-top: 15px;                  animation: loader_5191 675ms ease-in-out 525ms infinite alternate; }
+.square#sq9 { margin-top: 15px; margin-left: 15px;  animation: loader_5191 675ms ease-in-out 600ms infinite alternate; }

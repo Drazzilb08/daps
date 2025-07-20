@@ -144,6 +144,38 @@ class DapsDB:
                 );
             """
             )
+            # normalized_title index on poster_cache
+            self.conn.execute(
+                """
+                CREATE INDEX IF NOT EXISTS poster_cache_normalized_title_idx
+                    ON poster_cache (normalized_title)
+                ;
+                """
+            )
+            # tmdb_id index on poster_cache
+            self.conn.execute(
+                """
+                CREATE INDEX IF NOT EXISTS poster_cache_tmdb_id_idx
+                    ON poster_cache (tmdb_id)
+                ;
+                """
+            )
+            # tvdb_id index on poster_cache
+            self.conn.execute(
+                """
+                CREATE INDEX IF NOT EXISTS poster_cache_tvdb_id_idx
+                    ON poster_cache (tvdb_id)
+                ;
+                """
+            )
+            # imdb_id index on poster_cache
+            self.conn.execute(
+                """
+                CREATE INDEX IF NOT EXISTS poster_cache_imdb_id_idx
+                    ON poster_cache (imdb_id)
+                ;
+                """
+            )
             # Holiday status table
             self.conn.execute(
                 """
@@ -158,13 +190,13 @@ class DapsDB:
                 """
                 CREATE TABLE IF NOT EXISTS run_state (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    module_name TEXT NOT NULL UNIQUE,         
-                    last_run TEXT,                            
-                    last_run_successful INTEGER DEFAULT 0,    
-                    last_run_status TEXT,                     
-                    last_run_message TEXT,                    
-                    last_duration INTEGER,                    
-                    last_run_by TEXT                          
+                    module_name TEXT NOT NULL UNIQUE,
+                    last_run TEXT,
+                    last_run_successful INTEGER DEFAULT 0,
+                    last_run_status TEXT,
+                    last_run_message TEXT,
+                    last_duration INTEGER,
+                    last_run_by TEXT
                 );
                 """
             )
@@ -185,7 +217,7 @@ class DapsDB:
             self.conn.execute(
                 "DELETE FROM plex_media_cache WHERE instance_name=?", (instance_name,)
             )
-    
+
     def report_orphaned_posters(self, logger: Optional[Any] = None) -> dict:
         """
         Logs all orphaned posters and returns a JSON-ready summary for the frontend.
@@ -344,7 +376,7 @@ class DapsDB:
 
         if asset_type == "movie":
             item["season_number"] = None
-        
+
         def norm_int(val):
             if val in (None, "", "None"):
                 return None
@@ -368,7 +400,7 @@ class DapsDB:
             norm_int(item.get("season_number")),
             str(instance_name),
         )
-    
+
     @staticmethod
     def _canonical_plex_key(item: dict) -> tuple:
         """
@@ -394,7 +426,7 @@ class DapsDB:
             norm_str(item.get("library_name")),
             norm_str(item.get("plex_id")),
         )
-    
+
     @staticmethod
     def _canonical_poster_key(item: dict) -> tuple:
         """
@@ -423,7 +455,7 @@ class DapsDB:
             norm_int(item.get("season_number")),
             norm_str(item.get("file")),
         )
-    
+
     def upsert_collection(self, record: dict, instance_name: str) -> None:
         """
         Insert or update a record in the collections table using canonical collection key.
@@ -852,7 +884,7 @@ class DapsDB:
             logger.debug(
                 f"[SYNC] Plex media cache for {instance_name} ({library_name}) synchronized. {len(fresh_media)} items present."
             )
-            
+
     def sync_media_cache_for_instance(
         self,
         instance_name: str,
@@ -1028,7 +1060,7 @@ class DapsDB:
 
         with self.lock, self.conn:
             self.conn.execute(query, tuple(params))
-        
+
     def get_last_holiday_status(self) -> dict:
         with self.lock, self.conn:
             cur = self.conn.execute(
@@ -1050,12 +1082,12 @@ class DapsDB:
                 """,
                 (last_active_holiday,),
             )
-    
+
     # THIS SECTION IS FOR RETURNING NONE IF CACHE STALE
     def get_plex_media_cache_for_library(
-            self, 
-            instance_name: str, 
-            library_name: str, 
+            self,
+            instance_name: str,
+            library_name: str,
             max_age_hours: int = 6
             ) -> Optional[list]:
         """
@@ -1077,9 +1109,9 @@ class DapsDB:
 
 
     def get_media_cache_for_instance(
-            self, 
-            instance_name: str, 
-            asset_type: str, 
+            self,
+            instance_name: str,
+            asset_type: str,
             max_age_hours: int = 6
         ) -> Optional[list]:
         """
@@ -1098,7 +1130,7 @@ class DapsDB:
             if not all(t > cutoff for t in times):
                 return None
             return rows
-        
+
     def get_collections_cache_for_library(
         self,
         instance_name: str,
@@ -1123,7 +1155,7 @@ class DapsDB:
                 return None
             return rows
     ########################
-        
+
     def get_plex_media_cache_by_instance(self, instance_name: str) -> Optional[list]:
         """
         Returns all cached Plex media for the given instance_name as a list of dicts.
@@ -1226,12 +1258,16 @@ class DapsDB:
         else:
             sql += " AND season_number IS NULL"
         with self.lock, self.conn:
-            self.conn.execute(sql, params)
+            cursor = self.conn.cursor()
+            cursor.execute(sql, params)
+            return cursor.rowcount
 
     def delete_poster_cache_by_title(self, normalized_title, year, season_number):
         sql = "DELETE FROM poster_cache WHERE normalized_title=? AND year IS ? AND season_number IS ?"
         with self.lock, self.conn:
-            self.conn.execute(sql, (normalized_title, year, season_number))
+            cursor = self.conn.cursor()
+            cursor.execute(sql, (normalized_title, year, season_number))
+            return cursor.rowcount
 
     def get_media_cache_by_instance(self, instance_name: str) -> list:
         """
@@ -1242,14 +1278,14 @@ class DapsDB:
                 "SELECT * FROM media_cache WHERE instance_name=?", (instance_name,)
             )
             return cur.fetchall()
-        
+
     def get_collections_cache_by_instance(self, instance_name: str) -> list:
         with self.lock, self.conn:
             cur = self.conn.execute(
                 "SELECT * FROM collections_cache WHERE instance_name=?", (instance_name,)
             )
             return cur.fetchall()
-    
+
     def get_collections_cache_by_instance_and_library(self, instance_name: str, library_name: str) -> list:
         with self.lock, self.conn:
             cur = self.conn.execute(
@@ -1257,7 +1293,7 @@ class DapsDB:
                 (instance_name, library_name)
             )
             return cur.fetchall()
-        
+
     def get_media_cache_from_id(self, id: int) -> Optional[dict]:
         """
         Retrieve a single media_cache row by its unique integer ID.
@@ -1267,7 +1303,7 @@ class DapsDB:
             cur = self.conn.execute("SELECT * FROM media_cache WHERE id=?", (id,))
             row = cur.fetchone()
             return dict(row) if row else None
-    
+
     def get_collections_cache_from_id(self, id: int) -> Optional[dict]:
         """
         Retrieve a single collections_cache row by its unique integer ID.
@@ -1277,13 +1313,13 @@ class DapsDB:
             cur = self.conn.execute("SELECT * FROM collections_cache WHERE id=?", (id,))
             row = cur.fetchone()
             return dict(row) if row else None
-        
+
     def get_media_cache(self) -> list:
         """Return all records from media_cache as a list of dicts."""
         with self.lock, self.conn:
             cur = self.conn.execute("SELECT * FROM media_cache")
             return cur.fetchall()
-    
+
     def get_collection_cache(self) -> list:
         """Return all records from collections_cache as a list of dicts."""
         with self.lock, self.conn:
@@ -1324,7 +1360,7 @@ class DapsDB:
             """Delete all rows from poster_cache."""
             with self.lock, self.conn:
                 self.conn.execute("DELETE FROM poster_cache")
-    
+
     def clear_media_cache_by_instance_name_and_asset_type(self, instance_name, asset_type) -> None:
         """Delete all rows from media_cache where instance_name and asset_type match
         the provided values."""
@@ -1361,7 +1397,7 @@ class DapsDB:
         status: str = None,
         message: str = None,
         duration: int = None,
-        run_by: str = None 
+        run_by: str = None
     ) -> None:
         """Mark the finish of a module run, recording status, message, duration, etc."""
         with self.lock, self.conn:

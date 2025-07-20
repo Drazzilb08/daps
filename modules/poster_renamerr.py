@@ -353,7 +353,7 @@ def main() -> None:
         output, manifest = rename_files(config, logger, db)
 
         if config.report_unmatched_assets:
-            db.close()
+            db.poster.close()
             from modules.unmatched_assets import main as report_unmatched_assets
 
             report_unmatched_assets()
@@ -380,5 +380,5 @@ def main() -> None:
     except Exception:
         logger.error("\n\nAn error occurred:\n", exc_info=True)
     finally:
-        db.close()
+        db.close_all()
         logger.log_outro()

@@ -38,7 +38,7 @@ def run_and_track(target_func, module_name, origin):
         run_by=origin,
     )
     if hasattr(db, "close"):
-        db.close()
+        db.close_all()
 
 
 def check_schedule(script_name: str, schedule: str, logger: Logger) -> bool:

@@ -388,4 +388,4 @@ def main():
     output = build_unmatched_assets_output(db, config)
     manager = NotificationManager(config, logger, module_name="unmatched_assets")
     manager.send_notification(output)
-    db.close()
+    db.close_all()

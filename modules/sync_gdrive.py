@@ -150,9 +150,9 @@ def run_rclone(config: SimpleNamespace, logger: Logger) -> None:
 def main(logger: Optional[Logger] = None) -> None:
     """Initialize logger, optionally print config in debug mode, and run rclone sync."""
     config = Config("sync_gdrive")
-    logger = Logger(config.log_level, config.module_name)
+    logger = Logger(getattr(config, "log_level", "INFO"), config.module_name)
     try:
-        if config.log_level.lower() == "debug":
+        if getattr(config, "log_level", "INFO").lower() == "debug":
             print_settings(logger, config)
         run_rclone(config, logger)
     except KeyboardInterrupt:

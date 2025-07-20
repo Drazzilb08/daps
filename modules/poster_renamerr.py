@@ -327,11 +327,11 @@ def main() -> None:
     """
 
     config = Config("poster_renamerr")
-    logger = Logger(config.log_level, config.module_name)
+    logger = Logger(getattr(config, "log_level", "INFO"), config.module_name)
     db = DapsDB()
 
     try:
-        if config.log_level.lower() == "debug":
+        if getattr(config, "log_level", "INFO") == "debug":
             print_settings(logger, config)
 
         ensure_destination_dir(config, logger)
@@ -359,7 +359,7 @@ def main() -> None:
             report_unmatched_assets()
 
         if config.run_cleanarr:
-            cleanarr_logger = Logger(config.log_level, "cleanarr")
+            cleanarr_logger = Logger(getattr(config, "log_level", "INFO"), "cleanarr")
             db.orphaned.handle_orphaned_posters(cleanarr_logger, config.dry_run)
 
         if config.run_border_replacerr:

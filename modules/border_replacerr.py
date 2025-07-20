@@ -235,7 +235,7 @@ def run_replacerr(
 ) -> None:
     replacerr_config = Config("border_replacerr")
 
-    if renamerr_config.log_level.lower() == "debug":
+    if getattr(renamerr_config, "log_level", "INFO").lower() == "debug":
         print_settings(logger, replacerr_config)
 
     results = get_holiday_status(db, replacerr_config, logger)

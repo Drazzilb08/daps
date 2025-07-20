@@ -46,7 +46,7 @@ def main() -> None:
         None
     """
     config = Config("jduparr")
-    logger = Logger(config.log_level, config.module_name)
+    logger = Logger(getattr(config, "log_level", "INFO"), config.module_name)
     results = None
     try:
         # If dry run, display a notice table
@@ -63,7 +63,7 @@ def main() -> None:
             )
             return
         for path in config.source_dirs:
-            if config.log_level.lower() == "debug":
+            if getattr(config, "log_level", "INFO").lower() == "debug":
                 print_settings(logger, config)
 
             if not os.path.isdir(path):

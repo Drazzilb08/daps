@@ -232,3 +232,37 @@
     padding: 0 0.14em;
     font-weight: 600;
 }
+
+.poster-source-picker .source-picker-btn.disabled,
+.poster-source-picker .source-picker-btn:disabled {
+  opacity: 0.45;
+  filter: grayscale(0.7);
+  cursor: not-allowed;
+}
+.poster-source-picker .source-picker-btn:hover:not(.disabled),
+.poster-source-picker .source-picker-btn:focus:not(.disabled),
+.poster-source-picker .source-picker-btn.active {
+    background: var(--primary, #1e88e5);
+    color: #fff;
+    opacity: 1;
+}
+
+
+.poster-source-tooltip {
+    position: fixed;
+    background: var(--surface-alt, #222);
+    color: var(--text-color, #fff);
+    font-size: 0.98em;
+    padding: 0.42em 1.1em;
+    border-radius: 7px;
+    box-shadow: 0 2px 18px rgba(30,40,68,0.11), 0 0.4px 1.5px rgba(20,20,28,0.08);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.16s;
+    white-space: pre-line;
+    max-width: 320px;
+}
+.poster-source-tooltip.visible {
+    opacity: 1;
+    pointer-events: none;
+}

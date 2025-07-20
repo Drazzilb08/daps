@@ -37,7 +37,7 @@ def update_client_databases(db, config, logger, max_age_hours=6, force_reindex=F
 
             asset_type = "movie" if app.instance_type == "Radarr" else "show"
             if not force_reindex:
-                cache = db.get_media_cache_for_instance(
+                cache = db.media.get_for_instance(
                     instance_name, asset_type, max_age_hours=max_age_hours
                 )
                 if cache:
@@ -48,7 +48,7 @@ def update_client_databases(db, config, logger, max_age_hours=6, force_reindex=F
 
             logger.info(f"Indexing '{instance_name}'...")
             fresh_media = app.get_all_media()
-            db.sync_media_cache_for_instance(
+            db.media.sync_for_instance(
                 instance_name, app.instance_type, asset_type, fresh_media, logger
             )
 
@@ -88,7 +88,7 @@ def update_plex_database(db, config, logger, max_age_hours=6, force_reindex=Fals
 
         for library_name in libraries:
             if not force_reindex:
-                cache = db.get_plex_media_cache_for_library(
+                cache = db.plex.get_for_library(
                     instance_name, library_name, max_age_hours=max_age_hours
                 )
                 if cache:
@@ -105,7 +105,7 @@ def update_plex_database(db, config, logger, max_age_hours=6, force_reindex=Fals
                     logger=logger,
                     instance_name=instance_name,
                 )
-                db.sync_plex_media_cache_for_library(
+                db.plex.sync_for_library(
                     instance_name=instance_name,
                     library_name=library_name,
                     fresh_media=fresh_media,
@@ -171,7 +171,7 @@ def update_collections_database(
                     continue
 
                 if not force_reindex:
-                    cache = db.get_collections_cache_for_library(
+                    cache = db.collection.get_for_library(
                         instance_name, library_name, max_age_hours=max_age_hours
                     )
                     if cache:
@@ -184,7 +184,7 @@ def update_collections_database(
                     f"Indexing collections for library '{library_name}' in '{instance_name}'..."
                 )
                 try:
-                    db.sync_collections_cache(
+                    db.collection.sync_collections_cache(
                         instance_name, library_name, collections, logger
                     )
                 except Exception as e:

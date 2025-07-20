@@ -35,7 +35,7 @@ def get_holiday_status(
     skip_enabled = getattr(config, "skip", False)
 
     # Get last status from DB
-    last_status = db.get_last_holiday_status()
+    last_status = db.holiday.get_status()
     last_active_holiday = last_status.get("last_active_holiday")
 
     current_holiday = None
@@ -247,7 +247,7 @@ def run_replacerr(
         logger.info(
             "Border replacerr is in skip mode and today is not a holiday. Skipping all processing."
         )
-        db.set_last_holiday_status(active_holiday)
+        db.holiday.set_status(active_holiday)
         return
     if skip_enabled and active_holiday:
         logger.info(
@@ -264,7 +264,7 @@ def run_replacerr(
         logger.debug(
             "Holiday state changed (or startup). Doing full reprocessing of all matched assets."
         )
-        for row in db.get_media_cache():
+        for row in db.media.get_all():
             if row.get("matched") == 1:
                 if (
                     replacerr_config.exclusion_list
@@ -282,9 +282,9 @@ def run_replacerr(
 
         for source, asset_id in all_ids:
             if source == "media_cache":
-                asset = db.get_media_cache_from_id(asset_id)
+                asset = db.media.get_by_id(asset_id)
             else:
-                asset = db.get_collections_cache_from_id(asset_id)
+                asset = db.collection.get_by_id(asset_id)
             if not asset:
                 logger.warning(f"Asset ID {asset_id} not found in {source}. Skipping.")
                 continue
@@ -298,7 +298,7 @@ def run_replacerr(
 
     if not assets:
         logger.info("No assets to process for border replacerr.")
-        db.set_last_holiday_status(active_holiday)
+        db.holiday.set_status(active_holiday)
         return
 
     border_colors = results["border_colors"]
@@ -399,4 +399,4 @@ def run_replacerr(
     logger.info("")
 
     # Save current run and active holiday to DB
-    db.set_last_holiday_status(active_holiday)
+    db.holiday.set_status(active_holiday)

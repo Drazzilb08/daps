@@ -6,10 +6,10 @@ from util.notification import NotificationManager
 
 def get_unmatched_assets_stats(db, config):
     # --- DB fetches ---
-    unmatched_media = db.get_unmatched_media()
-    unmatched_collections = db.get_unmatched_collections()
-    all_media = db.get_media_cache()
-    all_collections = db.get_collection_cache()
+    unmatched_media = db.media.get_unmatched()
+    unmatched_collections = db.collection.get_unmatched()
+    all_media = db.media.get_all()
+    all_collections = db.collection.get_all()
 
     # --- Instance/library filtering ---
     allowed_instances = set()

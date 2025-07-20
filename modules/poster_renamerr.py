@@ -71,7 +71,7 @@ def rename_files(
         if isinstance(inst, str):
             # Radarr/Sonarr/other non-Plex
             instance_name = inst
-            for row in db.get_media_cache_by_instance(instance_name):
+            for row in db.media.get_by_instance(instance_name):
                 if row.get("matched") and (
                     not row.get("renamed_file")
                     or not os.path.exists(row.get("renamed_file"))
@@ -83,7 +83,7 @@ def rename_files(
                 if library_names:
                     for library_name in library_names:
                         # Add matched, not-yet-renamed collections
-                        for row in db.get_collections_cache_by_instance_and_library(
+                        for row in db.collection.get_by_instance_and_library(
                             instance_name, library_name
                         ):
                             if row.get("matched") and (
@@ -147,7 +147,7 @@ def rename_files(
                 item["renamed_file"] = new_file_path
 
                 if asset_type == "collection":
-                    db.update_collections_cache_item(
+                    db.collection.update(
                         title=item.get("title"),
                         year=item.get("year"),
                         library_name=item.get("library_name"),
@@ -157,7 +157,7 @@ def rename_files(
                         renamed_file=new_file_path,
                     )
                 else:
-                    db.update_media_cache_item(
+                    db.media.update(
                         asset_type=asset_type,
                         title=item.get("title"),
                         year=item.get("year"),
@@ -342,7 +342,7 @@ def main() -> None:
         sync_posters(config, logger)
 
         logger.info("Gathering all the posters, please wait...")
-        db.clear_poster_cache()
+        db.poster.clear()
         merge_assets(db, config.source_dirs, logger)
         print("Finished gathering posters.")
 
@@ -360,7 +360,7 @@ def main() -> None:
 
         if config.run_cleanarr:
             cleanarr_logger = Logger(config.log_level, "cleanarr")
-            db.handle_orphaned_posters(cleanarr_logger, config.dry_run)
+            db.orphaned.handle_orphaned_posters(cleanarr_logger, config.dry_run)
 
         if config.run_border_replacerr:
             run_border_replacerr(db, config, manifest, logger)

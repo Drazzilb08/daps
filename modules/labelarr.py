@@ -191,7 +191,7 @@ def sync_to_plex(plex_client, arr_data, plex_data, logger, labels, config, db):
                 f"Sync '{plex_item.get('title')}' ({plex_item.get('year')}) [{match_type}]: {add_remove}"
             )
             if not config.dry_run:
-                db.update_plex_media_cache_item(
+                db.plex.update(
                     title=plex_item.get("title"),
                     year=plex_item.get("year"),
                     library_name=plex_item.get("library_name"),
@@ -262,7 +262,7 @@ def main() -> None:
             labels = mapping["labels"]
             arr_data.extend(
                 row
-                for row in db.get_media_cache_by_instance(app_instance) or []
+                for row in db.media.get_by_instance(app_instance) or []
                 if (
                     any(
                         label
@@ -293,7 +293,7 @@ def main() -> None:
                 if plex_client.is_connected():
                     for library in library_names:
                         plex_data.extend(
-                            db.get_plex_media_cache_by_instance_and_library(
+                            db.plex.get_by_instance_and_library(
                                 instance_name, library
                             )
                         )

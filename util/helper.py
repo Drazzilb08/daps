@@ -549,7 +549,7 @@ def match_assets_to_media(
         if isinstance(inst, str):
             # Radarr/Sonarr etc.
             instance_name = inst
-            media = db.get_media_cache_by_instance(instance_name)
+            media = db.media.get_by_instance(instance_name)
             if media:
                 all_media.extend(media)
         elif isinstance(inst, dict):
@@ -557,7 +557,7 @@ def match_assets_to_media(
                 library_names = params.get("library_names", [])
                 if library_names:
                     for library_name in library_names:
-                        collections = db.get_collections_cache_by_instance_and_library(
+                        collections = db.collection. get_by_instance_and_library(
                             instance_name, library_name
                         )
                         if collections:
@@ -597,13 +597,13 @@ def match_assets_to_media(
                 for id_field in ["imdb_id", "tmdb_id", "tvdb_id"]:
                     id_val = media.get(id_field)
                     if id_val:
-                        candidate = db.get_poster_cache_by_id(
+                        candidate = db.poster.get_by_id(
                             id_field, id_val, season_number
                         )
                         if candidate:
                             return candidate
                 # 2. Try by normalized_title/year/season_number
-                candidate = db.get_poster_cache_by_normalized_title(
+                candidate = db.poster.get_by_normalized_title(
                     normalized_title, year, season_number
                 )
                 if candidate:
@@ -611,7 +611,7 @@ def match_assets_to_media(
                 # 3. Try by alternate normalized titles
                 for alt in alt_titles:
                     alt_norm = normalize_titles(alt)
-                    candidate = db.get_poster_cache_by_normalized_title(
+                    candidate = db.poster.get_by_normalized_title(
                         alt_norm, year, season_number
                     )
                     if candidate:
@@ -622,7 +622,7 @@ def match_assets_to_media(
                 # Main poster match (no season)
                 candidate = find_match(media, season_number=None)
                 if candidate and is_match(candidate, media)[0]:
-                    db.update_media_cache_item(
+                    db.media.update(
                         asset_type=asset_type,
                         title=title,
                         year=year,
@@ -636,7 +636,7 @@ def match_assets_to_media(
                     )
                     matches += 1
                 else:
-                    db.update_media_cache_item(
+                    db.media.update(
                         asset_type=asset_type,
                         title=title,
                         year=year,
@@ -661,7 +661,7 @@ def match_assets_to_media(
                 for season in seasons:
                     candidate = find_match(media, season_number=season)
                     if candidate and is_match(candidate, media)[0]:
-                        db.update_media_cache_item(
+                        db.media.update(
                             asset_type=asset_type,
                             title=title,
                             year=year,
@@ -675,7 +675,7 @@ def match_assets_to_media(
                         )
                         matches += 1
                     else:
-                        db.update_media_cache_item(
+                        db.media.update(
                             asset_type=asset_type,
                             title=title,
                             year=year,
@@ -691,7 +691,7 @@ def match_assets_to_media(
                 candidate = find_match(media)
                 print(f"candidate: {candidate}")
                 if candidate and is_match(candidate, media)[0]:
-                    db.update_collections_cache_item(
+                    db.collection.update(
                         title=title,
                         year=year,
                         library_name=library_name,
@@ -704,7 +704,7 @@ def match_assets_to_media(
                     )
                     matches += 1
                 else:
-                    db.update_collections_cache_item(
+                    db.collection.update(
                         title=title,
                         year=year,
                         library_name=library_name,
@@ -719,7 +719,7 @@ def match_assets_to_media(
                 # Movies and all other asset types
                 candidate = find_match(media, season_number=None)
                 if candidate and is_match(candidate, media)[0]:
-                    db.update_media_cache_item(
+                    db.media.update(
                         asset_type=asset_type,
                         title=title,
                         year=year,
@@ -733,7 +733,7 @@ def match_assets_to_media(
                     )
                     matches += 1
                 else:
-                    db.update_media_cache_item(
+                    db.media.update(
                         asset_type=asset_type,
                         title=title,
                         year=year,

@@ -28,7 +28,7 @@ def upload_posters(config: Any, db: Any, logger: Any, manifest: dict) -> None:
                 plex_client = PlexClient(url, api, logger)
                 if plex_client.is_connected():
                     assets = []
-                    plex_media_cache = db.get_plex_media_cache_by_instance(
+                    plex_media_cache = db.plex.get_by_instance(
                         instance_name
                     )
                     all_ids = [
@@ -39,9 +39,9 @@ def upload_posters(config: Any, db: Any, logger: Any, manifest: dict) -> None:
                     ]
                     for source, asset_id in all_ids:
                         if source == "media_cache":
-                            asset = db.get_media_cache_from_id(asset_id)
+                            asset = db.media.get_media_cache_from_id(asset_id)
                         else:
-                            asset = db.get_collections_cache_from_id(asset_id)
+                            asset = db.collection.get_by_id(asset_id)
                         if not asset:
                             logger.warning(
                                 f"Asset ID {asset_id} not found in {source}. Skipping."
@@ -216,7 +216,7 @@ def _sync_movies(
                 dry_run=dry_run,
             )
             if upload_ok:
-                db.update_media_cache_item(
+                db.media.update(
                     "movie",
                     asset_title,
                     asset_year,
@@ -319,7 +319,7 @@ def _sync_series(
             )
 
             if upload_ok:
-                db.update_media_cache_item(
+                db.media.update(
                     "show",
                     asset_title,
                     asset_year,
@@ -407,7 +407,7 @@ def _sync_collections(
                 dry_run=dry_run,
             )
             if upload_ok:
-                db.update_media_cache_item(
+                db.media.update(
                     "collection",
                     asset_title,
                     asset_year,

@@ -73,12 +73,12 @@ def merge_assets(db: Any, source_dirs: List[str], logger: Optional[Any] = None) 
             for id_field in ["imdb_id", "tmdb_id", "tvdb_id"]:
                 id_val = asset.get(id_field)
                 if id_val:
-                    db.delete_poster_cache_by_id(
+                    db.poster.delete_by_id(
                         id_field, id_val, asset.get("season_number")
                     )
 
             # 2. Delete by normalized_title/year/season_number
-            db.delete_poster_cache_by_title(
+            db.poster.delete_by_title(
                 asset["normalized_title"], asset.get("year"), asset.get("season_number")
             )
 
@@ -91,13 +91,13 @@ def merge_assets(db: Any, source_dirs: List[str], logger: Optional[Any] = None) 
             ]
             for id_field, id_val in id_fields:
                 if id_val:
-                    matched = db.get_poster_cache_by_id(
+                    matched = db.poster.get_by_id(
                         id_field, id_val, asset.get("season_number")
                     )
                     if matched:
                         break
             if not matched:
-                matched = db.get_poster_cache_by_normalized_title(
+                matched = db.poster.get_by_normalized_title(
                     asset["normalized_title"],
                     asset.get("year"),
                     asset.get("season_number"),
@@ -111,6 +111,6 @@ def merge_assets(db: Any, source_dirs: List[str], logger: Optional[Any] = None) 
                     if matched.get(id_field) and not asset.get(id_field):
                         asset[id_field] = matched[id_field]
                 # For shows: propagate IDs to all seasons if this is a season poster
-                db.propagate_ids_for_show(asset["title"], asset.get("year"), asset)
+                db.poster.propagate_ids_for_show(asset["title"], asset.get("year"), asset)
             # 5. Upsert the new asset (now the only entry for this logical asset)
-            db.upsert_poster_cache(asset)
+            db.poster.upsert(asset)

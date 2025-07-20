@@ -16,10 +16,6 @@ from util.database import DapsDB
 
 
 def run_and_track(target_func, module_name, origin):
-    import time
-
-    from util.database import DapsDB
-
     db = DapsDB()
     start_time = time.monotonic()
     success = False
@@ -33,7 +29,7 @@ def run_and_track(target_func, module_name, origin):
         status = "error"
         message = str(e)
     duration = int(time.monotonic() - start_time)
-    db.record_run_finish(
+    db.run_state.record_run_finish(
         module_name,
         success=success,
         status=status,
@@ -149,7 +145,7 @@ class DapsOrchestrator:
     def __init__(self, logger):
         self.logger = logger
         self.running: Dict[str, multiprocessing.Process] = {}
-        self.db = DapsDB()
+        self.db = DapsDB(logger=logger)
 
     def _log(self, level, *args, **kwargs):
         if self.logger:
@@ -273,7 +269,7 @@ class DapsOrchestrator:
             target_func = MODULES[name]
             self._log("info", f"[{origin.upper()}] Launching module '{name}'...")
 
-            self.db.record_run_start(name, run_by=origin)
+            self.db.run_state.record_run_start(name, run_by=origin)
 
             proc = multiprocessing.Process(
                 target=run_and_track, args=(target_func, name, origin)

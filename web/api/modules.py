@@ -117,7 +117,7 @@ async def get_all_run_states(request: Request, logger: Any = Depends(get_logger)
             return JSONResponse(
                 status_code=500, content={"error": "DB not available on orchestrator"}
             )
-        run_states = db.get_all_run_states()
+        run_states = db.run_state.get_all()
         return {"run_states": run_states}
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})

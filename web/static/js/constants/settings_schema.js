@@ -4,9 +4,9 @@ export const SETTINGS_SCHEMA = [
     key: "sync_gdrive", label: "Sync Gdrive",
     fields: [
       { key: "log_level", label: "Log Level", type: "dropdown", options: ["debug", "info"], required: true, description: "Set the logging verbosity for Google Drive sync." },
-      { key: "client_id", label: "Client ID", type: "text", required: true, description: "Google API client ID for authentication." },
-      { key: "client_secret", label: "Client Secret", type: "password", required: true, description: "Google API client secret for authentication." },
-      { key: "token", label: "Token (JSON)", type: "json", required: true, placeholder: `{\n  "access_token": "ya29...",\n  "refresh_token": "1", ...}`, description: "OAuth2 token JSON for authenticating with Google Drive." },
+      { key: "client_id", label: "Client ID", type: "text", required: false, description: "Google API client ID for authentication." },
+      { key: "client_secret", label: "Client Secret", type: "password", required: false, description: "Google API client secret for authentication." },
+      { key: "token", label: "Token (JSON)", type: "json", required: false, placeholder: `{\n  "access_token": "ya29...",\n  "refresh_token": "1", ...}`, description: "OAuth2 token JSON for authenticating with Google Drive." },
       { key: "gdrive_sa_location", label: "Service Account Location", type: "text", required: false, description: "Path to the Google Drive service account credentials file." },
       {
         key: "gdrive_list", label: "Google Drive List", type: "gdrive_custom", required: false,

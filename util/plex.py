@@ -84,7 +84,9 @@ class PlexClient:
                     "year": year,
                     "folder": folder,
                     "alternate_titles": alternate_titles["alternate_titles"],
-                    "normalized_alternate_titles": alternate_titles["normalized_alternate_titles"],
+                    "normalized_alternate_titles": alternate_titles[
+                        "normalized_alternate_titles"
+                    ],
                     "library_name": library_name,
                     "asset_type": "collection",
                     "tmdb_id": tmdb_id,
@@ -158,9 +160,7 @@ class PlexClient:
                         "folder": folder,
                         "year": str(getattr(item, "year", "")),
                         "guids": guids,
-                        "labels": [
-                            label.tag for label in getattr(item, "labels", [])
-                        ],
+                        "labels": [label.tag for label in getattr(item, "labels", [])],
                     }
                 )
         return items

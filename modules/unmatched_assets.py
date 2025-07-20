@@ -44,7 +44,10 @@ def get_unmatched_assets_stats(db, config):
 
     # --- User config filters ---
     def should_include(asset):
-        if getattr(config, "ignore_folders", []) and asset.get("folder") in config.ignore_folders:
+        if (
+            getattr(config, "ignore_folders", [])
+            and asset.get("folder") in config.ignore_folders
+        ):
             return False
         profile = asset.get("profile") or asset.get("quality_profile")
         if getattr(config, "ignore_profiles", []) and profile in config.ignore_profiles:
@@ -52,6 +55,7 @@ def get_unmatched_assets_stats(db, config):
         tags = asset.get("tags", [])
         if isinstance(tags, str):
             import json
+
             try:
                 tags = json.loads(tags)
             except Exception:
@@ -59,7 +63,10 @@ def get_unmatched_assets_stats(db, config):
         if getattr(config, "ignore_tags", []):
             if any(tag in config.ignore_tags for tag in tags):
                 return False
-        if getattr(config, "ignore_titles", []) and asset.get("title") in config.ignore_titles:
+        if (
+            getattr(config, "ignore_titles", [])
+            and asset.get("title") in config.ignore_titles
+        ):
             return False
         return True
 
@@ -69,11 +76,7 @@ def get_unmatched_assets_stats(db, config):
     all_collections = [a for a in all_collections if should_include(a)]
 
     # --- Grouping ---
-    group_map = {
-        "movie": "movies",
-        "show": "series",
-        "series": "series"
-    }
+    group_map = {"movie": "movies", "show": "series", "series": "series"}
     unmatched = {"movies": [], "series": [], "collections": []}
     all_media_grouped = {"movies": [], "series": []}
     all_collections_grouped = []
@@ -85,29 +88,49 @@ def get_unmatched_assets_stats(db, config):
         entry = dict(row)
         if key == "series":
             if entry.get("season_number") is not None:
-                found = next((s for s in unmatched["series"]
-                              if s["title"] == entry["title"] and s.get("year") == entry.get("year")), None)
+                found = next(
+                    (
+                        s
+                        for s in unmatched["series"]
+                        if s["title"] == entry["title"]
+                        and s.get("year") == entry.get("year")
+                    ),
+                    None,
+                )
                 if found:
-                    found.setdefault("missing_seasons", []).append(entry["season_number"])
+                    found.setdefault("missing_seasons", []).append(
+                        entry["season_number"]
+                    )
                 else:
-                    unmatched["series"].append({
-                        "title": entry["title"],
-                        "year": entry.get("year"),
-                        "missing_seasons": [entry["season_number"]],
-                        "missing_main_poster": False
-                    })
+                    unmatched["series"].append(
+                        {
+                            "title": entry["title"],
+                            "year": entry.get("year"),
+                            "missing_seasons": [entry["season_number"]],
+                            "missing_main_poster": False,
+                        }
+                    )
             else:
-                found = next((s for s in unmatched["series"]
-                              if s["title"] == entry["title"] and s.get("year") == entry.get("year")), None)
+                found = next(
+                    (
+                        s
+                        for s in unmatched["series"]
+                        if s["title"] == entry["title"]
+                        and s.get("year") == entry.get("year")
+                    ),
+                    None,
+                )
                 if found:
                     found["missing_main_poster"] = True
                 else:
-                    unmatched["series"].append({
-                        "title": entry["title"],
-                        "year": entry.get("year"),
-                        "missing_seasons": [],
-                        "missing_main_poster": True
-                    })
+                    unmatched["series"].append(
+                        {
+                            "title": entry["title"],
+                            "year": entry.get("year"),
+                            "missing_seasons": [],
+                            "missing_main_poster": True,
+                        }
+                    )
         else:
             unmatched[key].append(entry)
 
@@ -120,8 +143,15 @@ def get_unmatched_assets_stats(db, config):
             continue
         entry = dict(row)
         if key == "series":
-            found = next((s for s in all_media_grouped["series"]
-                          if s["title"] == entry["title"] and s.get("year") == entry.get("year")), None)
+            found = next(
+                (
+                    s
+                    for s in all_media_grouped["series"]
+                    if s["title"] == entry["title"]
+                    and s.get("year") == entry.get("year")
+                ),
+                None,
+            )
             if found:
                 if entry.get("season_number") is not None:
                     found.setdefault("seasons", []).append(entry["season_number"])
@@ -129,11 +159,13 @@ def get_unmatched_assets_stats(db, config):
                 seasons = []
                 if entry.get("season_number") is not None:
                     seasons = [entry["season_number"]]
-                all_media_grouped["series"].append({
-                    "title": entry["title"],
-                    "year": entry.get("year"),
-                    "seasons": seasons
-                })
+                all_media_grouped["series"].append(
+                    {
+                        "title": entry["title"],
+                        "year": entry.get("year"),
+                        "seasons": seasons,
+                    }
+                )
         else:
             all_media_grouped[key].append(entry)
 
@@ -143,23 +175,52 @@ def get_unmatched_assets_stats(db, config):
     # --- Stats ---
     unmatched_movies_total = len(unmatched["movies"])
     total_movies = len(all_media_grouped["movies"])
-    percent_movies_complete = ((total_movies - unmatched_movies_total) / total_movies * 100) if total_movies else 0
+    percent_movies_complete = (
+        ((total_movies - unmatched_movies_total) / total_movies * 100)
+        if total_movies
+        else 0
+    )
 
-    unmatched_series_total = sum(1 for item in unmatched["series"] if item.get("missing_main_poster", False))
+    unmatched_series_total = sum(
+        1 for item in unmatched["series"] if item.get("missing_main_poster", False)
+    )
     total_series = len(all_media_grouped["series"])
-    percent_series_complete = ((total_series - unmatched_series_total) / total_series * 100) if total_series else 0
+    percent_series_complete = (
+        ((total_series - unmatched_series_total) / total_series * 100)
+        if total_series
+        else 0
+    )
 
-    unmatched_seasons_total = sum(len(item.get("missing_seasons", [])) for item in unmatched["series"])
-    total_seasons = sum(len(item.get("seasons", [])) for item in all_media_grouped["series"])
-    percent_seasons_complete = ((total_seasons - unmatched_seasons_total) / total_seasons * 100) if total_seasons else 0
+    unmatched_seasons_total = sum(
+        len(item.get("missing_seasons", [])) for item in unmatched["series"]
+    )
+    total_seasons = sum(
+        len(item.get("seasons", [])) for item in all_media_grouped["series"]
+    )
+    percent_seasons_complete = (
+        ((total_seasons - unmatched_seasons_total) / total_seasons * 100)
+        if total_seasons
+        else 0
+    )
 
     unmatched_collections_total = len(unmatched["collections"])
     total_collections = len(all_collections_grouped)
-    percent_collections_complete = ((total_collections - unmatched_collections_total) / total_collections * 100) if total_collections else 0
+    percent_collections_complete = (
+        ((total_collections - unmatched_collections_total) / total_collections * 100)
+        if total_collections
+        else 0
+    )
 
     grand_total = total_movies + total_series + total_seasons + total_collections
-    grand_unmatched = unmatched_movies_total + unmatched_series_total + unmatched_seasons_total + unmatched_collections_total
-    percent_grand_complete = ((grand_total - grand_unmatched) / grand_total * 100) if grand_total else 0
+    grand_unmatched = (
+        unmatched_movies_total
+        + unmatched_series_total
+        + unmatched_seasons_total
+        + unmatched_collections_total
+    )
+    percent_grand_complete = (
+        ((grand_total - grand_unmatched) / grand_total * 100) if grand_total else 0
+    )
 
     summary = {
         "movies": {
@@ -196,12 +257,12 @@ def get_unmatched_assets_stats(db, config):
         "summary": summary,
     }
 
+
 def print_unmatched_assets(db, logger, config):
     from util.helper import create_table
+
     stats = get_unmatched_assets_stats(db, config)
     unmatched = stats["unmatched"]
-    all_media = stats["all_media"]
-    all_collections = stats["all_collections"]
     summary = stats["summary"]
 
     asset_types = ["movies", "series", "collections"]
@@ -226,7 +287,9 @@ def print_unmatched_assets(db, logger, config):
                         for season in missing_seasons:
                             logger.info(f"\t\tSeason: {season}")
                     elif missing_seasons:
-                        logger.info(f"\t{title} ({year}) (Seasons listed below have missing posters)")
+                        logger.info(
+                            f"\t{title} ({year}) (Seasons listed below have missing posters)"
+                        )
                         for season in missing_seasons:
                             logger.info(f"\t\tSeason: {season}")
                     elif missing_main:
@@ -241,13 +304,39 @@ def print_unmatched_assets(db, logger, config):
     logger.info(create_table([["Statistics"]]))
     table = [
         ["Type", "Total", "Unmatched", "Percent Complete"],
-        ["Movies", summary["movies"]["total"], summary["movies"]["unmatched"], f"{summary['movies']['percent_complete']:.2f}%"],
-        ["Series", summary["series"]["total"], summary["series"]["unmatched"], f"{summary['series']['percent_complete']:.2f}%"],
-        ["Seasons", summary["seasons"]["total"], summary["seasons"]["unmatched"], f"{summary['seasons']['percent_complete']:.2f}%"],
-        ["Collections", summary["collections"]["total"], summary["collections"]["unmatched"], f"{summary['collections']['percent_complete']:.2f}%"],
-        ["Grand Total", summary["grand_total"]["total"], summary["grand_total"]["unmatched"], f"{summary['grand_total']['percent_complete']:.2f}%"]
+        [
+            "Movies",
+            summary["movies"]["total"],
+            summary["movies"]["unmatched"],
+            f"{summary['movies']['percent_complete']:.2f}%",
+        ],
+        [
+            "Series",
+            summary["series"]["total"],
+            summary["series"]["unmatched"],
+            f"{summary['series']['percent_complete']:.2f}%",
+        ],
+        [
+            "Seasons",
+            summary["seasons"]["total"],
+            summary["seasons"]["unmatched"],
+            f"{summary['seasons']['percent_complete']:.2f}%",
+        ],
+        [
+            "Collections",
+            summary["collections"]["total"],
+            summary["collections"]["unmatched"],
+            f"{summary['collections']['percent_complete']:.2f}%",
+        ],
+        [
+            "Grand Total",
+            summary["grand_total"]["total"],
+            summary["grand_total"]["unmatched"],
+            f"{summary['grand_total']['percent_complete']:.2f}%",
+        ],
     ]
     logger.info(create_table(table))
+
 
 def build_unmatched_assets_output(db, config):
     stats = get_unmatched_assets_stats(db, config)
@@ -257,16 +346,39 @@ def build_unmatched_assets_output(db, config):
     # Build summary table rows like print_unmatched_assets
     table = [
         ["Type", "Total", "Unmatched", "Percent Complete"],
-        ["Movies", summary["movies"]["total"], summary["movies"]["unmatched"], f"{summary['movies']['percent_complete']:.2f}%"],
-        ["Series", summary["series"]["total"], summary["series"]["unmatched"], f"{summary['series']['percent_complete']:.2f}%"],
-        ["Seasons", summary["seasons"]["total"], summary["seasons"]["unmatched"], f"{summary['seasons']['percent_complete']:.2f}%"],
-        ["Collections", summary["collections"]["total"], summary["collections"]["unmatched"], f"{summary['collections']['percent_complete']:.2f}%"],
-        ["Grand Total", summary["grand_total"]["total"], summary["grand_total"]["unmatched"], f"{summary['grand_total']['percent_complete']:.2f}%"]
+        [
+            "Movies",
+            summary["movies"]["total"],
+            summary["movies"]["unmatched"],
+            f"{summary['movies']['percent_complete']:.2f}%",
+        ],
+        [
+            "Series",
+            summary["series"]["total"],
+            summary["series"]["unmatched"],
+            f"{summary['series']['percent_complete']:.2f}%",
+        ],
+        [
+            "Seasons",
+            summary["seasons"]["total"],
+            summary["seasons"]["unmatched"],
+            f"{summary['seasons']['percent_complete']:.2f}%",
+        ],
+        [
+            "Collections",
+            summary["collections"]["total"],
+            summary["collections"]["unmatched"],
+            f"{summary['collections']['percent_complete']:.2f}%",
+        ],
+        [
+            "Grand Total",
+            summary["grand_total"]["total"],
+            summary["grand_total"]["unmatched"],
+            f"{summary['grand_total']['percent_complete']:.2f}%",
+        ],
     ]
-    return {
-        "unmatched_dict": unmatched_dict,
-        "summary": table
-    }
+    return {"unmatched_dict": unmatched_dict, "summary": table}
+
 
 def main():
     config = Config("unmatched_assets")

@@ -63,10 +63,7 @@ def rename_files(
         "movie": [],
         "show": [],
     }
-    manifest = {
-        "media_cache": [],
-        "collections_cache": []
-    }
+    manifest = {"media_cache": [], "collections_cache": []}
     matched_assets = []
 
     # --- Gather matched/unrenamed media assets ---
@@ -75,7 +72,10 @@ def rename_files(
             # Radarr/Sonarr/other non-Plex
             instance_name = inst
             for row in db.get_media_cache_by_instance(instance_name):
-                if row.get("matched") and (not row.get("renamed_file") or not os.path.exists(row.get("renamed_file"))):
+                if row.get("matched") and (
+                    not row.get("renamed_file")
+                    or not os.path.exists(row.get("renamed_file"))
+                ):
                     matched_assets.append(row)
         elif isinstance(inst, dict):
             for instance_name, params in inst.items():
@@ -83,8 +83,13 @@ def rename_files(
                 if library_names:
                     for library_name in library_names:
                         # Add matched, not-yet-renamed collections
-                        for row in db.get_collections_cache_by_instance_and_library(instance_name, library_name):
-                            if row.get("matched") and (not row.get("renamed_file") or not os.path.exists(row.get("renamed_file"))):
+                        for row in db.get_collections_cache_by_instance_and_library(
+                            instance_name, library_name
+                        ):
+                            if row.get("matched") and (
+                                not row.get("renamed_file")
+                                or not os.path.exists(row.get("renamed_file"))
+                            ):
                                 matched_assets.append(row)
                 # If you want to support Plex media as well, add that here if needed
 
@@ -156,7 +161,7 @@ def rename_files(
                         asset_type=asset_type,
                         title=item.get("title"),
                         year=item.get("year"),
-                        instance_name = item.get("instance_name"),
+                        instance_name=item.get("instance_name"),
                         matched_value=None,
                         season_number=item.get("season_number"),
                         original_file=None,
@@ -344,12 +349,13 @@ def main() -> None:
         update_client_databases(db, config, logger)
         update_collections_database(db, config, logger)
 
-        match_assets_to_media(db,logger, config)
+        match_assets_to_media(db, logger, config)
         output, manifest = rename_files(config, logger, db)
 
         if config.report_unmatched_assets:
             db.close()
             from modules.unmatched_assets import main as report_unmatched_assets
+
             report_unmatched_assets()
 
         if config.run_cleanarr:
@@ -360,10 +366,12 @@ def main() -> None:
             run_border_replacerr(db, config, manifest, logger)
 
         upload_posters(config, db, logger, manifest)
-        
+
         if any(output.values()):
             handle_output(output, logger)
-            manager = NotificationManager(config, logger, module_name=config.module_name)
+            manager = NotificationManager(
+                config, logger, module_name=config.module_name
+            )
             manager.send_notification(output)
 
     except KeyboardInterrupt:

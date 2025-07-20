@@ -35,7 +35,9 @@ class Config:
             for k, v in (config["schedule"] or {}).items():
                 setattr(self, k, v)
             # Notifications for "schedule" if any
-            self.notifications = (config.get("notifications", {}) or {}).get("schedule", {}) or {}
+            self.notifications = (config.get("notifications", {}) or {}).get(
+                "schedule", {}
+            ) or {}
             return  # Do not set any globals for schedule
 
         # Normal behavior for all others (including any top-level key)
@@ -43,7 +45,9 @@ class Config:
         for k, v in mod_cfg.items():
             setattr(self, k, v)
         self.instances_config = config.get("instances", {})
-        self.notifications = (config.get("notifications", {}) or {}).get(module_name, {}) or {}
+        self.notifications = (config.get("notifications", {}) or {}).get(
+            module_name, {}
+        ) or {}
 
     @property
     def data(self):
@@ -52,6 +56,7 @@ class Config:
             return config.get("schedule", {})
         else:
             return config.get(self.module_name, {})
+
 
 def load_user_config(path: str) -> Dict[str, Any]:
     """

@@ -1,6 +1,3 @@
-
-
-
 import copy
 from typing import Any, Dict
 
@@ -13,18 +10,24 @@ from util.helper import redact_apis
 
 def get_config() -> Dict[str, Any]:
     import yaml
+
     with open(config_file_path, "r") as f:
         return yaml.safe_load(f)
 
+
 def save_config_dict(cfg: Dict[str, Any]) -> None:
     import yaml
+
     with open(config_file_path, "w") as f:
         yaml.safe_dump(cfg, f, sort_keys=False)
+
 
 def get_logger(request: Request) -> Any:
     return request.app.state.logger
 
+
 router = APIRouter()
+
 
 @router.get("/api/config")
 async def get_config_route(
@@ -35,10 +38,10 @@ async def get_config_route(
         logger.debug("[WEB] Serving GET /api/config")
     return config
 
+
 @router.post("/api/config")
 async def update_config_route(
-    request: Request,
-    logger: Any = Depends(get_logger)
+    request: Request, logger: Any = Depends(get_logger)
 ) -> Any:
     """
     Updates the configuration file with provided values.

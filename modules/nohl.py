@@ -188,7 +188,9 @@ def handle_searches(
     Returns:
         List of items that were searched.
     """
-    logger.debug(f"Initiating search for {len(search_list)} items in {instance_type.title()}.")
+    logger.debug(
+        f"Initiating search for {len(search_list)} items in {instance_type.title()}."
+    )
     searched_for: List[Dict[str, Any]] = []
     searches = 0
     per_item_info_logs = []
@@ -200,32 +202,48 @@ def handle_searches(
         total=len(search_list),
         logger=logger,
     ):
-        title = item.get('title', 'Unknown')
-        year = item.get('year', 'Unknown')
+        title = item.get("title", "Unknown")
+        year = item.get("year", "Unknown")
 
         # Use debug for all per-item actions in the loop
-        logger.debug(f"Processing [{instance_type}] '{title}' ({year}) [media_id={item.get('media_id')}]")
+        logger.debug(
+            f"Processing [{instance_type}] '{title}' ({year}) [media_id={item.get('media_id')}]"
+        )
 
         if instance_type == "radarr":
             if config.dry_run:
-                logger.debug(f"[Dry Run] Would search and delete: '{title}' ({year}), file IDs: {item.get('file_ids', [])}")
+                logger.debug(
+                    f"[Dry Run] Would search and delete: '{title}' ({year}), file IDs: {item.get('file_ids', [])}"
+                )
                 searched_for.append(item)
                 searches += 1
-                per_item_info_logs.append(f"[Dry Run] Would search and delete: '{title}' ({year}), file IDs: {item.get('file_ids', [])}")
+                per_item_info_logs.append(
+                    f"[Dry Run] Would search and delete: '{title}' ({year}), file IDs: {item.get('file_ids', [])}"
+                )
             else:
-                logger.debug(f" Deleting file IDs: {item.get('file_ids', [])} for '{title}' ({year}) [media_id={item.get('media_id')}]")
+                logger.debug(
+                    f" Deleting file IDs: {item.get('file_ids', [])} for '{title}' ({year}) [media_id={item.get('media_id')}]"
+                )
                 app.delete_movie_file(item["file_ids"])
-                logger.debug(f" Refreshing movie: '{title}' ({year}) [media_id={item['media_id']}]")
+                logger.debug(
+                    f" Refreshing movie: '{title}' ({year}) [media_id={item['media_id']}]"
+                )
                 results = app.refresh_items(item["media_id"])
                 ready = app.wait_for_command(results["id"])
                 if ready:
-                    logger.debug(f" Initiating search for movie: '{title}' ({year}), media_id: {item['media_id']}")
+                    logger.debug(
+                        f" Initiating search for movie: '{title}' ({year}), media_id: {item['media_id']}"
+                    )
                     app.search_media(item["media_id"])
                     searched_for.append(item)
                     searches += 1
-                    per_item_info_logs.append(f" Searched: '{title}' ({year}) [media_id={item['media_id']}]")
+                    per_item_info_logs.append(
+                        f" Searched: '{title}' ({year}) [media_id={item['media_id']}]"
+                    )
                 else:
-                    logger.warning(f" Command for '{title}' ({year}) was not ready in time.")
+                    logger.warning(
+                        f" Command for '{title}' ({year}) was not ready in time."
+                    )
         elif instance_type == "sonarr":
             seasons = item.get("seasons", [])
             if not seasons:
@@ -235,42 +253,74 @@ def handle_searches(
             for season in seasons:
                 snum = season.get("season_number", "Unknown")
                 season_pack = season.get("season_pack", False)
-                file_ids = list({ep["episode_file_id"] for ep in season["episode_data"]})
+                file_ids = list(
+                    {ep["episode_file_id"] for ep in season["episode_data"]}
+                )
                 episode_ids = [ep["episode_id"] for ep in season["episode_data"]]
-                episode_numbers = [ep.get("episode_number") for ep in season["episode_data"]]
+                episode_numbers = [
+                    ep.get("episode_number") for ep in season["episode_data"]
+                ]
                 if season_pack:
                     if config.dry_run:
-                        logger.debug(f"[Dry Run] Would search season pack: '{title}' ({year}) Season {snum} [media_id={item.get('media_id')}]")
-                        per_item_info_logs.append(f"[Dry Run] Would search season pack: '{title}' ({year}) Season {snum} [media_id={item.get('media_id')}]")
+                        logger.debug(
+                            f"[Dry Run] Would search season pack: '{title}' ({year}) Season {snum} [media_id={item.get('media_id')}]"
+                        )
+                        per_item_info_logs.append(
+                            f"[Dry Run] Would search season pack: '{title}' ({year}) Season {snum} [media_id={item.get('media_id')}]"
+                        )
                     else:
-                        logger.debug(f" Deleting episode file IDs: {file_ids} for Season {snum} of '{title}' ({year}) [media_id={item.get('media_id')}]")
+                        logger.debug(
+                            f" Deleting episode file IDs: {file_ids} for Season {snum} of '{title}' ({year}) [media_id={item.get('media_id')}]"
+                        )
                         app.delete_episode_files(file_ids)
-                        logger.debug(f" Refreshing series: '{title}' ({year}) [media_id={item['media_id']}]")
+                        logger.debug(
+                            f" Refreshing series: '{title}' ({year}) [media_id={item['media_id']}]"
+                        )
                         results = app.refresh_items(item["media_id"])
                         ready = app.wait_for_command(results["id"])
                         if ready:
-                            logger.debug(f" Initiating season pack search for: '{title}' ({year}) Season {snum} [media_id={item['media_id']}]")
+                            logger.debug(
+                                f" Initiating season pack search for: '{title}' ({year}) Season {snum} [media_id={item['media_id']}]"
+                            )
                             app.search_season(item["media_id"], snum)
-                            per_item_info_logs.append(f" Searched season pack: '{title}' ({year}) Season {snum} [media_id={item['media_id']}]")
+                            per_item_info_logs.append(
+                                f" Searched season pack: '{title}' ({year}) Season {snum} [media_id={item['media_id']}]"
+                            )
                         else:
-                            logger.warning(f" Command for season pack '{title}' ({year}) Season {snum} was not ready in time.")
+                            logger.warning(
+                                f" Command for season pack '{title}' ({year}) Season {snum} was not ready in time."
+                            )
                     searched_this_item = True
                 else:
                     if config.dry_run:
-                        logger.debug(f"[Dry Run] Would search episodes {episode_numbers} of '{title}' ({year}) Season {snum} [media_id={item.get('media_id')}]")
-                        per_item_info_logs.append(f"[Dry Run] Would search episodes {episode_numbers} of '{title}' ({year}) Season {snum} [media_id={item.get('media_id')}]")
+                        logger.debug(
+                            f"[Dry Run] Would search episodes {episode_numbers} of '{title}' ({year}) Season {snum} [media_id={item.get('media_id')}]"
+                        )
+                        per_item_info_logs.append(
+                            f"[Dry Run] Would search episodes {episode_numbers} of '{title}' ({year}) Season {snum} [media_id={item.get('media_id')}]"
+                        )
                     else:
-                        logger.debug(f" Deleting episode file IDs: {file_ids} for episodes {episode_numbers} in Season {snum} of '{title}' ({year}) [media_id={item.get('media_id')}]")
+                        logger.debug(
+                            f" Deleting episode file IDs: {file_ids} for episodes {episode_numbers} in Season {snum} of '{title}' ({year}) [media_id={item.get('media_id')}]"
+                        )
                         app.delete_episode_files(file_ids)
-                        logger.debug(f" Refreshing series: '{title}' ({year}) [media_id={item['media_id']}]")
+                        logger.debug(
+                            f" Refreshing series: '{title}' ({year}) [media_id={item['media_id']}]"
+                        )
                         results = app.refresh_items(item["media_id"])
                         ready = app.wait_for_command(results["id"])
                         if ready:
-                            logger.debug(f" Initiating episode search for: '{title}' ({year}) Episodes {episode_ids} in Season {snum} [media_id={item['media_id']}]")
+                            logger.debug(
+                                f" Initiating episode search for: '{title}' ({year}) Episodes {episode_ids} in Season {snum} [media_id={item['media_id']}]"
+                            )
                             app.search_episodes(episode_ids)
-                            per_item_info_logs.append(f" Searched episodes {episode_numbers} of '{title}' ({year}) Season {snum} [media_id={item['media_id']}]")
+                            per_item_info_logs.append(
+                                f" Searched episodes {episode_numbers} of '{title}' ({year}) Season {snum} [media_id={item['media_id']}]"
+                            )
                         else:
-                            logger.warning(f" Command for episodes '{title}' ({year}) Season {snum} was not ready in time.")
+                            logger.warning(
+                                f" Command for episodes '{title}' ({year}) Season {snum} was not ready in time."
+                            )
                     searched_this_item = True
             if searched_this_item:
                 searched_for.append(item)
@@ -318,17 +368,21 @@ def filter_media(
         season_data = []
         filtered_seasons = []
         if not media_season.get("monitored"):
-            filtered_seasons.append({
-                "season_number": media_season["season_number"],
-                "monitored": False,
-            })
+            filtered_seasons.append(
+                {
+                    "season_number": media_season["season_number"],
+                    "monitored": False,
+                }
+            )
         else:
             if media_season.get("season_pack"):
-                season_data.append({
-                    "season_number": media_season["season_number"],
-                    "season_pack": True,
-                    "episode_data": media_season["episode_data"],
-                })
+                season_data.append(
+                    {
+                        "season_number": media_season["season_number"],
+                        "season_pack": True,
+                        "episode_data": media_season["episode_data"],
+                    }
+                )
             else:
                 episode_set = set(file_season.get("episodes", []))
                 filtered_episodes = []
@@ -339,17 +393,21 @@ def filter_media(
                     elif episode.get("episode_number") in episode_set:
                         episode_data.append(episode)
                 if filtered_episodes:
-                    filtered_seasons.append({
-                        "season_number": media_season["season_number"],
-                        "monitored": True,
-                        "episodes": filtered_episodes,
-                    })
+                    filtered_seasons.append(
+                        {
+                            "season_number": media_season["season_number"],
+                            "monitored": True,
+                            "episodes": filtered_episodes,
+                        }
+                    )
                 if episode_data:
-                    season_data.append({
-                        "season_number": media_season["season_number"],
-                        "season_pack": False,
-                        "episode_data": episode_data,
-                    })
+                    season_data.append(
+                        {
+                            "season_number": media_season["season_number"],
+                            "season_pack": False,
+                            "episode_data": episode_data,
+                        }
+                    )
         return season_data, filtered_seasons
 
     data_list = {"search_media": [], "filtered_media": []}
@@ -363,10 +421,9 @@ def filter_media(
     ):
         for media_item in media_dict:
             # Match normalized title and year
-            if (
-                media_item.get("normalized_title") == nohl_item.get("normalized_title")
-                and media_item.get("year") == nohl_item.get("year")
-            ):
+            if media_item.get("normalized_title") == nohl_item.get(
+                "normalized_title"
+            ) and media_item.get("year") == nohl_item.get("year"):
                 # Only match root_path if not dry_run
                 if (
                     nohl_item.get("root_path") not in media_item.get("root_folder", "")
@@ -396,17 +453,22 @@ def filter_media(
                     reasons.append("excluded by quality profile")
 
                 if reasons:
-                    data_list["filtered_media"].append({
-                        "title": media_item["title"],
-                        "year": media_item["year"],
-                        "monitored": media_item["monitored"],
-                        "excluded": any(x in reasons for x in ["excluded by title"]),
-                        "quality_profile": (
-                            quality_profiles.get(media_item["quality_profile"])
-                            if media_item.get("quality_profile") in exclude_profile_ids
-                            else None
-                        ),
-                    })
+                    data_list["filtered_media"].append(
+                        {
+                            "title": media_item["title"],
+                            "year": media_item["year"],
+                            "monitored": media_item["monitored"],
+                            "excluded": any(
+                                x in reasons for x in ["excluded by title"]
+                            ),
+                            "quality_profile": (
+                                quality_profiles.get(media_item["quality_profile"])
+                                if media_item.get("quality_profile")
+                                in exclude_profile_ids
+                                else None
+                            ),
+                        }
+                    )
                     logger.debug(
                         f"Filtered out: '{media_item['title']}' ({media_item['year']}), reasons: {', '.join(reasons)}"
                     )
@@ -414,12 +476,14 @@ def filter_media(
 
                 if instance_type == "radarr":
                     file_ids = media_item.get("file_id")
-                    data_list["search_media"].append({
-                        "media_id": media_item["media_id"],
-                        "title": media_item["title"],
-                        "year": media_item["year"],
-                        "file_ids": file_ids,
-                    })
+                    data_list["search_media"].append(
+                        {
+                            "media_id": media_item["media_id"],
+                            "title": media_item["title"],
+                            "year": media_item["year"],
+                            "file_ids": file_ids,
+                        }
+                    )
                     logger.debug(
                         f"Will process '{media_item['title']}' ({media_item['year']}), file_ids={file_ids}, media_id={media_item['media_id']}"
                     )
@@ -430,9 +494,8 @@ def filter_media(
                     filtered_seasons = []
                     for media_season in media_seasons_info:
                         for file_season in file_season_info:
-                            if (
-                                media_season.get("season_number")
-                                == file_season.get("season_number")
+                            if media_season.get("season_number") == file_season.get(
+                                "season_number"
                             ):
                                 sdata, sfiltered = build_season_filtering(
                                     media_season, file_season
@@ -440,22 +503,26 @@ def filter_media(
                                 season_data.extend(sdata)
                                 filtered_seasons.extend(sfiltered)
                     if filtered_seasons:
-                        data_list["filtered_media"].append({
-                            "title": media_item["title"],
-                            "year": media_item["year"],
-                            "seasons": filtered_seasons,
-                        })
+                        data_list["filtered_media"].append(
+                            {
+                                "title": media_item["title"],
+                                "year": media_item["year"],
+                                "seasons": filtered_seasons,
+                            }
+                        )
                         logger.debug(
                             f"Filtered out: '{media_item['title']}' ({media_item['year']}) -- unmonitored/filtered seasons: {[s['season_number'] for s in filtered_seasons]}"
                         )
                     if season_data:
-                        data_list["search_media"].append({
-                            "media_id": media_item["media_id"],
-                            "title": media_item["title"],
-                            "year": media_item["year"],
-                            "monitored": media_item["monitored"],
-                            "seasons": season_data,
-                        })
+                        data_list["search_media"].append(
+                            {
+                                "media_id": media_item["media_id"],
+                                "title": media_item["title"],
+                                "year": media_item["year"],
+                                "monitored": media_item["monitored"],
+                                "seasons": season_data,
+                            }
+                        )
                         logger.debug(
                             f" Will process '{media_item['title']}' ({media_item['year']}), seasons: {[s['season_number'] for s in season_data]}, media_id={media_item['media_id']}"
                         )
@@ -502,7 +569,8 @@ def handle_messages(output: Dict[str, Any], logger: Logger) -> None:
                 logger.info("")
     # Output resolved section: show all ARR actions performed or skipped
     has_results = any(
-        instance.get("data", {}).get("search_media") or instance.get("data", {}).get("filtered_media")
+        instance.get("data", {}).get("search_media")
+        or instance.get("data", {}).get("filtered_media")
         for instance in output.get("resolved", {}).values()
     )
     if has_results:
@@ -620,6 +688,7 @@ def parse_source_entries(config):
     resolve_entries = [e for e in source_entries if e["mode"] == "resolve"]
     return scan_entries, resolve_entries
 
+
 def scan_entries(scan_entries, logger):
     """Gather all non-hardlinked files for reporting."""
     scanned_results: Dict[str, Any] = {}
@@ -628,6 +697,7 @@ def scan_entries(scan_entries, logger):
         results = find_nohl_files(path, logger)
         scanned_results[path] = results or {"movies": [], "series": []}
     return scanned_results
+
 
 def aggregate_nohl_results(resolve_entries, logger):
     """Aggregate all nohl results for ARR resolution."""
@@ -645,6 +715,7 @@ def aggregate_nohl_results(resolve_entries, logger):
             continue
     return nohl_list
 
+
 def process_arr_instances(config, nohl_list, logger):
     """For each instance, filter and trigger searches, returning output_dict, data_list, media_dict, nohl_data."""
     output_dict: Dict[str, Any] = {}
@@ -654,7 +725,9 @@ def process_arr_instances(config, nohl_list, logger):
     if config.instances:
         instance_index = build_instance_index(config.instances, config.instances_config)
         for instance in config.instances:
-            instance_name = instance if isinstance(instance, str) else list(instance.keys())[0]
+            instance_name = (
+                instance if isinstance(instance, str) else list(instance.keys())[0]
+            )
             instance_type, instance_settings = instance_index[instance_name]
             if instance_type not in ("radarr", "sonarr"):
                 continue  # skip plex here if only working with ARR
@@ -668,9 +741,9 @@ def process_arr_instances(config, nohl_list, logger):
             table = [[f"{server_name}"]]
             logger.info(create_table(table))
             nohl_data = (
-                nohl_list["movies"] if instance_type == "radarr"
-                else nohl_list["series"] if instance_type == "sonarr"
-                else None
+                nohl_list["movies"]
+                if instance_type == "radarr"
+                else nohl_list["series"] if instance_type == "sonarr" else None
             )
             if not nohl_data:
                 logger.info(f"No non-hardlinked files found for server: {server_name}")
@@ -683,10 +756,14 @@ def process_arr_instances(config, nohl_list, logger):
             if not media_dict:
                 logger.info(f"No media found for server: {server_name}")
                 continue
-            data_list = filter_media(app, media_dict, nohl_data, instance_type, config, logger)
+            data_list = filter_media(
+                app, media_dict, nohl_data, instance_type, config, logger
+            )
             search_list = data_list.get("search_media", [])
             if search_list:
-                search_list = handle_searches(app, search_list, instance_type, logger, config)
+                search_list = handle_searches(
+                    app, search_list, instance_type, logger, config
+                )
                 data_list["search_media"] = search_list
             output_dict[instance_name] = {
                 "server_name": server_name,
@@ -697,6 +774,7 @@ def process_arr_instances(config, nohl_list, logger):
                 f"{server_name} processing complete. Search media: {len(data_list['search_media'])}, Filtered: {len(data_list['filtered_media'])}"
             )
     return output_dict, data_list, media_dict, nohl_data
+
 
 def build_summary(scanned_results, output_dict):
     """Compute summary statistics for output reporting."""
@@ -731,6 +809,7 @@ def build_summary(scanned_results, output_dict):
     }
     return summary
 
+
 def dump_debug_json(data_list, media_dict, nohl_data, output_dict, logger, config):
     """Dump debug JSON payloads if needed."""
     table = [["Debug JSON Payloads"]]
@@ -763,10 +842,14 @@ def main() -> None:
         # Aggregate nohl results for ARR resolution
         nohl_list = aggregate_nohl_results(resolve_entries_list, logger)
         # ARR resolution: for each instance, filter and trigger searches
-        output_dict, data_list, media_dict, nohl_data = process_arr_instances(config, nohl_list, logger)
+        output_dict, data_list, media_dict, nohl_data = process_arr_instances(
+            config, nohl_list, logger
+        )
         # Dump debug JSON payloads if needed
         if config.log_level == "debug":
-            dump_debug_json(data_list, media_dict, nohl_data, output_dict, logger, config)
+            dump_debug_json(
+                data_list, media_dict, nohl_data, output_dict, logger, config
+            )
         # Prepare summary for output reporting
         summary = build_summary(scanned_results, output_dict)
         # Combine scan and resolve results for reporting and notification

@@ -10,8 +10,10 @@ router = APIRouter()
 
 ASSET_DIR = "web/static/assets"
 
+
 def get_logger(request: Request) -> Any:
     return request.app.state.logger
+
 
 @router.post("/api/poster-search-stats")
 async def poster_search_stats(request: Request, logger: Any = Depends(get_logger)):
@@ -49,7 +51,8 @@ async def poster_search_stats(request: Request, logger: Any = Depends(get_logger
     except Exception as e:
         logger.error(f"poster-search-stats error: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
-    
+
+
 @router.get("/api/preview-poster")
 async def preview_poster(location: str, path: str, logger: Any = Depends(get_logger)):
     """
@@ -73,17 +76,18 @@ async def preview_poster(location: str, path: str, logger: Any = Depends(get_log
     except Exception as e:
         logger.error(f"[WEB] Preview poster error: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
-    
+
 
 @router.get("/api/poster_assets")
 def list_poster_assets():
     # Only include image files (update extensions if needed)
-    allowed_ext = {'.jpg', '.jpeg', '.png', '.webp'}
+    allowed_ext = {".jpg", ".jpeg", ".png", ".webp"}
     try:
         files = [
-            f for f in os.listdir(ASSET_DIR)
-            if os.path.isfile(os.path.join(ASSET_DIR, f)) and
-               os.path.splitext(f)[1].lower() in allowed_ext
+            f
+            for f in os.listdir(ASSET_DIR)
+            if os.path.isfile(os.path.join(ASSET_DIR, f))
+            and os.path.splitext(f)[1].lower() in allowed_ext
         ]
         return JSONResponse(files)
     except Exception as e:

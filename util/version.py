@@ -124,7 +124,9 @@ def start_version_check(config, logger, interval=3600):
                     "color": "FF0000",
                 }
                 config.module_name = "version_check"
-                manager = NotificationManager(config, logger, module_name="version_check")
+                manager = NotificationManager(
+                    config, logger, module_name="version_check"
+                )
                 manager.send_notification(output)
             else:
                 logger.debug(

@@ -17,6 +17,7 @@ class NotifiarrConfig:
     webhook: str
     channel_id: int
 
+
 class NotificationManager:
     def __init__(self, config, logger, module_name="main"):
         self.config = config
@@ -92,12 +93,16 @@ class NotificationManager:
                         "color": color,
                         "timestamp": timestamp,
                         "fields": part.get("fields", []),
-                        "footer": {"text": f"Powered by: Drazzilb | {get_random_joke()}"},
+                        "footer": {
+                            "text": f"Powered by: Drazzilb | {get_random_joke()}"
+                        },
                     }
                 ]
             if "content" in part:
                 payload["content"] = (
-                    f"__**Dry Run**__\n{part['content']}" if dry_run else part["content"]
+                    f"__**Dry Run**__\n{part['content']}"
+                    if dry_run
+                    else part["content"]
                 )
             elif dry_run:
                 payload["content"] = "__**Dry Run**__"
@@ -111,7 +116,9 @@ class NotificationManager:
     def safe_post(url: str, payload: Dict[str, Any]) -> requests.Response:
         return requests.post(url, json=payload)
 
-    def send_and_log_response(self, label: str, hook: str, payload: Dict[str, Any]) -> Tuple[bool, str]:
+    def send_and_log_response(
+        self, label: str, hook: str, payload: Dict[str, Any]
+    ) -> Tuple[bool, str]:
         try:
             resp = self.safe_post(hook, payload)
             if resp.status_code not in (200, 204):
@@ -126,7 +133,9 @@ class NotificationManager:
                 return True, "Notification sent successfully."
         except Exception as e:
             tb_str = traceback.format_exc()
-            self.logger.error(f"[Notification] {label} send exception: {e}\n{tb_str}", exc_info=True)
+            self.logger.error(
+                f"[Notification] {label} send exception: {e}\n{tb_str}", exc_info=True
+            )
             return False, f"{e}\n{tb_str}"
 
     # ========== Main Send Methods ==========
@@ -152,6 +161,7 @@ class NotificationManager:
             return success, msg
 
         from util.notification_formatting import format_for_discord
+
         data, _ = format_for_discord(self.config, output)
         parts: List[Dict[str, Any]] = []
         if isinstance(data, dict):
@@ -160,7 +170,9 @@ class NotificationManager:
                     {
                         "embed": True,
                         "fields": fields,
-                        "part": f" (Part {idx} of {len(data)})" if len(data) > 1 else "",
+                        "part": (
+                            f" (Part {idx} of {len(data)})" if len(data) > 1 else ""
+                        ),
                     }
                 )
         else:
@@ -246,12 +258,15 @@ class NotificationManager:
                 return True, "Notification sent via Apprise."
             else:
                 err_msg = self.format_notification_error(apprise, label)
-                self.logger.error(f"[Notification] ❌ {label} failed via Apprise: {err_msg}")
+                self.logger.error(
+                    f"[Notification] ❌ {label} failed via Apprise: {err_msg}"
+                )
                 return False, err_msg
         except Exception as e:
             tb_str = traceback.format_exc()
             self.logger.error(
-                f"[Notification] ❌ {label} exception via Apprise: {e}\n{tb_str}", exc_info=True
+                f"[Notification] ❌ {label} exception via Apprise: {e}\n{tb_str}",
+                exc_info=True,
             )
             return False, f"{e}\n{tb_str}"
 
@@ -262,6 +277,7 @@ class NotificationManager:
         output: Any,
     ) -> Tuple[bool, str]:
         from util.notification_formatting import format_for_email
+
         try:
             body, success = format_for_email(self.config, output)
             if not success:
@@ -281,7 +297,9 @@ class NotificationManager:
 
     # ========== Target Management ==========
 
-    def collect_valid_targets(self, test: bool = False) -> Dict[str, Union[str, Dict[str, Any]]]:
+    def collect_valid_targets(
+        self, test: bool = False
+    ) -> Dict[str, Union[str, Dict[str, Any]]]:
         # (code identical to your previous collect_valid_targets, but using self.config/self.logger)
         config = self.config
         logger = self.logger
@@ -294,7 +312,9 @@ class NotificationManager:
         try:
             for ttype, target in notification_targets.items():
                 if not isinstance(target, dict):
-                    logger.warning(f"Invalid config structure for {ttype}: expected dict.")
+                    logger.warning(
+                        f"Invalid config structure for {ttype}: expected dict."
+                    )
                     target_data[ttype] = f"Invalid config for {ttype}"
                     continue
                 if ttype == "discord":
@@ -405,7 +425,9 @@ class NotificationManager:
                 tb_str = traceback.format_exc()
                 entry["error"] = f"Exception for {target}: {ex}\n{tb_str}"
                 results.append(entry)
-                self.logger.error(f"Exception for {target}: {ex}\n{tb_str}", exc_info=True)
+                self.logger.error(
+                    f"Exception for {target}: {ex}\n{tb_str}", exc_info=True
+                )
         success = any(r.get("ok") for r in results)
         out = {"success": success, "results": results}
         if not success:
@@ -428,7 +450,8 @@ class NotificationManager:
             }
             if not data or (isinstance(data, str) and data.startswith("Invalid")):
                 entry["message"] = (
-                    data if isinstance(data, str)
+                    data
+                    if isinstance(data, str)
                     else f"No valid config for '{target.upper()}'"
                 )
                 entry["error"] = entry["message"]
@@ -437,7 +460,9 @@ class NotificationManager:
             try:
                 if target == "notifiarr":
                     cfg = NotifiarrConfig(**data)
-                    ok, msg = self.send_notifiarr_notification(cfg, module_title, None, test=True)
+                    ok, msg = self.send_notifiarr_notification(
+                        cfg, module_title, None, test=True
+                    )
                 else:
                     apprise = Apprise()
                     apprise.add(data)
@@ -468,15 +493,15 @@ class NotificationManager:
     def extract_apprise_errors(apprise: Apprise) -> str:
         errors = []
         for service in apprise:
-            err = getattr(service, 'notify_error', None)
+            err = getattr(service, "notify_error", None)
             if callable(err):
                 notify_err = err()
                 if notify_err:
                     errors.append(str(notify_err))
-            last_resp = getattr(service, 'last_response', None)
+            last_resp = getattr(service, "last_response", None)
             if last_resp and str(last_resp) not in errors:
                 errors.append(str(last_resp))
-            resp = getattr(service, 'response', None)
+            resp = getattr(service, "response", None)
             if resp and str(resp) not in errors:
                 errors.append(str(resp))
             if hasattr(service, "details") and callable(service.details):
@@ -484,7 +509,9 @@ class NotificationManager:
                     details = service.details()
                     if details and isinstance(details, dict):
                         for k, v in details.items():
-                            if isinstance(v, str) and ("error" in v.lower() or "fail" in v.lower()):
+                            if isinstance(v, str) and (
+                                "error" in v.lower() or "fail" in v.lower()
+                            ):
                                 errors.append(f"{k}: {v}")
                     elif details and isinstance(details, str) and details not in errors:
                         errors.append(details)
@@ -495,21 +522,21 @@ class NotificationManager:
             return "Unknown notification error. (No error message was provided by Apprise or the notification service.) Please double-check your config values and try sending a test with debug logs enabled."
         return "; ".join(dict.fromkeys(errors))
 
-    def format_notification_error(self, source: Any, label: str = "", config: Any = None) -> str:
+    def format_notification_error(
+        self, source: Any, label: str = "", config: Any = None
+    ) -> str:
         if isinstance(source, requests.Response):
             return self.extract_error(source)
         try:
             if isinstance(source, Apprise):
                 msg = self.extract_apprise_errors(source)
-                if (
-                    "Unknown notification error" in msg
-                    and config is not None
-                ):
+                if "Unknown notification error" in msg and config is not None:
                     return f"{msg}\n\nConfig used:\n{json.dumps(config, indent=2)}"
                 return msg
         except Exception:
             pass
         return f"{label} unknown error"
+
 
 # Optionally keep ErrorNotifyHandler for error logging integration:
 class ErrorNotifyHandler(logging.Handler):
@@ -553,12 +580,13 @@ class ErrorNotifyHandler(logging.Handler):
                     f"[ErrorNotifyHandler] Failed to send error notification: {e}"
                 )
 
+
 def get_random_joke() -> str:
-        root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-        jokes_path = os.path.join(root_dir, "jokes.txt")
-        if os.path.exists(jokes_path):
-            with open(jokes_path, encoding="utf-8") as f:
-                jokes = [line.strip() for line in f if line.strip()]
-                if jokes:
-                    return random.choice(jokes)
-        return ""
+    root_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+    jokes_path = os.path.join(root_dir, "jokes.txt")
+    if os.path.exists(jokes_path):
+        with open(jokes_path, encoding="utf-8") as f:
+            jokes = [line.strip() for line in f if line.strip()]
+            if jokes:
+                return random.choice(jokes)
+    return ""

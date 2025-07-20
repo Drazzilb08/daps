@@ -33,7 +33,9 @@ def get_assets_files(source_dir: str) -> List[dict]:
             tmdb_id, tvdb_id, imdb_id = extract_ids(fname)
             if not (tmdb_id or tvdb_id or imdb_id):
                 tmdb_id, tvdb_id, imdb_id = extract_ids(folder)
-            match = season_number_regex.search(fname) or season_number_regex.search(folder)
+            match = season_number_regex.search(fname) or season_number_regex.search(
+                folder
+            )
             season_number = int(match.group(1)) if match else None
 
             # Only collections without year get alternate titles (per your spec)
@@ -52,11 +54,8 @@ def get_assets_files(source_dir: str) -> List[dict]:
             asset_records.append(record)
     return asset_records
 
-def merge_assets(
-    db: Any,
-    source_dirs: List[str],
-    logger: Optional[Any] = None
-) -> None:
+
+def merge_assets(db: Any, source_dirs: List[str], logger: Optional[Any] = None) -> None:
     """
     For each directory (low->high priority), scan assets and upsert them so that
     higher priority assets overwrite lower priority ones in the DB.
@@ -74,28 +73,34 @@ def merge_assets(
             for id_field in ["imdb_id", "tmdb_id", "tvdb_id"]:
                 id_val = asset.get(id_field)
                 if id_val:
-                    db.delete_poster_cache_by_id(id_field, id_val, asset.get("season_number"))
+                    db.delete_poster_cache_by_id(
+                        id_field, id_val, asset.get("season_number")
+                    )
 
             # 2. Delete by normalized_title/year/season_number
             db.delete_poster_cache_by_title(
-                asset["normalized_title"],
-                asset.get("year"),
-                asset.get("season_number")
+                asset["normalized_title"], asset.get("year"), asset.get("season_number")
             )
 
             # 3. Try to find a match for ID propagation (e.g. old record with an ID, new without)
             matched = None
-            id_fields = [("imdb_id", asset.get("imdb_id")),
-                         ("tmdb_id", asset.get("tmdb_id")),
-                         ("tvdb_id", asset.get("tvdb_id"))]
+            id_fields = [
+                ("imdb_id", asset.get("imdb_id")),
+                ("tmdb_id", asset.get("tmdb_id")),
+                ("tvdb_id", asset.get("tvdb_id")),
+            ]
             for id_field, id_val in id_fields:
                 if id_val:
-                    matched = db.get_poster_cache_by_id(id_field, id_val, asset.get("season_number"))
+                    matched = db.get_poster_cache_by_id(
+                        id_field, id_val, asset.get("season_number")
+                    )
                     if matched:
                         break
             if not matched:
                 matched = db.get_poster_cache_by_normalized_title(
-                    asset["normalized_title"], asset.get("year"), asset.get("season_number")
+                    asset["normalized_title"],
+                    asset.get("year"),
+                    asset.get("season_number"),
                 )
             if matched and not is_match(matched, asset)[0]:
                 matched = None

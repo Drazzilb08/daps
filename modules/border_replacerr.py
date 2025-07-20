@@ -19,6 +19,7 @@ from util.logger import Logger
 
 logging.getLogger("PIL").setLevel(logging.WARNING)
 
+
 def get_holiday_status(
     db: DapsDB,
     config: SimpleNamespace,
@@ -44,7 +45,7 @@ def get_holiday_status(
         schedule = schedule_color.get("schedule")
         if not schedule or not schedule.startswith("range("):
             continue
-        inside = schedule[len("range("): -1]
+        inside = schedule[len("range(") : -1]
         start_str, end_str = inside.split("-", 1)
         sm, sd = map(int, start_str.split("/"))
         em, ed = map(int, end_str.split("/"))
@@ -69,7 +70,7 @@ def get_holiday_status(
         border_colors = [convert_to_rgb(c, logger) for c in default_colors]
 
     # -- The key logic:
-    reset_all = (current_holiday != last_active_holiday)
+    reset_all = current_holiday != last_active_holiday
     result = {
         "active_holiday": current_holiday,
         "last_active_holiday": last_active_holiday,
@@ -146,10 +147,14 @@ def replace_borders(
                 return True
             else:
                 os.remove(tmp_path)
-                logger.debug(f"No border update needed for {os.path.basename(renamed_file)}")
+                logger.debug(
+                    f"No border update needed for {os.path.basename(renamed_file)}"
+                )
                 return False
     except Exception as e:
-        logger.error(f"Error replacing border on {os.path.basename(original_file)}: {e}")
+        logger.error(
+            f"Error replacing border on {os.path.basename(original_file)}: {e}"
+        )
         return False
 
 
@@ -189,7 +194,9 @@ def remove_borders(
                 return True
             else:
                 os.remove(tmp_path)
-                logger.debug(f"No border update needed for {os.path.basename(renamed_file)}")
+                logger.debug(
+                    f"No border update needed for {os.path.basename(renamed_file)}"
+                )
                 return False
     except Exception as e:
         logger.error(f"Error removing border on {os.path.basename(original_file)}: {e}")
@@ -237,11 +244,15 @@ def run_replacerr(
     active_holiday = results["active_holiday"]
 
     if skip_enabled and not active_holiday:
-        logger.info("Border replacerr is in skip mode and today is not a holiday. Skipping all processing.")
+        logger.info(
+            "Border replacerr is in skip mode and today is not a holiday. Skipping all processing."
+        )
         db.set_last_holiday_status(active_holiday)
         return
     if skip_enabled and active_holiday:
-        logger.info("Border replacerr skip mode: Overriding skip due to active holiday.")
+        logger.info(
+            "Border replacerr skip mode: Overriding skip due to active holiday."
+        )
 
     assets = []
     color_index = 0
@@ -250,18 +261,24 @@ def run_replacerr(
     removed = 0
     skipped = 0
     if reset_all:
-        logger.debug("Holiday state changed (or startup). Doing full reprocessing of all matched assets.")
+        logger.debug(
+            "Holiday state changed (or startup). Doing full reprocessing of all matched assets."
+        )
         for row in db.get_media_cache():
             if row.get("matched") == 1:
-                if replacerr_config.exclusion_list and row.get("title") in replacerr_config.exclusion_list:
+                if (
+                    replacerr_config.exclusion_list
+                    and row.get("title") in replacerr_config.exclusion_list
+                ):
                     logger.debug(f"Skipping '{row['title']}' (in exclusion_list).")
                     skipped += 1
                     continue
                 assets.append(row)
     else:
         # Combine all asset IDs and their types into a single list
-        all_ids = [("media_cache", i) for i in manifest.get("media_cache", [])] + \
-                [("collections_cache", i) for i in manifest.get("collections_cache", [])]
+        all_ids = [("media_cache", i) for i in manifest.get("media_cache", [])] + [
+            ("collections_cache", i) for i in manifest.get("collections_cache", [])
+        ]
 
         for source, asset_id in all_ids:
             if source == "media_cache":
@@ -271,11 +288,13 @@ def run_replacerr(
             if not asset:
                 logger.warning(f"Asset ID {asset_id} not found in {source}. Skipping.")
                 continue
-            if replacerr_config.exclusion_list and asset.get("title") in replacerr_config.exclusion_list:
+            if (
+                replacerr_config.exclusion_list
+                and asset.get("title") in replacerr_config.exclusion_list
+            ):
                 logger.debug(f"Skipping '{asset['title']}' (in exclusion_list).")
                 continue
             assets.append(asset)
-
 
     if not assets:
         logger.info("No assets to process for border replacerr.")
@@ -343,9 +362,13 @@ def run_replacerr(
                 processed += 1
 
     logger.info("")  # Spacing
-    logger.info(create_table([
-        ["Border Replacerr Summary"],
-    ]))
+    logger.info(
+        create_table(
+            [
+                ["Border Replacerr Summary"],
+            ]
+        )
+    )
     summary_table = [
         ["Processed", processed],
         ["Skipped", skipped],

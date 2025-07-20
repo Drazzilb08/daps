@@ -34,12 +34,12 @@ def run_and_track(target_func, module_name, origin):
         message = str(e)
     duration = int(time.monotonic() - start_time)
     db.record_run_finish(
-        module_name, 
-        success=success, 
-        status=status, 
-        message=message, 
+        module_name,
+        success=success,
+        status=status,
+        message=message,
         duration=duration,
-        run_by=origin
+        run_by=origin,
     )
     if hasattr(db, "close"):
         db.close()
@@ -248,7 +248,7 @@ class DapsOrchestrator:
             from web.server import start_web_server
 
             start_web_server(self.logger, orchestrator=self)
-            
+
             self._log("info", "[ORCH] Web server started in background thread.")
         except Exception as e:
             self._log("error", f"[ORCH] Failed to start web server: {e}", exc_info=True)
@@ -276,8 +276,7 @@ class DapsOrchestrator:
             self.db.record_run_start(name, run_by=origin)
 
             proc = multiprocessing.Process(
-                target=run_and_track,
-                args=(target_func, name, origin)
+                target=run_and_track, args=(target_func, name, origin)
             )
             proc.start()
             self._log(
@@ -287,6 +286,7 @@ class DapsOrchestrator:
             return {"proc": proc, "origin": origin}
         except Exception as e:
             import traceback
+
             self._log(
                 "error",
                 f"[{origin.upper()}] Failed to launch module '{name}': {e}",

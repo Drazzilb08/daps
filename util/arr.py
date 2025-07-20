@@ -53,7 +53,7 @@ class BaseARRClient:
         self.logger.debug(
             f"Connected to {self.app_name} v{self.app_version} at {self.url}"
         )
-    
+
     def is_connected(self) -> bool:
         """
         Returns True if client is connected to ARR instance, else False.
@@ -312,6 +312,7 @@ class BaseARRClient:
             for profile in response:
                 dict_of_names_and_ids[profile["name"]] = profile["id"]
             return dict_of_names_and_ids
+
 
 class RadarrClient(BaseARRClient):
     """Client for interacting with Radarr API."""

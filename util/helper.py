@@ -500,36 +500,36 @@ def is_match(
 
 
 def generate_title_variants(title: str) -> Dict[str, List[str]]:
-        """
-        Generate alternate and normalized title variants for a given media title.
-        """
+    """
+    Generate alternate and normalized title variants for a given media title.
+    """
 
-        stripped_prefix = next(
-            (title[len(p) + 1:].strip() for p in prefixes if title.startswith(p + " ")),
-            title,
-        )
-        stripped_suffix = next(
-            (title[:-(len(s) + 1)].strip() for s in suffixes if title.endswith(" " + s)),
-            title,
-        )
-        stripped_both = next(
-            (
-                stripped_prefix[:-(len(s) + 1)].strip()
-                for s in suffixes
-                if stripped_prefix.endswith(" " + s)
-            ),
-            stripped_prefix,
-        )
-        alternate_titles = [stripped_prefix, stripped_suffix, stripped_both]
-        if not title.lower().endswith("collection"):
-            alternate_titles.append(f"{title} Collection")
-        normalized_alternate_titles = [normalize_titles(alt) for alt in alternate_titles]
-        alternate_titles = list(dict.fromkeys(alternate_titles))
-        normalized_alternate_titles = list(dict.fromkeys(normalized_alternate_titles))
-        return {
-            "alternate_titles": alternate_titles,
-            "normalized_alternate_titles": normalized_alternate_titles,
-        }
+    stripped_prefix = next(
+        (title[len(p) + 1 :].strip() for p in prefixes if title.startswith(p + " ")),
+        title,
+    )
+    stripped_suffix = next(
+        (title[: -(len(s) + 1)].strip() for s in suffixes if title.endswith(" " + s)),
+        title,
+    )
+    stripped_both = next(
+        (
+            stripped_prefix[: -(len(s) + 1)].strip()
+            for s in suffixes
+            if stripped_prefix.endswith(" " + s)
+        ),
+        stripped_prefix,
+    )
+    alternate_titles = [stripped_prefix, stripped_suffix, stripped_both]
+    if not title.lower().endswith("collection"):
+        alternate_titles.append(f"{title} Collection")
+    normalized_alternate_titles = [normalize_titles(alt) for alt in alternate_titles]
+    alternate_titles = list(dict.fromkeys(alternate_titles))
+    normalized_alternate_titles = list(dict.fromkeys(normalized_alternate_titles))
+    return {
+        "alternate_titles": alternate_titles,
+        "normalized_alternate_titles": normalized_alternate_titles,
+    }
 
 
 def match_assets_to_media(
@@ -557,7 +557,9 @@ def match_assets_to_media(
                 library_names = params.get("library_names", [])
                 if library_names:
                     for library_name in library_names:
-                        collections = db.get_collections_cache_by_instance_and_library(instance_name, library_name)
+                        collections = db.get_collections_cache_by_instance_and_library(
+                            instance_name, library_name
+                        )
                         if collections:
                             all_media.extend(collections)
 
@@ -595,7 +597,9 @@ def match_assets_to_media(
                 for id_field in ["imdb_id", "tmdb_id", "tvdb_id"]:
                     id_val = media.get(id_field)
                     if id_val:
-                        candidate = db.get_poster_cache_by_id(id_field, id_val, season_number)
+                        candidate = db.get_poster_cache_by_id(
+                            id_field, id_val, season_number
+                        )
                         if candidate:
                             return candidate
                 # 2. Try by normalized_title/year/season_number

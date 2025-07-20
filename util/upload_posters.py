@@ -28,16 +28,24 @@ def upload_posters(config: Any, db: Any, logger: Any, manifest: dict) -> None:
                 plex_client = PlexClient(url, api, logger)
                 if plex_client.is_connected():
                     assets = []
-                    plex_media_cache = db.get_plex_media_cache_by_instance(instance_name)
-                    all_ids =   [("media_cache", i) for i in manifest.get("media_cache", [])] + \
-                                [("collections_cache", i) for i in manifest.get("collections_cache", [])]
+                    plex_media_cache = db.get_plex_media_cache_by_instance(
+                        instance_name
+                    )
+                    all_ids = [
+                        ("media_cache", i) for i in manifest.get("media_cache", [])
+                    ] + [
+                        ("collections_cache", i)
+                        for i in manifest.get("collections_cache", [])
+                    ]
                     for source, asset_id in all_ids:
                         if source == "media_cache":
                             asset = db.get_media_cache_from_id(asset_id)
                         else:
                             asset = db.get_collections_cache_from_id(asset_id)
                         if not asset:
-                            logger.warning(f"Asset ID {asset_id} not found in {source}. Skipping.")
+                            logger.warning(
+                                f"Asset ID {asset_id} not found in {source}. Skipping."
+                            )
                             continue
                         assets.append(asset)
                     movie_index, show_index, collection_index = _build_indexes(
@@ -171,7 +179,7 @@ def _sync_movies(
             library_name = record.get("library_name")
             norm_title = normalize_titles(asset_title)
             record_hash = record.get("file_hash")
-            instance_name = record.get('instance_name')
+            instance_name = record.get("instance_name")
             matched_entry, match_type = match_asset(
                 movie_index,
                 ["tmdb", "imdb", "folder", "title"],
@@ -264,7 +272,7 @@ def _sync_series(
             norm_title = normalize_titles(asset_title)
             record_hash = record.get("file_hash")
             season_number = record.get("season_number")
-            instance_name = record.get('instance_name')
+            instance_name = record.get("instance_name")
 
             matched_entry, match_type = match_asset(
                 show_index,
@@ -364,7 +372,7 @@ def _sync_collections(
             library_name = record.get("library_name")
             norm_title = normalize_titles(asset_title)
             record_hash = record.get("file_hash")
-            instance_name = record.get('instance_name')
+            instance_name = record.get("instance_name")
             matched_entry, match_type = match_asset(
                 collection_index,
                 ["title", "folder"],

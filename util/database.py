@@ -344,6 +344,7 @@ class DapsDB:
         Returns a tuple key matching the UNIQUE constraint on collections.
         Used for DB key and SQL parameter order.
         """
+
         def norm_int(val):
             if val in (None, "", "None"):
                 return None
@@ -407,6 +408,7 @@ class DapsDB:
         Returns a tuple key for unique identification in plex_media_cache.
         Typically uses (title, year, library_name, plex_id).
         """
+
         def norm_str(val):
             if val in (None, "", "None"):
                 return None
@@ -433,6 +435,7 @@ class DapsDB:
         Returns a tuple key matching the UNIQUE constraint on poster_cache.
         Used for DB key and SQL parameter order.
         """
+
         def norm_int(val):
             if val in (None, "", "None"):
                 return None
@@ -463,8 +466,8 @@ class DapsDB:
         """
 
         now = datetime.datetime.now(datetime.timezone.utc).isoformat()
-        record['instance_name'] = instance_name
-        record['asset_type'] = "collection"
+        record["instance_name"] = instance_name
+        record["asset_type"] = "collection"
         # Serialize lists/dicts to JSON before inserting
         for key in ("alternate_titles", "normalized_alternate_titles"):
             if isinstance(record.get(key), (list, dict)):
@@ -704,7 +707,7 @@ class DapsDB:
                     record["season_number"],
                     record["folder"],
                     record["file"],
-                )
+                ),
             )
 
     def delete_media_record(
@@ -747,6 +750,7 @@ class DapsDB:
                 logger.info(
                     f"[DELETE] Key: {key_params} | Rows deleted: {rows_deleted}"
                 )
+
     def delete_collections_record(
         self,
         item: dict,
@@ -757,7 +761,9 @@ class DapsDB:
         Delete a single record from collections_cache using canonical collection key.
         If the record had a renamed_file, insert it as orphaned.
         """
-        key_params = self._canonical_collection_key({**item, "instance_name": instance_name})
+        key_params = self._canonical_collection_key(
+            {**item, "instance_name": instance_name}
+        )
         sql = """
             DELETE FROM collections_cache
             WHERE title=? AND year IS ? AND tmdb_id IS ? AND tvdb_id IS ? AND imdb_id IS ? AND library_name IS ? AND instance_name=?
@@ -809,7 +815,13 @@ class DapsDB:
             if logger:
                 logger.info(f"[DELETE] Plex Key: {key} | Rows deleted: {rows_deleted}")
 
-    def sync_collections_cache(self, instance_name: str, library_name: str, fresh_collections: list, logger=None):
+    def sync_collections_cache(
+        self,
+        instance_name: str,
+        library_name: str,
+        fresh_collections: list,
+        logger=None,
+    ):
         """
         Syncs the collections table for a specific instance to match fresh_collections.
         Removes missing, updates existing, adds new.
@@ -817,19 +829,26 @@ class DapsDB:
         with self.lock, self.conn:
             cur = self.conn.execute(
                 "SELECT * FROM collections_cache WHERE instance_name=? AND library_name=?",
-                (instance_name, library_name)
+                (instance_name, library_name),
             )
             db_rows = cur.fetchall()
 
         db_map = {self._canonical_collection_key(row): row for row in db_rows}
-        fresh_map = {self._canonical_collection_key({**item, "instance_name": instance_name}): item for item in fresh_collections}
+        fresh_map = {
+            self._canonical_collection_key(
+                {**item, "instance_name": instance_name}
+            ): item
+            for item in fresh_collections
+        }
 
         # Upsert new/changed collections
         for key, item in fresh_map.items():
             if key not in db_map:
                 self.upsert_collection(item, instance_name)
                 if logger:
-                    logger.debug(f"[ADD] New collection '{item['title']}' for {instance_name}")
+                    logger.debug(
+                        f"[ADD] New collection '{item['title']}' for {instance_name}"
+                    )
             else:
                 self.upsert_collection(item, instance_name)
 
@@ -840,7 +859,9 @@ class DapsDB:
                 row = db_map[key]
                 self.delete_collections_record(row, instance_name, logger)
         if logger:
-            logger.debug(f"[SYNC] Collections table for {instance_name} synchronized. {len(fresh_collections)} items present.")
+            logger.debug(
+                f"[SYNC] Collections table for {instance_name} synchronized. {len(fresh_collections)} items present."
+            )
 
     def sync_plex_media_cache_for_library(
         self,
@@ -869,7 +890,9 @@ class DapsDB:
             if key not in db_map:
                 self.upsert_plex_record([item])
                 if logger:
-                    logger.debug(f"[ADD] New Plex asset '{item['title']}' in '{library_name}' ({instance_name})")
+                    logger.debug(
+                        f"[ADD] New Plex asset '{item['title']}' in '{library_name}' ({instance_name})"
+                    )
             else:
                 self.upsert_plex_record([item])
 
@@ -953,7 +976,9 @@ class DapsDB:
         """
         labels_json = json.dumps(labels)
         with self.lock, self.conn:
-            self.conn.execute(query, (labels_json, title, year, library_name, instance_name, plex_id))
+            self.conn.execute(
+                query, (labels_json, title, year, library_name, instance_name, plex_id)
+            )
 
     def update_media_cache_item(
         self,
@@ -1085,75 +1110,78 @@ class DapsDB:
 
     # THIS SECTION IS FOR RETURNING NONE IF CACHE STALE
     def get_plex_media_cache_for_library(
-            self,
-            instance_name: str,
-            library_name: str,
-            max_age_hours: int = 6
-            ) -> Optional[list]:
+        self, instance_name: str, library_name: str, max_age_hours: int = 6
+    ) -> Optional[list]:
         """
         Returns cached media for a single library (within a single Plex instance) if not stale (or None if stale or missing).
         """
-        cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=max_age_hours)
+        cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
+            hours=max_age_hours
+        )
         with self.lock, self.conn:
             cur = self.conn.execute(
                 "SELECT * FROM plex_media_cache WHERE instance_name=? AND library_name=?",
-                (instance_name, library_name)
+                (instance_name, library_name),
             )
             rows = cur.fetchall()
             if not rows:
                 return None
-            times = [datetime.datetime.fromisoformat(row["last_indexed"]) for row in rows]
+            times = [
+                datetime.datetime.fromisoformat(row["last_indexed"]) for row in rows
+            ]
             if not all(t > cutoff for t in times):
                 return None
             return rows
 
-
     def get_media_cache_for_instance(
-            self,
-            instance_name: str,
-            asset_type: str,
-            max_age_hours: int = 6
-        ) -> Optional[list]:
+        self, instance_name: str, asset_type: str, max_age_hours: int = 6
+    ) -> Optional[list]:
         """
         Returns cached media for a single ARR instance and asset type if not stale (or None if stale or missing).
         """
-        cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=max_age_hours)
+        cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
+            hours=max_age_hours
+        )
         with self.lock, self.conn:
             cur = self.conn.execute(
                 "SELECT * FROM media_cache WHERE instance_name=? AND asset_type=?",
-                (instance_name, asset_type)
+                (instance_name, asset_type),
             )
             rows = cur.fetchall()
             if not rows:
                 return None
-            times = [datetime.datetime.fromisoformat(row["last_indexed"]) for row in rows]
+            times = [
+                datetime.datetime.fromisoformat(row["last_indexed"]) for row in rows
+            ]
             if not all(t > cutoff for t in times):
                 return None
             return rows
 
     def get_collections_cache_for_library(
-        self,
-        instance_name: str,
-        library_name: str = None,
-        max_age_hours: int = 6
+        self, instance_name: str, library_name: str = None, max_age_hours: int = 6
     ) -> Optional[list]:
         """
         Returns cached collections for a single instance (and optionally a single library)
         if not stale (or None if stale or missing).
         """
-        cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(hours=max_age_hours)
+        cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
+            hours=max_age_hours
+        )
         with self.lock, self.conn:
             cur = self.conn.execute(
                 "SELECT * FROM collections_cache WHERE instance_name=? AND library_name=?",
-                (instance_name, library_name)
+                (instance_name, library_name),
             )
             rows = cur.fetchall()
             if not rows:
                 return None
-            times = [datetime.datetime.fromisoformat(row["last_indexed"]) for row in rows]
+            times = [
+                datetime.datetime.fromisoformat(row["last_indexed"]) for row in rows
+            ]
             if not all(t > cutoff for t in times):
                 return None
             return rows
+
     ########################
 
     def get_plex_media_cache_by_instance(self, instance_name: str) -> Optional[list]:
@@ -1163,15 +1191,16 @@ class DapsDB:
         """
         with self.lock, self.conn:
             cur = self.conn.execute(
-                "SELECT * FROM plex_media_cache WHERE instance_name=?",
-                (instance_name,)
+                "SELECT * FROM plex_media_cache WHERE instance_name=?", (instance_name,)
             )
             rows = cur.fetchall()
             if not rows:
                 return None
             return rows
 
-    def get_plex_media_cache_by_instance_and_library(self, instance_name: str, library_name: str) -> Optional[list]:
+    def get_plex_media_cache_by_instance_and_library(
+        self, instance_name: str, library_name: str
+    ) -> Optional[list]:
         """
         Returns all cached Plex media for the given instance_name and library_name as a list of dicts.
         Returns None if no records are found.
@@ -1179,7 +1208,7 @@ class DapsDB:
         with self.lock, self.conn:
             cur = self.conn.execute(
                 "SELECT * FROM plex_media_cache WHERE instance_name=? AND library_name=?",
-                (instance_name, library_name)
+                (instance_name, library_name),
             )
             rows = cur.fetchall()
             if not rows:
@@ -1195,7 +1224,9 @@ class DapsDB:
             rows = cur.fetchall()
             return [dict(row) for row in rows]
 
-    def get_poster_cache_by_id(self, id_field: str, id_val, season_number=None) -> Optional[dict]:
+    def get_poster_cache_by_id(
+        self, id_field: str, id_val, season_number=None
+    ) -> Optional[dict]:
         # Example SQLite logic; adjust as needed
         sql = f"SELECT * FROM poster_cache WHERE {id_field}=?"
         params = [id_val]
@@ -1207,7 +1238,12 @@ class DapsDB:
             row = cur.fetchone()
             return dict(row) if row else None
 
-    def get_poster_cache_by_normalized_title(self, normalized_title: str, year: Optional[int] = None, season_number: Optional[int] = None) -> Optional[dict]:
+    def get_poster_cache_by_normalized_title(
+        self,
+        normalized_title: str,
+        year: Optional[int] = None,
+        season_number: Optional[int] = None,
+    ) -> Optional[dict]:
         sql = "SELECT * FROM poster_cache WHERE normalized_title=?"
         params = [normalized_title]
         if year is not None:
@@ -1282,15 +1318,18 @@ class DapsDB:
     def get_collections_cache_by_instance(self, instance_name: str) -> list:
         with self.lock, self.conn:
             cur = self.conn.execute(
-                "SELECT * FROM collections_cache WHERE instance_name=?", (instance_name,)
+                "SELECT * FROM collections_cache WHERE instance_name=?",
+                (instance_name,),
             )
             return cur.fetchall()
 
-    def get_collections_cache_by_instance_and_library(self, instance_name: str, library_name: str) -> list:
+    def get_collections_cache_by_instance_and_library(
+        self, instance_name: str, library_name: str
+    ) -> list:
         with self.lock, self.conn:
             cur = self.conn.execute(
                 "SELECT * FROM collections_cache WHERE instance_name=? AND library_name=?",
-                (instance_name, library_name)
+                (instance_name, library_name),
             )
             return cur.fetchall()
 
@@ -1357,18 +1396,20 @@ class DapsDB:
             self.conn.execute("DELETE FROM orphaned_posters")
 
     def clear_poster_cache(self) -> None:
-            """Delete all rows from poster_cache."""
-            with self.lock, self.conn:
-                self.conn.execute("DELETE FROM poster_cache")
+        """Delete all rows from poster_cache."""
+        with self.lock, self.conn:
+            self.conn.execute("DELETE FROM poster_cache")
 
-    def clear_media_cache_by_instance_name_and_asset_type(self, instance_name, asset_type) -> None:
+    def clear_media_cache_by_instance_name_and_asset_type(
+        self, instance_name, asset_type
+    ) -> None:
         """Delete all rows from media_cache where instance_name and asset_type match
         the provided values."""
         with self.lock, self.conn:
             self.conn.execute(
-                    "DELETE FROM media_cache WHERE instance_name=? AND asset_type=?",
-                    (instance_name, asset_type)
-                )
+                "DELETE FROM media_cache WHERE instance_name=? AND asset_type=?",
+                (instance_name, asset_type),
+            )
 
     def record_run_start(self, module_name: str, run_by: str = "manual") -> None:
         """Mark the start of a module run (sets last_run, last_run_by; resets other fields)."""
@@ -1389,7 +1430,6 @@ class DapsDB:
                 (module_name, now, run_by),
             )
 
-
     def record_run_finish(
         self,
         module_name: str,
@@ -1397,7 +1437,7 @@ class DapsDB:
         status: str = None,
         message: str = None,
         duration: int = None,
-        run_by: str = None
+        run_by: str = None,
     ) -> None:
         """Mark the finish of a module run, recording status, message, duration, etc."""
         with self.lock, self.conn:

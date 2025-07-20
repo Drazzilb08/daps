@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 from typing import Any, List
 
 from fastapi import APIRouter, Depends, HTTPException, Request
@@ -8,8 +9,6 @@ from fastapi.responses import PlainTextResponse
 def get_logger(request: Request) -> Any:
     return request.app.state.logger
 
-# You may want to DRY this up with a helper, for now duplicate as in server.py
-from pathlib import Path
 
 if os.environ.get("DOCKER_ENV"):
     LOG_BASE_DIR = "/config/logs"
@@ -18,18 +17,23 @@ else:
 
 router = APIRouter()
 
+
 @router.get("/api/logs")
 async def list_logs(logger=Depends(get_logger)) -> List[str]:
     logger.debug(f"[WEB] Listing log modules in {LOG_BASE_DIR}")
     modules = [
-        module for module in os.listdir(LOG_BASE_DIR)
+        module
+        for module in os.listdir(LOG_BASE_DIR)
         if os.path.isdir(os.path.join(LOG_BASE_DIR, module)) and module != "debug"
     ]
     logger.debug("[WEB] Log modules listed: %s", modules)
     return modules
 
+
 @router.get("/api/logs/{module_name}")
-async def list_logs_for_module(module_name: str, logger=Depends(get_logger)) -> List[str]:
+async def list_logs_for_module(
+    module_name: str, logger=Depends(get_logger)
+) -> List[str]:
     logger.debug(f"[WEB] Listing logs for module: {module_name}")
     module_path = os.path.join(LOG_BASE_DIR, module_name)
     if not os.path.isdir(module_path):
@@ -41,6 +45,7 @@ async def list_logs_for_module(module_name: str, logger=Depends(get_logger)) -> 
         if os.path.isfile(os.path.join(module_path, f))
     )
     return files
+
 
 @router.get("/api/logs/{module}/{filename}", response_class=PlainTextResponse)
 async def read_log(module: str, filename: str, logger=Depends(get_logger)) -> str:

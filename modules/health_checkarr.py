@@ -123,7 +123,9 @@ def main() -> None:
                                             )
 
                                 # Send notification with deleted items
-                                manager = NotificationManager(config, logger, module_name="health_checkarr")
+                                manager = NotificationManager(
+                                    config, logger, module_name="health_checkarr"
+                                )
                                 manager.send_notification(output)
                         else:
                             logger.info(

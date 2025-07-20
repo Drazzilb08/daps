@@ -295,7 +295,9 @@ def process_instance(
                         f"🔁 Reached search count limit after non-season search ({search_count} >= {count}), breaking."
                     )
                     logger.debug("─" * 70)
-                    logger.debug(f"[END] Finished: {item['title']} ({item['year']}) | ID: {item['media_id']}")
+                    logger.debug(
+                        f"[END] Finished: {item['title']} ({item['year']}) | ID: {item['media_id']}"
+                    )
                     logger.debug("─" * 70)
                     logger.debug("")
                     break
@@ -325,13 +327,17 @@ def process_instance(
                             f"🔁 Reached series-based search count limit ({search_count} >= {count}), breaking."
                         )
                         logger.debug("─" * 70)
-                        logger.debug(f"[END] Finished: {item['title']} ({item['year']}) | ID: {item['media_id']}")
+                        logger.debug(
+                            f"[END] Finished: {item['title']} ({item['year']}) | ID: {item['media_id']}"
+                        )
                         logger.debug("─" * 70)
                         logger.debug("")
                         break
 
             logger.debug("─" * 70)
-            logger.debug(f"[END] Finished: {item['title']} ({item['year']}) | ID: {item['media_id']}")
+            logger.debug(
+                f"[END] Finished: {item['title']} ({item['year']}) | ID: {item['media_id']}"
+            )
             logger.debug("─" * 70)
             logger.debug("")  # Blank line after block
             logger.info(f"Finished processing: {item['title']} ({item['year']})")

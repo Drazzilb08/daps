@@ -9,6 +9,7 @@ from util.config import config_file_path
 
 router = APIRouter()
 
+
 class TestInstanceRequest(BaseModel):
     """Request schema for testing a service instance."""
 
@@ -17,18 +18,21 @@ class TestInstanceRequest(BaseModel):
     url: str
     api: Optional[str] = None
 
+
 def get_logger(request: Request) -> Any:
     return request.app.state.logger
 
+
 def get_config() -> Dict[str, Any]:
     import yaml
+
     with open(config_file_path, "r") as f:
         return yaml.safe_load(f)
 
+
 @router.get("/api/instances/", response_model=None)
 async def get_instances(
-    config: Dict[str, Any] = Depends(get_config),
-    logger: any = Depends(get_logger)
+    config: Dict[str, Any] = Depends(get_config), logger: any = Depends(get_logger)
 ) -> Any:
     """Returns dictionary Plex/Radarr/Sonarr instances"""
     try:
@@ -87,6 +91,7 @@ async def get_plex_libraries(
     except Exception as e:
         logger.error(f"[WEB] Unexpected error in /api/plex/libraries: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
+
 
 @router.post("/api/test-instance", response_model=None)
 async def test_instance(

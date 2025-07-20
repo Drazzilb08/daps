@@ -1,4 +1,4 @@
-import { fetchPosterPreviewUrl, fetchConfig } from '../api.js';
+import { fetchPosterPreviewUrl, fetchConfig, fetchStats } from '../api.js';
 import { showToast, getIcon } from '../util.js';
 import { showLoaderModal } from '../common/loaders.js';
 import { openModal } from '../common/modals.js';
@@ -182,27 +182,59 @@ function buildPosterSearchUI() {
         {
             key: 'gdrive',
             label: 'GDrive',
-            icon: getIcon('gdrive', { style: 'height:1.2em;vertical-align:-0.2em;' }),
+            icon: getIcon('mi:cloud'),
+            tooltip: 'Search posters in Google Drive sources (from GDrive Sync settings).',
         },
         {
             key: 'custom',
             label: 'Custom',
-            icon: getIcon('custom', { style: 'height:1.2em;vertical-align:-0.2em;' }),
+            icon: getIcon('mi:folder_special'),
+            // Tooltip set dynamically below
         },
         {
             key: 'assets',
             label: 'Assets',
-            icon: getIcon('assets', { style: 'height:1.2em;vertical-align:-0.2em;' }),
+            icon: getIcon('mi:folder'),
+            tooltip: 'Search posters in the Assets directory.',
         },
     ];
+
     const sourcePicker = document.createElement('div');
     sourcePicker.className = 'poster-source-picker';
+
     sources.forEach((src) => {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'source-picker-btn';
         btn.dataset.source = src.key;
         btn.innerHTML = `${src.icon}<span>${src.label}</span>`;
+
+        // Tooltip
+        if (src.key === 'custom') {
+            if (!customLocations.length) {
+                btn.classList.add('disabled');
+                btn.disabled = true;
+                btn.tabIndex = -1;
+                btn.setAttribute(
+                    'aria-label',
+                    'No custom sources defined in Poster Renamerr settings.'
+                );
+                btn.dataset.tooltip = 'No custom sources defined in Poster Renamerr settings.';
+            } else {
+                btn.setAttribute('aria-label', 'User-defined folders (Poster Renamerr settings)');
+                btn.dataset.tooltip =
+                    'Search posters in user-defined folders from Poster Renamerr settings.';
+            }
+        } else {
+            btn.dataset.tooltip = src.tooltip || '';
+        }
+
+        // Tooltip logic for all buttons, enabled or disabled
+        btn.addEventListener('mouseenter', showSourceTooltip);
+        btn.addEventListener('focus', showSourceTooltip);
+        btn.addEventListener('mouseleave', hideSourceTooltip);
+        btn.addEventListener('blur', hideSourceTooltip);
+
         sourcePicker.appendChild(btn);
     });
     controlsRow.appendChild(sourcePicker);
@@ -259,6 +291,39 @@ function buildPosterSearchUI() {
     resultsDiv.id = IDS.searchResults;
     resultsDiv.className = 'poster-search-results';
     content.appendChild(resultsDiv);
+}
+
+function showSourceTooltip(e) {
+    let btn = e.currentTarget;
+    if (!btn || !btn.dataset.tooltip) return;
+    let tip = document.createElement('div');
+    tip.className = 'poster-source-tooltip';
+    tip.textContent = btn.dataset.tooltip;
+    document.body.appendChild(tip);
+    const rect = btn.getBoundingClientRect();
+    tip.style.position = 'fixed';
+    tip.style.zIndex = 10000;
+
+    // --- Position above the button ---
+    const spacing = 8;
+    const tipWidth = tip.offsetWidth;
+    const left = rect.left + rect.width / 2 - tip.offsetWidth / 2;
+    const top = rect.top - tip.offsetHeight - spacing;
+
+    tip.style.left = Math.max(8, left) + 'px';
+    tip.style.top = Math.max(8, top) + 'px';
+
+    setTimeout(() => {
+        if (tip && tip.parentNode) tip.classList.add('visible');
+    }, 5);
+    btn._posterTip = tip;
+}
+function hideSourceTooltip(e) {
+    let btn = e.currentTarget;
+    if (btn && btn._posterTip) {
+        btn._posterTip.remove();
+        btn._posterTip = null;
+    }
 }
 
 function getById(id) {
@@ -525,56 +590,56 @@ async function fetchAllFileLists() {
     customLocations = sourceDirs.filter((dir) => !gdriveLocSet.has(dir));
     assetsDir = config.poster_renamerr?.destination_dir || '';
 
+    let errorSources = [];
+
     gdriveFiles = [];
     for (const { name, location } of gdriveLocations) {
-        try {
-            const res = await fetch('/api/poster-search-stats', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ location }),
-            });
-            const stats = await res.json();
-            if (Array.isArray(stats.files)) {
-                stats.files.forEach((f) => gdriveFiles.push({ file: f, name, location }));
-            }
-        } catch {}
+        const stats = await fetchStats(location);
+        if (stats.error || !Array.isArray(stats.files)) {
+            errorSources.push('GDrive');
+            continue;
+        }
+        stats.files.forEach((f) => gdriveFiles.push({ file: f, name, location }));
     }
 
     customFiles = [];
     for (const dir of customLocations) {
-        try {
-            const res = await fetch('/api/poster-search-stats', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ location: dir }),
-            });
-            const stats = await res.json();
-            if (Array.isArray(stats.files)) {
-                stats.files.forEach((f) =>
-                    customFiles.push({
-                        file: f,
-                        name: dir.split('/').pop() + ' (Custom)',
-                        location: dir,
-                    })
-                );
-            }
-        } catch {}
+        const stats = await fetchStats(dir);
+        if (stats.error || !Array.isArray(stats.files)) {
+            errorSources.push('Custom');
+            continue;
+        }
+        stats.files.forEach((f) =>
+            customFiles.push({
+                file: f,
+                name: dir.split('/').pop() + ' (Custom)',
+                location: dir,
+            })
+        );
     }
 
     assetsFiles = [];
     if (assetsDir) {
-        try {
-            const res = await fetch('/api/poster-search-stats', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ location: assetsDir }),
-            });
-            const stats = await res.json();
-            if (Array.isArray(stats.files)) {
-                assetsFiles = stats.files;
-            }
-        } catch {
-            assetsFiles = [];
+        const stats = await fetchStats(assetsDir);
+        if (stats.error || !Array.isArray(stats.files)) {
+            errorSources.push('Assets');
+        } else {
+            assetsFiles = stats.files;
+        }
+    }
+
+    // --- Show error message if everything is missing/errored ---
+    if (!gdriveFiles.length && !customFiles.length && !assetsFiles.length) {
+        const resultsDiv = document.getElementById('poster-search-results');
+        if (resultsDiv) {
+            resultsDiv.innerHTML = `
+                <div class="poster-search-error">
+                    <b>No poster sources found or could not be loaded.</b><br>
+                    Please check your
+                    <a href="/pages/settings?module_name=poster_renamerr">Poster Renamerr settings</a>
+                    or <a href="/pages/settings?module_name=gdrive">GDrive settings</a>
+                </div>
+            `;
         }
     }
 }

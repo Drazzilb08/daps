@@ -26,7 +26,7 @@ body, input, select, textarea, button {
   color: var(--focus);
 }
 /* ======================
-   ERRORS & ANIMATIONS
+   ERRORS
 ====================== */
 .input-error {
     border: 2px solid var(--error, #ff375f) !important;
@@ -56,6 +56,17 @@ body, input, select, textarea, button {
     color: var(--error, #ff375f);
     box-shadow: 0 0 0 2px var(--error, #f1636365);
     font-weight: 600;
+}
+.poster-search-error {
+    color: var(--error, #ff375f);
+    margin-top: 2.5em;
+    font-size: 1.13em;
+    text-align: center;
+    font-weight: 600;
+}
+.poster-search-error a {
+    color: var(--primary);
+    text-decoration: underline;
 }
 
 /* ========== CARD LAYOUT ========== */

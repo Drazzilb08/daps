@@ -1034,3 +1034,23 @@
         min-width: 100%;
     }
 }
+
+.instances-empty-message {
+  color: var(--muted, #888);
+  font-size: 1.06em;
+  margin: 1.5em 0 0.6em 0;
+  padding: 0.6em 1em;
+  border-radius: 6px;
+  background: var(--surface-alt, #25292e);
+  text-align: center;
+}
+.settings-warning-callout {
+  background: #fffbe7;
+  border: 1.5px solid #ffe08a;
+  color: #7c6500;
+  border-radius: 6px;
+  margin: 1em 0 0.8em 0;
+  padding: 0.6em 1em;
+  font-size: 1.04em;
+  text-align: center;
+}

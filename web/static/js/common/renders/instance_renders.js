@@ -219,8 +219,10 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
         }
 
         // --- 2. Plex: Below, full width, each as a card/block, only if 'plex' in instanceTypes ---
+        let plexRendered = false;
         if (instanceTypes.includes('plex') && rootConfig.instances && rootConfig.instances.plex) {
             Object.keys(rootConfig.instances.plex).forEach((instName) => {
+                plexRendered = true;
                 // Instance block for each Plex instance
                 const instanceBlock = document.createElement('div');
                 instanceBlock.className = 'plex-instance-card';
@@ -365,6 +367,35 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
 
                 inputWrap.appendChild(instanceBlock);
             });
+        }
+
+        // === NO INSTANCES MESSAGE ===
+        const radarrExists =
+            rootConfig.instances &&
+            rootConfig.instances.radarr &&
+            Object.keys(rootConfig.instances.radarr).length > 0;
+        const sonarrExists =
+            rootConfig.instances &&
+            rootConfig.instances.sonarr &&
+            Object.keys(rootConfig.instances.sonarr).length > 0;
+        const plexExists =
+            rootConfig.instances &&
+            rootConfig.instances.plex &&
+            Object.keys(rootConfig.instances.plex).length > 0;
+
+        if (!radarrExists && !sonarrExists && !plexExists) {
+            const emptyMsg = document.createElement('div');
+            emptyMsg.className = 'instances-empty-message';
+            emptyMsg.textContent =
+                'No instances have been configured. Please add at least one instance in the Instances settings first.';
+            inputWrap.appendChild(emptyMsg);
+
+            // NEW: Add yellow warning
+            const warning = document.createElement('div');
+            warning.className = 'settings-warning-callout';
+            warning.textContent =
+                '⚠️ At least one instance (Radarr, Sonarr, or Plex) is required. Please configure in the Instances settings first.';
+            inputWrap.appendChild(warning);
         }
     }
 

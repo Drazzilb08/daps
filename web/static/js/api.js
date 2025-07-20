@@ -241,3 +241,20 @@ export function fetchPosterPreviewUrl(location, path) {
         return '';
     }
 }
+
+
+// Fetch log files for a module
+export async function fetchLogFiles(moduleName) {
+    if (!moduleName) return [];
+    const res = await fetch(`/api/logs/${moduleName}`);
+    if (!res.ok) return [];
+    return await res.json();
+}
+
+// Fetch log content for a module's log file
+export async function fetchLogContent(moduleName, fileName) {
+    if (!moduleName || !fileName) return '';
+    const res = await fetch(`/api/logs/${moduleName}/${fileName}`);
+    if (!res.ok) return '';
+    return await res.text();
+}

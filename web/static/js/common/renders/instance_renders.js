@@ -1,3 +1,5 @@
+import { markDirty } from '../../util.js';
+
 export function renderInstancesField(field, value = [], config, rootConfig) {
     // Defensive clone for state
     value =
@@ -313,6 +315,7 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
                         addPostersBtn.textContent =
                             'Upload Posters: ' + (entry[instName].add_posters ? 'ON' : 'OFF');
                         config[field.key] = Array.isArray(value) ? selected.slice() : [];
+                        markDirty();
                     };
 
                     // Show/hide the button only if instance is selected

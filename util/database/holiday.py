@@ -1,14 +1,10 @@
-import threading
+from .db_base import DatabaseBase
 from typing import Optional
 
-class HolidayStatus:
+class HolidayStatus(DatabaseBase):
     """
     Interface for the holiday_status table (tracks last active holiday).
     """
-    def __init__(self, conn, lock: Optional[threading.Lock] = None):
-        self.conn = conn
-        self.lock = lock or threading.Lock()
-
     def get_status(self) -> dict:
         """Get the last_active_holiday row (or None if not set)."""
         with self.lock, self.conn:

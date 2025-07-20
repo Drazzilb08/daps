@@ -8,6 +8,39 @@
 :root {
     --font-family: 'Inter', 'Roboto', Arial, sans-serif;
     --overlya-bg: rgba(24, 25, 31, 0.64);
+
+    --primary: #ff7300;
+    --focus: #ff9500;
+    --accent: #3e7bfa;
+    --accent-dark: #204288;
+    --success: #32d74b;
+    --success-highlight: #30d16e;
+    --error: #ff375f;
+    --error-highlight: #ff3b30;
+    --caution: #ff9f0a;
+    --caution-highlight: #ffcc00;
+    --info: #5ac8fa;
+
+    --bg: #23272b;
+    --surface: #262a30;
+    --surface-alt: #282c31;
+    --sidebar-bg: #191b1f;
+    --sidebar-fg: #f3f3f3;
+    --sidebar-highlight: var(--primary);
+    --sidebar-divider: #292c30;
+    --header-bg: #191b1f;
+    --header-fg: #ffd233;
+    --toolbar: #1f2227;
+
+    --text-color: #e3e3e3;
+    --muted: #a9a9a9;
+    --link-color: var(--accent);
+    --divider: #292c30;
+
+    --input-bg: #21242a;
+    --switch-bg: #444952;
+    --switch-bg-active: #3e7bfa;
+    --switch-knob: #1a1a1a;
 }
 
 /* ========== DARK THEME (default) ========== */

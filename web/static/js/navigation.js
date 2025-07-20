@@ -280,9 +280,15 @@ function setupNavigation() {
     frag = frag.replace(/-/g, '_').replace(/\.html$/, '');
     highlightNav(frag, path);
 
-    if (path !== '/' && !path.startsWith('/api') && !path.startsWith('/web/static')) {
+    if (
+        path !== '/' &&
+        path !== '/index.html' &&
+        !path.startsWith('/api') &&
+        !path.startsWith('/web/static')
+    ) {
         navigateTo(path);
-    } else if (typeof showSplashScreen === 'function') {
+    } else {
+        // Always load splash for both '/' and '/index.html'
         PAGE_LOADERS.index();
         const viewFrame = document.getElementById('viewFrame');
         if (viewFrame) viewFrame.style.opacity = '1';

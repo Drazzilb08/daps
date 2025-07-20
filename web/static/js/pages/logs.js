@@ -1,15 +1,15 @@
-import { humanize } from '../util.js';
-import { moduleOrder } from '../constants/constants.js';
-import { fetchLogModules } from '../api.js';
+// web/static/js/pages/logs.js
 
-let term = null; // xterm.js instance
-let fitAddon = null; // xterm-addon-fit instance
+import { humanize, showToast, getIcon } from '../util.js';
+import { moduleOrder } from '../constants/constants.js';
+import { fetchLogFiles, fetchLogContent, fetchLogModules } from '../api.js';
+
+let term = null;
+let fitAddon = null;
 let currentFullLogText = '';
-let lastWrittenLineCount = 0;
 let lastRenderedFileKey = null;
-let _activeLogsDestroy = () => {};
 let refreshInterval = null;
-let activeLoadSessionId = Symbol();
+let _activeLogsDestroy = () => {};
 
 const ANSI_COLORS = {
     RESET: '\x1b[0m',
@@ -24,12 +24,13 @@ const ANSI_COLORS = {
     HIGHLIGHT: '\x1b[7m',
 };
 
+/* ============================
+   DOM & Modular Build
+============================ */
 export function initLogs() {
     ensureLogsDOM();
     loadLogs();
 }
-
-// ===== DOM/HTML Construction =====
 
 function ensureLogsDOM() {
     const container = document.getElementById('viewFrame');
@@ -87,6 +88,7 @@ function ensureLogsDOM() {
 }
 
 function buildLogControls() {
+    const isMobile = window.innerWidth <= 1000;
     const controlsDiv = document.createElement('div');
     controlsDiv.className = 'log-controls log-toolbar';
 
@@ -104,38 +106,78 @@ function buildLogControls() {
     searchInput.className = 'input search-logs';
     searchInput.placeholder = 'Search logs...';
 
-    const clearBtn = document.createElement('button');
-    clearBtn.className = 'clear-search btn';
-    clearBtn.textContent = 'Clear';
+    // Buttons row
+    const btnRow = document.createElement('div');
+    btnRow.className = 'btn-row';
 
+    // Clear
+    const clearBtn = document.createElement('button');
+    clearBtn.type = 'button';
+    clearBtn.className = isMobile ? 'btn clear-search' : 'btn--icon clear-search';
+    clearBtn.title = 'Clear search';
+    clearBtn.setAttribute('aria-label', 'Clear search');
+    if (isMobile) {
+        clearBtn.innerHTML = `${getIcon('mi:cancel', {
+            style: 'vertical-align:middle;',
+        })} Clear`;
+    } else {
+        clearBtn.innerHTML = `${getIcon('mi:cancel', {
+            style: 'vertical-align:middle;',
+        })}<span class="btn-tooltip">Clear Search</span>`;
+    }
+
+    // Download
     const downloadBtn = document.createElement('button');
-    downloadBtn.className = 'download-log btn';
-    downloadBtn.textContent = 'Download';
+    downloadBtn.type = 'button';
+    downloadBtn.className = isMobile ? 'btn download-log' : 'btn--icon download-log';
+    downloadBtn.title = 'Download log';
+    downloadBtn.setAttribute('aria-label', 'Download log');
+    if (isMobile) {
+        downloadBtn.innerHTML = `${getIcon('mi:download', {
+            style: 'vertical-align:middle;',
+        })} Download`;
+    } else {
+        downloadBtn.innerHTML = `${getIcon('mi:download', {
+            style: 'vertical-align:middle;',
+        })}<span class="btn-tooltip">Download Log</span>`;
+    }
+
+    // Upload
+    const uploadBtn = document.createElement('button');
+    uploadBtn.type = 'button';
+    uploadBtn.className = isMobile ? 'btn upload-log' : 'btn--icon upload-log';
+    uploadBtn.title = 'Upload log to dpaste';
+    uploadBtn.setAttribute('aria-label', 'Upload log to dpaste');
+    if (isMobile) {
+        uploadBtn.innerHTML = `${getIcon('mi:upload', { style: 'vertical-align:middle;' })} Upload`;
+    } else {
+        uploadBtn.innerHTML = `${getIcon('mi:upload', {
+            style: 'vertical-align:middle;',
+        })}<span class="btn-tooltip">Upload</span>`;
+    }
+
+    btnRow.appendChild(clearBtn);
+    btnRow.appendChild(downloadBtn);
+    btnRow.appendChild(uploadBtn);
 
     controlsDiv.appendChild(moduleSelect);
     controlsDiv.appendChild(logfileSelect);
     controlsDiv.appendChild(searchInput);
-    controlsDiv.appendChild(clearBtn);
-    controlsDiv.appendChild(downloadBtn);
+    controlsDiv.appendChild(btnRow);
 
     // Collapse btn (for mobile)
     const collapseBtn = document.createElement('button');
-    collapseBtn.className = 'btn toolbar-collapse-btn';
+    collapseBtn.className = 'toolbar-collapse-btn';
     collapseBtn.type = 'button';
     collapseBtn.innerHTML = '<span class="toolbar-collapse-icon">▾</span> Hide Controls';
     controlsDiv.insertBefore(collapseBtn, controlsDiv.firstChild);
 
-    if (window.innerWidth <= 1000) {
-        controlsDiv.classList.add('collapsed');
-        collapseBtn.setAttribute('aria-expanded', 'false');
-        collapseBtn.innerHTML = '<span class="toolbar-collapse-icon">▸</span> Show Controls';
-    }
-
     return controlsDiv;
 }
 
-// ===== Core Loader =====
-
+/* ============================
+   Loader & Terminal
+============================ */
 async function loadLogs() {
     if (term) {
         term.dispose();
@@ -165,11 +207,8 @@ async function loadLogs() {
 
     registerLogControlEvents(controlsDiv, logOutput);
 
-    // Initial load of modules/files
     await loadModules(controlsDiv, logOutput);
 }
-
-// ===== Terminal Setup =====
 
 function setupTerminal(logOutput) {
     term = new Terminal({
@@ -192,42 +231,35 @@ function setupTerminal(logOutput) {
     window.addEventListener('resize', () => fitAddon.fit());
 }
 
-// ===== Event Handlers =====
-
+/* ============================
+   Event Handlers
+============================ */
 function registerLogControlEvents(controlsDiv, logOutput) {
     const moduleSelect = controlsDiv.querySelector('.module-select');
     const logfileSelect = controlsDiv.querySelector('.logfile-select');
     const searchInput = controlsDiv.querySelector('.search-logs');
     const clearBtn = controlsDiv.querySelector('.clear-search');
     const downloadBtn = controlsDiv.querySelector('.download-log');
+    const uploadBtn = controlsDiv.querySelector('.upload-log');
     const collapseBtn = controlsDiv.querySelector('.toolbar-collapse-btn');
 
     let filterTimeout;
 
     moduleSelect.addEventListener('change', async (e) => {
-        lastWrittenLineCount = 0;
-        lastRenderedFileKey = null;
+        currentFullLogText = '';
         clearRefresh();
-        // --- PATCH: Update URL ---
-        const params = new URLSearchParams(location.search);
-        params.set('module_name', e.target.value);
-        params.delete('log_file');
-        history.pushState({}, '', location.pathname + '?' + params.toString());
-        await loadLogFiles(e.target.value, controlsDiv, logOutput, searchInput);
+        const selectedModule = e.target.value;
+        await updateLogFiles(selectedModule, logfileSelect, logOutput, searchInput);
     });
 
     logfileSelect.addEventListener('change', async (e) => {
-        lastWrittenLineCount = 0;
-        lastRenderedFileKey = null;
+        currentFullLogText = '';
         clearRefresh();
-        const selectedFile = e.target.value;
-        const params = new URLSearchParams(location.search);
-        params.set('module_name', moduleSelect.value);
-        params.set('log_file', selectedFile);
-        history.pushState({}, '', location.pathname + '?' + params.toString());
-        await loadLogContent(moduleSelect.value, selectedFile, logOutput, searchInput);
+        const selectedModule = moduleSelect.value;
+        const selectedFile = logfileSelect.value;
+        await updateLogContent(selectedModule, selectedFile, logOutput, searchInput);
         setRefreshTask(() =>
-            loadLogContent(moduleSelect.value, selectedFile, logOutput, searchInput)
+            updateLogContent(selectedModule, selectedFile, logOutput, searchInput)
         );
     });
 
@@ -238,9 +270,10 @@ function registerLogControlEvents(controlsDiv, logOutput) {
         }, 150);
     });
 
-    clearBtn.addEventListener('click', () => {
+    clearBtn.addEventListener('click', (e) => {
         searchInput.value = '';
         filterLogs(searchInput, logOutput);
+        e.currentTarget.blur();
     });
 
     document.addEventListener('keydown', function (e) {
@@ -251,14 +284,32 @@ function registerLogControlEvents(controlsDiv, logOutput) {
         }
     });
 
-    downloadBtn.addEventListener('click', () => {
-        if (!moduleSelect.value || !logfileSelect.value) return;
+    downloadBtn.addEventListener('click', (e) => {
+        const selectedModule = moduleSelect.value;
+        const selectedFile = logfileSelect.value;
+        if (!selectedModule || !selectedFile) {
+            showToast('Select a module and log file first.', 'warn');
+            e.currentTarget.blur();
+            return;
+        }
         const link = document.createElement('a');
-        link.href = `/api/logs/${moduleSelect.value}/${logfileSelect.value}`;
-        link.download = logfileSelect.value;
+        link.href = `/api/logs/${selectedModule}/${selectedFile}`;
+        link.download = selectedFile;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        e.currentTarget.blur();
+    });
+
+    uploadBtn.addEventListener('click', (e) => {
+        handleUploadLog({
+            uploadBtn,
+            moduleSelect,
+            logfileSelect,
+            currentFullLogText,
+            showToast,
+        });
+        e.currentTarget.blur();
     });
 
     collapseBtn.addEventListener('click', () => {
@@ -272,10 +323,8 @@ function registerLogControlEvents(controlsDiv, logOutput) {
     window.addEventListener('popstate', clearRefresh);
     window.addEventListener('beforeunload', clearRefresh);
 
-    // Cleanup
     _activeLogsDestroy = () => {
         clearRefresh();
-        activeLoadSessionId = null;
         window.removeEventListener('resize', fitAddon?.fit);
         if (term) {
             term.dispose();
@@ -285,28 +334,16 @@ function registerLogControlEvents(controlsDiv, logOutput) {
             fitAddon.dispose();
             fitAddon = null;
         }
-        const scrollContainer = document.getElementById('scroll-output-container');
-        if (scrollContainer) {
-            const classListToRemove = ['scroll-to-top', 'scroll-to-bottom', 'log-empty-msg'];
-            for (const className of classListToRemove) {
-                const el = scrollContainer.querySelector(`.${className}`);
-                if (el && el.parentNode === scrollContainer) {
-                    scrollContainer.removeChild(el);
-                }
-            }
-        }
     };
 }
 
-// ===== Data Loaders =====
-
+/* ============================
+   Data Loaders
+============================ */
 async function loadModules(controlsDiv, logOutput) {
     const moduleSelect = controlsDiv.querySelector('.module-select');
     const logfileSelect = controlsDiv.querySelector('.logfile-select');
     const searchInput = controlsDiv.querySelector('.search-logs');
-
-    const { module_name: preselectedModule, log_file: preselectedFile } = getUrlParams();
-
     const availableModules = await fetchLogModules();
     moduleSelect.innerHTML = '<option value="">Select Module</option>';
 
@@ -327,33 +364,17 @@ async function loadModules(controlsDiv, logOutput) {
         opt.textContent = humanize?.(module) || module;
         moduleSelect.appendChild(opt);
     }
-
-    if (preselectedModule && availableModules.includes(preselectedModule)) {
-        moduleSelect.value = preselectedModule;
-        await loadLogFiles(preselectedModule, controlsDiv, logOutput, searchInput);
-        const res2 = await fetch(`/api/logs/${preselectedModule}`);
-        const files = await res2.json();
-        if (preselectedFile && files.includes(preselectedFile)) {
-            logfileSelect.value = preselectedFile;
-            await loadLogContent(preselectedModule, preselectedFile, logOutput, searchInput);
-            setRefreshTask(() =>
-                loadLogContent(preselectedModule, preselectedFile, logOutput, searchInput)
-            );
-        }
-    }
 }
 
-async function loadLogFiles(moduleName, controlsDiv, logOutput, searchInput) {
-    const logfileSelect = controlsDiv.querySelector('.logfile-select');
+async function updateLogFiles(moduleName, logfileSelect, logOutput, searchInput) {
     logfileSelect.innerHTML = '<option value="">Select Log File</option>';
     logfileSelect.disabled = true;
     if (!moduleName) {
         renderToXTerm('', { forceClear: true, fileKey: null });
         return;
     }
-    const res = await fetch(`/api/logs/${moduleName}`);
-    const files = await res.json();
-    if (files.length === 0) {
+    const files = await fetchLogFiles(moduleName);
+    if (!files.length) {
         hideXTerm(logOutput);
         renderToXTerm('', { forceClear: true, fileKey: null });
         return;
@@ -369,57 +390,26 @@ async function loadLogFiles(moduleName, controlsDiv, logOutput, searchInput) {
     logfileSelect.disabled = false;
     if (defaultLog) {
         logfileSelect.value = defaultLog;
-        await loadLogContent(moduleName, defaultLog, logOutput, searchInput);
-        setRefreshTask(() => loadLogContent(moduleName, defaultLog, logOutput, searchInput));
+        await updateLogContent(moduleName, defaultLog, logOutput, searchInput);
+        setRefreshTask(() => updateLogContent(moduleName, defaultLog, logOutput, searchInput));
     }
 }
 
-async function loadLogContent(moduleName, fileName, logOutput, searchInput) {
-    const requestKey = `${moduleName}/${fileName}`;
-    let currentModule = moduleName;
-    let currentFile = fileName;
-    const sessionId = Symbol();
-    activeLoadSessionId = sessionId;
+async function updateLogContent(moduleName, fileName, logOutput, searchInput) {
     if (!moduleName || !fileName) {
         currentFullLogText = '';
         renderToXTerm('', { forceClear: true, fileKey: null });
         return;
     }
-
-    let spinner = null;
-    let spinnerTimeout = setTimeout(() => {
-        spinner = document.querySelector('.log-spinner');
-        if (!spinner) {
-            spinner = document.createElement('div');
-            spinner.className = 'log-spinner';
-            logOutput.appendChild(spinner);
-        }
-    }, 250);
-
     try {
-        const res = await fetch(`/api/logs/${moduleName}/${fileName}`);
-        const text = await res.text();
-        clearTimeout(spinnerTimeout);
-        spinner = document.querySelector('.log-spinner');
-        if (spinner) spinner.remove();
-
-        if (
-            activeLoadSessionId !== sessionId ||
-            moduleName !== currentModule ||
-            fileName !== currentFile
-        ) {
-            return;
-        }
+        const text = await fetchLogContent(moduleName, fileName);
         currentFullLogText = text;
-        const fileKeyForRender = `${moduleName}/${fileName}`;
         const searchValue = searchInput.value.trim();
         if (searchValue) filterLogs(searchInput, logOutput);
-        else renderToXTerm(currentFullLogText, { fileKey: fileKeyForRender });
+        else renderToXTerm(currentFullLogText, { fileKey: `${moduleName}/${fileName}` });
     } catch (e) {
-        clearTimeout(spinnerTimeout);
-        spinner = document.querySelector('.log-spinner');
-        if (spinner) spinner.remove();
-        throw e;
+        showToast('Failed to load log content.', 'error');
+        renderToXTerm('', { forceClear: true, fileKey: null });
     }
 }
 
@@ -447,8 +437,9 @@ function filterLogs(searchInput, logOutput) {
     });
 }
 
-// ===== Utility =====
-
+/* ============================
+   Utility
+============================ */
 function setRefreshTask(callback, delay = 1000) {
     clearRefresh();
     refreshInterval = setInterval(callback, delay);
@@ -457,7 +448,6 @@ function clearRefresh() {
     if (refreshInterval) clearInterval(refreshInterval);
     refreshInterval = null;
 }
-
 function hideXTerm(logOutput) {
     let emptyMsg = document.getElementById('log-empty-msg');
     if (!emptyMsg) {
@@ -471,16 +461,8 @@ function hideXTerm(logOutput) {
     }
     if (logOutput) logOutput.classList.add('hide-xterm');
 }
-
 function escapeRegex(text) {
     return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-function getUrlParams() {
-    const params = new URLSearchParams(location.search);
-    return {
-        module_name: params.get('module_name') || '',
-        log_file: params.get('log_file') || '',
-    };
 }
 function applyLogLevelAnsiColors(line) {
     if (line.includes('CRITICAL')) return `${ANSI_COLORS.BRIGHT_RED}${line}${ANSI_COLORS.RESET}`;
@@ -490,22 +472,16 @@ function applyLogLevelAnsiColors(line) {
     else if (line.includes('DEBUG')) return `${ANSI_COLORS.CYAN}${line}${ANSI_COLORS.RESET}`;
     return line;
 }
-
 function renderToXTerm(text, opts = {}) {
     if (!term) return;
-
-    // Avoid double-rendering same file content
     if (opts.fileKey && opts.fileKey === lastRenderedFileKey && !opts.forceClear) {
         return;
     }
     lastRenderedFileKey = opts.fileKey || null;
-
-    // If filtered, don't colorize log levels (already done)
     let lines = text.split('\n');
     if (!opts.isFiltered) {
         lines = lines.map(applyLogLevelAnsiColors);
     }
-
     term.clear();
     const MAX_LINES = 20000;
     if (lines.length > MAX_LINES) {
@@ -513,4 +489,112 @@ function renderToXTerm(text, opts = {}) {
         lines.unshift(`... (showing last ${MAX_LINES} lines) ...`);
     }
     term.write(lines.join('\n'));
+}
+
+
+/* ============================
+   Upload Logic
+============================ */
+function handleUploadLog({
+    uploadBtn,
+    moduleSelect,
+    logfileSelect,
+    currentFullLogText,
+    showToast,
+}) {
+    // Static variables for last upload
+    handleUploadLog.lastUploadUrl = handleUploadLog.lastUploadUrl || null;
+    handleUploadLog.lastUploadTime = handleUploadLog.lastUploadTime || 0;
+    handleUploadLog.lastUploadData = handleUploadLog.lastUploadData || '';
+
+    const selectedModule = moduleSelect.value;
+    const selectedFile = logfileSelect.value;
+    const isMobile = window.innerWidth <= 1000;
+
+    if (!selectedModule || !selectedFile) {
+        showToast('Select a module and log file first.', 'warn');
+        return;
+    }
+    if (!currentFullLogText || !currentFullLogText.trim()) {
+        showToast('No log content to upload.', 'warn');
+        return;
+    }
+
+    // COPY if already uploaded this content
+    if (handleUploadLog.lastUploadUrl && currentFullLogText === handleUploadLog.lastUploadData) {
+        navigator.clipboard.writeText(handleUploadLog.lastUploadUrl).then(
+            () => {
+                showToast('Copied upload URL to clipboard.', 'success', 3000);
+            },
+            () => {
+                showToast('Copy failed.', 'error');
+            }
+        );
+        // Revert to Upload icon after copy
+        if (isMobile) {
+            uploadBtn.innerHTML = `${getIcon('mi:upload', {
+                style: 'vertical-align:middle;',
+            })} Upload`;
+        } else {
+            uploadBtn.innerHTML = `${getIcon('mi:upload', {
+                style: 'vertical-align:middle;',
+            })}<span class="btn-tooltip">Upload</span>`;
+        }
+        handleUploadLog.lastUploadUrl = null;
+        handleUploadLog.lastUploadData = '';
+        return;
+    }
+
+    // Prevent double upload of same log or too soon
+    const now = Date.now();
+    if (handleUploadLog.lastUploadTime && now - handleUploadLog.lastUploadTime < 60000) {
+        showToast('You have already uploaded this log recently.', 'warn');
+        return;
+    }
+    if (handleUploadLog.lastUploadData && currentFullLogText === handleUploadLog.lastUploadData) {
+        showToast('You already uploaded this content.', 'info');
+        return;
+    }
+    if (uploadBtn.disabled) return;
+
+    uploadBtn.disabled = true;
+    uploadBtn.classList.add('busy');
+
+    fetch('https://dpaste.com/api/v2/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+            content: currentFullLogText,
+            syntax: 'text',
+            expiry_days: '1',
+        }),
+    })
+        .then(async (res) => {
+            if (!res.ok) throw new Error('Upload failed');
+            const dpasteUrl = await res.text();
+
+            // Show Copy icon after upload
+            if (isMobile) {
+                uploadBtn.innerHTML = `${getIcon('mi:content_copy', {
+                    style: 'vertical-align:middle;',
+                })} Copy Link`;
+            } else {
+                uploadBtn.innerHTML = `${getIcon('mi:content_copy', {
+                    style: 'vertical-align:middle;',
+                })}<span class="btn-tooltip">Copy Link</span>`;
+            }
+            // Set these ASAP to prevent repeat uploads
+            handleUploadLog.lastUploadUrl = dpasteUrl;
+            handleUploadLog.lastUploadTime = now;
+            handleUploadLog.lastUploadData = currentFullLogText;
+
+            showToast(`Log uploaded`, 'success', 9000);
+        })
+        .catch(() => {
+            showToast('Failed to upload log.', 'error');
+        })
+        .finally(() => {
+            uploadBtn.disabled = false;
+            uploadBtn.classList.remove('busy');
+        });
 }

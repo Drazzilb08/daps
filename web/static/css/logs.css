@@ -7,10 +7,10 @@
     flex-direction: column;
     flex: 1 1 auto;
     min-height: 0;
-    height: 100vh;
-    box-sizing: border-box;
+    height: 100%;
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
 
 /* =============================
@@ -21,17 +21,15 @@
     box-sizing: border-box;
     padding: 12px;
     width: 100%;
-    height: 90%;
     max-width: 1280px;
     min-width: 0;
-    min-height: 350px;
-    margin: 0.6rem auto 0.6rem auto;
+    min-height: 120px;         /* Minimal height for content */
+    margin: 0.6rem auto 2.4rem auto;
     border-radius: 12px;
     position: relative;
-
     display: flex;
     flex-direction: column;
-    justify-content: stretch;
+    flex: 1 1 auto;
     font-size: 1.04rem;
     line-height: 1.36;
     color: var(--text-color);
@@ -39,6 +37,21 @@
     transition: box-shadow 0.15s, border 0.15s;
     box-shadow: 0 2px 12px #0002;
     border: 1px solid var(--divider, #292c30);
+    min-height: 0;
+    overflow: hidden;
+}
+.logs-card.page-card {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+}
+
+.log-output > * {
+    margin: 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box !important;
 }
 
 /* =============================
@@ -63,16 +76,13 @@
 
 /* =============================
    XTERM VIEWPORT/SCREEN - SCROLL ONLY HERE
-============================= */
+   ============================= */
 .log-output .xterm-viewport,
-∑ .log-output .xterm-screen {
+.log-output .xterm-screen {
     background: black !important;
     width: 100% !important;
     height: 100% !important;
     margin: 0 !important;
-    padding-left: 12px !important;
-    padding-right: 12px !important;
-    padding-top: 12px !important;
     box-sizing: border-box !important;
     border-radius: 12px !important;
     min-width: 0 !important;
@@ -84,6 +94,7 @@
     scrollbar-width: thin;
     scrollbar-color: var(--divider, #333) var(--surface, #222);
 }
+
 .xterm .xterm-screen {
     padding-left: 12px !important;
     padding-right: 12px !important;
@@ -98,12 +109,9 @@
     border-radius: 5px;
 }
 
-.log-output > * {
-    margin: 0 !important;
-    padding: 0 !important;
-    box-sizing: border-box !important;
-}
-
+/* =============================
+   LOG LINE HIGHLIGHTS
+   ============================= */
 .log-line:hover {
     background: color-mix(in srgb, var(--focus, #ff9500) 7%, transparent 93%);
 }
@@ -134,7 +142,7 @@
     border-radius: 12px;
     box-shadow: 0 1.5px 8px #0001;
     max-width: 880px;
-    margin: 1rem auto 0.6rem auto;
+    margin: 2rem auto 0.6rem auto;
     padding: 0.28rem 0.9rem 0.28rem 1.05rem;
     border: 1px solid var(--divider, #292c30);
     flex-wrap: wrap;
@@ -147,6 +155,9 @@
     max-width: 188px;
     flex: 0 0 auto;
     margin-bottom: 0;
+}
+.logfile-select {
+  min-width: 225px !important;
 }
 .log-controls input[type='text'] {
     min-width: 200px;
@@ -165,6 +176,71 @@
     box-shadow: 0 0px 1px #0001;
 }
 
+/* =============================
+   ICON BUTTONS & TOOLTIP
+   ============================= */
+.btn-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.26rem;
+    margin-left: 1rem
+}
+
+.btn--icon {
+    background: none;
+    border: none;
+    outline: none;
+    padding: 0.2em 0.39em;
+    margin: 0 0.05em;
+    border-radius: 5px;
+    color: var(--text-color, #d4d4d4);
+    font-size: 1.05em;
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.13s, color 0.13s;
+}
+
+.btn--icon:active,
+.btn--icon:focus-visible {
+    background: var(--focus, #ff9500);
+    color: #fff;
+}
+.btn--icon[disabled] {
+    opacity: 0.45;
+    pointer-events: none;
+}
+.btn-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    pointer-events: none;
+    background: var(--surface-alt, #23272b);
+    color: var(--text-color, #fff);
+    border-radius: 4px;
+    font-size: 0.93em;
+    padding: 0.28em 0.7em;
+    position: absolute;
+    bottom: 110%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    z-index: 15;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.13);
+    transition: opacity 0.18s, visibility 0.18s;
+}
+.btn--icon:hover .btn-tooltip,
+.btn--icon:focus .btn-tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+
+
+/* =============================
+   COLLAPSE BUTTON
+   ============================= */
 .toolbar-collapse-btn {
     display: none;
     margin-bottom: 0.4em;
@@ -268,4 +344,8 @@
         box-sizing: border-box !important;
         border-radius: 0 !important;
     }
+    .btn-row {
+    margin-left: 0rem;
+    justify-content: center;
+}
 }

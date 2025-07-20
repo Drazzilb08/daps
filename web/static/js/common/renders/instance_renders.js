@@ -390,12 +390,6 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
                 'No instances have been configured. Please add at least one instance in the Instances settings first.';
             inputWrap.appendChild(emptyMsg);
 
-            // NEW: Add yellow warning
-            const warning = document.createElement('div');
-            warning.className = 'settings-warning-callout';
-            warning.textContent =
-                '⚠️ At least one instance (Radarr, Sonarr, or Plex) is required. Please configure in the Instances settings first.';
-            inputWrap.appendChild(warning);
         }
     }
 

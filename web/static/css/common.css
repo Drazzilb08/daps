@@ -25,6 +25,38 @@ body, input, select, textarea, button {
   background: color-mix(in srgb, var(--accent) 22%, transparent 78%);
   color: var(--focus);
 }
+/* ======================
+   ERRORS & ANIMATIONS
+====================== */
+.input-error {
+    border: 2px solid var(--error, #ff375f) !important;
+    background: rgba(255, 55, 95, 0.07) !important;
+}
+.field-error-text {
+    color: var(--error, #ff375f);
+    font-size: 0.97em;
+    font-weight: 500;
+    margin-top: 0.18em;
+    margin-bottom: 0.07em;
+    padding-left: 1px;
+    letter-spacing: 0.01em;
+}
+.instances-empty-message {
+  color: var(--muted, #888);
+  font-size: 1.06em;
+  margin: 1.5em 0 0.6em 0;
+  padding: 0.6em 1em;
+  border-radius: 6px;
+  background: var(--surface-alt, #25292e);
+  text-align: center;
+}
+.instances-empty-message.field-error {
+   border: 2px solid var(--error, #ff375f) !important;
+    background: rgba(255, 55, 95, 0.07) !important;
+    color: var(--error, #ff375f);
+    box-shadow: 0 0 0 2px var(--error, #f1636365);
+    font-weight: 600;
+}
 
 /* ========== CARD LAYOUT ========== */
 .card-list {

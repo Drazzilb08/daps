@@ -285,6 +285,19 @@ function validateSettingsFields(schema, container) {
         // INSTANCES FIELD (plex/radarr/sonarr special validation)
         if (field.type === 'instances' && field.required) {
             let foundValid = false;
+            const emptyMsg = container.querySelector('.instances-empty-message');
+            if (emptyMsg) {
+                emptyMsg.classList.add('field-error');
+                // Optional: add error text only if not already present
+                if (!emptyMsg.querySelector('.field-error-text')) {
+                    const err = document.createElement('div');
+                    err.className = 'field-error-text';
+                    err.textContent = 'At least one instance must be configured to proceed.';
+                    emptyMsg.appendChild(err);
+                }
+                errorFields.push(field.key);
+                return; // skip the rest for this field
+            }
 
             // Plex
             if (field.instance_types && field.instance_types.includes('plex')) {

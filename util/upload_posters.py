@@ -205,9 +205,6 @@ def _sync_movies(
                 )
                 continue
 
-            if has_overlay(matched_entry):
-                plex_client.remove_label(matched_entry, "Overlay", dry_run)
-
             upload_ok = plex_client.upload_poster(
                 matched_entry["library_name"],
                 matched_entry["title"],
@@ -216,6 +213,9 @@ def _sync_movies(
                 dry_run=dry_run,
             )
             if upload_ok:
+                if has_overlay(matched_entry):
+                    plex_client.remove_label(matched_entry, "Overlay", dry_run)
+
                 db.media.update(
                     "movie",
                     asset_title,
@@ -305,9 +305,6 @@ def _sync_series(
                 )
                 continue
 
-            if has_overlay(matched_entry) and not season_number:
-                plex_client.remove_label(matched_entry, "Overlay", dry_run)
-
             upload_ok = plex_client.upload_poster(
                 matched_entry["library_name"],
                 matched_entry["title"],
@@ -319,6 +316,9 @@ def _sync_series(
             )
 
             if upload_ok:
+                if has_overlay(matched_entry) and not season_number:
+                    plex_client.remove_label(matched_entry, "Overlay", dry_run)
+
                 db.media.update(
                     "show",
                     asset_title,
@@ -395,9 +395,6 @@ def _sync_collections(
                 )
                 continue
 
-            if has_overlay(matched_entry):
-                plex_client.remove_label(matched_entry, "Overlay", dry_run)
-
             upload_ok = plex_client.upload_poster(
                 matched_entry["library_name"],
                 matched_entry["title"],
@@ -407,6 +404,9 @@ def _sync_collections(
                 dry_run=dry_run,
             )
             if upload_ok:
+                if has_overlay(matched_entry):
+                    plex_client.remove_label(matched_entry, "Overlay", dry_run)
+
                 db.media.update(
                     "collection",
                     asset_title,

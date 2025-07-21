@@ -387,12 +387,26 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
             Object.keys(rootConfig.instances.plex).length > 0;
 
         if (!radarrExists && !sonarrExists && !plexExists) {
+            // All missing
             const emptyMsg = document.createElement('div');
             emptyMsg.className = 'instances-empty-message';
             emptyMsg.textContent =
                 'No instances have been configured. Please add at least one instance in the Instances settings first.';
             inputWrap.appendChild(emptyMsg);
-
+        } else if (!radarrExists && !sonarrExists && plexExists) {
+            // Plex exists but no radarr/sonarr
+            const emptyMsg = document.createElement('div');
+            emptyMsg.className = 'instances-empty-message';
+            emptyMsg.textContent =
+                'No Radarr or Sonarr instances have been configured. Please add at least one in the Instances settings first.';
+            inputWrap.appendChild(emptyMsg);
+        } else if ((radarrExists || sonarrExists) && !plexExists) {
+            // Radarr/Sonarr exists but no Plex
+            const emptyMsg = document.createElement('div');
+            emptyMsg.className = 'instances-empty-message';
+            emptyMsg.textContent =
+                'No Plex instances have been configured. Please add at least one in the Instances settings first.';
+            inputWrap.appendChild(emptyMsg);
         }
     }
 

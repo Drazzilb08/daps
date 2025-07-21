@@ -239,11 +239,11 @@ def main() -> None:
         config (SimpleNamespace): Configuration object loaded from user settings.
     """
     config = Config("labelarr")
-    logger = Logger(config.log_level, config.module_name)
+    logger = Logger(getattr(config, "log_level", "INFO"), config.module_name)
     db = DapsDB()
     try:
         # Print detailed settings if debug logging is enabled
-        if config.log_level.lower() == "debug":
+        if getattr(config, "log_level", "INFO").lower() == "debug":
             print_settings(logger, config)
 
         # Notify user if running in dry run mode (no actual changes will be made)

@@ -25,6 +25,15 @@
     "gdrive_sa_location": "",
     "gdrive_list": [{}]
   },
+  "unmatched_assets": {
+    "log_level": "info",
+    "dry_run": false,
+    "ignore_folders": [],
+    "ignore_profles": [],
+    "ignore_titles": [],
+    "ignore_tags": [],
+    "instances": []
+  },
   "poster_renamerr": {
     "log_level": "info",
     "dry_run": false,

@@ -825,9 +825,9 @@ def main() -> None:
     Entrypoint for nohl.py. Scans for non-hardlinked files and triggers ARR actions.
     """
     config = Config("nohl")
-    logger = Logger(config.log_level, config.module_name)
+    logger = Logger(getattr(config, "log_level", "INFO"), config.module_name)
     try:
-        if config.log_level.lower() == "debug":
+        if getattr(config, "log_level", "INFO").lower() == "debug":
             print_settings(logger, config)
         # Warn if running in dry run mode
         if config.dry_run:
@@ -846,7 +846,7 @@ def main() -> None:
             config, nohl_list, logger
         )
         # Dump debug JSON payloads if needed
-        if config.log_level == "debug":
+        if getattr(config, "log_level", "INFO") == "debug":
             dump_debug_json(
                 data_list, media_dict, nohl_data, output_dict, logger, config
             )

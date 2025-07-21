@@ -382,10 +382,10 @@ def build_unmatched_assets_output(db, config):
 
 def main():
     config = Config("unmatched_assets")
-    logger = Logger(config.log_level, config.module_name)
+    logger = Logger(getattr(config, "log_level", "INFO"), config.module_name)
     db = DapsDB()
     print_unmatched_assets(db, logger, config)
     output = build_unmatched_assets_output(db, config)
     manager = NotificationManager(config, logger, module_name="unmatched_assets")
     manager.send_notification(output)
-    db.close()
+    db.close_all()

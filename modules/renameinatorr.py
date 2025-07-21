@@ -340,9 +340,9 @@ def main() -> None:
         config: Parsed config for renameinatorr.
     """
     config = Config("renameinatorr")
-    logger = Logger(config.log_level, config.module_name)
+    logger = Logger(getattr(config, "log_level", "INFO"), config.module_name)
     try:
-        if getattr(config, "log_level", "").lower() == "debug":
+        if getattr(config, "log_level", "INFO").lower() == "debug":
             print_settings(logger, config)
         if getattr(config, "dry_run", False):
             table = [["Dry Run"], ["NO CHANGES WILL BE MADE"]]

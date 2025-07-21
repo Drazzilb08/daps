@@ -17,10 +17,10 @@ def main() -> None:
     as removed from TMDB or TVDB. Supports dry run mode and logs all actions.
     """
     config = Config("health_checkarr")
-    logger = Logger(config.log_level, config.module_name)
+    logger = Logger(getattr(config, "log_level", "INFO"), config.module_name)
     try:
         # Display configuration settings if in debug mode
-        if config.log_level.lower() == "debug":
+        if getattr(config, "log_level", "INFO").lower() == "debug":
             print_settings(logger, config)
 
         # Print dry run notice if enabled

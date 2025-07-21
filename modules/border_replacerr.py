@@ -30,7 +30,7 @@ def get_holiday_status(
     """
 
     now = datetime.now()
-    holidays = getattr(config, "holidays", {}) or {}
+    holidays = getattr(config, "holidays", []) or []
     default_colors = getattr(config, "border_colors", [])
     skip_enabled = getattr(config, "skip", False)
 
@@ -40,9 +40,10 @@ def get_holiday_status(
 
     current_holiday = None
     border_colors = None
-
-    for holiday, schedule_color in holidays.items():
-        schedule = schedule_color.get("schedule")
+    for holiday_item in holidays:
+        holiday = holiday_item.get("name")
+        schedule = holiday_item.get("schedule")
+        color_list = holiday_item.get("color", default_colors)
         if not schedule or not schedule.startswith("range("):
             continue
         inside = schedule[len("range(") : -1]
@@ -59,7 +60,6 @@ def get_holiday_status(
             else:
                 end_date = end_date.replace(year=year + 1)
         if start_date <= now <= end_date:
-            color_list = schedule_color.get("color", default_colors)
             if isinstance(color_list, str):
                 color_list = [color_list]
             border_colors = [convert_to_rgb(c, logger) for c in color_list]
@@ -235,7 +235,7 @@ def run_replacerr(
 ) -> None:
     replacerr_config = Config("border_replacerr")
 
-    if renamerr_config.log_level.lower() == "debug":
+    if getattr(renamerr_config, "log_level", "INFO").lower() == "debug":
         print_settings(logger, replacerr_config)
 
     results = get_holiday_status(db, replacerr_config, logger)

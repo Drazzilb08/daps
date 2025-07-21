@@ -29,6 +29,17 @@ class DapsDB:
         self.stats = Stats(db_path)
         self.holiday = HolidayStatus(db_path)
 
+    def close_all(self):
+        if self.logger:
+            self.logger.debug("[DATABASE] Closing database connections")
+        self.plex.close()
+        self.collection.close()
+        self.poster.close()
+        self.media.close()
+        self.orphaned.close()
+        self.run_state.close()
+        self.stats.close()
+        self.holiday.close()
 
 __all__ = [
     "DatabaseBase",

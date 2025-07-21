@@ -425,9 +425,9 @@ def main() -> None:
         None
     """
     config = Config("upgradinatorr")
-    logger = Logger(config.log_level, config.module_name)
+    logger = Logger(getattr(config, "log_level", "INFO"), config.module_name)
     try:
-        if config.log_level.lower() == "debug":
+        if getattr(config, "log_level", "INFO") == "debug":
             print_settings(logger, config)
         if config.dry_run:
             table = [["Dry Run"], ["NO CHANGES WILL BE MADE"]]

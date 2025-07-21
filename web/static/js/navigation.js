@@ -1,5 +1,5 @@
 import { PAGE_LOADERS, PAGE_CSS } from './pages/init_pages.js';
-import { showToast, getIsDirty, loadCSS, unloadCSS } from './util.js';
+import { showToast, getIsDirty, loadCSS, unloadCSS, renderNotFoundCard } from './util.js';
 import { unsavedSettingsModal } from './common/modals.js';
 import { saveSettings, buildSidebarSettingsSubMenu } from './pages/settings.js';
 
@@ -112,7 +112,6 @@ export async function navigateTo(link, { pushState = true } = {}) {
     viewFrame.dataset.currentUrl = url;
     highlightNav(frag, url);
 
-    setPageCSS(frag);
 
     if (pushState && location.pathname + location.search !== url) {
         history.pushState({}, '', url);
@@ -124,6 +123,7 @@ export async function navigateTo(link, { pushState = true } = {}) {
     );
     [...viewFrame.children].forEach((child) => child.remove());
 
+    setPageCSS(frag);
     // Load SPA module
     try {
         if (PAGE_LOADERS[frag]) {
@@ -135,33 +135,12 @@ export async function navigateTo(link, { pushState = true } = {}) {
                 await PAGE_LOADERS[frag]();
             }
         } else {
-            viewFrame.innerHTML = `
-        <div class="not-found-outer">
-  <div class="not-found-animation">
-    <div class="stars"></div>
-    <div class="planet"></div>
-    <div class="astronaut">
-      <div class="helmet">
-        <div class="glow"></div>
-      </div>
-      <div class="backpack"></div>
-      <div class="body"></div>
-      <div class="arm left"></div>
-      <div class="arm right"></div>
-      <div class="leg left"></div>
-      <div class="leg right"></div>
-      <div class="tether"></div>
-    </div>
-    <div class="not-found-404-bounce">404</div>
-    <div class="not-found-planet-shadow"></div>
-  </div>
-  <div class="not-found-msg">
-    <div class="not-found-headline">Whoops! Lost in Space</div>
-    <div class="not-found-desc">We couldn't find this page. <span class="emoji">🚀</span></div>
-    <a class="not-found-home-btn" href="/pages/index">Return to Home</a>
-  </div>
-</div>
-    `;
+           renderNotFoundCard(viewFrame, {
+               code: 404,
+               headline: 'Whoops! Lost in Space',
+               desc: 'We couldn\'t find this page. <span class="emoji">🚀</span>',
+               animation: true,
+           });
         }
 
         setTimeout(() => {

@@ -235,6 +235,22 @@ export function loadCSS(href, id) {
     link.rel = 'stylesheet';
     link.href = href;
     if (id) link.id = id;
+    link.onerror = () => {
+        link.remove();
+        // Only show missing CSS if NOT already a 404 page
+        const viewFrame = document.getElementById('viewFrame');
+        if (!viewFrame) return;
+        if (!viewFrame.querySelector('.not-found-outer')) {
+            renderNotFoundCard(viewFrame, {
+                code: 404,
+                headline: 'Whoops! Missing CSS',
+                desc: `The required stylesheet could not be loaded:<br>
+                  <code>${href.replace(location.origin, '')}</code>
+                  <br>The page might be incomplete or unstyled.`,
+                animation: true,
+            });
+        } // else, do nothing: page itself is already not found
+    };
     document.head.appendChild(link);
 }
 
@@ -242,4 +258,59 @@ export function loadCSS(href, id) {
 export function unloadCSS(id) {
     const link = document.getElementById(id);
     if (link) link.remove();
+}
+
+export function renderNotFoundCard(targetEl, opts = {}) {
+    if (!targetEl) return;
+    const code = opts.code || '404';
+    const animation = opts.animation !== false; // default true
+    const headline = opts.headline || (animation ? 'Whoops! Lost in Space' : 'Not Found');
+    const desc =
+        opts.desc ||
+        (animation
+            ? 'We couldn\'t find this page. <span class="emoji">🚀</span>'
+            : 'This resource could not be loaded.');
+    const detail = opts.detail ? `<div class="not-found-detail">${opts.detail}</div>` : '';
+    const btnHref = (opts.button && opts.button.href) || '/pages/index';
+    const btnLabel = (opts.button && opts.button.label) || 'Return to Home';
+
+    if (animation) {
+        targetEl.innerHTML = `
+            <div class="not-found-outer">
+              <div class="not-found-animation">
+                <div class="stars"></div>
+                <div class="planet"></div>
+                <div class="astronaut">
+                  <div class="helmet"><div class="glow"></div></div>
+                  <div class="backpack"></div>
+                  <div class="body"></div>
+                  <div class="arm left"></div>
+                  <div class="arm right"></div>
+                  <div class="leg left"></div>
+                  <div class="leg right"></div>
+                  <div class="tether"></div>
+                </div>
+                <div class="not-found-${code}-bounce">${code}</div>
+                <div class="not-found-planet-shadow"></div>
+              </div>
+              <div class="not-found-msg">
+                <div class="not-found-headline">${headline}</div>
+                <div class="not-found-desc">${desc}</div>
+                ${detail}
+                <a class="not-found-home-btn" href="${btnHref}">${btnLabel}</a>
+              </div>
+            </div>
+        `;
+    } else {
+        targetEl.innerHTML = `
+            <div class="not-found-outer simple">
+              <div class="not-found-msg">
+                <div class="not-found-headline">${headline}</div>
+                <div class="not-found-desc">${desc}</div>
+                ${detail}
+                <a class="not-found-home-btn" href="${btnHref}">${btnLabel}</a>
+              </div>
+            </div>
+        `;
+    }
 }

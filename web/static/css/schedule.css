@@ -173,3 +173,11 @@
         font-size: 0.98rem !important;
     }
 }
+
+.card-noschedule {
+    color: var(--text-muted, #8c8c8c);
+    font-style: italic;
+    font-size: 1em;
+    letter-spacing: 0.01em;
+    opacity: 0.86;
+}

@@ -39,7 +39,7 @@ def upload_posters(config: Any, db: Any, logger: Any, manifest: dict) -> None:
                     ]
                     for source, asset_id in all_ids:
                         if source == "media_cache":
-                            asset = db.media.get_media_cache_from_id(asset_id)
+                            asset = db.media.get_by_id(asset_id)
                         else:
                             asset = db.collection.get_by_id(asset_id)
                         if not asset:

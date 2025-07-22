@@ -112,7 +112,6 @@ export async function navigateTo(link, { pushState = true } = {}) {
     viewFrame.dataset.currentUrl = url;
     highlightNav(frag, url);
 
-
     if (pushState && location.pathname + location.search !== url) {
         history.pushState({}, '', url);
     }
@@ -135,12 +134,7 @@ export async function navigateTo(link, { pushState = true } = {}) {
                 await PAGE_LOADERS[frag]();
             }
         } else {
-           renderNotFoundCard(viewFrame, {
-               code: 404,
-               headline: 'Whoops! Lost in Space',
-               desc: 'We couldn\'t find this page. <span class="emoji">🚀</span>',
-               animation: true,
-           });
+            renderNotFoundCard(viewFrame);
         }
 
         setTimeout(() => {

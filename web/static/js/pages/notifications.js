@@ -1,10 +1,9 @@
 import { fetchConfig, postConfig, runTestNotification } from '../api.js';
-import { humanize, showToast, getIcon, getSpinner } from '../util.js';
+import { humanize, showToast, getIcon, getSpinner, attachTooltip } from '../util.js';
 import { openModal } from '../common/modals.js';
 import { modalHeaderHtml, setupModalCloseOnOutsideClick } from '../common/modal_helpers.js';
 import { buildNotificationPayload } from '../payload.js';
 import { NOTIFICATIONS_SCHEMA } from '../constants/notifications_schema.js';
-
 
 // --- Utility to find type def ---
 function getTypeDef(type) {
@@ -257,17 +256,8 @@ function makeNotificationCard(module, type, settings, notifications) {
     testBtn.innerHTML = getIcon('mi:science'); // flask/science icon
 
     // Tooltip
-    const tooltip = document.createElement('div');
-    tooltip.className = 'btn-tooltip';
-    tooltip.textContent = `Send test to ${getTypeDef(type)?.label || type}`;
     btnWrap.appendChild(testBtn);
-    btnWrap.appendChild(tooltip);
-
-    // Tooltip events
-    testBtn.onmouseenter = () => tooltip.classList.add('show');
-    testBtn.onmouseleave = () => tooltip.classList.remove('show');
-    testBtn.onfocus = testBtn.onmouseenter;
-    testBtn.onblur = testBtn.onmouseleave;
+    attachTooltip(testBtn, `Send test to ${getTypeDef(type)?.label || type}`, 'top');
 
     testBtn.onclick = async (e) => {
         e.stopPropagation();

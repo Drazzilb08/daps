@@ -1,28 +1,3 @@
-/* .btn--remove-item.remove-btn {
-    max-width: 30px;
-    max-height: 30px;
-    padding: 0.25rem 0.5rem;
-} */
-
-.daily-times-row {
-  display: flex;
-  align-items: center;
-  gap: 0.6em; /* or whatever looks best */
-}
-
-.daily-times-row input[type="time"] {
-  flex: 1 1 auto;
-}
-
-.daily-times-row .remove-btn {
-        max-width: 30px;
-    max-height: 30px;
-    padding: 0.25rem 0.5rem;
-  flex: 0 0 auto;
-
-}
-
-
 /* ======================
    MODAL OVERLAY
 ====================== */
@@ -239,6 +214,24 @@ html.modal-open {
 /* ======================
    PILLS & SCHEDULE SELECTS
 ====================== */
+.daily-times-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6em; /* or whatever looks best */
+}
+
+.daily-times-row input[type="time"] {
+  flex: 1 1 auto;
+}
+
+.daily-times-row .remove-btn {
+        max-width: 30px;
+    max-height: 30px;
+    padding: 0.25rem 0.5rem;
+  flex: 0 0 auto;
+
+}
+
 .pill-group {
     display: flex;
     gap: 0.65em;
@@ -317,6 +310,24 @@ html.modal-open {
     opacity: 0;
     transform: translateY(8px) scale(0.98);
     animation: fadeInRow 0.21s 0.11s cubic-bezier(0.61, 0.13, 0.55, 1.21) forwards;
+}
+
+.schedule-hourly-minute {
+    width: 90px;
+}
+
+.schedule-hourly-hint {
+    color: var(--muted);
+    font-size: 0.96em;
+}
+
+.cron-link-hint {
+    font-size: 0.96em;
+    color: var(--muted);
+    margin-top: 3px;
+}
+.cron-link-hint a {
+    color: var(--accent);
 }
 
 /* ======================
@@ -574,3 +585,79 @@ html.modal-open {
 }
 
 
+/* ======================
+    GDrive Preset Card
+====================== */
+
+.gdrive-preset-card {
+    background: var(--surface-alt, #262932);
+    color: var(--text-color, #e3e3e3);
+    border-radius: 9px;
+    box-shadow: 0 3px 12px 0 rgba(30, 32, 44, 0.13), 0 1px 4px rgba(20, 20, 28, 0.10);
+    margin: 1.3em 0 0.8em 0;
+    padding: 1.35em 2em 1.3em 2em;
+    max-width: 530px;
+    width: 100%;
+    transition: box-shadow 0.18s;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55em;
+    font-size: 1.04em;
+    border: 1px solid var(--divider, #282c30);
+}
+
+.gdrive-preset-card-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.7em;
+    margin-bottom: 0.2em;
+}
+
+.gdrive-preset-card-label {
+    min-width: 70px;
+    color: var(--primary, #3391ff);
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    text-align: left;
+    flex: 0 0 85px;
+}
+
+.gdrive-preset-card-value {
+    flex: 1 1 auto;
+    color: var(--text-color, #e3e3e3);
+    word-break: break-word;
+}
+
+.gdrive-preset-card-content {
+    background: var(--surface, #21242b);
+    color: var(--text-color, #e3e3e3);
+    border-radius: 7px;
+    padding: 0.8em 1em;
+    margin-top: 0.2em;
+    font-size: 0.99em;
+    line-height: 1.42;
+}
+
+.gdrive-preset-card-content ul {
+    margin: 0.2em 0 0 1.2em;
+    padding: 0;
+}
+
+.gdrive-preset-card-content li {
+    list-style: disc;
+    margin-bottom: 0.13em;
+}
+
+@media (max-width: 600px) {
+    .gdrive-preset-card {
+        max-width: 100vw !important;
+        border-radius: 0 !important;
+        margin: 1.2em 0 1em 0 !important;
+        padding: 1em 0.8em 1em 0.8em !important;
+    }
+    .gdrive-preset-card-label {
+        min-width: 60px;
+        flex: 0 0 60px;
+        font-size: 0.99em;
+    }
+}

@@ -1,4 +1,4 @@
-export function renderPasswordField(field, value) {
+export function renderPasswordField(field, immediateData) {
     const row = document.createElement('div');
     row.className = 'settings-field-row';
 
@@ -26,7 +26,7 @@ export function renderPasswordField(field, value) {
     input.className = 'input password-input masked-input';
     input.name = field.key;
     input.id = field.key;
-    input.value = value ?? '';
+    input.value = immediateData[field.key] ?? '';
     input.autocomplete = 'current-password';
     if (field.placeholder) input.placeholder = field.placeholder;
     pwWrap.appendChild(input);
@@ -54,6 +54,11 @@ export function renderPasswordField(field, value) {
         }
     };
 
+    // Save to immediateData on input
+    input.addEventListener('input', () => {
+        immediateData[field.key] = input.value;
+    });
+
     inputWrap.appendChild(pwWrap);
 
     // Help text
@@ -68,7 +73,7 @@ export function renderPasswordField(field, value) {
     return row;
 }
 
-export function renderTextField(field, value) {
+export function renderTextField(field, immediateData) {
     const row = document.createElement('div');
     row.className = 'settings-field-row';
 
@@ -92,10 +97,14 @@ export function renderTextField(field, value) {
     input.className = 'input';
     input.name = field.key;
     input.id = field.key;
-    input.value = value ?? '';
+    input.value = immediateData[field.key] ?? '';
 
     if (field.placeholder) input.placeholder = field.placeholder;
     if (field.modal === 'directoryPickerModal') input.readOnly = true;
+
+    input.addEventListener('input', () => {
+        immediateData[field.key] = input.value;
+    });
 
     inputWrap.appendChild(input);
 
@@ -110,7 +119,7 @@ export function renderTextField(field, value) {
     return row;
 }
 
-export function renderJsonField(field, value) {
+export function renderJsonField(field, immediateData) {
     const row = document.createElement('div');
     row.className = 'settings-field-row';
 
@@ -135,15 +144,25 @@ export function renderJsonField(field, value) {
     textarea.id = field.key;
     textarea.rows = 6;
     textarea.placeholder = field.placeholder || '';
-    if (typeof value === 'object' && value !== null) {
-        textarea.value = JSON.stringify(value, null, 2);
-    } else if (typeof value === 'string') {
-        textarea.value = value;
+
+    if (typeof immediateData[field.key] === 'object' && immediateData[field.key] !== null) {
+        textarea.value = JSON.stringify(immediateData[field.key], null, 2);
+    } else if (typeof immediateData[field.key] === 'string') {
+        textarea.value = immediateData[field.key];
     } else {
         textarea.value = '';
     }
 
     autoResizeTextarea(textarea);
+
+    textarea.addEventListener('input', () => {
+        try {
+            immediateData[field.key] = JSON.parse(textarea.value);
+        } catch {
+            immediateData[field.key] = textarea.value;
+        }
+    });
+
     inputWrap.appendChild(textarea);
 
     if (field.description) {
@@ -157,7 +176,8 @@ export function renderJsonField(field, value) {
     return row;
 }
 
-export function renderNumberField(field, value) {
+// Integer-only number input for settings (no percent/float logic)
+export function renderNumberField(field, immediateData) {
     const row = document.createElement('div');
     row.className = 'settings-field-row';
 
@@ -168,7 +188,6 @@ export function renderNumberField(field, value) {
     label.textContent = field.label;
     label.htmlFor = field.key;
     labelCol.appendChild(label);
-
     row.appendChild(labelCol);
 
     const inputWrap = document.createElement('div');
@@ -180,44 +199,18 @@ export function renderNumberField(field, value) {
     input.name = field.key;
     input.id = field.key;
     if (field.placeholder) input.placeholder = field.placeholder;
+    if (field.min !== undefined) input.min = field.min;
+    if (field.max !== undefined) input.max = field.max;
+    if (field.step !== undefined) input.step = field.step;
+    input.value = immediateData[field.key] ?? '';
 
-    // If float:true and show as percent, display percent
-    let showAsPercent = !!field.float;
-    if (showAsPercent) {
-        input.min = 0;
-        input.max = 100;
-        input.step = 1;
-        // Display as percent string if value exists
-        if (typeof value === 'number') {
-            input.value = Math.round(value * 100 * 100) / 100; // round to 2 decimals
-        } else if (typeof value === 'string' && value !== '') {
-            input.value = Math.round(parseFloat(value) * 100 * 100) / 100;
-        } else {
-            input.value = '';
-        }
-    } else {
-        input.value = value ?? '';
-    }
+    // Save as int to immediateData on input
+    input.addEventListener('input', () => {
+        let v = input.value;
+        immediateData[field.key] = v === '' ? '' : parseInt(v, 10);
+    });
 
-    // Helper percent symbol (optional)
-    if (showAsPercent) {
-        // Create a flex container
-        const percentContainer = document.createElement('div');
-        percentContainer.style.display = 'flex';
-        percentContainer.style.alignItems = 'center';
-        percentContainer.style.gap = '6px'; // Small gap
-
-        input.style.flex = '1 1 auto';
-        percentContainer.appendChild(input);
-
-        const percentSpan = document.createElement('span');
-        percentSpan.textContent = '%';
-        percentContainer.appendChild(percentSpan);
-
-        inputWrap.appendChild(percentContainer);
-    } else {
-        inputWrap.appendChild(input);
-    }
+    inputWrap.appendChild(input);
 
     if (field.description) {
         const help = document.createElement('div');
@@ -230,7 +223,73 @@ export function renderNumberField(field, value) {
     return row;
 }
 
-export function renderTextareaField(field, value) {
+// Float/percent field: always 0..1 (float in config), displays as percent to user
+export function renderFloatField(field, immediateData) {
+    const row = document.createElement('div');
+    row.className = 'settings-field-row';
+
+    const labelCol = document.createElement('div');
+    labelCol.className = 'settings-field-labelcol';
+
+    const label = document.createElement('label');
+    label.textContent = field.label;
+    label.htmlFor = field.key;
+    labelCol.appendChild(label);
+    row.appendChild(labelCol);
+
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'settings-field-inputwrap';
+
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.className = 'input';
+    input.name = field.key;
+    input.id = field.key;
+    input.min = 0;
+    input.max = 100;
+    input.step = 1;
+    if (field.placeholder) input.placeholder = field.placeholder;
+
+    // Display as percent string if value exists
+    if (typeof immediateData[field.key] === 'number') {
+        input.value = Math.round(immediateData[field.key] * 100 * 100) / 100;
+    } else if (typeof immediateData[field.key] === 'string' && immediateData[field.key] !== '') {
+        input.value = Math.round(parseFloat(immediateData[field.key]) * 100 * 100) / 100;
+    } else {
+        input.value = '';
+    }
+
+    // Save as float (0..1) to immediateData on input
+    input.addEventListener('input', () => {
+        let v = input.value;
+        let floatVal = v === '' ? '' : Math.min(1, Math.max(0, parseFloat(v) / 100));
+        immediateData[field.key] = v === '' ? '' : floatVal;
+    });
+
+    // Percent symbol
+    const percentContainer = document.createElement('div');
+    percentContainer.style.display = 'flex';
+    percentContainer.style.alignItems = 'center';
+    percentContainer.style.gap = '6px';
+    input.style.flex = '1 1 auto';
+    percentContainer.appendChild(input);
+    const percentSpan = document.createElement('span');
+    percentSpan.textContent = '%';
+    percentContainer.appendChild(percentSpan);
+    inputWrap.appendChild(percentContainer);
+
+    if (field.description) {
+        const help = document.createElement('div');
+        help.className = 'field-help-text';
+        help.textContent = field.description;
+        inputWrap.appendChild(help);
+    }
+
+    row.appendChild(inputWrap);
+    return row;
+}
+
+export function renderTextareaField(field, immediateData) {
     const row = document.createElement('div');
     row.className = 'settings-field-row';
 
@@ -252,9 +311,15 @@ export function renderTextareaField(field, value) {
     textarea.rows = 6;
     textarea.placeholder = field.placeholder || '';
     if (field.required) textarea.required = true;
-    textarea.value = Array.isArray(value) ? value.join('\n') : value ?? '';
+    textarea.value = Array.isArray(immediateData[field.key])
+        ? immediateData[field.key].join('\n')
+        : immediateData[field.key] ?? '';
 
     autoResizeTextarea(textarea);
+
+    textarea.addEventListener('input', () => {
+        immediateData[field.key] = textarea.value;
+    });
 
     inputWrap.appendChild(textarea);
 

@@ -4,9 +4,12 @@ import {
     modalFooterHtml,
     attachDynamicFieldConditions,
     setupModalCloseOnOutsideClick,
-    validateModalFields,
 } from './modal_helpers.js';
+import { validateFields } from './validation.js';
 
+/**
+ * Unsaved Changes Modal (special, no schema)
+ */
 export function unsavedSettingsModal() {
     return new Promise((resolve) => {
         let modal;
@@ -31,48 +34,34 @@ export function unsavedSettingsModal() {
                 { id: 'unsaved-cancel-btn', label: 'Cancel', class: 'btn--cancel', type: 'button' },
             ],
             onCancel: () => handleChoice('cancel'),
-            // Do not use buttonHandler here (so we avoid validation trap)
+            // No buttonHandler—avoid validation trap
         });
 
-        // Custom content for body (not using schema fields)
+        // Custom body content (not using schema fields)
         const contentDiv = modal.querySelector('.modal-content');
         if (contentDiv) {
             const custom = document.createElement('div');
             custom.style.margin = '1em 0';
             custom.innerHTML = `<p>You have unsaved changes. What would you like to do?</p>`;
-            // Insert right after the modal header
             const header = contentDiv.querySelector('.modal-header');
             if (header) header.insertAdjacentElement('afterend', custom);
             else contentDiv.prepend(custom);
         }
 
-        // Attach button handlers directly
         setTimeout(() => {
             const saveBtn = modal.querySelector('#unsaved-save-btn');
             const discardBtn = modal.querySelector('#unsaved-discard-btn');
             const cancelBtn = modal.querySelector('#unsaved-cancel-btn');
-            if (saveBtn) {
-                saveBtn.onclick = () => {
-                    console.log('[unsavedSettingsModal] Save button clicked');
-                    handleChoice('save');
-                };
-            }
-            if (discardBtn) {
-                discardBtn.onclick = () => {
-                    console.log('[unsavedSettingsModal] Discard button clicked');
-                    handleChoice('discard');
-                };
-            }
-            if (cancelBtn) {
-                cancelBtn.onclick = () => {
-                    console.log('[unsavedSettingsModal] Cancel button clicked');
-                    handleChoice('cancel');
-                };
-            }
+            if (saveBtn) saveBtn.onclick = () => handleChoice('save');
+            if (discardBtn) discardBtn.onclick = () => handleChoice('discard');
+            if (cancelBtn) cancelBtn.onclick = () => handleChoice('cancel');
         }, 0);
     });
 }
 
+/**
+ * Directory Picker Modal (special schema)
+ */
 export function directoryPickerModal(initialPath = '/') {
     return new Promise((resolve) => {
         let lastCreatedFolder = null;
@@ -97,13 +86,11 @@ export function directoryPickerModal(initialPath = '/') {
             ],
             buttonHandler: {
                 'dir-create': async ({ modal, entry, bodyDiv }) => {
-                    // Use the visible input value, not just entry.path
                     const input = modal.querySelector('input.dir-picker-input');
                     const currPath = input && input.value ? input.value : entry.path || '/';
                     const name = prompt('New folder name:');
                     if (!name) return;
 
-                    // Optional: prevent creation at root
                     if (currPath === '/' || currPath === '') {
                         alert('Please navigate to a directory before creating a subfolder.');
                         return;
@@ -144,7 +131,6 @@ export function directoryPickerModal(initialPath = '/') {
                         event.preventDefault();
                         return;
                     }
-                    // --- PATCH: ensure we grab the input value for path ---
                     const input = modal.querySelector('input.dir-picker-input');
                     if (input) entry.path = input.value;
                     closeModal();
@@ -159,14 +145,26 @@ export function directoryPickerModal(initialPath = '/') {
     });
 }
 
+/**
+ * Open a modal dialog for editing/adding an entry.
+ * @param {Object} opts
+ * @param {Array} opts.schema - Array of field objects to render
+ * @param {Object} opts.entry - The object being edited (the editable entry)
+ * @param {string} [opts.title]
+ * @param {Array} [opts.footerButtons]
+ * @param {Object} [opts.buttonHandler]
+ * @param {Object} [opts.moduleConfig] - The parent config object (for advanced renders)
+ * @param {Object} [opts.rootConfig] - The root config object if needed
+ * @param {string} [opts.modalClass]
+ */
 export function openModal({
     schema = [],
     entry = {},
     title = 'Edit',
     footerButtons = [],
     buttonHandler = {},
-    value,
-    rootConfig,
+    moduleConfig = null,
+    rootConfig = null,
     modalClass = 'modal-content',
 }) {
     // Create modal root
@@ -185,8 +183,10 @@ export function openModal({
     // BODY
     const bodyDiv = document.createElement('div');
     bodyDiv.className = 'modal-body';
+
     schema.forEach((field) => {
-        const fieldNode = renderField(field, entry[field.key], value, rootConfig);
+        // Always call field renders as: (field, immediateData, moduleConfig, rootConfig)
+        const fieldNode = renderField(field, entry, moduleConfig, rootConfig);
         if (!fieldNode || typeof fieldNode !== 'object' || !('nodeType' in fieldNode)) {
             console.error(
                 '[MODAL FIELD ERROR]',
@@ -242,13 +242,37 @@ export function openModal({
             el.onclick = (e) => {
                 // Global: always run validation for save/add
                 if (/save|add/i.test(btn.label || btn.id)) {
-                    const errorFields = validateModalFields(schema, bodyDiv);
+                    const errorFields = validateFields(schema, bodyDiv, {
+                        rootConfig,
+                        isModal: true,
+                    });
                     if (errorFields.length) {
                         const first = bodyDiv.querySelector('.input-error');
                         if (first) first.scrollIntoView({ behavior: 'smooth', block: 'center' });
                         e.preventDefault();
-                        console.warn('[openModal] Validation failed for save/add.');
-                        console.groupEnd();
+                        // More descriptive output:
+                        console.warn(
+                            '[openModal] Validation failed for save/add. Invalid fields:',
+                            errorFields
+                        );
+                        errorFields.forEach((fieldKey) => {
+                            const fieldInput = bodyDiv.querySelector(`[name="${fieldKey}"]`);
+                            if (fieldInput) {
+                                const label =
+                                    fieldInput
+                                        .closest('.settings-field-row, .modal-field-inputwrap')
+                                        ?.querySelector('label')?.innerText || '';
+                                console.warn(
+                                    `  - Field "${fieldKey}"${
+                                        label ? ` (label: "${label}")` : ''
+                                    } is invalid.`
+                                );
+                            } else {
+                                console.warn(
+                                    `  - Field "${fieldKey}" is invalid (input not found in modal DOM).`
+                                );
+                            }
+                        });
                         return;
                     }
                 }
@@ -274,7 +298,6 @@ export function openModal({
         const el = modal.querySelector(`#${btn.id}`);
         if (!el) return;
         const isCancel = /cancel/i.test(btn.label) || /cancel/i.test(btn.id);
-        // Only attach if not already handled above
         if (isCancel && (!buttonHandler || typeof buttonHandler[btn.id] !== 'function')) {
             el.onclick = (e) => {
                 e.preventDefault();

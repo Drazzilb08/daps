@@ -1,23 +1,15 @@
-import * as Modals from '../modals.js';
+import { directoryPickerModal } from '../modals.js';
 
-export function renderDirPickerField(field, value, config) {
-    // Defensive: If value is an input element, use its value string
+export function renderDirPickerField(field, immediateData) {
+    let value = immediateData[field.key];
+
     if (value && typeof value === 'object' && value instanceof HTMLInputElement) {
         value = value.value;
-    }
-    if (
-        config &&
-        config[field.key] &&
-        typeof config[field.key] === 'object' &&
-        config[field.key] instanceof HTMLInputElement
-    ) {
-        config[field.key] = config[field.key].value;
     }
 
     const row = document.createElement('div');
     row.className = 'settings-field-row field-dir-picker';
 
-    // Label column
     const labelCol = document.createElement('div');
     labelCol.className = 'settings-field-labelcol';
     const label = document.createElement('label');
@@ -26,11 +18,9 @@ export function renderDirPickerField(field, value, config) {
     labelCol.appendChild(label);
     row.appendChild(labelCol);
 
-    // Input column
     const inputWrap = document.createElement('div');
     inputWrap.className = 'settings-field-inputwrap';
 
-    // Main input
     const input = document.createElement('input');
     input.type = 'text';
     input.className = 'input dir-picker-input';
@@ -41,21 +31,17 @@ export function renderDirPickerField(field, value, config) {
 
     inputWrap.appendChild(input);
 
-    // Directory list element
     const dirList = document.createElement('ul');
     dirList.className = 'dir-list';
     inputWrap.appendChild(dirList);
 
-    // Directory cache (could be global)
     const dirCache = {};
     let suggestionTimeout = null;
 
-    // Show a directory's contents in the list
     async function showPath(val) {
         input.value = val;
-        if (config) config[field.key] = String(input.value);
+        immediateData[field.key] = String(input.value);
         if (!dirCache[val]) {
-            // Fetch directory from backend
             try {
                 const res = await fetch(`/api/list?path=${encodeURIComponent(val)}`);
                 const data = await res.json();
@@ -67,10 +53,8 @@ export function renderDirPickerField(field, value, config) {
         updateDirList(val);
     }
 
-    // Update the <ul> with current entries
     function updateDirList(current) {
         dirList.innerHTML = '';
-        // ".." for up
         if (current !== '/') {
             const up = document.createElement('li');
             up.textContent = '..';
@@ -88,24 +72,21 @@ export function renderDirPickerField(field, value, config) {
                 showPath(newPath);
             };
             li.ondblclick = () => {
-                // Double click: select this path
                 input.value = current.endsWith('/') ? current + name : current + '/' + name;
-                if (config) config[field.key] = String(input.value);
-                dirList.innerHTML = ''; // Hide suggestion list after selection
+                immediateData[field.key] = String(input.value);
+                dirList.innerHTML = '';
             };
             dirList.appendChild(li);
         });
     }
 
-    // Input handlers
     input.addEventListener('input', (e) => {
         const val = e.target.value.trim() || '/';
         clearTimeout(suggestionTimeout);
         suggestionTimeout = setTimeout(() => {
             showPath(val);
         }, 200);
-        // Always update config as the user types
-        if (config) config[field.key] = String(input.value);
+        immediateData[field.key] = String(input.value);
     });
 
     input.addEventListener('keydown', (e) => {
@@ -115,10 +96,8 @@ export function renderDirPickerField(field, value, config) {
         }
     });
 
-    // Initial list load
     showPath(input.value.trim() || '/');
 
-    // Help/description
     if (field.description) {
         const help = document.createElement('div');
         help.className = 'field-help-text';
@@ -127,22 +106,20 @@ export function renderDirPickerField(field, value, config) {
     }
 
     row.appendChild(inputWrap);
-    // Final defensive: If config has input element, force to string
+
     if (
-        config &&
-        typeof config[field.key] === 'object' &&
-        config[field.key] instanceof HTMLInputElement
+        typeof immediateData[field.key] === 'object' &&
+        immediateData[field.key] instanceof HTMLInputElement
     ) {
-        config[field.key] = config[field.key].value;
+        immediateData[field.key] = immediateData[field.key].value;
     }
     return row;
 }
 
-export function renderDirField(field, value, config) {
+export function renderDirField(field, immediateData) {
     const row = document.createElement('div');
     row.className = 'settings-field-row field-dir';
 
-    // LABEL COLUMN
     const labelCol = document.createElement('div');
     labelCol.className = 'settings-field-labelcol';
     const label = document.createElement('label');
@@ -151,7 +128,6 @@ export function renderDirField(field, value, config) {
     labelCol.appendChild(label);
     row.appendChild(labelCol);
 
-    // INPUT COLUMN
     const inputWrap = document.createElement('div');
     inputWrap.className = 'settings-field-inputwrap';
 
@@ -159,43 +135,25 @@ export function renderDirField(field, value, config) {
     input.type = 'text';
     input.name = field.key;
     input.className = 'input field-input';
-    input.readOnly = !!field.modal;
 
-    // Set initial value from config or fallback
-    let inputValue = config && config[field.key] ? config[field.key] : value ?? '';
+    let inputValue = immediateData && immediateData[field.key] ? immediateData[field.key] : '';
     input.value = inputValue;
 
-    // If we have a modal defined AND not inside a modal-open context (to avoid recursion)
-    if (
-        field.modal &&
-        typeof Modals[field.modal] === 'function' &&
-        !document.body.classList.contains('modal-open')
-    ) {
-        input.addEventListener('click', async () => {
-            try {
-                // Wait for modal selection to finish and get new path
-                const selectedPath = await Modals[field.modal](input.value || '/', config);
-
-                if (selectedPath && selectedPath !== input.value) {
-                    input.value = selectedPath;
-                    if (config) {
-                        config[field.key] = selectedPath;
-                    }
-                    // Optional: trigger any change listeners or custom event
-                    const event = new Event('input', { bubbles: true });
-                    input.dispatchEvent(event);
-                }
-            } catch (e) {
-                console.error('Directory picker modal failed or was canceled', e);
+    input.addEventListener('click', async () => {
+        if (typeof directoryPickerModal === 'function') {
+            const selectedPath = await directoryPickerModal(input.value || '/');
+            if (selectedPath && selectedPath !== input.value) {
+                input.value = selectedPath;
+                immediateData[field.key] = selectedPath;
+                const event = new Event('input', { bubbles: true });
+                input.dispatchEvent(event);
             }
-        });
-    }
+        }
+    });
 
-    if (config) {
-        input.addEventListener('input', () => {
-            config[field.key] = input.value;
-        });
-    }
+    input.addEventListener('input', () => {
+        immediateData[field.key] = input.value;
+    });
 
     inputWrap.appendChild(input);
 
@@ -210,11 +168,11 @@ export function renderDirField(field, value, config) {
     return row;
 }
 
-export function renderDirListField(field, value = [], config) {
+export function renderDirListField(field, immediateData) {
+    let value = immediateData[field.key] ?? [];
     const row = document.createElement('div');
     row.className = 'settings-field-row field-dir-list';
 
-    // --- LABEL COLUMN ---
     const labelCol = document.createElement('div');
     labelCol.className = 'settings-field-labelcol dirlist-label-col';
 
@@ -223,24 +181,21 @@ export function renderDirListField(field, value = [], config) {
     label.htmlFor = field.key;
     labelCol.appendChild(label);
 
-    // Filler flex so button is pushed to bottom of labelCol
     const filler = document.createElement('div');
     filler.style.flex = '1';
     labelCol.appendChild(filler);
 
-    // Add Directory button
     const addBtn = document.createElement('button');
     addBtn.type = 'button';
     addBtn.className = 'btn add-btn';
     addBtn.textContent = 'Add Directory';
     addBtn.onclick = () => {
         value.push('');
-        if (config) config[field.key] = [...value];
+        immediateData[field.key] = [...value];
         renderRows();
     };
     labelCol.appendChild(addBtn);
 
-    // --- INPUT COLUMN ---
     const inputWrap = document.createElement('div');
     inputWrap.className = 'settings-field-inputwrap dirlist-input-col';
 
@@ -257,22 +212,23 @@ export function renderDirListField(field, value = [], config) {
             input.className = 'input field-input';
             input.name = field.key;
             input.value = dir || '';
-            if (field.modal === 'directoryPickerModal') {
-                input.readOnly = true;
-                input.addEventListener('click', async () => {
-                    // The modal returns a path (string), NOT an input element!
-                    const selectedPath = await Modals.directoryPickerModal(input.value || '/');
+
+            input.readOnly = false;
+            input.addEventListener('click', async () => {
+                if (typeof directoryPickerModal === 'function') {
+                    const selectedPath = await directoryPickerModal(input.value || '/');
                     if (selectedPath && selectedPath !== input.value) {
                         input.value = selectedPath;
                         value[idx] = selectedPath;
-                        if (config) config[field.key] = [...value];
+                        immediateData[field.key] = [...value];
                         input.dispatchEvent(new Event('input', { bubbles: true }));
                     }
-                });
-            }
+                }
+            });
+
             input.addEventListener('input', () => {
                 value[idx] = input.value;
-                if (config) config[field.key] = [...value];
+                immediateData[field.key] = [...value];
             });
             item.appendChild(input);
 
@@ -284,7 +240,7 @@ export function renderDirListField(field, value = [], config) {
             removeBtn.addEventListener('click', () => {
                 if (value.length > 1) {
                     value.splice(idx, 1);
-                    if (config) config[field.key] = [...value];
+                    immediateData[field.key] = [...value];
                     renderRows();
                     const form = row.closest('form');
                     if (form) form.dispatchEvent(new Event('input', { bubbles: true }));
@@ -310,15 +266,17 @@ export function renderDirListField(field, value = [], config) {
     return row;
 }
 
+// Drag/drop and options functions (no logic omitted):
+
 function isTouchDevice() {
     return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 }
 
-export function renderDirListDragDropField(field, value = [], config) {
+export function renderDirListDragDropField(field, immediateData) {
+    let value = immediateData[field.key] ?? [];
     const row = document.createElement('div');
     row.className = 'settings-field-row field-dir-list';
 
-    // --- LABEL COLUMN ---
     const labelCol = document.createElement('div');
     labelCol.className = 'settings-field-labelcol dirlist-label-col';
 
@@ -331,26 +289,23 @@ export function renderDirListDragDropField(field, value = [], config) {
     filler.style.flex = '1';
     labelCol.appendChild(filler);
 
-    // Add Directory button
     const addBtn = document.createElement('button');
     addBtn.type = 'button';
     addBtn.className = 'btn add-btn';
     addBtn.textContent = 'Add Directory';
     addBtn.onclick = () => {
         value.push('');
-        if (config) config[field.key] = [...value];
+        immediateData[field.key] = [...value];
         renderRows();
     };
     labelCol.appendChild(addBtn);
 
-    // --- INPUT COLUMN ---
     const inputWrap = document.createElement('div');
     inputWrap.className = 'settings-field-inputwrap dirlist-input-col';
 
     if (!Array.isArray(value) || value.length === 0) value = [''];
     const useTouch = isTouchDevice();
 
-    // Used for row move animation on touch
     let lastMovedIndex = null;
 
     function animateButtonPop(btn) {
@@ -361,7 +316,6 @@ export function renderDirListDragDropField(field, value = [], config) {
     }
 
     function renderRows() {
-        // 1. Save previous row positions for FLIP
         const oldPositions = [];
         Array.from(inputWrap.children).forEach((node) => {
             if (node.classList?.contains('field-dragdrop-row')) {
@@ -394,7 +348,7 @@ export function renderDirListDragDropField(field, value = [], config) {
                     animateButtonPop(upBtn);
                     if (idx > 0) {
                         [value[idx - 1], value[idx]] = [value[idx], value[idx - 1]];
-                        if (config) config[field.key] = [...value];
+                        immediateData[field.key] = [...value];
                         lastMovedIndex = idx - 1;
                         renderRows();
                     }
@@ -411,7 +365,7 @@ export function renderDirListDragDropField(field, value = [], config) {
                     animateButtonPop(downBtn);
                     if (idx < value.length - 1) {
                         [value[idx + 1], value[idx]] = [value[idx], value[idx + 1]];
-                        if (config) config[field.key] = [...value];
+                        immediateData[field.key] = [...value];
                         lastMovedIndex = idx + 1;
                         renderRows();
                     }
@@ -420,7 +374,6 @@ export function renderDirListDragDropField(field, value = [], config) {
 
                 item.appendChild(upDownWrap);
 
-                // Add move animation class if this is the row that was just moved
                 if (idx === lastMovedIndex) {
                     item.classList.add('row-just-moved');
                     setTimeout(() => item.classList.remove('row-just-moved'), 380);
@@ -438,21 +391,22 @@ export function renderDirListDragDropField(field, value = [], config) {
             input.className = 'input field-input';
             input.name = field.key;
             input.value = dir || '';
-            if (field.modal === 'directoryPickerModal') {
-                input.readOnly = true;
-                input.addEventListener('click', async () => {
-                    const selectedPath = await Modals.directoryPickerModal(input.value || '/');
+
+            input.readOnly = false;
+            input.addEventListener('click', async () => {
+                if (typeof directoryPickerModal === 'function') {
+                    const selectedPath = await directoryPickerModal(input.value || '/');
                     if (selectedPath && selectedPath !== input.value) {
                         input.value = selectedPath;
                         value[idx] = selectedPath;
-                        if (config) config[field.key] = [...value];
+                        immediateData[field.key] = [...value];
                         input.dispatchEvent(new Event('input', { bubbles: true }));
                     }
-                });
-            }
+                }
+            });
             input.addEventListener('input', () => {
                 value[idx] = input.value;
-                if (config) config[field.key] = [...value];
+                immediateData[field.key] = [...value];
             });
             item.appendChild(input);
 
@@ -465,7 +419,7 @@ export function renderDirListDragDropField(field, value = [], config) {
             removeBtn.addEventListener('click', () => {
                 if (value.length > 1) {
                     value.splice(idx, 1);
-                    if (config) config[field.key] = [...value];
+                    immediateData[field.key] = [...value];
                     renderRows();
                     const form = row.closest('form');
                     if (form) form.dispatchEvent(new Event('input', { bubbles: true }));
@@ -476,12 +430,18 @@ export function renderDirListDragDropField(field, value = [], config) {
             inputWrap.appendChild(item);
         });
 
-        // 2. FLIP Animation for row moves (touch only, fallback for desktop)
+        if (field.description) {
+            const help = document.createElement('div');
+            help.className = 'field-help-text';
+            help.textContent = field.description;
+            inputWrap.appendChild(help);
+        }
+
+        // FLIP animation for drag/drop
         if (useTouch && oldPositions.length > 0) {
             const newNodes = Array.from(inputWrap.children).filter((el) =>
                 el.classList?.contains('field-dragdrop-row')
             );
-            // 1. Set initial transform, no transition yet
             const animList = [];
             newNodes.forEach((node) => {
                 node.style.transition = 'none';
@@ -499,11 +459,7 @@ export function renderDirListDragDropField(field, value = [], config) {
                 }
                 animList.push({ node, key, dy });
             });
-
-            // 2. Force browser to recognize initial state
             animList.forEach(({ node }) => void node.offsetWidth);
-
-            // 3. Animate to new position
             requestAnimationFrame(() => {
                 animList.forEach(({ node }) => {
                     node.style.transition = 'transform 0.38s cubic-bezier(.44,1.13,.73,.98)';
@@ -512,22 +468,13 @@ export function renderDirListDragDropField(field, value = [], config) {
             });
         }
 
-        // 3. Drag-and-drop (desktop only)
+        // Drag-and-drop (desktop only)
         if (!useTouch) {
-            makeDraggable(inputWrap, value, config, field, renderRows);
-        }
-
-        // 4. Field description/help
-        if (field.description) {
-            const help = document.createElement('div');
-            help.className = 'field-help-text';
-            help.textContent = field.description;
-            inputWrap.appendChild(help);
+            makeDraggable(inputWrap, value, immediateData, field, renderRows);
         }
     }
 
-    // Desktop drag and drop logic
-    function makeDraggable(list, valueArr, configObj, fieldObj, rerender) {
+    function makeDraggable(list, valueArr, immediateDataObj, fieldObj, rerender) {
         let dragged = null;
         list.querySelectorAll('.field-dragdrop-row').forEach((item) => {
             item.setAttribute('draggable', true);
@@ -580,7 +527,7 @@ export function renderDirListDragDropField(field, value = [], config) {
                 if (JSON.stringify(valueArr) !== JSON.stringify(newOrder)) {
                     valueArr.length = 0;
                     newOrder.forEach((v) => valueArr.push(v));
-                    if (configObj) configObj[fieldObj.key] = [...valueArr];
+                    if (immediateDataObj) immediateDataObj[fieldObj.key] = [...valueArr];
                     if (typeof rerender === 'function') rerender();
                 }
             });
@@ -593,44 +540,39 @@ export function renderDirListDragDropField(field, value = [], config) {
     return row;
 }
 
-export function renderDirListOptionsField(field, value = [], config) {
-    // Markup/class structure matches renderDirListDragDropField except: no drag handle, select dropdown for options.
+// Options variant:
+export function renderDirListOptionsField(field, immediateData) {
+    let value = immediateData[field.key] ?? [];
     const row = document.createElement('div');
     row.className = 'settings-field-row field-dir-list';
 
-    // --- LABEL COLUMN ---
     const labelCol = document.createElement('div');
     labelCol.className = 'settings-field-labelcol dirlist-label-col';
 
-    // 1. Label
     const label = document.createElement('label');
     label.textContent = field.label;
     label.htmlFor = field.key;
     labelCol.appendChild(label);
 
-    // 2. Filler flex so button is pushed to bottom of labelCol
     const filler = document.createElement('div');
     filler.style.flex = '1';
     labelCol.appendChild(filler);
 
-    // 3. Add Directory button
     const addBtn = document.createElement('button');
     addBtn.type = 'button';
     addBtn.className = 'btn add-btn';
     addBtn.textContent = 'Add Directory';
     addBtn.onclick = () => {
-        // If options, store as { path, mode }, else as string
         if (field.options && field.options.length) {
             value.push({ path: '', mode: field.options[0] });
         } else {
             value.push('');
         }
-        if (config) config[field.key] = [...value];
+        immediateData[field.key] = [...value];
         renderRows();
     };
     labelCol.appendChild(addBtn);
 
-    // --- INPUT COLUMN ---
     const inputWrap = document.createElement('div');
     inputWrap.className = 'settings-field-inputwrap dirlist-input-col';
 
@@ -647,18 +589,17 @@ export function renderDirListOptionsField(field, value = [], config) {
         value.forEach((dir, idx) => {
             const item = document.createElement('div');
             item.className = 'field-dragdrop-row dir-list-option-row';
-            // No drag handle!
 
-            // Directory input
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'input field-input';
             input.name = field.key;
             input.value = typeof dir === 'object' && dir !== null ? dir.path || '' : dir || '';
-            if (field.modal === 'directoryPickerModal') {
-                input.readOnly = true;
-                input.addEventListener('click', async () => {
-                    const selectedPath = await Modals.directoryPickerModal(input.value || '/');
+
+            input.readOnly = false;
+            input.addEventListener('click', async () => {
+                if (typeof directoryPickerModal === 'function') {
+                    const selectedPath = await directoryPickerModal(input.value || '/');
                     if (selectedPath && selectedPath !== input.value) {
                         input.value = selectedPath;
                         if (typeof dir === 'object' && dir !== null) {
@@ -666,18 +607,19 @@ export function renderDirListOptionsField(field, value = [], config) {
                         } else {
                             value[idx] = selectedPath;
                         }
-                        if (config) config[field.key] = [...value];
+                        immediateData[field.key] = [...value];
                         input.dispatchEvent(new Event('input', { bubbles: true }));
                     }
-                });
-            }
+                }
+            });
+
             input.addEventListener('input', () => {
                 if (typeof dir === 'object' && dir !== null) {
                     dir.path = input.value;
                 } else {
                     value[idx] = input.value;
                 }
-                if (config) config[field.key] = [...value];
+                immediateData[field.key] = [...value];
             });
             item.appendChild(input);
 
@@ -706,12 +648,11 @@ export function renderDirListOptionsField(field, value = [], config) {
                     } else {
                         value[idx] = { path: input.value, mode: select.value };
                     }
-                    if (config) config[field.key] = [...value];
+                    immediateData[field.key] = [...value];
                 });
                 item.appendChild(select);
             }
 
-            // Remove button
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
             removeBtn.className = 'btn btn--remove-item remove-btn';
@@ -720,7 +661,7 @@ export function renderDirListOptionsField(field, value = [], config) {
             removeBtn.addEventListener('click', () => {
                 if (value.length > 1) {
                     value.splice(idx, 1);
-                    if (config) config[field.key] = [...value];
+                    immediateData[field.key] = [...value];
                     renderRows();
                     const form = row.closest('form');
                     if (form) form.dispatchEvent(new Event('input', { bubbles: true }));
@@ -738,7 +679,6 @@ export function renderDirListOptionsField(field, value = [], config) {
         }
     }
 
-    // Helper to humanize mode option names
     function humanize(str) {
         if (!str) return '';
         return str.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());

@@ -1,31 +1,34 @@
-export function renderColorListField(field, value = [], config) {
+import { fetchPosterAssetList } from '../../api.js';
+
+export function renderColorListField(field, immediateData, config) {
+    // 'immediateData' is always the config object for the module
+    // 'config' is also the module config (redundant but matches dispatcher)
+
+    // If the field doesn't exist, initialize it as an empty array
+    if (!Array.isArray(immediateData[field.key])) {
+        immediateData[field.key] = [];
+    }
+    let colorArray = immediateData[field.key].slice();
+
     // Should show poster border preview?
     const shouldPreview = String(field.preview) === 'true';
 
-    // Store available posters (cached)
+    // Poster asset state
     let posterAssets = [];
     let posterFetchPromise = null;
 
-    // Fetch and cache all poster asset filenames
     function fetchPosterAssets() {
         if (posterFetchPromise) return posterFetchPromise;
-        posterFetchPromise = fetch('/api/poster_assets')
-            .then((r) => r.json())
+        posterFetchPromise = fetchPosterAssetList()
             .then((arr) => (Array.isArray(arr) ? arr : []))
             .then((arr) => (posterAssets = arr))
             .catch(() => (posterAssets = []));
         return posterFetchPromise;
     }
 
-    // Utility: Pick random poster asset, never default to poster.jpg
-    function getRandomPoster() {
-        if (posterAssets.length) {
-            return (
-                '/web/static/assets/' +
-                posterAssets[Math.floor(Math.random() * posterAssets.length)]
-            );
-        }
-        return null;
+    function getPosterByIndex(idx) {
+        if (!posterAssets.length) return null;
+        return '/web/static/assets/' + posterAssets[idx % posterAssets.length];
     }
 
     // Utility: Convert hex to RGB
@@ -40,57 +43,7 @@ export function renderColorListField(field, value = [], config) {
         return { r: (num >> 16) & 255, g: (num >> 8) & 255, b: num & 255 };
     }
 
-    // Detect artwork bounds inside a white border
-    function detectArtworkBounds(img, cb) {
-        const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
-        const ctx = canvas.getContext('2d');
-        ctx.drawImage(img, 0, 0);
-        const data = ctx.getImageData(0, 0, img.width, img.height).data;
-        const whiteT = 235,
-            pad = 0;
-        function isWhite(i) {
-            const r = data[i],
-                g = data[i + 1],
-                b = data[i + 2];
-            return (
-                r > whiteT &&
-                g > whiteT &&
-                b > whiteT &&
-                Math.abs(r - g) < 14 &&
-                Math.abs(r - b) < 14 &&
-                Math.abs(g - b) < 14
-            );
-        }
-        let left = 0,
-            right = img.width - 1,
-            top = 0,
-            bottom = img.height - 1;
-        outer: for (; left < img.width; ++left) {
-            for (let y = 0; y < img.height; ++y)
-                if (!isWhite((y * img.width + left) * 4)) break outer;
-        }
-        outer: for (; right > left; --right) {
-            for (let y = 0; y < img.height; ++y)
-                if (!isWhite((y * img.width + right) * 4)) break outer;
-        }
-        outer: for (; top < img.height; ++top) {
-            for (let x = left; x <= right; ++x)
-                if (!isWhite((top * img.width + x) * 4)) break outer;
-        }
-        outer: for (; bottom > top; --bottom) {
-            for (let x = left; x <= right; ++x)
-                if (!isWhite((bottom * img.width + x) * 4)) break outer;
-        }
-        left = Math.max(0, left - pad);
-        right = Math.min(img.width - 1, right + pad);
-        top = Math.max(0, top - pad);
-        bottom = Math.min(img.height - 1, bottom + pad);
-        cb({ left, right, top, bottom, width: right - left + 1, height: bottom - top + 1 });
-    }
-
-    // Canvas: Replace white border with color
+    // --- Canvas border coloring ---
     function renderPosterPreviewCanvas(imgUrl, borderColor, callback, options = {}) {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
@@ -132,54 +85,10 @@ export function renderColorListField(field, value = [], config) {
         img.src = imgUrl;
     }
 
-    // Canvas: Crop to detected artwork only (no border)
-    function renderNoBorderPreview(imgUrl, callback, options = {}) {
-        const img = new window.Image();
-        img.crossOrigin = 'anonymous';
-        img.onload = function () {
-            detectArtworkBounds(img, (bounds) => {
-                const canvas = document.createElement('canvas');
-                canvas.width = bounds.width;
-                canvas.height = bounds.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(
-                    img,
-                    bounds.left,
-                    bounds.top,
-                    bounds.width,
-                    bounds.height,
-                    0,
-                    0,
-                    bounds.width,
-                    bounds.height
-                );
-                callback(canvas);
-            });
-        };
-        img.src = imgUrl;
-    }
-
-    // Initialize posters, and color objects
-    async function ensureInitialPostersAndRender() {
-        await fetchPosterAssets();
-        if (!Array.isArray(value)) value = [];
-        value = value.map((v) =>
-            typeof v === 'string'
-                ? { color: v, poster: getRandomPoster() }
-                : v && v.color && !v.poster
-                ? { color: v.color, poster: getRandomPoster() }
-                : v
-        );
-        if (value.length && value.some((v) => !v.poster)) {
-            value = value.map((v) => (v.poster ? v : { ...v, poster: getRandomPoster() }));
-        }
-        renderColors();
-        if (shouldPreview) updateBorderPreview();
-    }
-
-    // UI Structure
+    // --- UI Structure ---
     const row = document.createElement('div');
     row.className = 'settings-field-row field-dir-list field-color-list';
+
     const labelCol = document.createElement('div');
     labelCol.className = 'settings-field-labelcol dirlist-label-col';
     const label = document.createElement('label');
@@ -195,11 +104,9 @@ export function renderColorListField(field, value = [], config) {
     addBtn.textContent = 'Add Color';
     addBtn.onclick = async () => {
         await fetchPosterAssets();
-        const poster = getRandomPoster();
-        if (!poster) return;
-        value.push({ color: '#ffffff', poster });
+        colorArray.push('#ffffff');
+        saveConfig();
         renderColors();
-        if (config) config[field.key] = value.slice();
         if (shouldPreview) updateBorderPreview();
     };
     labelCol.appendChild(addBtn);
@@ -224,22 +131,30 @@ export function renderColorListField(field, value = [], config) {
     help.textContent = field.description || '';
     inputWrap.appendChild(help);
 
+    function saveConfig() {
+        // Save only flat array
+        immediateData[field.key] = colorArray.slice();
+        if (config) config[field.key] = colorArray.slice();
+    }
+
     function renderColors() {
         colorsDiv.innerHTML = '';
-        value.forEach((v, idx) => {
+        colorArray.forEach((color, idx) => {
             const swatch = document.createElement('div');
             swatch.className = 'color-picker-swatch';
 
             const input = document.createElement('input');
             input.type = 'color';
-            input.value = v.color || '#ffffff';
+            input.value = color || '#ffffff';
             input.addEventListener('change', () => {
-                value[idx].color = input.value;
-                if (config) config[field.key] = value.slice();
+                colorArray[idx] = input.value;
+                saveConfig();
+                renderColors();
                 if (shouldPreview) updateBorderPreview();
             });
             input.addEventListener('input', () => {
-                value[idx].color = input.value;
+                colorArray[idx] = input.value;
+                saveConfig();
                 if (shouldPreview) updateBorderPreview();
             });
 
@@ -248,9 +163,9 @@ export function renderColorListField(field, value = [], config) {
             removeBtn.className = 'remove-btn';
             removeBtn.textContent = '−';
             removeBtn.onclick = () => {
-                value.splice(idx, 1);
+                colorArray.splice(idx, 1);
+                saveConfig();
                 renderColors();
-                if (config) config[field.key] = value.slice();
                 if (shouldPreview) updateBorderPreview();
             };
 
@@ -264,18 +179,18 @@ export function renderColorListField(field, value = [], config) {
     function updateBorderPreview() {
         if (!previewWrap) return;
         previewWrap.innerHTML = '';
-        // Remove any old notifications before re-adding
         let oldNote = inputWrap.querySelector('.no-border-notification');
         if (oldNote) oldNote.remove();
 
-        if (value.length && posterAssets.length) {
-            value.forEach((v) => {
-                if (!v.poster) return;
+        if (colorArray.length && posterAssets.length) {
+            colorArray.forEach((color, idx) => {
+                const poster = getPosterByIndex(idx);
+                if (!poster) return;
                 const previewDiv = document.createElement('div');
                 previewDiv.className = 'poster-preview-container';
                 renderPosterPreviewCanvas(
-                    v.poster,
-                    v.color || '#ffffff',
+                    poster,
+                    color || '#ffffff',
                     (canvas) => {
                         canvas.className = 'poster-preview-img';
                         previewDiv.appendChild(canvas);
@@ -288,10 +203,11 @@ export function renderColorListField(field, value = [], config) {
             // No colors: show blank artwork, random poster
             const previewDiv = document.createElement('div');
             previewDiv.className = 'poster-preview-container';
-            const poster = getRandomPoster();
+            const poster = getPosterByIndex(0);
             if (!poster) return;
-            renderNoBorderPreview(
+            renderPosterPreviewCanvas(
                 poster,
+                '#ffffff',
                 (canvas) => {
                     canvas.className = 'poster-preview-img';
                     previewDiv.appendChild(canvas);
@@ -304,18 +220,23 @@ export function renderColorListField(field, value = [], config) {
             const note = document.createElement('div');
             note.className = 'no-border-notification';
             note.textContent = 'No colors selected. The white border will be removed.';
-            // Insert notification before help/description
             inputWrap.insertBefore(note, help);
         }
     }
 
     row.appendChild(inputWrap);
-    // Initial fetch and migration—set up all posters on first load!
-    ensureInitialPostersAndRender();
+
+    // On load, fetch assets and render
+    (async () => {
+        await fetchPosterAssets();
+        renderColors();
+        if (shouldPreview) updateBorderPreview();
+    })();
+
     return row;
 }
 
-export function renderColorField(field, value, config) {
+export function renderColorField(field, immediateData, moduleConfig) {
     // Row structure
     const row = document.createElement('div');
     row.className = 'settings-field-row field-color';
@@ -340,12 +261,15 @@ export function renderColorField(field, value, config) {
 
     const input = document.createElement('input');
     input.type = 'color';
-    input.value = value && typeof value === 'string' ? value : '#ffffff';
+    input.value =
+        immediateData[field.key] && typeof immediateData[field.key] === 'string'
+            ? immediateData[field.key]
+            : '#ffffff';
     input.addEventListener('change', () => {
-        if (config) config[field.key] = input.value;
+        immediateData[field.key] = input.value;
     });
     input.addEventListener('input', () => {
-        if (config) config[field.key] = input.value;
+        immediateData[field.key] = input.value;
     });
     swatch.appendChild(input);
 

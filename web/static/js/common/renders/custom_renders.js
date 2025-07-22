@@ -1,19 +1,14 @@
 import { openModal } from '../modals.js';
 import { markDirty } from '../../util.js';
 
-export function renderGDriveCustomField(field, value, config, rootConfig) {
-    config = config || arguments[3];
-    value = Array.isArray(config?.[field.key])
-        ? config[field.key]
-        : Array.isArray(value)
-        ? value
-        : [];
+// GDrive Custom Renderer
+export function renderGDriveCustomField(field, immediateData, moduleConfig, rootConfig) {
+    let value = Array.isArray(immediateData[field.key]) ? immediateData[field.key] : [];
+
     const subfields = Array.isArray(field.fields) ? field.fields : [];
-    // --- Outer container
     const row = document.createElement('div');
     row.className = 'settings-field-row';
 
-    // --- Label
     const labelCol = document.createElement('div');
     labelCol.className = 'settings-field-labelcol';
     const label = document.createElement('label');
@@ -22,7 +17,6 @@ export function renderGDriveCustomField(field, value, config, rootConfig) {
     labelCol.appendChild(label);
     row.appendChild(labelCol);
 
-    // --- Main content
     const inputWrap = document.createElement('div');
     inputWrap.className = 'settings-field-inputwrap';
 
@@ -33,12 +27,10 @@ export function renderGDriveCustomField(field, value, config, rootConfig) {
         inputWrap.appendChild(desc);
     }
 
-    // --- Card list
     const listArea = document.createElement('div');
     listArea.className = 'settings-card-list';
     inputWrap.appendChild(listArea);
 
-    // --- Card list rendering
     function renderList() {
         listArea.innerHTML = '';
 
@@ -72,15 +64,14 @@ export function renderGDriveCustomField(field, value, config, rootConfig) {
                                 <span class="settings-value">${item.location || ''}</span>`;
             card.appendChild(locRow);
 
-            // Edit behavior (always pass correct context to openEditModal)
             card.tabIndex = 0;
             card.setAttribute('role', 'button');
             card.setAttribute('aria-label', 'Edit Google Drive Entry');
             card.addEventListener('click', () =>
                 openEditModal(idx, {
-                    value,
+                    immediateData,
                     field,
-                    config,
+                    moduleConfig,
                     subfields,
                     rootConfig,
                     buttonHandler: gdriveButtonHandler(idx),
@@ -90,9 +81,9 @@ export function renderGDriveCustomField(field, value, config, rootConfig) {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     openEditModal(idx, {
-                        value,
+                        immediateData,
                         field,
-                        config,
+                        moduleConfig,
                         subfields,
                         rootConfig,
                         buttonHandler: gdriveButtonHandler(idx),
@@ -106,7 +97,6 @@ export function renderGDriveCustomField(field, value, config, rootConfig) {
         listArea.appendChild(createAddCard());
     }
 
-    // --- Add Card
     function createAddCard() {
         const addCard = document.createElement('div');
         addCard.className = 'settings-entry-card settings-add-card';
@@ -115,9 +105,9 @@ export function renderGDriveCustomField(field, value, config, rootConfig) {
         addCard.setAttribute('aria-label', `Add ${field.label.replace(/s$/, '')}`);
         addCard.addEventListener('click', () =>
             openEditModal(null, {
-                value,
+                immediateData,
                 field,
-                config,
+                moduleConfig,
                 subfields,
                 rootConfig,
                 buttonHandler: gdriveButtonHandler(null),
@@ -127,9 +117,9 @@ export function renderGDriveCustomField(field, value, config, rootConfig) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 openEditModal(null, {
-                    value,
+                    immediateData,
                     field,
-                    config,
+                    moduleConfig,
                     subfields,
                     rootConfig,
                     buttonHandler: gdriveButtonHandler(null),
@@ -157,26 +147,27 @@ export function renderGDriveCustomField(field, value, config, rootConfig) {
                         else entryObj[sf.key] = input.value;
                     }
                 });
-                // 2. Only update the array at config[field.key], never assign entryObj to config directly!
                 if (typeof idx === 'number') {
                     value[idx] = entryObj;
                 } else {
                     value.push(entryObj);
                 }
-
-                config[field.key] = value.slice();
-                markDirty();
+                const prev = JSON.stringify(immediateData[field.key]);
+                immediateData[field.key] = value.slice();
+                const curr = JSON.stringify(immediateData[field.key]);
+                if (prev !== curr) markDirty();
                 renderList();
                 closeModal();
             },
             ...(typeof idx === 'number' && {
                 'delete-modal-btn': ({ closeModal }) => {
                     value.splice(idx, 1);
-                    config[field.key] = value.slice();
-                    markDirty();
+                    const prev = JSON.stringify(immediateData[field.key]);
+                    immediateData[field.key] = value.slice();
+                    const curr = JSON.stringify(immediateData[field.key]);
+                    if (prev !== curr) markDirty();
                     renderList();
                     closeModal();
-                    // Don't need markDirty() or closeModal() here anymore!
                 },
             }),
         };
@@ -186,20 +177,13 @@ export function renderGDriveCustomField(field, value, config, rootConfig) {
     return row;
 }
 
-export function renderReplacerrCustomField(field, value, config) {
-    config = config || arguments[3];
-    value = Array.isArray(config?.[field.key])
-        ? config[field.key]
-        : Array.isArray(value)
-        ? value
-        : [];
+// Replacerr Custom Renderer
+export function renderReplacerrCustomField(field, immediateData, moduleConfig, rootConfig) {
+    let value = Array.isArray(immediateData[field.key]) ? immediateData[field.key] : [];
     const subfields = Array.isArray(field.fields) ? field.fields : [];
-
-    // --- Outer container: settings field row
     const row = document.createElement('div');
     row.className = 'settings-field-row';
 
-    // --- Label column
     const labelCol = document.createElement('div');
     labelCol.className = 'settings-field-labelcol';
     const label = document.createElement('label');
@@ -208,7 +192,6 @@ export function renderReplacerrCustomField(field, value, config) {
     labelCol.appendChild(label);
     row.appendChild(labelCol);
 
-    // --- Main content column
     const inputWrap = document.createElement('div');
     inputWrap.className = 'settings-field-inputwrap';
 
@@ -219,26 +202,21 @@ export function renderReplacerrCustomField(field, value, config) {
         inputWrap.appendChild(desc);
     }
 
-    // --- Holidays card-list (flex row of cards)
     const listArea = document.createElement('div');
     listArea.className = 'settings-card-list twocol';
     inputWrap.appendChild(listArea);
 
     function renderList() {
         listArea.innerHTML = '';
-
         if (!Array.isArray(value) || !value.length) {
-            // Show add button only if empty
             listArea.appendChild(createAddCard());
             return;
         }
 
-        // Render each holiday as a card
         value.forEach((item, idx) => {
             const card = document.createElement('div');
             card.className = 'settings-entry-card';
 
-            // Name row (main)
             const nameRow = document.createElement('div');
             nameRow.className = 'settings-entry-row settings-entry-main';
             const nameVal = document.createElement('span');
@@ -247,7 +225,6 @@ export function renderReplacerrCustomField(field, value, config) {
             nameRow.appendChild(nameVal);
             card.appendChild(nameRow);
 
-            // Schedule row
             const schedRow = document.createElement('div');
             schedRow.className = 'settings-entry-row';
             const schedLabel = document.createElement('span');
@@ -255,7 +232,6 @@ export function renderReplacerrCustomField(field, value, config) {
             schedLabel.textContent = 'Schedule:';
             const schedVal = document.createElement('span');
             schedVal.className = 'settings-value';
-            // Custom rendering for schedule: extract MM/DD–MM/DD if "range(MM/DD-MM/DD)"
             let schedText = '';
             if (typeof item.schedule === 'string') {
                 const m = item.schedule.match(
@@ -274,7 +250,6 @@ export function renderReplacerrCustomField(field, value, config) {
             schedRow.appendChild(schedVal);
             card.appendChild(schedRow);
 
-            // Colors row
             const colorRow = document.createElement('div');
             colorRow.className = 'settings-entry-row';
             const colorLabel = document.createElement('span');
@@ -293,18 +268,17 @@ export function renderReplacerrCustomField(field, value, config) {
             colorRow.appendChild(colorsWrap);
             card.appendChild(colorRow);
 
-            // Make card clickable for editing
             card.tabIndex = 0;
             card.setAttribute('role', 'button');
             card.setAttribute('aria-label', 'Edit Holiday');
             card.addEventListener('click', () =>
                 openEditModal(idx, {
-                    value,
+                    immediateData,
                     field,
-                    config,
+                    moduleConfig,
                     renderList,
                     subfields,
-                    rootConfig: null,
+                    rootConfig,
                     buttonHandler: replacerrButtonHandler(idx),
                 })
             );
@@ -312,12 +286,12 @@ export function renderReplacerrCustomField(field, value, config) {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     openEditModal(idx, {
-                        value,
+                        immediateData,
                         field,
-                        config,
+                        moduleConfig,
                         renderList,
                         subfields,
-                        rootConfig: null,
+                        rootConfig,
                         buttonHandler: replacerrButtonHandler(idx),
                     });
                 }
@@ -326,11 +300,9 @@ export function renderReplacerrCustomField(field, value, config) {
             listArea.appendChild(card);
         });
 
-        // Add “fat plus” card at the end
         listArea.appendChild(createAddCard());
     }
 
-    // Add card helper
     function createAddCard() {
         const addCard = document.createElement('div');
         addCard.className = 'settings-entry-card settings-add-card';
@@ -339,12 +311,12 @@ export function renderReplacerrCustomField(field, value, config) {
         addCard.setAttribute('aria-label', `Add ${field.label.replace(/s$/, '')}`);
         addCard.addEventListener('click', () =>
             openEditModal(null, {
-                value,
+                immediateData,
                 field,
-                config,
+                moduleConfig,
                 renderList,
                 subfields,
-                rootConfig: null,
+                rootConfig,
                 buttonHandler: replacerrButtonHandler(null),
             })
         );
@@ -352,12 +324,12 @@ export function renderReplacerrCustomField(field, value, config) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 openEditModal(null, {
-                    value,
+                    immediateData,
                     field,
-                    config,
+                    moduleConfig,
                     renderList,
                     subfields,
-                    rootConfig: null,
+                    rootConfig,
                     buttonHandler: replacerrButtonHandler(null),
                 });
             }
@@ -371,13 +343,10 @@ export function renderReplacerrCustomField(field, value, config) {
         return addCard;
     }
 
-    // ---- Custom save/delete handler: always builds full {name, schedule, color}
     function replacerrButtonHandler(idx) {
         return {
             'save-modal-btn': ({ modal, closeModal, schema, bodyDiv }) => {
-                // Name
                 const name = modal.querySelector('input[name="name"]')?.value?.trim() || '';
-                // Schedule (holiday_schedule type)
                 const fromMonth = modal.querySelector('#schedule-from-month')?.value || '';
                 const fromDay = modal.querySelector('#schedule-from-day')?.value || '';
                 const toMonth = modal.querySelector('#schedule-to-month')?.value || '';
@@ -386,7 +355,6 @@ export function renderReplacerrCustomField(field, value, config) {
                     fromMonth && fromDay && toMonth && toDay
                         ? `range(${fromMonth}/${fromDay}-${toMonth}/${toDay})`
                         : '';
-                // Color
                 const color = Array.from(
                     modal.querySelectorAll(
                         '.field-color-list .color-list-container input[type="color"]'
@@ -400,18 +368,20 @@ export function renderReplacerrCustomField(field, value, config) {
                 } else {
                     value.push(entryObj);
                 }
-                config[field.key] = value.slice();
-
-                markDirty();
+                const prev = JSON.stringify(immediateData[field.key]);
+                immediateData[field.key] = value.slice();
+                const curr = JSON.stringify(immediateData[field.key]);
+                if (prev !== curr) markDirty();
                 renderList();
                 closeModal();
             },
             ...(typeof idx === 'number' && {
                 'delete-modal-btn': ({ closeModal }) => {
                     value.splice(idx, 1);
-                    config[field.key] = value.slice();
-
-                    markDirty();
+                    const prev = JSON.stringify(immediateData[field.key]);
+                    immediateData[field.key] = value.slice();
+                    const curr = JSON.stringify(immediateData[field.key]);
+                    if (prev !== curr) markDirty();
                     renderList();
                     closeModal();
                 },
@@ -424,15 +394,10 @@ export function renderReplacerrCustomField(field, value, config) {
     return row;
 }
 
-export function renderUpgradinatorrCustomField(field, value = [], config, rootConfig) {
-    config = config || arguments[3];
-    value = Array.isArray(config?.[field.key])
-        ? config[field.key]
-        : Array.isArray(value)
-        ? value
-        : [];
+// Upgradinatorr Custom Renderer
+export function renderUpgradinatorrCustomField(field, immediateData, moduleConfig, rootConfig) {
+    let value = Array.isArray(immediateData[field.key]) ? immediateData[field.key] : [];
     const subfields = Array.isArray(field.fields) ? field.fields : [];
-
     const row = document.createElement('div');
     row.className = 'settings-field-row';
 
@@ -460,7 +425,6 @@ export function renderUpgradinatorrCustomField(field, value = [], config, rootCo
 
     function renderList() {
         listArea.innerHTML = '';
-
         if (!Array.isArray(value) || !value.length) {
             listArea.appendChild(createAddCard());
             return;
@@ -473,19 +437,15 @@ export function renderUpgradinatorrCustomField(field, value = [], config, rootCo
             subfields.forEach((sf) => {
                 if (sf.exclude_on_save) return;
 
-                // Only show fields for the correct instance type, if specified
                 if (
                     sf.show_if_instance_type &&
-                    rootConfig &&
-                    rootConfig.instances &&
                     item.instance &&
-                    (!rootConfig.instances[sf.show_if_instance_type] ||
-                        !(item.instance in rootConfig.instances[sf.show_if_instance_type]))
+                    sf.show_if_instance_type.toLowerCase() !==
+                        getInstanceType(item.instance, rootConfig)
                 ) {
                     return;
                 }
 
-                // Hide empty/null/undefined fields except for instance, count, tag_name
                 if (
                     (typeof item[sf.key] === 'undefined' ||
                         item[sf.key] === null ||
@@ -497,12 +457,11 @@ export function renderUpgradinatorrCustomField(field, value = [], config, rootCo
 
                 let fieldValue = item[sf.key];
                 if (Array.isArray(fieldValue)) fieldValue = fieldValue[0];
-
-                // Add percent symbol for season_monitored_threshold
                 if (sf.key === 'season_monitored_threshold') {
                     let percent = fieldValue;
-                    // Support string, int, or float, always show as 0–100 %
-                    if (typeof percent === 'string') percent = parseFloat(percent);
+                    if (typeof percent === 'string') percent = parseFloat(percent) * 100;
+                    else if (typeof percent === 'number' && !isNaN(percent))
+                        percent = percent * 100;
                     if (typeof percent === 'number' && !isNaN(percent)) {
                         percent = Math.round(percent);
                         fieldValue = percent + ' %';
@@ -510,7 +469,6 @@ export function renderUpgradinatorrCustomField(field, value = [], config, rootCo
                         fieldValue = '';
                     }
                 }
-
                 let fieldDiv, labelSpan, valueSpan;
                 if (sf.key === 'instance') {
                     fieldDiv = document.createElement('div');
@@ -543,9 +501,9 @@ export function renderUpgradinatorrCustomField(field, value = [], config, rootCo
             card.setAttribute('aria-label', 'Edit entry');
             card.addEventListener('click', () =>
                 openEditModal(idx, {
-                    value,
+                    immediateData,
                     field,
-                    config,
+                    moduleConfig,
                     subfields,
                     rootConfig,
                     buttonHandler: upgradinatorrButtonHandler(idx),
@@ -555,9 +513,9 @@ export function renderUpgradinatorrCustomField(field, value = [], config, rootCo
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     openEditModal(idx, {
-                        value,
+                        immediateData,
                         field,
-                        config,
+                        moduleConfig,
                         subfields,
                         rootConfig,
                         buttonHandler: upgradinatorrButtonHandler(idx),
@@ -579,9 +537,9 @@ export function renderUpgradinatorrCustomField(field, value = [], config, rootCo
         addCard.setAttribute('aria-label', `Add ${field.label.replace(/s$/, '')}`);
         addCard.addEventListener('click', () =>
             openEditModal(null, {
-                value,
+                immediateData,
                 field,
-                config,
+                moduleConfig,
                 subfields,
                 rootConfig,
                 buttonHandler: upgradinatorrButtonHandler(null),
@@ -591,9 +549,9 @@ export function renderUpgradinatorrCustomField(field, value = [], config, rootCo
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 openEditModal(null, {
-                    value,
+                    immediateData,
                     field,
-                    config,
+                    moduleConfig,
                     subfields,
                     rootConfig,
                     buttonHandler: upgradinatorrButtonHandler(null),
@@ -609,36 +567,69 @@ export function renderUpgradinatorrCustomField(field, value = [], config, rootCo
         return addCard;
     }
 
-    // ---- Custom save/delete handler for Upgradinatorr
+    function getInstanceType(instanceName, rootConfig) {
+        if (!rootConfig || !rootConfig.instances) return '';
+        for (const type of Object.keys(rootConfig.instances)) {
+            if (instanceName in (rootConfig.instances[type] || {})) return type;
+        }
+        return '';
+    }
+
     function upgradinatorrButtonHandler(idx) {
         return {
             'save-modal-btn': ({ modal, closeModal, schema, bodyDiv }) => {
                 const entryObj = {};
+                let instanceType = null;
                 schema.forEach((sf) => {
-                    if (sf.exclude_on_save) return;
-                    const input = bodyDiv.querySelector(`[name="${sf.key}"]`);
-                    if (input) {
-                        if (input.type === 'checkbox') entryObj[sf.key] = input.checked;
-                        else entryObj[sf.key] = input.value;
+                    if (sf.key === 'instance') {
+                        const instanceInput = bodyDiv.querySelector(`[name="${sf.key}"]`);
+                        if (instanceInput)
+                            instanceType = getInstanceType(instanceInput.value, rootConfig);
                     }
                 });
+                schema.forEach((sf) => {
+                    if (sf.exclude_on_save) return;
+                    if (
+                        sf.show_if_instance_type &&
+                        (!instanceType || sf.show_if_instance_type !== instanceType)
+                    ) {
+                        return;
+                    }
+                    const input = bodyDiv.querySelector(`[name="${sf.key}"]`);
+                    if (!input) return;
+                    if (input.type === 'checkbox') {
+                        entryObj[sf.key] = input.checked;
+                    } else if (sf.type === 'number') {
+                        entryObj[sf.key] = input.value === '' ? '' : parseInt(input.value, 10);
+                    } else if (sf.type === 'float') {
+                        entryObj[sf.key] =
+                            input.value === ''
+                                ? ''
+                                : Math.min(1, Math.max(0, parseFloat(input.value) / 100));
+                    } else {
+                        entryObj[sf.key] = input.value;
+                    }
+                });
+
                 if (typeof idx === 'number') {
                     value[idx] = entryObj;
                 } else {
                     value.push(entryObj);
                 }
-                config[field.key] = value.slice();
-
-                markDirty();
+                const prev = JSON.stringify(immediateData[field.key]);
+                immediateData[field.key] = value.slice();
+                const curr = JSON.stringify(immediateData[field.key]);
+                if (prev !== curr) markDirty();
                 renderList();
                 closeModal();
             },
             ...(typeof idx === 'number' && {
                 'delete-modal-btn': ({ closeModal }) => {
                     value.splice(idx, 1);
-                    config[field.key] = value.slice();
-
-                    markDirty();
+                    const prev = JSON.stringify(immediateData[field.key]);
+                    immediateData[field.key] = value.slice();
+                    const curr = JSON.stringify(immediateData[field.key]);
+                    if (prev !== curr) markDirty();
                     renderList();
                     closeModal();
                 },
@@ -651,30 +642,21 @@ export function renderUpgradinatorrCustomField(field, value = [], config, rootCo
     return row;
 }
 
-export function renderLabelarrCustomField(field, value, config, rootConfig) {
-    config = config || arguments[3];
-    value = Array.isArray(config?.[field.key])
-        ? config[field.key]
-        : Array.isArray(value)
-        ? value
-        : [];
-    const subfields = Array.isArray(field.fields) ? field.fields : [];
+// Labelarr Custom Renderer
+export function renderLabelarrCustomField(field, immediateData, moduleConfig, rootConfig) {
+    let value = Array.isArray(immediateData[field.key]) ? immediateData[field.key] : [];
 
-    // --- Outer container: settings field row
     const row = document.createElement('div');
     row.className = 'settings-field-row';
 
-    // --- Label column
     const labelCol = document.createElement('div');
     labelCol.className = 'settings-field-labelcol';
-
     const label = document.createElement('label');
     label.textContent = field.label;
     label.htmlFor = field.key;
     labelCol.appendChild(label);
     row.appendChild(labelCol);
 
-    // --- Main content column
     const inputWrap = document.createElement('div');
     inputWrap.className = 'settings-field-inputwrap';
 
@@ -685,15 +667,9 @@ export function renderLabelarrCustomField(field, value, config, rootConfig) {
         inputWrap.appendChild(desc);
     }
 
-    // --- Card-list (single column, full width)
     const listArea = document.createElement('div');
     listArea.className = 'settings-card-list';
     inputWrap.appendChild(listArea);
-
-    function humanize(str) {
-        if (!str) return '';
-        return str.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
-    }
 
     function renderList() {
         listArea.innerHTML = '';
@@ -707,16 +683,12 @@ export function renderLabelarrCustomField(field, value, config, rootConfig) {
             const card = document.createElement('div');
             card.className = 'settings-entry-card';
 
-            // --- App Instance ---
             const appRow = document.createElement('div');
             appRow.className = 'settings-entry-row settings-entry-main';
             appRow.innerHTML = `<span class="settings-label">App Instance:</span>
-                                <span class="settings-value">${humanize(
-                                    item.app_instance || ''
-                                )}</span>`;
+                                <span class="settings-value">${item.app_instance || ''}</span>`;
             card.appendChild(appRow);
 
-            // --- Labels row ---
             const labelsRow = document.createElement('div');
             labelsRow.className = 'settings-entry-row';
             labelsRow.innerHTML = `<span class="settings-label">Labels:</span>
@@ -727,29 +699,22 @@ export function renderLabelarrCustomField(field, value, config, rootConfig) {
                                    }</span>`;
             card.appendChild(labelsRow);
 
-            // --- Plex libraries block ---
-            if (Array.isArray(item.plex_instances)) {
+            if (Array.isArray(item.plex_instances) && item.plex_instances.length > 0) {
                 item.plex_instances.forEach((plex, pidx) => {
                     const plexRow = document.createElement('div');
                     plexRow.className = 'settings-entry-row settings-plexmap-block';
 
-                    // Label (same class for width alignment)
                     const plexLabel = document.createElement('span');
                     plexLabel.className = 'settings-label';
                     plexLabel.textContent = 'Plex Libraries:';
                     plexRow.appendChild(plexLabel);
 
-                    // Value wrap (align pill and names as single value field)
                     const valueWrap = document.createElement('span');
                     valueWrap.className = 'settings-value';
-
-                    // Pill
                     const pill = document.createElement('span');
                     pill.className = 'settings-plex-name plex-pill';
-                    pill.textContent = plex.instance ? humanize(plex.instance) : `Plex ${pidx + 1}`;
+                    pill.textContent = plex.instance ? plex.instance : `Plex ${pidx + 1}`;
                     valueWrap.appendChild(pill);
-
-                    // Library names (comma-separated, normal font)
                     const libNames = document.createElement('span');
                     libNames.className = 'settings-plex-libs';
                     libNames.textContent = Array.isArray(plex.library_names)
@@ -762,16 +727,16 @@ export function renderLabelarrCustomField(field, value, config, rootConfig) {
                 });
             }
 
-            // Make card clickable for editing (use local handler)
             card.tabIndex = 0;
             card.setAttribute('role', 'button');
             card.setAttribute('aria-label', 'Edit Mapping');
             card.addEventListener('click', () =>
                 openEditModal(idx, {
-                    value,
+                    immediateData,
                     field,
-                    config,
-                    subfields,
+                    moduleConfig,
+                    renderList,
+                    subfields: field.fields || [],
                     rootConfig,
                     buttonHandler: labelarrButtonHandler(idx),
                 })
@@ -780,10 +745,11 @@ export function renderLabelarrCustomField(field, value, config, rootConfig) {
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     openEditModal(idx, {
-                        value,
+                        immediateData,
                         field,
-                        config,
-                        subfields,
+                        moduleConfig,
+                        renderList,
+                        subfields: field.fields || [],
                         rootConfig,
                         buttonHandler: labelarrButtonHandler(idx),
                     });
@@ -793,23 +759,22 @@ export function renderLabelarrCustomField(field, value, config, rootConfig) {
             listArea.appendChild(card);
         });
 
-        // Add “fat plus” card at the end
         listArea.appendChild(createAddCard());
     }
 
-    // Add card helper
     function createAddCard() {
         const addCard = document.createElement('div');
         addCard.className = 'settings-entry-card settings-add-card';
         addCard.tabIndex = 0;
         addCard.setAttribute('role', 'button');
-        addCard.setAttribute('aria-label', `Add ${field.label.replace(/s$/, '')}`);
+        addCard.setAttribute('aria-label', 'Add Mapping');
         addCard.addEventListener('click', () =>
             openEditModal(null, {
-                value,
+                immediateData,
                 field,
-                config,
-                subfields,
+                moduleConfig,
+                renderList,
+                subfields: field.fields || [],
                 rootConfig,
                 buttonHandler: labelarrButtonHandler(null),
             })
@@ -818,16 +783,16 @@ export function renderLabelarrCustomField(field, value, config, rootConfig) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 openEditModal(null, {
-                    value,
+                    immediateData,
                     field,
-                    config,
-                    subfields,
+                    moduleConfig,
+                    renderList,
+                    subfields: field.fields || [],
                     rootConfig,
                     buttonHandler: labelarrButtonHandler(null),
                 });
             }
         });
-
         const plus = document.createElement('span');
         plus.className = 'card-add-plus';
         plus.textContent = '+';
@@ -836,36 +801,78 @@ export function renderLabelarrCustomField(field, value, config, rootConfig) {
         return addCard;
     }
 
-    // ---- Custom save/delete handler for Labelarr
     function labelarrButtonHandler(idx) {
         return {
             'save-modal-btn': ({ modal, closeModal, schema, bodyDiv }) => {
                 const entryObj = {};
-                schema.forEach((sf) => {
+                (schema || []).forEach((sf) => {
                     if (sf.exclude_on_save) return;
+
+                    if (sf.key === 'plex_instances' && sf.type === 'instances') {
+                        entryObj.plex_instances = [];
+                        const plexBlocks = bodyDiv.querySelectorAll(
+                            '.instance-block, .plex-instance-card'
+                        );
+                        plexBlocks.forEach((block) => {
+                            const chkLabel = block.querySelector('.instance-checkbox-container');
+                            const chk = chkLabel
+                                ? chkLabel.querySelector('input[type="checkbox"]')
+                                : null;
+                            if (chk && chk.checked) {
+                                const instanceName =
+                                    block.querySelector('.instance-label')?.textContent?.trim() ||
+                                    chk.value ||
+                                    '';
+                                const libList = block.querySelector('.instance-library-list');
+                                let library_names = [];
+                                if (libList) {
+                                    library_names = Array.from(
+                                        libList.querySelectorAll('input[type="checkbox"]:checked')
+                                    )
+                                        .map(
+                                            (cb) =>
+                                                cb.nextSibling?.textContent?.trim() ||
+                                                cb.value ||
+                                                ''
+                                        )
+                                        .filter((name) => !!name && name !== 'on');
+                                }
+                                entryObj.plex_instances.push({
+                                    instance: instanceName,
+                                    library_names,
+                                });
+                            }
+                        });
+                        return;
+                    }
+
                     const input = bodyDiv.querySelector(`[name="${sf.key}"]`);
                     if (input) {
                         if (input.type === 'checkbox') entryObj[sf.key] = input.checked;
                         else entryObj[sf.key] = input.value;
                     }
                 });
+
                 if (typeof idx === 'number') {
                     value[idx] = entryObj;
                 } else {
                     value.push(entryObj);
                 }
-                config[field.key] = value.slice();
 
-                markDirty();
+                const prev = JSON.stringify(immediateData[field.key]);
+                immediateData[field.key] = value.slice();
+                const curr = JSON.stringify(immediateData[field.key]);
+                if (prev !== curr) markDirty();
                 renderList();
                 closeModal();
             },
             ...(typeof idx === 'number' && {
                 'delete-modal-btn': ({ closeModal }) => {
                     value.splice(idx, 1);
-                    config[field.key] = value.slice();
-
-                    markDirty();
+                    const prev = JSON.stringify(immediateData[field.key]);
+                    immediateData[field.key] = value.slice();
+                    const curr = JSON.stringify(immediateData[field.key]);
+                    if (prev !== curr) markDirty();
                     renderList();
                     closeModal();
                 },
@@ -878,13 +885,13 @@ export function renderLabelarrCustomField(field, value, config, rootConfig) {
     return row;
 }
 
-function openEditModal(
+// Edit Modal Helper
+export function openEditModal(
     idx,
-    { value, field, config, subfields, rootConfig = null, buttonHandler = null }
+    { immediateData, field, moduleConfig, subfields, rootConfig = null, buttonHandler = null }
 ) {
     const isEdit = typeof idx === 'number';
-    // Create a local copy for editing, never reference config or value directly
-    const entry = isEdit ? { ...value[idx] } : {};
+    const entry = isEdit ? { ...immediateData[field.key][idx] } : {};
 
     const footerButtons = [
         ...(isEdit ? [{ id: 'delete-modal-btn', label: 'Delete', class: 'btn--remove' }] : []),
@@ -900,7 +907,8 @@ function openEditModal(
         footerButtons,
         isEdit,
         buttonHandler: buttonHandler,
-        value,
+        immediateData,
         rootConfig,
+        moduleConfig,
     });
 }

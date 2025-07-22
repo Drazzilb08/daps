@@ -51,10 +51,10 @@ export const holidayPresetsList = [
     },
 ];
 
-export function renderHolidayPresetsField(field, value, config) {
-    // 1. Collect names already in config
-    const addedNames = Array.isArray(config)
-        ? config.map((entry) => entry?.name).filter(Boolean)
+export function renderHolidayPresetsField(field, immediateData, moduleConfig) {
+    // 1. Collect names already in moduleConfig.holidays (or whatever array key)
+    const addedNames = Array.isArray(moduleConfig?.holidays)
+        ? moduleConfig.holidays.map((entry) => entry?.name).filter(Boolean)
         : [];
 
     // 2. Build DOM: row > labelCol + inputWrap
@@ -79,7 +79,6 @@ export function renderHolidayPresetsField(field, value, config) {
     select.id = 'holiday-preset';
     select.className = 'select';
 
-    // Fill options (disable if already added, mark if already added)
     select.innerHTML =
         '<option value="">Select preset...</option>' +
         holidayPresetsList
@@ -106,12 +105,12 @@ export function renderHolidayPresetsField(field, value, config) {
 
     // Pre-select value if editing
     if (
-        value &&
-        typeof value === 'object' &&
-        value.name &&
-        holidayPresetsList.some((p) => p.name === value.name)
+        immediateData &&
+        typeof immediateData === 'object' &&
+        immediateData.name &&
+        holidayPresetsList.some((p) => p.name === immediateData.name)
     ) {
-        select.value = value.name;
+        select.value = immediateData.name;
     }
 
     // Change logic: Populate modal fields when a preset is picked
@@ -173,7 +172,7 @@ export function renderHolidayPresetsField(field, value, config) {
     return row;
 }
 
-export function renderDropdownField(field, value, config) {
+export function renderDropdownField(field, immediateData) {
     const row = document.createElement('div');
     row.className = 'settings-field-row';
 
@@ -197,15 +196,13 @@ export function renderDropdownField(field, value, config) {
     field.options.forEach((opt) => {
         const option = document.createElement('option');
         option.value = opt;
-        option.selected = value === opt;
+        option.selected = immediateData[field.key] === opt;
         option.textContent = opt;
         select.appendChild(option);
     });
-    if (config) {
-        select.addEventListener('change', () => {
-            config[field.key] = select.value;
-        });
-    }
+    select.addEventListener('change', () => {
+        immediateData[field.key] = select.value;
+    });
     inputWrap.appendChild(select);
 
     if (field.description) {
@@ -219,7 +216,7 @@ export function renderDropdownField(field, value, config) {
     return row;
 }
 
-export function renderCheckBoxField(field, value, config) {
+export function renderCheckBoxField(field, immediateData) {
     const row = document.createElement('div');
     row.className = 'settings-field-row';
 
@@ -243,9 +240,9 @@ export function renderCheckBoxField(field, value, config) {
     input.className = 'settings-checkbox';
     input.name = field.key;
     input.id = field.key;
-    input.checked = !!value;
+    input.checked = !!immediateData[field.key];
     input.addEventListener('change', () => {
-        if (config) config[field.key] = input.checked;
+        immediateData[field.key] = input.checked;
     });
     inputWrap.appendChild(input);
 
@@ -260,7 +257,7 @@ export function renderCheckBoxField(field, value, config) {
     return row;
 }
 
-export function renderInstanceDropdownField(field, value, config, rootConfig) {
+export function renderInstanceDropdownField(field, immediateData, rootConfig) {
     // Row wrapper
     const row = document.createElement('div');
     row.className = 'settings-field-row';
@@ -294,7 +291,6 @@ export function renderInstanceDropdownField(field, value, config, rootConfig) {
         select.innerHTML = '';
         let types = [];
 
-        // Use from array or all instance types in config
         if (Array.isArray(field.from)) {
             types = field.from;
         } else {
@@ -315,369 +311,27 @@ export function renderInstanceDropdownField(field, value, config, rootConfig) {
             select.appendChild(option);
         });
 
-        // Auto-select value: prefer config, else first option
+        // Auto-select value: prefer immediateData, else first option
         if (options.length > 0) {
-            let selected = value || config[field.key];
+            let selected = immediateData[field.key];
             if (!selected || !options.includes(selected)) {
                 selected = options[0];
-                config[field.key] = selected;
+                immediateData[field.key] = selected;
             }
             select.value = selected;
         } else {
-            config[field.key] = '';
+            immediateData[field.key] = '';
         }
     }
 
     setOptions();
 
     select.onchange = () => {
-        config[field.key] = select.value;
+        immediateData[field.key] = select.value;
     };
 
     inputWrap.appendChild(select);
     row.appendChild(inputWrap);
-
-    return row;
-}
-
-export function renderScheduleField(field, value, config) {
-    config = config || {};
-    // Defensive: parse the current value for prefill
-    let initialType = 'daily';
-    let parsed = {};
-    if (typeof value === 'string') {
-        let match;
-        if ((match = value.match(/^hourly\((\d{2})\)$/))) {
-            initialType = 'hourly';
-            parsed.minute = match[1];
-        } else if ((match = value.match(/^daily\(([\d:|]+)\)$/))) {
-            initialType = 'daily';
-            parsed.times = match[1].split('|');
-        } else if ((match = value.match(/^weekly\(([\w,]+)@([\d:]+)\)$/))) {
-            initialType = 'weekly';
-            parsed.days = match[1].split(',').map((d) => d.toLowerCase());
-            parsed.time = match[2];
-        } else if ((match = value.match(/^monthly\(([\d,]+)@([\d:]+)\)$/))) {
-            initialType = 'monthly';
-            parsed.days = match[1].split(',').map(Number);
-            parsed.time = match[2];
-        } else if ((match = value.match(/^cron\(([^)]+)\)$/))) {
-            initialType = 'cron';
-            parsed.expr = match[1];
-        }
-    }
-
-    // Outer row for modal settings layout
-    const row = document.createElement('div');
-    row.className = 'settings-field-row field-schedule';
-
-    // Label col
-    const labelCol = document.createElement('div');
-    labelCol.className = 'settings-field-labelcol';
-    if (field.label) {
-        const label = document.createElement('label');
-        label.textContent = field.label;
-        labelCol.appendChild(label);
-    }
-    row.appendChild(labelCol);
-
-    // Input col
-    const inputWrap = document.createElement('div');
-    inputWrap.className = 'settings-field-inputwrap';
-
-    // Help text
-    if (field.description) {
-        const help = document.createElement('div');
-        help.className = 'field-help-text';
-        help.textContent = field.description;
-        inputWrap.appendChild(help);
-    }
-
-    // Pill group (frequency)
-    const pills = [
-        { type: 'hourly', label: 'Hourly' },
-        { type: 'daily', label: 'Daily' },
-        { type: 'weekly', label: 'Weekly' },
-        { type: 'monthly', label: 'Monthly' },
-        { type: 'cron', label: 'Cron' },
-    ];
-    const pillGroup = document.createElement('div');
-    pillGroup.className = 'pill-group';
-    pills.forEach((p) => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'pill' + (p.type === initialType ? ' active' : '');
-        btn.dataset.type = p.type;
-        btn.textContent = p.label;
-        pillGroup.appendChild(btn);
-    });
-    inputWrap.appendChild(pillGroup);
-
-    // Fields area (dynamically replaced)
-    const fieldsDiv = document.createElement('div');
-    fieldsDiv.className = 'schedule-fields';
-    inputWrap.appendChild(fieldsDiv);
-
-    // Schedule summary
-    const summaryDiv = document.createElement('div');
-    summaryDiv.className = 'schedule-summary';
-    inputWrap.appendChild(summaryDiv);
-
-    row.appendChild(inputWrap);
-
-    // --- State ---
-    let selectedType = initialType;
-
-    // --- Helpers ---
-    function updateSummary() {
-        let summary = '';
-        if (selectedType === 'hourly') {
-            const m = fieldsDiv.querySelector('#hourly-minute')?.value || '0';
-            summary = `Will run at minute ${m} of every hour.`;
-        } else if (selectedType === 'daily') {
-            const times = Array.from(fieldsDiv.querySelectorAll('.daily-times input[type="time"]'))
-                .map((inp) => inp.value.trim())
-                .filter(Boolean);
-            summary = `Will run daily at ${times.join(', ') || '[no times set]'}`;
-        } else if (selectedType === 'weekly') {
-            const days = Array.from(fieldsDiv.querySelectorAll('.weekday-pill.active')).map(
-                (btn) => btn.textContent
-            );
-            const time = fieldsDiv.querySelector('#weekly-time')?.value || '';
-            summary = days.length
-                ? `Will run every ${days.join(', ')} at ${time || '[time]'}`
-                : 'Pick at least one day of the week.';
-        } else if (selectedType === 'monthly') {
-            const days = Array.from(fieldsDiv.querySelectorAll('.monthday-pill.active')).map(
-                (btn) => btn.textContent
-            );
-            const time = fieldsDiv.querySelector('#monthly-time')?.value || '';
-            summary = days.length
-                ? `Will run on day(s) ${days.join(', ')} of the month at ${time || '[time]'}`
-                : 'Pick at least one day of the month.';
-        } else if (selectedType === 'cron') {
-            const expr = fieldsDiv.querySelector('#cron-expr')?.value.trim();
-            summary = expr ? `Custom cron: ${expr}` : 'Enter a cron expression.';
-        }
-        summaryDiv.textContent = summary;
-        config[field.key] = getCurrentValue();
-    }
-
-    function getCurrentValue() {
-        let schedString = '';
-        if (selectedType === 'hourly') {
-            const min = parseInt(fieldsDiv.querySelector('#hourly-minute').value, 10);
-            schedString = `hourly(${String(isNaN(min) ? 0 : min).padStart(2, '0')})`;
-        } else if (selectedType === 'daily') {
-            const times = Array.from(fieldsDiv.querySelectorAll('.daily-times input[type="time"]'))
-                .map((inp) => inp.value.trim())
-                .filter(Boolean);
-            schedString = `daily(${times.join('|')})`;
-        } else if (selectedType === 'weekly') {
-            const days = Array.from(fieldsDiv.querySelectorAll('.weekday-pill.active')).map((btn) =>
-                btn.textContent.toLowerCase()
-            );
-            const time = fieldsDiv.querySelector('#weekly-time')?.value || '';
-            schedString = `weekly(${days.join(',')}@${time})`;
-        } else if (selectedType === 'monthly') {
-            const days = Array.from(fieldsDiv.querySelectorAll('.monthday-pill.active'))
-                .map((btn) => btn.textContent)
-                .filter(Boolean);
-            const time = fieldsDiv.querySelector('#monthly-time')?.value || '';
-            schedString = `monthly(${days.join(',')}@${time})`;
-        } else if (selectedType === 'cron') {
-            const expr = fieldsDiv.querySelector('#cron-expr')?.value.trim();
-            schedString = `cron(${expr || ''})`;
-        }
-        return schedString;
-    }
-
-    // --- Render fields for current frequency ---
-    function renderFields(type) {
-        fieldsDiv.innerHTML = '';
-        if (type === 'hourly') {
-            // At minute
-            const label = document.createElement('label');
-            label.textContent = 'At minute:';
-            fieldsDiv.appendChild(label);
-
-            const input = document.createElement('input');
-            input.type = 'number';
-            input.min = '0';
-            input.max = '59';
-            input.className = 'input';
-            input.id = 'hourly-minute';
-            input.value = parsed.minute || '0';
-            input.style.width = '90px';
-            input.addEventListener('input', updateSummary);
-            fieldsDiv.appendChild(input);
-
-            const hint = document.createElement('span');
-            hint.style.color = 'var(--muted)';
-            hint.style.fontSize = '0.96em';
-            hint.textContent = ' (0 = top of hour)';
-            fieldsDiv.appendChild(hint);
-        } else if (type === 'daily') {
-            // Time(s)
-            const label = document.createElement('label');
-            label.textContent = 'Time(s):';
-            fieldsDiv.appendChild(label);
-
-            const timesDiv = document.createElement('div');
-            timesDiv.className = 'daily-times';
-            fieldsDiv.appendChild(timesDiv);
-
-            function addTimeRow(val = '') {
-                const row = document.createElement('div');
-                row.className = 'daily-times-row';
-
-                const input = document.createElement('input');
-                input.type = 'time';
-                input.className = 'input';
-                input.value = val;
-                input.addEventListener('input', updateSummary);
-
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'btn btn--remove-item remove-btn';
-                btn.title = 'Remove';
-                btn.innerHTML = '&minus;';
-                btn.onclick = () => {
-                    row.remove();
-                    updateSummary();
-                };
-
-                row.appendChild(input);
-                row.appendChild(btn);
-                timesDiv.appendChild(row);
-            }
-
-            // Initial values
-            (parsed.times && parsed.times.length ? parsed.times : ['12:00']).forEach((t) =>
-                addTimeRow(t)
-            );
-
-            const addBtn = document.createElement('button');
-            addBtn.type = 'button';
-            addBtn.id = 'add-daily-time';
-            addBtn.className = 'add-time-btn btn';
-            addBtn.textContent = '+ Add time';
-            addBtn.onclick = () => {
-                addTimeRow('');
-                updateSummary();
-            };
-            fieldsDiv.appendChild(addBtn);
-        } else if (type === 'weekly') {
-            // Days
-            const labelDays = document.createElement('label');
-            labelDays.textContent = 'Day(s):';
-            fieldsDiv.appendChild(labelDays);
-
-            const weekdayPills = document.createElement('div');
-            weekdayPills.className = 'weekday-pills';
-            ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach((d, i) => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'weekday-pill';
-                btn.dataset.day = i;
-                btn.textContent = d;
-                if (parsed.days && parsed.days.includes(d.toLowerCase()))
-                    btn.classList.add('active');
-                btn.onclick = () => {
-                    btn.classList.toggle('active');
-                    updateSummary();
-                };
-                weekdayPills.appendChild(btn);
-            });
-            fieldsDiv.appendChild(weekdayPills);
-
-            // At time
-            const labelTime = document.createElement('label');
-            labelTime.textContent = 'At:';
-            fieldsDiv.appendChild(labelTime);
-
-            const input = document.createElement('input');
-            input.type = 'time';
-            input.className = 'input';
-            input.id = 'weekly-time';
-            input.value = parsed.time || '12:00';
-            input.addEventListener('input', updateSummary);
-            fieldsDiv.appendChild(input);
-        } else if (type === 'monthly') {
-            // Days of month
-            const labelDays = document.createElement('label');
-            labelDays.textContent = 'Day(s) of month:';
-            fieldsDiv.appendChild(labelDays);
-
-            const monthdayPills = document.createElement('div');
-            monthdayPills.className = 'monthday-pills';
-            Array.from({ length: 31 }).forEach((_, i) => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.className = 'monthday-pill';
-                btn.dataset.day = i + 1;
-                btn.textContent = (i + 1).toString();
-                if (parsed.days && parsed.days.includes(i + 1)) btn.classList.add('active');
-                btn.onclick = () => {
-                    btn.classList.toggle('active');
-                    updateSummary();
-                };
-                monthdayPills.appendChild(btn);
-            });
-            fieldsDiv.appendChild(monthdayPills);
-
-            // At time
-            const labelTime = document.createElement('label');
-            labelTime.textContent = 'At:';
-            fieldsDiv.appendChild(labelTime);
-
-            const input = document.createElement('input');
-            input.type = 'time';
-            input.className = 'input';
-            input.id = 'monthly-time';
-            input.value = parsed.time || '12:00';
-            input.addEventListener('input', updateSummary);
-            fieldsDiv.appendChild(input);
-        } else if (type === 'cron') {
-            // Cron expression
-            const label = document.createElement('label');
-            label.textContent = 'Cron Expression';
-            fieldsDiv.appendChild(label);
-
-            const input = document.createElement('input');
-            input.type = 'text';
-            input.className = 'input';
-            input.id = 'cron-expr';
-            input.placeholder = 'e.g. 0 0 * * *';
-            input.value = parsed.expr || '';
-            input.addEventListener('input', updateSummary);
-            fieldsDiv.appendChild(input);
-
-            const linkDiv = document.createElement('div');
-            linkDiv.style.fontSize = '0.96em';
-            linkDiv.style.color = 'var(--muted)';
-            linkDiv.style.marginTop = '3px';
-            linkDiv.innerHTML = `<a href="https://crontab.guru/" target="_blank" style="color:var(--accent);">What is cron?</a>`;
-            fieldsDiv.appendChild(linkDiv);
-        }
-        updateSummary();
-    }
-
-    function setActivePill(type) {
-        selectedType = type;
-        pillGroup.querySelectorAll('.pill').forEach((btn) => {
-            btn.classList.toggle('active', btn.dataset.type === type);
-        });
-        renderFields(type);
-    }
-
-    // Attach pill click events
-    pillGroup.querySelectorAll('.pill').forEach((btn) => {
-        btn.onclick = () => setActivePill(btn.dataset.type);
-    });
-
-    // Initial render
-    renderFields(selectedType);
 
     return row;
 }
@@ -791,7 +445,7 @@ export function renderHolidayScheduleField(field, value) {
     return row;
 }
 
-export function renderGdrivePresetsField(field, value, config) {
+export function renderGdrivePresetsField(field, immediateData, moduleConfig) {
     const row = document.createElement('div');
     row.className = 'settings-field-row';
 
@@ -815,34 +469,35 @@ export function renderGdrivePresetsField(field, value, config) {
     select.id = field.key;
     select.innerHTML = '<option value="">— No Preset —</option>';
 
-    // Get all already-added GDrive IDs from the config
-    const addedIds = Array.isArray(config) ? config.map((entry) => entry.id) : [];
-    // Make presets globally available for this session
+    // Only look at gdrive_list for already added
+    const addedIds = Array.isArray(moduleConfig?.gdrive_list)
+        ? moduleConfig.gdrive_list.map((entry) => entry.id)
+        : [];
+
     fetchGdrivePresets().then((entries) => {
         select.innerHTML =
             '<option value="">— No Preset —</option>' +
             entries
                 .map((drive) => {
                     const alreadyAdded = addedIds.includes(drive.id);
-                    const label = alreadyAdded ? `${drive.name} (Already Added)` : drive.name;
+                    const optionLabel = alreadyAdded ? `${drive.name} (Already Added)` : drive.name;
                     return `<option value="${drive.id}"${
                         alreadyAdded ? ' disabled' : ''
-                    }>${label}</option>`;
+                    }>${optionLabel}</option>`;
                 })
                 .join('');
-        select.value = value || '';
-        // Store for change handler
+        select.value = immediateData[field.key] || '';
         select._presets = entries;
     });
 
-    // On change, set value to config and fill fields
     select.addEventListener('change', function () {
         const selectedId = select.value;
         const presets = select._presets || [];
         const preset = presets.find((drive) => drive.id === selectedId);
 
+        immediateData[field.key] = selectedId;
+
         if (preset) {
-            // Only fill in modal input fields (not config fields)
             const modal = document.querySelector('.modal.show');
             if (modal) {
                 const nameInput = modal.querySelector('input[name="name"]');
@@ -861,7 +516,6 @@ export function renderGdrivePresetsField(field, value, config) {
 
     inputWrap.appendChild(select);
 
-    // Optional: help text
     if (field.description) {
         const help = document.createElement('div');
         help.className = 'field-help-text';
@@ -901,4 +555,347 @@ async function fetchGdrivePresets() {
         _gdrivePresetsCache = [];
     }
     return _gdrivePresetsCache;
+}
+
+export function renderScheduleField(field, immediateData) {
+    // Use immediateData as the working object (represents the config or entry being edited)
+    let value = immediateData[field.key];
+    let initialType = 'daily';
+    let parsed = {};
+
+    if (typeof value === 'string') {
+        let match;
+        if ((match = value.match(/^hourly\((\d{2})\)$/))) {
+            initialType = 'hourly';
+            parsed.minute = match[1];
+        } else if ((match = value.match(/^daily\(([\d:|]+)\)$/))) {
+            initialType = 'daily';
+            parsed.times = match[1].split('|');
+        } else if ((match = value.match(/^weekly\(([\w@|]+)\)$/))) {
+            initialType = 'weekly';
+            parsed.weekly = match[1];
+        } else if ((match = value.match(/^monthly\(([\w@|]+)\)$/))) {
+            initialType = 'monthly';
+            parsed.monthly = match[1];
+        } else if ((match = value.match(/^cron\(([^)]+)\)$/))) {
+            initialType = 'cron';
+            parsed.expr = match[1];
+        }
+    }
+
+    const row = document.createElement('div');
+    row.className = 'settings-field-row field-schedule';
+
+    const labelCol = document.createElement('div');
+    labelCol.className = 'settings-field-labelcol';
+    if (field.label) {
+        const label = document.createElement('label');
+        label.textContent = field.label;
+        labelCol.appendChild(label);
+    }
+    row.appendChild(labelCol);
+
+    const inputWrap = document.createElement('div');
+    inputWrap.className = 'settings-field-inputwrap';
+
+    if (field.description) {
+        const help = document.createElement('div');
+        help.className = 'field-help-text';
+        help.textContent = field.description;
+        inputWrap.appendChild(help);
+    }
+
+    const pills = [
+        { type: 'hourly', label: 'Hourly' },
+        { type: 'daily', label: 'Daily' },
+        { type: 'weekly', label: 'Weekly' },
+        { type: 'monthly', label: 'Monthly' },
+        { type: 'cron', label: 'Cron' },
+    ];
+    const pillGroup = document.createElement('div');
+    pillGroup.className = 'pill-group';
+    pills.forEach((p) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'pill' + (p.type === initialType ? ' active' : '');
+        btn.dataset.type = p.type;
+        btn.textContent = p.label;
+        pillGroup.appendChild(btn);
+    });
+    inputWrap.appendChild(pillGroup);
+
+    const fieldsDiv = document.createElement('div');
+    fieldsDiv.className = 'schedule-fields';
+    inputWrap.appendChild(fieldsDiv);
+
+    const summaryDiv = document.createElement('div');
+    summaryDiv.className = 'schedule-summary';
+    inputWrap.appendChild(summaryDiv);
+
+    row.appendChild(inputWrap);
+
+    let selectedType = initialType;
+
+    function updateSummary() {
+        let summary = '';
+        if (selectedType === 'hourly') {
+            const m = fieldsDiv.querySelector('#hourly-minute')?.value || '0';
+            summary = `Will run at minute ${m} of every hour.`;
+        } else if (selectedType === 'daily') {
+            const times = Array.from(fieldsDiv.querySelectorAll('.daily-times input[type="time"]'))
+                .map((inp) => inp.value.trim())
+                .filter(Boolean);
+            summary = `Will run daily at ${times.join(', ') || '[no times set]'}`;
+        } else if (selectedType === 'weekly') {
+            const days = Array.from(fieldsDiv.querySelectorAll('.weekday-pill.active')).map(
+                (btn) => btn.textContent
+            );
+            const time = fieldsDiv.querySelector('#weekly-time')?.value || '';
+            summary = days.length
+                ? `Will run every ${days.join(', ')} at ${time || '[time]'}`
+                : 'Pick at least one day of the week.';
+        } else if (selectedType === 'monthly') {
+            const days = Array.from(fieldsDiv.querySelectorAll('.monthday-pill.active')).map(
+                (btn) => btn.textContent
+            );
+            const time = fieldsDiv.querySelector('#monthly-time')?.value || '';
+            summary = days.length
+                ? `Will run on day(s) ${days.join(', ')} of the month at ${time || '[time]'}`
+                : 'Pick at least one day of the month.';
+        } else if (selectedType === 'cron') {
+            const expr = fieldsDiv.querySelector('#cron-expr')?.value.trim();
+            summary = expr ? `Custom cron: ${expr}` : 'Enter a cron expression.';
+        }
+        summaryDiv.textContent = summary;
+        // <--- This is the key change: update immediateData[field.key]
+        immediateData[field.key] = getCurrentValue();
+    }
+
+    function getCurrentValue() {
+        let schedString = '';
+        if (selectedType === 'hourly') {
+            const min = parseInt(fieldsDiv.querySelector('#hourly-minute').value, 10);
+            schedString = `hourly(${String(isNaN(min) ? 0 : min).padStart(2, '0')})`;
+        } else if (selectedType === 'daily') {
+            const times = Array.from(fieldsDiv.querySelectorAll('.daily-times input[type="time"]'))
+                .map((inp) => inp.value.trim())
+                .filter(Boolean);
+            schedString = `daily(${times.join('|')})`;
+        } else if (selectedType === 'weekly') {
+            const days = Array.from(fieldsDiv.querySelectorAll('.weekday-pill.active')).map((btn) =>
+                btn.textContent.toLowerCase()
+            );
+            const time = fieldsDiv.querySelector('#weekly-time')?.value || '';
+            schedString = `weekly(${days.map((d) => `${d}@${time}`).join('|')})`;
+        } else if (selectedType === 'monthly') {
+            const days = Array.from(fieldsDiv.querySelectorAll('.monthday-pill.active'))
+                .map((btn) => btn.textContent)
+                .filter(Boolean);
+            const time = fieldsDiv.querySelector('#monthly-time')?.value || '';
+            schedString = `monthly(${days.map((d) => `${d}@${time}`).join('|')})`;
+        } else if (selectedType === 'cron') {
+            const expr = fieldsDiv.querySelector('#cron-expr')?.value.trim();
+            schedString = `cron(${expr || ''})`;
+        }
+        return schedString;
+    }
+
+    function renderFields(type) {
+        fieldsDiv.innerHTML = '';
+        if (type === 'hourly') {
+            const label = document.createElement('label');
+            label.textContent = 'At minute:';
+            fieldsDiv.appendChild(label);
+
+            const input = document.createElement('input');
+            input.type = 'number';
+            input.min = '0';
+            input.max = '59';
+            input.className = 'input';
+            input.id = 'hourly-minute';
+            input.value = parsed.minute || '0';
+            input.style.width = '90px';
+            input.addEventListener('input', updateSummary);
+            fieldsDiv.appendChild(input);
+
+            const hint = document.createElement('span');
+            hint.style.color = 'var(--muted)';
+            hint.style.fontSize = '0.96em';
+            hint.textContent = ' (0 = top of hour)';
+            fieldsDiv.appendChild(hint);
+        } else if (type === 'daily') {
+            const label = document.createElement('label');
+            label.textContent = 'Time(s):';
+            fieldsDiv.appendChild(label);
+
+            const timesDiv = document.createElement('div');
+            timesDiv.className = 'daily-times';
+            fieldsDiv.appendChild(timesDiv);
+
+            function addTimeRow(val = '') {
+                const row = document.createElement('div');
+                row.className = 'daily-times-row';
+
+                const input = document.createElement('input');
+                input.type = 'time';
+                input.className = 'input';
+                input.value = val;
+                input.addEventListener('input', updateSummary);
+
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'btn btn--remove-item remove-btn';
+                btn.title = 'Remove';
+                btn.innerHTML = '&minus;';
+                btn.onclick = () => {
+                    row.remove();
+                    updateSummary();
+                };
+
+                row.appendChild(input);
+                row.appendChild(btn);
+                timesDiv.appendChild(row);
+            }
+
+            (parsed.times && parsed.times.length ? parsed.times : ['12:00']).forEach((t) =>
+                addTimeRow(t)
+            );
+
+            const addBtn = document.createElement('button');
+            addBtn.type = 'button';
+            addBtn.id = 'add-daily-time';
+            addBtn.className = 'add-time-btn btn';
+            addBtn.textContent = '+ Add time';
+            addBtn.onclick = () => {
+                addTimeRow('');
+                updateSummary();
+            };
+            fieldsDiv.appendChild(addBtn);
+        } else if (type === 'weekly') {
+            const labelDays = document.createElement('label');
+            labelDays.textContent = 'Day(s):';
+            fieldsDiv.appendChild(labelDays);
+
+            const weekdayPills = document.createElement('div');
+            weekdayPills.className = 'weekday-pills';
+            ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].forEach((d, i) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'weekday-pill';
+                btn.dataset.day = i;
+                btn.textContent = d;
+                if (parsed.weekly && parsed.weekly.includes(`${d.toLowerCase()}@`))
+                    btn.classList.add('active');
+                btn.onclick = () => {
+                    btn.classList.toggle('active');
+                    updateSummary();
+                };
+                weekdayPills.appendChild(btn);
+            });
+            fieldsDiv.appendChild(weekdayPills);
+
+            const labelTime = document.createElement('label');
+            labelTime.textContent = 'At:';
+            fieldsDiv.appendChild(labelTime);
+
+            const input = document.createElement('input');
+            input.type = 'time';
+            input.className = 'input';
+            input.id = 'weekly-time';
+            // Find the first time if present in the parsed string, else default
+            let t = '12:00';
+            if (parsed.weekly) {
+                const first = parsed.weekly.split('|')[0];
+                if (first && first.includes('@')) t = first.split('@')[1];
+            }
+            input.value = t;
+            input.addEventListener('input', updateSummary);
+            fieldsDiv.appendChild(input);
+        } else if (type === 'monthly') {
+            const labelDays = document.createElement('label');
+            labelDays.textContent = 'Day(s) of month:';
+            fieldsDiv.appendChild(labelDays);
+
+            const monthdayPills = document.createElement('div');
+            monthdayPills.className = 'monthday-pills';
+
+            let selectedDays = [];
+            if (parsed.monthly) {
+                selectedDays = parsed.monthly.split('|').map((d) => parseInt(d.split('@')[0], 10));
+            }
+
+            Array.from({ length: 31 }).forEach((_, i) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.className = 'monthday-pill';
+                btn.dataset.day = i + 1;
+                btn.textContent = (i + 1).toString();
+                if (selectedDays.includes(i + 1)) btn.classList.add('active');
+                btn.onclick = () => {
+                    btn.classList.toggle('active');
+                    updateSummary();
+                };
+                monthdayPills.appendChild(btn);
+            });
+            fieldsDiv.appendChild(monthdayPills);
+
+            const labelTime = document.createElement('label');
+            labelTime.textContent = 'At:';
+            fieldsDiv.appendChild(labelTime);
+
+            const input = document.createElement('input');
+            input.type = 'time';
+            input.className = 'input';
+            input.id = 'monthly-time';
+            // Find the first time if present in the parsed string, else default
+            let t = '12:00';
+            if (parsed.monthly) {
+                const first = parsed.monthly.split('|')[0];
+                if (first && first.includes('@')) t = first.split('@')[1];
+            }
+            input.value = t;
+            input.addEventListener('input', updateSummary);
+            fieldsDiv.appendChild(input);
+        } else if (type === 'cron') {
+            const label = document.createElement('label');
+            label.textContent = 'Cron Expression';
+            fieldsDiv.appendChild(label);
+
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.className = 'input';
+            input.id = 'cron-expr';
+            input.placeholder = 'e.g. 0 0 * * *';
+            input.value = parsed.expr || '';
+            input.addEventListener('input', updateSummary);
+            fieldsDiv.appendChild(input);
+
+            const linkDiv = document.createElement('div');
+            linkDiv.style.fontSize = '0.96em';
+            linkDiv.style.color = 'var(--muted)';
+            linkDiv.style.marginTop = '3px';
+            linkDiv.innerHTML = `<a href="https://crontab.guru/" target="_blank" style="color:var(--accent);">What is cron?</a>`;
+            fieldsDiv.appendChild(linkDiv);
+        }
+        updateSummary();
+    }
+
+    function setActivePill(type) {
+        selectedType = type;
+        parsed = {}; // Reset parsed on pill switch
+        pillGroup.querySelectorAll('.pill').forEach((btn) => {
+            btn.classList.toggle('active', btn.dataset.type === type);
+        });
+        renderFields(type);
+        updateSummary();
+    }
+
+    pillGroup.querySelectorAll('.pill').forEach((btn) => {
+        btn.onclick = () => setActivePill(btn.dataset.type);
+    });
+
+    renderFields(selectedType);
+    updateSummary();
+
+    return row;
 }

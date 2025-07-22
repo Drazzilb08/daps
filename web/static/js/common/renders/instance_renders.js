@@ -1,7 +1,8 @@
-import { markDirty } from '../../util.js';
+import { markDirty, showToast } from '../../util.js';
 
-export function renderInstancesField(field, value = [], config, rootConfig) {
+export function renderInstancesField(field, immediateData, rootConfig) {
     // Defensive clone for state
+    let value = immediateData[field.key] ?? [];
     value =
         Array.isArray(value) &&
         value.length &&
@@ -32,14 +33,6 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
     const label = document.createElement('label');
     label.textContent = field.label || 'Instances';
     labelCol.appendChild(label);
-
-    // description/help text
-    // if (field.description) {
-    //     const help = document.createElement('div');
-    //     help.className = 'field-help-text';
-    //     help.textContent = field.description;
-    //     labelCol.appendChild(help);
-    // }
     row.appendChild(labelCol);
 
     // ----- INPUT COLUMN -----
@@ -69,12 +62,11 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
         );
         if (idx !== -1) {
             selected[idx][name].library_names = libs;
-            config[field.key] = Array.isArray(value) ? selected.slice() : [];
+            immediateData[field.key] = Array.isArray(value) ? selected.slice() : [];
         }
     }
 
     // -- Plex libraries list fetcher --
-    // Render the list of libraries for a Plex instance as pills with checkboxes
     function renderPlexLibraries(name, container, checkedLibs) {
         container.innerHTML = 'Loading libraries...';
         fetch(`/api/plex/libraries?instance=${encodeURIComponent(name)}`)
@@ -101,24 +93,21 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
                 if (Array.isArray(libraries) && libraries.length) {
                     libraries.forEach((lib) => {
                         const label = document.createElement('label');
-                        label.className = 'instance-pill'; // For styling
+                        label.className = 'instance-pill';
 
-                        // Hidden checkbox for state
                         const input = document.createElement('input');
                         input.type = 'checkbox';
                         input.checked = checkedLibs.includes(lib);
                         input.setAttribute('aria-label', lib);
+                        input.value = lib;
 
-                        // Visual checkmark
                         const checkmark = document.createElement('span');
                         checkmark.className = 'pill-checkmark';
 
-                        // Library label
                         const pillLabel = document.createElement('span');
                         pillLabel.className = 'pill-label';
                         pillLabel.textContent = lib;
 
-                        // Toggle checked state & styling
                         input.onchange = () => {
                             let libs = getPlexLibraries(name).slice();
                             if (input.checked) {
@@ -132,7 +121,6 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
                         };
                         if (input.checked) label.classList.add('checked');
 
-                        // Compose pill
                         label.appendChild(input);
                         label.appendChild(checkmark);
                         label.appendChild(pillLabel);
@@ -148,7 +136,6 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
             });
     }
 
-    // -- Main render logic for content column --
     function renderSelf() {
         inputWrap.innerHTML = '';
 
@@ -163,11 +150,9 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
                     : [];
             if (!all.length) return;
 
-            // Build a column for each type
             const col = document.createElement('div');
             col.className = 'instance-type-col';
 
-            // Heading
             const typeLabel = document.createElement('div');
             typeLabel.className = 'instance-type-label';
             typeLabel.textContent = type.charAt(0).toUpperCase() + type.slice(1);
@@ -189,10 +174,9 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
                         const idx = selected.indexOf(instName);
                         if (idx !== -1) selected.splice(idx, 1);
                     }
-                    config[field.key] = Array.isArray(value) ? selected.slice() : [];
+                    immediateData[field.key] = Array.isArray(value) ? selected.slice() : [];
                 });
 
-                // Optional: visually consistent label text
                 const pillText = document.createElement('span');
                 pillText.className = 'pill-label';
                 pillText.textContent = instName;
@@ -206,7 +190,6 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
             columns[type] = col;
         });
 
-        // Only render columns row if either exists
         if (columns.radarr || columns.sonarr) {
             const columnsWrap = document.createElement('div');
             columnsWrap.className = 'instances-multicol';
@@ -225,25 +208,20 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
         if (instanceTypes.includes('plex') && rootConfig.instances && rootConfig.instances.plex) {
             Object.keys(rootConfig.instances.plex).forEach((instName) => {
                 plexRendered = true;
-                // Instance block for each Plex instance
                 const instanceBlock = document.createElement('div');
                 instanceBlock.className = 'plex-instance-card';
 
-                // Instance header row with animated SVG checkbox and instance label
                 const instanceHeader = document.createElement('div');
                 instanceHeader.className = 'instance-header';
 
-                // --- Custom animated SVG checkbox ---
                 const chkLabel = document.createElement('label');
                 chkLabel.className = 'instance-checkbox-container';
 
-                // Hidden native checkbox for accessibility/state
                 const chk = document.createElement('input');
                 chk.type = 'checkbox';
                 chk.checked = isSelected('plex', instName);
                 chk.style.display = 'none';
 
-                // SVG animated checkbox
                 const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
                 svg.setAttribute('viewBox', '0 0 64 64');
                 svg.setAttribute('height', '24');
@@ -255,7 +233,6 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
                 chkLabel.appendChild(chk);
                 chkLabel.appendChild(svg);
 
-                // Animation fix: always update checked class and prevent double-renders
                 function updateCheckedClass() {
                     if (chk.checked) {
                         chkLabel.classList.add('checked');
@@ -263,16 +240,14 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
                         chkLabel.classList.remove('checked');
                     }
                 }
-                // Plex name label
+
                 const lbl = document.createElement('span');
                 lbl.className = 'instance-label';
                 lbl.textContent = instName;
 
-                // Use animated SVG checkbox and label
                 instanceHeader.appendChild(chkLabel);
                 instanceHeader.appendChild(lbl);
 
-                // --- Conditionally Add Posters text button ---
                 let addPostersBtn = null;
                 if (field.add_posters_option !== false) {
                     let plexEntry = selected.find(
@@ -293,9 +268,7 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
                             ? 'ON'
                             : 'OFF');
 
-                    // Button click handler
                     addPostersBtn.onclick = () => {
-                        // Ensure config entry
                         let entry = selected.find(
                             (x) =>
                                 typeof x === 'object' &&
@@ -314,22 +287,19 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
                         );
                         addPostersBtn.textContent =
                             'Upload Posters: ' + (entry[instName].add_posters ? 'ON' : 'OFF');
-                        config[field.key] = Array.isArray(value) ? selected.slice() : [];
+                        immediateData[field.key] = Array.isArray(value) ? selected.slice() : [];
                         markDirty();
                     };
 
-                    // Show/hide the button only if instance is selected
                     addPostersBtn.style.display = chk.checked ? '' : 'none';
                     instanceHeader.appendChild(addPostersBtn);
                 }
 
-                // Always handle checkbox label clicks for select/deselect
                 chkLabel.addEventListener('click', (e) => {
                     e.preventDefault();
                     chk.checked = !chk.checked;
                     updateCheckedClass();
                     if (chk.checked) {
-                        // Ensure config has entry
                         let entry = selected.find(
                             (x) =>
                                 typeof x === 'object' &&
@@ -339,7 +309,7 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
                         if (!entry) {
                             entry = { [instName]: { library_names: [], add_posters: false } };
                             selected.push(entry);
-                            config[field.key] = Array.isArray(value) ? selected.slice() : [];
+                            immediateData[field.key] = Array.isArray(value) ? selected.slice() : [];
                         }
                         if (addPostersBtn) addPostersBtn.style.display = '';
                         libList.classList.add('expanded');
@@ -348,19 +318,15 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
                         libList.classList.remove('expanded');
                     }
                 });
-                // Call once for initial state
                 updateCheckedClass();
 
                 instanceBlock.appendChild(instanceHeader);
 
-                // Always render the library list, toggle .expanded for animation.
-                // Always keep libList in DOM
                 const libList = document.createElement('div');
                 libList.className = 'instance-library-list';
                 const libs = getPlexLibraries(instName);
                 renderPlexLibraries(instName, libList, libs);
 
-                // Only toggle the class; don't clear out innerHTML
                 if (chk.checked) {
                     libList.classList.add('expanded');
                 } else {
@@ -372,7 +338,6 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
             });
         }
 
-        // === NO INSTANCES MESSAGE ===
         const radarrExists =
             rootConfig.instances &&
             rootConfig.instances.radarr &&
@@ -387,21 +352,18 @@ export function renderInstancesField(field, value = [], config, rootConfig) {
             Object.keys(rootConfig.instances.plex).length > 0;
 
         if (!radarrExists && !sonarrExists && !plexExists) {
-            // All missing
             const emptyMsg = document.createElement('div');
             emptyMsg.className = 'instances-empty-message';
             emptyMsg.textContent =
                 'No instances have been configured. Please add at least one instance in the Instances settings first.';
             inputWrap.appendChild(emptyMsg);
         } else if (!radarrExists && !sonarrExists && plexExists) {
-            // Plex exists but no radarr/sonarr
             const emptyMsg = document.createElement('div');
             emptyMsg.className = 'instances-empty-message';
             emptyMsg.textContent =
                 'No Radarr or Sonarr instances have been configured. Please add at least one in the Instances settings first.';
             inputWrap.appendChild(emptyMsg);
         } else if ((radarrExists || sonarrExists) && !plexExists) {
-            // Radarr/Sonarr exists but no Plex
             const emptyMsg = document.createElement('div');
             emptyMsg.className = 'instances-empty-message';
             emptyMsg.textContent =

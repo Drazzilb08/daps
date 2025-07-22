@@ -258,3 +258,43 @@ export async function fetchLogContent(moduleName, fileName) {
     if (!res.ok) return '';
     return await res.text();
 }
+
+// Run a scheduled module now
+export async function runScheduledModule(module) {
+    if (!module) return false;
+    try {
+        const res = await fetch('/api/run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ module }),
+        });
+        return res.ok;
+    } catch (err) {
+        return false;
+    }
+}
+
+// Cancel a running scheduled module
+export async function cancelScheduledModule(module) {
+    if (!module) return false;
+    try {
+        const res = await fetch('/api/cancel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ module }),
+        });
+        return res.ok;
+    } catch (err) {
+        return false;
+    }
+}
+
+export async function fetchPosterAssetList() {
+    try {
+        const res = await fetch('/api/poster_assets');
+        const arr = await res.json();
+        return Array.isArray(arr) ? arr : [];
+    } catch {
+        return [];
+    }
+}

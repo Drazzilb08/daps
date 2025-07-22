@@ -14,6 +14,7 @@ class Logger:
     def __init__(self, log_level: str, module_name: str, max_logs: int = 9):
         """Set up file and console logging handlers and emit versioned header."""
         log_base = os.getenv("LOG_DIR")
+        self.log_level = log_level.upper()
         if log_base:
             log_dir = Path(log_base) / module_name
         else:

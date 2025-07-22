@@ -1,7 +1,9 @@
 import html
 import os
+import plexapi
 from typing import Any, Dict, List
 
+from plexapi import utils as plexutils
 from plexapi.exceptions import NotFound
 from plexapi.server import PlexServer
 from unidecode import unidecode
@@ -115,7 +117,7 @@ class PlexClient:
         """
         section = self.plex.library.section(library_name)
         typ = section.type
-        all_entries = section.all()
+        all_entries = self.fetch_all_plex_media_with_paging(logger, section)
         items = []
 
         with progress(
@@ -164,6 +166,41 @@ class PlexClient:
                     }
                 )
         return items
+
+    def fetch_all_plex_media_with_paging(self, logger, section):
+        all_entries = []
+        key = f"/library/sections/{section.key}/all?includeGuids=1&type={plexutils.searchType(section.type)}"
+        container_start = 0
+        container_size = plexapi.X_PLEX_CONTAINER_SIZE
+        total_size = 1
+        while total_size > len(all_entries) and container_start <= total_size:
+            logger.debug(
+                f"doing an iteration: total={total_size}, start={container_start}, size={container_size}"
+            )
+            data = section._server.query(
+                key,
+                headers={
+                    "X-Plex-Container-Start": str(container_start),
+                    "X-Plex-Container-Size": str(container_size),
+                },
+            )
+            subresults = section.findItems(data, initpath=key)
+            total_size = plexutils.cast(
+                int, data.attrib.get("totalSize") or data.attrib.get("size")
+            ) or len(subresults)
+
+            librarySectionID = plexutils.cast(int, data.attrib.get("librarySectionID"))
+            if librarySectionID:
+                for item in subresults:
+                    item.librarySectionID = librarySectionID
+
+            all_entries.extend(subresults)
+            container_start += container_size
+            logger.debug(
+                f"Loaded: {total_size if container_start > total_size else container_start}/{total_size}"
+            )
+
+        return all_entries
 
     def upload_poster(
         self,

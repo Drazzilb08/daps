@@ -2,11 +2,13 @@ import { fetchConfig, postConfig } from '../api.js';
 import { renderSettingsForm } from '../common/dynamic_forms.js';
 import { showToast, markDirty, resetDirty, setTheme } from '../util.js';
 import { SETTINGS_SCHEMA, SETTINGS_MODULES } from '../constants/settings_schema.js';
+import { validateFields } from '../common/validation.js';
 
 // Tracks last loaded values for the current module, for dirty checking
 let currentModule = null;
 let currentConfig = {};
 let lastLoadedConfig = {};
+let rootConfig = {};
 
 /**
  * Main entry for settings page.
@@ -192,7 +194,6 @@ export async function saveSettings() {
     const saveBtn = document.getElementById('saveBtnFixed');
     if (saveBtn) saveBtn.disabled = true;
 
-    // const payload = await buildSettingsPayload(currentModule, currentConfig);
     const payload = { [currentModule]: currentConfig };
 
     if (!payload) {
@@ -201,7 +202,7 @@ export async function saveSettings() {
     }
     const formFields = document.getElementById('settingsForm');
     const schema = getSchemaForModule(currentModule);
-    const errorFields = validateSettingsFields(schema.fields, formFields);
+    const errorFields = validateFields(schema.fields, formFields, { rootConfig, isModal: false });
     if (errorFields.length > 0) {
         showToast('Please fill out all required fields.', 'error');
         // Optionally scroll to first error
@@ -272,195 +273,6 @@ function setupFormDirtyDetection(moduleName) {
             markDirty();
         };
     });
-}
-
-/**
- * Validate fields for settings (global, not just modals).
- * Returns an array of error field keys.
- */
-function validateSettingsFields(schema, container) {
-    const errorFields = [];
-
-    schema.forEach((field) => {
-        // INSTANCES FIELD (plex/radarr/sonarr special validation)
-        if (field.type === 'instances' && field.required) {
-            let foundValid = false;
-            const emptyMsg = container.querySelector('.instances-empty-message');
-            if (emptyMsg) {
-                emptyMsg.classList.add('field-error');
-                // Optional: add error text only if not already present
-                if (!emptyMsg.querySelector('.field-error-text')) {
-                    const err = document.createElement('div');
-                    err.className = 'field-error-text';
-                    err.textContent = 'At least one instance must be configured to proceed.';
-                    emptyMsg.appendChild(err);
-                }
-                errorFields.push(field.key);
-                return; // skip the rest for this field
-            }
-
-            // Plex
-            if (field.instance_types && field.instance_types.includes('plex')) {
-                const plexBlocks = container.querySelectorAll('.plex-instance-card');
-                let plexInstanceSelected = false;
-                let plexMissingLibraries = false;
-
-                plexBlocks.forEach((block) => {
-                    const chkLabel = block.querySelector('.instance-checkbox-container');
-                    const chk = chkLabel ? chkLabel.querySelector('input[type="checkbox"]') : null;
-
-                    if (chk && chk.checked) {
-                        plexInstanceSelected = true;
-                        // Library selection
-                        const libraryChecks = block.querySelectorAll(
-                            '.instance-library-list input[type="checkbox"]'
-                        );
-                        const anyLibChecked = Array.from(libraryChecks).some((l) => l.checked);
-                        // Show/hide errors for library selection
-                        const libList = block.querySelector('.instance-library-list');
-                        if (!anyLibChecked) {
-                            plexMissingLibraries = true;
-                            libraryChecks.forEach((libChk) => libChk.classList.add('input-error'));
-                            if (libList && !libList.querySelector('.field-error-text')) {
-                                const err = document.createElement('div');
-                                err.className = 'field-error-text';
-                                err.textContent = 'At least one library must be selected.';
-                                libList.appendChild(err);
-                            }
-                        } else {
-                            libraryChecks.forEach((libChk) =>
-                                libChk.classList.remove('input-error')
-                            );
-                            if (libList) {
-                                const err = libList.querySelector('.field-error-text');
-                                if (err) err.remove();
-                            }
-                        }
-                    } else if (chk) {
-                        // Clean up errors on unchecked instances
-                        const libraryChecks = block.querySelectorAll(
-                            '.instance-library-list input[type="checkbox"]'
-                        );
-                        libraryChecks.forEach((libChk) => libChk.classList.remove('input-error'));
-                        const libList = block.querySelector('.instance-library-list');
-                        if (libList) {
-                            const err = libList.querySelector('.field-error-text');
-                            if (err) err.remove();
-                        }
-                    }
-                });
-
-                // Plex instance must be selected
-                if (!plexInstanceSelected) {
-                    plexBlocks.forEach((block) => {
-                        block.classList.add('field-error');
-                        const header = block.querySelector('.instance-header');
-                        if (header && !header.querySelector('.field-error-text')) {
-                            const err = document.createElement('div');
-                            err.className = 'field-error-text';
-                            err.textContent = `${field.label} cannot be empty.`;
-                            header.appendChild(err);
-                        }
-                    });
-                } else {
-                    plexBlocks.forEach((block) => {
-                        block.classList.remove('field-error');
-                        const header = block.querySelector('.instance-header');
-                        if (header) {
-                            const err = header.querySelector('.field-error-text');
-                            if (err) err.remove();
-                        }
-                    });
-                }
-
-                if (!plexInstanceSelected || plexMissingLibraries) {
-                    errorFields.push(field.key);
-                }
-                if (plexInstanceSelected && !plexMissingLibraries) {
-                    foundValid = true;
-                }
-            }
-
-            // Radarr/Sonarr: at least one checked
-            if (
-                field.instance_types &&
-                (field.instance_types.includes('radarr') || field.instance_types.includes('sonarr'))
-            ) {
-                const allCols = container.querySelectorAll('.instance-type-col');
-                let anyChecked = false;
-                allCols.forEach((col) => {
-                    const chks = col.querySelectorAll('input[type="checkbox"]');
-                    if (Array.from(chks).some((chk) => chk.checked)) {
-                        anyChecked = true;
-                    }
-                });
-                if (!anyChecked) {
-                    allCols.forEach((col) => {
-                        col.classList.add('field-error');
-                        if (!col.querySelector('.field-error-text')) {
-                            const err = document.createElement('div');
-                            err.className = 'field-error-text';
-                            err.textContent = `${field.label} cannot be empty.`;
-                            col.appendChild(err);
-                        }
-                    });
-                    errorFields.push(field.key);
-                } else {
-                    allCols.forEach((col) => {
-                        col.classList.remove('field-error');
-                        const err = col.querySelector('.field-error-text');
-                        if (err) err.remove();
-                    });
-                    foundValid = true;
-                }
-            }
-            return; // Skip default logic for this field
-        }
-
-        // GENERIC REQUIRED FIELD VALIDATION
-        if (field.required) {
-            const input = container.querySelector(`[name="${field.key}"]`);
-            let isEmpty = false;
-
-            if (input) {
-                isEmpty = input.value === '' || input.value == null;
-            } else if (field.type === 'color_list') {
-                const colorInputs = container.querySelectorAll(
-                    '.field-color-list input[type="color"]'
-                );
-                isEmpty = Array.from(colorInputs).filter((i) => i.value).length === 0;
-            } else if (field.type && field.type.startsWith('dir_')) {
-                // Directory list type: at least one non-empty input
-                const dirInputs = container.querySelectorAll(`input[name="${field.key}"]`);
-                isEmpty = Array.from(dirInputs).every((inp) => !inp.value);
-            } else {
-                isEmpty = true;
-            }
-
-            // Find wrapper for error message placement
-            const wrapper = input?.closest('.settings-field-inputwrap, div');
-            if (isEmpty) {
-                errorFields.push(field.key);
-                if (input) input.classList.add('input-error');
-                if (wrapper && !wrapper.querySelector('.field-error-text')) {
-                    const err = document.createElement('div');
-                    err.className = 'field-error-text';
-                    err.textContent = field.label
-                        ? `${field.label} cannot be empty.`
-                        : 'This field cannot be empty.';
-                    wrapper && wrapper.appendChild(err);
-                }
-            } else {
-                if (input) input.classList.remove('input-error');
-                if (wrapper) {
-                    const err = wrapper.querySelector('.field-error-text');
-                    if (err) err.remove();
-                }
-            }
-        }
-    });
-
-    return errorFields;
 }
 
 export function buildSidebarSettingsSubMenu() {

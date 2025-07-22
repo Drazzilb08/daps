@@ -117,6 +117,7 @@ export function renderDirPickerField(field, immediateData) {
 }
 
 export function renderDirField(field, immediateData) {
+    console.log('renderDirField', field, immediateData);
     const row = document.createElement('div');
     row.className = 'settings-field-row field-dir';
 
@@ -139,9 +140,27 @@ export function renderDirField(field, immediateData) {
     let inputValue = immediateData && immediateData[field.key] ? immediateData[field.key] : '';
     input.value = inputValue;
 
+
+    input.addEventListener('focus', () => {
+        let parent = input.closest('form') || input.closest('.modal-content');
+        if (parent) {
+            const nameInput = parent.querySelector('input[name="name"]');
+            if (nameInput) {
+                const nameValue = nameInput.value;
+                console.log('nameValue', nameValue);
+            }
+        }
+    });
+
     input.addEventListener('click', async () => {
+        let nameValue = '';
+        let parent = input.closest('form') || input.closest('.modal-content');
+        if (parent) {
+            const nameInput = parent.querySelector('input[name="name"]');
+            if (nameInput) nameValue = nameInput.value.trim();
+        }
         if (typeof directoryPickerModal === 'function') {
-            const selectedPath = await directoryPickerModal(input.value || '/');
+            const selectedPath = await directoryPickerModal(input.value || '/', nameValue || null);
             if (selectedPath && selectedPath !== input.value) {
                 input.value = selectedPath;
                 immediateData[field.key] = selectedPath;

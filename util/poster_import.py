@@ -1,8 +1,8 @@
 import os
 from typing import Any, List, Optional
 
-from util.database import DapsDB
 from util.constants import id_content_regex, season_number_regex, year_regex
+from util.database import DapsDB
 from util.helper import (
     extract_ids,
     extract_year,
@@ -56,7 +56,9 @@ def get_assets_files(source_dir: str) -> List[dict]:
     return asset_records
 
 
-def merge_assets(db: DapsDB, source_dirs: List[str], logger: Optional[Any] = None) -> None:
+def merge_assets(
+    db: DapsDB, source_dirs: List[str], logger: Optional[Any] = None
+) -> None:
     """
     For each directory (low->high priority), scan assets and upsert them so that
     higher priority assets overwrite lower priority ones in the DB.
@@ -74,9 +76,7 @@ def merge_assets(db: DapsDB, source_dirs: List[str], logger: Optional[Any] = Non
             for id_field in ["imdb_id", "tmdb_id", "tvdb_id"]:
                 id_val = asset.get(id_field)
                 if id_val:
-                    db.poster.delete_by_id(
-                        id_field, id_val, asset.get("season_number")
-                    )
+                    db.poster.delete_by_id(id_field, id_val, asset.get("season_number"))
 
             # 2. Delete by normalized_title/year/season_number
             db.poster.delete_by_title(
@@ -112,6 +112,8 @@ def merge_assets(db: DapsDB, source_dirs: List[str], logger: Optional[Any] = Non
                     if matched.get(id_field) and not asset.get(id_field):
                         asset[id_field] = matched[id_field]
                 # For shows: propagate IDs to all seasons if this is a season poster
-                db.poster.propagate_ids_for_show(asset["title"], asset.get("year"), asset)
+                db.poster.propagate_ids_for_show(
+                    asset["title"], asset.get("year"), asset
+                )
             # 5. Upsert the new asset (now the only entry for this logical asset)
             db.poster.upsert(asset)

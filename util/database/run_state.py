@@ -1,6 +1,8 @@
 import datetime
+from typing import Any, Dict, List, Optional
+
 from .db_base import DatabaseBase
-from typing import Any, Optional, List, Dict
+
 
 class RunState(DatabaseBase):
     """

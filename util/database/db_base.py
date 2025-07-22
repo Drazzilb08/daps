@@ -2,6 +2,7 @@ import sqlite3
 import threading
 from typing import Any
 
+
 class DatabaseBase:
     def __init__(self, db_path: str):
         self.db_path = db_path
@@ -21,6 +22,7 @@ class DatabaseBase:
     @staticmethod
     def init_schema(db_path: str):
         import util.database.schema as schema
+
         conn = sqlite3.connect(db_path)
         schema.init_db_schema(conn)
         conn.close()

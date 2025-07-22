@@ -1,5 +1,7 @@
-from .db_base import DatabaseBase
 from typing import Any, Dict
+
+from .db_base import DatabaseBase
+
 
 class Stats(DatabaseBase):
     """
@@ -38,7 +40,7 @@ class Stats(DatabaseBase):
                 "unmatched_collections_count": len(unmatched_collections),
                 "total_media_count": len(all_media),
                 "total_collections_count": len(all_collections),
-            }
+            },
         }
 
     def count_poster_cache(self) -> int:

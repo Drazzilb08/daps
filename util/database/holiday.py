@@ -1,10 +1,13 @@
-from .db_base import DatabaseBase
 from typing import Optional
+
+from .db_base import DatabaseBase
+
 
 class HolidayStatus(DatabaseBase):
     """
     Interface for the holiday_status table (tracks last active holiday).
     """
+
     def get_status(self) -> dict:
         """Get the last_active_holiday row (or None if not set)."""
         with self.lock, self.conn:

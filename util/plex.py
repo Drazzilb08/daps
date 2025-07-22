@@ -1,15 +1,15 @@
 import html
 import os
-import plexapi
 from typing import Any, Dict, List
 
+import plexapi
 from plexapi import utils as plexutils
 from plexapi.exceptions import NotFound
 from plexapi.server import PlexServer
 from unidecode import unidecode
 
-from util.database import DapsDB
 from util.constants import illegal_chars_regex
+from util.database import DapsDB
 from util.helper import generate_title_variants, progress
 from util.normalization import normalize_titles
 

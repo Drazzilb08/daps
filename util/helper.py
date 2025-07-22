@@ -48,7 +48,9 @@ def print_json(data: Any, logger: Any, module_name: str, type_: str) -> None:
     logger.debug(f"Wrote {type_} to {assets_file}")
 
 
-def print_settings(logger: Any, module_config: SimpleNamespace) -> None: # want to fix this to be Config, but it's a circular import issue right now
+def print_settings(
+    logger: Any, module_config: SimpleNamespace
+) -> None:  # want to fix this to be Config, but it's a circular import issue right now
     """Print sanitized settings from module_config in YAML format.
 
     Args:
@@ -234,7 +236,9 @@ def progress(
     desc: Optional[str] = None,
     total: Optional[int] = None,
     unit: Optional[str] = None,
-    logger: Optional[Any] = None, # want to fix this to be Logger, but it's a circular import issue right now
+    logger: Optional[
+        Any
+    ] = None,  # want to fix this to be Logger, but it's a circular import issue right now
     leave: bool = True,
     **kwargs: Any,
 ) -> Any:
@@ -535,8 +539,10 @@ def generate_title_variants(title: str) -> Dict[str, List[str]]:
 
 def match_assets_to_media(
     db: DapsDB,
-    logger: Optional[Any] = None, # want to fix this to be Logger, but it's a circular import issue right now
-    config: SimpleNamespace = None, # want to fix this to be Config, but it's a circular import issue right now
+    logger: Optional[
+        Any
+    ] = None,  # want to fix this to be Logger, but it's a circular import issue right now
+    config: SimpleNamespace = None,  # want to fix this to be Config, but it's a circular import issue right now
 ) -> None:
     """
     Match all media and collections from the database to physical asset files using DB lookups only.
@@ -558,7 +564,7 @@ def match_assets_to_media(
                 library_names = params.get("library_names", [])
                 if library_names:
                     for library_name in library_names:
-                        collections = db.collection. get_by_instance_and_library(
+                        collections = db.collection.get_by_instance_and_library(
                             instance_name, library_name
                         )
                         if collections:
@@ -598,9 +604,7 @@ def match_assets_to_media(
                 for id_field in ["imdb_id", "tmdb_id", "tvdb_id"]:
                     id_val = media.get(id_field)
                     if id_val:
-                        candidate = db.poster.get_by_id(
-                            id_field, id_val, season_number
-                        )
+                        candidate = db.poster.get_by_id(id_field, id_val, season_number)
                         if candidate:
                             return candidate
                 # 2. Try by normalized_title/year/season_number

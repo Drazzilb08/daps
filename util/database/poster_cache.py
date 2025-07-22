@@ -1,7 +1,8 @@
 import json
+from typing import Optional
+
 from .db_base import DatabaseBase
-import datetime
-from typing import Any, Optional
+
 
 class PosterCache(DatabaseBase):
     """
@@ -11,6 +12,7 @@ class PosterCache(DatabaseBase):
     @staticmethod
     def _canonical_key(item: dict) -> tuple:
         """Returns a tuple key matching the UNIQUE constraint on poster_cache."""
+
         def norm_int(val):
             if val in (None, "", "None"):
                 return None
@@ -18,10 +20,12 @@ class PosterCache(DatabaseBase):
                 return int(val)
             except Exception:
                 return None
+
         def norm_str(val):
             if val in (None, "", "None"):
                 return None
             return str(val).strip() if isinstance(val, str) else val
+
         return (
             norm_str(item.get("title")),
             norm_int(item.get("year")),
@@ -137,6 +141,7 @@ class PosterCache(DatabaseBase):
         for all season_numbers (including NULL).
         """
         from util.helper import normalize_titles
+
         normalized_title = normalize_titles(title)
         sql = """
             UPDATE poster_cache

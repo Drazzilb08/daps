@@ -2,13 +2,14 @@ import hashlib
 import json
 from typing import Any, List, Optional, Tuple
 
-from util.database import DapsDB
 from util.config import Config
 from util.connector import update_plex_database
+from util.database import DapsDB
 from util.helper import progress
 from util.logger import Logger
 from util.normalization import normalize_titles
 from util.plex import PlexClient
+
 
 def upload_posters(config: Config, db: DapsDB, logger: Logger, manifest: dict) -> None:
     """
@@ -30,9 +31,7 @@ def upload_posters(config: Config, db: DapsDB, logger: Logger, manifest: dict) -
                 plex_client = PlexClient(url, api, logger)
                 if plex_client.is_connected():
                     assets = []
-                    plex_media_cache = db.plex.get_by_instance(
-                        instance_name
-                    )
+                    plex_media_cache = db.plex.get_by_instance(instance_name)
                     all_ids = [
                         ("media_cache", i) for i in manifest.get("media_cache", [])
                     ] + [

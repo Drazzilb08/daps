@@ -1,20 +1,22 @@
 import os
 
-from .db_base import DatabaseBase
-from .plex_cache import PlexCache
 from .collection_cache import CollectionCache
-from .poster_cache import PosterCache
+from .db_base import DatabaseBase
+from .holiday import HolidayStatus
 from .media_cache import MediaCache
 from .orphaned_posters import OrphanedPosters
+from .plex_cache import PlexCache
+from .poster_cache import PosterCache
 from .run_state import RunState
 from .stats import Stats
-from .holiday import HolidayStatus
+
 
 class DapsDB:
     def __init__(self, logger=None, db_path=None):
         self.logger = logger
         if db_path is None:
             from util.helper import get_config_dir
+
             config_dir = get_config_dir()
             db_path = os.path.join(config_dir, "daps.db")
         if logger:
@@ -40,6 +42,7 @@ class DapsDB:
         self.run_state.close()
         self.stats.close()
         self.holiday.close()
+
 
 __all__ = [
     "DatabaseBase",

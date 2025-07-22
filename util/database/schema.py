@@ -1,5 +1,6 @@
 # util/database/schema.py
 
+
 def init_db_schema(conn):
     with conn:
         # Plex media cache

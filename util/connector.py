@@ -6,7 +6,9 @@ from util.database import DapsDB
 from util.plex import PlexClient
 
 
-def update_client_databases(db: DapsDB, config, logger, max_age_hours=6, force_reindex=False):
+def update_client_databases(
+    db: DapsDB, config, logger, max_age_hours=6, force_reindex=False
+):
     """
     Update all ARR instances listed in instances_config, only reindexing if cache is missing or stale.
     """
@@ -55,7 +57,9 @@ def update_client_databases(db: DapsDB, config, logger, max_age_hours=6, force_r
             )
 
 
-def update_plex_database(db: DapsDB, config: Config, logger, max_age_hours=6, force_reindex=False):
+def update_plex_database(
+    db: DapsDB, config: Config, logger, max_age_hours=6, force_reindex=False
+):
     """
     Only reindex libraries for Plex instances if their cache is missing or stale.
     Syncs the database after each library is indexed.

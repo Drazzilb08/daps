@@ -1,7 +1,9 @@
-import json
 import datetime
+import json
+from typing import Any, List, Optional
+
 from .db_base import DatabaseBase
-from typing import Any, Optional, List
+
 
 class PlexCache(DatabaseBase):
     """
@@ -11,10 +13,12 @@ class PlexCache(DatabaseBase):
     @staticmethod
     def _canonical_key(item: dict) -> tuple:
         """Returns the unique key for plex_media_cache."""
+
         def norm_str(val):
             if val in (None, "", "None"):
                 return None
             return str(val).strip() if isinstance(val, str) else val
+
         def norm_int(val):
             if val in (None, "", "None"):
                 return None
@@ -22,6 +26,7 @@ class PlexCache(DatabaseBase):
                 return int(val)
             except Exception:
                 return None
+
         return (
             norm_str(item.get("title")),
             norm_int(item.get("year")),
@@ -122,7 +127,9 @@ class PlexCache(DatabaseBase):
                 return None
             return [dict(row) for row in rows]
 
-    def get_by_instance_and_library(self, instance_name: str, library_name: str) -> Optional[list]:
+    def get_by_instance_and_library(
+        self, instance_name: str, library_name: str
+    ) -> Optional[list]:
         """
         Return all records for a given instance_name and library_name as a list of dicts.
         """
@@ -174,7 +181,7 @@ class PlexCache(DatabaseBase):
             rows_deleted = cursor.rowcount
             if logger:
                 logger.info(f"[DELETE] Plex Key: {key} | Rows deleted: {rows_deleted}")
-    
+
     def sync_for_library(
         self,
         instance_name: str,

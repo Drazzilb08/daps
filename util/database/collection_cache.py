@@ -1,7 +1,9 @@
-from .db_base import DatabaseBase
-import json
 import datetime
+import json
 from typing import Any, Optional
+
+from .db_base import DatabaseBase
+
 
 class CollectionCache(DatabaseBase):
     """
@@ -56,6 +58,7 @@ class CollectionCache(DatabaseBase):
     @staticmethod
     def _canonical_collection_key(item: dict) -> tuple:
         """Returns the unique key for collections_cache."""
+
         def norm_int(val):
             if val in (None, "", "None"):
                 return None
@@ -63,10 +66,12 @@ class CollectionCache(DatabaseBase):
                 return int(val)
             except Exception:
                 return None
+
         def norm_str(val):
             if val in (None, "", "None"):
                 return None
             return str(val).strip() if isinstance(val, str) else val
+
         return (
             norm_str(item.get("title")),
             norm_int(item.get("year")),
@@ -106,11 +111,14 @@ class CollectionCache(DatabaseBase):
         """Return all collection rows for the given instance."""
         with self.lock, self.conn:
             cur = self.conn.execute(
-                "SELECT * FROM collections_cache WHERE instance_name=?", (instance_name,)
+                "SELECT * FROM collections_cache WHERE instance_name=?",
+                (instance_name,),
             )
             return cur.fetchall()
 
-    def get_by_instance_and_library(self, instance_name: str, library_name: str) -> list:
+    def get_by_instance_and_library(
+        self, instance_name: str, library_name: str
+    ) -> list:
         """Return all collection rows for the given instance and library."""
         with self.lock, self.conn:
             cur = self.conn.execute(
@@ -143,9 +151,13 @@ class CollectionCache(DatabaseBase):
         with self.lock, self.conn:
             self.conn.execute("DELETE FROM collections_cache")
 
-    def delete(self, item: dict, instance_name: str, logger: Optional[Any] = None) -> None:
+    def delete(
+        self, item: dict, instance_name: str, logger: Optional[Any] = None
+    ) -> None:
         """Delete a single record by its unique key; records orphaned poster if applicable."""
-        key_params = self._canonical_collection_key({**item, "instance_name": instance_name})
+        key_params = self._canonical_collection_key(
+            {**item, "instance_name": instance_name}
+        )
         sql = """
             DELETE FROM collections_cache
             WHERE title=? AND year IS ? AND tmdb_id IS ? AND tvdb_id IS ? AND imdb_id IS ? AND library_name IS ? AND instance_name=?
@@ -172,7 +184,9 @@ class CollectionCache(DatabaseBase):
             cursor = self.conn.execute(sql, key_params)
             rows_deleted = cursor.rowcount
             if logger:
-                logger.info(f"[DELETE] Collection Key: {key_params} | Rows deleted: {rows_deleted}")
+                logger.info(
+                    f"[DELETE] Collection Key: {key_params} | Rows deleted: {rows_deleted}"
+                )
 
     def update(
         self,

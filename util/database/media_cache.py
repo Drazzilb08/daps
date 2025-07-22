@@ -1,7 +1,9 @@
-from .db_base import DatabaseBase
-import json
 import datetime
+import json
 from typing import Any, Optional
+
+from .db_base import DatabaseBase
+
 
 class MediaCache(DatabaseBase):
     """
@@ -9,7 +11,14 @@ class MediaCache(DatabaseBase):
     Provides CRUD and sync operations for tracked media assets.
     """
 
-    def upsert(self, item: dict, asset_type: str, instance_type: str, instance_name: str, max_age_hours: int = 6) -> None:
+    def upsert(
+        self,
+        item: dict,
+        asset_type: str,
+        instance_type: str,
+        instance_name: str,
+        max_age_hours: int = 6,
+    ) -> None:
         """Insert or update a media record for a given instance/asset_type if not present or stale."""
         now = datetime.datetime.now(datetime.timezone.utc).isoformat()
         required_keys = [
@@ -112,6 +121,7 @@ class MediaCache(DatabaseBase):
         """Returns the unique key for media_cache."""
         if asset_type == "movie":
             item["season_number"] = None
+
         def norm_int(val):
             if val in (None, "", "None"):
                 return None
@@ -119,10 +129,12 @@ class MediaCache(DatabaseBase):
                 return int(val)
             except Exception:
                 return None
+
         def norm_str(val):
             if val in (None, "", "None"):
                 return None
             return str(val).strip() if isinstance(val, str) else val
+
         return (
             asset_type,
             norm_str(item.get("title", "")),
@@ -134,7 +146,9 @@ class MediaCache(DatabaseBase):
             str(instance_name),
         )
 
-    def get_for_instance(self, instance_name: str, asset_type: str, max_age_hours: int = 6) -> Optional[list]:
+    def get_for_instance(
+        self, instance_name: str, asset_type: str, max_age_hours: int = 6
+    ) -> Optional[list]:
         """Return all cached media for a given instance and asset_type, if not stale."""
         cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
             hours=max_age_hours
@@ -194,7 +208,13 @@ class MediaCache(DatabaseBase):
                 (instance_name, asset_type),
             )
 
-    def delete(self, item: dict, instance_name: str, asset_type: str, logger: Optional[Any] = None) -> None:
+    def delete(
+        self,
+        item: dict,
+        instance_name: str,
+        asset_type: str,
+        logger: Optional[Any] = None,
+    ) -> None:
         """Delete a single record by its unique key; records orphaned poster if applicable."""
         key_params = self._canonical_key(item, asset_type, instance_name)
         sql = """
@@ -225,7 +245,9 @@ class MediaCache(DatabaseBase):
             cursor = self.conn.execute(sql, key_params)
             rows_deleted = cursor.rowcount
             if logger:
-                logger.info(f"[DELETE] Key: {key_params} | Rows deleted: {rows_deleted}")
+                logger.info(
+                    f"[DELETE] Key: {key_params} | Rows deleted: {rows_deleted}"
+                )
 
     def update(
         self,
@@ -283,7 +305,7 @@ class MediaCache(DatabaseBase):
 
         with self.lock, self.conn:
             self.conn.execute(query, tuple(params))
-    
+
     def sync_for_instance(
         self,
         instance_name: str,
@@ -303,8 +325,7 @@ class MediaCache(DatabaseBase):
             )
             db_rows = cur.fetchall()
         db_map = {
-            self._canonical_key(row, asset_type, instance_name): row
-            for row in db_rows
+            self._canonical_key(row, asset_type, instance_name): row for row in db_rows
         }
         fresh_map = {
             self._canonical_key(item, asset_type, instance_name): item

@@ -1,3 +1,4 @@
+import { attachTooltip } from '../../util.js';
 export const holidayPresetsList = [
     {
         name: "🎆 New Year's Day",
@@ -474,6 +475,49 @@ export function renderGdrivePresetsField(field, immediateData, moduleConfig) {
         ? moduleConfig.gdrive_list.map((entry) => entry.id)
         : [];
 
+    // Container for the preset card
+    const cardContainer = document.createElement('div');
+    cardContainer.className = 'gdrive-preset-card-container';
+    cardContainer.style.marginTop = '0.4em';
+
+    // Helper: Render the preset card HTML
+    function renderPresetCard(preset) {
+        if (!preset) return '';
+        // Don't show name or id
+        const fields = Object.entries(preset).filter(([k]) => k !== 'name' && k !== 'id');
+        if (fields.length === 0) return '';
+        // Build the card HTML
+        let html = '<div class="gdrive-preset-card">';
+        for (const [key, value] of fields) {
+            // Format key label (capitalize first letter)
+            let label = key.charAt(0).toUpperCase() + key.slice(1).replace(/_/g, ' ');
+            // Format value
+            let valHTML = '';
+            if (Array.isArray(value)) {
+                valHTML =
+                    '<div class="gdrive-preset-card-content"><ul>' +
+                    value.map((v) => `<li>${v}</li>`).join('') +
+                    '</ul></div>';
+            } else if (typeof value === 'object' && value !== null) {
+                valHTML =
+                    '<div class="gdrive-preset-card-content">' +
+                    JSON.stringify(value, null, 2) +
+                    '</div>';
+            } else {
+                valHTML = `<div class="gdrive-preset-card-value">${value}</div>`;
+            }
+            html += `
+                <div class="gdrive-preset-card-row">
+                    <div class="gdrive-preset-card-label">${label}:</div>
+                    ${valHTML}
+                </div>
+            `;
+        }
+        html += '</div>';
+        return html;
+    }
+
+    // Render options and set up select
     fetchGdrivePresets().then((entries) => {
         select.innerHTML =
             '<option value="">— No Preset —</option>' +
@@ -488,6 +532,10 @@ export function renderGdrivePresetsField(field, immediateData, moduleConfig) {
                 .join('');
         select.value = immediateData[field.key] || '';
         select._presets = entries;
+
+        // On load: render the card if there is a selected preset
+        const preset = entries.find((d) => d.id === select.value);
+        cardContainer.innerHTML = preset ? renderPresetCard(preset) : '';
     });
 
     select.addEventListener('change', function () {
@@ -497,6 +545,10 @@ export function renderGdrivePresetsField(field, immediateData, moduleConfig) {
 
         immediateData[field.key] = selectedId;
 
+        // Update card
+        cardContainer.innerHTML = preset ? renderPresetCard(preset) : '';
+
+        // Autofill name/id if present in modal
         if (preset) {
             const modal = document.querySelector('.modal.show');
             if (modal) {
@@ -523,6 +575,9 @@ export function renderGdrivePresetsField(field, immediateData, moduleConfig) {
         inputWrap.appendChild(help);
     }
 
+    // Insert card below select
+    inputWrap.appendChild(cardContainer);
+
     row.appendChild(inputWrap);
     return row;
 }
@@ -532,7 +587,7 @@ async function fetchGdrivePresets() {
     if (_gdrivePresetsCache) return _gdrivePresetsCache; // use cache
     try {
         const response = await fetch(
-            'https://raw.githubusercontent.com/Drazzilb08/daps-gdrive-presets/main/presets.json'
+            'https://raw.githubusercontent.com/Drazzilb08/daps-gdrive-presets/CL2K/presets.json'
         );
         if (!response.ok) throw new Error('Failed to fetch GDrive presets');
         const data = await response.json();
@@ -667,7 +722,6 @@ export function renderScheduleField(field, immediateData) {
             summary = expr ? `Custom cron: ${expr}` : 'Enter a cron expression.';
         }
         summaryDiv.textContent = summary;
-        // <--- This is the key change: update immediateData[field.key]
         immediateData[field.key] = getCurrentValue();
     }
 
@@ -711,16 +765,15 @@ export function renderScheduleField(field, immediateData) {
             input.type = 'number';
             input.min = '0';
             input.max = '59';
-            input.className = 'input';
+            input.className = 'input schedule-hourly-minute';
             input.id = 'hourly-minute';
             input.value = parsed.minute || '0';
-            input.style.width = '90px';
+            // input.style.width = '90px';  // REMOVED inline style
             input.addEventListener('input', updateSummary);
             fieldsDiv.appendChild(input);
 
             const hint = document.createElement('span');
-            hint.style.color = 'var(--muted)';
-            hint.style.fontSize = '0.96em';
+            hint.className = 'schedule-hourly-hint'; // Add a CSS class instead of inline style
             hint.textContent = ' (0 = top of hour)';
             fieldsDiv.appendChild(hint);
         } else if (type === 'daily') {
@@ -871,10 +924,8 @@ export function renderScheduleField(field, immediateData) {
             fieldsDiv.appendChild(input);
 
             const linkDiv = document.createElement('div');
-            linkDiv.style.fontSize = '0.96em';
-            linkDiv.style.color = 'var(--muted)';
-            linkDiv.style.marginTop = '3px';
-            linkDiv.innerHTML = `<a href="https://crontab.guru/" target="_blank" style="color:var(--accent);">What is cron?</a>`;
+            linkDiv.className = 'cron-link-hint';
+            linkDiv.innerHTML = `<a href="https://crontab.guru/" target="_blank">What is cron?</a>`;
             fieldsDiv.appendChild(linkDiv);
         }
         updateSummary();

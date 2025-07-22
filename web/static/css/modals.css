@@ -424,6 +424,13 @@ html.modal-open {
   line-height: 1.1;
 }
 
+.modal-copy-controls {
+  display: flex;
+  gap: 0.6em;
+  align-items: center;
+  margin: 0 0 10px 0;
+}
+
 /* ======================
    MOBILE RESPONSIVENESS
 ====================== */

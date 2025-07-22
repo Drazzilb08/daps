@@ -6,7 +6,6 @@ import { openModal } from '../common/modals.js';
 import { buildInstancesPayload } from '../payload.js';
 import { INSTANCE_SCHEMA } from '../constants/instance_schema.js';
 
-
 // --------- Render all instances (groups/cards) ----------
 async function loadInstances() {
     const config = await fetchConfig();

@@ -491,7 +491,6 @@ function renderToXTerm(text, opts = {}) {
     term.write(lines.join('\n'));
 }
 
-
 /* ============================
    Upload Logic
 ============================ */

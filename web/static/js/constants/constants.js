@@ -8,8 +8,7 @@ export const moduleList = [
     'health_checkarr',
     'jduparr',
     'unmatched_assets',
-]
-
+];
 
 export const moduleOrder = [
     'sync_gdrive',

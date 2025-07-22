@@ -5,7 +5,7 @@ import { initNotifications } from './notifications.js';
 import { initPosterSearch } from './poster_search.js';
 import { initSettings } from './settings.js';
 import { initStatistics } from './statistics.js';
-import { initPosterMgmt } from './poster_management.js'
+import { initPosterMgmt } from './poster_management.js';
 import { initIndex } from './index.js';
 
 export const PAGE_LOADERS = {

@@ -35,5 +35,3 @@ function showSplashScreen() {
 export function initIndex() {
     showSplashScreen();
 }
-
-

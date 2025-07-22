@@ -1,7 +1,6 @@
 import { fetchGdriveStats, fetchConfig } from '../api.js';
 import { showLoaderModal } from '../common/loaders.js';
 
-
 // Core function for building stats card
 async function buildGdriveStatsCard(parent) {
     // --- Card container ---

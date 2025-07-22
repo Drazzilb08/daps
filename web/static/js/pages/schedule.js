@@ -1,7 +1,14 @@
 // --- Imports ---
-import { fetchConfig, postConfig, fetchAllRunStates, getModuleStatus } from '../api.js';
+import {
+    fetchConfig,
+    postConfig,
+    fetchAllRunStates,
+    getModuleStatus,
+    runScheduledModule,
+    cancelScheduledModule,
+} from '../api.js';
 import { buildSchedulePayload } from '../payload.js';
-import { showToast, humanize, getIcon } from '../util.js';
+import { showToast, humanize, getIcon, attachTooltip } from '../util.js';
 import { openModal } from '../common/modals.js';
 import { moduleList } from '../constants/constants.js';
 
@@ -25,15 +32,12 @@ async function loadSchedule() {
     const list = document.getElementById('schedule-list');
     if (!list) return;
     list.innerHTML = '';
-    for (const module of moduleList) {
-        if (schedule.hasOwnProperty(module)) {
-            list.appendChild(await makeCard(module, schedule[module], allRunStates, schedule));
-        }
-    }
     const scheduledModules = Object.keys(schedule);
-    const unscheduled = moduleList.filter((m) => !scheduledModules.includes(m));
-    if (unscheduled.length > 0) {
-        list.appendChild(makeAddCard(schedule));
+    // Show ALL modules
+    for (const module of moduleList) {
+        const isScheduled = scheduledModules.includes(module);
+        const scheduleTime = isScheduled ? schedule[module] : null;
+        list.appendChild(await makeCard(module, scheduleTime, allRunStates, schedule));
     }
 }
 
@@ -42,8 +46,13 @@ async function makeCard(module, time, allRunStates, scheduleConfig) {
     card.className = 'card';
     card.tabIndex = 0;
     card.onclick = (e) => {
-        if (!e.target.classList.contains('card-action-btn')) {
-            showEditScheduleModal(module, time, scheduleConfig);
+        if (e.target.classList.contains('card-action-btn')) return;
+        if (time) {
+            // Scheduled: Edit modal
+            showEditScheduleModal(module, time);
+        } else {
+            // Not scheduled: Add modal (for just this module)
+            showAddScheduleModal(module);
         }
     };
 
@@ -54,7 +63,11 @@ async function makeCard(module, time, allRunStates, scheduleConfig) {
 
     const meta = document.createElement('div');
     meta.className = 'card-meta';
-    meta.textContent = time || '';
+    if (time) {
+        meta.textContent = time;
+    } else {
+        meta.innerHTML = `<span class="card-noschedule" title="This module will not run automatically.">Not scheduled</span>`;
+    }
     card.appendChild(meta);
 
     const bottomBar = document.createElement('div');
@@ -76,9 +89,18 @@ async function makeCard(module, time, allRunStates, scheduleConfig) {
     btn.type = 'button';
     btnWrap.appendChild(btn);
 
-    const btnTooltip = document.createElement('div');
-    btnTooltip.className = 'btn-tooltip';
-    btnWrap.appendChild(btnTooltip);
+    // Attach generic tooltip (dynamically updates)
+    function updateTooltip(running, showStop) {
+        attachTooltip(
+            btn,
+            running
+                ? showStop
+                    ? `Cancel ${humanize(module)} Run`
+                    : `Running…`
+                : `Run ${humanize(module)} Now!`,
+            'top'
+        );
+    }
 
     let running = await getModuleStatus(module);
     let destroyed = false;
@@ -92,30 +114,23 @@ async function makeCard(module, time, allRunStates, scheduleConfig) {
             'aria-label',
             isRunning ? `Cancel ${humanize(module)} Run` : `Run ${humanize(module)} Now!`
         );
-        btnTooltip.textContent = isRunning
-            ? `Cancel ${humanize(module)} Run`
-            : `Run ${humanize(module)} Now!`;
-
         if (isRunning) {
-            btn.innerHTML = showStop
-                ? getIcon('mi:stop')
-                : `<span class="spinner"></span>`;
+            btn.innerHTML = showStop ? getIcon('mi:stop') : `<span class="spinner"></span>`;
         } else {
             btn.innerHTML = getIcon('mi:play_arrow');
         }
+        updateTooltip(isRunning, showStop);
     }
 
     setBtnState(running);
 
     btn.onmouseenter = () => {
-        btnTooltip.classList.add('show');
         if (running) {
             showStop = true;
             setBtnState(running);
         }
     };
     btn.onmouseleave = () => {
-        btnTooltip.classList.remove('show');
         if (running) {
             showStop = false;
             setBtnState(running);
@@ -126,21 +141,13 @@ async function makeCard(module, time, allRunStates, scheduleConfig) {
         e.stopPropagation();
         if (!running) {
             setBtnState(true, true);
-            await fetch('/api/run', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ module }),
-            });
+            await runScheduledModule(module); // Works for ad-hoc too
             running = true;
             setBtnState(true);
             pollStatus();
         } else {
             setBtnState(true, true);
-            await fetch('/api/cancel', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ module }),
-            });
+            await cancelScheduledModule(module);
             running = false;
             setBtnState(false);
             loadSchedule();
@@ -171,40 +178,25 @@ async function makeCard(module, time, allRunStates, scheduleConfig) {
     return card;
 }
 
-function makeAddCard(scheduleConfig) {
-    const card = document.createElement('div');
-    card.className = 'card card-add';
-    card.tabIndex = 0;
-    card.onclick = () => showAddScheduleModal(scheduleConfig);
-
-    const plus = document.createElement('div');
-    plus.className = 'card-add-plus';
-    plus.innerHTML = '&#43;';
-    card.appendChild(plus);
-    return card;
-}
-
-function showAddScheduleModal(scheduleConfig) {
-    const scheduledModules = Object.keys(scheduleConfig);
-    const availableModules = moduleList.filter((m) => !scheduledModules.includes(m));
+function showAddScheduleModal(module) {
     openScheduleModal({
-        modules: availableModules,
+        module,
+        value: '',
         isEdit: false,
-        onSave: scheduleSaveHandler('add'),
+        onSave: scheduleSaveHandler('add', module),
         onCancel: () => {},
         onDelete: null,
     });
 }
 
-function showEditScheduleModal(module, value, scheduleConfig) {
+function showEditScheduleModal(module, value) {
     openScheduleModal({
         module,
         value,
-        modules: [module],
         isEdit: true,
-        onSave: scheduleSaveHandler('edit'),
+        onSave: scheduleSaveHandler('edit', module),
         onCancel: () => {},
-        onDelete: scheduleSaveHandler('delete'),
+        onDelete: scheduleSaveHandler('delete', module),
     });
 }
 
@@ -212,21 +204,12 @@ function openScheduleModal({
     module = '',
     value = '',
     isEdit = false,
-    modules = [],
     onSave,
     onDelete,
     onCancel,
 } = {}) {
+    // Only the schedule field is shown
     const schema = [
-        {
-            key: 'module',
-            label: 'Module Name',
-            type: 'dropdown',
-            options: modules,
-            required: true,
-            disabled: isEdit,
-            description: 'Which DAPS module to schedule.',
-        },
         {
             key: 'schedule',
             label: 'Frequency',
@@ -235,7 +218,8 @@ function openScheduleModal({
             description: 'How often to run this module.',
         },
     ];
-    const entry = { module: module || '', schedule: value || '' };
+    const entry = {};
+    entry.schedule = value || '';
 
     const footerButtons = [
         ...(isEdit
@@ -259,33 +243,37 @@ function openScheduleModal({
 
     const buttonHandler = {
         'delete-modal-btn': async ({ closeModal }) => {
-            if (typeof onDelete === 'function') await onDelete(entry.module);
+            if (typeof onDelete === 'function') await onDelete(module);
             closeModal();
         },
         'cancel-modal-btn': ({ closeModal }) => {
             if (typeof onCancel === 'function') onCancel();
             closeModal();
         },
-        'save-modal-btn': scheduleModalBtnHandler(onSave, entry),
-        'add-modal-btn': scheduleModalBtnHandler(onSave, entry),
+        'save-modal-btn': scheduleModalBtnHandler(onSave, entry, module),
+        'add-modal-btn': scheduleModalBtnHandler(onSave, entry, module),
     };
 
     openModal({
         schema,
         entry,
-        config: entry,
-        title: `${isEdit ? 'Edit' : 'Add'} Schedule`,
+        title: `${isEdit ? 'Edit' : 'Add'} ${humanize(module)} Schedule`,
         isEdit,
         footerButtons,
         buttonHandler,
     });
 }
 
-function scheduleSaveHandler(action) {
-    return async (entry) => {
+function scheduleSaveHandler(action, module) {
+    return async (entryOrModule) => {
+        // When deleting, entryOrModule might be just the module name
+        const modName = typeof entryOrModule === 'string' ? entryOrModule : module;
+        const scheduleVal = typeof entryOrModule === 'object' ? entryOrModule.schedule : '';
+
         let payload, res;
         if (action === 'add' || action === 'edit') {
-            payload = await buildSchedulePayload(entry.module, entry.schedule, false);
+            payload = await buildSchedulePayload(modName, scheduleVal, false);
+
             res = await postConfig(payload);
             if (res.success) {
                 showToast('Schedule saved!', 'success');
@@ -294,7 +282,7 @@ function scheduleSaveHandler(action) {
                 showToast('Failed to save schedule: ' + (res.error || ''), 'error');
             }
         } else if (action === 'delete') {
-            payload = await buildSchedulePayload(entry, '', true);
+            payload = await buildSchedulePayload(modName, '', true);
             res = await postConfig(payload);
             if (res.success) {
                 showToast('Schedule deleted!', 'success');
@@ -306,18 +294,18 @@ function scheduleSaveHandler(action) {
     };
 }
 
-function scheduleModalBtnHandler(onSave, entry) {
+function scheduleModalBtnHandler(onSave, entry, module) {
     return ({ bodyDiv, closeModal, event }) => {
-        const inputs = bodyDiv.querySelectorAll('input, textarea, select');
-        inputs.forEach((input) => {
-            if (!input.name) return;
-            if (input.type === 'checkbox') {
-                entry[input.name] = input.checked;
-            } else {
-                entry[input.name] = input.value;
-            }
-        });
+        const scheduleVal = entry.schedule;
+        if (!scheduleVal || !String(scheduleVal).trim()) {
+            showToast('You must enter a schedule expression.', 'error');
+
+            return;
+        }
+        entry.module = module;
+
         if (typeof onSave === 'function') onSave(entry);
+
         closeModal();
     };
 }

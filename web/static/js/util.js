@@ -1,4 +1,3 @@
-// --- Utilities ---
 import { fetchConfig } from './api.js';
 
 let isDirty = false;
@@ -93,7 +92,6 @@ export function getIcon(type, opts = {}) {
 export function getSpinner() {
     return `<span class="spinner"></span>`;
 }
-
 
 let _themeMediaListener = null;
 
@@ -271,7 +269,7 @@ export function renderNotFoundCard(targetEl, opts = {}) {
             ? 'We couldn\'t find this page. <span class="emoji">🚀</span>'
             : 'This resource could not be loaded.');
     const detail = opts.detail ? `<div class="not-found-detail">${opts.detail}</div>` : '';
-    const btnHref = (opts.button && opts.button.href) || '/pages/index';
+    const btnHref = (opts.button && opts.button.href) || '/';
     const btnLabel = (opts.button && opts.button.label) || 'Return to Home';
 
     if (animation) {
@@ -313,4 +311,60 @@ export function renderNotFoundCard(targetEl, opts = {}) {
             </div>
         `;
     }
+}
+
+export function attachTooltip(el, text, position = 'top') {
+    if (!el) return;
+
+    // Remove any previous listeners/tooltips
+    el._btnTooltipListenerFns = el._btnTooltipListenerFns || [];
+    el._btnTooltipListenerFns.forEach((fn, i) => {
+        el.removeEventListener(['mouseenter', 'focus', 'mouseleave', 'blur'][i], fn);
+    });
+    el._btnTooltipListenerFns = [];
+
+    function show(e) {
+        hide();
+        el.style.position = 'relative';
+
+        const tip = document.createElement('div');
+        tip.className = 'btn-tooltip';
+        tip.textContent = text;
+
+        // Custom position logic
+        if (position === 'bottom') {
+            tip.style.bottom = '';
+            tip.style.top = '120%';
+        } else {
+            // 'top'
+            tip.style.top = '';
+            tip.style.bottom = '120%';
+        }
+
+        el.appendChild(tip);
+
+        setTimeout(() => {
+            tip.classList.add('show');
+            el._btnTooltip = tip;
+        }, 1);
+    }
+
+    function hide() {
+        if (el._btnTooltip) {
+            el._btnTooltip.remove();
+            el._btnTooltip = null;
+        }
+    }
+
+    const mouseEnter = show.bind(el);
+    const focus = show.bind(el);
+    const mouseLeave = hide.bind(el);
+    const blur = hide.bind(el);
+
+    el.addEventListener('mouseenter', mouseEnter);
+    el.addEventListener('focus', focus);
+    el.addEventListener('mouseleave', mouseLeave);
+    el.addEventListener('blur', blur);
+
+    el._btnTooltipListenerFns = [mouseEnter, focus, mouseLeave, blur];
 }

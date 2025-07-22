@@ -1,13 +1,11 @@
 import { fetchPosterPreviewUrl, fetchConfig, fetchStats } from '../api.js';
-import { showToast, getIcon } from '../util.js';
+import { showToast, getIcon, attachTooltip } from '../util.js';
 import { showLoaderModal } from '../common/loaders.js';
 import { openModal } from '../common/modals.js';
 
 const IDS = {
     searchInput: 'poster-search-input',
     searchResults: 'poster-search-results',
-    scopeToggle: 'search-scope-toggle',
-    scopeLabel: 'search-scope-label',
 };
 
 let config = {};
@@ -229,11 +227,10 @@ function buildPosterSearchUI() {
             btn.dataset.tooltip = src.tooltip || '';
         }
 
-        // Tooltip logic for all buttons, enabled or disabled
-        btn.addEventListener('mouseenter', showSourceTooltip);
-        btn.addEventListener('focus', showSourceTooltip);
-        btn.addEventListener('mouseleave', hideSourceTooltip);
-        btn.addEventListener('blur', hideSourceTooltip);
+        // Attach generic tooltip (always above)
+        if (btn.dataset.tooltip) {
+            attachTooltip(btn, btn.dataset.tooltip, 'top');
+        }
 
         sourcePicker.appendChild(btn);
     });
@@ -333,9 +330,6 @@ function highlight(str, term) {
     if (!term) return str;
     const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
     return str.replace(regex, `<span class="highlight">$1</span>`);
-}
-function materialIcon(name, style = '') {
-    return `<span class="material-icons" style="vertical-align:middle;${style}">${name}</span>`;
 }
 
 function setupSearchControls() {
@@ -529,7 +523,6 @@ function setupPosterSearchResultEvents() {
     }
 }
 
-
 function showImageModal(imgSrc, caption) {
     // Parse title from caption (filename)
     let fileName = caption || '';
@@ -644,92 +637,6 @@ async function fetchAllFileLists() {
     }
 }
 
-function renderResults(term) {
-    const resultsDiv = getById(IDS.searchResults);
-    let html = '';
-    let useAssets = getById(IDS.scopeToggle).checked;
-
-    if (!useAssets) {
-        const groups = {};
-        [...gdriveFiles, ...customFiles].forEach(({ file, name, location }) => {
-            if (!term || file.toLowerCase().includes(term)) {
-                const key = name + '||' + location;
-                if (!groups[key]) groups[key] = { name, location, files: [] };
-                groups[key].files.push(file);
-            }
-        });
-        Object.values(groups).forEach((group) => {
-            const locate = encodeURIComponent(group.location);
-            html += `<div class="result-group">
-                <div class="result-folder" tabindex="0" aria-label="${group.name}">${
-                group.name
-            }</div>
-                <ul class="poster-list">${group.files
-                    .map(
-                        (f) =>
-                            `<li class="img-preview-link">
-                    <span class="poster-file-label"
-                          data-location="${locate}"
-                          data-file="${encodeURIComponent(f)}"
-                          tabindex="0"
-                          aria-label="Preview ${f}">${highlight(f, term)}</span>
-                    <button class="copy-btn" title="Copy filename" aria-label="Copy filename ${f}">
-                        <span class="copy-btn-default">${getIcon('mi:content_copy', {
-                            style: 'font-size:1.2em;margin-right:3px;vertical-align:middle;',
-                        })}Copy</span>
-<span class="copy-btn-copied" style="display:none;">${getIcon('mi:check', {
-                                style: 'font-size:1.2em;margin-right:3px;vertical-align:middle;',
-                            })}Copied</span>
-                    </button>
-                </li>`
-                    )
-                    .join('')}</ul>
-            </div>`;
-        });
-    }
-    if (useAssets && assetsFiles.length) {
-        const matches = assetsFiles.filter((file) => {
-            if (file.startsWith('tmp/')) return false;
-            if (file === '.DS_Store') return false;
-            if (!term) return true;
-            const lower = file.toLowerCase();
-            const fname = file.split('/').pop().toLowerCase();
-            return lower.includes(term) || fname.includes(term);
-        });
-        if (matches.length) {
-            const locate = encodeURIComponent(assetsDir);
-            html += `<div class="result-group">
-                <div class="result-folder">Assets Dir</div>
-                <ul class="poster-list">${matches
-                    .map(
-                        (f) =>
-                            `<li class="img-preview-link">
-                    <span class="poster-file-label"
-                          data-location="${locate}"
-                          data-file="${encodeURIComponent(f)}"
-                          tabindex="0"
-                          aria-label="Preview ${f}">${highlight(f, term)}</span>
-                    <button class="copy-btn" title="Copy filename" aria-label="Copy filename ${f}">
-                        <span class="copy-btn-default">${materialIcon(
-                            'content_copy',
-                            'font-size:1.2em;margin-right:3px;'
-                        )}Copy</span>
-                        <span class="copy-btn-copied" style="display:none;">${materialIcon(
-                            'check',
-                            'font-size:1.2em;margin-right:3px;'
-                        )}Copied</span>
-                    </button>
-                </li>`
-                    )
-                    .join('')}</ul>
-            </div>`;
-        }
-    }
-    resultsDiv.innerHTML =
-        html ||
-        `<div style="margin-top:2em;">No results found. Try another search or check your filters.</div>`;
-}
-
 function copyToClipboard(btn, text) {
     navigator.clipboard
         .writeText(text)
@@ -751,24 +658,25 @@ function copyToClipboard(btn, text) {
 }
 
 function setupEventListeners() {
-    const toggle = getById(IDS.scopeToggle);
-    const label = getById(IDS.scopeLabel);
     const searchInput = getById(IDS.searchInput);
     const searchResults = getById(IDS.searchResults);
 
-    // Defensive: Only proceed if all key DOM elements exist
-    if (!toggle || !label || !searchInput || !searchResults) {
-        console.warn('setupEventListeners: Required DOM elements missing.');
+    // Defensive: Only proceed if key DOM elements exist
+    if (!searchInput || !searchResults) {
+        if (!searchInput)
+            console.warn(
+                'setupEventListeners: Missing searchInput element (ID:',
+                IDS.searchInput,
+                ')'
+            );
+        if (!searchResults)
+            console.warn(
+                'setupEventListeners: Missing searchResults element (ID:',
+                IDS.searchResults,
+                ')'
+            );
         return;
     }
-
-    toggle.checked = false;
-    label.textContent = 'GDrive Locations';
-    toggle.onchange = () => {
-        label.textContent = toggle.checked ? 'Assets Directory' : 'GDrive Locations';
-        searchInput.value = '';
-        searchResults.innerHTML = '';
-    };
 
     document.addEventListener('keydown', (e) => {
         const modal = document.getElementById('img-preview-modal');
@@ -780,14 +688,14 @@ function setupEventListeners() {
             else searchInput.value = '';
         } else if (e.key === 'Enter' && document.activeElement === searchInput) {
             e.preventDefault();
-            renderResults(searchInput.value.trim().toLowerCase());
+            renderPosterResults(searchInput.value.trim().toLowerCase());
         }
     });
 
     searchInput.onkeypress = (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
-            renderResults(e.target.value.trim().toLowerCase());
+            renderPosterResults(e.target.value.trim().toLowerCase());
         }
     };
 

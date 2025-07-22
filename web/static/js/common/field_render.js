@@ -10,6 +10,7 @@ import {
     renderTextField,
     renderPasswordField,
     renderTextareaField,
+    renderFloatField,
 } from './renders/input_renders.js';
 import {
     renderDirListOptionsField,
@@ -29,146 +30,62 @@ import {
 } from './renders/select_renders.js';
 import { renderColorField, renderColorListField } from './renders/color_renders.js';
 import { renderInstancesField } from './renders/instance_renders.js';
-
-
-import { getIcon } from '../util.js';
-
-function renderPosterField(field) {
-    const wrap = document.createElement('div');
-    wrap.className = 'modal-poster-preview';
-
-    // Remove extension
-    let fileName = field.caption || '';
-    fileName = fileName.replace(/\.(jpg|jpeg|png)$/i, '');
-
-    // Extract IDs
-    const tmdbMatch = fileName.match(/\{tmdb-(\d+)\}/i);
-    const tvdbMatch = fileName.match(/\{tvdb-(\d+)\}/i);
-    const imdbMatch = fileName.match(/\{imdb-tt(\d+)\}/i);
-    const seasonMatch = fileName.match(/season[\s_]?(\d{1,2})/i) || fileName.match(/S(\d{1,2})/i);
-
-    // Get display title and year (for modal title only)
-    let titleYear = fileName.replace(/\{(tmdb|tvdb|imdb-tt)[^}]+\}/gi, '').trim();
-    titleYear = titleYear.replace(/-+\s*Season.*$/i, '').trim();
-
-    const titleYearMatch = titleYear.match(/^(.*?)(?:\s*\((\d{4})\))?$/);
-    const showTitle = titleYearMatch && titleYearMatch[1] ? titleYearMatch[1].trim() : titleYear;
-    const showYear = titleYearMatch && titleYearMatch[2] ? titleYearMatch[2] : '';
-
-    // Set modal title if possible
-    const modalTitle = document.querySelector('.modal-content-fit .modal-title');
-    if (modalTitle) {
-        modalTitle.textContent = showTitle + (showYear ? ` (${showYear})` : '');
-    }
-
-    // Poster image
-    const img = document.createElement('img');
-    img.className = 'modal-poster-img';
-    img.src = field.value || '';
-    img.alt = showTitle || 'Poster Preview';
-    wrap.appendChild(img);
-
-    // Season
-    if (seasonMatch) {
-        const seasonDiv = document.createElement('div');
-        seasonDiv.className = 'modal-poster-season';
-        seasonDiv.textContent = `Season ${seasonMatch[1]}`;
-        wrap.appendChild(seasonDiv);
-    }
-
-    // --- ID Links and icons (in a row, icons ARE links)
-    const idsRow = document.createElement('div');
-    idsRow.className = 'modal-poster-ids';
-
-    // IMDb
-    if (imdbMatch) {
-        const imdbNum = imdbMatch[1];
-        const imdbSpan = document.createElement('span');
-        imdbSpan.innerHTML = `<a href="https://www.imdb.com/title/tt${imdbNum}" target="_blank" rel="noopener" class="id-link">
-                ${getIcon('imdb')}
-                <span class="id-label">tt${imdbNum}</span>
-            </a>`;
-        idsRow.appendChild(imdbSpan);
-    }
-    // TMDB
-    if (tmdbMatch) {
-        const tmdbNum = tmdbMatch[1];
-        const tmdbSpan = document.createElement('span');
-        tmdbSpan.innerHTML = `<a href="https://www.themoviedb.org/movie/${tmdbNum}" target="_blank" rel="noopener" class="id-link">
-                ${getIcon('tmdb')}
-                <span class="id-label">${tmdbNum}</span>
-            </a>`;
-        idsRow.appendChild(tmdbSpan);
-    }
-    // TVDB
-    if (tvdbMatch) {
-        const tvdbNum = tvdbMatch[1];
-        const tvdbSpan = document.createElement('span');
-        tvdbSpan.innerHTML = `<a href="https://thetvdb.com/?tab=series&id=${tvdbNum}" target="_blank" rel="noopener" class="id-link">
-                ${getIcon('tvdb')}
-                <span class="id-label">${tvdbNum}</span>
-            </a>`;
-        idsRow.appendChild(tvdbSpan);
-    }
-
-    if (idsRow.children.length) wrap.appendChild(idsRow);
-
-    return wrap;
-}
+import { renderPosterField } from './renders/image_renders.js';
 
 // -------- FIELD DISPATCHER ----------
-
-export function renderField(field, value, config, rootConfig) {
+export function renderField(field, immediateData, moduleConfig, rootConfig) {
     switch (field.type) {
         case 'dropdown':
-            return renderDropdownField(field, value, config);
+            return renderDropdownField(field, immediateData);
         case 'textarea':
-            return renderTextareaField(field, value, config);
+            return renderTextareaField(field, immediateData);
         case 'json':
-            return renderJsonField(field, value, config);
+            return renderJsonField(field, immediateData);
         case 'number':
-            return renderNumberField(field, value, config);
+            return renderNumberField(field, immediateData);
         case 'dir':
-            return renderDirField(field, value, config);
+            return renderDirField(field, immediateData);
         case 'dir_list':
-            return renderDirListField(field, value, config);
+            return renderDirListField(field, immediateData);
         case 'dir_list_drag_drop':
-            return renderDirListDragDropField(field, value, config);
+            return renderDirListDragDropField(field, immediateData);
         case 'dir_list_options':
-            return renderDirListOptionsField(field, value, config);
+            return renderDirListOptionsField(field, immediateData);
         case 'password':
-            return renderPasswordField(field, value, config);
+            return renderPasswordField(field, immediateData);
         case 'color_list':
-            return renderColorListField(field, value, config);
+            return renderColorListField(field, immediateData, moduleConfig);
         case 'instances':
-            return renderInstancesField(field, value, config, rootConfig);
+            return renderInstancesField(field, immediateData, rootConfig);
         case 'check_box':
-            return renderCheckBoxField(field, value, config);
+            return renderCheckBoxField(field, immediateData);
         case 'instance_dropdown':
-            return renderInstanceDropdownField(field, value, config, rootConfig);
+            return renderInstanceDropdownField(field, immediateData, rootConfig);
         case 'gdrive_custom':
-            return renderGDriveCustomField(field, value, config);
+            return renderGDriveCustomField(field, immediateData, moduleConfig);
         case 'replacerr_custom':
-            return renderReplacerrCustomField(field, value, config);
+            return renderReplacerrCustomField(field, immediateData, moduleConfig);
         case 'upgradinatorr_custom':
-            return renderUpgradinatorrCustomField(field, value, config, rootConfig);
+            return renderUpgradinatorrCustomField(field, immediateData, moduleConfig, rootConfig);
         case 'labelarr_custom':
-            return renderLabelarrCustomField(field, value, config, rootConfig);
+            return renderLabelarrCustomField(field, immediateData, moduleConfig, rootConfig);
         case 'dir_picker':
-            return renderDirPickerField(field, value, config);
+            return renderDirPickerField(field, immediateData);
         case 'schedule':
-            return renderScheduleField(field, value, config);
+            return renderScheduleField(field, immediateData);
         case 'holiday_schedule':
-            return renderHolidayScheduleField(field, value);
+            return renderHolidayScheduleField(field, immediateData);
         case 'color':
-            return renderColorField(field, value, config);
+            return renderColorField(field, immediateData);
         case 'gdrive_presets':
-            return renderGdrivePresetsField(field, value, config);
+            return renderGdrivePresetsField(field, immediateData, moduleConfig);
         case 'holiday_presets':
-            return renderHolidayPresetsField(field, value, config);
+            return renderHolidayPresetsField(field, immediateData, moduleConfig);
         case 'poster':
             return renderPosterField(field);
+        case 'float':
+            return renderFloatField(field, immediateData);
         default:
-            return renderTextField(field, value, config);
+            return renderTextField(field, immediateData);
     }
 }

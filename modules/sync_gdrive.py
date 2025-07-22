@@ -5,7 +5,6 @@ import shlex
 import subprocess
 import sys
 from shutil import which
-from types import SimpleNamespace
 from typing import List, Optional
 
 from util.config import Config
@@ -41,7 +40,7 @@ def get_rclone_path() -> str:
     return rclone_path
 
 
-def run_rclone(config: SimpleNamespace, logger: Logger) -> None:
+def run_rclone(config: Config, logger: Logger) -> None:
     """Run rclone sync for each configured Google Drive folder and log output."""
     sync_list: List[dict] = (
         config.gdrive_list

@@ -236,7 +236,7 @@ def main() -> None:
     Main function to sync labels between Plex and Radarr/Sonarr based on configuration.
 
     Args:
-        config (SimpleNamespace): Configuration object loaded from user settings.
+        config (Config): Configuration object loaded from user settings.
     """
     config = Config("labelarr")
     logger = Logger(getattr(config, "log_level", "INFO"), config.module_name)

@@ -2,13 +2,15 @@ import hashlib
 import json
 from typing import Any, List, Optional, Tuple
 
+from util.database import DapsDB
+from util.config import Config
 from util.connector import update_plex_database
 from util.helper import progress
+from util.logger import Logger
 from util.normalization import normalize_titles
 from util.plex import PlexClient
 
-
-def upload_posters(config: Any, db: Any, logger: Any, manifest: dict) -> None:
+def upload_posters(config: Config, db: DapsDB, logger: Logger, manifest: dict) -> None:
     """
     Syncs poster assets to Plex using a database-cached media index for matching.
     Avoids unnecessary uploads by comparing hashes. Supports dry-run.
@@ -39,7 +41,7 @@ def upload_posters(config: Any, db: Any, logger: Any, manifest: dict) -> None:
                     ]
                     for source, asset_id in all_ids:
                         if source == "media_cache":
-                            asset = db.media.get_media_cache_from_id(asset_id)
+                            asset = db.media.get_by_id(asset_id)
                         else:
                             asset = db.collection.get_by_id(asset_id)
                         if not asset:
@@ -149,7 +151,7 @@ def _build_indexes(media_cache: List[dict]) -> Tuple[dict, dict, dict]:
 
 def _sync_movies(
     records: List[dict],
-    db: Any,
+    db: DapsDB,
     plex_client: Any,
     movie_index: dict,
     dry_run: bool,
@@ -205,9 +207,6 @@ def _sync_movies(
                 )
                 continue
 
-            if has_overlay(matched_entry):
-                plex_client.remove_label(matched_entry, "Overlay", dry_run)
-
             upload_ok = plex_client.upload_poster(
                 matched_entry["library_name"],
                 matched_entry["title"],
@@ -216,6 +215,9 @@ def _sync_movies(
                 dry_run=dry_run,
             )
             if upload_ok:
+                if has_overlay(matched_entry):
+                    plex_client.remove_label(matched_entry, "Overlay", dry_run)
+
                 db.media.update(
                     "movie",
                     asset_title,
@@ -240,7 +242,7 @@ def _sync_movies(
 
 def _sync_series(
     records: List[dict],
-    db: Any,
+    db: DapsDB,
     plex_client: Any,
     show_index: dict,
     dry_run: bool,
@@ -305,9 +307,6 @@ def _sync_series(
                 )
                 continue
 
-            if has_overlay(matched_entry) and not season_number:
-                plex_client.remove_label(matched_entry, "Overlay", dry_run)
-
             upload_ok = plex_client.upload_poster(
                 matched_entry["library_name"],
                 matched_entry["title"],
@@ -319,6 +318,9 @@ def _sync_series(
             )
 
             if upload_ok:
+                if has_overlay(matched_entry) and not season_number:
+                    plex_client.remove_label(matched_entry, "Overlay", dry_run)
+
                 db.media.update(
                     "show",
                     asset_title,
@@ -343,7 +345,7 @@ def _sync_series(
 
 def _sync_collections(
     records: List[dict],
-    db: Any,
+    db: DapsDB,
     plex_client: Any,
     collection_index: dict,
     dry_run: bool,
@@ -395,9 +397,6 @@ def _sync_collections(
                 )
                 continue
 
-            if has_overlay(matched_entry):
-                plex_client.remove_label(matched_entry, "Overlay", dry_run)
-
             upload_ok = plex_client.upload_poster(
                 matched_entry["library_name"],
                 matched_entry["title"],
@@ -407,6 +406,9 @@ def _sync_collections(
                 dry_run=dry_run,
             )
             if upload_ok:
+                if has_overlay(matched_entry):
+                    plex_client.remove_label(matched_entry, "Overlay", dry_run)
+
                 db.media.update(
                     "collection",
                     asset_title,

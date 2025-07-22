@@ -125,6 +125,7 @@
 }
 .input.field-input {
     flex: 1;
+    min-width: 75%;
 }
 .btn--remove-item.remove-btn {
     max-width: 30px;

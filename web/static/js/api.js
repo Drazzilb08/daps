@@ -242,7 +242,6 @@ export function fetchPosterPreviewUrl(location, path) {
     }
 }
 
-
 // Fetch log files for a module
 export async function fetchLogFiles(moduleName) {
     if (!moduleName) return [];

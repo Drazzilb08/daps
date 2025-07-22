@@ -62,9 +62,8 @@ export function unsavedSettingsModal() {
 /**
  * Directory Picker Modal (special schema)
  */
-export function directoryPickerModal(initialPath = '/') {
+export function directoryPickerModal(initialPath = '/', nameValue = null) {
     return new Promise((resolve) => {
-        let lastCreatedFolder = null;
         const entry = { path: initialPath || '/' };
 
         openModal({
@@ -78,7 +77,7 @@ export function directoryPickerModal(initialPath = '/') {
                 },
             ],
             entry,
-            title: 'Select Directory',
+            title: nameValue ? `Select a location for ${nameValue}'s directory` : 'Select Directory',
             footerButtons: [
                 { id: 'dir-create', label: 'New Folder', class: 'btn', type: 'button' },
                 { id: 'dir-accept', label: 'Accept', class: 'btn--success', type: 'button' },

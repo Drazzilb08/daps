@@ -16,8 +16,6 @@ body {
     background: var(--bg);
     margin: 0;
     padding: 0;
-    height: 100vh;
-    min-height: 100vh;
     display: flex;
     flex-direction: column;
     font-size: 14px;
@@ -63,7 +61,8 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
+    height: 100%;
+    min-height: 0;
 }
 
 .page-content {
@@ -146,26 +145,48 @@ body {
 }
 
 /* ========================
-   SCROLLBARS
+   SCROLLBARS (COOL VERSION)
 ======================== */
-
-body,
 .view-frame,
-.view-frame * {
+#settingsForm {
     scrollbar-width: thin;
-    scrollbar-color: #707070 var(--surface, #18191b);
+    scrollbar-color: var(--muted, #ff9500) var(--surface, #18191b);
+    overflow-y: auto;
+    overflow-x: hidden;
 }
-body::-webkit-scrollbar,
-.view-frame::-webkit-scrollbar {
-    width: 8px;
+
+/* WebKit browsers (Chrome, Edge, Safari) */
+.view-frame::-webkit-scrollbar,
+#settingsForm::-webkit-scrollbar {
+    width: 10px;
+    background: var(--surface, #18191b);
+    border-radius: 8px;
+}
+
+.view-frame::-webkit-scrollbar-thumb,
+#settingsForm::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--accent, #ff9500), var(--primary, #222));
+    border-radius: 8px;
+    min-height: 40px;
+    border: 2px solid var(--surface, #18191b);
+    transition: background 0.2s;
+}
+
+.view-frame::-webkit-scrollbar-thumb:hover,
+#settingsForm::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--accent, #ffd36c), var(--primary, #ff9500));
+}
+
+.view-frame::-webkit-scrollbar-track,
+#settingsForm::-webkit-scrollbar-track {
+    background: var(--surface, #18191b);
+    border-radius: 8px;
+}
+
+.view-frame::-webkit-scrollbar-corner,
+#settingsForm::-webkit-scrollbar-corner {
     background: var(--surface, #18191b);
 }
-body::-webkit-scrollbar-thumb,
-.view-frame::-webkit-scrollbar-thumb {
-    background: #707070;
-    border-radius: 6px;
-}
-
 /* ========================
    HEADINGS
 ======================== */

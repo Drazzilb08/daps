@@ -3,7 +3,6 @@ import logging
 import os
 import shutil
 from datetime import datetime
-from types import SimpleNamespace
 from typing import Any, List, Tuple
 
 from PIL import Image
@@ -22,7 +21,7 @@ logging.getLogger("PIL").setLevel(logging.WARNING)
 
 def get_holiday_status(
     db: DapsDB,
-    config: SimpleNamespace,
+    config: Config,
     logger: Logger,
 ) -> dict:
     """
@@ -229,7 +228,7 @@ def process_file(file: str, new_file_path: str, action_type: str, logger: Any) -
 
 def run_replacerr(
     db: DapsDB,
-    renamerr_config: SimpleNamespace,
+    renamerr_config: Config,
     manifest: List[int],
     logger: Logger,
 ) -> None:

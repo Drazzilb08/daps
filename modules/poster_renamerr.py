@@ -2,7 +2,6 @@ import filecmp
 import os
 import shutil
 import sys
-from types import SimpleNamespace
 from typing import Any, Dict, List
 
 from pathvalidate import is_valid_filename, sanitize_filename
@@ -21,8 +20,7 @@ from util.notification import NotificationManager
 from util.poster_import import merge_assets
 from util.upload_posters import upload_posters
 
-
-def process_file(file: str, new_file_path: str, action_type: str, logger: Any) -> None:
+def process_file(file: str, new_file_path: str, action_type: str, logger: Logger) -> None:
     """
     Perform a file operation (copy, move, hardlink, or symlink) between paths.
     Args:
@@ -47,9 +45,9 @@ def process_file(file: str, new_file_path: str, action_type: str, logger: Any) -
 
 
 def rename_files(
-    config: SimpleNamespace,
-    logger: Any,
-    db: Any,
+    config: Config,
+    logger: Logger,
+    db: DapsDB,
 ) -> tuple:
     """
     Prepares assets for renaming or generates a manifest of asset IDs for border replacerr.
@@ -226,7 +224,7 @@ def rename_files(
     return output, manifest
 
 
-def handle_output(output: Dict[str, List[Dict[str, Any]]], logger: Any) -> None:
+def handle_output(output: Dict[str, List[Dict[str, Any]]], logger: Logger) -> None:
     """
     Print final rename results to the logger by asset type in a clean, grouped format.
     Groups shows by (title, year, folder) with all their messages together.
@@ -272,7 +270,7 @@ def handle_output(output: Dict[str, List[Dict[str, Any]]], logger: Any) -> None:
                 logger.info("")
 
 
-def ensure_destination_dir(config: SimpleNamespace, logger: Any) -> None:
+def ensure_destination_dir(config: Config, logger: Logger) -> None:
     if not os.path.exists(config.destination_dir):
         logger.info(f"Creating destination directory: {config.destination_dir}")
         os.makedirs(config.destination_dir)
@@ -280,7 +278,7 @@ def ensure_destination_dir(config: SimpleNamespace, logger: Any) -> None:
         logger.debug(f"Destination directory already exists: {config.destination_dir}")
 
 
-def sync_posters(config: SimpleNamespace, logger: Any) -> None:
+def sync_posters(config: Config, logger: Logger) -> None:
     if getattr(config, "sync_posters", False):
         logger.info("Running sync_gdrive")
         from modules.sync_gdrive import main as gdrive_main
@@ -294,7 +292,7 @@ def sync_posters(config: SimpleNamespace, logger: Any) -> None:
 
 
 def run_border_replacerr(
-    db: DapsDB, config: SimpleNamespace, manifest: List[int], logger: Any
+    db: DapsDB, config: Config, manifest: List[int], logger: Logger
 ) -> None:
     """
     Orchestrates calling border_replacerr in manifest/inline mode, passing only the list of asset IDs.

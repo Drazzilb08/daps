@@ -1,5 +1,4 @@
 import sys
-from types import SimpleNamespace
 from typing import Any, Dict, List, Optional
 
 from util.arr import BaseARRClient, create_arr_client
@@ -172,7 +171,7 @@ def process_instance(
     instance_settings: Dict[str, Any],
     app: BaseARRClient,
     logger: Logger,
-    config: SimpleNamespace,
+    config: Config,
 ) -> Optional[Dict[str, Any]]:
     """
     Process a single instance: filter media, trigger searches, tag media, and gather results.

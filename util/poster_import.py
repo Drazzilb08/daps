@@ -1,6 +1,7 @@
 import os
 from typing import Any, List, Optional
 
+from util.database import DapsDB
 from util.constants import id_content_regex, season_number_regex, year_regex
 from util.helper import (
     extract_ids,
@@ -55,7 +56,7 @@ def get_assets_files(source_dir: str) -> List[dict]:
     return asset_records
 
 
-def merge_assets(db: Any, source_dirs: List[str], logger: Optional[Any] = None) -> None:
+def merge_assets(db: DapsDB, source_dirs: List[str], logger: Optional[Any] = None) -> None:
     """
     For each directory (low->high priority), scan assets and upsert them so that
     higher priority assets overwrite lower priority ones in the DB.

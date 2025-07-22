@@ -40,7 +40,7 @@ def main() -> None:
     Main execution function for identifying and hardlinking duplicate media files using jdupes.
 
     Args:
-        config (SimpleNamespace): Configuration object containing source directories, logging, and other settings.
+        config (Config): Configuration object containing source directories, logging, and other settings.
 
     Returns:
         None

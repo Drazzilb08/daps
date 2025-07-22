@@ -19,6 +19,7 @@ from util.constants import (
     tvdb_id_regex,
     year_regex,
 )
+from util.database import DapsDB
 from util.normalization import (
     normalize_titles,
 )
@@ -29,7 +30,7 @@ def print_json(data: Any, logger: Any, module_name: str, type_: str) -> None:
 
     Args:
         data (Any): Data to write as JSON.
-        logger (Any): Logger instance.
+        logger (Any): Any instance.
         module_name (str): Module name for directory path.
         type_ (str): Type used for filename.
     """
@@ -47,12 +48,12 @@ def print_json(data: Any, logger: Any, module_name: str, type_: str) -> None:
     logger.debug(f"Wrote {type_} to {assets_file}")
 
 
-def print_settings(logger: Any, module_config: SimpleNamespace) -> None:
+def print_settings(logger: Any, module_config: SimpleNamespace) -> None: # want to fix this to be Config, but it's a circular import issue right now
     """Print sanitized settings from module_config in YAML format.
 
     Args:
-        logger (Any): Logger instance.
-        module_config (SimpleNamespace): Configuration object.
+        logger (Any): Any instance.
+        module_config (Any): Configuration object.
     """
     logger.debug(create_table([["Script Settings"]]))
 
@@ -233,7 +234,7 @@ def progress(
     desc: Optional[str] = None,
     total: Optional[int] = None,
     unit: Optional[str] = None,
-    logger: Optional[Any] = None,
+    logger: Optional[Any] = None, # want to fix this to be Logger, but it's a circular import issue right now
     leave: bool = True,
     **kwargs: Any,
 ) -> Any:
@@ -533,9 +534,9 @@ def generate_title_variants(title: str) -> Dict[str, List[str]]:
 
 
 def match_assets_to_media(
-    db: Any,
-    logger: Optional[Any] = None,
-    config: SimpleNamespace = None,
+    db: DapsDB,
+    logger: Optional[Any] = None, # want to fix this to be Logger, but it's a circular import issue right now
+    config: SimpleNamespace = None, # want to fix this to be Config, but it's a circular import issue right now
 ) -> None:
     """
     Match all media and collections from the database to physical asset files using DB lookups only.

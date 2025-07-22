@@ -2,7 +2,6 @@ import re
 import sys
 import time
 from collections import defaultdict
-from types import SimpleNamespace
 from typing import Any, Dict, List
 
 from util.arr import BaseARRClient, create_arr_client
@@ -61,7 +60,7 @@ def print_output(output: Dict[str, Dict[str, Any]], logger: Logger) -> None:
 
 
 def get_count_for_instance_type(
-    config: SimpleNamespace, instance_type: str, logger: Logger
+    config: Config, instance_type: str, logger: Logger
 ) -> int:
     """
     Get the number of items to process for a given instance type, allowing overrides.
@@ -89,7 +88,7 @@ def get_count_for_instance_type(
 
 
 def process_instance(
-    app: BaseARRClient, instance_type: str, config: SimpleNamespace, logger: Logger
+    app: BaseARRClient, instance_type: str, config: Config, logger: Logger
 ) -> List[Dict[str, Any]]:
     """
     Rename media and optionally folders for a single Radarr/Sonarr instance.

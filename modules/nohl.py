@@ -175,7 +175,7 @@ def handle_searches(
     search_list: List[Dict[str, Any]],
     instance_type: str,
     logger: Logger,
-    config,
+    config: Config,
 ) -> List[Dict[str, Any]]:
     """
     Perform search and deletion actions for Radarr or Sonarr items.
@@ -339,7 +339,7 @@ def filter_media(
     media_dict: List[Dict[str, Any]],
     nohl_data: List[Dict[str, Any]],
     instance_type: str,
-    config,
+    config: Config,
     logger: Logger,
 ) -> Dict[str, List[Dict[str, Any]]]:
     """
@@ -670,7 +670,7 @@ def build_instance_index(instances, instances_config):
 
 
 # Helper functions for refactoring main()
-def parse_source_entries(config):
+def parse_source_entries(config: Config):
     """Parse source_dirs into scan and resolve entries."""
     source_entries = []
     if getattr(config, "source_dirs", None):
@@ -689,7 +689,7 @@ def parse_source_entries(config):
     return scan_entries, resolve_entries
 
 
-def scan_entries(scan_entries, logger):
+def scan_entries(scan_entries, logger: Logger):
     """Gather all non-hardlinked files for reporting."""
     scanned_results: Dict[str, Any] = {}
     for entry in scan_entries:
@@ -699,7 +699,7 @@ def scan_entries(scan_entries, logger):
     return scanned_results
 
 
-def aggregate_nohl_results(resolve_entries, logger):
+def aggregate_nohl_results(resolve_entries, logger: Logger):
     """Aggregate all nohl results for ARR resolution."""
     nohl_list: Dict[str, List[Dict[str, Any]]] = {"movies": [], "series": []}
     for entry in resolve_entries:
@@ -716,7 +716,7 @@ def aggregate_nohl_results(resolve_entries, logger):
     return nohl_list
 
 
-def process_arr_instances(config, nohl_list, logger):
+def process_arr_instances(config: Config, nohl_list, logger: Logger):
     """For each instance, filter and trigger searches, returning output_dict, data_list, media_dict, nohl_data."""
     output_dict: Dict[str, Any] = {}
     data_list: Dict[str, Any] = {}
@@ -810,7 +810,7 @@ def build_summary(scanned_results, output_dict):
     return summary
 
 
-def dump_debug_json(data_list, media_dict, nohl_data, output_dict, logger, config):
+def dump_debug_json(data_list, media_dict, nohl_data, output_dict, logger: Logger, config: Config):
     """Dump debug JSON payloads if needed."""
     table = [["Debug JSON Payloads"]]
     logger.debug(create_table(table))

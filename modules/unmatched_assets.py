@@ -4,7 +4,7 @@ from util.logger import Logger
 from util.notification import NotificationManager
 
 
-def get_unmatched_assets_stats(db, config):
+def get_unmatched_assets_stats(db: DapsDB, config: Config):
     # --- DB fetches ---
     unmatched_media = db.media.get_unmatched()
     unmatched_collections = db.collection.get_unmatched()
@@ -258,7 +258,7 @@ def get_unmatched_assets_stats(db, config):
     }
 
 
-def print_unmatched_assets(db, logger, config):
+def print_unmatched_assets(db: DapsDB, logger: Logger, config: Config):
     from util.helper import create_table
 
     stats = get_unmatched_assets_stats(db, config)
@@ -338,7 +338,7 @@ def print_unmatched_assets(db, logger, config):
     logger.info(create_table(table))
 
 
-def build_unmatched_assets_output(db, config):
+def build_unmatched_assets_output(db: DapsDB, config: Config):
     stats = get_unmatched_assets_stats(db, config)
     unmatched_dict = stats["unmatched"]
     summary = stats["summary"]

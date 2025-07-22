@@ -2,13 +2,15 @@ import hashlib
 import json
 from typing import Any, List, Optional, Tuple
 
+from util.database import DapsDB
+from util.config import Config
 from util.connector import update_plex_database
 from util.helper import progress
+from util.logger import Logger
 from util.normalization import normalize_titles
 from util.plex import PlexClient
 
-
-def upload_posters(config: Any, db: Any, logger: Any, manifest: dict) -> None:
+def upload_posters(config: Config, db: DapsDB, logger: Logger, manifest: dict) -> None:
     """
     Syncs poster assets to Plex using a database-cached media index for matching.
     Avoids unnecessary uploads by comparing hashes. Supports dry-run.
@@ -149,7 +151,7 @@ def _build_indexes(media_cache: List[dict]) -> Tuple[dict, dict, dict]:
 
 def _sync_movies(
     records: List[dict],
-    db: Any,
+    db: DapsDB,
     plex_client: Any,
     movie_index: dict,
     dry_run: bool,
@@ -240,7 +242,7 @@ def _sync_movies(
 
 def _sync_series(
     records: List[dict],
-    db: Any,
+    db: DapsDB,
     plex_client: Any,
     show_index: dict,
     dry_run: bool,
@@ -343,7 +345,7 @@ def _sync_series(
 
 def _sync_collections(
     records: List[dict],
-    db: Any,
+    db: DapsDB,
     plex_client: Any,
     collection_index: dict,
     dry_run: bool,

@@ -37,7 +37,9 @@ def main():
         os.environ["LOG_TO_CONSOLE"] = "false"
         try:
             main_config = Config("general")
-            logger = Logger(getattr(main_config, "log_level", "INFO"), main_config.module_name)
+            logger = Logger(
+                getattr(main_config, "log_level", "INFO"), main_config.module_name
+            )
             manage_config(logger)
             orchestrator = DapsOrchestrator(logger)
             orchestrator.run(args)

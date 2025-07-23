@@ -61,8 +61,7 @@ def update_plex_database(
     db: DapsDB, config: Config, logger, max_age_hours=6, force_reindex=False
 ):
     """
-    Only reindex libraries for Plex instances if their cache is missing or stale.
-    Syncs the database after each library is indexed.
+    Only reindex libraries for Plex instances/libraries explicitly listed in config.
     """
     logger.info("Updating Plex library databases...")
     plex_instances = config.instances_config.get("plex", {})
@@ -70,7 +69,13 @@ def update_plex_database(
         logger.error("No Plex instances found in config.")
         return
 
+    # Get relevant instance/library_names mapping from config
+    plex_libs = extract_plex_libraries_from_config(config)
+
     for instance_name, info in plex_instances.items():
+        # Only process if this instance is mentioned in config
+        if instance_name not in plex_libs:
+            continue
         url = info.get("url")
         api = info.get("api")
         if not url or not api:
@@ -84,15 +89,24 @@ def update_plex_database(
             logger.error(f"[plex] Connection failed for '{instance_name}'. Skipping.")
             continue
 
+        # Fetch all possible libraries from Plex for validation
         try:
-            libraries = [
-                section.title for section in plex_client.plex.library.sections()
-            ]
+            all_libraries = [section.title for section in plex_client.plex.library.sections()]
         except Exception as e:
             logger.error(f"[plex] Failed to fetch libraries for '{instance_name}': {e}")
             continue
 
-        for library_name in libraries:
+        # The set of libraries we actually want to process for this instance
+        configured_libs = plex_libs.get(instance_name, [])
+        # If configured_libs is empty, skip (alternatively: process all; adapt as needed)
+        if not configured_libs:
+            logger.debug(f"[plex] No libraries specified for '{instance_name}', skipping.")
+            continue
+
+        # Only work on intersection of valid Plex libraries and those configured
+        target_libraries = [lib for lib in configured_libs if lib in all_libraries]
+
+        for library_name in target_libraries:
             if not force_reindex:
                 cache = db.plex.get_for_library(
                     instance_name, library_name, max_age_hours=max_age_hours
@@ -128,16 +142,19 @@ def update_collections_database(
     db: DapsDB, config, logger, max_age_hours=6, force_reindex=False
 ):
     """
-    Only reindex collections for Plex instances if their collections cache is missing or stale.
-    Syncs the collections table after each library is indexed.
+    Only reindex collections for Plex libraries explicitly listed in config.
     """
-    logger.info("Updating Plex collections databases...")
+    logger.info("Updating Plex collections databases (surgical)...")
     plex_instances = config.instances_config.get("plex", {})
     if not plex_instances:
         logger.error("No Plex instances found in config.")
         return
 
+    plex_libs = extract_plex_libraries_from_config(config)
+
     for instance_name, info in plex_instances.items():
+        if instance_name not in plex_libs:
+            continue
         url = info.get("url")
         api = info.get("api")
         if not url or not api:
@@ -152,49 +169,83 @@ def update_collections_database(
             continue
 
         try:
-            libraries = [
-                section.title for section in plex_client.plex.library.sections()
-            ]
+            all_libraries = [section.title for section in plex_client.plex.library.sections()]
         except Exception as e:
             logger.error(f"[plex] Failed to fetch libraries for '{instance_name}': {e}")
             continue
-        if libraries:
-            for library_name in libraries:
-                try:
-                    collections = plex_client.get_collections(
-                        library_name, include_smart=True
-                    )
-                except Exception as e:
-                    logger.error(
-                        f"[plex] Error fetching collections for library '{library_name}' in '{instance_name}': {e}"
-                    )
-                    continue
 
-                if not collections:
-                    logger.debug(
-                        f"[plex] No collections found for library '{library_name}' in '{instance_name}'. Skipping."
-                    )
-                    continue
+        configured_libs = plex_libs.get(instance_name, [])
+        if not configured_libs:
+            logger.debug(f"[plex] No libraries specified for '{instance_name}', skipping.")
+            continue
 
-                if not force_reindex:
-                    cache = db.collection.get_for_library(
-                        instance_name, library_name, max_age_hours=max_age_hours
-                    )
-                    if cache:
-                        logger.debug(
-                            f"[plex] Collections cache for library '{library_name}' in '{instance_name}' is fresh. Skipping reindex."
-                        )
-                        continue
+        target_libraries = [lib for lib in configured_libs if lib in all_libraries]
 
-                logger.info(
-                    f"Indexing collections for library '{library_name}' in '{instance_name}'..."
+        for library_name in target_libraries:
+            try:
+                collections = plex_client.get_collections(
+                    library_name, include_smart=True
                 )
-                try:
-                    db.collection.sync_collections_cache(
-                        instance_name, library_name, collections, logger
-                    )
-                except Exception as e:
-                    logger.error(
-                        f"[plex] Error caching collections for library '{library_name}' in '{instance_name}': {e}"
+            except Exception as e:
+                logger.error(
+                    f"[plex] Error fetching collections for library '{library_name}' in '{instance_name}': {e}"
+                )
+                continue
+
+            if not collections:
+                logger.debug(
+                    f"[plex] No collections found for library '{library_name}' in '{instance_name}'. Skipping."
+                )
+                continue
+
+            if not force_reindex:
+                cache = db.collection.get_for_library(
+                    instance_name, library_name, max_age_hours=max_age_hours
+                )
+                if cache:
+                    logger.debug(
+                        f"[plex] Collections cache for library '{library_name}' in '{instance_name}' is fresh. Skipping reindex."
                     )
                     continue
+
+            logger.info(
+                f"Indexing collections for library '{library_name}' in '{instance_name}'..."
+            )
+            try:
+                db.collection.sync_collections_cache(
+                    instance_name, library_name, collections, logger
+                )
+            except Exception as e:
+                logger.error(
+                    f"[plex] Error caching collections for library '{library_name}' in '{instance_name}': {e}"
+                )
+                continue
+
+
+def extract_plex_libraries_from_config(config):
+    """
+    Returns dict of plex_instance -> set(library_names), supports both 'instances' and 'mappings' config styles.
+    """
+    plex_libraries = {}
+
+    # poster_renamerr/asset modules style: 'instances' list (can be strings or dicts)
+    for entry in getattr(config, 'instances', []):
+        if isinstance(entry, dict):
+            for plex_instance, opts in entry.items():
+                libs = opts.get('library_names') or []
+                if plex_instance not in plex_libraries:
+                    plex_libraries[plex_instance] = set()
+                plex_libraries[plex_instance].update(libs)
+
+    # labelarr style: 'mappings' list, with 'plex_instances'
+    for mapping in getattr(config, 'mappings', []):
+        for pi in mapping.get('plex_instances', []):
+            instance = pi.get('instance')
+            libs = pi.get('library_names') or []
+            if instance:
+                if instance not in plex_libraries:
+                    plex_libraries[instance] = set()
+                plex_libraries[instance].update(libs)
+
+    # Convert sets to lists for final output
+    return {k: list(v) for k, v in plex_libraries.items()}

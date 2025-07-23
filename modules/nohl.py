@@ -810,7 +810,9 @@ def build_summary(scanned_results, output_dict):
     return summary
 
 
-def dump_debug_json(data_list, media_dict, nohl_data, output_dict, logger: Logger, config: Config):
+def dump_debug_json(
+    data_list, media_dict, nohl_data, output_dict, logger: Logger, config: Config
+):
     """Dump debug JSON payloads if needed."""
     table = [["Debug JSON Payloads"]]
     logger.debug(create_table(table))

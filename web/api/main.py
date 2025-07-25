@@ -98,6 +98,7 @@ async def test_endpoint(request: Request, logger: Any = Depends(get_logger)):
     try:
         data = await request.json()
         logger.debug(f"[WEB] Received data: {data}")
+
         return {"status": "ok", "received": data}
     except Exception as e:
         logger.error(f"[WEB] Error reading data: {e}")
@@ -121,11 +122,6 @@ async def get_cleanarr(logger: Any = Depends(get_logger)):
 
 @app.post("/api/run/cleanarr")
 async def run_cleanarr(logger: Any = Depends(get_logger)):
-    pass
-
-
-@app.put("/api/media_add/")
-async def media_add(logger: Any = Depends(get_logger)):
     pass
 
 

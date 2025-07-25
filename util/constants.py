@@ -1,14 +1,9 @@
 import re
 from typing import List, Pattern, Set
 
-# Matches suffixes like " - Season X" or "_SeasonX" (where X is 1–4 digits), as well as "- Specials" or "_Specials" (case-insensitive)
-season_pattern: Pattern = re.compile(
-    r"(?:\s*-\s*Season\s*\d+|_Season\d{1,4}|\s*-\s*Specials|_Specials)", re.IGNORECASE
-)
-
-# Matches optional leading hyphens, underscores, or spaces before "Season" followed by 1–4 digits (e.g. "- Season 2", "_Season10"), capturing the digits as group 1
-season_number_regex: Pattern = re.compile(
-    r"(?:[-\s_]+)?Season\s*(\d{1,4})", re.IGNORECASE
+# Matches "Season 1", "season_01", etc., and "Specials" (returns 0)
+season_number_regex = re.compile(
+    r"(?:[-\s_]+)?Season\s*(\d{1,4})|(?:[-\s_]+)?Specials?", re.IGNORECASE
 )
 
 # Matches the literal "Season " followed by 1–4 digits (e.g. "Season 1", "Season 12", up to "Season 9999"), capturing those digits as group 1

@@ -433,7 +433,6 @@ class NotificationManager:
         if not success:
             errors = [r.get("error") for r in results if r.get("error")]
             out["error"] = "; ".join(errors)
-        # print(json.dumps(out, indent=2))
         return out
 
     def send_test_notification(self) -> Dict[str, Any]:

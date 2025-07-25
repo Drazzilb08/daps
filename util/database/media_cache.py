@@ -19,7 +19,10 @@ class MediaCache(DatabaseBase):
         instance_name: str,
         max_age_hours: int = 6,
     ) -> None:
-        """Insert or update a media record for a given instance/asset_type if not present or stale."""
+        """
+        Insert or update a single media record for a given instance/asset_type if not present or stale.
+        (Callers must handle any show/season looping.)
+        """
         now = datetime.datetime.now(datetime.timezone.utc).isoformat()
         required_keys = [
             "title",
@@ -41,7 +44,13 @@ class MediaCache(DatabaseBase):
         if asset_type == "movie":
             record["season_number"] = None
 
-        for field in ["year", "tmdb_id", "tvdb_id", "imdb_id", "season_number"]:
+        for field in [
+            "year",
+            "tmdb_id",
+            "tvdb_id",
+            "imdb_id",
+            "season_number",
+        ]:
             if record[field] == "" or (
                 isinstance(record[field], str) and record[field].strip() == ""
             ):
@@ -248,6 +257,38 @@ class MediaCache(DatabaseBase):
                 logger.info(
                     f"[DELETE] Key: {key_params} | Rows deleted: {rows_deleted}"
                 )
+    
+    def get_by_keys(
+        self,
+        asset_type: str,
+        title: str,
+        year: str,
+        tmdb_id: int,
+        tvdb_id: int,
+        imdb_id: str,
+        season_number: int,
+        instance_name: str,
+    ) -> Optional[dict]:
+        with self.lock, self.conn:
+            query = """
+            SELECT * FROM media_cache
+            WHERE asset_type=? AND title=? AND year IS ?
+            AND tmdb_id IS ? AND tvdb_id IS ? AND imdb_id IS ?
+            AND season_number IS ? AND instance_name=?
+            """
+            params = (
+                asset_type,
+                title,
+                year if year not in ("", None) else None,
+                tmdb_id if tmdb_id not in ("", None) else None,
+                tvdb_id if tvdb_id not in ("", None) else None,
+                imdb_id if imdb_id not in ("", None) else None,
+                season_number if season_number not in ("", None) else None,
+                instance_name,
+            )
+            cur = self.conn.execute(query, params)
+            row = cur.fetchone()
+            return dict(row) if row else None
 
     def update(
         self,

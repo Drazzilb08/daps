@@ -293,9 +293,7 @@ def main() -> None:
                 if plex_client.is_connected():
                     for library in library_names:
                         plex_data.extend(
-                            db.plex.get_by_instance_and_library(
-                                instance_name, library
-                            )
+                            db.plex.get_by_instance_and_library(instance_name, library)
                         )
                     output += sync_to_plex(
                         plex_client, arr_data, plex_data, logger, labels, config, db

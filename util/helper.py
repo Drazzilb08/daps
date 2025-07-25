@@ -11,6 +11,7 @@ import yaml
 from tqdm import tqdm
 
 from util.constants import (
+    common_words,
     folder_year_regex,
     imdb_id_regex,
     prefixes,
@@ -19,7 +20,6 @@ from util.constants import (
     tvdb_id_regex,
     year_regex,
 )
-from util.database import DapsDB
 from util.normalization import (
     normalize_titles,
 )
@@ -537,219 +537,10 @@ def generate_title_variants(title: str) -> Dict[str, List[str]]:
     }
 
 
-def match_assets_to_media(
-    db: DapsDB,
-    logger: Optional[
-        Any
-    ] = None,  # want to fix this to be Logger, but it's a circular import issue right now
-    config: SimpleNamespace = None,  # want to fix this to be Config, but it's a circular import issue right now
-) -> None:
-    """
-    Match all media and collections from the database to physical asset files using DB lookups only.
-    Uses get_poster_cache_by_id and get_poster_cache_by_normalized_title.
-    """
-    logger.info("Matching assets to media and collections, please wait...")
-    all_media = []
-
-    # --- Gather regular media ---
-    for inst in config.instances:
-        if isinstance(inst, str):
-            # Radarr/Sonarr etc.
-            instance_name = inst
-            media = db.media.get_by_instance(instance_name)
-            if media:
-                all_media.extend(media)
-        elif isinstance(inst, dict):
-            for instance_name, params in inst.items():
-                library_names = params.get("library_names", [])
-                if library_names:
-                    for library_name in library_names:
-                        collections = db.collection.get_by_instance_and_library(
-                            instance_name, library_name
-                        )
-                        if collections:
-                            all_media.extend(collections)
-
-    total_items = len(all_media)
-    if not all_media:
-        logger.warning("No media or collections found in database for matching.")
-        return
-
-    matches = 0
-    non_matches = 0
-
-    with progress(
-        all_media,
-        desc="Matching assets to media & collections",
-        total=total_items,
-        unit="media",
-        logger=logger,
-    ) as bar:
-        for media in bar:
-            asset_type = media.get("asset_type")
-            title = media.get("title")
-            year = media.get("year")
-            library_name = media.get("library_name")
-            instance_name = media.get("instance_name")
-            normalized_title = media.get("normalized_title")
-
-            alt_titles = []
-            try:
-                alt_titles = json.loads(media.get("alternate_titles") or "[]")
-            except Exception:
-                pass
-
-            def find_match(media, season_number=None):
-                # 1. Try by IDs
-                for id_field in ["imdb_id", "tmdb_id", "tvdb_id"]:
-                    id_val = media.get(id_field)
-                    if id_val:
-                        candidate = db.poster.get_by_id(id_field, id_val, season_number)
-                        if candidate:
-                            return candidate
-                # 2. Try by normalized_title/year/season_number
-                candidate = db.poster.get_by_normalized_title(
-                    normalized_title, year, season_number
-                )
-                if candidate:
-                    return candidate
-                # 3. Try by alternate normalized titles
-                for alt in alt_titles:
-                    alt_norm = normalize_titles(alt)
-                    candidate = db.poster.get_by_normalized_title(
-                        alt_norm, year, season_number
-                    )
-                    if candidate:
-                        return candidate
-                return None
-
-            if asset_type == "show":
-                # Main poster match (no season)
-                candidate = find_match(media, season_number=None)
-                if candidate and is_match(candidate, media)[0]:
-                    db.media.update(
-                        asset_type=asset_type,
-                        title=title,
-                        year=year,
-                        instance_name=instance_name,
-                        matched_value=True,
-                        season_number=None,
-                        original_file=candidate.get("file"),
-                    )
-                    logger.debug(
-                        f"✓ Matched: show main: {title} ({year}) <-> {candidate.get('title')} ({candidate.get('year')})"
-                    )
-                    matches += 1
-                else:
-                    db.media.update(
-                        asset_type=asset_type,
-                        title=title,
-                        year=year,
-                        instance_name=instance_name,
-                        matched_value=False,
-                        season_number=None,
-                        original_file=None,
-                    )
-                    logger.debug(f"✗ No match: show main: {title} ({year})")
-                    non_matches += 1
-
-                # Per-season posters
-                seasons = []
-                if media.get("season_number") is not None:
-                    seasons = [media.get("season_number")]
-                elif "seasons" in media and isinstance(media["seasons"], list):
-                    seasons = [
-                        s.get("season_number")
-                        for s in media["seasons"]
-                        if s.get("season_number") is not None
-                    ]
-                for season in seasons:
-                    candidate = find_match(media, season_number=season)
-                    if candidate and is_match(candidate, media)[0]:
-                        db.media.update(
-                            asset_type=asset_type,
-                            title=title,
-                            year=year,
-                            instance_name=instance_name,
-                            matched_value=True,
-                            season_number=season,
-                            original_file=candidate.get("file"),
-                        )
-                        logger.debug(
-                            f"✓ Matched: show S{season}: {title} ({year}) <-> {candidate.get('title')} ({candidate.get('year')})"
-                        )
-                        matches += 1
-                    else:
-                        db.media.update(
-                            asset_type=asset_type,
-                            title=title,
-                            year=year,
-                            instance_name=instance_name,
-                            matched_value=False,
-                            season_number=season,
-                            original_file=None,
-                        )
-                        logger.debug(f"✗ No match: show S{season}: {title} ({year})")
-                        non_matches += 1
-
-            elif asset_type == "collection":
-                candidate = find_match(media)
-                print(f"candidate: {candidate}")
-                if candidate and is_match(candidate, media)[0]:
-                    db.collection.update(
-                        title=title,
-                        year=year,
-                        library_name=library_name,
-                        instance_name=instance_name,
-                        matched_value=True,
-                        original_file=candidate.get("file"),
-                    )
-                    logger.debug(
-                        f"✓ Matched: [collection] {title} ({year}) <-> {candidate.get('title')} ({candidate.get('year')})"
-                    )
-                    matches += 1
-                else:
-                    db.collection.update(
-                        title=title,
-                        year=year,
-                        library_name=library_name,
-                        instance_name=instance_name,
-                        matched_value=False,
-                        original_file=None,
-                    )
-                    logger.debug(f"✗ No match: [collection] {title} ({year})")
-                    non_matches += 1
-
-            else:
-                # Movies and all other asset types
-                candidate = find_match(media, season_number=None)
-                if candidate and is_match(candidate, media)[0]:
-                    db.media.update(
-                        asset_type=asset_type,
-                        title=title,
-                        year=year,
-                        instance_name=instance_name,
-                        matched_value=True,
-                        season_number=None,
-                        original_file=candidate.get("file"),
-                    )
-                    logger.debug(
-                        f"✓ Matched: {title} ({year}) <-> {candidate.get('title')} ({candidate.get('year')})"
-                    )
-                    matches += 1
-                else:
-                    db.media.update(
-                        asset_type=asset_type,
-                        title=title,
-                        year=year,
-                        instance_name=instance_name,
-                        matched_value=False,
-                        season_number=None,
-                        original_file=None,
-                    )
-                    logger.debug(f"✗ No match: {title} ({year})")
-                    non_matches += 1
-
-    logger.debug(f"Completed matching for all assets: {total_items} items")
-    logger.debug(f"{matches} total_matches")
-    logger.debug(f"{non_matches} non_matches")
+def get_prefix(title: str, length: int = 3) -> str:
+    words = [w for w in title.split() if w.lower() not in common_words]
+    if words:
+        prefix = "".join(words)[:length]
+    else:
+        prefix = "".join(title.split())[:length]
+    return prefix.lower()

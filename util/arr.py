@@ -7,7 +7,7 @@ from typing import Any, Dict, List, Optional, Union
 import requests
 from unidecode import unidecode
 
-from util.constants import windows_path_regex, year_regex
+from util.constants import year_regex
 from util.helper import extract_year
 from util.normalization import normalize_titles
 
@@ -339,6 +339,13 @@ class RadarrClient(BaseARRClient):
         endpoint = f"{self.url}/api/v3/movie"
         return self.make_get_request(endpoint)
 
+    def get_movie(self, media_id: int) -> Any:
+        endpoint = f"{self.url}/api/v3/movie/{media_id}"
+        result = self.make_get_request(endpoint)
+        tags = self.get_all_tags() or []
+        if result:
+            return normalize_arr_media(result, tags, arr_type="radarr")
+
     def add_tags(self, media_id: Union[int, List[int]], tag_id: int) -> Any:
         """
         Add a tag to one or more movies.
@@ -536,65 +543,9 @@ class RadarrClient(BaseARRClient):
         return self.make_delete_request(endpoint)
 
     def get_all_media(self) -> List[Dict[str, Any]]:
-        """
-        Return a structured list of normalized movie items.
-
-        Args:
-            include_episode (bool): Ignored for Radarr.
-        Returns:
-            List[Dict[str, Any]]: List of normalized media entries.
-        """
-        media_dict = []
-        media = self.get_media()
-        if not media:
-            return media_dict
+        items = self.get_media()
         tags = self.get_all_tags() or []
-        tag_lookup = {tag["id"]: tag["label"] for tag in tags}
-        for item in media:
-            tag_names = [tag_lookup.get(tag_id, str(tag_id)) for tag_id in item["tags"]]
-            file_id = item.get("movieFile", {}).get("id", None)
-            alternate_titles = [t["title"] for t in item["alternateTitles"]]
-            normalized_alternate_titles = [
-                normalize_titles(t["title"]) for t in item["alternateTitles"]
-            ]
-            if year_regex.search(item["title"]):
-                title = year_regex.sub("", item["title"])
-                year = extract_year(item["title"])
-            else:
-                title = item["title"]
-                year = item["year"]
-            reg = windows_path_regex.match(item["path"])
-            if reg and reg.group(1):
-                folder = item["path"][item["path"].rfind("\\") + 1 :]
-            else:
-                folder = os.path.basename(os.path.normpath(item["path"]))
-            media_item = {
-                "title": unidecode(html.unescape(title)),
-                "year": year,
-                "media_id": item["id"],
-                "tmdb_id": item["tmdbId"],
-                "imdb_id": item.get("imdbId", None),
-                "monitored": item["monitored"],
-                "status": item["status"],
-                "root_folder": item["rootFolderPath"],
-                "quality_profile": item["qualityProfileId"],
-                "normalized_title": normalize_titles(item["title"]),
-                "path_name": os.path.basename(item["path"]),
-                "original_title": item.get("originalTitle", None),
-                "secondary_year": item.get("secondaryYear", None),
-                "alternate_titles": alternate_titles,
-                "normalized_alternate_titles": normalized_alternate_titles,
-                "file_id": file_id,
-                "folder": folder,
-                "normalized_folder": normalize_titles(folder),
-                "has_file": item["hasFile"],
-                "tags": tag_names,
-                "seasons": None,
-                "season_numbers": None,
-            }
-
-            media_dict.append(media_item)
-        return media_dict
+        return [normalize_arr_media(item, tags, arr_type="radarr") for item in items or []]
 
 
 class SonarrClient(BaseARRClient):
@@ -621,6 +572,13 @@ class SonarrClient(BaseARRClient):
         """
         endpoint = f"{self.url}/api/v3/series"
         return self.make_get_request(endpoint)
+
+    def get_show(self, media_id: int) -> Any:
+        endpoint = f"{self.url}/api/v3/series/{media_id}"
+        result = self.make_get_request(endpoint)
+        tags = self.get_all_tags() or []
+        if result:
+            return normalize_arr_media(result, tags, arr_type="sonarr")
 
     def add_tags(self, media_id: Union[int, List[int]], tag_id: int) -> Any:
         """
@@ -913,113 +871,10 @@ class SonarrClient(BaseARRClient):
         endpoint = f"{self.url}/api/v3/series/{media_id}"
         return self.make_delete_request(endpoint)
 
-    def get_all_media(self, include_episode: bool = False) -> List[Dict[str, Any]]:
-        """
-        Return a structured list of normalized series items and season items.
-
-        Returns:
-            List[Dict[str, Any]]: List of normalized media entries (series and seasons).
-        """
-        media_dict = []
-        media = self.get_media()
-        if not media:
-            return media_dict
+    def get_all_media(self) -> List[Dict[str, Any]]:
+        items = self.get_media()
         tags = self.get_all_tags() or []
-        tag_lookup = {tag["id"]: tag["label"] for tag in tags}
-        for item in media:
-            season_data = item.get("seasons", [])
-            season_list = []
-            for season in season_data:
-                if include_episode:
-                    episode_data = self.get_episode_data_by_season(
-                        item["id"], season["seasonNumber"]
-                    )
-                    episode_list = [
-                        {
-                            "episode_number": ep["episodeNumber"],
-                            "monitored": ep["monitored"],
-                            "episode_file_id": ep["episodeFileId"],
-                            "episode_id": ep["id"],
-                            "has_file": ep["hasFile"],
-                        }
-                        for ep in episode_data
-                    ]
-                else:
-                    episode_list = []
-                try:
-                    status = (
-                        season["statistics"]["episodeCount"]
-                        == season["statistics"]["totalEpisodeCount"]
-                    )
-                except Exception:
-                    status = False
-                try:
-                    season_stats = season["statistics"]["episodeCount"]
-                except Exception:
-                    season_stats = 0
-                season_list.append(
-                    {
-                        "season_number": season["seasonNumber"],
-                        "monitored": season["monitored"],
-                        "season_pack": status,
-                        "season_has_episodes": season_stats,
-                        "episode_data": episode_list,
-                    }
-                )
-            tag_names = [tag_lookup.get(tag_id, str(tag_id)) for tag_id in item["tags"]]
-            season_data = item.get("seasons", [])
-            alternate_titles = [t["title"] for t in item.get("alternateTitles", [])]
-            normalized_alternate_titles = [
-                normalize_titles(t["title"]) for t in item.get("alternateTitles", [])
-            ]
-            # Title/year parsing
-            if year_regex.search(item["title"]):
-                title = year_regex.sub("", item["title"])
-                year = extract_year(item["title"])
-            else:
-                title = item["title"]
-                year = item["year"]
-            reg = windows_path_regex.match(item["path"])
-            if reg and reg.group(1):
-                folder = item["path"][item["path"].rfind("\\") + 1 :]
-            else:
-                folder = os.path.basename(os.path.normpath(item["path"]))
-
-            def normalize_int(val):
-                try:
-                    return int(val) if val is not None else None
-                except Exception:
-                    return None
-
-            # Base media dict for series main row (no season_number)
-            media_item = {
-                "title": unidecode(html.unescape(title)),
-                "year": year,
-                "media_id": item["id"],
-                "tvdb_id": normalize_int(item.get("tvdbId")),
-                "imdb_id": item.get("imdbId") if item.get("imdbId") else None,
-                "monitored": item["monitored"],
-                "status": item["status"],
-                "root_folder": item["rootFolderPath"],
-                "quality_profile": item["qualityProfileId"],
-                "normalized_title": normalize_titles(item["title"]),
-                "path_name": os.path.basename(item["path"]),
-                "original_title": item.get("originalTitle", None),
-                "secondary_year": item.get("secondaryYear", None),
-                "alternate_titles": alternate_titles,
-                "normalized_alternate_titles": normalized_alternate_titles,
-                "file_id": None,
-                "folder": folder,
-                "normalized_folder": normalize_titles(folder),
-                "has_file": None,
-                "tags": tag_names,
-                "season_number": None,
-                "media_folder": None,
-                "seasons": season_list,
-            }
-            # Only add the main series row (no season_number)
-            media_dict.append(dict(media_item))
-        return media_dict
+        return [normalize_arr_media(item, tags, arr_type="sonarr") for item in items or []]
 
     def refresh_queue(self) -> Any:
         """
@@ -1083,3 +938,121 @@ def create_arr_client(
         return SonarrClient(url, api, logger)
     logger.error("Unknown ARR type")
     return None
+
+
+def normalize_arr_media(
+    item, tags, arr_type, include_episode=False, episode_lookup=None
+):
+    """
+    Normalize a single ARR media item (Radarr/Sonarr) into a unified dict structure.
+    - arr_type: "radarr" or "sonarr"
+    - include_episode: (sonarr only) whether to pull episode data
+    - episode_lookup: func(media_id, season_number) -> episode list (for Sonarr)
+    """
+    tag_lookup = {tag.get("id"): tag.get("label") for tag in tags or []}
+    tags_field = item.get("tags") or []
+    tag_names = [
+        tag_lookup.get(tid, str(tid)) for tid in tags_field if tid is not None
+    ]
+
+    alt_titles_field = item.get("alternateTitles") or []
+    alternate_titles = [t.get("title", "") for t in alt_titles_field if t]
+    normalized_alternate_titles = [normalize_titles(t) for t in alternate_titles]
+
+    title_val = item.get("title", "")
+    if year_regex.search(title_val or ""):
+        title = year_regex.sub("", title_val or "")
+        year = extract_year(title_val or "")
+    else:
+        title = title_val or ""
+        year = item.get("year")
+
+    folder = os.path.basename(
+        os.path.normpath(item.get("path", "") or item.get("folderPath"))
+    )
+
+    if arr_type == "radarr":
+        movie_file = item.get("movieFile") or {}
+        file_id = movie_file.get("id")
+        return {
+            "title": unidecode(html.unescape(title or "")),
+            "year": year,
+            "media_id": item.get("id"),
+            "tmdb_id": item.get("tmdbId"),
+            "imdb_id": item.get("imdbId"),
+            "monitored": item.get("monitored"),
+            "status": item.get("status"),
+            "root_folder": item.get("rootFolderPath"),
+            "quality_profile": item.get("qualityProfileId"),
+            "normalized_title": normalize_titles(title_val or ""),
+            "path_name": os.path.basename(item.get("path", "") or ""),
+            "original_title": item.get("originalTitle"),
+            "secondary_year": item.get("secondaryYear"),
+            "alternate_titles": alternate_titles,
+            "normalized_alternate_titles": normalized_alternate_titles,
+            "file_id": file_id,
+            "folder": folder,
+            "normalized_folder": normalize_titles(folder or ""),
+            "has_file": item.get("hasFile"),
+            "tags": tag_names,
+            "seasons": None,
+            "season_numbers": None,
+        }
+    else:
+        season_list = []
+        for season in item.get("seasons", []) or []:
+            season_number = season.get("seasonNumber")
+            episode_list = []
+            if include_episode and episode_lookup and season_number is not None:
+                episode_data = episode_lookup(item.get("id"), season_number) or []
+                episode_list = [
+                    {
+                        "episode_number": ep.get("episodeNumber"),
+                        "monitored": ep.get("monitored"),
+                        "episode_file_id": ep.get("episodeFileId"),
+                        "episode_id": ep.get("id"),
+                        "has_file": ep.get("hasFile"),
+                    }
+                    for ep in episode_data if ep
+                ]
+            try:
+                stats = season.get("statistics") or {}
+                status = stats.get("episodeCount", 0) == stats.get("totalEpisodeCount", 0)
+                season_stats = stats.get("episodeCount", 0)
+            except Exception:
+                status = False
+                season_stats = 0
+            season_list.append(
+                {
+                    "season_number": season_number,
+                    "monitored": season.get("monitored"),
+                    "season_pack": status,
+                    "season_has_episodes": season_stats,
+                    "episode_data": episode_list,
+                }
+            )
+        return {
+            "title": unidecode(html.unescape(title or "")),
+            "year": year,
+            "media_id": item.get("id"),
+            "tvdb_id": item.get("tvdbId"),
+            "imdb_id": item.get("imdbId"),
+            "monitored": item.get("monitored"),
+            "status": item.get("status"),
+            "root_folder": item.get("rootFolderPath"),
+            "quality_profile": item.get("qualityProfileId"),
+            "normalized_title": normalize_titles(title_val or ""),
+            "path_name": os.path.basename(item.get("path", "") or ""),
+            "original_title": item.get("originalTitle"),
+            "secondary_year": item.get("secondaryYear"),
+            "alternate_titles": alternate_titles,
+            "normalized_alternate_titles": normalized_alternate_titles,
+            "file_id": None,
+            "folder": folder,
+            "normalized_folder": normalize_titles(folder or ""),
+            "has_file": None,
+            "tags": tag_names,
+            "season_number": None,
+            "media_folder": None,
+            "seasons": season_list,
+        }

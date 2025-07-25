@@ -238,3 +238,51 @@ class CollectionCache(DatabaseBase):
 
         with self.lock, self.conn:
             self.conn.execute(query, tuple(params))
+
+    def sync_collections_cache(
+        self,
+        instance_name: str,
+        library_name: str,
+        fresh_collections: list,
+        logger=None,
+    ):
+        """
+        Syncs the collections table for a specific instance to match fresh_collections.
+        Removes missing, updates existing, adds new.
+        """
+        with self.lock, self.conn:
+            cur = self.conn.execute(
+                "SELECT * FROM collections_cache WHERE instance_name=? AND library_name=?",
+                (instance_name, library_name),
+            )
+            db_rows = cur.fetchall()
+
+        db_map = {self._canonical_collection_key(row): row for row in db_rows}
+        fresh_map = {
+            self._canonical_collection_key(
+                {**item, "instance_name": instance_name}
+            ): item
+            for item in fresh_collections
+        }
+
+        # Upsert new/changed collections
+        for key, item in fresh_map.items():
+            if key not in db_map:
+                self.upsert(item, instance_name)
+                if logger:
+                    logger.debug(
+                        f"[ADD] New collection '{item['title']}' for {instance_name}"
+                    )
+            else:
+                self.upsert(item, instance_name)
+
+        # Remove collections no longer present
+        keys_to_remove = set(db_map.keys()) - set(fresh_map.keys())
+        for key in keys_to_remove:
+            row = db_map[key]
+            self.delete(row, instance_name, logger)
+
+        if logger:
+            logger.debug(
+                f"[SYNC] Collections table for {instance_name} synchronized. {len(fresh_collections)} items present."
+            )

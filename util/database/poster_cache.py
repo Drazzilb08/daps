@@ -1,6 +1,8 @@
 import json
 from typing import Optional
 
+from util.helper import get_prefix
+
 from .db_base import DatabaseBase
 
 
@@ -77,7 +79,6 @@ class PosterCache(DatabaseBase):
             return [dict(row) for row in cur.fetchall()]
 
     def get_by_id(self, id_field: str, id_val, season_number=None) -> Optional[dict]:
-        """Return a single record from poster_cache by id_field (and season_number, if provided)."""
         sql = f"SELECT * FROM poster_cache WHERE {id_field}=?"
         params = [id_val]
         if season_number is not None:
@@ -94,7 +95,6 @@ class PosterCache(DatabaseBase):
         year: Optional[int] = None,
         season_number: Optional[int] = None,
     ) -> Optional[dict]:
-        """Return a record by normalized_title (optionally year/season_number)."""
         sql = "SELECT * FROM poster_cache WHERE normalized_title=?"
         params = [normalized_title]
         if year is not None:
@@ -162,3 +162,13 @@ class PosterCache(DatabaseBase):
         ]
         with self.lock, self.conn:
             self.conn.execute(sql, params)
+
+    def get_candidates_by_prefix(self, title: str, length: int = 3) -> list:
+        prefix = get_prefix(title, length)
+        if not prefix:
+            return []
+        sql = "SELECT * FROM poster_cache WHERE LOWER(normalized_title) LIKE ?"
+        params = [f"{prefix}%"]
+        with self.lock, self.conn:
+            cur = self.conn.execute(sql, params)
+            return [dict(row) for row in cur.fetchall()]

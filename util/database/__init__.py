@@ -22,6 +22,9 @@ class DapsDB:
         if logger:
             logger.info("[DATABASE] Initializing database")
             logger.debug(f"[DATABASE] DB path: {db_path}")
+
+        DatabaseBase.init_schema(db_path)
+
         self.plex = PlexCache(db_path)
         self.collection = CollectionCache(db_path)
         self.poster = PosterCache(db_path)

@@ -187,17 +187,19 @@ class DapsOrchestrator:
         self._log("info", "[SCHEDULER] Starting scheduler loop...")
         print_schedule_table(self.logger, schedule)
         self._log("info", "[SCHEDULER] Waiting for scheduled modules...")
-        loop_count = 0
+        start_time = time.monotonic()
         try:
             while True:
                 self.tick(schedule)
                 time.sleep(5)
-                loop_count += 1
+                elapsed = int(time.monotonic() - start_time)
                 # Log "waiting" and heartbeat every 12 loops (1 minute)
-                if loop_count % 12 == 0:
+                if elapsed % 60 == 0:  # every full minute
+                    minutes = elapsed // 60
+                    seconds = elapsed % 60
                     self._log(
                         "debug",
-                        f"[SCHEDULER] Scheduler is alive. Loop count: {loop_count}",
+                        f"[SCHEDULER] Scheduler is alive. Uptime: {minutes}m {seconds}s",
                     )
         except Exception as e:
             import traceback
@@ -207,7 +209,6 @@ class DapsOrchestrator:
             )
             traceback.print_exc()
             raise
-
     def tick(self, schedule):
         """Run due modules and clean up finished ones."""
         try:

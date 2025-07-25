@@ -11,6 +11,7 @@ def update_client_databases(
 ):
     """
     Update all ARR instances listed in instances_config, only reindexing if cache is missing or stale.
+    Handles shows by flattening into show-level and per-season items for DB sync.
     """
     logger.info("Updating ARR (Radarr/Sonarr) databases...")
     all_instances = []
@@ -18,9 +19,13 @@ def update_client_databases(
         for instance_name, info in instance_dict.items():
             all_instances.append((instance_type, instance_name, info))
 
+
     if not all_instances:
         logger.error("No instances found in instances_config. Exiting module...")
         sys.exit(1)
+
+    if force_reindex:
+        db.media.clear()
 
     for instance_type, instance_name, info in all_instances:
         url = info.get("url")
@@ -50,8 +55,23 @@ def update_client_databases(
                     )
                     continue
 
+
             logger.info(f"Indexing '{instance_name}'...")
-            fresh_media = app.get_all_media()
+            raw_media = app.get_all_media()
+            fresh_media = []
+
+            if asset_type == "show":
+                for show in raw_media:
+                    show_row = dict(show)
+                    show_row["season_number"] = None
+                    fresh_media.append(show_row)
+                    for season in show.get("seasons", []):
+                        season_row = dict(show)
+                        season_row["season_number"] = season.get("season_number")
+                        fresh_media.append(season_row)
+            else:
+                fresh_media = raw_media
+
             db.media.sync_for_instance(
                 instance_name, app.instance_type, asset_type, fresh_media, logger
             )
@@ -144,7 +164,7 @@ def update_collections_database(
     """
     Only reindex collections for Plex libraries explicitly listed in config.
     """
-    logger.info("Updating Plex collections databases (surgical)...")
+    logger.info("Updating Plex collections databases...")
     plex_instances = config.instances_config.get("plex", {})
     if not plex_instances:
         logger.error("No Plex instances found in config.")

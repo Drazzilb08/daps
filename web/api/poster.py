@@ -5,8 +5,9 @@ from typing import Any
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import FileResponse, JSONResponse
 
-router = APIRouter()
+from util.job_service import JobService
 
+router = APIRouter()
 
 ASSET_DIR = "web/static/assets"
 
@@ -92,3 +93,36 @@ def list_poster_assets():
         return JSONResponse(files)
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
+
+
+@router.post("/api/arr-webhook")
+async def add_media(request: Request, logger: Any = Depends(get_logger)):
+    user_agent = request.headers.get("user-agent", "")
+    service_name = user_agent.split("/")[0] if "/" in user_agent else user_agent
+    try:
+        logger.info("[WEB] Serving POST /api/arr-webhook")
+        data = await request.json()
+        logger.debug(f"Incoming eventType: {data.get('eventType', '')}")
+        job_service = JobService(request, logger=logger, module_name="poster_renamerr")
+        if job_service.is_test(data):
+            logger.info(f"Received test event from {service_name}")
+            return JSONResponse(
+                status_code=200,
+                content={"message": "Test event received, no processing performed."}
+            )
+        process_result = job_service.process_arr_request(data, logger)
+        if process_result:
+            results = job_service.run_renamerr_adhoc(process_result)
+            if results.get('status') == 200:
+                return JSONResponse(status_code=200, content={"message": "Media processed and renamed."})
+            else:
+                # Pass the error from results
+                return JSONResponse(
+                    status_code=results.get('status', 500),
+                    content={"error": results.get('error', 'Failed to process media')}
+                )
+        else:
+            return JSONResponse(status_code=400, content={"error": "Failed to process ARR request."})
+    except Exception as e:
+        logger.error(f"Error adding media: {e}", exc_info=True)
+        return JSONResponse(status_code=500, content={"error": str(e)})

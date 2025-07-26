@@ -1,6 +1,3 @@
-# util/database/schema.py
-
-
 def init_db_schema(conn):
     with conn:
         # Plex media cache
@@ -168,6 +165,23 @@ def init_db_schema(conn):
                 last_run_message TEXT,
                 last_duration INTEGER,
                 last_run_by TEXT
+            );
+            """
+        )
+        # Webhook Jobs
+        conn.execute(
+            """
+            CREATE TABLE IF NOT EXISTS jobs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                type TEXT NOT NULL,
+                received_at TEXT,
+                payload TEXT,
+                status TEXT DEFAULT 'pending',
+                result TEXT,
+                error TEXT,
+                attempts INTEGER DEFAULT 0,
+                max_attempts INTEGER DEFAULT 3,
+                scheduled_at TEXT DEFAULT NULL
             );
             """
         )

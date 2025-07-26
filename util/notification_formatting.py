@@ -40,7 +40,7 @@ def format_for_discord(
         for line in lines:
             candidate = buffer + line + "\n"
             if len(candidate) > DISCORD_FIELD_CHAR_LIMIT:
-                # Discord embed field value chunk limit reached.
+
                 field = {
                     "name": name if first else "",
                     "value": f"```{buffer.rstrip()}```",
@@ -79,7 +79,7 @@ def format_for_discord(
                     chunk["inline"] = True
                 expanded.append(chunk)
                 continue
-            # Unwrap code block if present
+
             content = (
                 val[3:-3] if val.startswith("```") and val.endswith("```") else val
             )
@@ -108,14 +108,12 @@ def format_for_discord(
                 if inline:
                     chunk["inline"] = True
                 expanded.append(chunk)
-        # Batch fields into embeds, respecting Discord's limits.
+
         result: Dict[int, List[Dict[str, Any]]] = {}
         batch: List[Dict[str, Any]] = []
         size_acc = 0
         idx = 1
-        limit = (
-            DISCORD_EMBED_CHAR_LIMIT + 500
-        )  # Discord embed character limit (buffered)
+        limit = DISCORD_EMBED_CHAR_LIMIT + 500
         for f in expanded:
             est = len(f.get("name", "")) + len(f.get("value", "")) + 30
             if len(batch) >= DISCORD_FIELD_COUNT_LIMIT or size_acc + est > limit:
@@ -177,7 +175,6 @@ def format_for_discord(
         fields: List[Dict[str, Any]] = []
         had_any = False
 
-        # Helper for Movies/Collections
         def add_asset_fields(assets, label):
             nonlocal had_any
             for asset in assets:
@@ -190,12 +187,10 @@ def format_for_discord(
                     text = "\n".join([section_title] + [f"    {m}" for m in msgs])
                     fields.append({"name": section_title, "value": f"```{text}```"})
 
-        # Collections
         add_asset_fields(o.get("collection", []), "Collection")
-        # Movies
+
         add_asset_fields(o.get("movie", []), "Movie")
 
-        # Shows: group by (title, year)
         from collections import defaultdict
 
         show_assets = o.get("show", [])
@@ -441,7 +436,7 @@ def format_for_discord(
         return results
 
     def fmt_version_check(o: dict) -> list:
-        # o = {"local_version": "...", "remote_version": "..."}
+
         fields = [
             {"name": "Update Available", "value": "🚨 A new update is available!"},
             {"name": "Your Version", "value": o.get("local_version", "")},
@@ -456,7 +451,7 @@ def format_for_discord(
         ]
         tb = o.get("traceback")
         if tb:
-            # Truncate traceback if too long for Discord embed field
+
             if len(tb) > 1800:
                 tb = tb[:1800] + "\n...truncated..."
             fields.append({"name": "Traceback", "value": f"```{tb}```"})
@@ -848,7 +843,7 @@ def format_for_email(config: Any, output: Any) -> Tuple[str, bool]:
                         block.append(f"<li>{title}{year}</li>")
                 block.append("</ul></div>")
                 sections.append("".join(block))
-        # Summary block for unmatched_assets
+
         summary_data = output.get("summary")
         if summary_data:
             summary_block = [

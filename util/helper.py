@@ -317,7 +317,7 @@ def get_config_dir() -> str:
         config_dir = os.getenv("CONFIG_DIR", "/config")
     else:
         config_dir = Path(__file__).resolve().parents[1] / "config"
-        # Ensure directory exists
+
         Path(config_dir).mkdir(parents=True, exist_ok=True)
     return str(config_dir)
 

@@ -60,5 +60,3 @@ class Stats(DatabaseBase):
             cur = self.conn.execute("SELECT COUNT(*) as cnt FROM orphaned_posters")
             row = cur.fetchone()
             return row["cnt"] if row else 0
-
-    # Add any additional stat queries needed for your UI/dashboard

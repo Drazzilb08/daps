@@ -31,7 +31,7 @@ class PlexClient:
         """
         try:
             self.plex = PlexServer(self.url, self.api_token)
-            # Try a harmless call to confirm connection works
+
             _ = self.plex.version
             self.logger.debug(f"Connected to Plex at {self.url}")
         except Exception as e:
@@ -228,7 +228,7 @@ class PlexClient:
         """
         try:
             section = self.plex.library.section(library_name)
-            # --- Handle collections ---
+
             if is_collection:
                 items = section.search(title=item_title, libtype="collection")
                 if not items:
@@ -241,7 +241,6 @@ class PlexClient:
                     item.uploadPoster(filepath=poster_path)
                 return True
 
-            # --- Handle movies/shows ---
             items = section.search(title=item_title, year=year)
             if not items:
                 self.logger.error(
@@ -250,7 +249,6 @@ class PlexClient:
                 return False
             item = items[0]
 
-            # --- Handle season poster upload for series ---
             if season_number is not None:
                 seasons = [
                     s for s in item.seasons() if int(s.index) == int(season_number)
@@ -265,7 +263,6 @@ class PlexClient:
                     season.uploadPoster(filepath=poster_path)
                 return True
 
-            # --- Otherwise, upload to movie/show itself ---
             if not dry_run:
                 item.uploadPoster(filepath=poster_path)
             return True

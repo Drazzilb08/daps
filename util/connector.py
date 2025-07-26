@@ -19,7 +19,6 @@ def update_client_databases(
         for instance_name, info in instance_dict.items():
             all_instances.append((instance_type, instance_name, info))
 
-
     if not all_instances:
         logger.error("No instances found in instances_config. Exiting module...")
         sys.exit(1)
@@ -55,7 +54,6 @@ def update_client_databases(
                     )
                     continue
 
-
             logger.info(f"Indexing '{instance_name}'...")
             raw_media = app.get_all_media()
             fresh_media = []
@@ -89,11 +87,10 @@ def update_plex_database(
         logger.error("No Plex instances found in config.")
         return
 
-    # Get relevant instance/library_names mapping from config
     plex_libs = extract_plex_libraries_from_config(config)
 
     for instance_name, info in plex_instances.items():
-        # Only process if this instance is mentioned in config
+
         if instance_name not in plex_libs:
             continue
         url = info.get("url")
@@ -109,21 +106,22 @@ def update_plex_database(
             logger.error(f"[plex] Connection failed for '{instance_name}'. Skipping.")
             continue
 
-        # Fetch all possible libraries from Plex for validation
         try:
-            all_libraries = [section.title for section in plex_client.plex.library.sections()]
+            all_libraries = [
+                section.title for section in plex_client.plex.library.sections()
+            ]
         except Exception as e:
             logger.error(f"[plex] Failed to fetch libraries for '{instance_name}': {e}")
             continue
 
-        # The set of libraries we actually want to process for this instance
         configured_libs = plex_libs.get(instance_name, [])
-        # If configured_libs is empty, skip (alternatively: process all; adapt as needed)
+
         if not configured_libs:
-            logger.debug(f"[plex] No libraries specified for '{instance_name}', skipping.")
+            logger.debug(
+                f"[plex] No libraries specified for '{instance_name}', skipping."
+            )
             continue
 
-        # Only work on intersection of valid Plex libraries and those configured
         target_libraries = [lib for lib in configured_libs if lib in all_libraries]
 
         for library_name in target_libraries:
@@ -189,14 +187,18 @@ def update_collections_database(
             continue
 
         try:
-            all_libraries = [section.title for section in plex_client.plex.library.sections()]
+            all_libraries = [
+                section.title for section in plex_client.plex.library.sections()
+            ]
         except Exception as e:
             logger.error(f"[plex] Failed to fetch libraries for '{instance_name}': {e}")
             continue
 
         configured_libs = plex_libs.get(instance_name, [])
         if not configured_libs:
-            logger.debug(f"[plex] No libraries specified for '{instance_name}', skipping.")
+            logger.debug(
+                f"[plex] No libraries specified for '{instance_name}', skipping."
+            )
             continue
 
         target_libraries = [lib for lib in configured_libs if lib in all_libraries]
@@ -248,24 +250,21 @@ def extract_plex_libraries_from_config(config):
     """
     plex_libraries = {}
 
-    # poster_renamerr/asset modules style: 'instances' list (can be strings or dicts)
-    for entry in getattr(config, 'instances', []):
+    for entry in getattr(config, "instances", []):
         if isinstance(entry, dict):
             for plex_instance, opts in entry.items():
-                libs = opts.get('library_names') or []
+                libs = opts.get("library_names") or []
                 if plex_instance not in plex_libraries:
                     plex_libraries[plex_instance] = set()
                 plex_libraries[plex_instance].update(libs)
 
-    # labelarr style: 'mappings' list, with 'plex_instances'
-    for mapping in getattr(config, 'mappings', []):
-        for pi in mapping.get('plex_instances', []):
-            instance = pi.get('instance')
-            libs = pi.get('library_names') or []
+    for mapping in getattr(config, "mappings", []):
+        for pi in mapping.get("plex_instances", []):
+            instance = pi.get("instance")
+            libs = pi.get("library_names") or []
             if instance:
                 if instance not in plex_libraries:
                     plex_libraries[instance] = set()
                 plex_libraries[instance].update(libs)
 
-    # Convert sets to lists for final output
     return {k: list(v) for k, v in plex_libraries.items()}

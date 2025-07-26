@@ -15,12 +15,13 @@ def start_web_server(logger: Any, orchestrator=None) -> None:
       orchestrator: Optional orchestrator instance to store in app state.
     """
     app.state.logger = logger
+    log = logger.get_adapter({"source": "web"})
     if orchestrator is not None:
         app.state.orchestrator = orchestrator
 
     PORT = int(os.environ.get("PORT", 8000))
     HOST = os.environ.get("HOST", "0.0.0.0")
-    logger.info(f"[WEB] Starting web server on {HOST}:{PORT}")
+    log.info(f"Starting web server on {HOST}:{PORT}")
     web_thread = Thread(
         target=lambda: uvicorn.run(app, host=HOST, port=PORT, log_level="warning"),
         daemon=True,

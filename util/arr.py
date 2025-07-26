@@ -545,7 +545,9 @@ class RadarrClient(BaseARRClient):
     def get_all_media(self) -> List[Dict[str, Any]]:
         items = self.get_media()
         tags = self.get_all_tags() or []
-        return [normalize_arr_media(item, tags, arr_type="radarr") for item in items or []]
+        return [
+            normalize_arr_media(item, tags, arr_type="radarr") for item in items or []
+        ]
 
 
 class SonarrClient(BaseARRClient):
@@ -874,7 +876,9 @@ class SonarrClient(BaseARRClient):
     def get_all_media(self) -> List[Dict[str, Any]]:
         items = self.get_media()
         tags = self.get_all_tags() or []
-        return [normalize_arr_media(item, tags, arr_type="sonarr") for item in items or []]
+        return [
+            normalize_arr_media(item, tags, arr_type="sonarr") for item in items or []
+        ]
 
     def refresh_queue(self) -> Any:
         """
@@ -916,6 +920,8 @@ def create_arr_client(
         Optional[Union[RadarrClient, SonarrClient]]: The client or None on failure.
     """
 
+    logger = logger.get_adapter({"source": "ARR"})
+
     class SilentLogger:
         def debug(self, *args, **kwargs):
             pass
@@ -951,9 +957,7 @@ def normalize_arr_media(
     """
     tag_lookup = {tag.get("id"): tag.get("label") for tag in tags or []}
     tags_field = item.get("tags") or []
-    tag_names = [
-        tag_lookup.get(tid, str(tid)) for tid in tags_field if tid is not None
-    ]
+    tag_names = [tag_lookup.get(tid, str(tid)) for tid in tags_field if tid is not None]
 
     alt_titles_field = item.get("alternateTitles") or []
     alternate_titles = [t.get("title", "") for t in alt_titles_field if t]
@@ -1013,11 +1017,14 @@ def normalize_arr_media(
                         "episode_id": ep.get("id"),
                         "has_file": ep.get("hasFile"),
                     }
-                    for ep in episode_data if ep
+                    for ep in episode_data
+                    if ep
                 ]
             try:
                 stats = season.get("statistics") or {}
-                status = stats.get("episodeCount", 0) == stats.get("totalEpisodeCount", 0)
+                status = stats.get("episodeCount", 0) == stats.get(
+                    "totalEpisodeCount", 0
+                )
                 season_stats = stats.get("episodeCount", 0)
             except Exception:
                 status = False

@@ -5,7 +5,6 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 
-# Schemas
 class RunRequest(BaseModel):
     module: str
 
@@ -17,8 +16,8 @@ class CancelRequest(BaseModel):
 router = APIRouter()
 
 
-def get_logger(request: Request) -> Any:
-    return request.app.state.logger
+def get_logger(request: Request, source="WEB") -> Any:
+    return request.app.state.logger.get_adapter({"source": source})
 
 
 @router.post("/api/run")
@@ -28,10 +27,10 @@ async def run_module(
     logger: Any = Depends(get_logger),
 ):
     module = data.module
-    logger.debug("[WEB] Serving POST /api/run for module: %s", module)
+    logger.debug("Serving POST /api/run for module: %s", module)
     orchestrator = getattr(request.app.state, "orchestrator", None)
     if orchestrator is None:
-        logger.error("[WEB] Orchestrator not available in app state")
+        logger.error("Orchestrator not available in app state")
         return JSONResponse(
             status_code=500, content={"error": "Orchestrator not available"}
         )
@@ -41,13 +40,13 @@ async def run_module(
         and running[module] is not None
         and running[module]["proc"].is_alive()
     ):
-        logger.error(f"[WEB] Module {module} is already running")
+        logger.error(f"Module {module} is already running")
         return JSONResponse(
             status_code=400, content={"error": f"Module {module} is already running"}
         )
     proc_entry = orchestrator.launch_module(module, origin="web")
     if proc_entry is None:
-        logger.error(f"[WEB] Failed to start module: {module}")
+        logger.error(f"Failed to start module: {module}")
         return JSONResponse(
             status_code=500, content={"error": f"Failed to start module: {module}"}
         )
@@ -61,7 +60,7 @@ async def module_status(
 ):
     orchestrator = getattr(request.app.state, "orchestrator", None)
     if orchestrator is None:
-        logger.error("[WEB] Orchestrator not available in app state")
+        logger.error("Orchestrator not available in app state")
         return JSONResponse(
             status_code=500, content={"error": "Orchestrator not available"}
         )
@@ -88,7 +87,7 @@ async def cancel_module(
     module = data.module
     orchestrator = getattr(request.app.state, "orchestrator", None)
     if orchestrator is None:
-        logger.error("[WEB] Orchestrator not available in app state")
+        logger.error("Orchestrator not available in app state")
         return JSONResponse(
             status_code=500, content={"error": "Orchestrator not available"}
         )
@@ -97,7 +96,7 @@ async def cancel_module(
     if not entry or not entry["proc"].is_alive():
         return JSONResponse(status_code=400, content={"error": "Module not running"})
     entry["proc"].terminate()
-    logger.info(f"[WEB] Manually cancelled module: {module}")
+    logger.info(f"Manually cancelled module: {module}")
     del orchestrator.running[module]
     return {"status": "cancelled", "module": module}
 
@@ -107,7 +106,7 @@ async def get_all_run_states(request: Request, logger: Any = Depends(get_logger)
     """Get last run status for all modules (for schedule cards)."""
     orchestrator = getattr(request.app.state, "orchestrator", None)
     if orchestrator is None:
-        logger.error("[WEB] Orchestrator not available in app state")
+        logger.error("Orchestrator not available in app state")
         return JSONResponse(
             status_code=500, content={"error": "Orchestrator not available"}
         )

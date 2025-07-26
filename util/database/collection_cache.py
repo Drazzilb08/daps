@@ -265,7 +265,6 @@ class CollectionCache(DatabaseBase):
             for item in fresh_collections
         }
 
-        # Upsert new/changed collections
         for key, item in fresh_map.items():
             if key not in db_map:
                 self.upsert(item, instance_name)
@@ -276,7 +275,6 @@ class CollectionCache(DatabaseBase):
             else:
                 self.upsert(item, instance_name)
 
-        # Remove collections no longer present
         keys_to_remove = set(db_map.keys()) - set(fresh_map.keys())
         for key in keys_to_remove:
             row = db_map[key]

@@ -1,5 +1,3 @@
-# util/orchestrator.py
-
 import multiprocessing
 import time
 from datetime import datetime
@@ -147,68 +145,96 @@ class DapsOrchestrator:
         self.running: Dict[str, multiprocessing.Process] = {}
         self.db = DapsDB(logger=logger)
 
-    def _log(self, level, *args, **kwargs):
+    def _log(self, level, msg, source="orchestrator", exc_info=False, **kwargs):
+        """
+        Unified logging method. Uses logger if available, includes source context,
+        and falls back to print if logger is None.
+        """
         if self.logger:
-            log_method = getattr(self.logger, level, None)
-            if log_method:
-                log_method(*args, **kwargs)
+            adapter = self.logger.get_adapter({"source": source})
+            log_func = getattr(adapter, level, None)
+            if log_func:
+                log_func(msg, exc_info=exc_info, **kwargs)
+            else:
+
+                print(f"[{level.upper()}][{source}] {msg}")
+        else:
+            print(f"[{level.upper()}][{source}] {msg}")
 
     def run(self, args):
-        self._log("debug", f"[ORCH] run() entry with args: {args}")
+        self._log("debug", f"run() entry with args: {args}", source="orchestrator")
         try:
             if args.modules:
                 self.run_cli_modules(args.modules)
             else:
-                self._log("info", "[GENERAL] Starting DAPS...")
+                self._log("info", "Starting DAPS...", source="orchestrator")
                 self._start_web_thread()
                 self.run_schedule()
         except Exception as e:
             import traceback
 
-            self._log("error", f"[ORCH] FATAL error in run(): {e}", exc_info=True)
+            self._log(
+                "error",
+                f"FATAL error in run(): {e}",
+                source="orchestrator",
+                exc_info=True,
+            )
             traceback.print_exc()
             raise
 
     def run_cli_modules(self, modules):
-        self._log("info", f"[ORCH] CLI mode: Running modules {modules}")
+
+        self._log("info", f"CLI mode: Running modules {modules}", source="orchestrator")
         try:
             for name in modules:
                 self.launch_module(name)
             for proc in multiprocessing.active_children():
                 proc.join()
-            self._log("info", "[ORCH] All CLI modules completed.")
+            self._log("info", "All CLI modules completed.", source="orchestrator")
         except Exception as e:
-            self._log("error", f"[ORCH] Error in run_cli_modules: {e}", exc_info=True)
+            self._log(
+                "error",
+                f"Error in run_cli_modules: {e}",
+                source="orchestrator",
+                exc_info=True,
+            )
             raise
 
     def run_schedule(self):
         schedule = Config("schedule").data
-
-        self._log("info", "[SCHEDULER] Starting scheduler loop...")
-        print_schedule_table(self.logger, schedule)
-        self._log("info", "[SCHEDULER] Waiting for scheduled modules...")
+        self._log("info", "Starting scheduler loop...", source="scheduler")
+        log_adapter = (
+            self.logger.get_adapter({"source": "SCHEDULER"}) if self.logger else None
+        )
+        print_schedule_table(log_adapter, schedule)
+        self._log("info", "Waiting for scheduled modules...", source="scheduler")
         start_time = time.monotonic()
         try:
             while True:
                 self.tick(schedule)
                 time.sleep(5)
                 elapsed = int(time.monotonic() - start_time)
-                # Log "waiting" and heartbeat every 12 loops (1 minute)
-                if elapsed % 60 == 0:  # every full minute
+
+                if elapsed % 60 == 0:
                     minutes = elapsed // 60
                     seconds = elapsed % 60
                     self._log(
                         "debug",
-                        f"[SCHEDULER] Scheduler is alive. Uptime: {minutes}m {seconds}s",
+                        f"Scheduler is alive. Uptime: {minutes}m {seconds}s",
+                        source="scheduler",
                     )
         except Exception as e:
             import traceback
 
             self._log(
-                "error", f"[SCHEDULER] FATAL error in schedule loop: {e}", exc_info=True
+                "error",
+                f"FATAL error in schedule loop: {e}",
+                source="scheduler",
+                exc_info=True,
             )
             traceback.print_exc()
             raise
+
     def tick(self, schedule):
         """Run due modules and clean up finished ones."""
         try:
@@ -216,7 +242,11 @@ class DapsOrchestrator:
                 if not sched:
                     continue
                 if name not in MODULES:
-                    self._log("error", f"Unknown module in schedule: {name}")
+                    self._log(
+                        "error",
+                        f"Unknown module in schedule: {name}",
+                        source="scheduler",
+                    )
                     continue
                 if (
                     name in self.running
@@ -224,51 +254,79 @@ class DapsOrchestrator:
                     and self.running[name]["proc"].is_alive()
                 ):
                     continue
-                if check_schedule(name, sched, self.logger):
-                    self._log("info", f"[SCHEDULER] Running scheduled module: {name}")
+
+                log_adapter = (
+                    self.logger.get_adapter({"source": "scheduler"})
+                    if self.logger
+                    else None
+                )
+                if check_schedule(name, sched, log_adapter):
+                    self._log(
+                        "info", f"Running scheduled module: {name}", source="scheduler"
+                    )
                     self.running[name] = self.launch_module(name, origin="scheduled")
-            # Cleanup finished
+
             for name in list(self.running):
                 entry = self.running[name]
                 proc = entry["proc"]
                 origin = entry["origin"]
                 if proc is not None and not proc.is_alive():
-                    self._log("info", f"[{origin.upper()}] Module {name} finished")
+                    self._log(
+                        "info",
+                        f"Module {name} finished (origin={origin})",
+                        source="scheduler",
+                    )
                     del self.running[name]
         except Exception as e:
-            self._log("error", f"[SCHEDULER] Exception in tick(): {e}", exc_info=True)
+            self._log(
+                "error", f"Exception in tick(): {e}", source="scheduler", exc_info=True
+            )
             raise
 
     def _start_web_thread(self):
         try:
-
             from web.server import start_web_server
 
             start_web_server(self.logger, orchestrator=self)
-
-            self._log("info", "[ORCH] Web server started in background thread.")
+            self._log(
+                "info",
+                "Web server started in background thread.",
+                source="orchestrator",
+            )
         except Exception as e:
-            self._log("error", f"[ORCH] Failed to start web server: {e}", exc_info=True)
+            self._log(
+                "error",
+                f"Failed to start web server: {e}",
+                source="orchestrator",
+                exc_info=True,
+            )
 
     def start_web(self):
-        # (For direct web-only mode if you ever need it)
+
         try:
             from web.server import start_web_server
 
-            self._log("info", "[ORCH] Starting web server (blocking)...")
+            self._log(
+                "info", "Starting web server (blocking)...", source="orchestrator"
+            )
             start_web_server(self.logger, self)
         except Exception as e:
-            self._log("error", f"[ORCH] Failed to start web server: {e}", exc_info=True)
+            self._log(
+                "error",
+                f"Failed to start web server: {e}",
+                source="orchestrator",
+                exc_info=True,
+            )
             raise
 
     def launch_module(self, name, origin="manual"):
         try:
             if name not in MODULES:
-                self._log("error", f"Unknown module: {name}")
+                self._log("error", f"Unknown module: {name}", source=origin)
                 return None
 
             target_func = MODULES[name]
-            self._log("info", f"[{origin.upper()}] Launching module '{name}'...")
+            self._log("info", f"Launching module '{name}'...", source=origin)
 
             self.db.run_state.record_run_start(name, run_by=origin)
 
@@ -278,7 +336,8 @@ class DapsOrchestrator:
             proc.start()
             self._log(
                 "info",
-                f"[{origin.upper()}] Process for '{name}' started: alive={proc.is_alive()}",
+                f"Process for '{name}' started: alive={proc.is_alive()}",
+                source=origin,
             )
             return {"proc": proc, "origin": origin}
         except Exception as e:
@@ -286,7 +345,8 @@ class DapsOrchestrator:
 
             self._log(
                 "error",
-                f"[{origin.upper()}] Failed to launch module '{name}': {e}",
+                f"Failed to launch module '{name}': {e}",
+                source=origin,
                 exc_info=True,
             )
             traceback.print_exc()

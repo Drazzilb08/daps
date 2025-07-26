@@ -41,7 +41,7 @@ def get_version() -> str:
 
 
 def _check_remote_version(local_version, branch, logger):
-    # Fetch remote VERSION file from GitHub
+
     raw_url = f"https://raw.githubusercontent.com/Drazzilb08/daps/{branch}/VERSION"
     try:
         remote_version = requests.get(raw_url, timeout=5)
@@ -55,7 +55,6 @@ def _check_remote_version(local_version, branch, logger):
         logger.debug(f"Exception fetching VERSION: {e}")
         return None, None, False
 
-    # Get remote build number (commit count)
     api_url = (
         f"https://api.github.com/repos/Drazzilb08/daps/commits?sha={branch}&per_page=1"
     )
@@ -74,10 +73,8 @@ def _check_remote_version(local_version, branch, logger):
         logger.debug(f"Exception fetching build count: {e}")
         return remote_version_str, None, False
 
-    # Construct remote full version
     remote_full = f"{remote_version_str}.{branch}{build_count}"
 
-    # Compare (mimic your JS logic)
     update_available = False
     local_parts = local_version.strip().split(".")
     if len(local_parts) >= 4:

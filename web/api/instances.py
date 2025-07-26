@@ -19,8 +19,8 @@ class TestInstanceRequest(BaseModel):
     api: Optional[str] = None
 
 
-def get_logger(request: Request) -> Any:
-    return request.app.state.logger
+def get_logger(request: Request, source="WEB") -> Any:
+    return request.app.state.logger.get_adapter({"source": source})
 
 
 def get_config() -> Dict[str, Any]:
@@ -36,10 +36,10 @@ async def get_instances(
 ) -> Any:
     """Returns dictionary Plex/Radarr/Sonarr instances"""
     try:
-        logger.debug("[WEB] Serving GET /api/instances")
+        logger.debug("Serving GET /api/instances")
         return config.get("instances", {})
     except Exception as e:
-        logger.error(f"[WEB] Error in /api/instances: {e}")
+        logger.error(f"Error in /api/instances: {e}")
 
 
 @router.get("/api/plex/libraries", response_model=None)
@@ -64,12 +64,10 @@ async def get_plex_libraries(
         headers = {"X-Plex-Token": token}
         url = f"{base_url}/library/sections"
         try:
-            logger.debug(
-                "[WEB] Serving GET /api/plex/libraries for instance: %s", instance
-            )
+            logger.debug("Serving GET /api/plex/libraries for instance: %s", instance)
             res = requests.get(url, headers=headers, timeout=5)
         except requests.exceptions.RequestException as req_exc:
-            logger.error(f"[WEB] Plex request failed: {req_exc}")
+            logger.error(f"Plex request failed: {req_exc}")
             return JSONResponse(
                 status_code=502,
                 content={"error": f"Failed to connect to Plex server: {req_exc}"},
@@ -89,7 +87,7 @@ async def get_plex_libraries(
         ]
         return libraries
     except Exception as e:
-        logger.error(f"[WEB] Unexpected error in /api/plex/libraries: {e}")
+        logger.error(f"Unexpected error in /api/plex/libraries: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
@@ -112,21 +110,19 @@ async def test_instance(
         else:
             headers = {"X-Api-Key": api} if api else {}
             test_url = f"{url}/api/v3/system/status"
-        logger.info(f"[WEB] Testing: {name.upper()} - URL: {test_url}")
+        logger.info(f"Testing: {name.upper()} - URL: {test_url}")
         resp = requests.get(test_url, headers=headers, timeout=5)
         if resp.ok:
-            logger.info("[WEB] Connection test: OK")
+            logger.info("Connection test: OK")
             return {"ok": True, "status": resp.status_code}
         if resp.status_code == 401:
-            logger.error(
-                "[WEB] Connection test code 401: Unauthorized - Invalid credentials"
-            )
+            logger.error("Connection test code 401: Unauthorized - Invalid credentials")
             return JSONResponse(status_code=401, content={"error": "Unauthorized"})
         if resp.status_code == 404:
-            logger.error("[WEB] Connection test code 404: Not Found - Invalid URL")
+            logger.error("Connection test code 404: Not Found - Invalid URL")
             return JSONResponse(status_code=404, content={"error": "Not Found"})
-        logger.error(f"[WEB] Connection test code {resp.status_code}: {resp.text}")
+        logger.error(f"Connection test code {resp.status_code}: {resp.text}")
         return JSONResponse(status_code=resp.status_code, content={"error": resp.text})
     except Exception as e:
-        logger.error(f"[WEB] Connection test failed for {name} ({url}): {e}")
+        logger.error(f"Connection test failed for {name} ({url}): {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})

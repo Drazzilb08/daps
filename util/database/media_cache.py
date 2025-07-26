@@ -257,7 +257,7 @@ class MediaCache(DatabaseBase):
                 logger.info(
                     f"[DELETE] Key: {key_params} | Rows deleted: {rows_deleted}"
                 )
-    
+
     def get_by_keys(
         self,
         asset_type: str,
@@ -373,7 +373,6 @@ class MediaCache(DatabaseBase):
             for item in fresh_media
         }
 
-        # Add or update records
         for key, item in fresh_map.items():
             if key not in db_map:
                 self.upsert(item, asset_type, instance_type, instance_name)
@@ -384,7 +383,6 @@ class MediaCache(DatabaseBase):
             else:
                 self.upsert(item, asset_type, instance_type, instance_name)
 
-        # Remove stale records
         keys_to_remove = set(db_map.keys()) - set(fresh_map.keys())
         for key in keys_to_remove:
             row = db_map[key]

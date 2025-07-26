@@ -22,8 +22,8 @@ def save_config_dict(cfg: Dict[str, Any]) -> None:
         yaml.safe_dump(cfg, f, sort_keys=False)
 
 
-def get_logger(request: Request) -> Any:
-    return request.app.state.logger
+def get_logger(request: Request, source="WEB") -> Any:
+    return request.app.state.logger.get_adapter({"source": source})
 
 
 router = APIRouter()
@@ -35,7 +35,7 @@ async def get_config_route(
 ) -> Dict[str, Any]:
     """Returns the current configuration as a dictionary."""
     if logger:
-        logger.debug("[WEB] Serving GET /api/config")
+        logger.debug("Serving GET /api/config")
     return config
 
 
@@ -52,25 +52,23 @@ async def update_config_route(
         incoming_copy = copy.deepcopy(incoming)
         if "instances" in incoming_copy:
             redact_apis(incoming_copy["instances"])
-        logger.debug("[WEB] Serving POST /api/config with payload: %s", incoming_copy)
+        logger.debug("Serving POST /api/config with payload: %s", incoming_copy)
 
         current_config = get_config()
 
-        # For each top-level section provided, overwrite it fully
         for section in ["schedule", "instances", "notifications"]:
             if section in incoming:
                 current_config[section] = incoming[section]
 
-        # Any other config sections (poster_renamerr, border_replacerr, etc)
         for k, v in incoming.items():
             if k not in ("schedule", "instances", "notifications"):
                 current_config[k] = v
 
         save_config_dict(current_config)
         if logger:
-            logger.info("[WEB] Config entries updated")
+            logger.info("Config entries updated")
         return {"status": "success"}
     except Exception as e:
         if logger:
-            logger.error("[WEB] Config update failed: %s", e)
+            logger.error("Config update failed: %s", e)
         return JSONResponse(status_code=500, content={"error": str(e)})

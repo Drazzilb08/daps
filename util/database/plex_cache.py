@@ -203,7 +203,6 @@ class PlexCache(DatabaseBase):
         db_map = {self._canonical_key(row): row for row in db_rows}
         fresh_map = {self._canonical_key(item): item for item in fresh_media}
 
-        # Add or update new/changed items
         for key, item in fresh_map.items():
             if key not in db_map:
                 self.upsert([item])
@@ -214,7 +213,6 @@ class PlexCache(DatabaseBase):
             else:
                 self.upsert([item])
 
-        # Remove items no longer present
         keys_to_remove = set(db_map.keys()) - set(fresh_map.keys())
         for key in keys_to_remove:
             row = db_map[key]

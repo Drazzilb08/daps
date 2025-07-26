@@ -1,5 +1,3 @@
-# orphaned_posters.py
-
 import os
 from typing import Any, Optional
 
@@ -43,7 +41,6 @@ class OrphanedPosters(DatabaseBase):
                 )
             logger.info("")
 
-        # Prepare data for frontend
         orphaned = []
         by_type = {}
         by_year = {}

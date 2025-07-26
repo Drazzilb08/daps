@@ -6,8 +6,8 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import PlainTextResponse
 
 
-def get_logger(request: Request) -> Any:
-    return request.app.state.logger
+def get_logger(request: Request, source="WEB") -> Any:
+    return request.app.state.logger.get_adapter({"source": source})
 
 
 if os.environ.get("DOCKER_ENV"):
@@ -20,13 +20,13 @@ router = APIRouter()
 
 @router.get("/api/logs")
 async def list_logs(logger=Depends(get_logger)) -> List[str]:
-    logger.debug(f"[WEB] Listing log modules in {LOG_BASE_DIR}")
+    logger.debug(f"Listing log modules in {LOG_BASE_DIR}")
     modules = [
         module
         for module in os.listdir(LOG_BASE_DIR)
         if os.path.isdir(os.path.join(LOG_BASE_DIR, module)) and module != "debug"
     ]
-    logger.debug("[WEB] Log modules listed: %s", modules)
+    logger.debug("Log modules listed: %s", modules)
     return modules
 
 
@@ -34,10 +34,10 @@ async def list_logs(logger=Depends(get_logger)) -> List[str]:
 async def list_logs_for_module(
     module_name: str, logger=Depends(get_logger)
 ) -> List[str]:
-    logger.debug(f"[WEB] Listing logs for module: {module_name}")
+    logger.debug(f"Listing logs for module: {module_name}")
     module_path = os.path.join(LOG_BASE_DIR, module_name)
     if not os.path.isdir(module_path):
-        logger.error(f"[WEB] Module {module_name} not found")
+        logger.error(f"Module {module_name} not found")
         raise HTTPException(status_code=404, detail="Module not found.")
     files = sorted(
         f

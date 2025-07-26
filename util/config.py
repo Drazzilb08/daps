@@ -30,17 +30,15 @@ class Config:
         config = load_user_config(config_file_path)
         self.module_name = module_name
 
-        # Special case: If user asks for "schedule", only return schedule keys as attributes
         if module_name == "schedule" and isinstance(config.get("schedule"), dict):
             for k, v in (config["schedule"] or {}).items():
                 setattr(self, k, v)
-            # Notifications for "schedule" if any
+
             self.notifications = (config.get("notifications", {}) or {}).get(
                 "schedule", {}
             ) or {}
-            return  # Do not set any globals for schedule
+            return
 
-        # Normal behavior for all others (including any top-level key)
         mod_cfg = config.get(module_name, {}) or {}
         for k, v in mod_cfg.items():
             setattr(self, k, v)
@@ -141,13 +139,11 @@ def manage_config(logger: Logger) -> None:
         with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
             template_data = json.load(f)
     except FileNotFoundError:
-        logger.error(
-            f"[CONFIG] Template configuration file not found at {TEMPLATE_PATH}"
-        )
+        logger.error(f"Template configuration file not found at {TEMPLATE_PATH}")
         return
     except json.JSONDecodeError as e:
         logger.error(
-            f"[CONFIG] Could not parse template configuration file {TEMPLATE_PATH}: {e}"
+            f"Could not parse template configuration file {TEMPLATE_PATH}: {e}"
         )
         return
 
@@ -158,10 +154,10 @@ def manage_config(logger: Logger) -> None:
                 user_data = yaml.safe_load(f) or {}
         except yaml.YAMLError as e:
             logger.error(
-                f"[CONFIG] Could not parse user configuration file {config_file_path}: {e}"
+                f"Could not parse user configuration file {config_file_path}: {e}"
             )
             logger.warning(
-                "[CONFIG] Proceeding with an empty user configuration for reconciliation."
+                "Proceeding with an empty user configuration for reconciliation."
             )
     if not isinstance(user_data, dict):
         logger.warning(
@@ -184,13 +180,11 @@ def manage_config(logger: Logger) -> None:
                 allow_unicode=True,
             )
         logger.info(
-            f"[CONFIG] Configuration file {config_file_path} updated successfully based on template."
+            f"Configuration file {config_file_path} updated successfully based on template."
         )
         if added_keys:
-            logger.info(f"[CONFIG] Keys ADDED to config: {added_keys}")
+            logger.info(f"Keys ADDED to config: {added_keys}")
         if removed_keys:
-            logger.info(f"[CONFIG] Keys REMOVED from config: {removed_keys}")
+            logger.info(f"Keys REMOVED from config: {removed_keys}")
     except IOError as e:
-        logger.error(
-            f"[CONFIG] Could not write to configuration file {config_file_path}: {e}"
-        )
+        logger.error(f"Could not write to configuration file {config_file_path}: {e}")

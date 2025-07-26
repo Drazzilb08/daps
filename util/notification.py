@@ -29,8 +29,6 @@ class NotificationManager:
             "email": self.send_email_notification,
         }
 
-    # ========== Helper/Utility Methods ==========
-
     @staticmethod
     def format_module_title(name: str) -> str:
         return name.replace("_", " ").title()
@@ -137,8 +135,6 @@ class NotificationManager:
                 f"[Notification] {label} send exception: {e}\n{tb_str}", exc_info=True
             )
             return False, f"{e}\n{tb_str}"
-
-    # ========== Main Send Methods ==========
 
     def send_notifiarr_notification(
         self,
@@ -295,12 +291,10 @@ class NotificationManager:
             )
             return False, f"{e}\n{tb_str}"
 
-    # ========== Target Management ==========
-
     def collect_valid_targets(
         self, test: bool = False
     ) -> Dict[str, Union[str, Dict[str, Any]]]:
-        # (code identical to your previous collect_valid_targets, but using self.config/self.logger)
+
         config = self.config
         logger = self.logger
         target_data: Dict[str, Union[str, Dict[str, Any]]] = {}
@@ -385,8 +379,6 @@ class NotificationManager:
             logger.error(f"[Notification] Error collecting targets: {e}", exc_info=True)
             target_data = {}
         return target_data
-
-    # ========== Main Dispatch Methods ==========
 
     def send_notification(self, output: Any) -> Dict[str, Any]:
         """Send notifications to all configured targets. Returns standardized result."""
@@ -486,8 +478,6 @@ class NotificationManager:
             out["error"] = "; ".join(errors)
         return out
 
-    # ========== Error Extraction/Formatting ==========
-
     @staticmethod
     def extract_apprise_errors(apprise: Apprise) -> str:
         errors = []
@@ -537,7 +527,6 @@ class NotificationManager:
         return f"{label} unknown error"
 
 
-# Optionally keep ErrorNotifyHandler for error logging integration:
 class ErrorNotifyHandler(logging.Handler):
     """Custom logging handler to send errors to Discord/Notifiarr via notifications."""
 

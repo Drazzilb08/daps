@@ -5,18 +5,14 @@ import shutil
 import sys
 from typing import Any, Dict, List
 
-import os
-from typing import Any, List, Optional
-
-from util.constants import id_content_regex, season_number_regex, year_regex
-from util.database import DapsDB
-from util.helper import extract_ids, extract_year, is_match, normalize_titles
-
 from util.config import Config
 from util.connector import update_client_databases, update_collections_database
+from util.constants import id_content_regex, season_number_regex, year_regex
 from util.database import DapsDB
 from util.helper import (
     create_table,
+    extract_ids,
+    extract_year,
     is_match,
     normalize_titles,
     print_settings,
@@ -71,7 +67,6 @@ class PosterRenamerr:
         except OSError as e:
             self.logger.error(f"Error {action_type}ing file: {e}")
 
-
     def match_item(self, media: dict, is_collection=False) -> dict:
         asset_type = media.get("asset_type")
         title = media.get("title")
@@ -92,7 +87,6 @@ class PosterRenamerr:
         candidate = None
         candidates = []
 
-        # --- ID Match: stop at first valid ---
         for id_field in ["imdb_id", "tmdb_id", "tvdb_id"]:
             id_val = media.get(id_field)
             if id_val:
@@ -107,26 +101,22 @@ class PosterRenamerr:
                         candidates = [c]
                         break
 
-        # --- Name/Title Candidates: gather ALL ---
         if not candidate:
-            # Prefix-based candidate search (ignores common words)
+
             candidates = self.db.poster.get_candidates_by_prefix(title)
 
-            # Prepare all normalized/alternate titles for expanded matching
             all_titles = set()
             if normalized_title:
                 all_titles.add(normalized_title)
             all_titles.update({normalize_titles(t) for t in alt_titles if t})
 
-            # Try to match each candidate, including normalized and alternate titles
             for cand in candidates:
-                # Compare against all title variants
+
                 cand_norm_title = cand.get("normalized_title", "")
                 cand_alt_titles = set(
                     json.loads(cand.get("normalized_alternate_titles", "[]") or "[]")
                 )
 
-                # If any title variant matches (normalized or alternate), count as matched
                 if cand_norm_title in all_titles or bool(
                     all_titles & set(cand_alt_titles)
                 ):
@@ -139,7 +129,6 @@ class PosterRenamerr:
                             candidate = cand
                             matched = True
 
-        # --- DB Update as before ---
         if is_collection:
             self.db.collection.update(
                 title=title,
@@ -150,7 +139,6 @@ class PosterRenamerr:
                 original_file=candidate.get("file") if candidate else None,
             )
         else:
-            print(f"Updating | Asset Type: {asset_type} | Title: {title} | Year: {year} | Instance: {instance_name} | Season: {season_number} | original_file: {candidate.get('file') if candidate else None}")
             self.db.media.update(
                 asset_type=asset_type,
                 title=title,
@@ -163,7 +151,7 @@ class PosterRenamerr:
 
         if asset_type == "show":
             if season_number is not None:
-                # Per-season match
+
                 if matched and candidate:
                     self.logger.debug(
                         f"✓ Matched: show S{season_number}: {title} ({year}) <-> {candidate.get('title')} ({candidate.get('year')})"
@@ -173,15 +161,13 @@ class PosterRenamerr:
                         f"✗ No match: show S{season_number}: {title} ({year})"
                     )
             else:
-                # Main show match
+
                 if matched and candidate:
                     self.logger.debug(
                         f"✓ Matched: show main: {title} ({year}) <-> {candidate.get('title')} ({candidate.get('year')})"
                     )
                 else:
-                    self.logger.debug(
-                        f"✗ No match: show main: {title} ({year})"
-                    )
+                    self.logger.debug(f"✗ No match: show main: {title} ({year})")
 
         elif is_collection:
             if matched and candidate:
@@ -189,20 +175,16 @@ class PosterRenamerr:
                     f"✓ Matched: [collection] {title} ({year}) <-> {candidate.get('title')} ({candidate.get('year')})"
                 )
             else:
-                self.logger.debug(
-                    f"✗ No match: [collection] {title} ({year})"
-                )
+                self.logger.debug(f"✗ No match: [collection] {title} ({year})")
 
         else:
-            # Movies and all other asset types
+
             if matched and candidate:
                 self.logger.debug(
                     f"✓ Matched: {title} ({year}) <-> {candidate.get('title')} ({candidate.get('year')})"
                 )
             else:
-                self.logger.debug(
-                    f"✗ No match: {title} ({year})"
-                )
+                self.logger.debug(f"✗ No match: {title} ({year})")
 
         return {
             "matched": bool(matched),
@@ -266,6 +248,7 @@ class PosterRenamerr:
         """
         Renames a single item and updates DB. Returns output dict for reporting.
         """
+
         asset_type = item.get("asset_type")
         file = item.get("original_file") or item.get("file")
         folder = item.get("folder", item.get("media_folder", "")) or ""
@@ -274,15 +257,17 @@ class PosterRenamerr:
         season_number = item.get("season_number")
         config = self.config
 
-        # Folder logic as before
         if getattr(config, "asset_folders", False):
             dest_dir = os.path.join(config.destination_dir, folder)
-            if not os.path.exists(dest_dir) and not config.dry_run and not config.run_border_replacerr:
+            if (
+                not os.path.exists(dest_dir)
+                and not config.dry_run
+                and not config.run_border_replacerr
+            ):
                 os.makedirs(dest_dir)
         else:
             dest_dir = config.destination_dir
 
-        # Name logic as before
         if asset_type == "show" and season_number is not None:
             season_str = str(season_number).zfill(2)
             if getattr(config, "asset_folders", False):
@@ -299,7 +284,6 @@ class PosterRenamerr:
 
         item["renamed_file"] = new_file_path
 
-        # DB update as before
         if asset_type == "collection":
             self.db.collection.update(
                 title=item.get("title"),
@@ -360,7 +344,7 @@ class PosterRenamerr:
             "asset_type": asset_type,
             "id": item.get("id"),
         }
-    
+
     def get_matched_assets(self) -> list:
         """
         Gather all matched, unrenamed assets from both media and collections.
@@ -400,7 +384,7 @@ class PosterRenamerr:
             "show": [],
         }
         manifest = {"media_cache": [], "collections_cache": []}
-        matched_assets = self.get_matched_assets() 
+        matched_assets = self.get_matched_assets()
 
         if matched_assets:
             self.logger.info("Renaming assets please wait...")
@@ -414,7 +398,7 @@ class PosterRenamerr:
                 for item in bar:
                     result = self.rename_file(item)
                     output[item.get("asset_type", "movie")].append(result)
-                    # Add to manifest as before
+
                     if item.get("asset_type") == "collection":
                         manifest["collections_cache"].append(item.get("id"))
                     else:
@@ -447,7 +431,7 @@ class PosterRenamerr:
                     self.logger.info(display)
                     for msg in data["messages"]:
                         self.logger.info(f"\t{msg}")
-                    self.logger.info("")  # Spacing
+                    self.logger.info("")
 
             else:
                 for asset in assets:
@@ -472,16 +456,18 @@ class PosterRenamerr:
                 folder = os.path.basename(root)
                 filename, _ = os.path.splitext(fname)
 
-                # Try to extract title (pre-parenthesis, pre-brace, else whole filename)
                 title_base = id_content_regex.sub("", filename).strip()
                 title = year_regex.sub("", title_base).strip()
 
-                # Get year, ids, and season number
-                year = extract_year(fname) or extract_year(title) or extract_year(folder)
+                year = (
+                    extract_year(fname) or extract_year(title) or extract_year(folder)
+                )
                 tmdb_id, tvdb_id, imdb_id = extract_ids(fname)
                 if not (tmdb_id or tvdb_id or imdb_id):
                     tmdb_id, tvdb_id, imdb_id = extract_ids(folder)
-                match = season_number_regex.search(fname) or season_number_regex.search(folder)
+                match = season_number_regex.search(fname) or season_number_regex.search(
+                    folder
+                )
                 season_number = (
                     int(match.group(1))
                     if match and match.group(1)
@@ -526,20 +512,20 @@ class PosterRenamerr:
                 continue
 
             for asset in assets:
-                # Always delete all possible matches, so only highest-priority wins
 
-                # 1. Delete by IDs, if present
                 for id_field in ["imdb_id", "tmdb_id", "tvdb_id"]:
                     id_val = asset.get(id_field)
                     if id_val:
-                        db.poster.delete_by_id(id_field, id_val, asset.get("season_number"))
+                        db.poster.delete_by_id(
+                            id_field, id_val, asset.get("season_number")
+                        )
 
-                # 2. Delete by normalized_title/year/season_number
                 db.poster.delete_by_title(
-                    asset["normalized_title"], asset.get("year"), asset.get("season_number")
+                    asset["normalized_title"],
+                    asset.get("year"),
+                    asset.get("season_number"),
                 )
 
-                # 3. Try to find a match for ID propagation (e.g. old record with an ID, new without)
                 matched = None
                 id_fields = [
                     ("imdb_id", asset.get("imdb_id")),
@@ -562,16 +548,15 @@ class PosterRenamerr:
                 if matched and not is_match(matched, asset)[0]:
                     matched = None
 
-                # 4. Propagate IDs if needed (old had ID, new didn't)
                 if matched:
                     for id_field in ["imdb_id", "tmdb_id", "tvdb_id"]:
                         if matched.get(id_field) and not asset.get(id_field):
                             asset[id_field] = matched[id_field]
-                    # For shows: propagate IDs to all seasons if this is a season poster
+
                     db.poster.propagate_ids_for_show(
                         asset["title"], asset.get("year"), asset
                     )
-                # 5. Upsert the new asset (now the only entry for this logical asset)
+
                 db.poster.upsert(asset)
 
     def run_border_replacerr(self, manifest: List[int]):

@@ -156,10 +156,9 @@ class DapsOrchestrator:
             if log_func:
                 log_func(msg, exc_info=exc_info, **kwargs)
             else:
-
-                print(f"[{level.upper()}][{source}] {msg}")
+                print(f"[{source.upper()}] {msg}")
         else:
-            print(f"[{level.upper()}][{source}] {msg}")
+            print(f"[{source.upper()}] {msg}")
 
     def run(self, args):
         self._log("debug", f"run() entry with args: {args}", source="orchestrator")

@@ -40,7 +40,8 @@ def main():
             logger = Logger(
                 getattr(main_config, "log_level", "INFO"), main_config.module_name
             )
-            manage_config(logger)
+            config_logger = logger.get_adapter({"source": "CONFIG"})
+            manage_config(config_logger)
             orchestrator = DapsOrchestrator(logger)
             orchestrator.run(args)
         except Exception as e:
@@ -50,7 +51,10 @@ def main():
             print(msg, file=sys.stderr)
             traceback.print_exc()
             if not logger:
-                logger = Logger(getattr(main_config, "log_level", "INFO"), "general")
+                fallback_module = "general"
+                if main_config and hasattr(main_config, "module_name"):
+                    fallback_module = main_config.module_name
+                logger = Logger("INFO", fallback_module)
             logger.error(msg, exc_info=True)
             sys.exit(1)
 

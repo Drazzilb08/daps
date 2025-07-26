@@ -5,26 +5,26 @@ from typing import Any
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import FileResponse, JSONResponse
 
-from util.job_service import JobService
-
 router = APIRouter()
 
 ASSET_DIR = "web/static/assets"
 
 
-def get_logger(request: Request) -> Any:
-    return request.app.state.logger
+def get_webhook_logger(request: Request) -> Any:
+    return request.app.state.logger.get_adapter({"source": "WEBHOOK"})
+
+
+def get_web_logger(request: Request) -> Any:
+    return request.app.state.logger.get_adapter({"source": "WEB"})
 
 
 @router.post("/api/poster-search-stats")
-async def poster_search_stats(request: Request, logger: Any = Depends(get_logger)):
+async def poster_search_stats(request: Request, logger: Any = Depends(get_web_logger)):
     """Returns stats and file list for a given poster location directory."""
     try:
         data = await request.json()
         location = data.get("location")
-        logger.debug(
-            f"[WEB] Serving POST /api/poster-search-stats for location: {location}"
-        )
+        logger.debug(f"Serving POST /api/poster-search-stats for location: {location}")
         if not location or not os.path.isdir(location):
             return JSONResponse(status_code=400, content={"error": "Invalid location"})
         total_size = 0
@@ -55,33 +55,35 @@ async def poster_search_stats(request: Request, logger: Any = Depends(get_logger
 
 
 @router.get("/api/preview-poster")
-async def preview_poster(location: str, path: str, logger: Any = Depends(get_logger)):
+async def preview_poster(
+    location: str, path: str, logger: Any = Depends(get_web_logger)
+):
     """
     Returns the requested poster image file as a response if it exists within location.
     """
     try:
         base_dir = Path(location).resolve()
         file_path = (base_dir / path).resolve()
-        # Security: prevent path traversal
+
         if not str(file_path).startswith(str(base_dir)):
             return JSONResponse(status_code=403, content={"error": "Invalid path"})
         if not file_path.exists() or not file_path.is_file():
             return JSONResponse(status_code=404, content={"error": "File not found"})
-        # Basic file type check (optional: just for images)
+
         if file_path.suffix.lower() not in [".jpg", ".jpeg", ".png", ".webp", ".bmp"]:
             return JSONResponse(
                 status_code=415, content={"error": "Unsupported file type"}
             )
-        logger.debug(f"[WEB] Serving image preview: {file_path}")
+        logger.debug(f"Serving image preview: {file_path}")
         return FileResponse(str(file_path))
     except Exception as e:
-        logger.error(f"[WEB] Preview poster error: {e}")
+        logger.error(f"Preview poster error: {e}")
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 @router.get("/api/poster_assets")
 def list_poster_assets():
-    # Only include image files (update extensions if needed)
+
     allowed_ext = {".jpg", ".jpeg", ".png", ".webp"}
     try:
         files = [
@@ -96,33 +98,55 @@ def list_poster_assets():
 
 
 @router.post("/api/arr-webhook")
-async def add_media(request: Request, logger: Any = Depends(get_logger)):
-    user_agent = request.headers.get("user-agent", "")
-    service_name = user_agent.split("/")[0] if "/" in user_agent else user_agent
+async def add_media(request: Request, logger: Any = Depends(get_webhook_logger)):
     try:
-        logger.info("[WEB] Serving POST /api/arr-webhook")
+        client_info = {
+            "client_host": request.client.host if request.client else None,
+            "client_port": request.headers.get("X-Service-Port"),
+            "headers": dict(request.headers),
+            "scheme": getattr(request.url, "scheme", "http"),
+        }
         data = await request.json()
-        logger.debug(f"Incoming eventType: {data.get('eventType', '')}")
-        job_service = JobService(request, logger=logger, module_name="poster_renamerr")
-        if job_service.is_test(data):
-            logger.info(f"Received test event from {service_name}")
-            return JSONResponse(
-                status_code=200,
-                content={"message": "Test event received, no processing performed."}
+        if is_test(data):
+            logger.info(
+                f"Test event received from {client_info['scheme']}://{client_info['client_host']}:{client_info['client_port']}"
             )
-        process_result = job_service.process_arr_request(data, logger)
-        if process_result:
-            results = job_service.run_renamerr_adhoc(process_result)
-            if results.get('status') == 200:
-                return JSONResponse(status_code=200, content={"message": "Media processed and renamed."})
-            else:
-                # Pass the error from results
-                return JSONResponse(
-                    status_code=results.get('status', 500),
-                    content={"error": results.get('error', 'Failed to process media')}
-                )
-        else:
-            return JSONResponse(status_code=400, content={"error": "Failed to process ARR request."})
+            return {
+                "status": 200,
+                "success": True,
+            }
+        job_data = dict(data)
+        job_data["_client"] = client_info
+
+        db = request.app.state.db
+        result = db.worker.enqueue_job("jobs", job_data, job_type="webhook")
+
+        if not result.get("success"):
+            logger.error(
+                f"Error persisting webhook: {result.get('message')}", exc_info=True
+            )
+            return JSONResponse(
+                status_code=result.get("status", 500),
+                content=result,
+            )
+
+        logger.info("Webhook job persisted for async processing.")
+        return JSONResponse(
+            status_code=200,
+            content=result,
+        )
     except Exception as e:
-        logger.error(f"Error adding media: {e}", exc_info=True)
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        logger.error(f"Exception in webhook enqueue: {e}", exc_info=True)
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "error_code": "ENQUEUE_FAIL",
+                "message": str(e),
+            },
+        )
+
+
+def is_test(data):
+    event_type = data.get("eventType", "")
+    return isinstance(event_type, str) and "test" in event_type.lower()

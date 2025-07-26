@@ -197,7 +197,7 @@ class DBWorker(DatabaseBase):
         """
         Add a new job to the specified table. Optionally set scheduled_at (ISO timestamp string).
         """
-        now = datetime.now(datetime.timezone.utc).isoformat()
+        now = datetime.datetime.now(datetime.timezone.utc).isoformat()
         fields = {
             "type": job_type,
             "received_at": now,

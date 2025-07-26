@@ -345,7 +345,7 @@ class WebhookService:
             }
             delay_minutes = getattr(self.config, "upload_retry_delay", 5)
             max_attempts = getattr(self.config, "upload_retry_max_attempts", 3)
-            scheduled_at = (datetime.datetime.utcnow() + datetime.timedelta(minutes=delay_minutes)).isoformat()
+            scheduled_at = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=delay_minutes)).isoformat()
             enqueue_result = self.db.worker.enqueue_job(
                 "jobs",
                 payload,

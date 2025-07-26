@@ -9,6 +9,7 @@ from .plex_cache import PlexCache
 from .poster_cache import PosterCache
 from .run_state import RunState
 from .stats import Stats
+from .worker import DBWorker
 
 
 class DapsDB:
@@ -19,9 +20,6 @@ class DapsDB:
 
             config_dir = get_config_dir()
             db_path = os.path.join(config_dir, "daps.db")
-        if logger:
-            logger.info("[DATABASE] Initializing database")
-            logger.debug(f"[DATABASE] DB path: {db_path}")
 
         DatabaseBase.init_schema(db_path)
 
@@ -33,6 +31,7 @@ class DapsDB:
         self.run_state = RunState(db_path)
         self.stats = Stats(db_path)
         self.holiday = HolidayStatus(db_path)
+        self.worker = DBWorker(db_path)
 
     def close_all(self):
         if self.logger:
@@ -45,6 +44,7 @@ class DapsDB:
         self.run_state.close()
         self.stats.close()
         self.holiday.close()
+        self.worker.close()
 
 
 __all__ = [
@@ -56,4 +56,7 @@ __all__ = [
     "RunState",
     "Stats",
     "DapsDB",
+    "DBWorker",
+    "HolidayStatus",
+    "MediaCache",
 ]

@@ -17,11 +17,10 @@ class DapsDB:
         self.logger = logger
         if db_path is None:
             from util.helper import get_config_dir
-
             config_dir = get_config_dir()
             db_path = os.path.join(config_dir, "daps.db")
-
-        DatabaseBase.init_schema(db_path)
+        self.db_path = db_path
+        DatabaseBase.init_schema(self.db_path)
 
         self.plex = PlexCache(db_path)
         self.collection = CollectionCache(db_path)
@@ -33,6 +32,16 @@ class DapsDB:
         self.holiday = HolidayStatus(db_path)
         self.worker = DBWorker(db_path)
 
+    def create_worker(self, logger=None, num_workers=1, poll_interval=2, worker_name="UNNAMED", job_type_filter=None):
+        return DBWorker(
+            db_path=self.db_path,
+            logger=logger or self.logger,
+            num_workers=num_workers,
+            poll_interval=poll_interval,
+            worker_name=worker_name,
+            job_type_filter=job_type_filter,
+        )
+    
     def close_all(self):
         if self.logger:
             self.logger.debug("[DATABASE] Closing database connections")

@@ -3,6 +3,7 @@ import json
 import threading
 import time
 from urllib.parse import urlparse
+import datetime
 
 from modules.poster_renamerr import PosterRenamerr
 from util.arr import create_arr_client
@@ -274,7 +275,6 @@ class WebhookService:
             }
 
         renamer = PosterRenamerr(self.config, log, self.db)
-        log.debug("Gathering all the posters, please wait...")
         renamer.merge_assets(self.config.source_dirs, self.db, self.logger)
 
         is_collection = item.get("asset_type", "").lower() not in ("movie", "show")
@@ -322,8 +322,47 @@ class WebhookService:
 
         if self.config.run_border_replacerr:
             renamer.run_border_replacerr(manifest)
-
-        upload_posters(self.config, self.db, self.logger, manifest)
+        # ----
+        # TODO: finish return from upload_posters, break into class functionality to support modularity
+        # The upload_posters() function should return a result dict like:
+        # {
+        #     "success": bool,  # True if upload succeeded, False otherwise
+        #     "message": str,   # Description of result or error
+        #     "error_code": str, # (optional) Application-level error code, e.g. "UPLOAD_FAILED", "NOT_FOUND"
+        #     "payload": dict   # (optional) Payload needed to retry upload (e.g. manifest, item, etc.)
+        # }
+        # If "success" is False, "payload" MUST contain everything needed to re-attempt the upload,
+        # so it can be re-queued for the background worker to retry later.
+        # ----
+        result = None
+        upload_result = upload_posters(self.config, self.db, self.logger, manifest)
+        if not upload_result.get("success"):
+            # Enqueue for background worker
+            payload = {
+                "manifest": manifest,
+                "item": renamed,
+                "config_module": self.config.module_name,
+            }
+            delay_minutes = getattr(self.config, "upload_retry_delay", 5)
+            max_attempts = getattr(self.config, "upload_retry_max_attempts", 3)
+            scheduled_at = (datetime.datetime.utcnow() + datetime.timedelta(minutes=delay_minutes)).isoformat()
+            enqueue_result = self.db.worker.enqueue_job(
+                "jobs",
+                payload,
+                job_type="upload_posters",
+                extra_fields={"max_attempts": max_attempts},
+                scheduled_at=scheduled_at,
+            )
+            log.error(f"Upload failed, enqueued for retry: {enqueue_result}")
+            return {
+                "status": 500,
+                "success": False,
+                "error_code": "UPLOAD_QUEUED",
+                "message": f"Upload failed, job enqueued for retry: {upload_result.get('message')}",
+                "item": renamed,
+                "retry_job": enqueue_result,
+            }
+        
         return {
             "status": 200,
             "success": True,

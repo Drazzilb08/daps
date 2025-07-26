@@ -1,7 +1,7 @@
 import json
 import threading
 import time
-from datetime import datetime
+import datetime
 from typing import Any, Callable, Dict
 
 from util.database.db_base import DatabaseBase
@@ -13,84 +13,50 @@ class DBWorker(DatabaseBase):
     Includes background periodic cleanup of completed jobs.
     """
 
-    def __init__(self, db_path=None, logger=None, poll_interval: int = 2):
+    def __init__(self, db_path, logger=None, poll_interval: int = 2, num_workers: int = 3, worker_name: str = "UNNAMED", job_type_filter: str = None,cleanup_interval: int = 3600, job_deletion_days: int = 30):
         super().__init__(db_path)
         self.logger = logger
+        self.worker_name = worker_name
+        self.job_type_filter = job_type_filter
         self.poll_interval = poll_interval
         self.running = False
         self._thread = None
         self._cleanup_running = False
+        self.cleanup_interval = cleanup_interval
+        self.job_deletion_days = job_deletion_days
         self._cleanup_thread = None
+        self.num_workers = num_workers
+        self._threads = []
 
-    def process_pending_jobs(
-        self, table_name: str, process_fn: Callable[[Dict[str, Any]], None]
-    ):
-        """
-        Polls the job table for pending jobs, processes, supports retries, and stores result/error/status.
-        """
+    def process_pending_jobs(self, table_name: str, process_fn: Callable[[Dict[str, Any]], None], job_type_filter: str = None):
         while self.running:
-            log = self.logger.get_adapter({"source": "WORKER"}) if self.logger else None
+            log = self.logger.get_adapter({"source": f"WORKER:{self.worker_name}"}) if self.logger else None
             try:
-                with self.conn:
-                    cur = self.conn.execute(
-                        f"""SELECT * FROM {table_name}
-                            WHERE status='pending'
-                            AND (attempts < max_attempts OR max_attempts IS NULL)
-                            AND (scheduled_at IS NULL OR scheduled_at <= ?)
-                            ORDER BY received_at ASC""",
-                        (datetime.utcnow().isoformat(),),
-                    )
-                    jobs = cur.fetchall()
+                jobs = self.get_pending_jobs(table_name, job_type_filter)
                 for job in jobs:
                     job_dict = dict(job)
                     job_id = job_dict["id"]
                     if log:
                         log.info(f"Processing {table_name} job ID {job_id}")
                     try:
-
-                        with self.conn:
-                            self.conn.execute(
-                                f"UPDATE {table_name} SET attempts=attempts+1, status='running' WHERE id=?",
-                                (job_id,),
-                            )
+                        self.mark_job_running(table_name, job_id)
                         result = process_fn(job_dict)
-
-                        with self.conn:
-                            self.conn.execute(
-                                f"UPDATE {table_name} SET status='done', result=? WHERE id=?",
-                                (json.dumps(result) if result else None, job_id),
-                            )
+                        self.mark_job_done(table_name, job_id, result)
                         if log:
                             log.info(f"Job {job_id} processed.")
                     except Exception as ex:
-
-                        with self.conn:
-                            cur = self.conn.execute(
-                                f"SELECT attempts, max_attempts FROM {table_name} WHERE id=?",
-                                (job_id,),
-                            )
-                            row = cur.fetchone()
+                        row = self.get_attempts(table_name, job_id)
                         attempts = row["attempts"]
                         max_attempts = row["max_attempts"]
                         if attempts < max_attempts:
-
-                            with self.conn:
-                                self.conn.execute(
-                                    f"UPDATE {table_name} SET status='pending', error=? WHERE id=?",
-                                    (str(ex), job_id),
-                                )
+                            self.mark_job_pending_with_error(table_name, job_id, ex)
                             if log:
                                 log.error(
                                     f"Error processing job {job_id}: {ex} (will retry)",
                                     exc_info=True,
                                 )
                         else:
-
-                            with self.conn:
-                                self.conn.execute(
-                                    f"UPDATE {table_name} SET status='error', error=? WHERE id=?",
-                                    (str(ex), job_id),
-                                )
+                            self.mark_job_failed(table_name, job_id, ex)
                             if log:
                                 log.error(
                                     f"Job {job_id} failed permanently after {attempts} attempts: {ex}",
@@ -101,6 +67,79 @@ class DBWorker(DatabaseBase):
                 if log:
                     log.error(f"Loop error: {ex}", exc_info=True)
                 time.sleep(self.poll_interval)
+
+    def get_pending_jobs(self, table_name: str, job_type_filter: str = None):
+        query = f"""SELECT * FROM {table_name}
+                    WHERE status='pending'
+                    AND (attempts < max_attempts OR max_attempts IS NULL)
+                    AND (scheduled_at IS NULL OR scheduled_at <= ?)
+                """
+        params = [datetime.datetime.now(datetime.timezone.utc).isoformat()]
+        if job_type_filter:
+            query += " AND type=?"
+            params.append(job_type_filter)
+        query += " ORDER BY received_at ASC"
+        with self.conn:
+            cur = self.conn.execute(query, tuple(params))
+            return cur.fetchall()
+
+    def mark_job_running(self, table_name: str, job_id: int):
+        with self.conn:
+            self.conn.execute(
+                f"UPDATE {table_name} SET attempts=attempts+1, status='running' WHERE id=?",
+                (job_id,),
+            )
+
+    def mark_job_done(self, table_name: str, job_id: int, result):
+        with self.conn:
+            self.conn.execute(
+                f"UPDATE {table_name} SET status='done', result=? WHERE id=?",
+                (json.dumps(result) if result else None, job_id),
+            )
+
+    def get_attempts(self, table_name: str, job_id: int):
+        with self.conn:
+            cur = self.conn.execute(
+                f"SELECT attempts, max_attempts FROM {table_name} WHERE id=?",
+                (job_id,),
+            )
+            return cur.fetchone()
+
+    def mark_job_pending_with_error(self, table_name: str, job_id: int, error):
+        with self.conn:
+            self.conn.execute(
+                f"UPDATE {table_name} SET status='pending', error=? WHERE id=?",
+                (str(error), job_id),
+            )
+
+    def mark_job_failed(self, table_name: str, job_id: int, error):
+        with self.conn:
+            self.conn.execute(
+                f"UPDATE {table_name} SET status='error', error=? WHERE id=?",
+                (str(error), job_id),
+            )
+        # Log a manual intervention warning when a job fails permanently
+        job_type = None
+        try:
+            with self.conn:
+                cur = self.conn.execute(
+                    f"SELECT type FROM {table_name} WHERE id=?",
+                    (job_id,),
+                )
+                row = cur.fetchone()
+                if row and "type" in row:
+                    job_type = row["type"]
+        except Exception:
+            pass
+        log = self.logger.get_adapter({"source": "WORKER"}) if self.logger else None
+        warning_msg = (
+            f"Job ID {job_id} (type={job_type}) marked as FAILED after max attempts. "
+            "Manual intervention may be required."
+        )
+        if log:
+            log.warning(warning_msg)
+        else:
+            print(f"[WORKER][WARNING] {warning_msg}")
 
     def job_stats(self, table_name: str = "jobs", error_limit: int = 10):
         """
@@ -158,7 +197,7 @@ class DBWorker(DatabaseBase):
         """
         Add a new job to the specified table. Optionally set scheduled_at (ISO timestamp string).
         """
-        now = datetime.utcnow().isoformat()
+        now = datetime.now(datetime.timezone.utc).isoformat()
         fields = {
             "type": job_type,
             "received_at": now,
@@ -191,7 +230,7 @@ class DBWorker(DatabaseBase):
                 "message": f"Error enqueuing job: {e}",
             }
 
-    def start(self, table_name: str, process_fn: Callable[[Dict[str, Any]], None]):
+    def start(self, table_name: str, process_fn: Callable[[Dict[str, Any]], None], job_type_filter: str = None):
         log = self.logger.get_adapter({"source": "WORKER"}) if self.logger else None
         with self.conn:
             reset = self.conn.execute(
@@ -199,32 +238,47 @@ class DBWorker(DatabaseBase):
             ).rowcount
         if log and reset:
             log.info(f"Reset {reset} 'running' jobs to 'pending' on startup.")
-        if self._thread and self._thread.is_alive():
+        if self._threads and all(t.is_alive() for t in self._threads):
             if log:
                 log.info("Already running.")
             return
         self.running = True
-        self._thread = threading.Thread(
-            target=self.process_pending_jobs, args=(table_name, process_fn), daemon=True
-        )
-        self._thread.start()
-        self._cleanup_running = True
-        self._cleanup_thread = threading.Thread(
-            target=self._periodic_cleanup, args=(table_name,), daemon=True
-        )
-        self._cleanup_thread.start()
+        self._threads = []
+        for _ in range(self.num_workers):
+            t = threading.Thread(
+                target=self.process_pending_jobs,
+                args=(table_name, process_fn, job_type_filter),
+                daemon=True
+            )
+            t.start()
+            self._threads.append(t)
+        # Cleanup thread remains single
+        if not self._cleanup_thread or not self._cleanup_thread.is_alive():
+            self._cleanup_running = True
+            self._cleanup_thread = threading.Thread(
+                target=self._periodic_cleanup, args=(table_name,), daemon=True
+            )
+            self._cleanup_thread.start()
         if log:
-            log.info(f"Started for table: {table_name}")
-            log.info(f"Cleanup thread started for table: {table_name}")
-
+            thread_info = (
+                f"Started {self.num_workers} worker thread{'s' if self.num_workers > 1 else ''} "
+                f"for table '{table_name}' (poll_interval={self.poll_interval}s)"
+            )
+            if self.job_type_filter:
+                thread_info += f" [job type: '{self.job_type_filter}']"
+            log.info(thread_info)
+            log.info(
+                f"Started cleanup thread for table '{table_name}' "
+                f"(cleanup_interval={self.cleanup_interval}s, job_deletion_age={self.job_deletion_days}d)"
+            )
+            
     def stop(self):
-        """Stop the worker loop and join the thread."""
         log = self.logger.get_adapter({"source": "WORKER"}) if self.logger else None
         self.running = False
         self._cleanup_running = False
-        if self._thread:
-            self._thread.join(timeout=2)
-            self._thread = None
+        for t in self._threads:
+            t.join(timeout=2)
+        self._threads = []
         if self._cleanup_thread:
             self._cleanup_thread.join(timeout=2)
             self._cleanup_thread = None
@@ -243,7 +297,7 @@ class DBWorker(DatabaseBase):
 
         try:
             cutoff = (
-                datetime.datetime.utcnow() - datetime.timedelta(days=days)
+                datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=days)
             ).isoformat()
             with self.conn:
                 deleted = self.conn.execute(
@@ -252,7 +306,7 @@ class DBWorker(DatabaseBase):
                 ).rowcount
             log = self.logger.get_adapter({"source": "WORKER"}) if self.logger else None
             if log:
-                log.info(f"Cleaned up {deleted} old jobs (>{days}d) from {table_name}")
+                log.info(f"Removed {deleted} jobs from '{table_name}' older than {days} days")
             return {
                 "status": 200,
                 "success": True,
@@ -395,6 +449,54 @@ def process_job(job, logger):
                     "success": False,
                     "message": f"Exception in sync_gdrive handler: {str(ex)}",
                     "error_code": "SYNC_GDRIVE_EXCEPTION",
+                }
+        elif job_type == "upload_posters":
+            try:
+                if "manifest" not in payload or not isinstance(payload["manifest"], dict):
+                    error_msg = f"[JOB:{job_id}] upload_posters: missing/invalid manifest in payload"
+                    if log:
+                        log.error(error_msg)
+                    result = {
+                        "status": 400,
+                        "success": False,
+                        "message": error_msg,
+                        "error_code": "PAYLOAD_SCHEMA_INVALID",
+                    }
+                    return result
+                from util.upload_posters import upload_posters
+                from util.config import Config
+                from util.database import DapsDB
+
+                config_module = payload.get("config_module", "poster_renamerr")
+                config = Config(config_module)
+                db = DapsDB(logger=logger)
+                manifest = payload.get("manifest")
+                upload_result = upload_posters(config, db, logger, manifest)
+                if upload_result.get("success"):
+                    result = {
+                        "status": 200,
+                        "success": True,
+                        "message": "Poster uploaded successfully (background)",
+                        "error_code": None,
+                    }
+                else:
+                    result = {
+                        "status": 500,
+                        "success": False,
+                        "message": f"Upload failed: {upload_result.get('message')}",
+                        "error_code": "UPLOAD_FAILED",
+                    }
+            except Exception as ex:
+                if log:
+                    log.error(
+                        f"[JOB:{job_id}] Error in upload_posters handler: {ex}",
+                        exc_info=True,
+                    )
+                result = {
+                    "status": 500,
+                    "success": False,
+                    "message": f"Exception in upload_posters handler: {str(ex)}",
+                    "error_code": "UPLOAD_EXCEPTION",
                 }
 
         else:

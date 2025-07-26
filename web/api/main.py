@@ -1,4 +1,6 @@
 from contextlib import asynccontextmanager
+from util.database import DapsDB
+from util.database.worker import process_job, DBWorker
 from pathlib import Path
 from typing import Any
 
@@ -11,7 +13,6 @@ from fastapi.responses import (
 )
 from fastapi.staticfiles import StaticFiles
 
-from util.database import DapsDB
 from util.database.worker import process_job
 from util.version import get_version
 from web.api import (
@@ -26,22 +27,34 @@ from web.api import (
 
 @asynccontextmanager
 async def lifespan(app):
-
     app.state.logger = app.state.logger or None
     app.state.db = DapsDB(logger=app.state.logger)
 
-    app.state.db.worker.start(
+    app.state.db.adhoc_worker = app.state.db.create_worker(num_workers=3, worker_name="ADHOC", job_type_filter="webhook")
+    app.state.db.background_worker = app.state.db.create_worker(num_workers=1, worker_name="UPLOAD", job_type_filter="upload_posters")
+
+    app.state.db.adhoc_worker.start(
         table_name="jobs",
         process_fn=lambda job: process_job(job, app.state.logger),
+        job_type_filter="webhook"
     )
+    app.state.db.background_worker.start(
+        table_name="jobs",
+        process_fn=lambda job: process_job(job, app.state.logger),
+        job_type_filter="upload_posters"
+    )
+
     yield
-    app.state.db.worker.stop()
+
+    app.state.db.adhoc_worker.stop()
+    app.state.db.background_worker.stop()
     app.state.db.close_all()
 
 
 app = FastAPI(lifespan=lifespan)
 router = APIRouter()
 app.state.logger = None
+
 
 
 def get_logger(request: Request, source="WEB") -> Any:
@@ -179,6 +192,7 @@ async def serve_spa(full_path: str):
 @app.get("/api/jobs")
 async def list_jobs(
     status: str = None,
+    job_type: str = None,
     limit: int = 50,
     db=Depends(lambda request: request.app.state.db),
     logger: Any = Depends(get_logger),
@@ -187,6 +201,8 @@ async def list_jobs(
     List jobs from the queue.
     """
     jobs = db.worker.list_jobs(status, limit)
+    if job_type:
+        jobs['jobs'] = [job for job in jobs['jobs'] if job.get('type') == job_type]
     return jobs
 
 
@@ -225,3 +241,26 @@ async def job_stats(
     logger: Any = Depends(get_logger),
 ):
     return db.worker.job_stats()
+
+@app.post("/api/jobs/{job_id}/retry")
+async def retry_job(
+    job_id: int,
+    db=Depends(lambda request: request.app.state.db),
+    logger: Any = Depends(get_logger),
+):
+    """
+    Retry a job (if it's in error/done). Resets status/attempts and puts back into pending queue.
+    """
+    with db.worker.conn:
+        cur = db.worker.conn.execute("SELECT * FROM jobs WHERE id=?", (job_id,))
+        row = cur.fetchone()
+        if not row:
+            return JSONResponse(status_code=404, content={"error": "Job not found"})
+        if row["status"] not in ("error", "done"):
+            return JSONResponse(status_code=400, content={"error": "Only error/done jobs can be retried"})
+        db.worker.conn.execute(
+            "UPDATE jobs SET status='pending', attempts=0, scheduled_at=NULL, error=NULL, result=NULL WHERE id=?",
+            (job_id,)
+        )
+        logger.info(f"Job {job_id} reset to pending by API")
+        return {"status": "reset", "job_id": job_id}

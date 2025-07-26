@@ -4,6 +4,9 @@ import os
 import shutil
 import sys
 from typing import Any, Dict, List
+from datetime import datetime
+import time
+
 
 from util.config import Config
 from util.connector import update_client_databases, update_collections_database
@@ -500,6 +503,8 @@ class PosterRenamerr:
             db (DapsDB, optional): Database to use. Defaults to self.db.
             logger (Logger, optional): Logger to use. Defaults to self.logger.
         """
+        start_time = datetime.now()
+        self.logger.info("Gathering all the posters, please wait...")
         db = db or self.db
         logger = logger or self.logger
         source_dirs = source_dirs or getattr(self.config, "source_dirs", [])
@@ -558,6 +563,11 @@ class PosterRenamerr:
                     )
 
                 db.poster.upsert(asset)
+        duration = datetime.now() - start_time
+        hours, remainder = divmod(duration.total_seconds(), 3600)
+        minutes, seconds = divmod(remainder, 60)
+        formatted_duration = f"{int(hours)}h {int(minutes)}m {int(seconds)}s"
+        logger.debug(f"Merge run time: {formatted_duration}")
 
     def run_border_replacerr(self, manifest: List[int]):
         from modules.border_replacerr import run_replacerr
@@ -585,7 +595,6 @@ class PosterRenamerr:
 
             self.sync_posters()
 
-            self.logger.info("Gathering all the posters, please wait...")
             self.db.poster.clear()
             self.merge_assets()
 

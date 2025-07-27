@@ -1,9 +1,9 @@
+import datetime
 import hashlib
 import json
 import threading
 import time
 from urllib.parse import urlparse
-import datetime
 
 from modules.poster_renamerr import PosterRenamerr
 from util.arr import create_arr_client
@@ -275,7 +275,17 @@ class WebhookService:
             }
 
         renamer = PosterRenamerr(self.config, log, self.db)
-        renamer.merge_assets(self.config.source_dirs, self.db, self.logger)
+        if self.config.source_dirs:
+            renamer.merge_assets(self.config.source_dirs, self.db, self.logger)
+        else:
+            self.logger.warning("No source directories configured.")
+            return {
+                "status": 500,
+                "success": False,
+                "error_code": "NO_SOURCE_DIRS",
+                "message": "No source directories configured.",
+                "item": None,
+            }
 
         is_collection = item.get("asset_type", "").lower() not in ("movie", "show")
         result = renamer.match_item(item, is_collection=is_collection)
@@ -337,7 +347,6 @@ class WebhookService:
         result = None
         upload_result = upload_posters(self.config, self.db, self.logger, manifest)
         if not upload_result.get("success"):
-            # Enqueue for background worker
             payload = {
                 "manifest": manifest,
                 "item": renamed,
@@ -345,7 +354,10 @@ class WebhookService:
             }
             delay_minutes = getattr(self.config, "upload_retry_delay", 5)
             max_attempts = getattr(self.config, "upload_retry_max_attempts", 3)
-            scheduled_at = (datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=delay_minutes)).isoformat()
+            scheduled_at = (
+                datetime.datetime.now(datetime.timezone.utc)
+                + datetime.timedelta(minutes=delay_minutes)
+            ).isoformat()
             enqueue_result = self.db.worker.enqueue_job(
                 "jobs",
                 payload,
@@ -362,7 +374,7 @@ class WebhookService:
                 "item": renamed,
                 "retry_job": enqueue_result,
             }
-        
+
         return {
             "status": 200,
             "success": True,

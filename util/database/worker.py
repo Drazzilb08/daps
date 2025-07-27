@@ -1,7 +1,7 @@
+import datetime
 import json
 import threading
 import time
-import datetime
 from typing import Any, Callable, Dict
 
 from util.database.db_base import DatabaseBase
@@ -13,7 +13,17 @@ class DBWorker(DatabaseBase):
     Includes background periodic cleanup of completed jobs.
     """
 
-    def __init__(self, db_path, logger=None, poll_interval: int = 2, num_workers: int = 3, worker_name: str = "UNNAMED", job_type_filter: str = None,cleanup_interval: int = 3600, job_deletion_days: int = 30):
+    def __init__(
+        self,
+        db_path,
+        logger=None,
+        poll_interval: int = 2,
+        num_workers: int = 3,
+        worker_name: str = "UNNAMED",
+        job_type_filter: str = None,
+        cleanup_interval: int = 3600,
+        job_deletion_days: int = 30,
+    ):
         super().__init__(db_path)
         self.logger = logger
         self.worker_name = worker_name
@@ -28,8 +38,17 @@ class DBWorker(DatabaseBase):
         self.num_workers = num_workers
         self._threads = []
 
-    def process_pending_jobs(self, table_name: str, process_fn: Callable[[Dict[str, Any]], None], job_type_filter: str = None):
-        log = self.logger.get_adapter({"source": f"WORKER:{self.worker_name}"}) if self.logger else None
+    def process_pending_jobs(
+        self,
+        table_name: str,
+        process_fn: Callable[[Dict[str, Any]], None],
+        job_type_filter: str = None,
+    ):
+        log = (
+            self.logger.get_adapter({"source": f"WORKER:{self.worker_name}"})
+            if self.logger
+            else None
+        )
         while self.running:
             try:
                 job = self.claim_next_job(table_name, job_type_filter)
@@ -82,7 +101,6 @@ class DBWorker(DatabaseBase):
             cur = self.conn.execute(query, tuple(params))
             return cur.fetchall()
 
-
     def mark_job_done(self, table_name: str, job_id: int, result):
         with self.conn:
             self.conn.execute(
@@ -111,7 +129,7 @@ class DBWorker(DatabaseBase):
                 f"UPDATE {table_name} SET status='error', error=? WHERE id=?",
                 (str(error), job_id),
             )
-        # Log a manual intervention warning when a job fails permanently
+
         job_type = None
         try:
             with self.conn:
@@ -141,7 +159,7 @@ class DBWorker(DatabaseBase):
         """
         now = datetime.datetime.now(datetime.timezone.utc).isoformat()
         with self.conn:
-            # Fetch one pending job (oldest first)
+
             query = f"""SELECT * FROM {table_name}
                         WHERE status='pending'
                         AND (attempts < max_attempts OR max_attempts IS NULL)
@@ -157,15 +175,15 @@ class DBWorker(DatabaseBase):
             if not row:
                 return None
             job_id = row["id"]
-            # Atomically claim the job (only if still pending)
+
             updated = self.conn.execute(
                 f"UPDATE {table_name} SET status='running', attempts=attempts+1 WHERE id=? AND status='pending'",
                 (job_id,),
             ).rowcount
             if updated == 1:
-                return dict(row)  # We got it!
+                return dict(row)
             else:
-                return None      # Lost the race, another thread got it first
+                return None
 
     def job_stats(self, table_name: str = "jobs", error_limit: int = 10):
         """
@@ -256,7 +274,12 @@ class DBWorker(DatabaseBase):
                 "message": f"Error enqueuing job: {e}",
             }
 
-    def start(self, table_name: str, process_fn: Callable[[Dict[str, Any]], None], job_type_filter: str = None):
+    def start(
+        self,
+        table_name: str,
+        process_fn: Callable[[Dict[str, Any]], None],
+        job_type_filter: str = None,
+    ):
         log = self.logger.get_adapter({"source": "WORKER"}) if self.logger else None
         with self.conn:
             reset = self.conn.execute(
@@ -274,11 +297,11 @@ class DBWorker(DatabaseBase):
             t = threading.Thread(
                 target=self.process_pending_jobs,
                 args=(table_name, process_fn, job_type_filter),
-                daemon=True
+                daemon=True,
             )
             t.start()
             self._threads.append(t)
-        # Cleanup thread remains single
+
         if not self._cleanup_thread or not self._cleanup_thread.is_alive():
             self._cleanup_running = True
             self._cleanup_thread = threading.Thread(
@@ -297,7 +320,7 @@ class DBWorker(DatabaseBase):
                 f"Started cleanup thread for table '{table_name}' "
                 f"(cleanup_interval={self.cleanup_interval}s, job_deletion_age={self.job_deletion_days}d)"
             )
-            
+
     def stop(self):
         log = self.logger.get_adapter({"source": "WORKER"}) if self.logger else None
         self.running = False
@@ -323,7 +346,8 @@ class DBWorker(DatabaseBase):
 
         try:
             cutoff = (
-                datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(days=days)
+                datetime.datetime.now(datetime.timezone.utc)
+                - datetime.timedelta(days=days)
             ).isoformat()
             with self.conn:
                 deleted = self.conn.execute(
@@ -332,7 +356,9 @@ class DBWorker(DatabaseBase):
                 ).rowcount
             log = self.logger.get_adapter({"source": "WORKER"}) if self.logger else None
             if log:
-                log.info(f"Removed {deleted} jobs from '{table_name}' older than {days} days")
+                log.info(
+                    f"Removed {deleted} jobs from '{table_name}' older than {days} days"
+                )
             return {
                 "status": 200,
                 "success": True,
@@ -478,7 +504,9 @@ def process_job(job, logger):
                 }
         elif job_type == "upload_posters":
             try:
-                if "manifest" not in payload or not isinstance(payload["manifest"], dict):
+                if "manifest" not in payload or not isinstance(
+                    payload["manifest"], dict
+                ):
                     error_msg = f"[JOB:{job_id}] upload_posters: missing/invalid manifest in payload"
                     if log:
                         log.error(error_msg)
@@ -489,9 +517,9 @@ def process_job(job, logger):
                         "error_code": "PAYLOAD_SCHEMA_INVALID",
                     }
                     return result
-                from util.upload_posters import upload_posters
                 from util.config import Config
                 from util.database import DapsDB
+                from util.upload_posters import upload_posters
 
                 config_module = payload.get("config_module", "poster_renamerr")
                 config = Config(config_module)

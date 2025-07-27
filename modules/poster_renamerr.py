@@ -3,10 +3,8 @@ import json
 import os
 import shutil
 import sys
-from typing import Any, Dict, List
 from datetime import datetime
-import time
-
+from typing import Any, Dict, List
 
 from util.config import Config
 from util.connector import update_client_databases, update_collections_database

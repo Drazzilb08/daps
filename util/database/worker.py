@@ -29,40 +29,39 @@ class DBWorker(DatabaseBase):
         self._threads = []
 
     def process_pending_jobs(self, table_name: str, process_fn: Callable[[Dict[str, Any]], None], job_type_filter: str = None):
+        log = self.logger.get_adapter({"source": f"WORKER:{self.worker_name}"}) if self.logger else None
         while self.running:
-            log = self.logger.get_adapter({"source": f"WORKER:{self.worker_name}"}) if self.logger else None
             try:
-                jobs = self.get_pending_jobs(table_name, job_type_filter)
-                for job in jobs:
-                    job_dict = dict(job)
-                    job_id = job_dict["id"]
+                job = self.claim_next_job(table_name, job_type_filter)
+                if not job:
+                    time.sleep(self.poll_interval)
+                    continue
+                job_id = job["id"]
+                if log:
+                    log.info(f"Processing {table_name} job ID {job_id}")
+                try:
+                    result = process_fn(job)
+                    self.mark_job_done(table_name, job_id, result)
                     if log:
-                        log.info(f"Processing {table_name} job ID {job_id}")
-                    try:
-                        self.mark_job_running(table_name, job_id)
-                        result = process_fn(job_dict)
-                        self.mark_job_done(table_name, job_id, result)
+                        log.info(f"Job {job_id} processed.")
+                except Exception as ex:
+                    row = self.get_attempts(table_name, job_id)
+                    attempts = row["attempts"]
+                    max_attempts = row["max_attempts"]
+                    if attempts < max_attempts:
+                        self.mark_job_pending_with_error(table_name, job_id, ex)
                         if log:
-                            log.info(f"Job {job_id} processed.")
-                    except Exception as ex:
-                        row = self.get_attempts(table_name, job_id)
-                        attempts = row["attempts"]
-                        max_attempts = row["max_attempts"]
-                        if attempts < max_attempts:
-                            self.mark_job_pending_with_error(table_name, job_id, ex)
-                            if log:
-                                log.error(
-                                    f"Error processing job {job_id}: {ex} (will retry)",
-                                    exc_info=True,
-                                )
-                        else:
-                            self.mark_job_failed(table_name, job_id, ex)
-                            if log:
-                                log.error(
-                                    f"Job {job_id} failed permanently after {attempts} attempts: {ex}",
-                                    exc_info=True,
-                                )
-                time.sleep(self.poll_interval)
+                            log.error(
+                                f"Error processing job {job_id}: {ex} (will retry)",
+                                exc_info=True,
+                            )
+                    else:
+                        self.mark_job_failed(table_name, job_id, ex)
+                        if log:
+                            log.error(
+                                f"Job {job_id} failed permanently after {attempts} attempts: {ex}",
+                                exc_info=True,
+                            )
             except Exception as ex:
                 if log:
                     log.error(f"Loop error: {ex}", exc_info=True)
@@ -83,12 +82,6 @@ class DBWorker(DatabaseBase):
             cur = self.conn.execute(query, tuple(params))
             return cur.fetchall()
 
-    def mark_job_running(self, table_name: str, job_id: int):
-        with self.conn:
-            self.conn.execute(
-                f"UPDATE {table_name} SET attempts=attempts+1, status='running' WHERE id=?",
-                (job_id,),
-            )
 
     def mark_job_done(self, table_name: str, job_id: int, result):
         with self.conn:
@@ -140,6 +133,39 @@ class DBWorker(DatabaseBase):
             log.warning(warning_msg)
         else:
             print(f"[WORKER][WARNING] {warning_msg}")
+
+    def claim_next_job(self, table_name: str, job_type_filter: str = None):
+        """
+        Atomically fetch and claim a single pending job for processing.
+        Returns the job dict if successful, else None.
+        """
+        now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        with self.conn:
+            # Fetch one pending job (oldest first)
+            query = f"""SELECT * FROM {table_name}
+                        WHERE status='pending'
+                        AND (attempts < max_attempts OR max_attempts IS NULL)
+                        AND (scheduled_at IS NULL OR scheduled_at <= ?)
+                    """
+            params = [now]
+            if job_type_filter:
+                query += " AND type=?"
+                params.append(job_type_filter)
+            query += " ORDER BY received_at ASC LIMIT 1"
+            cur = self.conn.execute(query, tuple(params))
+            row = cur.fetchone()
+            if not row:
+                return None
+            job_id = row["id"]
+            # Atomically claim the job (only if still pending)
+            updated = self.conn.execute(
+                f"UPDATE {table_name} SET status='running', attempts=attempts+1 WHERE id=? AND status='pending'",
+                (job_id,),
+            ).rowcount
+            if updated == 1:
+                return dict(row)  # We got it!
+            else:
+                return None      # Lost the race, another thread got it first
 
     def job_stats(self, table_name: str = "jobs", error_limit: int = 10):
         """

@@ -297,3 +297,24 @@ export async function fetchPosterAssetList() {
         return [];
     }
 }
+
+export async function fetchDirectoryList(path) {
+    if (!path) path = '/';
+    try {
+        const res = await fetch(`/api/list?path=${encodeURIComponent(path)}`);
+        const exists = res.ok;
+        let directories = [];
+        if (exists) {
+            const data = await res.json();
+            directories = Array.isArray(data.directories) ? data.directories : [];
+        }
+        if (!exists) showToast('Failed to load directory list.', 'error');
+        return { exists, directories };
+    } catch (err) {
+        showToast(
+            'Failed to load directory list.' + (err && err.message ? ` (${err.message})` : ''),
+            'error'
+        );
+        return { exists: false, directories: [] };
+    }
+}

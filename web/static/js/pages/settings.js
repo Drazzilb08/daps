@@ -140,7 +140,6 @@ async function loadSettings(moduleName) {
     document.getElementById('settingsForm')?.classList.remove('hidden');
 
     resetDirty();
-    console.log('[CONFIG LOAD]', moduleConfig);
 }
 
 /**

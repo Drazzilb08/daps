@@ -211,6 +211,78 @@ html.modal-open {
     line-height: 1.4;
 }
 
+/* ========================
+   Directory List (dir-list)
+   Subtle Version
+=========================== */
+
+.dir-list {
+    margin: 0.2em 0 0.6em 0;
+    padding: 0;
+    list-style: none;
+    background: var(--input-bg);
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(30,32,44,0.04);
+    max-height: 210px;
+    overflow-y: auto;
+    border: 1px solid var(--divider, #22242a);
+}
+
+.dir-list li {
+    display: flex;
+    align-items: center;
+    padding: 0.48em 1em 0.48em 1.12em;
+    font-size: 1.06em;
+    color: var(--text-color, #c4c9d4);
+    cursor: pointer;
+    border-bottom: 1px solid var(--divider, #23242b);
+    user-select: none;
+    /* background intentionally removed to inherit from .dir-list */
+    transition: background 0.13s, color 0.14s;
+}
+
+.dir-list li:last-child {
+    border-bottom: none;
+}
+
+.dir-list li:hover,
+.dir-list li:focus {
+    background: rgba(110, 130, 180, 0.07); /* overlay on top of --input-bg */
+    color: var(--primary, #3391ff);
+}
+
+.dir-list li:active {
+    background: rgba(60, 90, 150, 0.12); /* overlay on top of --input-bg */
+    color: var(--primary, #297cd6);
+}
+
+.dir-list li.dir-parent {
+    color: var(--accent, #ffb300);
+    font-weight: 500;
+    /* background intentionally removed to inherit from .dir-list */
+    letter-spacing: 0.01em;
+}
+
+.dir-list li.dir-parent:hover,
+.dir-list li.dir-parent:focus {
+    background: rgba(255, 205, 70, 0.10); /* overlay on top of --input-bg */
+    color: var(--accent, #ffb300);
+}
+
+.dir-list::-webkit-scrollbar {
+    width: 5px;
+    background: transparent;
+}
+.dir-list::-webkit-scrollbar-thumb {
+    background: var(--divider, #25252a);
+    border-radius: 4px;
+}
+
+.dir-list li.active {
+    background: var(--primary, #3693f8) !important;
+    color: #fff !important;
+}
+
 /* ======================
    PILLS & SCHEDULE SELECTS
 ====================== */

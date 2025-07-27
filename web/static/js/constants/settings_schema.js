@@ -15,7 +15,7 @@ export const SETTINGS_SCHEMA = [
             {
                 key: 'client_id',
                 label: 'Client ID',
-                type: 'text',
+                type: 'password',
                 required: false,
                 description: 'Google API client ID for authentication.',
             },

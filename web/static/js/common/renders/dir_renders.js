@@ -1,9 +1,9 @@
 import { directoryPickerModal } from '../modals.js';
 import { humanize } from '../../util.js';
+import { fetchDirectoryList } from '../../api.js';
 
 export function renderDirPickerField(field, immediateData) {
     let value = immediateData[field.key];
-
     if (value && typeof value === 'object' && value instanceof HTMLInputElement) {
         value = value.value;
     }
@@ -29,76 +29,206 @@ export function renderDirPickerField(field, immediateData) {
     input.value = value ?? '';
     input.placeholder = field.placeholder || 'Choose directory…';
     input.autocomplete = 'off';
-
+    input.setAttribute('aria-label', 'Directory path');
     inputWrap.appendChild(input);
 
     const dirList = document.createElement('ul');
     dirList.className = 'dir-list';
     inputWrap.appendChild(dirList);
 
-    const dirCache = {};
+    // Cache most recent loaded dirs for parent path
+    let currentDir = '/';
+    let dirCache = {};
+    let filterText = '';
     let suggestionTimeout = null;
+    let activeIdx = -1; // keyboard-highlighted item
 
-    async function showPath(val) {
-        input.value = val;
-        immediateData[field.key] = String(input.value);
-        if (!dirCache[val]) {
-            try {
-                const res = await fetch(`/api/list?path=${encodeURIComponent(val)}`);
-                const data = await res.json();
-                dirCache[val] = data.directories || [];
-            } catch (e) {
-                dirCache[val] = [];
-            }
-        }
-        updateDirList(val);
+    async function fetchAndDisplay(path) {
+        const { directories } = await fetchDirectoryList(path);
+        dirCache[path] = directories;
+        currentDir = path;
+        activeIdx = -1;
+        displayDirList();
+        await validateInput(); // Validate on any navigation
     }
 
-    function updateDirList(current) {
+    function displayDirList() {
         dirList.innerHTML = '';
-        if (current !== '/') {
+        let items = [];
+        // Parent dir row
+        if (currentDir !== '/') {
             const up = document.createElement('li');
             up.textContent = '..';
+            up.className = 'dir-parent';
+            up.setAttribute('aria-label', 'Parent directory');
             up.onclick = () => {
-                const parent = current.split('/').slice(0, -1).join('/') || '/';
-                showPath(parent);
+                let parent = currentDir.replace(/\/+$/, '');
+                parent = parent.substring(0, parent.lastIndexOf('/')) || '/';
+                const parentPath = parent.endsWith('/') ? parent : parent + '/';
+                input.value = parentPath;
+                immediateData[field.key] = parentPath;
+                filterText = '';
+                activeIdx = -1;
+                fetchAndDisplay(parentPath);
+                input.focus();
             };
             dirList.appendChild(up);
+            items.push(up);
         }
-        (dirCache[current] || []).sort().forEach((name) => {
+        let dirs = dirCache[currentDir] || [];
+        if (filterText) {
+            const lc = filterText.toLowerCase();
+            dirs = dirs.filter((name) => name.toLowerCase().startsWith(lc));
+        }
+        dirs.forEach((name) => {
             const li = document.createElement('li');
             li.textContent = name;
+            li.setAttribute('aria-label', name);
             li.onclick = () => {
-                const newPath = current.endsWith('/') ? current + name : current + '/' + name;
-                showPath(newPath);
-            };
-            li.ondblclick = () => {
-                input.value = current.endsWith('/') ? current + name : current + '/' + name;
-                immediateData[field.key] = String(input.value);
-                dirList.innerHTML = '';
+                const newPath = currentDir.endsWith('/')
+                    ? currentDir + name + '/'
+                    : currentDir + '/' + name + '/';
+                input.value = newPath;
+                immediateData[field.key] = input.value;
+                filterText = '';
+                activeIdx = -1;
+                fetchAndDisplay(newPath);
+                input.focus();
             };
             dirList.appendChild(li);
+            items.push(li);
+        });
+        // Keyboard highlight:
+        items.forEach((el, i) => {
+            el.classList.toggle('active', i === activeIdx);
+            el.setAttribute('aria-selected', i === activeIdx ? 'true' : 'false');
         });
     }
 
+    // Initial load
+    let initialPath = input.value.trim() || '/';
+    if (!initialPath.endsWith('/')) {
+        const lastSlash = initialPath.lastIndexOf('/');
+        currentDir = lastSlash >= 0 ? initialPath.slice(0, lastSlash) || '/' : '/';
+        filterText = initialPath.slice(lastSlash + 1);
+    } else {
+        currentDir = initialPath;
+        filterText = '';
+    }
+    fetchAndDisplay(currentDir);
+
+    // Directory validation state and error UI
+    let validDir = false;
+    let errorDiv = null;
+    function showError(msg) {
+        if (!errorDiv) {
+            errorDiv = document.createElement('div');
+            errorDiv.className = 'field-error-message';
+            errorDiv.style.color = 'var(--error, #ff375f)';
+            errorDiv.style.fontSize = '0.98em';
+            errorDiv.style.marginTop = '0.28em';
+            inputWrap.appendChild(errorDiv);
+        }
+        errorDiv.textContent = msg;
+        input.classList.add('input-error');
+    }
+    function clearError() {
+        if (errorDiv) errorDiv.textContent = '';
+        input.classList.remove('input-error');
+    }
+
+    async function validateInput() {
+        const val = input.value.trim();
+        if (!val || !val.endsWith('/')) {
+            showError('Must be a valid directory (end with /)');
+            validDir = false;
+        } else {
+            const { exists } = await fetchDirectoryList(val);
+            if (!exists) {
+                showError('Directory does not exist.');
+                validDir = false;
+            } else {
+                clearError();
+                validDir = true;
+            }
+        }
+        // Disable "accept" button if present
+        const modal = row.closest('.modal-content');
+        if (modal) {
+            const accept = modal.querySelector('#dir-accept');
+            if (accept) accept.disabled = !validDir;
+        }
+        return validDir;
+    }
+
+    // Handle input changes
     input.addEventListener('input', (e) => {
         const val = e.target.value.trim() || '/';
+        immediateData[field.key] = val;
         clearTimeout(suggestionTimeout);
         suggestionTimeout = setTimeout(() => {
-            showPath(val);
-        }, 200);
-        immediateData[field.key] = String(input.value);
+            if (val.endsWith('/')) {
+                filterText = '';
+                fetchAndDisplay(val);
+            } else {
+                const lastSlash = val.lastIndexOf('/');
+                const parentDir = lastSlash >= 0 ? val.slice(0, lastSlash) || '/' : '/';
+                filterText = val.slice(lastSlash + 1);
+                if (parentDir !== currentDir) {
+                    fetchAndDisplay(parentDir).then(() => displayDirList());
+                } else {
+                    displayDirList();
+                }
+            }
+            activeIdx = -1;
+            validateInput();
+        }, 120);
     });
 
     input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
+        let items = Array.from(dirList.querySelectorAll('li'));
+        // Tab or ArrowDown: next; Shift+Tab or ArrowUp: prev
+        if ((e.key === 'Tab' && !e.shiftKey) || e.key === 'ArrowDown') {
             e.preventDefault();
-            showPath(input.value.trim() || '/');
+            if (items.length === 0) return;
+            activeIdx = (activeIdx + 1) % items.length;
+            items.forEach((el, i) => {
+                el.classList.toggle('active', i === activeIdx);
+                el.setAttribute('aria-selected', i === activeIdx ? 'true' : 'false');
+            });
+            if (activeIdx >= 0 && items[activeIdx])
+                items[activeIdx].scrollIntoView({ block: 'nearest' });
+            return;
+        }
+        if ((e.key === 'Tab' && e.shiftKey) || e.key === 'ArrowUp') {
+            e.preventDefault();
+            if (items.length === 0) return;
+            activeIdx = (activeIdx - 1 + items.length) % items.length;
+            items.forEach((el, i) => {
+                el.classList.toggle('active', i === activeIdx);
+                el.setAttribute('aria-selected', i === activeIdx ? 'true' : 'false');
+            });
+            if (activeIdx >= 0 && items[activeIdx])
+                items[activeIdx].scrollIntoView({ block: 'nearest' });
+            return;
+        }
+        if (e.key === 'Enter') {
+            if (activeIdx >= 0) {
+                e.preventDefault();
+                let items = Array.from(dirList.querySelectorAll('li'));
+                if (items[activeIdx]) items[activeIdx].click();
+                activeIdx = -1;
+                return;
+            }
+            // Otherwise, allow Enter to be handled for path entry/save
+        }
+        if (e.key === 'Escape') {
+            activeIdx = -1;
+            items.forEach((el) => el.classList.remove('active'));
         }
     });
 
-    showPath(input.value.trim() || '/');
-
+    // Optionally, focus/description
     if (field.description) {
         const help = document.createElement('div');
         help.className = 'field-help-text';
@@ -114,6 +244,17 @@ export function renderDirPickerField(field, immediateData) {
     ) {
         immediateData[field.key] = immediateData[field.key].value;
     }
+
+    // Expose validate helper for external use
+    row.validateDirectoryExists = async function (path) {
+        if (!path || !path.endsWith('/')) return false;
+        const { exists } = await fetchDirectoryList(path);
+        return exists;
+    };
+
+    // Validate on mount for initial value
+    setTimeout(validateInput, 10);
+
     return row;
 }
 
@@ -146,7 +287,7 @@ export function renderDirField(field, immediateData) {
             const nameInput = parent.querySelector('input[name="name"]');
             if (nameInput) {
                 const nameValue = nameInput.value;
-                console.log('nameValue', nameValue);
+                
             }
         }
     });
@@ -192,12 +333,6 @@ export function renderDirListField(field, immediateData) {
     if (typeof value === 'string') value = [value];
     if (value === null || value === undefined || !Array.isArray(value)) value = [''];
     immediateData[field.key] = [...value];
-    console.log(
-        '[DIR_LIST_FIELD] Saving',
-        field.key,
-        immediateData[field.key],
-        typeof immediateData[field.key]
-    );
     const row = document.createElement('div');
     row.className = 'settings-field-row field-dir-list';
 

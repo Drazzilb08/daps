@@ -65,8 +65,9 @@ export function unsavedSettingsModal() {
 export function directoryPickerModal(initialPath = '/', nameValue = null) {
     return new Promise((resolve) => {
         const entry = { path: initialPath || '/' };
+        let modal = null;
 
-        openModal({
+        modal = openModal({
             schema: [
                 {
                     key: 'path',
@@ -77,7 +78,9 @@ export function directoryPickerModal(initialPath = '/', nameValue = null) {
                 },
             ],
             entry,
-            title: nameValue ? `Select a location for ${nameValue}'s directory` : 'Select Directory',
+            title: nameValue
+                ? `Select a location for ${nameValue}'s directory`
+                : 'Select Directory',
             footerButtons: [
                 { id: 'dir-create', label: 'New Folder', class: 'btn', type: 'button' },
                 { id: 'dir-accept', label: 'Accept', class: 'btn--success', type: 'button' },
@@ -109,7 +112,6 @@ export function directoryPickerModal(initialPath = '/', nameValue = null) {
                             alert('Create failed: ' + (errData.error || resp.statusText));
                             return;
                         }
-                        lastCreatedFolder = name;
                         entry.path = newPath;
                         if (input) {
                             input.value = newPath;
@@ -131,7 +133,10 @@ export function directoryPickerModal(initialPath = '/', nameValue = null) {
                         return;
                     }
                     const input = modal.querySelector('input.dir-picker-input');
-                    if (input) entry.path = input.value;
+                    if (input) {
+                        input.dispatchEvent(new Event('input', { bubbles: true })); // ensure update
+                        entry.path = input.value;
+                    }
                     closeModal();
                     resolve(entry.path);
                 },
@@ -141,6 +146,44 @@ export function directoryPickerModal(initialPath = '/', nameValue = null) {
                 },
             },
         });
+
+        setTimeout(() => {
+            const input = document.querySelector('.modal-content .dir-picker-input');
+            if (input) input.focus();
+        }, 10);
+
+        // Focus trap helper for modal accessibility
+        function trapFocus(e) {
+            if (e.key !== 'Tab') return;
+            const focusableSelectors = [
+                'a[href]',
+                'button:not([disabled])',
+                'input:not([disabled])',
+                'select:not([disabled])',
+                'textarea:not([disabled])',
+                '[tabindex]:not([tabindex="-1"])',
+            ];
+            const modalContent = modal.querySelector('.modal-content');
+            if (!modalContent) return;
+            const focusable = Array.from(
+                modalContent.querySelectorAll(focusableSelectors.join(','))
+            ).filter((el) => el.offsetParent !== null);
+            if (!focusable.length) return;
+            const first = focusable[0];
+            const last = focusable[focusable.length - 1];
+            if (e.shiftKey) {
+                if (document.activeElement === first) {
+                    e.preventDefault();
+                    last.focus();
+                }
+            } else {
+                if (document.activeElement === last) {
+                    e.preventDefault();
+                    first.focus();
+                }
+            }
+        }
+        if (modal) modal.addEventListener('keydown', trapFocus);
     });
 }
 

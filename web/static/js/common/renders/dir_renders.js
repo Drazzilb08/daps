@@ -1,4 +1,5 @@
 import { directoryPickerModal } from '../modals.js';
+import { humanize } from '../../util.js';
 
 export function renderDirPickerField(field, immediateData) {
     let value = immediateData[field.key];
@@ -117,7 +118,6 @@ export function renderDirPickerField(field, immediateData) {
 }
 
 export function renderDirField(field, immediateData) {
-    console.log('renderDirField', field, immediateData);
     const row = document.createElement('div');
     row.className = 'settings-field-row field-dir';
 
@@ -139,7 +139,6 @@ export function renderDirField(field, immediateData) {
 
     let inputValue = immediateData && immediateData[field.key] ? immediateData[field.key] : '';
     input.value = inputValue;
-
 
     input.addEventListener('focus', () => {
         let parent = input.closest('form') || input.closest('.modal-content');
@@ -188,7 +187,17 @@ export function renderDirField(field, immediateData) {
 }
 
 export function renderDirListField(field, immediateData) {
-    let value = immediateData[field.key] ?? [];
+    let value = immediateData[field.key];
+
+    if (typeof value === 'string') value = [value];
+    if (value === null || value === undefined || !Array.isArray(value)) value = [''];
+    immediateData[field.key] = [...value];
+    console.log(
+        '[DIR_LIST_FIELD] Saving',
+        field.key,
+        immediateData[field.key],
+        typeof immediateData[field.key]
+    );
     const row = document.createElement('div');
     row.className = 'settings-field-row field-dir-list';
 
@@ -285,14 +294,15 @@ export function renderDirListField(field, immediateData) {
     return row;
 }
 
-// Drag/drop and options functions (no logic omitted):
-
 function isTouchDevice() {
     return 'ontouchstart' in window || navigator.maxTouchPoints > 0;
 }
 
 export function renderDirListDragDropField(field, immediateData) {
-    let value = immediateData[field.key] ?? [];
+    let value = immediateData[field.key];
+    if (typeof value === 'string') value = [value];
+    if (!Array.isArray(value) || value.length === 0) value = [''];
+    immediateData[field.key] = [...value];
     const row = document.createElement('div');
     row.className = 'settings-field-row field-dir-list';
 
@@ -352,7 +362,6 @@ export function renderDirListDragDropField(field, immediateData) {
             item.className = 'field-dragdrop-row draggable';
             item.dataset.rowKey = dir + '__' + idx;
 
-            // --- Left: up/down arrows (touch) or drag handle (desktop)
             if (useTouch) {
                 const upDownWrap = document.createElement('div');
                 upDownWrap.className = 'dirlist-arrows';
@@ -404,7 +413,6 @@ export function renderDirListDragDropField(field, immediateData) {
                 item.appendChild(handle);
             }
 
-            // --- Input
             const input = document.createElement('input');
             input.type = 'text';
             input.className = 'input field-input';
@@ -429,7 +437,6 @@ export function renderDirListDragDropField(field, immediateData) {
             });
             item.appendChild(input);
 
-            // --- Remove
             const removeBtn = document.createElement('button');
             removeBtn.type = 'button';
             removeBtn.className = 'btn btn--remove-item remove-btn';
@@ -456,7 +463,6 @@ export function renderDirListDragDropField(field, immediateData) {
             inputWrap.appendChild(help);
         }
 
-        // FLIP animation for drag/drop
         if (useTouch && oldPositions.length > 0) {
             const newNodes = Array.from(inputWrap.children).filter((el) =>
                 el.classList?.contains('field-dragdrop-row')
@@ -487,7 +493,6 @@ export function renderDirListDragDropField(field, immediateData) {
             });
         }
 
-        // Drag-and-drop (desktop only)
         if (!useTouch) {
             makeDraggable(inputWrap, value, immediateData, field, renderRows);
         }
@@ -540,7 +545,7 @@ export function renderDirListDragDropField(field, immediateData) {
                     el.classList.remove('drag-over')
                 );
                 dragged = null;
-                // After drop, update value array to new order
+
                 const items = Array.from(list.querySelectorAll('.field-dragdrop-row'));
                 const newOrder = items.map((el) => el.querySelector('input').value);
                 if (JSON.stringify(valueArr) !== JSON.stringify(newOrder)) {
@@ -559,9 +564,42 @@ export function renderDirListDragDropField(field, immediateData) {
     return row;
 }
 
-// Options variant:
 export function renderDirListOptionsField(field, immediateData) {
-    let value = immediateData[field.key] ?? [];
+    let value = immediateData[field.key];
+
+    if (typeof value === 'string') {
+        value = [
+            {
+                path: value,
+                mode: (field.options && field.options[0]) || '',
+            },
+        ];
+    } else if (value && !Array.isArray(value)) {
+        value = [
+            {
+                path: value.path ?? '',
+                mode: value.mode ?? ((field.options && field.options[0]) || ''),
+            },
+        ];
+    }
+    if (!Array.isArray(value) || value.length === 0) {
+        value = [
+            {
+                path: '',
+                mode: (field.options && field.options[0]) || '',
+            },
+        ];
+    }
+    immediateData[field.key] = value.map((dir) =>
+        typeof dir === 'object' && dir !== null
+            ? {
+                  path: dir.path ?? '',
+                  mode: dir.mode ?? ((field.options && field.options[0]) || ''),
+              }
+            : { path: dir || '', mode: (field.options && field.options[0]) || '' }
+    );
+    value = immediateData[field.key];
+
     const row = document.createElement('div');
     row.className = 'settings-field-row field-dir-list';
 
@@ -582,11 +620,7 @@ export function renderDirListOptionsField(field, immediateData) {
     addBtn.className = 'btn add-btn';
     addBtn.textContent = 'Add Directory';
     addBtn.onclick = () => {
-        if (field.options && field.options.length) {
-            value.push({ path: '', mode: field.options[0] });
-        } else {
-            value.push('');
-        }
+        value.push({ path: '', mode: (field.options && field.options[0]) || '' });
         immediateData[field.key] = [...value];
         renderRows();
     };
@@ -595,17 +629,17 @@ export function renderDirListOptionsField(field, immediateData) {
     const inputWrap = document.createElement('div');
     inputWrap.className = 'settings-field-inputwrap dirlist-input-col';
 
-    if (!Array.isArray(value) || value.length === 0) {
-        if (field.options && field.options.length) {
-            value = [{ path: '', mode: field.options[0] }];
-        } else {
-            value = [''];
-        }
-    }
-
     function renderRows() {
         inputWrap.innerHTML = '';
         value.forEach((dir, idx) => {
+            if (typeof dir !== 'object' || dir === null) {
+                dir = { path: dir || '', mode: (field.options && field.options[0]) || '' };
+                value[idx] = dir;
+            } else {
+                if (!dir.mode) dir.mode = (field.options && field.options[0]) || '';
+                if (!('path' in dir)) dir.path = '';
+            }
+
             const item = document.createElement('div');
             item.className = 'field-dragdrop-row dir-list-option-row';
 
@@ -613,7 +647,7 @@ export function renderDirListOptionsField(field, immediateData) {
             input.type = 'text';
             input.className = 'input field-input';
             input.name = field.key;
-            input.value = typeof dir === 'object' && dir !== null ? dir.path || '' : dir || '';
+            input.value = dir.path || '';
 
             input.readOnly = false;
             input.addEventListener('click', async () => {
@@ -621,11 +655,7 @@ export function renderDirListOptionsField(field, immediateData) {
                     const selectedPath = await directoryPickerModal(input.value || '/');
                     if (selectedPath && selectedPath !== input.value) {
                         input.value = selectedPath;
-                        if (typeof dir === 'object' && dir !== null) {
-                            dir.path = selectedPath;
-                        } else {
-                            value[idx] = selectedPath;
-                        }
+                        dir.path = selectedPath;
                         immediateData[field.key] = [...value];
                         input.dispatchEvent(new Event('input', { bubbles: true }));
                     }
@@ -633,16 +663,11 @@ export function renderDirListOptionsField(field, immediateData) {
             });
 
             input.addEventListener('input', () => {
-                if (typeof dir === 'object' && dir !== null) {
-                    dir.path = input.value;
-                } else {
-                    value[idx] = input.value;
-                }
+                dir.path = input.value;
                 immediateData[field.key] = [...value];
             });
             item.appendChild(input);
 
-            // Mode select (for options)
             if (field.options && Array.isArray(field.options)) {
                 const select = document.createElement('select');
                 select.className = 'select dir-list-mode';
@@ -650,23 +675,13 @@ export function renderDirListOptionsField(field, immediateData) {
                     const option = document.createElement('option');
                     option.value = opt;
                     option.textContent = humanize(opt);
-                    if (
-                        (typeof dir === 'object' && dir !== null && dir.mode === opt) ||
-                        (typeof dir === 'object' &&
-                            dir !== null &&
-                            !dir.mode &&
-                            field.options[0] === opt)
-                    ) {
+                    if (dir.mode === opt) {
                         option.selected = true;
                     }
                     select.appendChild(option);
                 });
                 select.addEventListener('change', () => {
-                    if (typeof dir === 'object' && dir !== null) {
-                        dir.mode = select.value;
-                    } else {
-                        value[idx] = { path: input.value, mode: select.value };
-                    }
+                    dir.mode = select.value;
                     immediateData[field.key] = [...value];
                 });
                 item.appendChild(select);
@@ -698,13 +713,9 @@ export function renderDirListOptionsField(field, immediateData) {
         }
     }
 
-    function humanize(str) {
-        if (!str) return '';
-        return str.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase());
-    }
-
     renderRows();
     row.appendChild(labelCol);
     row.appendChild(inputWrap);
+
     return row;
 }

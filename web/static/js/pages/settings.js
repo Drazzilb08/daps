@@ -140,6 +140,7 @@ async function loadSettings(moduleName) {
     document.getElementById('settingsForm')?.classList.remove('hidden');
 
     resetDirty();
+    console.log('[CONFIG LOAD]', moduleConfig);
 }
 
 /**
@@ -190,6 +191,7 @@ function buildSettingsToolbar() {
  * Save settings for the current module.
  */
 export async function saveSettings() {
+    console.log('DEBUG: currentConfig before save', JSON.stringify(currentConfig, null, 2));
     if (!currentModule) return;
     const saveBtn = document.getElementById('saveBtnFixed');
     if (saveBtn) saveBtn.disabled = true;
@@ -211,6 +213,9 @@ export async function saveSettings() {
         if (saveBtn) saveBtn.disabled = false;
         return; // Don't save!
     }
+    Object.entries(currentConfig).forEach(([k, v]) =>
+        console.log('[PRE-SAVE]', k, Array.isArray(v), v)
+    );
     const { success, error } = await postConfig(payload);
 
     if (success) {
@@ -266,6 +271,13 @@ function setupFormDirtyDetection(moduleName) {
     schema.fields.forEach((field) => {
         const el = form.querySelector(`[name="${field.key}"]`);
         if (!el) return;
+
+        // Only attach this handler for *simple* fields, not arrays or special types
+        const handledByCustom = ['dir_list', 'dir_list_drag_drop', 'dir_list_options'].includes(
+            field.type
+        );
+        if (handledByCustom) return;
+
         el.oninput = el.onchange = () => {
             let value = el.type === 'checkbox' ? el.checked : el.value;
             if (el.type === 'number') value = el.value === '' ? null : parseInt(el.value, 10);

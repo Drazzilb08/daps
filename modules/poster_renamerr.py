@@ -25,12 +25,12 @@ from util.upload_posters import upload_posters
 
 
 class PosterRenamerr:
-    def __init__(self, config: Config, logger: Logger = None, db: DapsDB = None):
-        self.config = config
+    def __init__(self, logger: Logger = None):
+        self.config = Config("poster_renamerr")
         self.logger = logger or Logger(
-            getattr(config, "log_level", "INFO"), config.module_name
+            getattr(self.config, "log_level", "INFO"), self.config.module_name
         )
-        self.db = db or DapsDB()
+        self.db = DapsDB()
 
     def ensure_destination_dir(self):
         if not os.path.exists(self.config.destination_dir):
@@ -641,6 +641,5 @@ class PosterRenamerr:
 
 
 def main():
-    config = Config("poster_renamerr")
-    renamer = PosterRenamerr(config)
+    renamer = PosterRenamerr()
     renamer.run()

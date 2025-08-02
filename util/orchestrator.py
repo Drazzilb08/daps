@@ -284,7 +284,7 @@ class DapsOrchestrator:
 
     def _start_web_thread(self):
         try:
-            from web.server import start_web_server
+            from api.server import start_web_server
 
             start_web_server(self.logger, orchestrator=self)
             self._log(
@@ -303,7 +303,7 @@ class DapsOrchestrator:
     def start_web(self):
 
         try:
-            from web.server import start_web_server
+            from api.server import start_web_server
 
             self._log(
                 "info", "Starting web server (blocking)...", source="orchestrator"

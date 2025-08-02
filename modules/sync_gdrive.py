@@ -4,10 +4,12 @@ import re
 import shlex
 import subprocess
 import sys
+import time
 from shutil import which
 from typing import List
 
 from util.config import Config
+from util.database import DapsDB
 from util.helper import print_settings
 from util.logger import Logger
 
@@ -21,12 +23,13 @@ except ImportError:
 
 
 class SyncGDrive:
-    def __init__(self, config: Config, logger: Logger = None):
-        self.config = config
+    def __init__(self, logger: Logger = None):
+        self.config = Config("sync_gdrive")
         self.logger = logger or Logger(
-            getattr(config, "log_level", "INFO"), config.module_name
+            getattr(self.config, "log_level", "INFO"), self.config.module_name
         )
         self.rclone_path = self.get_rclone_path()
+        self.db = DapsDB()
 
     def get_rclone_path(self) -> str:
         env_path = os.getenv("RCLONE_PATH")
@@ -128,6 +131,100 @@ class SyncGDrive:
         except Exception as e:
             self.logger.error(f"Exception occurred while running rclone: {e}")
 
+    def gather_folder_stats(self, folder_path):
+        """
+        Returns (file_count, size_bytes, last_updated) for all files under folder_path.
+        last_updated is the most recent mtime (as ISO string), or '' if no files.
+        """
+        file_count = 0
+        size_bytes = 0
+        latest_mtime = 0
+        for root, dirs, files in os.walk(folder_path):
+            for fname in files:
+                try:
+                    fpath = os.path.join(root, fname)
+                    stat = os.stat(fpath)
+                    file_count += 1
+                    size_bytes += stat.st_size
+                    if stat.st_mtime > latest_mtime:
+                        latest_mtime = stat.st_mtime
+                except Exception:
+                    continue
+        last_updated = (
+            time.strftime("%Y%m%d", time.localtime(latest_mtime))
+            if latest_mtime
+            else ""
+        )
+        return file_count, size_bytes, last_updated
+
+    def refresh_all_poster_stats(self):
+        """
+        Gather stats and upsert for all gdrive entries in config.gdrive_list.
+        """
+        sync_list = (
+            self.config.gdrive_list
+            if isinstance(self.config.gdrive_list, list)
+            else [self.config.gdrive_list]
+        )
+        for sync_item in sync_list:
+            owner = sync_item.get("name", "")
+            sync_location = sync_item.get("location")
+            file_count, size_bytes, last_updated = self.gather_folder_stats(
+                sync_location
+            )
+            self.db.stats.upsert_gdrive_stat(
+                location=sync_location,
+                folder_name=owner,
+                owner=owner,
+                file_count=file_count,
+                size_bytes=size_bytes,
+                last_updated=last_updated,
+            )
+            self.logger.debug(
+                f"Updated gdrive_stats for {sync_location}: "
+                f"{file_count} files, {size_bytes} bytes, last updated {last_updated}"
+            )
+
+    def sync_folder_adhoc(self, gdrive_name: str):
+        """
+        Sync a single GDrive folder (by its config 'name') on demand.
+        """
+        try:
+            sync_list = (
+                self.config.gdrive_list
+                if isinstance(self.config.gdrive_list, list)
+                else [self.config.gdrive_list]
+            )
+            for sync_item in sync_list:
+                owner = sync_item.get("name", "")
+                if owner == gdrive_name:
+                    sync_location = sync_item.get("location")
+                    sync_id = sync_item.get("id")
+                    self.sync_folder(sync_location, sync_id)
+                    # Optionally, refresh stats after sync
+                    file_count, size_bytes, last_updated = self.gather_folder_stats(
+                        sync_location
+                    )
+                    self.db.stats.upsert_gdrive_stat(
+                        location=sync_location,
+                        folder_name=owner,
+                        owner=owner,
+                        file_count=file_count,
+                        size_bytes=size_bytes,
+                        last_updated=last_updated,
+                    )
+                    self.logger.info(
+                        f"Synced and updated gdrive_stats for {sync_location}: "
+                        f"{file_count} files, {size_bytes} bytes, last updated {last_updated}"
+                    )
+                    return True
+            self.logger.error(
+                f"GDrive name '{gdrive_name}' not found in config.gdrive_list."
+            )
+            return False
+        except Exception as exc:
+            self.logger.error(f"\n\nAn error occurred: {exc}\n", exc_info=True)
+
     def run(self):
         try:
             if getattr(self.config, "log_level", "INFO").lower() == "debug":
@@ -155,17 +252,33 @@ class SyncGDrive:
                 sync_id = sync_item.get("id")
                 self.sync_folder(sync_location, sync_id)
 
+                # GATHER STATS AND UPSERT
+                file_count, size_bytes, last_updated = self.gather_folder_stats(
+                    sync_location
+                )
+                owner = sync_item.get("name", "")  # Use 'name' as owner
+                self.db.stats.upsert_gdrive_stat(
+                    location=sync_location,
+                    folder_name=owner,  # If you want to store owner as folder_name for now
+                    owner=owner,
+                    file_count=file_count,
+                    size_bytes=size_bytes,
+                    last_updated=last_updated,
+                )
+                self.logger.info(
+                    f"Updated gdrive_stats for {sync_location}: {file_count} files, {size_bytes} bytes, last updated {last_updated}"
+                )
+
         except KeyboardInterrupt:
             print("Keyboard Interrupt detected. Exiting...")
             sys.exit()
-        except Exception:
-            self.logger.error("\n\nAn error occurred:\n", exc_info=True)
+        except Exception as exc:
+            self.logger.error(f"\n\nAn error occurred: {exc}\n", exc_info=True)
         finally:
+            self.db.close_all()
             self.logger.log_outro()
 
 
 def main():
-    config = Config("sync_gdrive")
-    logger = Logger(getattr(config, "log_level", "INFO"), config.module_name)
-    syncer = SyncGDrive(config, logger)
+    syncer = SyncGDrive()
     syncer.run()

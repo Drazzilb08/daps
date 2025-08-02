@@ -1,73 +1,52 @@
-# Byte-compiled / optimized / DLL files
+# Node and frontend build
+node_modules/
+ui/node_modules/
+ui/dist/
+ui/.vite/
+ui/.cache/
+ui/coverage/
+
+# Backend build output (static assets)
+templates/assets/
+templates/icons/
+templates/img/
+templates/posters/
+templates/
+
+
+# Python artifacts and test output
 __pycache__/
 *.py[cod]
-
-# C extensions
 *.so
-
-# Distribution / packaging
-dist/
-*.egg-info/
-*.egg
-
-# PyInstaller
-*.manifest
-*.spec
-
-# Installer logs
-pip-log.txt
-pip-delete-this-directory.txt
-
-# Unit test / coverage reports
-htmlcov/
-.tox/
-.nox/
-.coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.pytest_cache/
-
-# Virtual environments
-venv/
+.venv/
 env/
 ENV/
 .venv/
+.archives/
+logs/
+tests/
+screenshots/
+.extra_scripts/
+*.log
+*.ruff_cache
+*.pytest_cache
+config/
 
-# Bash
-*.sh~
+# Files
+test.*
+TODO.*
+build_*
 
-# IDEs / editors
+
+# Misc editor junk
 .vscode/
 .idea/
+.DS_Store
 *.swp
 *.swo
 *.swn
 *.bak
 
-# Ignore Directories
-.archives/
-.extra_scripts/
-screenshots/
-logs/
-tests/
-
-
-# Ignore Files
-**/config.yml
-**/.DS_Store
-**/TODO.*
-**test.**
-**side-projects**
-test2.py
-.env
-/tests
-pyproject.toml
-config/daps.db-shm
-config/daps.db-wal
-config/daps.db
-/config
+# OS/IDE and temp files
+Thumbs.db
+*~

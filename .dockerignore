@@ -1,24 +1,35 @@
-# Ignore everything
+# Ignore everything by default
 *
 
-# Allow files and directories
+# Allow these files/directories (for building the app)
 !/main.py
 !/requirements.txt
-!/jokes.txt
-!/modules
-!/util
-!/scripts
-!/config
+!/modules/
+!/util/
+!/config/
+!/ui/
+!/api/
 !/VERSION
-!/spud
 !/start.sh
-!/web
 
-# Ignore unnecessary files inside allowed directories
-# This should go after the allowed directories
+# Exclude these (don't ship local build/test/editor files)
 **/*~
 **/*.log
 **/.DS_Store
 **/Thumbs.db
 **/config.yml
 **/Dockerfile
+node_modules/
+ui/node_modules/
+ui/dist/
+logs/
+tests/
+.vscode/
+.idea/
+.DS_Store
+*.swp
+*.swo
+*.swn
+*.bak
+Thumbs.db
+*~

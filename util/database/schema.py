@@ -70,12 +70,15 @@ def init_db_schema(conn):
             )
             """
         )
-        # Poster source stats (for frontend stats and analytics)
+        # Gdrive Statistics
         conn.execute(
             """
-            CREATE TABLE IF NOT EXISTS poster_source_stats (
-                source_folder TEXT PRIMARY KEY,
-                poster_count INTEGER,
+            CREATE TABLE IF NOT EXISTS gdrive_stats (
+                location TEXT PRIMARY KEY,
+                owner TEXT,
+                folder_name TEXT,
+                file_count INTEGER,
+                size_bytes INTEGER,
                 last_updated TEXT
             );
             """

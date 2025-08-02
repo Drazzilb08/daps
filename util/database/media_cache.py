@@ -258,6 +258,11 @@ class MediaCache(DatabaseBase):
                     f"[DELETE] Key: {key_params} | Rows deleted: {rows_deleted}"
                 )
 
+    def delete_by_id(self, id: int) -> None:
+        """Delete a single record by its unique integer ID."""
+        with self.lock, self.conn:
+            self.conn.execute("DELETE FROM media_cache WHERE id=?", (id,))
+
     def get_by_keys(
         self,
         asset_type: str,

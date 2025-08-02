@@ -1,15 +1,23 @@
-# Single-stage build for installing Python dependencies and required packages
-FROM python:3.11-slim 
+# -------------------------
+# Stage 1: Builder
+# -------------------------
+FROM python:3.11-slim as builder
 
-# Copy requirements.txt and install Python dependencies
-COPY requirements.txt .
-
-# Install required packages and Python dependencies
+# Install build dependencies (including Node.js and build tools)
 RUN set -eux; \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        gcc wget curl unzip p7zip-full tzdata jq git build-essential && \
-    pip3 install --no-cache-dir -r requirements.txt && \
+        gcc wget curl unzip p7zip-full tzdata jq git build-essential nodejs npm && \
+    rm -rf /var/lib/apt/lists/*
+
+WORKDIR /app
+
+# Copy and install Python dependencies
+COPY requirements.txt .
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Install additional binaries/tools (rclone, jdupes)
+RUN set -eux; \
     curl https://rclone.org/install.sh | bash && \
     git clone https://codeberg.org/jbruchon/libjodycode.git /tmp/libjodycode && \
     make -C /tmp/libjodycode && make -C /tmp/libjodycode install && \
@@ -19,12 +27,48 @@ RUN set -eux; \
     ln -s /usr/local/bin/jdupes /usr/bin/jdupes && \
     rm -rf /tmp/libjodycode /tmp/jdupes
 
-# Clean up
-RUN set -eux; \
-    apt-get remove -y --purge gcc build-essential && \
-    apt-get autoremove -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# Copy full app source (including frontend)
+COPY . .
+
+# Build frontend assets
+RUN cd ui && npm install && npm run build
+
+# -------------------------
+# Stage 2: Final runtime image
+# -------------------------
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Copy only Python runtime and site-packages from builder
+COPY --from=builder /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=builder /usr/local/bin /usr/local/bin
+
+# Copy built frontend assets
+COPY --from=builder /app/ui/dist ./ui/dist
+
+# Copy app source files excluding node_modules etc (already filtered by .dockerignore)
+COPY --from=builder /app .
+
+# Copy frontend build output into templates folder as your original Dockerfile expects
+RUN mkdir -p templates && \
+    cp ui/dist/index.html templates/index.html && \
+    rm -rf templates/assets templates/icons templates/img templates/posters && \
+    cp -r ui/dist/assets templates/assets && \
+    if [ -d ui/dist/icons ]; then cp -r ui/dist/icons templates/icons; fi && \
+    if [ -d ui/dist/img ]; then cp -r ui/dist/img templates/img; fi && \
+    if [ -d ui/dist/posters ]; then cp -r ui/dist/posters templates/posters; fi
+
+# Create user/group as before
+RUN groupadd -g 99 dockeruser && \
+    useradd -u 100 -g 99 dockeruser && \
+    chown -R dockeruser:dockeruser /app
+
+USER dockeruser
+
+EXPOSE 8000
+
+VOLUME /config
 
 # Metadata and labels
 LABEL maintainer="Drazzilb" \
@@ -36,12 +80,8 @@ LABEL maintainer="Drazzilb" \
 # Branch and build number arguments
 ARG BRANCH="master"
 ARG BUILD_NUMBER=""
-# Pass the build-time BRANCH arg into a runtime environment variable
 ENV BRANCH=${BRANCH}
 ENV BUILD_NUMBER=${BUILD_NUMBER}
-ARG CONFIG_DIR=/config
-
-# Set script environment variables
 ENV CONFIG_DIR=/config
 ENV APPDATA_PATH=/appdata
 ENV LOG_DIR=/config/logs
@@ -50,19 +90,4 @@ ENV PORT=8000
 ENV HOST=0.0.0.0
 ENV DOCKER_ENV=true
 
-# Expose the application port
-EXPOSE ${PORT}
-
-VOLUME /config
-
-WORKDIR /app
-
-COPY . .
-
-# Create a new user called dockeruser with the specified PUID and PGID
-RUN groupadd -g 99 dockeruser; \
-    useradd -u 100 -g 99 dockeruser; \
-    chown -R dockeruser:dockeruser /app; 
-
-# Entrypoint script
 CMD ["bash", "start.sh"]

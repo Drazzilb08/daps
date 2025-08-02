@@ -22,13 +22,16 @@ def ensure_log_dir_and_rotate(log_file_path, max_logs=9):
     log_dir = os.path.dirname(log_file_path)
     os.makedirs(log_dir, exist_ok=True)
 
+    # Only rotate if main log file exists
     if os.path.isfile(log_file_path):
         for i in range(max_logs - 1, 0, -1):
-            old = f"{log_file_path}.{i}"
-            new = f"{log_file_path}.{i + 1}"
+            old = f"{log_file_path.rsplit('.log', 1)[0]}.{i}.log"
+            new = f"{log_file_path.rsplit('.log', 1)[0]}.{i+1}.log"
             if os.path.exists(old):
                 os.rename(old, new)
-        os.rename(log_file_path, f"{log_file_path}.1")
+        # Rename the current .log to .1.log
+        rotated = f"{log_file_path.rsplit('.log', 1)[0]}.1.log"
+        os.rename(log_file_path, rotated)
 
 
 class Logger:
@@ -112,7 +115,7 @@ class Logger:
         if extra:
             ctx.update(extra)
         ctx["source"] = (ctx.get("source") or self.module_name).upper()
-        return logging.LoggerAdapter(self._logger, ctx)
+        return DapsLoggerAdapter(self._logger, ctx)
 
     def log_outro(self) -> None:
         start = getattr(self, "start_time", None)
@@ -127,3 +130,11 @@ class Logger:
 
     def __getattr__(self, name):
         return getattr(self._logger, name)
+
+
+class DapsLoggerAdapter(logging.LoggerAdapter):
+    def get_adapter(self, extra=None):
+        new_extra = dict(self.extra)
+        if extra:
+            new_extra.update(extra)
+        return DapsLoggerAdapter(self.logger, new_extra)

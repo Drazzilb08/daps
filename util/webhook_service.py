@@ -258,130 +258,135 @@ class WebhookService:
             self.db.media.upsert(item, asset_type, instance_type, instance_name)
 
     def run_renamerr_adhoc(self, process_result: dict) -> dict:
-        from util.upload_posters import upload_posters
+        try:
+            from util.upload_posters import upload_posters
 
-        log = self.logger.get_adapter({"source": "RENAMERR_ADHOC"})
+            log = self.logger.get_adapter({"source": "RENAMERR_ADHOC"})
 
-        item_keys = self._extract_media_keys(process_result)
-        item = self.db.media.get_by_keys(**item_keys)
-        if not item:
-            log.error(f"No DB row found for: {json.dumps(item_keys, indent=2)}")
-            return {
-                "status": 404,
-                "success": False,
-                "error_code": "MEDIA_NOT_FOUND",
-                "message": "No media DB row found for keys.",
-                "item": None,
-            }
+            item_keys = self._extract_media_keys(process_result)
+            item = self.db.media.get_by_keys(**item_keys)
+            if not item:
+                log.error(f"No DB row found for: {json.dumps(item_keys, indent=2)}")
+                return {
+                    "status": 404,
+                    "success": False,
+                    "error_code": "MEDIA_NOT_FOUND",
+                    "message": "No media DB row found for keys.",
+                    "item": None,
+                }
 
-        renamer = PosterRenamerr(self.config, log, self.db)
-        if self.config.source_dirs:
-            renamer.merge_assets(self.config.source_dirs, self.db, self.logger)
-        else:
-            self.logger.warning("No source directories configured.")
-            return {
-                "status": 500,
-                "success": False,
-                "error_code": "NO_SOURCE_DIRS",
-                "message": "No source directories configured.",
-                "item": None,
-            }
+            renamer = PosterRenamerr(self.config, log, self.db)
+            if self.config.source_dirs:
+                renamer.merge_assets(self.config.source_dirs, self.db, self.logger)
+            else:
+                self.logger.warning("No source directories configured.")
+                return {
+                    "status": 500,
+                    "success": False,
+                    "error_code": "NO_SOURCE_DIRS",
+                    "message": "No source directories configured.",
+                    "item": None,
+                }
 
-        is_collection = item.get("asset_type", "").lower() not in ("movie", "show")
-        result = renamer.match_item(item, is_collection=is_collection)
+            is_collection = item.get("asset_type", "").lower() not in ("movie", "show")
+            result = renamer.match_item(item, is_collection=is_collection)
 
-        if not result["matched"]:
-            log.info(f"No match for {item['title']} ({item['year']})")
-            return {
-                "status": 404,
-                "success": False,
-                "error_code": "NO_MATCH",
-                "message": "No asset match found for provided media.",
-                "item": item,
-            }
+            if not result["matched"]:
+                log.info(f"No match for {item['title']} ({item['year']})")
+                return {
+                    "status": 404,
+                    "success": False,
+                    "error_code": "NO_MATCH",
+                    "message": "No asset match found for provided media.",
+                    "item": item,
+                }
 
-        log.info(
-            f"Matched: {result['match']['title']} ({result['match']['year']}) → {item['title']} ({item['year']})"
-        )
-        log.debug(f"Match reasons: {result['reasons']}")
-
-        item = self.db.media.get_by_keys(**item_keys)
-        renamed = renamer.rename_file(item)
-        if not renamed:
-            return {
-                "status": 500,
-                "success": False,
-                "error_code": "RENAME_FAILED",
-                "message": "Rename failed.",
-                "item": item,
-            }
-
-        output = {"collection": [], "movie": [], "show": []}
-        output[renamed["asset_type"]].append(renamed)
-
-        manifest = {
-            "media_cache": (
-                [renamed["id"]] if renamed["asset_type"] != "collection" else []
-            ),
-            "collections_cache": (
-                [renamed["id"]] if renamed["asset_type"] == "collection" else []
-            ),
-        }
-
-        self.notification_manager.send_notification(output)
-
-        if self.config.run_border_replacerr:
-            renamer.run_border_replacerr(manifest)
-        # ----
-        # TODO: finish return from upload_posters, break into class functionality to support modularity
-        # The upload_posters() function should return a result dict like:
-        # {
-        #     "success": bool,  # True if upload succeeded, False otherwise
-        #     "message": str,   # Description of result or error
-        #     "error_code": str, # (optional) Application-level error code, e.g. "UPLOAD_FAILED", "NOT_FOUND"
-        #     "payload": dict   # (optional) Payload needed to retry upload (e.g. manifest, item, etc.)
-        # }
-        # If "success" is False, "payload" MUST contain everything needed to re-attempt the upload,
-        # so it can be re-queued for the background worker to retry later.
-        # ----
-        result = None
-        upload_result = upload_posters(self.config, self.db, self.logger, manifest)
-        if not upload_result.get("success"):
-            payload = {
-                "manifest": manifest,
-                "item": renamed,
-                "config_module": self.config.module_name,
-            }
-            delay_minutes = getattr(self.config, "upload_retry_delay", 5)
-            max_attempts = getattr(self.config, "upload_retry_max_attempts", 3)
-            scheduled_at = (
-                datetime.datetime.now(datetime.timezone.utc)
-                + datetime.timedelta(minutes=delay_minutes)
-            ).isoformat()
-            enqueue_result = self.db.worker.enqueue_job(
-                "jobs",
-                payload,
-                job_type="upload_posters",
-                extra_fields={"max_attempts": max_attempts},
-                scheduled_at=scheduled_at,
+            log.info(
+                f"Matched: {result['match']['title']} ({result['match']['year']}) → {item['title']} ({item['year']})"
             )
-            log.error(f"Upload failed, enqueued for retry: {enqueue_result}")
-            return {
-                "status": 500,
-                "success": False,
-                "error_code": "UPLOAD_QUEUED",
-                "message": f"Upload failed, job enqueued for retry: {upload_result.get('message')}",
-                "item": renamed,
-                "retry_job": enqueue_result,
+            log.debug(f"Match reasons: {result['reasons']}")
+
+            item = self.db.media.get_by_keys(**item_keys)
+            renamed = renamer.rename_file(item)
+            if not renamed:
+                return {
+                    "status": 500,
+                    "success": False,
+                    "error_code": "RENAME_FAILED",
+                    "message": "Rename failed.",
+                    "item": item,
+                }
+
+            output = {"collection": [], "movie": [], "show": []}
+            output[renamed["asset_type"]].append(renamed)
+
+            manifest = {
+                "media_cache": (
+                    [renamed["id"]] if renamed["asset_type"] != "collection" else []
+                ),
+                "collections_cache": (
+                    [renamed["id"]] if renamed["asset_type"] == "collection" else []
+                ),
             }
 
-        return {
-            "status": 200,
-            "success": True,
-            "error_code": None,
-            "message": "Renaming and notification completed.",
-            "item": renamed,
-        }
+            self.notification_manager.send_notification(output)
+
+            if self.config.run_border_replacerr:
+                renamer.run_border_replacerr(manifest)
+            # ----
+            # TODO: finish return from upload_posters, break into class functionality to support modularity
+            # The upload_posters() function should return a result dict like:
+            # {
+            #     "success": bool,  # True if upload succeeded, False otherwise
+            #     "message": str,   # Description of result or error
+            #     "error_code": str, # (optional) Application-level error code, e.g. "UPLOAD_FAILED", "NOT_FOUND"
+            #     "payload": dict   # (optional) Payload needed to retry upload (e.g. manifest, item, etc.)
+            # }
+            # If "success" is False, "payload" MUST contain everything needed to re-attempt the upload,
+            # so it can be re-queued for the background worker to retry later.
+            # ----
+            result = None
+            upload_result = upload_posters(self.config, self.db, self.logger, manifest)
+            if not upload_result.get("success"):
+                payload = {
+                    "manifest": manifest,
+                    "item": renamed,
+                    "config_module": self.config.module_name,
+                }
+                delay_minutes = getattr(self.config, "upload_retry_delay", 5)
+                max_attempts = getattr(self.config, "upload_retry_max_attempts", 3)
+                scheduled_at = (
+                    datetime.datetime.now(datetime.timezone.utc)
+                    + datetime.timedelta(minutes=delay_minutes)
+                ).isoformat()
+                enqueue_result = self.db.worker.enqueue_job(
+                    "jobs",
+                    payload,
+                    job_type="upload_posters",
+                    extra_fields={"max_attempts": max_attempts},
+                    scheduled_at=scheduled_at,
+                )
+                log.error(f"Upload failed, enqueued for retry: {enqueue_result}")
+                return {
+                    "status": 500,
+                    "success": False,
+                    "error_code": "UPLOAD_QUEUED",
+                    "message": f"Upload failed, job enqueued for retry: {upload_result.get('message')}",
+                    "item": renamed,
+                    "retry_job": enqueue_result,
+                }
+
+            return {
+                "status": 200,
+                "success": True,
+                "error_code": None,
+                "message": "Renaming and notification completed.",
+                "item": renamed,
+            }
+        except Exception as exc:
+            self.logger.error(f"\n\nAn error occurred: {exc}\n", exc_info=True)
+        finally:
+            self.db.close_all()
 
     def _extract_media_keys(self, process_result: dict) -> dict:
         item = process_result.get("item", {})

@@ -1,0 +1,1152 @@
+/* ======================================================
+   SETTINGS ROOT
+====================================================== */
+#settingsForm {
+    flex: 1 1 auto;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden auto;
+    box-sizing: border-box;
+    padding-top: 25px;
+}
+
+.settings-page .view-frame {
+    overflow: visible !important;
+    height: unset !important;
+    min-height: unset !important;
+}
+
+.settings-form {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+    overflow: hidden auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--muted, #ff9500) var(--surface, #18191b);
+}
+
+.settings-form::-webkit-scrollbar {
+    width: 10px;
+    background: var(--surface, #18191b);
+    border-radius: 8px;
+}
+
+.settings-form::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--accent, #ff9500), var(--primary, #222));
+    border-radius: 8px;
+    min-height: 40px;
+    border: 2px solid var(--surface, #18191b);
+    transition: background 0.2s;
+}
+
+/* ======================================================
+   SPLASH PANEL
+====================================================== */
+.settings-splash {
+    max-width: 700px;
+    margin: 2.2rem auto 0;
+    padding: 0 1.5rem 2rem;
+}
+
+.settings-splash-title {
+    font-size: 2.3rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 1.7rem;
+    text-align: left;
+}
+
+.settings-section-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.3rem;
+}
+
+.settings-section-link {
+    display: flex;
+    flex-direction: column;
+    padding: 1.1rem 1.5rem;
+    background: var(--surface);
+    border-radius: 10px;
+    box-shadow: 0 2px 16px rgb(0 0 0 / 6%);
+    border: 2px solid transparent;
+    text-decoration: none;
+    color: var(--text-color);
+    transition:
+        border-color 0.18s,
+        box-shadow 0.16s,
+        background 0.16s;
+    cursor: pointer;
+}
+
+.settings-section-link:hover {
+    border-color: var(--accent);
+    background: var(--surface-alt);
+    box-shadow: 0 4px 20px rgb(62 123 250 / 8%);
+    outline: none;
+}
+
+.settings-section-title {
+    font-size: 1.23rem;
+    font-weight: 700;
+    color: var(--primary);
+    margin-bottom: 0.13em;
+}
+
+.settings-section-desc {
+    font-size: 1.06rem;
+    color: var(--muted);
+}
+
+.settings-section {
+    margin-bottom: 2.6em;
+}
+
+/* ======================================================
+   FIELDS BLOCK
+====================================================== */
+.settings-fields-list {
+    max-width: 75%;
+    width: 100%;
+    align-items: stretch;
+    margin-left: auto;
+    margin-right: auto;
+    box-sizing: border-box;
+}
+
+.settings-field-row,
+.settings-field-row.field-dir-list {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+    margin-bottom: 15px;
+    margin-top: 15px;
+    font-size: 1.06rem;
+    box-sizing: border-box;
+}
+
+.settings-field-row.field-dir-list {
+    align-items: stretch;
+}
+
+.settings-field-labelcol,
+.settings-field-labelcol.dirlist-label-col {
+    min-width: 160px;
+    max-width: 260px;
+    flex: 0 0 210px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: flex-start;
+    padding-right: 20px;
+    box-sizing: border-box;
+}
+
+.instance-header label {
+    font-size: 1.11rem;
+    font-weight: 600;
+    color: var(--primary);
+    margin: 0 0.8rem 0 0;
+    padding: 0;
+    cursor: pointer;
+    user-select: text;
+    display: inline-block;
+}
+
+.settings-field-labelcol label,
+.settings-field-labelcol.dirlist-label-col label {
+    font-weight: 500;
+    color: var(--primary);
+    padding-top: 0.21em;
+    line-height: 1.3;
+    text-align: right;
+    margin-bottom: 0.18em;
+    width: 100%;
+    display: block;
+}
+
+.settings-field-labelcol .btn,
+.settings-field-labelcol.dirlist-label-col .btn.add-btn {
+    margin-top: 0.5em;
+    align-self: flex-end;
+}
+
+.settings-field-inputwrap,
+.settings-field-inputwrap.dirlist-input-col {
+    flex: 1 1 320px;
+    min-width: 220px;
+    max-width: 70%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15em;
+    box-sizing: border-box;
+    align-items: stretch;
+}
+
+.settings-field-inputwrap.dirlist-input-col {
+    gap: 0.4em;
+}
+
+.input.field-input {
+    flex: 1;
+    min-width: 75%;
+}
+
+.btn--remove-item.remove-btn {
+    max-width: 30px;
+    max-height: 30px;
+    padding: 0.25rem 0.5rem;
+}
+
+.field-help-text,
+.settings-field-inputwrap .field-help-text {
+    color: var(--muted);
+    font-size: 0.97rem;
+    margin-top: 0.2em;
+    margin-bottom: 0.05em;
+    line-height: 1.45;
+    letter-spacing: 0.01em;
+}
+
+/* ======================================================
+   DRAG/DROP ROWS
+====================================================== */
+.field-dragdrop-row {
+    display: flex;
+    align-items: center;
+    gap: 0.6em;
+    width: 100%;
+    transition:
+        transform 0.35s cubic-bezier(0.44, 1.13, 0.73, 0.98),
+        background 0.11s;
+    will-change: transform;
+}
+
+.drag-handle {
+    cursor: grab;
+    user-select: none;
+    font-size: 1.2em;
+    color: var(--muted);
+}
+
+.dirlist-arrows {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-right: 8px;
+    margin-left: 0;
+    align-items: center;
+}
+
+.arrow-btn {
+    border: none;
+    background: var(--surface-alt, #e6e6e6);
+    color: var(--primary, #3a6ecf);
+    border-radius: 4px;
+    font-size: 1.15em;
+    width: 28px;
+    height: 28px;
+    line-height: 1;
+    padding: 0;
+    margin: 0;
+    box-shadow: 0 1px 3px rgb(50 50 60 / 7%);
+    cursor: pointer;
+    transition:
+        background 0.15s,
+        color 0.12s,
+        opacity 0.11s,
+        transform 0.13s;
+    opacity: 0.85;
+}
+
+.arrow-btn.clicked {
+    background: var(--accent, #3183e2);
+    color: #fff;
+    transform: scale(1.22);
+    opacity: 1;
+    box-shadow: 0 0 12px 2px var(--accent, #3183e2aa);
+    z-index: 1;
+}
+
+.arrow-btn[disabled] {
+    opacity: 0.45;
+    cursor: not-allowed;
+    background: #eee;
+}
+
+/* ======================================================
+   COLOR PICKER SWATCHES
+====================================================== */
+.color-list-swatch {
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    border-radius: 4px;
+    margin-right: 6px;
+    margin-bottom: 3px;
+    border: 1.5px solid var(--divider);
+    box-shadow: 0 1.5px 6px rgb(0 0 0 / 7%);
+    vertical-align: middle;
+}
+
+.color-list-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7em 1em;
+    align-items: center;
+    margin-bottom: 0.15em;
+    min-height: 38px;
+}
+
+.color-picker-swatch.removing {
+    opacity: 0;
+    transform: scale(0.9);
+    pointer-events: none;
+}
+
+.color-picker-swatch .remove-btn {
+    position: absolute;
+    top: -9px;
+    right: -9px;
+    background: #fa5454;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 21px;
+    height: 21px;
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    box-shadow: 0 1.5px 7px rgb(0 0 0 / 8%);
+    transition: background 0.18s;
+    z-index: 2;
+}
+
+.color-picker-swatch .remove-btn:hover {
+    background: #d52828;
+}
+
+/* ======================================================
+   POSTER BORDER PREVIEW
+====================================================== */
+.poster-border-preview-wrap {
+    display: flex;
+    flex-flow: row wrap;
+    align-items: flex-start;
+    gap: 2.2em;
+    width: 100%;
+    margin-top: 0.7em;
+    margin-bottom: 0.4em;
+}
+
+.poster-preview-container {
+    position: relative;
+    width: 156px;
+    height: 234px;
+    background: #fff;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: 0 1.5px 7px rgb(0 0 0 / 8%);
+}
+
+.poster-preview-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+.border-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 26px solid #fff;
+    border-radius: 0;
+    box-sizing: border-box;
+    pointer-events: none;
+    z-index: 2;
+    transition: border-color 0.18s;
+}
+
+.no-border-notification {
+    margin-top: 0.6em;
+    font-size: 1.04rem;
+    color: var(--red, #8c8c8c);
+    text-align: left;
+}
+
+/* ======================================================
+   SETTINGS CARD LIST
+====================================================== */
+.settings-card-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.15rem;
+    margin: 0.6em 0 1.2em;
+}
+
+.settings-entry-card,
+.settings-add-card {
+    min-width: 240px;
+    padding: 1rem 1.1rem;
+    border-radius: 10px;
+    box-shadow: 0 1.5px 7px rgb(0 0 0 / 7%);
+    background: var(--surface-alt, #f7f7fb);
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    position: relative;
+    transition:
+        box-shadow 0.18s,
+        border-color 0.19s;
+}
+
+.settings-entry-card:hover {
+    box-shadow: 0 3.5px 18px rgb(0 0 0 / 15%);
+    border-color: var(--accent, #5af);
+}
+
+.settings-entry-main {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 0.6em;
+    color: var(--primary);
+}
+
+.settings-label {
+    color: var(--primary);
+    font-weight: 500;
+    margin-right: 0.4em;
+    min-width: 120px;
+    display: inline-block;
+    text-align: left;
+}
+
+.settings-entry-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.25em;
+    font-size: 1.08rem;
+    gap: 0.6em;
+}
+
+.settings-value {
+    flex: 1 1 0;
+    overflow-wrap: break-word;
+    color: var(--text-color);
+}
+
+.settings-entry-row.settings-entry-main .settings-value {
+    color: var(--primary);
+    font-size: 1.14rem;
+    font-weight: 700;
+}
+
+.settings-add-card {
+    justify-content: center;
+    align-items: center;
+    font-size: 2.3rem;
+    color: var(--muted);
+    background: transparent;
+    border: 2px dashed var(--accent, #e2e2e2);
+    min-width: 92px;
+    min-height: 92px;
+    cursor: pointer;
+    border-radius: 10px;
+    display: flex;
+}
+
+.settings-entry-swatches {
+    display: inline-flex;
+    gap: 0.18em;
+    margin-left: 0.2em;
+}
+
+.settings-card-list.twocol {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+}
+
+.settings-card-list.twocol .settings-entry-card,
+.settings-card-list.twocol .settings-add-card {
+    width: auto;
+    min-width: 0;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* ========== PLEX/INSTANCES AREA ========== */
+.instance-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    background: var(--input-bg, #f6f8fa);
+    border-radius: 12px;
+    padding: 0.18em 0.88em 0.18em 0.56em;
+    min-height: 30px;
+    border: 1.2px solid transparent;
+    cursor: pointer;
+    margin-bottom: 0.16em;
+    margin-right: 0.54em;
+    user-select: none;
+    transition:
+        background 0.18s,
+        border-color 0.17s;
+}
+
+.instance-pill input[type='checkbox'] {
+    margin-right: 0.46em;
+    cursor: pointer;
+    accent-color: var(--primary, #47b1f6);
+    width: 18px;
+    height: 18px;
+    border-radius: 2px;
+    background: #fff;
+    border: 2px solid var(--divider, #ccc);
+    transition:
+        border-color 0.18s,
+        background 0.2s;
+}
+
+.instance-pill:hover {
+    background: color-mix(in srgb, var(--primary) 6%, var(--input-bg) 94%);
+    border-color: var(--primary-fade, #e3f1ff);
+}
+
+.instance-pill.checked {
+    border-color: var(--primary, #47b1f6);
+}
+
+.instance-pill input[type='checkbox']:hover,
+.instance-pill input[type='checkbox']:focus {
+    background: #fff;
+}
+
+.instance-pill input[type='checkbox']:checked {
+    background: var(--primary);
+}
+
+.instances-multicol {
+    display: flex;
+    gap: 2.2rem;
+    align-items: stretch;
+    width: 100%;
+    margin-bottom: 2.2rem;
+    flex-direction: row;
+}
+
+.instance-type-col {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    flex: 1 1 0;
+    min-width: 240px;
+    max-width: 400px;
+    margin: 0 0.6rem 0 0;
+    background: var(--surface);
+    border-radius: 16px;
+    box-shadow: 0 6px 24px 0 var(--primary-fade, #11192813);
+    padding: 1.2rem 1.2rem 1.3rem;
+    box-sizing: border-box;
+    min-height: 120px;
+}
+
+.instances-multicol > .instance-type-col:last-child {
+    margin-right: 0;
+}
+
+.instance-type-label {
+    display: flex;
+    align-items: center;
+    gap: 0.7em;
+    font-weight: 700;
+    font-size: 1.35rem;
+    margin-bottom: 1.1rem;
+    color: var(--primary);
+    letter-spacing: 0.01em;
+}
+
+.plex-instance-card {
+    border-radius: 16px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 6px 24px 0 var(--primary-fade, #11192813);
+    background: var(--surface);
+    transition:
+        box-shadow 0.18s,
+        border 0.18s,
+        background 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 64px;
+}
+
+.instance-label {
+    font-size: 1.11rem;
+    font-weight: 600;
+    color: var(--primary);
+    margin: 0 0.8rem 0 0;
+    padding: 0;
+    user-select: text;
+    display: inline-block;
+}
+
+.instance-library-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.8rem 1.1rem;
+    max-height: 0;
+    opacity: 0;
+    pointer-events: none;
+    overflow: hidden;
+    transition:
+        max-height 0.38s cubic-bezier(0.46, 0.03, 0.52, 0.96),
+        opacity 0.24s cubic-bezier(0.53, 0.15, 0.45, 0.96);
+    will-change: max-height, opacity;
+}
+
+.instance-library-list.expanded {
+    max-height: 600px;
+    opacity: 1;
+    pointer-events: auto;
+    transition:
+        max-height 0.51s cubic-bezier(0.46, 0.03, 0.52, 0.96),
+        opacity 0.23s cubic-bezier(0.53, 0.15, 0.45, 0.96);
+}
+
+.add-posters-text-btn {
+    border: none;
+    background: var(--surface-alt);
+    color: var(--primary);
+    border-radius: 4px;
+    padding: 0.35em 1.25em;
+    font-size: 1.01rem;
+    font-weight: 600;
+    margin-left: auto;
+    transition:
+        background 0.18s,
+        color 0.18s;
+    cursor: pointer;
+    box-shadow: 0 1px 3px rgb(30 34 50 / 5%);
+    outline: none;
+}
+
+.add-posters-text-btn.active,
+.add-posters-text-btn[aria-pressed='true'] {
+    background: var(--accent);
+    color: #fff;
+}
+
+.add-posters-text-btn:focus {
+    outline-offset: 1.5px;
+}
+
+.instance-checkbox-container {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    user-select: none;
+    height: 24px;
+    width: 24px;
+    margin-right: 0.8em;
+}
+
+.instance-checkbox-container input {
+    display: none;
+}
+
+.instance-checkbox-container svg {
+    overflow: visible;
+    display: block;
+}
+
+.instance-checkbox-path {
+    fill: none;
+    stroke: var(--accent, #3183e2);
+    stroke-width: 6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition:
+        stroke-dasharray 0.5s cubic-bezier(0.58, 1.47, 0.63, 1.06),
+        stroke-dashoffset 0.5s cubic-bezier(0.58, 1.47, 0.63, 1.06);
+    stroke-dasharray: 241 9999999;
+    stroke-dashoffset: 0;
+    filter: drop-shadow(0 2px 7px rgb(34 34 34 / 11%));
+}
+
+.instance-checkbox-container.checked .instance-checkbox-path {
+    stroke-dasharray: 70.5 9999999;
+    stroke-dashoffset: -262.27;
+    stroke: var(--accent, #3183e2);
+}
+
+/* ======================================================
+   TOOLBAR
+====================================================== */
+.settings-toolbar-bar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: var(--surface-alt, #23242a);
+    border-bottom: 1px solid var(--divider);
+    padding: 0.2em 0.9em;
+    display: flex;
+    align-items: center;
+    min-height: 44px;
+}
+
+.settings-page-title {
+    font-size: 1.27rem;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 0.01em;
+    user-select: none;
+    margin-right: auto;
+}
+
+.settings-toolbar-btn {
+    display: flex;
+    align-items: center;
+    background: var(--accent, #3183e2);
+    color: #fff;
+    border: none;
+    border-radius: 7px;
+    padding: 0.42em 1.32em 0.42em 1.05em;
+    font-size: 1.04rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 1.5px 7px rgb(30 34 50 / 8%);
+    outline: none;
+    min-width: 66px;
+    opacity: 0.8;
+    pointer-events: auto;
+    transition:
+        background 0.15s,
+        box-shadow 0.15s,
+        color 0.15s,
+        opacity 0.19s;
+}
+
+.settings-toolbar-btn:hover,
+.settings-toolbar-btn:focus {
+    background: var(--primary, #4977ed);
+    color: #fff;
+    box-shadow: 0 3.5px 16px rgb(50 70 120 / 10%);
+}
+
+.settings-toolbar-btn svg {
+    width: 21px;
+    height: 21px;
+    margin-right: 7px;
+    margin-left: -2px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.save-btn-label {
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    font-size: 1.01rem;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+.settings-toolbar-btn.dirty {
+    opacity: 1;
+    background: var(--warn, #fa983a);
+    color: #fff;
+    animation: settings-btn-pulse 1.25s cubic-bezier(0.5, 0.1, 0.65, 0.88) infinite alternate;
+    box-shadow: 0 0 0 2px var(--warn, #fa983a);
+}
+
+@keyframes settings-btn-pulse {
+    from {
+        box-shadow: 0 0 0 2px var(--warn, #fa983a);
+    }
+
+    to {
+        box-shadow: 0 0 12px 4px var(--warn, #fa983a60);
+    }
+}
+
+.settings-toolbar-btn.saved {
+    opacity: 0.5;
+    background: var(--accent, #3183e2);
+    color: #fff;
+    pointer-events: none;
+    animation: none;
+}
+
+/* ======================================================
+   MEDIA QUERIES
+====================================================== */
+@media (width <= 100px) {
+    .settings-splash {
+        max-width: 100vw;
+        margin: 1rem 0 0;
+        padding: 0 0.5rem 1.1rem;
+    }
+
+    .settings-splash-title {
+        font-size: 1.6rem;
+        margin-bottom: 1rem;
+    }
+
+    .settings-section-link {
+        padding: 0.9rem 0.7rem;
+        border-radius: 7px;
+        font-size: 0.98rem;
+        box-shadow: 0 1.5px 7px rgb(0 0 0 / 5%);
+    }
+
+    .settings-section-title {
+        font-size: 1.07rem;
+        margin-bottom: 0.08em;
+    }
+
+    .settings-section-desc {
+        font-size: 0.99rem;
+    }
+}
+
+@media (width <= 1100px) {
+    .settings-splash-title {
+        font-size: 1.2rem;
+        margin-bottom: 0.7rem;
+    }
+
+    .settings-section-title {
+        font-size: 1rem;
+    }
+
+    .settings-fields-list {
+        padding-left: 0.7rem;
+        padding-right: 0.7rem;
+        box-sizing: border-box;
+        max-width: 100vw;
+        width: 100vw;
+        min-width: 0;
+    }
+
+    .settings-field-row,
+    .settings-field-row.field-dir-list {
+        flex-direction: column;
+        align-items: flex-start;
+        margin-bottom: 10px;
+        padding: 0;
+        min-height: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .settings-field-labelcol,
+    .settings-field-labelcol.dirlist-label-col {
+        min-width: 0;
+        max-width: 100%;
+        flex: 1 1 100%;
+        align-items: flex-start;
+        padding: 0 0 0.18em;
+        margin: 0 0 1px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .settings-field-labelcol label {
+        text-align: left;
+        font-size: 1.05rem;
+        font-weight: 600;
+        margin-bottom: 0.13em;
+        padding: 0;
+        width: 100%;
+        color: var(--primary);
+    }
+
+    .settings-field-inputwrap,
+    .settings-field-inputwrap.dirlist-input-col {
+        min-width: 0;
+        max-width: 100%;
+        padding-left: 0;
+        padding-right: 0;
+        gap: 0.1em;
+        align-items: stretch;
+        flex: 0 0 auto;
+        min-height: 0;
+        height: auto;
+        margin-left: 0;
+        margin-right: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .settings-field-inputwrap input,
+    .settings-field-inputwrap select,
+    .settings-field-inputwrap textarea,
+    .settings-field-inputwrap pre {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
+        box-sizing: border-box;
+        font-size: 1.02rem;
+        margin-bottom: 2px;
+        margin-left: 0;
+        margin-right: 0;
+        border-radius: 7px;
+    }
+
+    .field-help-text,
+    .settings-field-inputwrap .field-help-text {
+        margin: 0.13em 0 0.03em;
+        font-size: 0.97rem;
+        color: var(--muted);
+        text-align: left;
+        line-height: 1.33;
+        padding: 0;
+    }
+
+    .settings-field-inputwrap select {
+        padding-right: 2em;
+        height: 2.4em;
+    }
+
+    .settings-toolbar-bar {
+        padding: 0 0.6rem 0 0.5rem;
+        min-height: 44px;
+        position: static !important;
+        top: auto !important;
+        z-index: initial !important;
+    }
+
+    .settings-toolbar-btn {
+        font-size: 0.97rem;
+        padding: 0.34em 0.8em 0.34em 0.7em;
+        min-width: 50px;
+        margin-top: 0.25em;
+        margin-bottom: 0.2em;
+    }
+
+    .settings-page-title {
+        font-size: 1.05rem;
+        font-weight: 700;
+        margin-bottom: 0.24em;
+    }
+
+    .settings-field-labelcol.dirlist-label-col label,
+    .settings-field-labelcol.dirlist-label-col .btn.add-btn {
+        text-align: left;
+        align-self: start;
+    }
+
+    .settings-field-inputwrap {
+        height: auto !important;
+        min-height: 0 !important;
+        max-height: unset !important;
+        overflow: visible !important;
+    }
+
+    .instance-type-label {
+        font-size: 1.07rem;
+        margin-bottom: 0.7rem;
+        padding-left: 0;
+        font-weight: 700;
+    }
+
+    .pill-label {
+        font-size: 0.99rem;
+        font-weight: 500;
+        white-space: pre-line;
+        overflow-wrap: break-word;
+        line-height: 1.22;
+    }
+
+    .instance-library-list {
+        display: grid;
+        grid-template-columns: 1fr !important;
+        gap: 0.5rem 0 !important;
+        margin-top: 0.32em;
+        margin-bottom: 0.11em;
+        padding: 0;
+        max-height: 0;
+        opacity: 0;
+        pointer-events: none;
+        overflow: hidden;
+        transition:
+            max-height 0.38s cubic-bezier(0.46, 0.03, 0.52, 0.96),
+            opacity 0.24s cubic-bezier(0.53, 0.15, 0.45, 0.96);
+        will-change: max-height, opacity;
+    }
+
+    .instance-library-list.expanded {
+        max-height: 1200px;
+        opacity: 1;
+        pointer-events: auto;
+        transition:
+            max-height 0.51s cubic-bezier(0.46, 0.03, 0.52, 0.96),
+            opacity 0.23s cubic-bezier(0.53, 0.15, 0.45, 0.96);
+    }
+
+    .instance-pill,
+    .instance-type-col .instance-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.7em;
+        padding: 0.48em 1.1em;
+        background: var(--surface-alt);
+        border: 1px solid rgb(0 0 0 / 22%);
+        border-radius: 8px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        color: var(--muted);
+        cursor: pointer;
+        margin-bottom: 0.45rem;
+        margin-right: 0.65rem;
+        transition:
+            border-color 0.18s,
+            background 0.2s,
+            box-shadow 0.18s;
+        user-select: none;
+        min-width: 0;
+        min-height: 2.2em;
+    }
+
+    .instance-library-list .instance-pill {
+        width: 100%;
+        max-width: 100vw;
+        min-width: 0;
+        margin-right: 0;
+        border-radius: 7px;
+        padding: 0.45em 0.75em;
+        font-size: 0.98rem;
+        margin-bottom: 0.18em;
+        box-sizing: border-box;
+    }
+
+    .instance-header {
+        gap: 0.5rem;
+        min-height: 32px;
+        padding-bottom: 0.04rem;
+    }
+
+    .instance-header .instance-checkbox-container,
+    .instance-header input[type='checkbox'] {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        min-height: 20px;
+        border-radius: 5px;
+        margin-right: 0.5rem;
+    }
+
+    .instance-label {
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0 0.35rem 0 0;
+    }
+
+    .add-posters-text-btn {
+        font-size: 0.97rem;
+        padding: 0.18em 0.7em;
+        border-radius: 4px;
+        margin-left: auto;
+        margin-right: 0;
+        min-width: 88px;
+        box-shadow: 0 1px 4px rgb(30 34 50 / 5%);
+    }
+
+    .instances-multicol {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        width: 100% !important;
+        margin-bottom: 1.1rem !important;
+        gap: 0.8rem !important;
+    }
+
+    .instance-type-col {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+        box-sizing: border-box !important;
+        margin: 0 0 0.5rem !important;
+        flex: 1 1 100% !important;
+    }
+
+    .settings-card-list.twocol {
+        grid-template-columns: 1fr !important;
+        gap: 0.7rem !important;
+    }
+
+    .settings-entry-row {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.1em;
+        margin-bottom: 0.7em;
+        width: 100%;
+    }
+
+    .settings-label {
+        margin-bottom: 0.15em;
+        font-size: 0.98em;
+        font-weight: 600;
+        color: var(--primary);
+        min-width: 0;
+        text-align: left;
+        display: block;
+    }
+
+    .settings-value {
+        font-size: 1em;
+        font-weight: 500;
+        color: var(--text-color);
+        margin-bottom: 0;
+        margin-left: 0;
+        width: 100%;
+        overflow-wrap: break-word;
+        text-align: left;
+        display: block;
+    }
+
+    .settings-entry-main {
+        font-size: 1.1em;
+        font-weight: 700;
+        margin-bottom: 0.3em;
+        color: var(--primary);
+        width: 100%;
+        display: block;
+    }
+
+    .dir-list-option-row {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 0.3em !important;
+        width: 100%;
+        margin-bottom: 0.5em;
+    }
+
+    .dir-list-option-row .input.field-input,
+    .dir-list-option-row .select.dir-list-mode {
+        flex: 0;
+        width: 100% !important;
+        min-width: 0 !important;
+        max-width: 100% !important;
+        margin: 0 0 0.18em !important;
+        font-size: 1.07em !important;
+        border-radius: 8px !important;
+        box-sizing: border-box;
+    }
+
+    .dir-list-option-row .btn--remove-item.remove-btn {
+        align-self: flex-end;
+        max-width: 100%;
+        max-height: 38px;
+        margin: 0.1em 0 0.2em;
+        font-size: 1.23em;
+        min-width: 100%;
+    }
+}

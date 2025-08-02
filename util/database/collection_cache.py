@@ -151,6 +151,11 @@ class CollectionCache(DatabaseBase):
         with self.lock, self.conn:
             self.conn.execute("DELETE FROM collections_cache")
 
+    def delete_by_id(self, id: int) -> None:
+        """Delete a single record by its unique integer ID."""
+        with self.lock, self.conn:
+            self.conn.execute("DELETE FROM collections_cache WHERE id=?", (id,))
+
     def delete(
         self, item: dict, instance_name: str, logger: Optional[Any] = None
     ) -> None:

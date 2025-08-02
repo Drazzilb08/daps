@@ -1,3 +1,5 @@
+import os
+from collections import defaultdict
 from typing import Any, Dict
 
 from .db_base import DatabaseBase
@@ -60,3 +62,105 @@ class Stats(DatabaseBase):
             cur = self.conn.execute("SELECT COUNT(*) as cnt FROM orphaned_posters")
             row = cur.fetchone()
             return row["cnt"] if row else 0
+
+    def upsert_gdrive_stat(
+        self, location, folder_name, owner, file_count, size_bytes, last_updated
+    ):
+        """
+        Upsert (insert or update) a GDrive stat record for the given location.
+        """
+        with self.lock, self.conn:
+            self.conn.execute(
+                """
+                INSERT INTO gdrive_stats (location, folder_name, owner, file_count, size_bytes, last_updated)
+                VALUES (?, ?, ?, ?, ?, ?)
+                ON CONFLICT(location) DO UPDATE SET
+                    folder_name=excluded.folder_name,
+                    owner=excluded.owner,
+                    file_count=excluded.file_count,
+                    size_bytes=excluded.size_bytes,
+                    last_updated=excluded.last_updated
+                """,
+                (location, folder_name, owner, file_count, size_bytes, last_updated),
+            )
+
+    def get_gdrive_stats(self) -> list:
+        """
+        Returns all GDrive stats as a list of dicts.
+        """
+        with self.lock, self.conn:
+            cur = self.conn.execute("SELECT * FROM gdrive_stats")
+            return [dict(row) for row in cur.fetchall()]
+
+    def get_matched_posters_stats(self):
+        with self.lock, self.conn:
+            # MEDIA
+            media = self.conn.execute(
+                "SELECT matched, original_file FROM media_cache WHERE original_file IS NOT NULL AND original_file != ''"
+            ).fetchall()
+            # COLLECTIONS
+            collections = self.conn.execute(
+                "SELECT matched, original_file FROM collections_cache WHERE original_file IS NOT NULL AND original_file != ''"
+            ).fetchall()
+
+        owner_stats = defaultdict(
+            lambda: {
+                "media_matched": 0,
+                "media_total": 0,
+                "collections_matched": 0,
+                "collections_total": 0,
+            }
+        )
+
+        # Aggregate media
+        for row in media:
+            owner = os.path.basename(os.path.dirname(row["original_file"])) or "unknown"
+            owner_stats[owner]["media_total"] += 1
+            if row["matched"]:
+                owner_stats[owner]["media_matched"] += 1
+
+        # Aggregate collections
+        for row in collections:
+            owner = os.path.basename(os.path.dirname(row["original_file"])) or "unknown"
+            owner_stats[owner]["collections_total"] += 1
+            if row["matched"]:
+                owner_stats[owner]["collections_matched"] += 1
+
+        # Calculate percentages
+        results = []
+        for owner, stats in sorted(owner_stats.items()):
+            media_pct = (
+                round((stats["media_matched"] / stats["media_total"] * 100), 1)
+                if stats["media_total"]
+                else 0
+            )
+            collections_pct = (
+                round(
+                    (stats["collections_matched"] / stats["collections_total"] * 100), 1
+                )
+                if stats["collections_total"]
+                else 0
+            )
+            overall_matched = stats["media_matched"] + stats["collections_matched"]
+            overall_total = stats["media_total"] + stats["collections_total"]
+            overall_pct = (
+                round((overall_matched / overall_total * 100), 1)
+                if overall_total
+                else 0
+            )
+            results.append(
+                {
+                    "owner": owner,
+                    "media_matched": stats["media_matched"],
+                    "media_total": stats["media_total"],
+                    "media_pct": media_pct,
+                    "collections_matched": stats["collections_matched"],
+                    "collections_total": stats["collections_total"],
+                    "collections_pct": collections_pct,
+                    "overall_matched": overall_matched,
+                    "overall_total": overall_total,
+                    "overall_pct": overall_pct,
+                }
+            )
+
+        return results

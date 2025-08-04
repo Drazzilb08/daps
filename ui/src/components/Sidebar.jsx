@@ -5,17 +5,27 @@ const NAV = [
     { to: '/schedule', icon: 'event_note', label: 'Schedule' },
     { to: '/instances', icon: 'desktop_windows', label: 'Instances' },
     { to: '/notifications', icon: 'chat_bubble_outline', label: 'Notifications' },
-    { to: '/poster_search', icon: 'search', label: 'Poster Search' },
     {
         to: '/poster_management',
         icon: 'collections',
         label: 'Poster Management',
         children: [
-            { to: '/poster_management/upload', label: 'Upload' },
-            { to: '/poster_management/manage', label: 'Manage' },
+            { to: '/poster/search/gdrive', label: 'Gdrive Search' },
+            { to: '/poster/search/assets', label: 'Assets Search' },
+            { to: '/poster/manage', label: 'Manage' },
+            { to: '/poster/statistics', label: 'Statistics' },
         ],
     },
-    { to: '/statistics', icon: 'bar_chart', label: 'Statistics' },
+    {
+        to: '/media_management',
+        icon: 'folder',
+        label: 'Media Management',
+        children: [ 
+            { to: '/media/search', label: 'Search' },
+            { to: '/media/manage', label: 'Manage' },
+            { to: '/media/statistics', label: 'Statistics' },
+        ],
+    },
     {
         to: '/settings',
         icon: 'settings',

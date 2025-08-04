@@ -76,7 +76,6 @@ export default function SettingsForm({ moduleName }) {
     }, [isDirty, handleSaveInternal, registerUnsavedChanges]);
 
     function handleChange(fieldKey, value) {
-        console.log('SettingsForm handleChange:', fieldKey, value);
         setFormData(prev => {
             const prevModuleData = prev[moduleName] || {};
             if (invalidFields[fieldKey]) {

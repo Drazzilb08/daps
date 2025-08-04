@@ -1,12 +1,10 @@
-// src/pages/PosterSearch.jsx
+// src/pages/GdriveSearch.jsx
 
 import React, { useEffect, useState, useCallback } from 'react';
-
-import { fetchConfig, fetchMediaCache, fetchCollectionCache, fetchPosters } from '../utils/api';
+import { fetchConfig, fetchPosters } from '../utils/api';
 import { getSpinner } from '../utils/tools';
-import { showLoader } from '../components/loaders';
-import PosterSearchControls from '../components/poster_search/PosterSearchControls';
-import PosterSearchResults from '../components/poster_search/PosterSearchResults';
+import GdriveSearchControls from '../components/poster_search/gdrive_search/GdriveSearchControls';
+import GdriveSearchResults from '../components/poster_search/gdrive_search/GdriveSearchResults';
 import PosterSearchModalTrigger from '../components/poster_search/PosterSearchModalTrigger';
 import usePosterSearchHoverPreview from '../components/poster_search/PosterSearchHoverPreview';
 import { useToast } from '../components/providers/ToastProvider';
@@ -16,61 +14,45 @@ function isImageFile(filename) {
     return /\.(jpe?g|png|webp|gif)$/i.test(filename);
 }
 
-export default function PosterSearch() {
+export default function GdriveSearch() {
     const [, setConfig] = useState({});
     const [, setGdriveLocations] = useState([]);
     const [customLocations, setCustomLocations] = useState([]);
     const [gdriveFiles, setGdriveFiles] = useState([]);
     const [customFiles, setCustomFiles] = useState([]);
-    const [assetsDir, setAssetsDir] = useState('');
-    const [, setAssetsFiles] = useState([]);
     const [priorityOrder, setPriorityOrder] = useState({});
     const [currentSource, setCurrentSource] = useState('gdrive');
     const [currentSort, setCurrentSort] = useState('priority-asc');
     const [currentView, setCurrentView] = useState('grid');
     const [errorMsg, setErrorMsg] = useState(null);
 
-    // SEARCH STATE
+    // Search state
     const [pendingSearchTerm, setPendingSearchTerm] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
-
-    // SEARCH RESULTS
     const [searchResults, setSearchResults] = useState([]);
 
-    // Cache state for assets DB items
-    const [mediaCache, setMediaCache] = useState([]);
-    const [collectionCache, setCollectionCache] = useState([]);
-    const [assetCacheLoaded, setAssetCacheLoaded] = useState(false);
-
-    // Asset search filter state (selected only for UI, not for auto-searching)
-    const [assetTypeFilter, setAssetTypeFilter] = useState('all');
-    // GDrive owner filter state
+    // Owner filter
     const [selectedGDriveOwner, setSelectedGDriveOwner] = useState('');
 
-    // Modal state (holds poster info)
+    // Modal
     const [modalInfo, setModalInfo] = useState(null);
 
-    // For hover preview image
+    // Hover preview
     const hoverPreviewImgRef = usePosterSearchHoverPreview();
-
-    // --- Use Toast ---
     const toast = useToast();
 
-    // Reset all relevant state on source change
+    // Reset all state on source change
     useEffect(() => {
         setPendingSearchTerm('');
         setSearchTerm('');
         setSearchResults([]);
-        setAssetTypeFilter('all');
         setSelectedGDriveOwner('');
-        if (currentSource !== 'assets') setAssetCacheLoaded(false);
     }, [currentSource]);
 
-    // --- Load config, GDrive, Custom, Asset file lists on mount ---
+    // --- Load config, GDrive, Custom file lists on mount ---
     useEffect(() => {
         let cancelled = false;
-        const dismissLoader = showLoader(1200);
         setErrorMsg(null);
 
         (async () => {
@@ -91,12 +73,10 @@ export default function PosterSearch() {
             const sourceDirs = cfg.poster_renamerr?.source_dirs || [];
             const customLocs = sourceDirs.filter(dir => !gdriveLocSet.has(dir));
             setCustomLocations(customLocs);
-            setAssetsDir(cfg.poster_renamerr?.destination_dir || '');
 
-            // Fetch files for GDrive/Custom/Assets
+            // Fetch files for GDrive/Custom
             let _gdriveFiles = [];
             let _customFiles = [];
-            let _assetsFiles = [];
             let errorSources = [];
             for (const { name, location } of gdriveLocs) {
                 const stats = await fetchPosters(location);
@@ -124,16 +104,6 @@ export default function PosterSearch() {
             }
             setCustomFiles(_customFiles);
 
-            if (cfg.poster_renamerr?.destination_dir) {
-                const stats = await fetchPosters(cfg.poster_renamerr.destination_dir);
-                if (stats.error || !Array.isArray(stats.files)) {
-                    errorSources.push('Assets');
-                } else {
-                    _assetsFiles = stats.files;
-                }
-                setAssetsFiles(_assetsFiles);
-            }
-
             // Priority order
             const dirs = cfg.poster_renamerr?.source_dirs || [];
             const order = {};
@@ -143,10 +113,10 @@ export default function PosterSearch() {
             setPriorityOrder(order);
 
             // Show error if none
-            if (!_gdriveFiles.length && !_customFiles.length && !_assetsFiles.length) {
+            if (!_gdriveFiles.length && !_customFiles.length) {
                 setErrorMsg(
                     <div>
-                        <b>No poster sources found or could not be loaded.</b>
+                        <b>No GDrive or Custom poster sources found or could not be loaded.</b>
                         <br />
                         Please check your{' '}
                         <a href="/pages/settings?module_name=poster_renamerr">
@@ -156,34 +126,8 @@ export default function PosterSearch() {
                     </div>
                 );
             }
-
-            if (!cancelled) {
-                dismissLoader();
-            }
         })();
-
-        return () => {
-            cancelled = true;
-            dismissLoader.cancel && dismissLoader.cancel();
-        };
     }, []);
-
-    // --- Load asset cache from DB when assets tab is first used or forced to reload ---
-    useEffect(() => {
-        if (currentSource !== 'assets' || assetCacheLoaded) return;
-        setIsSearching(true);
-        Promise.all([fetchMediaCache(), fetchCollectionCache()])
-            .then(([media, collections]) => {
-                setMediaCache(media.filter(item => item.matched));
-                setCollectionCache(collections.filter(item => item.matched));
-                setAssetCacheLoaded(true);
-            })
-            .catch(() => {
-                setMediaCache([]);
-                setCollectionCache([]);
-            })
-            .finally(() => setIsSearching(false));
-    }, [currentSource, assetCacheLoaded]);
 
     // --- SEARCH HANDLER ---
     const handleSearch = useCallback(
@@ -191,50 +135,6 @@ export default function PosterSearch() {
             function getAllFiles() {
                 if (currentSource === 'gdrive') return gdriveFiles;
                 if (currentSource === 'custom') return customFiles;
-                if (currentSource === 'assets') {
-                    const sourceDirs = window.dapsConfig?.poster_renamerr?.source_dirs || [];
-                    const files = [
-                        ...collectionCache.map(c => {
-                            const absFile = c.renamed_file || c.original_file;
-                            return {
-                                ...c,
-                                file: absFile,
-                                location: assetsDir,
-                                relativeFile: absFile
-                                    ? absFile
-                                          .replace(assetsDir + '/', '')
-                                          .replace(assetsDir + '\\', '')
-                                    : '',
-                                source_dir: '',
-                            };
-                        }),
-                        ...mediaCache.map(m => {
-                            const absFile = m.renamed_file || m.original_file;
-                            let srcDir = '';
-                            for (const dir of sourceDirs) {
-                                if (
-                                    (m.original_file || '').startsWith(dir + '/') ||
-                                    (m.original_file || '').startsWith(dir + '\\')
-                                ) {
-                                    srcDir = dir;
-                                    break;
-                                }
-                            }
-                            return {
-                                ...m,
-                                file: absFile,
-                                location: assetsDir,
-                                relativeFile: absFile
-                                    ? absFile
-                                          .replace(assetsDir + '/', '')
-                                          .replace(assetsDir + '\\', '')
-                                    : '',
-                                source_dir: srcDir,
-                            };
-                        }),
-                    ];
-                    return files;
-                }
                 return [];
             }
 
@@ -246,17 +146,6 @@ export default function PosterSearch() {
                 // GDrive owner filter
                 if (currentSource === 'gdrive' && selectedGDriveOwner) {
                     filtered = filtered.filter(obj => obj.name === selectedGDriveOwner);
-                }
-
-                // Asset filter only for assets
-                const assetTypeMap = {
-                    collections: 'collection',
-                    movies: 'movie',
-                    shows: 'show',
-                };
-                if (currentSource === 'assets' && assetTypeFilter && assetTypeFilter !== 'all') {
-                    const filterValue = assetTypeMap[assetTypeFilter];
-                    filtered = filtered.filter(obj => obj.asset_type === filterValue);
                 }
 
                 // Search term
@@ -271,17 +160,7 @@ export default function PosterSearch() {
                 setIsSearching(false);
             }, 0);
         },
-        [
-            assetTypeFilter,
-            assetsDir,
-            collectionCache,
-            currentSource,
-            customFiles,
-            gdriveFiles,
-            mediaCache,
-            pendingSearchTerm,
-            selectedGDriveOwner,
-        ]
+        [currentSource, gdriveFiles, customFiles, pendingSearchTerm, selectedGDriveOwner]
     );
 
     // --- GDrive Owners List (deduped, sorted) ---
@@ -289,11 +168,10 @@ export default function PosterSearch() {
 
     // --- Filter/SORT change: immediately update results IF there is an active search term or last search was performed ---
     useEffect(() => {
-        if (searchTerm || (pendingSearchTerm && pendingSearchTerm.trim())) {
+        if (searchTerm) {
             handleSearch(searchTerm);
         }
-        // eslint-disable-next-line
-    }, [assetTypeFilter, selectedGDriveOwner, currentSort]);
+    }, [selectedGDriveOwner, currentSort, handleSearch, searchTerm]);
 
     // Only run search when user hits Enter/search button in controls
     const handlePendingSearch = () => {
@@ -319,7 +197,7 @@ export default function PosterSearch() {
         <div className="poster-search-root">
             <div className="poster-search-card">
                 <div className="poster-search-content">
-                    <PosterSearchControls
+                    <GdriveSearchControls
                         currentSource={currentSource}
                         setCurrentSource={setCurrentSource}
                         currentSort={currentSort}
@@ -332,9 +210,6 @@ export default function PosterSearch() {
                         onClearSearch={handleClearSearch}
                         customLocations={customLocations}
                         isSearching={isSearching}
-                        assetTypeFilter={assetTypeFilter}
-                        setAssetTypeFilter={setAssetTypeFilter}
-                        showAssetTypeFilter={currentSource === 'assets'}
                         gdriveOwners={gdriveOwners}
                         selectedGDriveOwner={selectedGDriveOwner}
                         setSelectedGDriveOwner={setSelectedGDriveOwner}
@@ -343,7 +218,7 @@ export default function PosterSearch() {
                     {isSearching ? (
                         <div style={{ textAlign: 'center', margin: 32 }}>{getSpinner()}</div>
                     ) : (
-                        <PosterSearchResults
+                        <GdriveSearchResults
                             errorMsg={errorMsg}
                             files={searchResults}
                             searchTerm={searchTerm}
@@ -361,10 +236,7 @@ export default function PosterSearch() {
                 <PosterSearchModalTrigger
                     obj={modalInfo}
                     onClose={handleCloseModal}
-                    onDeleted={() => {
-                        handleCloseModal();
-                        setAssetCacheLoaded(false);
-                    }}
+                    onDeleted={handleCloseModal}
                 />
             )}
         </div>

@@ -51,6 +51,7 @@ export default function Statistics() {
     const cardRefs = useRef({});
     const toggleRefs = useRef({});
     const [cards] = useState(STAT_CARDS);
+    
     const [openCards, setOpenCards] = useState(() =>
         Object.fromEntries(STAT_CARDS.map(card => [card.key, true]))
     );

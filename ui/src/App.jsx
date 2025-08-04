@@ -4,7 +4,8 @@ import Splash from './pages/Splash';
 import Schedule from './pages/Schedule';
 import Instances from './pages/Instances';
 import Notifications from './pages/Notifications';
-import PosterSearch from './pages/PosterSearch';
+import GdriveSearch from './pages/GdriveSearch';
+import AssetsSearch from './pages/AssetsSearch';
 import Settings from './pages/Settings';
 import LogViewer from './pages/Logs';
 import Statistics from './pages/Statistics';
@@ -33,8 +34,9 @@ export default function App() {
                                 <Route path="/schedule" element={<Schedule />} />
                                 <Route path="/instances" element={<Instances />} />
                                 <Route path="/notifications" element={<Notifications />} />
-                                <Route path="/poster_search" element={<PosterSearch />} />
-                                <Route path="/statistics" element={<Statistics />} />
+                                <Route path="/poster/search/gdrive" element={<GdriveSearch />} />
+                                <Route path="/poster/search/assets" element={<AssetsSearch />} />
+                                <Route path="/poster/statistics" element={<Statistics />} />
                                 <Route
                                     path="/settings/*"
                                     element={

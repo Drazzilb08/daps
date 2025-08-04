@@ -20,7 +20,7 @@ const NAV = [
         to: '/media_management',
         icon: 'folder',
         label: 'Media Management',
-        children: [ 
+        children: [
             { to: '/media/search', label: 'Search' },
             { to: '/media/manage', label: 'Manage' },
             { to: '/media/statistics', label: 'Statistics' },

@@ -1,6 +1,6 @@
 // src/pages/GdriveSearch.jsx
 
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { fetchConfig, fetchPosters } from '../utils/api';
 import { getSpinner } from '../utils/tools';
 import GdriveSearchControls from '../components/poster_search/gdrive_search/GdriveSearchControls';
@@ -30,7 +30,7 @@ export default function GdriveSearch() {
     const [pendingSearchTerm, setPendingSearchTerm] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [isSearching, setIsSearching] = useState(false);
-    const [searchResults, setSearchResults] = useState([]);
+    const [unfilteredSearchResults, setUnfilteredSearchResults] = useState([]); // stores the unfiltered, searched results
 
     // Owner filter
     const [selectedGDriveOwner, setSelectedGDriveOwner] = useState('');
@@ -46,7 +46,7 @@ export default function GdriveSearch() {
     useEffect(() => {
         setPendingSearchTerm('');
         setSearchTerm('');
-        setSearchResults([]);
+        setUnfilteredSearchResults([]);
         setSelectedGDriveOwner('');
     }, [currentSource]);
 
@@ -127,6 +127,9 @@ export default function GdriveSearch() {
                 );
             }
         })();
+        return () => {
+            cancelled = true;
+        };
     }, []);
 
     // --- SEARCH HANDLER ---
@@ -143,35 +146,52 @@ export default function GdriveSearch() {
                 let allFiles = getAllFiles();
                 let filtered = allFiles.filter(obj => obj.file && isImageFile(obj.file));
 
-                // GDrive owner filter
-                if (currentSource === 'gdrive' && selectedGDriveOwner) {
-                    filtered = filtered.filter(obj => obj.name === selectedGDriveOwner);
-                }
-
                 // Search term
                 const term = overrideTerm !== undefined ? overrideTerm : pendingSearchTerm;
+                let results = filtered;
                 if (term && term.trim()) {
                     const lc = term.trim().toLowerCase();
-                    filtered = filtered.filter(obj => obj.file.toLowerCase().includes(lc));
+                    results = filtered.filter(obj => obj.file.toLowerCase().includes(lc));
                 }
 
                 setSearchTerm(term || '');
-                setSearchResults(filtered);
+                setUnfilteredSearchResults(results); // This is the result set to be filtered by filter/sort UI
                 setIsSearching(false);
             }, 0);
         },
-        [currentSource, gdriveFiles, customFiles, pendingSearchTerm, selectedGDriveOwner]
+        [currentSource, gdriveFiles, customFiles, pendingSearchTerm]
     );
 
     // --- GDrive Owners List (deduped, sorted) ---
-    const gdriveOwners = Array.from(new Set(gdriveFiles.map(f => f.name).filter(Boolean))).sort();
+    const gdriveOwners = useMemo(
+        () => Array.from(new Set(gdriveFiles.map(f => f.name).filter(Boolean))).sort(),
+        [gdriveFiles]
+    );
 
-    // --- Filter/SORT change: immediately update results IF there is an active search term or last search was performed ---
-    useEffect(() => {
-        if (searchTerm) {
-            handleSearch(searchTerm);
+    // --- FILTER & SORT: only applied to already searched results ---
+    const searchResults = useMemo(() => {
+        let filtered = [...unfilteredSearchResults];
+
+        // Owner filter (for GDrive)
+        if (currentSource === 'gdrive' && selectedGDriveOwner) {
+            filtered = filtered.filter(obj => obj.name === selectedGDriveOwner);
         }
-    }, [selectedGDriveOwner, currentSort, handleSearch, searchTerm]);
+
+        // Sorting
+        if (currentSort === 'priority-asc' || currentSort === 'priority-desc') {
+            filtered = filtered.slice().sort((a, b) => {
+                const pa = priorityOrder[a.location] ?? 9999;
+                const pb = priorityOrder[b.location] ?? 9999;
+                return currentSort === 'priority-asc' ? pa - pb : pb - pa;
+            });
+        } else if (currentSort === 'alpha') {
+            filtered = filtered.slice().sort((a, b) => a.file.localeCompare(b.file));
+        } else if (currentSort === 'alpha-desc') {
+            filtered = filtered.slice().sort((a, b) => b.file.localeCompare(a.file));
+        } // Add date sort if needed
+
+        return filtered;
+    }, [unfilteredSearchResults, currentSource, selectedGDriveOwner, currentSort, priorityOrder]);
 
     // Only run search when user hits Enter/search button in controls
     const handlePendingSearch = () => {
@@ -182,7 +202,7 @@ export default function GdriveSearch() {
     const handleClearSearch = () => {
         setPendingSearchTerm('');
         setSearchTerm('');
-        setSearchResults([]);
+        setUnfilteredSearchResults([]);
     };
 
     // Open modal handler

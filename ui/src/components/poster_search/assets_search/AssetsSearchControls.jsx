@@ -72,7 +72,7 @@ export default function AssetsSearchControls({
                     <button
                         type="button"
                         ref={el => (viewBtnRefs.current['assets'] = el)}
-                        className="source-picker-btn active"
+                        className="btn source-picker-btn active"
                         onMouseEnter={() => setShowAssetsSourceTip(true)}
                         onMouseLeave={() => setShowAssetsSourceTip(false)}
                         onFocus={() => setShowAssetsSourceTip(true)}

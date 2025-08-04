@@ -15,7 +15,7 @@ const SOURCE_OPTIONS = [
         key: 'custom',
         label: 'Custom',
         icon: 'mi:folder_special',
-        tooltip: null,
+        tooltip: 'No custom sources defined in Poster Renamerr settings.',
     },
 ];
 
@@ -62,7 +62,9 @@ export default function GdriveSearchControls({
 }) {
     // Refs for tooltips
     const btnRefs = useRef({});
+    const wrapperRefs = useRef({});
     const viewBtnRefs = useRef({});
+    const viewWrapperRefs = useRef({});
     const searchBtnRef = useRef();
     const ownerFilterBtnRef = useRef();
     const searchInputRef = useRef();
@@ -101,12 +103,27 @@ export default function GdriveSearchControls({
                                 src.key === 'custom' &&
                                 (!customLocations || !customLocations.length);
                             return (
-                                <React.Fragment key={src.key}>
+                                <span
+                                    key={src.key}
+                                    ref={el => (wrapperRefs.current[src.key] = el)}
+                                    className="source-picker-btn-wrapper"
+                                    style={{
+                                        display: 'inline-block',
+                                        position: 'relative',
+                                        cursor: disabled ? 'not-allowed' : undefined,
+                                    }}
+                                    // Mouse events for tooltip are on the wrapper
+                                    onMouseEnter={() => setHoveredSource(src.key)}
+                                    onMouseLeave={() => setHoveredSource(null)}
+                                    onFocus={() => setHoveredSource(src.key)}
+                                    onBlur={() => setHoveredSource(null)}
+                                    tabIndex={-1}
+                                >
                                     <button
                                         type="button"
                                         ref={el => (btnRefs.current[src.key] = el)}
                                         className={
-                                            'source-picker-btn' +
+                                            'btn source-picker-btn' +
                                             (currentSource === src.key ? ' active' : '') +
                                             (disabled ? ' disabled' : '')
                                         }
@@ -114,23 +131,19 @@ export default function GdriveSearchControls({
                                         disabled={disabled}
                                         tabIndex={disabled ? -1 : 0}
                                         onClick={() => !disabled && setCurrentSource(src.key)}
-                                        onMouseEnter={() => setHoveredSource(src.key)}
-                                        onMouseLeave={() => setHoveredSource(null)}
-                                        onFocus={() => setHoveredSource(src.key)}
-                                        onBlur={() => setHoveredSource(null)}
                                     >
                                         <span className="icon">{getIcon(src.icon)}</span>
                                         <span style={{ marginLeft: 8 }}>{src.label}</span>
                                     </button>
                                     <TooltipFactory
-                                        anchor={btnRefs.current[src.key]}
+                                        anchor={wrapperRefs.current[src.key]}
                                         text={getSourceTooltip(src, customLocations)}
                                         show={
                                             hoveredSource === src.key &&
                                             !!getSourceTooltip(src, customLocations)
                                         }
                                     />
-                                </React.Fragment>
+                                </span>
                             );
                         }
                     )}
@@ -153,7 +166,17 @@ export default function GdriveSearchControls({
                 </select>
                 <div className="poster-view-mode-group">
                     {VIEW_MODES.map(mode => (
-                        <React.Fragment key={mode.key}>
+                        <span
+                            key={mode.key}
+                            ref={el => (viewWrapperRefs.current[mode.key] = el)}
+                            className="view-mode-btn-wrapper"
+                            style={{ display: 'inline-block', position: 'relative' }}
+                            onMouseEnter={() => setHoveredView(mode.key)}
+                            onMouseLeave={() => setHoveredView(null)}
+                            onFocus={() => setHoveredView(mode.key)}
+                            onBlur={() => setHoveredView(null)}
+                            tabIndex={-1}
+                        >
                             <button
                                 type="button"
                                 ref={el => (viewBtnRefs.current[mode.key] = el)}
@@ -162,19 +185,15 @@ export default function GdriveSearchControls({
                                 }
                                 data-view={mode.key}
                                 onClick={() => setCurrentView(mode.key)}
-                                onMouseEnter={() => setHoveredView(mode.key)}
-                                onMouseLeave={() => setHoveredView(null)}
-                                onFocus={() => setHoveredView(mode.key)}
-                                onBlur={() => setHoveredView(null)}
                             >
                                 <span className="icon">{getIcon(mode.icon)}</span>
                             </button>
                             <TooltipFactory
-                                anchor={viewBtnRefs.current[mode.key]}
+                                anchor={viewWrapperRefs.current[mode.key]}
                                 text={mode.tooltip}
                                 show={hoveredView === mode.key}
                             />
-                        </React.Fragment>
+                        </span>
                     ))}
                 </div>
             </div>

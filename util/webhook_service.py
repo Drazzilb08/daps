@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 
 from modules.poster_renamerr import PosterRenamerr
 from util.arr import create_arr_client
-from util.config import Config
+from util.config import load_config
 from util.database import DapsDB
 from util.logger import Logger
 from util.notification import NotificationManager
@@ -24,10 +24,18 @@ class WebhookService:
 
     def __init__(self, request=None, db=None, logger=None, module_name=None):
         self.request = request
-        self.config = Config(module_name)
+        # Always load the full config, always access .instances, .poster_renamerr, etc as needed
+        full_config = load_config()
+        self.full_config = full_config
+        # If module_name given, use that section if present, else fallback to full_config
+        if module_name and hasattr(full_config, module_name):
+            self.config = getattr(full_config, module_name)
+        else:
+            self.config = full_config
         self.db = db or DapsDB()
         self.logger = logger or Logger(
-            getattr(self.config, "log_level", "INFO"), self.config.module_name
+            getattr(self.config, "log_level", "INFO"),
+            getattr(self.config, "module_name", module_name or "webhook_service"),
         )
         self.notification_manager = NotificationManager(
             self.config, self.logger, module_name
@@ -120,11 +128,15 @@ class WebhookService:
         norm_host = normalize_host(host)
         norm_port = int(port) if port is not None else None
 
-        for media_type in ("radarr", "sonarr"):
-            for name, info in self.config.instances_config.get(media_type, {}).items():
-                url = info.get("url")
-                if not url:
+        # Use pydantic attribute access, never .get()
+        instances_config = self.full_config.instances
 
+        for media_type in ("radarr", "sonarr"):
+            # Each is a dict of name -> InstanceDetail
+            media_dict = getattr(instances_config, media_type, {})
+            for name, info in media_dict.items():
+                url = info.url
+                if not url:
                     continue
                 parsed = urlparse(url)
                 parsed_host = normalize_host(parsed.hostname)
@@ -134,10 +146,9 @@ class WebhookService:
                     parsed_port = None
 
                 if parsed_host == norm_host and parsed_port == norm_port:
-
                     instance_name = name
                     instance_type = media_type
-                    instance_api = info.get("api")
+                    instance_api = info.api
                     instance_scheme = scheme or parsed.scheme or "http"
                     break
 
@@ -162,7 +173,6 @@ class WebhookService:
         """
         Main webhook entrypoint. Skips test events, then matches client info and processes ARR webhook.
         """
-
         if "_client" in data:
             self._client_info = data["_client"]
         media_block, media_kind, media_id = self._get_media_block(data)
@@ -205,8 +215,28 @@ class WebhookService:
                         }
                 self._media_cache[cache_key] = (media_hash, now)
 
+        # ARR instance config is always full_config.instances.{radarr|sonarr}
+        instances_config = self.full_config.instances
+
+        # Get the correct InstanceDetail
+        arr_url = None
+        if instance_type and instance_name:
+            media_dict = getattr(instances_config, instance_type, {})
+            info = media_dict.get(instance_name)
+            if info:
+                arr_url = info.url
+
+        if not arr_url:
+            return {
+                "status": 502,
+                "success": False,
+                "error_code": "ARR_CONFIG_MISSING",
+                "message": "No URL for ARR instance",
+                "item": None,
+            }
+
         arr_client = create_arr_client(
-            self.config.instances_config[instance_type][instance_name]["url"],
+            arr_url,
             instance_api,
             logger,
         )
@@ -259,13 +289,12 @@ class WebhookService:
 
     def run_renamerr_adhoc(self, process_result: dict) -> dict:
         try:
-            from util.upload_posters import upload_posters
+            from util.upload_posters import PosterUploader
 
             log = self.logger.get_adapter("RENAMERR_ADHOC")
-
             item_keys = self._extract_media_keys(process_result)
-            item = self.db.media.get_by_keys(**item_keys)
-            if not item:
+            items = self.db.media.get_by_keys(**item_keys)
+            if not items:
                 log.error(f"No DB row found for: {json.dumps(item_keys, indent=2)}")
                 return {
                     "status": 404,
@@ -275,10 +304,13 @@ class WebhookService:
                     "item": None,
                 }
 
-            renamer = PosterRenamerr(self.config, log, self.db)
-            if self.config.source_dirs:
-                renamer.merge_assets(self.config.source_dirs, self.db, self.logger)
-            else:
+            # Only allow types relevant to ARR (movie, show)
+            allowed_types = ("movie", "show")
+            output = {k: [] for k in allowed_types}
+            manifests = []
+
+            renamer = PosterRenamerr(logger=log)
+            if not self.config.source_dirs:
                 self.logger.warning("No source directories configured.")
                 return {
                     "status": 500,
@@ -288,101 +320,146 @@ class WebhookService:
                     "item": None,
                 }
 
-            is_collection = item.get("asset_type", "").lower() not in ("movie", "show")
-            result = renamer.match_item(item, is_collection=is_collection)
+            renamer.merge_assets(self.config.source_dirs, self.db, self.logger)
 
-            if not result["matched"]:
-                log.info(f"No match for {item['title']} ({item['year']})")
-                return {
-                    "status": 404,
-                    "success": False,
-                    "error_code": "NO_MATCH",
-                    "message": "No asset match found for provided media.",
-                    "item": item,
-                }
+            for item in items:
+                asset_type = item.get("asset_type", "").lower()
+                if asset_type not in allowed_types:
+                    log.info(f"Skipping unsupported asset_type: {asset_type}")
+                    continue
 
-            log.info(
-                f"Matched: {result['match']['title']} ({result['match']['year']}) → {item['title']} ({item['year']})"
-            )
-            log.debug(f"Match reasons: {result['reasons']}")
+                result = renamer.match_item(item, is_collection=False)
+                if not result["matched"]:
+                    log.info(f"No match for {item['title']} ({item['year']})")
+                    return {
+                        "status": 404,
+                        "success": False,
+                        "error_code": "NO_MATCH",
+                        "message": "No asset match found for provided media.",
+                        "item": item,
+                    }
 
-            item = self.db.media.get_by_keys(**item_keys)
-            renamed = renamer.rename_file(item)
-            if not renamed:
-                return {
-                    "status": 500,
-                    "success": False,
-                    "error_code": "RENAME_FAILED",
-                    "message": "Rename failed.",
-                    "item": item,
-                }
+                log.info(
+                    f"Matched: {result['match']['title']} ({result['match']['year']}) → {item['title']} ({item['year']})"
+                )
+                log.debug(f"Match reasons: {result['reasons']}")
+                refreshed_item = self.db.media.get_by_id(item["id"])
+                renamed = renamer.rename_file(refreshed_item)
+                if not renamed:
+                    return {
+                        "status": 500,
+                        "success": False,
+                        "error_code": "RENAME_FAILED",
+                        "message": "Rename failed.",
+                        "item": refreshed_item,
+                    }
 
-            output = {"collection": [], "movie": [], "show": []}
-            output[renamed["asset_type"]].append(renamed)
+                output[renamed["asset_type"]].append(renamed)
+                # Build manifest: only include as media_cache (never collections_cache for ARR)
+                manifests.append(
+                    {
+                        "media_cache": [renamed["id"]],
+                        "collections_cache": [],
+                    }
+                )
 
-            manifest = {
-                "media_cache": (
-                    [renamed["id"]] if renamed["asset_type"] != "collection" else []
-                ),
-                "collections_cache": (
-                    [renamed["id"]] if renamed["asset_type"] == "collection" else []
-                ),
-            }
-
+            # Always send notification for all results
             self.notification_manager.send_notification(output)
 
-            if self.config.run_border_replacerr:
-                renamer.run_border_replacerr(manifest)
-            # ----
-            # TODO: finish return from upload_posters, break into class functionality to support modularity
-            # The upload_posters() function should return a result dict like:
-            # {
-            #     "success": bool,  # True if upload succeeded, False otherwise
-            #     "message": str,   # Description of result or error
-            #     "error_code": str, # (optional) Application-level error code, e.g. "UPLOAD_FAILED", "NOT_FOUND"
-            #     "payload": dict   # (optional) Payload needed to retry upload (e.g. manifest, item, etc.)
-            # }
-            # If "success" is False, "payload" MUST contain everything needed to re-attempt the upload,
-            # so it can be re-queued for the background worker to retry later.
-            # ----
-            result = None
-            upload_result = upload_posters(self.config, self.db, self.logger, manifest)
-            if not upload_result.get("success"):
-                payload = {
-                    "manifest": manifest,
-                    "item": renamed,
-                    "config_module": self.config.module_name,
-                }
-                delay_minutes = getattr(self.config, "upload_retry_delay", 5)
-                max_attempts = getattr(self.config, "upload_retry_max_attempts", 3)
-                scheduled_at = (
-                    datetime.datetime.now(datetime.timezone.utc)
-                    + datetime.timedelta(minutes=delay_minutes)
-                ).isoformat()
-                enqueue_result = self.db.worker.enqueue_job(
-                    "jobs",
-                    payload,
-                    job_type="upload_posters",
-                    extra_fields={"max_attempts": max_attempts},
-                    scheduled_at=scheduled_at,
-                )
-                log.error(f"Upload failed, enqueued for retry: {enqueue_result}")
-                return {
-                    "status": 500,
-                    "success": False,
-                    "error_code": "UPLOAD_QUEUED",
-                    "message": f"Upload failed, job enqueued for retry: {upload_result.get('message')}",
-                    "item": renamed,
-                    "retry_job": enqueue_result,
-                }
+            # Border replacer logic
+            if getattr(self.config, "run_border_replacerr", False):
+                for manifest in manifests:
+                    renamer.run_border_replacerr(manifest)
 
-            return {
-                "status": 200,
-                "success": True,
-                "error_code": None,
-                "message": "Renaming and notification completed.",
-                "item": renamed,
-            }
+            # Only proceed if at least one Plex instance is enabled for poster upload
+            plex_enabled = any(
+                isinstance(i, dict)
+                and getattr(next(iter(i.values())), "add_posters", False)
+                for i in self.config.instances
+            )
+
+            if plex_enabled:
+                # Can only ever be one manifest per ARR webhook run, but handle multi just in case
+                upload_failures = []
+                upload_success = []
+                for manifest in manifests:
+                    upld = PosterUploader(logger=self.logger, manifest=manifest)
+                    upload_result = upld.upload_posters()
+                    if not upload_result.get("success"):
+                        failure_message = (
+                            upload_result.get("message") or "Unknown upload failure"
+                        )
+                        payload = {
+                            "manifest": manifest,
+                            "item": output,
+                            "config_module": getattr(self.config, "module_name", None),
+                        }
+                        delay_minutes = getattr(self.config, "upload_retry_delay", 5)
+                        max_attempts = getattr(
+                            self.config, "upload_retry_max_attempts", 3
+                        )
+                        scheduled_at = (
+                            datetime.datetime.now(datetime.timezone.utc)
+                            + datetime.timedelta(minutes=delay_minutes)
+                        ).isoformat()
+                        enqueue_result = self.db.worker.enqueue_job(
+                            "jobs",
+                            payload,
+                            job_type="upload_posters",
+                            extra_fields={
+                                "max_attempts": max_attempts,
+                                "error": failure_message,
+                            },
+                            scheduled_at=scheduled_at,
+                        )
+                        log.warning(
+                            f"Poster upload failed: {upload_result.get('message')!r}; will retry (job enqueued)"
+                        )
+                        log.info(f"Enqueue result: {enqueue_result}")
+                        upload_failures.append(
+                            {
+                                "manifest": manifest,
+                                "result": upload_result,
+                                "retry_job": enqueue_result,
+                            }
+                        )
+                    else:
+                        upload_success.append(
+                            {
+                                "manifest": manifest,
+                                "result": upload_result,
+                            }
+                        )
+
+                if upload_failures:
+                    return {
+                        "status": 500,
+                        "success": False,
+                        "error_code": "UPLOAD_QUEUED",
+                        "message": "One or more uploads failed, jobs enqueued for retry.",
+                        "item": output,
+                        "upload_failures": upload_failures,
+                    }
+                else:
+                    return {
+                        "status": 200,
+                        "success": True,
+                        "error_code": None,
+                        "message": "Renaming and notification completed, uploads succeeded.",
+                        "item": output,
+                        "upload_success": upload_success,
+                    }
+            else:
+                self.logger.debug(
+                    "No Plex instances enabled (add_posters=True) for poster upload."
+                )
+                return {
+                    "status": 200,
+                    "success": True,
+                    "error_code": None,
+                    "message": "Renaming and notification completed.",
+                    "item": output,
+                }
         except Exception as exc:
             self.logger.error(f"\n\nAn error occurred: {exc}\n", exc_info=True)
         finally:

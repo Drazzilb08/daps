@@ -31,7 +31,7 @@ class DapsDB:
         self.run_state = RunState(db_path)
         self.stats = Stats(db_path)
         self.holiday = HolidayStatus(db_path)
-        self.worker = DBWorker(db_path)
+        self.worker = DBWorker(db_path, logger=self.logger)
 
     def create_worker(
         self,

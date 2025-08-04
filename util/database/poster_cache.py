@@ -84,6 +84,8 @@ class PosterCache(DatabaseBase):
         if season_number is not None:
             sql += " AND season_number=?"
             params.append(season_number)
+        else:
+            sql += " AND season_number IS NULL"
         with self.lock, self.conn:
             cur = self.conn.execute(sql, params)
             row = cur.fetchone()
@@ -103,6 +105,8 @@ class PosterCache(DatabaseBase):
         if season_number is not None:
             sql += " AND season_number=?"
             params.append(season_number)
+        else:
+            sql += " AND season_number IS NULL"
         with self.lock, self.conn:
             cur = self.conn.execute(sql, params)
             row = cur.fetchone()

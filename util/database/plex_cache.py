@@ -1,6 +1,6 @@
 import datetime
 import json
-from typing import Any, List, Optional
+from typing import Any, Optional
 
 from .db_base import DatabaseBase
 
@@ -34,10 +34,10 @@ class PlexCache(DatabaseBase):
             norm_str(item.get("plex_id")),
         )
 
-    def upsert(self, items: List[dict]) -> None:
+    def upsert(self, item: dict) -> None:
         """
-        Bulk insert/update media items into plex_media_cache.
-        Each item must include all required fields.
+        Insert/update a single media item into plex_media_cache.
+        The item must include all required fields.
         """
         now = datetime.datetime.now(datetime.timezone.utc).isoformat()
         expected_cols = [
@@ -47,35 +47,35 @@ class PlexCache(DatabaseBase):
             "library_name",
             "title",
             "normalized_title",
-            "folder",
             "year",
             "guids",
             "labels",
+            "season_number",
         ]
+        missing = [k for k in expected_cols if k not in item]
+        assert not missing, f"Missing columns in cache_plex_data: {missing}"
+
         with self.lock, self.conn:
-            for item in items:
-                missing = [k for k in expected_cols if k not in item]
-                assert not missing, f"Missing columns in cache_plex_data: {missing}"
-                self.conn.execute(
-                    """
-                    INSERT OR REPLACE INTO plex_media_cache
-                        (plex_id, instance_name, asset_type, library_name, title, normalized_title, folder, year, guids, labels, last_indexed)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                    """,
-                    (
-                        item["plex_id"],
-                        item["instance_name"],
-                        item["asset_type"],
-                        item["library_name"],
-                        item["title"],
-                        item["normalized_title"],
-                        item["folder"],
-                        item["year"],
-                        json.dumps(item["guids"]),
-                        json.dumps(item["labels"]),
-                        now,
-                    ),
-                )
+            self.conn.execute(
+                """
+                INSERT OR REPLACE INTO plex_media_cache
+                    (plex_id, instance_name, asset_type, library_name, title, normalized_title, season_number, year, guids, labels, last_indexed)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    item["plex_id"],
+                    item["instance_name"],
+                    item["asset_type"],
+                    item["library_name"],
+                    item["title"],
+                    item["normalized_title"],
+                    item["season_number"],
+                    item["year"],
+                    json.dumps(item["guids"]),
+                    json.dumps(item["labels"]),
+                    now,
+                ),
+            )
 
     def update_labels(
         self,
@@ -205,13 +205,13 @@ class PlexCache(DatabaseBase):
 
         for key, item in fresh_map.items():
             if key not in db_map:
-                self.upsert([item])
+                self.upsert(item)
                 if logger:
                     logger.debug(
                         f"[ADD] New Plex asset '{item['title']}' in '{library_name}' ({instance_name})"
                     )
             else:
-                self.upsert([item])
+                self.upsert(item)
 
         keys_to_remove = set(db_map.keys()) - set(fresh_map.keys())
         for key in keys_to_remove:

@@ -217,8 +217,9 @@ async def add_media(request: Request, logger: Any = Depends(get_webhook_logger))
         job_data = dict(data)
         job_data["_client"] = client_info
 
-        db = request.app.state.db
-        result = db.worker.enqueue_job("jobs", job_data, job_type="webhook")
+        result = request.app.state.db.worker.enqueue_job(
+            "jobs", job_data, job_type="webhook"
+        )
 
         if not result.get("success"):
             logger.error(

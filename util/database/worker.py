@@ -254,12 +254,17 @@ class DBWorker(DatabaseBase):
             fields.update(extra_fields)
         keys = ",".join(fields.keys())
         qs = ",".join("?" for _ in fields)
+        logger = self.logger.get_adapter("enqueue_job")
+
         try:
             with self.conn:
                 self.conn.execute(
                     f"INSERT INTO {table_name} ({keys}) VALUES ({qs})",
                     tuple(fields.values()),
                 )
+            logger.debug(
+                f"Successfully enqueued job: type={job_type}, table={table_name}, scheduled_at={scheduled_at}"
+            )
             return {
                 "status": 200,
                 "success": True,
@@ -267,6 +272,9 @@ class DBWorker(DatabaseBase):
                 "message": "Job enqueued successfully",
             }
         except Exception as e:
+            self.logger.debug(
+                f"Failed to enqueue job: type={job_type}, table={table_name}, error={e}"
+            )
             return {
                 "status": 500,
                 "success": False,
@@ -517,15 +525,14 @@ def process_job(job, logger):
                         "error_code": "PAYLOAD_SCHEMA_INVALID",
                     }
                     return result
-                from util.config import Config
-                from util.database import DapsDB
-                from util.upload_posters import upload_posters
 
-                config_module = payload.get("config_module", "poster_renamerr")
-                config = Config(config_module)
+                from util.database import DapsDB
+                from util.upload_posters import PosterUploader
+
                 db = DapsDB(logger=logger)
                 manifest = payload.get("manifest")
-                upload_result = upload_posters(config, db, logger, manifest)
+                uploader = PosterUploader(logger=logger, manifest=manifest)
+                upload_result = uploader.upload_posters()
                 if upload_result.get("success"):
                     result = {
                         "status": 200,

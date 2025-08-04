@@ -1,71 +1,67 @@
+import itertools
 import sys
+import time
+from typing import Dict, List
 
 from util.arr import create_arr_client
 from util.config import DapsConfig, load_config
 from util.database import DapsDB
+from util.logger import Logger
 from util.plex import PlexClient
 
 
 class Connector:
-    def __init__(self, db: DapsDB = None, config: DapsConfig = None, logger=None):
+    def __init__(
+        self,
+        db: DapsDB = None,
+        config: DapsConfig = None,
+        logger: Logger = None,
+        instance_map: Dict[str, List[str]] = None,
+    ):
         self.db = db or DapsDB()
         self.config = load_config()
         self.logger = logger
+        self.instance_map = instance_map
 
-    def update_arr_database(self, max_age_hours=6, force_reindex=False):
-        """
-        Update all ARR instances listed in config.instances (radarr, sonarr),
-        only reindexing if cache is missing or stale.
-        Handles shows by flattening into show-level and per-season items for DB sync.
-        """
-        logger = self.logger
+    def update_arr_database(self):
+        logger = self.logger.get_adapter("arr")
         config = self.config
         db = self.db
 
+        arr_instances = set(self.instance_map.get("arrs", []))
         all_instances = []
         for instance_type, instance_dict in [
             ("radarr", config.instances.radarr),
             ("sonarr", config.instances.sonarr),
         ]:
             for instance_name, info in instance_dict.items():
-                logger.info(f"Indexing '{instance_name}'...")
+                if arr_instances and instance_name not in arr_instances:
+                    continue
                 all_instances.append((instance_type, instance_name, info))
 
         if not all_instances:
-            logger.error("No instances found in config.instances. Exiting module...")
-            sys.exit(1)
+            logger.error("No ARR instances found in instance_map['arrs'] or config.")
+            return
 
-        if force_reindex:
-            db.media.clear()
-
-        for instance_type, instance_name, info in all_instances:
+        spinner = itertools.cycle(["-", "\\", "|", "/"])
+        for idx, (instance_type, instance_name, info) in enumerate(all_instances):
+            arr_logger = logger.get_adapter(f"{instance_type}:{instance_name}")
+            sys.stdout.write(f"\rIndexing '{instance_name}'... {next(spinner)}")
+            sys.stdout.flush()
             url = info.url
             api = info.api
             if not url or not api:
-                logger.warning(
-                    f"[{instance_type}] Instance '{instance_name}' missing URL or API key. Skipping."
+                arr_logger.warning(
+                    f"Instance '{instance_name}' missing URL or API key. Skipping."
                 )
                 continue
 
-            app = create_arr_client(url, api, logger)
+            app = create_arr_client(url, api, arr_logger)
             if app is None or not app.is_connected():
-                logger.error(
-                    f"[{instance_type}] Connection failed for '{instance_name}'. Skipping."
-                )
+                arr_logger.error(f"Connection failed for '{instance_name}'. Skipping.")
                 continue
 
             asset_type = "movie" if app.instance_type == "Radarr" else "show"
-            if not force_reindex:
-                cache = db.media.get_for_instance(
-                    instance_name, asset_type, max_age_hours=max_age_hours
-                )
-                if cache:
-                    logger.debug(
-                        f"[{instance_type}] Instance '{instance_name}' is fresh. Skipping reindex."
-                    )
-                    continue
-
-            logger.info(f"Indexing '{instance_name}'...")
             raw_media = app.get_all_media()
             fresh_media = []
 
@@ -82,217 +78,179 @@ class Connector:
                 fresh_media = raw_media
 
             db.media.sync_for_instance(
-                instance_name, app.instance_type, asset_type, fresh_media, logger
+                instance_name, app.instance_type, asset_type, fresh_media, arr_logger
             )
+            time.sleep(0.05)
+        sys.stdout.write("\r")
+        print(f"ARR database sync complete. ({len(all_instances)} instances)\n")
 
-    def update_plex_database(self, max_age_hours=6, force_reindex=False):
-        """
-        Only reindex libraries for Plex instances/libraries explicitly listed in config.
-        """
-        logger = self.logger
+    def update_plex_database(self):
+        logger = self.logger.get_adapter("plex")
         config = self.config
         db = self.db
 
-        logger.info("Updating Plex library databases...")
-        plex_instances = config.instances.plex
-        if not plex_instances:
-            logger.error("No Plex instances found in config.")
+        plex_map = self.instance_map.get("plex", {})
+        if not plex_map:
+            logger.error("No Plex instances found in instance_map['plex'].")
             return
 
-        plex_libs = self.extract_plex_libraries_from_config(config)
-
-        for instance_name, info in plex_instances.items():
-            if instance_name not in plex_libs:
+        for instance_name, selected_libraries in plex_map.items():
+            plex_logger = logger.get_adapter(instance_name)
+            plex_config = config.instances.plex.get(instance_name)
+            if not plex_config:
+                plex_logger.warning(
+                    f"Plex instance '{instance_name}' not found in config."
+                )
                 continue
-            url = info.url
-            api = info.api
+            url = plex_config.url
+            api = plex_config.api
             if not url or not api:
-                logger.warning(
-                    f"[plex] Instance '{instance_name}' missing URL or API key. Skipping."
+                plex_logger.warning(
+                    f"Instance '{instance_name}' missing URL or API key. Skipping."
                 )
                 continue
 
-            plex_client = PlexClient(url, api, logger)
+            plex_client = PlexClient(url, api, plex_logger)
             if not plex_client.is_connected():
-                logger.error(
-                    f"[plex] Connection failed for '{instance_name}'. Skipping."
-                )
+                plex_logger.error(f"Connection failed for '{instance_name}'. Skipping.")
                 continue
 
             try:
-                all_libraries = [
-                    section.title for section in plex_client.plex.library.sections()
-                ]
+                all_libraries = plex_client.get_libraries()
             except Exception as e:
-                logger.error(
-                    f"[plex] Failed to fetch libraries for '{instance_name}': {e}"
+                plex_logger.error(
+                    f"Failed to fetch libraries for '{instance_name}': {e}"
                 )
                 continue
 
-            configured_libs = plex_libs.get(instance_name, [])
+            # Handle [] as "all libraries", otherwise filter
+            if not selected_libraries:
+                target_libraries = all_libraries
+            else:
 
-            if not configured_libs:
-                logger.debug(
-                    f"[plex] No libraries specified for '{instance_name}', skipping."
+                def norm(s):
+                    return s.strip().lower() if isinstance(s, str) else s
+
+                norm_selected = set(map(norm, selected_libraries))
+                target_libraries = [
+                    lib for lib in all_libraries if norm(lib) in norm_selected
+                ]
+
+            if not target_libraries:
+                plex_logger.debug(
+                    f"No libraries specified for '{instance_name}', skipping. Available libraries: {all_libraries}"
                 )
                 continue
 
-            target_libraries = [lib for lib in configured_libs if lib in all_libraries]
-
-            for library_name in target_libraries:
-                if not force_reindex:
-                    cache = db.plex.get_for_library(
-                        instance_name, library_name, max_age_hours=max_age_hours
-                    )
-                    if cache:
-                        logger.debug(
-                            f"[plex] Library '{library_name}' for '{instance_name}' is fresh. Skipping reindex."
-                        )
-                        continue
-
-                logger.info(
-                    f"Indexing library '{library_name}' for '{instance_name}'..."
+            spinner = itertools.cycle(["-", "\\", "|", "/"])
+            for idx, library_name in enumerate(target_libraries):
+                sys.stdout.write(
+                    f"\rIndexing library '{library_name}' for '{instance_name}'... {next(spinner)}"
                 )
+                sys.stdout.flush()
                 try:
                     fresh_media = plex_client.get_all_plex_media(
-                        db=db,
                         library_name=library_name,
-                        logger=logger,
+                        logger=plex_logger,
                         instance_name=instance_name,
                     )
                     db.plex.sync_for_library(
                         instance_name=instance_name,
                         library_name=library_name,
                         fresh_media=fresh_media,
-                        logger=logger,
+                        logger=plex_logger,
                     )
                 except Exception as e:
-                    logger.error(
-                        f"[plex] Error caching library '{library_name}' for '{instance_name}': {e}"
+                    plex_logger.error(
+                        f"Error caching library '{library_name}' for '{instance_name}': {e}"
                     )
                     continue
+                time.sleep(0.05)
+            sys.stdout.write("\r")
+            print(f"Indexed all libraries for {instance_name}.")
 
-    def update_collections_database(self, max_age_hours=6, force_reindex=False):
-        """
-        Only reindex collections for Plex libraries explicitly listed in config.
-        """
-        logger = self.logger
+    def update_collections_database(self):
+        logger = self.logger.get_adapter("plex")
         config = self.config
         db = self.db
 
-        logger.info("Updating Plex collections databases...")
-        plex_instances = config.instances.plex
-        if not plex_instances:
-            logger.error("No Plex instances found in config.")
+        plex_map = self.instance_map.get("plex", {})
+        if not plex_map:
+            logger.error("No Plex instances found in instance_map['plex'].")
             return
 
-        plex_libs = self.extract_plex_libraries_from_config(config)
-
-        for instance_name, info in plex_instances.items():
-            if instance_name not in plex_libs:
+        for instance_name, selected_libraries in plex_map.items():
+            plex_logger = logger.get_adapter(instance_name)
+            plex_config = config.instances.plex.get(instance_name)
+            if not plex_config:
+                plex_logger.warning(
+                    f"Plex instance '{instance_name}' not found in config."
+                )
                 continue
-            url = info.url
-            api = info.api
+            url = plex_config.url
+            api = plex_config.api
             if not url or not api:
-                logger.warning(
-                    f"[plex] Instance '{instance_name}' missing URL or API key. Skipping."
+                plex_logger.warning(
+                    f"Instance '{instance_name}' missing URL or API key. Skipping."
                 )
                 continue
 
-            plex_client = PlexClient(url, api, logger)
+            plex_client = PlexClient(url, api, plex_logger)
             if not plex_client.is_connected():
-                logger.error(
-                    f"[plex] Connection failed for '{instance_name}'. Skipping."
-                )
+                plex_logger.error(f"Connection failed for '{instance_name}'. Skipping.")
                 continue
 
             try:
-                all_libraries = [
-                    section.title for section in plex_client.plex.library.sections()
-                ]
+                all_libraries = plex_client.get_libraries()
             except Exception as e:
-                logger.error(
-                    f"[plex] Failed to fetch libraries for '{instance_name}': {e}"
+                plex_logger.error(
+                    f"Failed to fetch libraries for '{instance_name}': {e}"
                 )
                 continue
 
-            configured_libs = plex_libs.get(instance_name, [])
-            if not configured_libs:
-                logger.debug(
-                    f"[plex] No libraries specified for '{instance_name}', skipping."
+            if not selected_libraries:
+                target_libraries = all_libraries
+            else:
+
+                def norm(s):
+                    return s.strip().lower() if isinstance(s, str) else s
+
+                norm_selected = set(map(norm, selected_libraries))
+                target_libraries = [
+                    lib for lib in all_libraries if norm(lib) in norm_selected
+                ]
+
+            if not target_libraries:
+                plex_logger.debug(
+                    f"No libraries specified for '{instance_name}', skipping. Available libraries: {all_libraries}"
                 )
                 continue
 
-            target_libraries = [lib for lib in configured_libs if lib in all_libraries]
-
-            for library_name in target_libraries:
+            spinner = itertools.cycle(["-", "\\", "|", "/"])
+            for idx, library_name in enumerate(target_libraries):
+                sys.stdout.write(
+                    f"\rIndexing collections for library '{library_name}' in '{instance_name}'... {next(spinner)}"
+                )
+                sys.stdout.flush()
                 try:
                     collections = plex_client.get_collections(
                         library_name, include_smart=True
                     )
                 except Exception as e:
-                    logger.error(
-                        f"[plex] Error fetching collections for library '{library_name}' in '{instance_name}': {e}"
+                    plex_logger.error(
+                        f"Error fetching collections for library '{library_name}' in '{instance_name}': {e}"
                     )
                     continue
 
                 if not collections:
-                    logger.debug(
-                        f"[plex] No collections found for library '{library_name}' in '{instance_name}'. Skipping."
+                    plex_logger.debug(
+                        f"No collections found for library '{library_name}' in '{instance_name}'. Skipping."
                     )
                     continue
 
-                if not force_reindex:
-                    cache = db.collection.get_for_library(
-                        instance_name, library_name, max_age_hours=max_age_hours
-                    )
-                    if cache:
-                        logger.debug(
-                            f"[plex] Collections cache for library '{library_name}' in '{instance_name}' is fresh. Skipping reindex."
-                        )
-                        continue
-
-                logger.info(
-                    f"Indexing collections for library '{library_name}' in '{instance_name}'..."
+                db.collection.sync_collections_cache(
+                    instance_name, library_name, collections, plex_logger
                 )
-                try:
-                    db.collection.sync_collections_cache(
-                        instance_name, library_name, collections, logger
-                    )
-                except Exception as e:
-                    logger.error(
-                        f"[plex] Error caching collections for library '{library_name}' in '{instance_name}': {e}"
-                    )
-                    continue
-
-    @staticmethod
-    def extract_plex_libraries_from_config(config: DapsConfig):
-        """
-        Returns dict of plex_instance -> set(library_names), supports both 'instances' and 'mappings' config styles.
-        """
-        plex_libraries = {}
-
-        # PosterRenamerr and other modules may have 'instances' as List[Union[str, dict]]
-        poster_cfg = getattr(config, "poster_renamerr", None)
-        if poster_cfg and hasattr(poster_cfg, "instances"):
-            for entry in poster_cfg.instances:
-                if isinstance(entry, dict):
-                    for plex_instance, opts in entry.items():
-                        libs = getattr(opts, "library_names", []) or []
-                        if plex_instance not in plex_libraries:
-                            plex_libraries[plex_instance] = set()
-                        plex_libraries[plex_instance].update(libs)
-
-        # Also check for 'mappings' (Labelarr etc.)
-        labelarr_cfg = getattr(config, "labelarr", None)
-        if labelarr_cfg and hasattr(labelarr_cfg, "mappings"):
-            for mapping in labelarr_cfg.mappings:
-                for pi in getattr(mapping, "plex_instances", []):
-                    instance = getattr(pi, "instance", None)
-                    libs = getattr(pi, "library_names", []) or []
-                    if instance:
-                        if instance not in plex_libraries:
-                            plex_libraries[instance] = set()
-                        plex_libraries[instance].update(libs)
-
-        return {k: list(v) for k, v in plex_libraries.items()}
+                time.sleep(0.05)
+            sys.stdout.write("\r")
+            print(f"Indexed all collections for {instance_name}.")

@@ -1,6 +1,5 @@
 import html
 import itertools
-import os
 import sys
 from typing import Any, Dict, List
 
@@ -42,6 +41,43 @@ class PlexClient:
 
     def is_connected(self) -> bool:
         return self.plex is not None
+
+    def get_libraries(self) -> list:
+        """
+        Returns a list of all library names on this Plex server.
+        """
+        try:
+            return [section.title for section in self.plex.library.sections()]
+        except Exception as e:
+            self.logger.error(f"Failed to fetch libraries: {e}")
+            return []
+
+    def get_media_by_libraries(
+        self,
+        library_names: list = None,
+        db: DapsDB = None,
+        logger=None,
+        instance_name=None,
+    ):
+        """
+        Fetch all media for specified libraries (all if None).
+        Returns dict {library_name: [media]}.
+        """
+        result = {}
+        libraries = library_names or self.get_libraries()
+        for library_name in libraries:
+            try:
+                media = self.get_all_plex_media(
+                    library_name=library_name,
+                    logger=logger or self.logger,
+                    instance_name=instance_name,
+                )
+                result[library_name] = media
+            except Exception as e:
+                (logger or self.logger).error(
+                    f"Error fetching media for '{library_name}': {e}"
+                )
+        return result
 
     def get_collections(
         self,
@@ -108,15 +144,13 @@ class PlexClient:
 
     def get_all_plex_media(
         self,
-        db: DapsDB,
         library_name: str,
         logger: Any,
         instance_name: str,
     ) -> list:
         """
         Indexes and caches a single Plex library for a Plex instance.
-        The caller is responsible for deciding whether to index or not.
-        Returns the new cache list for that library.
+        Returns a list of dicts ready for DB upsert, matching the latest schema.
         """
         section = self.plex.library.section(library_name)
         typ = section.type
@@ -136,38 +170,70 @@ class PlexClient:
                     for g in getattr(item, "guids", [])
                     if "://" in g.id
                 }
-                folder = None
                 try:
                     if typ == "movie":
-                        for m in item.media:
-                            for p in m.parts:
-                                folder = os.path.basename(os.path.dirname(p.file))
-                                break
-                            if folder:
-                                break
+                        items.append(
+                            {
+                                "plex_id": str(item.ratingKey),
+                                "instance_name": instance_name,
+                                "asset_type": typ,
+                                "library_name": library_name,
+                                "title": item.title,
+                                "normalized_title": normalize_titles(item.title),
+                                "season_number": None,
+                                "year": str(getattr(item, "year", "")),
+                                "guids": guids,
+                                "labels": [
+                                    label.tag for label in getattr(item, "labels", [])
+                                ],
+                            }
+                        )
                     elif typ in ("show", "tvshow"):
-                        episodes = item.episodes()
-                        if episodes:
-                            folder = os.path.basename(
-                                os.path.dirname(episodes[0].media[0].parts[0].file)
+                        # Main show row (season_number=None)
+                        items.append(
+                            {
+                                "plex_id": str(item.ratingKey),
+                                "instance_name": instance_name,
+                                "asset_type": typ,
+                                "library_name": library_name,
+                                "title": item.title,
+                                "normalized_title": normalize_titles(item.title),
+                                "season_number": None,
+                                "year": str(getattr(item, "year", "")),
+                                "guids": guids,
+                                "labels": [
+                                    label.tag for label in getattr(item, "labels", [])
+                                ],
+                            }
+                        )
+                        # Add a row for every season (with correct season_number)
+                        for season in item.seasons():
+                            items.append(
+                                {
+                                    "plex_id": str(season.ratingKey),
+                                    "instance_name": instance_name,
+                                    "asset_type": typ,
+                                    "library_name": library_name,
+                                    "title": item.title,
+                                    "normalized_title": normalize_titles(item.title),
+                                    "season_number": (
+                                        int(season.index)
+                                        if season.index is not None
+                                        else None
+                                    ),
+                                    "year": str(getattr(item, "year", "")),
+                                    "guids": guids,
+                                    "labels": [
+                                        label.tag
+                                        for label in getattr(item, "labels", [])
+                                    ],
+                                }
                             )
-                except Exception:
-                    pass
+                except Exception as e:
+                    logger.error(
+                        f"Error processing item '{getattr(item, 'title', '')}': {e}"
+                    )
 
-                items.append(
-                    {
-                        "plex_id": str(item.ratingKey),
-                        "instance_name": instance_name,
-                        "asset_type": typ,
-                        "library_name": library_name,
-                        "title": item.title,
-                        "normalized_title": normalize_titles(item.title),
-                        "folder": folder,
-                        "year": str(getattr(item, "year", "")),
-                        "guids": guids,
-                        "labels": [label.tag for label in getattr(item, "labels", [])],
-                    }
-                )
         return items
 
     def fetch_all_plex_media_with_paging(self, logger, section):
@@ -222,16 +288,7 @@ class PlexClient:
     ) -> bool:
         """
         Upload a poster to Plex using plexapi's built-in methods.
-        Args:
-            library_name: Plex library to search in.
-            item_title: Title of the item.
-            poster_path: Path to the poster image file.
-            year: (optional) Year for precise matching.
-            is_collection: If True, uploads to a collection.
-            season_number: For series, the season index to upload to (optional).
-            dry_run: If True, only logs the action without performing the upload.
-        Returns:
-            True if successful or dry_run is True, False otherwise.
+        Now supports uploading to a series season if season_number is given.
         """
         try:
             section = self.plex.library.section(library_name)
@@ -248,6 +305,7 @@ class PlexClient:
                     item.uploadPoster(filepath=poster_path)
                 return True
 
+            # TV Shows
             items = section.search(title=item_title, year=year)
             if not items:
                 self.logger.error(
@@ -257,9 +315,13 @@ class PlexClient:
             item = items[0]
 
             if season_number is not None:
-                seasons = [
-                    s for s in item.seasons() if int(s.index) == int(season_number)
-                ]
+                # If season_number is 0, try to handle "Specials" or skip if not present
+                try:
+                    seasons = [
+                        s for s in item.seasons() if int(s.index) == int(season_number)
+                    ]
+                except Exception:
+                    seasons = []
                 if not seasons:
                     self.logger.error(
                         f"Season {season_number} not found for '{item_title}' in '{library_name}'"
@@ -270,6 +332,7 @@ class PlexClient:
                     season.uploadPoster(filepath=poster_path)
                 return True
 
+            # Otherwise, upload to the main show/movie poster
             if not dry_run:
                 item.uploadPoster(filepath=poster_path)
             return True

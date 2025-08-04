@@ -27,7 +27,7 @@ from util.version import get_version
 
 @asynccontextmanager
 async def lifespan(app):
-    app.state.logger = app.state.logger or None
+    app.state.logger = app.state.logger
     app.state.db = DapsDB(logger=app.state.logger)
 
     app.state.db.adhoc_worker = app.state.db.create_worker(
@@ -57,7 +57,6 @@ async def lifespan(app):
 
 app = FastAPI(lifespan=lifespan)
 router = APIRouter()
-app.state.logger = None
 
 # Mount the built assets directory
 app.mount(

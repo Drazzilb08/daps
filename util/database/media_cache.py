@@ -1,6 +1,6 @@
 import datetime
 import json
-from typing import Any, Optional
+from typing import Any, List, Optional
 
 from .db_base import DatabaseBase
 
@@ -273,27 +273,49 @@ class MediaCache(DatabaseBase):
         imdb_id: str,
         season_number: int,
         instance_name: str,
-    ) -> Optional[dict]:
+    ) -> List[dict]:
+        # If asset_type is 'show' and season_number is None, get all seasons and the show record
         with self.lock, self.conn:
-            query = """
-            SELECT * FROM media_cache
-            WHERE asset_type=? AND title=? AND year IS ?
-            AND tmdb_id IS ? AND tvdb_id IS ? AND imdb_id IS ?
-            AND season_number IS ? AND instance_name=?
-            """
-            params = (
-                asset_type,
-                title,
-                year if year not in ("", None) else None,
-                tmdb_id if tmdb_id not in ("", None) else None,
-                tvdb_id if tvdb_id not in ("", None) else None,
-                imdb_id if imdb_id not in ("", None) else None,
-                season_number if season_number not in ("", None) else None,
-                instance_name,
-            )
-            cur = self.conn.execute(query, params)
-            row = cur.fetchone()
-            return dict(row) if row else None
+            if asset_type == "show" and season_number is None:
+                query = """
+                SELECT * FROM media_cache
+                WHERE asset_type=? AND title=? AND year IS ?
+                AND tmdb_id IS ? AND tvdb_id IS ? AND imdb_id IS ?
+                AND instance_name=?
+                """
+                params = (
+                    asset_type,
+                    title,
+                    year if year not in ("", None) else None,
+                    tmdb_id if tmdb_id not in ("", None) else None,
+                    tvdb_id if tvdb_id not in ("", None) else None,
+                    imdb_id if imdb_id not in ("", None) else None,
+                    instance_name,
+                )
+                cur = self.conn.execute(query, params)
+                rows = cur.fetchall()
+                return [dict(row) for row in rows]
+            else:
+                # regular case: one record
+                query = """
+                SELECT * FROM media_cache
+                WHERE asset_type=? AND title=? AND year IS ?
+                AND tmdb_id IS ? AND tvdb_id IS ? AND imdb_id IS ?
+                AND season_number IS ? AND instance_name=?
+                """
+                params = (
+                    asset_type,
+                    title,
+                    year if year not in ("", None) else None,
+                    tmdb_id if tmdb_id not in ("", None) else None,
+                    tvdb_id if tvdb_id not in ("", None) else None,
+                    imdb_id if imdb_id not in ("", None) else None,
+                    season_number if season_number not in ("", None) else None,
+                    instance_name,
+                )
+                cur = self.conn.execute(query, params)
+                rows = cur.fetchall()
+                return [dict(row) for row in rows]
 
     def update(
         self,

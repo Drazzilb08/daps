@@ -108,6 +108,9 @@ class PosterRenamerr:
             all_titles.update({normalize_titles(t) for t in alt_titles if t})
 
             for cand in candidates:
+                cand_season = cand.get("season_number")
+                if season_number is not None and cand_season != season_number:
+                    continue
                 cand_norm_title = cand.get("normalized_title", "")
                 cand_alt_titles = set(
                     json.loads(cand.get("normalized_alternate_titles", "[]") or "[]")
@@ -189,10 +192,6 @@ class PosterRenamerr:
     def match_assets_to_media(self):
         self.logger.info("Matching assets to media and collections, please wait...")
         all_media = []
-
-        import pprint
-
-        pprint.pprint(self.config.instances)
 
         for inst in self.config.instances:
             if isinstance(inst, str):
@@ -569,8 +568,14 @@ class PosterRenamerr:
 
             self.db.poster.clear()
             self.merge_assets()
+            instance_list = [
+                inst if isinstance(inst, dict) else inst
+                for inst in self.config.instances
+            ]
 
-            connector = Connector(self.db, self.config, self.logger)
+            connector = Connector(
+                self.db, self.config, self.logger, instance_list=instance_list
+            )
             connector.update_arr_database()
             connector.update_collections_database()
 

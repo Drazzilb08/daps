@@ -1,190 +1,250 @@
-import json
 import os
 import pathlib
-import sys
-from copy import deepcopy
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Union
 
 import yaml
+from pydantic import BaseModel, Field, ValidationError
 
-from util.helper import get_config_dir
-from util.logger import Logger
-
-TEMPLATE_PATH = pathlib.Path(__file__).parent / "template" / "config_template.json"
-config_dir = get_config_dir()
-config_file_path = os.path.join(config_dir, "config.yml")
-
-if not os.path.exists(config_file_path):
-    from json import load as _json_load
-
-    with open(TEMPLATE_PATH, "r") as tf:
-        default_cfg = _json_load(tf)
-    with open(config_file_path, "w") as wf:
-        yaml.safe_dump(default_cfg, wf, sort_keys=False)
+# ==== SECTION: MODELS FOR CONFIG STRUCTURE ====
 
 
-class Config:
-    """Manages loading and accessing configuration for a given module."""
-
-    def __init__(self, module_name: str):
-        config = load_user_config(config_file_path)
-        self.module_name = module_name
-
-        if module_name == "schedule" and isinstance(config.get("schedule"), dict):
-            for k, v in (config["schedule"] or {}).items():
-                setattr(self, k, v)
-
-            self.notifications = (config.get("notifications", {}) or {}).get(
-                "schedule", {}
-            ) or {}
-            return
-
-        mod_cfg = config.get(module_name, {}) or {}
-        for k, v in mod_cfg.items():
-            setattr(self, k, v)
-        self.instances_config = config.get("instances", {})
-        self.notifications = (config.get("notifications", {}) or {}).get(
-            module_name, {}
-        ) or {}
-
-    @property
-    def data(self):
-        config = load_user_config(config_file_path)
-        if self.module_name == "schedule":
-            return config.get("schedule", {})
-        else:
-            return config.get(self.module_name, {})
+class GDriveListEntry(BaseModel):
+    id: Optional[str] = ""
+    location: Optional[str] = ""
+    name: Optional[str] = ""
 
 
-def load_user_config(path: str) -> Dict[str, Any]:
-    """
-    Load YAML configuration from the specified file path.
-
-    Args:
-        path (str): Path to the YAML configuration file.
-
-    Returns:
-        dict: Parsed configuration dictionary, or empty dict if file is missing or invalid.
-    """
-    try:
-        with open(path, "r") as f:
-            raw = f.read()
-        data = yaml.safe_load(raw)
-        return data or {}
-    except FileNotFoundError:
-        sys.stderr.write("[CONFIG] config file not found\n")
-        return {}
-    except yaml.YAMLError as e:
-        sys.stderr.write(f"[CONFIG] Error parsing config file: {e}\n")
-        print(f"Error parsing config file: {e}")
-        return {}
+class SyncGDriveToken(BaseModel):
+    access_token: Optional[str] = ""
+    token_type: Optional[str] = ""
+    refresh_token: Optional[str] = ""
+    expiry: Optional[str] = ""
 
 
-def _reconcile_config_data(
-    template_data: Dict[str, Any], user_data: Dict[str, Any]
-) -> Tuple[Dict[str, Any], List[str], List[str]]:
-    """
-    Recursively reconcile user configuration with a template.
-
-    Args:
-        template_data (dict): Template configuration dictionary.
-        user_data (dict): User configuration dictionary.
-
-    Returns:
-        Tuple containing reconciled dictionary, list of added keys, and list of removed keys.
-    """
-    reconciled_dict: Dict[str, Any] = {}
-    added_keys: List[str] = []
-    removed_keys: List[str] = []
-
-    for key, template_value in template_data.items():
-        if key in user_data:
-            user_value = user_data[key]
-            if isinstance(template_value, dict):
-                if isinstance(user_value, dict):
-                    if not template_value:
-                        reconciled_dict[key] = deepcopy(user_value)
-                    else:
-                        rec, add, rem = _reconcile_config_data(
-                            template_value, user_value
-                        )
-                        reconciled_dict[key] = rec
-                        added_keys.extend([f"{key}.{k}" for k in add])
-                        removed_keys.extend([f"{key}.{k}" for k in rem])
-                else:
-                    reconciled_dict[key] = deepcopy(template_value)
-            else:
-                reconciled_dict[key] = user_value
-        else:
-            reconciled_dict[key] = deepcopy(template_value)
-            added_keys.append(key)
-
-    for key in user_data.keys():
-        if key not in template_data:
-            removed_keys.append(key)
-    return reconciled_dict, added_keys, removed_keys
+class SyncGDriveConfig(BaseModel):
+    log_level: str = "info"
+    client_id: str = ""
+    client_secret: str = ""
+    token: Union[str, SyncGDriveToken, None] = ""
+    gdrive_sa_location: str = ""
+    gdrive_list: List[GDriveListEntry] = Field(default_factory=list)
 
 
-def manage_config(logger: Logger) -> None:
-    """
-    Update user's config.yml based on config_template.json.
+class InstanceDetail(BaseModel):
+    url: Optional[str] = ""
+    api: Optional[str] = ""
 
-    Logs keys that are added or removed.
 
-    Args:
-        logger (Logger): Logger instance for logging messages.
-    """
-    global TEMPLATE_PATH, config_file_path
-    try:
-        with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
-            template_data = json.load(f)
-    except FileNotFoundError:
-        logger.error(f"Template configuration file not found at {TEMPLATE_PATH}")
-        return
-    except json.JSONDecodeError as e:
-        logger.error(
-            f"Could not parse template configuration file {TEMPLATE_PATH}: {e}"
-        )
-        return
+class InstancesConfig(BaseModel):
+    radarr: Dict[str, InstanceDetail] = Field(default_factory=dict)
+    sonarr: Dict[str, InstanceDetail] = Field(default_factory=dict)
+    plex: Dict[str, InstanceDetail] = Field(default_factory=dict)
 
-    user_data: Dict[str, Any] = {}
-    if os.path.exists(config_file_path):
-        try:
-            with open(config_file_path, "r", encoding="utf-8") as f:
-                user_data = yaml.safe_load(f) or {}
-        except yaml.YAMLError as e:
-            logger.error(
-                f"Could not parse user configuration file {config_file_path}: {e}"
-            )
-            logger.warning(
-                "Proceeding with an empty user configuration for reconciliation."
-            )
-    if not isinstance(user_data, dict):
-        logger.warning(
-            f"User configuration at {config_file_path} is not a dictionary. Treating as empty."
-        )
-        user_data = {}
 
-    reconciled_data, added_keys, removed_keys = _reconcile_config_data(
-        template_data, user_data
+class PosterRenamerrPlexInstance(BaseModel):
+    library_names: List[str] = Field(default_factory=list)
+    add_posters: Optional[bool] = False
+
+
+class PosterRenamerrConfig(BaseModel):
+    log_level: str = "info"
+    dry_run: bool = False
+    sync_posters: bool = False
+    action_type: str = "copy"
+    asset_folders: bool = False
+    print_only_renames: bool = False
+    run_border_replacerr: bool = False
+    incremental_border_replacerr: bool = False
+    run_cleanarr: bool = False
+    report_unmatched_assets: bool = False
+    source_dirs: List[str] = Field(default_factory=list)
+    destination_dir: str = ""
+    instances: List[Union[str, Dict[str, PosterRenamerrPlexInstance]]] = Field(
+        default_factory=list
     )
 
+
+class BorderHoliday(BaseModel):
+    name: str
+    schedule: str
+    colors: List[str] = Field(default_factory=list)
+
+
+class BorderReplacerrConfig(BaseModel):
+    log_level: str = "info"
+    dry_run: bool = False
+    source_dirs: List[str] = Field(default_factory=list)
+    destination_dir: str = ""
+    border_width: int = 26
+    skip: bool = False
+    exclusion_list: Optional[List[str]] = None
+    border_colors: List[str] = Field(default_factory=list)
+    holidays: List[BorderHoliday] = Field(default_factory=list)
+
+
+class UpgradinatorrInstance(BaseModel):
+    instance: str = ""
+    count: int = 0
+    tag_name: str = ""
+    ignore_tag: str = ""
+    unattended: bool = False
+    season_monitored_threshold: Optional[float] = None
+
+
+class UpgradinatorrConfig(BaseModel):
+    log_level: str = "info"
+    dry_run: bool = False
+    instances_list: List[UpgradinatorrInstance] = Field(default_factory=list)
+
+
+class RenameinatorrConfig(BaseModel):
+    log_level: str = "info"
+    dry_run: bool = False
+    rename_folders: bool = True
+    count: Union[int, str] = 100
+    radarr_count: int = 0
+    sonarr_count: int = 0
+    tag_name: str = ""
+    ignore_tags: str = ""
+    enable_batching: bool = False
+    instances: List[str] = Field(default_factory=list)
+
+
+class NohlSourceDir(BaseModel):
+    path: str
+    mode: str
+
+
+class NohlConfig(BaseModel):
+    log_level: str = "info"
+    dry_run: bool = False
+    searches: int = 10
+    print_files: bool = False
+    source_dirs: List[Union[str, NohlSourceDir]] = Field(default_factory=list)
+    exclude_profiles: List[str] = Field(default_factory=list)
+    exclude_movies: List[str] = Field(default_factory=list)
+    exclude_series: List[str] = Field(default_factory=list)
+    instances: List[str] = Field(default_factory=list)
+
+
+class LabelarrPlexInstance(BaseModel):
+    instance: str = ""
+    library_names: List[str] = Field(default_factory=list)
+
+
+class LabelarrMapping(BaseModel):
+    app_instance: str = ""
+    labels: Union[List[str], str] = Field(default_factory=list)
+    plex_instances: List[LabelarrPlexInstance] = Field(default_factory=list)
+
+
+class LabelarrConfig(BaseModel):
+    log_level: str = "info"
+    dry_run: bool = False
+    mappings: List[LabelarrMapping] = Field(default_factory=list)
+
+
+class HealthCheckarrConfig(BaseModel):
+    log_level: str = "info"
+    dry_run: bool = False
+    instances: Optional[List[str]] = None
+
+
+class JduparrConfig(BaseModel):
+    log_level: str = "info"
+    dry_run: bool = False
+    source_dirs: Optional[List[str]] = None
+
+
+class UserInterfaceConfig(BaseModel):
+    theme: str = "dark"
+
+
+class GeneralConfig(BaseModel):
+    log_level: str = "info"
+    update_notifications: bool = False
+
+
+class UnmatchedAssetsConfig(BaseModel):
+    log_level: str = "info"
+    dry_run: bool = False
+    ignore_folders: List[str] = Field(default_factory=list)
+    ignore_profles: List[str] = Field(default_factory=list)
+    ignore_titles: List[str] = Field(default_factory=list)
+    ignore_tags: List[str] = Field(default_factory=list)
+    instances: List[str] = Field(default_factory=list)
+
+
+# Notifications is a dict of module_name to dicts (arbitrary structure, so keep Any)
+class ConfigNotifications(BaseModel):
+    poster_renamerr: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    poster_cleanarr: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    unmatched_assets: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    health_checkarr: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    labelarr: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    upgradinatorr: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    renameinatorr: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    nohl: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    jduparr: Optional[Dict[str, Any]] = Field(default_factory=dict)
+    main: Optional[Dict[str, Any]] = Field(default_factory=dict)
+
+
+# ==== ROOT CONFIG MODEL ====
+
+
+class DapsConfig(BaseModel):
+    schedule: Dict[str, Any] = Field(default_factory=dict)
+    instances: InstancesConfig = Field(default_factory=InstancesConfig)
+    notifications: ConfigNotifications = Field(default_factory=ConfigNotifications)
+    sync_gdrive: SyncGDriveConfig = Field(default_factory=SyncGDriveConfig)
+    unmatched_assets: UnmatchedAssetsConfig = Field(
+        default_factory=UnmatchedAssetsConfig
+    )
+    poster_renamerr: PosterRenamerrConfig = Field(default_factory=PosterRenamerrConfig)
+    border_replacerr: BorderReplacerrConfig = Field(
+        default_factory=BorderReplacerrConfig
+    )
+    upgradinatorr: UpgradinatorrConfig = Field(default_factory=UpgradinatorrConfig)
+    renameinatorr: RenameinatorrConfig = Field(default_factory=RenameinatorrConfig)
+    nohl: NohlConfig = Field(default_factory=NohlConfig)
+    labelarr: LabelarrConfig = Field(default_factory=LabelarrConfig)
+    health_checkarr: HealthCheckarrConfig = Field(default_factory=HealthCheckarrConfig)
+    jduparr: JduparrConfig = Field(default_factory=JduparrConfig)
+    user_interface: UserInterfaceConfig = Field(default_factory=UserInterfaceConfig)
+    general: GeneralConfig = Field(default_factory=GeneralConfig)
+
+
+# ==== CONFIG LOADER ====
+
+
+def get_config_path() -> str:
+    config_dir = os.environ.get("DAPS_CONFIG_DIR") or str(
+        pathlib.Path(__file__).parent.parent / "config"
+    )
+    config_file_path = os.path.join(config_dir, "config.yml")
+    return config_file_path
+
+
+def load_config(path: Optional[str] = None) -> DapsConfig:
+    path = path or get_config_path()
+    with open(path, "r") as f:
+        raw = yaml.safe_load(f) or {}
     try:
-        with open(config_file_path, "w", encoding="utf-8") as f:
-            yaml.safe_dump(
-                reconciled_data,
-                f,
-                sort_keys=False,
-                indent=2,
-                default_flow_style=False,
-                allow_unicode=True,
-            )
-        logger.info(
-            f"Configuration file {config_file_path} updated successfully based on template."
-        )
-        if added_keys:
-            logger.info(f"Keys ADDED to config: {added_keys}")
-        if removed_keys:
-            logger.info(f"Keys REMOVED from config: {removed_keys}")
-    except IOError as e:
-        logger.error(f"Could not write to configuration file {config_file_path}: {e}")
+        # Pydantic v2
+        return DapsConfig.model_validate(raw)
+    except ValidationError as e:
+        print("Config validation error:", e)
+        raise
+
+
+def save_config(config: DapsConfig, path: Optional[str] = None):
+    path = path or get_config_path()
+    with open(path, "w") as f:
+        yaml.safe_dump(config.model_dump(mode="python"), f, sort_keys=False)
+
+
+# ==== USAGE ====
+# cfg = load_config()  # Optionally: load_config("/your/path/config.yml")
+# print(cfg.poster_renamerr.log_level)
+# print(cfg.instances.plex["plex_1"].url)
+# save_config(cfg)

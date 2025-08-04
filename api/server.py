@@ -15,7 +15,7 @@ def start_web_server(logger: Any, orchestrator=None) -> None:
       orchestrator: Optional orchestrator instance to store in app state.
     """
     app.state.logger = logger
-    log = logger.get_adapter({"source": "web"})
+    log = logger.get_adapter("web")
     if orchestrator is not None:
         app.state.orchestrator = orchestrator
 

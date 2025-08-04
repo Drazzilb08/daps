@@ -1,29 +1,23 @@
 import copy
-from typing import Any, Dict
+from typing import Any
 
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import JSONResponse
 
-from util.config import config_file_path
-from util.helper import redact_apis
+from util.config import DapsConfig, load_config, save_config
+from util.helper import dict_diff
 
 
-def get_config() -> Dict[str, Any]:
-    import yaml
-
-    with open(config_file_path, "r") as f:
-        return yaml.safe_load(f)
+def get_config() -> DapsConfig:
+    return load_config()
 
 
-def save_config_dict(cfg: Dict[str, Any]) -> None:
-    import yaml
-
-    with open(config_file_path, "w") as f:
-        yaml.safe_dump(cfg, f, sort_keys=False)
+def save_config_model(cfg: DapsConfig) -> None:
+    save_config(cfg)
 
 
 def get_logger(request: Request, source="WEB") -> Any:
-    return request.app.state.logger.get_adapter({"source": source})
+    return request.app.state.logger.get_adapter(source)
 
 
 router = APIRouter()
@@ -31,49 +25,47 @@ router = APIRouter()
 
 @router.get("/api/config")
 async def get_config_route(
-    config: Dict[str, Any] = Depends(get_config),
+    config: DapsConfig = Depends(get_config),
     logger: Any = Depends(get_logger),
     section: str = Query(None, description="Optional config section"),
-) -> Dict[str, Any]:
-    """Returns the current configuration or a specific section."""
+):
     if logger:
         logger.debug(f"Serving GET /api/config section={section!r}")
     if section:
-        if section in config:
-            return {section: config[section]}
-
+        data = config.model_dump(mode="python")
+        if section in data:
+            return {section: data[section]}
         return JSONResponse(
             status_code=404, content={"error": f"Section '{section}' not found"}
         )
-    return config
+    return config.model_dump(mode="python")
 
 
 @router.post("/api/config")
 async def update_config_route(
     request: Request, logger: Any = Depends(get_logger)
 ) -> Any:
-    """
-    Updates the configuration file with provided values.
-    Replaces whole sections as sent from frontend.
-    """
     try:
         incoming = await request.json()
         incoming_copy = copy.deepcopy(incoming)
-        if "instances" in incoming_copy:
-            redact_apis(incoming_copy["instances"])
         logger.debug("Serving POST /api/config with payload: %s", incoming_copy)
 
-        current_config = get_config()
-
-        for section in ["schedule", "instances", "notifications"]:
-            if section in incoming:
-                current_config[section] = incoming[section]
+        current_config = load_config()
+        config_dict = current_config.model_dump(mode="python")
 
         for k, v in incoming.items():
-            if k not in ("schedule", "instances", "notifications"):
-                current_config[k] = v
+            config_dict[k] = v
 
-        save_config_dict(current_config)
+        old_config = current_config.model_dump(mode="python")
+        new_config = config_dict
+
+        diffs = dict_diff(old_config, new_config)
+        for path, old, new in diffs:
+            logger = logger.get_adapter("CONFIG_UPDATE")
+            logger.debug(f"Updated: {path} | old={old!r} | new={new!r}")
+
+        updated_config = DapsConfig.model_validate(config_dict)
+        save_config(updated_config)
         if logger:
             logger.info("Config entries updated")
         return {"status": "success"}

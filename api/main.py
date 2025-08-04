@@ -78,7 +78,7 @@ app.mount(
 
 
 def get_logger(request: Request, source="WEB") -> Any:
-    return request.app.state.logger.get_adapter({"source": source})
+    return request.app.state.logger.get_adapter(source)
 
 
 @app.exception_handler(Exception)

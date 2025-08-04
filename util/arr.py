@@ -229,6 +229,24 @@ class BaseARRClient:
                     self._handle_request_exception(method, endpoint, ex, response, json)
         return None
 
+    def get_tag_id_from_name(self, tag_name: str) -> int:
+        """
+        Retrieve a tag ID by its name, create if not exists.
+
+        Args:
+            tag_name (str): Tag name.
+        Returns:
+            int: Tag ID.
+        """
+        all_tags = self.get_all_tags() or []
+        tag_name = tag_name.lower()
+        for tag in all_tags:
+            if tag["label"] == tag_name:
+                tag_id = tag["id"]
+                return tag_id
+        tag_id = self.create_tag(tag_name)
+        return tag_id
+
     def _handle_request_exception(
         self,
         method: str,
@@ -542,7 +560,7 @@ class RadarrClient(BaseARRClient):
         endpoint = f"{self.url}/api/v3/moviefile/{media_id}"
         return self.make_delete_request(endpoint)
 
-    def get_all_media(self) -> List[Dict[str, Any]]:
+    def get_all_media(self, include_episode: bool = False) -> List[Dict[str, Any]]:
         items = self.get_media()
         tags = self.get_all_tags() or []
         return [
@@ -873,11 +891,25 @@ class SonarrClient(BaseARRClient):
         endpoint = f"{self.url}/api/v3/series/{media_id}"
         return self.make_delete_request(endpoint)
 
-    def get_all_media(self) -> List[Dict[str, Any]]:
+    def get_all_media(self, include_episode: bool = False) -> List[Dict[str, Any]]:
         items = self.get_media()
         tags = self.get_all_tags() or []
+        # Only for Sonarr, we can optionally pull episode data for each season:
+        episode_lookup = None
+        if include_episode:
+            # Define a closure to fetch episodes for a series+season
+            def episode_lookup(media_id, season_number):
+                return self.get_episode_data_by_season(media_id, season_number)
+
         return [
-            normalize_arr_media(item, tags, arr_type="sonarr") for item in items or []
+            normalize_arr_media(
+                item,
+                tags,
+                arr_type="sonarr",
+                include_episode=include_episode,
+                episode_lookup=episode_lookup,
+            )
+            for item in items or []
         ]
 
     def refresh_queue(self) -> Any:
@@ -920,7 +952,7 @@ def create_arr_client(
         Optional[Union[RadarrClient, SonarrClient]]: The client or None on failure.
     """
 
-    logger = logger.get_adapter({"source": "ARR"})
+    logger = logger.get_adapter("ARR")
 
     class SilentLogger:
         def debug(self, *args, **kwargs):

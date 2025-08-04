@@ -2,7 +2,7 @@ import argparse
 import os
 import sys
 
-from util.config import Config, manage_config
+from util.config import DapsConfig, load_config
 from util.logger import Logger
 from util.orchestrator import DapsOrchestrator
 from util.version import get_version
@@ -21,10 +21,18 @@ def parse_args():
 
 def main():
     args = parse_args()
+    logger = None  # for safe fallback
+
+    try:
+        config: DapsConfig = load_config()
+    except Exception as e:
+        print(f"[DAPS] ERROR loading config: {e}", file=sys.stderr)
+        sys.exit(1)
+
     if args.modules:
         os.environ["LOG_TO_CONSOLE"] = "true"
         try:
-            orchestrator = DapsOrchestrator(None)
+            orchestrator = DapsOrchestrator(logger=None, config=config)
             orchestrator.run(args)
         except Exception as e:
             import traceback
@@ -36,13 +44,10 @@ def main():
     else:
         os.environ["LOG_TO_CONSOLE"] = "false"
         try:
-            main_config = Config("general")
-            logger = Logger(
-                getattr(main_config, "log_level", "INFO"), main_config.module_name
-            )
-            config_logger = logger.get_adapter({"source": "CONFIG"})
-            manage_config(config_logger)
-            orchestrator = DapsOrchestrator(logger)
+            # Use config.general for log_level, fallback to INFO if missing
+            log_level = getattr(config.general, "log_level", "INFO")
+            logger = Logger(log_level, "general")
+            orchestrator = DapsOrchestrator(logger=logger, config=config)
             orchestrator.run(args)
         except Exception as e:
             import traceback
@@ -51,10 +56,7 @@ def main():
             print(msg, file=sys.stderr)
             traceback.print_exc()
             if not logger:
-                fallback_module = "general"
-                if main_config and hasattr(main_config, "module_name"):
-                    fallback_module = main_config.module_name
-                logger = Logger("INFO", fallback_module)
+                logger = Logger("INFO", "general")
             logger.error(msg, exc_info=True)
             sys.exit(1)
 

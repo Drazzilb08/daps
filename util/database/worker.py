@@ -45,7 +45,7 @@ class DBWorker(DatabaseBase):
         job_type_filter: str = None,
     ):
         log = (
-            self.logger.get_adapter({"source": f"WORKER:{self.worker_name}"})
+            self.logger.get_adapter(f"WORKER:{self.worker_name}")
             if self.logger
             else None
         )
@@ -142,7 +142,7 @@ class DBWorker(DatabaseBase):
                     job_type = row["type"]
         except Exception:
             pass
-        log = self.logger.get_adapter({"source": "WORKER"}) if self.logger else None
+        log = self.logger.get_adapter("WORKER") if self.logger else None
         warning_msg = (
             f"Job ID {job_id} (type={job_type}) marked as FAILED after max attempts. "
             "Manual intervention may be required."
@@ -280,7 +280,7 @@ class DBWorker(DatabaseBase):
         process_fn: Callable[[Dict[str, Any]], None],
         job_type_filter: str = None,
     ):
-        log = self.logger.get_adapter({"source": "WORKER"}) if self.logger else None
+        log = self.logger.get_adapter("WORKER") if self.logger else None
         with self.conn:
             reset = self.conn.execute(
                 f"UPDATE {table_name} SET status='pending' WHERE status='running'"
@@ -322,7 +322,7 @@ class DBWorker(DatabaseBase):
             )
 
     def stop(self):
-        log = self.logger.get_adapter({"source": "WORKER"}) if self.logger else None
+        log = self.logger.get_adapter("WORKER") if self.logger else None
         self.running = False
         self._cleanup_running = False
         for t in self._threads:
@@ -354,7 +354,7 @@ class DBWorker(DatabaseBase):
                     f"DELETE FROM {table_name} WHERE status IN ('done', 'error') AND received_at < ?",
                     (cutoff,),
                 ).rowcount
-            log = self.logger.get_adapter({"source": "WORKER"}) if self.logger else None
+            log = self.logger.get_adapter("WORKER") if self.logger else None
             if log:
                 log.info(
                     f"Removed {deleted} jobs from '{table_name}' older than {days} days"
@@ -382,7 +382,7 @@ class DBWorker(DatabaseBase):
         Runs cleanup_jobs every `interval` seconds. Defaults to once per hour.
         """
         while getattr(self, "_cleanup_running", False):
-            log = self.logger.get_adapter({"source": "WORKER"}) if self.logger else None
+            log = self.logger.get_adapter("WORKER") if self.logger else None
             try:
                 deleted_result = self.cleanup_jobs(table_name, days=days)
                 if log and deleted_result["success"] and deleted_result["deleted"] > 0:
@@ -433,7 +433,7 @@ def process_job(job, logger):
     payload = json.loads(job.get("payload", "{}"))
     start_time = time.time()
 
-    log = logger.get_adapter({"source": "WORKER"}) if logger else None
+    log = logger.get_adapter("WORKER") if logger else None
     if log:
         log.debug(f"[JOB:{job_id}] Starting job type={job_type}")
     result = {"status": 500, "success": False, "message": "Unknown error"}

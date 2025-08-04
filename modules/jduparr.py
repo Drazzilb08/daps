@@ -2,119 +2,107 @@ import os
 import subprocess
 import sys
 
-from util.config import Config
+from util.config import DapsConfig, load_config
 from util.helper import create_table, print_settings
 from util.logger import Logger
 from util.notification import NotificationManager
 
 
-def print_output(output: list[dict], logger: Logger) -> None:
-    """
-    Print the results of the duplicate file search and linking process.
+class Jduparr:
+    def __init__(self, logger: Logger = None, config: DapsConfig = None):
+        self.full_config = config or load_config()
+        self.config = self.full_config.jduparr
+        self.logger = logger or Logger(self.config.log_level, "jduparr")
 
-    Args:
-        output (list[dict]): List of dictionaries containing path, message, files, and counts.
-        logger (Logger): Logger instance to output messages.
-    """
-    count = 0
-    for item in output:
-        path = item.get("source_dir")
-        field_message = item.get("field_message")
-        files = item.get("output")
-        sub_count = item.get("sub_count")
+    def print_output(self, output: list[dict]) -> None:
+        count = 0
+        for item in output:
+            path = item["source_dir"]
+            field_message = item["field_message"]
+            files = item["output"]
+            sub_count = item["sub_count"]
 
-        logger.info(f"Findings for path: {path}")
-        logger.info(f"\t{field_message}")
-        for i in files:
-            count += 1
-            logger.info(f"\t\t{i}")
-        count += sub_count
-        logger.info(
-            f"\tTotal items for '{os.path.basename(os.path.normpath(path))}': {sub_count}"
-        )
-    logger.info(f"Total items relinked: {count}")
-
-
-def main() -> None:
-    """
-    Main execution function for identifying and hardlinking duplicate media files using jdupes.
-
-    Args:
-        config (Config): Configuration object containing source directories, logging, and other settings.
-
-    Returns:
-        None
-    """
-    config = Config("jduparr")
-    logger = Logger(getattr(config, "log_level", "INFO"), config.module_name)
-    results = None
-    try:
-        # If dry run, display a notice table
-        if config.dry_run:
-            table = [["Dry Run"], ["NO CHANGES WILL BE MADE"]]
-            logger.info(create_table(table))
-
-        output = []
-
-        # Iterate over each source directory to find duplicates
-        if not config.source_dirs:
-            logger.error(
-                f"No source directories provided in config: {config.source_dirs}"
+            self.logger.info(f"Findings for path: {path}")
+            self.logger.info(f"\t{field_message}")
+            for i in files:
+                count += 1
+                self.logger.info(f"\t\t{i}")
+            count += sub_count
+            self.logger.info(
+                f"\tTotal items for '{os.path.basename(os.path.normpath(path))}': {sub_count}"
             )
-            return
-        for path in config.source_dirs:
-            if getattr(config, "log_level", "INFO").lower() == "debug":
-                print_settings(logger, config)
+        self.logger.info(f"Total items relinked: {count}")
 
-            if not os.path.isdir(path):
-                logger.error(f"ERROR: path does not exist: {path}")
+    def run(self) -> None:
+        try:
+            if self.config.dry_run:
+                table = [["Dry Run"], ["NO CHANGES WILL BE MADE"]]
+                self.logger.info(create_table(table))
+
+            output = []
+
+            # Expect self.config.source_dirs to always be present
+            if not self.config.source_dirs:
+                self.logger.error(
+                    f"No source directories provided in config: {self.config.source_dirs}"
+                )
                 return
 
-            # Run jdupes to find duplicate media files with specified extensions
-            result = subprocess.getoutput(
-                f"jdupes -r -M -X onlyext:mp4,mkv,avi '{path}' 2>/dev/null"
-            )
+            for path in self.config.source_dirs:
+                if self.config.log_level.lower() == "debug":
+                    print_settings(self.logger, self.config)
 
-            # If not dry run and duplicates found, hardlink duplicates
-            if not config.dry_run:
-                if "No duplicates found." not in result:
-                    subprocess.run(
-                        f"jdupes -r -L -X onlyext:mp4,mkv,avi '{path}' 2>/dev/null",
-                        shell=True,
+                if not os.path.isdir(path):
+                    self.logger.error(f"ERROR: path does not exist: {path}")
+                    return
+
+                # Find duplicate media files with jdupes
+                result = subprocess.getoutput(
+                    f"jdupes -r -M -X onlyext:mp4,mkv,avi '{path}' 2>/dev/null"
+                )
+
+                # Hardlink duplicates if not dry run and duplicates found
+                if not self.config.dry_run:
+                    if "No duplicates found." not in result:
+                        subprocess.run(
+                            f"jdupes -r -L -X onlyext:mp4,mkv,avi '{path}' 2>/dev/null",
+                            shell=True,
+                        )
+
+                # Parse duplicate files from output
+                parsed_files = sorted(
+                    set(
+                        line.split("/")[-1]
+                        for line in result.splitlines()
+                        if "/" in line
                     )
+                )
+                field_message = (
+                    "✅ No unlinked files discovered..."
+                    if not parsed_files
+                    else "❌ Unlinked files discovered..."
+                )
+                sub_count = len(parsed_files)
 
-            # Parse filenames from jdupes output
-            parsed_files = sorted(
-                set(line.split("/")[-1] for line in result.splitlines() if "/" in line)
+                output_data = {
+                    "source_dir": path,
+                    "field_message": field_message,
+                    "output": parsed_files,
+                    "sub_count": sub_count,
+                }
+                output.append(output_data)
+
+            # Print summarized output and send notification
+            self.print_output(output)
+            manager = NotificationManager(
+                self.config, self.logger, module_name="jduparr"
             )
-            field_message = (
-                "✅ No unlinked files discovered..."
-                if not parsed_files
-                else "❌ Unlinked files discovered..."
-            )
-            sub_count = len(parsed_files)
+            manager.send_notification(output)
 
-            output_data = {
-                "source_dir": path,
-                "field_message": field_message,
-                "output": parsed_files,
-                "sub_count": sub_count,
-            }
-            output.append(output_data)
-        if results:
-            logger.debug(f"jdupes output: {result}")
-            logger.debug(f"Parsed log: {parsed_files}")
-
-        # Print summarized output and send notification
-        print_output(output, logger)
-        manager = NotificationManager(config, logger, module_name="health_checkarr")
-        manager.send_notification(output)
-
-    except KeyboardInterrupt:
-        print("Keyboard Interrupt detected. Exiting...")
-        sys.exit()
-    except Exception:
-        logger.error("An error occurred:", exc_info=True)
-    finally:
-        # Log outro message with run time
-        logger.log_outro()
+        except KeyboardInterrupt:
+            print("Keyboard Interrupt detected. Exiting...")
+            sys.exit()
+        except Exception:
+            self.logger.error("An error occurred:", exc_info=True)
+        finally:
+            self.logger.log_outro()

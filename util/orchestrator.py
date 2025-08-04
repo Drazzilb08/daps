@@ -9,17 +9,18 @@ from dateutil import tz
 from prettytable import PrettyTable
 
 from modules import MODULES
-from util.config import Config
+from util.config import DapsConfig
 from util.database import DapsDB
 
 
-def run_and_track(target_func, module_name, origin):
+def run_and_track(module_class, module_name, origin, config, logger):
     db = DapsDB()
     start_time = time.monotonic()
     success = False
     message = ""
     try:
-        target_func()
+        mod = module_class(logger=logger, config=config)
+        mod.run()
         success = True
         status = "success"
         message = "Completed successfully"
@@ -140,8 +141,9 @@ class DapsOrchestrator:
     Orchestrator class to manage running DAPS modules (CLI, schedule, web UI).
     """
 
-    def __init__(self, logger):
+    def __init__(self, logger, config: DapsConfig = None):
         self.logger = logger
+        self.config = config
         self.running: Dict[str, multiprocessing.Process] = {}
         self.db = DapsDB(logger=logger)
 
@@ -151,7 +153,7 @@ class DapsOrchestrator:
         and falls back to print if logger is None.
         """
         if self.logger:
-            adapter = self.logger.get_adapter({"source": source})
+            adapter = self.logger.get_adapter(source)
             log_func = getattr(adapter, level, None)
             if log_func:
                 log_func(msg, exc_info=exc_info, **kwargs)
@@ -182,7 +184,6 @@ class DapsOrchestrator:
             raise
 
     def run_cli_modules(self, modules):
-
         self._log("info", f"CLI mode: Running modules {modules}", source="orchestrator")
         try:
             for name in modules:
@@ -200,11 +201,9 @@ class DapsOrchestrator:
             raise
 
     def run_schedule(self):
-        schedule = Config("schedule").data
+        schedule = self.config.schedule
         self._log("info", "Starting scheduler loop...", source="scheduler")
-        log_adapter = (
-            self.logger.get_adapter({"source": "SCHEDULER"}) if self.logger else None
-        )
+        log_adapter = self.logger.get_adapter("SCHEDULER") if self.logger else None
         print_schedule_table(log_adapter, schedule)
         self._log("info", "Waiting for scheduled modules...", source="scheduler")
         start_time = time.monotonic()
@@ -213,7 +212,6 @@ class DapsOrchestrator:
                 self.tick(schedule)
                 time.sleep(5)
                 elapsed = int(time.monotonic() - start_time)
-
                 if elapsed % 60 == 0:
                     minutes = elapsed // 60
                     seconds = elapsed % 60
@@ -255,9 +253,7 @@ class DapsOrchestrator:
                     continue
 
                 log_adapter = (
-                    self.logger.get_adapter({"source": "scheduler"})
-                    if self.logger
-                    else None
+                    self.logger.get_adapter("scheduler") if self.logger else None
                 )
                 if check_schedule(name, sched, log_adapter):
                     self._log(
@@ -301,7 +297,6 @@ class DapsOrchestrator:
             )
 
     def start_web(self):
-
         try:
             from api.server import start_web_server
 
@@ -324,13 +319,21 @@ class DapsOrchestrator:
                 self._log("error", f"Unknown module: {name}", source=origin)
                 return None
 
-            target_func = MODULES[name]
+            module_class = MODULES[name]
             self._log("info", f"Launching module '{name}'...", source=origin)
 
             self.db.run_state.record_run_start(name, run_by=origin)
 
+            # Each class gets the correct sub-config and logger
+            from util.config import load_config
+
+            full_config = self.config or load_config()
+
+            # If the module expects the full config, pass it, else just the sub-config
+            # We'll always pass full_config as 'config', the module __init__ can decide how to handle it.
             proc = multiprocessing.Process(
-                target=run_and_track, args=(target_func, name, origin)
+                target=run_and_track,
+                args=(module_class, name, origin, full_config, self.logger),
             )
             proc.start()
             self._log(

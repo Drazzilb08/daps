@@ -7,7 +7,7 @@ from fastapi.responses import PlainTextResponse
 
 
 def get_logger(request: Request, source="WEB") -> Any:
-    return request.app.state.logger.get_adapter({"source": source})
+    return request.app.state.logger.get_adapter(source)
 
 
 if os.environ.get("DOCKER_ENV"):

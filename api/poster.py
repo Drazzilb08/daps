@@ -15,11 +15,11 @@ ASSET_DIR = "web/static/assets"
 
 
 def get_webhook_logger(request: Request) -> Any:
-    return request.app.state.logger.get_adapter({"source": "WEBHOOK"})
+    return request.app.state.logger.get_adapter("WEBHOOK")
 
 
 def get_web_logger(request: Request) -> Any:
-    return request.app.state.logger.get_adapter({"source": "WEB"})
+    return request.app.state.logger.get_adapter("WEB")
 
 
 @router.get("/api/matched-posters-stats")
@@ -31,7 +31,7 @@ async def matched_posters_stats(logger: Any = Depends(get_web_logger)):
 
 @router.get("/api/gdrive-stats")
 async def get_gdrive_stats(logger: Any = Depends(get_web_logger)):
-    logger = logger.get_adapter({"source": "GDriveStats"})
+    logger = logger.get_adapter("GDriveStats")
     syncer = SyncGDrive(logger=logger)
     syncer.refresh_all_poster_stats()
     db = DapsDB()
@@ -41,7 +41,7 @@ async def get_gdrive_stats(logger: Any = Depends(get_web_logger)):
 
 @router.get("/api/unmatched-stats")
 async def get_unmatched_stats(logger: Any = Depends(get_web_logger)):
-    logger = logger.get_adapter({"source": "UnmatchedStats"})
+    logger = logger.get_adapter("UnmatchedStats")
     unmatched = UnmatchedAssets(logger=logger)
     stats = unmatched.get_stats_adhoc()
     return {"success": True, "summary": stats["summary"]}

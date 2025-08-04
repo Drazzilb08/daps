@@ -1,11 +1,11 @@
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import requests
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from util.config import config_file_path
+from util.config import DapsConfig, load_config
 
 router = APIRouter()
 
@@ -20,43 +20,42 @@ class TestInstanceRequest(BaseModel):
 
 
 def get_logger(request: Request, source="WEB") -> Any:
-    return request.app.state.logger.get_adapter({"source": source})
+    return request.app.state.logger.get_adapter(source)
 
 
-def get_config() -> Dict[str, Any]:
-    import yaml
-
-    with open(config_file_path, "r") as f:
-        return yaml.safe_load(f)
+def get_config() -> DapsConfig:
+    return load_config()
 
 
 @router.get("/api/instances/", response_model=None)
 async def get_instances(
-    config: Dict[str, Any] = Depends(get_config), logger: any = Depends(get_logger)
+    config: DapsConfig = Depends(get_config), logger: any = Depends(get_logger)
 ) -> Any:
     """Returns dictionary Plex/Radarr/Sonarr instances"""
     try:
         logger.debug("Serving GET /api/instances")
-        return config.get("instances", {})
+        # Convert pydantic to dict for the response
+        return config.instances.model_dump(mode="python")
     except Exception as e:
         logger.error(f"Error in /api/instances: {e}")
+        return JSONResponse(status_code=500, content={"error": str(e)})
 
 
 @router.get("/api/plex/libraries", response_model=None)
 async def get_plex_libraries(
     instance: str,
-    config: Dict[str, Any] = Depends(get_config),
+    config: DapsConfig = Depends(get_config),
     logger: Any = Depends(get_logger),
 ) -> Any:
     """Returns library names for a specific Plex instance."""
     try:
-        plex_data = config.get("instances", {}).get("plex", {}).get(instance)
+        plex_data = config.instances.plex.get(instance)
         if not plex_data:
             return JSONResponse(
                 status_code=404, content={"error": "Plex instance not found"}
             )
-        base_url = plex_data.get("url")
-        token = plex_data.get("api")
+        base_url = plex_data.url
+        token = plex_data.api
         if not base_url or not token:
             return JSONResponse(
                 status_code=400, content={"error": "Missing Plex API credentials"}

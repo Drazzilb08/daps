@@ -6,8 +6,8 @@ import sys
 from datetime import datetime
 from typing import Any, Dict, List
 
-from util.config import Config
-from util.connector import update_client_databases, update_collections_database
+from util.config import DapsConfig, load_config
+from util.connector import Connector
 from util.constants import id_content_regex, season_number_regex, year_regex
 from util.database import DapsDB
 from util.helper import (
@@ -21,15 +21,14 @@ from util.helper import (
 )
 from util.logger import Logger
 from util.notification import NotificationManager
-from util.upload_posters import upload_posters
+from util.upload_posters import PosterUploader
 
 
 class PosterRenamerr:
-    def __init__(self, logger: Logger = None):
-        self.config = Config("poster_renamerr")
-        self.logger = logger or Logger(
-            getattr(self.config, "log_level", "INFO"), self.config.module_name
-        )
+    def __init__(self, logger: Logger = None, config: DapsConfig = None):
+        self.full_config = config or load_config()
+        self.config = self.full_config.poster_renamerr
+        self.logger = logger or Logger(self.config.log_level, "poster_renamerr")
         self.db = DapsDB()
 
     def ensure_destination_dir(self):
@@ -44,12 +43,11 @@ class PosterRenamerr:
             )
 
     def sync_posters(self):
-        if getattr(self.config, "sync_posters", False):
+        if self.config.sync_posters:
             self.logger.info("Running sync_gdrive")
             from modules.sync_gdrive import main as gdrive_main
-            from util.config import Config as SyncGDriveConfig
 
-            gdrive_config = SyncGDriveConfig("sync_gdrive").module_config
+            gdrive_config = self.full_config.sync_gdrive
             gdrive_main(gdrive_config)
             self.logger.info("Finished running sync_gdrive")
         else:
@@ -103,16 +101,13 @@ class PosterRenamerr:
                         break
 
         if not candidate:
-
             candidates = self.db.poster.get_candidates_by_prefix(title)
-
             all_titles = set()
             if normalized_title:
                 all_titles.add(normalized_title)
             all_titles.update({normalize_titles(t) for t in alt_titles if t})
 
             for cand in candidates:
-
                 cand_norm_title = cand.get("normalized_title", "")
                 cand_alt_titles = set(
                     json.loads(cand.get("normalized_alternate_titles", "[]") or "[]")
@@ -152,7 +147,6 @@ class PosterRenamerr:
 
         if asset_type == "show":
             if season_number is not None:
-
                 if matched and candidate:
                     self.logger.debug(
                         f"✓ Matched: show S{season_number}: {title} ({year}) <-> {candidate.get('title')} ({candidate.get('year')})"
@@ -162,7 +156,6 @@ class PosterRenamerr:
                         f"✗ No match: show S{season_number}: {title} ({year})"
                     )
             else:
-
                 if matched and candidate:
                     self.logger.debug(
                         f"✓ Matched: show main: {title} ({year}) <-> {candidate.get('title')} ({candidate.get('year')})"
@@ -179,7 +172,6 @@ class PosterRenamerr:
                 self.logger.debug(f"✗ No match: [collection] {title} ({year})")
 
         else:
-
             if matched and candidate:
                 self.logger.debug(
                     f"✓ Matched: {title} ({year}) <-> {candidate.get('title')} ({candidate.get('year')})"
@@ -198,6 +190,10 @@ class PosterRenamerr:
         self.logger.info("Matching assets to media and collections, please wait...")
         all_media = []
 
+        import pprint
+
+        pprint.pprint(self.config.instances)
+
         for inst in self.config.instances:
             if isinstance(inst, str):
                 instance_name = inst
@@ -206,7 +202,7 @@ class PosterRenamerr:
                     all_media.extend(media)
             elif isinstance(inst, dict):
                 for instance_name, params in inst.items():
-                    library_names = params.get("library_names", [])
+                    library_names = params.library_names
                     if library_names:
                         for library_name in library_names:
                             collections = (
@@ -246,10 +242,6 @@ class PosterRenamerr:
         self.logger.debug(f"{non_matches} non_matches")
 
     def rename_file(self, item: dict) -> dict:
-        """
-        Renames a single item and updates DB. Returns output dict for reporting.
-        """
-
         asset_type = item.get("asset_type")
         file = item.get("original_file") or item.get("file")
         folder = item.get("folder", item.get("media_folder", "")) or ""
@@ -258,7 +250,7 @@ class PosterRenamerr:
         season_number = item.get("season_number")
         config = self.config
 
-        if getattr(config, "asset_folders", False):
+        if config.asset_folders:
             dest_dir = os.path.join(config.destination_dir, folder)
             if (
                 not os.path.exists(dest_dir)
@@ -271,13 +263,13 @@ class PosterRenamerr:
 
         if asset_type == "show" and season_number is not None:
             season_str = str(season_number).zfill(2)
-            if getattr(config, "asset_folders", False):
+            if config.asset_folders:
                 new_file_name = f"Season{season_str}{file_extension}"
             else:
                 new_file_name = f"{folder}_Season{season_str}{file_extension}"
             new_file_path = os.path.join(dest_dir, new_file_name)
         else:
-            if getattr(config, "asset_folders", False):
+            if config.asset_folders:
                 new_file_name = f"poster{file_extension}"
             else:
                 new_file_name = f"{folder}{file_extension}"
@@ -309,7 +301,7 @@ class PosterRenamerr:
 
         messages = []
         discord_message = []
-        file_ops_enabled = not getattr(config, "run_border_replacerr", False)
+        file_ops_enabled = not config.run_border_replacerr
 
         if os.path.lexists(new_file_path):
             existing_file = os.path.join(dest_dir, new_file_name)
@@ -318,11 +310,11 @@ class PosterRenamerr:
                     messages.append(f"{file_name} -renamed-> {new_file_name}")
                     discord_message.append(f"{new_file_name}")
                 else:
-                    if not getattr(config, "print_only_renames", False):
+                    if not config.print_only_renames:
                         messages.append(f"{file_name} -not-renamed-> {new_file_name}")
                         discord_message.append(f"{new_file_name}")
                 if file_ops_enabled and not config.dry_run:
-                    if getattr(config, "action_type", None) in ["hardlink", "symlink"]:
+                    if config.action_type in ["hardlink", "symlink"]:
                         os.remove(new_file_path)
                     self.process_file(file, new_file_path, config.action_type)
         else:
@@ -330,7 +322,7 @@ class PosterRenamerr:
                 messages.append(f"{file_name} -renamed-> {new_file_name}")
                 discord_message.append(f"{new_file_name}")
             else:
-                if not getattr(config, "print_only_renames", False):
+                if not config.print_only_renames:
                     messages.append(f"{file_name} -not-renamed-> {new_file_name}")
                     discord_message.append(f"{new_file_name}")
             if file_ops_enabled and not config.dry_run:
@@ -347,9 +339,6 @@ class PosterRenamerr:
         }
 
     def get_matched_assets(self) -> list:
-        """
-        Gather all matched, unrenamed assets from both media and collections.
-        """
         matched_assets = []
         for inst in self.config.instances:
             if isinstance(inst, str):
@@ -362,7 +351,7 @@ class PosterRenamerr:
                         matched_assets.append(row)
             elif isinstance(inst, dict):
                 for instance_name, params in inst.items():
-                    library_names = params.get("library_names", [])
+                    library_names = params.library_names
                     if library_names:
                         for library_name in library_names:
                             for row in self.db.collection.get_by_instance_and_library(
@@ -376,9 +365,6 @@ class PosterRenamerr:
         return matched_assets
 
     def rename_files(self) -> tuple:
-        """
-        Renames all eligible assets using rename_file(). Returns output and manifest as before.
-        """
         output: Dict[str, List[Dict[str, Any]]] = {
             "collection": [],
             "movie": [],
@@ -445,9 +431,6 @@ class PosterRenamerr:
                     self.logger.info("")
 
     def _get_assets_files(self, source_dir: str):
-        """
-        Scan a directory for asset files and build a list of records with normalized and alternate titles.
-        """
         asset_records = []
         for root, dirs, files in os.walk(source_dir):
             for fname in files:
@@ -490,22 +473,11 @@ class PosterRenamerr:
         return asset_records
 
     def merge_assets(self, source_dirs=None, db=None, logger=None):
-        """
-        For each directory (low->high priority), scan assets and upsert them so that
-        higher priority assets overwrite lower priority ones in the DB.
-        This version deletes any previous matches (by ID or normalized title/year/season_number)
-        before inserting the new asset.
-
-        Args:
-            source_dirs (list, optional): Directories to scan. Defaults to self.config.source_dirs.
-            db (DapsDB, optional): Database to use. Defaults to self.db.
-            logger (Logger, optional): Logger to use. Defaults to self.logger.
-        """
         start_time = datetime.now()
         self.logger.info("Gathering all the posters, please wait...")
         db = db or self.db
         logger = logger or self.logger
-        source_dirs = source_dirs or getattr(self.config, "source_dirs", [])
+        source_dirs = source_dirs or self.config.source_dirs
 
         for src_idx, source_dir in enumerate(source_dirs):
             assets = self._get_assets_files(source_dir)
@@ -568,7 +540,9 @@ class PosterRenamerr:
         logger.debug(f"Merge run time: {formatted_duration}")
 
     def run_border_replacerr(self, manifest: List[int]):
-        from modules.border_replacerr import run_replacerr
+        from modules.border_replacerr import BorderReplacerr
+
+        border = BorderReplacerr(self.db, self.config, self.logger)
 
         self.logger.debug(
             "\nRunning border replacerr:\n"
@@ -576,12 +550,12 @@ class PosterRenamerr:
             f"  Collection assets to process: {len(manifest.get('collections_cache', []))}\n"
             f"  Total assets to process: {len(manifest.get('media_cache', [])) + len(manifest.get('collections_cache', []))}\n"
         )
-        run_replacerr(self.db, self.config, manifest, self.logger)
+        border.run(manifest)
         self.logger.info("Finished running border_replacerr.")
 
     def run(self):
         try:
-            if getattr(self.config, "log_level", "INFO") == "debug":
+            if self.config.log_level == "debug":
                 print_settings(self.logger, self.config)
 
             self.ensure_destination_dir()
@@ -596,10 +570,9 @@ class PosterRenamerr:
             self.db.poster.clear()
             self.merge_assets()
 
-            update_client_databases(
-                self.db, self.config, self.logger, max_age_hours=6, force_reindex=True
-            )
-            update_collections_database(self.db, self.config, self.logger)
+            connector = Connector(self.db, self.config, self.logger)
+            connector.update_arr_database()
+            connector.update_collections_database()
 
             self.match_assets_to_media()
             output, manifest = self.rename_files()
@@ -611,9 +584,7 @@ class PosterRenamerr:
                 report_unmatched_assets()
 
             if self.config.run_cleanarr:
-                cleanarr_logger = Logger(
-                    getattr(self.config, "log_level", "INFO"), "cleanarr"
-                )
+                cleanarr_logger = Logger(self.config.log_level, "cleanarr")
                 self.db.orphaned.handle_orphaned_posters(
                     cleanarr_logger, self.config.dry_run
                 )
@@ -621,12 +592,13 @@ class PosterRenamerr:
             if self.config.run_border_replacerr:
                 self.run_border_replacerr(manifest)
 
-            upload_posters(self.config, self.db, self.logger, manifest)
+            upld = PosterUploader(self.logger, manifest)
+            upld.upload_posters()
 
             if any(output.values()):
                 self.handle_output(output)
                 manager = NotificationManager(
-                    self.config, self.logger, module_name=self.config.module_name
+                    self.config, self.logger, module_name="poster_renamerr"
                 )
                 manager.send_notification(output)
 

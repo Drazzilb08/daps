@@ -89,7 +89,6 @@ export default function ModalFactory({
                         return; // Don't proceed, errors present
                     }
                 }
-                console.log('Button click args:', args);
                 handler({ ...args, btnId: btn.id, formData, closeModal });
             };
         }

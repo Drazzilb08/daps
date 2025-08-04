@@ -8,7 +8,7 @@ import time
 from shutil import which
 from typing import List
 
-from util.config import Config
+from util.config import DapsConfig, load_config
 from util.database import DapsDB
 from util.helper import print_settings
 from util.logger import Logger
@@ -23,11 +23,10 @@ except ImportError:
 
 
 class SyncGDrive:
-    def __init__(self, logger: Logger = None):
-        self.config = Config("sync_gdrive")
-        self.logger = logger or Logger(
-            getattr(self.config, "log_level", "INFO"), self.config.module_name
-        )
+    def __init__(self, logger: Logger = None, config: DapsConfig = None):
+        self.full_config = config or load_config()
+        self.config = self.full_config.sync_gdrive
+        self.logger = logger or Logger(self.config.log_level, "sync_gdrive")
         self.rclone_path = self.get_rclone_path()
         self.db = DapsDB()
 
@@ -167,8 +166,8 @@ class SyncGDrive:
             else [self.config.gdrive_list]
         )
         for sync_item in sync_list:
-            owner = sync_item.get("name", "")
-            sync_location = sync_item.get("location")
+            owner = sync_item.name
+            sync_location = sync_item.location
             file_count, size_bytes, last_updated = self.gather_folder_stats(
                 sync_location
             )
@@ -196,12 +195,11 @@ class SyncGDrive:
                 else [self.config.gdrive_list]
             )
             for sync_item in sync_list:
-                owner = sync_item.get("name", "")
+                owner = sync_item.name
                 if owner == gdrive_name:
-                    sync_location = sync_item.get("location")
-                    sync_id = sync_item.get("id")
+                    sync_location = sync_item.location
+                    sync_id = sync_item.id
                     self.sync_folder(sync_location, sync_id)
-                    # Optionally, refresh stats after sync
                     file_count, size_bytes, last_updated = self.gather_folder_stats(
                         sync_location
                     )
@@ -227,7 +225,7 @@ class SyncGDrive:
 
     def run(self):
         try:
-            if getattr(self.config, "log_level", "INFO").lower() == "debug":
+            if self.config.log_level.lower() == "debug":
                 print_settings(self.logger, self.config)
 
             sync_list: List[dict] = (
@@ -248,18 +246,18 @@ class SyncGDrive:
             self.ensure_remote()
 
             for sync_item in sync_list:
-                sync_location = sync_item.get("location")
-                sync_id = sync_item.get("id")
+                sync_location = sync_item.location
+                sync_id = sync_item.id
                 self.sync_folder(sync_location, sync_id)
 
                 # GATHER STATS AND UPSERT
                 file_count, size_bytes, last_updated = self.gather_folder_stats(
                     sync_location
                 )
-                owner = sync_item.get("name", "")  # Use 'name' as owner
+                owner = sync_item.name
                 self.db.stats.upsert_gdrive_stat(
                     location=sync_location,
-                    folder_name=owner,  # If you want to store owner as folder_name for now
+                    folder_name=owner,
                     owner=owner,
                     file_count=file_count,
                     size_bytes=size_bytes,
@@ -277,8 +275,3 @@ class SyncGDrive:
         finally:
             self.db.close_all()
             self.logger.log_outro()
-
-
-def main():
-    syncer = SyncGDrive()
-    syncer.run()

@@ -170,7 +170,7 @@ class WebhookService:
         instance_name, instance_type, instance_api, host, port, scheme = (
             self.find_instance()
         )
-        log = logger.get_adapter({"source": "WEBHOOK"})
+        log = logger.get_adapter("WEBHOOK")
         log.debug(f"Source: {scheme}://{host}:{port}")
 
         if not instance_name or not instance_api or not media_kind or media_id is None:
@@ -240,7 +240,7 @@ class WebhookService:
         }
 
     def upsert_media_items(self, item, asset_type, instance_type, instance_name):
-        log = self.logger.get_adapter({"source": "WEBHOOK"})
+        log = self.logger.get_adapter("WEBHOOK")
         log.debug(
             f"New asset '{item['title']}' ({asset_type}), {item.get('year')}, from {instance_name}"
         )
@@ -261,7 +261,7 @@ class WebhookService:
         try:
             from util.upload_posters import upload_posters
 
-            log = self.logger.get_adapter({"source": "RENAMERR_ADHOC"})
+            log = self.logger.get_adapter("RENAMERR_ADHOC")
 
             item_keys = self._extract_media_keys(process_result)
             item = self.db.media.get_by_keys(**item_keys)

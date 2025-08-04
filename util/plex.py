@@ -1,5 +1,7 @@
 import html
+import itertools
 import os
+import sys
 from typing import Any, Dict, List
 
 import plexapi
@@ -174,10 +176,10 @@ class PlexClient:
         container_start = 0
         container_size = plexapi.X_PLEX_CONTAINER_SIZE
         total_size = 1
+        spinner = itertools.cycle(["-", "\\", "|", "/"])  # A simple rotating spinner
+
         while total_size > len(all_entries) and container_start <= total_size:
-            logger.debug(
-                f"doing an iteration: total={total_size}, start={container_start}, size={container_size}"
-            )
+            # Your normal loading logic
             data = section._server.query(
                 key,
                 headers={
@@ -197,10 +199,15 @@ class PlexClient:
 
             all_entries.extend(subresults)
             container_start += container_size
-            logger.debug(
-                f"Loaded: {total_size if container_start > total_size else container_start}/{total_size}"
-            )
 
+            # --- Spinner/Status line ---
+            spin = next(spinner)
+            sys.stdout.write(
+                f"\r{spin} Loading: {len(all_entries)}/{total_size}           "
+            )
+            sys.stdout.flush()
+
+        print()  # Move to next line after done
         return all_entries
 
     def upload_poster(

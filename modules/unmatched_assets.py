@@ -1,16 +1,17 @@
 import sys
 
-from util.config import Config
+from util.config import DapsConfig, load_config
 from util.database import DapsDB
 from util.logger import Logger
 from util.notification import NotificationManager
 
 
 class UnmatchedAssets:
-    def __init__(self, logger: Logger = None):
-        self.config = Config("unmatched_assets")
+    def __init__(self, logger: Logger = None, config: DapsConfig = None):
+        self.full_config = config or load_config()
+        self.config = self.full_config.unmatched_assets
         self.logger = logger or Logger(
-            getattr(self.config, "log_level", "INFO"), self.config.module_name
+            getattr(self.config, "log_level", "INFO"), "unmatched_assets"
         )
 
         self.db = DapsDB()
@@ -315,7 +316,6 @@ class UnmatchedAssets:
             )
 
         self.filter_by_instance()
-
         self.filter_by_config()
         unmatched, all_media_grouped, all_collections_grouped = self.group_assets()
         summary = self.calculate_stats(
@@ -465,8 +465,14 @@ class UnmatchedAssets:
         output = self.build_output()
         manager.send_notification(output)
 
-
-def main():
-    unmatched = UnmatchedAssets()
-    unmatched.print_stats()
-    unmatched.send_notification()
+    def run(self):
+        try:
+            self.print_stats()
+        except KeyboardInterrupt:
+            print("Keyboard Interrupt detected. Exiting...")
+            sys.exit()
+        except Exception:
+            self.logger.error("\n\nAn error occurred:\n", exc_info=True)
+        finally:
+            self.db.close_all()
+            self.logger.log_outro()

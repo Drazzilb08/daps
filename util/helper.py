@@ -49,17 +49,20 @@ def print_json(data: Any, logger: Any, module_name: str, type_: str) -> None:
 
 
 def print_settings(
-    logger: Any, module_config: SimpleNamespace
-) -> None:  # want to fix this to be Config, but it's a circular import issue right now
+    logger: Any, module_config: Any  # Accept any config-like object
+) -> None:
     """Print sanitized settings from module_config in YAML format.
 
     Args:
-        logger (Any): Any instance.
+        logger (Any): Logger instance (must provide redact_sensitive_info if possible).
         module_config (Any): Configuration object.
     """
     logger.debug(create_table([["Script Settings"]]))
 
     def ns_to_dict(obj: Any) -> Any:
+        # Convert all namespaces and models to dicts, recursively.
+        if hasattr(obj, "model_dump"):
+            return obj.model_dump(mode="python")
         if isinstance(obj, SimpleNamespace):
             return {k: ns_to_dict(v) for k, v in vars(obj).items()}
         if isinstance(obj, dict):
@@ -75,28 +78,36 @@ def print_settings(
     }
     sanitized = copy.deepcopy(ns_to_dict(raw))
 
-    def _redact(obj: Any) -> None:
+    # Recursively redact everything via logger's global redactor
+    def global_redact(obj: Any, parent_keys: list = None) -> Any:
+        parent_keys = parent_keys or []
         if isinstance(obj, dict):
-            for key, val in obj.items():
-                kl = key.lower()
-                if val is None:
-                    continue
-                if "password" in kl:
-                    obj[key] = redact_sensitive_info(str(val), password=True)
-                elif "webhook" in kl:
-                    obj[key] = redact_sensitive_info(str(val), password=False)
+            out = {}
+            for k, v in obj.items():
+                # If we're in a gdrive_list and key == "id", don't redact
+                if parent_keys[-1:] == ["gdrive_list"] and k == "id":
+                    out[k] = v
                 else:
-                    _redact(val)
-        elif isinstance(obj, list):
-            for item in obj:
-                if isinstance(item, (dict, list)):
-                    _redact(item)
+                    out[k] = global_redact(v, parent_keys + [k])
+            return out
+        if isinstance(obj, list):
+            return [global_redact(i, parent_keys) for i in obj]
+        if isinstance(obj, str):
+            if hasattr(logger, "redact_sensitive_info"):
+                return logger.redact_sensitive_info(obj)
+            try:
+                from util.logger import Logger
 
-    _redact(sanitized)
+                return Logger.redact_sensitive_info(obj)
+            except Exception:
+                return obj
+        return obj
+
+    redacted = global_redact(sanitized)
 
     try:
         yaml_output = yaml.dump(
-            {getattr(module_config, "module_name", "settings"): sanitized},
+            {getattr(module_config, "module_name", "settings"): redacted},
             sort_keys=False,
             allow_unicode=True,
             default_flow_style=False,
@@ -106,11 +117,43 @@ def print_settings(
         logger.warning(
             "Failed to render config as YAML; falling back to key:value lines."
         )
-        for key, value in sanitized.items():
+        for key, value in redacted.items():
             display = value if isinstance(value, str) else str(value)
             logger.debug(f"{key}: {display}")
 
     logger.debug(create_bar("-"))
+
+
+def dict_diff(old, new, path=""):
+    """
+    Recursively diff two dicts (or namespaces), returning a list of (path, old, new).
+    """
+    diffs = []
+    if isinstance(old, (list, tuple)) and isinstance(new, (list, tuple)):
+        minlen = min(len(old), len(new))
+        for i in range(minlen):
+            diffs += dict_diff(old[i], new[i], f"{path}[{i}]")
+        for i in range(minlen, len(new)):
+            diffs.append((f"{path}[{i}]", None, new[i]))
+        for i in range(minlen, len(old)):
+            diffs.append((f"{path}[{i}]", old[i], None))
+    elif isinstance(old, dict) and isinstance(new, dict):
+        all_keys = set(old) | set(new)
+        for k in all_keys:
+            old_val = old.get(k, None)
+            new_val = new.get(k, None)
+            subpath = f"{path}.{k}" if path else k
+            if old_val != new_val:
+                if isinstance(old_val, (dict, list)) and isinstance(
+                    new_val, type(old_val)
+                ):
+                    diffs += dict_diff(old_val, new_val, subpath)
+                else:
+                    diffs.append((subpath, old_val, new_val))
+    else:
+        if old != new:
+            diffs.append((path, old, new))
+    return diffs
 
 
 def create_table(data: List[List[Any]]) -> str:
@@ -192,45 +235,6 @@ def create_bar(middle_text: str) -> str:
     return f"\n{'*' * left_side_length} {middle_text} {'*' * right_side_length}\n"
 
 
-def redact_sensitive_info(text: str, password: bool = False) -> str:
-    """Redact sensitive info from text.
-
-    Args:
-        text (str): Text to redact.
-        password (bool): If True, redact entire text.
-
-    Returns:
-        str: Redacted text.
-    """
-    if password:
-        return "[redacted]"
-
-    text = re.sub(
-        r"https://discord\.com/api/webhooks/[^/]+/\S+",
-        r"https://discord.com/api/webhooks/[redacted]",
-        text,
-    )
-    text = re.sub(
-        r"\b(\w{24})-[a-zA-Z0-9_-]{24}\.apps\.googleusercontent\.com\b",
-        r"[redacted].apps.googleusercontent.com",
-        text,
-    )
-    text = re.sub(r'(?<=refresh_token": ")([^"]+)(?=")', r"[redacted]", text)
-    text = re.sub(r"(\b[A-Za-z0-9_-]{33}\b)", r"[redacted]", text)
-    text = re.sub(r'(?<=access_token": ")([^"]+)(?=")', r"[redacted]", text)
-    text = re.sub(r"GOCSPX-\S+", r"GOCSPX-[redacted]", text)
-    pattern_client_id = r"(-i).*?(\.apps\.googleusercontent\.com)"
-    text = re.sub(
-        pattern_client_id, r"\1 [redacted]\2", text, flags=re.DOTALL | re.IGNORECASE
-    )
-    pattern_file_arg = r"(-f)\s\S+"
-    text = re.sub(
-        pattern_file_arg, r"\1 [redacted]", text, flags=re.DOTALL | re.IGNORECASE
-    )
-
-    return text
-
-
 def progress(
     iterable: Any,
     desc: Optional[str] = None,
@@ -277,23 +281,6 @@ def progress(
     if not log_console:
         return DummyProgress(iterable)
     return tqdm(iterable, desc=desc, total=total, unit=unit, leave=leave, **kwargs)
-
-
-def redact_apis(obj: Any) -> None:
-    """Recursively redact any 'api' keys in dicts or nested lists.
-
-    Args:
-        obj (Any): Object to redact API keys in-place.
-    """
-    if isinstance(obj, dict):
-        for key, value in obj.items():
-            if key.lower() == "api":
-                obj[key] = "REDACTED"
-            else:
-                redact_apis(value)
-    elif isinstance(obj, list):
-        for item in obj:
-            redact_apis(item)
 
 
 def get_log_dir(module_name: str) -> str:

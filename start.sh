@@ -38,10 +38,14 @@ echo "
 echo "Setting umask to ${UMASK}"
 umask "$UMASK"
 
-echo "Adjusting ownership of config and app directories"
-chown -R "${PUID}:${PGID}" "${CONFIG_DIR}" /app || true
-chmod -R 777 "${CONFIG_DIR}" || true
-[ -f "${CONFIG_DIR}/config.yml" ] && chmod 660 "${CONFIG_DIR}/config.yml"
-
 echo "Starting daps as $(whoami) with UID: $PUID and GID: $PGID"
-exec python3 main.py
+if [ "$(id -u)" = "0" ]; then
+  groupmod -o -g "$PGID" dockeruser
+  usermod -o -u "$PUID" dockeruser
+  chown -R "${PUID}:${PGID}" "${CONFIG_DIR}" /app
+  chmod -R 777 "${CONFIG_DIR}"
+  [ -f "${CONFIG_DIR}/config.yml" ] && chmod 660 "${CONFIG_DIR}/config.yml"
+  exec su -s /bin/bash -c "python3 main.py" dockeruser
+else
+  exec python3 main.py
+fi

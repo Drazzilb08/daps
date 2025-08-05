@@ -63,6 +63,7 @@ RUN mkdir -p templates && \
 RUN groupadd -g 99 dockeruser && \
     useradd -u 100 -g 99 dockeruser && \
     chown -R dockeruser:dockeruser /app
+RUN chown -R 100:99 /app
 
 USER dockeruser
 

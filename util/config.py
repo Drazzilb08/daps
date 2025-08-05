@@ -218,7 +218,7 @@ class DapsConfig(BaseModel):
 
 
 def get_config_path() -> str:
-    config_dir = os.environ.get("DAPS_CONFIG_DIR") or str(
+    config_dir = os.environ.get("CONFIG_DIR") or str(
         pathlib.Path(__file__).parent.parent / "config"
     )
     config_file_path = os.path.join(config_dir, "config.yml")

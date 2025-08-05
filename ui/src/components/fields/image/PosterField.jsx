@@ -1,9 +1,9 @@
 // src/components/fields/image/PosterField.jsx
 
 import React, { useRef, useState } from 'react';
-import { getIcon, humanize } from '../../../utils/tools';
+import { getIcon, humanize, getSpinner } from '../../../utils/tools';
 import { useToast } from '../../providers/ToastProvider';
-import { deleteCollectionCacheById, deleteMediaCacheById, uploadById } from '../../../utils/api';
+import { deleteCollectionCacheById, deleteMediaCacheById, uploadMediaById, uploadCollectionById } from '../../../utils/api';
 import TooltipFactory from '../../../components/Tooltip';
 
 // Helper to get file name only (no dirs)
@@ -52,6 +52,7 @@ export default function PosterField({ field, entry = {} }) {
     const owner = originalFile ? originalFile.split(/[\\/]/).slice(-2, -1)[0] || '' : '';
     const sourceName = instanceName ? humanize(instanceName) : '';
     const imgSrc = obj.previewUrl || obj.value || '';
+    const [uploading, setUploading] = useState(false);
 
     // --- File path and file name logic ---
     let filePathToCopy = '';
@@ -242,21 +243,35 @@ export default function PosterField({ field, entry = {} }) {
                                 className="btn--icon"
                                 ref={uploadRef}
                                 aria-label="Upload poster"
+                                disabled={uploading}
                                 onClick={async () => {
-                                    try {
-                                        await uploadById(obj.id);
-                                        toast('Upload started!', 'success');
-                                    } catch {
+                                setUploading(true);
+                                try {
+                                    let result;
+                                    if (obj.asset_type === 'collection') {
+                                        result = await uploadCollectionById(obj.id);
+                                    } else {
+                                        result = await uploadMediaById(obj.id);
+                                    }
+                                    if (result.success) {
+                                        toast('Upload succeeded!', 'success');
+                                    } else {
                                         toast('Upload failed!', 'error');
                                     }
-                                }}
+                                } catch {
+                                    toast('Upload failed!', 'error');
+                                } finally {
+                                    setUploading(false);
+                                }
+                            }}
                                 onMouseEnter={() => setShowUploadTip(true)}
                                 onMouseLeave={() => setShowUploadTip(false)}
                                 onFocus={() => setShowUploadTip(true)}
                                 onBlur={() => setShowUploadTip(false)}
                             >
-                                {getIcon('mi:upload')}
+                                {uploading ? getSpinner() : getIcon('mi:upload')}
                             </button>
+
                             <TooltipFactory
                                 anchor={uploadRef.current}
                                 text="Upload to Plex"

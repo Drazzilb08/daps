@@ -180,6 +180,7 @@ def init_db_schema(conn):
                 received_at TEXT,
                 payload TEXT,
                 status TEXT DEFAULT 'Unknown',
+                progress INTEGER DEFAULT 0,
                 result TEXT,
                 error TEXT,
                 attempts INTEGER DEFAULT 0,

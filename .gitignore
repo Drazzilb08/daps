@@ -36,6 +36,8 @@ config/
 test.*
 TODO.*
 build_*
+*.db
+*.db-journal
 
 
 # Misc editor junk

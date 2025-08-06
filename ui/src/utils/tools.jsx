@@ -121,3 +121,21 @@ export function setTheme() {
             localStorage.setItem('theme', 'light');
         });
 }
+
+export function splitIntoColumns(cards, renderedOpen) {
+    const left = [],
+        right = [];
+    let leftHeight = 0,
+        rightHeight = 0;
+    cards.forEach(card => {
+        const weight = renderedOpen[card.key] ? 2 : 1;
+        if (leftHeight <= rightHeight) {
+            left.push(card);
+            leftHeight += weight;
+        } else {
+            right.push(card);
+            rightHeight += weight;
+        }
+    });
+    return [left, right];
+}

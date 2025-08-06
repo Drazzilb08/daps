@@ -268,9 +268,8 @@ class PlexClient:
 
             # --- Spinner/Status line ---
             spin = next(spinner)
-            sys.stdout.write(
-                f"\r{spin} Loading: {len(all_entries)}/{total_size}           "
-            )
+            msg = f"{spin} Loading: {len(all_entries)}/{total_size} items from {section.type.title()} for '{section.title}'..."
+            sys.stdout.write("\r" + msg.ljust(60))
             sys.stdout.flush()
 
         print()  # Move to next line after done

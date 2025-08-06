@@ -1,12 +1,39 @@
 // utils/api.js
 
-// --- Upload Command for given item ---
-export async function uploadById(id) {
-    if (!id) throw new Error('Missing id for upload');
-    const res = await fetch(`/api/run/upload/${id}`, {
-        method: 'PUT',
+export async function fetchJobDetail(jobId) {
+    const res = await fetch(`/api/jobs/${jobId}`);
+    if (!res.ok) throw new Error('Failed to fetch job');
+    return await res.json();
+}
+
+// Add at bottom of file
+export async function runGDriveAdhocSync(gdrive_names) {
+    const qs = gdrive_names.map(n => `gdrive_names=${encodeURIComponent(n)}`).join('&');
+    const res = await fetch(`/api/gdrive-folder?${qs}`, { method: 'POST' });
+    if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || 'Failed to run GDrive adhoc sync');
+    }
+    return await res.json();
+}
+
+// Upload a single media cache item by ID
+export async function uploadMediaById(id) {
+    if (!id) throw new Error('Missing id for media upload');
+    const res = await fetch(`/api/run/upload/media/${id}`, {
+        method: 'POST',
     });
-    if (!res.ok) throw new Error('Failed to upload');
+    if (!res.ok) throw new Error('Failed to upload media');
+    return await res.json();
+}
+
+// Upload a single collection cache item by ID
+export async function uploadCollectionById(id) {
+    if (!id) throw new Error('Missing id for collection upload');
+    const res = await fetch(`/api/run/upload/collection/${id}`, {
+        method: 'POST',
+    });
+    if (!res.ok) throw new Error('Failed to upload collection');
     return await res.json();
 }
 
@@ -219,7 +246,7 @@ export async function fetchAllRunStates() {
 }
 
 // --- Module status (running) ---
-export async function getModuleStatus(module) {
+export async function fetchModuleStatus(module) {
     if (!module) return false;
     const res = await fetch(`/api/status?module=${encodeURIComponent(module)}`);
     if (!res.ok) throw new Error('Failed to check status');
@@ -260,7 +287,7 @@ export async function fetchLogContent(moduleName, fileName) {
 }
 
 // --- Scheduled jobs (run/cancel) ---
-export async function runScheduledModule(module) {
+export async function runModule(module) {
     if (!module) return false;
     const res = await fetch('/api/run', {
         method: 'POST',

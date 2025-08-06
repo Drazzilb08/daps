@@ -14,9 +14,7 @@ from util.plex import PlexClient
 # Manifest expected: {'media_cache': [int]], 'collections_cache': [int]}
 class PosterUploader:
     def __init__(
-        self,
-        logger: Logger = None,
-        manifest: dict = None,
+        self, logger: Logger = None, manifest: dict = None, force: bool = False
     ):
         self.full_config = load_config()
         self.config = self.full_config.poster_renamerr
@@ -24,8 +22,9 @@ class PosterUploader:
         self.logger = logger or Logger(self.config.log_level, "poster_uploader")
         self.logger = self.logger.get_adapter("poster_uploader")
         self.manifest = manifest or {}
+        self.force = force
 
-    def upload_posters(self):
+    def run(self):
         """
         Syncs poster assets to Plex using a database-cached media index for matching.
         Avoids unnecessary uploads by comparing hashes. Supports dry-run.
@@ -66,6 +65,9 @@ class PosterUploader:
                             plex_media_cache = self.db.plex.get_by_instance(
                                 instance_name
                             )
+                            self.logger.debug(
+                                f"Plex Media Cache: {len(plex_media_cache)} entries"
+                            )
                             all_ids = [
                                 ("media_cache", i)
                                 for i in self.manifest.get("media_cache", [])
@@ -73,6 +75,9 @@ class PosterUploader:
                                 ("collections_cache", i)
                                 for i in self.manifest.get("collections_cache", [])
                             ]
+                            self.logger.debug(
+                                f"Processing {len(all_ids)} assets from manifest: {all_ids}"
+                            )
                             for source, asset_id in all_ids:
                                 if source == "media_cache":
                                     asset = self.db.media.get_by_id(asset_id)
@@ -84,6 +89,7 @@ class PosterUploader:
                                     )
                                     continue
                                 assets.append(asset)
+                            self.logger.debug(f"Found {len(assets)} assets to process.")
                             if not plex_media_cache:
                                 self.logger.error(
                                     f"No media cache found for Plex instance '{instance_name}'. Skipping instance."
@@ -138,48 +144,25 @@ class PosterUploader:
                         msg = f"Skipping sync for {instance_name} (not enabled)"
                         self.logger.info(msg)
                         overall_skipped.append(msg)
-            # Compose result
-            if not any_instance_processed:
-                self.logger.error(
-                    "No Plex instances enabled or configured for poster upload."
-                )
-                return {
-                    "success": False,
-                    "message": "No Plex instances enabled or configured for poster upload.",
-                    "error_code": "NO_ENABLED_INSTANCE",
-                    "payload": {
-                        "manifest": self.manifest,
-                    },
-                }
-            if overall_failed:
-                # Partial or total failure; include everything needed to retry in 'payload'
-                self.logger.error(
-                    f"Some uploads failed. Updated: {len(overall_updated)}, Skipped: {len(overall_skipped)}, Failed: {len(overall_failed)}"
-                )
-                return {
-                    "success": False,
-                    "message": f"Some uploads failed. Updated: {len(overall_updated)}, Skipped: {len(overall_skipped)}, Failed: {len(overall_failed)}",
-                    "error_code": "UPLOAD_FAILED",
-                    "payload": {
-                        "manifest": self.manifest,
-                        "updated": overall_updated,
-                        "skipped": overall_skipped,
-                        "failed": overall_failed,
-                    },
-                }
-            # If here, all succeeded or were skipped
-            return {
-                "success": True,
-                "message": f"Uploads completed. Updated: {len(overall_updated)}, Skipped: {len(overall_skipped)}",
-                "error_code": None,
-                "payload": {
-                    "manifest": self.manifest,
-                    "updated": overall_updated,
-                    "skipped": overall_skipped,
-                },
-            }
+            return self._compose_result(
+                any_instance_processed, overall_updated, overall_skipped, overall_failed
+            )
         except Exception as exc:
+            # Log what we have before returning on exception
             self.logger.error(f"Exception during poster upload: {exc}", exc_info=True)
+            self.logger.info(
+                f"Poster upload summary: Updated: {len(overall_updated)}, Skipped: {len(overall_skipped)}, Failed: {len(overall_failed)}"
+            )
+            if overall_skipped:
+                self.logger.info(
+                    "SKIPPED ASSETS:\n"
+                    + "\n".join("\t" + str(s) for s in overall_skipped)
+                )
+            if overall_failed:
+                self.logger.warning(
+                    "FAILED ASSETS:\n"
+                    + "\n".join("\t" + str(f) for f in overall_failed)
+                )
             return {
                 "success": False,
                 "message": f"Exception occurred: {exc}",
@@ -188,6 +171,82 @@ class PosterUploader:
                     "manifest": self.manifest,
                 },
             }
+
+    def _compose_result(
+        self, any_instance_processed, overall_updated, overall_skipped, overall_failed
+    ):
+        """
+        Compose and log the result/summary for the poster upload run.
+        """
+
+        def log_summary():
+            self.logger.info(
+                f"Poster upload summary: Updated: {len(overall_updated)}, Skipped: {len(overall_skipped)}, Failed: {len(overall_failed)}"
+            )
+            if overall_skipped:
+                self.logger.info(
+                    "SKIPPED ASSETS:\n"
+                    + "\n".join("\t" + str(s) for s in overall_skipped)
+                )
+            if overall_failed:
+                self.logger.warning(
+                    "FAILED ASSETS:\n"
+                    + "\n".join("\t" + str(f) for f in overall_failed)
+                )
+
+        if not any_instance_processed:
+            self.logger.error(
+                "No Plex instances enabled or configured for poster upload."
+            )
+            log_summary()
+            return {
+                "success": False,
+                "message": "No Plex instances enabled or configured for poster upload.",
+                "error_code": "NO_ENABLED_INSTANCE",
+                "payload": {
+                    "manifest": self.manifest,
+                },
+            }
+        if overall_failed:
+            self.logger.error(
+                f"Some uploads failed. Updated: {len(overall_updated)}, Skipped: {len(overall_skipped)}, Failed: {len(overall_failed)}"
+            )
+            log_summary()
+            return {
+                "success": False,
+                "message": f"Some uploads failed. Updated: {len(overall_updated)}, Skipped: {len(overall_skipped)}, Failed: {len(overall_failed)}",
+                "error_code": "UPLOAD_FAILED",
+                "payload": {
+                    "manifest": self.manifest,
+                    "updated": overall_updated,
+                    "skipped": overall_skipped,
+                    "failed": overall_failed,
+                },
+            }
+        # If here, all succeeded or were skipped
+        log_summary()
+        return {
+            "success": True,
+            "message": f"Uploads completed. Updated: {len(overall_updated)}, Skipped: {len(overall_skipped)}",
+            "error_code": None,
+            "payload": {
+                "manifest": self.manifest,
+                "updated": overall_updated,
+                "skipped": overall_skipped,
+            },
+        }
+
+    def _is_single_asset_manifest(self):
+        """
+        Returns True if the manifest is for a single asset (media or collection, but not both, and only one ID).
+        """
+        media_ids = self.manifest.get("media_cache", [])
+        collection_ids = self.manifest.get("collections_cache", [])
+        if media_ids and not collection_ids and len(media_ids) == 1:
+            return True
+        if collection_ids and not media_ids and len(collection_ids) == 1:
+            return True
+        return False
 
     @staticmethod
     def has_overlay(item: dict) -> bool:
@@ -305,7 +364,7 @@ class PosterUploader:
                     poster_path, asset_title, logger, failed, dry_run
                 )
 
-                if current_file_hash == record_hash:
+                if current_file_hash == record_hash and not self.force:
                     skipped.append(
                         f"{asset_title} ({match_type}, {matched_entry['library_name']}) [UNCHANGED]"
                     )
@@ -354,6 +413,7 @@ class PosterUploader:
         failed: List[str],
         logger: Any,
     ) -> List[str]:
+        logger.debug("Starting sync for shows and seasons")
         updated = []
         # Process series main posters (season_number is None)
         series_records = [
@@ -402,7 +462,7 @@ class PosterUploader:
                 current_file_hash = self.compute_file_hash(
                     poster_path, asset_title, logger, failed, dry_run
                 )
-                if current_file_hash == record_hash:
+                if current_file_hash == record_hash and not self.force:
                     skipped.append(
                         f"{asset_title} ({match_type}, {matched_entry['library_name']}) [UNCHANGED]"
                     )
@@ -486,7 +546,8 @@ class PosterUploader:
                 current_file_hash = self.compute_file_hash(
                     poster_path, asset_title, logger, failed, dry_run
                 )
-                if current_file_hash == record_hash:
+
+                if current_file_hash == record_hash and not self.force:
                     skipped.append(
                         f"{asset_title} S{season_number} ({match_type}, {matched_entry['library_name']}) [UNCHANGED]"
                     )
@@ -569,7 +630,7 @@ class PosterUploader:
                     poster_path, asset_title, logger, failed, dry_run
                 )
 
-                if current_file_hash == record_hash:
+                if current_file_hash == record_hash and not self.force:
                     skipped.append(
                         f"{asset_title} ({match_type}, {matched_entry['library_name']}) [UNCHANGED]"
                     )

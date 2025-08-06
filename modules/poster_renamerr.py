@@ -597,8 +597,7 @@ class PosterRenamerr:
             if self.config.run_border_replacerr:
                 self.run_border_replacerr(manifest)
 
-            upld = PosterUploader(self.logger, manifest)
-            upld.upload_posters()
+            PosterUploader(self.logger, manifest).run()
 
             if any(output.values()):
                 self.handle_output(output)

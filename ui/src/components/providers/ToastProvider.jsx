@@ -1,25 +1,30 @@
-// src/components/providers/ToastProvider.jsx
 import React, { createContext, useContext, useState, useCallback } from 'react';
 
 // Context for toasts
 const ToastContext = createContext();
 let toastBridge = null;
 
-// Hook for using the toast function in your components
-export function useToast() {
-    return useContext(ToastContext);
+function showToastHelper(setToasts, message, type = 'info', timeout = 3000) {
+    const id = Date.now() + Math.random();
+    setToasts(prev => [...prev, { id, message, type, timeout }]);
 }
 
-// ToastMessage component for animation (fade in/out with .show class)
+// Hook for using the toast function in your components
+export function useToast() {
+    const showToast = useContext(ToastContext);
+    const error = useCallback((msg, timeout) => showToast(msg, 'error', timeout), [showToast]);
+    const success = useCallback((msg, timeout) => showToast(msg, 'success', timeout), [showToast]);
+    const info = useCallback((msg, timeout) => showToast(msg, 'info', timeout), [showToast]);
+    return Object.assign(showToast, { error, success, info });
+}
+
+// ToastMessage component for animation
 function ToastMessage({ id, message, type, timeout, onRemove }) {
     const [show, setShow] = useState(false);
 
     React.useEffect(() => {
-        // Fade in
         const fadeIn = setTimeout(() => setShow(true), 100);
-        // Fade out
         const fadeOut = setTimeout(() => setShow(false), timeout);
-        // Remove after fade out
         const remove = setTimeout(() => onRemove(id), timeout + 500);
 
         return () => {
@@ -46,8 +51,7 @@ export function ToastProvider({ children }) {
 
     // Show a new toast
     const showToast = useCallback((message, type = 'info', timeout = 3000) => {
-        const id = Date.now() + Math.random();
-        setToasts(prev => [...prev, { id, message, type, timeout }]);
+        showToastHelper(setToasts, message, type, timeout);
     }, []);
 
     toastBridge = showToast;
@@ -68,7 +72,9 @@ export function ToastProvider({ children }) {
         </ToastContext.Provider>
     );
 }
-
 export function toast(...args) {
     if (typeof toastBridge === 'function') toastBridge(...args);
 }
+toast.error = (msg, timeout = 3000) => toast(msg, 'error', timeout);
+toast.success = (msg, timeout = 3000) => toast(msg, 'success', timeout);
+toast.info = (msg, timeout = 3000) => toast(msg, 'info', timeout);

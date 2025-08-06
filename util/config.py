@@ -26,7 +26,7 @@ class SyncGDriveConfig(BaseModel):
     client_id: str = ""
     client_secret: str = ""
     token: Union[str, SyncGDriveToken, None] = ""
-    gdrive_sa_location: str = ""
+    gdrive_sa_location: Optional[str] = Field(default=None)
     gdrive_list: List[GDriveListEntry] = Field(default_factory=list)
 
 

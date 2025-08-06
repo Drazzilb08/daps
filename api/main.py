@@ -15,6 +15,7 @@ from fastapi.staticfiles import StaticFiles
 from api import (
     config as config_router,
     instances as plex_router,
+    jobs as job_router,
     logs as logs_router,
     modules as modules_router,
     notifications as notifications_router,
@@ -34,18 +35,22 @@ async def lifespan(app):
         num_workers=3, worker_name="ADHOC", job_type_filter="webhook"
     )
     app.state.db.background_worker = app.state.db.create_worker(
-        num_workers=1, worker_name="UPLOAD", job_type_filter="upload_posters"
+        num_workers=3, worker_name="BACKGROUND", job_type_filter=None
     )
 
     app.state.db.adhoc_worker.start(
         table_name="jobs",
-        process_fn=lambda job: process_job(job, app.state.logger),
+        process_fn=lambda job: process_job(
+            job, app.state.logger, worker=app.state.db.adhoc_worker
+        ),
         job_type_filter="webhook",
     )
     app.state.db.background_worker.start(
         table_name="jobs",
-        process_fn=lambda job: process_job(job, app.state.logger),
-        job_type_filter="upload_posters",
+        process_fn=lambda job: process_job(
+            job, app.state.logger, worker=app.state.db.background_worker
+        ),
+        job_type_filter=None,
     )
 
     yield
@@ -92,6 +97,7 @@ app.include_router(modules_router.router)
 app.include_router(plex_router.router)
 app.include_router(notifications_router.router)
 app.include_router(poster_search_router.router)
+app.include_router(job_router.router)
 app.include_router(router)
 
 
@@ -170,75 +176,3 @@ async def serve_spa(full_path: str):
         raise HTTPException(status_code=404, detail="Not Found")
     index_path = Path(__file__).parents[1] / "templates" / "index.html"
     return FileResponse(index_path)
-
-
-@app.get("/api/jobs")
-async def list_jobs(
-    status: str = None,
-    job_type: str = None,
-    limit: int = 50,
-    db=Depends(lambda request: request.app.state.db),
-    logger: Any = Depends(get_logger),
-):
-    jobs = db.worker.list_jobs(status, limit)
-    if job_type:
-        jobs["jobs"] = [job for job in jobs["jobs"] if job.get("type") == job_type]
-    return jobs
-
-
-@app.get("/api/jobs/{job_id}")
-async def get_job_detail(
-    job_id: int,
-    db=Depends(lambda request: request.app.state.db),
-    logger: Any = Depends(get_logger),
-):
-    with db.worker.conn:
-        cur = db.worker.conn.execute("SELECT * FROM jobs WHERE id=?", (job_id,))
-        row = cur.fetchone()
-        if row:
-            return dict(row)
-        else:
-            return JSONResponse(status_code=404, content={"error": "Job not found"})
-
-
-@app.post("/api/jobs/cleanup")
-async def cleanup_jobs(
-    days: int = 30,
-    db=Depends(lambda request: request.app.state.db),
-    logger: Any = Depends(get_logger),
-):
-    deleted = db.worker.cleanup_jobs("jobs", days=days)
-    logger.info(f"Cleaned up {deleted} jobs older than {days} days")
-    return {"deleted": deleted, "days": days}
-
-
-@app.get("/api/jobs/stats")
-async def job_stats(
-    db=Depends(lambda request: request.app.state.db),
-    logger: Any = Depends(get_logger),
-):
-    return db.worker.job_stats()
-
-
-@app.post("/api/jobs/{job_id}/retry")
-async def retry_job(
-    job_id: int,
-    db=Depends(lambda request: request.app.state.db),
-    logger: Any = Depends(get_logger),
-):
-    with db.worker.conn:
-        cur = db.worker.conn.execute("SELECT * FROM jobs WHERE id=?", (job_id,))
-        row = cur.fetchone()
-        if not row:
-            return JSONResponse(status_code=404, content={"error": "Job not found"})
-        if row["status"] not in ("error", "done"):
-            return JSONResponse(
-                status_code=400,
-                content={"error": "Only error/done jobs can be retried"},
-            )
-        db.worker.conn.execute(
-            "UPDATE jobs SET status='pending', attempts=0, scheduled_at=NULL, error=NULL, result=NULL WHERE id=?",
-            (job_id,),
-        )
-        logger.info(f"Job {job_id} reset to pending by API")
-        return {"status": "reset", "job_id": job_id}

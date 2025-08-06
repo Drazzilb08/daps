@@ -3,7 +3,6 @@ import os
 import re
 import shlex
 import subprocess
-import sys
 import time
 from shutil import which
 from typing import List
@@ -29,6 +28,23 @@ class SyncGDrive:
         self.logger = logger or Logger(self.config.log_level, "sync_gdrive")
         self.rclone_path = self.get_rclone_path()
         self.db = DapsDB()
+
+    def parse_rclone_progress(self, line):
+        """
+        Extract percent progress from rclone --stats output line.
+        Returns integer percent or None.
+        """
+        # Typical: Transferred:    1.234 GiB / 8.000 GiB, 15%, 1.23 MiB/s, ETA 01:36:20
+        match = re.search(
+            r"Transferred:.*?([\d.]+\s\w+) / ([\d.]+\s\w+),\s*(\d+)%", line
+        )
+        if match:
+            return int(match.group(3))
+        # Alternate: Transferred:  14 / 100, 14%
+        match2 = re.search(r"Transferred:\s+\d+ / \d+,\s*(\d+)%", line)
+        if match2:
+            return int(match2.group(1))
+        return None
 
     def get_rclone_path(self) -> str:
         env_path = os.getenv("RCLONE_PATH")
@@ -64,10 +80,11 @@ class SyncGDrive:
         except Exception as e:
             self.logger.error(f"Error ensuring rclone remote 'posters' exists: {e}")
 
-    def sync_folder(self, sync_location, sync_id):
+    def sync_folder(self, sync_location, sync_id, progress_cb=lambda pct: None):
         """Run rclone sync for a single folder."""
         if not sync_location or not sync_id:
             self.logger.error("Sync location or GDrive folder ID not provided.")
+            progress_cb(100)
             return
 
         try:
@@ -75,7 +92,18 @@ class SyncGDrive:
             self.logger.info(f"Ensured sync location exists: {sync_location}")
         except OSError as e:
             self.logger.error(f"Could not create sync location '{sync_location}': {e}")
+            progress_cb(100)
             return
+
+        # Starting sync
+        progress_cb(10)
+
+        last_pct = [10]
+
+        def guarded_progress_cb(pct):
+            if pct > last_pct[0]:
+                progress_cb(pct)
+                last_pct[0] = pct
 
         cmd = [
             self.rclone_path,
@@ -85,7 +113,15 @@ class SyncGDrive:
             "--drive-client-secret",
             self.config.client_secret or "",
             "--drive-token",
-            json.dumps(self.config.token) if self.config.token else "",
+            (
+                json.dumps(
+                    self.config.token.model_dump()
+                    if hasattr(self.config.token, "model_dump")
+                    else dict(self.config.token)
+                )
+                if self.config.token
+                else ""
+            ),
             "--drive-root-folder-id",
             sync_id,
             "--fast-list",
@@ -99,6 +135,7 @@ class SyncGDrive:
             "--size-only",
             "--delete-after",
             "-v",
+            "--stats=1s",
         ]
 
         if getattr(self.config, "gdrive_sa_location", None):
@@ -120,6 +157,9 @@ class SyncGDrive:
                 ).strip()
                 if cleaned_line:
                     self.logger.info(cleaned_line)
+                    pct = self.parse_rclone_progress(cleaned_line)
+                    if pct is not None:
+                        guarded_progress_cb(pct)
             process.wait()
             if process.returncode == 0:
                 self.logger.info("✅ RClone sync completed successfully.")
@@ -127,8 +167,10 @@ class SyncGDrive:
                 self.logger.error(
                     f"❌ RClone sync failed with return code {process.returncode}"
                 )
+                progress_cb(100)
         except Exception as e:
             self.logger.error(f"Exception occurred while running rclone: {e}")
+            progress_cb(100)
 
     def gather_folder_stats(self, folder_path):
         """
@@ -184,7 +226,7 @@ class SyncGDrive:
                 f"{file_count} files, {size_bytes} bytes, last updated {last_updated}"
             )
 
-    def sync_folder_adhoc(self, gdrive_name: str):
+    def sync_folder_adhoc(self, gdrive_name: str, progress_cb=lambda pct: None):
         """
         Sync a single GDrive folder (by its config 'name') on demand.
         """
@@ -199,7 +241,13 @@ class SyncGDrive:
                 if owner == gdrive_name:
                     sync_location = sync_item.location
                     sync_id = sync_item.id
-                    self.sync_folder(sync_location, sync_id)
+
+                    progress_cb(5)  # Starting ad-hoc sync
+
+                    self.sync_folder(sync_location, sync_id, progress_cb=progress_cb)
+
+                    # GATHER STATS AND UPSERT
+                    progress_cb(90)
                     file_count, size_bytes, last_updated = self.gather_folder_stats(
                         sync_location
                     )
@@ -215,15 +263,18 @@ class SyncGDrive:
                         f"Synced and updated gdrive_stats for {sync_location}: "
                         f"{file_count} files, {size_bytes} bytes, last updated {last_updated}"
                     )
+                    progress_cb(100)
                     return True
             self.logger.error(
                 f"GDrive name '{gdrive_name}' not found in config.gdrive_list."
             )
+            progress_cb(100)
             return False
         except Exception as exc:
             self.logger.error(f"\n\nAn error occurred: {exc}\n", exc_info=True)
+            progress_cb(100)
 
-    def run(self):
+    def run(self, progress_cb=lambda pct: None):
         try:
             if self.config.log_level.lower() == "debug":
                 print_settings(self.logger, self.config)
@@ -244,13 +295,17 @@ class SyncGDrive:
                 self.config.gdrive_sa_location = None
 
             self.ensure_remote()
+            total = len(sync_list)
 
-            for sync_item in sync_list:
+            for idx, sync_item in enumerate(sync_list, 1):
+                progress_cb(int(10 + 80 * (idx - 1) / total))  # Start for each
+
                 sync_location = sync_item.location
                 sync_id = sync_item.id
-                self.sync_folder(sync_location, sync_id)
+                self.sync_folder(sync_location, sync_id, progress_cb=progress_cb)
 
                 # GATHER STATS AND UPSERT
+                progress_cb(int(10 + 80 * (idx - 0.5) / total))
                 file_count, size_bytes, last_updated = self.gather_folder_stats(
                     sync_location
                 )
@@ -266,12 +321,9 @@ class SyncGDrive:
                 self.logger.info(
                     f"Updated gdrive_stats for {sync_location}: {file_count} files, {size_bytes} bytes, last updated {last_updated}"
                 )
+                progress_cb(int(10 + 80 * idx / total))  # Step up after folder done
 
-        except KeyboardInterrupt:
-            print("Keyboard Interrupt detected. Exiting...")
-            sys.exit()
+            progress_cb(100)
         except Exception as exc:
             self.logger.error(f"\n\nAn error occurred: {exc}\n", exc_info=True)
-        finally:
-            self.db.close_all()
-            self.logger.log_outro()
+            progress_cb(100)

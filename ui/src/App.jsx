@@ -4,11 +4,18 @@ import Splash from './pages/Splash';
 import Schedule from './pages/Schedule';
 import Instances from './pages/Instances';
 import Notifications from './pages/Notifications';
-import GdriveSearch from './pages/GdriveSearch';
-import AssetsSearch from './pages/AssetsSearch';
 import Settings from './pages/Settings';
 import LogViewer from './pages/Logs';
-import Statistics from './pages/Statistics';
+
+import PosterManagement from './pages/PosterManage';
+import GdriveSearch from './pages/GdriveSearch';
+import AssetsSearch from './pages/AssetsSearch';
+import PosterStatistics from './pages/PosterStatistics';
+
+import MediaManagement from './pages/MediaManage';
+import MediaSearch from './pages/MediaSearch';
+import MediaStatistics from './pages/MediaStatistics';
+
 import NotFound from './components/providers/NotFound';
 
 import { FIELD_RENDERERS } from './components/fields/FieldRegistry';
@@ -36,7 +43,11 @@ export default function App() {
                                 <Route path="/notifications" element={<Notifications />} />
                                 <Route path="/poster/search/gdrive" element={<GdriveSearch />} />
                                 <Route path="/poster/search/assets" element={<AssetsSearch />} />
-                                <Route path="/poster/statistics" element={<Statistics />} />
+                                <Route path="/poster/manage" element={<PosterManagement />} />
+                                <Route path="/poster/statistics" element={<PosterStatistics />} />
+                                <Route path="/media/search" element={<MediaSearch />} />
+                                <Route path="/media/manage" element={<MediaManagement />} />
+                                <Route path="/media/statistics" element={<MediaStatistics />} />
                                 <Route
                                     path="/settings/*"
                                     element={

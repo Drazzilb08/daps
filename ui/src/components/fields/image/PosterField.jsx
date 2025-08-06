@@ -3,7 +3,12 @@
 import React, { useRef, useState } from 'react';
 import { getIcon, humanize, getSpinner } from '../../../utils/tools';
 import { useToast } from '../../providers/ToastProvider';
-import { deleteCollectionCacheById, deleteMediaCacheById, uploadMediaById, uploadCollectionById } from '../../../utils/api';
+import {
+    deleteCollectionCacheById,
+    deleteMediaCacheById,
+    uploadMediaById,
+    uploadCollectionById,
+} from '../../../utils/api';
 import TooltipFactory from '../../../components/Tooltip';
 
 // Helper to get file name only (no dirs)
@@ -245,25 +250,25 @@ export default function PosterField({ field, entry = {} }) {
                                 aria-label="Upload poster"
                                 disabled={uploading}
                                 onClick={async () => {
-                                setUploading(true);
-                                try {
-                                    let result;
-                                    if (obj.asset_type === 'collection') {
-                                        result = await uploadCollectionById(obj.id);
-                                    } else {
-                                        result = await uploadMediaById(obj.id);
-                                    }
-                                    if (result.success) {
-                                        toast('Upload succeeded!', 'success');
-                                    } else {
+                                    setUploading(true);
+                                    try {
+                                        let result;
+                                        if (obj.asset_type === 'collection') {
+                                            result = await uploadCollectionById(obj.id);
+                                        } else {
+                                            result = await uploadMediaById(obj.id);
+                                        }
+                                        if (result.success) {
+                                            toast('Upload succeeded!', 'success');
+                                        } else {
+                                            toast('Upload failed!', 'error');
+                                        }
+                                    } catch {
                                         toast('Upload failed!', 'error');
+                                    } finally {
+                                        setUploading(false);
                                     }
-                                } catch {
-                                    toast('Upload failed!', 'error');
-                                } finally {
-                                    setUploading(false);
-                                }
-                            }}
+                                }}
                                 onMouseEnter={() => setShowUploadTip(true)}
                                 onMouseLeave={() => setShowUploadTip(false)}
                                 onFocus={() => setShowUploadTip(true)}

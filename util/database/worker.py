@@ -42,7 +42,6 @@ class DBWorker(DatabaseBase):
         self,
         table_name: str,
         process_fn: Callable[[Dict[str, Any]], None],
-        job_type_filter: str = None,
     ):
         log = (
             self.logger.get_adapter(f"WORKER:{self.worker_name}")
@@ -51,16 +50,19 @@ class DBWorker(DatabaseBase):
         )
         while self.running:
             try:
-                job = self.claim_next_job(table_name, job_type_filter)
+                job = self.claim_next_job(table_name, self.job_type_filter)
                 if not job:
                     time.sleep(self.poll_interval)
                     continue
+
+                # No more need to check for type=='webhook' here!
+
                 job_id = job["id"]
                 if log:
                     log.info(f"Processing {table_name} job ID {job_id}")
                 try:
                     result = process_fn(job)
-                    self.mark_job_done(table_name, job_id, result)
+                    self.mark_job_complete(table_name, job_id, result)
                     if log:
                         log.info(f"Job {job_id} processed.")
                 except Exception as ex:
@@ -101,10 +103,10 @@ class DBWorker(DatabaseBase):
             cur = self.conn.execute(query, tuple(params))
             return cur.fetchall()
 
-    def mark_job_done(self, table_name: str, job_id: int, result):
+    def mark_job_complete(self, table_name: str, job_id: int, result):
         with self.conn:
             self.conn.execute(
-                f"UPDATE {table_name} SET status='done', result=? WHERE id=?",
+                f"UPDATE {table_name} SET status='success', result=? WHERE id=?",
                 (json.dumps(result) if result else None, job_id),
             )
 
@@ -152,6 +154,25 @@ class DBWorker(DatabaseBase):
         else:
             print(f"[WORKER][WARNING] {warning_msg}")
 
+    def reset_job_to_pending(self, table_name: str, job_id: int):
+        """
+        Reset a job to 'pending' status, clearing attempts, error, and result.
+        Only allows if current status is 'error' or 'done'.
+        Returns True if reset, False if not found or not eligible.
+        """
+        with self.conn:
+            cur = self.conn.execute(f"SELECT * FROM {table_name} WHERE id=?", (job_id,))
+            row = cur.fetchone()
+            if not row:
+                return None  # Not found
+            if row["status"] not in ("error", "success"):
+                return False  # Not eligible
+            self.conn.execute(
+                f"UPDATE {table_name} SET status='pending', attempts=0, scheduled_at=NULL, error=NULL, result=NULL WHERE id=?",
+                (job_id,),
+            )
+            return True
+
     def claim_next_job(self, table_name: str, job_type_filter: str = None):
         """
         Atomically fetch and claim a single pending job for processing.
@@ -159,16 +180,19 @@ class DBWorker(DatabaseBase):
         """
         now = datetime.datetime.now(datetime.timezone.utc).isoformat()
         with self.conn:
-
             query = f"""SELECT * FROM {table_name}
                         WHERE status='pending'
                         AND (attempts < max_attempts OR max_attempts IS NULL)
                         AND (scheduled_at IS NULL OR scheduled_at <= ?)
                     """
             params = [now]
-            if job_type_filter:
+            if job_type_filter == "webhook":
                 query += " AND type=?"
-                params.append(job_type_filter)
+                params.append("webhook")
+            elif job_type_filter is None:
+                query += " AND type!=?"
+                params.append("webhook")
+            # else: could add other type filters here if needed
             query += " ORDER BY received_at ASC LIMIT 1"
             cur = self.conn.execute(query, tuple(params))
             row = cur.fetchone()
@@ -230,6 +254,13 @@ class DBWorker(DatabaseBase):
                 "message": f"Error fetching job stats: {e}",
             }
 
+    def update_progress(self, table_name: str, job_id: int, progress: int):
+        with self.conn:
+            self.conn.execute(
+                f"UPDATE {table_name} SET progress=? WHERE id=?",
+                (progress, job_id),
+            )
+
     def enqueue_job(
         self,
         table_name: str,
@@ -258,10 +289,11 @@ class DBWorker(DatabaseBase):
 
         try:
             with self.conn:
-                self.conn.execute(
+                cur = self.conn.execute(
                     f"INSERT INTO {table_name} ({keys}) VALUES ({qs})",
                     tuple(fields.values()),
                 )
+                job_id = cur.lastrowid
             logger.debug(
                 f"Successfully enqueued job: type={job_type}, table={table_name}, scheduled_at={scheduled_at}"
             )
@@ -270,6 +302,7 @@ class DBWorker(DatabaseBase):
                 "success": True,
                 "error_code": None,
                 "message": "Job enqueued successfully",
+                "job_id": job_id,
             }
         except Exception as e:
             self.logger.debug(
@@ -281,6 +314,12 @@ class DBWorker(DatabaseBase):
                 "error_code": "ENQUEUE_JOB_ERROR",
                 "message": f"Error enqueuing job: {e}",
             }
+
+    def get_job_by_id(self, table_name: str, job_id: int):
+        with self.conn:
+            cur = self.conn.execute(f"SELECT * FROM {table_name} WHERE id=?", (job_id,))
+            row = cur.fetchone()
+            return dict(row) if row else None
 
     def start(
         self,
@@ -304,7 +343,7 @@ class DBWorker(DatabaseBase):
         for _ in range(self.num_workers):
             t = threading.Thread(
                 target=self.process_pending_jobs,
-                args=(table_name, process_fn, job_type_filter),
+                args=(table_name, process_fn),
                 daemon=True,
             )
             t.start()
@@ -435,7 +474,7 @@ class DBWorker(DatabaseBase):
             }
 
 
-def process_job(job, logger):
+def process_job(job, logger, worker=None):
     job_id = job.get("id")
     job_type = job.get("type")
     payload = json.loads(job.get("payload", "{}"))
@@ -491,13 +530,32 @@ def process_job(job, logger):
 
         elif job_type == "sync_gdrive":
             try:
+                from modules.sync_gdrive import SyncGDrive
 
-                result = {
-                    "status": 200,
-                    "success": True,
-                    "message": "sync_gdrive completed",
-                    "error_code": None,
-                }
+                job_id = job.get("id")
+                gdrive_name = payload.get("gdrive_name")  # This comes from your API
+
+                def progress_updater(pct):
+                    worker.update_progress("jobs", job_id, pct)
+
+                if gdrive_name:
+                    SyncGDrive(logger=logger).sync_folder_adhoc(
+                        gdrive_name, progress_cb=progress_updater
+                    )
+                    result = {
+                        "status": 200,
+                        "success": True,
+                        "message": f"sync_gdrive for {gdrive_name} completed",
+                        "error_code": None,
+                    }
+                else:
+                    # If for some reason no name was supplied
+                    result = {
+                        "status": 400,
+                        "success": False,
+                        "message": "No gdrive_name provided for adhoc sync.",
+                        "error_code": "MISSING_GDRIVE_NAME",
+                    }
             except Exception as ex:
                 if log:
                     log.error(

@@ -4,6 +4,8 @@ from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
+from util.database import DapsDB
+
 
 class RunRequest(BaseModel):
     module: str
@@ -111,7 +113,7 @@ async def get_all_run_states(request: Request, logger: Any = Depends(get_logger)
             status_code=500, content={"error": "Orchestrator not available"}
         )
     try:
-        db = orchestrator.db if hasattr(orchestrator, "db") else None
+        db = DapsDB(logger=logger)
         if db is None:
             return JSONResponse(
                 status_code=500, content={"error": "DB not available on orchestrator"}

@@ -79,6 +79,16 @@ nav.sidebar {
     z-index: 1;
 }
 
+/* New toggle button style moved from inline styles */
+.sidebar-link--toggle {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    padding: 0.22em 0.7em 0.22em 0.55em;
+    cursor: pointer;
+}
+
 .sidebar-link:hover,
 .sidebar-link:focus,
 .sidebar-link.active {
@@ -104,6 +114,7 @@ nav.sidebar {
     flex-shrink: 0;
     margin-right: 0.1em;
     margin-left: 0.5em;
+    font-size: 20px;
 }
 
 /* Sidebar highlight bar */
@@ -113,9 +124,9 @@ nav.sidebar {
     left: 0;
     top: 0;
     bottom: 0;
-    width: 6px;
+    width: 3px;
     background: var(--primary);
-    border-radius: 0 8px 8px 0;
+    border-radius: 0 10px 10px 0;
     z-index: 2;
     box-shadow: none;
 }

@@ -1,4 +1,5 @@
-import { NavLink, useLocation } from 'react-router-dom';
+import React from 'react';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { getIcon } from '../utils/tools';
 
 const NAV = [
@@ -6,8 +7,7 @@ const NAV = [
     { to: '/instances', icon: 'desktop_windows', label: 'Instances' },
     { to: '/notifications', icon: 'chat_bubble_outline', label: 'Notifications' },
     {
-        to: '/poster_management',
-        icon: 'collections',
+        icon: 'folder_open',
         label: 'Poster Management',
         children: [
             { to: '/poster/search/gdrive', label: 'Gdrive Search' },
@@ -17,8 +17,7 @@ const NAV = [
         ],
     },
     {
-        to: '/media_management',
-        icon: 'folder',
+        icon: 'movie_edit',
         label: 'Media Management',
         children: [
             { to: '/media/search', label: 'Search' },
@@ -50,7 +49,7 @@ const NAV = [
 ];
 
 function isParentActive(item, location) {
-    if (location.pathname === item.to) return true;
+    if (item.to && location.pathname === item.to) return true;
     if (item.children && item.children.some(sub => location.pathname.startsWith(sub.to)))
         return true;
     return false;
@@ -58,6 +57,18 @@ function isParentActive(item, location) {
 
 export default function Sidebar() {
     const location = useLocation();
+    const navigate = useNavigate();
+    const [openDropdown, setOpenDropdown] = React.useState(null);
+
+    // Always close dropdown when route changes to a non-child
+    React.useEffect(() => {
+        const parentForPath = NAV.find(
+            item => item.children && item.children.some(sub => location.pathname.startsWith(sub.to))
+        );
+        if (!parentForPath || (parentForPath && parentForPath.label !== openDropdown)) {
+            setOpenDropdown(null);
+        }
+    }, [location.pathname, openDropdown]);
 
     return (
         <nav className="sidebar" id="sidebarNav">
@@ -65,6 +76,7 @@ export default function Sidebar() {
                 {NAV.map(item => {
                     const isActiveSection = isParentActive(item, location);
 
+                    // Simple link, no children
                     if (!item.children) {
                         return (
                             <li
@@ -83,25 +95,40 @@ export default function Sidebar() {
                                 {isActiveSection && <span className="sidebar-highlight" />}
                             </li>
                         );
-                    } else {
+                    }
+
+                    // Dropdown parent with NO 'to:' -- pure dropdown, only one open at a time
+                    if (!item.to && item.children && item.children.length > 0) {
+                        const isChildRoute = item.children.some(sub =>
+                            location.pathname.startsWith(sub.to)
+                        );
+                        const isOpen = openDropdown === item.label || isChildRoute;
                         return (
                             <li
-                                key={item.to}
-                                className={`relative${isActiveSection ? ' active-section' : ''}`}
+                                key={item.label}
+                                className={`relative${isOpen ? ' active-section' : ''}`}
                             >
-                                <NavLink
-                                    to={item.to}
-                                    className={({ isActive }) =>
-                                        `sidebar-link${isActive ? ' active' : ''}`
-                                    }
+                                <button
+                                    type="button"
+                                    className="sidebar-link sidebar-link--toggle"
+                                    aria-expanded={isOpen}
+                                    onClick={() => {
+                                        if (!isOpen) {
+                                            // When opening, always navigate to first child
+                                            setOpenDropdown(item.label);
+                                            if (!isChildRoute && item.children[0]?.to) {
+                                                navigate(item.children[0].to);
+                                            }
+                                        }
+                                        // Do not allow closing by clicking again
+                                    }}
                                 >
                                     <span className="icon">{getIcon(`mi:${item.icon}`)}</span>
                                     {item.label}
-                                </NavLink>
-                                {isActiveSection && <span className="sidebar-highlight" />}
+                                </button>
                                 <ul
                                     className="settings-sub-menu"
-                                    style={{ display: isActiveSection ? 'block' : 'none' }}
+                                    style={{ display: isOpen ? 'block' : 'none' }}
                                 >
                                     {item.children.map(sub => (
                                         <li key={sub.to}>
@@ -110,15 +137,53 @@ export default function Sidebar() {
                                                 className={({ isActive }) =>
                                                     `sidebar-link sidebar-link--sub${isActive ? ' active' : ''}`
                                                 }
+                                                onClick={() => setOpenDropdown(item.label)}
                                             >
                                                 {sub.label}
                                             </NavLink>
                                         </li>
                                     ))}
                                 </ul>
+                                {isOpen && <span className="sidebar-highlight" />}
                             </li>
                         );
                     }
+
+                    // Has 'to:' and children (dropdown opens if active as before)
+                    return (
+                        <li
+                            key={item.to}
+                            className={`relative${isActiveSection ? ' active-section' : ''}`}
+                        >
+                            <NavLink
+                                to={item.to}
+                                className={({ isActive }) =>
+                                    `sidebar-link${isActive ? ' active' : ''}`
+                                }
+                            >
+                                <span className="icon">{getIcon(`mi:${item.icon}`)}</span>
+                                {item.label}
+                            </NavLink>
+                            {isActiveSection && <span className="sidebar-highlight" />}
+                            <ul
+                                className="settings-sub-menu"
+                                style={{ display: isActiveSection ? 'block' : 'none' }}
+                            >
+                                {item.children.map(sub => (
+                                    <li key={sub.to}>
+                                        <NavLink
+                                            to={sub.to}
+                                            className={({ isActive }) =>
+                                                `sidebar-link sidebar-link--sub${isActive ? ' active' : ''}`
+                                            }
+                                        >
+                                            {sub.label}
+                                        </NavLink>
+                                    </li>
+                                ))}
+                            </ul>
+                        </li>
+                    );
                 })}
             </ul>
             <div className="sidebar-footer">{/* Footer content */}</div>

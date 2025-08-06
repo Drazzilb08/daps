@@ -383,8 +383,9 @@ class WebhookService:
                 upload_failures = []
                 upload_success = []
                 for manifest in manifests:
-                    upld = PosterUploader(logger=self.logger, manifest=manifest)
-                    upload_result = upld.upload_posters()
+                    upload_result = PosterUploader(
+                        logger=self.logger, manifest=manifest
+                    ).run()
                     if not upload_result.get("success"):
                         failure_message = (
                             upload_result.get("message") or "Unknown upload failure"

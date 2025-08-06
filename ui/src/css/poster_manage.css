@@ -1,0 +1,160 @@
+/* ===== GDrive Pills (optional, for poster_manage, etc.) ===== */
+.gdrive-pill-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4em;
+    margin-bottom: 0.7em;
+}
+
+.gdrive-pill {
+    background: var(--surface, #20232a);
+    border-radius: 10px;
+    min-height: 33px;
+    padding: 0.22em 1.1em 0.22em 0.42em;
+    margin-bottom: 2px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 1.5px 9px rgb(10 30 70 / 7%);
+    border-left: 4px solid transparent;
+    transition:
+        background 0.18s,
+        border-color 0.18s,
+        box-shadow 0.17s;
+    cursor: pointer;
+    font-size: 1.01em;
+}
+
+.gdrive-pill input[type='checkbox'] {
+    margin-right: 0.5em;
+    width: 18px;
+    height: 18px;
+    vertical-align: middle;
+}
+
+.gdrive-pill.checked {
+    border-left: 4px solid var(--success, #34e370);
+    background: color-mix(in srgb, var(--success) 10%, var(--surface) 90%);
+    box-shadow: 0 2.5px 11px rgb(62 170 250 / 8%);
+}
+
+.gdrive-pill.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.gdrive-pill:hover,
+.gdrive-pill:focus-visible {
+    background: color-mix(in srgb, var(--primary) 12%, var(--surface) 88%);
+    box-shadow: 0 4px 16px rgb(30 120 250 / 10%);
+    outline: none;
+}
+
+.gdrive-pill-content {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1 1 0;
+    gap: 2px;
+}
+
+.gdrive-pill-name {
+    font-size: 1.13em;
+    font-weight: 700;
+    color: var(--primary);
+    letter-spacing: 0.01em;
+    line-height: 1.12;
+}
+
+.gdrive-pill-path {
+    font-size: 0.96em;
+    color: var(--muted);
+    opacity: 0.84;
+    line-height: 1.07;
+    white-space: nowrap;
+    overflow: hidden;
+    max-width: 100%;
+}
+
+/* Card actions for pills/cards */
+.gdrive-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 1.2em;
+    padding: 0.6em 0 0.2em;
+    margin-top: 0.35em;
+    width: 100%;
+}
+
+.gdrive-card-progress {
+    flex: 1 1 0;
+    min-width: 70px;
+    max-width: 300px;
+    margin-right: 0.6em;
+    display: flex;
+    align-items: center;
+}
+
+.gdrive-card-run-btn {
+    flex-shrink: 0;
+    font-weight: 700;
+    min-width: 110px;
+    padding: 0.54em 1.18em;
+    font-size: 1.09em;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgb(55 170 90 / 6%);
+    margin-left: auto;
+}
+
+@media (width <= 650px) {
+    .gdrive-card-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.9em;
+    }
+
+    .gdrive-card-progress {
+        margin-right: 0;
+        max-width: 100%;
+    }
+
+    .gdrive-card-run-btn {
+        width: 100%;
+        min-width: 0;
+        margin-left: 0;
+        margin-top: 0.3em;
+    }
+}
+
+.gdrive-pill-complete {
+    margin-left: 10px;
+    color: var(--success, #34e370);
+    font-weight: 600;
+    font-size: 1em;
+}
+
+.gdrive-pill-error {
+    margin-left: 10px;
+    color: var(--error, #e35555);
+    font-weight: 600;
+    font-size: 1em;
+}
+
+.gdrive-pill.success {
+    border-left: 4px solid var(--success, #34e370);
+    background: color-mix(in srgb, var(--success) 23%, var(--surface) 77%);
+}
+
+.gdrive-pill.error {
+    border-left: 4px solid var(--error, #e35555);
+    background: color-mix(in srgb, var(--error) 18%, var(--surface) 82%);
+}
+
+.gdrive-pill.running {
+    border-left: 4px solid var(--primary, #3e7bfa);
+    background: color-mix(in srgb, var(--primary) 18%, var(--surface) 82%);
+}
+
+.gdrive-pill-progress {
+    margin-top: 6px;
+    margin-bottom: 2px;
+}

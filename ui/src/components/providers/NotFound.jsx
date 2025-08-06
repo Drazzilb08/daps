@@ -23,7 +23,11 @@ function isSolvable(tiles) {
     let invCount = 0;
     for (let i = 0; i < tiles.length - 1; i++) {
         for (let j = i + 1; j < tiles.length; j++) {
-            if (tiles[i] !== TILES.length - 1 && tiles[j] !== TILES.length - 1 && tiles[i] > tiles[j]) {
+            if (
+                tiles[i] !== TILES.length - 1 &&
+                tiles[j] !== TILES.length - 1 &&
+                tiles[i] > tiles[j]
+            ) {
                 invCount++;
             }
         }
@@ -36,11 +40,7 @@ function getGridPos(index) {
 }
 
 function tileContent(val) {
-    const grid = [
-      '4', '0', '4',
-      '',  '',  '',
-      '',  '',  ''
-    ];
+    const grid = ['4', '0', '4', '', '', '', '', '', ''];
     return grid[val] || '';
 }
 
@@ -70,7 +70,7 @@ export default function NotFound() {
         if (!middle404 && isSolved) {
             setIsSolved(false);
         }
-    }, [tiles]);
+    }, [tiles, isSolved]);
 
     useEffect(() => {
         if (moveCount >= 15) setShowHint(true);
@@ -79,7 +79,7 @@ export default function NotFound() {
     function isAdjacent(i, blank) {
         const pos = getGridPos(i);
         const bpos = getGridPos(blank);
-        return (Math.abs(pos.row - bpos.row) + Math.abs(pos.col - bpos.col)) === 1;
+        return Math.abs(pos.row - bpos.row) + Math.abs(pos.col - bpos.col) === 1;
     }
 
     function handleTileClick(idx) {
@@ -98,16 +98,23 @@ export default function NotFound() {
 
     function handleKeyDown(e) {
         if (isSolved) return;
-        const dir = { ArrowUp: -GRID_SIZE, ArrowDown: GRID_SIZE, ArrowLeft: -1, ArrowRight: 1 }[e.key];
+        const dir = { ArrowUp: -GRID_SIZE, ArrowDown: GRID_SIZE, ArrowLeft: -1, ArrowRight: 1 }[
+            e.key
+        ];
         if (dir !== undefined) {
             const moveIdx = blankIndex + dir;
             if (
                 moveIdx >= 0 &&
                 moveIdx < TILES.length &&
-                (dir === -GRID_SIZE || dir === GRID_SIZE || getGridPos(moveIdx).row === getGridPos(blankIndex).row)
+                (dir === -GRID_SIZE ||
+                    dir === GRID_SIZE ||
+                    getGridPos(moveIdx).row === getGridPos(blankIndex).row)
             ) {
                 const newTiles = [...tiles];
-                [newTiles[blankIndex], newTiles[moveIdx]] = [newTiles[moveIdx], newTiles[blankIndex]];
+                [newTiles[blankIndex], newTiles[moveIdx]] = [
+                    newTiles[moveIdx],
+                    newTiles[blankIndex],
+                ];
                 setTiles(newTiles);
                 setMoveCount(prev => prev + 1);
             }
@@ -126,12 +133,13 @@ export default function NotFound() {
         <div className="four04puzzle__outer">
             <h1 className="four04puzzle__title">404</h1>
             <p className="four04puzzle__desc">
-                Looks like you’re lost.<br />
+                Looks like you’re lost.
+                <br />
                 Slide to solve the <b>404</b> and get home!
             </p>
             <div
                 className={
-                    "four04puzzle__grid abs" +
+                    'four04puzzle__grid abs' +
                     (isSolved ? ' solved' : '') +
                     (invalidShake ? ' invalidshake' : '')
                 }
@@ -152,26 +160,24 @@ export default function NotFound() {
                     return (
                         <div
                             key={val}
-                            className={
-                                `four04puzzle__tile abs` +
-                                (isSolved ? ' solved' : '')
-                            }
+                            className={`four04puzzle__tile abs` + (isSolved ? ' solved' : '')}
                             style={{
                                 transform: `translate(${x}px, ${y}px)`,
                                 width: TILE_SIZE,
                                 height: TILE_SIZE,
                                 position: 'absolute',
-                                transition: 'transform 0.26s cubic-bezier(.62,1.8,.49,1.18), box-shadow 0.18s, background 0.18s',
+                                transition:
+                                    'transform 0.26s cubic-bezier(.62,1.8,.49,1.18), box-shadow 0.18s, background 0.18s',
                                 zIndex: 2,
                             }}
                             tabIndex={0}
                             aria-label={`Tile ${val + 1}`}
                             onClick={() => handleTileClick(idx)}
-                            onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && handleTileClick(idx)}
+                            onKeyDown={e =>
+                                (e.key === 'Enter' || e.key === ' ') && handleTileClick(idx)
+                            }
                         >
-                            <span className="four04puzzle__number">
-                                {tileContent(val)}
-                            </span>
+                            <span className="four04puzzle__number">{tileContent(val)}</span>
                         </div>
                     );
                 })}
@@ -179,9 +185,15 @@ export default function NotFound() {
             {showHint && (
                 <p
                     className="four04puzzle__hint"
-                    style={{ color: 'var(--muted)', textAlign: 'center', marginTop: '0.8rem', fontWeight: '600' }}
+                    style={{
+                        color: 'var(--muted)',
+                        textAlign: 'center',
+                        marginTop: '0.8rem',
+                        fontWeight: '600',
+                    }}
                 >
-                    Hint: Get the center row to say <span style={{color: 'var(--primary)'}}>4 0 4</span>
+                    Hint: Get the center row to say{' '}
+                    <span style={{ color: 'var(--primary)' }}>4 0 4</span>
                 </p>
             )}
             {isSolved && (
@@ -192,18 +204,22 @@ export default function NotFound() {
                         textAlign: 'center',
                         marginTop: '1rem',
                         fontWeight: '700',
-                        fontSize: '1.2rem'
+                        fontSize: '1.2rem',
                     }}
                     aria-live="polite"
                 >
                     🎉 You solved the puzzle! Great job!
                     <br />
-                    Shouldn't you be doing something else?
+                    Shouldn&#39;t you be doing something else?
                 </p>
             )}
             <div className="four04puzzle__controls">
-                <button className="four04puzzle__reset" onClick={handleReset}>Shuffle</button>
-                <a className="four04puzzle__home" href="/">Go Home</a>
+                <button className="four04puzzle__reset" onClick={handleReset}>
+                    Shuffle
+                </button>
+                <a className="four04puzzle__home" href="/">
+                    Go Home
+                </a>
             </div>
         </div>
     );

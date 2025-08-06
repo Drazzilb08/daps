@@ -1,36 +1,52 @@
-// src/components/common/ProgressBar.jsx
-import React from 'react';
+import React, { useRef, useState } from 'react';
+import TooltipFactory from './Tooltip';
+import '../css/progress.css';
 
-/**
- * value: 0-100 for determinate, null for indeterminate (animated)
- * active: true = apply indeterminate animation even if value is null
- * className: optional extra class
- */
 export default function ProgressBar({
     value = null,
     active = false,
     className = '',
     style = {},
+    done = false, 
+    error = false, 
+    tooltip = '',
     ...props
 }) {
+    const [tip, setTip] = useState(false);
+    const barRef = useRef(null);
+
     const hasValue = value !== null && value !== undefined;
+    let percent = hasValue ? Math.max(0, Math.min(100, value)) : 0;
+    let labelClass = percent >= 50 ? 'progress-bar__label--invert' : '';
+
+    let displayTooltip = tip && tooltip;
+    let doneClass = done ? ' progress-bar--done' : '';
+    let errorClass = error ? ' progress-bar--error' : '';
 
     return (
         <div
-            className={`progress-bar${active || hasValue ? ' progress-bar--active' : ''}${className ? ' ' + className : ''}`}
+            ref={barRef}
+            className={`progress-bar${active || hasValue ? ' progress-bar--active' : ''}${doneClass}${errorClass}${className ? ' ' + className : ''}`}
             style={style}
             {...props}
+            onMouseEnter={() => setTip(true)}
+            onMouseLeave={() => setTip(false)}
         >
             <div
                 className="progress-bar__inner"
-                style={hasValue ? { width: `${Math.max(0, Math.min(100, value))}%` } : undefined}
-            >
-                {hasValue && (
-                    <span className="progress-bar__label">
-                        {Math.round(Math.max(0, Math.min(100, value)))}%
-                    </span>
-                )}
-            </div>
+                style={hasValue ? { width: `${percent}%` } : undefined}
+            />
+            <span className={`progress-bar__label${labelClass ? ' ' + labelClass : ''}`}>
+                {hasValue ? `${Math.round(percent)}%` : ''}
+            </span>
+            {displayTooltip && (
+                <TooltipFactory
+                    anchor={barRef.current}
+                    text={tooltip}
+                    show={displayTooltip}
+                    position="top"
+                />
+            )}
         </div>
     );
 }

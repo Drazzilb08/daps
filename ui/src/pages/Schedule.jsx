@@ -4,8 +4,8 @@ import {
     fetchConfig,
     postConfig,
     fetchAllRunStates,
-    getModuleStatus,
-    runScheduledModule,
+    fetchModuleStatus,
+    runModule,
     cancelScheduledModule,
 } from '../utils/api';
 import { humanize, getIcon, getSpinner } from '../utils/tools';
@@ -287,7 +287,7 @@ function ScheduleCard({ module, scheduleTime, runState, reload, openModal, toast
         let destroy = false;
         while (!destroy && running) {
             await new Promise(r => setTimeout(r, 1000));
-            const state = await getModuleStatus(module);
+            const state = await fetchModuleStatus(module);
             if (state !== running) {
                 setRunning(state);
                 if (!state) reload();
@@ -302,7 +302,7 @@ function ScheduleCard({ module, scheduleTime, runState, reload, openModal, toast
     useEffect(() => {
         let destroy = false;
         (async () => {
-            const state = await getModuleStatus(module);
+            const state = await fetchModuleStatus(module);
             if (!destroy) setRunning(state);
             if (state && !polling) pollStatus();
         })();
@@ -375,7 +375,7 @@ function ScheduleCard({ module, scheduleTime, runState, reload, openModal, toast
                             e.stopPropagation();
                             if (!running) {
                                 setRunning(true);
-                                await runScheduledModule(module);
+                                await runModule(module);
                                 toast('Module started.', 'info');
                                 setRunning(true);
                                 pollStatus();

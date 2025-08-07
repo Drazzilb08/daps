@@ -1,21 +1,19 @@
 // src/components/poster_management/GDriveAdhocContent.jsx
-
 import React, { useRef, useState, useMemo } from 'react';
 import ProgressBar from '../ProgressBar';
 import TooltipFactory from '../Tooltip';
-import {getIcon} from '../../utils/tools';
+import { getIcon } from '../../utils/tools';
 
 export default function GDriveAdhocContent({
     items = [],
     selected = [],
-    loading = false,
-    pillProgress = {}, // { [name]: { progress, status, error } }
+    pillProgress = {},
     onToggleSelect,
     onRun,
-    // onCancel,
 }) {
     // Search/filter state
     const [filter, setFilter] = useState('');
+    
     // Tooltip for the Run button
     const [runTip, setRunTip] = useState(false);
     const runBtnRef = useRef(null);
@@ -45,13 +43,28 @@ export default function GDriveAdhocContent({
         );
     };
 
+
     // Only allow run if any selected pills are NOT running/success
     const runDisabled =
+        selected.length === 0 || 
         !selected.some(
             n =>
                 !pillProgress[n] ||
-                (pillProgress[n].status !== 'running' && pillProgress[n].status !== 'success')
-        ) || loading;
+                (
+                    pillProgress[n].status !== 'running' &&
+                    pillProgress[n].status !== 'success'
+                )
+        );
+
+    // Get status display text
+    const getStatusText = (pill) => {
+        switch (pill.status) {
+            case 'running': return 'Running...';
+            case 'success': return 'Completed!';
+            case 'error': return pill.error || 'Failed';
+            default: return '';
+        }
+    };
 
     return (
         <>
@@ -65,6 +78,13 @@ export default function GDriveAdhocContent({
                     autoComplete="off"
                     aria-label="Filter drives"
                 />
+                <div className="gdrive-pill-summary">
+                    {selected.length > 0 && (
+                        <span className="selected-count">
+                            {selected.length} selected
+                        </span>
+                    )}
+                </div>
             </div>
             <div className="gdrive-pill-list">
                 {filteredItems.length === 0 ? (
@@ -73,15 +93,20 @@ export default function GDriveAdhocContent({
                     filteredItems.map(item => {
                         const checked = selected.includes(item.name);
                         const pill = pillProgress[item.name] || {};
+                        
                         const isRunning = pill.status === 'running';
                         const isSuccess = pill.status === 'success';
                         const isError = pill.status === 'error';
+                        const pillDisabled = isRunning;
+
+                        const statusText = getStatusText(pill);
+
                         return (
                             <div
                                 className={
                                     'gdrive-pill' +
                                     (checked ? ' checked' : '') +
-                                    (loading || isRunning ? ' disabled' : '') +
+                                    (pillDisabled ? ' disabled' : '') +
                                     (isRunning ? ' running' : '') +
                                     (isSuccess ? ' success' : '') +
                                     (isError ? ' error' : '')
@@ -91,79 +116,82 @@ export default function GDriveAdhocContent({
                                 aria-pressed={checked}
                                 key={item.name}
                                 onClick={e => {
-                                    if (!loading && !isRunning && e.target.type !== 'checkbox') {
+                                    if (!pillDisabled && e.target.type !== 'checkbox') {
                                         onToggleSelect(item.name);
                                     }
                                 }}
                                 onKeyDown={e =>
                                     (e.key === ' ' || e.key === 'Enter') &&
-                                    !loading &&
-                                    !isRunning &&
+                                    !pillDisabled &&
                                     onToggleSelect(item.name)
                                 }
-                                aria-disabled={loading || isRunning}
+                                aria-disabled={pillDisabled}
                             >
                                 <input
                                     type="checkbox"
                                     checked={checked}
                                     onChange={() =>
-                                        !loading && !isRunning && onToggleSelect(item.name)
+                                        !pillDisabled && onToggleSelect(item.name)
                                     }
                                     aria-label={`Select ${item.name}`}
-                                    disabled={loading || isRunning}
+                                    disabled={pillDisabled}
                                 />
                                 <div className="gdrive-pill-content">
-                                    <span className="gdrive-pill-name">
-                                        {highlightText(item.name, filter)}
-                                    </span>
-                                    <span className="gdrive-pill-path" title={item.location}>
-                                        {highlightText(item.location, filter)}
-                                    </span>
-                                    {/* Divider before progress */}
-                                    <div className="progress-bar-divider" />
-                                    {(pill.progress != null || pill.status === 'running' || pill.status === 'success' || pill.status === 'error') && (
-                                        <ProgressBar
-                                            value={pill.progress}
-                                            active={pill.status === 'running' && pill.progress == null}
-                                            done={pill.status === 'success'}
-                                            error={pill.status === 'error'}
-                                            tooltip={
-                                                pill.status === 'running' ? 'Syncing...' :
-                                                pill.status === 'success' ? 'Completed!' :
-                                                pill.status === 'error' ? 'Failed' : ''
-                                            }
-                                            className="gdrive-pill-progress"
-                                        />
+                                    <div className="gdrive-pill-info">
+                                        <span className="gdrive-pill-name">
+                                            {highlightText(item.name, filter)}
+                                        </span>
+                                        <span className="gdrive-pill-path" title={item.location}>
+                                            {highlightText(item.location, filter)}
+                                        </span>
+                                    </div>
+                                    
+                                    {/* Status and Progress Section */}
+                                    {(pill.progress != null || pillDisabled) && (
+                                        <div className="gdrive-pill-status">
+                                            {statusText && (
+                                                <span className="gdrive-pill-status-text">
+                                                    {statusText}
+                                                </span>
+                                            )}
+                                            <div className="progress-bar-divider" />
+                                            <ProgressBar
+                                                value={pill.progress}
+                                                active={isRunning && pill.progress == null}
+                                                done={isSuccess}
+                                                error={isError}
+                                                tooltip={statusText}
+                                                className="gdrive-pill-progress"
+                                            />
+                                        </div>
                                     )}
                                 </div>
-                                {/* Example: cancel action button (future use) */}
-                                {isRunning && (
-                                    <button
-                                        className="gdrive-pill-cancel"
-                                        title="Cancel"
-                                        style={{
-                                            marginLeft: 'auto',
-                                            background: 'none',
-                                            border: 'none',
-                                            color: '#f66',
-                                            fontSize: '1.3em',
-                                            cursor: 'pointer',
-                                            opacity: 0.82,
-                                        }}
-                                        // onClick={e => {
-                                        //     e.stopPropagation();
-                                        //     if (onCancel) onCancel(item.name);
-                                        // }}
-                                        aria-label={`Cancel sync for ${item.name}`}
-                                    >
-                                        {getIcon("mi:cancel")}
-                                    </button>
-                                )}
+                                
+                                {/* Action buttons */}
+                                <div className="gdrive-pill-actions">
+                                    
+                                    {/* Retry button for failed jobs */}
+                                    {isError && (
+                                        <button
+                                            className="gdrive-pill-retry"
+                                            title="Retry this sync"
+                                            onClick={e => {
+                                                e.stopPropagation();
+                                                // Add to selected and trigger run
+                                                if (!checked) onToggleSelect(item.name);
+                                            }}
+                                            aria-label={`Retry sync for ${item.name}`}
+                                        >
+                                            {getIcon("mi:refresh")}
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         );
                     })
                 )}
             </div>
+            
             <div className="gdrive-card-actions">
                 <button
                     ref={runBtnRef}
@@ -175,11 +203,18 @@ export default function GDriveAdhocContent({
                     onFocus={() => setRunTip(true)}
                     onBlur={() => setRunTip(false)}
                 >
-                    {loading ? 'Running...' : 'Run Sync'}
+                    {selected.length === 0 
+                        ? 'Select drives to sync' 
+                        : `Run Sync (${selected.length})`
+                    }
                 </button>
                 <TooltipFactory
                     anchor={runBtnRef.current}
-                    text="Run sync for selected items"
+                    text={
+                        selected.length === 0 
+                            ? "Select one or more drives to sync"
+                            : `Run sync for ${selected.length} selected drive${selected.length > 1 ? 's' : ''}`
+                    }
                     show={runTip}
                     position="top"
                 />

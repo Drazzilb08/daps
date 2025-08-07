@@ -152,19 +152,19 @@ class PosterRenamerr:
             if season_number is not None:
                 if matched and candidate:
                     self.logger.debug(
-                        f"✓ Matched: show S{season_number}: {title} ({year}) <-> {candidate.get('title')} ({candidate.get('year')})"
+                        f"✓ Matched: [show] {title} ({year}) Season: {season_number} <-> {candidate.get('title')} ({candidate.get('year')}) Season: {candidate.get('season_number')}"
                     )
                 else:
                     self.logger.debug(
-                        f"✗ No match: show S{season_number}: {title} ({year})"
+                        f"✗ No match: [show] {title} ({year}) Season {season_number}"
                     )
             else:
                 if matched and candidate:
                     self.logger.debug(
-                        f"✓ Matched: show main: {title} ({year}) <-> {candidate.get('title')} ({candidate.get('year')})"
+                        f"✓ Matched: [show] {title} ({year}) <-> {candidate.get('title')} ({candidate.get('year')})"
                     )
                 else:
-                    self.logger.debug(f"✗ No match: show main: {title} ({year})")
+                    self.logger.debug(f"✗ No match: [show] {title} ({year})")
 
         elif is_collection:
             if matched and candidate:
@@ -177,10 +177,10 @@ class PosterRenamerr:
         else:
             if matched and candidate:
                 self.logger.debug(
-                    f"✓ Matched: {title} ({year}) <-> {candidate.get('title')} ({candidate.get('year')})"
+                    f"✓ Matched: [movie] {title} ({year}) <-> {candidate.get('title')} ({candidate.get('year')})"
                 )
             else:
-                self.logger.debug(f"✗ No match: {title} ({year})")
+                self.logger.debug(f"✗ No match: [movie] {title} ({year})")
 
         return {
             "matched": bool(matched),
@@ -575,10 +575,8 @@ class PosterRenamerr:
                     for i in self.config.instances
                     if isinstance(i, dict)
                     for name, opts in i.items()
-                    if getattr(opts, "add_posters", False)
                 },
             }
-            self.logger.warning(f"instance_map: {instance_map}")
             connector = Connector(self.db, self.logger, instance_map=instance_map)
             connector.update_arr_database()
             connector.update_collections_database()

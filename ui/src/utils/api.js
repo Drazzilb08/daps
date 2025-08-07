@@ -1,21 +1,55 @@
-// utils/api.js
+// ========== JOB MANAGEMENT FUNCTIONS ==========
 
+// Get details of a specific job by ID
 export async function fetchJobDetail(jobId) {
     const res = await fetch(`/api/jobs/${jobId}`);
     if (!res.ok) throw new Error('Failed to fetch job');
     return await res.json();
 }
 
-// Add at bottom of file
+// Retry a failed job
+export async function retryJob(jobId) {
+    const res = await fetch(`/api/jobs/${jobId}/retry`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+    });
+    if (!res.ok) {
+        const error = await res.json().catch(() => ({}));
+        throw new Error(error.message || 'Failed to retry job');
+    }
+    return await res.json();
+}
+
+
+// ========== GDRIVE SYNC FUNCTIONS ==========
+
+// Run GDrive sync with enhanced error handling and job tracking
 export async function runGDriveAdhocSync(gdrive_names) {
     const qs = gdrive_names.map(n => `gdrive_names=${encodeURIComponent(n)}`).join('&');
     const res = await fetch(`/api/gdrive-folder?${qs}`, { method: 'POST' });
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'Failed to run GDrive adhoc sync');
+        throw new Error(err.error || `Failed to run GDrive adhoc sync (${res.status})`);
     }
-    return await res.json();
+    const result = await res.json();
+    
+    // Ensure we have a job_id for tracking
+    if (!result.job_id) {
+        throw new Error('Sync started but no job ID returned for tracking');
+    }
+    
+    return result;
 }
+
+// Get Gdrive Statistics
+export async function fetchGDriveStats() {
+    const res = await fetch('/api/gdrive-stats');
+    if (!res.ok) throw new Error('Failed to fetch GDrive stats');
+    const data = await res.json();
+    return data.gdrive_stats || [];
+}
+
+// ========== MEDIA & COLLECTION MANAGEMENT ==========
 
 // Upload a single media cache item by ID
 export async function uploadMediaById(id) {
@@ -37,15 +71,15 @@ export async function uploadCollectionById(id) {
     return await res.json();
 }
 
-// --- Get all media cache entries ---
+// Get all media cache entries
 export async function fetchMediaCache() {
     const res = await fetch('/api/get-media-cache');
-    if (!res.ok) throw new Error('Failed to fetch media tocache');
+    if (!res.ok) throw new Error('Failed to fetch media cache');
     const data = await res.json();
     return data.media_cache || [];
 }
 
-// --- Get all collection cache entries ---
+// Get all collection cache entries
 export async function fetchCollectionCache() {
     const res = await fetch('/api/get-collection-cache');
     if (!res.ok) throw new Error('Failed to fetch collection cache');
@@ -53,7 +87,7 @@ export async function fetchCollectionCache() {
     return data.collection_cache || [];
 }
 
-// --- Delete media cache entry by id ---
+// Delete media cache entry by id
 export async function deleteMediaCacheById(id) {
     if (!id) throw new Error('Missing id for deletion');
     const res = await fetch(`/api/delete-media-cache/${id}`, {
@@ -66,7 +100,7 @@ export async function deleteMediaCacheById(id) {
     return await res.json();
 }
 
-// --- Delete collection cache entry by id ---
+// Delete collection cache entry by id
 export async function deleteCollectionCacheById(id) {
     if (!id) throw new Error('Missing id for deletion');
     const res = await fetch(`/api/delete-collection-cache/${id}`, {
@@ -79,15 +113,9 @@ export async function deleteCollectionCacheById(id) {
     return await res.json();
 }
 
-// --- Get Gdrive Statistics ---
-export async function fetchGDriveStats() {
-    const res = await fetch('/api/gdrive-stats');
-    if (!res.ok) throw new Error('Failed to fetch GDrive stats');
-    const data = await res.json();
-    return data.gdrive_stats || [];
-}
+// ========== POSTER STATISTICS ==========
 
-// --- Get Unamtched Poster Statistics ---
+// Get unmatched poster statistics
 export async function fetchUnmatchedStats() {
     const res = await fetch('/api/unmatched-stats');
     if (!res.ok) throw new Error('Failed to fetch unmatched poster stats');
@@ -95,7 +123,7 @@ export async function fetchUnmatchedStats() {
     return data.summary || [];
 }
 
-// --- Get Matched Poster Statistics ---
+// Get matched poster statistics
 export async function fetchMatchedPosterStats() {
     const res = await fetch('/api/matched-posters-stats');
     if (!res.ok) throw new Error('Failed to fetch matched poster stats');
@@ -103,55 +131,7 @@ export async function fetchMatchedPosterStats() {
     return data.matched_posters_stats || [];
 }
 
-// --- Plex Libraries ---
-export async function fetchPlexLibraries(instanceName) {
-    const resp = await fetch(`/api/plex/libraries?instance=${encodeURIComponent(instanceName)}`);
-    if (!resp.ok) {
-        const msg = `Failed to fetch Plex libraries (${resp.status})`;
-        throw new Error(msg);
-    }
-    return await resp.json();
-}
-
-// --- Create Directory ---
-export async function createDirectory(path) {
-    const resp = await fetch(`/api/create-folder?path=${encodeURIComponent(path)}`, {
-        method: 'POST',
-    });
-    if (!resp.ok) {
-        let err;
-        try {
-            err = await resp.json();
-        } catch {
-            err = {};
-        }
-        throw new Error(err.error || resp.statusText);
-    }
-    return await resp.json();
-}
-
-// --- Fetch Config ---
-export async function fetchConfig(section = null) {
-    let url = '/api/config';
-    if (section) url += `?section=${encodeURIComponent(section)}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('Failed to fetch config');
-    return await res.json();
-}
-
-// --- Save Config ---
-export async function postConfig(payload) {
-    const res = await fetch('/api/config', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || res.statusText);
-    return { success: true, data };
-}
-
-// --- Poster/Folder Stats ---
+// Get poster/folder stats
 export async function fetchPosters(location) {
     if (!location) {
         return {
@@ -162,7 +142,6 @@ export async function fetchPosters(location) {
             message: 'Missing location for stats fetch.',
         };
     }
-    // Use query params for GET
     const res = await fetch(`/api/posters?location=${encodeURIComponent(location)}`);
     if (!res.ok) {
         return {
@@ -176,7 +155,62 @@ export async function fetchPosters(location) {
     return await res.json();
 }
 
-// --- Send Test Notification ---
+// Get poster asset list
+export async function fetchPosterAssetList() {
+    const res = await fetch('/api/poster_assets');
+    if (!res.ok) throw new Error('Failed to fetch poster asset list');
+    const arr = await res.json();
+    return Array.isArray(arr) ? arr : [];
+}
+
+// Poster preview URL (not async, just guard errors)
+export function fetchPosterPreviewUrl(location, path) {
+    if (!location || !path) {
+        return '';
+    }
+    return `/api/preview-poster?location=${encodeURIComponent(location)}&path=${encodeURIComponent(
+        path
+    )}`;
+}
+
+// ========== PLEX INTEGRATION ==========
+
+// Get Plex libraries
+export async function fetchPlexLibraries(instanceName) {
+    const resp = await fetch(`/api/plex/libraries?instance=${encodeURIComponent(instanceName)}`);
+    if (!resp.ok) {
+        const msg = `Failed to fetch Plex libraries (${resp.status})`;
+        throw new Error(msg);
+    }
+    return await resp.json();
+}
+
+// ========== CONFIGURATION ==========
+
+// Fetch config
+export async function fetchConfig(section = null) {
+    let url = '/api/config';
+    if (section) url += `?section=${encodeURIComponent(section)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Failed to fetch config');
+    return await res.json();
+}
+
+// Save config
+export async function postConfig(payload) {
+    const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || res.statusText);
+    return { success: true, data };
+}
+
+// ========== NOTIFICATIONS ==========
+
+// Send test notification
 export async function runTestNotification(type, data) {
     if (!type || !data) {
         return { ok: false, error: 'Missing type or data' };
@@ -215,7 +249,9 @@ export async function runTestNotification(type, data) {
     return { ok: false, error: result.error || 'Test notification failed (unknown error)' };
 }
 
-// --- Test Instance (API check) ---
+// ========== INSTANCE TESTING ==========
+
+// Test instance (API check)
 export async function testInstance(service, entry) {
     if (!service || !entry || !entry.name || !entry.url || !entry.api) {
         return false;
@@ -234,7 +270,9 @@ export async function testInstance(service, entry) {
     return true;
 }
 
-// --- Fetch all run states (job queue) ---
+// ========== MODULE MANAGEMENT ==========
+
+// Fetch all run states (job queue)
 export async function fetchAllRunStates() {
     const res = await fetch('/api/run_state');
     if (!res.ok) throw new Error('Failed to fetch run states');
@@ -245,7 +283,7 @@ export async function fetchAllRunStates() {
     }, {});
 }
 
-// --- Module status (running) ---
+// Module status (running)
 export async function fetchModuleStatus(module) {
     if (!module) return false;
     const res = await fetch(`/api/status?module=${encodeURIComponent(module)}`);
@@ -254,39 +292,7 @@ export async function fetchModuleStatus(module) {
     return !!data.running;
 }
 
-// --- Poster preview URL (not async, just guard errors) ---
-export function fetchPosterPreviewUrl(location, path) {
-    if (!location || !path) {
-        return '';
-    }
-    return `/api/preview-poster?location=${encodeURIComponent(location)}&path=${encodeURIComponent(
-        path
-    )}`;
-}
-
-// --- Log modules list ---
-export async function fetchLogModules() {
-    const res = await fetch('/api/logs');
-    if (!res.ok) throw new Error('Failed to fetch log modules');
-    return await res.json();
-}
-
-// --- Log files and content ---
-export async function fetchLogFiles(moduleName) {
-    if (!moduleName) return [];
-    const res = await fetch(`/api/logs/${moduleName}`);
-    if (!res.ok) return [];
-    return await res.json();
-}
-
-export async function fetchLogContent(moduleName, fileName) {
-    if (!moduleName || !fileName) return '';
-    const res = await fetch(`/api/logs/${moduleName}/${fileName}`);
-    if (!res.ok) return '';
-    return await res.text();
-}
-
-// --- Scheduled jobs (run/cancel) ---
+// Run module
 export async function runModule(module) {
     if (!module) return false;
     const res = await fetch('/api/run', {
@@ -297,6 +303,7 @@ export async function runModule(module) {
     return res.ok;
 }
 
+// Cancel scheduled module
 export async function cancelScheduledModule(module) {
     if (!module) return false;
     const res = await fetch('/api/cancel', {
@@ -307,15 +314,51 @@ export async function cancelScheduledModule(module) {
     return res.ok;
 }
 
-// --- Poster asset list ---
-export async function fetchPosterAssetList() {
-    const res = await fetch('/api/poster_assets');
-    if (!res.ok) throw new Error('Failed to fetch poster asset list');
-    const arr = await res.json();
-    return Array.isArray(arr) ? arr : [];
+// ========== LOGGING ==========
+
+// Get log modules list
+export async function fetchLogModules() {
+    const res = await fetch('/api/logs');
+    if (!res.ok) throw new Error('Failed to fetch log modules');
+    return await res.json();
 }
 
-// --- Directory listing ---
+// Get log files
+export async function fetchLogFiles(moduleName) {
+    if (!moduleName) return [];
+    const res = await fetch(`/api/logs/${moduleName}`);
+    if (!res.ok) return [];
+    return await res.json();
+}
+
+// Get log content
+export async function fetchLogContent(moduleName, fileName) {
+    if (!moduleName || !fileName) return '';
+    const res = await fetch(`/api/logs/${moduleName}/${fileName}`);
+    if (!res.ok) return '';
+    return await res.text();
+}
+
+// ========== FILESYSTEM ==========
+
+// Create directory
+export async function createDirectory(path) {
+    const resp = await fetch(`/api/create-folder?path=${encodeURIComponent(path)}`, {
+        method: 'POST',
+    });
+    if (!resp.ok) {
+        let err;
+        try {
+            err = await resp.json();
+        } catch {
+            err = {};
+        }
+        throw new Error(err.error || resp.statusText);
+    }
+    return await resp.json();
+}
+
+// Directory listing
 export async function fetchDirectoryList(path) {
     if (!path) path = '/';
     const res = await fetch(`/api/list?path=${encodeURIComponent(path)}`);

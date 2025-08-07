@@ -1,6 +1,8 @@
 import hashlib
 import json
-from typing import Any, List, Optional, Tuple
+from contextlib import contextmanager
+from dataclasses import dataclass
+from typing import Any, Dict, Generator, List, Optional, Tuple
 
 from util.config import load_config
 from util.connector import Connector
@@ -11,10 +13,62 @@ from util.normalization import normalize_titles
 from util.plex import PlexClient
 
 
-# Manifest expected: {'media_cache': [int]], 'collections_cache': [int]}
+class PosterUploadError(Exception):
+    """Base exception for poster upload operations"""
+
+    pass
+
+
+class PlexConnectionError(PosterUploadError):
+    """Raised when Plex connection fails"""
+
+    pass
+
+
+class AssetProcessingError(PosterUploadError):
+    """Raised when asset processing fails"""
+
+    pass
+
+
+class FileOperationError(PosterUploadError):
+    """Raised when file operations fail"""
+
+    pass
+
+
+@dataclass
+class UploadResult:
+    """Result of a single upload operation"""
+
+    asset_title: str
+    asset_type: str
+    success: bool
+    action: str  # 'updated', 'skipped', 'failed'
+    reason: str
+    library_name: Optional[str] = None
+    match_type: Optional[str] = None
+
+
+@dataclass
+class InstanceResult:
+    """Result for a single Plex instance"""
+
+    instance_name: str
+    enabled: bool
+    connected: bool
+    uploads: List[UploadResult]
+    error_message: Optional[str] = None
+
+
 class PosterUploader:
+    """Enhanced poster uploader with improved error handling and logging"""
+
     def __init__(
-        self, logger: Logger = None, manifest: dict = None, force: bool = False
+        self,
+        logger: Optional[Logger] = None,
+        manifest: Optional[Dict] = None,
+        force: bool = False,
     ):
         self.full_config = load_config()
         self.config = self.full_config.poster_renamerr
@@ -24,665 +78,750 @@ class PosterUploader:
         self.manifest = manifest or {}
         self.force = force
 
-    def run(self):
+        # Cache for connections and indexes
+        self._plex_clients = {}
+        self._media_indexes = {}
+
+    def run(self) -> Dict[str, Any]:
         """
-        Syncs poster assets to Plex using a database-cached media index for matching.
-        Avoids unnecessary uploads by comparing hashes. Supports dry-run.
-        Returns a summary dict for programmatic consumption.
+        Main entry point for poster uploading with improved error handling.
+
+        Returns:
+            Dict with comprehensive results and minimal verbose logging
         """
-        dry_run = self.config.dry_run
-        instances = self.config.instances
-        instance_list = {
-            "arrs": [i for i in instances if isinstance(i, str)],
-            "plex": {
-                name: (opts.library_names or [])
-                for i in instances
-                if isinstance(i, dict)
-                for name, opts in i.items()
-                if getattr(opts, "add_posters", False)
-            },
-        }
-        Connector(
-            self.db, self.full_config, self.logger, instance_list
-        ).update_plex_database()
-        overall_updated = []
-        overall_skipped = []
-        overall_failed = []
-        any_instance_processed = False
         try:
-            for i in self.config.instances:
-                if isinstance(i, dict):
-                    instance_name, instance_data = next(iter(i.items()))
-                    plex_config = self.full_config.instances.plex.get(instance_name)
-                    add_posters = instance_data.add_posters
-                    if plex_config and add_posters:
-                        any_instance_processed = True
-                        url = plex_config.url
-                        api = plex_config.api
-                        plex_client = PlexClient(url, api, self.logger)
-                        if plex_client.is_connected():
-                            assets = []
-                            plex_media_cache = self.db.plex.get_by_instance(
-                                instance_name
-                            )
-                            self.logger.debug(
-                                f"Plex Media Cache: {len(plex_media_cache)} entries"
-                            )
-                            all_ids = [
-                                ("media_cache", i)
-                                for i in self.manifest.get("media_cache", [])
-                            ] + [
-                                ("collections_cache", i)
-                                for i in self.manifest.get("collections_cache", [])
-                            ]
-                            self.logger.debug(
-                                f"Processing {len(all_ids)} assets from manifest: {all_ids}"
-                            )
-                            for source, asset_id in all_ids:
-                                if source == "media_cache":
-                                    asset = self.db.media.get_by_id(asset_id)
-                                else:
-                                    asset = self.db.collection.get_by_id(asset_id)
-                                if not asset:
-                                    self.logger.warning(
-                                        f"Asset ID {asset_id} not found in {source}. Skipping."
-                                    )
-                                    continue
-                                assets.append(asset)
-                            self.logger.debug(f"Found {len(assets)} assets to process.")
-                            if not plex_media_cache:
-                                self.logger.error(
-                                    f"No media cache found for Plex instance '{instance_name}'. Skipping instance."
-                                )
-                                overall_failed.append(
-                                    f"{instance_name}: No media cache."
-                                )
-                                continue
-                            movie_index, show_index, season_index, collection_index = (
-                                self._build_indexes(plex_media_cache)
-                            )
-                            updated, skipped, failed = [], [], []
-                            updated += self._sync_movies(
-                                assets,
-                                self.db,
-                                plex_client,
-                                movie_index,
-                                dry_run,
-                                skipped,
-                                failed,
-                                self.logger,
-                            )
-                            updated += self._sync_shows_and_seasons(
-                                assets,
-                                self.db,
-                                plex_client,
-                                show_index,
-                                season_index,
-                                dry_run,
-                                skipped,
-                                failed,
-                                self.logger,
-                            )
-                            updated += self._sync_collections(
-                                assets,
-                                self.db,
-                                plex_client,
-                                collection_index,
-                                dry_run,
-                                skipped,
-                                failed,
-                                self.logger,
-                            )
-                            overall_updated.extend(updated)
-                            overall_skipped.extend(skipped)
-                            overall_failed.extend(failed)
-                        else:
-                            msg = f"Skipping sync for {instance_name} (not connected)"
-                            self.logger.warning(msg)
-                            overall_failed.append(msg)
+            # Parse instance configuration
+            enabled_instances = self._get_enabled_instances()
+
+            if not enabled_instances:
+                self.logger.debug("No Plex instances enabled for poster upload")
+                return self._create_result(
+                    success=False,
+                    message="No Plex instances enabled for poster upload",
+                    error_code="NO_ENABLED_INSTANCES",
+                )
+
+            # Update Plex database once for all instances
+            self._update_plex_database(enabled_instances)
+
+            # Process each enabled instance
+            instance_results = []
+            for instance_name, library_names in enabled_instances.items():
+                result = self._process_instance(instance_name, library_names)
+                instance_results.append(result)
+
+            # Generate final result
+            return self._compile_final_result(instance_results)
+
+        except Exception as e:
+            self.logger.error(f"Poster upload failed: {e}", exc_info=True)
+            return self._create_result(
+                success=False,
+                message=f"Poster upload failed: {e}",
+                error_code="UPLOAD_EXCEPTION",
+            )
+        finally:
+            self._cleanup_connections()
+
+    def _get_enabled_instances(self) -> Dict[str, List[str]]:
+        """Get enabled Plex instances with their library names"""
+        enabled_instances = {}
+        disabled_instances = []
+
+        for instance_config in self.config.instances:
+            if isinstance(instance_config, dict):
+                for instance_name, instance_data in instance_config.items():
+                    if (
+                        hasattr(instance_data, "add_posters")
+                        and instance_data.add_posters
+                    ):
+                        library_names = getattr(instance_data, "library_names", [])
+                        enabled_instances[instance_name] = library_names
                     else:
-                        msg = f"Skipping sync for {instance_name} (not enabled)"
-                        self.logger.info(msg)
-                        overall_skipped.append(msg)
-            return self._compose_result(
-                any_instance_processed, overall_updated, overall_skipped, overall_failed
-            )
-        except Exception as exc:
-            # Log what we have before returning on exception
-            self.logger.error(f"Exception during poster upload: {exc}", exc_info=True)
-            self.logger.info(
-                f"Poster upload summary: Updated: {len(overall_updated)}, Skipped: {len(overall_skipped)}, Failed: {len(overall_failed)}"
-            )
-            if overall_skipped:
-                self.logger.info(
-                    "SKIPPED ASSETS:\n"
-                    + "\n".join("\t" + str(s) for s in overall_skipped)
-                )
-            if overall_failed:
-                self.logger.warning(
-                    "FAILED ASSETS:\n"
-                    + "\n".join("\t" + str(f) for f in overall_failed)
-                )
-            return {
-                "success": False,
-                "message": f"Exception occurred: {exc}",
-                "error_code": "EXCEPTION",
-                "payload": {
-                    "manifest": self.manifest,
-                },
-            }
+                        disabled_instances.append(instance_name)
 
-    def _compose_result(
-        self, any_instance_processed, overall_updated, overall_skipped, overall_failed
-    ):
-        """
-        Compose and log the result/summary for the poster upload run.
-        """
+        # Log disabled instances once, concisely
+        if disabled_instances:
+            self.logger.debug(f"Disabled instances: {', '.join(disabled_instances)}")
 
-        def log_summary():
-            self.logger.info(
-                f"Poster upload summary: Updated: {len(overall_updated)}, Skipped: {len(overall_skipped)}, Failed: {len(overall_failed)}"
-            )
-            if overall_skipped:
-                self.logger.info(
-                    "SKIPPED ASSETS:\n"
-                    + "\n".join("\t" + str(s) for s in overall_skipped)
-                )
-            if overall_failed:
-                self.logger.warning(
-                    "FAILED ASSETS:\n"
-                    + "\n".join("\t" + str(f) for f in overall_failed)
-                )
+        return enabled_instances
 
-        if not any_instance_processed:
-            self.logger.error(
-                "No Plex instances enabled or configured for poster upload."
-            )
-            log_summary()
-            return {
-                "success": False,
-                "message": "No Plex instances enabled or configured for poster upload.",
-                "error_code": "NO_ENABLED_INSTANCE",
-                "payload": {
-                    "manifest": self.manifest,
-                },
-            }
-        if overall_failed:
-            self.logger.error(
-                f"Some uploads failed. Updated: {len(overall_updated)}, Skipped: {len(overall_skipped)}, Failed: {len(overall_failed)}"
-            )
-            log_summary()
-            return {
-                "success": False,
-                "message": f"Some uploads failed. Updated: {len(overall_updated)}, Skipped: {len(overall_skipped)}, Failed: {len(overall_failed)}",
-                "error_code": "UPLOAD_FAILED",
-                "payload": {
-                    "manifest": self.manifest,
-                    "updated": overall_updated,
-                    "skipped": overall_skipped,
-                    "failed": overall_failed,
-                },
-            }
-        # If here, all succeeded or were skipped
-        log_summary()
-        return {
-            "success": True,
-            "message": f"Uploads completed. Updated: {len(overall_updated)}, Skipped: {len(overall_skipped)}",
-            "error_code": None,
-            "payload": {
-                "manifest": self.manifest,
-                "updated": overall_updated,
-                "skipped": overall_skipped,
-            },
+    def _update_plex_database(self, enabled_instances: Dict[str, List[str]]):
+        """Update Plex database for enabled instances"""
+        instance_map = {
+            "plex": {name: libraries for name, libraries in enabled_instances.items()}
         }
 
-    def _is_single_asset_manifest(self):
-        """
-        Returns True if the manifest is for a single asset (media or collection, but not both, and only one ID).
-        """
-        media_ids = self.manifest.get("media_cache", [])
-        collection_ids = self.manifest.get("collections_cache", [])
-        if media_ids and not collection_ids and len(media_ids) == 1:
-            return True
-        if collection_ids and not media_ids and len(collection_ids) == 1:
-            return True
-        return False
+        try:
+            connector = Connector(
+                db=self.db, logger=self.logger, instance_map=instance_map
+            )
+            connector.update_plex_database()
+        except Exception as e:
+            raise PosterUploadError(f"Failed to update Plex database: {e}")
 
-    @staticmethod
-    def has_overlay(item: dict) -> bool:
-        return "Overlay" in item.get("labels", [])
+    def _process_instance(
+        self, instance_name: str, library_names: List[str]
+    ) -> InstanceResult:
+        """Process a single Plex instance"""
+        try:
+            # Get Plex configuration
+            plex_config = self.full_config.instances.plex.get(instance_name)
+            if not plex_config:
+                return InstanceResult(
+                    instance_name=instance_name,
+                    enabled=True,
+                    connected=False,
+                    uploads=[],
+                    error_message=f"Configuration not found for instance '{instance_name}'",
+                )
 
-    @staticmethod
-    def _build_indexes(media_cache: List[dict]) -> Tuple[dict, dict, dict, dict]:
-        """
-        Build indexes for fast asset lookups by type.
-        Returns (movie_index, show_index, season_index, collection_index).
-        Keys are prioritized by tmdb, imdb, tvdb, title (normalized), season_number.
-        """
-        movie_index, show_index, season_index, collection_index = {}, {}, {}, {}
-        for entry in media_cache:
-            typ = entry["asset_type"]
-            norm_title = entry["normalized_title"]
-            guids = entry.get("guids", {})
-            # Support for JSON-encoded guids if needed
-            if isinstance(guids, str):
-                try:
-                    guids = json.loads(guids)
-                except Exception:
-                    guids = {}
+            # Connect to Plex
+            with self._get_plex_client(
+                instance_name, plex_config.url, plex_config.api
+            ) as plex_client:
+                if not plex_client.is_connected():
+                    return InstanceResult(
+                        instance_name=instance_name,
+                        enabled=True,
+                        connected=False,
+                        uploads=[],
+                        error_message=f"Failed to connect to Plex instance '{instance_name}'",
+                    )
 
-            if typ == "movie":
-                if norm_title:
-                    movie_index[f"title:{norm_title}"] = entry
-                if "tmdb" in guids:
-                    movie_index[f"tmdb:{guids['tmdb']}"] = entry
-                if "imdb" in guids:
-                    movie_index[f"imdb:{guids['imdb']}"] = entry
+                # Build media indexes
+                indexes = self._get_media_indexes(instance_name)
+                if not indexes:
+                    return InstanceResult(
+                        instance_name=instance_name,
+                        enabled=True,
+                        connected=True,
+                        uploads=[],
+                        error_message=f"No media cache found for instance '{instance_name}'",
+                    )
 
-            elif typ in ("show", "tvshow"):
-                # Series main entry (season_number is None)
-                if norm_title and entry.get("season_number") in (None, "null"):
-                    show_index[f"title:{norm_title}"] = entry
-                if "tmdb" in guids and entry.get("season_number") in (None, "null"):
-                    show_index[f"tmdb:{guids['tmdb']}"] = entry
-                if "imdb" in guids and entry.get("season_number") in (None, "null"):
-                    show_index[f"imdb:{guids['imdb']}"] = entry
-                if "tvdb" in guids and entry.get("season_number") in (None, "null"):
-                    show_index[f"tvdb:{guids['tvdb']}"] = entry
+                # Process assets
+                assets = self._get_assets_from_manifest()
+                upload_results = self._sync_all_assets(
+                    assets, plex_client, indexes, self.config.dry_run
+                )
 
-                # Season entries: include season_number in the key
-                if entry.get("season_number") not in (None, "null"):
-                    snum = entry["season_number"]
-                    # By normalized title and season_number
-                    if norm_title:
-                        season_index[f"title:{norm_title}:S{snum}"] = entry
-                    if "tmdb" in guids:
-                        season_index[f"tmdb:{guids['tmdb']}:S{snum}"] = entry
-                    if "imdb" in guids:
-                        season_index[f"imdb:{guids['imdb']}:S{snum}"] = entry
-                    if "tvdb" in guids:
-                        season_index[f"tvdb:{guids['tvdb']}:S{snum}"] = entry
+                return InstanceResult(
+                    instance_name=instance_name,
+                    enabled=True,
+                    connected=True,
+                    uploads=upload_results,
+                )
 
-            elif typ == "collection":
-                if norm_title:
-                    collection_index[f"title:{norm_title}"] = entry
+        except Exception as e:
+            self.logger.error(f"Error processing instance '{instance_name}': {e}")
+            return InstanceResult(
+                instance_name=instance_name,
+                enabled=True,
+                connected=False,
+                uploads=[],
+                error_message=str(e),
+            )
 
-        return movie_index, show_index, season_index, collection_index
+    @contextmanager
+    def _get_plex_client(
+        self, instance_name: str, url: str, api: str
+    ) -> Generator[PlexClient, None, None]:
+        """Get or create Plex client with connection caching"""
+        if instance_name not in self._plex_clients:
+            client = PlexClient(url, api, self.logger)
+            if not client.is_connected():
+                raise PlexConnectionError(
+                    f"Failed to connect to Plex instance '{instance_name}'"
+                )
+            self._plex_clients[instance_name] = client
 
-    def _sync_movies(
+        yield self._plex_clients[instance_name]
+
+    def _get_media_indexes(
+        self, instance_name: str
+    ) -> Optional[Tuple[Dict, Dict, Dict, Dict]]:
+        """Get or build media indexes for an instance"""
+        if instance_name in self._media_indexes:
+            return self._media_indexes[instance_name]
+
+        plex_media_cache = self.db.plex.get_by_instance(instance_name)
+        if not plex_media_cache:
+            return None
+
+        indexes = self._build_indexes(plex_media_cache)
+        self._media_indexes[instance_name] = indexes
+        return indexes
+
+    def _get_assets_from_manifest(self) -> List[Dict]:
+        """Get assets from manifest with error handling"""
+        assets = []
+
+        # Process media assets
+        for asset_id in self.manifest.get("media_cache", []):
+            try:
+                asset = self.db.media.get_by_id(asset_id)
+                if asset:
+                    assets.append(asset)
+                else:
+                    self.logger.warning(f"Media asset ID {asset_id} not found")
+            except Exception as e:
+                self.logger.error(f"Error retrieving media asset {asset_id}: {e}")
+
+        # Process collection assets
+        for asset_id in self.manifest.get("collections_cache", []):
+            try:
+                asset = self.db.collection.get_by_id(asset_id)
+                if asset:
+                    assets.append(asset)
+                else:
+                    self.logger.warning(f"Collection asset ID {asset_id} not found")
+            except Exception as e:
+                self.logger.error(f"Error retrieving collection asset {asset_id}: {e}")
+
+        return assets
+
+    def _sync_all_assets(
         self,
-        records: List[dict],
-        db: DapsDB,
-        plex_client: Any,
-        movie_index: dict,
+        assets: List[Dict],
+        plex_client: PlexClient,
+        indexes: Tuple[Dict, Dict, Dict, Dict],
         dry_run: bool,
-        skipped: List[str],
-        failed: List[str],
-        logger: Any,
-    ) -> List[str]:
-        updated = []
-        movie_records = [
+    ) -> List[UploadResult]:
+        """Sync all assets with consolidated progress reporting"""
+        movie_index, show_index, season_index, collection_index = indexes
+        all_results = []
+
+        # Group assets by type for efficient processing
+        movies = [
             a
-            for a in records
+            for a in assets
             if a.get("asset_type") == "movie" and a.get("matched") == 1
         ]
-
-        with progress(
-            movie_records,
-            desc="Syncing Movie Posters",
-            total=len(movie_records),
-            unit="movie",
-            logger=logger,
-        ) as bar:
-            for record in bar:
-                asset_title = record.get("title")
-                asset_year = record.get("year")
-                poster_path = record.get("renamed_file")
-                asset_tmdb = (
-                    str(record.get("tmdb_id")) if record.get("tmdb_id") else None
-                )
-                asset_imdb = record.get("imdb_id")
-
-                norm_title = normalize_titles(asset_title)
-                record_hash = record.get("file_hash")
-                instance_name = record.get("instance_name")
-                matched_entry, match_type = self.match_asset(
-                    movie_index,
-                    ["tmdb", "imdb", "title"],
-                    {
-                        "tmdb": asset_tmdb,
-                        "imdb": asset_imdb,
-                        "title": norm_title,
-                    },
-                )
-
-                if not matched_entry:
-                    failed.append(f"{asset_title} (movie) [NO MATCH]")
-                    continue
-
-                current_file_hash = self.compute_file_hash(
-                    poster_path, asset_title, logger, failed, dry_run
-                )
-
-                if current_file_hash == record_hash and not self.force:
-                    skipped.append(
-                        f"{asset_title} ({match_type}, {matched_entry['library_name']}) [UNCHANGED]"
-                    )
-                    continue
-
-                upload_ok = plex_client.upload_poster(
-                    matched_entry["library_name"],
-                    matched_entry["title"],
-                    poster_path,
-                    year=matched_entry.get("year"),
-                    dry_run=dry_run,
-                )
-                if upload_ok:
-                    if self.has_overlay(matched_entry):
-                        plex_client.remove_label(matched_entry, "Overlay", dry_run)
-
-                    db.media.update(
-                        asset_type="movie",
-                        title=asset_title,
-                        year=asset_year,
-                        instance_name=instance_name,
-                        matched_value=None,
-                        season_number=None,
-                        original_file=None,
-                        renamed_file=None,
-                        file_hash=current_file_hash,
-                    )
-                    updated.append(
-                        f"{asset_title} ({match_type}, {matched_entry['library_name']})"
-                    )
-                else:
-                    failed.append(
-                        f"{asset_title} ({match_type}, {matched_entry['library_name']}) [UPLOAD FAILED]"
-                    )
-        return updated
-
-    def _sync_shows_and_seasons(
-        self,
-        records: List[dict],
-        db: DapsDB,
-        plex_client: Any,
-        show_index: dict,
-        season_index: dict,
-        dry_run: bool,
-        skipped: List[str],
-        failed: List[str],
-        logger: Any,
-    ) -> List[str]:
-        logger.debug("Starting sync for shows and seasons")
-        updated = []
-        # Process series main posters (season_number is None)
-        series_records = [
+        series = [
             a
-            for a in records
+            for a in assets
             if a.get("asset_type") == "show"
             and a.get("matched") == 1
             and not a.get("season_number")
         ]
-        with progress(
-            series_records,
-            desc="Syncing Series Posters",
-            total=len(series_records),
-            unit="series",
-            logger=logger,
-        ) as bar:
-            for record in bar:
-                asset_title = record.get("title")
-                asset_year = record.get("year")
-                poster_path = record.get("renamed_file")
-                asset_tmdb = (
-                    str(record.get("tmdb_id")) if record.get("tmdb_id") else None
-                )
-                asset_imdb = record.get("imdb_id")
-                asset_tvdb = (
-                    str(record.get("tvdb_id")) if record.get("tvdb_id") else None
-                )
-
-                norm_title = normalize_titles(asset_title)
-                record_hash = record.get("file_hash")
-                instance_name = record.get("instance_name")
-                matched_entry, match_type = self.match_asset(
-                    show_index,
-                    ["tvdb", "tmdb", "imdb", "title"],
-                    {
-                        "tvdb": asset_tvdb,
-                        "tmdb": asset_tmdb,
-                        "imdb": asset_imdb,
-                        "title": norm_title,
-                    },
-                )
-                if not matched_entry:
-                    failed.append(f"{asset_title} (series) [NO MATCH]")
-                    continue
-
-                current_file_hash = self.compute_file_hash(
-                    poster_path, asset_title, logger, failed, dry_run
-                )
-                if current_file_hash == record_hash and not self.force:
-                    skipped.append(
-                        f"{asset_title} ({match_type}, {matched_entry['library_name']}) [UNCHANGED]"
-                    )
-                    continue
-
-                upload_ok = plex_client.upload_poster(
-                    matched_entry["library_name"],
-                    matched_entry["title"],
-                    poster_path,
-                    year=matched_entry.get("year"),
-                    is_collection=False,
-                    season_number=None,
-                    dry_run=dry_run,
-                )
-                if upload_ok:
-                    if self.has_overlay(matched_entry):
-                        plex_client.remove_label(matched_entry, "Overlay", dry_run)
-                    db.media.update(
-                        asset_type="show",
-                        title=asset_title,
-                        year=asset_year,
-                        instance_name=instance_name,
-                        matched_value=None,
-                        season_number=None,
-                        original_file=None,
-                        renamed_file=None,
-                        file_hash=current_file_hash,
-                    )
-                    updated.append(
-                        f"{asset_title} ({match_type}, {matched_entry['library_name']})"
-                    )
-                else:
-                    failed.append(
-                        f"{asset_title} ({match_type}, {matched_entry['library_name']}) [UPLOAD FAILED]"
-                    )
-        # Now process season posters (season_number is set)
-        season_records = [
+        seasons = [
             a
-            for a in records
+            for a in assets
             if a.get("asset_type") == "show"
             and a.get("matched") == 1
             and a.get("season_number")
         ]
+        collections = [
+            a
+            for a in assets
+            if a.get("asset_type") == "collection" and a.get("matched") == 1
+        ]
+
+        # Process each type with progress bars
+        if movies:
+            all_results.extend(
+                self._sync_movies(movies, plex_client, movie_index, dry_run)
+            )
+
+        if series:
+            all_results.extend(
+                self._sync_series(series, plex_client, show_index, dry_run)
+            )
+
+        if seasons:
+            all_results.extend(
+                self._sync_seasons(seasons, plex_client, season_index, dry_run)
+            )
+
+        if collections:
+            all_results.extend(
+                self._sync_collections(
+                    collections, plex_client, collection_index, dry_run
+                )
+            )
+
+        return all_results
+
+    def _sync_movies(
+        self,
+        movies: List[Dict],
+        plex_client: PlexClient,
+        movie_index: Dict,
+        dry_run: bool,
+    ) -> List[UploadResult]:
+        """Sync movie posters"""
+        results = []
+
         with progress(
-            season_records,
-            desc="Syncing Season Posters",
-            total=len(season_records),
-            unit="season",
-            logger=logger,
+            movies,
+            desc="Syncing movie posters",
+            total=len(movies),
+            unit="movie",
+            logger=self.logger,
         ) as bar:
-            for record in bar:
-                asset_title = record.get("title")
-                asset_year = record.get("year")
-                poster_path = record.get("renamed_file")
-                asset_tmdb = (
-                    str(record.get("tmdb_id")) if record.get("tmdb_id") else None
-                )
-                asset_imdb = record.get("imdb_id")
-                asset_tvdb = (
-                    str(record.get("tvdb_id")) if record.get("tvdb_id") else None
-                )
-
-                norm_title = normalize_titles(asset_title)
-                record_hash = record.get("file_hash")
-                season_number = record.get("season_number")
-                instance_name = record.get("instance_name")
-                matched_entry, match_type = self.match_asset(
-                    season_index,
-                    ["tvdb", "tmdb", "imdb", "title"],
-                    {
-                        "tvdb": asset_tvdb,
-                        "tmdb": asset_tmdb,
-                        "imdb": asset_imdb,
-                        "title": f"{norm_title}:S{season_number}",
-                    },
-                )
-                if not matched_entry:
-                    failed.append(f"{asset_title} (season {season_number}) [NO MATCH]")
-                    continue
-
-                current_file_hash = self.compute_file_hash(
-                    poster_path, asset_title, logger, failed, dry_run
-                )
-
-                if current_file_hash == record_hash and not self.force:
-                    skipped.append(
-                        f"{asset_title} S{season_number} ({match_type}, {matched_entry['library_name']}) [UNCHANGED]"
+            for movie in bar:
+                try:
+                    result = self._sync_single_asset(
+                        asset=movie,
+                        plex_client=plex_client,
+                        index=movie_index,
+                        priority_keys=["tmdb", "imdb", "title"],
+                        dry_run=dry_run,
                     )
-                    continue
+                    results.append(result)
+                except Exception as e:
+                    self.logger.error(
+                        f"Error syncing movie '{movie.get('title')}': {e}"
+                    )
+                    results.append(
+                        UploadResult(
+                            asset_title=movie.get("title", "Unknown"),
+                            asset_type="movie",
+                            success=False,
+                            action="failed",
+                            reason=f"Processing error: {e}",
+                        )
+                    )
 
-                upload_ok = plex_client.upload_poster(
-                    matched_entry["library_name"],
-                    matched_entry["title"],
-                    poster_path,
-                    year=matched_entry.get("year"),
-                    is_collection=False,
-                    season_number=season_number,
-                    dry_run=dry_run,
-                )
-                if upload_ok:
-                    db.media.update(
-                        asset_type="show",
-                        title=asset_title,
-                        year=asset_year,
-                        instance_name=instance_name,
-                        matched_value=None,
-                        season_number=season_number,
-                        original_file=None,
-                        renamed_file=None,
-                        file_hash=current_file_hash,
+        return results
+
+    def _sync_series(
+        self,
+        series: List[Dict],
+        plex_client: PlexClient,
+        show_index: Dict,
+        dry_run: bool,
+    ) -> List[UploadResult]:
+        """Sync TV series posters"""
+        results = []
+
+        with progress(
+            series,
+            desc="Syncing series posters",
+            total=len(series),
+            unit="series",
+            logger=self.logger,
+        ) as bar:
+            for show in bar:
+                try:
+                    result = self._sync_single_asset(
+                        asset=show,
+                        plex_client=plex_client,
+                        index=show_index,
+                        priority_keys=["tvdb", "tmdb", "imdb", "title"],
+                        dry_run=dry_run,
                     )
-                    updated.append(
-                        f"{asset_title} S{season_number} ({match_type}, {matched_entry['library_name']})"
+                    results.append(result)
+                except Exception as e:
+                    self.logger.error(
+                        f"Error syncing series '{show.get('title')}': {e}"
                     )
-                else:
-                    failed.append(
-                        f"{asset_title} S{season_number} ({match_type}, {matched_entry['library_name']}) [UPLOAD FAILED]"
+                    results.append(
+                        UploadResult(
+                            asset_title=show.get("title", "Unknown"),
+                            asset_type="series",
+                            success=False,
+                            action="failed",
+                            reason=f"Processing error: {e}",
+                        )
                     )
-        return updated
+
+        return results
+
+    def _sync_seasons(
+        self,
+        seasons: List[Dict],
+        plex_client: PlexClient,
+        season_index: Dict,
+        dry_run: bool,
+    ) -> List[UploadResult]:
+        """Sync season posters"""
+        results = []
+
+        with progress(
+            seasons,
+            desc="Syncing season posters",
+            total=len(seasons),
+            unit="season",
+            logger=self.logger,
+        ) as bar:
+            for season in bar:
+                try:
+                    # Modify search key for season matching
+                    season_num = season.get("season_number")
+                    norm_title = normalize_titles(season.get("title", ""))
+
+                    result = self._sync_single_asset(
+                        asset=season,
+                        plex_client=plex_client,
+                        index=season_index,
+                        priority_keys=["tvdb", "tmdb", "imdb", "title"],
+                        dry_run=dry_run,
+                        season_number=season_num,
+                        title_override=f"{norm_title}:S{season_num}",
+                    )
+                    results.append(result)
+                except Exception as e:
+                    season_num = season.get("season_number", "?")
+                    self.logger.error(
+                        f"Error syncing season {season_num} of '{season.get('title')}': {e}"
+                    )
+                    results.append(
+                        UploadResult(
+                            asset_title=f"{season.get('title', 'Unknown')} S{season_num}",
+                            asset_type="season",
+                            success=False,
+                            action="failed",
+                            reason=f"Processing error: {e}",
+                        )
+                    )
+
+        return results
 
     def _sync_collections(
         self,
-        records: List[dict],
-        db: DapsDB,
-        plex_client: Any,
-        collection_index: dict,
+        collections: List[Dict],
+        plex_client: PlexClient,
+        collection_index: Dict,
         dry_run: bool,
-        skipped: List[str],
-        failed: List[str],
-        logger: Any,
-    ) -> List[str]:
-        updated = []
-        collection_records = [
-            a
-            for a in records
-            if a.get("asset_type") == "collection" and a.get("matched") == 1
-        ]
+    ) -> List[UploadResult]:
+        """Sync collection posters"""
+        results = []
+
         with progress(
-            collection_records,
-            desc="Syncing Collection Posters",
-            total=len(collection_records),
+            collections,
+            desc="Syncing collection posters",
+            total=len(collections),
             unit="collection",
-            logger=logger,
+            logger=self.logger,
         ) as bar:
-            for record in bar:
-                asset_title = record.get("title")
-                asset_year = record.get("year")
-                poster_path = record.get("renamed_file")
+            for collection in bar:
+                try:
+                    result = self._sync_single_asset(
+                        asset=collection,
+                        plex_client=plex_client,
+                        index=collection_index,
+                        priority_keys=["title"],
+                        dry_run=dry_run,
+                        is_collection=True,
+                    )
+                    results.append(result)
+                except Exception as e:
+                    self.logger.error(
+                        f"Error syncing collection '{collection.get('title')}': {e}"
+                    )
+                    results.append(
+                        UploadResult(
+                            asset_title=collection.get("title", "Unknown"),
+                            asset_type="collection",
+                            success=False,
+                            action="failed",
+                            reason=f"Processing error: {e}",
+                        )
+                    )
 
-                norm_title = normalize_titles(asset_title)
-                record_hash = record.get("file_hash")
-                instance_name = record.get("instance_name")
-                matched_entry, match_type = self.match_asset(
-                    collection_index,
-                    ["title"],
+        return results
+
+    def _sync_single_asset(
+        self,
+        asset: Dict,
+        plex_client: PlexClient,
+        index: Dict,
+        priority_keys: List[str],
+        dry_run: bool,
+        season_number: Optional[int] = None,
+        title_override: Optional[str] = None,
+        is_collection: bool = False,
+    ) -> UploadResult:
+        """Sync a single asset with comprehensive error handling"""
+
+        asset_title = asset.get("title", "Unknown")
+        asset_type = asset.get("asset_type", "unknown")
+        poster_path = asset.get("renamed_file")
+
+        try:
+            # Find matching Plex entry
+            search_values = {
+                "tmdb": str(asset.get("tmdb_id")) if asset.get("tmdb_id") else None,
+                "imdb": asset.get("imdb_id"),
+                "tvdb": str(asset.get("tvdb_id")) if asset.get("tvdb_id") else None,
+                "title": title_override or normalize_titles(asset_title),
+            }
+
+            matched_entry, match_type = self.match_asset(
+                index, priority_keys, search_values
+            )
+
+            if not matched_entry:
+                return UploadResult(
+                    asset_title=asset_title,
+                    asset_type=asset_type,
+                    success=False,
+                    action="failed",
+                    reason="No matching Plex entry found",
+                )
+
+            # Check if file hash has changed
+            record_hash = asset.get("file_hash")
+            current_file_hash = self._compute_file_hash(poster_path, dry_run)
+
+            if not current_file_hash:
+                return UploadResult(
+                    asset_title=asset_title,
+                    asset_type=asset_type,
+                    success=False,
+                    action="failed",
+                    reason="Could not read poster file",
+                )
+
+            if current_file_hash == record_hash and not self.force:
+                return UploadResult(
+                    asset_title=asset_title,
+                    asset_type=asset_type,
+                    success=True,
+                    action="skipped",
+                    reason="File unchanged",
+                    library_name=matched_entry.get("library_name"),
+                    match_type=match_type,
+                )
+
+            # Upload poster
+            upload_success = plex_client.upload_poster(
+                library_name=matched_entry["library_name"],
+                item_title=matched_entry["title"],
+                poster_path=poster_path,
+                year=matched_entry.get("year"),
+                is_collection=is_collection,
+                season_number=season_number,
+                dry_run=dry_run,
+            )
+
+            if upload_success:
+                # Remove overlay label if present
+                if self._has_overlay(matched_entry):
+                    plex_client.remove_label(matched_entry, "Overlay", dry_run)
+
+                # Update database
+                self._update_asset_database(asset, current_file_hash)
+
+                return UploadResult(
+                    asset_title=asset_title,
+                    asset_type=asset_type,
+                    success=True,
+                    action="updated",
+                    reason="Successfully uploaded",
+                    library_name=matched_entry.get("library_name"),
+                    match_type=match_type,
+                )
+            else:
+                return UploadResult(
+                    asset_title=asset_title,
+                    asset_type=asset_type,
+                    success=False,
+                    action="failed",
+                    reason="Upload to Plex failed",
+                    library_name=matched_entry.get("library_name"),
+                    match_type=match_type,
+                )
+
+        except Exception as e:
+            self.logger.error(f"Error processing asset '{asset_title}': {e}")
+            return UploadResult(
+                asset_title=asset_title,
+                asset_type=asset_type,
+                success=False,
+                action="failed",
+                reason=f"Processing error: {e}",
+            )
+
+    def _update_asset_database(self, asset: Dict, file_hash: str):
+        """Update asset in database with new hash"""
+        try:
+            if asset.get("asset_type") == "collection":
+                self.db.collection.update(
+                    title=asset.get("title"),
+                    year=asset.get("year"),
+                    library_name=asset.get("library_name"),
+                    instance_name=asset.get("instance_name"),
+                    matched_value=None,
+                    original_file=None,
+                    renamed_file=None,
+                    file_hash=file_hash,
+                )
+            else:
+                self.db.media.update(
+                    asset_type=asset.get("asset_type"),
+                    title=asset.get("title"),
+                    year=asset.get("year"),
+                    instance_name=asset.get("instance_name"),
+                    matched_value=None,
+                    season_number=asset.get("season_number"),
+                    original_file=None,
+                    renamed_file=None,
+                    file_hash=file_hash,
+                )
+        except Exception as e:
+            self.logger.error(
+                f"Failed to update database for asset '{asset.get('title')}': {e}"
+            )
+
+    def _compile_final_result(
+        self, instance_results: List[InstanceResult]
+    ) -> Dict[str, Any]:
+        """Compile final result with clean summary logging"""
+        total_updated = 0
+        total_skipped = 0
+        total_failed = 0
+        successful_instances = 0
+
+        for instance_result in instance_results:
+            if instance_result.connected and not instance_result.error_message:
+                successful_instances += 1
+
+                updated = len(
+                    [r for r in instance_result.uploads if r.action == "updated"]
+                )
+                skipped = len(
+                    [r for r in instance_result.uploads if r.action == "skipped"]
+                )
+                failed = len(
+                    [r for r in instance_result.uploads if r.action == "failed"]
+                )
+
+                total_updated += updated
+                total_skipped += skipped
+                total_failed += failed
+
+                # Log instance summary concisely
+                self.logger.info(
+                    f"{instance_result.instance_name}: {updated} updated, {skipped} skipped, {failed} failed"
+                )
+
+        # Log overall summary
+        self.logger.info(
+            f"Upload summary: {total_updated} updated, {total_skipped} skipped, {total_failed} failed"
+        )
+
+        # Log detailed failures only if there are failures
+        if total_failed > 0:
+            failed_details = []
+            for instance_result in instance_results:
+                for upload in instance_result.uploads:
+                    if upload.action == "failed":
+                        failed_details.append(f"{upload.asset_title}: {upload.reason}")
+            if failed_details:
+                self.logger.warning(
+                    "Failed uploads:\n"
+                    + "\n".join(f"  • {detail}" for detail in failed_details)
+                )
+
+        # Determine overall success
+        overall_success = total_failed == 0 and successful_instances > 0
+
+        return self._create_result(
+            success=overall_success,
+            message=f"Upload complete: {total_updated} updated, {total_skipped} skipped, {total_failed} failed",
+            error_code=None if overall_success else "UPLOAD_FAILURES",
+            payload={
+                "updated": total_updated,
+                "skipped": total_skipped,
+                "failed": total_failed,
+                "instances_processed": successful_instances,
+                "instance_results": [
                     {
-                        "title": norm_title,
-                    },
-                )
-                if not matched_entry:
-                    failed.append(f"{asset_title} (collection) [NO MATCH]")
-                    continue
+                        "instance": r.instance_name,
+                        "enabled": r.enabled,
+                        "connected": r.connected,
+                        "uploads": len(r.uploads),
+                        "error": r.error_message,
+                    }
+                    for r in instance_results
+                ],
+            },
+        )
 
-                current_file_hash = self.compute_file_hash(
-                    poster_path, asset_title, logger, failed, dry_run
-                )
+    def _create_result(
+        self,
+        success: bool,
+        message: str,
+        error_code: Optional[str],
+        payload: Optional[Dict] = None,
+    ) -> Dict[str, Any]:
+        """Create standardized result dictionary"""
+        return {
+            "success": success,
+            "message": message,
+            "error_code": error_code,
+            "payload": {"manifest": self.manifest, **(payload or {})},
+        }
 
-                if current_file_hash == record_hash and not self.force:
-                    skipped.append(
-                        f"{asset_title} ({match_type}, {matched_entry['library_name']}) [UNCHANGED]"
-                    )
-                    continue
+    def _cleanup_connections(self):
+        """Clean up cached connections"""
+        self._plex_clients.clear()
+        self._media_indexes.clear()
 
-                upload_ok = plex_client.upload_poster(
-                    matched_entry["library_name"],
-                    matched_entry["title"],
-                    poster_path,
-                    year=None,
-                    is_collection=True,
-                    dry_run=dry_run,
-                )
-                if upload_ok:
-                    if self.has_overlay(matched_entry):
-                        plex_client.remove_label(matched_entry, "Overlay", dry_run)
+    # Static/utility methods (keeping existing implementations but with improvements)
+    @staticmethod
+    def _build_indexes(media_cache: List[Dict]) -> Tuple[Dict, Dict, Dict, Dict]:
+        """Build indexes for fast asset lookups - same as original but with error handling"""
+        movie_index, show_index, season_index, collection_index = {}, {}, {}, {}
 
-                    db.media.update(
-                        asset_type="collection",
-                        title=asset_title,
-                        year=asset_year,
-                        instance_name=instance_name,
-                        matched_value=None,
-                        season_number=None,
-                        original_file=None,
-                        renamed_file=None,
-                        file_hash=current_file_hash,
-                    )
-                    updated.append(
-                        f"{asset_title} ({match_type}, {matched_entry['library_name']})"
-                    )
-                else:
-                    failed.append(
-                        f"{asset_title} ({match_type}, {matched_entry['library_name']}) [UPLOAD FAILED]"
-                    )
-        return updated
+        for entry in media_cache:
+            try:
+                typ = entry.get("asset_type")
+                norm_title = entry.get("normalized_title")
+                guids = entry.get("guids", {})
+
+                # Handle JSON-encoded guids
+                if isinstance(guids, str):
+                    try:
+                        guids = json.loads(guids)
+                    except (json.JSONDecodeError, TypeError):
+                        guids = {}
+
+                if typ == "movie":
+                    if norm_title:
+                        movie_index[f"title:{norm_title}"] = entry
+                    if guids.get("tmdb"):
+                        movie_index[f"tmdb:{guids['tmdb']}"] = entry
+                    if guids.get("imdb"):
+                        movie_index[f"imdb:{guids['imdb']}"] = entry
+
+                elif typ in ("show", "tvshow"):
+                    season_num = entry.get("season_number")
+                    if season_num in (None, "null"):
+                        # Series main entry
+                        if norm_title:
+                            show_index[f"title:{norm_title}"] = entry
+                        for guid_type in ["tmdb", "imdb", "tvdb"]:
+                            if guids.get(guid_type):
+                                show_index[f"{guid_type}:{guids[guid_type]}"] = entry
+                    else:
+                        # Season entry
+                        if norm_title:
+                            season_index[f"title:{norm_title}:S{season_num}"] = entry
+                        for guid_type in ["tmdb", "imdb", "tvdb"]:
+                            if guids.get(guid_type):
+                                season_index[
+                                    f"{guid_type}:{guids[guid_type]}:S{season_num}"
+                                ] = entry
+
+                elif typ == "collection":
+                    if norm_title:
+                        collection_index[f"title:{norm_title}"] = entry
+
+            except Exception:
+                # Log and continue with other entries
+                continue
+
+        return movie_index, show_index, season_index, collection_index
 
     @staticmethod
     def match_asset(
-        index: dict, priority_keys: List[str], values: dict
-    ) -> Tuple[Optional[dict], Optional[str]]:
-        """
-        Generic matching function for assets.
-
-        Args:
-            index (dict): The prebuilt index (e.g., movie_index).
-            priority_keys (list): Priority order for matching, e.g., ["tmdb", "imdb", "title"].
-            values (dict): Dict of values like {"tmdb": "1234", "title": "foobar"}.
-
-        Returns:
-            tuple: (matched_record, match_type) or (None, None)
-        """
+        index: Dict, priority_keys: List[str], values: Dict
+    ) -> Tuple[Optional[Dict], Optional[str]]:
+        """Match asset using index with priority keys"""
         for key in priority_keys:
             value = values.get(key)
             if value and f"{key}:{value}" in index:
@@ -690,27 +829,18 @@ class PosterUploader:
         return None, None
 
     @staticmethod
-    def compute_file_hash(
-        poster_path: str,
-        asset_title: str,
-        logger: Any,
-        failed: List[str],
-        dry_run: bool = False,
-    ) -> Optional[str]:
-        """
-        Compute SHA-256 hash of the poster file, or return dummy hash if dry run.
-        Appends to failed list and logs error if the file is unreadable.
-
-        Returns:
-            str|None: File hash or None if file couldn't be read (only on real run).
-        """
+    def _compute_file_hash(poster_path: str, dry_run: bool = False) -> Optional[str]:
+        """Compute file hash with proper error handling"""
         if dry_run:
-            return "1234567890"
+            return "dry_run_hash"
 
         try:
             with open(poster_path, "rb") as f:
                 return hashlib.sha256(f.read()).hexdigest()
-        except Exception as e:
-            logger.error(f"Cannot read poster for {asset_title}: {poster_path} -- {e}")
-            failed.append(f"{asset_title} [FILE NOT FOUND]")
+        except (FileNotFoundError, PermissionError, OSError):
             return None
+
+    @staticmethod
+    def _has_overlay(item: Dict) -> bool:
+        """Check if item has overlay label"""
+        return "Overlay" in item.get("labels", [])

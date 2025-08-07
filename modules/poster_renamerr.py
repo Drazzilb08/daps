@@ -568,14 +568,18 @@ class PosterRenamerr:
 
             self.db.poster.clear()
             self.merge_assets()
-            instance_list = [
-                inst if isinstance(inst, dict) else inst
-                for inst in self.config.instances
-            ]
-
-            connector = Connector(
-                self.db, self.config, self.logger, instance_list=instance_list
-            )
+            instance_map = {
+                "arrs": [i for i in self.config.instances if isinstance(i, str)],
+                "plex": {
+                    name: (opts.library_names or [])
+                    for i in self.config.instances
+                    if isinstance(i, dict)
+                    for name, opts in i.items()
+                    if getattr(opts, "add_posters", False)
+                },
+            }
+            self.logger.warning(f"instance_map: {instance_map}")
+            connector = Connector(self.db, self.logger, instance_map=instance_map)
             connector.update_arr_database()
             connector.update_collections_database()
 

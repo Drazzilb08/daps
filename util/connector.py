@@ -1,8 +1,3 @@
-"""
-Enhanced Connector class for DAPS v3 with improved error handling and proper data structure support.
-Handles instance_map format: ['Radarr Test', 'Sonarr Test', {'plex_1': PosterRenamerrPlexInstance(library_names=[...])}]
-"""
-
 import itertools
 import sys
 import threading

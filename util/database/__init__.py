@@ -31,7 +31,12 @@ class DapsDB:
         self.run_state = RunState(db_path)
         self.stats = Stats(db_path)
         self.holiday = HolidayStatus(db_path)
-        self.worker = DBWorker(db_path, logger=self.logger)
+
+        # Create a default worker but don't start it (it's just for compatibility)
+        self.worker = DBWorker(db_path, logger=self.logger, worker_name="DEFAULT")
+
+        # Keep track of created workers for cleanup
+        self.created_workers = []
 
     def create_worker(
         self,
@@ -41,7 +46,9 @@ class DapsDB:
         worker_name="UNNAMED",
         job_type_filter=None,
     ):
-        return DBWorker(
+        if logger:
+            logger.debug(f"Creating: '{worker_name}' worker")
+        worker = DBWorker(
             db_path=self.db_path,
             logger=logger or self.logger,
             num_workers=num_workers,
@@ -49,10 +56,29 @@ class DapsDB:
             worker_name=worker_name,
             job_type_filter=job_type_filter,
         )
+        # Track created workers for cleanup
+        self.created_workers.append(worker)
+        return worker
 
     def close_all(self):
         if self.logger:
             self.logger.debug("[DATABASE] Closing database connections")
+
+        # Close created workers first (these are the active ones)
+        for worker in self.created_workers:
+            try:
+                if hasattr(worker, "running") and worker.running:
+                    worker.close()
+            except Exception as e:
+                if self.logger:
+                    self.logger.debug(
+                        f"Error closing worker {getattr(worker, 'worker_name', 'UNKNOWN')}: {e}"
+                    )
+
+        # Clear the list
+        self.created_workers.clear()
+
+        # Close other database connections
         self.plex.close()
         self.collection.close()
         self.poster.close()
@@ -61,7 +87,14 @@ class DapsDB:
         self.run_state.close()
         self.stats.close()
         self.holiday.close()
-        self.worker.close()
+
+        # Close the default worker (but it should not be running)
+        try:
+            if hasattr(self.worker, "conn") and self.worker.conn:
+                self.worker.conn.close()
+        except Exception as e:
+            if self.logger:
+                self.logger.debug(f"Error closing default worker connection: {e}")
 
 
 __all__ = [

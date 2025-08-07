@@ -1,4 +1,5 @@
 import os
+import threading
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any
@@ -28,36 +29,154 @@ from util.version import get_version
 
 @asynccontextmanager
 async def lifespan(app):
-    app.state.logger = app.state.logger
-    app.state.db = DapsDB(logger=app.state.logger)
+    """FastAPI lifespan context manager with proper startup/shutdown"""
 
-    app.state.db.adhoc_worker = app.state.db.create_worker(
-        num_workers=3, worker_name="ADHOC", job_type_filter="webhook"
-    )
-    app.state.db.background_worker = app.state.db.create_worker(
-        num_workers=3, worker_name="BACKGROUND", job_type_filter=None
-    )
+    # Startup
+    logger = app.state.logger
+    log = logger.get_adapter("FASTAPI") if logger else None
 
-    app.state.db.adhoc_worker.start(
-        table_name="jobs",
-        process_fn=lambda job: process_job(
-            job, app.state.logger, worker=app.state.db.adhoc_worker
-        ),
-        job_type_filter="webhook",
-    )
-    app.state.db.background_worker.start(
-        table_name="jobs",
-        process_fn=lambda job: process_job(
-            job, app.state.logger, worker=app.state.db.background_worker
-        ),
-        job_type_filter=None,
-    )
+    try:
+        if log:
+            log.debug("Starting FastAPI application...")
 
-    yield
+        # Initialize database
+        app.state.db = DapsDB(logger=logger)
 
-    app.state.db.adhoc_worker.stop()
-    app.state.db.background_worker.stop()
-    app.state.db.close_all()
+        # Create workers with improved configuration
+        if log:
+            log.debug("Creating database workers...")
+
+        app.state.db.adhoc_worker = app.state.db.create_worker(
+            logger=logger,  # Explicitly pass logger
+            num_workers=2,  # Reduced from 3 for better resource management
+            poll_interval=1,  # Faster polling for webhooks
+            worker_name="ADHOC",
+            job_type_filter="webhook",
+        )
+
+        app.state.db.background_worker = app.state.db.create_worker(
+            logger=logger,  # Explicitly pass logger
+            num_workers=3,
+            poll_interval=2,
+            worker_name="BACKGROUND",
+            job_type_filter=None,
+        )
+
+        # Start workers
+        if log:
+            log.debug("Starting database workers...")
+
+        app.state.db.adhoc_worker.start(
+            table_name="jobs",
+            process_fn=lambda job: process_job(
+                job, logger, worker=app.state.db.adhoc_worker
+            ),
+            job_type_filter="webhook",
+        )
+
+        app.state.db.background_worker.start(
+            table_name="jobs",
+            process_fn=lambda job: process_job(
+                job, logger, worker=app.state.db.background_worker
+            ),
+            job_type_filter=None,
+        )
+
+        if log:
+            log.info("FastAPI application started successfully")
+
+        yield
+
+    except Exception as e:
+        if log:
+            log.error(f"Error during FastAPI startup: {e}", exc_info=True)
+        else:
+            print(f"[FASTAPI] Startup error: {e}")
+        raise
+
+    finally:
+        # Shutdown
+        if log:
+            log.debug("Shutting down FastAPI application...")
+        else:
+            print("[FASTAPI] Shutting down...")
+
+        try:
+            # Stop workers with timeout
+            shutdown_tasks = []
+
+            if hasattr(app.state, "db"):
+                if hasattr(app.state.db, "adhoc_worker") and app.state.db.adhoc_worker:
+                    worker_name = getattr(
+                        app.state.db.adhoc_worker, "worker_name", "ADHOC-UNKNOWN"
+                    )
+                    shutdown_tasks.append(
+                        (f"adhoc_worker({worker_name})", app.state.db.adhoc_worker)
+                    )
+
+                if (
+                    hasattr(app.state.db, "background_worker")
+                    and app.state.db.background_worker
+                ):
+                    worker_name = getattr(
+                        app.state.db.background_worker,
+                        "worker_name",
+                        "BACKGROUND-UNKNOWN",
+                    )
+                    shutdown_tasks.append(
+                        (
+                            f"background_worker({worker_name})",
+                            app.state.db.background_worker,
+                        )
+                    )
+
+            # Stop workers in parallel with timeout
+            def stop_worker_with_timeout(name, worker, timeout=8):
+                try:
+                    if log:
+                        log.debug(f"Stopping {name}...")
+                    else:
+                        print(f"[FASTAPI] Stopping {name}...")
+                    worker.stop(timeout=timeout)
+                    if log:
+                        log.debug(f"{name} stopped successfully")
+                    else:
+                        print(f"[FASTAPI] {name} stopped successfully")
+                except Exception as e:
+                    if log:
+                        log.error(f"Error stopping {name}: {e}")
+                    else:
+                        print(f"[FASTAPI] Error stopping {name}: {e}")
+
+            # Use threading to stop workers in parallel
+            stop_threads = []
+            for name, worker in shutdown_tasks:
+                thread = threading.Thread(
+                    target=stop_worker_with_timeout, args=(name, worker, 8), daemon=True
+                )
+                thread.start()
+                stop_threads.append(thread)
+
+            # Wait for all stop threads to complete (max 10 seconds total)
+            for thread in stop_threads:
+                thread.join(timeout=10)
+
+            # Close database connections
+            if hasattr(app.state, "db") and app.state.db:
+                if log:
+                    log.debug("Closing database connections...")
+                app.state.db.close_all()
+
+            if log:
+                log.info("FastAPI application shutdown complete")
+            else:
+                print("[FASTAPI] Shutdown complete")
+
+        except Exception as e:
+            if log:
+                log.error(f"Error during FastAPI shutdown: {e}", exc_info=True)
+            else:
+                print(f"[FASTAPI] Shutdown error: {e}")
 
 
 app = FastAPI(lifespan=lifespan)

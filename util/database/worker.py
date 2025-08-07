@@ -347,37 +347,82 @@ class DBWorker(DatabaseBase):
             self._cleanup_thread.start()
 
         log.info(
-            f"Started {self.num_workers} worker threads for table '{table_name}' "
+            f"Starting '{self.num_workers}' worker(s) for '{job_type_filter if job_type_filter is not None else 'Any'}' jobs..."
+        )
+        log.debug(
             f"(poll_interval={self.poll_interval}s, job_type_filter='{self.job_type_filter}')"
         )
 
     def stop(self, timeout: int = 10):
-        """Stop the worker gracefully"""
+        """Stop the worker gracefully with improved timeout handling"""
         log = self.logger.get_adapter("WORKER")
-        log.info("Initiating graceful shutdown...")
+        log.info(f"Initiating graceful shutdown of '{self.worker_name}'...")
 
+        # Set shutdown flags
         self.running = False
         self._cleanup_running = False
         self._shutdown_event.set()
+        self._shutdown_requested = True
 
-        # Wait for threads to finish
-        for i, t in enumerate(self._threads):
-            t.join(timeout=timeout)
-            if t.is_alive():
-                log.warning(
-                    f"Worker thread {i+1} did not stop gracefully within {timeout}s"
-                )
+        # Stop worker threads
+        alive_threads = [t for t in self._threads if t.is_alive()]
 
-        if self._cleanup_thread:
+        if alive_threads:
+            log.info(f"Waiting for {len(alive_threads)} worker threads to stop...")
+
+            # Wait for threads with individual timeouts
+            per_thread_timeout = max(1, timeout // max(1, len(alive_threads)))
+
+            for i, thread in enumerate(alive_threads):
+                thread.join(timeout=per_thread_timeout)
+                if thread.is_alive():
+                    log.warning(
+                        f"Worker thread {i+1} ({thread.name}) did not stop within {per_thread_timeout}s"
+                    )
+
+        # Stop cleanup thread
+        if self._cleanup_thread and self._cleanup_thread.is_alive():
+            log.debug("Waiting for cleanup thread to stop...")
             self._cleanup_thread.join(timeout=2)
+            if self._cleanup_thread.is_alive():
+                log.warning("Cleanup thread did not stop gracefully")
 
-        self._threads = []
+        # Clear thread references
+        self._threads.clear()
         self._cleanup_thread = None
-        log.info("Worker stopped gracefully")
+
+        # Check if any threads are still alive
+        remaining_alive = sum(1 for t in self._threads if t.is_alive())
+        if remaining_alive == 0:
+            log.info("Worker stopped gracefully")
+        else:
+            log.warning(f"Worker stopped with {remaining_alive} threads still running")
 
     def close(self):
-        self.stop()
-        super().close()
+        """Close the worker and database connection"""
+        try:
+            # Stop worker first
+            self.stop(timeout=5)
+
+            # Close database connection
+            if hasattr(self, "conn") and self.conn:
+                try:
+                    self.conn.close()
+                except Exception as e:
+                    if hasattr(self, "logger") and self.logger:
+                        self.logger.get_adapter("WORKER").error(
+                            f"Error closing database connection: {e}"
+                        )
+
+            # Call parent close if it exists
+            if hasattr(super(), "close"):
+                super().close()
+
+        except Exception as e:
+            if hasattr(self, "logger") and self.logger:
+                self.logger.get_adapter("WORKER").error(
+                    f"Error during worker close: {e}", exc_info=True
+                )
 
     def job_stats(self, table_name: str = "jobs", error_limit: int = 10):
         try:

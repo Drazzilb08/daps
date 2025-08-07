@@ -2,6 +2,8 @@ import html
 import logging
 import os
 import time
+from contextlib import contextmanager
+from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Union
 
 import requests
@@ -14,45 +16,145 @@ from util.normalization import normalize_titles
 logging.getLogger("requests").setLevel(logging.WARNING)
 
 
+# Custom exception types for specific error categories
+class ARRConnectionError(Exception):
+    """Raised when cannot connect to ARR instance"""
+
+    pass
+
+
+class ARRAuthenticationError(Exception):
+    """Raised when API key is invalid or unauthorized"""
+
+    pass
+
+
+class ARRRateLimitError(Exception):
+    """Raised when rate limited by ARR API"""
+
+    pass
+
+
+class ARRTemporaryError(Exception):
+    """Raised for temporary failures that should be retried"""
+
+    pass
+
+
+class ARRPermanentError(Exception):
+    """Raised for permanent failures that should not be retried"""
+
+    pass
+
+
+@dataclass
+class RetryConfig:
+    """Configuration for retry behavior"""
+
+    max_attempts: int = 5
+    base_delay: float = 1.0
+    max_delay: float = 60.0
+    exponential_base: float = 2.0
+    jitter: bool = True
+
+
+class RetryHandler:
+    """Handles exponential backoff retry logic with jitter"""
+
+    def __init__(self, config: RetryConfig = None):
+        self.config = config or RetryConfig()
+
+    def calculate_delay(self, attempt: int) -> float:
+        """Calculate delay for given attempt with exponential backoff and jitter"""
+        delay = min(
+            self.config.base_delay * (self.config.exponential_base**attempt),
+            self.config.max_delay,
+        )
+
+        if self.config.jitter:
+            import random
+
+            delay *= 0.5 + 0.5 * random.random()  # Add 0-50% jitter
+
+        return delay
+
+    def should_retry(self, attempt: int, exception: Exception) -> bool:
+        """Determine if we should retry based on attempt count and exception type"""
+        if attempt >= self.config.max_attempts:
+            return False
+
+        # Don't retry permanent errors
+        if isinstance(exception, (ARRAuthenticationError, ARRPermanentError)):
+            return False
+
+        # Retry temporary errors and connection issues
+        if isinstance(
+            exception, (ARRTemporaryError, ARRConnectionError, ARRRateLimitError)
+        ):
+            return True
+
+        # Retry specific HTTP errors
+        if isinstance(exception, requests.exceptions.RequestException):
+            if hasattr(exception, "response") and exception.response:
+                status_code = exception.response.status_code
+                # Retry server errors and rate limits
+                return status_code >= 500 or status_code == 429
+
+        return False
+
+
+@contextmanager
+def database_transaction(db_connection):
+    """Context manager for database transactions with automatic rollback"""
+    transaction = db_connection.begin()
+    try:
+        yield transaction
+        transaction.commit()
+    except Exception:
+        transaction.rollback()
+        raise
+    finally:
+        if hasattr(transaction, "close"):
+            transaction.close()
+
+
 class BaseARRClient:
-    """Base class for interacting with ARR (Radarr/Sonarr) instances."""
+    """Improved base class with better error handling"""
 
     def __init__(self, url: str, api: str, logger: Any) -> None:
-        """
-        Initialize the base ARR client.
-
-        Args:
-            url (str): API URL.
-            api (str): API key.
-            logger (Any): Logger instance.
-        """
         self.logger = logger
-        self.max_retries = 5
-        self.timeout = 60
         self.url = url.rstrip("/")
         self.api = api
+        self.retry_handler = RetryHandler()
+        self.session = None
+        self.connect_status = False
+
+        # Add these missing attributes:
         self.headers = {
             "Accept": "application/json",
             "Content-Type": "application/json",
             "X-Api-Key": api,
         }
-        self.session = requests.Session()
-        self.session.headers.update({"X-Api-Key": self.api})
-        self.connect_status = False
+        self.max_retries = 5
+        self.timeout = 60
         self.instance_type = None
         self.instance_name = None
         self.app_name = None
         self.app_version = None
-        status = self.get_system_status()
-        if not status:
-            return
-        self.app_name = status.get("appName")
-        self.app_version = status.get("version")
-        self.instance_name = status.get("instanceName")
-        self.connect_status = True
-        self.logger.debug(
-            f"Connected to {self.app_name} v{self.app_version} at {self.url}"
-        )
+
+        # Initialize with specific error handling
+        try:
+            self._initialize_session()
+            self._verify_connection()
+        except ARRAuthenticationError as e:
+            self.logger.error(f"Authentication failed for {url}: {e}")
+            raise
+        except ARRConnectionError as e:
+            self.logger.error(f"Connection failed for {url}: {e}")
+            raise
+        except Exception as e:
+            self.logger.error(f"Unexpected error during initialization: {e}")
+            raise ARRConnectionError(f"Failed to initialize ARR client: {e}")
 
     def is_connected(self) -> bool:
         """
@@ -68,7 +170,7 @@ class BaseARRClient:
             Optional[Dict[str, Any]]: Health status.
         """
         endpoint = f"{self.url}/api/v3/health"
-        return self.make_get_request(endpoint, headers=self.headers)
+        return self.make_get_request(endpoint)
 
     def wait_for_command(self, command_id: int) -> bool:
         """
@@ -120,7 +222,7 @@ class BaseARRClient:
         Returns:
             Optional[str]: Instance name.
         """
-        status = self.get_system_status()
+        status = self._get_system_status_with_retry()
         return status.get("instanceName") if status else None
 
     def get_system_status(self) -> Optional[Dict[str, Any]]:
@@ -189,46 +291,6 @@ class BaseARRClient:
         """
         return self._request_with_retries("DELETE", endpoint, json=json)
 
-    def _request_with_retries(
-        self,
-        method: str,
-        endpoint: str,
-        headers: Optional[Dict[str, str]] = None,
-        json: Any = None,
-    ) -> Any:
-        """
-        Perform HTTP request with retry logic.
-
-        Args:
-            method (str): HTTP method.
-            endpoint (str): API endpoint.
-            headers (Optional[Dict[str, str]]): Headers.
-            json (Any): JSON payload.
-        Returns:
-            Any: Response or JSON.
-        """
-        response = None
-        for i in range(self.max_retries):
-            try:
-                response = self.session.request(
-                    method, endpoint, headers=headers, json=json, timeout=self.timeout
-                )
-                response.raise_for_status()
-                return response if method == "DELETE" else response.json()
-            except (
-                requests.exceptions.Timeout,
-                requests.exceptions.HTTPError,
-                requests.exceptions.RequestException,
-            ) as ex:
-                if i < self.max_retries - 1:
-                    self.logger.warning(
-                        f"{method} request failed ({ex}), retrying ({i+1}/{self.max_retries})..."
-                    )
-                    time.sleep(1)
-                else:
-                    self._handle_request_exception(method, endpoint, ex, response, json)
-        return None
-
     def get_tag_id_from_name(self, tag_name: str) -> int:
         """
         Retrieve a tag ID by its name, create if not exists.
@@ -247,64 +309,221 @@ class BaseARRClient:
         tag_id = self.create_tag(tag_name)
         return tag_id
 
-    def _handle_request_exception(
+    def _initialize_session(self) -> None:
+        """Initialize HTTP session with proper configuration"""
+        try:
+            self.session = requests.Session()
+            self.session.headers.update(
+                {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                    "X-Api-Key": self.api,
+                    "User-Agent": "DAPS/1.0",
+                }
+            )
+            # Set reasonable timeouts
+            self.session.timeout = (10, 60)  # (connect, read) timeouts
+        except Exception as e:
+            raise ARRConnectionError(f"Failed to initialize session: {e}")
+
+    def _verify_connection(self) -> None:
+        """Verify connection and get system status"""
+        try:
+            status = self._get_system_status_with_retry()
+            if not status:
+                raise ARRConnectionError("Could not retrieve system status")
+
+            self.app_name = status.get("appName")
+            self.app_version = status.get("version")
+            self.instance_name = status.get("instanceName")
+            self.connect_status = True
+
+            self.logger.debug(
+                f"Connected to {self.app_name} v{self.app_version} at {self.url}"
+            )
+
+        except ARRAuthenticationError:
+            raise
+        except Exception as e:
+            raise ARRConnectionError(f"Connection verification failed: {e}")
+
+    def _get_system_status_with_retry(self) -> Optional[Dict[str, Any]]:
+        """Get system status with retry logic"""
+        endpoint = f"{self.url}/api/v3/system/status"
+
+        for attempt in range(self.retry_handler.config.max_attempts):
+            try:
+                response = self.session.get(endpoint, timeout=self.session.timeout)
+
+                # Handle specific HTTP status codes
+                if response.status_code == 401:
+                    raise ARRAuthenticationError("Invalid API key")
+                elif response.status_code == 403:
+                    raise ARRAuthenticationError("API key lacks necessary permissions")
+                elif response.status_code == 429:
+                    raise ARRRateLimitError("Rate limited")
+                elif response.status_code >= 500:
+                    raise ARRTemporaryError(f"Server error: {response.status_code}")
+
+                response.raise_for_status()
+                return response.json()
+
+            except (ARRAuthenticationError, ARRPermanentError):
+                # Don't retry authentication or permanent errors
+                raise
+            except Exception as e:
+                if not self.retry_handler.should_retry(attempt, e):
+                    self.logger.error(
+                        f"Failed to get system status after {attempt + 1} attempts: {e}"
+                    )
+                    raise ARRConnectionError(f"System status check failed: {e}")
+
+                delay = self.retry_handler.calculate_delay(attempt)
+                self.logger.warning(
+                    f"System status attempt {attempt + 1} failed, retrying in {delay:.2f}s: {e}"
+                )
+                time.sleep(delay)
+
+        return None
+
+    def _request_with_retries(
         self,
         method: str,
         endpoint: str,
-        ex: Exception,
-        response: Any,
+        headers: Optional[Dict[str, str]] = None,
+        json: Any = None,
+    ) -> Any:
+        """Enhanced request method with improved error handling and retries"""
+
+        for attempt in range(self.retry_handler.config.max_attempts):
+            try:
+                response = self.session.request(
+                    method,
+                    endpoint,
+                    headers=headers,
+                    json=json,
+                    timeout=self.session.timeout,
+                )
+
+                # Handle specific status codes
+                if response.status_code == 401:
+                    raise ARRAuthenticationError("API request unauthorized")
+                elif response.status_code == 403:
+                    raise ARRAuthenticationError("API request forbidden")
+                elif response.status_code == 404:
+                    raise ARRPermanentError(f"Endpoint not found: {endpoint}")
+                elif response.status_code == 429:
+                    # Extract retry-after header if available
+                    retry_after = response.headers.get("Retry-After")
+                    if retry_after:
+                        try:
+                            delay = int(retry_after)
+                            raise ARRRateLimitError(
+                                f"Rate limited, retry after {delay}s"
+                            )
+                        except ValueError:
+                            pass
+                    raise ARRRateLimitError("Rate limited")
+                elif response.status_code >= 500:
+                    raise ARRTemporaryError(f"Server error: {response.status_code}")
+
+                response.raise_for_status()
+
+                # Return appropriate response type
+                if method == "DELETE":
+                    return response
+                else:
+                    try:
+                        return response.json()
+                    except ValueError as e:
+                        self.logger.warning(f"Failed to parse JSON response: {e}")
+                        return response.text
+
+            except (ARRAuthenticationError, ARRPermanentError):
+                # Don't retry these
+                self.logger.error(f"{method} request to {endpoint} failed permanently")
+                raise
+
+            except Exception as e:
+                if not self.retry_handler.should_retry(attempt, e):
+                    self._log_request_failure(
+                        method,
+                        endpoint,
+                        e,
+                        response if "response" in locals() else None,
+                        json,
+                    )
+                    return None
+
+                delay = self.retry_handler.calculate_delay(attempt)
+                self.logger.warning(
+                    f"{method} request attempt {attempt + 1} failed, retrying in {delay:.2f}s: {e}"
+                )
+                time.sleep(delay)
+
+        return None
+
+    def _log_request_failure(
+        self,
+        method: str,
+        endpoint: str,
+        exception: Exception,
+        response: Any = None,
         payload: Any = None,
     ) -> None:
-        """
-        Handle exceptions during HTTP request.
-
-        Args:
-            method (str): HTTP method.
-            endpoint (str): API endpoint.
-            ex (Exception): Exception.
-            response (Any): Response object.
-            payload (Any): Payload data.
-        """
+        """Comprehensive logging for request failures"""
         status_code = (
-            response.status_code
-            if response is not None
-            and hasattr(response, "status_code")
-            and response.status_code
+            getattr(response, "status_code", "No response")
+            if response
             else "No response"
         )
-        hint = (
-            self._get_error_hint(status_code)
-            if isinstance(status_code, int)
-            else "No HTTP response received, check URL"
+
+        self.logger.error(
+            f"{method} request failed after {self.retry_handler.config.max_attempts} attempts"
         )
-        self.logger.error(f"{method} request failed after {self.max_retries} retries.")
         self.logger.error(f"Endpoint: {endpoint}")
+        self.logger.error(f"Status Code: {status_code}")
+        self.logger.error(f"Exception: {type(exception).__name__}: {exception}")
+
         if payload:
             self.logger.error(f"Payload: {payload}")
-        if response is not None and hasattr(response, "text"):
-            self.logger.error(f"Response: {response.text} Code: {status_code}")
-        self.logger.error(f"Status: {status_code}, Error: {ex}")
-        self.logger.error(f"\nHint: {hint}\n")
 
-    def _get_error_hint(self, status_code: int) -> str:
-        """
-        Get a user-friendly hint for a given HTTP status code.
+        if response and hasattr(response, "text"):
+            # Truncate very long responses
+            response_text = (
+                response.text[:1000] + "..."
+                if len(response.text) > 1000
+                else response.text
+            )
+            self.logger.error(f"Response: {response_text}")
 
-        Args:
-            status_code (int): HTTP status code.
-        Returns:
-            str: Hint.
-        """
+        # Provide helpful hints
+        hint = self._get_error_hint(
+            status_code if isinstance(status_code, int) else None
+        )
+        if hint:
+            self.logger.error(f"Hint: {hint}")
+
+    def _get_error_hint(self, status_code: Optional[int]) -> str:
+        """Get helpful error hints based on status code"""
+        if not status_code:
+            return "No HTTP response received. Check if the service is running and URL is correct."
+
         hints = {
-            400: "Bad Request – likely malformed or missing parameters.",
-            401: "Unauthorized – check that your API key is correct.",
-            403: "Forbidden – the API key may not have the necessary permissions.",
-            404: "Not Found – the endpoint may be incorrect or the resource doesn't exist.",
-            429: "Too Many Requests – you may have hit a rate limit.",
-            500: "Internal Server Error – something went wrong on the server.",
-            503: "Service Unavailable – the server is currently down or overloaded.",
+            400: "Bad Request - Check request parameters and payload format",
+            401: "Unauthorized - Verify API key is correct and has proper permissions",
+            403: "Forbidden - API key may not have required permissions for this operation",
+            404: "Not Found - Endpoint may be incorrect or resource doesn't exist",
+            429: "Rate Limited - Reduce request frequency or implement backoff",
+            500: "Internal Server Error - Check service logs, may be temporary",
+            502: "Bad Gateway - Service may be behind a proxy with issues",
+            503: "Service Unavailable - Service may be down or overloaded",
+            504: "Gateway Timeout - Service may be slow to respond",
         }
-        return hints.get(status_code, "Unknown error – check logs for more info.")
+
+        return hints.get(
+            status_code, f"HTTP {status_code} - Check service documentation"
+        )
 
     def get_all_tags(self) -> Optional[List[Dict[str, Any]]]:
         """

@@ -171,7 +171,7 @@ def init_db_schema(conn):
             );
             """
         )
-        # Webhook Jobs
+        # Jobs
         conn.execute(
             """
             CREATE TABLE IF NOT EXISTS jobs (
@@ -179,13 +179,14 @@ def init_db_schema(conn):
                 type TEXT NOT NULL,
                 received_at TEXT,
                 payload TEXT,
-                status TEXT DEFAULT 'Unknown',
-                progress INTEGER DEFAULT 0,
+                status TEXT DEFAULT 'pending',
                 result TEXT,
                 error TEXT,
                 attempts INTEGER DEFAULT 0,
                 max_attempts INTEGER DEFAULT 3,
-                scheduled_at TEXT DEFAULT NULL
+                scheduled_at TEXT DEFAULT NULL,
+                priority INTEGER DEFAULT 0,
+                progress INTEGER DEFAULT 0
             );
             """
         )

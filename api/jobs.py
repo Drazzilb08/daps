@@ -64,7 +64,7 @@ async def get_job_detail(
             status_code=400,
             content={"error": "Job ID must be a positive integer"},
         )
-    # Initialize the database connection
+
     logger = logger.get_adapter("GetJobDetail")
     logger.debug(f"Serving GET /api/jobs/{job_id}")
     db = DapsDB(logger=logger)
@@ -72,6 +72,7 @@ async def get_job_detail(
     if job:
         return job
     else:
+        logger.warning(f"Job {job_id} not found")
         return JSONResponse(status_code=404, content={"error": "Job not found"})
 
 

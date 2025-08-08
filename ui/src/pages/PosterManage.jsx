@@ -103,15 +103,18 @@ export default function PosterManagement() {
         // Reset all selected drives to running state
         setPillProgress(() =>
             Object.fromEntries(
-                selectedGDrives.map(n => [n, { 
-                    progress: 0, 
-                    status: 'running', 
-                    jobId: null,
-                    error: null 
-                }])
+                selectedGDrives.map(n => [
+                    n,
+                    {
+                        progress: 0,
+                        status: 'running',
+                        jobId: null,
+                        error: null,
+                    },
+                ])
             )
         );
-        
+
         try {
             // Start jobs in parallel
             await Promise.all(
@@ -119,17 +122,17 @@ export default function PosterManagement() {
                     try {
                         const jobResp = await runGDriveAdhocSync([driveName]);
                         if (!jobResp.job_id) throw new Error('No job ID returned');
-                        
+
                         // Update with job ID
                         setPillProgress(prv => ({
                             ...prv,
-                            [driveName]: { 
-                                ...prv[driveName], 
+                            [driveName]: {
+                                ...prv[driveName],
                                 jobId: jobResp.job_id,
-                                progress: 5  // Show some initial progress
+                                progress: 5, // Show some initial progress
                             },
                         }));
-                        
+
                         // Start polling job progress
                         startJobPolling(driveName, jobResp.job_id);
                         return { name: driveName, jobId: jobResp.job_id };
@@ -156,25 +159,25 @@ export default function PosterManagement() {
     // Poll job progress for a drive
     const startJobPolling = (driveName, jobId) => {
         console.log(`Starting polling for ${driveName}, job ${jobId}`);
-        
+
         // Clear existing poller
         if (jobPollers.current[driveName]) {
             clearInterval(jobPollers.current[driveName]);
         }
-        
+
         jobPollers.current[driveName] = setInterval(async () => {
             try {
                 const response = await fetchJobDetail(jobId);
                 console.log(`Job ${jobId} status:`, response);
-                
+
                 // Handle the response structure - fetchJobDetail returns the job object directly
                 const job = response.job || response;
-                
+
                 // Map database status values to our UI states
                 const dbStatus = job.status;
                 let uiStatus = 'running';
                 let isFinished = false;
-                
+
                 if (dbStatus === 'success') {
                     uiStatus = 'success';
                     isFinished = true;
@@ -186,7 +189,7 @@ export default function PosterManagement() {
                 } else if (dbStatus === 'pending') {
                     uiStatus = 'running'; // Show as running for pending jobs
                 }
-                
+
                 // Update progress state
                 setPillProgress(prv => ({
                     ...prv,
@@ -197,21 +200,22 @@ export default function PosterManagement() {
                         error: job.error || null,
                     },
                 }));
-                
+
                 // Stop polling if finished
                 if (isFinished) {
                     console.log(`Job ${jobId} finished with status: ${uiStatus}`);
                     clearInterval(jobPollers.current[driveName]);
                     delete jobPollers.current[driveName];
-                    
+
                     // Show completion notification
                     if (uiStatus === 'success') {
                         toast.success(`GDrive sync completed for ${driveName}`);
                     } else if (uiStatus === 'error') {
-                        toast.error(`GDrive sync failed for ${driveName}: ${job.error || 'Unknown error'}`);
+                        toast.error(
+                            `GDrive sync failed for ${driveName}: ${job.error || 'Unknown error'}`
+                        );
                     }
                 }
-                
             } catch (e) {
                 console.error(`Error polling job ${jobId}:`, e);
                 setPillProgress(prv => ({
@@ -230,13 +234,13 @@ export default function PosterManagement() {
     };
 
     // Retry a failed job
-    const handleRetryJob = async (driveName) => {
+    const handleRetryJob = async driveName => {
         const pill = pillProgress[driveName];
         if (!pill?.jobId) {
             toast.error('No job ID to retry');
             return;
         }
-        
+
         try {
             // Reset pill to running state
             setPillProgress(prv => ({
@@ -248,14 +252,13 @@ export default function PosterManagement() {
                     error: null,
                 },
             }));
-            
+
             // Call retry API
             await retryJob(pill.jobId);
             toast.info(`Retrying sync for ${driveName}...`);
-            
+
             // Restart polling
             startJobPolling(driveName, pill.jobId);
-            
         } catch (error) {
             setPillProgress(prv => ({
                 ...prv,

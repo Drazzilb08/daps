@@ -18,7 +18,7 @@ export default function GDriveAdhocContent({
     // Tooltip for the Run button
     const [runTip, setRunTip] = useState(false);
     const runBtnRef = useRef(null);
-    
+
     // Tooltip refs for retry buttons
     const retryRefs = useRef({});
 
@@ -48,9 +48,7 @@ export default function GDriveAdhocContent({
     };
 
     // Check if any selected drives are currently running
-    const hasRunningSelectedDrives = selected.some(
-        n => pillProgress[n]?.status === 'running'
-    );
+    const hasRunningSelectedDrives = selected.some(n => pillProgress[n]?.status === 'running');
 
     // Only allow run if we have selected drives and none are currently running
     const runDisabled = selected.length === 0 || hasRunningSelectedDrives;
@@ -75,12 +73,12 @@ export default function GDriveAdhocContent({
     // Get pill CSS classes
     const getPillClasses = (checked, pill) => {
         let classes = 'gdrive-pill';
-        
+
         if (checked) classes += ' checked';
         if (pill.status === 'running') classes += ' running disabled';
         else if (pill.status === 'success') classes += ' success';
         else if (pill.status === 'error') classes += ' error';
-        
+
         return classes;
     };
 
@@ -102,7 +100,8 @@ export default function GDriveAdhocContent({
                     )}
                     {hasRunningSelectedDrives && (
                         <span className="running-count">
-                            {selected.filter(n => pillProgress[n]?.status === 'running').length} running
+                            {selected.filter(n => pillProgress[n]?.status === 'running').length}{' '}
+                            running
                         </span>
                     )}
                 </div>
@@ -118,10 +117,10 @@ export default function GDriveAdhocContent({
                         const isRunning = pill.status === 'running';
                         const isSuccess = pill.status === 'success';
                         const isError = pill.status === 'error';
-                        
+
                         // Only disable the pill itself if it's running
                         const pillDisabled = isRunning;
-                        
+
                         const statusText = getStatusText(pill);
 
                         return (
@@ -187,7 +186,7 @@ export default function GDriveAdhocContent({
                                     {isError && onRetry && (
                                         <>
                                             <button
-                                                ref={el => retryRefs.current[item.name] = el}
+                                                ref={el => (retryRefs.current[item.name] = el)}
                                                 className="gdrive-pill-retry"
                                                 onClick={e => {
                                                     e.stopPropagation();
@@ -227,8 +226,8 @@ export default function GDriveAdhocContent({
                     {selected.length === 0
                         ? 'Select drives to sync'
                         : hasRunningSelectedDrives
-                        ? `Running sync (${selected.filter(n => pillProgress[n]?.status === 'running').length})`
-                        : `Run Sync (${selected.length})`}
+                          ? `Running sync (${selected.filter(n => pillProgress[n]?.status === 'running').length})`
+                          : `Run Sync (${selected.length})`}
                 </button>
                 <TooltipFactory
                     anchor={runBtnRef.current}
@@ -236,8 +235,8 @@ export default function GDriveAdhocContent({
                         selected.length === 0
                             ? 'Select one or more drives to sync'
                             : hasRunningSelectedDrives
-                            ? 'Wait for current syncs to complete'
-                            : `Run sync for ${selected.length} selected drive${selected.length > 1 ? 's' : ''}`
+                              ? 'Wait for current syncs to complete'
+                              : `Run sync for ${selected.length} selected drive${selected.length > 1 ? 's' : ''}`
                     }
                     show={runTip}
                     position="top"

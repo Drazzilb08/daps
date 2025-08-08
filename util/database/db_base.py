@@ -1,6 +1,4 @@
-"""
-Base database class providing common functionality and connection management.
-"""
+# util/database/db_base.py
 
 import os
 import sqlite3

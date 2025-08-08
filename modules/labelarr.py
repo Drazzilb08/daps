@@ -1,26 +1,31 @@
+# modules/labelarr.py
+
 import json
 import sys
 from collections import defaultdict
 from typing import Dict, List
 
-from util.config import DapsConfig, load_config
+from util.base_module import DapsModule
 from util.connector import Connector
 from util.database import DapsDB
 from util.helper import create_table, print_settings
-from util.logger import Logger
 from util.normalization import normalize_titles
 from util.notification import NotificationManager
 from util.plex import PlexClient
 
 
-class Labelarr:
-    def __init__(self, logger: Logger = None, config: DapsConfig = None):
-        self.full_config = config or load_config()
-        self.config = self.full_config.labelarr
-        self.logger = logger or Logger(self.config.log_level, "labelarr")
-        self.db = None
+class Labelarr(DapsModule):
+    def __init__(self) -> None:
+        """
+        Standard constructor using dependency injection.
 
-    def sync_to_plex(self, plex_client, arr_data, plex_data, labels) -> List[Dict]:
+        Args:
+            config: Complete DAPS configuration object
+            logger: Logger instance
+        """
+        super().__init__()
+
+    def sync_to_plex(self, plex_client, arr_data, plex_data, labels, db) -> List[Dict]:
         def get_id(val):
             return str(val) if val not in (None, "null", "") else None
 
@@ -97,7 +102,6 @@ class Labelarr:
 
             new_labels = list(plex_labels)
 
-            # Get all possible IDs from plex
             plex_ids = {
                 "tmdb": get_id(guids.get("tmdb") or plex_item["tmdb_id"]),
                 "tvdb": get_id(guids.get("tvdb") or plex_item["tvdb_id"]),
@@ -111,21 +115,18 @@ class Labelarr:
             arr_item = None
             match_type = "NO MATCH"
 
-            # 1. Prefer TMDB+IMDB dual ID
             if plex_ids["tmdb"] and plex_ids["imdb"]:
                 arr_item = arr_dual_ids["tmdb_imdb"].get(
                     (plex_ids["tmdb"], plex_ids["imdb"])
                 )
                 if arr_item:
                     match_type = "TMDB+IMDB"
-            # 2. Prefer TVDB+IMDB dual ID
             if not arr_item and plex_ids["tvdb"] and plex_ids["imdb"]:
                 arr_item = arr_dual_ids["tvdb_imdb"].get(
                     (plex_ids["tvdb"], plex_ids["imdb"])
                 )
                 if arr_item:
                     match_type = "TVDB+IMDB"
-            # 3. Fallback to single IDs
             if not arr_item and plex_ids["tmdb"]:
                 arr_item = id_maps["tmdb"].get(plex_ids["tmdb"])
                 if arr_item:
@@ -138,7 +139,6 @@ class Labelarr:
                 arr_item = id_maps["imdb"].get(plex_ids["imdb"])
                 if arr_item:
                     match_type = "IMDB"
-            # 4. Last-resort fallback: title+year
             if not arr_item:
                 arr_item = id_maps["title_year"].get(key)
                 if arr_item:
@@ -169,7 +169,6 @@ class Labelarr:
                             if label_item.lower() != label_lc
                         ]
             else:
-                # No ARR match: remove any matching label in Plex
                 for label_lc, label in labels_lower.items():
                     if label_lc in plex_label_set:
                         add_remove[label] = "remove"
@@ -180,7 +179,6 @@ class Labelarr:
                             if label_item.lower() != label_lc
                         ]
 
-            # If any label changed, update DB
             if add_remove:
                 output.append(
                     {
@@ -193,7 +191,7 @@ class Labelarr:
                     f"Sync '{plex_item['title']}' ({plex_item['year']}) [{match_type}]: {add_remove}"
                 )
                 if not self.config.dry_run:
-                    self.db.plex.update(
+                    db.plex.update(
                         title=plex_item["title"],
                         year=plex_item["year"],
                         library_name=plex_item["library_name"],
@@ -203,7 +201,8 @@ class Labelarr:
                     )
         return output
 
-    def handle_messages(self, data_dict: List[Dict]):
+    def handle_messages(self, data_dict: List[Dict]) -> None:
+        """Display results in a formatted table"""
         table: List[List[str]] = [["Results"]]
         self.logger.info(create_table(table))
 
@@ -219,9 +218,9 @@ class Labelarr:
             for entry in items:
                 self.logger.info(f"  - {entry}")
 
-    def run(self):
+    def run(self) -> None:
         try:
-            with DapsDB(logger=self.logger) as self.db:
+            with DapsDB(logger=self.logger) as db:
                 if self.config.log_level.lower() == "debug":
                     print_settings(self.logger, self.config)
 
@@ -229,13 +228,15 @@ class Labelarr:
                     table = [["Dry Run"], ["NO CHANGES WILL BE MADE"]]
                     self.logger.info(create_table(table))
 
-                connector = Connector(self.db, self.full_config, self.logger)
-
-                connector.update_arr_database()
-                connector.update_plex_database()
+                with Connector(
+                    db=db, config=self.full_config, logger=self.logger
+                ) as connector:
+                    connector.update_arr_database()
+                    connector.update_plex_database()
 
                 output: List[Dict] = []
                 arr_data = []
+
                 for mapping in self.config.mappings:
                     app_instance = mapping.app_instance
                     labels = (
@@ -245,7 +246,7 @@ class Labelarr:
                     )
                     arr_data.extend(
                         row
-                        for row in self.db.media.get_by_instance(app_instance) or []
+                        for row in db.media.get_by_instance(app_instance) or []
                         if (
                             any(
                                 label
@@ -262,11 +263,12 @@ class Labelarr:
                             )
                         )
                     )
+
                     plex_instances = mapping.plex_instances
                     for plex_instance in plex_instances:
                         instance_name = plex_instance.instance
                         library_names = plex_instance.library_names
-                        # Config: assume all plex instances always present, throw if not
+
                         plex_connection_data = self.full_config.instances.plex[
                             instance_name
                         ]
@@ -279,12 +281,12 @@ class Labelarr:
                         if plex_client.is_connected():
                             for library in library_names:
                                 plex_data.extend(
-                                    self.db.plex.get_by_instance_and_library(
+                                    db.plex.get_by_instance_and_library(
                                         instance_name, library
                                     )
                                 )
                             output += self.sync_to_plex(
-                                plex_client, arr_data, plex_data, labels
+                                plex_client, arr_data, plex_data, labels, db
                             )
 
                 if output:
@@ -295,6 +297,7 @@ class Labelarr:
                     manager.send_notification(output)
                 else:
                     self.logger.info("No labels to sync to Plex")
+
         except KeyboardInterrupt:
             print("Keyboard Interrupt detected. Exiting...")
             sys.exit()

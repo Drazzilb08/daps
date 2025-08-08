@@ -1,36 +1,39 @@
-import sys
+# modules/unmatched_assets.py
 
-from util.config import DapsConfig, load_config
+import sys
+from typing import Any, Dict, List
+
+from util.base_module import DapsModule
 from util.database import DapsDB
-from util.logger import Logger
 from util.notification import NotificationManager
 
 
-class UnmatchedAssets:
-    def __init__(self, logger: Logger = None, config: DapsConfig = None):
-        self.full_config = config or load_config()
-        self.config = self.full_config.unmatched_assets
-        self.logger = logger or Logger(
-            getattr(self.config, "log_level", "INFO"), "unmatched_assets"
-        )
+class UnmatchedAssets(DapsModule):
+    def __init__(self) -> None:
+        """
+        Standard constructor using dependency injection.
 
-        self.db = None
-        # Instance/library filters (make sure they're always defined!)
-        self.allowed_instances = set()
-        self.plex_libraries = {}
-        # Caches
-        self.unmatched_media = []
-        self.unmatched_collections = []
-        self.all_media = []
-        self.all_collections = []
+        Args:
+            config: Complete DAPS configuration object
+            logger: Logger instance
+        """
+        super().__init__()
 
-    def fetch_data(self):
-        self.unmatched_media = self.db.media.get_unmatched()
-        self.unmatched_collections = self.db.collection.get_unmatched()
-        self.all_media = self.db.media.get_all()
-        self.all_collections = self.db.collection.get_all()
+        self.allowed_instances: set = set()
+        self.plex_libraries: Dict[str, set] = {}
 
-    def compute_instance_filters(self):
+        self.unmatched_media: List[Dict] = []
+        self.unmatched_collections: List[Dict] = []
+        self.all_media: List[Dict] = []
+        self.all_collections: List[Dict] = []
+
+    def fetch_data(self, db: DapsDB) -> None:
+        self.unmatched_media = db.media.get_unmatched()
+        self.unmatched_collections = db.collection.get_unmatched()
+        self.all_media = db.media.get_all()
+        self.all_collections = db.collection.get_all()
+
+    def compute_instance_filters(self) -> None:
         for inst in getattr(self.config, "instances", []):
             if isinstance(inst, str):
                 self.allowed_instances.add(inst)
@@ -41,11 +44,11 @@ class UnmatchedAssets:
                     if libs:
                         self.plex_libraries[instance_name] = libs
 
-    def allowed_media(self, asset):
+    def allowed_media(self, asset: Dict[str, Any]) -> bool:
         inst = asset.get("instance_name")
         return bool(inst and inst in self.allowed_instances)
 
-    def allowed_collection(self, asset):
+    def allowed_collection(self, asset: Dict[str, Any]) -> bool:
         inst = asset.get("instance_name")
         lib = asset.get("library_name")
         if inst not in self.allowed_instances:
@@ -54,7 +57,7 @@ class UnmatchedAssets:
             return lib in self.plex_libraries[inst]
         return True
 
-    def filter_by_instance(self):
+    def filter_by_instance(self) -> None:
         self.unmatched_media = [
             a for a in self.unmatched_media if self.allowed_media(a)
         ]
@@ -66,7 +69,7 @@ class UnmatchedAssets:
             a for a in self.all_collections if self.allowed_collection(a)
         ]
 
-    def should_include(self, asset):
+    def should_include(self, asset: Dict[str, Any]) -> bool:
         cfg = self.config
         if (
             getattr(cfg, "ignore_folders", [])
@@ -94,7 +97,7 @@ class UnmatchedAssets:
             return False
         return True
 
-    def filter_by_config(self):
+    def filter_by_config(self) -> None:
         self.unmatched_media = [
             a for a in self.unmatched_media if self.should_include(a)
         ]
@@ -106,7 +109,7 @@ class UnmatchedAssets:
             a for a in self.all_collections if self.should_include(a)
         ]
 
-    def group_assets(self):
+    def group_assets(self) -> tuple:
         group_map = {"movie": "movies", "show": "series", "series": "series"}
         unmatched = {"movies": [], "series": [], "collections": []}
         all_media_grouped = {"movies": [], "series": []}
@@ -205,9 +208,13 @@ class UnmatchedAssets:
 
         return unmatched, all_media_grouped, all_collections_grouped
 
-    def calculate_stats(self, unmatched, all_media_grouped, all_collections_grouped):
-        summary = {}
-
+    def calculate_stats(
+        self,
+        unmatched: Dict[str, List],
+        all_media_grouped: Dict[str, List],
+        all_collections_grouped: List[Dict],
+    ) -> Dict[str, Any]:
+        """Calculate completion statistics"""
         unmatched_movies_total = len(unmatched["movies"])
         total_movies = len(all_media_grouped["movies"])
         percent_movies_complete = (
@@ -290,15 +297,16 @@ class UnmatchedAssets:
         }
         return summary
 
-    def get_stats_adhoc(self):
+    def get_stats_adhoc(self) -> Dict[str, Any]:
         try:
-            with DapsDB(logger=self.logger) as self.db:
-                return self.get_stats()
+            with DapsDB(logger=self.logger) as db:
+                return self.get_stats(db)
         except Exception as exc:
             self.logger.error(f"\n\nAn error occurred: {exc}\n", exc_info=True)
+            return {}
 
-    def get_stats(self):
-        self.fetch_data()
+    def get_stats(self, db: DapsDB) -> Dict[str, Any]:
+        self.fetch_data(db)
 
         self.compute_instance_filters()
         if not self.allowed_instances:
@@ -327,11 +335,11 @@ class UnmatchedAssets:
             "summary": summary,
         }
 
-    def print_stats(self):
+    def print_stats(self, db: DapsDB) -> None:
         try:
             from util.helper import create_table
 
-            stats = self.get_stats()
+            stats = self.get_stats(db)
             unmatched = stats["unmatched"]
             summary = stats["summary"]
             asset_types = ["movies", "series", "collections"]
@@ -408,16 +416,11 @@ class UnmatchedAssets:
                 ],
             ]
             self.logger.info(create_table(table))
-        except KeyboardInterrupt:
-            print("Keyboard Interrupt detected. Exiting...")
-            sys.exit()
         except Exception as exc:
             self.logger.error(f"\n\nAn error occurred: {exc}\n", exc_info=True)
-        finally:
-            self.logger.log_outro()
 
-    def build_output(self):
-        stats = self.get_stats()
+    def build_output(self, db: DapsDB) -> Dict[str, Any]:
+        stats = self.get_stats(db)
         unmatched_dict = stats["unmatched"]
         summary = stats["summary"]
 
@@ -456,17 +459,18 @@ class UnmatchedAssets:
         ]
         return {"unmatched_dict": unmatched_dict, "summary": table}
 
-    def send_notification(self):
+    def send_notification(self, db: DapsDB) -> None:
         manager = NotificationManager(
             self.config, self.logger, module_name="unmatched_assets"
         )
-        output = self.build_output()
+        output = self.build_output(db)
         manager.send_notification(output)
 
-    def run(self):
+    def run(self) -> None:
         try:
-            with DapsDB(logger=self.logger) as self.db:
-                self.print_stats()
+            with DapsDB(logger=self.logger) as db:
+                self.print_stats(db)
+
         except KeyboardInterrupt:
             print("Keyboard Interrupt detected. Exiting...")
             sys.exit()

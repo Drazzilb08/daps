@@ -1,3 +1,5 @@
+# modules/renameinatorr.py
+
 import re
 import sys
 import time
@@ -5,18 +7,16 @@ from collections import defaultdict
 from typing import Any, Dict, List
 
 from util.arr import BaseARRClient, create_arr_client
-from util.config import DapsConfig, load_config
+from util.base_module import DapsModule
 from util.constants import season_regex
 from util.helper import create_table, print_settings, progress
 from util.logger import Logger
 from util.notification import NotificationManager
 
 
-class Renameinatorr:
-    def __init__(self, logger: Logger = None, config: DapsConfig = None):
-        self.full_config = config or load_config()
-        self.config = self.full_config.renameinatorr
-        self.logger = logger or Logger(self.config.log_level, "renameinatorr")
+class Renameinatorr(DapsModule):
+    def __init__(self) -> None:
+        super().__init__()
 
     @staticmethod
     def print_output(output: Dict[str, Dict[str, Any]], logger: Logger) -> None:

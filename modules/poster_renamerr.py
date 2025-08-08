@@ -1,3 +1,5 @@
+# modules/poster_renamerr.py
+
 import filecmp
 import json
 import os
@@ -6,7 +8,7 @@ import sys
 from datetime import datetime
 from typing import Any, Dict, List
 
-from util.config import DapsConfig, load_config
+from util.base_module import DapsModule
 from util.connector import Connector
 from util.constants import id_content_regex, season_number_regex, year_regex
 from util.database import DapsDB
@@ -24,12 +26,9 @@ from util.notification import NotificationManager
 from util.upload_posters import PosterUploader
 
 
-class PosterRenamerr:
-    def __init__(self, logger: Logger = None, config: DapsConfig = None):
-        self.full_config = config or load_config()
-        self.config = self.full_config.poster_renamerr
-        self.logger = logger or Logger(self.config.log_level, "poster_renamerr")
-        self.db = None
+class PosterRenamerr(DapsModule):
+    def __init__(self) -> None:
+        super().__init__()
 
     def ensure_destination_dir(self):
         if not os.path.exists(self.config.destination_dir):
@@ -66,7 +65,7 @@ class PosterRenamerr:
         except OSError as e:
             self.logger.error(f"Error {action_type}ing file: {e}")
 
-    def match_item(self, media: dict, is_collection=False) -> dict:
+    def match_item(self, media: dict, db: DapsDB, is_collection=False) -> dict:
         asset_type = media.get("asset_type")
         title = media.get("title")
         year = media.get("year")
@@ -89,7 +88,7 @@ class PosterRenamerr:
         for id_field in ["imdb_id", "tmdb_id", "tvdb_id"]:
             id_val = media.get(id_field)
             if id_val:
-                c = self.db.poster.get_by_id(id_field, id_val, season_number)
+                c = db.poster.get_by_id(id_field, id_val, season_number)
                 if c:
                     matched, reason = is_match(c, media)
                     if matched:
@@ -101,7 +100,7 @@ class PosterRenamerr:
                         break
 
         if not candidate:
-            candidates = self.db.poster.get_candidates_by_prefix(title)
+            candidates = db.poster.get_candidates_by_prefix(title)
             all_titles = set()
             if normalized_title:
                 all_titles.add(normalized_title)
@@ -129,7 +128,7 @@ class PosterRenamerr:
                             matched = True
 
         if is_collection:
-            self.db.collection.update(
+            db.collection.update(
                 title=title,
                 year=year,
                 library_name=library_name,
@@ -138,7 +137,7 @@ class PosterRenamerr:
                 original_file=candidate.get("file") if candidate else None,
             )
         else:
-            self.db.media.update(
+            db.media.update(
                 asset_type=asset_type,
                 title=title,
                 year=year,
@@ -189,14 +188,14 @@ class PosterRenamerr:
             "reasons": reasons,
         }
 
-    def match_assets_to_media(self):
+    def match_assets_to_media(self, db: DapsDB):
         self.logger.info("Matching assets to media and collections, please wait...")
         all_media = []
 
         for inst in self.config.instances:
             if isinstance(inst, str):
                 instance_name = inst
-                media = self.db.media.get_by_instance(instance_name)
+                media = db.media.get_by_instance(instance_name)
                 if media:
                     all_media.extend(media)
             elif isinstance(inst, dict):
@@ -204,10 +203,8 @@ class PosterRenamerr:
                     library_names = params.library_names
                     if library_names:
                         for library_name in library_names:
-                            collections = (
-                                self.db.collection.get_by_instance_and_library(
-                                    instance_name, library_name
-                                )
+                            collections = db.collection.get_by_instance_and_library(
+                                instance_name, library_name
                             )
                             if collections:
                                 all_media.extend(collections)
@@ -230,7 +227,7 @@ class PosterRenamerr:
         ) as bar:
             for media in bar:
                 is_collection = media.get("asset_type") == "collection"
-                result = self.match_item(media, is_collection)
+                result = self.match_item(media, db, is_collection)
                 if result["matched"]:
                     matches += 1
                 else:
@@ -240,7 +237,7 @@ class PosterRenamerr:
         self.logger.debug(f"{matches} total_matches")
         self.logger.debug(f"{non_matches} non_matches")
 
-    def rename_file(self, item: dict) -> dict:
+    def rename_file(self, item: dict, db: DapsDB) -> dict:
         asset_type = item.get("asset_type")
         file = item.get("original_file") or item.get("file")
         folder = item.get("folder", item.get("media_folder", "")) or ""
@@ -277,7 +274,7 @@ class PosterRenamerr:
         item["renamed_file"] = new_file_path
 
         if asset_type == "collection":
-            self.db.collection.update(
+            db.collection.update(
                 title=item.get("title"),
                 year=item.get("year"),
                 library_name=item.get("library_name"),
@@ -287,7 +284,7 @@ class PosterRenamerr:
                 renamed_file=new_file_path,
             )
         else:
-            self.db.media.update(
+            db.media.update(
                 asset_type=asset_type,
                 title=item.get("title"),
                 year=item.get("year"),
@@ -337,12 +334,12 @@ class PosterRenamerr:
             "id": item.get("id"),
         }
 
-    def get_matched_assets(self) -> list:
+    def get_matched_assets(self, db: DapsDB) -> list:
         matched_assets = []
         for inst in self.config.instances:
             if isinstance(inst, str):
                 instance_name = inst
-                for row in self.db.media.get_by_instance(instance_name):
+                for row in db.media.get_by_instance(instance_name):
                     if row.get("matched") and (
                         not row.get("renamed_file")
                         or not os.path.exists(row.get("renamed_file"))
@@ -353,7 +350,7 @@ class PosterRenamerr:
                     library_names = params.library_names
                     if library_names:
                         for library_name in library_names:
-                            for row in self.db.collection.get_by_instance_and_library(
+                            for row in db.collection.get_by_instance_and_library(
                                 instance_name, library_name
                             ):
                                 if row.get("matched") and (
@@ -363,14 +360,14 @@ class PosterRenamerr:
                                     matched_assets.append(row)
         return matched_assets
 
-    def rename_files(self) -> tuple:
+    def rename_files(self, db: DapsDB) -> tuple:
         output: Dict[str, List[Dict[str, Any]]] = {
             "collection": [],
             "movie": [],
             "show": [],
         }
         manifest = {"media_cache": [], "collections_cache": []}
-        matched_assets = self.get_matched_assets()
+        matched_assets = self.get_matched_assets(db=db)
 
         if matched_assets:
             self.logger.info("Renaming assets please wait...")
@@ -382,7 +379,7 @@ class PosterRenamerr:
                 logger=self.logger,
             ) as bar:
                 for item in bar:
-                    result = self.rename_file(item)
+                    result = self.rename_file(item=item, db=db)
                     output[item.get("asset_type", "movie")].append(result)
 
                     if item.get("asset_type") == "collection":
@@ -471,10 +468,9 @@ class PosterRenamerr:
                 asset_records.append(record)
         return asset_records
 
-    def merge_assets(self, source_dirs=None, db=None, logger=None):
+    def merge_assets(self, source_dirs: List[str], db: DapsDB, logger: Logger):
         start_time = datetime.now()
         self.logger.info("Gathering all the posters, please wait...")
-        db = db or self.db
         logger = logger or self.logger
         source_dirs = source_dirs or self.config.source_dirs
 
@@ -569,11 +565,11 @@ class PosterRenamerr:
             return {"success": False, "message": "No media items provided"}
 
         try:
-            with DapsDB(logger=self.logger) as self.db:
+            with DapsDB(logger=self.logger) as db:
                 self.ensure_destination_dir()
 
                 # Clear and rebuild poster cache for current session
-                self.db.poster.clear()
+                db.poster.clear()
                 self.merge_assets()
 
                 # Process each media item
@@ -584,21 +580,19 @@ class PosterRenamerr:
                 for media_item in media_items:
                     # Match poster to media
                     is_collection = media_item.get("asset_type") == "collection"
-                    match_result = self.match_item(media_item, is_collection)
+                    match_result = self.match_item(media_item, db, is_collection)
 
                     if match_result["matched"]:
                         matched_count += 1
                         # Get the updated item from DB after matching
                         if is_collection:
-                            updated_item = self.db.collection.get_by_id(
-                                media_item.get("id")
-                            )
+                            updated_item = db.collection.get_by_id(media_item.get("id"))
                         else:
-                            updated_item = self.db.media.get_by_id(media_item.get("id"))
+                            updated_item = db.media.get_by_id(media_item.get("id"))
 
                         if updated_item:
                             # Rename the file
-                            rename_result = self.rename_file(updated_item)
+                            rename_result = self.rename_file(item=updated_item, db=db)
 
                             if rename_result:
                                 asset_type = updated_item.get("asset_type", "movie")
@@ -640,7 +634,7 @@ class PosterRenamerr:
         Full scheduled run - existing functionality unchanged.
         """
         try:
-            with DapsDB(logger=self.logger) as self.db:
+            with DapsDB(logger=self.logger) as db:
                 if self.config.log_level == "debug":
                     print_settings(self.logger, self.config)
 
@@ -653,8 +647,10 @@ class PosterRenamerr:
 
                 self.sync_posters()
 
-                self.db.poster.clear()
-                self.merge_assets()
+                db.poster.clear()
+                self.merge_assets(
+                    source_dirs=self.config.source_dirs, db=db, logger=self.logger
+                )
                 instance_map = {
                     "arrs": [i for i in self.config.instances if isinstance(i, str)],
                     "plex": {
@@ -664,12 +660,14 @@ class PosterRenamerr:
                         for name, opts in i.items()
                     },
                 }
-                connector = Connector(self.db, self.logger, instance_map=instance_map)
+                connector = Connector(
+                    db=db, logger=self.logger, instance_map=instance_map
+                )
                 connector.update_arr_database()
                 connector.update_collections_database()
 
-                self.match_assets_to_media()
-                output, manifest = self.rename_files()
+                self.match_assets_to_media(db=db)
+                output, manifest = self.rename_files(db)
 
                 if self.config.report_unmatched_assets:
                     from modules.unmatched_assets import main as report_unmatched_assets
@@ -678,14 +676,14 @@ class PosterRenamerr:
 
                 if self.config.run_cleanarr:
                     cleanarr_logger = Logger(self.config.log_level, "cleanarr")
-                    self.db.orphaned.handle_orphaned_posters(
+                    db.orphaned.handle_orphaned_posters(
                         cleanarr_logger, self.config.dry_run
                     )
 
                 if self.config.run_border_replacerr:
                     self.run_border_replacerr(manifest)
 
-                PosterUploader(db=self.db, logger=self.logger, manifest=manifest).run()
+                PosterUploader(db=db, logger=self.logger, manifest=manifest).run()
 
                 if any(output.values()):
                     self.handle_output(output)

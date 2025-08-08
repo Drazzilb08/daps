@@ -22,7 +22,6 @@ class DapsApplication:
         self.scheduler: Optional[DapsScheduler] = None
         self.logger: Optional[Logger] = None
         self.config: Optional[DapsConfig] = None
-        # FIXED: Don't hold DapsDB instance - use context managers instead
         self.shutdown_requested = threading.Event()
         self.cleanup_done = False
 
@@ -75,15 +74,11 @@ class DapsApplication:
             else:
                 print("[MAIN] Cleaning up application resources...")
 
-            # Stop scheduler if running
             if self.scheduler:
                 self.scheduler.stop()
 
-            # Stop module runner if running
             if self.module_runner:
                 self.module_runner.stop_all()
-
-            # FIXED: No database cleanup needed since we use context managers
 
             self.cleanup_done = True
 
@@ -102,37 +97,30 @@ class DapsApplication:
     def run(self, args):
         """Main application run method"""
         try:
-            # Load config
             try:
                 self.config = load_config()
             except Exception as e:
                 print(f"[DAPS] ERROR loading config: {e}", file=sys.stderr)
                 return 1
 
-            # Set up logging
             if args.modules:
-                # CLI mode - log to console
                 import os
 
                 os.environ["LOG_TO_CONSOLE"] = "true"
                 log_level = getattr(self.config.general, "log_level", "INFO")
                 self.logger = Logger(log_level, "general")
             else:
-                # Server mode - use file logging
                 import os
 
                 os.environ["LOG_TO_CONSOLE"] = "false"
                 log_level = getattr(self.config.general, "log_level", "INFO")
                 self.logger = Logger(log_level, "general")
 
-            # Create module runner (no database for CLI mode)
-            self.module_runner = ModuleRunner(logger=self.logger, config=self.config)
+            self.module_runner = ModuleRunner(logger=self.logger)
 
             if args.modules:
-                # CLI mode - run modules and exit
                 return self.run_cli_modules(args.modules)
             else:
-                # Server mode - initialize full infrastructure
                 return self.run_server_mode()
 
         except KeyboardInterrupt:
@@ -176,19 +164,14 @@ class DapsApplication:
             print("[MAIN] Starting DAPS server...")
 
         try:
-
-            # Create scheduler - it will use DapsDB context managers internally
             self.scheduler = DapsScheduler(
                 config=self.config, logger=self.logger, module_runner=self.module_runner
             )
 
-            # Start web server
             self.start_web_server()
 
-            # Set up signal handling AFTER creating infrastructure
             self.setup_signal_handlers()
 
-            # Run scheduler loop
             self.run_scheduler_loop()
 
             if self.logger:
@@ -210,11 +193,9 @@ class DapsApplication:
             return 1
 
     def start_web_server(self):
-        """Start web server with proper dependency injection"""
         try:
             from api.server import start_web_server
 
-            # Pass scheduler and module_runner to web server
             start_web_server(logger=self.logger, module_runner=self.module_runner)
             if self.logger:
                 self.logger.get_adapter("MAIN").info(

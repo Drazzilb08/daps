@@ -1,4 +1,5 @@
-# modules/sync_gdrive.py - FIXED VERSION (removing redundancy)
+# modules/sync_gdrive.py
+
 import json
 import os
 import re
@@ -9,12 +10,10 @@ import time
 from shutil import which
 from typing import List
 
-from util.config import DapsConfig, load_config
+from util.base_module import DapsModule
 from util.database import DapsDB
 from util.helper import print_settings
-from util.logger import Logger
 
-# Load environment variables from .env file if available
 try:
     from dotenv import load_dotenv
 
@@ -23,11 +22,9 @@ except ImportError:
     pass
 
 
-class SyncGDrive:
-    def __init__(self, logger: Logger = None, config: DapsConfig = None):
-        self.full_config = config or load_config()
-        self.config = self.full_config.sync_gdrive
-        self.logger = logger or Logger(self.config.log_level, "sync_gdrive")
+class SyncGDrive(DapsModule):
+    def __init__(self) -> None:
+        super().__init__()
         self.rclone_path = self.get_rclone_path()
         self.db = None
         # Track current job ID for progress updates

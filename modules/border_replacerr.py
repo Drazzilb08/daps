@@ -1,3 +1,5 @@
+# modules/border_replacerr.py
+
 import filecmp
 import logging
 import os
@@ -7,28 +9,24 @@ from typing import Tuple
 
 from PIL import Image
 
-from util.config import DapsConfig, load_config
+from util.base_module import DapsModule
 from util.database import DapsDB
 from util.helper import create_table, print_settings, progress
-from util.logger import Logger
 
 logging.getLogger("PIL").setLevel(logging.WARNING)
 
 
-class BorderReplacerr:
-    def __init__(self, config: DapsConfig = None, logger: Logger = None):
-        self.full_config = config or load_config()
-        self.config = self.full_config.border_replacerr
-        self.logger = logger or Logger(self.config.log_level, "border_replacerr")
-        self.db = None
+class BorderReplacerr(DapsModule):
+    def __init__(self) -> None:
+        super().__init__()
 
-    def get_holiday_status(self):
+    def get_holiday_status(self, db: DapsDB):
         now = datetime.now()
         holidays = self.config.holidays
         default_colors = self.config.border_colors
         skip_enabled = self.config.skip
 
-        last_status = self.db.holiday.get_status()
+        last_status = db.holiday.get_status()
         last_active_holiday = last_status["last_active_holiday"]
 
         current_holiday = None
@@ -164,11 +162,11 @@ class BorderReplacerr:
             return False
 
     def run(self, manifest: dict):
-        with DapsDB(logger=self.logger) as self.db:
+        with DapsDB(logger=self.logger) as db:
             if self.config.log_level.lower() == "debug":
                 print_settings(self.logger, self.config)
 
-            results = self.get_holiday_status()
+            results = self.get_holiday_status(db=db)
             skip_enabled = results["skip_enabled"]
             reset_all = results["reset_all"]
             active_holiday = results["active_holiday"]
@@ -177,7 +175,7 @@ class BorderReplacerr:
                 self.logger.info(
                     "Border replacerr is in skip mode and today is not a holiday. Skipping all processing."
                 )
-                self.db.holiday.set_status(active_holiday)
+                db.holiday.set_status(active_holiday)
                 return
             if skip_enabled and active_holiday:
                 self.logger.info(
@@ -194,7 +192,7 @@ class BorderReplacerr:
                 self.logger.debug(
                     "Holiday state changed (or startup). Doing full reprocessing of all matched assets."
                 )
-                for row in self.db.media.get_all():
+                for row in db.media.get_all():
                     if row["matched"] == 1:
                         if (
                             self.config.exclusion_list
@@ -212,9 +210,9 @@ class BorderReplacerr:
                 ]
                 for source, asset_id in all_ids:
                     if source == "media_cache":
-                        asset = self.db.media.get_by_id(asset_id)
+                        asset = db.media.get_by_id(asset_id)
                     else:
-                        asset = self.db.collection.get_by_id(asset_id)
+                        asset = db.collection.get_by_id(asset_id)
                     if not asset:
                         self.logger.warning(
                             f"Asset ID {asset_id} not found in {source}. Skipping."
@@ -232,7 +230,7 @@ class BorderReplacerr:
 
             if not assets:
                 self.logger.info("No assets to process for border replacerr.")
-                self.db.holiday.set_status(active_holiday)
+                db.holiday.set_status(active_holiday)
                 return
 
             border_colors = results["border_colors"]
@@ -329,4 +327,4 @@ class BorderReplacerr:
                 )
             self.logger.info("")
 
-            self.db.holiday.set_status(active_holiday)
+            db.holiday.set_status(active_holiday)

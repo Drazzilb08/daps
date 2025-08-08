@@ -1,10 +1,12 @@
+# modules/nohl.py
+
 import os
 import re
 import sys
 from typing import Any, Dict, List, Optional
 
 from util.arr import create_arr_client
-from util.config import DapsConfig, load_config
+from util.base_module import DapsModule
 from util.constants import episode_regex, season_regex, year_regex
 from util.helper import (
     create_table,
@@ -19,11 +21,9 @@ from util.notification import NotificationManager
 VIDEO_EXTS = (".mkv", ".mp4")
 
 
-class Nohl:
-    def __init__(self, logger: Logger = None, config: DapsConfig = None):
-        self.full_config = config or load_config()
-        self.config = self.full_config.nohl
-        self.logger = logger or Logger(self.config.log_level, "nohl")
+class Nohl(DapsModule):
+    def __init__(self) -> None:
+        super().__init__()
 
     @staticmethod
     def find_nohl_files(

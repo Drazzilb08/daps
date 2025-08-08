@@ -1,8 +1,4 @@
-"""
-Centralized schema management for DAPS database.
-Handles all table creation, indexing, and schema synchronization.
-SIMPLIFIED: No more automatic table dropping for safety.
-"""
+# util/database/schema.py
 
 import logging
 import sqlite3

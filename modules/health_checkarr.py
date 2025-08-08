@@ -1,21 +1,27 @@
+# modules/health_checkarr.py
+
 import json
 import re
 import sys
 from typing import Any, Dict, List
 
 from util.arr import create_arr_client
-from util.config import DapsConfig, load_config
+from util.base_module import DapsModule
 from util.constants import tmdb_id_regex, tvdb_id_regex
 from util.helper import create_table, print_settings, progress
-from util.logger import Logger
 from util.notification import NotificationManager
 
 
-class HealthCheckarr:
-    def __init__(self, logger: Logger = None, config: DapsConfig = None):
-        self.full_config = config or load_config()
-        self.config = self.full_config.health_checkarr
-        self.logger = logger or Logger(self.config.log_level, "health_checkarr")
+class HealthCheckarr(DapsModule):
+    def __init__(self) -> None:
+        """
+        Standard constructor using dependency injection.
+
+        Args:
+            config: Complete DAPS configuration object
+            logger: Logger instance
+        """
+        super().__init__()
 
     def run(self) -> None:
         """
@@ -33,12 +39,10 @@ class HealthCheckarr:
 
             # Supported instance types: radarr/sonarr
             for instance_type in ["radarr", "sonarr"]:
-                # These are expected to be present in the config and be dicts of instance_name: instance_info
                 instances = getattr(self.full_config.instances, instance_type)
                 if not instances:
                     continue
                 for instance_name, instance_info in instances.items():
-                    # Expect instance_info to have url and api attributes (if not, it will raise)
                     app = create_arr_client(
                         instance_info.url,
                         instance_info.api,

@@ -1,22 +1,19 @@
+# modules/upgradinatorr.py
+
 import sys
 from typing import Any, Dict, List, Optional
 
 from util.arr import BaseARRClient, create_arr_client
-from util.config import DapsConfig, load_config
+from util.base_module import DapsModule
 from util.helper import create_table, print_settings
-from util.logger import Logger
 from util.notification import NotificationManager
 
 VALID_STATUSES = {"continuing", "airing", "ended", "canceled", "released"}
 
 
-class Upgradinatorr:
-    def __init__(self, logger: Logger = None, config: DapsConfig = None):
-        self.full_config = config or load_config()
-        self.config = self.full_config.upgradinatorr
-        self.logger = logger or Logger(
-            getattr(self.config, "log_level", "INFO"), "upgradinatorr"
-        )
+class Upgradinatorr(DapsModule):
+    def __init__(self) -> None:
+        super().__init__()
 
     def filter_media(
         self,

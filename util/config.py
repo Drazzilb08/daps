@@ -1,5 +1,6 @@
 import os
 import pathlib
+import sys
 from typing import Any, Dict, List, Optional, Union
 
 import yaml
@@ -218,6 +219,7 @@ class DapsConfig(BaseModel):
 
 
 def get_config_path() -> str:
+    """Get configuration file path from environment or default location."""
     config_dir = os.environ.get("CONFIG_DIR") or str(
         pathlib.Path(__file__).parent.parent / "config"
     )
@@ -225,26 +227,75 @@ def get_config_path() -> str:
     return config_file_path
 
 
+def _print_cli_validation_errors(validation_error: ValidationError) -> None:
+    """Print simplified validation errors for CLI users."""
+    print("❌ Configuration validation failed:")
+    for error in validation_error.errors():
+        location = " -> ".join(str(loc) for loc in error["loc"])
+        msg = error["msg"]
+
+        # Simplify common error messages
+        if "field required" in msg:
+            msg = "missing required field"
+        elif "not a valid integer" in msg:
+            msg = "must be a number"
+        elif "not a valid boolean" in msg:
+            msg = "must be true or false"
+        elif "not a valid string" in msg:
+            msg = "must be text"
+        elif "invalid or missing URL scheme" in msg:
+            msg = "must be a valid URL (http:// or https://)"
+
+        print(f"   • {location}: {msg}")
+    print("💡 Check your config.yml file and fix the issues above")
+
+
 def load_config(path: Optional[str] = None) -> DapsConfig:
-    path = path or get_config_path()
-    with open(path, "r") as f:
-        raw = yaml.safe_load(f) or {}
+    """
+    Load configuration with CLI-focused validation.
+    GUI users get validation in the UI layer.
+    """
+    config_path = path or get_config_path()
+
+    # Check if file exists
+    if not os.path.exists(config_path):
+        print(f"❌ Configuration file not found: {config_path}")
+        print("💡 Create a config.yml file in the config directory")
+        sys.exit(1)
+
+    try:
+        with open(config_path, "r") as f:
+            raw = yaml.safe_load(f)
+    except yaml.YAMLError as e:
+        print(f"❌ Invalid YAML syntax in {config_path}")
+        print(f"💡 Check your YAML formatting: {e}")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Failed to read {config_path}: {e}")
+        sys.exit(1)
+
+    if raw is None:
+        print(f"❌ Configuration file is empty: {config_path}")
+        print(f"💡 Add your configuration settings to {config_path}")
+        sys.exit(1)
+
     try:
         # Pydantic v2
         return DapsConfig.model_validate(raw)
     except ValidationError as e:
-        print("Config validation error:", e)
+        _print_cli_validation_errors(e)
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Unexpected configuration error: {e}")
+        sys.exit(1)
+
+
+def save_config(config: DapsConfig, path: Optional[str] = None) -> None:
+    """Save configuration to YAML file."""
+    config_path = path or get_config_path()
+    try:
+        with open(config_path, "w") as f:
+            yaml.safe_dump(config.model_dump(mode="python"), f, sort_keys=False)
+    except Exception as e:
+        print(f"❌ Failed to save configuration: {e}")
         raise
-
-
-def save_config(config: DapsConfig, path: Optional[str] = None):
-    path = path or get_config_path()
-    with open(path, "w") as f:
-        yaml.safe_dump(config.model_dump(mode="python"), f, sort_keys=False)
-
-
-# ==== USAGE ====
-# cfg = load_config()  # Optionally: load_config("/your/path/config.yml")
-# print(cfg.poster_renamerr.log_level)
-# print(cfg.instances.plex["plex_1"].url)
-# save_config(cfg)

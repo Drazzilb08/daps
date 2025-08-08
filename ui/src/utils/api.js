@@ -20,30 +20,29 @@ export async function retryJob(jobId) {
     return await res.json();
 }
 
-
 // ========== GDRIVE SYNC FUNCTIONS ==========
 
 // Run GDrive sync with enhanced error handling and job tracking
 export async function runGDriveAdhocSync(gdrive_names) {
     const qs = gdrive_names.map(n => `gdrive_names=${encodeURIComponent(n)}`).join('&');
-    const res = await fetch(`/api/gdrive-folder?${qs}`, { method: 'POST' });
+    const res = await fetch(`/api/run/gdrive?${qs}`, { method: 'POST' });
     if (!res.ok) {
         const err = await res.json().catch(() => ({}));
         throw new Error(err.error || `Failed to run GDrive adhoc sync (${res.status})`);
     }
     const result = await res.json();
-    
+
     // Ensure we have a job_id for tracking
     if (!result.job_id) {
         throw new Error('Sync started but no job ID returned for tracking');
     }
-    
+
     return result;
 }
 
 // Get Gdrive Statistics
 export async function fetchGDriveStats() {
-    const res = await fetch('/api/gdrive-stats');
+    const res = await fetch('/api/gdrive/stats');
     if (!res.ok) throw new Error('Failed to fetch GDrive stats');
     const data = await res.json();
     return data.gdrive_stats || [];
@@ -73,7 +72,7 @@ export async function uploadCollectionById(id) {
 
 // Get all media cache entries
 export async function fetchMediaCache() {
-    const res = await fetch('/api/get-media-cache');
+    const res = await fetch('/api/cache/media');
     if (!res.ok) throw new Error('Failed to fetch media cache');
     const data = await res.json();
     return data.media_cache || [];
@@ -81,7 +80,7 @@ export async function fetchMediaCache() {
 
 // Get all collection cache entries
 export async function fetchCollectionCache() {
-    const res = await fetch('/api/get-collection-cache');
+    const res = await fetch('/api/cache/collection');
     if (!res.ok) throw new Error('Failed to fetch collection cache');
     const data = await res.json();
     return data.collection_cache || [];
@@ -90,7 +89,7 @@ export async function fetchCollectionCache() {
 // Delete media cache entry by id
 export async function deleteMediaCacheById(id) {
     if (!id) throw new Error('Missing id for deletion');
-    const res = await fetch(`/api/delete-media-cache/${id}`, {
+    const res = await fetch(`/api/cache/media/${id}`, {
         method: 'DELETE',
     });
     if (!res.ok) {
@@ -103,7 +102,7 @@ export async function deleteMediaCacheById(id) {
 // Delete collection cache entry by id
 export async function deleteCollectionCacheById(id) {
     if (!id) throw new Error('Missing id for deletion');
-    const res = await fetch(`/api/delete-collection-cache/${id}`, {
+    const res = await fetch(`/api/cache/collection/${id}`, {
         method: 'DELETE',
     });
     if (!res.ok) {
@@ -117,7 +116,7 @@ export async function deleteCollectionCacheById(id) {
 
 // Get unmatched poster statistics
 export async function fetchUnmatchedStats() {
-    const res = await fetch('/api/unmatched-stats');
+    const res = await fetch('/api/posters/unmatched/stats');
     if (!res.ok) throw new Error('Failed to fetch unmatched poster stats');
     const data = await res.json();
     return data.summary || [];
@@ -125,7 +124,7 @@ export async function fetchUnmatchedStats() {
 
 // Get matched poster statistics
 export async function fetchMatchedPosterStats() {
-    const res = await fetch('/api/matched-posters-stats');
+    const res = await fetch('/api/posters/matched/stats');
     if (!res.ok) throw new Error('Failed to fetch matched poster stats');
     const data = await res.json();
     return data.matched_posters_stats || [];
@@ -157,7 +156,7 @@ export async function fetchPosters(location) {
 
 // Get poster asset list
 export async function fetchPosterAssetList() {
-    const res = await fetch('/api/poster_assets');
+    const res = await fetch('/api/poster/assets');
     if (!res.ok) throw new Error('Failed to fetch poster asset list');
     const arr = await res.json();
     return Array.isArray(arr) ? arr : [];
@@ -168,7 +167,7 @@ export function fetchPosterPreviewUrl(location, path) {
     if (!location || !path) {
         return '';
     }
-    return `/api/preview-poster?location=${encodeURIComponent(location)}&path=${encodeURIComponent(
+    return `/api/poster/preview?location=${encodeURIComponent(location)}&path=${encodeURIComponent(
         path
     )}`;
 }

@@ -7,8 +7,8 @@ export default function ProgressBar({
     active = false,
     className = '',
     style = {},
-    done = false, 
-    error = false, 
+    done = false,
+    error = false,
     tooltip = '',
     ...props
 }) {

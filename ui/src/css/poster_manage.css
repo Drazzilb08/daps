@@ -14,6 +14,7 @@
     cursor: pointer;
     transition: all 0.2s ease;
     color: var(--text-color);
+    animation: none;
 }
 
 .gdrive-pill:hover:not(.disabled) {
@@ -297,17 +298,19 @@
 }
 
 /* ========== ANIMATIONS ========== */
-.gdrive-pill {
-    animation: none; /* Remove jarring animations */
-}
-
 .gdrive-pill.running .gdrive-pill-progress {
-    animation: pulseProgress 2s ease-in-out infinite;
+    animation: pulse-progress 2s ease-in-out infinite;
 }
 
-@keyframes pulseProgress {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
+@keyframes pulse-progress {
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
 }
 
 /* ========== RESPONSIVE ADJUSTMENTS ========== */
@@ -318,25 +321,25 @@
         gap: 12px;
         padding: 16px;
     }
-    
+
     .gdrive-pill-actions {
         flex-direction: row;
         margin-left: 0;
         margin-top: 8px;
         align-self: flex-end;
     }
-    
+
     .gdrive-pill-header {
         flex-direction: column;
         gap: 12px;
         align-items: stretch;
     }
-    
+
     .gdrive-pill-summary {
         width: 100%;
         justify-content: center;
     }
-    
+
     .selected-count {
         text-align: center;
     }
@@ -346,15 +349,15 @@
     .gdrive-pill {
         padding: 12px;
     }
-    
+
     .gdrive-pill-name {
         font-size: 0.9rem;
     }
-    
+
     .gdrive-pill-path {
         font-size: 0.75rem;
     }
-    
+
     .gdrive-pill-cancel,
     .gdrive-pill-retry {
         width: 28px;

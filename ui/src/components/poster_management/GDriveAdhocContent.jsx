@@ -13,7 +13,7 @@ export default function GDriveAdhocContent({
 }) {
     // Search/filter state
     const [filter, setFilter] = useState('');
-    
+
     // Tooltip for the Run button
     const [runTip, setRunTip] = useState(false);
     const runBtnRef = useRef(null);
@@ -43,26 +43,26 @@ export default function GDriveAdhocContent({
         );
     };
 
-
     // Only allow run if any selected pills are NOT running/success
     const runDisabled =
-        selected.length === 0 || 
+        selected.length === 0 ||
         !selected.some(
             n =>
                 !pillProgress[n] ||
-                (
-                    pillProgress[n].status !== 'running' &&
-                    pillProgress[n].status !== 'success'
-                )
+                (pillProgress[n].status !== 'running' && pillProgress[n].status !== 'success')
         );
 
     // Get status display text
-    const getStatusText = (pill) => {
+    const getStatusText = pill => {
         switch (pill.status) {
-            case 'running': return 'Running...';
-            case 'success': return 'Completed!';
-            case 'error': return pill.error || 'Failed';
-            default: return '';
+            case 'running':
+                return 'Running...';
+            case 'success':
+                return 'Completed!';
+            case 'error':
+                return pill.error || 'Failed';
+            default:
+                return '';
         }
     };
 
@@ -80,9 +80,7 @@ export default function GDriveAdhocContent({
                 />
                 <div className="gdrive-pill-summary">
                     {selected.length > 0 && (
-                        <span className="selected-count">
-                            {selected.length} selected
-                        </span>
+                        <span className="selected-count">{selected.length} selected</span>
                     )}
                 </div>
             </div>
@@ -93,7 +91,7 @@ export default function GDriveAdhocContent({
                     filteredItems.map(item => {
                         const checked = selected.includes(item.name);
                         const pill = pillProgress[item.name] || {};
-                        
+
                         const isRunning = pill.status === 'running';
                         const isSuccess = pill.status === 'success';
                         const isError = pill.status === 'error';
@@ -130,9 +128,7 @@ export default function GDriveAdhocContent({
                                 <input
                                     type="checkbox"
                                     checked={checked}
-                                    onChange={() =>
-                                        !pillDisabled && onToggleSelect(item.name)
-                                    }
+                                    onChange={() => !pillDisabled && onToggleSelect(item.name)}
                                     aria-label={`Select ${item.name}`}
                                     disabled={pillDisabled}
                                 />
@@ -145,7 +141,7 @@ export default function GDriveAdhocContent({
                                             {highlightText(item.location, filter)}
                                         </span>
                                     </div>
-                                    
+
                                     {/* Status and Progress Section */}
                                     {(pill.progress != null || pillDisabled) && (
                                         <div className="gdrive-pill-status">
@@ -166,10 +162,9 @@ export default function GDriveAdhocContent({
                                         </div>
                                     )}
                                 </div>
-                                
+
                                 {/* Action buttons */}
                                 <div className="gdrive-pill-actions">
-                                    
                                     {/* Retry button for failed jobs */}
                                     {isError && (
                                         <button
@@ -182,7 +177,7 @@ export default function GDriveAdhocContent({
                                             }}
                                             aria-label={`Retry sync for ${item.name}`}
                                         >
-                                            {getIcon("mi:refresh")}
+                                            {getIcon('mi:refresh')}
                                         </button>
                                     )}
                                 </div>
@@ -191,7 +186,7 @@ export default function GDriveAdhocContent({
                     })
                 )}
             </div>
-            
+
             <div className="gdrive-card-actions">
                 <button
                     ref={runBtnRef}
@@ -203,16 +198,15 @@ export default function GDriveAdhocContent({
                     onFocus={() => setRunTip(true)}
                     onBlur={() => setRunTip(false)}
                 >
-                    {selected.length === 0 
-                        ? 'Select drives to sync' 
-                        : `Run Sync (${selected.length})`
-                    }
+                    {selected.length === 0
+                        ? 'Select drives to sync'
+                        : `Run Sync (${selected.length})`}
                 </button>
                 <TooltipFactory
                     anchor={runBtnRef.current}
                     text={
-                        selected.length === 0 
-                            ? "Select one or more drives to sync"
+                        selected.length === 0
+                            ? 'Select one or more drives to sync'
                             : `Run sync for ${selected.length} selected drive${selected.length > 1 ? 's' : ''}`
                     }
                     show={runTip}

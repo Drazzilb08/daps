@@ -56,15 +56,28 @@
 }
 
 @keyframes progress-bar-indeterminate {
-    0% { opacity: 0.72; left: -75%; width: 35%; }
-    45% { opacity: 0.89; left: 50%; width: 55%; }
-    100% { opacity: 0.72; left: 110%; width: 20%; }
+    0% {
+        opacity: 0.72;
+        left: -75%;
+        width: 35%;
+    }
+
+    45% {
+        opacity: 0.89;
+        left: 50%;
+        width: 55%;
+    }
+
+    100% {
+        opacity: 0.72;
+        left: 110%;
+        width: 20%;
+    }
 }
 
 .progress-bar--active:not(.progress-bar--indeterminate) .progress-bar__inner {
     animation: none;
 }
-
 
 .progress-bar-divider {
     width: 96%;

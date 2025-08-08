@@ -5,7 +5,7 @@ import os
 import re
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, Iterator, List, Optional, Tuple, Union
 
 import yaml
 from tqdm import tqdm
@@ -26,14 +26,7 @@ from util.normalization import (
 
 
 def print_json(data: Any, logger: Any, module_name: str, type_: str) -> None:
-    """Write data as JSON to a debug file and log the action.
-
-    Args:
-        data (Any): Data to write as JSON.
-        logger (Any): Any instance.
-        module_name (str): Module name for directory path.
-        type_ (str): Type used for filename.
-    """
+    """Write data as JSON to a debug file for troubleshooting."""
     log_base = os.getenv("LOG_DIR")
     if log_base:
         debug_dir = Path(log_base) / module_name / "debug"
@@ -48,19 +41,12 @@ def print_json(data: Any, logger: Any, module_name: str, type_: str) -> None:
     logger.debug(f"Wrote {type_} to {assets_file}")
 
 
-def print_settings(
-    logger: Any, module_config: Any  # Accept any config-like object
-) -> None:
-    """Print sanitized settings from module_config in YAML format.
-
-    Args:
-        logger (Any): Logger instance (must provide redact_sensitive_info if possible).
-        module_config (Any): Configuration object.
-    """
+def print_settings(logger: Any, module_config: Any) -> None:
+    """Print module configuration in YAML format with sensitive data redacted."""
     logger.debug(create_table([["Script Settings"]]))
 
     def ns_to_dict(obj: Any) -> Any:
-        # Convert all namespaces and models to dicts, recursively.
+        """Convert namespaces and Pydantic models to dictionaries recursively."""
         if hasattr(obj, "model_dump"):
             return obj.model_dump(mode="python")
         if isinstance(obj, SimpleNamespace):
@@ -78,13 +64,13 @@ def print_settings(
     }
     sanitized = copy.deepcopy(ns_to_dict(raw))
 
-    # Recursively redact everything via logger's global redactor
-    def global_redact(obj: Any, parent_keys: list = None) -> Any:
+    def global_redact(obj: Any, parent_keys: Optional[List[str]] = None) -> Any:
+        """Recursively redact sensitive information from config objects."""
         parent_keys = parent_keys or []
         if isinstance(obj, dict):
             out = {}
             for k, v in obj.items():
-                # If we're in a gdrive_list and key == "id", don't redact
+
                 if parent_keys[-1:] == ["gdrive_list"] and k == "id":
                     out[k] = v
                 else:
@@ -124,10 +110,12 @@ def print_settings(
     logger.debug(create_bar("-"))
 
 
-def dict_diff(old, new, path=""):
-    """
-    Recursively diff two dicts (or namespaces), returning a list of (path, old, new).
-    """
+def dict_diff(
+    old: Union[Dict[str, Any], List[Any], Any],
+    new: Union[Dict[str, Any], List[Any], Any],
+    path: str = "",
+) -> List[Tuple[str, Any, Any]]:
+    """Compare two data structures and return list of (path, old_value, new_value) differences."""
     diffs = []
     if isinstance(old, (list, tuple)) and isinstance(new, (list, tuple)):
         minlen = min(len(old), len(new))
@@ -157,13 +145,10 @@ def dict_diff(old, new, path=""):
 
 
 def create_table(data: List[List[Any]]) -> str:
-    """Create a formatted table string from 2D data list.
+    """Create a formatted table from 2D list data (headers in first row).
 
-    Args:
-        data (List[List[Any]]): Data to create the table from.
-
-    Returns:
-        str: Formatted table string.
+    Returns a nicely formatted ASCII table with borders and proper spacing.
+    Automatically adjusts column widths and ensures minimum 76-char width.
     """
     if not data:
         return "No data provided."
@@ -215,20 +200,15 @@ def create_table(data: List[List[Any]]) -> str:
 
 
 def create_bar(middle_text: str) -> str:
-    """Create a separation bar with text centered.
-
-    Args:
-        middle_text (str): Text to place in center of bar.
-
-    Returns:
-        str: Formatted separation bar.
-    """
+    """Create a horizontal separator bar with centered text (80 chars total)."""
     total_length = 80
     if len(middle_text) == 1:
+
         remaining_length = total_length - len(middle_text) - 2
         left_side_length = 0
         right_side_length = remaining_length
         return f"\n{middle_text * left_side_length}{middle_text}{middle_text * right_side_length}\n"
+
     remaining_length = total_length - len(middle_text) - 4
     left_side_length = math.floor(remaining_length / 2)
     right_side_length = remaining_length - left_side_length
@@ -240,39 +220,30 @@ def progress(
     desc: Optional[str] = None,
     total: Optional[int] = None,
     unit: Optional[str] = None,
-    logger: Optional[
-        Any
-    ] = None,  # want to fix this to be Logger, but it's a circular import issue right now
+    logger: Optional[Any] = None,
     leave: bool = True,
     **kwargs: Any,
-) -> Any:
-    """Wrap tqdm to toggle progress bars based on LOG_TO_CONSOLE env var.
+) -> Union[tqdm]:
+    """Create progress bar that respects LOG_TO_CONSOLE environment variable.
 
-    Args:
-        iterable (Any): Iterable to wrap.
-        desc (Optional[str]): Description for progress bar.
-        total (Optional[int]): Total iterations.
-        unit (Optional[str]): Unit of progress.
-        logger (Optional[Any]): Logger instance.
-        leave (bool): Keep progress bar after completion.
-        **kwargs: Additional tqdm args.
-
-    Returns:
-        tqdm or DummyProgress: Progress bar or dummy context manager.
+    Returns tqdm progress bar when LOG_TO_CONSOLE is enabled, otherwise returns
+    a silent DummyProgress object with the same interface.
     """
     log_console = os.environ.get("LOG_TO_CONSOLE", "").lower() in ("1", "true", "yes")
 
     class DummyProgress:
+        """Silent progress tracker with tqdm-compatible interface."""
+
         def __init__(self, iterable: Any) -> None:
             self.iterable = iterable
 
         def __enter__(self) -> "DummyProgress":
             return self
 
-        def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
             pass
 
-        def __iter__(self):
+        def __iter__(self) -> Iterator[Any]:
             return iter(self.iterable)
 
         def update(self, n: int = 1) -> None:
@@ -284,7 +255,7 @@ def progress(
 
 
 def get_log_dir(module_name: str) -> str:
-    """Return the log directory for a given module."""
+    """Get log directory path for module, creating if needed."""
     log_base = os.getenv("LOG_DIR")
     if log_base:
         log_dir = Path(log_base) / module_name
@@ -295,73 +266,59 @@ def get_log_dir(module_name: str) -> str:
 
 
 def get_config_dir() -> str:
-    """
-    Return the path to the DAPS config directory, using DOCKER_ENV/CONFIG_DIR if set,
-    otherwise using the standard project layout.
-    """
-
+    """Get config directory path (Docker: /config, Standard: ../config)."""
     if os.environ.get("DOCKER_ENV"):
         config_dir = os.getenv("CONFIG_DIR", "/config")
     else:
         config_dir = Path(__file__).resolve().parents[1] / "config"
-
         Path(config_dir).mkdir(parents=True, exist_ok=True)
     return str(config_dir)
 
 
 def extract_year(text: str) -> Optional[int]:
-    """Extract the first 4-digit year from text.
-
-    Args:
-        text: Input string to search for a year.
-
-    Returns:
-        The extracted year as an integer, or None if not found.
-    """
+    """Extract first 4-digit year from text, returns None if not found."""
     try:
-        return int(year_regex.search(text).group(1))
-    except Exception:
+        match = year_regex.search(text)
+        return int(match.group(1)) if match else None
+    except (ValueError, AttributeError):
         return None
 
 
 def extract_ids(text: str) -> Tuple[Optional[int], Optional[int], Optional[str]]:
     """Extract TMDB, TVDB, and IMDB IDs from text.
 
-    Args:
-        text: Input string containing IDs.
-
-    Returns:
-        Tuple of TMDB ID (int or None), TVDB ID (int or None), IMDB ID (str or None).
+    Returns: (tmdb_id, tvdb_id, imdb_id) where IMDB is string, others are int.
     """
     tmdb_match = tmdb_id_regex.search(text)
     tmdb = int(tmdb_match.group(1)) if tmdb_match else None
+
     tvdb_match = tvdb_id_regex.search(text)
     tvdb = int(tvdb_match.group(1)) if tvdb_match else None
+
     imdb_match = imdb_id_regex.search(text)
     imdb = imdb_match.group(1) if imdb_match else None
+
     return tmdb, tvdb, imdb
 
 
 def compare_strings(string1: str, string2: str) -> bool:
-    """Loosely compare two strings by removing non-alphanumeric characters and comparing lowercase."""
-    string1 = re.sub(r"\W+", "", string1)
-    string2 = re.sub(r"\W+", "", string2)
-    return string1.lower() == string2.lower()
+    """Compare strings ignoring punctuation and case (useful for title matching)."""
+    normalized1 = re.sub(r"\W+", "", string1).lower()
+    normalized2 = re.sub(r"\W+", "", string2).lower()
+    return normalized1 == normalized2
 
 
 def is_match(
     asset: Dict[str, Any],
     media: Dict[str, Any],
 ) -> Tuple[bool, str]:
-    """Determine if a media entry and an asset match based on ID, title, and year heuristics.
+    """Determine if asset and media match using ID and title matching.
 
-    Args:
-      asset: Asset dictionary.
-      media: Media dictionary.
-      strict_folder_match: Only consider match if asset's folder matches media's folder.
+    Core matching logic for DAPS:
+    1. If both have IDs, match on tmdb_id/tvdb_id/imdb_id
+    2. Otherwise, match on various title combinations with year validation
 
-    Returns:
-      Tuple of (True, reason) if matched, else (False, "").
+    Returns: (is_match, reason_string)
     """
     if media.get("folder"):
         folder_base_name = os.path.basename(media["folder"])
@@ -374,6 +331,7 @@ def is_match(
             media["normalized_folder_title"] = normalize_titles(media["folder_title"])
 
     def year_matches() -> bool:
+        """Check if asset year matches any media year."""
         asset_year = asset.get("year")
         media_years = [
             media.get(key) for key in ["year", "secondary_year", "folder_year"]
@@ -382,14 +340,15 @@ def is_match(
             return True
         return any(asset_year == year for year in media_years if year is not None)
 
-    def has_any_valid_id(d: Dict[str, Any]) -> bool:
-        for k in ["tmdb_id", "tvdb_id", "imdb_id"]:
-            v = d.get(k)
-            if k == "imdb_id":
-                if v and isinstance(v, str) and v.startswith("tt"):
+    def has_any_valid_id(data: Dict[str, Any]) -> bool:
+        """Check if dict has valid media database IDs."""
+        for key in ["tmdb_id", "tvdb_id", "imdb_id"]:
+            value = data.get(key)
+            if key == "imdb_id":
+                if value and isinstance(value, str) and value.startswith("tt"):
                     return True
             else:
-                if v and str(v).isdigit() and int(v) > 0:
+                if value and str(value).isdigit() and int(value) > 0:
                     return True
         return False
 
@@ -485,6 +444,7 @@ def is_match(
             "Normalized titles match under loose string comparison",
         ),
     ]
+
     for condition, reason in match_criteria:
         if condition and year_matches():
             return True, reason
@@ -492,18 +452,25 @@ def is_match(
 
 
 def generate_title_variants(title: str) -> Dict[str, List[str]]:
-    """
-    Generate alternate and normalized title variants for a given media title.
+    """Generate alternate title variants by removing common prefixes/suffixes.
+
+    Creates variations like:
+    - "The Movie" -> ["Movie", "The Movie Collection"]
+    - "Movie Collection" -> ["Movie", "The Movie Collection"]
+
+    Returns dict with 'alternate_titles' and 'normalized_alternate_titles' lists.
     """
 
     stripped_prefix = next(
         (title[len(p) + 1 :].strip() for p in prefixes if title.startswith(p + " ")),
         title,
     )
+
     stripped_suffix = next(
         (title[: -(len(s) + 1)].strip() for s in suffixes if title.endswith(" " + s)),
         title,
     )
+
     stripped_both = next(
         (
             stripped_prefix[: -(len(s) + 1)].strip()
@@ -512,12 +479,17 @@ def generate_title_variants(title: str) -> Dict[str, List[str]]:
         ),
         stripped_prefix,
     )
+
     alternate_titles = [stripped_prefix, stripped_suffix, stripped_both]
+
     if not title.lower().endswith("collection"):
         alternate_titles.append(f"{title} Collection")
+
     normalized_alternate_titles = [normalize_titles(alt) for alt in alternate_titles]
+
     alternate_titles = list(dict.fromkeys(alternate_titles))
     normalized_alternate_titles = list(dict.fromkeys(normalized_alternate_titles))
+
     return {
         "alternate_titles": alternate_titles,
         "normalized_alternate_titles": normalized_alternate_titles,
@@ -525,9 +497,18 @@ def generate_title_variants(title: str) -> Dict[str, List[str]]:
 
 
 def get_prefix(title: str, length: int = 3) -> str:
+    """Generate short prefix from title for sorting/categorization.
+
+    Filters out common words ("the", "and", etc.) and takes first N characters.
+    Falls back to all words if no meaningful ones remain.
+    """
+
     words = [w for w in title.split() if w.lower() not in common_words]
+
     if words:
         prefix = "".join(words)[:length]
     else:
+
         prefix = "".join(title.split())[:length]
+
     return prefix.lower()

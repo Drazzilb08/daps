@@ -13,22 +13,12 @@ target-version = ["py39"]
 skip-string-normalization = false
 skip-magic-trailing-comma = false
 
-[tool.flake8]
-max-line-length = 88
-extend-ignore = "E203,W503"
-
-[tool.mypy]
-python_version = 3.9
-ignore_missing_imports = true
-check_untyped_defs = true
-show_error_codes = true
-
 [tool.ruff]
 line-length = 88
 target-version = "py39"
 
 [tool.ruff.lint]
-extend-select = ["I"]
+extend-select = []
 ignore = ["E203"]
 
 [tool.coverage.run]

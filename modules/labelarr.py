@@ -18,7 +18,7 @@ class Labelarr:
         self.full_config = config or load_config()
         self.config = self.full_config.labelarr
         self.logger = logger or Logger(self.config.log_level, "labelarr")
-        self.db = DapsDB()
+        self.db = None
 
     def sync_to_plex(self, plex_client, arr_data, plex_data, labels) -> List[Dict]:
         def get_id(val):
@@ -221,79 +221,80 @@ class Labelarr:
 
     def run(self):
         try:
-            if self.config.log_level.lower() == "debug":
-                print_settings(self.logger, self.config)
+            with DapsDB(logger=self.logger) as self.db:
+                if self.config.log_level.lower() == "debug":
+                    print_settings(self.logger, self.config)
 
-            if self.config.dry_run:
-                table = [["Dry Run"], ["NO CHANGES WILL BE MADE"]]
-                self.logger.info(create_table(table))
+                if self.config.dry_run:
+                    table = [["Dry Run"], ["NO CHANGES WILL BE MADE"]]
+                    self.logger.info(create_table(table))
 
-            connector = Connector(self.db, self.full_config, self.logger)
+                connector = Connector(self.db, self.full_config, self.logger)
 
-            connector.update_arr_database()
-            connector.update_plex_database()
+                connector.update_arr_database()
+                connector.update_plex_database()
 
-            output: List[Dict] = []
-            arr_data = []
-            for mapping in self.config.mappings:
-                app_instance = mapping.app_instance
-                labels = (
-                    mapping.labels
-                    if isinstance(mapping.labels, list)
-                    else [mapping.labels]
-                )
-                arr_data.extend(
-                    row
-                    for row in self.db.media.get_by_instance(app_instance) or []
-                    if (
-                        any(
-                            label
-                            in (
-                                json.loads(row["tags"])
-                                if isinstance(row["tags"], str)
-                                else row["tags"]
-                            )
-                            for label in labels
-                        )
-                        and (
-                            row["asset_type"] != "show"
-                            or row["season_number"] in (None, "", "None")
-                        )
+                output: List[Dict] = []
+                arr_data = []
+                for mapping in self.config.mappings:
+                    app_instance = mapping.app_instance
+                    labels = (
+                        mapping.labels
+                        if isinstance(mapping.labels, list)
+                        else [mapping.labels]
                     )
-                )
-                plex_instances = mapping.plex_instances
-                for plex_instance in plex_instances:
-                    instance_name = plex_instance.instance
-                    library_names = plex_instance.library_names
-                    # Config: assume all plex instances always present, throw if not
-                    plex_connection_data = self.full_config.instances.plex[
-                        instance_name
-                    ]
-                    plex_client = PlexClient(
-                        plex_connection_data.url,
-                        plex_connection_data.api,
-                        self.logger,
-                    )
-                    plex_data = []
-                    if plex_client.is_connected():
-                        for library in library_names:
-                            plex_data.extend(
-                                self.db.plex.get_by_instance_and_library(
-                                    instance_name, library
+                    arr_data.extend(
+                        row
+                        for row in self.db.media.get_by_instance(app_instance) or []
+                        if (
+                            any(
+                                label
+                                in (
+                                    json.loads(row["tags"])
+                                    if isinstance(row["tags"], str)
+                                    else row["tags"]
                                 )
+                                for label in labels
                             )
-                        output += self.sync_to_plex(
-                            plex_client, arr_data, plex_data, labels
+                            and (
+                                row["asset_type"] != "show"
+                                or row["season_number"] in (None, "", "None")
+                            )
                         )
+                    )
+                    plex_instances = mapping.plex_instances
+                    for plex_instance in plex_instances:
+                        instance_name = plex_instance.instance
+                        library_names = plex_instance.library_names
+                        # Config: assume all plex instances always present, throw if not
+                        plex_connection_data = self.full_config.instances.plex[
+                            instance_name
+                        ]
+                        plex_client = PlexClient(
+                            plex_connection_data.url,
+                            plex_connection_data.api,
+                            self.logger,
+                        )
+                        plex_data = []
+                        if plex_client.is_connected():
+                            for library in library_names:
+                                plex_data.extend(
+                                    self.db.plex.get_by_instance_and_library(
+                                        instance_name, library
+                                    )
+                                )
+                            output += self.sync_to_plex(
+                                plex_client, arr_data, plex_data, labels
+                            )
 
-            if output:
-                self.handle_messages(output)
-                manager = NotificationManager(
-                    self.config, self.logger, module_name="labelarr"
-                )
-                manager.send_notification(output)
-            else:
-                self.logger.info("No labels to sync to Plex")
+                if output:
+                    self.handle_messages(output)
+                    manager = NotificationManager(
+                        self.config, self.logger, module_name="labelarr"
+                    )
+                    manager.send_notification(output)
+                else:
+                    self.logger.info("No labels to sync to Plex")
         except KeyboardInterrupt:
             print("Keyboard Interrupt detected. Exiting...")
             sys.exit()

@@ -14,7 +14,7 @@ class UnmatchedAssets:
             getattr(self.config, "log_level", "INFO"), "unmatched_assets"
         )
 
-        self.db = DapsDB()
+        self.db = None
         # Instance/library filters (make sure they're always defined!)
         self.allowed_instances = set()
         self.plex_libraries = {}
@@ -292,7 +292,8 @@ class UnmatchedAssets:
 
     def get_stats_adhoc(self):
         try:
-            return self.get_stats()
+            with DapsDB(logger=self.logger) as self.db:
+                return self.get_stats()
         except Exception as exc:
             self.logger.error(f"\n\nAn error occurred: {exc}\n", exc_info=True)
         finally:
@@ -467,7 +468,8 @@ class UnmatchedAssets:
 
     def run(self):
         try:
-            self.print_stats()
+            with DapsDB(logger=self.logger) as self.db:
+                self.print_stats()
         except KeyboardInterrupt:
             print("Keyboard Interrupt detected. Exiting...")
             sys.exit()

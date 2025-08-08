@@ -6,26 +6,27 @@ from typing import Any, Optional
 import uvicorn
 
 from api.main import app
+from util.module_runner import ModuleRunner
 
 # Global reference to the web server thread for cleanup
 _web_thread: Optional[threading.Thread] = None
 _server_config = None
 
 
-def start_web_server(logger: Any, orchestrator=None) -> None:
+def start_web_server(logger: Any, module_runner: ModuleRunner = None) -> None:
     """
     Starts the web server in a background thread and stores logger in app state.
     Args:
       logger: Logger instance to use for the app.
-      orchestrator: Optional orchestrator instance to store in app state.
+      module_runner: Optional module_runner instance to store in app state.
     """
     global _web_thread, _server_config
 
     app.state.logger = logger
     log = logger.get_adapter("web")
 
-    if orchestrator is not None:
-        app.state.orchestrator = orchestrator
+    if module_runner is not None:
+        app.state.module_runner = module_runner
 
     PORT = int(os.environ.get("PORT", 8000))
     HOST = os.environ.get("HOST", "0.0.0.0")
@@ -70,6 +71,7 @@ def start_web_server(logger: Any, orchestrator=None) -> None:
         log.info(f"Web server started on {HOST}:{PORT}")
     else:
         log.error("Failed to start web server thread")
+        exit(1)
 
 
 def stop_web_server(logger: Any = None, timeout: int = 10) -> bool:

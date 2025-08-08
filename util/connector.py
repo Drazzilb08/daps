@@ -267,7 +267,7 @@ class Connector:
         logger: Optional[Logger] = None,
         instance_map: Optional[Dict[str, Any]] = None,
     ):
-        self.db = db or DapsDB()
+        self.db = db
         self.config = load_config()
         self.logger = logger
         self.instance_map = instance_map

@@ -9,7 +9,6 @@ from fastapi.responses import (
     FileResponse,
     HTMLResponse,
     JSONResponse,
-    PlainTextResponse,
 )
 from fastapi.staticfiles import StaticFiles
 
@@ -31,7 +30,6 @@ from util.version import get_version
 async def lifespan(app):
     """FastAPI lifespan context manager with proper startup/shutdown"""
 
-    # Startup
     logger = app.state.logger
     log = logger.get_adapter("FASTAPI") if logger else None
 
@@ -39,53 +37,46 @@ async def lifespan(app):
         if log:
             log.debug("Starting FastAPI application...")
 
-        # Initialize database
-        app.state.db = DapsDB(logger=logger)
+        # FIXED: Use DapsDB context manager properly and simplify worker setup
+        with DapsDB(logger=logger) as db:
+            if log:
+                log.debug("Creating database workers...")
 
-        # Create workers with improved configuration
-        if log:
-            log.debug("Creating database workers...")
+            # SIMPLIFIED: Create workers with cleaner interface
+            app.state.webhook_worker = db.create_worker(
+                logger=logger,
+                num_workers=2,
+                poll_interval=1,
+                worker_name="WEBHOOK",
+                job_type_filter="webhook_process",
+            )
 
-        app.state.db.adhoc_worker = app.state.db.create_worker(
-            logger=logger,  # Explicitly pass logger
-            num_workers=2,  # Reduced from 3 for better resource management
-            poll_interval=1,  # Faster polling for webhooks
-            worker_name="ADHOC",
-            job_type_filter="webhook",
-        )
+            app.state.background_worker = db.create_worker(
+                logger=logger,
+                num_workers=3,
+                poll_interval=2,
+                worker_name="BACKGROUND",
+                job_type_filter=None,
+            )
 
-        app.state.db.background_worker = app.state.db.create_worker(
-            logger=logger,  # Explicitly pass logger
-            num_workers=3,
-            poll_interval=2,
-            worker_name="BACKGROUND",
-            job_type_filter=None,
-        )
+            if log:
+                log.debug("Starting database workers...")
 
-        # Start workers
-        if log:
-            log.debug("Starting database workers...")
+            # FIXED: Use unified process_job function with consistent signature
+            app.state.webhook_worker.start(
+                table_name="jobs",
+                process_fn=process_job,
+                job_type_filter="webhook_process",
+            )
 
-        app.state.db.adhoc_worker.start(
-            table_name="jobs",
-            process_fn=lambda job: process_job(
-                job, logger, worker=app.state.db.adhoc_worker
-            ),
-            job_type_filter="webhook",
-        )
+            app.state.background_worker.start(
+                table_name="jobs", process_fn=process_job, job_type_filter=None
+            )
 
-        app.state.db.background_worker.start(
-            table_name="jobs",
-            process_fn=lambda job: process_job(
-                job, logger, worker=app.state.db.background_worker
-            ),
-            job_type_filter=None,
-        )
+            if log:
+                log.info("FastAPI application started successfully")
 
-        if log:
-            log.info("FastAPI application started successfully")
-
-        yield
+            yield
 
     except Exception as e:
         if log:
@@ -95,88 +86,51 @@ async def lifespan(app):
         raise
 
     finally:
-        # Shutdown
         if log:
             log.debug("Shutting down FastAPI application...")
         else:
             print("[FASTAPI] Shutting down...")
 
         try:
-            # Stop workers with timeout
-            shutdown_tasks = []
+            # SIMPLIFIED: Cleaner shutdown
+            workers_to_stop = []
+            if hasattr(app.state, "webhook_worker") and app.state.webhook_worker:
+                workers_to_stop.append(("webhook_worker", app.state.webhook_worker))
+            if hasattr(app.state, "background_worker") and app.state.background_worker:
+                workers_to_stop.append(
+                    ("background_worker", app.state.background_worker)
+                )
 
-            if hasattr(app.state, "db"):
-                if hasattr(app.state.db, "adhoc_worker") and app.state.db.adhoc_worker:
-                    worker_name = getattr(
-                        app.state.db.adhoc_worker, "worker_name", "ADHOC-UNKNOWN"
-                    )
-                    shutdown_tasks.append(
-                        (f"adhoc_worker({worker_name})", app.state.db.adhoc_worker)
-                    )
-
-                if (
-                    hasattr(app.state.db, "background_worker")
-                    and app.state.db.background_worker
-                ):
-                    worker_name = getattr(
-                        app.state.db.background_worker,
-                        "worker_name",
-                        "BACKGROUND-UNKNOWN",
-                    )
-                    shutdown_tasks.append(
-                        (
-                            f"background_worker({worker_name})",
-                            app.state.db.background_worker,
-                        )
-                    )
-
-            # Stop workers in parallel with timeout
             def stop_worker_with_timeout(name, worker, timeout=8):
                 try:
                     if log:
                         log.debug(f"Stopping {name}...")
-                    else:
-                        print(f"[FASTAPI] Stopping {name}...")
                     worker.stop(timeout=timeout)
                     if log:
                         log.debug(f"{name} stopped successfully")
-                    else:
-                        print(f"[FASTAPI] {name} stopped successfully")
                 except Exception as e:
                     if log:
                         log.error(f"Error stopping {name}: {e}")
-                    else:
-                        print(f"[FASTAPI] Error stopping {name}: {e}")
 
-            # Use threading to stop workers in parallel
+            # Stop workers in parallel
             stop_threads = []
-            for name, worker in shutdown_tasks:
+            for name, worker in workers_to_stop:
                 thread = threading.Thread(
                     target=stop_worker_with_timeout, args=(name, worker, 8), daemon=True
                 )
                 thread.start()
                 stop_threads.append(thread)
 
-            # Wait for all stop threads to complete (max 10 seconds total)
+            # Wait for all to finish
             for thread in stop_threads:
                 thread.join(timeout=10)
 
-            # Close database connections
-            if hasattr(app.state, "db") and app.state.db:
-                if log:
-                    log.debug("Closing database connections...")
-                app.state.db.close_all()
-
             if log:
                 log.info("FastAPI application shutdown complete")
-            else:
-                print("[FASTAPI] Shutdown complete")
 
         except Exception as e:
             if log:
                 log.error(f"Error during FastAPI shutdown: {e}", exc_info=True)
-            else:
-                print(f"[FASTAPI] Shutdown error: {e}")
 
 
 app = FastAPI(lifespan=lifespan)
@@ -205,9 +159,18 @@ def get_logger(request: Request, source="WEB") -> Any:
 
 
 @app.exception_handler(Exception)
-async def handle_exception(exc: Exception, logger: Any = Depends(get_logger)):
+async def handle_exception(request: Request, exc: Exception):
+    """FIXED: Standardized error response format"""
+    logger = get_logger(request, "ERROR")
     logger.error(f"Unhandled Exception: {exc}", exc_info=True)
-    return JSONResponse(status_code=500, content={"error": str(exc)})
+    return JSONResponse(
+        status_code=500,
+        content={
+            "success": False,
+            "message": f"Internal server error: {str(exc)}",
+            "error_code": "INTERNAL_ERROR",
+        },
+    )
 
 
 app.include_router(config_router.router)
@@ -222,60 +185,119 @@ app.include_router(router)
 
 @app.get("/api/version")
 async def get_version_route(logger: Any = Depends(get_logger)):
+    """FIXED: Standardized response format"""
     try:
         version = get_version()
         logger.debug(f"Serving GET /api/version: {version}")
-    except Exception:
-        version = "unknown"
-    return PlainTextResponse(version)
+        return {
+            "success": True,
+            "message": "Version retrieved",
+            "data": {"version": version},
+        }
+    except Exception as e:
+        logger.error(f"Error getting version: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "message": f"Error getting version: {str(e)}",
+                "error_code": "VERSION_ERROR",
+            },
+        )
 
 
 @app.get("/api/list")
 async def list_dir(path: str = "/", logger: Any = Depends(get_logger)):
-    resolved = Path(path).expanduser().resolve()
-    if not resolved.exists() or not resolved.is_dir():
+    """FIXED: Standardized response format"""
+    try:
+        resolved = Path(path).expanduser().resolve()
+        if not resolved.exists() or not resolved.is_dir():
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "success": False,
+                    "message": "Invalid path",
+                    "error_code": "INVALID_PATH",
+                    "data": {"directories": [], "exists": False, "writable": False},
+                },
+            )
+
+        dirs = [
+            p.name
+            for p in resolved.iterdir()
+            if p.is_dir() and not p.name.startswith(".")
+        ]
+        dirs.sort()
+
+        return {
+            "success": True,
+            "message": f"Listed {len(dirs)} directories",
+            "data": {
+                "directories": dirs,
+                "exists": True,
+                "writable": os.access(resolved, os.W_OK),
+            },
+        }
+    except Exception as e:
+        logger.error(f"Error listing directory {path}: {e}")
         return JSONResponse(
-            status_code=400,
+            status_code=500,
             content={
-                "directories": [],
-                "exists": False,
-                "writable": False,
-                "error": "Invalid path",
+                "success": False,
+                "message": f"Error listing directory: {str(e)}",
+                "error_code": "LIST_DIR_ERROR",
             },
         )
-    dirs = [
-        p.name for p in resolved.iterdir() if p.is_dir() and not p.name.startswith(".")
-    ]
-    dirs.sort()
-    return {
-        "directories": dirs,
-        "exists": True,
-        "writable": os.access(resolved, os.W_OK),
-    }
 
 
 @app.post("/api/create-folder")
 async def create_folder(path: str, logger: Any = Depends(get_logger)):
-    resolved = Path(path).expanduser().resolve()
+    """FIXED: Standardized response format"""
     try:
+        resolved = Path(path).expanduser().resolve()
         logger.info(f"Creating folder: {resolved}")
         resolved.mkdir(parents=True, exist_ok=False)
-        return {"status": "created"}
+
+        return {
+            "success": True,
+            "message": f"Folder created: {resolved}",
+            "data": {"path": str(resolved)},
+        }
     except Exception as e:
-        logger.error(f"Error creating folder {resolved}: {e}")
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        logger.error(f"Error creating folder {path}: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "message": f"Error creating folder: {str(e)}",
+                "error_code": "CREATE_FOLDER_ERROR",
+            },
+        )
 
 
 @app.post("/api/test-endpoint")
 async def test_endpoint(request: Request, logger: Any = Depends(get_logger)):
+    """FIXED: Standardized response format"""
     logger.debug("Serving POST /api/test-endpoint")
     try:
         data = await request.json()
         logger.debug(f"Received data: {data}")
-        return {"status": "ok", "received": data}
+
+        return {
+            "success": True,
+            "message": "Test endpoint working",
+            "data": {"received": data},
+        }
     except Exception as e:
         logger.error(f"Error reading data: {e}")
-        return {"status": "error", "error": str(e)}
+        return JSONResponse(
+            status_code=400,
+            content={
+                "success": False,
+                "message": f"Error reading request data: {str(e)}",
+                "error_code": "REQUEST_DATA_ERROR",
+            },
+        )
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -285,13 +307,21 @@ async def root():
     try:
         return HTMLResponse(content=html_path.read_text(), status_code=200)
     except Exception as e:
-        return JSONResponse(status_code=500, content={"error": str(e)})
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "message": f"Error serving index page: {str(e)}",
+                "error_code": "INDEX_PAGE_ERROR",
+            },
+        )
 
 
 @app.get("/{full_path:path}", response_class=HTMLResponse)
 async def serve_spa(full_path: str):
-    # Serve index.html for all non-API, non-assets routes (for SPA)
+    """Serve index.html for all non-API, non-assets routes (for SPA)"""
     if full_path.startswith("api/") or full_path == "api":
-        raise HTTPException(status_code=404, detail="Not Found")
+        raise HTTPException(status_code=404, detail="API endpoint not found")
+
     index_path = Path(__file__).parents[1] / "templates" / "index.html"
     return FileResponse(index_path)

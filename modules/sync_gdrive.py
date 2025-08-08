@@ -3,6 +3,7 @@ import os
 import re
 import shlex
 import subprocess
+import sys
 import time
 from shutil import which
 from typing import List
@@ -27,7 +28,7 @@ class SyncGDrive:
         self.config = self.full_config.sync_gdrive
         self.logger = logger or Logger(self.config.log_level, "sync_gdrive")
         self.rclone_path = self.get_rclone_path()
-        self.db = DapsDB()
+        self.db = None
 
     def parse_rclone_progress(self, line):
         """
@@ -231,26 +232,92 @@ class SyncGDrive:
         Sync a single GDrive folder (by its config 'name') on demand.
         """
         try:
-            sync_list = (
-                self.config.gdrive_list
-                if isinstance(self.config.gdrive_list, list)
-                else [self.config.gdrive_list]
-            )
-            for sync_item in sync_list:
-                owner = sync_item.name
-                if owner == gdrive_name:
+            with DapsDB(logger=self.logger) as self.db:
+                sync_list = (
+                    self.config.gdrive_list
+                    if isinstance(self.config.gdrive_list, list)
+                    else [self.config.gdrive_list]
+                )
+                for sync_item in sync_list:
+                    owner = sync_item.name
+                    if owner == gdrive_name:
+                        sync_location = sync_item.location
+                        sync_id = sync_item.id
+
+                        progress_cb(5)  # Starting ad-hoc sync
+
+                        self.sync_folder(
+                            sync_location, sync_id, progress_cb=progress_cb
+                        )
+
+                        # GATHER STATS AND UPSERT
+                        progress_cb(90)
+                        file_count, size_bytes, last_updated = self.gather_folder_stats(
+                            sync_location
+                        )
+                        self.db.stats.upsert_gdrive_stat(
+                            location=sync_location,
+                            folder_name=owner,
+                            owner=owner,
+                            file_count=file_count,
+                            size_bytes=size_bytes,
+                            last_updated=last_updated,
+                        )
+                        self.logger.info(
+                            f"Synced and updated gdrive_stats for {sync_location}: "
+                            f"{file_count} files, {size_bytes} bytes, last updated {last_updated}"
+                        )
+                        progress_cb(100)
+                        return True
+                self.logger.error(
+                    f"GDrive name '{gdrive_name}' not found in config.gdrive_list."
+                )
+                progress_cb(100)
+                return False
+        except KeyboardInterrupt:
+            print("Keyboard Interrupt detected. Exiting...")
+            sys.exit()
+        except Exception as exc:
+            self.logger.error(f"\n\nAn error occurred: {exc}\n", exc_info=True)
+            progress_cb(100)
+
+    def run(self, progress_cb=lambda pct: None):
+        try:
+            with DapsDB(logger=self.logger) as self.db:
+                if self.config.log_level.lower() == "debug":
+                    print_settings(self.logger, self.config)
+
+                sync_list: List[dict] = (
+                    self.config.gdrive_list
+                    if isinstance(self.config.gdrive_list, list)
+                    else [self.config.gdrive_list]
+                )
+
+                if getattr(
+                    self.config, "gdrive_sa_location", None
+                ) and not os.path.isfile(self.config.gdrive_sa_location):
+                    self.logger.warning(
+                        f"\nGoogle service account file '{self.config.gdrive_sa_location}' does not exist\n"
+                        "Please verify the path or remove it from config\n"
+                    )
+                    self.config.gdrive_sa_location = None
+
+                self.ensure_remote()
+                total = len(sync_list)
+
+                for idx, sync_item in enumerate(sync_list, 1):
+                    progress_cb(int(10 + 80 * (idx - 1) / total))  # Start for each
+
                     sync_location = sync_item.location
                     sync_id = sync_item.id
-
-                    progress_cb(5)  # Starting ad-hoc sync
-
                     self.sync_folder(sync_location, sync_id, progress_cb=progress_cb)
 
                     # GATHER STATS AND UPSERT
-                    progress_cb(90)
+                    progress_cb(int(10 + 80 * (idx - 0.5) / total))
                     file_count, size_bytes, last_updated = self.gather_folder_stats(
                         sync_location
                     )
+                    owner = sync_item.name
                     self.db.stats.upsert_gdrive_stat(
                         location=sync_location,
                         folder_name=owner,
@@ -260,70 +327,14 @@ class SyncGDrive:
                         last_updated=last_updated,
                     )
                     self.logger.info(
-                        f"Synced and updated gdrive_stats for {sync_location}: "
-                        f"{file_count} files, {size_bytes} bytes, last updated {last_updated}"
+                        f"Updated gdrive_stats for {sync_location}: {file_count} files, {size_bytes} bytes, last updated {last_updated}"
                     )
-                    progress_cb(100)
-                    return True
-            self.logger.error(
-                f"GDrive name '{gdrive_name}' not found in config.gdrive_list."
-            )
-            progress_cb(100)
-            return False
-        except Exception as exc:
-            self.logger.error(f"\n\nAn error occurred: {exc}\n", exc_info=True)
-            progress_cb(100)
+                    progress_cb(int(10 + 80 * idx / total))  # Step up after folder done
 
-    def run(self, progress_cb=lambda pct: None):
-        try:
-            if self.config.log_level.lower() == "debug":
-                print_settings(self.logger, self.config)
-
-            sync_list: List[dict] = (
-                self.config.gdrive_list
-                if isinstance(self.config.gdrive_list, list)
-                else [self.config.gdrive_list]
-            )
-
-            if getattr(self.config, "gdrive_sa_location", None) and not os.path.isfile(
-                self.config.gdrive_sa_location
-            ):
-                self.logger.warning(
-                    f"\nGoogle service account file '{self.config.gdrive_sa_location}' does not exist\n"
-                    "Please verify the path or remove it from config\n"
-                )
-                self.config.gdrive_sa_location = None
-
-            self.ensure_remote()
-            total = len(sync_list)
-
-            for idx, sync_item in enumerate(sync_list, 1):
-                progress_cb(int(10 + 80 * (idx - 1) / total))  # Start for each
-
-                sync_location = sync_item.location
-                sync_id = sync_item.id
-                self.sync_folder(sync_location, sync_id, progress_cb=progress_cb)
-
-                # GATHER STATS AND UPSERT
-                progress_cb(int(10 + 80 * (idx - 0.5) / total))
-                file_count, size_bytes, last_updated = self.gather_folder_stats(
-                    sync_location
-                )
-                owner = sync_item.name
-                self.db.stats.upsert_gdrive_stat(
-                    location=sync_location,
-                    folder_name=owner,
-                    owner=owner,
-                    file_count=file_count,
-                    size_bytes=size_bytes,
-                    last_updated=last_updated,
-                )
-                self.logger.info(
-                    f"Updated gdrive_stats for {sync_location}: {file_count} files, {size_bytes} bytes, last updated {last_updated}"
-                )
-                progress_cb(int(10 + 80 * idx / total))  # Step up after folder done
-
-            progress_cb(100)
+                progress_cb(100)
+        except KeyboardInterrupt:
+            print("Keyboard Interrupt detected. Exiting...")
+            sys.exit()
         except Exception as exc:
             self.logger.error(f"\n\nAn error occurred: {exc}\n", exc_info=True)
             progress_cb(100)

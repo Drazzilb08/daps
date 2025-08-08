@@ -29,7 +29,7 @@ class PosterRenamerr:
         self.full_config = config or load_config()
         self.config = self.full_config.poster_renamerr
         self.logger = logger or Logger(self.config.log_level, "poster_renamerr")
-        self.db = DapsDB()
+        self.db = None
 
     def ensure_destination_dir(self):
         if not os.path.exists(self.config.destination_dir):
@@ -45,10 +45,10 @@ class PosterRenamerr:
     def sync_posters(self):
         if self.config.sync_posters:
             self.logger.info("Running sync_gdrive")
-            from modules.sync_gdrive import main as gdrive_main
+            from modules.sync_gdrive import SyncGDrive
 
-            gdrive_config = self.full_config.sync_gdrive
-            gdrive_main(gdrive_config)
+            syncer = SyncGDrive(logger=self.logger)
+            syncer.run()
             self.logger.info("Finished running sync_gdrive")
         else:
             self.logger.debug("Sync posters is disabled. Skipping...")
@@ -538,10 +538,10 @@ class PosterRenamerr:
         formatted_duration = f"{int(hours)}h {int(minutes)}m {int(seconds)}s"
         logger.debug(f"Merge run time: {formatted_duration}")
 
-    def run_border_replacerr(self, manifest: List[int]):
+    def run_border_replacerr(self, manifest: dict):
         from modules.border_replacerr import BorderReplacerr
 
-        border = BorderReplacerr(self.db, self.config, self.logger)
+        border = BorderReplacerr(self.config, self.logger)
 
         self.logger.debug(
             "\nRunning border replacerr:\n"
@@ -552,61 +552,147 @@ class PosterRenamerr:
         border.run(manifest)
         self.logger.info("Finished running border_replacerr.")
 
-    def run(self):
+    def run_poster_rename_adhoc(self, media_items: List[dict]) -> dict:
+        """
+        Process specific media items directly (like sync_gdrive.sync_folder_adhoc).
+        This is the NEW method for webhook/API processing.
+
+        Args:
+            media_items: List of media items to process
+
+        Returns:
+            dict: Processing results with renamed files and manifest
+        """
+        log = self.logger.get_adapter("POSTER_ADHOC")
+
+        if not media_items:
+            return {"success": False, "message": "No media items provided"}
+
         try:
-            if self.config.log_level == "debug":
-                print_settings(self.logger, self.config)
+            with DapsDB(logger=self.logger) as self.db:
+                self.ensure_destination_dir()
 
-            self.ensure_destination_dir()
+                # Clear and rebuild poster cache for current session
+                self.db.poster.clear()
+                self.merge_assets()
 
-            if self.config.dry_run:
-                self.logger.info(
-                    create_table([["Dry Run"], ["NO CHANGES WILL BE MADE"]])
+                # Process each media item
+                output = {"collection": [], "movie": [], "show": []}
+                manifest = {"media_cache": [], "collections_cache": []}
+
+                matched_count = 0
+                for media_item in media_items:
+                    # Match poster to media
+                    is_collection = media_item.get("asset_type") == "collection"
+                    match_result = self.match_item(media_item, is_collection)
+
+                    if match_result["matched"]:
+                        matched_count += 1
+                        # Get the updated item from DB after matching
+                        if is_collection:
+                            updated_item = self.db.collection.get_by_id(
+                                media_item.get("id")
+                            )
+                        else:
+                            updated_item = self.db.media.get_by_id(media_item.get("id"))
+
+                        if updated_item:
+                            # Rename the file
+                            rename_result = self.rename_file(updated_item)
+
+                            if rename_result:
+                                asset_type = updated_item.get("asset_type", "movie")
+                                output[asset_type].append(rename_result)
+
+                                # Add to manifest
+                                if asset_type == "collection":
+                                    manifest["collections_cache"].append(
+                                        updated_item["id"]
+                                    )
+                                else:
+                                    manifest["media_cache"].append(updated_item["id"])
+
+                log.info(
+                    f"Processed {len(media_items)} media items, {matched_count} matched"
                 )
 
-            self.sync_posters()
+                return {
+                    "success": True,
+                    "output": output,
+                    "manifest": manifest,
+                    "message": f"Successfully processed {matched_count}/{len(media_items)} items",
+                    "stats": {
+                        "total_items": len(media_items),
+                        "matched_items": matched_count,
+                        "renamed_items": sum(len(items) for items in output.values()),
+                    },
+                }
 
-            self.db.poster.clear()
-            self.merge_assets()
-            instance_map = {
-                "arrs": [i for i in self.config.instances if isinstance(i, str)],
-                "plex": {
-                    name: (opts.library_names or [])
-                    for i in self.config.instances
-                    if isinstance(i, dict)
-                    for name, opts in i.items()
-                },
+        except Exception as e:
+            log.error(f"Error during adhoc poster rename: {e}", exc_info=True)
+            return {
+                "success": False,
+                "message": f"Error during poster rename: {str(e)}",
             }
-            connector = Connector(self.db, self.logger, instance_map=instance_map)
-            connector.update_arr_database()
-            connector.update_collections_database()
 
-            self.match_assets_to_media()
-            output, manifest = self.rename_files()
+    def run(self):
+        """
+        Full scheduled run - existing functionality unchanged.
+        """
+        try:
+            with DapsDB(logger=self.logger) as self.db:
+                if self.config.log_level == "debug":
+                    print_settings(self.logger, self.config)
 
-            if self.config.report_unmatched_assets:
-                self.db.poster.close()
-                from modules.unmatched_assets import main as report_unmatched_assets
+                self.ensure_destination_dir()
 
-                report_unmatched_assets()
+                if self.config.dry_run:
+                    self.logger.info(
+                        create_table([["Dry Run"], ["NO CHANGES WILL BE MADE"]])
+                    )
 
-            if self.config.run_cleanarr:
-                cleanarr_logger = Logger(self.config.log_level, "cleanarr")
-                self.db.orphaned.handle_orphaned_posters(
-                    cleanarr_logger, self.config.dry_run
-                )
+                self.sync_posters()
 
-            if self.config.run_border_replacerr:
-                self.run_border_replacerr(manifest)
+                self.db.poster.clear()
+                self.merge_assets()
+                instance_map = {
+                    "arrs": [i for i in self.config.instances if isinstance(i, str)],
+                    "plex": {
+                        name: (opts.library_names or [])
+                        for i in self.config.instances
+                        if isinstance(i, dict)
+                        for name, opts in i.items()
+                    },
+                }
+                connector = Connector(self.db, self.logger, instance_map=instance_map)
+                connector.update_arr_database()
+                connector.update_collections_database()
 
-            PosterUploader(self.logger, manifest).run()
+                self.match_assets_to_media()
+                output, manifest = self.rename_files()
 
-            if any(output.values()):
-                self.handle_output(output)
-                manager = NotificationManager(
-                    self.config, self.logger, module_name="poster_renamerr"
-                )
-                manager.send_notification(output)
+                if self.config.report_unmatched_assets:
+                    from modules.unmatched_assets import main as report_unmatched_assets
+
+                    report_unmatched_assets()
+
+                if self.config.run_cleanarr:
+                    cleanarr_logger = Logger(self.config.log_level, "cleanarr")
+                    self.db.orphaned.handle_orphaned_posters(
+                        cleanarr_logger, self.config.dry_run
+                    )
+
+                if self.config.run_border_replacerr:
+                    self.run_border_replacerr(manifest)
+
+                PosterUploader(db=self.db, logger=self.logger, manifest=manifest).run()
+
+                if any(output.values()):
+                    self.handle_output(output)
+                    manager = NotificationManager(
+                        self.config, self.logger, module_name="poster_renamerr"
+                    )
+                    manager.send_notification(output)
 
         except KeyboardInterrupt:
             print("Keyboard Interrupt detected. Exiting...")
@@ -614,10 +700,4 @@ class PosterRenamerr:
         except Exception:
             self.logger.error("\n\nAn error occurred:\n", exc_info=True)
         finally:
-            self.db.close_all()
             self.logger.log_outro()
-
-
-def main():
-    renamer = PosterRenamerr()
-    renamer.run()

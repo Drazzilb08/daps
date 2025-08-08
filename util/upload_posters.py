@@ -66,13 +66,14 @@ class PosterUploader:
 
     def __init__(
         self,
+        db: DapsDB,
         logger: Optional[Logger] = None,
         manifest: Optional[Dict] = None,
         force: bool = False,
     ):
         self.full_config = load_config()
         self.config = self.full_config.poster_renamerr
-        self.db = DapsDB()
+        self.db = db
         self.logger = logger or Logger(self.config.log_level, "poster_uploader")
         self.logger = self.logger.get_adapter("poster_uploader")
         self.manifest = manifest or {}

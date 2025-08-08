@@ -5,9 +5,11 @@ import threading
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import Callable, Dict, Optional
+from typing import Any, Callable, Dict, Optional
 
-from util.database.db_base import DatabaseBase
+# FIXED: Only import non-circular dependencies at module level
+# Modules that import util.database must be imported inside functions to avoid circular imports
+from .db_base import DatabaseBase
 
 
 class JobStatus(Enum):
@@ -43,7 +45,7 @@ class DBWorker(DatabaseBase):
         job_deletion_days: int = 30,
         max_retry_delay: int = 300,
     ):
-        super().__init__(db_path)
+        super().__init__(logger, db_path)
         self.logger = logger
         self.worker_name = worker_name
         self.job_type_filter = job_type_filter
@@ -118,7 +120,7 @@ class DBWorker(DatabaseBase):
 
                 start_time = time.time()
                 try:
-                    result = process_fn(job)
+                    result = process_fn(job, self.logger)
                     duration = time.time() - start_time
 
                     # Handle different result types
@@ -200,97 +202,88 @@ class DBWorker(DatabaseBase):
             query += " AND type=?"
             params.append(job_type_filter)
         query += " ORDER BY received_at ASC"
-        with self.conn:
-            cur = self.conn.execute(query, tuple(params))
-            return cur.fetchall()
+        return self.execute_query(query, tuple(params), fetch_all=True)
 
     def mark_job_complete(self, table_name: str, job_id: int, result):
-        with self.conn:
-            self.conn.execute(
-                f"UPDATE {table_name} SET status='success', result=? WHERE id=?",
-                (json.dumps(result) if result else None, job_id),
-            )
+        self.execute_query(
+            f"UPDATE {table_name} SET status='success', result=? WHERE id=?",
+            (json.dumps(result) if result else None, job_id),
+        )
 
     def get_attempts(self, table_name: str, job_id: int):
-        with self.conn:
-            cur = self.conn.execute(
-                f"SELECT attempts, max_attempts FROM {table_name} WHERE id=?",
-                (job_id,),
-            )
-            return cur.fetchone()
+        return self.execute_query(
+            f"SELECT attempts, max_attempts FROM {table_name} WHERE id=?",
+            (job_id,),
+            fetch_one=True,
+        )
 
     def mark_job_pending_with_error(
         self, table_name: str, job_id: int, error, scheduled_at: str = None
     ):
-        with self.conn:
-            if scheduled_at:
-                self.conn.execute(
-                    f"UPDATE {table_name} SET status='pending', error=?, scheduled_at=? WHERE id=?",
-                    (str(error), scheduled_at, job_id),
-                )
-            else:
-                self.conn.execute(
-                    f"UPDATE {table_name} SET status='pending', error=? WHERE id=?",
-                    (str(error), job_id),
-                )
-
-    def mark_job_failed(self, table_name: str, job_id: int, error):
-        with self.conn:
-            self.conn.execute(
-                f"UPDATE {table_name} SET status='error', error=? WHERE id=?",
+        if scheduled_at:
+            self.execute_query(
+                f"UPDATE {table_name} SET status='pending', error=?, scheduled_at=? WHERE id=?",
+                (str(error), scheduled_at, job_id),
+            )
+        else:
+            self.execute_query(
+                f"UPDATE {table_name} SET status='pending', error=? WHERE id=?",
                 (str(error), job_id),
             )
 
+    def mark_job_failed(self, table_name: str, job_id: int, error):
+        self.execute_query(
+            f"UPDATE {table_name} SET status='error', error=? WHERE id=?",
+            (str(error), job_id),
+        )
+
     def reset_job_to_pending(self, table_name: str, job_id: int):
         """Reset a job to 'pending' status"""
-        with self.conn:
-            cur = self.conn.execute(f"SELECT * FROM {table_name} WHERE id=?", (job_id,))
-            row = cur.fetchone()
-            if not row:
-                return None
-            if row["status"] not in ("error", "success"):
-                return False
-            self.conn.execute(
-                f"UPDATE {table_name} SET status='pending', attempts=0, scheduled_at=NULL, error=NULL, result=NULL WHERE id=?",
-                (job_id,),
-            )
-            return True
+        row = self.execute_query(
+            f"SELECT * FROM {table_name} WHERE id=?", (job_id,), fetch_one=True
+        )
+        if not row:
+            return None
+        if row["status"] not in ("error", "success"):
+            return False
+        self.execute_query(
+            f"UPDATE {table_name} SET status='pending', attempts=0, scheduled_at=NULL, error=NULL, result=NULL WHERE id=?",
+            (job_id,),
+        )
+        return True
 
     def claim_next_job(self, table_name: str, job_type_filter: str = None):
         """Claim the next available job"""
         now = datetime.datetime.now(datetime.timezone.utc).isoformat()
-        with self.conn:
-            query = f"""SELECT * FROM {table_name}
-                        WHERE status='pending'
-                        AND (attempts < max_attempts OR max_attempts IS NULL)
-                        AND (scheduled_at IS NULL OR scheduled_at <= ?)
-                    """
-            params = [now]
+        query = f"""SELECT * FROM {table_name}
+                    WHERE status='pending'
+                    AND (attempts < max_attempts OR max_attempts IS NULL)
+                    AND (scheduled_at IS NULL OR scheduled_at <= ?)
+                """
+        params = [now]
 
-            if job_type_filter == "webhook":
-                query += " AND type=?"
-                params.append("webhook")
-            elif job_type_filter is None:
-                query += " AND type!=?"
-                params.append("webhook")
+        if job_type_filter == "webhook":
+            query += " AND type=?"
+            params.append("webhook")
+        elif job_type_filter is None:
+            query += " AND type!=?"
+            params.append("webhook")
 
-            query += " ORDER BY COALESCE(priority, 0) DESC, received_at ASC LIMIT 1"
+        query += " ORDER BY COALESCE(priority, 0) DESC, received_at ASC LIMIT 1"
 
-            cur = self.conn.execute(query, tuple(params))
-            row = cur.fetchone()
-            if not row:
-                return None
+        row = self.execute_query(query, tuple(params), fetch_one=True)
+        if not row:
+            return None
 
-            job_id = row["id"]
-            updated = self.conn.execute(
-                f"UPDATE {table_name} SET status='running', attempts=attempts+1 WHERE id=? AND status='pending'",
-                (job_id,),
-            ).rowcount
-
-            if updated == 1:
-                return dict(row)
-            else:
-                return None
+        job_id = row["id"]
+        updated = self.execute_query(
+            f"UPDATE {table_name} SET status='running', attempts=attempts+1 WHERE id=? AND status='pending'",
+            (job_id,),
+        )
+        if updated == 1:
+            return dict(row)
+        else:
+            return None
 
     def get_worker_stats(self):
         """Get basic worker stats"""
@@ -308,10 +301,9 @@ class DBWorker(DatabaseBase):
         log = self.logger.get_adapter("WORKER")
 
         # Reset any stuck running jobs
-        with self.conn:
-            reset = self.conn.execute(
-                f"UPDATE {table_name} SET status='pending' WHERE status='running'"
-            ).rowcount
+        reset = self.execute_query(
+            f"UPDATE {table_name} SET status='pending' WHERE status='running'"
+        )
         if reset:
             log.info(f"Reset {reset} 'running' jobs to 'pending' on startup.")
 
@@ -354,7 +346,7 @@ class DBWorker(DatabaseBase):
         )
 
     def stop(self, timeout: int = 10):
-        """Stop the worker gracefully with improved timeout handling"""
+        """Stop the worker gracefully"""
         log = self.logger.get_adapter("WORKER")
         log.info(f"Initiating graceful shutdown of '{self.worker_name}'...")
 
@@ -369,55 +361,23 @@ class DBWorker(DatabaseBase):
 
         if alive_threads:
             log.info(f"Waiting for {len(alive_threads)} worker threads to stop...")
-
-            # Wait for threads with individual timeouts
-            per_thread_timeout = max(1, timeout // max(1, len(alive_threads)))
-
-            for i, thread in enumerate(alive_threads):
-                thread.join(timeout=per_thread_timeout)
-                if thread.is_alive():
-                    log.warning(
-                        f"Worker thread {i+1} ({thread.name}) did not stop within {per_thread_timeout}s"
-                    )
+            for thread in alive_threads:
+                thread.join(timeout=2)
 
         # Stop cleanup thread
         if self._cleanup_thread and self._cleanup_thread.is_alive():
-            log.debug("Waiting for cleanup thread to stop...")
             self._cleanup_thread.join(timeout=2)
-            if self._cleanup_thread.is_alive():
-                log.warning("Cleanup thread did not stop gracefully")
 
         # Clear thread references
         self._threads.clear()
         self._cleanup_thread = None
 
-        # Check if any threads are still alive
-        remaining_alive = sum(1 for t in self._threads if t.is_alive())
-        if remaining_alive == 0:
-            log.info("Worker stopped gracefully")
-        else:
-            log.warning(f"Worker stopped with {remaining_alive} threads still running")
+        log.info("Worker stopped")
 
     def close(self):
         """Close the worker and database connection"""
         try:
-            # Stop worker first
             self.stop(timeout=5)
-
-            # Close database connection
-            if hasattr(self, "conn") and self.conn:
-                try:
-                    self.conn.close()
-                except Exception as e:
-                    if hasattr(self, "logger") and self.logger:
-                        self.logger.get_adapter("WORKER").error(
-                            f"Error closing database connection: {e}"
-                        )
-
-            # Call parent close if it exists
-            if hasattr(super(), "close"):
-                super().close()
-
         except Exception as e:
             if hasattr(self, "logger") and self.logger:
                 self.logger.get_adapter("WORKER").error(
@@ -426,50 +386,55 @@ class DBWorker(DatabaseBase):
 
     def job_stats(self, table_name: str = "jobs", error_limit: int = 10):
         try:
-            with self.conn:
-                cur = self.conn.execute(
-                    f"SELECT status, COUNT(*) AS count FROM {table_name} GROUP BY status"
-                )
-                status_counts = {row["status"]: row["count"] for row in cur.fetchall()}
+            status_rows = self.execute_query(
+                f"SELECT status, COUNT(*) AS count FROM {table_name} GROUP BY status",
+                fetch_all=True,
+            )
+            status_counts = (
+                {row["status"]: row["count"] for row in status_rows}
+                if status_rows
+                else {}
+            )
 
-                cur = self.conn.execute(f"SELECT COUNT(*) as total FROM {table_name}")
-                total = cur.fetchone()["total"]
+            total_row = self.execute_query(
+                f"SELECT COUNT(*) as total FROM {table_name}", fetch_one=True
+            )
+            total = total_row["total"] if total_row else 0
 
-                cur = self.conn.execute(
-                    f"SELECT id, type, received_at, error FROM {table_name} WHERE status='error' ORDER BY received_at DESC LIMIT ?",
-                    (error_limit,),
-                )
-                recent_errors = [dict(row) for row in cur.fetchall()]
+            error_rows = self.execute_query(
+                f"SELECT id, type, received_at, error FROM {table_name} WHERE status='error' ORDER BY received_at DESC LIMIT ?",
+                (error_limit,),
+                fetch_all=True,
+            )
+            recent_errors = [dict(row) for row in error_rows] if error_rows else []
 
-                cur = self.conn.execute(
-                    f"SELECT id, type, status, received_at FROM {table_name} ORDER BY received_at DESC LIMIT 1"
-                )
-                last = cur.fetchone()
+            last_row = self.execute_query(
+                f"SELECT id, type, status, received_at FROM {table_name} ORDER BY received_at DESC LIMIT 1",
+                fetch_one=True,
+            )
 
             return {
-                "status": 200,
                 "success": True,
-                "error_code": None,
                 "message": "Job stats fetched",
-                "total": total,
-                "status_counts": status_counts,
-                "recent_errors": recent_errors,
-                "last_job": dict(last) if last else None,
+                "data": {
+                    "total": total,
+                    "status_counts": status_counts,
+                    "recent_errors": recent_errors,
+                    "last_job": dict(last_row) if last_row else None,
+                },
             }
         except Exception as e:
             return {
-                "status": 500,
                 "success": False,
-                "error_code": "DB_JOB_STATS_ERROR",
                 "message": f"Error fetching job stats: {e}",
+                "error_code": "DB_JOB_STATS_ERROR",
             }
 
     def update_progress(self, table_name: str, job_id: int, progress: int):
-        with self.conn:
-            self.conn.execute(
-                f"UPDATE {table_name} SET progress=? WHERE id=?",
-                (progress, job_id),
-            )
+        self.execute_query(
+            f"UPDATE {table_name} SET progress=? WHERE id=?",
+            (progress, job_id),
+        )
 
     def enqueue_job(
         self,
@@ -495,32 +460,31 @@ class DBWorker(DatabaseBase):
         qs = ",".join("?" for _ in fields)
 
         try:
-            with self.conn:
-                cur = self.conn.execute(
+            with self.get_connection() as conn:
+                cursor = conn.execute(
                     f"INSERT INTO {table_name} ({keys}) VALUES ({qs})",
                     tuple(fields.values()),
                 )
-                job_id = cur.lastrowid
+                job_id = cursor.lastrowid
+                conn.commit()
+
             return {
-                "status": 200,
                 "success": True,
-                "error_code": None,
                 "message": "Job enqueued successfully",
-                "job_id": job_id,
+                "data": {"job_id": job_id},
             }
         except Exception as e:
             return {
-                "status": 500,
                 "success": False,
-                "error_code": "ENQUEUE_JOB_ERROR",
                 "message": f"Error enqueuing job: {e}",
+                "error_code": "ENQUEUE_JOB_ERROR",
             }
 
     def get_job_by_id(self, table_name: str, job_id: int):
-        with self.conn:
-            cur = self.conn.execute(f"SELECT * FROM {table_name} WHERE id=?", (job_id,))
-            row = cur.fetchone()
-            return dict(row) if row else None
+        row = self.execute_query(
+            f"SELECT * FROM {table_name} WHERE id=?", (job_id,), fetch_one=True
+        )
+        return dict(row) if row else None
 
     def cleanup_jobs(self, table_name: str = "jobs", days: int = 30):
         """Delete old completed/failed jobs"""
@@ -529,11 +493,10 @@ class DBWorker(DatabaseBase):
                 datetime.datetime.now(datetime.timezone.utc)
                 - datetime.timedelta(days=days)
             ).isoformat()
-            with self.conn:
-                deleted = self.conn.execute(
-                    f"DELETE FROM {table_name} WHERE status IN ('success', 'error') AND received_at < ?",
-                    (cutoff,),
-                ).rowcount
+            deleted = self.execute_query(
+                f"DELETE FROM {table_name} WHERE status IN ('success', 'error') AND received_at < ?",
+                (cutoff,),
+            )
 
             if deleted > 0:
                 log = self.logger.get_adapter("WORKER")
@@ -542,21 +505,15 @@ class DBWorker(DatabaseBase):
                 )
 
             return {
-                "status": 200,
                 "success": True,
-                "error_code": None,
                 "message": f"Deleted {deleted} old jobs (> {days}d)",
-                "deleted": deleted,
-                "days": days,
+                "data": {"deleted": deleted, "days": days},
             }
         except Exception as e:
             return {
-                "status": 500,
                 "success": False,
-                "error_code": "DB_CLEANUP_JOBS_ERROR",
                 "message": f"Error cleaning up jobs: {e}",
-                "deleted": 0,
-                "days": days,
+                "error_code": "DB_CLEANUP_JOBS_ERROR",
             }
 
     def _periodic_cleanup(self, table_name: str):
@@ -575,150 +532,209 @@ class DBWorker(DatabaseBase):
     def list_jobs(self, status: str = None, limit: int = 50):
         """List jobs, optionally filtered by status"""
         try:
-            with self.conn:
-                if status:
-                    cur = self.conn.execute(
-                        "SELECT * FROM jobs WHERE status=? ORDER BY received_at DESC LIMIT ?",
-                        (status, limit),
-                    )
-                else:
-                    cur = self.conn.execute(
-                        "SELECT * FROM jobs ORDER BY received_at DESC LIMIT ?", (limit,)
-                    )
-                jobs = [dict(row) for row in cur.fetchall()]
+            if status:
+                rows = self.execute_query(
+                    "SELECT * FROM jobs WHERE status=? ORDER BY received_at DESC LIMIT ?",
+                    (status, limit),
+                    fetch_all=True,
+                )
+            else:
+                rows = self.execute_query(
+                    "SELECT * FROM jobs ORDER BY received_at DESC LIMIT ?",
+                    (limit,),
+                    fetch_all=True,
+                )
+            jobs = [dict(row) for row in rows] if rows else []
             return {
-                "status": 200,
                 "success": True,
-                "error_code": None,
                 "message": f"Returned {len(jobs)} job(s)",
-                "jobs": jobs,
+                "data": {"jobs": jobs},
             }
         except Exception as e:
             return {
-                "status": 500,
                 "success": False,
-                "error_code": "DB_LIST_JOBS_ERROR",
                 "message": f"Error listing jobs: {e}",
-                "jobs": [],
+                "error_code": "DB_LIST_JOBS_ERROR",
             }
 
 
-# Simplified process_job function
-def process_job(job, logger, worker=None):
+# SINGLE UNIFIED JOB PROCESSOR - No more duplicates!
+def process_job(job: Dict[str, Any], logger) -> Dict[str, Any]:
     """
-    Simplified job processing function
+    Single unified job processor that handles all job types.
+    FIXED: Strategic imports to avoid circular dependencies.
     """
     job_id = job.get("id")
     job_type = job.get("type")
     payload = json.loads(job.get("payload", "{}"))
-    start_time = time.time()
 
-    log = logger.get_adapter("WORKER")
-    log.debug(f"[JOB:{job_id}] Starting job type={job_type}")
+    log = logger.get_adapter("JOB_PROCESSOR")
+    log.debug(f"[JOB:{job_id}] Processing {job_type}")
 
     try:
-        if job_type == "webhook":
-            from util.database import DapsDB
-            from util.webhook_service import WebhookService
+        if job_type == "webhook_process":
+            # Webhook processing - import here to avoid circular dependency
+            from util.webhook_processor import WebhookProcessor
 
-            db = DapsDB(logger=logger)
-            job_service = WebhookService(
-                request=None, db=db, logger=logger, module_name="poster_renamerr"
+            processor = WebhookProcessor(logger)
+            result = processor.process_webhook_adhoc(
+                payload.get("webhook_data", {}), payload.get("client_info")
             )
-
-            res = job_service.process_arr_request(payload, logger)
-            if res and res.get("success"):
-                job_service.run_renamerr_adhoc(res)
-                return {
-                    "status": 200,
-                    "success": True,
-                    "message": "Webhook job processed successfully",
-                    "error_code": None,
-                }
-            else:
-                return {
-                    "status": res.get("status", 500) if res else 500,
-                    "success": False,
-                    "message": f"WebhookService error: {res.get('error') if res else 'No result'}",
-                    "error_code": "WEBHOOK_ERROR",
-                }
+            return result
 
         elif job_type == "sync_gdrive":
+            # GDrive sync - import here to avoid circular dependency
             from modules.sync_gdrive import SyncGDrive
 
             gdrive_name = payload.get("gdrive_name")
-            if gdrive_name:
-
-                def progress_updater(pct):
-                    if worker:
-                        worker.update_progress("jobs", job_id, pct)
-
-                SyncGDrive(logger=logger).sync_folder_adhoc(
-                    gdrive_name, progress_cb=progress_updater
-                )
+            if not gdrive_name:
                 return {
-                    "status": 200,
-                    "success": True,
-                    "message": f"sync_gdrive for {gdrive_name} completed",
-                    "error_code": None,
-                }
-            else:
-                return {
-                    "status": 400,
                     "success": False,
-                    "message": "No gdrive_name provided for adhoc sync.",
+                    "message": "No gdrive_name provided",
                     "error_code": "MISSING_GDRIVE_NAME",
                 }
 
-        elif job_type == "upload_posters":
-            if "manifest" not in payload or not isinstance(payload["manifest"], dict):
+            syncer = SyncGDrive(logger=logger)
+            syncer.sync_folder_adhoc(gdrive_name)
+
+            return {
+                "success": True,
+                "message": f"Sync completed for {gdrive_name}",
+            }
+
+        elif job_type == "poster_rename":
+            # Poster rename - import here to avoid circular dependency
+            from modules.poster_renamerr import PosterRenamerr
+
+            media_items = payload.get("media_items", [])
+            if not media_items:
                 return {
-                    "status": 400,
                     "success": False,
-                    "message": "upload_posters: missing/invalid manifest in payload",
-                    "error_code": "PAYLOAD_SCHEMA_INVALID",
+                    "message": "No media items provided",
+                    "error_code": "MISSING_MEDIA_ITEMS",
                 }
 
+            renamer = PosterRenamerr(logger=logger)
+            result = renamer.run_poster_rename_adhoc(media_items)
+
+            # Handle notifications and uploads if successful
+            if result["success"] and result.get("output"):
+                _handle_post_rename_actions(result, renamer, logger)
+
+            return result
+
+        elif job_type == "upload_posters":
+            # Poster upload - import here to avoid circular dependency
             from util.database import DapsDB
             from util.upload_posters import PosterUploader
 
-            db = DapsDB(logger=logger)
             manifest = payload.get("manifest")
-            uploader = PosterUploader(logger=logger, manifest=manifest)
-            upload_result = uploader.upload_posters()
-
-            if upload_result.get("success"):
+            if not manifest:
                 return {
-                    "status": 200,
+                    "success": False,
+                    "message": "No manifest provided",
+                    "error_code": "MISSING_MANIFEST",
+                }
+
+            with DapsDB(logger=logger) as db:
+                uploader = PosterUploader(db=db, logger=logger, manifest=manifest)
+                result = uploader.upload_posters()
+
+            if result.get("success"):
+                return {
                     "success": True,
-                    "message": "Poster uploaded successfully",
-                    "error_code": None,
+                    "message": "Upload completed",
                 }
             else:
                 return {
-                    "status": 500,
                     "success": False,
-                    "message": f"Upload failed: {upload_result.get('message')}",
+                    "message": f"Upload failed: {result.get('message')}",
                     "error_code": "UPLOAD_FAILED",
                 }
 
         else:
             return {
-                "status": 400,
                 "success": False,
                 "message": f"Unknown job type: {job_type}",
                 "error_code": "UNKNOWN_JOB_TYPE",
             }
 
-    except Exception as ex:
-        log.error(f"[JOB:{job_id}] Unhandled error: {ex}", exc_info=True)
+    except Exception as e:
+        log.error(f"[JOB:{job_id}] Error: {e}", exc_info=True)
         return {
-            "status": 500,
             "success": False,
-            "message": f"Unhandled exception: {str(ex)}",
-            "error_code": "UNHANDLED_EXCEPTION",
+            "message": f"Job failed: {str(e)}",
+            "error_code": "JOB_EXCEPTION",
         }
 
-    finally:
-        duration = time.time() - start_time
-        log.debug(f"[JOB:{job_id}] Job type={job_type} finished in {duration:.2f}s")
+
+def _handle_post_rename_actions(rename_result: Dict[str, Any], renamer, logger):
+    """Handle notifications and uploads after successful rename."""
+    try:
+        output = rename_result.get("output", {})
+        manifest = rename_result.get("manifest", {})
+
+        # Send notifications if there are results
+        if any(output.values()):
+            from util.notification import NotificationManager
+
+            manager = NotificationManager(
+                renamer.config, logger, module_name="poster_renamerr"
+            )
+            manager.send_notification(output)
+            logger.get_adapter("POST_RENAME").info("Notifications sent")
+
+        # Handle border replacer if enabled
+        if getattr(renamer.config, "run_border_replacerr", False) and manifest:
+            renamer.run_border_replacerr(manifest)
+            logger.get_adapter("POST_RENAME").info("Border replacer completed")
+
+        # Queue upload job if Plex instances are enabled
+        plex_enabled = _check_plex_upload_enabled(renamer.config)
+        if plex_enabled and manifest:
+            _queue_upload_job(manifest, logger)
+
+    except Exception as e:
+        logger.get_adapter("POST_RENAME").error(f"Error in post-rename actions: {e}")
+
+
+def _check_plex_upload_enabled(config) -> bool:
+    """Check if any Plex instances have poster upload enabled."""
+    try:
+        if not hasattr(config, "instances"):
+            return False
+
+        for inst in config.instances:
+            if isinstance(inst, dict):
+                for instance_name, params in inst.items():
+                    if getattr(params, "add_posters", False):
+                        return True
+        return False
+    except Exception:
+        return False
+
+
+def _queue_upload_job(manifest: Dict[str, Any], logger):
+    """Queue a poster upload job."""
+    try:
+        # Import here to avoid circular dependency
+        from util.database import DapsDB
+
+        upload_payload = {"manifest": manifest}
+
+        with DapsDB(logger=logger) as db:
+            result = db.worker.enqueue_job(
+                table_name="jobs", payload=upload_payload, job_type="upload_posters"
+            )
+
+        if result["success"]:
+            logger.get_adapter("POST_RENAME").info(
+                f"Upload job queued: {result['data']['job_id']}"
+            )
+        else:
+            logger.get_adapter("POST_RENAME").error(
+                f"Failed to queue upload job: {result['message']}"
+            )
+
+    except Exception as e:
+        logger.get_adapter("POST_RENAME").error(f"Error queueing upload job: {e}")

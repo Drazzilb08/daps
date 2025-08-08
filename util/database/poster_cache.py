@@ -40,56 +40,53 @@ class PosterCache(DatabaseBase):
 
     def upsert(self, record: dict) -> None:
         """Insert or update a record in poster_cache table."""
+        # Serialize list/dict fields to JSON
         for key in ("alternate_titles", "normalized_alternate_titles"):
             if isinstance(record.get(key), (list, dict)):
                 record[key] = json.dumps(record[key])
             elif record.get(key) is None:
                 record[key] = json.dumps([])
 
-        key = self._canonical_key(record)
-        with self.lock, self.conn:
-            self.conn.execute(
-                """
-                INSERT INTO poster_cache
-                    (title, normalized_title, year,
-                     tmdb_id, tvdb_id, imdb_id, season_number, folder, file)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(title, year, tmdb_id, tvdb_id, imdb_id, season_number, file)
-                DO UPDATE SET
-                    normalized_title=excluded.normalized_title,
-                    folder=excluded.folder
-                """,
-                (
-                    record["title"],
-                    record["normalized_title"],
-                    record["year"],
-                    record["tmdb_id"],
-                    record["tvdb_id"],
-                    record["imdb_id"],
-                    record["season_number"],
-                    record["folder"],
-                    record["file"],
-                ),
-            )
+        self.execute_query(
+            """
+            INSERT INTO poster_cache
+                (title, normalized_title, year,
+                 tmdb_id, tvdb_id, imdb_id, season_number, folder, file)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(title, year, tmdb_id, tvdb_id, imdb_id, season_number, file)
+            DO UPDATE SET
+                normalized_title=excluded.normalized_title,
+                folder=excluded.folder
+            """,
+            (
+                record["title"],
+                record["normalized_title"],
+                record["year"],
+                record["tmdb_id"],
+                record["tvdb_id"],
+                record["imdb_id"],
+                record["season_number"],
+                record["folder"],
+                record["file"],
+            ),
+        )
 
     def get_all(self) -> list:
         """Return all records from poster_cache as a list of dicts."""
-        with self.lock, self.conn:
-            cur = self.conn.execute("SELECT * FROM poster_cache")
-            return [dict(row) for row in cur.fetchall()]
+        return self.execute_query("SELECT * FROM poster_cache", fetch_all=True) or []
 
     def get_by_id(self, id_field: str, id_val, season_number=None) -> Optional[dict]:
+        """Get poster cache record by ID field."""
         sql = f"SELECT * FROM poster_cache WHERE {id_field}=?"
         params = [id_val]
+
         if season_number is not None:
             sql += " AND season_number=?"
             params.append(season_number)
         else:
             sql += " AND season_number IS NULL"
-        with self.lock, self.conn:
-            cur = self.conn.execute(sql, params)
-            row = cur.fetchone()
-            return dict(row) if row else None
+
+        return self.execute_query(sql, params, fetch_one=True)
 
     def get_by_normalized_title(
         self,
@@ -97,47 +94,43 @@ class PosterCache(DatabaseBase):
         year: Optional[int] = None,
         season_number: Optional[int] = None,
     ) -> Optional[dict]:
+        """Get poster cache record by normalized title."""
         sql = "SELECT * FROM poster_cache WHERE normalized_title=?"
         params = [normalized_title]
+
         if year is not None:
             sql += " AND year=?"
             params.append(year)
+
         if season_number is not None:
             sql += " AND season_number=?"
             params.append(season_number)
         else:
             sql += " AND season_number IS NULL"
-        with self.lock, self.conn:
-            cur = self.conn.execute(sql, params)
-            row = cur.fetchone()
-            return dict(row) if row else None
+
+        return self.execute_query(sql, params, fetch_one=True)
 
     def delete_by_id(self, id_field, id_value, season_number):
         """Delete a record by id_field (and season_number, or IS NULL)."""
         sql = f"DELETE FROM poster_cache WHERE {id_field}=?"
         params = [id_value]
+
         if season_number is not None:
             sql += " AND season_number=?"
             params.append(season_number)
         else:
             sql += " AND season_number IS NULL"
-        with self.lock, self.conn:
-            cursor = self.conn.cursor()
-            cursor.execute(sql, params)
-            return cursor.rowcount
+
+        return self.execute_query(sql, params)
 
     def delete_by_title(self, normalized_title, year, season_number):
         """Delete a record by normalized_title/year/season_number."""
         sql = "DELETE FROM poster_cache WHERE normalized_title=? AND year IS ? AND season_number IS ?"
-        with self.lock, self.conn:
-            cursor = self.conn.cursor()
-            cursor.execute(sql, (normalized_title, year, season_number))
-            return cursor.rowcount
+        return self.execute_query(sql, (normalized_title, year, season_number))
 
     def clear(self) -> None:
         """Delete all rows from poster_cache."""
-        with self.lock, self.conn:
-            self.conn.execute("DELETE FROM poster_cache")
+        self.execute_query("DELETE FROM poster_cache")
 
     def propagate_ids_for_show(self, title, year, asset):
         """
@@ -164,15 +157,16 @@ class PosterCache(DatabaseBase):
             year,
             asset.get("file"),
         ]
-        with self.lock, self.conn:
-            self.conn.execute(sql, params)
+
+        self.execute_query(sql, params)
 
     def get_candidates_by_prefix(self, title: str, length: int = 3) -> list:
+        """Get poster candidates by title prefix."""
         prefix = get_prefix(title, length)
         if not prefix:
             return []
+
         sql = "SELECT * FROM poster_cache WHERE LOWER(normalized_title) LIKE ?"
         params = [f"{prefix}%"]
-        with self.lock, self.conn:
-            cur = self.conn.execute(sql, params)
-            return [dict(row) for row in cur.fetchall()]
+
+        return self.execute_query(sql, params, fetch_all=True) or []

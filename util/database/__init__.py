@@ -1,4 +1,18 @@
+"""
+DAPS Database Module
+
+Provides a clean, context-manager-based database interface with automatic schema management.
+
+Usage:
+    with DapsDB() as db:
+        db.media.upsert(item, "movie", "Radarr", "instance1")
+        records = db.media.get_by_instance("instance1")
+"""
+
 import os
+
+from util.helper import get_config_dir
+from util.logger import Logger
 
 from .collection_cache import CollectionCache
 from .db_base import DatabaseBase
@@ -8,46 +22,165 @@ from .orphaned_posters import OrphanedPosters
 from .plex_cache import PlexCache
 from .poster_cache import PosterCache
 from .run_state import RunState
+from .schema import SchemaManager
 from .stats import Stats
 from .worker import DBWorker
 
 
 class DapsDB:
-    def __init__(self, logger=None, db_path=None):
+    """
+    Main database context manager providing clean access to all database operations.
+
+    Usage:
+        with DapsDB() as db:
+            db.media.upsert(item, "movie", "Radarr", "instance1")
+    """
+
+    def __init__(self, logger: Logger, db_path: str = None):
+
         self.logger = logger
-        if db_path is None:
-            from util.helper import get_config_dir
 
-            config_dir = get_config_dir()
-            db_path = os.path.join(config_dir, "daps.db")
+        config_dir = get_config_dir()
+        db_path = os.path.join(config_dir, "daps.db")
+
         self.db_path = db_path
-        DatabaseBase.init_schema(self.db_path)
+        self._initialized = False
 
-        self.plex = PlexCache(db_path)
-        self.collection = CollectionCache(db_path)
-        self.poster = PosterCache(db_path)
-        self.media = MediaCache(db_path)
-        self.orphaned = OrphanedPosters(db_path)
-        self.run_state = RunState(db_path)
-        self.stats = Stats(db_path)
-        self.holiday = HolidayStatus(db_path)
+        # Initialize schema
+        DatabaseBase(logger=self.logger, db_path=self.db_path).init_schema(self.db_path)
 
-        # Create a default worker but don't start it (it's just for compatibility)
-        self.worker = DBWorker(db_path, logger=self.logger, worker_name="DEFAULT")
+        # Database interfaces (created on first access)
+        self._media = None
+        self._plex = None
+        self._collection = None
+        self._poster = None
+        self._orphaned = None
+        self._run_state = None
+        self._stats = None
+        self._holiday = None
+        self._worker = None
 
-        # Keep track of created workers for cleanup
+        # Track created workers for cleanup
         self.created_workers = []
+
+    def __enter__(self):
+        """Context manager entry."""
+        self._initialized = True
+        self.logger.debug("[DATABASE] Initializing database context")
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        """Context manager exit - ensures proper cleanup."""
+        self.logger.debug("[DATABASE] Cleaning up database context")
+
+        # Close any created workers
+        for worker in self.created_workers:
+            try:
+                if hasattr(worker, "running") and worker.running:
+                    worker.close()
+            except Exception as e:
+                self.logger.debug(f"Error closing worker: {e}")
+
+        self.created_workers.clear()
+        self._initialized = False
+
+    @property
+    def media(self) -> MediaCache:
+        """Access to media cache operations."""
+        if not self._initialized:
+            raise RuntimeError("DapsDB must be used within a context manager")
+        if self._media is None:
+            self._media = MediaCache(logger=self.logger, db_path=self.db_path)
+        return self._media
+
+    @property
+    def plex(self) -> PlexCache:
+        """Access to Plex cache operations."""
+        if not self._initialized:
+            raise RuntimeError("DapsDB must be used within a context manager")
+        if self._plex is None:
+            self._plex = PlexCache(logger=self.logger, db_path=self.db_path)
+        return self._plex
+
+    @property
+    def collection(self) -> CollectionCache:
+        """Access to collection cache operations."""
+        if not self._initialized:
+            raise RuntimeError("DapsDB must be used within a context manager")
+        if self._collection is None:
+            self._collection = CollectionCache(logger=self.logger, db_path=self.db_path)
+        return self._collection
+
+    @property
+    def poster(self) -> PosterCache:
+        """Access to poster cache operations."""
+        if not self._initialized:
+            raise RuntimeError("DapsDB must be used within a context manager")
+        if self._poster is None:
+            self._poster = PosterCache(logger=self.logger, db_path=self.db_path)
+        return self._poster
+
+    @property
+    def orphaned(self) -> OrphanedPosters:
+        """Access to orphaned posters operations."""
+        if not self._initialized:
+            raise RuntimeError("DapsDB must be used within a context manager")
+        if self._orphaned is None:
+            self._orphaned = OrphanedPosters(logger=self.logger, db_path=self.db_path)
+        return self._orphaned
+
+    @property
+    def run_state(self) -> RunState:
+        """Access to run state operations."""
+        if not self._initialized:
+            raise RuntimeError("DapsDB must be used within a context manager")
+        if self._run_state is None:
+            self._run_state = RunState(logger=self.logger, db_path=self.db_path)
+        return self._run_state
+
+    @property
+    def stats(self) -> Stats:
+        """Access to statistics operations."""
+        if not self._initialized:
+            raise RuntimeError("DapsDB must be used within a context manager")
+        if self._stats is None:
+            self._stats = Stats(logger=self.logger, db_path=self.db_path)
+        return self._stats
+
+    @property
+    def holiday(self) -> HolidayStatus:
+        """Access to holiday status operations."""
+        if not self._initialized:
+            raise RuntimeError("DapsDB must be used within a context manager")
+        if self._holiday is None:
+            self._holiday = HolidayStatus(logger=self.logger, db_path=self.db_path)
+        return self._holiday
+
+    @property
+    def worker(self) -> DBWorker:
+        """Access to default worker operations."""
+        if not self._initialized:
+            raise RuntimeError("DapsDB must be used within a context manager")
+        if self._worker is None:
+            self._worker = DBWorker(
+                logger=self.logger, db_path=self.db_path, worker_name="DEFAULT"
+            )
+        return self._worker
 
     def create_worker(
         self,
-        logger=None,
-        num_workers=1,
-        poll_interval=2,
-        worker_name="UNNAMED",
-        job_type_filter=None,
-    ):
-        if logger:
-            logger.debug(f"Creating: '{worker_name}' worker")
+        logger: Logger,
+        num_workers: int = 1,
+        poll_interval: int = 2,
+        worker_name: str = "UNNAMED",
+        job_type_filter: str = None,
+    ) -> DBWorker:
+        """Create a new database worker for background operations."""
+        if not self._initialized:
+            raise RuntimeError("DapsDB must be used within a context manager")
+
+        self.logger.debug(f"Creating: '{worker_name}' worker")
+
         worker = DBWorker(
             db_path=self.db_path,
             logger=logger or self.logger,
@@ -56,49 +189,15 @@ class DapsDB:
             worker_name=worker_name,
             job_type_filter=job_type_filter,
         )
+
         # Track created workers for cleanup
         self.created_workers.append(worker)
         return worker
 
-    def close_all(self):
-        if self.logger:
-            self.logger.debug("[DATABASE] Closing database connections")
-
-        # Close created workers first (these are the active ones)
-        for worker in self.created_workers:
-            try:
-                if hasattr(worker, "running") and worker.running:
-                    worker.close()
-            except Exception as e:
-                if self.logger:
-                    self.logger.debug(
-                        f"Error closing worker {getattr(worker, 'worker_name', 'UNKNOWN')}: {e}"
-                    )
-
-        # Clear the list
-        self.created_workers.clear()
-
-        # Close other database connections
-        self.plex.close()
-        self.collection.close()
-        self.poster.close()
-        self.media.close()
-        self.orphaned.close()
-        self.run_state.close()
-        self.stats.close()
-        self.holiday.close()
-
-        # Close the default worker (but it should not be running)
-        try:
-            if hasattr(self.worker, "conn") and self.worker.conn:
-                self.worker.conn.close()
-        except Exception as e:
-            if self.logger:
-                self.logger.debug(f"Error closing default worker connection: {e}")
-
 
 __all__ = [
     "DatabaseBase",
+    "SchemaManager",
     "PlexCache",
     "CollectionCache",
     "PosterCache",

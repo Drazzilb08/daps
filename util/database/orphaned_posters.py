@@ -11,9 +11,9 @@ class OrphanedPosters(DatabaseBase):
 
     def list_orphaned_posters(self) -> list:
         """Returns all orphaned posters as a list of dicts."""
-        with self.lock, self.conn:
-            cur = self.conn.execute("SELECT * FROM orphaned_posters")
-            return [dict(row) for row in cur.fetchall()]
+        return (
+            self.execute_query("SELECT * FROM orphaned_posters", fetch_all=True) or []
+        )
 
     def report_orphaned_posters(self, logger: Optional[Any] = None) -> dict:
         """
@@ -91,9 +91,13 @@ class OrphanedPosters(DatabaseBase):
 
         deleted = 0
         kept = 0
+
+        # Process each orphaned poster
+        operations = []
         for row in rows:
             file_path = row["file_path"]
             summary = f"[{row['asset_type']}] {row['title']} (year={row['year']} season={row['season']}) -> {file_path}"
+
             if dry_run:
                 if logger:
                     logger.info(f"[DRY RUN] Would delete: {summary}")
@@ -111,10 +115,15 @@ class OrphanedPosters(DatabaseBase):
                 except Exception as e:
                     if logger:
                         logger.error(f"Failed to delete {file_path}: {e}")
-                with self.lock, self.conn:
-                    self.conn.execute(
-                        "DELETE FROM orphaned_posters WHERE id=?", (row["id"],)
-                    )
+
+                # Queue database deletion
+                operations.append(
+                    ("DELETE FROM orphaned_posters WHERE id=?", (row["id"],))
+                )
+
+        # Execute all database deletions in a transaction
+        if operations:
+            self.execute_transaction(operations)
 
         if logger:
             logger.info(
@@ -123,5 +132,4 @@ class OrphanedPosters(DatabaseBase):
 
     def clear_orphaned_posters(self) -> None:
         """Delete all rows from orphaned_posters."""
-        with self.lock, self.conn:
-            self.conn.execute("DELETE FROM orphaned_posters")
+        self.execute_query("DELETE FROM orphaned_posters")

@@ -14,23 +14,36 @@ class Stats(DatabaseBase):
         """
         Returns all poster source stats as a list of dicts.
         """
-        with self.lock, self.conn:
-            cur = self.conn.execute("SELECT * FROM poster_source_stats")
-            return [dict(row) for row in cur.fetchall()]
+        return (
+            self.execute_query("SELECT * FROM poster_source_stats", fetch_all=True)
+            or []
+        )
 
     def get_unmatched_assets_stats(self) -> Dict[str, Any]:
         """
         Returns a summary dict with unmatched media, unmatched collections, and totals.
         """
-        with self.lock, self.conn:
-            cur = self.conn.execute("SELECT * FROM media_cache WHERE matched=0")
-            unmatched_media = [dict(row) for row in cur.fetchall()]
-            cur = self.conn.execute("SELECT * FROM collections_cache WHERE matched=0")
-            unmatched_collections = [dict(row) for row in cur.fetchall()]
-            cur = self.conn.execute("SELECT * FROM media_cache")
-            all_media = [dict(row) for row in cur.fetchall()]
-            cur = self.conn.execute("SELECT * FROM collections_cache")
-            all_collections = [dict(row) for row in cur.fetchall()]
+        unmatched_media = (
+            self.execute_query(
+                "SELECT * FROM media_cache WHERE matched=0", fetch_all=True
+            )
+            or []
+        )
+
+        unmatched_collections = (
+            self.execute_query(
+                "SELECT * FROM collections_cache WHERE matched=0", fetch_all=True
+            )
+            or []
+        )
+
+        all_media = (
+            self.execute_query("SELECT * FROM media_cache", fetch_all=True) or []
+        )
+
+        all_collections = (
+            self.execute_query("SELECT * FROM collections_cache", fetch_all=True) or []
+        )
 
         return {
             "unmatched": unmatched_media,
@@ -49,19 +62,19 @@ class Stats(DatabaseBase):
         """
         Returns the total number of records in the poster_cache table.
         """
-        with self.lock, self.conn:
-            cur = self.conn.execute("SELECT COUNT(*) as cnt FROM poster_cache")
-            row = cur.fetchone()
-            return row["cnt"] if row else 0
+        result = self.execute_query(
+            "SELECT COUNT(*) as cnt FROM poster_cache", fetch_one=True
+        )
+        return result["cnt"] if result else 0
 
     def count_orphaned_posters(self) -> int:
         """
         Returns the number of orphaned posters.
         """
-        with self.lock, self.conn:
-            cur = self.conn.execute("SELECT COUNT(*) as cnt FROM orphaned_posters")
-            row = cur.fetchone()
-            return row["cnt"] if row else 0
+        result = self.execute_query(
+            "SELECT COUNT(*) as cnt FROM orphaned_posters", fetch_one=True
+        )
+        return result["cnt"] if result else 0
 
     def upsert_gdrive_stat(
         self, location, folder_name, owner, file_count, size_bytes, last_updated
@@ -69,39 +82,45 @@ class Stats(DatabaseBase):
         """
         Upsert (insert or update) a GDrive stat record for the given location.
         """
-        with self.lock, self.conn:
-            self.conn.execute(
-                """
-                INSERT INTO gdrive_stats (location, folder_name, owner, file_count, size_bytes, last_updated)
-                VALUES (?, ?, ?, ?, ?, ?)
-                ON CONFLICT(location) DO UPDATE SET
-                    folder_name=excluded.folder_name,
-                    owner=excluded.owner,
-                    file_count=excluded.file_count,
-                    size_bytes=excluded.size_bytes,
-                    last_updated=excluded.last_updated
-                """,
-                (location, folder_name, owner, file_count, size_bytes, last_updated),
-            )
+        self.execute_query(
+            """
+            INSERT INTO gdrive_stats (location, folder_name, owner, file_count, size_bytes, last_updated)
+            VALUES (?, ?, ?, ?, ?, ?)
+            ON CONFLICT(location) DO UPDATE SET
+                folder_name=excluded.folder_name,
+                owner=excluded.owner,
+                file_count=excluded.file_count,
+                size_bytes=excluded.size_bytes,
+                last_updated=excluded.last_updated
+            """,
+            (location, folder_name, owner, file_count, size_bytes, last_updated),
+        )
 
     def get_gdrive_stats(self) -> list:
         """
         Returns all GDrive stats as a list of dicts.
         """
-        with self.lock, self.conn:
-            cur = self.conn.execute("SELECT * FROM gdrive_stats")
-            return [dict(row) for row in cur.fetchall()]
+        return self.execute_query("SELECT * FROM gdrive_stats", fetch_all=True) or []
 
     def get_matched_posters_stats(self):
-        with self.lock, self.conn:
-            # MEDIA
-            media = self.conn.execute(
-                "SELECT matched, original_file FROM media_cache WHERE original_file IS NOT NULL AND original_file != ''"
-            ).fetchall()
-            # COLLECTIONS
-            collections = self.conn.execute(
-                "SELECT matched, original_file FROM collections_cache WHERE original_file IS NOT NULL AND original_file != ''"
-            ).fetchall()
+        """Get statistics about matched posters by owner."""
+        # Fetch media records
+        media = (
+            self.execute_query(
+                "SELECT matched, original_file FROM media_cache WHERE original_file IS NOT NULL AND original_file != ''",
+                fetch_all=True,
+            )
+            or []
+        )
+
+        # Fetch collection records
+        collections = (
+            self.execute_query(
+                "SELECT matched, original_file FROM collections_cache WHERE original_file IS NOT NULL AND original_file != ''",
+                fetch_all=True,
+            )
+            or []
+        )
 
         owner_stats = defaultdict(
             lambda: {

@@ -22,37 +22,41 @@ def get_web_logger(request: Request) -> Any:
     return request.app.state.logger.get_adapter("WEB")
 
 
-@router.get("/api/matched-posters-stats")
+@router.get("/api/posters/matched/stats")
 async def matched_posters_stats(logger: Any = Depends(get_web_logger)):
     """
     Returns stats for matched posters.
     """
-    logger.debug("Serving GET /api/matched-posters-stats")
-    db = DapsDB()
-    stats = db.stats.get_matched_posters_stats()
+    logger.debug("Serving GET /api/posters/matched/stats")
+
+    with DapsDB(logger=logger) as db:
+        stats = db.stats.get_matched_posters_stats()
+
     return {"success": True, "matched_posters_stats": stats}
 
 
-@router.get("/api/gdrive-stats")
+@router.get("/api/gdrive/stats")
 async def get_gdrive_stats(logger: Any = Depends(get_web_logger)):
     """
     Returns GDrive sync stats.
     """
-    logger.debug("Serving GET /api/gdrive-stats")
+    logger.debug("Serving GET /api/gdrive/stats")
     logger = logger.get_adapter("GDriveStats")
     syncer = SyncGDrive(logger=logger)
     syncer.refresh_all_poster_stats()
-    db = DapsDB()
-    stats = db.stats.get_gdrive_stats()
+
+    with DapsDB(logger=logger) as db:
+        stats = db.stats.get_gdrive_stats()
+
     return {"success": True, "gdrive_stats": stats}
 
 
-@router.get("/api/unmatched-stats")
+@router.get("/api/posters/unmatched/stats")
 async def get_unmatched_stats(logger: Any = Depends(get_web_logger)):
     """
     Returns stats for unmatched assets.
     """
-    logger.debug("Serving GET /api/unmatched-stats")
+    logger.debug("Serving GET /api/posters/unmatched/stats")
     logger = logger.get_adapter("UnmatchedStats")
     unmatched = UnmatchedAssets(logger=logger)
     stats = unmatched.get_stats_adhoc()
@@ -61,32 +65,29 @@ async def get_unmatched_stats(logger: Any = Depends(get_web_logger)):
     # return {"success": True, "summary": stats["summary"], "unmatched": stats["unmatched"]}
 
 
-@router.post("/api/gdrive-folder")
+@router.post("/api/run/gdrive")
 async def gdrive_folder(
     gdrive_names: List[str] = Query(..., description="Names of the GDrive folders"),
     logger: Any = Depends(get_web_logger),
-    request: Request = None,
 ):
     """
     Enqueue a sync_gdrive job for each selected GDrive.
     Returns job IDs per drive.
     """
     logger = logger.get_adapter("GDriveFolder")
-    logger.debug(f"Serving POST /api/gdrive-folder with names: {gdrive_names}")
+    logger.debug(f"Serving POST /api/run/gdrive with names: {gdrive_names}")
 
-    db = request.app.state.db
     started = []
     job_ids = []
+    with DapsDB(logger=logger) as db:
+        for name in gdrive_names:
+            job_result = db.worker.enqueue_job(
+                "jobs", payload={"gdrive_name": name}, job_type="sync_gdrive"
+            )
+            job_id = job_result.get("job_id")
+            started.append(name)
+            job_ids.append({"name": name, "job_id": job_id})
 
-    for name in gdrive_names:
-        job_result = db.worker.enqueue_job(
-            "jobs", payload={"gdrive_name": name}, job_type="sync_gdrive"
-        )
-        job_id = job_result.get("job_id")
-        started.append(name)
-        job_ids.append({"name": name, "job_id": job_id})
-
-    # CHANGE: Return single job if only one was enqueued
     if len(job_ids) == 1:
         return {
             "success": True,
@@ -94,8 +95,6 @@ async def gdrive_folder(
             "job_id": job_ids[0]["job_id"],
             "name": job_ids[0]["name"],
         }
-
-    # Otherwise, multi-job result
     return {
         "success": True,
         "message": f"Sync for {', '.join(started)} has started.",
@@ -103,53 +102,59 @@ async def gdrive_folder(
     }
 
 
-@router.get("/api/get-media-cache")
+@router.get("/api/cache/media")
 async def get_media_cache(logger: Any = Depends(get_web_logger)):
     """
     Returns the media cache from the database.
     """
-    logger.debug("Serving GET /api/get-media-cache")
-    db = DapsDB()
-    media_cache = db.media.get_all()
+    logger.debug("Serving GET /api/cache/media")
+    with DapsDB(logger=logger) as db:
+        media_cache = db.media.get_all()
     # Convert rows to dict if not already; assuming get_all() returns list[dict]
     return {"success": True, "media_cache": media_cache}
 
 
-@router.get("/api/get-collection-cache")
+@router.get("/api/cache/collection")
 async def get_collection_cache(logger: Any = Depends(get_web_logger)):
-    """ "
+    """
     Returns the collection cache from the database.
     """
-    logger.debug("Serving GET /api/get-collection-cache")
-    db = DapsDB()
-    collection_cache = db.collection.get_all()
+    logger.debug("Serving GET /api/cache/collection")
+    with DapsDB(logger=logger) as db:
+        collection_cache = db.collection.get_all()
     return {"success": True, "collection_cache": collection_cache}
 
 
-@router.delete("/api/delete-media-cache/{id}")
+@router.delete("/api/cache/media/{id}")
 async def delete_media_cache_by_id(id: int, logger: Any = Depends(get_web_logger)):
-    db = DapsDB()
-    logger.debug(f"Serving DELETE /api/delete-media-cache/{id}")
-    if not db.media.get_by_id(id):
-        return JSONResponse(
-            status_code=404,
-            content={"success": False, "error": "Media cache not found"},
-        )
-    db.media.delete_by_id(id)
+    """
+    Deletes a media cache item by ID.
+    """
+    logger.debug(f"Serving DELETE /api/cache/media/{id}")
+    with DapsDB(logger=logger) as db:
+        if not db.media.get_by_id(id):
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "error": "Media cache not found"},
+            )
+        db.media.delete_by_id(id)
     logger.info(f"Deleted media_cache id={id}")
     return {"success": True, "deleted_id": id}
 
 
-@router.delete("/api/delete-collection-cache/{id}")
+@router.delete("/api/cache/collection/{id}")
 async def delete_collection_cache_by_id(id: int, logger: Any = Depends(get_web_logger)):
-    logger.debug(f"Serving DELETE /api/delete-collection-cache/{id}")
-    db = DapsDB()
-    if not db.collection.get_by_id(id):
-        return JSONResponse(
-            status_code=404,
-            content={"success": False, "error": "Collection cache not found"},
-        )
-    db.collection.delete_by_id(id)
+    """
+    Deletes a collection cache item by ID.
+    """
+    logger.debug(f"Serving DELETE /api/cache/collection/{id}")
+    with DapsDB(logger=logger) as db:
+        if not db.collection.get_by_id(id):
+            return JSONResponse(
+                status_code=404,
+                content={"success": False, "error": "Collection cache not found"},
+            )
+        db.collection.delete_by_id(id)
     logger.info(f"Deleted collections_cache id={id}")
     return {"success": True, "deleted_id": id}
 
@@ -190,7 +195,7 @@ async def poster_search_stats(
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
-@router.get("/api/preview-poster")
+@router.get("/api/poster/preview")
 async def preview_poster(
     location: str = "", path: str = "", logger: Any = Depends(get_web_logger)
 ):
@@ -201,7 +206,7 @@ async def preview_poster(
 
     try:
         logger.debug(
-            f"Serving GET /api/preview-poster for location: {location}, path: {path}"
+            f"Serving GET /api/poster/preview for location: {location}, path: {path}"
         )
         # If path is absolute, serve it directly (but validate allowed location if you want!)
         if path and os.path.isabs(path):
@@ -227,11 +232,11 @@ async def preview_poster(
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
-@router.get("/api/poster_assets")
+@router.get("/api/poster/assets")
 def list_poster_assets(logger: Any = Depends(get_web_logger)):
     allowed_ext = {".jpg", ".jpeg", ".png", ".webp"}
     try:
-        logger.debug("Serving GET /api/poster_assets")
+        logger.debug("Serving GET /api/poster/assets")
         files = [
             f
             for f in os.listdir(ASSET_DIR)
@@ -243,10 +248,10 @@ def list_poster_assets(logger: Any = Depends(get_web_logger)):
         return JSONResponse({"error": str(e)}, status_code=500)
 
 
-@router.post("/api/arr-webhook")
+@router.post("/api/poster/add")
 async def add_media(request: Request, logger: Any = Depends(get_webhook_logger)):
     try:
-        logger.debug("Serving POST /api/arr-webhook")
+        logger.debug("Serving POST /api/poster/add")
         client_info = {
             "client_host": request.client.host if request.client else None,
             "client_port": request.headers.get("X-Service-Port"),
@@ -278,7 +283,7 @@ async def add_media(request: Request, logger: Any = Depends(get_webhook_logger))
                 content=result,
             )
 
-        logger.info("Webhook job persisted for async processing.")
+        logger.info("Webhook job persistedççprocessing.")
         return JSONResponse(
             status_code=200,
             content=result,
@@ -314,7 +319,10 @@ async def run_upload_by_media_id(
     }
     from util.upload_posters import PosterUploader
 
-    result = PosterUploader(logger=logger, manifest=manifest, force=True).run()
+    with DapsDB(logger=logger) as db:
+        result = PosterUploader(
+            db=db, logger=logger, manifest=manifest, force=True
+        ).run()
     status_code = 200 if result.get("success") else 500
     return JSONResponse(status_code=status_code, content=result)
 
@@ -333,7 +341,10 @@ async def run_upload_by_collection_id(
     }
     from util.upload_posters import PosterUploader
 
-    result = PosterUploader(logger=logger, manifest=manifest, force=True).run()
+    with DapsDB(logger=logger) as db:
+        result = PosterUploader(
+            db=db, logger=logger, manifest=manifest, force=True
+        ).run()
     status_code = 200 if result.get("success") else 500
     return JSONResponse(status_code=status_code, content=result)
 

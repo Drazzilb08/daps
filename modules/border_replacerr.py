@@ -16,13 +16,11 @@ logging.getLogger("PIL").setLevel(logging.WARNING)
 
 
 class BorderReplacerr:
-    def __init__(
-        self, db: DapsDB = None, config: DapsConfig = None, logger: Logger = None
-    ):
+    def __init__(self, config: DapsConfig = None, logger: Logger = None):
         self.full_config = config or load_config()
         self.config = self.full_config.border_replacerr
         self.logger = logger or Logger(self.config.log_level, "border_replacerr")
-        self.db = db or DapsDB()
+        self.db = None
 
     def get_holiday_status(self):
         now = datetime.now()
@@ -166,166 +164,169 @@ class BorderReplacerr:
             return False
 
     def run(self, manifest: dict):
-        if self.config.log_level.lower() == "debug":
-            print_settings(self.logger, self.config)
+        with DapsDB(logger=self.logger) as self.db:
+            if self.config.log_level.lower() == "debug":
+                print_settings(self.logger, self.config)
 
-        results = self.get_holiday_status()
-        skip_enabled = results["skip_enabled"]
-        reset_all = results["reset_all"]
-        active_holiday = results["active_holiday"]
+            results = self.get_holiday_status()
+            skip_enabled = results["skip_enabled"]
+            reset_all = results["reset_all"]
+            active_holiday = results["active_holiday"]
 
-        if skip_enabled and not active_holiday:
-            self.logger.info(
-                "Border replacerr is in skip mode and today is not a holiday. Skipping all processing."
-            )
-            self.db.holiday.set_status(active_holiday)
-            return
-        if skip_enabled and active_holiday:
-            self.logger.info(
-                "Border replacerr skip mode: Overriding skip due to active holiday."
-            )
+            if skip_enabled and not active_holiday:
+                self.logger.info(
+                    "Border replacerr is in skip mode and today is not a holiday. Skipping all processing."
+                )
+                self.db.holiday.set_status(active_holiday)
+                return
+            if skip_enabled and active_holiday:
+                self.logger.info(
+                    "Border replacerr skip mode: Overriding skip due to active holiday."
+                )
 
-        assets = []
-        color_index = 0
-        processed = 0
-        replaced = 0
-        removed = 0
-        skipped = 0
-        if reset_all:
-            self.logger.debug(
-                "Holiday state changed (or startup). Doing full reprocessing of all matched assets."
-            )
-            for row in self.db.media.get_all():
-                if row["matched"] == 1:
+            assets = []
+            color_index = 0
+            processed = 0
+            replaced = 0
+            removed = 0
+            skipped = 0
+            if reset_all:
+                self.logger.debug(
+                    "Holiday state changed (or startup). Doing full reprocessing of all matched assets."
+                )
+                for row in self.db.media.get_all():
+                    if row["matched"] == 1:
+                        if (
+                            self.config.exclusion_list
+                            and row["title"] in self.config.exclusion_list
+                        ):
+                            self.logger.debug(
+                                f"Skipping '{row['title']}' (in exclusion_list)."
+                            )
+                            skipped += 1
+                            continue
+                        assets.append(row)
+            else:
+                all_ids = [("media_cache", i) for i in manifest["media_cache"]] + [
+                    ("collections_cache", i) for i in manifest["collections_cache"]
+                ]
+                for source, asset_id in all_ids:
+                    if source == "media_cache":
+                        asset = self.db.media.get_by_id(asset_id)
+                    else:
+                        asset = self.db.collection.get_by_id(asset_id)
+                    if not asset:
+                        self.logger.warning(
+                            f"Asset ID {asset_id} not found in {source}. Skipping."
+                        )
+                        continue
                     if (
                         self.config.exclusion_list
-                        and row["title"] in self.config.exclusion_list
+                        and asset["title"] in self.config.exclusion_list
                     ):
                         self.logger.debug(
-                            f"Skipping '{row['title']}' (in exclusion_list)."
+                            f"Skipping '{asset['title']}' (in exclusion_list)."
+                        )
+                        continue
+                    assets.append(asset)
+
+            if not assets:
+                self.logger.info("No assets to process for border replacerr.")
+                self.db.holiday.set_status(active_holiday)
+                return
+
+            border_colors = results["border_colors"]
+            dry_run = self.config.dry_run
+
+            self.logger.debug(f"Total assets to process: {len(assets)}")
+            if border_colors:
+                self.logger.debug(
+                    f"Border colors: {', '.join(f'#{r:02x}{g:02x}{b:02x}' for (r,g,b) in border_colors)}"
+                )
+            else:
+                self.logger.debug("Border colors: None (removing borders)")
+
+            self.logger.info(f"Processing {len(assets)} posters, please wait...")
+            with progress(
+                assets,
+                desc="Processing Posters",
+                total=len(assets),
+                unit="posters",
+                logger=self.logger,
+            ) as bar:
+                for asset in bar:
+                    original_file = asset["original_file"]
+                    renamed_file = asset["renamed_file"]
+                    title = asset["title"]
+                    if not original_file or not renamed_file:
+                        self.logger.warning(
+                            f"Asset '{title}' missing file info. Skipping."
                         )
                         skipped += 1
                         continue
-                    assets.append(row)
-        else:
-            all_ids = [("media_cache", i) for i in manifest["media_cache"]] + [
-                ("collections_cache", i) for i in manifest["collections_cache"]
+
+                    if border_colors:
+                        color = border_colors[color_index]
+                        if not dry_run:
+                            result = self.replace_borders(
+                                original_file,
+                                renamed_file,
+                                color,
+                                self.config.border_width,
+                            )
+                        else:
+                            self.logger.info(
+                                f"[DRY RUN] Would replace border for: {renamed_file}"
+                            )
+                            result = True
+                        color_index = (color_index + 1) % len(border_colors)
+                        if result:
+                            replaced += 1
+                        processed += 1
+                    else:
+                        if not dry_run:
+                            result = self.remove_borders(
+                                original_file,
+                                renamed_file,
+                                self.config.border_width,
+                            )
+                        else:
+                            self.logger.info(
+                                f"[DRY RUN] Would remove border for: {renamed_file}"
+                            )
+                            result = True
+                        if result:
+                            removed += 1
+                        processed += 1
+
+            self.logger.info("")  # Spacing
+            self.logger.info(create_table([["Border Replacerr Summary"]]))
+            summary_table = [
+                ["Processed", processed],
+                ["Skipped", skipped],
             ]
-            for source, asset_id in all_ids:
-                if source == "media_cache":
-                    asset = self.db.media.get_by_id(asset_id)
-                else:
-                    asset = self.db.collection.get_by_id(asset_id)
-                if not asset:
-                    self.logger.warning(
-                        f"Asset ID {asset_id} not found in {source}. Skipping."
-                    )
-                    continue
-                if (
-                    self.config.exclusion_list
-                    and asset["title"] in self.config.exclusion_list
-                ):
-                    self.logger.debug(
-                        f"Skipping '{asset['title']}' (in exclusion_list)."
-                    )
-                    continue
-                assets.append(asset)
-
-        if not assets:
-            self.logger.info("No assets to process for border replacerr.")
-            self.db.holiday.set_status(active_holiday)
-            return
-
-        border_colors = results["border_colors"]
-        dry_run = self.config.dry_run
-
-        self.logger.debug(f"Total assets to process: {len(assets)}")
-        if border_colors:
-            self.logger.debug(
-                f"Border colors: {', '.join(f'#{r:02x}{g:02x}{b:02x}' for (r,g,b) in border_colors)}"
-            )
-        else:
-            self.logger.debug("Border colors: None (removing borders)")
-
-        self.logger.info(f"Processing {len(assets)} posters, please wait...")
-        with progress(
-            assets,
-            desc="Processing Posters",
-            total=len(assets),
-            unit="posters",
-            logger=self.logger,
-        ) as bar:
-            for asset in bar:
-                original_file = asset["original_file"]
-                renamed_file = asset["renamed_file"]
-                title = asset["title"]
-                if not original_file or not renamed_file:
-                    self.logger.warning(f"Asset '{title}' missing file info. Skipping.")
-                    skipped += 1
-                    continue
-
-                if border_colors:
-                    color = border_colors[color_index]
-                    if not dry_run:
-                        result = self.replace_borders(
-                            original_file,
-                            renamed_file,
-                            color,
-                            self.config.border_width,
-                        )
-                    else:
-                        self.logger.info(
-                            f"[DRY RUN] Would replace border for: {renamed_file}"
-                        )
-                        result = True
-                    color_index = (color_index + 1) % len(border_colors)
-                    if result:
-                        replaced += 1
-                    processed += 1
-                else:
-                    if not dry_run:
-                        result = self.remove_borders(
-                            original_file,
-                            renamed_file,
-                            self.config.border_width,
-                        )
-                    else:
-                        self.logger.info(
-                            f"[DRY RUN] Would remove border for: {renamed_file}"
-                        )
-                        result = True
-                    if result:
-                        removed += 1
-                    processed += 1
-
-        self.logger.info("")  # Spacing
-        self.logger.info(create_table([["Border Replacerr Summary"]]))
-        summary_table = [
-            ["Processed", processed],
-            ["Skipped", skipped],
-        ]
-        if replaced:
-            summary_table.append(["Borders replaced", replaced])
-        elif removed:
-            summary_table.append(["Borders removed", removed])
-        else:
-            summary_table.append(["Borders changed", 0])
-        for row in summary_table:
-            self.logger.info(f"{row[0]:<20}: {row[1]}")
-
-        if replaced or removed:
-            action = []
             if replaced:
-                action.append(f"{replaced} replaced")
-            if removed:
-                action.append(f"{removed} removed")
-            self.logger.info(
-                f"Border replacerr completed: {processed} processed, {', '.join(action)}, {skipped} skipped."
-            )
-        else:
-            self.logger.info(
-                f"Border replacerr completed: {processed} processed, {skipped} skipped. No borders changed."
-            )
-        self.logger.info("")
+                summary_table.append(["Borders replaced", replaced])
+            elif removed:
+                summary_table.append(["Borders removed", removed])
+            else:
+                summary_table.append(["Borders changed", 0])
+            for row in summary_table:
+                self.logger.info(f"{row[0]:<20}: {row[1]}")
 
-        self.db.holiday.set_status(active_holiday)
+            if replaced or removed:
+                action = []
+                if replaced:
+                    action.append(f"{replaced} replaced")
+                if removed:
+                    action.append(f"{removed} removed")
+                self.logger.info(
+                    f"Border replacerr completed: {processed} processed, {', '.join(action)}, {skipped} skipped."
+                )
+            else:
+                self.logger.info(
+                    f"Border replacerr completed: {processed} processed, {skipped} skipped. No borders changed."
+                )
+            self.logger.info("")
+
+            self.db.holiday.set_status(active_holiday)

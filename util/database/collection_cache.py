@@ -16,44 +16,45 @@ class CollectionCache(DatabaseBase):
         now = datetime.datetime.now(datetime.timezone.utc).isoformat()
         record["instance_name"] = instance_name
         record["asset_type"] = "collection"
+
+        # Serialize list/dict fields to JSON
         for key in ("alternate_titles", "normalized_alternate_titles"):
             if isinstance(record.get(key), (list, dict)):
                 record[key] = json.dumps(record[key])
             elif record.get(key) is None:
                 record[key] = json.dumps([])
-        key = self._canonical_collection_key(record)
-        with self.lock, self.conn:
-            self.conn.execute(
-                """
-                INSERT INTO collections_cache
-                    (asset_type, title, normalized_title, alternate_titles, normalized_alternate_titles, year,
-                    tmdb_id, tvdb_id, imdb_id, folder, library_name, instance_name, last_indexed)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(title, library_name, instance_name)
-                DO UPDATE SET
-                    year=excluded.year,
-                    normalized_title=excluded.normalized_title,
-                    alternate_titles=excluded.alternate_titles,
-                    normalized_alternate_titles=excluded.normalized_alternate_titles,
-                    folder=excluded.folder,
-                    last_indexed=excluded.last_indexed
-                """,
-                (
-                    record.get("asset_type"),
-                    record.get("title"),
-                    record.get("normalized_title"),
-                    record.get("alternate_titles"),
-                    record.get("normalized_alternate_titles"),
-                    record.get("year"),
-                    record.get("tmdb_id"),
-                    record.get("tvdb_id"),
-                    record.get("imdb_id"),
-                    record.get("folder"),
-                    record.get("library_name"),
-                    record.get("instance_name"),
-                    now,
-                ),
-            )
+
+        self.execute_query(
+            """
+            INSERT INTO collections_cache
+                (asset_type, title, normalized_title, alternate_titles, normalized_alternate_titles, year,
+                tmdb_id, tvdb_id, imdb_id, folder, library_name, instance_name, last_indexed)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(title, library_name, instance_name)
+            DO UPDATE SET
+                year=excluded.year,
+                normalized_title=excluded.normalized_title,
+                alternate_titles=excluded.alternate_titles,
+                normalized_alternate_titles=excluded.normalized_alternate_titles,
+                folder=excluded.folder,
+                last_indexed=excluded.last_indexed
+            """,
+            (
+                record.get("asset_type"),
+                record.get("title"),
+                record.get("normalized_title"),
+                record.get("alternate_titles"),
+                record.get("normalized_alternate_titles"),
+                record.get("year"),
+                record.get("tmdb_id"),
+                record.get("tvdb_id"),
+                record.get("imdb_id"),
+                record.get("folder"),
+                record.get("library_name"),
+                record.get("instance_name"),
+                now,
+            ),
+        )
 
     @staticmethod
     def _canonical_collection_key(item: dict) -> tuple:
@@ -92,69 +93,74 @@ class CollectionCache(DatabaseBase):
         cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
             hours=max_age_hours
         )
-        with self.lock, self.conn:
-            cur = self.conn.execute(
-                "SELECT * FROM collections_cache WHERE instance_name=? AND library_name=?",
-                (instance_name, library_name),
-            )
-            rows = cur.fetchall()
-            if not rows:
-                return None
-            times = [
-                datetime.datetime.fromisoformat(row["last_indexed"]) for row in rows
-            ]
-            if not all(t > cutoff for t in times):
-                return None
-            return rows
+
+        rows = self.execute_query(
+            "SELECT * FROM collections_cache WHERE instance_name=? AND library_name=?",
+            (instance_name, library_name),
+            fetch_all=True,
+        )
+
+        if not rows:
+            return None
+
+        times = [datetime.datetime.fromisoformat(row["last_indexed"]) for row in rows]
+        if not all(t > cutoff for t in times):
+            return None
+
+        return rows
 
     def get_by_instance(self, instance_name: str) -> list:
         """Return all collection rows for the given instance."""
-        with self.lock, self.conn:
-            cur = self.conn.execute(
+        return (
+            self.execute_query(
                 "SELECT * FROM collections_cache WHERE instance_name=?",
                 (instance_name,),
+                fetch_all=True,
             )
-            return cur.fetchall()
+            or []
+        )
 
     def get_by_instance_and_library(
         self, instance_name: str, library_name: str
     ) -> list:
         """Return all collection rows for the given instance and library."""
-        with self.lock, self.conn:
-            cur = self.conn.execute(
+        return (
+            self.execute_query(
                 "SELECT * FROM collections_cache WHERE instance_name=? AND library_name=?",
                 (instance_name, library_name),
+                fetch_all=True,
             )
-            return cur.fetchall()
+            or []
+        )
 
     def get_by_id(self, id: int) -> Optional[dict]:
         """Return a single collection row by its unique integer ID."""
-        with self.lock, self.conn:
-            cur = self.conn.execute("SELECT * FROM collections_cache WHERE id=?", (id,))
-            row = cur.fetchone()
-            return dict(row) if row else None
+        return self.execute_query(
+            "SELECT * FROM collections_cache WHERE id=?", (id,), fetch_one=True
+        )
 
     def get_all(self) -> list:
         """Return all records from collections_cache as a list of dicts."""
-        with self.lock, self.conn:
-            cur = self.conn.execute("SELECT * FROM collections_cache")
-            return cur.fetchall()
+        return (
+            self.execute_query("SELECT * FROM collections_cache", fetch_all=True) or []
+        )
 
     def get_unmatched(self) -> list:
         """Return all collections_cache records where matched=0."""
-        with self.lock, self.conn:
-            cur = self.conn.execute("SELECT * FROM collections_cache WHERE matched=0")
-            return cur.fetchall()
+        return (
+            self.execute_query(
+                "SELECT * FROM collections_cache WHERE matched=0", fetch_all=True
+            )
+            or []
+        )
 
     def clear(self) -> None:
         """Delete all rows from collections_cache."""
-        with self.lock, self.conn:
-            self.conn.execute("DELETE FROM collections_cache")
+        self.execute_query("DELETE FROM collections_cache")
 
     def delete_by_id(self, id: int) -> None:
         """Delete a single record by its unique integer ID."""
-        with self.lock, self.conn:
-            self.conn.execute("DELETE FROM collections_cache WHERE id=?", (id,))
+        self.execute_query("DELETE FROM collections_cache WHERE id=?", (id,))
 
     def delete(
         self, item: dict, instance_name: str, logger: Optional[Any] = None
@@ -167,10 +173,12 @@ class CollectionCache(DatabaseBase):
             DELETE FROM collections_cache
             WHERE title=? AND year IS ? AND tmdb_id IS ? AND tvdb_id IS ? AND imdb_id IS ? AND library_name IS ? AND instance_name=?
         """
+
+        # Handle orphaned poster if applicable
         renamed_file = item.get("renamed_file")
         if renamed_file:
             now = datetime.datetime.now(datetime.timezone.utc).isoformat()
-            self.conn.execute(
+            self.execute_query(
                 """
                 INSERT OR IGNORE INTO orphaned_posters
                     (asset_type, title, year, season, file_path, date_orphaned)
@@ -185,13 +193,12 @@ class CollectionCache(DatabaseBase):
                     now,
                 ),
             )
-        with self.lock, self.conn:
-            cursor = self.conn.execute(sql, key_params)
-            rows_deleted = cursor.rowcount
-            if logger:
-                logger.info(
-                    f"[DELETE] Collection Key: {key_params} | Rows deleted: {rows_deleted}"
-                )
+
+        rows_deleted = self.execute_query(sql, key_params)
+        if logger:
+            logger.info(
+                f"[DELETE] Collection Key: {key_params} | Rows deleted: {rows_deleted}"
+            )
 
     def update(
         self,
@@ -241,8 +248,7 @@ class CollectionCache(DatabaseBase):
             query += " AND library_name=?"
             params.append(library_name)
 
-        with self.lock, self.conn:
-            self.conn.execute(query, tuple(params))
+        self.execute_query(query, tuple(params))
 
     def sync_collections_cache(
         self,
@@ -255,12 +261,14 @@ class CollectionCache(DatabaseBase):
         Syncs the collections table for a specific instance to match fresh_collections.
         Removes missing, updates existing, adds new.
         """
-        with self.lock, self.conn:
-            cur = self.conn.execute(
+        db_rows = (
+            self.execute_query(
                 "SELECT * FROM collections_cache WHERE instance_name=? AND library_name=?",
                 (instance_name, library_name),
+                fetch_all=True,
             )
-            db_rows = cur.fetchall()
+            or []
+        )
 
         db_map = {self._canonical_collection_key(row): row for row in db_rows}
         fresh_map = {
@@ -270,6 +278,7 @@ class CollectionCache(DatabaseBase):
             for item in fresh_collections
         }
 
+        # Add/update items that are present in fresh_collections
         for key, item in fresh_map.items():
             if key not in db_map:
                 self.upsert(item, instance_name)
@@ -280,6 +289,7 @@ class CollectionCache(DatabaseBase):
             else:
                 self.upsert(item, instance_name)
 
+        # Remove items that are no longer present
         keys_to_remove = set(db_map.keys()) - set(fresh_map.keys())
         for key in keys_to_remove:
             row = db_map[key]

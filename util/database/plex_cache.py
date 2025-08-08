@@ -55,27 +55,26 @@ class PlexCache(DatabaseBase):
         missing = [k for k in expected_cols if k not in item]
         assert not missing, f"Missing columns in cache_plex_data: {missing}"
 
-        with self.lock, self.conn:
-            self.conn.execute(
-                """
-                INSERT OR REPLACE INTO plex_media_cache
-                    (plex_id, instance_name, asset_type, library_name, title, normalized_title, season_number, year, guids, labels, last_indexed)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                (
-                    item["plex_id"],
-                    item["instance_name"],
-                    item["asset_type"],
-                    item["library_name"],
-                    item["title"],
-                    item["normalized_title"],
-                    item["season_number"],
-                    item["year"],
-                    json.dumps(item["guids"]),
-                    json.dumps(item["labels"]),
-                    now,
-                ),
-            )
+        self.execute_query(
+            """
+            INSERT OR REPLACE INTO plex_media_cache
+                (plex_id, instance_name, asset_type, library_name, title, normalized_title, season_number, year, guids, labels, last_indexed)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                item["plex_id"],
+                item["instance_name"],
+                item["asset_type"],
+                item["library_name"],
+                item["title"],
+                item["normalized_title"],
+                item["season_number"],
+                item["year"],
+                json.dumps(item["guids"]),
+                json.dumps(item["labels"]),
+                now,
+            ),
+        )
 
     def update_labels(
         self,
@@ -95,37 +94,32 @@ class PlexCache(DatabaseBase):
             WHERE title=? AND year IS ? AND library_name=? AND instance_name=? AND plex_id=?
         """
         labels_json = json.dumps(labels)
-        with self.lock, self.conn:
-            self.conn.execute(
-                query, (labels_json, title, year, library_name, instance_name, plex_id)
-            )
+        self.execute_query(
+            query, (labels_json, title, year, library_name, instance_name, plex_id)
+        )
 
     def clear(self) -> None:
         """Delete all rows from the plex_media_cache table."""
-        with self.lock, self.conn:
-            self.conn.execute("DELETE FROM plex_media_cache")
+        self.execute_query("DELETE FROM plex_media_cache")
 
     def clear_instance(self, instance_name: str) -> None:
         """
         Delete all records for a single instance from plex_media_cache.
         """
-        with self.lock, self.conn:
-            self.conn.execute(
-                "DELETE FROM plex_media_cache WHERE instance_name=?", (instance_name,)
-            )
+        self.execute_query(
+            "DELETE FROM plex_media_cache WHERE instance_name=?", (instance_name,)
+        )
 
     def get_by_instance(self, instance_name: str) -> Optional[list]:
         """
         Return all records for a given instance_name as a list of dicts.
         """
-        with self.lock, self.conn:
-            cur = self.conn.execute(
-                "SELECT * FROM plex_media_cache WHERE instance_name=?", (instance_name,)
-            )
-            rows = cur.fetchall()
-            if not rows:
-                return None
-            return [dict(row) for row in rows]
+        rows = self.execute_query(
+            "SELECT * FROM plex_media_cache WHERE instance_name=?",
+            (instance_name,),
+            fetch_all=True,
+        )
+        return rows if rows else None
 
     def get_by_instance_and_library(
         self, instance_name: str, library_name: str
@@ -133,15 +127,12 @@ class PlexCache(DatabaseBase):
         """
         Return all records for a given instance_name and library_name as a list of dicts.
         """
-        with self.lock, self.conn:
-            cur = self.conn.execute(
-                "SELECT * FROM plex_media_cache WHERE instance_name=? AND library_name=?",
-                (instance_name, library_name),
-            )
-            rows = cur.fetchall()
-            if not rows:
-                return None
-            return [dict(row) for row in rows]
+        rows = self.execute_query(
+            "SELECT * FROM plex_media_cache WHERE instance_name=? AND library_name=?",
+            (instance_name, library_name),
+            fetch_all=True,
+        )
+        return rows if rows else None
 
     def get_for_library(
         self, instance_name: str, library_name: str, max_age_hours: int = 6
@@ -152,20 +143,21 @@ class PlexCache(DatabaseBase):
         cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
             hours=max_age_hours
         )
-        with self.lock, self.conn:
-            cur = self.conn.execute(
-                "SELECT * FROM plex_media_cache WHERE instance_name=? AND library_name=?",
-                (instance_name, library_name),
-            )
-            rows = cur.fetchall()
-            if not rows:
-                return None
-            times = [
-                datetime.datetime.fromisoformat(row["last_indexed"]) for row in rows
-            ]
-            if not all(t > cutoff for t in times):
-                return None
-            return [dict(row) for row in rows]
+
+        rows = self.execute_query(
+            "SELECT * FROM plex_media_cache WHERE instance_name=? AND library_name=?",
+            (instance_name, library_name),
+            fetch_all=True,
+        )
+
+        if not rows:
+            return None
+
+        times = [datetime.datetime.fromisoformat(row["last_indexed"]) for row in rows]
+        if not all(t > cutoff for t in times):
+            return None
+
+        return rows
 
     def delete(self, item: dict, logger: Optional[Any] = None) -> None:
         """
@@ -176,11 +168,10 @@ class PlexCache(DatabaseBase):
             DELETE FROM plex_media_cache
             WHERE title=? AND year IS ? AND library_name IS ? AND plex_id IS ?
         """
-        with self.lock, self.conn:
-            cursor = self.conn.execute(sql, key)
-            rows_deleted = cursor.rowcount
-            if logger:
-                logger.info(f"[DELETE] Plex Key: {key} | Rows deleted: {rows_deleted}")
+
+        rows_deleted = self.execute_query(sql, key)
+        if logger:
+            logger.info(f"[DELETE] Plex Key: {key} | Rows deleted: {rows_deleted}")
 
     def sync_for_library(
         self,
@@ -193,16 +184,19 @@ class PlexCache(DatabaseBase):
         Sync the plex_media_cache table for a specific instance and library
         to match fresh_media. Deletes stale, adds/updates changed.
         """
-        with self.lock, self.conn:
-            cur = self.conn.execute(
+        db_rows = (
+            self.execute_query(
                 "SELECT * FROM plex_media_cache WHERE instance_name=? AND library_name=?",
                 (instance_name, library_name),
+                fetch_all=True,
             )
-            db_rows = cur.fetchall()
+            or []
+        )
 
         db_map = {self._canonical_key(row): row for row in db_rows}
         fresh_map = {self._canonical_key(item): item for item in fresh_media}
 
+        # Add/update items that are present in fresh_media
         for key, item in fresh_map.items():
             if key not in db_map:
                 self.upsert(item)
@@ -213,6 +207,7 @@ class PlexCache(DatabaseBase):
             else:
                 self.upsert(item)
 
+        # Remove items that are no longer present
         keys_to_remove = set(db_map.keys()) - set(fresh_map.keys())
         for key in keys_to_remove:
             row = db_map[key]

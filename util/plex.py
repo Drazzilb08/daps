@@ -10,7 +10,6 @@ from plexapi.server import PlexServer
 from unidecode import unidecode
 
 from util.constants import illegal_chars_regex
-from util.database import DapsDB
 from util.helper import generate_title_variants, progress
 from util.normalization import normalize_titles
 
@@ -55,7 +54,6 @@ class PlexClient:
     def get_media_by_libraries(
         self,
         library_names: list = None,
-        db: DapsDB = None,
         logger=None,
         instance_name=None,
     ):

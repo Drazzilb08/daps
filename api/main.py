@@ -22,7 +22,7 @@ from api import (
     poster as poster_search_router,
 )
 from util.database import DapsDB
-from util.database.worker import process_job
+from util.job_processor import process_job
 from util.version import get_version
 
 

@@ -296,8 +296,6 @@ class UnmatchedAssets:
                 return self.get_stats()
         except Exception as exc:
             self.logger.error(f"\n\nAn error occurred: {exc}\n", exc_info=True)
-        finally:
-            self.db.close_all()
 
     def get_stats(self):
         self.fetch_data()
@@ -416,7 +414,6 @@ class UnmatchedAssets:
         except Exception as exc:
             self.logger.error(f"\n\nAn error occurred: {exc}\n", exc_info=True)
         finally:
-            self.db.close_all()
             self.logger.log_outro()
 
     def build_output(self):
@@ -476,5 +473,4 @@ class UnmatchedAssets:
         except Exception:
             self.logger.error("\n\nAn error occurred:\n", exc_info=True)
         finally:
-            self.db.close_all()
             self.logger.log_outro()

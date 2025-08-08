@@ -1,3 +1,4 @@
+# api/poster.py
 import os
 from pathlib import Path
 from typing import Any, List
@@ -29,7 +30,7 @@ async def matched_posters_stats(logger: Any = Depends(get_web_logger)):
     """
     logger.debug("Serving GET /api/posters/matched/stats")
 
-    with DapsDB(logger=logger) as db:
+    with DapsDB(logger=logger, quiet=True) as db:
         stats = db.stats.get_matched_posters_stats()
 
     return {"success": True, "matched_posters_stats": stats}
@@ -45,7 +46,7 @@ async def get_gdrive_stats(logger: Any = Depends(get_web_logger)):
     syncer = SyncGDrive(logger=logger)
     syncer.refresh_all_poster_stats()
 
-    with DapsDB(logger=logger) as db:
+    with DapsDB(logger=logger, quiet=True) as db:
         stats = db.stats.get_gdrive_stats()
 
     return {"success": True, "gdrive_stats": stats}
@@ -61,8 +62,6 @@ async def get_unmatched_stats(logger: Any = Depends(get_web_logger)):
     unmatched = UnmatchedAssets(logger=logger)
     stats = unmatched.get_stats_adhoc()
     return {"success": True, "summary": stats["summary"]}
-    # Maybe will build this out later
-    # return {"success": True, "summary": stats["summary"], "unmatched": stats["unmatched"]}
 
 
 @router.post("/api/run/gdrive")
@@ -84,7 +83,7 @@ async def gdrive_folder(
             job_result = db.worker.enqueue_job(
                 "jobs", payload={"gdrive_name": name}, job_type="sync_gdrive"
             )
-            job_id = job_result.get("job_id")
+            job_id = job_result.get("data", {}).get("job_id")
             started.append(name)
             job_ids.append({"name": name, "job_id": job_id})
 
@@ -108,9 +107,8 @@ async def get_media_cache(logger: Any = Depends(get_web_logger)):
     Returns the media cache from the database.
     """
     logger.debug("Serving GET /api/cache/media")
-    with DapsDB(logger=logger) as db:
+    with DapsDB(logger=logger, quiet=True) as db:
         media_cache = db.media.get_all()
-    # Convert rows to dict if not already; assuming get_all() returns list[dict]
     return {"success": True, "media_cache": media_cache}
 
 
@@ -120,7 +118,7 @@ async def get_collection_cache(logger: Any = Depends(get_web_logger)):
     Returns the collection cache from the database.
     """
     logger.debug("Serving GET /api/cache/collection")
-    with DapsDB(logger=logger) as db:
+    with DapsDB(logger=logger, quiet=True) as db:
         collection_cache = db.collection.get_all()
     return {"success": True, "collection_cache": collection_cache}
 
@@ -203,12 +201,11 @@ async def preview_poster(
     Returns the requested poster image file as a response if it exists.
     Supports both (location + relative path) and absolute path.
     """
-
     try:
         logger.debug(
             f"Serving GET /api/poster/preview for location: {location}, path: {path}"
         )
-        # If path is absolute, serve it directly (but validate allowed location if you want!)
+
         if path and os.path.isabs(path):
             file_path = Path(path).resolve()
         elif location and path:
@@ -250,6 +247,21 @@ def list_poster_assets(logger: Any = Depends(get_web_logger)):
 
 @router.post("/api/poster/add")
 async def add_media(request: Request, logger: Any = Depends(get_webhook_logger)):
+    """
+    webhook processing endpoint
+
+    This endpoint is intended to:
+    1. Rename the asset ADHOC
+       - Get the Server it's from
+       - Get the FULL data from the server
+       - Upload this data to the database
+       - Match the asset to a poster that's in the Poster Cache table
+       - Get new Updated data from the database
+       - Rename the asset and place it in desired destination per config
+       - Determine if the user wants to upload to Plex
+         * Yes: Take the manifest from the Renamerr and send it to uploader
+         * No: Do nothing task complete
+    """
     try:
         logger.debug("Serving POST /api/poster/add")
         client_info = {
@@ -259,6 +271,7 @@ async def add_media(request: Request, logger: Any = Depends(get_webhook_logger))
             "scheme": getattr(request.url, "scheme", "http"),
         }
         data = await request.json()
+
         if is_test(data):
             logger.info(
                 f"Test event received from {client_info['scheme']}://{client_info['client_host']}:{client_info['client_port']}"
@@ -267,12 +280,11 @@ async def add_media(request: Request, logger: Any = Depends(get_webhook_logger))
                 "status": 200,
                 "success": True,
             }
-        job_data = dict(data)
-        job_data["_client"] = client_info
 
-        result = request.app.state.db.worker.enqueue_job(
-            "jobs", job_data, job_type="webhook"
-        )
+        job_data = {"webhook_data": data, "client_info": client_info}
+
+        with DapsDB(logger=logger) as db:
+            result = db.worker.enqueue_job("jobs", job_data, job_type="webhook")
 
         if not result.get("success"):
             logger.error(
@@ -283,10 +295,16 @@ async def add_media(request: Request, logger: Any = Depends(get_webhook_logger))
                 content=result,
             )
 
-        logger.info("Webhook job persistedççprocessing.")
+        logger.info(
+            f"Webhook job enqueued - processing: {result.get('data', {}).get('job_id')}"
+        )
         return JSONResponse(
             status_code=200,
-            content=result,
+            content={
+                "success": True,
+                "message": "Webhook enqueued",
+                "data": result.get("data", {}),
+            },
         )
     except Exception as e:
         logger.error(f"Exception in webhook enqueue: {e}", exc_info=True)
@@ -333,7 +351,7 @@ async def run_upload_by_collection_id(
     logger: Any = Depends(get_web_logger),
 ):
     """
-    Triggers upload for a single media cache item by ID.
+    Triggers upload for a single collection cache item by ID.
     """
     logger.debug(f"Serving POST /api/run/upload/collection/{id}")
     manifest = {

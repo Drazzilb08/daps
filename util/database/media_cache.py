@@ -261,6 +261,27 @@ class MediaCache(DatabaseBase):
         if logger:
             logger.info(f"[DELETE] Key: {key_params} | Rows deleted: {rows_deleted}")
 
+    def get_by_title_year_instance(
+        self, title: str, year: int = None, instance_name: str = None
+    ):
+        """
+        Get media records by title, year, and instance name.
+        Returns list of records including seasons for shows.
+        """
+        query = """
+            SELECT * FROM media_cache 
+            WHERE title = ? AND instance_name = ?
+        """
+        params = [title, instance_name]
+
+        if year is not None:
+            query += " AND year = ?"
+            params.append(year)
+
+        query += " ORDER BY season_number ASC NULLS FIRST"
+
+        return self.execute_query(query, tuple(params), fetch_all=True)
+
     def delete_by_id(self, id: int) -> None:
         """Delete a single record by its unique integer ID."""
         self.execute_query("DELETE FROM media_cache WHERE id=?", (id,))

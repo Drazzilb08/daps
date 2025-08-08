@@ -1,3 +1,4 @@
+# util/database/worker.py
 import datetime
 import json
 import signal
@@ -5,10 +6,8 @@ import threading
 import time
 from dataclasses import dataclass
 from enum import Enum
-from typing import Any, Callable, Dict, Optional
+from typing import Callable, Dict, Optional
 
-# FIXED: Only import non-circular dependencies at module level
-# Modules that import util.database must be imported inside functions to avoid circular imports
 from .db_base import DatabaseBase
 
 
@@ -30,7 +29,7 @@ class JobResult:
 
 class DBWorker(DatabaseBase):
     """
-    Simplified DB-backed job worker
+    Simplified DB-backed job worker that delegates processing to job_processor.py
     """
 
     def __init__(
@@ -296,9 +295,23 @@ class DBWorker(DatabaseBase):
             "num_workers": self.num_workers,
         }
 
-    def start(self, table_name: str, process_fn: Callable, job_type_filter: str = None):
-        """Start the worker"""
+    def start(
+        self,
+        table_name: str = "jobs",
+        process_fn: Callable = None,
+        job_type_filter: str = None,
+    ):
+        """
+        Start the worker - FIXED to use dedicated job processor by default
+        """
         log = self.logger.get_adapter("WORKER")
+
+        # FIXED: Use the dedicated job processor if no process_fn provided
+        if process_fn is None:
+            from util.job_processor import process_job
+
+            process_fn = process_job
+            log.debug("Using dedicated job processor from util.job_processor")
 
         # Reset any stuck running jobs
         reset = self.execute_query(
@@ -342,7 +355,7 @@ class DBWorker(DatabaseBase):
             f"Starting '{self.num_workers}' worker(s) for '{job_type_filter if job_type_filter is not None else 'Any'}' jobs..."
         )
         log.debug(
-            f"(poll_interval={self.poll_interval}s, job_type_filter='{self.job_type_filter}')"
+            f"(poll_interval={self.poll_interval}s, job_type_filter='{self.job_type_filter}', using dedicated job_processor)"
         )
 
     def stop(self, timeout: int = 10):
@@ -556,185 +569,3 @@ class DBWorker(DatabaseBase):
                 "message": f"Error listing jobs: {e}",
                 "error_code": "DB_LIST_JOBS_ERROR",
             }
-
-
-# SINGLE UNIFIED JOB PROCESSOR - No more duplicates!
-def process_job(job: Dict[str, Any], logger) -> Dict[str, Any]:
-    """
-    Single unified job processor that handles all job types.
-    FIXED: Strategic imports to avoid circular dependencies.
-    """
-    job_id = job.get("id")
-    job_type = job.get("type")
-    payload = json.loads(job.get("payload", "{}"))
-
-    log = logger.get_adapter("JOB_PROCESSOR")
-    log.debug(f"[JOB:{job_id}] Processing {job_type}")
-
-    try:
-        if job_type == "webhook_process":
-            # Webhook processing - import here to avoid circular dependency
-            from util.webhook_processor import WebhookProcessor
-
-            processor = WebhookProcessor(logger)
-            result = processor.process_webhook_adhoc(
-                payload.get("webhook_data", {}), payload.get("client_info")
-            )
-            return result
-
-        elif job_type == "sync_gdrive":
-            # GDrive sync - import here to avoid circular dependency
-            from modules.sync_gdrive import SyncGDrive
-
-            gdrive_name = payload.get("gdrive_name")
-            if not gdrive_name:
-                return {
-                    "success": False,
-                    "message": "No gdrive_name provided",
-                    "error_code": "MISSING_GDRIVE_NAME",
-                }
-
-            syncer = SyncGDrive(logger=logger)
-            syncer.sync_folder_adhoc(gdrive_name)
-
-            return {
-                "success": True,
-                "message": f"Sync completed for {gdrive_name}",
-            }
-
-        elif job_type == "poster_rename":
-            # Poster rename - import here to avoid circular dependency
-            from modules.poster_renamerr import PosterRenamerr
-
-            media_items = payload.get("media_items", [])
-            if not media_items:
-                return {
-                    "success": False,
-                    "message": "No media items provided",
-                    "error_code": "MISSING_MEDIA_ITEMS",
-                }
-
-            renamer = PosterRenamerr(logger=logger)
-            result = renamer.run_poster_rename_adhoc(media_items)
-
-            # Handle notifications and uploads if successful
-            if result["success"] and result.get("output"):
-                _handle_post_rename_actions(result, renamer, logger)
-
-            return result
-
-        elif job_type == "upload_posters":
-            # Poster upload - import here to avoid circular dependency
-            from util.database import DapsDB
-            from util.upload_posters import PosterUploader
-
-            manifest = payload.get("manifest")
-            if not manifest:
-                return {
-                    "success": False,
-                    "message": "No manifest provided",
-                    "error_code": "MISSING_MANIFEST",
-                }
-
-            with DapsDB(logger=logger) as db:
-                uploader = PosterUploader(db=db, logger=logger, manifest=manifest)
-                result = uploader.upload_posters()
-
-            if result.get("success"):
-                return {
-                    "success": True,
-                    "message": "Upload completed",
-                }
-            else:
-                return {
-                    "success": False,
-                    "message": f"Upload failed: {result.get('message')}",
-                    "error_code": "UPLOAD_FAILED",
-                }
-
-        else:
-            return {
-                "success": False,
-                "message": f"Unknown job type: {job_type}",
-                "error_code": "UNKNOWN_JOB_TYPE",
-            }
-
-    except Exception as e:
-        log.error(f"[JOB:{job_id}] Error: {e}", exc_info=True)
-        return {
-            "success": False,
-            "message": f"Job failed: {str(e)}",
-            "error_code": "JOB_EXCEPTION",
-        }
-
-
-def _handle_post_rename_actions(rename_result: Dict[str, Any], renamer, logger):
-    """Handle notifications and uploads after successful rename."""
-    try:
-        output = rename_result.get("output", {})
-        manifest = rename_result.get("manifest", {})
-
-        # Send notifications if there are results
-        if any(output.values()):
-            from util.notification import NotificationManager
-
-            manager = NotificationManager(
-                renamer.config, logger, module_name="poster_renamerr"
-            )
-            manager.send_notification(output)
-            logger.get_adapter("POST_RENAME").info("Notifications sent")
-
-        # Handle border replacer if enabled
-        if getattr(renamer.config, "run_border_replacerr", False) and manifest:
-            renamer.run_border_replacerr(manifest)
-            logger.get_adapter("POST_RENAME").info("Border replacer completed")
-
-        # Queue upload job if Plex instances are enabled
-        plex_enabled = _check_plex_upload_enabled(renamer.config)
-        if plex_enabled and manifest:
-            _queue_upload_job(manifest, logger)
-
-    except Exception as e:
-        logger.get_adapter("POST_RENAME").error(f"Error in post-rename actions: {e}")
-
-
-def _check_plex_upload_enabled(config) -> bool:
-    """Check if any Plex instances have poster upload enabled."""
-    try:
-        if not hasattr(config, "instances"):
-            return False
-
-        for inst in config.instances:
-            if isinstance(inst, dict):
-                for instance_name, params in inst.items():
-                    if getattr(params, "add_posters", False):
-                        return True
-        return False
-    except Exception:
-        return False
-
-
-def _queue_upload_job(manifest: Dict[str, Any], logger):
-    """Queue a poster upload job."""
-    try:
-        # Import here to avoid circular dependency
-        from util.database import DapsDB
-
-        upload_payload = {"manifest": manifest}
-
-        with DapsDB(logger=logger) as db:
-            result = db.worker.enqueue_job(
-                table_name="jobs", payload=upload_payload, job_type="upload_posters"
-            )
-
-        if result["success"]:
-            logger.get_adapter("POST_RENAME").info(
-                f"Upload job queued: {result['data']['job_id']}"
-            )
-        else:
-            logger.get_adapter("POST_RENAME").error(
-                f"Failed to queue upload job: {result['message']}"
-            )
-
-    except Exception as e:
-        logger.get_adapter("POST_RENAME").error(f"Error queueing upload job: {e}")

@@ -1,3 +1,4 @@
+# modules/sync_gdrive.py - FIXED VERSION (removing redundancy)
 import json
 import os
 import re
@@ -29,6 +30,12 @@ class SyncGDrive:
         self.logger = logger or Logger(self.config.log_level, "sync_gdrive")
         self.rclone_path = self.get_rclone_path()
         self.db = None
+        # Track current job ID for progress updates
+        self.current_job_id = None
+
+    def set_job_id(self, job_id):
+        """Set the current job ID for progress tracking"""
+        self.current_job_id = job_id
 
     def parse_rclone_progress(self, line):
         """
@@ -98,12 +105,24 @@ class SyncGDrive:
 
         # Starting sync
         progress_cb(10)
+        # FIXED: Direct call to update_progress, no redundant wrapper
+        if self.current_job_id and self.db:
+            try:
+                self.db.worker.update_progress("jobs", self.current_job_id, 10)
+            except Exception as e:
+                self.logger.debug(f"Failed to update progress: {e}")
 
         last_pct = [10]
 
         def guarded_progress_cb(pct):
             if pct > last_pct[0]:
                 progress_cb(pct)
+                # FIXED: Direct call to update_progress, no redundant wrapper
+                if self.current_job_id and self.db:
+                    try:
+                        self.db.worker.update_progress("jobs", self.current_job_id, pct)
+                    except Exception as e:
+                        self.logger.debug(f"Failed to update progress: {e}")
                 last_pct[0] = pct
 
         cmd = [
@@ -164,14 +183,30 @@ class SyncGDrive:
             process.wait()
             if process.returncode == 0:
                 self.logger.info("✅ RClone sync completed successfully.")
+                progress_cb(95)
+                if self.current_job_id and self.db:
+                    try:
+                        self.db.worker.update_progress("jobs", self.current_job_id, 95)
+                    except Exception as e:
+                        self.logger.debug(f"Failed to update progress: {e}")
             else:
                 self.logger.error(
                     f"❌ RClone sync failed with return code {process.returncode}"
                 )
                 progress_cb(100)
+                if self.current_job_id and self.db:
+                    try:
+                        self.db.worker.update_progress("jobs", self.current_job_id, 100)
+                    except Exception as e:
+                        self.logger.debug(f"Failed to update progress: {e}")
         except Exception as e:
             self.logger.error(f"Exception occurred while running rclone: {e}")
             progress_cb(100)
+            if self.current_job_id and self.db:
+                try:
+                    self.db.worker.update_progress("jobs", self.current_job_id, 100)
+                except Exception as e:
+                    self.logger.debug(f"Failed to update progress: {e}")
 
     def gather_folder_stats(self, folder_path):
         """
@@ -203,35 +238,51 @@ class SyncGDrive:
         """
         Gather stats and upsert for all gdrive entries in config.gdrive_list.
         """
-        sync_list = (
-            self.config.gdrive_list
-            if isinstance(self.config.gdrive_list, list)
-            else [self.config.gdrive_list]
-        )
-        for sync_item in sync_list:
-            owner = sync_item.name
-            sync_location = sync_item.location
-            file_count, size_bytes, last_updated = self.gather_folder_stats(
-                sync_location
+        # Use quiet mode for stats gathering
+        with DapsDB(logger=self.logger, quiet=True) as db:
+            sync_list = (
+                self.config.gdrive_list
+                if isinstance(self.config.gdrive_list, list)
+                else [self.config.gdrive_list]
             )
-            self.db.stats.upsert_gdrive_stat(
-                location=sync_location,
-                folder_name=owner,
-                owner=owner,
-                file_count=file_count,
-                size_bytes=size_bytes,
-                last_updated=last_updated,
-            )
-            self.logger.debug(
-                f"Updated gdrive_stats for {sync_location}: "
-                f"{file_count} files, {size_bytes} bytes, last updated {last_updated}"
-            )
+            for sync_item in sync_list:
+                owner = sync_item.name
+                sync_location = sync_item.location
+                file_count, size_bytes, last_updated = self.gather_folder_stats(
+                    sync_location
+                )
+                db.stats.upsert_gdrive_stat(
+                    location=sync_location,
+                    folder_name=owner,
+                    owner=owner,
+                    file_count=file_count,
+                    size_bytes=size_bytes,
+                    last_updated=last_updated,
+                )
+                self.logger.debug(
+                    f"Updated gdrive_stats for {sync_location}: "
+                    f"{file_count} files, {size_bytes} bytes, last updated {last_updated}"
+                )
 
-    def sync_folder_adhoc(self, gdrive_name: str, progress_cb=lambda pct: None):
+    def sync_folder_adhoc(
+        self, gdrive_name: str, progress_cb=lambda pct: None, job_id=None
+    ):
         """
         Sync a single GDrive folder (by its config 'name') on demand.
+
+        Args:
+            gdrive_name: Name of the GDrive folder to sync
+            progress_cb: Progress callback function
+            job_id: Job ID for progress tracking
+
+        Returns:
+            bool: Success status
         """
         try:
+            # Set job ID for progress tracking
+            if job_id:
+                self.set_job_id(job_id)
+
             with DapsDB(logger=self.logger) as self.db:
                 sync_list = (
                     self.config.gdrive_list
@@ -245,6 +296,13 @@ class SyncGDrive:
                         sync_id = sync_item.id
 
                         progress_cb(5)  # Starting ad-hoc sync
+                        if self.current_job_id and self.db:
+                            try:
+                                self.db.worker.update_progress(
+                                    "jobs", self.current_job_id, 5
+                                )
+                            except Exception as e:
+                                self.logger.debug(f"Failed to update progress: {e}")
 
                         self.sync_folder(
                             sync_location, sync_id, progress_cb=progress_cb
@@ -252,6 +310,14 @@ class SyncGDrive:
 
                         # GATHER STATS AND UPSERT
                         progress_cb(90)
+                        if self.current_job_id and self.db:
+                            try:
+                                self.db.worker.update_progress(
+                                    "jobs", self.current_job_id, 90
+                                )
+                            except Exception as e:
+                                self.logger.debug(f"Failed to update progress: {e}")
+
                         file_count, size_bytes, last_updated = self.gather_folder_stats(
                             sync_location
                         )
@@ -268,11 +334,23 @@ class SyncGDrive:
                             f"{file_count} files, {size_bytes} bytes, last updated {last_updated}"
                         )
                         progress_cb(100)
+                        if self.current_job_id and self.db:
+                            try:
+                                self.db.worker.update_progress(
+                                    "jobs", self.current_job_id, 100
+                                )
+                            except Exception as e:
+                                self.logger.debug(f"Failed to update progress: {e}")
                         return True
                 self.logger.error(
                     f"GDrive name '{gdrive_name}' not found in config.gdrive_list."
                 )
                 progress_cb(100)
+                if self.current_job_id and self.db:
+                    try:
+                        self.db.worker.update_progress("jobs", self.current_job_id, 100)
+                    except Exception as e:
+                        self.logger.debug(f"Failed to update progress: {e}")
                 return False
         except KeyboardInterrupt:
             print("Keyboard Interrupt detected. Exiting...")
@@ -280,6 +358,11 @@ class SyncGDrive:
         except Exception as exc:
             self.logger.error(f"\n\nAn error occurred: {exc}\n", exc_info=True)
             progress_cb(100)
+            if self.current_job_id and self.db:
+                try:
+                    self.db.worker.update_progress("jobs", self.current_job_id, 100)
+                except Exception as e:
+                    self.logger.debug(f"Failed to update progress: {e}")
 
     def run(self, progress_cb=lambda pct: None):
         try:
@@ -306,14 +389,31 @@ class SyncGDrive:
                 total = len(sync_list)
 
                 for idx, sync_item in enumerate(sync_list, 1):
-                    progress_cb(int(10 + 80 * (idx - 1) / total))  # Start for each
+                    progress_pct = int(10 + 80 * (idx - 1) / total)
+                    progress_cb(progress_pct)  # Start for each
+                    if self.current_job_id and self.db:
+                        try:
+                            self.db.worker.update_progress(
+                                "jobs", self.current_job_id, progress_pct
+                            )
+                        except Exception as e:
+                            self.logger.debug(f"Failed to update progress: {e}")
 
                     sync_location = sync_item.location
                     sync_id = sync_item.id
                     self.sync_folder(sync_location, sync_id, progress_cb=progress_cb)
 
                     # GATHER STATS AND UPSERT
-                    progress_cb(int(10 + 80 * (idx - 0.5) / total))
+                    progress_pct = int(10 + 80 * (idx - 0.5) / total)
+                    progress_cb(progress_pct)
+                    if self.current_job_id and self.db:
+                        try:
+                            self.db.worker.update_progress(
+                                "jobs", self.current_job_id, progress_pct
+                            )
+                        except Exception as e:
+                            self.logger.debug(f"Failed to update progress: {e}")
+
                     file_count, size_bytes, last_updated = self.gather_folder_stats(
                         sync_location
                     )
@@ -329,12 +429,31 @@ class SyncGDrive:
                     self.logger.info(
                         f"Updated gdrive_stats for {sync_location}: {file_count} files, {size_bytes} bytes, last updated {last_updated}"
                     )
-                    progress_cb(int(10 + 80 * idx / total))  # Step up after folder done
+
+                    progress_pct = int(10 + 80 * idx / total)
+                    progress_cb(progress_pct)  # Step up after folder done
+                    if self.current_job_id and self.db:
+                        try:
+                            self.db.worker.update_progress(
+                                "jobs", self.current_job_id, progress_pct
+                            )
+                        except Exception as e:
+                            self.logger.debug(f"Failed to update progress: {e}")
 
                 progress_cb(100)
+                if self.current_job_id and self.db:
+                    try:
+                        self.db.worker.update_progress("jobs", self.current_job_id, 100)
+                    except Exception as e:
+                        self.logger.debug(f"Failed to update progress: {e}")
         except KeyboardInterrupt:
             print("Keyboard Interrupt detected. Exiting...")
             sys.exit()
         except Exception as exc:
             self.logger.error(f"\n\nAn error occurred: {exc}\n", exc_info=True)
             progress_cb(100)
+            if self.current_job_id and self.db:
+                try:
+                    self.db.worker.update_progress("jobs", self.current_job_id, 100)
+                except Exception as e:
+                    self.logger.debug(f"Failed to update progress: {e}")

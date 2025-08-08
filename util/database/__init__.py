@@ -1,13 +1,4 @@
-"""
-DAPS Database Module
-
-Provides a clean, context-manager-based database interface with automatic schema management.
-
-Usage:
-    with DapsDB() as db:
-        db.media.upsert(item, "movie", "Radarr", "instance1")
-        records = db.media.get_by_instance("instance1")
-"""
+# util/database/__init__.py
 
 import os
 
@@ -30,15 +21,12 @@ from .worker import DBWorker
 class DapsDB:
     """
     Main database context manager providing clean access to all database operations.
-
-    Usage:
-        with DapsDB() as db:
-            db.media.upsert(item, "movie", "Radarr", "instance1")
+    FIXED: Reduced verbose logging for frequently polled operations.
     """
 
-    def __init__(self, logger: Logger, db_path: str = None):
-
+    def __init__(self, logger: Logger, db_path: str = None, quiet: bool = False):
         self.logger = logger
+        self.quiet = quiet
 
         config_dir = get_config_dir()
         db_path = os.path.join(config_dir, "daps.db")
@@ -66,12 +54,15 @@ class DapsDB:
     def __enter__(self):
         """Context manager entry."""
         self._initialized = True
-        self.logger.debug("[DATABASE] Initializing database context")
+        # FIXED: Only log if not in quiet mode
+        if not self.quiet:
+            self.logger.debug("[DATABASE] Initializing database context")
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
         """Context manager exit - ensures proper cleanup."""
-        self.logger.debug("[DATABASE] Cleaning up database context")
+        if not self.quiet:
+            self.logger.debug("[DATABASE] Cleaning up database context")
 
         # Close any created workers
         for worker in self.created_workers:
@@ -84,6 +75,7 @@ class DapsDB:
         self.created_workers.clear()
         self._initialized = False
 
+    # ... rest of the properties remain the same ...
     @property
     def media(self) -> MediaCache:
         """Access to media cache operations."""

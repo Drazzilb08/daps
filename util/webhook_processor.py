@@ -1,10 +1,4 @@
-"""
-Clean Webhook Processor
-
-Handles ONLY webhook validation and job enqueueing.
-No business logic, no database operations, no file operations.
-SIMPLIFIED: Removed duplicate logic, standardized response format.
-"""
+# util/webhook_processor.py
 
 import hashlib
 import json
@@ -13,14 +7,13 @@ import time
 from typing import Optional, Tuple
 from urllib.parse import urlparse
 
-from util.arr import create_arr_client
 from util.config import load_config
 from util.database import DapsDB
 
 
 class WebhookProcessor:
     """
-    Clean webhook processor - ONLY handles webhook validation and routing.
+    Clean webhook processor that only handles validation and routing.
     Business logic is delegated to other components.
     """
 
@@ -37,7 +30,6 @@ class WebhookProcessor:
     ) -> dict:
         """
         Process webhook and enqueue job for background processing.
-        SIMPLIFIED: Uses standardized response format.
 
         Args:
             webhook_data: Raw webhook data from ARR
@@ -48,12 +40,12 @@ class WebhookProcessor:
         """
         log = self.logger.get_adapter("WEBHOOK")
 
-        # 1. Validate and extract basic info
+        # Validate and extract basic info
         validation_result = self._validate_webhook(webhook_data, client_info)
         if not validation_result["success"]:
             return validation_result
 
-        # 2. Check for duplicates (simple debouncing)
+        # Check for duplicates (simple debouncing)
         if self._is_duplicate(validation_result["cache_key"], webhook_data):
             log.debug("Skipping duplicate webhook (debounced)")
             return {
@@ -62,7 +54,7 @@ class WebhookProcessor:
                 "data": {"debounced": True},
             }
 
-        # 3. Enqueue job for background processing
+        # Enqueue job for background processing
         job_payload = {
             "webhook_data": webhook_data,
             "client_info": client_info,
@@ -71,7 +63,7 @@ class WebhookProcessor:
 
         with DapsDB(logger=self.logger) as db:
             enqueue_result = db.worker.enqueue_job(
-                table_name="jobs", payload=job_payload, job_type="webhook_process"
+                table_name="jobs", payload=job_payload, job_type="webhook"
             )
 
         if enqueue_result["success"]:
@@ -90,70 +82,19 @@ class WebhookProcessor:
                 "error_code": "ENQUEUE_FAILED",
             }
 
-    def process_webhook_adhoc(
-        self, webhook_data: dict, client_info: Optional[dict] = None
-    ) -> dict:
-        """
-        Process webhook directly (synchronously) for job processing.
-        SIMPLIFIED: Unified with job processor, standardized response format.
-
-        Args:
-            webhook_data: Raw webhook data from ARR
-            client_info: Optional client info from API layer
-
-        Returns:
-            dict: Standardized processing results
-        """
-        log = self.logger.get_adapter("WEBHOOK_ADHOC")
-
-        # 1. Validate webhook
-        validation_result = self._validate_webhook(webhook_data, client_info)
-        if not validation_result["success"]:
-            return validation_result
-
-        # 2. Fetch media from ARR
-        media_result = self._fetch_media_from_arr(
-            webhook_data, validation_result["instance_info"]
-        )
-        if not media_result["success"]:
-            return media_result
-
-        # 3. Store media in database
-        with DapsDB(logger=self.logger) as db:
-            self._store_media(
-                db, media_result["media"], validation_result["instance_info"]
-            )
-
-        # 4. Call PosterRenamerr directly - import here to avoid circular dependency
-        from modules.poster_renamerr import PosterRenamerr
-
-        renamer = PosterRenamerr(logger=self.logger)
-        rename_result = renamer.run_poster_rename_adhoc([media_result["media"]])
-
-        if rename_result["success"]:
-            log.info(
-                f"Webhook processed successfully: {media_result['media']['title']}"
-            )
-            return {
-                "success": True,
-                "message": "Webhook processed successfully",
-                "data": {
-                    "media": media_result["media"],
-                    "rename_result": rename_result,
-                },
-            }
-        else:
-            log.error(f"Poster rename failed: {rename_result.get('message')}")
-            return {
-                "success": False,
-                "message": "Poster rename failed",
-                "error_code": "POSTER_RENAME_FAILED",
-            }
-
     def _validate_webhook(
         self, webhook_data: dict, client_info: Optional[dict] = None
     ) -> dict:
-        """Validate webhook and extract instance information. FIXED: Standardized response format."""
+        """
+        Validate webhook and extract instance information.
+
+        Args:
+            webhook_data: Raw webhook data
+            client_info: Client connection info
+
+        Returns:
+            dict: Validation result with instance info
+        """
         log = self.logger.get_adapter("WEBHOOK")
 
         # Extract media block
@@ -191,7 +132,15 @@ class WebhookProcessor:
     def _extract_media_block(
         self, webhook_data: dict
     ) -> Tuple[Optional[dict], Optional[str], Optional[int]]:
-        """Extract media information from webhook data."""
+        """
+        Extract media information from webhook data.
+
+        Args:
+            webhook_data: Raw webhook data
+
+        Returns:
+            tuple: (media_block, media_type, media_id)
+        """
         if "series" in webhook_data:
             return webhook_data["series"], "series", webhook_data["series"].get("id")
         elif "movie" in webhook_data:
@@ -200,7 +149,15 @@ class WebhookProcessor:
             return None, None, None
 
     def _find_arr_instance(self, client_info: Optional[dict] = None) -> dict:
-        """Find matching ARR instance from client info or request."""
+        """
+        Find matching ARR instance from client info.
+
+        Args:
+            client_info: Client connection information
+
+        Returns:
+            dict: Instance lookup result
+        """
 
         def normalize_host(h):
             if not h:
@@ -253,7 +210,16 @@ class WebhookProcessor:
         return {"found": False, "error": "No matching instance"}
 
     def _is_duplicate(self, cache_key: tuple, webhook_data: dict) -> bool:
-        """Check if this webhook is a duplicate (simple debouncing)."""
+        """
+        Check if this webhook is a duplicate (simple debouncing).
+
+        Args:
+            cache_key: Unique cache key for this webhook
+            webhook_data: Raw webhook data
+
+        Returns:
+            bool: True if duplicate
+        """
         media_block, _, _ = self._extract_media_block(webhook_data)
         if not media_block:
             return False
@@ -284,79 +250,3 @@ class WebhookProcessor:
                 del self._cache[k]
 
         return False
-
-    def _fetch_media_from_arr(self, webhook_data: dict, instance_info: dict) -> dict:
-        """Fetch full media information from ARR instance. FIXED: Standardized response format."""
-        log = self.logger.get_adapter("WEBHOOK")
-
-        # Create ARR client
-        arr_client = create_arr_client(
-            instance_info["url"], instance_info["api_key"], self.logger
-        )
-
-        if not arr_client or not arr_client.is_connected():
-            return {
-                "success": False,
-                "message": "Could not connect to ARR instance",
-                "error_code": "ARR_CONNECT_FAIL",
-            }
-
-        # Fetch media details
-        media_block, media_type, media_id = self._extract_media_block(webhook_data)
-
-        try:
-            if instance_info["type"] == "radarr":
-                media = arr_client.get_movie(media_id)
-                asset_type = "movie"
-            else:
-                media = arr_client.get_show(media_id)
-                asset_type = "show"
-
-            log.debug(f"Fetched {media['title']} from {instance_info['name']}")
-
-            return {
-                "success": True,
-                "message": f"Media fetched successfully: {media['title']}",
-                "media": media,
-                "asset_type": asset_type,
-            }
-
-        except Exception as e:
-            log.error(f"Failed to fetch media from ARR: {e}")
-            return {
-                "success": False,
-                "message": f"Failed to fetch media: {str(e)}",
-                "error_code": "ARR_FETCH_FAIL",
-            }
-
-    def _store_media(self, db, media: dict, instance_info: dict):
-        """Store media information in database."""
-        log = self.logger.get_adapter("WEBHOOK")
-
-        asset_type = "movie" if instance_info["type"] == "radarr" else "show"
-
-        # Store main media record
-        if asset_type == "show":
-            # Store show record
-            show_record = dict(media)
-            show_record["season_number"] = None
-            db.media.upsert(
-                show_record, asset_type, instance_info["type"], instance_info["name"]
-            )
-
-            # Store season records
-            for season in media.get("seasons", []):
-                season_record = dict(media)
-                season_record["season_number"] = season.get("season_number")
-                db.media.upsert(
-                    season_record,
-                    asset_type,
-                    instance_info["type"],
-                    instance_info["name"],
-                )
-        else:
-            db.media.upsert(
-                media, asset_type, instance_info["type"], instance_info["name"]
-            )
-
-        log.debug(f"Stored {media['title']} in database")

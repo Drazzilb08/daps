@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect, useCallback } from 'react';
 import DashboardCard from '../components/DashboardCard';
 import { getIcon, splitIntoColumns } from '../utils/tools';
 import { useToast } from '../components/providers/ToastProvider';
-import { runGDriveAdhocSync, fetchConfig, fetchJobDetail } from '../utils/api';
+import { runGDriveAdhocSync, fetchConfig, fetchJobDetail, retryJob } from '../utils/api';
 import '../css/dashboard.css';
 import '../css/poster_manage.css';
 
@@ -55,6 +55,9 @@ export default function PosterManagement() {
             if (card.key === 'gdrive_adhoc') {
                 setSelectedGDrives([]);
                 setPillProgress({});
+                // Clean up any existing pollers
+                Object.values(jobPollers.current).forEach(clearInterval);
+                jobPollers.current = {};
             }
             setCardState(s => ({
                 ...s,
@@ -97,24 +100,36 @@ export default function PosterManagement() {
 
     // GDrive Sync Handler (runs one job per selected drive, shows progress per-pill)
     const handleGDriveRun = async () => {
+        // Reset all selected drives to running state
         setPillProgress(() =>
             Object.fromEntries(
-                selectedGDrives.map(n => [n, { progress: 0, status: 'running', jobId: null }])
+                selectedGDrives.map(n => [n, { 
+                    progress: 0, 
+                    status: 'running', 
+                    jobId: null,
+                    error: null 
+                }])
             )
         );
+        
         try {
             // Start jobs in parallel
             await Promise.all(
                 selectedGDrives.map(async driveName => {
                     try {
-                        // runGDriveAdhocSync expects array; you could also POST one at a time if needed
                         const jobResp = await runGDriveAdhocSync([driveName]);
                         if (!jobResp.job_id) throw new Error('No job ID returned');
-                        // Track jobId per drive
+                        
+                        // Update with job ID
                         setPillProgress(prv => ({
                             ...prv,
-                            [driveName]: { ...prv[driveName], jobId: jobResp.job_id },
+                            [driveName]: { 
+                                ...prv[driveName], 
+                                jobId: jobResp.job_id,
+                                progress: 5  // Show some initial progress
+                            },
                         }));
+                        
                         // Start polling job progress
                         startJobPolling(driveName, jobResp.job_id);
                         return { name: driveName, jobId: jobResp.job_id };
@@ -122,10 +137,10 @@ export default function PosterManagement() {
                         setPillProgress(prv => ({
                             ...prv,
                             [driveName]: {
-                                ...prv[driveName],
-                                status: 'error',
                                 progress: null,
+                                status: 'error',
                                 error: err.message,
+                                jobId: null,
                             },
                         }));
                         toast.error(`Failed to start sync for ${driveName}: ${err.message}`);
@@ -140,27 +155,65 @@ export default function PosterManagement() {
 
     // Poll job progress for a drive
     const startJobPolling = (driveName, jobId) => {
-        if (jobPollers.current[driveName]) clearInterval(jobPollers.current[driveName]);
+        console.log(`Starting polling for ${driveName}, job ${jobId}`);
+        
+        // Clear existing poller
+        if (jobPollers.current[driveName]) {
+            clearInterval(jobPollers.current[driveName]);
+        }
+        
         jobPollers.current[driveName] = setInterval(async () => {
             try {
-                const job = await fetchJobDetail(jobId);
-                // You may want to check job.status or job.progress, depending on your schema
-                const finished =
-                    job.status &&
-                    ['done', 'success', 'failed', 'error', 'canceled'].includes(job.status);
+                const response = await fetchJobDetail(jobId);
+                console.log(`Job ${jobId} status:`, response);
+                
+                // Handle the response structure - fetchJobDetail returns the job object directly
+                const job = response.job || response;
+                
+                // Map database status values to our UI states
+                const dbStatus = job.status;
+                let uiStatus = 'running';
+                let isFinished = false;
+                
+                if (dbStatus === 'success') {
+                    uiStatus = 'success';
+                    isFinished = true;
+                } else if (dbStatus === 'error') {
+                    uiStatus = 'error';
+                    isFinished = true;
+                } else if (dbStatus === 'running') {
+                    uiStatus = 'running';
+                } else if (dbStatus === 'pending') {
+                    uiStatus = 'running'; // Show as running for pending jobs
+                }
+                
+                // Update progress state
                 setPillProgress(prv => ({
                     ...prv,
                     [driveName]: {
                         ...prv[driveName],
-                        progress: job.progress ?? null,
-                        status: job.status || (finished ? 'done' : 'running'),
+                        progress: job.progress ?? prv[driveName]?.progress ?? null,
+                        status: uiStatus,
                         error: job.error || null,
                     },
                 }));
-                if (finished) {
+                
+                // Stop polling if finished
+                if (isFinished) {
+                    console.log(`Job ${jobId} finished with status: ${uiStatus}`);
                     clearInterval(jobPollers.current[driveName]);
+                    delete jobPollers.current[driveName];
+                    
+                    // Show completion notification
+                    if (uiStatus === 'success') {
+                        toast.success(`GDrive sync completed for ${driveName}`);
+                    } else if (uiStatus === 'error') {
+                        toast.error(`GDrive sync failed for ${driveName}: ${job.error || 'Unknown error'}`);
+                    }
                 }
+                
             } catch (e) {
+                console.error(`Error polling job ${jobId}:`, e);
                 setPillProgress(prv => ({
                     ...prv,
                     [driveName]: {
@@ -171,12 +224,56 @@ export default function PosterManagement() {
                     },
                 }));
                 clearInterval(jobPollers.current[driveName]);
+                delete jobPollers.current[driveName];
             }
-        }, 1200); // poll every ~1s
+        }, 1000); // Poll every 1 second for better responsiveness
+    };
+
+    // Retry a failed job
+    const handleRetryJob = async (driveName) => {
+        const pill = pillProgress[driveName];
+        if (!pill?.jobId) {
+            toast.error('No job ID to retry');
+            return;
+        }
+        
+        try {
+            // Reset pill to running state
+            setPillProgress(prv => ({
+                ...prv,
+                [driveName]: {
+                    ...prv[driveName],
+                    status: 'running',
+                    progress: 0,
+                    error: null,
+                },
+            }));
+            
+            // Call retry API
+            await retryJob(pill.jobId);
+            toast.info(`Retrying sync for ${driveName}...`);
+            
+            // Restart polling
+            startJobPolling(driveName, pill.jobId);
+            
+        } catch (error) {
+            setPillProgress(prv => ({
+                ...prv,
+                [driveName]: {
+                    ...prv[driveName],
+                    status: 'error',
+                    error: error.message,
+                },
+            }));
+            toast.error(`Failed to retry ${driveName}: ${error.message}`);
+        }
     };
 
     // Columns
     const [leftCol, rightCol] = splitIntoColumns(POSTER_MANAGE_CARDS, renderedOpen);
+
+    // Check if any jobs are running
+    const hasRunningJobs = Object.values(pillProgress).some(p => p.status === 'running');
 
     // Render a card: parent prepares exactly the props for the content component
     const renderCard = card => {
@@ -189,8 +286,9 @@ export default function PosterManagement() {
             cardProps.selected = selectedGDrives;
             cardProps.onToggleSelect = handleToggleGDrive;
             cardProps.onRun = handleGDriveRun;
+            cardProps.onRetry = handleRetryJob;
             cardProps.pillProgress = pillProgress;
-            cardProps.loading = Object.values(pillProgress).some(p => p.status === 'running');
+            cardProps.loading = hasRunningJobs;
         }
 
         return (

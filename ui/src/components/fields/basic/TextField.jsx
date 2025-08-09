@@ -1,4 +1,6 @@
-export function TextField({
+import React from 'react';
+
+export const TextField = React.memo(function TextField({
     field,
     value,
     onChange,
@@ -30,4 +32,4 @@ export function TextField({
             </div>
         </div>
     );
-}
+});

@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 
-export function TextareaField({
+export const TextareaField = React.memo(function TextareaField({
     field,
     value,
     onChange,
@@ -49,4 +49,4 @@ export function TextareaField({
             </div>
         </div>
     );
-}
+});

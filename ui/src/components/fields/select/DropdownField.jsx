@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function DropdownField({
+export const DropdownField = React.memo(function DropdownField({
     field,
     value,
     onChange,
@@ -31,4 +31,4 @@ export function DropdownField({
             </div>
         </div>
     );
-}
+});

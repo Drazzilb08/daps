@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-export function PasswordField({
+export const PasswordField = React.memo(function PasswordField({
     field,
     value,
     onChange,
@@ -46,4 +46,4 @@ export function PasswordField({
             </div>
         </div>
     );
-}
+});

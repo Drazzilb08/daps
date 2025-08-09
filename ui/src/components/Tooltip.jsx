@@ -1,8 +1,7 @@
-// PortalTooltip.jsx
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 
-export default function TooltipFactory({ anchor, text, position = 'top', show }) {
+export default React.memo(function TooltipFactory({ anchor, text, position = 'top', show }) {
     const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
 
     useEffect(() => {
@@ -38,4 +37,4 @@ export default function TooltipFactory({ anchor, text, position = 'top', show })
         </div>,
         document.body
     );
-}
+});

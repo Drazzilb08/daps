@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function NumberField({
+export const NumberField = React.memo(function NumberField({
     field,
     value,
     onChange,
@@ -37,4 +37,4 @@ export function NumberField({
             </div>
         </div>
     );
-}
+});

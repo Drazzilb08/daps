@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 
-export default function Header() {
+export default React.memo(function Header() {
     useEffect(() => {
         // Hamburger logic for small screens only
         const hamburger = document.getElementById('sidebarToggle');
@@ -55,4 +55,4 @@ export default function Header() {
             </button>
         </div>
     );
-}
+});

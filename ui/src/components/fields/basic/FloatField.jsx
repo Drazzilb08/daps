@@ -1,6 +1,6 @@
 import React from 'react';
 
-export function FloatField({
+export const FloatField = React.memo(function FloatField({
     field,
     value,
     onChange,
@@ -49,4 +49,4 @@ export function FloatField({
             </div>
         </div>
     );
-}
+});

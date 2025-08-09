@@ -2,7 +2,7 @@ import React from 'react';
 import TooltipFactory from './Tooltip';
 import { getIcon } from '../utils/tools';
 
-export default function DashboardContent({
+export default React.memo(function DashboardContent({
     icon,
     title,
     headerActions = null,
@@ -54,4 +54,4 @@ export default function DashboardContent({
             </div>
         </div>
     );
-}
+});

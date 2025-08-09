@@ -1,7 +1,6 @@
-// src/components/fields/select/CheckBoxField.jsx
 import React from 'react';
 
-export function CheckBoxField({
+export const CheckBoxField = React.memo(function CheckBoxField({
     field,
     value,
     onChange,
@@ -29,4 +28,4 @@ export function CheckBoxField({
             </div>
         </div>
     );
-}
+});

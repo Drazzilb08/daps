@@ -1,23 +1,73 @@
+// ========== HELPER FUNCTIONS ==========
+
+/**
+ * Handle standardized API responses
+ * @param {Response} res - Fetch response object
+ * @returns {Promise<Object>} - Parsed response data
+ */
+async function handleApiResponse(res) {
+    const data = await res.json().catch(() => ({}));
+    
+    if (!res.ok || !data.success) {
+        const errorMessage = data.message || `API Error (${res.status})`;
+        const error = new Error(errorMessage);
+        error.code = data.error_code;
+        error.status = res.status;
+        throw error;
+    }
+    
+    return data;
+}
+
+/**
+ * Extract data from standardized API response
+ * @param {Object} response - API response object
+ * @param {string} field - Optional field to extract from data
+ * @returns {*} - Extracted data
+ */
+function extractData(response, field = null) {
+    if (!response.data) return field ? undefined : {};
+    return field ? response.data[field] : response.data;
+}
+
 // ========== JOB MANAGEMENT FUNCTIONS ==========
 
 // Get details of a specific job by ID
 export async function fetchJobDetail(jobId) {
     const res = await fetch(`/api/jobs/${jobId}`);
-    if (!res.ok) throw new Error('Failed to fetch job');
-    return await res.json();
+    const data = await handleApiResponse(res);
+    return extractData(data, 'job');
 }
 
 // Retry a failed job
 export async function retryJob(jobId) {
-    const res = await fetch(`/api/jobs/${jobId}/retry`, {
+    const res = await fetch(`/api/job/${jobId}/retry`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
     });
-    if (!res.ok) {
-        const error = await res.json().catch(() => ({}));
-        throw new Error(error.message || 'Failed to retry job');
-    }
-    return await res.json();
+    const data = await handleApiResponse(res);
+    return {
+        success: true,
+        message: data.message,
+        job_id: extractData(data, 'job_id')
+    };
+}
+
+// List jobs with optional filtering
+export async function fetchJobs(status = null, limit = 50) {
+    let url = `/api/jobs?limit=${limit}`;
+    if (status) url += `&status=${encodeURIComponent(status)}`;
+    
+    const res = await fetch(url);
+    const data = await handleApiResponse(res);
+    return extractData(data, 'jobs') || [];
+}
+
+// Get job statistics
+export async function fetchJobStats() {
+    const res = await fetch('/api/jobs/stats');
+    const data = await handleApiResponse(res);
+    return extractData(data, 'stats') || {};
 }
 
 // ========== GDRIVE SYNC FUNCTIONS ==========
@@ -26,26 +76,34 @@ export async function retryJob(jobId) {
 export async function runGDriveAdhocSync(gdrive_names) {
     const qs = gdrive_names.map(n => `gdrive_names=${encodeURIComponent(n)}`).join('&');
     const res = await fetch(`/api/run/gdrive?${qs}`, { method: 'POST' });
-    if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || `Failed to run GDrive adhoc sync (${res.status})`);
+    const data = await handleApiResponse(res);
+    
+    const responseData = extractData(data);
+    
+    // Handle single vs multiple jobs
+    if (responseData.job_id) {
+        return {
+            success: true,
+            message: data.message,
+            job_id: responseData.job_id,
+            name: responseData.name
+        };
+    } else if (responseData.jobs) {
+        return {
+            success: true,
+            message: data.message,
+            jobs: responseData.jobs
+        };
     }
-    const result = await res.json();
-
-    // Ensure we have a job_id for tracking
-    if (!result.job_id) {
-        throw new Error('Sync started but no job ID returned for tracking');
-    }
-
-    return result;
+    
+    throw new Error('Sync started but no job information returned');
 }
 
 // Get Gdrive Statistics
 export async function fetchGDriveStats() {
     const res = await fetch('/api/gdrive/stats');
-    if (!res.ok) throw new Error('Failed to fetch GDrive stats');
-    const data = await res.json();
-    return data.gdrive_stats || [];
+    const data = await handleApiResponse(res);
+    return extractData(data, 'gdrive_stats') || [];
 }
 
 // ========== MEDIA & COLLECTION MANAGEMENT ==========
@@ -56,8 +114,12 @@ export async function uploadMediaById(id) {
     const res = await fetch(`/api/run/upload/media/${id}`, {
         method: 'POST',
     });
-    if (!res.ok) throw new Error('Failed to upload media');
-    return await res.json();
+    const data = await handleApiResponse(res);
+    return {
+        success: true,
+        message: data.message,
+        data: extractData(data)
+    };
 }
 
 // Upload a single collection cache item by ID
@@ -66,24 +128,26 @@ export async function uploadCollectionById(id) {
     const res = await fetch(`/api/run/upload/collection/${id}`, {
         method: 'POST',
     });
-    if (!res.ok) throw new Error('Failed to upload collection');
-    return await res.json();
+    const data = await handleApiResponse(res);
+    return {
+        success: true,
+        message: data.message,
+        data: extractData(data)
+    };
 }
 
 // Get all media cache entries
 export async function fetchMediaCache() {
     const res = await fetch('/api/cache/media');
-    if (!res.ok) throw new Error('Failed to fetch media cache');
-    const data = await res.json();
-    return data.media_cache || [];
+    const data = await handleApiResponse(res);
+    return extractData(data, 'media_cache') || [];
 }
 
 // Get all collection cache entries
 export async function fetchCollectionCache() {
     const res = await fetch('/api/cache/collection');
-    if (!res.ok) throw new Error('Failed to fetch collection cache');
-    const data = await res.json();
-    return data.collection_cache || [];
+    const data = await handleApiResponse(res);
+    return extractData(data, 'collection_cache') || [];
 }
 
 // Delete media cache entry by id
@@ -92,11 +156,12 @@ export async function deleteMediaCacheById(id) {
     const res = await fetch(`/api/cache/media/${id}`, {
         method: 'DELETE',
     });
-    if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'Failed to delete media cache');
-    }
-    return await res.json();
+    const data = await handleApiResponse(res);
+    return {
+        success: true,
+        message: data.message,
+        deleted_id: extractData(data, 'deleted_id')
+    };
 }
 
 // Delete collection cache entry by id
@@ -105,11 +170,12 @@ export async function deleteCollectionCacheById(id) {
     const res = await fetch(`/api/cache/collection/${id}`, {
         method: 'DELETE',
     });
-    if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(err.error || 'Failed to delete collection cache');
-    }
-    return await res.json();
+    const data = await handleApiResponse(res);
+    return {
+        success: true,
+        message: data.message,
+        deleted_id: extractData(data, 'deleted_id')
+    };
 }
 
 // ========== POSTER STATISTICS ==========
@@ -117,17 +183,15 @@ export async function deleteCollectionCacheById(id) {
 // Get unmatched poster statistics
 export async function fetchUnmatchedStats() {
     const res = await fetch('/api/posters/unmatched/stats');
-    if (!res.ok) throw new Error('Failed to fetch unmatched poster stats');
-    const data = await res.json();
-    return data.summary || [];
+    const data = await handleApiResponse(res);
+    return extractData(data, 'summary') || {};
 }
 
 // Get matched poster statistics
 export async function fetchMatchedPosterStats() {
     const res = await fetch('/api/posters/matched/stats');
-    if (!res.ok) throw new Error('Failed to fetch matched poster stats');
-    const data = await res.json();
-    return data.matched_posters_stats || [];
+    const data = await handleApiResponse(res);
+    return extractData(data, 'matched_posters_stats') || [];
 }
 
 // Get poster/folder stats
@@ -141,25 +205,36 @@ export async function fetchPosters(location) {
             message: 'Missing location for stats fetch.',
         };
     }
-    const res = await fetch(`/api/posters?location=${encodeURIComponent(location)}`);
-    if (!res.ok) {
+    
+    try {
+        const res = await fetch(`/api/posters?location=${encodeURIComponent(location)}`);
+        const data = await handleApiResponse(res);
+        const posterData = extractData(data);
+        
+        return {
+            error: false,
+            file_count: posterData.file_count || 0,
+            size_bytes: posterData.size_bytes || 0,
+            files: posterData.files || [],
+            message: data.message
+        };
+    } catch (error) {
         return {
             error: true,
             file_count: 0,
             size_bytes: 0,
             files: [],
-            message: 'Failed to fetch poster stats.',
+            message: error.message || 'Failed to fetch poster stats.',
         };
     }
-    return await res.json();
 }
 
 // Get poster asset list
 export async function fetchPosterAssetList() {
     const res = await fetch('/api/poster/assets');
-    if (!res.ok) throw new Error('Failed to fetch poster asset list');
-    const arr = await res.json();
-    return Array.isArray(arr) ? arr : [];
+    const data = await handleApiResponse(res);
+    const files = extractData(data, 'files');
+    return Array.isArray(files) ? files : [];
 }
 
 // Poster preview URL (not async, just guard errors)
@@ -177,11 +252,8 @@ export function fetchPosterPreviewUrl(location, path) {
 // Get Plex libraries
 export async function fetchPlexLibraries(instanceName) {
     const resp = await fetch(`/api/plex/libraries?instance=${encodeURIComponent(instanceName)}`);
-    if (!resp.ok) {
-        const msg = `Failed to fetch Plex libraries (${resp.status})`;
-        throw new Error(msg);
-    }
-    return await resp.json();
+    const data = await handleApiResponse(resp);
+    return extractData(data, 'libraries') || [];
 }
 
 // ========== CONFIGURATION ==========
@@ -190,9 +262,10 @@ export async function fetchPlexLibraries(instanceName) {
 export async function fetchConfig(section = null) {
     let url = '/api/config';
     if (section) url += `?section=${encodeURIComponent(section)}`;
+    
     const res = await fetch(url);
-    if (!res.ok) throw new Error('Failed to fetch config');
-    return await res.json();
+    const data = await handleApiResponse(res);
+    return extractData(data);
 }
 
 // Save config
@@ -202,9 +275,53 @@ export async function postConfig(payload) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || res.statusText);
-    return { success: true, data };
+    const data = await handleApiResponse(res);
+    return {
+        success: true,
+        message: data.message,
+        data: extractData(data)
+    };
+}
+
+// ========== INSTANCES ==========
+
+// Fetch all service instances
+export async function fetchInstances() {
+    const res = await fetch('/api/instances/');
+    const data = await handleApiResponse(res);
+    return extractData(data);
+}
+
+// Test instance (API check)
+export async function testInstance(service, entry) {
+    if (!service || !entry || !entry.name || !entry.url || !entry.api) {
+        return { success: false, message: 'Missing required instance parameters' };
+    }
+    
+    try {
+        const res = await fetch('/api/test-instance', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                service,
+                name: entry.name.trim(),
+                url: entry.url.trim(),
+                api: entry.api.trim(),
+            }),
+        });
+        const data = await handleApiResponse(res);
+        return {
+            success: true,
+            message: data.message,
+            status_code: extractData(data, 'status_code')
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message: error.message,
+            error_code: error.code
+        };
+    }
 }
 
 // ========== NOTIFICATIONS ==========
@@ -214,59 +331,31 @@ export async function runTestNotification(type, data) {
     if (!type || !data) {
         return { ok: false, error: 'Missing type or data' };
     }
+    
     const payload = {
         module: 'notifications',
         notifications: { [type]: data },
     };
-    const res = await fetch('/api/test-notification', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-    });
-    const result = await res.json().catch(() => ({}));
-    if (!res.ok) {
-        return { ok: false, error: result.error || 'Error' };
+    
+    try {
+        const res = await fetch('/api/test-notification', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        });
+        const responseData = await handleApiResponse(res);
+        return {
+            ok: true,
+            message: responseData.message,
+            data: extractData(responseData)
+        };
+    } catch (error) {
+        return {
+            ok: false,
+            error: error.message,
+            error_code: error.code
+        };
     }
-    if (result.results && Array.isArray(result.results)) {
-        const okTarget = result.results.find(r => r.ok === true);
-        if (okTarget) {
-            return { ok: true, message: okTarget.message || 'Test notification sent!' };
-        }
-        const failTarget = result.results.find(r => r.ok === false);
-        if (failTarget) {
-            return {
-                ok: false,
-                error:
-                    failTarget.error ||
-                    failTarget.message ||
-                    result.error ||
-                    'Test notification failed.',
-            };
-        }
-    }
-    if (result.success) return { ok: true, message: 'Test notification sent!' };
-    return { ok: false, error: result.error || 'Test notification failed (unknown error)' };
-}
-
-// ========== INSTANCE TESTING ==========
-
-// Test instance (API check)
-export async function testInstance(service, entry) {
-    if (!service || !entry || !entry.name || !entry.url || !entry.api) {
-        return false;
-    }
-    const res = await fetch('/api/test-instance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            service,
-            name: entry.name.trim(),
-            url: entry.url.trim(),
-            api: entry.api.trim(),
-        }),
-    });
-    if (!res.ok) return false;
-    return true;
 }
 
 // ========== MODULE MANAGEMENT ==========
@@ -274,9 +363,10 @@ export async function testInstance(service, entry) {
 // Fetch all run states (job queue)
 export async function fetchAllRunStates() {
     const res = await fetch('/api/run_state');
-    if (!res.ok) throw new Error('Failed to fetch run states');
-    const data = await res.json();
-    return (data.run_states || []).reduce((acc, r) => {
+    const data = await handleApiResponse(res);
+    const runStates = extractData(data, 'run_states') || [];
+    
+    return runStates.reduce((acc, r) => {
         acc[r.module_name] = r;
         return acc;
     }, {});
@@ -285,32 +375,66 @@ export async function fetchAllRunStates() {
 // Module status (running)
 export async function fetchModuleStatus(module) {
     if (!module) return false;
-    const res = await fetch(`/api/status?module=${encodeURIComponent(module)}`);
-    if (!res.ok) throw new Error('Failed to check status');
-    const data = await res.json();
-    return !!data.running;
+    
+    try {
+        const res = await fetch(`/api/status?module=${encodeURIComponent(module)}`);
+        const data = await handleApiResponse(res);
+        const moduleData = extractData(data);
+        return moduleData.running || false;
+    } catch (error) {
+        console.error('Failed to check module status:', error);
+        return false;
+    }
 }
 
 // Run module
 export async function runModule(module) {
-    if (!module) return false;
-    const res = await fetch('/api/run', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ module }),
-    });
-    return res.ok;
+    if (!module) return { success: false, message: 'Module name required' };
+    
+    try {
+        const res = await fetch('/api/run', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ module }),
+        });
+        const data = await handleApiResponse(res);
+        return {
+            success: true,
+            message: data.message,
+            data: extractData(data)
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message: error.message,
+            error_code: error.code
+        };
+    }
 }
 
 // Cancel scheduled module
 export async function cancelScheduledModule(module) {
-    if (!module) return false;
-    const res = await fetch('/api/cancel', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ module }),
-    });
-    return res.ok;
+    if (!module) return { success: false, message: 'Module name required' };
+    
+    try {
+        const res = await fetch('/api/cancel', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ module }),
+        });
+        const data = await handleApiResponse(res);
+        return {
+            success: true,
+            message: data.message,
+            data: extractData(data)
+        };
+    } catch (error) {
+        return {
+            success: false,
+            message: error.message,
+            error_code: error.code
+        };
+    }
 }
 
 // ========== LOGGING ==========
@@ -318,67 +442,78 @@ export async function cancelScheduledModule(module) {
 // Get log modules list
 export async function fetchLogModules() {
     const res = await fetch('/api/logs');
-    if (!res.ok) throw new Error('Failed to fetch log modules');
-    return await res.json();
+    const data = await handleApiResponse(res);
+    return extractData(data, 'modules') || [];
 }
 
 // Get log files
 export async function fetchLogFiles(moduleName) {
     if (!moduleName) return [];
-    const res = await fetch(`/api/logs/${moduleName}`);
-    if (!res.ok) return [];
-    return await res.json();
+    
+    try {
+        const res = await fetch(`/api/logs/${moduleName}`);
+        const data = await handleApiResponse(res);
+        return extractData(data, 'files') || [];
+    } catch (error) {
+        console.error('Failed to fetch log files:', error);
+        return [];
+    }
 }
 
 // Get log content
 export async function fetchLogContent(moduleName, fileName) {
     if (!moduleName || !fileName) return '';
-    const res = await fetch(`/api/logs/${moduleName}/${fileName}`);
-    if (!res.ok) return '';
-    return await res.text();
+    
+    try {
+        const res = await fetch(`/api/logs/${moduleName}/${fileName}`);
+        if (!res.ok) return '';
+        return await res.text();
+    } catch (error) {
+        console.error('Failed to fetch log content:', error);
+        return '';
+    }
 }
 
-// ========== FILESYSTEM ==========
+// ========== FILESYSTEM (Legacy endpoints - may need backend implementation) ==========
 
 // Create directory
 export async function createDirectory(path) {
-    const resp = await fetch(`/api/create-folder?path=${encodeURIComponent(path)}`, {
-        method: 'POST',
-    });
-    if (!resp.ok) {
-        let err;
-        try {
-            err = await resp.json();
-        } catch {
-            err = {};
-        }
-        throw new Error(err.error || resp.statusText);
+    try {
+        const resp = await fetch(`/api/create-folder?path=${encodeURIComponent(path)}`, {
+            method: 'POST',
+        });
+        const data = await handleApiResponse(resp);
+        return {
+            success: true,
+            message: data.message,
+            data: extractData(data)
+        };
+    } catch (error) {
+        throw new Error(error.message || 'Failed to create directory');
     }
-    return await resp.json();
 }
 
 // Directory listing
 export async function fetchDirectoryList(path) {
     if (!path) path = '/';
-    const res = await fetch(`/api/list?path=${encodeURIComponent(path)}`);
-    let data;
+    
     try {
-        data = await res.json();
-    } catch {
-        data = { directories: [], exists: false, writable: false, error: 'Invalid response' };
-    }
-    if (!('directories' in data)) data.directories = [];
-    if (!('exists' in data)) data.exists = false;
-    if (!('writable' in data)) data.writable = false;
-    if (!('error' in data)) data.error = undefined;
-
-    if (!res.ok || data.error) {
+        const res = await fetch(`/api/list?path=${encodeURIComponent(path)}`);
+        const data = await handleApiResponse(res);
+        const dirData = extractData(data);
+        
+        return {
+            directories: dirData.directories || [],
+            exists: dirData.exists !== undefined ? dirData.exists : false,
+            writable: dirData.writable !== undefined ? dirData.writable : false,
+            error: undefined
+        };
+    } catch (error) {
         return {
             directories: [],
             exists: false,
             writable: false,
-            error: data.error || 'Failed to load directory list.',
+            error: error.message || 'Failed to load directory list.'
         };
     }
-    return data;
 }

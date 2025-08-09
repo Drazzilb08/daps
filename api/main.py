@@ -5,12 +5,14 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.responses import (
     FileResponse,
     HTMLResponse,
     JSONResponse,
 )
 from fastapi.staticfiles import StaticFiles
+from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from api import (
     config as config_router,
@@ -158,18 +160,77 @@ def get_logger(request: Request, source="WEB") -> Any:
     return request.app.state.logger.get_adapter(source)
 
 
+def ok(message: str, data: Any | None = None, status_code: int = 200):
+    """Standard success response factory.
+
+    Args:
+        message: Human-readable summary.
+        data: Optional payload.
+        status_code: HTTP status code (default 200).
+    """
+    payload = {"success": True, "message": message}
+    if data is not None:
+        payload["data"] = data
+    return JSONResponse(status_code=status_code, content=payload)
+
+
+def error(
+    message: str,
+    code: str = "UNKNOWN_ERROR",
+    *,
+    data: Any | None = None,
+    status_code: int = 400,
+):
+    """Standard error response factory.
+
+    Args:
+        message: Human-readable error.
+        code: Stable, machine-readable error code.
+        data: Optional details (e.g., validation errors).
+        status_code: HTTP status code (default 400).
+    """
+    payload = {"success": False, "message": message, "error_code": code}
+    if data is not None:
+        payload["data"] = data
+    return JSONResponse(status_code=status_code, content=payload)
+
+
 @app.exception_handler(Exception)
 async def handle_exception(request: Request, exc: Exception):
-    """FIXED: Standardized error response format"""
+    """Catch-all exception handler with standardized payload."""
     logger = get_logger(request, "ERROR")
     logger.error(f"Unhandled Exception: {exc}", exc_info=True)
-    return JSONResponse(
-        status_code=500,
-        content={
-            "success": False,
-            "message": f"Internal server error: {str(exc)}",
-            "error_code": "INTERNAL_ERROR",
-        },
+    return error(
+        f"Internal server error: {str(exc)}", code="INTERNAL_ERROR", status_code=500
+    )
+
+
+@app.exception_handler(StarletteHTTPException)
+async def handle_http_exception(request: Request, exc: StarletteHTTPException):
+    """Standardize HTTPException responses into the common error envelope."""
+    logger = get_logger(request, "ERROR")
+    logger.warning(f"HTTP {exc.status_code}: {exc.detail}")
+
+    detail = exc.detail
+    if isinstance(detail, dict):
+        msg = detail.get("message") or str(detail)
+        code = detail.get("error_code") or "HTTP_ERROR"
+        data = detail.get("data")
+    else:
+        msg = str(detail)
+        code = "HTTP_ERROR"
+        data = None
+
+    return error(msg, code=code, data=data, status_code=exc.status_code)
+
+
+@app.exception_handler(RequestValidationError)
+async def handle_validation_exception(request: Request, exc: RequestValidationError):
+    """Return a normalized 422 for validation errors."""
+    logger = get_logger(request, "ERROR")
+    logger.warning(f"Validation error: {exc.errors()}")
+    return error(
+        "Validation error", code="VALIDATION_ERROR", data=exc.errors(), status_code=422
     )
 
 
@@ -189,20 +250,11 @@ async def get_version_route(logger: Any = Depends(get_logger)):
     try:
         version = get_version()
         logger.debug(f"Serving GET /api/version: {version}")
-        return {
-            "success": True,
-            "message": "Version retrieved",
-            "data": {"version": version},
-        }
+        return ok("Version retrieved", {"version": version})
     except Exception as e:
         logger.error(f"Error getting version: {e}")
-        return JSONResponse(
-            status_code=500,
-            content={
-                "success": False,
-                "message": f"Error getting version: {str(e)}",
-                "error_code": "VERSION_ERROR",
-            },
+        return error(
+            f"Error getting version: {str(e)}", code="VERSION_ERROR", status_code=500
         )
 
 
@@ -212,14 +264,11 @@ async def list_dir(path: str = "/", logger: Any = Depends(get_logger)):
     try:
         resolved = Path(path).expanduser().resolve()
         if not resolved.exists() or not resolved.is_dir():
-            return JSONResponse(
+            return error(
+                "Invalid path",
+                code="INVALID_PATH",
                 status_code=400,
-                content={
-                    "success": False,
-                    "message": "Invalid path",
-                    "error_code": "INVALID_PATH",
-                    "data": {"directories": [], "exists": False, "writable": False},
-                },
+                data={"directories": [], "exists": False, "writable": False},
             )
 
         dirs = [
@@ -229,24 +278,18 @@ async def list_dir(path: str = "/", logger: Any = Depends(get_logger)):
         ]
         dirs.sort()
 
-        return {
-            "success": True,
-            "message": f"Listed {len(dirs)} directories",
-            "data": {
+        return ok(
+            f"Listed {len(dirs)} directories",
+            {
                 "directories": dirs,
                 "exists": True,
                 "writable": os.access(resolved, os.W_OK),
             },
-        }
+        )
     except Exception as e:
         logger.error(f"Error listing directory {path}: {e}")
-        return JSONResponse(
-            status_code=500,
-            content={
-                "success": False,
-                "message": f"Error listing directory: {str(e)}",
-                "error_code": "LIST_DIR_ERROR",
-            },
+        return error(
+            f"Error listing directory: {str(e)}", code="LIST_DIR_ERROR", status_code=500
         )
 
 
@@ -258,20 +301,13 @@ async def create_folder(path: str, logger: Any = Depends(get_logger)):
         logger.info(f"Creating folder: {resolved}")
         resolved.mkdir(parents=True, exist_ok=False)
 
-        return {
-            "success": True,
-            "message": f"Folder created: {resolved}",
-            "data": {"path": str(resolved)},
-        }
+        return ok("Folder created", {"path": str(resolved)})
     except Exception as e:
         logger.error(f"Error creating folder {path}: {e}")
-        return JSONResponse(
+        return error(
+            f"Error creating folder: {str(e)}",
+            code="CREATE_FOLDER_ERROR",
             status_code=500,
-            content={
-                "success": False,
-                "message": f"Error creating folder: {str(e)}",
-                "error_code": "CREATE_FOLDER_ERROR",
-            },
         )
 
 
@@ -283,20 +319,13 @@ async def test_endpoint(request: Request, logger: Any = Depends(get_logger)):
         data = await request.json()
         logger.debug(f"Received data: {data}")
 
-        return {
-            "success": True,
-            "message": "Test endpoint working",
-            "data": {"received": data},
-        }
+        return ok("Test endpoint working", {"received": data})
     except Exception as e:
         logger.error(f"Error reading data: {e}")
-        return JSONResponse(
+        return error(
+            f"Error reading request data: {str(e)}",
+            code="REQUEST_DATA_ERROR",
             status_code=400,
-            content={
-                "success": False,
-                "message": f"Error reading request data: {str(e)}",
-                "error_code": "REQUEST_DATA_ERROR",
-            },
         )
 
 
@@ -307,13 +336,10 @@ async def root():
     try:
         return HTMLResponse(content=html_path.read_text(), status_code=200)
     except Exception as e:
-        return JSONResponse(
+        return error(
+            f"Error serving index page: {str(e)}",
+            code="INDEX_PAGE_ERROR",
             status_code=500,
-            content={
-                "success": False,
-                "message": f"Error serving index page: {str(e)}",
-                "error_code": "INDEX_PAGE_ERROR",
-            },
         )
 
 

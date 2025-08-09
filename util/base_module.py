@@ -1,14 +1,23 @@
 # util/base_module.py
 
 from abc import ABC, abstractmethod
+from typing import Optional
 
 from util.config import load_config
 from util.logger import Logger
 
 
 class DapsModule(ABC):
-    def __init__(self) -> None:
+    def __init__(self, logger: Optional[Logger] = None) -> None:
+        """
+        Initialize module with optional logger injection.
+
+        Args:
+            logger: Optional logger instance for server mode.
+                   If None, creates module-specific logger for CLI mode.
+        """
         self.full_config = load_config()
+
         try:
             module_name = self._get_module_name()
         except Exception as e:
@@ -19,9 +28,11 @@ class DapsModule(ABC):
         if self.config is None:
             raise ValueError(f"No configuration found for module: {module_name}")
 
-        # Create module-specific logger with its own log file
-        log_level = getattr(self.config, "log_level", "INFO")
-        self.logger = Logger(log_level=log_level, module_name=module_name)
+        if logger is not None:
+            self.logger = logger.get_adapter(module_name.upper())
+        else:
+            log_level = getattr(self.config, "log_level", "INFO")
+            self.logger = Logger(log_level=log_level, module_name=module_name)
 
     def _get_module_name(self) -> str:
         """

@@ -13,6 +13,8 @@ from util.module_runner import ModuleRunner
 from util.scheduler import DapsScheduler
 from util.version import get_version
 
+SHUTDOWN_POLL_SECONDS = 60.0  # Interval for main thread to poll for shutdown
+
 
 class DapsApplication:
     """Main application class - handles lifecycle, infrastructure, and coordination"""
@@ -222,7 +224,7 @@ class DapsApplication:
 
             # Main thread waits for shutdown
             while not self.shutdown_requested.is_set():
-                if self.shutdown_requested.wait(timeout=60.0):  # Check every minute
+                if self.shutdown_requested.wait(timeout=SHUTDOWN_POLL_SECONDS):
                     break
 
         except Exception as e:

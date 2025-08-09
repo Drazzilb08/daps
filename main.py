@@ -24,75 +24,81 @@ class DapsApplication:
         self.config: Optional[DapsConfig] = None
         self.shutdown_requested = threading.Event()
         self.cleanup_done = False
+        self._cleanup_lock = threading.Lock()
+        self._cleanup_started = threading.Event()
 
     def setup_signal_handlers(self):
         """Set up signal handlers for graceful shutdown"""
-        signal_count = 0
+        import os
 
-        def signal_handler(signum, frame):
-            nonlocal signal_count
-            signal_count += 1
-
+        def hard_exit(signum, frame):
             if self.logger:
-                log = self.logger.get_adapter("MAIN")
-                log.info(
-                    f"Received signal {signum} (count: {signal_count}), initiating shutdown..."
+                self.logger.get_adapter("MAIN").warning(
+                    f"Received second signal {signum}, force exiting immediately"
                 )
             else:
                 print(
-                    f"[MAIN] Received signal {signum} (count: {signal_count}), initiating shutdown..."
+                    f"[MAIN] Received second signal {signum}, force exiting immediately"
                 )
+            os._exit(1)
 
-            if signal_count == 1:
-                self.shutdown_requested.set()
-                if not self.cleanup_done:
-                    cleanup_thread = threading.Thread(target=self.cleanup, daemon=True)
-                    cleanup_thread.start()
-                return
+        def first_signal(signum, frame):
+            if self.logger:
+                self.logger.get_adapter("MAIN").info(
+                    f"Received signal {signum}, initiating shutdown..."
+                )
             else:
-                if self.logger:
-                    self.logger.get_adapter("MAIN").warning("Force exiting immediately")
-                else:
-                    print("[MAIN] Force exiting immediately")
-                import os
+                print(f"[MAIN] Received signal {signum}, initiating shutdown...")
 
-                os._exit(1)
+            # Tell the rest of the app to stop
+            self.shutdown_requested.set()
 
-        signal.signal(signal.SIGINT, signal_handler)
-        signal.signal(signal.SIGTERM, signal_handler)
+            # Launch cleanup exactly once
+            if not self._cleanup_started.is_set():
+                self._cleanup_started.set()
+                threading.Thread(target=self.cleanup, daemon=True).start()
+
+            # After the first signal, escalate subsequent signals to immediate exit
+            signal.signal(signal.SIGINT, hard_exit)
+            signal.signal(signal.SIGTERM, hard_exit)
+
+        signal.signal(signal.SIGINT, first_signal)
+        signal.signal(signal.SIGTERM, first_signal)
         atexit.register(self.cleanup)
 
     def cleanup(self):
-        """Clean up resources"""
+        """Clean up resources (idempotent, thread-safe)"""
         if self.cleanup_done:
             return
+        with self._cleanup_lock:
+            if self.cleanup_done:
+                return
+            try:
+                if self.logger:
+                    log = self.logger.get_adapter("MAIN")
+                    log.info("Cleaning up application resources...")
+                else:
+                    print("[MAIN] Cleaning up application resources...")
 
-        try:
-            if self.logger:
-                log = self.logger.get_adapter("MAIN")
-                log.info("Cleaning up application resources...")
-            else:
-                print("[MAIN] Cleaning up application resources...")
+                if self.scheduler:
+                    self.scheduler.stop()
 
-            if self.scheduler:
-                self.scheduler.stop()
+                if self.module_runner:
+                    self.module_runner.stop_all()
 
-            if self.module_runner:
-                self.module_runner.stop_all()
+                self.cleanup_done = True
 
-            self.cleanup_done = True
+                if self.logger:
+                    self.logger.get_adapter("MAIN").info("Cleanup completed")
+                else:
+                    print("[MAIN] Cleanup completed")
 
-            if self.logger:
-                self.logger.get_adapter("MAIN").info("Cleanup completed")
-            else:
-                print("[MAIN] Cleanup completed")
-
-        except Exception as e:
-            if self.logger:
-                self.logger.get_adapter("MAIN").error(f"Error during cleanup: {e}")
-            else:
-                print(f"[MAIN] Error during cleanup: {e}")
-            self.cleanup_done = True
+            except Exception as e:
+                if self.logger:
+                    self.logger.get_adapter("MAIN").error(f"Error during cleanup: {e}")
+                else:
+                    print(f"[MAIN] Error during cleanup: {e}")
+                self.cleanup_done = True
 
     def run(self, args):
         """Main application run method"""
@@ -179,9 +185,7 @@ class DapsApplication:
             else:
                 print("[MAIN] Exiting application")
 
-            import os
-
-            os._exit(0)
+            return 0
 
         except Exception as e:
             if self.logger:

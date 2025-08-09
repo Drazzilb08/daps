@@ -1,4 +1,5 @@
 # util/scheduler.py
+
 import time
 from datetime import datetime
 from logging import Logger
@@ -6,7 +7,8 @@ from typing import Dict
 
 from croniter import croniter
 from dateutil import tz
-from prettytable import PrettyTable
+
+from util.helper import create_table
 
 
 def check_schedule(script_name: str, schedule: str, logger: Logger) -> bool:
@@ -92,18 +94,13 @@ def check_schedule(script_name: str, schedule: str, logger: Logger) -> bool:
 
 
 def print_schedule_table(logger, schedule):
-    """Print the current schedule table"""
+    """Print the current schedule table using util.helper.create_table for consistency."""
     if logger is None:
         return
-    logger.info("=" * 64)
-    logger.info("Current DAPS Schedule")
-    table = PrettyTable(["Module", "Schedule"])
-    table.align = "l"
-    table.padding_width = 1
-    for module_name, schedule_time in schedule.items():
-        table.add_row([module_name, schedule_time])
-    logger.info("\n" + str(table))
-    logger.info("=" * 64)
+    table_data = [["Module", "Schedule"]] + [
+        [module_name, schedule_time] for module_name, schedule_time in schedule.items()
+    ]
+    logger.info(create_table(table_data))
 
 
 class DapsScheduler:

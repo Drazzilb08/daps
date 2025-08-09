@@ -1,13 +1,4 @@
-"""Utility helpers for DAPS.
-
-This module centralizes small, dependency-light helpers used across CLI and web
-workers: structured logging and redaction helpers, diff utilities, ASCII table
-formatting, progress proxying, lightweight ID/year extraction, and the core
-asset↔media matching heuristics used by poster tools.
-
-The intent is to keep side effects explicit and I/O minimal so the functions are
-safe to reuse inside background workers and unit tests.
-"""
+# util/helper.py
 
 import copy
 import json

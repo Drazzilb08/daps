@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { fetchPosterPreviewUrl } from '../../../utils/api';
+import LazyImage from '../../common/LazyImage';
 
 function highlight(str, term) {
     if (!term) return str;
@@ -20,9 +21,6 @@ export default function AssetsSearchResults({
 }) {
     if (errorMsg) {
         return <div className="poster-search-error">{errorMsg}</div>;
-    }
-    if (!files.length) {
-        return <div className="poster-search-empty">No matching posters found.</div>;
     }
     if (!files.length) {
         return <div className="poster-search-empty">No matching posters found.</div>;
@@ -163,14 +161,15 @@ export default function AssetsSearchResults({
                             ].join('|')}
                             onClick={() => openPosterModal(obj)}
                         >
-                            {thumbUrl ? (
-                                <img
-                                    className="poster-thumb-img"
+                            {thumbUrl && (
+                                <LazyImage
                                     src={thumbUrl}
-                                    alt="thumb"
-                                    loading="lazy"
+                                    alt={obj.file}
+                                    className="poster-thumb-img"
+                                    threshold={0.1}
+                                    rootMargin="100px"
                                 />
-                            ) : null}
+                            )}
                             <span
                                 className="poster-file-label"
                                 dangerouslySetInnerHTML={{

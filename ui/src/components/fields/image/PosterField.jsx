@@ -10,6 +10,7 @@ import {
     uploadCollectionById,
 } from '../../../utils/api';
 import TooltipFactory from '../../../components/Tooltip';
+import LazyImage from '../../common/LazyImage';
 
 // Helper to get file name only (no dirs)
 function getFileName(path) {
@@ -138,7 +139,13 @@ export default function PosterField({ field, entry = {} }) {
 
     return (
         <div className="modal-poster-preview">
-            <img className="modal-poster-img" src={imgSrc} alt={showTitle || 'Poster Preview'} />
+            <LazyImage
+                src={imgSrc}
+                alt={showTitle || 'Poster Preview'}
+                className="modal-poster-img"
+                threshold={0.1}
+                rootMargin="50px"
+            />
 
             {renderMetaLine()}
 

@@ -3,6 +3,7 @@
 import React from 'react';
 import { fetchPosterPreviewUrl } from '../../../utils/api';
 import { humanize } from '../../../utils/tools';
+import LazyImage from '../../common/LazyImage';
 
 function highlight(str, term) {
     if (!term) return str;
@@ -174,11 +175,12 @@ export default function GdriveSearchResults({
                                         key={obj.id || obj.location + obj.file}
                                         onClick={() => openPosterModal(obj)}
                                     >
-                                        <img
-                                            className="poster-thumb-img"
+                                        <LazyImage
                                             src={thumbUrl}
-                                            alt="thumb"
-                                            loading="lazy"
+                                            alt={obj.file}
+                                            className="poster-thumb-img"
+                                            threshold={0.1}
+                                            rootMargin="100px"
                                         />
                                         <span
                                             className="poster-file-label"

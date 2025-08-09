@@ -606,6 +606,14 @@ export const SETTINGS_SCHEMA = [
                 description: 'Set the logging verbosity for general settings.',
             },
             {
+                key: 'max_logs',
+                label: 'Maximum Logs',
+                type: 'number',
+                placeholder: '9',
+                required: true,
+                description: 'Set the maximum number of logs to keep.',
+            },
+            {
                 key: 'update_notifications',
                 label: 'Update Notifications',
                 type: 'check_box',
@@ -683,5 +691,5 @@ export const SETTINGS_MODULES = [
     },
     { name: 'Jduparr', key: 'jduparr', description: 'Find and handle duplicates in your files.' },
     { name: 'UI', key: 'user_interface', description: 'User Interface Settings.' },
-    { name: 'General', key: 'main', description: 'General DAPS settings.' },
+    { name: 'General', key: 'general', description: 'General DAPS settings.' },
 ];

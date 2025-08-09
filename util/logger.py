@@ -1,7 +1,7 @@
 import logging
 import os
 import re
-from datetime import datetime, timedelta
+from datetime import datetime
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import Optional
@@ -80,7 +80,7 @@ class SmartRedactionFilter(logging.Filter):
 
 class Logger:
     """
-    Enhanced logger with smart redaction, automatic log retention, and cleaner initialization.
+    Enhanced logger with smart redaction, automatic log rotation, and cleaner initialization.
     """
 
     _initialized = set()
@@ -106,8 +106,8 @@ class Logger:
             log_level: Logging level (DEBUG, INFO, etc.)
             module_name: Name of the module for log organization
             log_file: Optional custom log file path
-            max_logs: Number of rotated logs to keep
-            retention_days: Days to keep old logs (None = no cleanup)
+            max_logs: Number of rotated logs to keep (defaults to 9 if not provided)
+            retention_days: (deprecated; ignored) kept for backward compatibility
             extra: Extra context for log adapters
         """
         log_level = log_level.upper()
@@ -130,10 +130,6 @@ class Logger:
 
         # Setup log directory and rotation
         self._setup_log_directory_and_rotation(log_file_path, max_logs)
-
-        # Cleanup old logs if retention is set
-        if retention_days:
-            self._cleanup_old_logs(log_file_path, retention_days)
 
         # Initialize logger
         self._logger = logging.getLogger(module_name)
@@ -184,35 +180,6 @@ class Logger:
             # Move current log to module_name.1.log
             rotated_file = f"{base_name}.1.log"
             os.rename(log_file_path, rotated_file)
-
-    def _cleanup_old_logs(self, log_file_path: str, retention_days: int) -> None:
-        """Remove log files older than retention_days."""
-        try:
-            log_dir = Path(log_file_path).parent
-            cutoff_date = datetime.now() - timedelta(days=retention_days)
-
-            # Find and remove old log files
-            log_pattern = f"{self.module_name}*.log"
-            removed_count = 0
-
-            for log_file in log_dir.glob(log_pattern):
-                try:
-                    file_modified = datetime.fromtimestamp(log_file.stat().st_mtime)
-                    if file_modified < cutoff_date:
-                        log_file.unlink()
-                        removed_count += 1
-                except (OSError, PermissionError):
-                    # Skip files we can't remove
-                    continue
-
-            if removed_count > 0:
-                print(
-                    f"[{self.module_name.upper()}] Cleaned up {removed_count} old log files"
-                )
-
-        except Exception:
-            # Silent fail on cleanup - not critical
-            pass
 
     def _setup_handlers(self, log_file_path: str, max_logs: int) -> None:
         """Setup logging handlers with improved redaction."""
@@ -324,60 +291,8 @@ class DapsLoggerAdapter(logging.LoggerAdapter):
         return DapsLoggerAdapter(self.logger, new_extra)
 
 
-def cleanup_old_logs_globally(retention_days: int = 30) -> None:
-    """
-    Global function to cleanup old logs across all modules.
-    Useful for maintenance scripts or scheduled cleanup.
-
-    Args:
-        retention_days: Days to keep logs (default: 30)
-    """
-    log_base = os.getenv("LOG_DIR")
-    if log_base:
-        logs_root = Path(log_base)
-    else:
-        logs_root = Path(__file__).resolve().parents[1] / "logs"
-
-    if not logs_root.exists():
-        return
-
-    cutoff_date = datetime.now() - timedelta(days=retention_days)
-    total_removed = 0
-
-    try:
-        # Walk through all module directories
-        for module_dir in logs_root.iterdir():
-            if not module_dir.is_dir():
-                continue
-
-            # Clean up log files in each module directory
-            for log_file in module_dir.glob("*.log"):
-                try:
-                    file_modified = datetime.fromtimestamp(log_file.stat().st_mtime)
-                    if file_modified < cutoff_date:
-                        log_file.unlink()
-                        total_removed += 1
-                except (OSError, PermissionError):
-                    continue
-
-            # Remove empty module directories
-            try:
-                if not any(module_dir.iterdir()):
-                    module_dir.rmdir()
-            except OSError:
-                pass
-
-        if total_removed > 0:
-            print(f"[MAINTENANCE] Cleaned up {total_removed} old log files")
-
-    except Exception as e:
-        print(f"[MAINTENANCE] Log cleanup failed: {e}")
-
-
-# Backwards compatibility
 def ensure_log_dir_and_rotate(log_file_path: str, max_logs: int = 9) -> None:
     """
-    Backwards compatibility function for manual log rotation.
     Ensures consistent <module_name>.#.log naming pattern.
 
     Args:

@@ -164,6 +164,7 @@ class UserInterfaceConfig(BaseModel):
 class GeneralConfig(BaseModel):
     log_level: str = "info"
     update_notifications: bool = False
+    logs_to_keep: int = 9  # max rotated log files to keep
 
 
 class UnmatchedAssetsConfig(BaseModel):

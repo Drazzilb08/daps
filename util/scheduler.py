@@ -10,6 +10,10 @@ from dateutil import tz
 
 from util.helper import create_table
 
+# Scheduler configuration constants
+SCHEDULER_POLL_INTERVAL_SECONDS = 5
+SCHEDULER_UPTIME_LOG_INTERVAL_SECONDS = 60
+
 
 def check_schedule(script_name: str, schedule: str, logger: Logger) -> bool:
     """Check if the current time matches the given schedule for a script."""
@@ -138,11 +142,11 @@ class DapsScheduler:
         try:
             while self.running:
                 self._tick(schedule)
-                time.sleep(5)
+                time.sleep(SCHEDULER_POLL_INTERVAL_SECONDS)
 
                 # Periodic uptime log
                 elapsed = int(time.monotonic() - start_time)
-                if elapsed % 60 == 0:
+                if elapsed % SCHEDULER_UPTIME_LOG_INTERVAL_SECONDS == 0:
                     minutes = elapsed // 60
                     seconds = elapsed % 60
                     if self.logger:

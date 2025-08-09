@@ -171,6 +171,7 @@ class ModuleRunner:
 
     def get_running(self) -> Dict[str, Dict]:
         """Return dict of running module names -> {'proc': proc, 'origin': ...}"""
+        self.cleanup_finished()
         return self.running.copy()
 
     def cleanup_finished(self) -> None:

@@ -14,14 +14,11 @@ export default function Settings() {
         return <SettingsSplash onSelectModule={key => navigate(`/settings/${key}`)} />;
     }
 
-    // Map alias 'ui' to 'user_interface'
-    const normalizedModuleName = moduleName === 'ui' ? 'user_interface' : moduleName;
-
     // Validate that normalizedModuleName exists in SETTINGS_SCHEMA keys
     const validKeys = SETTINGS_SCHEMA.map(s => s.key);
-    if (!validKeys.includes(normalizedModuleName)) {
+    if (!validKeys.includes(moduleName)) {
         return <div>Unknown settings module.</div>;
     }
 
-    return <SettingsForm moduleName={normalizedModuleName} onBack={() => navigate('/settings')} />;
+    return <SettingsForm moduleName={moduleName} onBack={() => navigate('/settings')} />;
 }

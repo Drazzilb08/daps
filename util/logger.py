@@ -87,14 +87,12 @@ class Logger:
 
     @staticmethod
     def redact_sensitive_info(text: str) -> str:
-        """Static method for backwards compatibility."""
         return SmartRedactionFilter.redact(text)
 
     def __init__(
         self,
         log_level: str,
         module_name: str,
-        log_file: Optional[str] = None,
         max_logs: int = 9,
         retention_days: Optional[int] = None,
         extra: Optional[dict] = None,
@@ -105,7 +103,6 @@ class Logger:
         Args:
             log_level: Logging level (DEBUG, INFO, etc.)
             module_name: Name of the module for log organization
-            log_file: Optional custom log file path
             max_logs: Number of rotated logs to keep (defaults to 9 if not provided)
             retention_days: (deprecated; ignored) kept for backward compatibility
             extra: Extra context for log adapters
@@ -115,18 +112,17 @@ class Logger:
         self._extra = extra or {}
         self.retention_days = retention_days
 
-        # Use simpler initialization tracking
-        key = (module_name, log_file)
+        env_log_file = os.getenv("LOG_FILE", "").strip()
+        if env_log_file:
+            log_file_path = env_log_file
+        else:
+            log_file_path = self._get_log_file_path(module_name)
+
+        key = (module_name, log_file_path)
         if key in Logger._initialized:
             self._logger = logging.getLogger(module_name)
             return
         Logger._initialized.add(key)
-
-        # Determine log file path
-        if log_file:
-            log_file_path = log_file
-        else:
-            log_file_path = self._get_log_file_path(module_name)
 
         # Setup log directory and rotation
         self._setup_log_directory_and_rotation(log_file_path, max_logs)

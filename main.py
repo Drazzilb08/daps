@@ -116,13 +116,21 @@ class DapsApplication:
 
                 os.environ["LOG_TO_CONSOLE"] = "true"
                 log_level = getattr(self.config.general, "log_level", "INFO")
-                self.logger = Logger(log_level, "general")
+                self.logger = Logger(
+                    log_level=log_level,
+                    module_name="general",
+                    max_logs=self.config.general.max_logs,
+                )
             else:
                 import os
 
                 os.environ["LOG_TO_CONSOLE"] = "false"
                 log_level = getattr(self.config.general, "log_level", "INFO")
-                self.logger = Logger(log_level, "general")
+                self.logger = Logger(
+                    log_level=log_level,
+                    module_name="general",
+                    max_logs=self.config.general.max_logs,
+                )
 
             self.module_runner = ModuleRunner(logger=self.logger)
 

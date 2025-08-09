@@ -8,7 +8,9 @@ from util.logger import Logger
 
 
 class DapsModule(ABC):
-    def __init__(self, logger: Optional[Logger] = None) -> None:
+    def __init__(
+        self, config: Optional[dict] = None, logger: Optional[Logger] = None
+    ) -> None:
         """
         Initialize module with optional logger injection.
 
@@ -32,7 +34,11 @@ class DapsModule(ABC):
             self.logger = logger.get_adapter(module_name.upper())
         else:
             log_level = getattr(self.config, "log_level", "INFO")
-            self.logger = Logger(log_level=log_level, module_name=module_name)
+            self.logger = Logger(
+                log_level=log_level,
+                module_name=module_name,
+                max_logs=self.full_config.general.max_logs,
+            )
 
     def _get_module_name(self) -> str:
         """

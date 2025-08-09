@@ -24,11 +24,31 @@ class DapsModule(ABC):
         self.logger = Logger(log_level=log_level, module_name=module_name)
 
     def _get_module_name(self) -> str:
+        """
+        Return this module's registry key from modules.MODULES.
+
+        Raises:
+            LookupError: if this class is not registered in the MODULES mapping.
+            TypeError: if the MODULES registry is not a dict-like mapping.
+        """
         from modules import MODULES
 
-        for module_name, module_class in MODULES.items():
-            if module_class == self.__class__:
+        # Validate registry is dict-like
+        try:
+            items = MODULES.items()
+        except Exception as e:
+            raise TypeError(f"Invalid MODULES registry: {e}")
+
+        for module_name, module_class in items:
+            # Exact class match only to avoid ambiguity
+            if module_class is self.__class__ or module_class == self.__class__:
                 return module_name
+
+        # Nothing matched: make the error explicit and actionable
+        raise LookupError(
+            f"{self.__class__.__name__} is not registered in modules.MODULES; "
+            "add it to modules/__init__.py: MODULES['<key>'] = <Class>"
+        )
 
     @abstractmethod
     def run(self) -> None:

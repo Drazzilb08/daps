@@ -3,19 +3,20 @@
 import json
 import sys
 from collections import defaultdict
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from util.base_module import DapsModule
 from util.connector import Connector
 from util.database import DapsDB
 from util.helper import create_table, print_settings
+from util.logger import Logger
 from util.normalization import normalize_titles
 from util.notification import NotificationManager
 from util.plex import PlexClient
 
 
 class Labelarr(DapsModule):
-    def __init__(self) -> None:
+    def __init__(self, logger: Optional[Logger] = None) -> None:
         """
         Standard constructor using dependency injection.
 
@@ -23,7 +24,7 @@ class Labelarr(DapsModule):
             config: Complete DAPS configuration object
             logger: Logger instance
         """
-        super().__init__()
+        super().__init__(logger)
 
     def sync_to_plex(self, plex_client, arr_data, plex_data, labels, db) -> List[Dict]:
         def get_id(val):

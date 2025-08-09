@@ -6,7 +6,7 @@ import os
 import shutil
 import sys
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from util.base_module import DapsModule
 from util.connector import Connector
@@ -27,8 +27,8 @@ from util.upload_posters import PosterUploader
 
 
 class PosterRenamerr(DapsModule):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, logger: Optional[Logger] = None) -> None:
+        super().__init__(logger)
 
     def ensure_destination_dir(self):
         if not os.path.exists(self.config.destination_dir):
@@ -46,8 +46,7 @@ class PosterRenamerr(DapsModule):
             self.logger.info("Running sync_gdrive")
             from modules.sync_gdrive import SyncGDrive
 
-            syncer = SyncGDrive(logger=self.logger)
-            syncer.run()
+            SyncGDrive(logger=self.logger).run()
             self.logger.info("Finished running sync_gdrive")
         else:
             self.logger.debug("Sync posters is disabled. Skipping...")
@@ -537,15 +536,15 @@ class PosterRenamerr(DapsModule):
     def run_border_replacerr(self, manifest: dict):
         from modules.border_replacerr import BorderReplacerr
 
-        border = BorderReplacerr(self.config, self.logger)
-
         self.logger.debug(
             "\nRunning border replacerr:\n"
             f"  Media assets to process: {len(manifest.get('media_cache', []))}\n"
             f"  Collection assets to process: {len(manifest.get('collections_cache', []))}\n"
             f"  Total assets to process: {len(manifest.get('media_cache', [])) + len(manifest.get('collections_cache', []))}\n"
         )
-        border.run(manifest)
+
+        BorderReplacerr(logger=self.logger).run(manifest)
+
         self.logger.info("Finished running border_replacerr.")
 
     def run_poster_rename_adhoc(self, media_items: List[dict]) -> dict:
@@ -670,9 +669,11 @@ class PosterRenamerr(DapsModule):
                 output, manifest = self.rename_files(db)
 
                 if self.config.report_unmatched_assets:
-                    from modules.unmatched_assets import main as report_unmatched_assets
+                    from modules.unmatched_assets import UnmatchedAssets
 
-                    report_unmatched_assets()
+                    unmatched_reporter = UnmatchedAssets(logger=self.logger)
+                    with DapsDB(logger=self.logger) as unmatched_db:
+                        unmatched_reporter.print_stats(unmatched_db)
 
                 if self.config.run_cleanarr:
                     cleanarr_logger = Logger(self.config.log_level, "cleanarr")

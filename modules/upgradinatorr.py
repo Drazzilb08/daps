@@ -6,14 +6,15 @@ from typing import Any, Dict, List, Optional
 from util.arr import BaseARRClient, create_arr_client
 from util.base_module import DapsModule
 from util.helper import create_table, print_settings
+from util.logger import Logger
 from util.notification import NotificationManager
 
 VALID_STATUSES = {"continuing", "airing", "ended", "canceled", "released"}
 
 
 class Upgradinatorr(DapsModule):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, logger: Optional[Logger] = None) -> None:
+        super().__init__(logger)
 
     def filter_media(
         self,

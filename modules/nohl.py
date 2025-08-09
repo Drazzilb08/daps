@@ -22,8 +22,8 @@ VIDEO_EXTS = (".mkv", ".mp4")
 
 
 class Nohl(DapsModule):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, logger: Optional[Logger] = None) -> None:
+        super().__init__(logger)
 
     @staticmethod
     def find_nohl_files(

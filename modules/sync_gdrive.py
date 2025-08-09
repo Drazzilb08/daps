@@ -8,11 +8,12 @@ import subprocess
 import sys
 import time
 from shutil import which
-from typing import List
+from typing import List, Optional
 
 from util.base_module import DapsModule
 from util.database import DapsDB
 from util.helper import print_settings
+from util.logger import Logger
 
 try:
     from dotenv import load_dotenv
@@ -23,8 +24,8 @@ except ImportError:
 
 
 class SyncGDrive(DapsModule):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, logger: Optional[Logger] = None) -> None:
+        super().__init__(logger)
         self.rclone_path = self.get_rclone_path()
         self.db = None
         # Track current job ID for progress updates

@@ -1,15 +1,16 @@
 # modules/unmatched_assets.py
 
 import sys
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from util.base_module import DapsModule
 from util.database import DapsDB
+from util.logger import Logger
 from util.notification import NotificationManager
 
 
 class UnmatchedAssets(DapsModule):
-    def __init__(self) -> None:
+    def __init__(self, logger: Optional[Logger] = None) -> None:
         """
         Standard constructor using dependency injection.
 
@@ -17,7 +18,7 @@ class UnmatchedAssets(DapsModule):
             config: Complete DAPS configuration object
             logger: Logger instance
         """
-        super().__init__()
+        super().__init__(logger)
 
         self.allowed_instances: set = set()
         self.plex_libraries: Dict[str, set] = {}

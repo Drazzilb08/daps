@@ -4,7 +4,7 @@ import re
 import sys
 import time
 from collections import defaultdict
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from util.arr import BaseARRClient, create_arr_client
 from util.base_module import DapsModule
@@ -15,8 +15,8 @@ from util.notification import NotificationManager
 
 
 class Renameinatorr(DapsModule):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, logger: Optional[Logger] = None) -> None:
+        super().__init__(logger)
 
     @staticmethod
     def print_output(output: Dict[str, Dict[str, Any]], logger: Logger) -> None:

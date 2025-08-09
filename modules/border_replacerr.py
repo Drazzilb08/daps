@@ -5,20 +5,21 @@ import logging
 import os
 import shutil
 from datetime import datetime
-from typing import Tuple
+from typing import Optional, Tuple
 
 from PIL import Image
 
 from util.base_module import DapsModule
 from util.database import DapsDB
 from util.helper import create_table, print_settings, progress
+from util.logger import Logger
 
 logging.getLogger("PIL").setLevel(logging.WARNING)
 
 
 class BorderReplacerr(DapsModule):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, logger: Optional[Logger] = None) -> None:
+        super().__init__(logger)
 
     def get_holiday_status(self, db: DapsDB):
         now = datetime.now()

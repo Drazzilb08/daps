@@ -3,15 +3,17 @@
 import os
 import subprocess
 import sys
+from typing import Optional
 
 from util.base_module import DapsModule
 from util.helper import create_table, print_settings
+from util.logger import Logger
 from util.notification import NotificationManager
 
 
 class Jduparr(DapsModule):
-    def __init__(self) -> None:
-        super().__init__()
+    def __init__(self, logger: Optional[Logger] = None) -> None:
+        super().__init__(logger)
 
     def print_output(self, output: list[dict]) -> None:
         count = 0

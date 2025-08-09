@@ -9,7 +9,7 @@ from util.logger import Logger
 
 
 def run_module_cli(module_class, module_name: str) -> None:
-    """Simple module execution for CLI runs - no database tracking."""
+    """Simple module execution for CLI runs - no database tracking, no shared logger."""
     try:
         mod = module_class()
         mod.run()
@@ -26,7 +26,7 @@ def run_module_tracked(module_class, module_name, origin, logger):
         success = False
         message = ""
         try:
-            mod = module_class()
+            mod = module_class(logger=logger)
             mod.run()
             success = True
             status = "success"

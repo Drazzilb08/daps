@@ -3,17 +3,18 @@
 import json
 import re
 import sys
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from util.arr import create_arr_client
 from util.base_module import DapsModule
 from util.constants import tmdb_id_regex, tvdb_id_regex
 from util.helper import create_table, print_settings, progress
+from util.logger import Logger
 from util.notification import NotificationManager
 
 
 class HealthCheckarr(DapsModule):
-    def __init__(self) -> None:
+    def __init__(self, logger: Optional[Logger] = None) -> None:
         """
         Standard constructor using dependency injection.
 
@@ -21,7 +22,7 @@ class HealthCheckarr(DapsModule):
             config: Complete DAPS configuration object
             logger: Logger instance
         """
-        super().__init__()
+        super().__init__(logger)
 
     def run(self) -> None:
         """

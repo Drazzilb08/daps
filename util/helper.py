@@ -1,3 +1,14 @@
+"""Utility helpers for DAPS.
+
+This module centralizes small, dependency-light helpers used across CLI and web
+workers: structured logging and redaction helpers, diff utilities, ASCII table
+formatting, progress proxying, lightweight ID/year extraction, and the core
+asset↔media matching heuristics used by poster tools.
+
+The intent is to keep side effects explicit and I/O minimal so the functions are
+safe to reuse inside background workers and unit tests.
+"""
+
 import copy
 import json
 import math
@@ -145,10 +156,30 @@ def dict_diff(
 
 
 def create_table(data: List[List[Any]]) -> str:
-    """Create a formatted table from 2D list data (headers in first row).
+    """Render a simple, fixed-width ASCII table.
 
-    Returns a nicely formatted ASCII table with borders and proper spacing.
-    Automatically adjusts column widths and ensures minimum 76-char width.
+    The first row is treated as a header. Column widths are computed from the
+    widest cell in each column, then padded by two spaces (min 5 chars/column).
+    If the overall table would be narrower than 76 characters, additional width
+    is distributed across columns to reach that minimum. Content is centered per
+    column. Borders are drawn using `|` with an underscore top border and an
+    overline `‾` bottom border.
+
+    Args:
+        data: 2D matrix (list of rows). All rows must have the same number of
+            columns. The first row is the header.
+
+    Returns:
+        A formatted table string suitable for logs.
+
+    Notes:
+        * This function does not attempt to wrap long cell values.
+        * Assumes a rectangular matrix; irregular rows will yield misaligned
+          output.
+
+    Example:
+        >>> create_table([["Name", "Age"], ["Ada", 36], ["Linus", 54]])
+        "\n__________________________________\n|   Name   |   Age   |\n|----------|---------|\n|   Ada    |    36   |\n|   Linus  |    54   |\n‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾‾"
     """
     if not data:
         return "No data provided."
@@ -312,13 +343,51 @@ def is_match(
     asset: Dict[str, Any],
     media: Dict[str, Any],
 ) -> Tuple[bool, str]:
-    """Determine if asset and media match using ID and title matching.
+    """Determine whether a poster *asset* refers to the same media item as *media*.
 
-    Core matching logic for DAPS:
-    1. If both have IDs, match on tmdb_id/tvdb_id/imdb_id
-    2. Otherwise, match on various title combinations with year validation
+    The matcher prioritizes **ID equality** (TMDB/TVDB/IMDB). When **both**
+    sides provide at least one valid ID, we **only** accept an ID match; title
+    similarity is *not* considered in that branch. When IDs are missing on
+    either side, we fall back to a set of increasingly permissive title checks
+    (exact, normalized, alternate titles, and a loose alphanumeric compare),
+    gated by a year check.
 
-    Returns: (is_match, reason_string)
+    Side effects:
+        If ``media['folder']`` is present and matches the configured
+        ``folder_year_regex``, the function annotates ``media`` in-place with:
+
+        * ``folder_title``: title parsed from the folder name
+        * ``folder_year``: optional year parsed from the folder name
+        * ``normalized_folder_title``: normalized folder title
+
+    Year rule:
+        If the asset year is present, it must equal at least one of
+        ``media['year']``, ``media['secondary_year']``, or ``media['folder_year']``
+        when those values exist. If **no** years are provided on either side,
+        the year check passes by default.
+
+    Args:
+        asset: Dict describing the poster asset. Common keys:
+            ``title``, ``normalized_title``, ``alternate_titles``,
+            ``normalized_alternate_titles``, ``year``, ``tmdb_id``, ``tvdb_id``,
+            ``imdb_id``.
+        media: Dict from the media index. Common keys:
+            ``title``, ``normalized_title``, ``original_title``,
+            ``alternate_titles``, ``normalized_alternate_titles``, ``year``,
+            ``secondary_year``, ``tmdb_id``, ``tvdb_id``, ``imdb_id``, and
+            optionally ``folder`` (e.g., "Movie (1999)").
+
+    Returns:
+        Tuple ``(matched, reason)`` where ``matched`` is a boolean and
+        ``reason`` is a short diagnostic string such as ``"ID match: tmdb_id"``
+        or ``"Asset normalized title equals media normalized title"``. When no
+        rule matches, returns ``(False, "")``.
+
+    Caveats:
+        * If **both** sides have at least one valid ID but **none** of those IDs
+          match, the function returns ``False`` immediately without trying title
+          heuristics. This is intentional to avoid mismatching distinct entities
+          that coincidentally share a title.
     """
     if media.get("folder"):
         folder_base_name = os.path.basename(media["folder"])
@@ -452,13 +521,33 @@ def is_match(
 
 
 def generate_title_variants(title: str) -> Dict[str, List[str]]:
-    """Generate alternate title variants by removing common prefixes/suffixes.
+    """Produce alternate title candidates plus their normalized forms.
 
-    Creates variations like:
-    - "The Movie" -> ["Movie", "The Movie Collection"]
-    - "Movie Collection" -> ["Movie", "The Movie Collection"]
+    Variants are formed by removing a single leading article/prefix (e.g.
+    "The", "A") and/or a trailing suffix such as "Collection" based on
+    project-wide lists (``prefixes``/``suffixes``). The function then appends a
+    "<title> Collection" variant **unless** the original title already ends
+    with "Collection". Normalized variants are created with
+    :func:`util.normalization.normalize_titles`.
 
-    Returns dict with 'alternate_titles' and 'normalized_alternate_titles' lists.
+    Deduplication preserves the first occurrence of each variant while keeping
+    order stable.
+
+    Args:
+        title: Original display title.
+
+    Returns:
+        Dict with two lists:
+            * ``alternate_titles``: human-readable candidates
+            * ``normalized_alternate_titles``: normalized versions aligned by
+              index to ``alternate_titles``
+
+    Example:
+        >>> generate_title_variants("The Matrix Collection")
+        {
+            'alternate_titles': ['Matrix Collection', 'The Matrix', 'Matrix'],
+            'normalized_alternate_titles': ['matrixcollection', 'thematrix', 'matrix']
+        }
     """
 
     stripped_prefix = next(

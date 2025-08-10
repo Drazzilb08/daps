@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { fetchPosterAssetList } from '../../../utils/api';
+import { fetchPosterFileList } from '../../../utils/api';
 
 const BORDER_THICKNESS = 5;
 
@@ -16,70 +16,85 @@ function hexToRgb(hex) {
 
 function getPosterByIndex(posterAssets, idx) {
     if (!posterAssets.length) return null;
-    return `/src/assets/posters/${posterAssets[idx % posterAssets.length]}`;
+    // Use the /posters/ URL path served by FastAPI static mount
+    return `/posters/${posterAssets[idx % posterAssets.length]}`;
 }
 
 function getPosterPreviewUrl(imgUrl, borderColor, options = {}) {
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
-        const img = new window.Image();
+        const img = new Image();
+        
+        // Important: Set crossOrigin before setting src
         img.crossOrigin = 'anonymous';
+        
         img.onload = function () {
-            const width = options.width || img.width;
-            const height = options.height || img.height;
-            canvas.width = width;
-            canvas.height = height;
-            ctx.drawImage(img, 0, 0, width, height);
+            try {
+                const width = options.width || img.width;
+                const height = options.height || img.height;
+                canvas.width = width;
+                canvas.height = height;
+                ctx.drawImage(img, 0, 0, width, height);
 
-            // === REMOVE BORDER ===
-            if (!borderColor) {
-                // Hardcrop 26px from all sides
-                const cropW = width - BORDER_THICKNESS * 2;
-                const cropH = height - BORDER_THICKNESS * 2;
-                const cropCanvas = document.createElement('canvas');
-                cropCanvas.width = cropW;
-                cropCanvas.height = cropH;
-                const cropCtx = cropCanvas.getContext('2d');
-                cropCtx.drawImage(
-                    canvas,
-                    BORDER_THICKNESS,
-                    BORDER_THICKNESS,
-                    cropW,
-                    cropH,
-                    0,
-                    0,
-                    cropW,
-                    cropH
-                );
-                resolve(cropCanvas.toDataURL());
-                return;
-            }
+                // === REMOVE BORDER ===
+                if (!borderColor) {
+                    // Hardcrop BORDER_THICKNESS px from all sides
+                    const cropW = width - BORDER_THICKNESS * 2;
+                    const cropH = height - BORDER_THICKNESS * 2;
+                    const cropCanvas = document.createElement('canvas');
+                    cropCanvas.width = cropW;
+                    cropCanvas.height = cropH;
+                    const cropCtx = cropCanvas.getContext('2d');
+                    cropCtx.drawImage(
+                        canvas,
+                        BORDER_THICKNESS,
+                        BORDER_THICKNESS,
+                        cropW,
+                        cropH,
+                        0,
+                        0,
+                        cropW,
+                        cropH
+                    );
+                    resolve(cropCanvas.toDataURL());
+                    return;
+                }
 
-            // === COLORIZE BORDER ===
-            // Color the outer 26px on each side
-            const imgData = ctx.getImageData(0, 0, width, height);
-            const data = imgData.data;
-            const rgb = hexToRgb(borderColor);
+                // === COLORIZE BORDER ===
+                // Color the outer BORDER_THICKNESS px on each side
+                const imgData = ctx.getImageData(0, 0, width, height);
+                const data = imgData.data;
+                const rgb = hexToRgb(borderColor);
 
-            for (let y = 0; y < height; ++y) {
-                for (let x = 0; x < width; ++x) {
-                    const isBorder =
-                        x < BORDER_THICKNESS ||
-                        x >= width - BORDER_THICKNESS ||
-                        y < BORDER_THICKNESS ||
-                        y >= height - BORDER_THICKNESS;
-                    if (isBorder) {
-                        const i = (y * width + x) * 4;
-                        data[i] = rgb.r;
-                        data[i + 1] = rgb.g;
-                        data[i + 2] = rgb.b;
+                for (let y = 0; y < height; ++y) {
+                    for (let x = 0; x < width; ++x) {
+                        const isBorder =
+                            x < BORDER_THICKNESS ||
+                            x >= width - BORDER_THICKNESS ||
+                            y < BORDER_THICKNESS ||
+                            y >= height - BORDER_THICKNESS;
+                        if (isBorder) {
+                            const i = (y * width + x) * 4;
+                            data[i] = rgb.r;
+                            data[i + 1] = rgb.g;
+                            data[i + 2] = rgb.b;
+                        }
                     }
                 }
+                ctx.putImageData(imgData, 0, 0);
+                resolve(canvas.toDataURL());
+            } catch (error) {
+                console.error('Error processing poster image:', error);
+                reject(error);
             }
-            ctx.putImageData(imgData, 0, 0);
-            resolve(canvas.toDataURL());
         };
+        
+        img.onerror = function () {
+            console.error('Failed to load poster image:', imgUrl);
+            reject(new Error(`Failed to load poster image: ${imgUrl}`));
+        };
+        
         img.src = imgUrl;
     });
 }
@@ -110,14 +125,15 @@ export function ColorListField({
         }
     }, [value, colorArray]);
 
+    // Fetch poster file list dynamically
     useEffect(() => {
         let isMounted = true;
-        fetchPosterAssetList()
-            .then(arr => (Array.isArray(arr) ? arr : []))
-            .then(arr => {
-                if (isMounted) setPosterAssets(arr);
+        fetchPosterFileList()
+            .then(files => {
+                if (isMounted) setPosterAssets(Array.isArray(files) ? files : []);
             })
-            .catch(() => {
+            .catch(error => {
+                console.error('Failed to fetch poster files:', error);
                 if (isMounted) setPosterAssets([]);
             });
         return () => {
@@ -133,27 +149,38 @@ export function ColorListField({
             let out = [];
             if (colorArray.length && posterAssets.length) {
                 for (let i = 0; i < colorArray.length; i++) {
-                    const poster = getPosterByIndex(posterAssets, i);
-                    if (!poster) continue;
-                    const url = await getPosterPreviewUrl(poster, colorArray[i] || '#ffffff', {
-                        width: 156,
-                        height: 234,
-                    });
-                    if (!cancelled) out[i] = url;
+                    try {
+                        const poster = getPosterByIndex(posterAssets, i);
+                        if (!poster) continue;
+                        const url = await getPosterPreviewUrl(poster, colorArray[i] || '#ffffff', {
+                            width: 156,
+                            height: 234,
+                        });
+                        if (!cancelled) out[i] = url;
+                    } catch (error) {
+                        console.error(`Failed to create preview for color ${i}:`, error);
+                        if (!cancelled) out[i] = null; // Keep slot but mark as failed
+                    }
                 }
             } else if (posterAssets.length) {
                 // No colors: remove border by cropping hardcoded area
-                const poster = getPosterByIndex(posterAssets, 0);
-                if (poster) {
-                    const url = await getPosterPreviewUrl(poster, null, {
-                        width: 156,
-                        height: 234,
-                    });
-                    if (!cancelled) out[0] = url;
+                try {
+                    const poster = getPosterByIndex(posterAssets, 0);
+                    if (poster) {
+                        const url = await getPosterPreviewUrl(poster, null, {
+                            width: 156,
+                            height: 234,
+                        });
+                        if (!cancelled) out[0] = url;
+                    }
+                } catch (error) {
+                    console.error('Failed to create no-border preview:', error);
+                    if (!cancelled) out[0] = null;
                 }
             }
             if (!cancelled) setPreviews(out);
         };
+        
         makePreviews();
         return () => {
             cancelled = true;
@@ -168,6 +195,7 @@ export function ColorListField({
             return copy;
         });
     }
+    
     function handleAdd() {
         setColorArray(arr => {
             const updated = [...arr, '#ffffff'];
@@ -175,6 +203,7 @@ export function ColorListField({
             return updated;
         });
     }
+    
     function handleRemove(idx) {
         setColorArray(arr => {
             const updated = arr.filter((_, i) => i !== idx);
@@ -228,13 +257,31 @@ export function ColorListField({
                     <div className="poster-border-preview-wrap">
                         {previews.map((url, idx) => (
                             <div className="poster-preview-container" key={idx}>
-                                <img
-                                    className="poster-preview-img"
-                                    src={url}
-                                    width={156}
-                                    height={234}
-                                    alt={`Preview ${idx + 1}`}
-                                />
+                                {url ? (
+                                    <img
+                                        className="poster-preview-img"
+                                        src={url}
+                                        width={156}
+                                        height={234}
+                                        alt={`Preview ${idx + 1}`}
+                                    />
+                                ) : (
+                                    <div
+                                        className="poster-preview-error"
+                                        style={{
+                                            width: 156,
+                                            height: 234,
+                                            background: '#f0f0f0',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            fontSize: '12px',
+                                            color: '#666',
+                                        }}
+                                    >
+                                        Preview Error
+                                    </div>
+                                )}
                             </div>
                         ))}
                     </div>
@@ -243,6 +290,11 @@ export function ColorListField({
                     {!colorArray.length && (
                         <div className="no-border-notification">
                             No colors selected. The white border will be removed.
+                        </div>
+                    )}
+                    {posterAssets.length === 0 && (
+                        <div className="no-posters-notification">
+                            No poster files found in /posters/ directory.
                         </div>
                     )}
                     {field.description || ''}

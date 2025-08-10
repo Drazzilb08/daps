@@ -138,7 +138,7 @@ async def lifespan(app):
 app = FastAPI(lifespan=lifespan)
 router = APIRouter()
 
-# Mount the built assets directory
+# Mount static directories - all served from templates after build
 app.mount(
     "/assets",
     StaticFiles(directory=Path(__file__).parents[1] / "templates" / "assets"),
@@ -153,6 +153,11 @@ app.mount(
     "/img",
     StaticFiles(directory=Path(__file__).parents[1] / "templates" / "img"),
     name="img",
+)
+app.mount(
+    "/posters",
+    StaticFiles(directory=Path(__file__).parents[1] / "templates" / "posters"),
+    name="posters",
 )
 
 
@@ -346,8 +351,16 @@ async def root():
 @app.get("/{full_path:path}", response_class=HTMLResponse)
 async def serve_spa(full_path: str):
     """Serve index.html for all non-API, non-assets routes (for SPA)"""
-    if full_path.startswith("api/") or full_path == "api":
-        raise HTTPException(status_code=404, detail="API endpoint not found")
+    # Exclude API and static asset paths
+    if (
+        full_path.startswith("api/")
+        or full_path == "api"
+        or full_path.startswith("assets/")
+        or full_path.startswith("icons/")
+        or full_path.startswith("img/")
+        or full_path.startswith("posters/")
+    ):
+        raise HTTPException(status_code=404, detail="Resource not found")
 
     index_path = Path(__file__).parents[1] / "templates" / "index.html"
     return FileResponse(index_path)

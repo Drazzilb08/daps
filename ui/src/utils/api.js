@@ -9,7 +9,6 @@ const CACHE_KEYS = {
     JOB_STATS: 'job_stats',
     UNMATCHED_STATS: 'unmatched_stats',
     MATCHED_POSTER_STATS: 'matched_poster_stats',
-    POSTER_ASSET_LIST: 'poster_asset_list',
     GDRIVE_STATS: 'gdrive_stats',
     PLEX_LIBRARIES: 'plex_libraries',
 };
@@ -364,12 +363,12 @@ export async function fetchPosters(location, forceRefresh = false) {
     }
 }
 
-// Get poster asset list (cached)
-export async function fetchPosterAssetList(forceRefresh = false) {
+// Get list of poster files (cached)
+export async function fetchPosterFileList(forceRefresh = false) {
     return await withCache(
-        CACHE_KEYS.POSTER_ASSET_LIST,
+        'poster_file_list',
         async () => {
-            const res = await fetch('/api/poster/assets');
+            const res = await fetch('/api/posters/list');
             const data = await handleApiResponse(res);
             const files = extractData(data, 'files');
             return Array.isArray(files) ? files : [];

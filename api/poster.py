@@ -11,7 +11,7 @@ from util.database import DapsDB
 
 router = APIRouter()
 
-ASSET_DIR = "web/static/assets"
+# ASSET_DIR removed - posters now served from /posters/ static mount
 
 
 def get_webhook_logger(request: Request) -> Any:
@@ -485,46 +485,46 @@ async def preview_poster(
         )
 
 
-@router.get("/api/poster/assets")
-def list_poster_assets(logger: Any = Depends(get_web_logger)) -> Dict[str, Any]:
+@router.get("/api/posters/list")
+def list_poster_files(logger: Any = Depends(get_web_logger)) -> Dict[str, Any]:
     """
-    List available poster asset files.
+    List available poster files from templates/posters directory.
 
-    Returns image files from the web assets directory for use in operations.
+    Returns just the filenames for dynamic discovery by frontend.
     """
     try:
-        logger.debug("Serving GET /api/poster/assets")
+        logger.debug("Serving GET /api/posters/list")
 
+        posters_dir = Path(__file__).parents[1] / "templates" / "posters"
         allowed_extensions = {".jpg", ".jpeg", ".png", ".webp"}
 
-        if not os.path.exists(ASSET_DIR):
+        if not posters_dir.exists():
             return {
                 "success": True,
-                "message": "Assets directory not found",
+                "message": "Posters directory not found",
                 "data": {"files": []},
             }
 
         files = [
-            f
-            for f in os.listdir(ASSET_DIR)
-            if os.path.isfile(os.path.join(ASSET_DIR, f))
-            and os.path.splitext(f)[1].lower() in allowed_extensions
+            f.name
+            for f in posters_dir.iterdir()
+            if f.is_file() and f.suffix.lower() in allowed_extensions
         ]
 
         return {
             "success": True,
-            "message": f"Found {len(files)} poster asset files",
+            "message": f"Found {len(files)} poster files",
             "data": {"files": sorted(files)},
         }
 
     except Exception as e:
-        logger.error(f"Error listing poster assets: {e}")
+        logger.error(f"Error listing poster files: {e}")
         return JSONResponse(
             status_code=500,
             content={
                 "success": False,
-                "message": f"Error listing poster assets: {str(e)}",
-                "error_code": "POSTER_ASSETS_LIST_ERROR",
+                "message": f"Error listing poster files: {str(e)}",
+                "error_code": "POSTER_LIST_ERROR",
             },
         )
 

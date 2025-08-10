@@ -35,7 +35,6 @@ config/
 # Files
 test.*
 TODO.*
-build_*
 *.db
 *.db-journal
 

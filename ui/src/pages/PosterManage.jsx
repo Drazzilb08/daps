@@ -3,8 +3,8 @@ import DashboardCard from '../components/DashboardCard';
 import { getIcon, splitIntoColumns } from '../utils/tools';
 import { useToast } from '../components/providers/ToastProvider';
 import { runGDriveAdhocSync, fetchConfig, fetchJobDetail, retryJob } from '../utils/api';
-import '../css/dashboard.css';
-import '../css/poster_manage.css';
+import '../css/pages/dashboard.css';
+import '../css/pages/poster-manage.css';
 
 import GDriveAdhocContent from '../components/poster_management/GDriveAdhocContent';
 

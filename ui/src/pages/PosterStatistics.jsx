@@ -8,8 +8,8 @@ import UnmatchedAssetsContent from '../components/poster_statistics/UnmatchedAss
 import { getIcon, splitIntoColumns } from '../utils/tools';
 import { fetchGDriveStats, fetchMatchedPosterStats, fetchUnmatchedStats } from '../utils/api';
 import { useToast } from '../components/providers/ToastProvider';
-import '../css/dashboard.css';
-import '../css/statistics.css';
+import '../css/pages/dashboard.css';
+import '../css/pages/statistics.css';
 
 // Each Content defines its *content* and its *fetcher*
 const STAT_CARDS = [

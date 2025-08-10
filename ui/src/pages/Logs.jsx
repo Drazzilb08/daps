@@ -4,7 +4,7 @@ import { humanize, getIcon, getSpinner } from '../utils/tools';
 import { moduleOrder } from '../utils/constants/constants';
 import { useToast } from '../components/providers/ToastProvider';
 import TooltipFactory from '../components/Tooltip';
-import '../css/logs.css';
+import '../css/pages/logs.css';
 
 export default function LogViewer() {
     const [modules, setModules] = useState([]);

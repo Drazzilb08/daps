@@ -1,0 +1,195 @@
+@layer components {
+    /* ========== CARD LAYOUT ========== */
+    .card-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-5);
+        padding: 0 var(--space-4) var(--space-6);
+    }
+
+    .card {
+        background: var(--surface);
+        border-radius: var(--radius-3);
+        box-shadow: var(--shadow-1);
+        display: flex;
+        flex-direction: column;
+        gap: 0.32rem;
+        color: var(--text-color);
+        cursor: pointer;
+        border: 1.5px solid transparent;
+        transition:
+            box-shadow var(--duration),
+            background var(--duration),
+            border var(--duration);
+        position: relative;
+    }
+
+    .card:hover,
+    .card:focus {
+        background: var(--surface-alt);
+        border-color: var(--accent);
+        box-shadow: var(--shadow-2);
+    }
+
+    /* ========== CARD CONTENT ========== */
+    .card-title {
+        font-size: var(--font-size-3);
+        font-weight: var(--font-weight-bold);
+        margin-bottom: 0.18em;
+        color: var(--primary);
+    }
+
+    .card-meta {
+        font-size: var(--font-size-2);
+        color: var(--muted);
+        letter-spacing: 0.01em;
+    }
+
+    /* ========== CARD VARIANTS ========== */
+    .card.card-add {
+        align-items: center;
+        justify-content: center;
+        background: color-mix(in srgb, var(--accent) 6%, var(--surface) 94%);
+        border: 2.5px dashed var(--accent);
+        color: var(--accent);
+        transition:
+            border-color var(--duration),
+            background var(--duration),
+            color var(--duration);
+    }
+
+    .card.card-add:hover,
+    .card.card-add:focus {
+        background: color-mix(in srgb, var(--accent) 12%, var(--surface) 88%);
+        color: var(--focus);
+        border-color: var(--focus);
+    }
+
+    .card--elevated {
+        box-shadow: var(--shadow-2);
+    }
+
+    .card--elevated:hover {
+        box-shadow: var(--shadow-3);
+    }
+
+    /* ========== CARD ADD BUTTON ========== */
+    .card-add-plus {
+        font-size: 3.5rem;
+        line-height: 1;
+        font-weight: var(--font-weight-bold);
+        margin-bottom: 0.1em;
+    }
+
+    /* ========== CARD BODY & STRUCTURE ========== */
+    .card__body {
+        font-size: var(--font-size-2);
+        padding: var(--space-4);
+    }
+
+    .card__title {
+        font-size: var(--font-size-3);
+        margin-bottom: var(--space-3);
+        color: var(--primary);
+        font-weight: var(--font-weight-bold);
+    }
+
+    /* ========== CARD PILLS ========== */
+    .card-pill {
+        display: inline-block;
+        background: color-mix(in srgb, var(--accent) 10%, var(--surface) 90%);
+        color: var(--accent);
+        border-radius: var(--radius-round);
+        padding: 0.16em 0.9em;
+        font-size: var(--font-size-1);
+        margin: 0 0.18em 0.18em 0;
+        font-weight: var(--font-weight-medium);
+        letter-spacing: 0.01em;
+        border: 1px solid var(--accent-dark);
+        opacity: 0.94;
+    }
+
+    /* ========== CARD BOTTOM ELEMENTS ========== */
+    .card-bottom-bar {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0.7em;
+        padding: 0 1em;
+        display: flex;
+        flex-direction: row;
+        align-items: flex-end;
+        justify-content: space-between;
+        pointer-events: auto;
+        z-index: var(--z-base);
+        width: auto;
+        margin: 0;
+    }
+
+    .card-last-run {
+        font-size: 0.87em;
+        color: var(--text-secondary, #bdbdbd);
+        display: flex;
+        align-items: center;
+        gap: 0.18em;
+        pointer-events: none;
+        user-select: none;
+        min-width: 0;
+        font-weight: var(--font-weight-regular);
+    }
+
+    .card-last-run .material-icons {
+        font-size: 1em !important;
+        vertical-align: middle;
+        opacity: 0.77;
+        line-height: 1;
+    }
+
+    /* ========== CARD STATE CLASSES ========== */
+    .card-noschedule {
+        color: var(--text-muted, #8c8c8c);
+        font-style: italic;
+        font-size: 1em;
+        letter-spacing: 0.01em;
+        opacity: 0.86;
+    }
+
+    /* ========== RESPONSIVE OVERRIDES ========== */
+    @media (width <= 900px) {
+        .card-list {
+            grid-template-columns: repeat(2, 1fr);
+            max-width: 100vw;
+            gap: var(--space-4);
+            padding: 0 var(--space-2) var(--space-6);
+            margin: 0 auto;
+            box-sizing: border-box;
+        }
+    }
+
+    @media (width <= 600px) {
+        .card-list {
+            display: grid !important;
+            grid-template-columns: 1fr !important;
+            max-width: 98vw !important;
+            gap: var(--space-3) !important;
+            padding: 0 var(--space-1) var(--space-5) !important;
+            margin: 0 auto !important;
+            place-items: center center !important;
+        }
+
+        .card,
+        .card.card-add {
+            width: 95vw !important;
+            min-width: 82vw !important;
+            max-width: 95vw !important;
+            box-sizing: border-box !important;
+            aspect-ratio: 1 / 1 !important;
+            margin-left: auto !important;
+            margin-right: auto !important;
+            border-radius: var(--radius-3) !important;
+            padding: var(--space-4) !important;
+            background: var(--surface) !important;
+            font-size: var(--font-size-1) !important;
+        }
+    }
+} /* end @layer components */

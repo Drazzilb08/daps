@@ -1,0 +1,96 @@
+@layer components {
+    /* ========== TOAST CONTAINER ========== */
+    .toast-container {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        width: 100vw;
+        z-index: var(--z-toast);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        pointer-events: none;
+    }
+
+    /* ========== TOAST BASE ========== */
+    .toast {
+        background: var(--surface-alt);
+        color: var(--text-color);
+        padding: var(--space-4) var(--space-6);
+        border-radius: var(--radius-2) var(--radius-2) 0 0;
+        box-shadow: var(--shadow-2);
+        opacity: 0;
+        transform: translateY(20px);
+        transition:
+            opacity 0.4s,
+            transform 0.4s;
+        font-size: var(--font-size-2);
+        font-weight: var(--font-weight-medium);
+        min-width: 240px;
+        max-width: 98vw;
+        overflow-wrap: break-word;
+        margin-bottom: 0;
+        margin-top: auto;
+        pointer-events: auto;
+    }
+
+    .toast.show {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* ========== TOAST VARIANTS ========== */
+    .toast.success {
+        background: var(--success);
+        color: #fff;
+        border-left: 4px solid var(--success-highlight);
+    }
+
+    .toast.error {
+        background: var(--error);
+        color: #fff;
+        border-left: 4px solid var(--error-highlight);
+    }
+
+    .toast.info {
+        background: var(--info);
+        color: #fff;
+        border-left: 4px solid var(--info-highlight);
+    }
+
+    .toast.warning {
+        background: var(--warning);
+        color: #fff;
+        border-left: 4px solid var(--warning-highlight);
+    }
+
+    /* ========== RESPONSIVE OVERRIDES ========== */
+    @media (width <= 800px) {
+        .toast-container {
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            padding: 0;
+            align-items: center;
+            max-width: 100vw;
+        }
+
+        .toast {
+            font-size: var(--font-size-1);
+            padding: var(--space-3) var(--space-2);
+            border-radius: 0;
+            width: 100vw;
+            min-width: 0;
+            max-width: 100vw;
+            margin: 0;
+            padding-left: var(--space-4);
+            padding-right: var(--space-4);
+            text-align: center;
+            opacity: 1;
+            transform: none;
+            display: block;
+        }
+    }
+} /* end @layer components */

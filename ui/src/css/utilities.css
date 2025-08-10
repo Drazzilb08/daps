@@ -1,0 +1,49 @@
+@layer utilities {
+    .u-hidden {
+        display: none !important;
+    }
+
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    .u-flex {
+        display: flex;
+    }
+
+    .u-flex-center {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .u-grid {
+        display: grid;
+        gap: var(--space-4);
+    }
+
+    /* minimal spacing set */
+    .u-mb-2 {
+        margin-bottom: var(--space-2);
+    }
+
+    .u-mb-4 {
+        margin-bottom: var(--space-4);
+    }
+
+    .u-pt-4 {
+        padding-top: var(--space-4);
+    }
+
+    .u-p-4 {
+        padding: var(--space-4);
+    }
+}

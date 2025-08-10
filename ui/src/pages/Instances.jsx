@@ -4,7 +4,7 @@ import { humanize, getIcon, getSpinner } from '../utils/tools';
 import { INSTANCE_SCHEMA } from '../utils/constants/instance_schema';
 import ModalFactory from '../components/modals/ModalFactory';
 import { useToast } from '../components/providers/ToastProvider';
-import '../css/instances.css';
+import '../css/pages/instances.css';
 
 // --- Instance Group Rendering ---
 function InstanceGroup({ service, items, onOpenModal }) {

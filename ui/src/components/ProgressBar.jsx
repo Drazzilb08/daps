@@ -1,6 +1,6 @@
 import React, { useRef, useState } from 'react';
 import TooltipFactory from './Tooltip';
-import '../css/progress.css';
+import '../css/components/progress.css';
 
 export default React.memo(function ProgressBar({
     value = null,

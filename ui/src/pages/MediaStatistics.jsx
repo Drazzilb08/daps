@@ -2,8 +2,8 @@
 // import { getIcon } from '../utils/tools';
 // import {  } from '../utils/api';
 // import TooltipFactory from "../components/Tooltip";
-// import '../css/poster_management.css';
+// import '../css/pages/media-statistics.css';
 
 export default function MediaStatistics() {
-    return <div>Media Statistics</div>;
+    return <div className="media-statistics-page">Media Statistics</div>;
 }

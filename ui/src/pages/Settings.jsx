@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { SETTINGS_SCHEMA } from '../utils/constants/settings_schema';
 import SettingsSplash from '../components/settings/SettingsSplash';
 import SettingsForm from '../components/settings/SettingsForm';
-import '../css/settings.css';
+import '../css/pages/settings.css';
 
 export default function Settings() {
     let { moduleName } = useParams();

@@ -50,79 +50,115 @@ export default function App() {
                             <Suspense fallback={<LoadingSpinner />}>
                                 <Routes>
                                     {/* Core Application Routes */}
-                                    <Route path="/" element={
-                                        <RouteErrorBoundary routeName="Dashboard">
-                                            <Splash />
-                                        </RouteErrorBoundary>
-                                    } />
-                                    
-                                    <Route path="/schedule" element={
-                                        <RouteErrorBoundary routeName="Schedule Management">
-                                            <Schedule />
-                                        </RouteErrorBoundary>
-                                    } />
-                                    
-                                    <Route path="/instances" element={
-                                        <RouteErrorBoundary routeName="Instance Monitor">
-                                            <Instances />
-                                        </RouteErrorBoundary>
-                                    } />
-                                    
-                                    <Route path="/notifications" element={
-                                        <RouteErrorBoundary routeName="Notifications">
-                                            <Notifications />
-                                        </RouteErrorBoundary>
-                                    } />
-                                    
-                                    <Route path="/logs" element={
-                                        <RouteErrorBoundary routeName="Log Viewer">
-                                            <LogViewer />
-                                        </RouteErrorBoundary>
-                                    } />
+                                    <Route
+                                        path="/"
+                                        element={
+                                            <RouteErrorBoundary routeName="Dashboard">
+                                                <Splash />
+                                            </RouteErrorBoundary>
+                                        }
+                                    />
+
+                                    <Route
+                                        path="/schedule"
+                                        element={
+                                            <RouteErrorBoundary routeName="Schedule Management">
+                                                <Schedule />
+                                            </RouteErrorBoundary>
+                                        }
+                                    />
+
+                                    <Route
+                                        path="/instances"
+                                        element={
+                                            <RouteErrorBoundary routeName="Instance Monitor">
+                                                <Instances />
+                                            </RouteErrorBoundary>
+                                        }
+                                    />
+
+                                    <Route
+                                        path="/notifications"
+                                        element={
+                                            <RouteErrorBoundary routeName="Notifications">
+                                                <Notifications />
+                                            </RouteErrorBoundary>
+                                        }
+                                    />
+
+                                    <Route
+                                        path="/logs"
+                                        element={
+                                            <RouteErrorBoundary routeName="Log Viewer">
+                                                <LogViewer />
+                                            </RouteErrorBoundary>
+                                        }
+                                    />
 
                                     {/* Poster Management Routes */}
-                                    <Route path="/poster/search/gdrive" element={
-                                        <RouteErrorBoundary routeName="Google Drive Search">
-                                            <GdriveSearch />
-                                        </RouteErrorBoundary>
-                                    } />
-                                    
-                                    <Route path="/poster/search/assets" element={
-                                        <RouteErrorBoundary routeName="Assets Search">
-                                            <AssetsSearch />
-                                        </RouteErrorBoundary>
-                                    } />
-                                    
-                                    <Route path="/poster/manage" element={
-                                        <RouteErrorBoundary routeName="Poster Management">
-                                            <PosterManagement />
-                                        </RouteErrorBoundary>
-                                    } />
-                                    
-                                    <Route path="/poster/statistics" element={
-                                        <RouteErrorBoundary routeName="Poster Statistics">
-                                            <PosterStatistics />
-                                        </RouteErrorBoundary>
-                                    } />
+                                    <Route
+                                        path="/poster/search/gdrive"
+                                        element={
+                                            <RouteErrorBoundary routeName="Google Drive Search">
+                                                <GdriveSearch />
+                                            </RouteErrorBoundary>
+                                        }
+                                    />
+
+                                    <Route
+                                        path="/poster/search/assets"
+                                        element={
+                                            <RouteErrorBoundary routeName="Assets Search">
+                                                <AssetsSearch />
+                                            </RouteErrorBoundary>
+                                        }
+                                    />
+
+                                    <Route
+                                        path="/poster/manage"
+                                        element={
+                                            <RouteErrorBoundary routeName="Poster Management">
+                                                <PosterManagement />
+                                            </RouteErrorBoundary>
+                                        }
+                                    />
+
+                                    <Route
+                                        path="/poster/statistics"
+                                        element={
+                                            <RouteErrorBoundary routeName="Poster Statistics">
+                                                <PosterStatistics />
+                                            </RouteErrorBoundary>
+                                        }
+                                    />
 
                                     {/* Media Management Routes */}
-                                    <Route path="/media/search" element={
-                                        <RouteErrorBoundary routeName="Media Search">
-                                            <MediaSearch />
-                                        </RouteErrorBoundary>
-                                    } />
-                                    
-                                    <Route path="/media/manage" element={
-                                        <RouteErrorBoundary routeName="Media Management">
-                                            <MediaManagement />
-                                        </RouteErrorBoundary>
-                                    } />
-                                    
-                                    <Route path="/media/statistics" element={
-                                        <RouteErrorBoundary routeName="Media Statistics">
-                                            <MediaStatistics />
-                                        </RouteErrorBoundary>
-                                    } />
+                                    <Route
+                                        path="/media/search"
+                                        element={
+                                            <RouteErrorBoundary routeName="Media Search">
+                                                <MediaSearch />
+                                            </RouteErrorBoundary>
+                                        }
+                                    />
+
+                                    <Route
+                                        path="/media/manage"
+                                        element={
+                                            <RouteErrorBoundary routeName="Media Management">
+                                                <MediaManagement />
+                                            </RouteErrorBoundary>
+                                        }
+                                    />
+
+                                    <Route
+                                        path="/media/statistics"
+                                        element={
+                                            <RouteErrorBoundary routeName="Media Statistics">
+                                                <MediaStatistics />
+                                            </RouteErrorBoundary>
+                                        }
+                                    />
 
                                     {/* Settings Routes with nested error boundary */}
                                     <Route
@@ -132,7 +168,10 @@ export default function App() {
                                                 <UnsavedChangesProvider>
                                                     <Routes>
                                                         <Route path="" element={<Settings />} />
-                                                        <Route path=":moduleName" element={<Settings />} />
+                                                        <Route
+                                                            path=":moduleName"
+                                                            element={<Settings />}
+                                                        />
                                                     </Routes>
                                                 </UnsavedChangesProvider>
                                             </RouteErrorBoundary>
@@ -140,11 +179,14 @@ export default function App() {
                                     />
 
                                     {/* 404 Route */}
-                                    <Route path="*" element={
-                                        <RouteErrorBoundary routeName="Page Not Found">
-                                            <NotFound />
-                                        </RouteErrorBoundary>
-                                    } />
+                                    <Route
+                                        path="*"
+                                        element={
+                                            <RouteErrorBoundary routeName="Page Not Found">
+                                                <NotFound />
+                                            </RouteErrorBoundary>
+                                        }
+                                    />
                                 </Routes>
                             </Suspense>
                         </Layout>

@@ -1,0 +1,113 @@
+/* ===== CSS Layers Declaration ===== */
+@layer reset, base, components, utilities, pages;
+
+/* ===== Font Imports ===== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+/* ======================================================
+   CSS TOKENS — Design System Variables
+====================================================== */
+
+:root {
+    /* Layout */
+    --sidebar-width: 210px;
+    --sidebar-collapsed-width: 72px;
+    --header-height: 64px;
+    --container-max: 1200px;
+    --content-gutter: 1rem;
+    --container-padding-x: 1rem;
+    --container-padding-y: 1rem;
+
+    /* Spacing scale */
+    --space-0: 0;
+    --space-1: 0.25rem;
+    --space-2: 0.5rem;
+    --space-3: 0.75rem;
+    --space-4: 1rem;
+    --space-5: 1.5rem;
+    --space-6: 2rem;
+
+    /* Radii & borders */
+    --radius-0: 0;
+    --radius-1: 4px;
+    --radius-2: 6px;
+    --radius-3: 8px;
+    --radius-round: 9999px;
+    --border-width-0: 0;
+    --border-width-1: 1px;
+    --border-width-2: 2px;
+
+    /* Elevation */
+    --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.12);
+    --shadow-2: 0 4px 10px rgba(0, 0, 0, 0.15);
+    --shadow-3: 0 8px 20px rgba(0, 0, 0, 0.2);
+
+    /* Typography */
+    --font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+    --font-size-0: 0.75rem;
+    --font-size-1: 0.875rem;
+    --font-size-2: 1rem;
+    --font-size-3: 1.125rem;
+    --font-size-4: 1.25rem;
+    --line-height: 1.5;
+    --font-weight-regular: 400;
+    --font-weight-medium: 500;
+    --font-weight-bold: 600;
+
+    /* Motion */
+    --duration-fast: 120ms;
+    --duration: 240ms;
+    --duration-slow: 360ms;
+    --easing: cubic-bezier(0.2, 0.8, 0.2, 1);
+
+    /* Z-index scale */
+    --z-base: 1;
+    --z-sticky: 100;
+    --z-dropdown: 200;
+    --z-modal: 1000;
+    --z-toast: 2000;
+    --z-max: 9999;
+
+    /* Controls */
+    --control-min-height: 36px;
+    --control-padding-x: 0.75rem;
+    --control-padding-y: 0.5rem;
+    --control-radius: var(--radius-2);
+
+    /* Overlay & focus */
+    --overlay-bg: rgba(0, 0, 0, 0.5);
+    --backdrop-blur: 6px;
+    --focus-ring-size: 3px;
+    --focus-ring-color: var(--primary);
+
+    /* Breakpoints */
+    --bp-sm: 480px;
+    --bp-md: 768px;
+    --bp-lg: 1024px;
+    --bp-xl: 1280px;
+}
+
+/* Accessibility: Respect reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+    :root {
+        --duration-fast: 1ms;
+        --duration: 1ms;
+        --duration-slow: 1ms;
+        --easing: ease;
+    }
+
+    *,
+    *::before,
+    *::after {
+        animation-duration: 1ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 1ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* 
+  NOTE: Color themes are now in theme/dark.css and theme/light.css
+  All design tokens are now centralized here for consistent spacing,
+  shadows, z-index, motion, and layout values.
+*/

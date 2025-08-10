@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import '../css/splash.css';
+import '../css/pages/splash.css';
 
 export default function Splash() {
     const titleRef = useRef();

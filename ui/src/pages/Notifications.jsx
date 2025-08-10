@@ -5,7 +5,7 @@ import { NOTIFICATIONS_SCHEMA } from '../utils/constants/notifications_schema';
 import ModalFactory from '../components/modals/ModalFactory';
 import NotificationTypePickerModal from '../components/modals/NotificationTypePickerModal';
 import { useToast } from '../components/providers/ToastProvider';
-import '../css/notifications.css';
+import '../css/pages/notifications.css';
 
 // Utility: get schema def by type
 function getTypeDef(type) {

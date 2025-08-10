@@ -1,0 +1,126 @@
+@layer components {
+    /* ========== LOADING CONTAINER ========== */
+    .loading-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 200px;
+        gap: var(--space-4);
+    }
+
+    /* ========== SPINNER ========== */
+    .spinner {
+        border: 2.5px solid var(--accent);
+        border-top: 2.5px solid transparent;
+        border-radius: var(--radius-round);
+        width: 22px;
+        height: 22px;
+        animation: spin 1s linear infinite;
+        margin: auto;
+        display: inline-block;
+    }
+
+    /* ========== SPINNER VARIANTS ========== */
+    .spinner--large {
+        width: 32px;
+        height: 32px;
+        border-width: 3px;
+    }
+
+    .spinner--small {
+        width: 16px;
+        height: 16px;
+        border-width: 2px;
+    }
+
+    .spinner--primary {
+        border-color: var(--primary);
+        border-top-color: transparent;
+    }
+
+    .spinner--white {
+        border-color: #fff;
+        border-top-color: transparent;
+    }
+
+    /* ========== LOADING STATES ========== */
+    .loading-text {
+        color: var(--muted);
+        font-size: var(--font-size-1);
+        margin-top: var(--space-2);
+        text-align: center;
+    }
+
+    .loading-overlay {
+        position: fixed;
+        inset: 0;
+        background: var(--overlay-bg);
+        backdrop-filter: blur(var(--backdrop-blur));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: var(--z-modal);
+    }
+
+    /* ========== ANIMATIONS ========== */
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    /* Pulse animation for loading states */
+    @keyframes pulse {
+        0%,
+        100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.5;
+        }
+    }
+
+    .loading-pulse {
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    /* ========== SKELETON LOADING ========== */
+    .skeleton {
+        background: linear-gradient(
+            90deg,
+            var(--surface-dim, #f0f0f0) 25%,
+            var(--surface-variant, #e0e0e0) 50%,
+            var(--surface-dim, #f0f0f0) 75%
+        );
+        background-size: 200% 100%;
+        animation: skeleton-shimmer 1.5s infinite;
+        border-radius: var(--radius-2);
+    }
+
+    @keyframes skeleton-shimmer {
+        0% {
+            background-position: 200% 0;
+        }
+        100% {
+            background-position: -200% 0;
+        }
+    }
+
+    .skeleton--text {
+        height: 1rem;
+        width: 100%;
+        margin-bottom: var(--space-2);
+    }
+
+    .skeleton--title {
+        height: 1.5rem;
+        width: 60%;
+        margin-bottom: var(--space-3);
+    }
+
+    .skeleton--circle {
+        border-radius: var(--radius-round);
+        aspect-ratio: 1;
+    }
+} /* end @layer components */

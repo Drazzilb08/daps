@@ -12,7 +12,6 @@ export default function Layout({ children }) {
                     {children}
                 </div>
             </main>
-            <div id="toast-container"></div>
         </div>
     );
 }

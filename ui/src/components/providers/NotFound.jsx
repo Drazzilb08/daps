@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import '../../css/404.css';
+import '../../css/pages/404.css';
 
 const GRID_SIZE = 3;
 const TILE_SIZE = 70; // px; sync with CSS

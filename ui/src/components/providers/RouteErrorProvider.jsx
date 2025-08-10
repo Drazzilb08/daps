@@ -8,46 +8,49 @@ function getComprehensiveDebugInfo(routeName, error, errorInfo) {
         timestamp: now.toISOString(),
         route: routeName,
         url: window.location.href,
-        
+
         // Error Details
         errorName: error?.name || 'Unknown',
         errorMessage: error?.message || 'No message',
         errorStack: error?.stack || 'No stack trace',
-        
+
         // Browser Environment
         userAgent: navigator.userAgent,
         platform: navigator.platform,
         language: navigator.language,
         viewport: `${window.innerWidth}x${window.innerHeight}`,
         screen: `${screen.width}x${screen.height}`,
-        
+
         // Performance & Memory
-        memoryUsage: performance.memory ? {
-            used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024) + ' MB',
-            total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024) + ' MB',
-            limit: Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024) + ' MB'
-        } : 'Not available',
-        
+        memoryUsage: performance.memory
+            ? {
+                  used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024) + ' MB',
+                  total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024) + ' MB',
+                  limit: Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024) + ' MB',
+              }
+            : 'Not available',
+
         // Navigation
         referrer: document.referrer || 'Direct',
         historyLength: window.history.length,
-        
+
         // Local Storage (safe keys only)
-        localStorageKeys: Object.keys(localStorage).filter(key => 
-            !key.includes('token') && !key.includes('secret') && !key.includes('key')
+        localStorageKeys: Object.keys(localStorage).filter(
+            key => !key.includes('token') && !key.includes('secret') && !key.includes('key')
         ),
-        
+
         // React Component Info
         componentStack: errorInfo?.componentStack || 'Not available',
-        
+
         // Network Status
         onlineStatus: navigator.onLine,
-        
+
         // Timing
-        pageLoadTime: performance.timing ? 
-            performance.timing.loadEventEnd - performance.timing.navigationStart : 'Unknown'
+        pageLoadTime: performance.timing
+            ? performance.timing.loadEventEnd - performance.timing.navigationStart
+            : 'Unknown',
     };
-    
+
     return info;
 }
 
@@ -73,9 +76,11 @@ BROWSER ENVIRONMENT:
 - Online: ${debugInfo.onlineStatus}
 
 PERFORMANCE:
-- Memory Usage: ${typeof debugInfo.memoryUsage === 'object' ? 
-    `${debugInfo.memoryUsage.used}/${debugInfo.memoryUsage.total} (limit: ${debugInfo.memoryUsage.limit})` : 
-    debugInfo.memoryUsage}
+- Memory Usage: ${
+        typeof debugInfo.memoryUsage === 'object'
+            ? `${debugInfo.memoryUsage.used}/${debugInfo.memoryUsage.total} (limit: ${debugInfo.memoryUsage.limit})`
+            : debugInfo.memoryUsage
+    }
 - Page Load Time: ${debugInfo.pageLoadTime}ms
 - History Length: ${debugInfo.historyLength}
 
@@ -96,12 +101,12 @@ Please share this report when seeking support.`;
 class RouteErrorBoundary extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { 
-            hasError: false, 
-            error: null, 
+        this.state = {
+            hasError: false,
+            error: null,
             errorInfo: null,
             debugInfo: null,
-            copied: false
+            copied: false,
         };
     }
 
@@ -111,12 +116,12 @@ class RouteErrorBoundary extends React.Component {
 
     componentDidCatch(error, errorInfo) {
         const debugInfo = getComprehensiveDebugInfo(this.props.routeName, error, errorInfo);
-        
-        this.setState({ 
+
+        this.setState({
             errorInfo,
-            debugInfo
+            debugInfo,
         });
-        
+
         console.group(`🚨 Route Error: ${this.props.routeName}`);
         console.error('Error:', error);
         console.error('Error Info:', errorInfo);
@@ -125,12 +130,12 @@ class RouteErrorBoundary extends React.Component {
     }
 
     handleRetry = () => {
-        this.setState({ 
-            hasError: false, 
-            error: null, 
+        this.setState({
+            hasError: false,
+            error: null,
             errorInfo: null,
             debugInfo: null,
-            copied: false 
+            copied: false,
         });
     };
 
@@ -158,7 +163,7 @@ class RouteErrorBoundary extends React.Component {
                 padding: '2rem',
                 fontFamily: 'var(--font-family)',
                 background: 'var(--surface)',
-                color: 'var(--text-color)'
+                color: 'var(--text-color)',
             };
 
             const errorBoxStyle = {
@@ -168,7 +173,7 @@ class RouteErrorBoundary extends React.Component {
                 border: '2px solid var(--error)',
                 borderRadius: '12px',
                 padding: '2rem',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)'
+                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
             };
 
             const titleStyle = {
@@ -180,14 +185,14 @@ class RouteErrorBoundary extends React.Component {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: '0.5rem'
+                gap: '0.5rem',
             };
 
             const messageStyle = {
                 color: 'var(--text-secondary)',
                 textAlign: 'center',
                 marginBottom: '1.5rem',
-                lineHeight: '1.5'
+                lineHeight: '1.5',
             };
 
             const errorDetailStyle = {
@@ -199,7 +204,7 @@ class RouteErrorBoundary extends React.Component {
                 fontFamily: 'monospace',
                 fontSize: '0.9rem',
                 color: 'var(--error)',
-                wordBreak: 'break-word'
+                wordBreak: 'break-word',
             };
 
             const buttonGroupStyle = {
@@ -207,7 +212,7 @@ class RouteErrorBoundary extends React.Component {
                 gap: '1rem',
                 justifyContent: 'center',
                 marginBottom: '1rem',
-                flexWrap: 'wrap'
+                flexWrap: 'wrap',
             };
 
             const primaryButtonStyle = {
@@ -219,7 +224,7 @@ class RouteErrorBoundary extends React.Component {
                 fontWeight: '600',
                 cursor: 'pointer',
                 fontSize: '0.95rem',
-                transition: 'opacity 0.2s'
+                transition: 'opacity 0.2s',
             };
 
             const secondaryButtonStyle = {
@@ -230,17 +235,17 @@ class RouteErrorBoundary extends React.Component {
                 padding: '0.75rem 1.5rem',
                 fontWeight: '600',
                 cursor: 'pointer',
-                fontSize: '0.95rem'
+                fontSize: '0.95rem',
             };
 
             const copyButtonStyle = {
                 ...primaryButtonStyle,
-                background: copied ? '#28a745' : '#6c757d'
+                background: copied ? '#28a745' : '#6c757d',
             };
 
             const detailsStyle = {
                 marginTop: '1rem',
-                width: '100%'
+                width: '100%',
             };
 
             const summaryStyle = {
@@ -248,7 +253,7 @@ class RouteErrorBoundary extends React.Component {
                 fontWeight: '600',
                 padding: '0.5rem 0',
                 color: 'var(--text-color)',
-                borderBottom: '1px solid var(--divider)'
+                borderBottom: '1px solid var(--divider)',
             };
 
             const debugContentStyle = {
@@ -262,7 +267,7 @@ class RouteErrorBoundary extends React.Component {
                 maxHeight: '300px',
                 overflow: 'auto',
                 whiteSpace: 'pre-wrap',
-                color: 'var(--text-secondary)'
+                color: 'var(--text-secondary)',
             };
 
             const helpTextStyle = {
@@ -270,52 +275,53 @@ class RouteErrorBoundary extends React.Component {
                 fontSize: '0.85rem',
                 color: 'var(--text-secondary)',
                 marginTop: '1rem',
-                fontStyle: 'italic'
+                fontStyle: 'italic',
             };
 
             return (
                 <div style={containerStyle}>
                     <div style={errorBoxStyle}>
-                        <h2 style={titleStyle}>
-                            🛠️ {routeName} Error
-                        </h2>
-                        
+                        <h2 style={titleStyle}>🛠️ {routeName} Error</h2>
+
                         <p style={messageStyle}>
-                            Something went wrong in this section. Other parts of DAPS should still work normally.
+                            Something went wrong in this section. Other parts of DAPS should still
+                            work normally.
                         </p>
 
                         <div style={errorDetailStyle}>
-                            <strong>{error?.name || 'Error'}:</strong> {error?.message || 'Unknown error occurred'}
+                            <strong>{error?.name || 'Error'}:</strong>{' '}
+                            {error?.message || 'Unknown error occurred'}
                         </div>
 
                         <div style={buttonGroupStyle}>
                             <button style={primaryButtonStyle} onClick={this.handleRetry}>
                                 🔄 Try Again
                             </button>
-                            
-                            <button 
-                                style={secondaryButtonStyle} 
-                                onClick={() => window.location.href = '/'}
+
+                            <button
+                                style={secondaryButtonStyle}
+                                onClick={() => (window.location.href = '/')}
                             >
                                 🏠 Go Home
                             </button>
-                            
+
                             <button style={copyButtonStyle} onClick={this.copyDebugReport}>
                                 {copied ? '✅ Copied!' : '📋 Copy Debug Report'}
                             </button>
                         </div>
 
                         <details style={detailsStyle}>
-                            <summary style={summaryStyle}>
-                                🔍 Debug Information for Support
-                            </summary>
+                            <summary style={summaryStyle}>🔍 Debug Information for Support</summary>
                             <div style={debugContentStyle}>
-                                {debugInfo ? formatDebugReport(debugInfo) : 'Debug info not available'}
+                                {debugInfo
+                                    ? formatDebugReport(debugInfo)
+                                    : 'Debug info not available'}
                             </div>
                         </details>
 
                         <p style={helpTextStyle}>
-                            💡 Copy the debug report above to share with support for faster problem resolution.
+                            💡 Copy the debug report above to share with support for faster problem
+                            resolution.
                         </p>
                     </div>
                 </div>

@@ -6,16 +6,16 @@ import React, { useState, useRef, useEffect } from 'react';
  * Optimized lazy loading image component with intersection observer
  * and placeholder states for DAPS poster previews
  */
-export default function LazyImage({ 
-    src, 
-    alt = '', 
-    className = '', 
+export default function LazyImage({
+    src,
+    alt = '',
+    className = '',
     placeholder = null,
     onLoad = null,
     onError = null,
     threshold = 0.1,
     rootMargin = '50px',
-    ...props 
+    ...props
 }) {
     const [isLoaded, setIsLoaded] = useState(false);
     const [isInView, setIsInView] = useState(false);
@@ -29,7 +29,7 @@ export default function LazyImage({
 
         // Create intersection observer for lazy loading
         observerRef.current = new IntersectionObserver(
-            (entries) => {
+            entries => {
                 const [entry] = entries;
                 if (entry.isIntersecting) {
                     setIsInView(true);
@@ -46,13 +46,13 @@ export default function LazyImage({
         };
     }, [src, threshold, rootMargin]);
 
-    const handleLoad = (e) => {
+    const handleLoad = e => {
         setIsLoaded(true);
         setHasError(false);
         onLoad?.(e);
     };
 
-    const handleError = (e) => {
+    const handleError = e => {
         setHasError(true);
         setIsLoaded(false);
         onError?.(e);
@@ -60,7 +60,7 @@ export default function LazyImage({
 
     // For modal poster images, apply styles directly to img
     const isModalPoster = className.includes('modal-poster-img');
-    
+
     if (isModalPoster) {
         return (
             <div ref={imgRef} className="lazy-image-container">
@@ -101,11 +101,7 @@ export default function LazyImage({
 
     // Standard implementation for grid items
     return (
-        <div 
-            ref={imgRef}
-            className={`lazy-image-container ${className}`}
-            {...props}
-        >
+        <div ref={imgRef} className={`lazy-image-container ${className}`} {...props}>
             {/* Placeholder while not in view or loading */}
             {(!isInView || (!isLoaded && !hasError)) && (
                 <div className="lazy-image-placeholder">

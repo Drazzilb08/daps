@@ -1,0 +1,101 @@
+@layer components {
+    /* ========== ERROR BOUNDARY CONTAINER ========== */
+    .error-boundary {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 200px;
+        padding: var(--space-6);
+        background: var(--surface);
+        border: var(--border-width-2) solid var(--error);
+        border-radius: var(--radius-3);
+        text-align: center;
+        gap: var(--space-4);
+    }
+
+    /* ========== ERROR BOUNDARY CONTENT ========== */
+    .error-boundary__title {
+        font-size: var(--font-size-4);
+        font-weight: var(--font-weight-bold);
+        color: var(--error);
+        margin: 0;
+    }
+
+    .error-boundary__message {
+        font-size: var(--font-size-2);
+        color: var(--text-color);
+        margin: 0;
+        max-width: 500px;
+        line-height: var(--line-height);
+    }
+
+    .error-boundary__details {
+        background: var(--surface-alt);
+        border: var(--border-width-1) solid var(--divider);
+        border-radius: var(--radius-2);
+        padding: var(--space-4);
+        margin-top: var(--space-3);
+        font-family: monospace;
+        font-size: var(--font-size-1);
+        color: var(--text-muted);
+        white-space: pre-wrap;
+        max-width: 100%;
+        overflow-x: auto;
+        text-align: left;
+    }
+
+    /* ========== ERROR BOUNDARY BUTTONS ========== */
+    .error-boundary button {
+        margin-top: var(--space-2);
+        margin-right: var(--space-2);
+        padding: var(--space-2) var(--space-3);
+        border: none;
+        background: #d8dee9;
+        color: #2e3440;
+        border-radius: var(--radius-1);
+        cursor: pointer;
+        font-size: var(--font-size-2);
+        font-weight: var(--font-weight-medium);
+        transition: background var(--duration-fast);
+    }
+
+    .error-boundary button:hover {
+        background: #eceff4;
+    }
+
+    .error-boundary button:focus {
+        outline: var(--focus-ring-size) solid var(--focus-ring-color);
+        outline-offset: 2px;
+    }
+
+    /* ========== ERROR BOUNDARY ACTIONS ========== */
+    .error-boundary__actions {
+        display: flex;
+        gap: var(--space-2);
+        margin-top: var(--space-4);
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    /* ========== ERROR BOUNDARY ICON ========== */
+    .error-boundary__icon {
+        font-size: 3rem;
+        color: var(--error);
+        margin-bottom: var(--space-2);
+    }
+
+    /* ========== GLOBAL ERROR STATE ========== */
+    .error-boundary--global {
+        min-height: 100vh;
+        border: none;
+        border-radius: 0;
+        background: var(--surface);
+    }
+
+    .error-boundary--inline {
+        min-height: 100px;
+        padding: var(--space-4);
+        border-radius: var(--radius-2);
+    }
+} /* end @layer components */

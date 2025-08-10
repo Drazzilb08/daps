@@ -2,8 +2,8 @@
 // import { getIcon } from '../utils/tools';
 // import {  } from '../utils/api';
 // import TooltipFactory from "../components/Tooltip";
-// import '../css/poster_management.css';
+// import '../css/pages/media-search.css';
 
 export default function MediaSearch() {
-    return <div>Media Search</div>;
+    return <div className="media-search-page">Media Search</div>;
 }

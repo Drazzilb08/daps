@@ -1,0 +1,36 @@
+@layer components {
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .table th,
+    .table td {
+        padding: var(--space-3) var(--space-4);
+        border-bottom: var(--border-width-1) solid var(--color-border);
+        text-align: left;
+    }
+
+    .table--compact th,
+    .table--compact td {
+        padding: var(--space-2) var(--space-3);
+    }
+
+    .table thead th {
+        position: sticky;
+        top: 0;
+        background: var(--color-surface);
+        z-index: var(--z-sticky);
+    }
+
+    .table tr:nth-child(even) {
+        background: color-mix(in oklab, var(--color-surface) 90%, var(--color-bg));
+    }
+
+    .table__cell--truncate {
+        max-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}

@@ -17,7 +17,7 @@ import { moduleList } from '../utils/constants/constants';
 import cronstrue from 'cronstrue/i18n';
 import { isValidCron } from 'cron-validator';
 import { useToast } from '../components/providers/ToastProvider';
-import '../css/schedule.css';
+import '../css/pages/schedule.css';
 
 // --- Helper: last run display ---
 function formatLastRun(dt) {
@@ -253,7 +253,7 @@ export default function SchedulePage() {
     return (
         <div>
             {modalProps && <ModalFactory {...modalProps} />}
-            <div className="card-list" id="schedule-list">
+            <div className="schedule-list card-list">
                 {loading ? (
                     <div className="loader-modal">Loading…</div>
                 ) : (

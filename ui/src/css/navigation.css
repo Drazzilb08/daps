@@ -1,185 +1,202 @@
-/* ======================================================
+@layer base {
+    /* ======================================================
    SIDEBAR NAVIGATION LAYOUT
 ====================================================== */
-nav.sidebar {
-    position: fixed;
-    top: 64px;
-    left: 0;
-    width: 210px;
-    height: calc(100vh - 64px);
-    background: var(--sidebar-bg);
-    color: var(--sidebar-fg);
-    display: flex;
-    flex-direction: column;
-    z-index: 200;
-    transition:
-        left 0.28s cubic-bezier(0.5, 0, 0.5, 1),
-        box-shadow 0.2s;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-    box-shadow: none;
-    border-right: none;
-}
-
-.nav-logo {
-    display: flex;
-    align-items: center;
-    padding: 0 12px;
-    color: var(--primary);
-    background: transparent;
-    height: 64px;
-}
-
-.nav-logo img {
-    width: 38px;
-    height: 38px;
-}
-
-/* ======================================================
-   SIDEBAR MENU
-====================================================== */
-.menu {
-    flex: 1;
-    list-style: none;
-    padding: 0.7rem 0 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    background: none;
-    gap: 0;
-    position: relative;
-}
-
-.menu > li {
-    position: relative;
-}
-
-/* Unified sidebar link style for main and sub */
-.sidebar-link,
-.sidebar-link:visited {
-    color: var(--sidebar-fg);
-    background: transparent;
-    transition:
-        color 0.14s,
-        background 0.14s;
-    box-shadow: none;
-    font-weight: 500;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 0.66em;
-    min-height: 28px;
-    padding: 0.22em 0.7em 0.22em 0.55em;
-    border-radius: 0 6px 6px 0;
-    position: relative;
-    outline: none;
-    border: none;
-    letter-spacing: 0.01em;
-    line-height: 1.22;
-    z-index: 1;
-}
-
-/* New toggle button style moved from inline styles */
-.sidebar-link--toggle {
-    width: 100%;
-    text-align: left;
-    background: transparent;
-    border: none;
-    padding: 0.22em 0.7em 0.22em 0.55em;
-    cursor: pointer;
-}
-
-.sidebar-link:hover,
-.sidebar-link:focus,
-.sidebar-link.active {
-    color: var(--primary);
-    background: transparent;
-    box-shadow: none;
-    font-weight: 700;
-}
-
-.sidebar-link--sub {
-    font-weight: 400;
-    padding: 0.31em 0.2em 0.31em 0.4em;
-    border-radius: 3px;
-    min-height: 34px;
-    margin-left: 0;
-}
-
-.menu .icon {
-    min-width: 1.5em;
-    text-align: center;
-    color: inherit;
-    opacity: 0.87;
-    flex-shrink: 0;
-    margin-right: 0.1em;
-    margin-left: 0.5em;
-    font-size: 20px;
-}
-
-/* Sidebar highlight bar */
-.menu > li.active-section::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 3px;
-    background: var(--primary);
-    border-radius: 0 10px 10px 0;
-    z-index: 2;
-    box-shadow: none;
-}
-
-/* ======================================================
-   SIDEBAR SUBMENU (ANY SECTION WITH CHILDREN)
-====================================================== */
-.settings-sub-menu {
-    display: none;
-    list-style: none;
-    padding: 0.1em 0 0 3.8em;
-    margin: 0;
-    flex-direction: column;
-    background: none;
-}
-
-.settings-sub-menu li {
-    margin-bottom: 0.02em;
-}
-
-/* ======================================================
-   SIDEBAR FOOTER
-====================================================== */
-.sidebar-footer {
-    margin-top: auto;
-    padding: 1em 1.3em 1.5em;
-    color: var(--sidebar-fg);
-    border-top: 1.5px solid var(--sidebar-divider);
-    background: var(--sidebar-bg);
-    text-align: center;
-    user-select: none;
-    letter-spacing: 0.04em;
-}
-
-/* ======================================================
-   SIDEBAR RESPONSIVE
-====================================================== */
-@media (width <= 1100px) {
     nav.sidebar {
-        left: -210px;
-        box-shadow: 2px 0 16px 0 rgb(0 0 0 / 24%);
+        position: fixed;
+        top: 64px; /* fallback */
+        top: var(--header-height);
+        left: 0;
+        width: 210px; /* fallback */
+        width: var(--sidebar-width);
+        height: calc(100vh - 64px); /* fallback */
+        height: calc(100vh - var(--header-height));
+        background: #191b1f; /* fallback */
+        background: var(--sidebar-bg);
+        color: var(--sidebar-fg);
+        display: flex;
+        flex-direction: column;
+        z-index: 200; /* fallback */
+        z-index: var(--z-dropdown);
+        transition:
+            left 0.28s cubic-bezier(0.5, 0, 0.5, 1),
+            box-shadow 0.2s;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
-        height: calc(100dvh - 64px);
-        min-height: 0;
-        max-height: none;
+        box-shadow: none;
+        border-right: none;
     }
 
-    body.sidebar-open nav.sidebar {
+    .nav-logo {
+        display: flex;
+        align-items: center;
+        padding: 0 12px; /* fallback */
+        padding: 0 var(--space-3);
+        color: var(--primary);
+        background: transparent;
+        height: 64px; /* fallback */
+        height: var(--header-height);
+    }
+
+    .nav-logo img {
+        width: 38px;
+        height: 38px;
+    }
+
+    /* ======================================================
+   SIDEBAR MENU
+====================================================== */
+    .menu {
+        flex: 1;
+        list-style: none;
+        padding: 0.7rem 0 0;
+        margin: 0;
+        display: flex;
+        flex-direction: column;
+        background: none;
+        gap: 0;
+        position: relative;
+    }
+
+    .menu > li {
+        position: relative;
+    }
+
+    /* Unified sidebar link style for main and sub */
+    .sidebar-link,
+    .sidebar-link:visited {
+        color: var(--sidebar-fg);
+        background: transparent;
+        transition:
+            color 0.14s,
+            background 0.14s;
+        box-shadow: none;
+        font-weight: 500;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem; /* fallback */
+        gap: var(--space-3);
+        min-height: 28px;
+        padding: 0.5rem 0.75rem 0.5rem 0.5rem; /* fallback */
+        padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
+        border-radius: 0 6px 6px 0; /* fallback */
+        border-radius: 0 var(--radius-2) var(--radius-2) 0;
+        position: relative;
+        outline: none;
+        border: none;
+        letter-spacing: 0.01em;
+        line-height: 1.22;
+        z-index: 1;
+    }
+
+    /* New toggle button style moved from inline styles */
+    .sidebar-link--toggle {
+        width: 100%;
+        text-align: left;
+        background: transparent;
+        border: none;
+        padding: 0.5rem 0.75rem 0.5rem 0.5rem; /* fallback */
+        padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
+        cursor: pointer;
+    }
+
+    .sidebar-link:hover,
+    .sidebar-link:focus,
+    .sidebar-link.active {
+        color: var(--primary);
+        background: transparent;
+        box-shadow: none;
+        font-weight: 700;
+    }
+
+    .sidebar-link--sub {
+        font-weight: 400;
+        padding: 0.31em 0.2em 0.31em 0.4em;
+        border-radius: 4px; /* fallback */
+        border-radius: var(--radius-1);
+        min-height: 34px;
+        margin-left: 0;
+    }
+
+    .menu .icon {
+        min-width: 1.5em;
+        text-align: center;
+        color: inherit;
+        opacity: 0.87;
+        flex-shrink: 0;
+        margin-right: 0.1em;
+        margin-left: 0.5em;
+        font-size: 20px;
+    }
+
+    /* Sidebar highlight bar */
+    .menu > li.active-section::before {
+        content: '';
+        position: absolute;
         left: 0;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: var(--primary);
+        border-radius: 0 10px 10px 0;
+        z-index: 2;
+        box-shadow: none;
     }
 
-    .daps-title {
-        display: none !important;
+    /* ======================================================
+   SIDEBAR SUBMENU (ANY SECTION WITH CHILDREN)
+====================================================== */
+    .settings-sub-menu {
+        display: none;
+        list-style: none;
+        padding: 0.1em 0 0 3.8em;
+        margin: 0;
+        flex-direction: column;
+        background: none;
     }
-}
+
+    .settings-sub-menu li {
+        margin-bottom: 0.02em;
+    }
+
+    /* ======================================================
+   SIDEBAR FOOTER
+====================================================== */
+    .sidebar-footer {
+        margin-top: auto;
+        padding: 1em 1.3em 1.5em;
+        color: var(--sidebar-fg);
+        border-top: 1.5px solid var(--sidebar-divider);
+        background: var(--sidebar-bg);
+        text-align: center;
+        user-select: none;
+        letter-spacing: 0.04em;
+    }
+
+    /* ======================================================
+   SIDEBAR RESPONSIVE
+====================================================== */
+    @media (width <= 1100px) {
+        nav.sidebar {
+            left: -210px; /* fallback */
+            left: calc(-1 * var(--sidebar-width));
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* fallback */
+            box-shadow: var(--shadow-3);
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+            height: calc(100dvh - 64px); /* fallback */
+            height: calc(100dvh - var(--header-height));
+            min-height: 0;
+            max-height: none;
+        }
+
+        body.sidebar-open nav.sidebar {
+            left: 0;
+        }
+
+        .daps-title {
+            display: none !important;
+        }
+    }
+} /* end @layer base */

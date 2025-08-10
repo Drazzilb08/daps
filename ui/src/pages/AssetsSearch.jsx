@@ -6,7 +6,7 @@ import AssetsSearchResults from '../components/poster_search/assets_search/Asset
 import PosterSearchModalTrigger from '../components/poster_search/PosterSearchModalTrigger';
 import usePosterSearchHoverPreview from '../components/poster_search/PosterSearchHoverPreview';
 import { useToast } from '../components/providers/ToastProvider';
-import '../css/poster_search.css';
+import '../css/pages/poster-search.css';
 
 function isImageFile(filename) {
     return /\.(jpe?g|png|webp|gif)$/i.test(filename);

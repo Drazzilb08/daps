@@ -11,21 +11,25 @@ const CACHE_KEYS = {
     MATCHED_POSTER_STATS: 'matched_poster_stats',
     POSTER_ASSET_LIST: 'poster_asset_list',
     GDRIVE_STATS: 'gdrive_stats',
-    PLEX_LIBRARIES: 'plex_libraries'
+    PLEX_LIBRARIES: 'plex_libraries',
 };
 
 /**
  * Cache management utilities
  */
 function getCacheKey(baseKey, params = {}) {
-    const paramString = Object.keys(params).length > 0 
-        ? '?' + Object.entries(params).map(([k, v]) => `${k}=${v}`).join('&')
-        : '';
+    const paramString =
+        Object.keys(params).length > 0
+            ? '?' +
+              Object.entries(params)
+                  .map(([k, v]) => `${k}=${v}`)
+                  .join('&')
+            : '';
     return `${baseKey}${paramString}`;
 }
 
 function isCacheValid(entry) {
-    return entry && (Date.now() - entry.timestamp) < CACHE_TTL;
+    return entry && Date.now() - entry.timestamp < CACHE_TTL;
 }
 
 function getFromCache(key) {
@@ -36,7 +40,7 @@ function getFromCache(key) {
 function setCache(key, data) {
     cache.set(key, {
         data,
-        timestamp: Date.now()
+        timestamp: Date.now(),
     });
     return data;
 }
@@ -69,7 +73,7 @@ async function withCache(cacheKey, apiCall, forceRefresh = false) {
             return cached;
         }
     }
-    
+
     const result = await apiCall();
     return setCache(cacheKey, result);
 }
@@ -83,7 +87,7 @@ async function withCache(cacheKey, apiCall, forceRefresh = false) {
  */
 async function handleApiResponse(res) {
     const data = await res.json().catch(() => ({}));
-    
+
     if (!res.ok || !data.success) {
         const errorMessage = data.message || `API Error (${res.status})`;
         const error = new Error(errorMessage);
@@ -91,7 +95,7 @@ async function handleApiResponse(res) {
         error.status = res.status;
         throw error;
     }
-    
+
     return data;
 }
 
@@ -122,14 +126,14 @@ export async function retryJob(jobId) {
         headers: { 'Content-Type': 'application/json' },
     });
     const data = await handleApiResponse(res);
-    
+
     // Clear job-related cache after retry
     clearCache('job');
-    
+
     return {
         success: true,
         message: data.message,
-        job_id: extractData(data, 'job_id')
+        job_id: extractData(data, 'job_id'),
     };
 }
 
@@ -137,7 +141,7 @@ export async function retryJob(jobId) {
 export async function fetchJobs(status = null, limit = 50) {
     let url = `/api/jobs?limit=${limit}`;
     if (status) url += `&status=${encodeURIComponent(status)}`;
-    
+
     const res = await fetch(url);
     const data = await handleApiResponse(res);
     return extractData(data, 'jobs') || [];
@@ -163,28 +167,28 @@ export async function runGDriveAdhocSync(gdrive_names) {
     const qs = gdrive_names.map(n => `gdrive_names=${encodeURIComponent(n)}`).join('&');
     const res = await fetch(`/api/run/gdrive?${qs}`, { method: 'POST' });
     const data = await handleApiResponse(res);
-    
+
     // Clear relevant cache after sync action
     clearCache('gdrive');
-    
+
     const responseData = extractData(data);
-    
+
     // Handle single vs multiple jobs
     if (responseData.job_id) {
         return {
             success: true,
             message: data.message,
             job_id: responseData.job_id,
-            name: responseData.name
+            name: responseData.name,
         };
     } else if (responseData.jobs) {
         return {
             success: true,
             message: data.message,
-            jobs: responseData.jobs
+            jobs: responseData.jobs,
         };
     }
-    
+
     throw new Error('Sync started but no job information returned');
 }
 
@@ -210,14 +214,14 @@ export async function uploadMediaById(id) {
         method: 'POST',
     });
     const data = await handleApiResponse(res);
-    
+
     // Clear cache after upload
     clearCache('cache');
-    
+
     return {
         success: true,
         message: data.message,
-        data: extractData(data)
+        data: extractData(data),
     };
 }
 
@@ -228,14 +232,14 @@ export async function uploadCollectionById(id) {
         method: 'POST',
     });
     const data = await handleApiResponse(res);
-    
+
     // Clear cache after upload
     clearCache('cache');
-    
+
     return {
         success: true,
         message: data.message,
-        data: extractData(data)
+        data: extractData(data),
     };
 }
 
@@ -260,14 +264,14 @@ export async function deleteMediaCacheById(id) {
         method: 'DELETE',
     });
     const data = await handleApiResponse(res);
-    
+
     // Clear cache after deletion
     clearCache('cache');
-    
+
     return {
         success: true,
         message: data.message,
-        deleted_id: extractData(data, 'deleted_id')
+        deleted_id: extractData(data, 'deleted_id'),
     };
 }
 
@@ -278,14 +282,14 @@ export async function deleteCollectionCacheById(id) {
         method: 'DELETE',
     });
     const data = await handleApiResponse(res);
-    
+
     // Clear cache after deletion
     clearCache('cache');
-    
+
     return {
         success: true,
         message: data.message,
-        deleted_id: extractData(data, 'deleted_id')
+        deleted_id: extractData(data, 'deleted_id'),
     };
 }
 
@@ -328,9 +332,9 @@ export async function fetchPosters(location, forceRefresh = false) {
             message: 'Missing location for stats fetch.',
         };
     }
-    
+
     const cacheKey = getCacheKey('posters', { location });
-    
+
     try {
         return await withCache(
             cacheKey,
@@ -338,13 +342,13 @@ export async function fetchPosters(location, forceRefresh = false) {
                 const res = await fetch(`/api/posters?location=${encodeURIComponent(location)}`);
                 const data = await handleApiResponse(res);
                 const posterData = extractData(data);
-                
+
                 return {
                     error: false,
                     file_count: posterData.file_count || 0,
                     size_bytes: posterData.size_bytes || 0,
                     files: posterData.files || [],
-                    message: data.message
+                    message: data.message,
                 };
             },
             forceRefresh
@@ -389,11 +393,13 @@ export function fetchPosterPreviewUrl(location, path) {
 // Get Plex libraries (cached per instance)
 export async function fetchPlexLibraries(instanceName, forceRefresh = false) {
     const cacheKey = getCacheKey(CACHE_KEYS.PLEX_LIBRARIES, { instance: instanceName });
-    
+
     return await withCache(
         cacheKey,
         async () => {
-            const resp = await fetch(`/api/plex/libraries?instance=${encodeURIComponent(instanceName)}`);
+            const resp = await fetch(
+                `/api/plex/libraries?instance=${encodeURIComponent(instanceName)}`
+            );
             const data = await handleApiResponse(resp);
             return extractData(data, 'libraries') || [];
         },
@@ -406,13 +412,13 @@ export async function fetchPlexLibraries(instanceName, forceRefresh = false) {
 // Fetch config (cached per section)
 export async function fetchConfig(section = null, forceRefresh = false) {
     const cacheKey = getCacheKey(CACHE_KEYS.CONFIG, section ? { section } : {});
-    
+
     return await withCache(
         cacheKey,
         async () => {
             let url = '/api/config';
             if (section) url += `?section=${encodeURIComponent(section)}`;
-            
+
             const res = await fetch(url);
             const data = await handleApiResponse(res);
             return extractData(data);
@@ -429,14 +435,14 @@ export async function postConfig(payload) {
         body: JSON.stringify(payload),
     });
     const data = await handleApiResponse(res);
-    
+
     // Clear config cache after save
     clearCache(CACHE_KEYS.CONFIG);
-    
+
     return {
         success: true,
         message: data.message,
-        data: extractData(data)
+        data: extractData(data),
     };
 }
 
@@ -460,7 +466,7 @@ export async function testInstance(service, entry) {
     if (!service || !entry || !entry.name || !entry.url || !entry.api) {
         return { success: false, message: 'Missing required instance parameters' };
     }
-    
+
     try {
         const res = await fetch('/api/test-instance', {
             method: 'POST',
@@ -476,13 +482,13 @@ export async function testInstance(service, entry) {
         return {
             success: true,
             message: data.message,
-            status_code: extractData(data, 'status_code')
+            status_code: extractData(data, 'status_code'),
         };
     } catch (error) {
         return {
             success: false,
             message: error.message,
-            error_code: error.code
+            error_code: error.code,
         };
     }
 }
@@ -494,12 +500,12 @@ export async function runTestNotification(type, data) {
     if (!type || !data) {
         return { ok: false, error: 'Missing type or data' };
     }
-    
+
     const payload = {
         module: 'notifications',
         notifications: { [type]: data },
     };
-    
+
     try {
         const res = await fetch('/api/test-notification', {
             method: 'POST',
@@ -510,13 +516,13 @@ export async function runTestNotification(type, data) {
         return {
             ok: true,
             message: responseData.message,
-            data: extractData(responseData)
+            data: extractData(responseData),
         };
     } catch (error) {
         return {
             ok: false,
             error: error.message,
-            error_code: error.code
+            error_code: error.code,
         };
     }
 }
@@ -528,7 +534,7 @@ export async function fetchAllRunStates() {
     const res = await fetch('/api/run_state');
     const data = await handleApiResponse(res);
     const runStates = extractData(data, 'run_states') || [];
-    
+
     return runStates.reduce((acc, r) => {
         acc[r.module_name] = r;
         return acc;
@@ -538,7 +544,7 @@ export async function fetchAllRunStates() {
 // Module status (not cached - real-time data)
 export async function fetchModuleStatus(module) {
     if (!module) return false;
-    
+
     try {
         const res = await fetch(`/api/status?module=${encodeURIComponent(module)}`);
         const data = await handleApiResponse(res);
@@ -553,7 +559,7 @@ export async function fetchModuleStatus(module) {
 // Run module (not cached - action)
 export async function runModule(module) {
     if (!module) return { success: false, message: 'Module name required' };
-    
+
     try {
         const res = await fetch('/api/run', {
             method: 'POST',
@@ -561,21 +567,21 @@ export async function runModule(module) {
             body: JSON.stringify({ module }),
         });
         const data = await handleApiResponse(res);
-        
+
         // Clear relevant cache after running module
         clearCache('job');
         clearCache('run_state');
-        
+
         return {
             success: true,
             message: data.message,
-            data: extractData(data)
+            data: extractData(data),
         };
     } catch (error) {
         return {
             success: false,
             message: error.message,
-            error_code: error.code
+            error_code: error.code,
         };
     }
 }
@@ -583,7 +589,7 @@ export async function runModule(module) {
 // Cancel scheduled module (not cached - action)
 export async function cancelScheduledModule(module) {
     if (!module) return { success: false, message: 'Module name required' };
-    
+
     try {
         const res = await fetch('/api/cancel', {
             method: 'POST',
@@ -591,21 +597,21 @@ export async function cancelScheduledModule(module) {
             body: JSON.stringify({ module }),
         });
         const data = await handleApiResponse(res);
-        
+
         // Clear relevant cache after canceling
         clearCache('job');
         clearCache('run_state');
-        
+
         return {
             success: true,
             message: data.message,
-            data: extractData(data)
+            data: extractData(data),
         };
     } catch (error) {
         return {
             success: false,
             message: error.message,
-            error_code: error.code
+            error_code: error.code,
         };
     }
 }
@@ -628,9 +634,9 @@ export async function fetchLogModules(forceRefresh = false) {
 // Get log files (cached per module)
 export async function fetchLogFiles(moduleName, forceRefresh = false) {
     if (!moduleName) return [];
-    
+
     const cacheKey = getCacheKey('log_files', { module: moduleName });
-    
+
     try {
         return await withCache(
             cacheKey,
@@ -650,7 +656,7 @@ export async function fetchLogFiles(moduleName, forceRefresh = false) {
 // Get log content (not cached - can be large and change frequently)
 export async function fetchLogContent(moduleName, fileName) {
     if (!moduleName || !fileName) return '';
-    
+
     try {
         const res = await fetch(`/api/logs/${moduleName}/${fileName}`);
         if (!res.ok) return '';
@@ -670,14 +676,14 @@ export async function createDirectory(path) {
             method: 'POST',
         });
         const data = await handleApiResponse(resp);
-        
+
         // Clear directory listing cache after creation
         clearCache('directory');
-        
+
         return {
             success: true,
             message: data.message,
-            data: extractData(data)
+            data: extractData(data),
         };
     } catch (error) {
         throw new Error(error.message || 'Failed to create directory');
@@ -687,9 +693,9 @@ export async function createDirectory(path) {
 // Directory listing (cached per path)
 export async function fetchDirectoryList(path, forceRefresh = false) {
     if (!path) path = '/';
-    
+
     const cacheKey = getCacheKey('directory', { path });
-    
+
     try {
         return await withCache(
             cacheKey,
@@ -697,12 +703,12 @@ export async function fetchDirectoryList(path, forceRefresh = false) {
                 const res = await fetch(`/api/list?path=${encodeURIComponent(path)}`);
                 const data = await handleApiResponse(res);
                 const dirData = extractData(data);
-                
+
                 return {
                     directories: dirData.directories || [],
                     exists: dirData.exists !== undefined ? dirData.exists : false,
                     writable: dirData.writable !== undefined ? dirData.writable : false,
-                    error: undefined
+                    error: undefined,
                 };
             },
             forceRefresh
@@ -712,7 +718,7 @@ export async function fetchDirectoryList(path, forceRefresh = false) {
             directories: [],
             exists: false,
             writable: false,
-            error: error.message || 'Failed to load directory list.'
+            error: error.message || 'Failed to load directory list.',
         };
     }
 }
@@ -734,19 +740,19 @@ export function clearApiCache(pattern = null) {
 export function getCacheStats() {
     const entries = [];
     const now = Date.now();
-    
+
     for (const [key, value] of cache.entries()) {
         entries.push({
             key,
             age: now - value.timestamp,
             valid: isCacheValid(value),
-            size: JSON.stringify(value.data).length
+            size: JSON.stringify(value.data).length,
         });
     }
-    
+
     return {
         totalEntries: cache.size,
         ttl: CACHE_TTL,
-        entries
+        entries,
     };
 }

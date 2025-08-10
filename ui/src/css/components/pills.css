@@ -1,0 +1,249 @@
+@layer components {
+    /* ========== PILL GROUPS ========== */
+    .pill-group {
+        display: flex;
+        gap: 0.65em;
+        margin-bottom: 1em;
+        margin-top: 1em;
+        flex-wrap: wrap;
+    }
+
+    /* ========== BASE PILL ========== */
+    .pill {
+        border: none;
+        background: var(--surface-alt, #25292f);
+        color: var(--muted);
+        border-radius: var(--radius-round);
+        padding: 0.48em 1.5em;
+        font-size: var(--font-size-2);
+        font-weight: var(--font-weight-medium);
+        cursor: pointer;
+        transition:
+            background var(--duration-fast),
+            color var(--duration-fast),
+            box-shadow var(--duration),
+            transform var(--duration-fast);
+        outline: none;
+        box-shadow: none;
+        margin-bottom: 0.1em;
+        user-select: none;
+        border: var(--border-width-1) solid transparent;
+    }
+
+    .pill.active,
+    .pill:focus {
+        background: var(--primary);
+        color: #fff;
+        box-shadow: 0 0 0 2.5px var(--focus, #ff9500);
+        transform: translateY(-1px) scale(1.03);
+    }
+
+    .pill:hover:not(.active) {
+        background: var(--focus);
+        color: #fff;
+        transform: translateY(-1px) scale(1.03);
+    }
+
+    .pill:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
+    }
+
+    /* ========== PILL VARIANTS ========== */
+    .pill--small {
+        padding: 0.22em 0.95em;
+        font-size: var(--font-size-1);
+        border-radius: var(--radius-3);
+    }
+
+    .pill--large {
+        padding: 0.6em 2em;
+        font-size: var(--font-size-3);
+    }
+
+    .pill--accent {
+        background: var(--accent);
+        color: #fff;
+    }
+
+    .pill--accent:hover:not(.active) {
+        background: var(--accent-highlight);
+    }
+
+    .pill--outline {
+        background: transparent;
+        border-color: var(--divider);
+        color: var(--text-color);
+    }
+
+    .pill--outline:hover:not(.active),
+    .pill--outline.active {
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+    }
+
+    /* ========== WEEKDAY PILLS ========== */
+    .weekday-pills,
+    .monthday-pills {
+        display: flex;
+        gap: 0.32em;
+        margin-bottom: 0.6em;
+        flex-wrap: wrap;
+    }
+
+    .weekday-pill,
+    .monthday-pill {
+        border: none;
+        border-radius: var(--radius-3);
+        background: var(--surface-alt, #25292f);
+        color: var(--muted);
+        font-size: var(--font-size-1);
+        padding: 0.22em 0.95em;
+        cursor: pointer;
+        font-weight: var(--font-weight-medium);
+        transition:
+            background var(--duration-fast),
+            color var(--duration-fast),
+            box-shadow var(--duration);
+        margin-bottom: 0.1em;
+        user-select: none;
+        min-width: 2.5em;
+        text-align: center;
+    }
+
+    .weekday-pill.active,
+    .weekday-pill:focus,
+    .monthday-pill.active,
+    .monthday-pill:focus {
+        background: var(--accent);
+        color: #fff;
+        box-shadow: 0 0 0 2px var(--focus, #ff9500);
+        outline: none;
+    }
+
+    .weekday-pill:hover:not(.active),
+    .monthday-pill:hover:not(.active) {
+        background: var(--focus);
+        color: #fff;
+    }
+
+    /* ========== CARD PILLS (for tags/badges) ========== */
+    .card-pill {
+        display: inline-block;
+        background: color-mix(in srgb, var(--accent) 10%, var(--surface) 90%);
+        color: var(--accent);
+        border-radius: var(--radius-round);
+        padding: 0.16em 0.9em;
+        font-size: var(--font-size-1);
+        margin: 0 0.18em 0.18em 0;
+        font-weight: var(--font-weight-medium);
+        letter-spacing: 0.01em;
+        border: var(--border-width-1) solid var(--accent-dark);
+        opacity: 0.94;
+    }
+
+    /* ========== INSTANCE PILLS (specific to settings) ========== */
+    .instance-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5em;
+        background: var(--input-bg, #f6f8fa);
+        border-radius: var(--radius-3);
+        padding: 0.18em 0.88em 0.18em 0.56em;
+        min-height: 30px;
+        border: 1.2px solid transparent;
+        cursor: pointer;
+        margin-bottom: 0.16em;
+        margin-right: 0.54em;
+        user-select: none;
+        transition:
+            background var(--duration),
+            border-color var(--duration-fast);
+        font-size: var(--font-size-1);
+    }
+
+    .instance-pill:hover {
+        background: color-mix(in srgb, var(--primary) 6%, var(--input-bg) 94%);
+        border-color: var(--primary-fade, #e3f1ff);
+    }
+
+    .instance-pill.checked {
+        border-color: var(--primary, #47b1f6);
+    }
+
+    .instance-pill input[type='checkbox'] {
+        margin-right: 0.46em;
+        cursor: pointer;
+        accent-color: var(--primary, #47b1f6);
+        width: 18px;
+        height: 18px;
+        border-radius: 2px;
+        background: #fff;
+        border: 2px solid var(--divider, #ccc);
+        transition:
+            border-color var(--duration),
+            background var(--duration-fast);
+    }
+
+    .instance-pill input[type='checkbox']:hover,
+    .instance-pill input[type='checkbox']:focus {
+        background: #fff;
+    }
+
+    .instance-pill input[type='checkbox']:checked {
+        background: var(--primary);
+    }
+
+    /* ========== RESPONSIVE OVERRIDES ========== */
+    @media (width <= 1000px) {
+        .pill,
+        .weekday-pill,
+        .monthday-pill {
+            font-size: var(--font-size-1) !important;
+            padding: 0.34em 0.82em !important;
+        }
+
+        .monthday-pills {
+            gap: 0.12em 0.16em;
+        }
+
+        .instance-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.7em;
+            padding: 0.48em 1.1em;
+            background: var(--surface-alt);
+            border: var(--border-width-1) solid rgb(0 0 0 / 22%);
+            border-radius: var(--radius-2);
+            font-size: var(--font-size-1);
+            font-weight: var(--font-weight-medium);
+            color: var(--muted);
+            cursor: pointer;
+            margin-bottom: 0.45rem;
+            margin-right: 0.65rem;
+            transition:
+                border-color var(--duration),
+                background var(--duration-fast),
+                box-shadow var(--duration);
+            user-select: none;
+            min-width: 0;
+            min-height: 2.2em;
+        }
+    }
+
+    @media (width <= 600px) {
+        .instance-pill {
+            width: 100%;
+            max-width: 100vw;
+            min-width: 0;
+            margin-right: 0;
+            border-radius: var(--radius-2);
+            padding: 0.45em 0.75em;
+            font-size: var(--font-size-2);
+            margin-bottom: 0.18em;
+            box-sizing: border-box;
+        }
+    }
+} /* end @layer components */

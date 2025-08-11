@@ -8,7 +8,7 @@
         min-height: 0;
         overflow: hidden auto;
         box-sizing: border-box;
-        padding-top: 25px;
+        padding-top: var(--space-6); /* 2rem - generous spacing */
     }
 
     .settings-page .view-frame {
@@ -25,6 +25,9 @@
         overflow: hidden auto;
         scrollbar-width: thin;
         scrollbar-color: var(--muted, #ff9500) var(--surface, #18191b);
+            padding-top: var(--space-6); /* 2rem - generous spacing */
+    padding-inline: var(--space-4); /* 1rem - side gutters */
+    padding-bottom: var(--space-4); /* 1rem - bottom space */
     }
 
     .settings-form::-webkit-scrollbar {

@@ -50,7 +50,7 @@ export function HolidayScheduleField({ field, value, onChange }) {
         const fd = newVals.fromDay ?? fromDay;
         const tm = newVals.toMonth ?? toMonth;
         const td = newVals.toDay ?? toDay;
-        onChange(field.key, `range(${fm}/${fd}-${tm}/${td})`);
+        onChange(`range(${fm}/${fd}-${tm}/${td})`);
     }
 
     return (

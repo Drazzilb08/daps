@@ -18,7 +18,7 @@ export const CheckBoxField = React.memo(function CheckBoxField({
                         type="checkbox"
                         className={`settings-checkbox${highlightInvalid ? ' input-error' : ''}`}
                         checked={!!value}
-                        onChange={e => onChange(field.key, e.target.checked)}
+                        onChange={e => onChange(e.target.checked)}
                     />
                     {field.description && (
                         <span className="checkbox-label field-help-text">{field.description}</span>

@@ -28,7 +28,7 @@ export function ReplacerrCustomField({ field, value = [], onChange, rootConfig, 
         setShowModal(false);
         setModalIdx(null);
         setModalEntry(null);
-        if (onChange) onChange(field.key, newArr); // Key difference!
+        if (onChange) onChange(newArr); // Key difference!
     }
 
     function handleModalDelete() {
@@ -38,7 +38,7 @@ export function ReplacerrCustomField({ field, value = [], onChange, rootConfig, 
         setShowModal(false);
         setModalIdx(null);
         setModalEntry(null);
-        if (onChange) onChange(field.key, newArr); // Key difference!
+        if (onChange) onChange(newArr); // Key difference!
     }
 
     // Modal button handler (single for all)

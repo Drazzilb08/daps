@@ -30,7 +30,7 @@ export function LabelarrCustomField({ field, value = [], onChange, rootConfig, m
         setShowModal(false);
         setModalIdx(null);
         setModalEntry(null);
-        if (onChange) onChange(field.key, newArr);
+        if (onChange) onChange(newArr);
     }
 
     function handleModalDelete() {
@@ -40,7 +40,7 @@ export function LabelarrCustomField({ field, value = [], onChange, rootConfig, m
         setShowModal(false);
         setModalIdx(null);
         setModalEntry(null);
-        if (onChange) onChange(field.key, newArr);
+        if (onChange) onChange(newArr);
     }
 
     function handleButtonClick({ btnId, formData, closeModal }) {

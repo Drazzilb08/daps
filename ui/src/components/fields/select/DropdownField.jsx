@@ -18,7 +18,7 @@ export const DropdownField = React.memo(function DropdownField({
                     id={field.key}
                     name={field.key}
                     value={value ?? ''}
-                    onChange={e => onChange(field.key, e.target.value)}
+                    onChange={e => onChange(e.target.value)}
                 >
                     {field.options.map(opt => (
                         <option key={opt} value={opt}>

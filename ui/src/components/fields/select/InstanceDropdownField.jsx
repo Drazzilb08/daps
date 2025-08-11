@@ -42,7 +42,7 @@ export function InstanceDropdownField({ field, value, onChange, rootConfig }) {
                     name={field.key}
                     id={field.key}
                     value={value ?? ''}
-                    onChange={e => onChange(field.key, e.target.value)}
+                    onChange={e => onChange(e.target.value)}
                 >
                     {options.map(opt => (
                         <option key={opt} value={opt}>

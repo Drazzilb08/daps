@@ -190,7 +190,7 @@ export default function InstancesField({
                 basicSelected = basicSelected.filter(x => x !== instName);
             }
             const plexSelected = getPlexSelected();
-            if (onChange) onChange(field.key, [...basicSelected, ...plexSelected]);
+            if (onChange) onChange([...basicSelected, ...plexSelected]);
         },
         [onChange, field.key, getBasicSelected, getPlexSelected]
     );
@@ -208,7 +208,7 @@ export default function InstancesField({
             } else if (!checked && idx !== -1) {
                 plexSelected = plexSelected.filter((x, i) => i !== idx);
             }
-            if (onChange) onChange(field.key, [...basicSelected, ...plexSelected]);
+            if (onChange) onChange([...basicSelected, ...plexSelected]);
         },
         [onChange, field.key, getBasicSelected, getPlexSelected]
     );
@@ -228,7 +228,7 @@ export default function InstancesField({
                 }
                 return obj;
             });
-            if (onChange) onChange(field.key, [...arr, ...plex]);
+            if (onChange) onChange([...arr, ...plex]);
         },
         [onChange, getBasicSelected, getPlexSelected, field.key]
     );
@@ -248,7 +248,7 @@ export default function InstancesField({
                 }
                 return obj;
             });
-            if (onChange) onChange(field.key, [...arr, ...plex]);
+            if (onChange) onChange([...arr, ...plex]);
         },
         [onChange, getBasicSelected, getPlexSelected, field.key]
     );

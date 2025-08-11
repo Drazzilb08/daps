@@ -62,7 +62,7 @@ export function HolidayPresetsField({ field, value, onChange, onPresetSelected, 
             if (typeof onPresetSelected === 'function') {
                 onPresetSelected(selected);
             } else if (typeof onChange === 'function') {
-                onChange(field.key, selected);
+            onChange(selected);
             }
         }
     }

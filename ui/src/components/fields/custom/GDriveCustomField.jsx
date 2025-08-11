@@ -39,7 +39,7 @@ export function GDriveCustomField({ field, value = [], onChange, rootConfig, mod
         setShowModal(false);
         setModalIdx(null);
         setModalEntry(null);
-        if (onChange) onChange(field.key, newArr);
+        if (onChange) onChange(newArr);
     }
 
     function handleModalDelete() {
@@ -49,7 +49,7 @@ export function GDriveCustomField({ field, value = [], onChange, rootConfig, mod
         setShowModal(false);
         setModalIdx(null);
         setModalEntry(null);
-        if (onChange) onChange(field.key, newArr);
+        if (onChange) onChange(newArr);
     }
 
     function openEdit(idx) {

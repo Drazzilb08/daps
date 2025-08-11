@@ -25,8 +25,6 @@ class Labelarr(DapsModule):
         """
         super().__init__(logger)
 
-    # ---------- helpers ----------
-
     def _get_id(self, val: Optional[object]) -> Optional[str]:
         """Normalize IDs from rows/guids into comparable strings or None."""
         return str(val) if val not in (None, "null", "") else None
@@ -150,8 +148,6 @@ class Labelarr(DapsModule):
                 inst: sorted(list(libs)) for inst, libs in plex_map.items()
             }
         return result
-
-    # ---------- single-item sync ----------
 
     def sync_to_plex(
         self,
@@ -287,8 +283,6 @@ class Labelarr(DapsModule):
             "add_remove": add_remove,
         }
 
-    # ---------- output helpers ----------
-
     def handle_messages(self, data_dict: List[Dict]) -> None:
         """Display results in a formatted table"""
         table: List[List[str]] = [["Results"]]
@@ -305,8 +299,6 @@ class Labelarr(DapsModule):
             self.logger.info(f"\nLabel: {label} has been {verb}:")
             for entry in items:
                 self.logger.info(f"  - {entry}")
-
-    # ---------- main ----------
 
     def run(self) -> None:
         try:

@@ -171,7 +171,7 @@
     }
 
     /* ===================== RESPONSIVE OVERRIDES ===================== */
-    @media (width <=1000px) {
+    @media (max-width: 1024px) {
         .notification-group-header {
             text-align: center;
             margin-left: 0;
@@ -182,7 +182,7 @@
         }
     }
 
-    @media (width <=600px) {
+    @media (max-width: 600px) {
         #notification-list .card-list {
             display: grid !important;
             grid-template-columns: 1fr !important;

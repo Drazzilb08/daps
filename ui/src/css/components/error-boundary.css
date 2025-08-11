@@ -87,7 +87,7 @@
 
     /* ========== GLOBAL ERROR STATE ========== */
     .error-boundary--global {
-        min-height: 100vh;
+        min-height: var(--app-vh);
         border: none;
         border-radius: 0;
         background: var(--surface);

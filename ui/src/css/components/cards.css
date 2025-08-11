@@ -155,7 +155,7 @@
     }
 
     /* ========== RESPONSIVE OVERRIDES ========== */
-    @media (width <= 900px) {
+    @media (max-width: 1024px) {
         .card-list {
             grid-template-columns: repeat(2, 1fr);
             max-width: 100vw;
@@ -166,7 +166,7 @@
         }
     }
 
-    @media (width <= 600px) {
+    @media (max-width: 600px) {
         .card-list {
             display: grid !important;
             grid-template-columns: 1fr !important;

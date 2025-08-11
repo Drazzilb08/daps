@@ -57,7 +57,7 @@
 
     /* ========== RESPONSIVE ========== */
 
-    @media (width <=1000px) {
+    @media (max-width: 1024px) {
         .instance-group-header {
             justify-content: center;
             text-align: center;
@@ -76,7 +76,7 @@
         }
     }
 
-    @media (width <=600px) {
+    @media (max-width: 600px) {
         #instances-list {
             display: grid !important;
             grid-template-columns: 1fr !important;

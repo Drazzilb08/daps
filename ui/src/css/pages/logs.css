@@ -258,7 +258,7 @@
     /* ======================================================
    MOBILE OVERRIDES (toolbar/buttons only, not log-output)
 ====================================================== */
-    @media (width <= 1024px) {
+    @media (max-width: 1024px) {
         .log-controls.log-toolbar {
             flex-direction: column;
             align-items: stretch;

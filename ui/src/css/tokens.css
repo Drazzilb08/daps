@@ -86,6 +86,16 @@
     --bp-md: 768px;
     --bp-lg: 1024px;
     --bp-xl: 1280px;
+
+    /* Viewport units - safe for mobile browsers */
+    --app-vh: 100vh;
+}
+
+/* Modern viewport units with fallback */
+@supports (height: 100svh) {
+    :root {
+        --app-vh: 100svh;
+    }
 }
 
 /* Accessibility: Respect reduced motion preference */

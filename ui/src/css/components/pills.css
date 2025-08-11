@@ -197,7 +197,7 @@
     }
 
     /* ========== RESPONSIVE OVERRIDES ========== */
-    @media (width <= 1000px) {
+    @media (max-width: 1024px) {
         .pill,
         .weekday-pill,
         .monthday-pill {
@@ -233,7 +233,7 @@
         }
     }
 
-    @media (width <= 600px) {
+    @media (max-width: 600px) {
         .instance-pill {
             width: 100%;
             max-width: 100vw;

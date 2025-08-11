@@ -21,9 +21,7 @@ export const TextField = React.memo(function TextField({
                     value={value ?? ''}
                     placeholder={field.placeholder}
                     readOnly={field.modal === 'directoryPickerModal'}
-                    onChange={e => {
-                        onChange(field.key, e.target.value);
-                    }}
+                    onChange={e => onChange(e.target.value)}
                 />
                 {field.description && <div className="field-help-text">{field.description}</div>}
                 {highlightInvalid && errorMessage && (

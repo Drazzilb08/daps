@@ -27,9 +27,9 @@ export function JsonField({
     const handleInput = e => {
         const val = e.target.value;
         try {
-            onChange(field.key, JSON.parse(val));
+            onChange(JSON.parse(val));
         } catch {
-            onChange(field.key, val);
+            onChange(val);
         }
         if (textareaRef.current) {
             textareaRef.current.style.height = 'auto';

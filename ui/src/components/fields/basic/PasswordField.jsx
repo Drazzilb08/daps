@@ -24,7 +24,7 @@ export const PasswordField = React.memo(function PasswordField({
                         value={value ?? ''}
                         placeholder={field.placeholder}
                         autoComplete="current-password"
-                        onChange={e => onChange(field.key, e.target.value)}
+                        onChange={e => onChange(e.target.value)}
                     />
                     <button
                         type="button"

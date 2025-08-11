@@ -34,7 +34,6 @@ export const FloatField = React.memo(function FloatField({
                         value={percentValue}
                         onChange={e =>
                             onChange(
-                                field.key,
                                 e.target.value === ''
                                     ? ''
                                     : Math.min(1, Math.max(0, parseFloat(e.target.value) / 100))

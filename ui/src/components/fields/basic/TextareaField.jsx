@@ -18,7 +18,7 @@ export const TextareaField = React.memo(function TextareaField({
     }, [value]);
 
     const handleInput = e => {
-        onChange(field.key, e.target.value);
+        onChange(e.target.value);
         if (textareaRef.current) {
             textareaRef.current.style.height = 'auto';
             textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';

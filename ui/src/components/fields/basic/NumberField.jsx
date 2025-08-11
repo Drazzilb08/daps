@@ -25,7 +25,6 @@ export const NumberField = React.memo(function NumberField({
                     value={value ?? ''}
                     onChange={e =>
                         onChange(
-                            field.key,
                             e.target.value === '' ? '' : parseInt(e.target.value, 10)
                         )
                     }

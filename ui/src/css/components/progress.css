@@ -2,7 +2,8 @@
     .progress-bar {
         width: 100%;
         max-width: 340px;
-        height: 18px;
+        height: 24px;
+        min-height: 24px;
         background: var(--progress-bar-bg, #e3e9f2); /* the unfilled bar color */
         border-radius: var(--radius-2);
         position: relative;
@@ -35,8 +36,9 @@
         top: 50%;
         z-index: var(--z-base);
         transform: translate(-50%, -50%);
-        font-size: 1.01em;
+        font-size: 0.875rem;
         font-weight: 600;
+        line-height: 1.2;
         color: var(--progress-bar-label, #1a2636); /* default: dark text */
         letter-spacing: 0.01em;
         pointer-events: none;
@@ -88,4 +90,12 @@
         border: none;
         border-radius: var(--radius-1);
     }
+    /* Mobile responsive fixes */
+    @media (max-width: 768px) {
+        .progress-bar {
+            height: 28px;
+            min-height: 28px;
+        }
+    }
+
 } /* end @layer components */

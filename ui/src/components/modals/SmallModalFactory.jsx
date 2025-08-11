@@ -50,34 +50,34 @@ export default function SmallModalFactory({
                         </div>
                     )}
                     {children}
+                    
+                    {/* Move buttons to body for small modals */}
+                    <div
+                        style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '0.7em',
+                            marginTop: '1.5em',
+                            width: '100%',
+                        }}
+                    >
+                        {actions.map((btn, i) => (
+                            <button
+                                key={btn.id || i}
+                                type={btn.type || 'button'}
+                                className={btn.className || 'btn'}
+                                style={{ minWidth: 0, width: '100%' }}
+                                onClick={btn.onClick}
+                                disabled={btn.disabled}
+                                autoFocus={btn.autoFocus}
+                            >
+                                {btn.label}
+                            </button>
+                        ))}
+                    </div>
                 </div>
-                <div
-                    className="modal-footer"
-                    style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        gap: '0.7em',
-                        justifyContent: 'center',
-                        alignItems: 'stretch',
-                        background: 'var(--surface, #23272b)',
-                        padding: '1.15em 1.65em 1.2em 1.65em',
-                        border: 'none',
-                        boxShadow: 'none',
-                    }}
-                >
-                    {actions.map((btn, i) => (
-                        <button
-                            key={btn.id || i}
-                            type={btn.type || 'button'}
-                            className={btn.className || 'btn'}
-                            style={{ minWidth: 0, width: '100%' }}
-                            onClick={btn.onClick}
-                            disabled={btn.disabled}
-                            autoFocus={btn.autoFocus}
-                        >
-                            {btn.label}
-                        </button>
-                    ))}
+                <div className="modal-footer" style={{ padding: '0.5rem', minHeight: '0.5rem' }}>
+                    {/* Empty footer for consistent spacing */}
                 </div>
             </div>
         </div>

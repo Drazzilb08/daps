@@ -103,35 +103,48 @@
     .poster-grid-item .lazy-image-container {
         width: 100%;
         max-width: 180px;
-        margin: 0 auto 0.7em;
-        border-radius: 7px;
-        background: #181a1b;
-        box-shadow: 0 1px 5px rgb(0 0 0 / 8%);
+        margin: 0 auto var(--space-4);
+        border-radius: var(--radius-2);
+        background: var(--surface-dim);
+        box-shadow: var(--shadow-1);
     }
 
     .poster-thumb-img.lazy-image {
-        border-radius: 7px;
-        margin: 0;
+        width: 100%;
+        max-width: 180px;
+        min-width: 0;
+        object-fit: contain;
+        display: block;
+        margin: 0 auto var(--space-4);
+        border-radius: var(--radius-2);
+        background: var(--surface-dim);
+        box-shadow: var(--shadow-1);
     }
 
     /* Modal poster image container */
     .modal-poster-img.lazy-image-container {
-        max-width: 100%;
+        max-width: 300px;
         max-height: 60vh;
-        display: block;
+        width: auto;
+        height: auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         cursor: default;
-        border-radius: 7px;
-        box-shadow: 0 2px 18px 0 rgb(30 32 44 / 13%);
+        border-radius: var(--radius-2);
+        box-shadow: var(--shadow-2);
         background: var(--surface-alt, #282c31);
-        margin-bottom: 0.75rem;
+        margin: 0 auto var(--space-4);
         position: relative;
     }
 
     .modal-poster-img.lazy-image-container .lazy-image {
-        width: 100%;
-        height: 100%;
+        max-width: 100%;
+        max-height: 100%;
+        width: auto;
+        height: auto;
         object-fit: contain;
-        border-radius: 7px;
+        border-radius: var(--radius-2);
         background: transparent;
         box-shadow: none;
         margin: 0;

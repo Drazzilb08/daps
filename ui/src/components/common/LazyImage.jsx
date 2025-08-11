@@ -58,15 +58,15 @@ export default function LazyImage({
         onError?.(e);
     };
 
-    // For modal poster images, apply styles directly to img
+    // For modal poster images, apply container styles properly
     const isModalPoster = className.includes('modal-poster-img');
 
     if (isModalPoster) {
         return (
-            <div ref={imgRef} className="lazy-image-container">
+            <div ref={imgRef} className={`${className} lazy-image-container`}>
                 {/* Placeholder while not in view or loading */}
                 {(!isInView || (!isLoaded && !hasError)) && (
-                    <div className="lazy-image-placeholder modal-poster-placeholder">
+                    <div className="lazy-image-placeholder">
                         {placeholder || (
                             <div className="lazy-image-skeleton">
                                 <div className="lazy-image-skeleton-shimmer" />
@@ -77,18 +77,18 @@ export default function LazyImage({
 
                 {/* Error state */}
                 {hasError && (
-                    <div className="lazy-image-error modal-poster-error">
+                    <div className="lazy-image-error">
                         <span className="lazy-image-error-icon">🖼️</span>
                         <span className="lazy-image-error-text">Failed to load</span>
                     </div>
                 )}
 
-                {/* Actual image - apply modal styles directly */}
+                {/* Actual image */}
                 {isInView && src && !hasError && (
                     <img
                         src={src}
                         alt={alt}
-                        className={`${className} ${isLoaded ? 'lazy-image--loaded' : 'lazy-image--loading'}`}
+                        className={`lazy-image ${isLoaded ? 'lazy-image--loaded' : 'lazy-image--loading'}`}
                         onLoad={handleLoad}
                         onError={handleError}
                         loading="lazy"

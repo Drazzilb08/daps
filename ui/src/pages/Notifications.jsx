@@ -3,7 +3,6 @@ import { fetchConfig, postConfig, runTestNotification } from '../utils/api';
 import { humanize, getIcon, getSpinner } from '../utils/tools';
 import { NOTIFICATIONS_SCHEMA } from '../utils/constants/notifications_schema';
 import ModalFactory from '../components/modals/ModalFactory';
-import NotificationTypePickerModal from '../components/modals/NotificationTypePickerModal';
 import { useToast } from '../components/providers/ToastProvider';
 import '../css/pages/notifications.css';
 
@@ -30,26 +29,40 @@ export default function Notifications() {
     function openTypePickerModal(module) {
         setModal({
             title: 'Select Notification Type',
-            modalClass: 'modal-content small-modal',
+            isSmallModal: true,
             onClose: () => setModal(null),
             children: (
-                <NotificationTypePickerModal
-                    module={module}
-                    notifications={notifications}
-                    notifyTypes={NOTIFICATIONS_SCHEMA}
-                    onTypePicked={({ type }) => {
-                        setModal(null);
-                        setTimeout(() => {
-                            openNotificationModal({
-                                module,
-                                type,
-                                settings: {},
-                                isEdit: false,
-                            });
-                        }, 10);
-                    }}
-                    onClose={() => setModal(null)}
-                />
+                <div style={{ textAlign: 'center' }}>
+                    {NOTIFICATIONS_SCHEMA.map(n => {
+                        const used = notifications?.[module] ? Object.keys(notifications[module]) : [];
+                        return (
+                            <button
+                                key={n.type}
+                                type="button"
+                                className="btn notify-type-btn"
+                                disabled={used.includes(n.type)}
+                                style={{ 
+                                    minWidth: 0, 
+                                    width: '100%', 
+                                    marginBottom: '0.7em' 
+                                }}
+                                onClick={() => {
+                                    setModal(null);
+                                    setTimeout(() => {
+                                        openNotificationModal({
+                                            module,
+                                            type: n.type,
+                                            settings: {},
+                                            isEdit: false,
+                                        });
+                                    }, 10);
+                                }}
+                            >
+                                {n.label}
+                            </button>
+                        );
+                    })}
+                </div>
             ),
             footerButtons: [],
         });

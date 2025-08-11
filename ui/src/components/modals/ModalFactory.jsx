@@ -4,6 +4,7 @@ import { ModalHeader, ModalFooter, useDynamicFieldConditions } from './helpers/M
 import { useFocusTrap, useModalCloseOnOutsideClick } from './helpers/useModalHelpers';
 import { renderField } from '../fields/RenderFields';
 import { validateFields } from '../validation';
+import SmallModalFactory from './SmallModalFactory';
 
 export default function ModalFactory({
     title,
@@ -17,7 +18,25 @@ export default function ModalFactory({
     onButtonClick = {},
     fieldRefs = {},
     children,
+    isSmallModal = false,
 }) {
+    // If small modal, use SmallModalFactory
+    if (isSmallModal) {
+        return (
+            <SmallModalFactory
+                title={title}
+                onClose={onClose}
+                children={children}
+                actions={footerButtons.map(btn => ({
+                    id: btn.id,
+                    label: btn.label,
+                    className: btn.className || 'btn',
+                    onClick: () => onButtonClick[btn.id]?.({}),
+                    disabled: btn.disabled,
+                }))}
+            />
+        );
+    }
     const modalRef = useRef();
     const formRef = useRef();
     const [formData, setFormData] = useState({ ...entry });

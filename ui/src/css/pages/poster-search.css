@@ -243,18 +243,6 @@
         color: #fff;
     }
 
-    .poster-thumb-img {
-        width: 100%;
-        max-width: 180px;
-        min-width: 0;
-        object-fit: contain;
-        display: block;
-        margin: 0 auto 0.7em;
-        border-radius: 7px;
-        background: #181a1b;
-        box-shadow: 0 1px 5px rgb(0 0 0 / 8%);
-    }
-
     .poster-file-label {
         word-break: break-all;
         font-size: 0.98em;

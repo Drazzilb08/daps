@@ -1,8 +1,9 @@
 import React, { useRef, useState } from 'react';
+import PropTypes from 'prop-types';
 import TooltipFactory from './Tooltip';
 import '../css/components/progress.css';
 
-export default React.memo(function ProgressBar({
+function ProgressBar({
     value = null,
     active = false,
     className = '',
@@ -49,4 +50,16 @@ export default React.memo(function ProgressBar({
             )}
         </div>
     );
-});
+}
+
+ProgressBar.propTypes = {
+    value: PropTypes.number,
+    active: PropTypes.bool,
+    className: PropTypes.string,
+    style: PropTypes.object,
+    done: PropTypes.bool,
+    error: PropTypes.bool,
+    tooltip: PropTypes.string,
+};
+
+export default React.memo(ProgressBar);

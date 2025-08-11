@@ -1,8 +1,9 @@
 import React from 'react';
+import PropTypes from 'prop-types';
 import TooltipFactory from './Tooltip';
 import { getIcon } from '../utils/tools';
 
-export default React.memo(function DashboardContent({
+function DashboardContent({
     icon,
     title,
     headerActions = null,
@@ -54,4 +55,19 @@ export default React.memo(function DashboardContent({
             </div>
         </div>
     );
-});
+}
+
+DashboardContent.propTypes = {
+    icon: PropTypes.node,
+    title: PropTypes.string.isRequired,
+    headerActions: PropTypes.node,
+    open: PropTypes.bool.isRequired,
+    onToggle: PropTypes.func.isRequired,
+    toggleRef: PropTypes.object,
+    cardRef: PropTypes.object,
+    hoveredToggle: PropTypes.bool,
+    setHoveredToggle: PropTypes.func.isRequired,
+    children: PropTypes.node,
+};
+
+export default React.memo(DashboardContent);

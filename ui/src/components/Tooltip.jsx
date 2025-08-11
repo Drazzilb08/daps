@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 
-export default React.memo(function TooltipFactory({ anchor, text, position = 'top', show }) {
+function TooltipFactory({ anchor, text, position = 'top', show }) {
     const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
 
     useEffect(() => {
@@ -37,4 +38,13 @@ export default React.memo(function TooltipFactory({ anchor, text, position = 'to
         </div>,
         document.body
     );
-});
+}
+
+TooltipFactory.propTypes = {
+    anchor: PropTypes.object,
+    text: PropTypes.string.isRequired,
+    position: PropTypes.oneOf(['top', 'bottom']),
+    show: PropTypes.bool,
+};
+
+export default React.memo(TooltipFactory);

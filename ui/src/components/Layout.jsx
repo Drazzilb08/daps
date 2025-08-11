@@ -1,4 +1,5 @@
 // src/components/Layout.jsx
+import PropTypes from 'prop-types';
 import Sidebar from './Sidebar';
 import Header from './Header';
 
@@ -15,3 +16,7 @@ export default function Layout({ children }) {
         </div>
     );
 }
+
+Layout.propTypes = {
+    children: PropTypes.node.isRequired,
+};

@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
+import PropTypes from 'prop-types';
 
-export default React.memo(function Header() {
+function Header() {
     useEffect(() => {
         // Hamburger logic for small screens only
         const hamburger = document.getElementById('sidebarToggle');
@@ -55,4 +56,9 @@ export default React.memo(function Header() {
             </button>
         </div>
     );
-});
+}
+
+// Header has no props
+Header.propTypes = {};
+
+export default React.memo(Header);

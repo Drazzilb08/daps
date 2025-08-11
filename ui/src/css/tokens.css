@@ -69,7 +69,7 @@
     --z-max: 9999;
 
     /* Controls */
-    --control-min-height: 36px;
+    --control-min-height: 44px;
     --control-padding-x: 0.75rem;
     --control-padding-y: 0.5rem;
     --control-radius: var(--radius-2);

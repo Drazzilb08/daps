@@ -10,18 +10,20 @@ export const CheckBoxField = React.memo(function CheckBoxField({
     return (
         <div className={`settings-field-row${highlightInvalid ? ' field-error' : ''}`}>
             <div className="settings-field-labelcol">
-                <label htmlFor={field.key}>{field.label}</label>
+                <label>{field.label}</label>
             </div>
             <div className="settings-field-inputwrap">
-                <input
-                    type="checkbox"
-                    className={`settings-checkbox${highlightInvalid ? ' input-error' : ''}`}
-                    id={field.key}
-                    name={field.key}
-                    checked={!!value}
-                    onChange={e => onChange(field.key, e.target.checked)}
-                />
-                {field.description && <div className="field-help-text">{field.description}</div>}
+                <label className="checkbox-row">
+                    <input
+                        type="checkbox"
+                        className={`settings-checkbox${highlightInvalid ? ' input-error' : ''}`}
+                        checked={!!value}
+                        onChange={e => onChange(field.key, e.target.checked)}
+                    />
+                    {field.description && (
+                        <span className="checkbox-label field-help-text">{field.description}</span>
+                    )}
+                </label>
                 {highlightInvalid && errorMessage && (
                     <div className="field-error-text">{errorMessage}</div>
                 )}

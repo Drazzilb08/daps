@@ -9,7 +9,6 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import (
     FileResponse,
     HTMLResponse,
-    JSONResponse,
 )
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -23,6 +22,7 @@ from api import (
     notifications as notifications_router,
     poster as poster_search_router,
 )
+from api.utils import error, get_logger, ok
 from util.database import DapsDB
 from util.job_processor import process_job
 from util.version import get_version
@@ -159,45 +159,6 @@ app.mount(
     StaticFiles(directory=Path(__file__).parents[1] / "templates" / "posters"),
     name="posters",
 )
-
-
-def get_logger(request: Request, source="WEB") -> Any:
-    return request.app.state.logger.get_adapter(source)
-
-
-def ok(message: str, data: Any | None = None, status_code: int = 200):
-    """Standard success response factory.
-
-    Args:
-        message: Human-readable summary.
-        data: Optional payload.
-        status_code: HTTP status code (default 200).
-    """
-    payload = {"success": True, "message": message}
-    if data is not None:
-        payload["data"] = data
-    return JSONResponse(status_code=status_code, content=payload)
-
-
-def error(
-    message: str,
-    code: str = "UNKNOWN_ERROR",
-    *,
-    data: Any | None = None,
-    status_code: int = 400,
-):
-    """Standard error response factory.
-
-    Args:
-        message: Human-readable error.
-        code: Stable, machine-readable error code.
-        data: Optional details (e.g., validation errors).
-        status_code: HTTP status code (default 400).
-    """
-    payload = {"success": False, "message": message, "error_code": code}
-    if data is not None:
-        payload["data"] = data
-    return JSONResponse(status_code=status_code, content=payload)
 
 
 @app.exception_handler(Exception)

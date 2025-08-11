@@ -2,8 +2,8 @@ import copy
 from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends, Query, Request
-from fastapi.responses import JSONResponse
 
+from api.utils import error, get_logger, ok
 from util.config import DapsConfig, load_config, save_config
 from util.helper import dict_diff
 
@@ -16,11 +16,6 @@ def get_config() -> DapsConfig:
 def save_config_model(cfg: DapsConfig) -> None:
     """Save configuration model to disk."""
     save_config(cfg)
-
-
-def get_logger(request: Request, source: str = "WEB") -> Any:
-    """Get logger adapter from app state."""
-    return request.app.state.logger.get_adapter(source)
 
 
 router = APIRouter()
@@ -44,36 +39,25 @@ async def get_config_route(
 
         if section:
             if section in data:
-                return {
-                    "success": True,
-                    "message": f"Configuration section '{section}' retrieved",
-                    "data": {section: data[section]},
-                }
+                return ok(
+                    f"Configuration section '{section}' retrieved",
+                    {section: data[section]},
+                )
             else:
-                return JSONResponse(
+                return error(
+                    f"Configuration section '{section}' not found",
+                    "SECTION_NOT_FOUND",
                     status_code=404,
-                    content={
-                        "success": False,
-                        "message": f"Configuration section '{section}' not found",
-                        "error_code": "SECTION_NOT_FOUND",
-                    },
                 )
 
-        return {
-            "success": True,
-            "message": "Configuration retrieved successfully",
-            "data": data,
-        }
+        return ok("Configuration retrieved successfully", data)
 
     except Exception as e:
         logger.error(f"Error retrieving configuration: {e}")
-        return JSONResponse(
+        return error(
+            f"Error retrieving configuration: {str(e)}",
+            "CONFIG_RETRIEVAL_ERROR",
             status_code=500,
-            content={
-                "success": False,
-                "message": f"Error retrieving configuration: {str(e)}",
-                "error_code": "CONFIG_RETRIEVAL_ERROR",
-            },
         )
 
 
@@ -109,29 +93,22 @@ async def update_config_route(
         save_config(updated_config)
 
         logger.info("Configuration updated successfully")
-        return {
-            "success": True,
-            "message": f"Configuration updated with {len(diffs)} changes",
-            "data": {"changes_count": len(diffs)},
-        }
+        return ok(
+            f"Configuration updated with {len(diffs)} changes",
+            {"changes_count": len(diffs)},
+        )
 
     except ValueError as e:
         logger.error(f"Configuration validation failed: {e}")
-        return JSONResponse(
+        return error(
+            f"Configuration validation failed: {str(e)}",
+            "CONFIG_VALIDATION_ERROR",
             status_code=400,
-            content={
-                "success": False,
-                "message": f"Configuration validation failed: {str(e)}",
-                "error_code": "CONFIG_VALIDATION_ERROR",
-            },
         )
     except Exception as e:
         logger.error(f"Configuration update failed: {e}")
-        return JSONResponse(
+        return error(
+            f"Configuration update failed: {str(e)}",
+            "CONFIG_UPDATE_ERROR",
             status_code=500,
-            content={
-                "success": False,
-                "message": f"Configuration update failed: {str(e)}",
-                "error_code": "CONFIG_UPDATE_ERROR",
-            },
         )

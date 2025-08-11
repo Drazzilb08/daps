@@ -1,10 +1,11 @@
 from typing import Any, Dict, Optional
 
 import requests
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
+from api.utils import get_logger
 from util.config import DapsConfig, load_config
 
 router = APIRouter()
@@ -17,11 +18,6 @@ class TestInstanceRequest(BaseModel):
     name: str
     url: str
     api: Optional[str] = None
-
-
-def get_logger(request: Request, source: str = "WEB") -> Any:
-    """Get logger adapter from app state."""
-    return request.app.state.logger.get_adapter(source)
 
 
 def get_config() -> DapsConfig:

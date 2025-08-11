@@ -2,14 +2,10 @@ import os
 from pathlib import Path
 from typing import Any, Dict
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse, PlainTextResponse
 
-
-def get_logger(request: Request, source: str = "WEB") -> Any:
-    """Get logger adapter from app state."""
-    return request.app.state.logger.get_adapter(source)
-
+from api.utils import get_logger
 
 if os.environ.get("DOCKER_ENV"):
     LOG_BASE_DIR = "/config/logs"

@@ -616,7 +616,7 @@
     /* ======================
    MOBILE RESPONSIVENESS
 ====================== */
-    @media (width <= 1000px) {
+    @media (width <= 1024px) {
         .modal-content {
             width: 100vw;
             max-width: 100vw;

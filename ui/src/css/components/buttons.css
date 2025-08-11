@@ -151,7 +151,7 @@
     }
 
     /* ========== RESPONSIVE OVERRIDES ========== */
-    @media (width <= 1000px) {
+    @media (width <= 1024px) {
         .btn,
         .btn--success,
         .btn--cancel {

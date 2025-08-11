@@ -82,6 +82,7 @@
 
     /* Breakpoints */
     --bp-sm: 480px;
+    --bp-touch: 600px; /* Enhanced touch targets */
     --bp-md: 768px;
     --bp-lg: 1024px;
     --bp-xl: 1280px;

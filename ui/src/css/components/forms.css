@@ -363,7 +363,7 @@
     }
 
     /* ========== RESPONSIVE FORM LAYOUTS ========== */
-    @media (width <= 1100px) {
+    @media (width <= 1024px) {
         .field,
         .settings-field-row,
         .modal-field-row {

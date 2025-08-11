@@ -36,6 +36,8 @@ def process_job(job: Dict[str, Any], logger) -> Dict[str, Any]:
             return _process_sync_gdrive_job(payload, logger, job_id)
         elif job_type == "upload_posters":
             return _process_upload_posters_job(payload, logger, job_id)
+        elif job_type == "module_run":
+            return _process_module_run_job(payload, logger, job_id)
         else:
             return {
                 "status": 400,
@@ -385,6 +387,127 @@ def _check_plex_upload_enabled(config) -> bool:
         return False
 
 
+def _process_module_run_job(
+    payload: Dict[str, Any], logger, job_id: int
+) -> Dict[str, Any]:
+    """
+    Process module run job - executes a DAPS module.
+
+    Args:
+        payload: Job payload containing module info
+        logger: Logger instance
+        job_id: Job ID for tracking
+
+    Returns:
+        dict: Processing result
+    """
+    log = logger.get_adapter("MODULE_PROCESSOR")
+
+    module_name = payload.get("module_name")
+    origin = payload.get("origin", "job")
+    # The immediate flag was intended to potentially adjust behavior (like priority or timeout), but it's not currently used in the job processing logic.
+    # immediate = payload.get("immediate", False)
+
+    if not module_name:
+        return {
+            "status": 400,
+            "success": False,
+            "message": "No module_name provided for module run",
+            "error_code": "MISSING_MODULE_NAME",
+        }
+
+    log.info(f"[JOB:{job_id}] Running module {module_name} (origin={origin})")
+
+    try:
+        from modules import MODULES
+
+        if module_name not in MODULES:
+            return {
+                "status": 400,
+                "success": False,
+                "message": f"Unknown module: {module_name}",
+                "error_code": "UNKNOWN_MODULE",
+            }
+
+        module_class = MODULES[module_name]
+
+        # Create module instance with fresh logger
+        module_instance = module_class(logger=logger)
+
+        # Record run start in database
+        with DapsDB(logger=logger) as db:
+            db.run_state.record_run_start(module_name, run_by=origin)
+
+        start_time = time.time()
+
+        try:
+            # Execute the module
+            module_instance.run()
+
+            duration = int(time.time() - start_time)
+
+            # Record successful completion
+            with DapsDB(logger=logger) as db:
+                db.run_state.record_run_finish(
+                    module_name,
+                    success=True,
+                    status="success",
+                    message="Completed successfully",
+                    duration=duration,
+                    run_by=origin,
+                )
+
+            log.info(
+                f"[JOB:{job_id}] Module {module_name} completed successfully in {duration}s"
+            )
+
+            return {
+                "status": 200,
+                "success": True,
+                "message": f"Module {module_name} completed successfully",
+                "data": {"module": module_name, "duration": duration, "origin": origin},
+            }
+
+        except Exception as e:
+            duration = int(time.time() - start_time)
+            error_msg = str(e)
+
+            # Record failure
+            with DapsDB(logger=logger) as db:
+                db.run_state.record_run_finish(
+                    module_name,
+                    success=False,
+                    status="error",
+                    message=error_msg,
+                    duration=duration,
+                    run_by=origin,
+                )
+
+            log.error(f"[JOB:{job_id}] Module {module_name} failed: {error_msg}")
+
+            return {
+                "status": 500,
+                "success": False,
+                "message": f"Module {module_name} failed: {error_msg}",
+                "error_code": "MODULE_EXECUTION_FAILED",
+                "data": {
+                    "module": module_name,
+                    "duration": duration,
+                    "origin": origin,
+                    "error": error_msg,
+                },
+            }
+
+    except Exception as e:
+        log.error(f"[JOB:{job_id}] Exception in module run job: {e}", exc_info=True)
+        return {
+            "status": 500,
+            "success": False,
+            "message": f"Module run job failed: {str(e)}",
+            "error_code": "MODULE_JOB_EXCEPTION",
+        }
+
+
 def _queue_upload_job(manifest: Dict[str, Any], logger, job_id: int) -> None:
     """
     Queue a poster upload job.
@@ -450,6 +573,10 @@ def simple_job_processor(job: Dict[str, Any], logger) -> Dict[str, Any]:
 
         renamer = PosterRenamerr(logger=logger)
         return renamer.run_poster_rename_adhoc(media_items)
+
+    elif job_type == "module_run":
+        # Delegate to the main processor
+        return _process_module_run_job(payload, logger, job_id)
 
     else:
         return {"success": False, "message": f"Unknown job type: {job_type}"}

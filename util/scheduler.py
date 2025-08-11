@@ -108,12 +108,12 @@ def print_schedule_table(logger, schedule):
 
 
 class DapsScheduler:
-    """Pure scheduling logic - delegates execution to ModuleRunner"""
+    """Pure scheduling logic - delegates execution to ModuleOrchestrator via job queue"""
 
-    def __init__(self, config, logger, module_runner):
+    def __init__(self, config, logger, module_orchestrator):
         self.config = config
         self.logger = logger
-        self.module_runner = module_runner
+        self.module_orchestrator = module_orchestrator
         self.running = False
 
     def start(self):
@@ -175,19 +175,15 @@ class DapsScheduler:
         self.running = False
 
     def _tick(self, schedule):
-        """Check for due modules and clean up finished ones"""
+        """Check for due modules and queue them for execution"""
         try:
             for name, sched in schedule.items():
                 if not sched:
                     continue
 
-                # Skip if already running
-                running_modules = self.module_runner.get_running()
-                if (
-                    name in running_modules
-                    and running_modules[name] is not None
-                    and running_modules[name]["proc"].is_alive()
-                ):
+                # Skip if already running (check via orchestrator)
+                status = self.module_orchestrator.get_module_status(name)
+                if status["running"]:
                     continue
 
                 # Check if module should run
@@ -201,10 +197,21 @@ class DapsScheduler:
                         )
                     else:
                         print(f"[SCHEDULER] Running scheduled module: {name}")
-                    self.module_runner.launch_module_tracked(name, "scheduled")
 
-            # Clean up finished processes
-            self.module_runner.cleanup_finished()
+                    # Queue module for async execution
+                    result = self.module_orchestrator.run_module_async(
+                        name, "scheduled"
+                    )
+
+                    if not result["success"]:
+                        if self.logger:
+                            self.logger.get_adapter("SCHEDULER").error(
+                                f"Failed to queue module {name}: {result['message']}"
+                            )
+                        else:
+                            print(
+                                f"[SCHEDULER] Failed to queue module {name}: {result['message']}"
+                            )
 
         except Exception as e:
             if self.logger:

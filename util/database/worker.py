@@ -542,6 +542,26 @@ class DBWorker(DatabaseBase):
             if self._shutdown_event.wait(timeout=sleep_time):
                 break
 
+    def get_running_module_job(self, module_name: str, table_name: str = "jobs"):
+        """Get running job for a specific module"""
+        import json
+
+        query = f"""SELECT id, status, payload FROM {table_name} 
+                    WHERE status='running' AND type='module_run'"""
+
+        rows = self.execute_query(query, fetch_all=True)
+
+        for row in rows or []:
+            payload = json.loads(row["payload"])
+            if payload.get("module_name") == module_name:
+                return {
+                    "job_id": row["id"],
+                    "status": row["status"],
+                    "origin": payload.get("origin", "unknown"),
+                }
+
+        return None
+
     def list_jobs(self, status: str = None, limit: int = 50):
         """List jobs, optionally filtered by status"""
         try:

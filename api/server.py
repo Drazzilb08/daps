@@ -10,28 +10,27 @@ import uvicorn
 
 if TYPE_CHECKING:
     from util.logger import Logger
-    from util.module_runner import ModuleRunner
+    from util.module_orchestrator import ModuleOrchestrator
 
 
-def start_web_server(logger: "Logger", module_runner: "ModuleRunner") -> None:
+def start_web_server(
+    logger: "Logger", module_orchestrator: "ModuleOrchestrator"
+) -> None:
     """
     Start web server with proper dependency injection.
 
     Args:
         logger: Logger instance
-        module_runner: ModuleRunner instance for handling module execution
+        module_orchestrator: ModuleOrchestrator instance for handling module execution
     """
 
     def run_server():
         try:
             from api.main import app
 
-            # FIXED: Inject dependencies into app state consistently
+            # Inject dependencies into app state
             app.state.logger = logger
-            app.state.module_runner = module_runner  # Consistent naming
-
-            # REMOVED: No more orchestrator reference for backward compatibility
-            # This breaks the old API but enforces the new standardized pattern
+            app.state.module_orchestrator = module_orchestrator
 
             port = 8000  # Could be configurable via environment or config
             host = "0.0.0.0"

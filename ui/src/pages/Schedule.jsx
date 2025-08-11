@@ -276,40 +276,21 @@ export default function SchedulePage() {
 
 function ScheduleCard({ module, scheduleTime, runState, reload, openModal, toast }) {
     const [running, setRunning] = useState(false);
-    const [showStop, setShowStop] = useState(false);
     const [polling, setPolling] = useState(false);
     const btnRef = useRef(null);
     const [showTooltip, setShowTooltip] = useState(false);
 
-    // 1. useCallback for pollStatus
-    const pollStatus = useCallback(async () => {
-        setPolling(true);
-        let destroy = false;
-        while (!destroy && running) {
-            await new Promise(r => setTimeout(r, 1000));
-            const state = await fetchModuleStatus(module);
-            if (state !== running) {
-                setRunning(state);
-                if (!state) reload();
-                break;
-            }
-        }
-        setPolling(false);
-        // Add all dependencies here:
-    }, [running, module, reload]);
-
-    // 2. useEffect includes all referenced values
+    // Check initial status
     useEffect(() => {
         let destroy = false;
         (async () => {
             const state = await fetchModuleStatus(module);
             if (!destroy) setRunning(state);
-            if (state && !polling) pollStatus();
         })();
         return () => {
             destroy = true;
         };
-    }, [module, pollStatus, polling]);
+    }, [module]);
 
     function handleCardClick() {
         openModal({
@@ -322,9 +303,7 @@ function ScheduleCard({ module, scheduleTime, runState, reload, openModal, toast
     const humanSchedule = scheduleToHuman(scheduleTime);
 
     const tooltipText = running
-        ? showStop
-            ? `Cancel ${humanize(module)} Run`
-            : 'Running…'
+        ? `Cancel ${humanize(module)} Run`
         : `Run ${humanize(module)} Now!`;
 
     return (
@@ -360,40 +339,49 @@ function ScheduleCard({ module, scheduleTime, runState, reload, openModal, toast
                         className={`btn--icon card-action-btn${running ? ' btn--danger' : ''}`}
                         type="button"
                         aria-label={tooltipText}
-                        disabled={polling}
-                        onMouseEnter={() => {
-                            setShowTooltip(true);
-                            if (running) setShowStop(true);
-                        }}
-                        onMouseLeave={() => {
-                            setShowTooltip(false);
-                            if (running) setShowStop(false);
-                        }}
+                        disabled={polling || running}
+                        onMouseEnter={() => setShowTooltip(true)}
+                        onMouseLeave={() => setShowTooltip(false)}
                         onFocus={() => setShowTooltip(true)}
                         onBlur={() => setShowTooltip(false)}
                         onClick={async e => {
                             e.stopPropagation();
                             if (!running) {
-                                setRunning(true);
-                                await runModule(module);
-                                toast('Module started.', 'info');
-                                setRunning(true);
-                                pollStatus();
+                                setPolling(true);
+                                try {
+                                    const result = await runModule(module);
+                                    if (result.success) {
+                                        toast('Module completed successfully.', 'success');
+                                    } else {
+                                        toast(`Module failed: ${result.message}`, 'error');
+                                    }
+                                    reload(); // Refresh run states
+                                } catch (error) {
+                                    toast(`Error running module: ${error.message}`, 'error');
+                                } finally {
+                                    setPolling(false);
+                                }
                             } else {
-                                setRunning(true);
-                                await cancelScheduledModule(module);
-                                toast('Module run cancelled.', 'info');
-                                setRunning(false);
-                                reload();
+                                setPolling(true);
+                                try {
+                                    await cancelScheduledModule(module);
+                                    toast('Module run cancelled.', 'info');
+                                    setRunning(false);
+                                    reload();
+                                } catch (error) {
+                                    toast(`Error cancelling module: ${error.message}`, 'error');
+                                } finally {
+                                    setPolling(false);
+                                }
                             }
                         }}
                         ref={btnRef}
                     >
-                        {!running
-                            ? getIcon('mi:play_arrow')
-                            : showStop
-                              ? getIcon('mi:stop')
-                              : getSpinner()}
+                        {polling
+                            ? getSpinner()
+                            : !running
+                              ? getIcon('mi:play_arrow')
+                              : getIcon('mi:stop')}
                     </button>
                     <TooltipFactory
                         anchor={btnRef.current}

@@ -9,7 +9,7 @@ from typing import Optional
 
 from util.config import DapsConfig, load_config
 from util.logger import Logger
-from util.module_runner import ModuleRunner
+from util.module_orchestrator import ModuleOrchestrator
 from util.scheduler import DapsScheduler
 from util.version import get_version
 
@@ -20,7 +20,7 @@ class DapsApplication:
     """Main application class - handles lifecycle, infrastructure, and coordination"""
 
     def __init__(self):
-        self.module_runner: Optional[ModuleRunner] = None
+        self.module_orchestrator: Optional[ModuleOrchestrator] = None
         self.scheduler: Optional[DapsScheduler] = None
         self.logger: Optional[Logger] = None
         self.config: Optional[DapsConfig] = None
@@ -85,8 +85,7 @@ class DapsApplication:
                 if self.scheduler:
                     self.scheduler.stop()
 
-                if self.module_runner:
-                    self.module_runner.stop_all()
+                # No need to clean up ModuleOrchestrator - jobs are handled by worker
 
                 self.cleanup_done = True
 
@@ -132,7 +131,7 @@ class DapsApplication:
                     max_logs=self.config.general.max_logs,
                 )
 
-            self.module_runner = ModuleRunner(logger=self.logger)
+            self.module_orchestrator = ModuleOrchestrator(logger=self.logger)
 
             if args.modules:
                 return self.run_cli_modules(args.modules)
@@ -155,15 +154,15 @@ class DapsApplication:
             return 1
 
     def run_cli_modules(self, modules):
-        """Run CLI modules - simple execution without infrastructure overhead"""
+        """Run CLI modules - simple execution without job queue overhead"""
         try:
             if self.logger:
                 self.logger.get_adapter("MAIN").info(
                     f"CLI mode: Running modules {modules}"
                 )
 
-            # Use simple module runner for CLI
-            self.module_runner.run_modules_cli(modules)
+            # Use simple orchestrator for CLI (bypasses job queue for simplicity)
+            self.module_orchestrator.run_module_cli(modules)
             return 0
         except Exception as e:
             if self.logger:
@@ -181,7 +180,9 @@ class DapsApplication:
 
         try:
             self.scheduler = DapsScheduler(
-                config=self.config, logger=self.logger, module_runner=self.module_runner
+                config=self.config,
+                logger=self.logger,
+                module_orchestrator=self.module_orchestrator,
             )
 
             self.start_web_server()
@@ -210,7 +211,9 @@ class DapsApplication:
         try:
             from api.server import start_web_server
 
-            start_web_server(logger=self.logger, module_runner=self.module_runner)
+            start_web_server(
+                logger=self.logger, module_orchestrator=self.module_orchestrator
+            )
             if self.logger:
                 self.logger.get_adapter("MAIN").info(
                     "Web server started in background thread."

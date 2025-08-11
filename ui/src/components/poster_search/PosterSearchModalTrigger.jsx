@@ -27,7 +27,7 @@ export default function PosterSearchModalTrigger({ obj, onClose, onDeleted }) {
         displayYear = titleMatch && titleMatch[2] ? titleMatch[2] : '';
     }
 
-    // Compose ModalFactory schema
+    // Compose ModalFactory schema - poster only, no DB fields
     const fields = [
         {
             key: 'poster',
@@ -40,19 +40,6 @@ export default function PosterSearchModalTrigger({ obj, onClose, onDeleted }) {
             onDeleted,
         },
     ];
-
-    // Add DB fields if asset
-    if (isAsset) {
-        if (obj.asset_type)
-            fields.push({ key: 'asset_type', label: 'Type', value: obj.asset_type, type: 'text' });
-        if (obj.title)
-            fields.push({ key: 'title', label: 'Title', value: obj.title, type: 'text' });
-        if (obj.year) fields.push({ key: 'year', label: 'Year', value: obj.year, type: 'text' });
-        if (obj.season_number != null)
-            fields.push({ key: 'season', label: 'Season', value: obj.season_number, type: 'text' });
-        if (obj.id) fields.push({ key: 'id', label: 'ID', value: obj.id, type: 'text' });
-        // add any other DB fields you want here, but always with a type
-    }
 
     return (
         <ModalFactory

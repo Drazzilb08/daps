@@ -106,24 +106,12 @@ export function ColorListField({
     highlightInvalid = false,
     errorMessage = null,
 }) {
-    const [colorArray, setColorArray] = useState(Array.isArray(value) ? value.slice() : []);
+    // Use value directly from props, no internal state
+    const colorArray = Array.isArray(value) ? value : [];
     const [posterAssets, setPosterAssets] = useState([]);
     const [previews, setPreviews] = useState([]);
-    const [pendingUpdate, setPendingUpdate] = useState(null);
     const shouldPreview = String(field.preview) === 'true';
     const helpRef = useRef(null);
-
-    useEffect(() => {
-        if (
-            Array.isArray(value) &&
-            (value.length !== colorArray.length || value.some((val, i) => val !== colorArray[i]))
-        ) {
-            setColorArray(value.slice());
-        }
-        if (!Array.isArray(value) && colorArray.length !== 0) {
-            setColorArray([]);
-        }
-    }, [value, colorArray]);
 
     // Fetch poster file list dynamically
     useEffect(() => {
@@ -141,6 +129,7 @@ export function ColorListField({
         };
     }, []);
 
+    // Generate previews when colors or posters change
     useEffect(() => {
         let cancelled = false;
         if (!shouldPreview || !posterAssets.length) return;
@@ -188,36 +177,20 @@ export function ColorListField({
     }, [colorArray, posterAssets, shouldPreview]);
 
     function handleColorChange(idx, newColor) {
-        setColorArray(arr => {
-            const copy = arr.slice();
-            copy[idx] = newColor;
-            setPendingUpdate(copy);
-            return copy;
-        });
+        const updatedArray = [...colorArray];
+        updatedArray[idx] = newColor;
+        onChange?.(updatedArray);
     }
     
     function handleAdd() {
-        setColorArray(arr => {
-            const updated = [...arr, '#ffffff'];
-            setPendingUpdate(updated);
-            return updated;
-        });
+        const updatedArray = [...colorArray, '#ffffff'];
+        onChange?.(updatedArray);
     }
     
     function handleRemove(idx) {
-        setColorArray(arr => {
-            const updated = arr.filter((_, i) => i !== idx);
-            setPendingUpdate(updated);
-            return updated;
-        });
+        const updatedArray = colorArray.filter((_, i) => i !== idx);
+        onChange?.(updatedArray);
     }
-
-    useEffect(() => {
-        if (pendingUpdate !== null && onChange) {
-            onChange(pendingUpdate);
-            setPendingUpdate(null);
-        }
-    }, [pendingUpdate, onChange, colorArray]);
 
     return (
         <div

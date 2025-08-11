@@ -22,7 +22,6 @@ export function ColorField({
                         className={inputClass}
                         value={typeof value === 'string' ? value : '#ffffff'}
                         onChange={e => onChange?.(e.target.value)}
-                        onInput={e => onChange?.(e.target.value)}
                     />
                 </div>
                 {field.description && <div className="field-help-text">{field.description}</div>}

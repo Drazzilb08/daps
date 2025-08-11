@@ -569,7 +569,9 @@ class PosterRenamerr(DapsModule):
 
                 # Clear and rebuild poster cache for current session
                 db.poster.clear()
-                self.merge_assets()
+                self.merge_assets(
+                    source_dirs=self.config.source_dirs, db=db, logger=self.logger
+                )
 
                 # Process each media item
                 output = {"collection": [], "movie": [], "show": []}

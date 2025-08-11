@@ -34,17 +34,19 @@ export default function Notifications() {
             children: (
                 <div style={{ textAlign: 'center' }}>
                     {NOTIFICATIONS_SCHEMA.map(n => {
-                        const used = notifications?.[module] ? Object.keys(notifications[module]) : [];
+                        const used = notifications?.[module]
+                            ? Object.keys(notifications[module])
+                            : [];
                         return (
                             <button
                                 key={n.type}
                                 type="button"
                                 className="btn notify-type-btn"
                                 disabled={used.includes(n.type)}
-                                style={{ 
-                                    minWidth: 0, 
-                                    width: '100%', 
-                                    marginBottom: '0.7em' 
+                                style={{
+                                    minWidth: 0,
+                                    width: '100%',
+                                    marginBottom: '0.7em',
                                 }}
                                 onClick={() => {
                                     setModal(null);

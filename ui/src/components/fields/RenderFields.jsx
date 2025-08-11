@@ -10,15 +10,15 @@ export function renderField(field, immediateData, moduleConfig, rootConfig, cont
             `Field type "${field.type}" does not have a registered FIELD_RENDERERS component!`
         );
     }
-    
+
     // Extract onChange from context and create wrapper
     const { onChange: contextOnChange, ...restContext } = context;
-    const onChange = contextOnChange 
-        ? (value) => contextOnChange(field.key, value)
-        : (value) => {
-            console.warn(`onChange not provided for field ${field.key}, value:`, value);
-        };
-    
+    const onChange = contextOnChange
+        ? value => contextOnChange(field.key, value)
+        : value => {
+              console.warn(`onChange not provided for field ${field.key}, value:`, value);
+          };
+
     return (
         <Renderer
             field={field}

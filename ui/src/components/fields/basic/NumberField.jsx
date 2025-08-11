@@ -24,9 +24,7 @@ export const NumberField = React.memo(function NumberField({
                     step={field.step}
                     value={value ?? ''}
                     onChange={e =>
-                        onChange(
-                            e.target.value === '' ? '' : parseInt(e.target.value, 10)
-                        )
+                        onChange(e.target.value === '' ? '' : parseInt(e.target.value, 10))
                     }
                 />
                 {field.description && <div className="field-help-text">{field.description}</div>}

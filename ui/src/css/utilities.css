@@ -46,4 +46,37 @@
     .u-p-4 {
         padding: var(--space-4);
     }
+
+    /* responsive utilities */
+    @media (max-width: 768px) {
+        .u-mobile-hidden {
+            display: none !important;
+        }
+
+        .u-mobile-full-width {
+            width: 100% !important;
+        }
+
+        .u-mobile-center {
+            text-align: center !important;
+        }
+
+        .u-touch-target {
+            min-width: 44px !important;
+            min-height: 44px !important;
+        }
+    }
+
+    @media (min-width: 769px) {
+        .u-desktop-hidden {
+            display: none !important;
+        }
+    }
+
+    /* hover states only for hover-capable devices */
+    @media (hover: hover) {
+        .u-hover-lift:hover {
+            transform: translateY(-1px);
+        }
+    }
 }

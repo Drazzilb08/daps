@@ -48,8 +48,12 @@
     }
 
     /* responsive utilities */
-    @media (max-width: 768px) {
+    @media (max-width: 1024px) {
         .u-mobile-hidden {
+            display: none !important;
+        }
+
+        .u-desktop-only {
             display: none !important;
         }
 
@@ -67,8 +71,12 @@
         }
     }
 
-    @media (min-width: 769px) {
+    @media (min-width: 1025px) {
         .u-desktop-hidden {
+            display: none !important;
+        }
+
+        .u-mobile-only {
             display: none !important;
         }
     }

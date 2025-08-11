@@ -170,12 +170,18 @@
         opacity: 0.85;
     }
 
+    .arrow-btn:active {
+        transform: scale(0.95);
+        background: var(--primary);
+        color: #fff;
+    }
+
     .arrow-btn.clicked {
         background: var(--accent, #3183e2);
         color: #fff;
-        transform: scale(1.22);
+        transform: scale(1.1);
         opacity: 1;
-        box-shadow: 0 0 12px 2px var(--accent, #3183e2aa);
+        box-shadow: 0 0 8px 2px var(--accent, #3183e2aa);
         z-index: 1;
     }
 

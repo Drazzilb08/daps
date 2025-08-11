@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
     DndContext,
     closestCenter,
@@ -16,8 +16,8 @@ import {
 import { CSS } from '@dnd-kit/utilities';
 import DirectoryPickerModal from '../../modals/DirectoryPickerModal';
 
-// --- Sortable Item component with drag handle
-function SortableRow({ id, dir, onRemove, onInput, onRowClick, isOnlyRow }) {
+// --- Sortable Item component with touch detection
+function SortableRow({ id, dir, onRemove, onInput, onRowClick, isOnlyRow, onMoveUp, onMoveDown, canMoveUp, canMoveDown, isTouchDevice }) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id,
     });
@@ -34,15 +34,51 @@ function SortableRow({ id, dir, onRemove, onInput, onRowClick, isOnlyRow }) {
             }}
             data-row-key={id}
         >
-            <span
-                className="drag-handle"
-                title="Drag to reorder"
-                style={{ cursor: 'grab' }}
-                {...attributes}
-                {...listeners}
-            >
-                ⋮⋮
-            </span>
+            {/* Touch device arrows */}
+            {isTouchDevice && (
+                <div className="dirlist-arrows">
+                    <button
+                        type="button"
+                        className="arrow-btn"
+                        onClick={(e) => {
+                            e.target.classList.add('clicked');
+                            setTimeout(() => e.target.classList.remove('clicked'), 150);
+                            onMoveUp();
+                        }}
+                        disabled={!canMoveUp}
+                        aria-label="Move up"
+                    >
+                        ↑
+                    </button>
+                    <button
+                        type="button"
+                        className="arrow-btn"
+                        onClick={(e) => {
+                            e.target.classList.add('clicked');
+                            setTimeout(() => e.target.classList.remove('clicked'), 150);
+                            onMoveDown();
+                        }}
+                        disabled={!canMoveDown}
+                        aria-label="Move down"
+                    >
+                        ↓
+                    </button>
+                </div>
+            )}
+            
+            {/* Non-touch device drag handle */}
+            {!isTouchDevice && (
+                <span
+                    className="drag-handle"
+                    title="Drag to reorder"
+                    style={{ cursor: 'grab' }}
+                    {...attributes}
+                    {...listeners}
+                >
+                    ⋮⋮
+                </span>
+            )}
+            
             <input
                 type="text"
                 className="input field-input"
@@ -71,6 +107,34 @@ export function DirListDragDropField({
     highlightInvalid = false,
     errorMessage = null,
 }) {
+    // Touch device detection
+    const [isTouchDevice, setIsTouchDevice] = useState(false);
+    
+    useEffect(() => {
+        const checkTouchDevice = () => {
+            // Multiple methods for better detection
+            const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+            const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+            const hasLimitedHover = window.matchMedia('(hover: none)').matches;
+            
+            setIsTouchDevice(hasTouch || isCoarsePointer || hasLimitedHover);
+        };
+        
+        checkTouchDevice();
+        
+        // Listen for media query changes
+        const pointerQuery = window.matchMedia('(pointer: coarse)');
+        const hoverQuery = window.matchMedia('(hover: none)');
+        
+        pointerQuery.addEventListener('change', checkTouchDevice);
+        hoverQuery.addEventListener('change', checkTouchDevice);
+        
+        return () => {
+            pointerQuery.removeEventListener('change', checkTouchDevice);
+            hoverQuery.removeEventListener('change', checkTouchDevice);
+        };
+    }, []);
+
     // Memoize dirs so reference is stable unless value changes
     const dirs = useMemo(
         () => (Array.isArray(value) ? (value.length ? [...value] : ['']) : value ? [value] : ['']),
@@ -125,6 +189,20 @@ export function DirListDragDropField({
         onChange(arr);
     }
 
+    function handleMoveUp(idx) {
+        if (idx === 0) return;
+        const newArr = arrayMove(localDirs, idx, idx - 1);
+        setLocalDirs(newArr);
+        onChange(newArr);
+    }
+
+    function handleMoveDown(idx) {
+        if (idx === localDirs.length - 1) return;
+        const newArr = arrayMove(localDirs, idx, idx + 1);
+        setLocalDirs(newArr);
+        onChange(newArr);
+    }
+
     function handleDragEnd(event) {
         const { active, over } = event;
         if (active.id !== over?.id) {
@@ -170,6 +248,11 @@ export function DirListDragDropField({
                                     onRemove={() => handleRemove(idx)}
                                     onInput={e => handleInputChange(idx, e.target.value)}
                                     onRowClick={() => openModalAtIndex(idx)}
+                                    onMoveUp={() => handleMoveUp(idx)}
+                                    onMoveDown={() => handleMoveDown(idx)}
+                                    canMoveUp={idx > 0}
+                                    canMoveDown={idx < localDirs.length - 1}
+                                    isTouchDevice={isTouchDevice}
                                 />
                             ))}
                             {field.description && (

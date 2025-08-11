@@ -23,7 +23,7 @@ export function ModalFooter({
 
     return (
         <div className="modal-footer">
-            <div>
+            <div className="modal-footer-left">
                 {leftButtons.map(btn => (
                     <button
                         key={btn.id}
@@ -40,7 +40,7 @@ export function ModalFooter({
                     </button>
                 ))}
             </div>
-            <div style={{ display: 'flex', gap: '0.7em' }}>
+            <div className="modal-footer-right">
                 {rightButtons.map(btn => (
                     <button
                         key={btn.id}

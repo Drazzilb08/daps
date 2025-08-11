@@ -2,6 +2,17 @@ import React from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { getIcon } from '../utils/tools';
 
+// Helper function to close mobile sidebar
+function closeMobileSidebar() {
+    const body = document.body;
+    const hamburger = document.getElementById('sidebarToggle');
+    if (body.classList.contains('sidebar-open')) {
+        body.classList.remove('sidebar-open');
+        hamburger?.classList.remove('opened');
+        hamburger?.setAttribute('aria-expanded', 'false');
+    }
+}
+
 const NAV = [
     { to: '/schedule', icon: 'event_note', label: 'Schedule' },
     { to: '/instances', icon: 'desktop_windows', label: 'Instances' },
@@ -88,6 +99,7 @@ export default function Sidebar() {
                                     className={({ isActive }) =>
                                         `sidebar-link${isActive ? ' active' : ''}`
                                     }
+                                    onClick={closeMobileSidebar}
                                 >
                                     <span className="icon">{getIcon(`mi:${item.icon}`)}</span>
                                     {item.label}
@@ -137,7 +149,10 @@ export default function Sidebar() {
                                                 className={({ isActive }) =>
                                                     `sidebar-link sidebar-link--sub${isActive ? ' active' : ''}`
                                                 }
-                                                onClick={() => setOpenDropdown(item.label)}
+                                                onClick={() => {
+                                                    setOpenDropdown(item.label);
+                                                    closeMobileSidebar();
+                                                }}
                                             >
                                                 {sub.label}
                                             </NavLink>
@@ -160,6 +175,7 @@ export default function Sidebar() {
                                 className={({ isActive }) =>
                                     `sidebar-link${isActive ? ' active' : ''}`
                                 }
+                                onClick={closeMobileSidebar}
                             >
                                 <span className="icon">{getIcon(`mi:${item.icon}`)}</span>
                                 {item.label}
@@ -176,6 +192,7 @@ export default function Sidebar() {
                                             className={({ isActive }) =>
                                                 `sidebar-link sidebar-link--sub${isActive ? ' active' : ''}`
                                             }
+                                            onClick={closeMobileSidebar}
                                         >
                                             {sub.label}
                                         </NavLink>

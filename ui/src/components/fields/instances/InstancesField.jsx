@@ -192,7 +192,7 @@ export default function InstancesField({
             const plexSelected = getPlexSelected();
             if (onChange) onChange([...basicSelected, ...plexSelected]);
         },
-        [onChange, field.key, getBasicSelected, getPlexSelected]
+        [onChange, getBasicSelected, getPlexSelected]
     );
 
     const handlePlexToggle = useCallback(
@@ -210,7 +210,7 @@ export default function InstancesField({
             }
             if (onChange) onChange([...basicSelected, ...plexSelected]);
         },
-        [onChange, field.key, getBasicSelected, getPlexSelected]
+        [onChange, getBasicSelected, getPlexSelected]
     );
 
     const handlePlexLibs = useCallback(
@@ -230,7 +230,7 @@ export default function InstancesField({
             });
             if (onChange) onChange([...arr, ...plex]);
         },
-        [onChange, getBasicSelected, getPlexSelected, field.key]
+        [onChange, getBasicSelected, getPlexSelected]
     );
 
     const handlePlexPosters = useCallback(
@@ -250,7 +250,7 @@ export default function InstancesField({
             });
             if (onChange) onChange([...arr, ...plex]);
         },
-        [onChange, getBasicSelected, getPlexSelected, field.key]
+        [onChange, getBasicSelected, getPlexSelected]
     );
 
     // Render logic flags (no side effects)

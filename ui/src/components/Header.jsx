@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import PropTypes from 'prop-types';
 
 function Header() {
     useEffect(() => {
@@ -58,7 +57,6 @@ function Header() {
     );
 }
 
-// Header has no props
-Header.propTypes = {};
+
 
 export default React.memo(Header);

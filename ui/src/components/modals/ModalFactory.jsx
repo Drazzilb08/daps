@@ -20,23 +20,6 @@ export default function ModalFactory({
     children,
     isSmallModal = false,
 }) {
-    // If small modal, use SmallModalFactory
-    if (isSmallModal) {
-        return (
-            <SmallModalFactory
-                title={title}
-                onClose={onClose}
-                children={children}
-                actions={footerButtons.map(btn => ({
-                    id: btn.id,
-                    label: btn.label,
-                    className: btn.className || 'btn',
-                    onClick: () => onButtonClick[btn.id]?.({}),
-                    disabled: btn.disabled,
-                }))}
-            />
-        );
-    }
     const modalRef = useRef();
     const formRef = useRef();
     const [formData, setFormData] = useState({ ...entry });
@@ -45,6 +28,25 @@ export default function ModalFactory({
     useFocusTrap(modalRef);
     useModalCloseOnOutsideClick(modalRef, onClose);
     useDynamicFieldConditions(schema, rootConfig, formRef);
+
+    // If small modal, use SmallModalFactory
+    if (isSmallModal) {
+        return (
+            <SmallModalFactory
+                title={title}
+                onClose={onClose}
+                actions={footerButtons.map(btn => ({
+                    id: btn.id,
+                    label: btn.label,
+                    className: btn.className || 'btn',
+                    onClick: () => onButtonClick[btn.id]?.({}),
+                    disabled: btn.disabled,
+                }))}
+            >
+                {children}
+            </SmallModalFactory>
+        );
+    }
 
     function handleFieldChange(fieldKey, newValue) {
         setFormData(prev => {
@@ -141,7 +143,8 @@ export default function ModalFactory({
                                       })}
                                   </React.Fragment>
                               ))
-                        : children}
+                        : null}
+                    {children && !schema.length && children}
                 </div>
                 <ModalFooter buttons={footerButtons} onButtonClick={wrappedButtonHandler} />
             </div>

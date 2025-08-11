@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { fetchPosterFileList } from '../../../utils/api';
 
 const BORDER_THICKNESS = 5;
@@ -107,7 +107,9 @@ export function ColorListField({
     errorMessage = null,
 }) {
     // Use value directly from props, no internal state
-    const colorArray = Array.isArray(value) ? value : [];
+    const colorArray = useMemo(() => {
+        return Array.isArray(value) ? value : [];
+    }, [value]);
     const [posterAssets, setPosterAssets] = useState([]);
     const [previews, setPreviews] = useState([]);
     const shouldPreview = String(field.preview) === 'true';

@@ -25,10 +25,10 @@ function getPosterPreviewUrl(imgUrl, borderColor, options = {}) {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         const img = new Image();
-        
+
         // Important: Set crossOrigin before setting src
         img.crossOrigin = 'anonymous';
-        
+
         img.onload = function () {
             try {
                 const width = options.width || img.width;
@@ -89,12 +89,12 @@ function getPosterPreviewUrl(imgUrl, borderColor, options = {}) {
                 reject(error);
             }
         };
-        
+
         img.onerror = function () {
             console.error('Failed to load poster image:', imgUrl);
             reject(new Error(`Failed to load poster image: ${imgUrl}`));
         };
-        
+
         img.src = imgUrl;
     });
 }
@@ -169,7 +169,7 @@ export function ColorListField({
             }
             if (!cancelled) setPreviews(out);
         };
-        
+
         makePreviews();
         return () => {
             cancelled = true;
@@ -181,12 +181,12 @@ export function ColorListField({
         updatedArray[idx] = newColor;
         onChange?.(updatedArray);
     }
-    
+
     function handleAdd() {
         const updatedArray = [...colorArray, '#ffffff'];
         onChange?.(updatedArray);
     }
-    
+
     function handleRemove(idx) {
         const updatedArray = colorArray.filter((_, i) => i !== idx);
         onChange?.(updatedArray);

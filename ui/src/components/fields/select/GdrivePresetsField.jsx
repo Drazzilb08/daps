@@ -57,18 +57,18 @@ export function GdrivePresetsField({ field, value, onChange, onPresetSelected, m
                     value={value ?? ''}
                     disabled={loading}
                     onChange={e => {
-                    onChange(e.target.value);
-                    if (onPresetSelected) {
-                    const selectedPreset = presets.find(p => p.id === e.target.value);
-                    if (selectedPreset) {
-                    onPresetSelected({
-                    [field.key]: e.target.value,
-                    name: selectedPreset.name,
-                    id: selectedPreset.id,
-                    ...selectedPreset,
-                    });
-                    }
-                    }
+                        onChange(e.target.value);
+                        if (onPresetSelected) {
+                            const selectedPreset = presets.find(p => p.id === e.target.value);
+                            if (selectedPreset) {
+                                onPresetSelected({
+                                    [field.key]: e.target.value,
+                                    name: selectedPreset.name,
+                                    id: selectedPreset.id,
+                                    ...selectedPreset,
+                                });
+                            }
+                        }
                     }}
                 >
                     <option value="">— No Preset —</option>

@@ -50,7 +50,7 @@ export default function SmallModalFactory({
                         </div>
                     )}
                     {children}
-                    
+
                     {/* Move buttons to body for small modals */}
                     <div
                         style={{

@@ -53,37 +53,62 @@
         transform: scale(1);
     }
 
+    /* ========== MOBILE-FIRST MODALS ========== */
     .modal-content {
         background: var(--surface, #23272b);
         color: var(--text-color, #e3e3e3);
-        border-radius: var(--radius-3);
-        width: 1000px;
-        max-width: 97vw;
-        min-height: 280px;
-        max-height: 92vh;
-        box-shadow: var(--shadow-3);
+        border-radius: 0;
+        width: 100vw;
+        max-width: 100vw;
+        min-height: 100vh;
+        max-height: 100vh;
+        box-shadow: none;
         display: flex;
         flex-direction: column;
         overflow: hidden;
         position: relative;
-        padding-left: var(--space-5);
-        padding-right: var(--space-5);
+        padding: 0;
     }
 
     .modal-content-fit {
         background: var(--surface, #23272b);
         color: var(--text-color, #e3e3e3);
-        border-radius: var(--radius-3);
-        max-width: 97vw;
-        min-height: 280px;
-        max-height: 92vh;
-        box-shadow: var(--shadow-3);
+        border-radius: 0;
+        width: 100vw;
+        max-width: 100vw;
+        min-height: 100vh;
+        max-height: 100vh;
+        box-shadow: none;
         display: flex;
         flex-direction: column;
         overflow: hidden;
         position: relative;
-        padding-left: var(--space-5);
-        padding-right: var(--space-5);
+        padding: 0;
+    }
+
+    /* DESKTOP: constrained modal sizing */
+    @media (min-width: 1025px) {
+        .modal-content {
+            border-radius: var(--radius-3);
+            width: 1000px;
+            max-width: 97vw;
+            min-height: 280px;
+            max-height: 92vh;
+            box-shadow: var(--shadow-3);
+            padding-left: var(--space-5);
+            padding-right: var(--space-5);
+        }
+
+        .modal-content-fit {
+            border-radius: var(--radius-3);
+            max-width: 97vw;
+            min-height: 280px;
+            max-height: 92vh;
+            box-shadow: var(--shadow-3);
+            padding-left: var(--space-5);
+            padding-right: var(--space-5);
+            width: auto;
+        }
     }
 
     /* ======================
@@ -613,149 +638,73 @@
         margin: 0 0 10px;
     }
 
-    /* ======================
-   MOBILE RESPONSIVENESS
-====================== */
-    @media (width <= 1024px) {
-        .modal-content {
-            width: 100vw;
-            max-width: 100vw;
-            min-height: 100vh;
-            max-height: 100vh;
-            border-radius: 0;
-            box-shadow: none;
-            padding: 0;
-        }
-
-        .modal-header,
-        .modal-footer {
-            padding-left: 1.1rem;
-            padding-right: 1.1rem;
-        }
-
-        .modal-body {
-            padding-left: 1.1rem;
-            padding-right: 1.1rem;
-        }
+    /* ========== MOBILE-FIRST MODAL LAYOUT ========== */
+    .modal-header,
+    .modal-footer {
+        padding-left: 1rem;
+        padding-right: 1rem;
+        min-height: 2.3em;
     }
 
-    @media (width <= 600px) {
-        .modal-content {
-            width: 100vw;
-            max-width: 100vw;
-            min-height: 100vh;
-            max-height: 100vh;
-            border-radius: 0;
-            box-shadow: none;
-            padding: 0;
-        }
+    .modal-header {
+        padding-top: 1.08rem;
+        padding-bottom: 0.7rem;
+        font-size: 1.08rem;
+    }
 
+    .modal-footer {
+        padding-top: 0.98rem;
+        padding-bottom: 1.04rem;
+        gap: 0.85rem;
+    }
+
+    .modal-body {
+        padding-left: 1rem;
+        padding-right: 1rem;
+        gap: 0.88rem;
+        font-size: 1.06rem;
+    }
+
+    /* TABLET: enhanced modal spacing */
+    @media (min-width: 769px) {
         .modal-header,
         .modal-footer {
-            padding-left: 1rem;
-            padding-right: 1rem;
-            min-height: 2.3em;
+            padding-left: 1.1rem;
+            padding-right: 1.1rem;
+            min-height: auto;
         }
 
         .modal-header {
-            padding-top: 1.08rem;
-            padding-bottom: 0.7rem;
-            font-size: 1.08rem;
+            padding-top: var(--space-4);
+            padding-bottom: var(--space-2);
+            font-size: inherit;
         }
 
         .modal-footer {
-            padding-top: 0.98rem;
-            padding-bottom: 1.04rem;
-            gap: 0.85rem;
+            padding-top: var(--space-4);
+            padding-bottom: var(--space-4);
+            gap: var(--space-4);
         }
 
         .modal-body {
-            padding-left: 1rem;
-            padding-right: 1rem;
-            gap: 0.88rem;
-            font-size: 1.06rem;
+            padding-left: 1.1rem;
+            padding-right: 1.1rem;
+            gap: var(--space-4);
+            font-size: inherit;
+        }
+    }
+
+    /* DESKTOP: full modal spacing */
+    @media (min-width: 1025px) {
+        .modal-header,
+        .modal-footer {
+            padding-left: var(--space-6);
+            padding-right: var(--space-6);
         }
 
-        .modal-content .settings-field-labelcol,
-        .modal-content .modal-field-labelcol {
-            min-width: 150px;
-            max-width: 240px;
-            flex: 0 0 200px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            justify-content: flex-start;
-            padding-right: 16px;
-        }
-
-        .modal-content .settings-field-labelcol label,
-        .modal-content .modal-field-labelcol label {
-            font-weight: 500;
-            color: var(--primary);
-            padding-top: 0.21em;
-            line-height: 1.3;
-            text-align: right;
-            margin-bottom: 0.13em;
-            font-size: 1.01em;
-        }
-
-        .modal-content .settings-field-inputwrap,
-        .modal-content .modal-field-inputwrap {
-            flex: 1 1 320px;
-            min-width: 160px;
-            display: flex;
-            flex-direction: column;
-            gap: 0.13em;
-            box-sizing: border-box;
-            align-items: stretch;
-            padding-left: 0.7em;
-            padding-right: 1.7em;
-            max-width: 97%;
-        }
-
-        .plex-instance-card {
-            width: 100%;
-            min-width: 0;
-            max-width: 100vw;
-            margin-left: 0;
-            margin-right: 0;
-            box-sizing: border-box;
-        }
-
-        .instance-library-list {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 0.5rem 0;
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .instance-library-list .instance-pill {
-            width: 100%;
-            max-width: 100vw;
-            min-width: 0;
-            margin: 0 0 0.32em;
-            border-radius: 8px;
-            padding: 0.44em 0.8em;
-            font-size: 1.02rem;
-            box-sizing: border-box;
-            display: flex;
-            align-items: center;
-        }
-
-        .field-help-text {
-            font-size: 0.98em;
-            margin-top: 0.21em;
-        }
-
-        .modal-content .settings-field-row,
-        .modal-content .settings-field-inputwrap {
-            min-height: unset;
-            height: auto;
-            overflow: visible;
-            align-items: stretch;
+        .modal-body {
+            padding-left: var(--space-6);
+            padding-right: var(--space-6);
         }
     }
 

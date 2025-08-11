@@ -1,57 +1,66 @@
 @layer components {
-    /* ========== FORM FIELD STRUCTURE ========== */
+    /* ========== MOBILE-FIRST FORM FIELD STRUCTURE ========== */
     .field,
     .settings-field-row,
     .modal-field-row {
         display: flex;
-        align-items: center;
+        flex-direction: column;
+        align-items: flex-start;
         width: 100%;
-        margin-bottom: var(--space-4);
+        margin-bottom: var(--space-3);
         font-size: var(--font-size-2);
         box-sizing: border-box;
+        padding: 0;
+        min-height: 0;
     }
 
     .field__label,
     .settings-field-labelcol,
     .modal-field-labelcol {
-        min-width: 150px;
-        max-width: 240px;
-        flex: 0 0 200px;
+        min-width: 0;
+        max-width: 100%;
+        flex: 1 1 100%;
         display: flex;
         flex-direction: column;
-        align-items: flex-end;
+        align-items: flex-start;
         align-self: stretch;
         justify-content: center;
-        padding-right: var(--space-4);
+        padding: 0 0 0.18em;
+        margin: 0 0 1px;
+        width: 100%;
         box-sizing: border-box;
     }
 
     .field__input,
     .settings-field-inputwrap,
     .modal-field-inputwrap {
-        flex: 1 1 320px;
-        min-width: 160px;
+        flex: 0 0 auto;
+        min-width: 0;
         max-width: 100%;
+        width: 100%;
         display: flex;
         flex-direction: column;
-        gap: 0.13em;
+        gap: 0.1em;
         box-sizing: border-box;
         align-items: stretch;
+        min-height: 0;
+        height: auto;
+        margin: 0;
     }
 
-    /* ========== LABELS ========== */
+    /* ========== MOBILE-FIRST LABELS ========== */
     .field__label label,
     .settings-field-labelcol label,
     .modal-field-labelcol label {
         font-weight: var(--font-weight-medium);
         color: var(--primary);
-        padding-top: 0;
+        padding: 0;
         line-height: 1.3;
-        text-align: right;
-        margin-bottom: 0;
+        text-align: left;
+        margin-bottom: 0.13em;
         width: 100%;
         display: block;
-        font-size: 1.01em;
+        font-size: var(--font-size-2);
     }
 
     /* ========== INPUT CONTROLS ========== */
@@ -145,7 +154,6 @@
         border-radius: var(--radius-2);
         transition: background var(--duration-fast);
     }
-
 
     input[type='checkbox'] {
         appearance: none;
@@ -362,82 +370,49 @@
         box-shadow: 0 0 0 var(--border-width-2) var(--accent, #3af) inset;
     }
 
-    /* ========== RESPONSIVE FORM LAYOUTS ========== */
-    @media (width <= 1024px) {
+    /* ========== DESKTOP FORM LAYOUTS ========== */
+    @media (min-width: 1025px) {
         .field,
         .settings-field-row,
         .modal-field-row {
-            flex-direction: column;
-            align-items: flex-start;
-            margin-bottom: var(--space-3);
-            padding: 0;
-            min-height: 0;
-            width: 100%;
-            box-sizing: border-box;
+            flex-direction: row;
+            align-items: center;
+            margin-bottom: var(--space-4);
         }
 
         .field__label,
         .settings-field-labelcol,
         .modal-field-labelcol {
-            min-width: 0;
-            max-width: 100%;
-            flex: 1 1 100%;
-            align-items: flex-start;
-            padding: 0 0 0.18em;
-            margin: 0 0 1px;
-            width: 100%;
-            box-sizing: border-box;
+            min-width: 150px;
+            max-width: 240px;
+            flex: 0 0 200px;
+            align-items: flex-end;
+            padding-right: var(--space-4);
+            margin: 0;
+            width: auto;
         }
 
         .field__label label,
         .settings-field-labelcol label,
         .modal-field-labelcol label {
-            text-align: left;
-            font-size: var(--font-size-2);
-            font-weight: var(--font-weight-medium);
-            margin-bottom: 0.13em;
-            padding: 0;
-            width: 100%;
-            color: var(--primary);
+            text-align: right;
+            font-size: 1.01em;
+            margin-bottom: 0;
+            padding-top: 0;
         }
 
         .field__input,
         .settings-field-inputwrap,
         .modal-field-inputwrap {
-            min-width: 0;
-            max-width: 100%;
-            padding-left: 0;
-            padding-right: 0;
-            gap: 0.1em;
-            align-items: stretch;
-            flex: 0 0 auto;
-            min-height: 0;
-            height: auto;
-            margin-left: 0;
-            margin-right: 0;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .field__input input,
-        .field__input select,
-        .field__input textarea,
-        .settings-field-inputwrap input,
-        .settings-field-inputwrap select,
-        .settings-field-inputwrap textarea {
-            width: 100%;
-            min-width: 0;
-            max-width: 100%;
-            box-sizing: border-box;
-            font-size: var(--font-size-2);
-            margin-bottom: 2px;
-            margin-left: 0;
-            margin-right: 0;
-            border-radius: var(--radius-2);
+            flex: 1 1 320px;
+            min-width: 160px;
+            gap: 0.13em;
+            width: auto;
         }
     }
 
-    @media (width <= 600px) {
+    /* ========== ENHANCED MOBILE TOUCH TARGETS ========== */
+    @media (max-width: 600px) {
         input[type='checkbox'] {
             width: 28px !important;
             height: 28px !important;

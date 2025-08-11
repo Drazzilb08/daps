@@ -80,7 +80,7 @@
     --focus-ring-size: 3px;
     --focus-ring-color: var(--primary);
 
-    /* Breakpoints */
+    /* Breakpoints - for reference use only*/
     --bp-sm: 480px;
     --bp-touch: 600px; /* Enhanced touch targets */
     --bp-md: 768px;

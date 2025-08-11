@@ -1,16 +1,16 @@
 @layer components {
-    /* ========== BUTTON BASE STYLES ========== */
+    /* ========== MOBILE-FIRST BUTTON STYLES ========== */
     .btn,
     .btn--success,
     .btn--cancel {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: var(--space-2) var(--space-5);
+        padding: 0.48em 1.1em;
         background: var(--primary);
         color: #fff;
         text-align: center;
-        font-size: var(--font-size-2);
+        font-size: var(--font-size-1);
         font-weight: var(--font-weight-medium);
         border: none;
         border-radius: var(--radius-1);
@@ -21,6 +21,45 @@
             transform var(--duration-fast);
         text-decoration: none;
         min-height: var(--control-min-height);
+        min-width: 66px;
+    }
+
+    /* ========== BUTTON ICONS & CONTENT ========== */
+    .btn .icon,
+    .btn svg {
+        min-width: 1.5em;
+        min-height: 1.5em;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    .btn span {
+        display: inline-block;
+        min-width: 36px;
+        text-align: center;
+    }
+
+    .btn-container {
+        display: flex;
+        gap: var(--space-2);
+        margin-left: auto;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    /* DESKTOP: enhanced button sizing */
+    @media (min-width: 1025px) {
+        .btn,
+        .btn--success,
+        .btn--cancel {
+            padding: var(--space-2) var(--space-5);
+            font-size: var(--font-size-2);
+            min-width: auto;
+        }
+
+        .btn-container {
+            gap: var(--space-3);
+        }
     }
 
     .btn:hover {
@@ -124,44 +163,5 @@
     .btn--remove-item:disabled {
         opacity: 0.65;
         pointer-events: none;
-    }
-
-    /* ========== BUTTON CONTAINERS ========== */
-    .btn-container {
-        display: flex;
-        gap: var(--space-3);
-        margin-left: auto;
-        align-items: center;
-        flex-wrap: wrap;
-    }
-
-    /* ========== BUTTON ICONS & CONTENT ========== */
-    .btn .icon,
-    .btn svg {
-        min-width: 1.5em;
-        min-height: 1.5em;
-        display: inline-block;
-        vertical-align: middle;
-    }
-
-    .btn span {
-        display: inline-block;
-        min-width: 36px;
-        text-align: center;
-    }
-
-    /* ========== RESPONSIVE OVERRIDES ========== */
-    @media (width <= 1024px) {
-        .btn,
-        .btn--success,
-        .btn--cancel {
-            min-width: 66px;
-            font-size: var(--font-size-1);
-            padding: 0.48em 1.1em;
-        }
-
-        .btn-container {
-            gap: var(--space-2);
-        }
     }
 } /* end @layer components */

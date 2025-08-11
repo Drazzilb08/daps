@@ -1,30 +1,39 @@
 @layer base {
-    /* ======================================================
-   SIDEBAR NAVIGATION LAYOUT
-====================================================== */
+    /* MOBILE-FIRST: sidebar hidden by default */
     nav.sidebar {
         position: fixed;
-        top: 64px; /* fallback */
         top: var(--header-height);
-        left: 0;
-        width: 210px; /* fallback */
+        left: -210px;
         width: var(--sidebar-width);
-        height: calc(100vh - 64px); /* fallback */
         height: calc(100vh - var(--header-height));
-        background: #191b1f; /* fallback */
         background: var(--sidebar-bg);
         color: var(--sidebar-fg);
         display: flex;
         flex-direction: column;
-        z-index: 200; /* fallback */
         z-index: var(--z-dropdown);
         transition:
             left 0.28s cubic-bezier(0.5, 0, 0.5, 1),
             box-shadow 0.2s;
         overflow-y: auto;
         -webkit-overflow-scrolling: touch;
-        box-shadow: none;
+        box-shadow: var(--shadow-3);
         border-right: none;
+    }
+
+    body.sidebar-open nav.sidebar {
+        left: 0;
+    }
+
+    /* DESKTOP: sidebar always visible */
+    @media (min-width: 1025px) {
+        nav.sidebar {
+            left: 0;
+            box-shadow: none;
+        }
+
+        body.sidebar-open nav.sidebar {
+            left: 0;
+        }
     }
 
     .nav-logo {
@@ -172,31 +181,5 @@
         text-align: center;
         user-select: none;
         letter-spacing: 0.04em;
-    }
-
-    /* ======================================================
-   SIDEBAR RESPONSIVE
-====================================================== */
-    @media (width <= 1024px) {
-        nav.sidebar {
-            left: -210px; /* fallback */
-            left: calc(-1 * var(--sidebar-width));
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* fallback */
-            box-shadow: var(--shadow-3);
-            overflow-y: auto;
-            -webkit-overflow-scrolling: touch;
-            height: calc(100dvh - 64px); /* fallback */
-            height: calc(100dvh - var(--header-height));
-            min-height: 0;
-            max-height: none;
-        }
-
-        body.sidebar-open nav.sidebar {
-            left: 0;
-        }
-
-        .daps-title {
-            display: none !important;
-        }
     }
 } /* end @layer base */

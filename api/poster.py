@@ -5,6 +5,7 @@ from typing import Any, Dict, List
 from fastapi import APIRouter, Depends, Query, Request
 from fastapi.responses import FileResponse, JSONResponse
 
+from api.utils import get_database
 from modules.sync_gdrive import SyncGDrive
 from modules.unmatched_assets import UnmatchedAssets
 from util.database import DapsDB
@@ -26,7 +27,7 @@ def get_web_logger(request: Request) -> Any:
 
 @router.get("/api/posters/matched/stats")
 async def matched_posters_stats(
-    logger: Any = Depends(get_web_logger),
+    logger: Any = Depends(get_web_logger), db: DapsDB = Depends(get_database)
 ) -> Dict[str, Any]:
     """
     Retrieve statistics for matched posters.
@@ -36,8 +37,7 @@ async def matched_posters_stats(
     try:
         logger.debug("Serving GET /api/posters/matched/stats")
 
-        with DapsDB(logger=logger, quiet=True) as db:
-            stats = db.stats.get_matched_posters_stats()
+        stats = db.stats.get_matched_posters_stats()
 
         return {
             "success": True,
@@ -58,7 +58,9 @@ async def matched_posters_stats(
 
 
 @router.get("/api/gdrive/stats")
-async def get_gdrive_stats(logger: Any = Depends(get_web_logger)) -> Dict[str, Any]:
+async def get_gdrive_stats(
+    logger: Any = Depends(get_web_logger), db: DapsDB = Depends(get_database)
+) -> Dict[str, Any]:
     """
     Retrieve GDrive synchronization statistics.
 
@@ -71,8 +73,7 @@ async def get_gdrive_stats(logger: Any = Depends(get_web_logger)) -> Dict[str, A
         syncer = SyncGDrive(logger=gdrive_logger)
         syncer.refresh_all_poster_stats()
 
-        with DapsDB(logger=logger, quiet=True) as db:
-            stats = db.stats.get_gdrive_stats()
+        stats = db.stats.get_gdrive_stats()
 
         return {
             "success": True,
@@ -128,6 +129,7 @@ async def get_unmatched_stats(logger: Any = Depends(get_web_logger)) -> Dict[str
 async def gdrive_folder(
     gdrive_names: List[str] = Query(..., description="Names of the GDrive folders"),
     logger: Any = Depends(get_web_logger),
+    db: DapsDB = Depends(get_database),
 ) -> Dict[str, Any]:
     """
     Enqueue GDrive synchronization jobs for selected folders.
@@ -151,14 +153,13 @@ async def gdrive_folder(
         started = []
         job_ids = []
 
-        with DapsDB(logger=logger) as db:
-            for name in gdrive_names:
-                job_result = db.worker.enqueue_job(
-                    "jobs", payload={"gdrive_name": name}, job_type="sync_gdrive"
-                )
-                job_id = job_result.get("data", {}).get("job_id")
-                started.append(name)
-                job_ids.append({"name": name, "job_id": job_id})
+        for name in gdrive_names:
+            job_result = db.worker.enqueue_job(
+                "jobs", payload={"gdrive_name": name}, job_type="sync_gdrive"
+            )
+            job_id = job_result.get("data", {}).get("job_id")
+            started.append(name)
+            job_ids.append({"name": name, "job_id": job_id})
 
         if len(job_ids) == 1:
             return {
@@ -186,7 +187,9 @@ async def gdrive_folder(
 
 
 @router.get("/api/cache/media")
-async def get_media_cache(logger: Any = Depends(get_web_logger)) -> Dict[str, Any]:
+async def get_media_cache(
+    logger: Any = Depends(get_web_logger), db: DapsDB = Depends(get_database)
+) -> Dict[str, Any]:
     """
     Retrieve the media cache from the database.
 
@@ -195,8 +198,7 @@ async def get_media_cache(logger: Any = Depends(get_web_logger)) -> Dict[str, An
     try:
         logger.debug("Serving GET /api/cache/media")
 
-        with DapsDB(logger=logger, quiet=True) as db:
-            media_cache = db.media.get_all()
+        media_cache = db.media.get_all()
 
         return {
             "success": True,
@@ -217,7 +219,9 @@ async def get_media_cache(logger: Any = Depends(get_web_logger)) -> Dict[str, An
 
 
 @router.get("/api/cache/collection")
-async def get_collection_cache(logger: Any = Depends(get_web_logger)) -> Dict[str, Any]:
+async def get_collection_cache(
+    logger: Any = Depends(get_web_logger), db: DapsDB = Depends(get_database)
+) -> Dict[str, Any]:
     """
     Retrieve the collection cache from the database.
 
@@ -226,8 +230,7 @@ async def get_collection_cache(logger: Any = Depends(get_web_logger)) -> Dict[st
     try:
         logger.debug("Serving GET /api/cache/collection")
 
-        with DapsDB(logger=logger, quiet=True) as db:
-            collection_cache = db.collection.get_all()
+        collection_cache = db.collection.get_all()
 
         return {
             "success": True,
@@ -249,7 +252,7 @@ async def get_collection_cache(logger: Any = Depends(get_web_logger)) -> Dict[st
 
 @router.delete("/api/cache/media/{id}")
 async def delete_media_cache_by_id(
-    id: int, logger: Any = Depends(get_web_logger)
+    id: int, logger: Any = Depends(get_web_logger), db: DapsDB = Depends(get_database)
 ) -> Dict[str, Any]:
     """
     Delete a media cache item by ID.
@@ -259,17 +262,16 @@ async def delete_media_cache_by_id(
     try:
         logger.debug(f"Serving DELETE /api/cache/media/{id}")
 
-        with DapsDB(logger=logger) as db:
-            if not db.media.get_by_id(id):
-                return JSONResponse(
-                    status_code=404,
-                    content={
-                        "success": False,
-                        "message": f"Media cache item {id} not found",
-                        "error_code": "MEDIA_CACHE_NOT_FOUND",
-                    },
-                )
-            db.media.delete_by_id(id)
+        if not db.media.get_by_id(id):
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "success": False,
+                    "message": f"Media cache item {id} not found",
+                    "error_code": "MEDIA_CACHE_NOT_FOUND",
+                },
+            )
+        db.media.delete_by_id(id)
 
         logger.info(f"Deleted media cache item id={id}")
         return {
@@ -292,7 +294,7 @@ async def delete_media_cache_by_id(
 
 @router.delete("/api/cache/collection/{id}")
 async def delete_collection_cache_by_id(
-    id: int, logger: Any = Depends(get_web_logger)
+    id: int, logger: Any = Depends(get_web_logger), db: DapsDB = Depends(get_database)
 ) -> Dict[str, Any]:
     """
     Delete a collection cache item by ID.
@@ -302,17 +304,16 @@ async def delete_collection_cache_by_id(
     try:
         logger.debug(f"Serving DELETE /api/cache/collection/{id}")
 
-        with DapsDB(logger=logger) as db:
-            if not db.collection.get_by_id(id):
-                return JSONResponse(
-                    status_code=404,
-                    content={
-                        "success": False,
-                        "message": f"Collection cache item {id} not found",
-                        "error_code": "COLLECTION_CACHE_NOT_FOUND",
-                    },
-                )
-            db.collection.delete_by_id(id)
+        if not db.collection.get_by_id(id):
+            return JSONResponse(
+                status_code=404,
+                content={
+                    "success": False,
+                    "message": f"Collection cache item {id} not found",
+                    "error_code": "COLLECTION_CACHE_NOT_FOUND",
+                },
+            )
+        db.collection.delete_by_id(id)
 
         logger.info(f"Deleted collection cache item id={id}")
         return {
@@ -531,7 +532,9 @@ def list_poster_files(logger: Any = Depends(get_web_logger)) -> Dict[str, Any]:
 
 @router.post("/api/poster/add")
 async def add_media(
-    request: Request, logger: Any = Depends(get_webhook_logger)
+    request: Request,
+    logger: Any = Depends(get_webhook_logger),
+    db: DapsDB = Depends(get_database),
 ) -> Dict[str, Any]:
     """
     Webhook endpoint for media poster processing.
@@ -563,8 +566,7 @@ async def add_media(
 
         job_data = {"webhook_data": data, "client_info": client_info}
 
-        with DapsDB(logger=logger) as db:
-            result = db.worker.enqueue_job("jobs", job_data, job_type="webhook")
+        result = db.worker.enqueue_job("jobs", job_data, job_type="webhook")
 
         if not result.get("success"):
             logger.error(f"Error persisting webhook: {result.get('message')}")
@@ -606,8 +608,7 @@ def _is_test_event(data: Dict[str, Any]) -> bool:
 
 @router.post("/api/run/upload/media/{id}")
 async def run_upload_by_media_id(
-    id: int,
-    logger: Any = Depends(get_web_logger),
+    id: int, logger: Any = Depends(get_web_logger), db: DapsDB = Depends(get_database)
 ) -> Dict[str, Any]:
     """
     Trigger poster upload for a specific media cache item.
@@ -621,10 +622,9 @@ async def run_upload_by_media_id(
 
         from util.upload_posters import PosterUploader
 
-        with DapsDB(logger=logger) as db:
-            result = PosterUploader(
-                db=db, logger=logger, manifest=manifest, force=True
-            ).run()
+        result = PosterUploader(
+            db=db, logger=logger, manifest=manifest, force=True
+        ).run()
 
         if result.get("success"):
             return {
@@ -656,8 +656,7 @@ async def run_upload_by_media_id(
 
 @router.post("/api/run/upload/collection/{id}")
 async def run_upload_by_collection_id(
-    id: int,
-    logger: Any = Depends(get_web_logger),
+    id: int, logger: Any = Depends(get_web_logger), db: DapsDB = Depends(get_database)
 ) -> Dict[str, Any]:
     """
     Trigger poster upload for a specific collection cache item.
@@ -671,10 +670,9 @@ async def run_upload_by_collection_id(
 
         from util.upload_posters import PosterUploader
 
-        with DapsDB(logger=logger) as db:
-            result = PosterUploader(
-                db=db, logger=logger, manifest=manifest, force=True
-            ).run()
+        result = PosterUploader(
+            db=db, logger=logger, manifest=manifest, force=True
+        ).run()
 
         if result.get("success"):
             return {

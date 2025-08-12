@@ -10,8 +10,16 @@ from util.logger import Logger
 class ModuleOrchestrator:
     """Centralized module execution through job queue"""
 
-    def __init__(self, logger: Logger):
+    def __init__(self, logger: Logger, db: DapsDB = None):
         self.logger = logger
+        self.db = db  # Optional shared database instance
+
+    def _get_database(self):
+        """Get database instance - use shared if available, otherwise create new context"""
+        if self.db:
+            return self.db
+        else:
+            return DapsDB(self.logger)
 
     def _log(
         self, level: str, msg: str, source: str = "orchestrator", exc_info: bool = False
@@ -148,24 +156,28 @@ class ModuleOrchestrator:
         Get current status of a module by checking active jobs.
         """
         try:
-            with DapsDB(self.logger) as db:
-                # Use proper database layer method
-                running_job = db.worker.get_running_module_job(module_name)
+            if self.db:
+                # Use shared database directly
+                running_job = self.db.worker.get_running_module_job(module_name)
+            else:
+                # Create own context
+                with DapsDB(self.logger) as db:
+                    running_job = db.worker.get_running_module_job(module_name)
 
-                if running_job:
-                    return {
-                        "module": module_name,
-                        "running": True,
-                        "job_id": running_job["job_id"],
-                        "origin": running_job["origin"],
-                    }
-
+            if running_job:
                 return {
                     "module": module_name,
-                    "running": False,
-                    "job_id": None,
-                    "origin": None,
+                    "running": True,
+                    "job_id": running_job["job_id"],
+                    "origin": running_job["origin"],
                 }
+
+            return {
+                "module": module_name,
+                "running": False,
+                "job_id": None,
+                "origin": None,
+            }
 
         except Exception as e:
             self._log("error", f"Error getting module status: {e}", exc_info=True)

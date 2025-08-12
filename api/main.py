@@ -39,46 +39,70 @@ async def lifespan(app):
         if log:
             log.debug("Starting FastAPI application...")
 
-        # FIXED: Use DapsDB context manager properly and simplify worker setup
-        with DapsDB(logger=logger) as db:
+        # CREATE SHARED DATABASE INSTANCE FOR ALL API ENDPOINTS
+        if log:
+            log.info("[DEBUG] Creating shared database instance...")
+        try:
+            app.state.db = DapsDB(
+                logger=logger, quiet=False
+            )  # Temporarily remove quiet for debugging
+            app.state.db.__enter__()  # Initialize the context manually
             if log:
-                log.debug("Creating database workers...")
+                log.info("[DEBUG] Shared database instance created successfully")
 
-            # SIMPLIFIED: Create workers with cleaner interface
-            app.state.webhook_worker = db.create_worker(
-                logger=logger,
-                num_workers=2,
-                poll_interval=1,
-                worker_name="WEBHOOK",
-                job_type_filter="webhook_process",
-            )
-
-            app.state.background_worker = db.create_worker(
-                logger=logger,
-                num_workers=3,
-                poll_interval=2,
-                worker_name="BACKGROUND",
-                job_type_filter=None,
-            )
-
+            # UPDATE MODULE ORCHESTRATOR TO USE SHARED DATABASE
+            if (
+                hasattr(app.state, "module_orchestrator")
+                and app.state.module_orchestrator
+            ):
+                app.state.module_orchestrator.db = app.state.db
+                if log:
+                    log.info(
+                        "[DEBUG] Updated ModuleOrchestrator to use shared database"
+                    )
+        except Exception as e:
             if log:
-                log.debug("Starting database workers...")
+                log.error(f"[DEBUG] Failed to create shared database: {e}")
+            raise
 
-            # FIXED: Use unified process_job function with consistent signature
-            app.state.webhook_worker.start(
-                table_name="jobs",
-                process_fn=process_job,
-                job_type_filter="webhook_process",
-            )
+        if log:
+            log.debug("Creating database workers...")
 
-            app.state.background_worker.start(
-                table_name="jobs", process_fn=process_job, job_type_filter=None
-            )
+        # Use the shared database instance for workers
+        app.state.webhook_worker = app.state.db.create_worker(
+            logger=logger,
+            num_workers=2,
+            poll_interval=1,
+            worker_name="WEBHOOK",
+            job_type_filter="webhook_process",
+        )
 
-            if log:
-                log.info("FastAPI application started successfully")
+        app.state.background_worker = app.state.db.create_worker(
+            logger=logger,
+            num_workers=3,
+            poll_interval=2,
+            worker_name="BACKGROUND",
+            job_type_filter=None,
+        )
 
-            yield
+        if log:
+            log.debug("Starting database workers...")
+
+        # FIXED: Use unified process_job function with consistent signature
+        app.state.webhook_worker.start(
+            table_name="jobs",
+            process_fn=process_job,
+            job_type_filter="webhook_process",
+        )
+
+        app.state.background_worker.start(
+            table_name="jobs", process_fn=process_job, job_type_filter=None
+        )
+
+        if log:
+            log.info("FastAPI application started successfully")
+
+        yield
 
     except Exception as e:
         if log:
@@ -126,6 +150,16 @@ async def lifespan(app):
             # Wait for all to finish
             for thread in stop_threads:
                 thread.join(timeout=10)
+
+            # CLEANUP SHARED DATABASE
+            if hasattr(app.state, "db") and app.state.db:
+                try:
+                    app.state.db.__exit__(None, None, None)  # Cleanup manually
+                    if log:
+                        log.debug("Shared database closed successfully")
+                except Exception as e:
+                    if log:
+                        log.error(f"Error closing shared database: {e}")
 
             if log:
                 log.info("FastAPI application shutdown complete")

@@ -5,7 +5,7 @@ from typing import Any
 from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 
-from api.utils import error, get_logger, ok
+from api.utils import error, get_database, get_logger, ok
 from util.database import DapsDB
 
 
@@ -137,11 +137,11 @@ async def cancel_module(
 async def get_all_run_states(
     request: Request,
     logger: Any = Depends(get_logger),
+    db: DapsDB = Depends(get_database),
 ):
     """Get all run states from database"""
     try:
-        with DapsDB(logger=logger) as db:
-            run_states = db.run_state.get_all()
+        run_states = db.run_state.get_all()
 
         return ok(
             f"Retrieved {len(run_states)} run states", data={"run_states": run_states}
@@ -162,11 +162,11 @@ async def get_job_status(
     request: Request,
     job_id: int,
     logger: Any = Depends(get_logger),
+    db: DapsDB = Depends(get_database),
 ):
     """Get status of a specific job"""
     try:
-        with DapsDB(logger=logger) as db:
-            job = db.worker.get_job_by_id("jobs", job_id)
+        job = db.worker.get_job_by_id("jobs", job_id)
 
         if not job:
             return error(
@@ -190,11 +190,11 @@ async def list_jobs(
     status: str = None,
     limit: int = 50,
     logger: Any = Depends(get_logger),
+    db: DapsDB = Depends(get_database),
 ):
     """List recent jobs with optional filtering"""
     try:
-        with DapsDB(logger=logger) as db:
-            result = db.worker.list_jobs(status=status, limit=limit)
+        result = db.worker.list_jobs(status=status, limit=limit)
 
         if result["success"]:
             return ok(result["message"], data=result["data"])
@@ -216,11 +216,11 @@ async def list_jobs(
 async def get_job_stats(
     request: Request,
     logger: Any = Depends(get_logger),
+    db: DapsDB = Depends(get_database),
 ):
     """Get job queue statistics"""
     try:
-        with DapsDB(logger=logger) as db:
-            result = db.worker.job_stats("jobs")
+        result = db.worker.job_stats("jobs")
 
         if result["success"]:
             return ok(result["message"], data={"stats": result["data"]})
@@ -245,11 +245,11 @@ async def retry_job(
     request: Request,
     job_id: int,
     logger: Any = Depends(get_logger),
+    db: DapsDB = Depends(get_database),
 ):
     """Retry a failed job"""
     try:
-        with DapsDB(logger=logger) as db:
-            success = db.worker.reset_job_to_pending("jobs", job_id)
+        success = db.worker.reset_job_to_pending("jobs", job_id)
 
         if success is None:
             return error(

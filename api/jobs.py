@@ -2,7 +2,7 @@ from typing import Any, Dict, Optional
 
 from fastapi import APIRouter, Depends
 
-from api.utils import error, get_logger, ok
+from api.utils import error, get_database, get_logger, ok
 from util.database import DapsDB
 
 router = APIRouter()
@@ -10,12 +10,11 @@ router = APIRouter()
 
 @router.get("/api/jobs/{job_id}")
 async def get_job_detail(
-    job_id: int, logger: Any = Depends(get_logger)
+    job_id: int, logger: Any = Depends(get_logger), db: DapsDB = Depends(get_database)
 ) -> Dict[str, Any]:
     """Retrieve job details by ID."""
     try:
-        with DapsDB(logger=logger, quiet=True) as db:
-            job = db.worker.get_job_by_id("jobs", job_id)
+        job = db.worker.get_job_by_id("jobs", job_id)
 
         if not job:
             return error(f"Job {job_id} not found", "JOB_NOT_FOUND", status_code=404)
@@ -33,12 +32,14 @@ async def get_job_detail(
 
 @router.get("/api/jobs")
 async def list_jobs(
-    status: Optional[str] = None, limit: int = 50, logger: Any = Depends(get_logger)
+    status: Optional[str] = None,
+    limit: int = 50,
+    logger: Any = Depends(get_logger),
+    db: DapsDB = Depends(get_database),
 ) -> Dict[str, Any]:
     """List jobs with optional status filter."""
     try:
-        with DapsDB(logger=logger, quiet=True) as db:
-            result = db.worker.list_jobs(status=status, limit=limit)
+        result = db.worker.list_jobs(status=status, limit=limit)
 
         if isinstance(result, dict) and "success" in result:
             return result
@@ -56,11 +57,12 @@ async def list_jobs(
 
 
 @router.get("/api/jobs/stats")
-async def get_job_stats(logger: Any = Depends(get_logger)) -> Dict[str, Any]:
+async def get_job_stats(
+    logger: Any = Depends(get_logger), db: DapsDB = Depends(get_database)
+) -> Dict[str, Any]:
     """Retrieve job statistics."""
     try:
-        with DapsDB(logger=logger, quiet=True) as db:
-            result = db.worker.job_stats("jobs", error_limit=10)
+        result = db.worker.job_stats("jobs", error_limit=10)
 
         if isinstance(result, dict) and "success" in result:
             return result
@@ -77,11 +79,12 @@ async def get_job_stats(logger: Any = Depends(get_logger)) -> Dict[str, Any]:
 
 
 @router.post("/api/job/{job_id}/retry")
-async def retry_job(job_id: int, logger: Any = Depends(get_logger)) -> Dict[str, Any]:
+async def retry_job(
+    job_id: int, logger: Any = Depends(get_logger), db: DapsDB = Depends(get_database)
+) -> Dict[str, Any]:
     """Retry a failed job by resetting it to pending status."""
     try:
-        with DapsDB(logger=logger) as db:
-            success = db.worker.reset_job_to_pending("jobs", job_id)
+        success = db.worker.reset_job_to_pending("jobs", job_id)
 
         if success is None:
             return error(f"Job {job_id} not found", "JOB_NOT_FOUND", status_code=404)

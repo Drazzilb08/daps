@@ -268,7 +268,6 @@ class Labelarr(DapsModule):
         )
 
         if not self.config.dry_run:
-            # Create updated item for upsert with new labels
             updated_item = dict(plex_item)
             updated_item["labels"] = new_labels
             db.plex.upsert(updated_item)

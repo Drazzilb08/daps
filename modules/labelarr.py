@@ -268,14 +268,10 @@ class Labelarr(DapsModule):
         )
 
         if not self.config.dry_run:
-            db.plex.update_labels(
-                title=plex_item.get("title"),
-                year=plex_item.get("year"),
-                library_name=plex_item.get("library_name"),
-                instance_name=plex_item.get("instance_name"),
-                plex_id=plex_item.get("plex_id"),
-                labels=new_labels,
-            )
+            # Create updated item for upsert with new labels
+            updated_item = dict(plex_item)
+            updated_item["labels"] = new_labels
+            db.plex.upsert(updated_item)
 
         return {
             "title": plex_item.get("title"),

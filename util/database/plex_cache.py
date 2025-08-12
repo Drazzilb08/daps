@@ -73,28 +73,6 @@ class PlexCache(DatabaseBase):
             ),
         )
 
-    def update_labels(
-        self,
-        title: str,
-        year: str,
-        library_name: str,
-        instance_name: str,
-        plex_id: str,
-        labels: list,
-    ) -> None:
-        """
-        Update only the labels field for a plex_media_cache row (identified by title, year, library_name, instance_name, plex_id).
-        """
-        query = """
-            UPDATE plex_media_cache
-            SET labels=?
-            WHERE title=? AND year IS ? AND library_name=? AND instance_name=? AND plex_id=?
-        """
-        labels_json = json.dumps(labels)
-        self.execute_query(
-            query, (labels_json, title, year, library_name, instance_name, plex_id)
-        )
-
     def clear(self) -> None:
         """Delete all rows from the plex_media_cache table."""
         self.execute_query("DELETE FROM plex_media_cache")

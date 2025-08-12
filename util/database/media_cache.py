@@ -77,6 +77,7 @@ class MediaCache(DatabaseBase):
             "location",
             "tags",
             "season_number",
+            "poster_url",
         ]
         record = {k: item.get(k) for k in required_keys}
         record["asset_type"] = asset_type
@@ -91,6 +92,7 @@ class MediaCache(DatabaseBase):
             "tvdb_id",
             "imdb_id",
             "season_number",
+            "poster_url",
         ]:
             if record[field] == "" or (
                 isinstance(record[field], str) and record[field].strip() == ""
@@ -112,8 +114,8 @@ class MediaCache(DatabaseBase):
             INSERT INTO media_cache
                 (identity_key, asset_type, title, normalized_title,
                 year, tmdb_id, tvdb_id, imdb_id, folder, tags,
-                season_number, matched, instance_name, source, original_file, renamed_file, file_hash)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                season_number, matched, instance_name, source, original_file, renamed_file, file_hash, poster_url)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(identity_key)
             DO UPDATE SET
                 normalized_title=excluded.normalized_title,
@@ -123,7 +125,8 @@ class MediaCache(DatabaseBase):
                 source=excluded.source,
                 original_file=excluded.original_file,
                 renamed_file=excluded.renamed_file,
-                file_hash=excluded.file_hash
+                file_hash=excluded.file_hash,
+                poster_url=excluded.poster_url
             """,
             (
                 identity_key,
@@ -143,6 +146,7 @@ class MediaCache(DatabaseBase):
                 record.get("original_file") or None,
                 record.get("renamed_file") or None,
                 record.get("file_hash") or None,
+                record.get("poster_url") or None,
             ),
         )
 
@@ -344,6 +348,7 @@ class MediaCache(DatabaseBase):
         original_file: Optional[Any] = None,
         renamed_file: Optional[Any] = None,
         file_hash: Optional[Any] = None,
+        poster_url: Optional[Any] = None,
     ) -> None:
         """Update fields for a given media record."""
         set_clauses = []
@@ -364,6 +369,10 @@ class MediaCache(DatabaseBase):
         if file_hash is not None:
             set_clauses.append("file_hash=?")
             params.append(file_hash)
+
+        if poster_url is not None:
+            set_clauses.append("poster_url=?")
+            params.append(poster_url)
 
         if not set_clauses:
             return

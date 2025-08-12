@@ -1197,6 +1197,41 @@ def create_arr_client(
     return None
 
 
+def extract_poster_url(item: dict) -> Optional[str]:
+    """
+    Extract poster URL from ARR response images array.
+
+    Looks for the first available poster image from:
+    1. 'poster' coverType
+    2. Any image with URL if no poster found
+
+    Args:
+        item: ARR API response item
+
+    Returns:
+        Optional[str]: Poster URL or None if no suitable image found
+    """
+    images = item.get("images", [])
+    if not images:
+        return None
+
+    # First priority: find image with coverType 'poster'
+    for image in images:
+        if image.get("coverType") == "poster":
+            # Prefer remoteUrl over url for external accessibility
+            poster_url = image.get("remoteUrl") or image.get("url")
+            if poster_url:
+                return poster_url
+
+    # Fallback: use the first image with a URL
+    for image in images:
+        poster_url = image.get("remoteUrl") or image.get("url")
+        if poster_url:
+            return poster_url
+
+    return None
+
+
 def normalize_arr_media(
     item, tags, arr_type, include_episode=False, episode_lookup=None
 ):
@@ -1226,6 +1261,9 @@ def normalize_arr_media(
         os.path.normpath(item.get("path", "") or item.get("folderPath"))
     )
 
+    # Extract poster URL from images
+    poster_url = extract_poster_url(item)
+
     if arr_type == "radarr":
         movie_file = item.get("movieFile") or {}
         file_id = movie_file.get("id")
@@ -1252,6 +1290,7 @@ def normalize_arr_media(
             "tags": tag_names,
             "seasons": None,
             "season_numbers": None,
+            "poster_url": poster_url,
         }
     else:
         season_list = []
@@ -1313,4 +1352,5 @@ def normalize_arr_media(
             "season_number": None,
             "media_folder": None,
             "seasons": season_list,
+            "poster_url": poster_url,
         }

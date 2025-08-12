@@ -47,6 +47,7 @@ class SchemaManager:
                 original_file TEXT,
                 renamed_file TEXT,
                 file_hash TEXT,
+                poster_url TEXT,
                 UNIQUE(identity_key)
             )
         """,

@@ -11,6 +11,51 @@ class MediaCache(DatabaseBase):
     Provides CRUD and sync operations for tracked media assets.
     """
 
+    @staticmethod
+    def _identity_key(item: dict, asset_type: str, instance_name: str) -> str:
+        """Build a stable, non-NULL identity string for media items.
+        Rules:
+          - Prefer imdb; else tmdb (movies); else tvdb (shows); else title+year fallback.
+          - Omit the season segment entirely when there is no season; include `|s:0` for specials, `|s:N` for seasons.
+        """
+
+        def norm_int(v):
+            if v in (None, "", "None"):
+                return None
+            try:
+                return int(v)
+            except Exception:
+                return None
+
+        def norm_str(v):
+            if v in (None, "", "None"):
+                return None
+            return str(v).strip()
+
+        tmdb = norm_int(item.get("tmdb_id"))
+        tvdb = norm_int(item.get("tvdb_id"))
+        imdb = norm_str(item.get("imdb_id"))
+        title_key = norm_str(item.get("normalized_title") or item.get("title")) or ""
+        year_key = norm_int(item.get("year")) or -1
+
+        # choose stable cross-source id
+        if imdb:
+            id_tag = f"imdb:{imdb.lower()}"
+        elif asset_type == "movie" and tmdb:
+            id_tag = f"tmdb:{tmdb}"
+        elif asset_type != "movie" and tvdb:
+            id_tag = f"tvdb:{tvdb}"
+        else:
+            id_tag = f"title:{title_key}|y:{year_key}"
+
+        # Season segment only when present (0..N). Omit for movies and series-root.
+        season_raw = item.get("season_number")
+        season_val = norm_int(season_raw)
+        has_season = (asset_type != "movie") and (season_val is not None)
+        season_seg = f"|s:{season_val}" if has_season else ""
+
+        return f"{instance_name}|{asset_type}|{id_tag}{season_seg}"
+
     def upsert(
         self,
         item: dict,
@@ -60,14 +105,16 @@ class MediaCache(DatabaseBase):
         else:
             record["tags"] = json.dumps(tags_value)
 
+        identity_key = self._identity_key(record, asset_type, instance_name)
+
         self.execute_query(
             """
             INSERT INTO media_cache
-                (asset_type, title, normalized_title,
+                (identity_key, asset_type, title, normalized_title,
                 year, tmdb_id, tvdb_id, imdb_id, folder, tags,
                 season_number, matched, instance_name, source, original_file, renamed_file, file_hash)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            ON CONFLICT(asset_type, title, year, tmdb_id, tvdb_id, imdb_id, season_number, instance_name)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(identity_key)
             DO UPDATE SET
                 normalized_title=excluded.normalized_title,
                 folder=excluded.folder,
@@ -79,6 +126,7 @@ class MediaCache(DatabaseBase):
                 file_hash=excluded.file_hash
             """,
             (
+                identity_key,
                 record["asset_type"],
                 record["title"],
                 record["normalized_title"],
@@ -176,15 +224,7 @@ class MediaCache(DatabaseBase):
         asset_type: str,
         logger: Optional[Any] = None,
     ) -> None:
-        """Delete a single record by its unique key; records orphaned poster if applicable."""
-        key_params = self._canonical_key(item, asset_type, instance_name)
-        sql = """
-            DELETE FROM media_cache
-            WHERE asset_type=? AND title=? AND year IS ?
-            AND tmdb_id IS ? AND tvdb_id IS ? AND imdb_id IS ?
-            AND season_number IS ? AND instance_name=?
-        """
-
+        """Delete a single record by its identity key; records orphaned poster if applicable."""
         # Handle orphaned poster if applicable
         renamed_file = item.get("renamed_file")
         if renamed_file:
@@ -205,9 +245,16 @@ class MediaCache(DatabaseBase):
                 ),
             )
 
-        rows_deleted = self.execute_query(sql, key_params)
+        # Delete strictly by identity_key (fresh DB, no legacy rows)
+        identity_key = self._identity_key(item, asset_type, instance_name)
+        rows_deleted = self.execute_query(
+            "DELETE FROM media_cache WHERE identity_key = ?",
+            (identity_key,),
+        )
         if logger:
-            logger.info(f"[DELETE] Key: {key_params} | Rows deleted: {rows_deleted}")
+            logger.info(
+                f"[DELETE] identity_key={identity_key} | Rows deleted: {rows_deleted}"
+            )
 
     def get_by_title_year_instance(
         self, title: str, year: int = None, instance_name: str = None
@@ -363,11 +410,12 @@ class MediaCache(DatabaseBase):
             or []
         )
 
-        db_map = {
-            self._canonical_key(row, asset_type, instance_name): row for row in db_rows
-        }
+        def row_identity(row):
+            return row["identity_key"]
+
+        db_map = {row_identity(row): row for row in db_rows}
         fresh_map = {
-            self._canonical_key(item, asset_type, instance_name): item
+            self._identity_key(item, asset_type, instance_name): item
             for item in fresh_media
         }
 
@@ -376,7 +424,7 @@ class MediaCache(DatabaseBase):
             self.upsert(item, asset_type, instance_type, instance_name)
             if key not in db_map and logger:
                 logger.debug(
-                    f"[ADD] New asset '{item['title']}' ({asset_type}), {item.get('year')}, from {instance_name}"
+                    f"[ADD] New asset '{item.get('title')}' ({asset_type}), {item.get('year')}, from {instance_name}"
                 )
 
         # Remove items that are no longer present

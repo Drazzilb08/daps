@@ -30,6 +30,7 @@ class SchemaManager:
         "media_cache": """
             CREATE TABLE IF NOT EXISTS media_cache (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                identity_key TEXT NOT NULL,
                 asset_type TEXT,
                 title TEXT,
                 normalized_title TEXT,
@@ -46,7 +47,7 @@ class SchemaManager:
                 original_file TEXT,
                 renamed_file TEXT,
                 file_hash TEXT,
-                UNIQUE(asset_type, title, year, tmdb_id, tvdb_id, imdb_id, season_number, instance_name)
+                UNIQUE(identity_key)
             )
         """,
         "collections_cache": """

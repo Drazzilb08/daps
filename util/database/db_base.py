@@ -18,6 +18,12 @@ class DatabaseBase:
         self.lock = threading.Lock()
         self.logger = logger
 
+        try:
+            self.init_schema(self.db_path)
+        except Exception as e:
+            # Don't crash startup if schema init races; just log
+            self.logger.error(f"Schema initialization error: {e}")
+
     def _ensure_db_directory(self) -> None:
         """Ensure the database directory exists."""
         db_dir = os.path.dirname(self.db_path)

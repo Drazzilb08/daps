@@ -131,7 +131,9 @@ class PlexCache(DatabaseBase):
         )
         return rows if rows else None
 
-    def delete(self, item: dict, logger: Optional[Any] = None) -> None:
+    def delete(
+        self, item: dict, logger: Optional[Any] = None, instance_name: str = None
+    ) -> None:
         """
         Delete a single record from plex_media_cache using the canonical key (title, year, library_name, plex_id).
         """
@@ -141,9 +143,13 @@ class PlexCache(DatabaseBase):
             WHERE title=? AND year IS ? AND library_name IS ? AND plex_id IS ?
         """
 
-        rows_deleted = self.execute_query(sql, key)
+        self.execute_query(sql, key)
         if logger:
-            logger.info(f"[DELETE] Plex Key: {key} | Rows deleted: {rows_deleted}")
+            season = item.get("season_number")
+            season_str = f" Season: {season}," if season is not None else ""
+            logger.info(
+                f"[DELETE] Title: {item.get('title')} ({item.get('year')}),{season_str} from {instance_name}"
+            )
 
     def sync_for_library(
         self,
@@ -172,15 +178,17 @@ class PlexCache(DatabaseBase):
         for key, item in fresh_map.items():
             self.upsert(item)
             if key not in db_map and logger:
+                season = item.get("season_number")
+                season_str = f" Season: {season}," if season is not None else ""
                 logger.debug(
-                    f"[ADD] New Plex asset '{item['title']}' in '{library_name}' ({instance_name})"
+                    f"[ADD] Title: {item.get('title')} ({item.get('year')}),{season_str} from {instance_name}"
                 )
 
         # Remove items that are no longer present
         keys_to_remove = set(db_map.keys()) - set(fresh_map.keys())
         for key in keys_to_remove:
             row = db_map[key]
-            self.delete(row, logger=logger)
+            self.delete(row, logger=logger, instance_name=instance_name)
 
         if logger:
             logger.debug(

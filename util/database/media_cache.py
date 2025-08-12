@@ -244,16 +244,16 @@ class MediaCache(DatabaseBase):
                     now,
                 ),
             )
-
-        # Delete strictly by identity_key (fresh DB, no legacy rows)
-        identity_key = self._identity_key(item, asset_type, instance_name)
-        rows_deleted = self.execute_query(
-            "DELETE FROM media_cache WHERE identity_key = ?",
-            (identity_key,),
-        )
+            identity_key = self._identity_key(item, asset_type, instance_name)
+            self.execute_query(
+                "DELETE FROM media_cache WHERE identity_key = ?",
+                (identity_key,),
+            )
         if logger:
+            season = item.get("season_number")
+            season_str = f" Season: {season}," if season is not None else ""
             logger.info(
-                f"[DELETE] identity_key={identity_key} | Rows deleted: {rows_deleted}"
+                f"[DELETE] Title: {item.get('title')} ({item.get('year')}) ({asset_type}),{season_str} from {instance_name}"
             )
 
     def get_by_title_year_instance(
@@ -423,8 +423,10 @@ class MediaCache(DatabaseBase):
         for key, item in fresh_map.items():
             self.upsert(item, asset_type, instance_type, instance_name)
             if key not in db_map and logger:
+                season = item.get("season_number")
+                season_str = f" Season: {season}," if season is not None else ""
                 logger.debug(
-                    f"[ADD] New asset '{item.get('title')}' ({asset_type}), {item.get('year')}, from {instance_name}"
+                    f"[ADD] Title: {item.get('title')} ({item.get('year')}) ({asset_type}),{season_str} from {instance_name}"
                 )
 
         # Remove items that are no longer present

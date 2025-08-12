@@ -24,7 +24,6 @@ class SchemaManager:
                 year TEXT,
                 guids TEXT,
                 labels TEXT,
-                last_indexed TEXT,
                 PRIMARY KEY (plex_id, instance_name)
             )
         """,
@@ -42,7 +41,6 @@ class SchemaManager:
                 tags TEXT,
                 season_number INTEGER,
                 matched BOOL,
-                last_indexed TEXT,
                 instance_name TEXT,
                 source TEXT,
                 original_file TEXT,
@@ -66,7 +64,6 @@ class SchemaManager:
                 folder TEXT,
                 library_name TEXT,
                 instance_name TEXT,
-                last_indexed TEXT,
                 matched INTEGER DEFAULT 0,
                 original_file TEXT,
                 renamed_file TEXT,

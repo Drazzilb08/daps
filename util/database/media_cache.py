@@ -17,13 +17,10 @@ class MediaCache(DatabaseBase):
         asset_type: str,
         instance_type: str,
         instance_name: str,
-        max_age_hours: int = 6,
     ) -> None:
         """
-        Insert or update a single media record for a given instance/asset_type if not present or stale.
-        (Callers must handle any show/season looping.)
+        Insert or update a single media record for a given instance/asset_type.
         """
-        now = datetime.datetime.now(datetime.timezone.utc).isoformat()
         required_keys = [
             "title",
             "normalized_title",
@@ -38,7 +35,6 @@ class MediaCache(DatabaseBase):
         ]
         record = {k: item.get(k) for k in required_keys}
         record["asset_type"] = asset_type
-        record["last_indexed"] = now
         record["instance_name"] = instance_name
         record["source"] = instance_type
         if asset_type == "movie":
@@ -64,69 +60,43 @@ class MediaCache(DatabaseBase):
         else:
             record["tags"] = json.dumps(tags_value)
 
-        key_params = self._canonical_key(record, asset_type, instance_name)
-
-        # Check if update is needed
-        row = self.execute_query(
+        self.execute_query(
             """
-            SELECT last_indexed FROM media_cache
-            WHERE asset_type=? AND title=? AND year IS ?
-            AND tmdb_id IS ? AND tvdb_id IS ? AND imdb_id IS ?
-            AND season_number IS ? AND instance_name=?
+            INSERT INTO media_cache
+                (asset_type, title, normalized_title,
+                year, tmdb_id, tvdb_id, imdb_id, folder, tags,
+                season_number, matched, instance_name, source, original_file, renamed_file, file_hash)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(asset_type, title, year, tmdb_id, tvdb_id, imdb_id, season_number, instance_name)
+            DO UPDATE SET
+                normalized_title=excluded.normalized_title,
+                folder=excluded.folder,
+                tags=excluded.tags,
+                matched=excluded.matched,
+                source=excluded.source,
+                original_file=excluded.original_file,
+                renamed_file=excluded.renamed_file,
+                file_hash=excluded.file_hash
             """,
-            key_params,
-            fetch_one=True,
+            (
+                record["asset_type"],
+                record["title"],
+                record["normalized_title"],
+                record["year"],
+                record["tmdb_id"],
+                record["tvdb_id"],
+                record["imdb_id"],
+                record["folder"],
+                record["tags"],
+                record["season_number"],
+                0,
+                instance_name,
+                instance_type,
+                record.get("original_file") or None,
+                record.get("renamed_file") or None,
+                record.get("file_hash") or None,
+            ),
         )
-
-        update = True
-        if row and row["last_indexed"]:
-            last_indexed = datetime.datetime.fromisoformat(row["last_indexed"])
-            age = (
-                datetime.datetime.now(datetime.timezone.utc) - last_indexed
-            ).total_seconds() / 3600
-            if age < max_age_hours:
-                update = False
-
-        if update:
-            self.execute_query(
-                """
-                INSERT INTO media_cache
-                    (asset_type, title, normalized_title,
-                    year, tmdb_id, tvdb_id, imdb_id, folder, tags,
-                    season_number, matched, last_indexed, instance_name, source, original_file, renamed_file, file_hash)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(asset_type, title, year, tmdb_id, tvdb_id, imdb_id, season_number, instance_name)
-                DO UPDATE SET
-                    normalized_title=excluded.normalized_title,
-                    folder=excluded.folder,
-                    tags=excluded.tags,
-                    matched=excluded.matched,
-                    last_indexed=excluded.last_indexed,
-                    source=excluded.source,
-                    original_file=excluded.original_file,
-                    renamed_file=excluded.renamed_file,
-                    file_hash=excluded.file_hash
-                """,
-                (
-                    record["asset_type"],
-                    record["title"],
-                    record["normalized_title"],
-                    record["year"],
-                    record["tmdb_id"],
-                    record["tvdb_id"],
-                    record["imdb_id"],
-                    record["folder"],
-                    record["tags"],
-                    record["season_number"],
-                    0,
-                    now,
-                    instance_name,
-                    instance_type,
-                    record.get("original_file") or None,
-                    record.get("renamed_file") or None,
-                    record.get("file_hash") or None,
-                ),
-            )
 
     @staticmethod
     def _canonical_key(item: dict, asset_type: str, instance_name: str) -> tuple:
@@ -157,28 +127,6 @@ class MediaCache(DatabaseBase):
             norm_int(item.get("season_number")),
             str(instance_name),
         )
-
-    def get_for_instance(
-        self, instance_name: str, asset_type: str, max_age_hours: int = 6
-    ) -> Optional[list]:
-        """Return all cached media for a given instance and asset_type, if not stale."""
-        cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
-            hours=max_age_hours
-        )
-
-        rows = self.execute_query(
-            "SELECT * FROM media_cache WHERE instance_name=? AND asset_type=?",
-            (instance_name, asset_type),
-            fetch_all=True,
-        )
-
-        if not rows:
-            return None
-
-        times = [datetime.datetime.fromisoformat(row["last_indexed"]) for row in rows]
-        if not all(t > cutoff for t in times):
-            return None
-        return rows
 
     def get_by_instance(self, instance_name: str) -> list:
         """Return all media_cache records for the given instance."""
@@ -425,14 +373,11 @@ class MediaCache(DatabaseBase):
 
         # Add/update items that are present in fresh_media
         for key, item in fresh_map.items():
-            if key not in db_map:
-                self.upsert(item, asset_type, instance_type, instance_name)
-                if logger:
-                    logger.debug(
-                        f"[ADD] New asset '{item['title']}' ({asset_type}), {item.get('year')}, from {instance_name}"
-                    )
-            else:
-                self.upsert(item, asset_type, instance_type, instance_name)
+            self.upsert(item, asset_type, instance_type, instance_name)
+            if key not in db_map and logger:
+                logger.debug(
+                    f"[ADD] New asset '{item['title']}' ({asset_type}), {item.get('year')}, from {instance_name}"
+                )
 
         # Remove items that are no longer present
         keys_to_remove = set(db_map.keys()) - set(fresh_map.keys())

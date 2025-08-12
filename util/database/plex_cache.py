@@ -1,4 +1,3 @@
-import datetime
 import json
 from typing import Any, Optional
 
@@ -39,7 +38,6 @@ class PlexCache(DatabaseBase):
         Insert/update a single media item into plex_media_cache.
         The item must include all required fields.
         """
-        now = datetime.datetime.now(datetime.timezone.utc).isoformat()
         expected_cols = [
             "plex_id",
             "instance_name",
@@ -58,8 +56,8 @@ class PlexCache(DatabaseBase):
         self.execute_query(
             """
             INSERT OR REPLACE INTO plex_media_cache
-                (plex_id, instance_name, asset_type, library_name, title, normalized_title, season_number, year, guids, labels, last_indexed)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (plex_id, instance_name, asset_type, library_name, title, normalized_title, season_number, year, guids, labels)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 item["plex_id"],
@@ -72,7 +70,6 @@ class PlexCache(DatabaseBase):
                 item["year"],
                 json.dumps(item["guids"]),
                 json.dumps(item["labels"]),
-                now,
             ),
         )
 
@@ -134,31 +131,6 @@ class PlexCache(DatabaseBase):
         )
         return rows if rows else None
 
-    def get_for_library(
-        self, instance_name: str, library_name: str, max_age_hours: int = 6
-    ) -> Optional[list]:
-        """
-        Return records for a single library (in a single Plex instance) if not stale, else None.
-        """
-        cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
-            hours=max_age_hours
-        )
-
-        rows = self.execute_query(
-            "SELECT * FROM plex_media_cache WHERE instance_name=? AND library_name=?",
-            (instance_name, library_name),
-            fetch_all=True,
-        )
-
-        if not rows:
-            return None
-
-        times = [datetime.datetime.fromisoformat(row["last_indexed"]) for row in rows]
-        if not all(t > cutoff for t in times):
-            return None
-
-        return rows
-
     def delete(self, item: dict, logger: Optional[Any] = None) -> None:
         """
         Delete a single record from plex_media_cache using the canonical key (title, year, library_name, plex_id).
@@ -198,14 +170,11 @@ class PlexCache(DatabaseBase):
 
         # Add/update items that are present in fresh_media
         for key, item in fresh_map.items():
-            if key not in db_map:
-                self.upsert(item)
-                if logger:
-                    logger.debug(
-                        f"[ADD] New Plex asset '{item['title']}' in '{library_name}' ({instance_name})"
-                    )
-            else:
-                self.upsert(item)
+            self.upsert(item)
+            if key not in db_map and logger:
+                logger.debug(
+                    f"[ADD] New Plex asset '{item['title']}' in '{library_name}' ({instance_name})"
+                )
 
         # Remove items that are no longer present
         keys_to_remove = set(db_map.keys()) - set(fresh_map.keys())

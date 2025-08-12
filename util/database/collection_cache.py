@@ -13,7 +13,6 @@ class CollectionCache(DatabaseBase):
 
     def upsert(self, record: dict, instance_name: str) -> None:
         """Insert or update a collection record for a given instance."""
-        now = datetime.datetime.now(datetime.timezone.utc).isoformat()
         record["instance_name"] = instance_name
         record["asset_type"] = "collection"
 
@@ -28,16 +27,15 @@ class CollectionCache(DatabaseBase):
             """
             INSERT INTO collections_cache
                 (asset_type, title, normalized_title, alternate_titles, normalized_alternate_titles, year,
-                tmdb_id, tvdb_id, imdb_id, folder, library_name, instance_name, last_indexed)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                tmdb_id, tvdb_id, imdb_id, folder, library_name, instance_name)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(title, library_name, instance_name)
             DO UPDATE SET
                 year=excluded.year,
                 normalized_title=excluded.normalized_title,
                 alternate_titles=excluded.alternate_titles,
                 normalized_alternate_titles=excluded.normalized_alternate_titles,
-                folder=excluded.folder,
-                last_indexed=excluded.last_indexed
+                folder=excluded.folder
             """,
             (
                 record.get("asset_type"),
@@ -52,7 +50,6 @@ class CollectionCache(DatabaseBase):
                 record.get("folder"),
                 record.get("library_name"),
                 record.get("instance_name"),
-                now,
             ),
         )
 
@@ -82,32 +79,6 @@ class CollectionCache(DatabaseBase):
             norm_str(item.get("library_name")),
             norm_str(item.get("instance_name")),
         )
-
-    def get_for_library(
-        self, instance_name: str, library_name: str = None, max_age_hours: int = 6
-    ) -> Optional[list]:
-        """
-        Return all cached collections for a given instance (and optionally a single library)
-        if not stale, else None.
-        """
-        cutoff = datetime.datetime.now(datetime.timezone.utc) - datetime.timedelta(
-            hours=max_age_hours
-        )
-
-        rows = self.execute_query(
-            "SELECT * FROM collections_cache WHERE instance_name=? AND library_name=?",
-            (instance_name, library_name),
-            fetch_all=True,
-        )
-
-        if not rows:
-            return None
-
-        times = [datetime.datetime.fromisoformat(row["last_indexed"]) for row in rows]
-        if not all(t > cutoff for t in times):
-            return None
-
-        return rows
 
     def get_by_instance(self, instance_name: str) -> list:
         """Return all collection rows for the given instance."""
@@ -280,14 +251,11 @@ class CollectionCache(DatabaseBase):
 
         # Add/update items that are present in fresh_collections
         for key, item in fresh_map.items():
-            if key not in db_map:
-                self.upsert(item, instance_name)
-                if logger:
-                    logger.debug(
-                        f"[ADD] New collection '{item['title']}' for {instance_name}"
-                    )
-            else:
-                self.upsert(item, instance_name)
+            self.upsert(item, instance_name)
+            if key not in db_map and logger:
+                logger.debug(
+                    f"[ADD] New collection '{item['title']}' for {instance_name}"
+                )
 
         # Remove items that are no longer present
         keys_to_remove = set(db_map.keys()) - set(fresh_map.keys())

@@ -63,7 +63,7 @@ def _process_webhook_job(
     payload: Dict[str, Any], logger, job_id: int
 ) -> Dict[str, Any]:
     """
-    Process webhook job by fetching media from ARR and running poster rename.
+    Process webhook job by fetching ONLY the specific media item and updating it.
 
     Args:
         payload: Job payload containing webhook data
@@ -78,7 +78,7 @@ def _process_webhook_job(
 
     try:
         from modules.poster_renamerr import PosterRenamerr
-        from util.connector import Connector
+        from util.arr import create_arr_client
         from util.webhook_processor import WebhookProcessor
 
         webhook_data = payload.get("webhook_data", {})
@@ -96,62 +96,68 @@ def _process_webhook_job(
         instance_info = validation_result["instance_info"]
         media_id = validation_result["media_id"]
 
-        # Use Connector to fetch and store media data
+        # Connect directly to ARR and fetch ONLY the specific item
         with DapsDB(logger=logger) as db:
-            instance_map = {"arrs": [instance_info["name"]]}
+            arr_logger = logger.get_adapter(
+                f"{instance_info['type']}:{instance_info['name']}"
+            )
 
-            with Connector(
-                db=db, logger=logger, instance_map=instance_map
-            ) as connector:
-                # Get the ARR client and fetch media
-                arr_instances = connector.parsed_instances.get("arr", [])
-                if not arr_instances:
+            # Create direct ARR client connection
+            client = create_arr_client(
+                instance_info["url"], instance_info["api_key"], arr_logger
+            )
+
+            if not client or not client.is_connected():
+                return {
+                    "success": False,
+                    "message": f"Failed to connect to {instance_info['type']} instance",
+                    "error_code": "ARR_CONNECTION_FAILED",
+                }
+
+            try:
+                # Fetch ONLY the specific media item that triggered the webhook
+                if instance_info["type"] == "radarr":
+                    media = client.get_movie(media_id)
+                    asset_type = "movie"
+                else:
+                    media = client.get_show(media_id)
+                    asset_type = "show"
+
+                if not media:
                     return {
                         "success": False,
-                        "message": "No matching ARR instance found in connector",
-                        "error_code": "NO_ARR_INSTANCE",
+                        "message": f"Media item {media_id} not found in {instance_info['name']}",
+                        "error_code": "MEDIA_NOT_FOUND",
                     }
 
-                arr_instance = arr_instances[0]  # Should be our target instance
+                log.debug(
+                    f"[JOB:{job_id}] Fetched {media['title']} from {instance_info['name']}"
+                )
 
-                with connector.connection_manager.get_arr_client(
-                    arr_instance
-                ) as client:
-                    # Fetch the specific media item
-                    if instance_info["type"] == "radarr":
-                        media = client.get_movie(media_id)
-                        asset_type = "movie"
-                    else:
-                        media = client.get_show(media_id)
-                        asset_type = "show"
+                # Process the single media item for database storage
+                processed_media = _process_media_record(media, asset_type)
 
-                    log.debug(
-                        f"[JOB:{job_id}] Fetched {media['title']} from {instance_info['name']}"
-                    )
+                # Update only this specific media item in the database
+                _update_media_record(
+                    db, instance_info, asset_type, processed_media, log
+                )
 
-                    # Process and store media
-                    fresh_media = connector._process_arr_media([media], asset_type)
+                # Get stored media records for poster processing
+                stored_media = db.media.get_by_title_year_instance(
+                    media["title"], media.get("year"), instance_info["name"]
+                )
 
-                    # Sync to database
-                    db.media.sync_for_instance(
-                        instance_info["name"],
-                        instance_info["type"].capitalize(),
-                        asset_type,
-                        fresh_media,
-                        log,
-                    )
+                if not stored_media:
+                    return {
+                        "success": False,
+                        "message": "Failed to retrieve stored media from database",
+                        "error_code": "MEDIA_RETRIEVAL_FAILED",
+                    }
 
-                    # Get stored media records
-                    stored_media = db.media.get_by_title_year_instance(
-                        media["title"], media.get("year"), instance_info["name"]
-                    )
-
-                    if not stored_media:
-                        return {
-                            "success": False,
-                            "message": "Failed to retrieve stored media from database",
-                            "error_code": "MEDIA_RETRIEVAL_FAILED",
-                        }
+            finally:
+                # Clean up the ARR client connection
+                if hasattr(client, "session") and client.session:
+                    client.session.close()
 
         # Run poster rename on the stored media
         media_items = stored_media if isinstance(stored_media, list) else [stored_media]
@@ -188,6 +194,76 @@ def _process_webhook_job(
             "message": f"Webhook processing failed: {str(e)}",
             "error_code": "WEBHOOK_PROCESSING_EXCEPTION",
         }
+
+
+def _process_media_record(media: dict, asset_type: str) -> list:
+    """
+    Process a single media item into the format expected by the database.
+    This replaces the heavy connector logic for single-item processing.
+
+    Args:
+        media: Single media item from ARR API
+        asset_type: 'movie' or 'show'
+
+    Returns:
+        list: Processed media items ready for database storage
+    """
+    processed_items = []
+
+    if asset_type == "show":
+        # For shows, create entries for the main show and each season
+        # Main show entry (no season)
+        show_entry = dict(media)
+        show_entry["season_number"] = None
+        processed_items.append(show_entry)
+
+        # Individual season entries
+        for season in media.get("seasons", []):
+            season_entry = dict(media)
+            season_entry["season_number"] = season.get("season_number")
+            processed_items.append(season_entry)
+    else:
+        # For movies, just add the single item
+        processed_items.append(media)
+
+    return processed_items
+
+
+def _update_media_record(
+    db: DapsDB, instance_info: dict, asset_type: str, processed_media: list, logger
+) -> None:
+    """
+    Update only the specific media records for the webhook item.
+    This prevents affecting other media in the instance.
+
+    Args:
+        db: Database connection
+        instance_info: ARR instance information
+        asset_type: 'movie' or 'show'
+        processed_media: List of processed media items to update
+        logger: Logger instance
+    """
+    instance_name = instance_info["name"]
+    instance_type = instance_info["type"].capitalize()
+
+    for item in processed_media:
+        try:
+            # Use upsert to add or update the individual record
+            db.media.upsert(item, asset_type, instance_type, instance_name)
+
+            # Log the action
+            season = item.get("season_number")
+            season_str = f" Season: {season}," if season is not None else ""
+            logger.info(
+                f"[ADD] Title: {item.get('title')} ({item.get('year')}) ({asset_type}),{season_str} from {instance_name}"
+            )
+
+        except Exception as e:
+            logger.error(f"Failed to update media record for {item.get('title')}: {e}")
+
+    logger.debug(
+        f"[SYNC] Media cache for {instance_name} ({asset_type}) synchronized. {len(processed_media)} items present."
+    )
 
 
 def _process_poster_rename_job(

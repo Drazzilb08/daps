@@ -1,5 +1,6 @@
 import React, { useRef, useState } from 'react';
-import { getIcon, getSpinner } from '../../utils/tools';
+import { getIcon } from '../../utils/tools';
+import LoadingSpinner from '../common/LoadingSpinner';
 import TooltipFactory from '../Tooltip';
 
 export default function MatchedPostersContent({ data, loading, error, refresh }) {
@@ -22,7 +23,7 @@ export default function MatchedPostersContent({ data, loading, error, refresh })
                     onFocus={() => setRefreshTip(true)}
                     onBlur={() => setRefreshTip(false)}
                 >
-                    {loading ? getSpinner({}) : getIcon('mi:refresh')}
+                    {loading ? <LoadingSpinner size="small" /> : getIcon('mi:refresh')}
                 </button>
                 <TooltipFactory
                     anchor={refreshRef.current}
@@ -32,7 +33,7 @@ export default function MatchedPostersContent({ data, loading, error, refresh })
                 />
             </div>
             {loading ? (
-                <div className="stats-loading">{getSpinner({})}</div>
+                <div className="stats-loading"><LoadingSpinner /></div>
             ) : error ? (
                 <div className="stats-error">{error}</div>
             ) : !(data ?? []).length ? (

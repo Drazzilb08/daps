@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { fetchLogFiles, fetchLogContent, fetchLogModules } from '../utils/api';
-import { humanize, getIcon, getSpinner } from '../utils/tools';
+import { humanize, getIcon } from '../utils/tools';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import { moduleOrder } from '../utils/constants/constants';
 import { useToast } from '../components/providers/ToastProvider';
 import TooltipFactory from '../components/Tooltip';
@@ -436,7 +437,7 @@ export default function LogViewer() {
                                     onBlur={() => setShowUploadTip(false)}
                                 >
                                     {uploadState.uploading
-                                        ? getSpinner({ style: { verticalAlign: 'middle' } })
+                                        ? <LoadingSpinner size="small" style={{ verticalAlign: 'middle' }} />
                                         : uploadState.lastUrl
                                           ? uploadState.linkOpened
                                               ? getIcon('mi:open_in_new', {

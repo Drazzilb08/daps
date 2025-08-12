@@ -29,10 +29,13 @@ const MediaManagement = lazy(() => import('./pages/MediaManage'));
 const MediaSearch = lazy(() => import('./pages/MediaSearch'));
 const MediaStatistics = lazy(() => import('./pages/MediaStatistics'));
 
+// Import LoadingSpinner component
+import LoadingSpinner from './components/common/LoadingSpinner';
+
 // Loading component for Suspense fallback
-const LoadingSpinner = () => (
+const SuspenseLoading = () => (
     <div className="loading-container">
-        <div className="spinner"></div>
+        <LoadingSpinner size="large" />
         <p>Loading...</p>
     </div>
 );
@@ -47,7 +50,7 @@ export default function App() {
                 >
                     <Router>
                         <Layout>
-                            <Suspense fallback={<LoadingSpinner />}>
+                            <Suspense fallback={<SuspenseLoading />}>
                                 <Routes>
                                     {/* Core Application Routes */}
                                     <Route

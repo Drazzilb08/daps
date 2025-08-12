@@ -1,7 +1,8 @@
 // src/components/fields/image/PosterField.jsx
 
 import React, { useRef, useState } from 'react';
-import { getIcon, humanize, getSpinner } from '../../../utils/tools';
+import { getIcon, humanize } from '../../../utils/tools';
+import LoadingSpinner from '../../common/LoadingSpinner';
 import { useToast } from '../../providers/ToastProvider';
 import {
     deleteCollectionCacheById,
@@ -281,7 +282,7 @@ export default function PosterField({ field, entry = {} }) {
                                 onFocus={() => setShowUploadTip(true)}
                                 onBlur={() => setShowUploadTip(false)}
                             >
-                                {uploading ? getSpinner() : getIcon('mi:upload')}
+                                {uploading ? <LoadingSpinner size="small" /> : getIcon('mi:upload')}
                             </button>
 
                             <TooltipFactory

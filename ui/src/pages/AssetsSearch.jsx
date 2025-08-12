@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { fetchConfig, fetchMediaCache, fetchCollectionCache } from '../utils/api';
-import { getSpinner } from '../utils/tools';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import AssetsSearchControls from '../components/poster_search/assets_search/AssetsSearchControls';
 import AssetsSearchResults from '../components/poster_search/assets_search/AssetsSearchResults';
 import PosterSearchModalTrigger from '../components/poster_search/PosterSearchModalTrigger';
@@ -183,7 +183,7 @@ export default function AssetsSearch() {
                         showAssetTypeFilter={true}
                     />
                     {isSearching ? (
-                        <div style={{ textAlign: 'center', margin: 32 }}>{getSpinner()}</div>
+                        <div style={{ textAlign: 'center', margin: 32 }}><LoadingSpinner /></div>
                     ) : (
                         <AssetsSearchResults
                             errorMsg={errorMsg}

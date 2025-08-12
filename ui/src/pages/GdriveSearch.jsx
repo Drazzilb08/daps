@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { fetchConfig, fetchPosters } from '../utils/api';
-import { getSpinner } from '../utils/tools';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import GdriveSearchControls from '../components/poster_search/gdrive_search/GdriveSearchControls';
 import GdriveSearchResults from '../components/poster_search/gdrive_search/GdriveSearchResults';
 import PosterSearchModalTrigger from '../components/poster_search/PosterSearchModalTrigger';
@@ -236,7 +236,7 @@ export default function GdriveSearch() {
                         showGDriveOwnerFilter={currentSource === 'gdrive'}
                     />
                     {isSearching ? (
-                        <div style={{ textAlign: 'center', margin: 32 }}>{getSpinner()}</div>
+                        <div style={{ textAlign: 'center', margin: 32 }}><LoadingSpinner /></div>
                     ) : (
                         <GdriveSearchResults
                             errorMsg={errorMsg}

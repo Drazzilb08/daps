@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchConfig, postConfig, testInstance } from '../utils/api';
-import { humanize, getIcon, getSpinner } from '../utils/tools';
+import { humanize, getIcon } from '../utils/tools';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import { INSTANCE_SCHEMA } from '../utils/constants/instance_schema';
 import ModalFactory from '../components/modals/ModalFactory';
 import { useToast } from '../components/providers/ToastProvider';
@@ -150,7 +151,7 @@ export default function Instances() {
 
     let testIcon, testClass;
     if (testStatus === 'testing') {
-        testIcon = getSpinner();
+        testIcon = <LoadingSpinner size="small" />;
         testClass = 'btn--info';
     } else if (testStatus === 'success') {
         testIcon = getIcon('mi:check', {

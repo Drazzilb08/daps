@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchConfig, postConfig, runTestNotification } from '../utils/api';
-import { humanize, getIcon, getSpinner } from '../utils/tools';
+import { humanize, getIcon } from '../utils/tools';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import { NOTIFICATIONS_SCHEMA } from '../utils/constants/notifications_schema';
 import ModalFactory from '../components/modals/ModalFactory';
 import { useToast } from '../components/providers/ToastProvider';
@@ -157,7 +158,7 @@ export default function Notifications() {
             footerButtons: [
                 {
                     id: 'test-btn',
-                    label: loading ? getSpinner() : 'Test',
+                    label: loading ? <LoadingSpinner size="small" /> : 'Test',
                     className: '',
                     type: 'button',
                 },

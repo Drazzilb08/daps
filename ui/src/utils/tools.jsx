@@ -72,10 +72,6 @@ export function getIcon(type, opts = {}) {
     );
 }
 
-export function getSpinner(opts = {}) {
-    return <span className="spinner" style={opts.style} />;
-}
-
 let _themeMediaListener = null;
 
 export function setTheme() {

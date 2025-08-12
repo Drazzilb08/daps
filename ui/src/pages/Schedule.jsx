@@ -8,7 +8,8 @@ import {
     runModule,
     cancelScheduledModule,
 } from '../utils/api';
-import { humanize, getIcon, getSpinner } from '../utils/tools';
+import { humanize, getIcon } from '../utils/tools';
+import LoadingSpinner from '../components/common/LoadingSpinner';
 import TooltipFactory from '../components/Tooltip';
 
 import ModalFactory from '../components/modals/ModalFactory';
@@ -378,7 +379,7 @@ function ScheduleCard({ module, scheduleTime, runState, reload, openModal, toast
                         ref={btnRef}
                     >
                         {polling
-                            ? getSpinner()
+                            ? <LoadingSpinner size="small" />
                             : !running
                               ? getIcon('mi:play_arrow')
                               : getIcon('mi:stop')}

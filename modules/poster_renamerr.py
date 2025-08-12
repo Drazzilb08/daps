@@ -236,7 +236,7 @@ class PosterRenamerr(DapsModule):
         self.logger.debug(f"{matches} total_matches")
         self.logger.debug(f"{non_matches} non_matches")
 
-    def rename_file(self, item: dict, db: DapsDB) -> dict:
+    def rename_file(self, item: dict, db: DapsDB) -> Optional[dict]:
         asset_type = item.get("asset_type")
         file = item.get("original_file") or item.get("file")
         folder = item.get("folder", item.get("media_folder", "")) or ""
@@ -323,15 +323,17 @@ class PosterRenamerr(DapsModule):
             if file_ops_enabled and not config.dry_run:
                 self.process_file(file, new_file_path, config.action_type)
 
-        return {
-            "title": item.get("title"),
-            "year": item.get("year"),
-            "folder": folder,
-            "messages": messages,
-            "discord_message": discord_message,
-            "asset_type": asset_type,
-            "id": item.get("id"),
-        }
+        if messages or discord_message:
+            return {
+                "title": item.get("title"),
+                "year": item.get("year"),
+                "folder": folder,
+                "messages": messages,
+                "discord_message": discord_message,
+                "asset_type": asset_type,
+                "id": item.get("id"),
+            }
+        return None
 
     def get_matched_assets(self, db: DapsDB) -> list:
         matched_assets = []
@@ -379,7 +381,8 @@ class PosterRenamerr(DapsModule):
             ) as bar:
                 for item in bar:
                     result = self.rename_file(item=item, db=db)
-                    output[item.get("asset_type", "movie")].append(result)
+                    if result:
+                        output[item.get("asset_type", "movie")].append(result)
 
                     if item.get("asset_type") == "collection":
                         manifest["collections_cache"].append(item.get("id"))
@@ -687,7 +690,6 @@ class PosterRenamerr(DapsModule):
                     self.run_border_replacerr(manifest)
 
                 PosterUploader(db=db, logger=self.logger, manifest=manifest).run()
-
                 if any(output.values()):
                     self.handle_output(output)
                     manager = NotificationManager(

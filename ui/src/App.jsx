@@ -12,6 +12,7 @@ import { ThemeProvider } from './components/providers/ThemeProvider';
 import { GlobalErrorProvider } from './components/providers/GlobalErrorProvider';
 import { UnsavedChangesProvider } from './components/providers/UnsavedChangesProvider';
 
+
 // Lazy load page components
 const Splash = lazy(() => import('./pages/Splash'));
 const Schedule = lazy(() => import('./pages/Schedule'));

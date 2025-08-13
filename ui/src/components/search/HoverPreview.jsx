@@ -1,6 +1,6 @@
 import { useRef, useEffect } from 'react';
 
-export default function usePosterSearchHoverPreview() {
+export default function useHoverPreview() {
     const imgRef = useRef(null);
 
     useEffect(() => {

@@ -2,7 +2,7 @@ import React from 'react';
 import ModalFactory from '../modals/ModalFactory';
 import { fetchPosterPreviewUrl } from '../../utils/api';
 
-export default function PosterSearchModalTrigger({ obj, onClose, onDeleted }) {
+export default function ModalTrigger({ obj, onClose, onDeleted }) {
     // DB asset record
     const isAsset = !!obj.asset_type;
 

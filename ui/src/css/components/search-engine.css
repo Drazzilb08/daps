@@ -1,0 +1,937 @@
+/* ui/src/css/components/search-engine.css
+ * Complete SearchEngine CSS system preserving all existing poster-search styles
+ * Maintains 100% visual compatibility with current implementation
+ */
+
+@layer components {
+    /* ======================================================
+   SEARCH ENGINE: LAYOUT & ROOT
+====================================================== */
+    .search-engine {
+        /* Base styles for SearchEngine component */
+    }
+    
+    .search-engine .poster-search-root {
+        margin-top: 2rem;
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 800px;
+        min-width: 400px;
+        padding: 0 2rem;
+    }
+
+    .search-engine .poster-search-card {
+        /* Card wrapper styles */
+    }
+
+    .search-engine .poster-search-content {
+        /* Content wrapper styles */
+    }
+
+    /* ======================================================
+   SEARCH ENGINE: CONTROLS (SCOPE/SOURCE, SORT, VIEW)
+====================================================== */
+    .search-engine .poster-search-controls {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2em;
+        margin-bottom: 1.6em;
+        margin-top: 1.5em;
+        width: 85%;
+        max-width: 800px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .search-engine .poster-source-picker {
+        display: flex;
+        gap: 0.5em;
+        border-radius: 9px;
+        padding: 0.19em 0.35em;
+        background: var(--bg);
+    }
+
+    .search-engine .source-picker-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.34em;
+        border: none;
+        background: none;
+        padding: 0.34em 1em;
+        border-radius: 7px;
+        font-size: 1em;
+        font-weight: 500;
+        color: var(--text-color, #e3e3e3);
+        opacity: 0.8;
+        cursor: pointer;
+        transition:
+            background 0.14s,
+            color 0.13s,
+            opacity 0.12s;
+    }
+
+    .search-engine .source-picker-btn.active,
+    .search-engine .source-picker-btn:focus {
+        background: var(--primary, #1e88e5);
+        color: #fff;
+        opacity: 1;
+    }
+
+    .search-engine .poster-view-mode-group {
+        display: flex;
+        gap: 0.32em;
+        margin-left: 0.9em;
+    }
+
+    .search-engine .view-mode-btn {
+        background: none;
+        border: none;
+        border-radius: 6px;
+        padding: 0.38em 0.62em;
+        font-size: 1.16em;
+        color: var(--text-color, #bfc4d0);
+        cursor: pointer;
+        transition:
+            background 0.13s,
+            color 0.11s;
+        opacity: 0.8;
+    }
+
+    .search-engine .view-mode-btn.active,
+    .search-engine .view-mode-btn:focus {
+        background: var(--primary, #1e88e5);
+        color: #fff;
+        opacity: 1;
+    }
+
+    /* Sort select styles - inherit from forms.css */
+    .search-engine select {
+        /* Use global form styles from forms.css */
+    }
+
+    /* ======================================================
+   SEARCH ENGINE: SEARCH BAR & FILTERS
+====================================================== */
+    .search-engine .poster-search-bar-container {
+        position: relative;
+        width: 85%;
+        max-width: 800px;
+        margin: 1em auto 0.4em;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-engine .search-bar-icon {
+        position: absolute;
+        left: 16px;
+        color: var(--text-muted, #999);
+        pointer-events: none;
+        z-index: 1;
+        font-size: 1.3em;
+    }
+
+    .search-engine .poster-search-bar {
+        width: 100%;
+        font-size: 1.18em;
+        padding: 0.82em 2.6em 0.82em 3em;
+        border-radius: 8px;
+        border: 1px solid var(--border-color, #353d44);
+        background: var(--input-bg, #181a1b);
+        color: var(--text-color, #e3e3e3);
+        outline: none;
+        transition: border-color 0.14s;
+        box-sizing: border-box;
+    }
+
+    .search-engine .poster-search-bar:focus {
+        border-color: var(--primary, #ff9800);
+    }
+
+    .search-engine .clear-btn {
+        position: absolute;
+        right: 48px;
+        background: none;
+        border: none;
+        color: var(--text-muted, #aaa);
+        font-size: 1.08em;
+        cursor: pointer;
+        padding: 0;
+        z-index: 2;
+        height: 32px;
+        width: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .search-engine .clear-btn:hover {
+        color: var(--primary, #ff9800);
+    }
+
+    .search-engine .search-btn {
+        position: absolute;
+        right: 10px;
+        background: none;
+        border: none;
+        color: var(--text-muted, #aaa);
+        font-size: 1.18em;
+        cursor: pointer;
+        z-index: 2;
+        height: 32px;
+        width: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.12s;
+    }
+
+    .search-engine .search-btn:disabled {
+        color: #444;
+        cursor: not-allowed;
+    }
+
+    .search-engine .search-btn:hover:not(:disabled) {
+        color: var(--primary, #ff9800);
+    }
+
+    /* Filter button styles */
+    .search-engine .search-bar-icon.search-bar-btn-icon {
+        position: absolute;
+        left: 0.7em;
+        top: 0;
+        bottom: 0;
+        display: flex;
+        align-items: center;
+        z-index: 5;
+        height: 100%;
+        pointer-events: auto;
+    }
+
+    .search-engine .search-bar-btn {
+        background: none;
+        border: none;
+        outline: none;
+        display: flex;
+        align-items: center;
+        font-size: 1.22em;
+        color: var(--text-muted, #aaa);
+        cursor: pointer;
+        padding: 0 0.4em 0 0.2em;
+        border-radius: 7px 0 0 7px;
+        min-width: 0;
+        height: 40px;
+        transition:
+            background 0.12s,
+            color 0.12s;
+    }
+
+    .search-engine .search-bar-btn:hover,
+    .search-engine .search-bar-btn:focus {
+        color: var(--primary, #1e88e5);
+    }
+
+    .search-engine .search-bar-btn-dropdown {
+        position: absolute;
+        top: 2.55em;
+        left: 0.1em;
+        background: var(--surface, #1b1d1f);
+        border: 1px solid var(--border-color, #353d44);
+        border-radius: 7px;
+        min-width: 120px;
+        box-shadow: 0 3px 22px rgb(0 0 0 / 15%);
+        z-index: 999;
+        overflow: hidden;
+    }
+
+    .search-engine .search-bar-btn-option {
+        padding: 0.7em 1.1em 0.62em;
+        font-size: 1em;
+        color: var(--text-color, #e3e3e3);
+        cursor: pointer;
+        transition: background 0.1s;
+        background: none;
+    }
+
+    .search-engine .search-bar-btn-option.active,
+    .search-engine .search-bar-btn-option:hover,
+    .search-engine .search-bar-btn-option:focus {
+        background: var(--primary, #388be5);
+        color: #fff;
+    }
+
+    .search-engine .poster-search-bar.has-filter {
+        padding-left: 2.4em;
+    }
+
+    /* ======================================================
+   SEARCH ENGINE: LOADING & EMPTY STATES
+====================================================== */
+    .search-engine .poster-search-empty {
+        margin-top: 2em;
+        color: var(--text-muted, #8c8c8c);
+        font-size: 1.12em;
+        text-align: center;
+        font-family: inherit;
+        letter-spacing: 0.01em;
+        font-weight: 500;
+        opacity: 0.85;
+    }
+
+    .search-engine .poster-search-error {
+        margin-top: 2em;
+        color: var(--error, #ff6b6b);
+        font-size: 1.12em;
+        text-align: center;
+        font-family: inherit;
+        letter-spacing: 0.01em;
+        font-weight: 500;
+        opacity: 0.9;
+    }
+
+    .search-engine .loading-spinner {
+        /* Use existing loading spinner styles */
+    }
+
+    /* ======================================================
+   SEARCH ENGINE: RESULTS LAYOUT
+====================================================== */
+    .search-engine .poster-search-results {
+        margin-top: 1.5em;
+        padding: 0 1rem;
+    }
+
+    .search-engine .poster-owner-group {
+        margin-bottom: 2.5em;
+    }
+
+    .search-engine .poster-owner-label {
+        font-size: 1.08em;
+        font-weight: 600;
+        margin-bottom: 0.38em;
+        color: var(--primary, #388be5);
+        letter-spacing: 0.01em;
+        padding-left: 0.15em;
+    }
+
+    /* ======================================================
+   SEARCH ENGINE: GRID VIEW
+====================================================== */
+    .search-engine .poster-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 1.2em;
+        margin-top: 1.3em;
+    }
+
+    .search-engine .poster-grid-item {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        background: var(--surface-alt, #24282c);
+        border-radius: 10px;
+        padding: 0.7em 0.7em 0.9em;
+        text-align: center;
+        box-shadow: 0 1px 5px rgb(0 0 0 / 5%);
+        cursor: pointer;
+        transition: background 0.14s;
+        min-width: 140px;
+        max-width: 200px;
+        min-height: 340px;
+        box-sizing: border-box;
+    }
+
+    .search-engine .poster-grid-item:hover {
+        background: var(--primary, #2456a8);
+        color: #fff;
+    }
+
+    .search-engine .poster-thumb-img {
+        max-width: 100%;
+        max-height: 240px;
+        object-fit: cover;
+        border-radius: 6px;
+        margin-bottom: 0.5em;
+        background: var(--surface-alt, #282c31);
+    }
+
+    .search-engine .poster-file-label {
+        word-break: break-all;
+        font-size: 0.98em;
+        color: var(--text-color, #e3e3e3);
+        font-family: inherit;
+        letter-spacing: 0.01em;
+        padding-left: 0.04em;
+        line-height: 1.1;
+        margin-top: 0.22em;
+    }
+
+    /* ======================================================
+   SEARCH ENGINE: LIST VIEW
+====================================================== */
+    .search-engine .poster-list {
+        list-style: none;
+        padding: 0;
+        margin-top: 1.2em;
+    }
+
+    .search-engine .poster-list-item {
+        background: var(--surface-alt, #23272b);
+        border-radius: 8px;
+        padding: 0.7em 1em;
+        margin-bottom: 0.6em;
+        cursor: pointer;
+        transition: background 0.12s;
+    }
+
+    .search-engine .poster-list-item:hover {
+        background: var(--primary, #1e88e5);
+        color: #fff;
+    }
+
+    /* ======================================================
+   SEARCH ENGINE: ASSET METADATA
+====================================================== */
+    .search-engine .poster-asset-meta {
+        margin-top: 0.4em;
+        font-size: 0.9em;
+        color: var(--text-muted, #aaa);
+        text-align: center;
+    }
+
+    .search-engine .meta-movie,
+    .search-engine .meta-show,
+    .search-engine .meta-collection,
+    .search-engine .meta-subtitle {
+        display: inline-block;
+        font-weight: 500;
+        letter-spacing: 0.01em;
+    }
+
+    .search-engine .meta-movie {
+        color: var(--accent, #ff9800);
+    }
+
+    .search-engine .meta-show {
+        color: var(--success, #4caf50);
+    }
+
+    .search-engine .meta-collection {
+        color: var(--info, #2196f3);
+    }
+
+    .search-engine .meta-subtitle {
+        color: var(--text-muted, #aaa);
+    }
+
+    /* ======================================================
+   SEARCH ENGINE: HOVER PREVIEW
+====================================================== */
+    .search-engine .hover-preview {
+        pointer-events: none;
+        position: fixed;
+        border: 1px solid var(--hover-preview-border, #444);
+        background: var(--card-bg);
+        max-width: 200px;
+        max-height: 200px;
+        border-radius: 8px;
+        z-index: 13000;
+        display: none;
+        box-shadow: 0 2px 14px var(--shadow);
+        transition:
+            left 0.13s cubic-bezier(0.3, 1.1, 0.6, 1),
+            top 0.13s cubic-bezier(0.3, 1.1, 0.6, 1);
+    }
+
+    /* ======================================================
+   SEARCH ENGINE: HIGHLIGHTING
+====================================================== */
+    .search-engine .highlight {
+        background: var(--primary, #2c4e72);
+        color: #fff;
+        border-radius: 3px;
+        padding: 0 0.14em;
+        font-weight: 600;
+    }
+
+    /* ======================================================
+   SEARCH ENGINE: RESPONSIVE DESIGN (Phase 2 Mobile Enhancements)
+====================================================== */
+    @media (max-width: 960px) {
+        .search-engine .poster-search-root {
+            max-width: 100%;
+            min-width: auto;
+            margin: 2rem 1rem 0;
+        }
+
+        .search-engine .poster-search-controls {
+            gap: 1em;
+        }
+
+        .search-engine .poster-grid {
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 1em;
+        }
+
+        .search-engine .poster-grid-item {
+            min-width: 120px;
+            min-height: 280px;
+        }
+    }
+
+    @media (max-width: 600px) {
+        .search-engine .poster-search-controls {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 1em;
+        }
+
+        .search-engine .poster-source-picker {
+            justify-content: center;
+        }
+
+        .search-engine .poster-view-mode-group {
+            margin-left: 0;
+            justify-content: center;
+        }
+
+        .search-engine .poster-grid {
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 0.8em;
+        }
+
+        .search-engine .poster-grid-item {
+            min-width: 100px;
+            min-height: 240px;
+            padding: 0.5em;
+        }
+
+        .search-engine .poster-file-label {
+            font-size: 0.9em;
+        }
+    }
+
+    /* Mobile Touch Enhancements (Phase 2) */
+    @media (max-width: 480px) {
+        /* Larger touch targets for mobile */
+        .search-engine .source-picker-btn,
+        .search-engine .view-mode-btn,
+        .search-engine .poster-search-btn,
+        .search-engine .poster-clear-btn {
+            min-height: 44px; /* Apple's recommended touch target size */
+            min-width: 44px;
+            padding: 0.75rem 1rem;
+        }
+
+        /* Mobile-optimized search controls */
+        .search-engine .poster-search-controls {
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .search-engine .poster-search-bar-container {
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .search-engine .poster-search-bar {
+            font-size: 16px; /* Prevents zoom on iOS */
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+        }
+
+        /* Mobile-friendly grid */
+        .search-engine .poster-grid {
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 1rem;
+            padding: 0 0.5rem;
+        }
+
+        .search-engine .poster-grid-item {
+            min-height: 260px;
+            padding: 0.75rem;
+            border-radius: 8px;
+            /* Larger tap target */
+            min-width: 140px;
+        }
+
+        /* Mobile list view improvements */
+        .search-engine .poster-list-item {
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            border-radius: 8px;
+            /* Easier to tap */
+            min-height: 60px;
+        }
+
+        .search-engine .poster-file-label {
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        /* Mobile loading states */
+        .search-loading-container {
+            min-height: 150px;
+            padding: 1.5rem;
+        }
+
+        .search-loading-text {
+            font-size: 1rem;
+            margin-top: 1rem;
+        }
+
+        /* Mobile error and empty states */
+        .search-error-container,
+        .search-empty-container {
+            margin: 1rem 0.5rem;
+            padding: 1.5rem 1rem;
+            border-radius: 8px;
+        }
+
+        .search-error-icon,
+        .search-empty-icon {
+            font-size: 2rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .search-retry-btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            min-height: 44px;
+        }
+
+        /* Hide tooltips on mobile (touch devices) */
+        .search-engine .tooltip {
+            display: none;
+        }
+
+        /* Improve keyboard focus for mobile users with external keyboards */
+        .poster-grid-item.keyboard-focused,
+        .poster-list-item.keyboard-focused {
+            outline-width: 3px;
+            outline-offset: 3px;
+        }
+    }
+
+    /* Extra small screens */
+    @media (max-width: 320px) {
+        .search-engine .poster-search-root {
+            margin: 1rem 0.5rem 0;
+        }
+
+        .search-engine .poster-grid {
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 0.75rem;
+            padding: 0 0.25rem;
+        }
+
+        .search-engine .poster-grid-item {
+            min-width: 120px;
+            min-height: 240px;
+            padding: 0.5rem;
+        }
+
+        .search-engine .poster-file-label {
+            font-size: 0.85rem;
+        }
+    }
+
+    /* Landscape mobile orientation */
+    @media (max-width: 768px) and (orientation: landscape) {
+        .search-engine .poster-search-root {
+            margin-top: 1rem;
+        }
+
+        .search-engine .poster-grid {
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+        }
+
+        .search-engine .poster-grid-item {
+            min-height: 220px;
+        }
+    }
+
+    /* High DPI/Retina displays */
+    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+        .search-engine .poster-grid-item,
+        .search-engine .poster-list-item {
+            /* Ensure crisp rendering on high-DPI displays */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+    }
+
+    /* Reduce motion for users who prefer it */
+    @media (prefers-reduced-motion: reduce) {
+        .search-engine *,
+        .poster-grid-item.keyboard-focused .poster-image,
+        .poster-list-item.keyboard-focused,
+        .search-retry-btn,
+        .source-picker-btn,
+        .view-mode-btn {
+            transition: none !important;
+            animation: none !important;
+        }
+    }
+
+    /* ======================================================
+   SEARCH ENGINE: VARIANTS
+====================================================== */
+    .search-engine--assets {
+        /* Specific styles for assets search variant */
+    }
+
+    .search-engine--gdrive {
+        /* Specific styles for gdrive search variant */
+    }
+
+    .search-engine--compact {
+        /* Compact variant styles */
+    }
+
+    .search-engine--compact .poster-search-root {
+        max-width: 600px;
+        min-width: 400px;
+    }
+
+    .search-engine--compact .poster-grid {
+        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+        gap: 0.8em;
+    }
+
+    .search-engine--compact .poster-grid-item {
+        min-height: 200px;
+        padding: 0.5em;
+    }
+
+    /* ======================================================
+   SEARCH ENGINE: ENHANCED STATES (Phase 2 Enhancement)
+====================================================== */
+    
+    /* Loading States */
+    .search-loading-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 200px;
+        padding: 2rem;
+    }
+
+    .search-loading-content {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .search-loading-text {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        text-align: center;
+    }
+
+    /* Enhanced Error States */
+    .search-error-container {
+        display: flex;
+        align-items: flex-start;
+        gap: 1rem;
+        padding: 1.5rem;
+        background: var(--bg-error, #fef2f2);
+        border: 1px solid var(--border-error, #fecaca);
+        border-radius: 8px;
+        margin: 1rem 0;
+    }
+
+    .search-error-icon {
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .search-error-content {
+        flex: 1;
+    }
+
+    .search-error-title {
+        font-weight: 600;
+        color: var(--text-error, #dc2626);
+        margin-bottom: 0.5rem;
+    }
+
+    .search-error-message {
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+        line-height: 1.4;
+    }
+
+    .search-error-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .search-retry-btn {
+        padding: 0.25rem 0.75rem;
+        font-size: 0.875rem;
+        background: var(--primary);
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+
+    .search-retry-btn:hover {
+        background: var(--primary-dark);
+    }
+
+    /* Enhanced Empty States */
+    .search-empty-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 200px;
+        padding: 2rem;
+        text-align: center;
+    }
+
+    .search-empty-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        opacity: 0.7;
+    }
+
+    .search-empty-content {
+        max-width: 400px;
+    }
+
+    .search-empty-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text);
+        margin-bottom: 0.5rem;
+    }
+
+    .search-empty-message {
+        color: var(--text-muted);
+        line-height: 1.4;
+    }
+
+    .search-empty-message kbd {
+        padding: 0.1rem 0.3rem;
+        background: var(--bg-secondary, #f3f4f6);
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        font-size: 0.85em;
+        font-family: monospace;
+    }
+
+    /* Keyboard Navigation Focus Styles (Phase 2 Enhancement) */
+    .poster-grid-item.keyboard-focused,
+    .poster-list-item.keyboard-focused {
+        outline: 2px solid var(--primary, #3b82f6);
+        outline-offset: 2px;
+        background: var(--bg-focus, rgba(59, 130, 246, 0.1));
+        transition: outline 0.2s ease, background-color 0.2s ease;
+    }
+
+    .poster-grid-item.keyboard-focused .poster-image,
+    .poster-list-item.keyboard-focused {
+        transform: scale(1.02);
+        transition: transform 0.2s ease;
+    }
+
+    /* Hide browser default focus outline on clickable items */
+    .poster-grid-item:focus,
+    .poster-list-item:focus {
+        outline: none;
+    }
+
+    /* Accessibility: Screen reader only content */
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    /* Result Virtualization Styles (Phase 2 Enhancement) */
+    .virtualized-notice {
+        text-align: center;
+        padding: 0.5rem;
+        background: var(--bg-info, #f0f9ff);
+        border: 1px solid var(--border-info, #bae6fd);
+        border-radius: 4px;
+        margin-bottom: 1rem;
+        color: var(--text-info, #0369a1);
+    }
+
+    .poster-grid-virtualized-container,
+    .poster-list-virtualized-container {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        background: var(--bg);
+    }
+
+    .poster-grid-virtualized-content,
+    .poster-list-virtualized-content {
+        /* Container for absolutely positioned virtualized items */
+    }
+
+    /* Virtualized grid items maintain original styling but with absolute positioning */
+    .poster-grid-virtualized-content .poster-grid-item {
+        /* Absolute positioning is handled in JavaScript */
+        box-sizing: border-box;
+    }
+
+    /* Virtualized list items maintain original styling but with absolute positioning */
+    .poster-list-virtualized-content .poster-list-item {
+        /* Absolute positioning is handled in JavaScript */
+        box-sizing: border-box;
+        border-bottom: 1px solid var(--border);
+        padding: 0.75rem 1rem;
+    }
+
+    .poster-list-virtualized-content .poster-list-item:hover {
+        background: var(--bg-hover, #f8fafc);
+    }
+
+    /* Dark mode support for enhanced states */
+    @media (prefers-color-scheme: dark) {
+        .search-error-container {
+            background: var(--bg-error-dark, #7f1d1d);
+            border-color: var(--border-error-dark, #991b1b);
+        }
+        
+        .search-error-title {
+            color: var(--text-error-dark, #fca5a5);
+        }
+        
+        .search-empty-message kbd {
+            background: var(--bg-secondary-dark, #374151);
+            border-color: var(--border-dark);
+            color: var(--text-dark);
+        }
+
+        .poster-grid-item.keyboard-focused,
+        .poster-list-item.keyboard-focused {
+            outline-color: var(--primary-light, #60a5fa);
+            background: var(--bg-focus-dark, rgba(96, 165, 250, 0.1));
+        }
+
+        .virtualized-notice {
+            background: var(--bg-info-dark, #1e3a8a);
+            border-color: var(--border-info-dark, #3b82f6);
+            color: var(--text-info-dark, #93c5fd);
+        }
+
+        .poster-list-virtualized-content .poster-list-item:hover {
+            background: var(--bg-hover-dark, #374151);
+        }
+    }
+}

@@ -19,13 +19,11 @@ def get_database(request: Request) -> DapsDB:
     """
     # Temporary debug logging
     logger = request.app.state.logger.get_adapter("DB_INJECTION")
-    logger.info("[DEBUG] get_database() called")
 
     if not hasattr(request.app.state, "db"):
-        logger.error("[DEBUG] No shared database found in app.state!")
+        logger.error("No shared database found in app.state!")
         raise RuntimeError("Database not available in app state")
 
-    logger.info("[DEBUG] Returning shared database instance")
     return request.app.state.db
 
 

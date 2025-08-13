@@ -40,15 +40,11 @@ async def lifespan(app):
             log.debug("Starting FastAPI application...")
 
         # CREATE SHARED DATABASE INSTANCE FOR ALL API ENDPOINTS
-        if log:
-            log.info("[DEBUG] Creating shared database instance...")
         try:
             app.state.db = DapsDB(
                 logger=logger, quiet=False
             )  # Temporarily remove quiet for debugging
             app.state.db.__enter__()  # Initialize the context manually
-            if log:
-                log.info("[DEBUG] Shared database instance created successfully")
 
             # UPDATE MODULE ORCHESTRATOR TO USE SHARED DATABASE
             if (
@@ -56,13 +52,9 @@ async def lifespan(app):
                 and app.state.module_orchestrator
             ):
                 app.state.module_orchestrator.db = app.state.db
-                if log:
-                    log.info(
-                        "[DEBUG] Updated ModuleOrchestrator to use shared database"
-                    )
         except Exception as e:
             if log:
-                log.error(f"[DEBUG] Failed to create shared database: {e}")
+                log.error(f"Failed to create shared database: {e}")
             raise
 
         if log:

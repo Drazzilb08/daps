@@ -108,7 +108,9 @@ export default function GDriveStatsContent({ data, loading, error, refresh }) {
                 />
             </div>
             {loading ? (
-                <div className="stats-loading"><LoadingSpinner /></div>
+                <div className="stats-loading">
+                    <LoadingSpinner />
+                </div>
             ) : error ? (
                 <div className="stats-error">{error}</div>
             ) : !arr.length ? (

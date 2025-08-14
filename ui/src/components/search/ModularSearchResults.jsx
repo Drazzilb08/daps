@@ -7,8 +7,8 @@ import PosterRenderer from './renderers/PosterRenderer';
 
 // Registry of available renderers
 const RENDERERS = {
-    'simple': new SimpleListRenderer(),
-    'poster': new PosterRenderer(), // Generic poster renderer for both assets and grouped displays
+    simple: new SimpleListRenderer(),
+    poster: new PosterRenderer(), // Generic poster renderer for both assets and grouped displays
 };
 
 export default function ModularSearchResults({
@@ -19,9 +19,12 @@ export default function ModularSearchResults({
     ...renderProps
 }) {
     const searchRenderer = RENDERERS[renderer];
-    
+
     if (!searchRenderer) {
-        console.error(`Unknown renderer: ${renderer}. Available renderers:`, Object.keys(RENDERERS));
+        console.error(
+            `Unknown renderer: ${renderer}. Available renderers:`,
+            Object.keys(RENDERERS)
+        );
         return <div className="poster-search-error">Invalid renderer configuration</div>;
     }
 
@@ -29,17 +32,17 @@ export default function ModularSearchResults({
     if (error) {
         return searchRenderer.renderError(error);
     }
-    
+
     // ===== EMPTY STATE =====
     if (!results.length) {
         return searchRenderer.renderEmptyState(searchTerm);
     }
-    
+
     // ===== RENDER RESULTS =====
     return searchRenderer.render({
         results,
         searchTerm,
-        ...renderProps
+        ...renderProps,
     });
 }
 

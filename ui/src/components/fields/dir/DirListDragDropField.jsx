@@ -17,7 +17,19 @@ import { CSS } from '@dnd-kit/utilities';
 import DirectoryPickerModal from '../../modals/DirectoryPickerModal';
 
 // --- Sortable Item component with touch detection
-function SortableRow({ id, dir, onRemove, onInput, onRowClick, isOnlyRow, onMoveUp, onMoveDown, canMoveUp, canMoveDown, isTouchDevice }) {
+function SortableRow({
+    id,
+    dir,
+    onRemove,
+    onInput,
+    onRowClick,
+    isOnlyRow,
+    onMoveUp,
+    onMoveDown,
+    canMoveUp,
+    canMoveDown,
+    isTouchDevice,
+}) {
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id,
     });
@@ -40,7 +52,7 @@ function SortableRow({ id, dir, onRemove, onInput, onRowClick, isOnlyRow, onMove
                     <button
                         type="button"
                         className="arrow-btn"
-                        onClick={(e) => {
+                        onClick={e => {
                             e.target.classList.add('clicked');
                             setTimeout(() => e.target.classList.remove('clicked'), 150);
                             onMoveUp();
@@ -53,7 +65,7 @@ function SortableRow({ id, dir, onRemove, onInput, onRowClick, isOnlyRow, onMove
                     <button
                         type="button"
                         className="arrow-btn"
-                        onClick={(e) => {
+                        onClick={e => {
                             e.target.classList.add('clicked');
                             setTimeout(() => e.target.classList.remove('clicked'), 150);
                             onMoveDown();
@@ -65,7 +77,7 @@ function SortableRow({ id, dir, onRemove, onInput, onRowClick, isOnlyRow, onMove
                     </button>
                 </div>
             )}
-            
+
             {/* Non-touch device drag handle */}
             {!isTouchDevice && (
                 <span
@@ -78,7 +90,7 @@ function SortableRow({ id, dir, onRemove, onInput, onRowClick, isOnlyRow, onMove
                     ⋮⋮
                 </span>
             )}
-            
+
             <input
                 type="text"
                 className="input field-input"
@@ -109,26 +121,26 @@ export function DirListDragDropField({
 }) {
     // Touch device detection
     const [isTouchDevice, setIsTouchDevice] = useState(false);
-    
+
     useEffect(() => {
         const checkTouchDevice = () => {
             // Multiple methods for better detection
             const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
             const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
             const hasLimitedHover = window.matchMedia('(hover: none)').matches;
-            
+
             setIsTouchDevice(hasTouch || isCoarsePointer || hasLimitedHover);
         };
-        
+
         checkTouchDevice();
-        
+
         // Listen for media query changes
         const pointerQuery = window.matchMedia('(pointer: coarse)');
         const hoverQuery = window.matchMedia('(hover: none)');
-        
+
         pointerQuery.addEventListener('change', checkTouchDevice);
         hoverQuery.addEventListener('change', checkTouchDevice);
-        
+
         return () => {
             pointerQuery.removeEventListener('change', checkTouchDevice);
             hoverQuery.removeEventListener('change', checkTouchDevice);

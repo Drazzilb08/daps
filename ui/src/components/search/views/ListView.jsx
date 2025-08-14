@@ -16,16 +16,20 @@ export default function ListView({
     renderMetadata = () => null,
     className = 'poster-search-results',
     focusedResultIndex = -1, // Phase 2 Enhancement: keyboard navigation
-    resultsContainerRef
+    resultsContainerRef,
 }) {
     return (
         <div className={className} id="poster-search-results" ref={resultsContainerRef}>
             {results.map((result, index) => {
                 const obj = result.original || result;
                 const displayTitle = getDisplayTitle(result);
-                const hoverProps = setupHoverPreview(result, hoverPreviewImgRef, enableHoverPreview);
+                const hoverProps = setupHoverPreview(
+                    result,
+                    hoverPreviewImgRef,
+                    enableHoverPreview
+                );
                 const isFocused = focusedResultIndex === index;
-                
+
                 return (
                     <div
                         className={`poster-list-item ${isFocused ? 'keyboard-focused' : ''}`}

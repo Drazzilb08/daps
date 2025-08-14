@@ -15,7 +15,7 @@
     --info: #1978d7;
     --info-highlight: #4a9eff;
     --warning: #e6b500;
-    --warning-highlight: #ffcc33;
+    --warning-highlight: #fc3;
     --bg: #fafbfe;
     --surface: #fff;
     --surface-alt: #f7f7fa;
@@ -23,39 +23,24 @@
     --surface-variant: #e8e8ec;
     --sidebar-bg: #f7f7fa;
     --sidebar-fg: #28292c;
-    --sidebar-highlight: var(--primary);
+    --sidebar-highlight: #ff7300;
     --sidebar-divider: #e6e6ea;
     --header-bg: #f5f5f8;
     --header-fg: #ff7300;
     --toolbar: #e6e6ea;
     --text-color: #1a1a1a;
     --muted: #5e5e5e;
-    --link-color: var(--accent);
+    --link-color: #246ddb;
     --divider: #ececf2;
     --input-bg: #f0f0f4;
     --switch-bg: #dadada;
     --switch-bg-active: #3e7bfa;
     --switch-knob: #fff;
 
-    /* Semantic color aliases for components */
-    --color-bg: var(--bg);
-    --color-surface: var(--surface);
-    --color-elevated: var(--surface-variant);
-    --color-text: var(--text-color);
-    --color-text-muted: var(--muted);
-    --color-border: var(--divider);
-    --color-link: var(--link-color);
-
-    --color-primary: var(--primary);
-    --color-primary-contrast: #ffffff;
-    --color-accent: var(--accent);
-    --color-success: var(--success);
-    --color-warning: var(--warning);
-    --color-danger: var(--error);
-    --color-info: var(--info);
+    /* Primary contrast color for light theme */
+    --primary-contrast: #fff;
 
     /* Focus and interaction states */
-    --focus-ring: 0 0 0 var(--focus-ring-size)
-        color-mix(in oklab, var(--color-primary) 25%, transparent);
-    --focus-outline: 2px solid var(--color-primary);
+    --focus-ring: 0 0 0 var(--focus-ring-size) color-mix(in oklab, var(--primary) 25%, transparent);
+    --focus-outline: 2px solid var(--primary);
 }

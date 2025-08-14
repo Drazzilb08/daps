@@ -48,7 +48,7 @@
     }
 
     /* DESKTOP: enhanced button sizing */
-    @media (min-width: 1025px) {
+    @media (width >= 1025px) {
         .btn,
         .btn--success,
         .btn--cancel {
@@ -111,10 +111,10 @@
         border: none;
         color: var(--accent);
         border-radius: var(--radius-round);
-        width: 40px;
-        height: 40px;
-        min-width: 40px;
-        min-height: 40px;
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        min-height: 44px;
         padding: 0;
         display: flex;
         align-items: center;

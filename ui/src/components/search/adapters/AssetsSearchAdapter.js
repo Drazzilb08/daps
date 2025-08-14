@@ -1,7 +1,12 @@
 // ui/src/components/search/adapters/AssetsSearchAdapter.js
 // Assets search adapter that replicates exact logic from AssetsSearch.jsx
 
-import { fetchConfig, fetchMediaCache, fetchCollectionCache, fetchPosterPreviewUrl } from '../../../utils/api';
+import {
+    fetchConfig,
+    fetchMediaCache,
+    fetchCollectionCache,
+    fetchPosterPreviewUrl,
+} from '../../../utils/api';
 
 // Utility function to check if a file is an image (preserved from existing code)
 function isImageFile(filename) {
@@ -18,31 +23,34 @@ export const assetsSearchAdapter = {
             // Load config to get assetsDir
             const config = await fetchConfig();
             const assetsDir = config.poster_renamerr?.destination_dir || '';
-            
+
             // Load both media and collection caches (handle errors gracefully like original)
             let mediaCache = [];
             let collectionCache = [];
-            
+
             try {
                 const [media, collections] = await Promise.all([
                     fetchMediaCache(),
-                    fetchCollectionCache()
+                    fetchCollectionCache(),
                 ]);
                 mediaCache = media;
                 collectionCache = collections;
             } catch (cacheError) {
-                console.log('Expected error loading cache data (empty caches will be used):', cacheError.message);
+                console.log(
+                    'Expected error loading cache data (empty caches will be used):',
+                    cacheError.message
+                );
                 // Continue with empty arrays - this matches original behavior
             }
-            
+
             // Filter to only matched items (same as existing logic)
             const filteredMediaCache = mediaCache.filter(item => item.matched);
             const filteredCollectionCache = collectionCache.filter(item => item.matched);
-            
+
             return {
                 assetsDir,
                 mediaCache: filteredMediaCache,
-                collectionCache: filteredCollectionCache
+                collectionCache: filteredCollectionCache,
             };
         } catch (error) {
             console.error('Error loading assets configuration:', error);
@@ -50,20 +58,20 @@ export const assetsSearchAdapter = {
             return {
                 assetsDir: '',
                 mediaCache: [],
-                collectionCache: []
+                collectionCache: [],
             };
         }
     },
-    
+
     /**
      * Search through assets data
      * Replicates the exact getAllAssets() and doSearch() logic from AssetsSearch.jsx
      */
     search(data, searchTerm, filters) {
         if (!data) return [];
-        
+
         const { assetsDir, mediaCache, collectionCache } = data;
-        
+
         // Step 1: Flatten both caches (exact same logic as getAllAssets())
         const allAssets = [
             ...collectionCache.map(c => ({
@@ -71,25 +79,27 @@ export const assetsSearchAdapter = {
                 file: c.renamed_file || c.original_file,
                 location: assetsDir,
                 asset_type: 'collection',
-                relativeFile: c.renamed_file || c.original_file
-                    ? (c.renamed_file || c.original_file)
-                          .replace(assetsDir + '/', '')
-                          .replace(assetsDir + '\\', '')
-                    : '',
+                relativeFile:
+                    c.renamed_file || c.original_file
+                        ? (c.renamed_file || c.original_file)
+                              .replace(assetsDir + '/', '')
+                              .replace(assetsDir + '\\', '')
+                        : '',
             })),
             ...mediaCache.map(m => ({
                 ...m,
                 file: m.renamed_file || m.original_file,
                 location: assetsDir,
                 asset_type: m.asset_type || m.type || 'movie',
-                relativeFile: m.renamed_file || m.original_file
-                    ? (m.renamed_file || m.original_file)
-                          .replace(assetsDir + '/', '')
-                          .replace(assetsDir + '\\', '')
-                    : '',
+                relativeFile:
+                    m.renamed_file || m.original_file
+                        ? (m.renamed_file || m.original_file)
+                              .replace(assetsDir + '/', '')
+                              .replace(assetsDir + '\\', '')
+                        : '',
             })),
         ].filter(obj => obj.file && isImageFile(obj.file));
-        
+
         // Step 2: Deduplicate based on absolute file path (exact same logic)
         const seen = new Set();
         const uniqueAssets = [];
@@ -100,9 +110,9 @@ export const assetsSearchAdapter = {
                 seen.add(key);
             }
         }
-        
+
         let filteredAssets = uniqueAssets;
-        
+
         // Step 3: Apply asset type filter (exact same logic as existing)
         const assetTypeFilter = filters.assetTypeFilter || filters.assetType;
         const assetTypeMap = {
@@ -110,31 +120,31 @@ export const assetsSearchAdapter = {
             movies: 'movie',
             shows: 'show',
         };
-        
+
         if (assetTypeFilter && assetTypeFilter !== 'all') {
             filteredAssets = filteredAssets.filter(
                 obj => (obj.asset_type || '').toLowerCase() === assetTypeMap[assetTypeFilter]
             );
         }
-        
+
         // Step 4: Apply search term filter (exact same logic)
         if (searchTerm && searchTerm.trim()) {
             const lc = searchTerm.trim().toLowerCase();
-            filteredAssets = filteredAssets.filter(obj => 
-                obj.file && obj.file.toLowerCase().includes(lc)
+            filteredAssets = filteredAssets.filter(
+                obj => obj.file && obj.file.toLowerCase().includes(lc)
             );
         }
-        
+
         return filteredAssets;
     },
-    
+
     /**
      * Sort search results
      * Replicates the exact sorting logic from AssetsSearch.jsx
      */
     sort(results, sortOption) {
         const sortedResults = [...results];
-        
+
         if (sortOption === 'alpha') {
             sortedResults.sort((a, b) => a.file.localeCompare(b.file));
         } else if (sortOption === 'alpha-desc') {
@@ -146,10 +156,10 @@ export const assetsSearchAdapter = {
                 return dateB - dateA;
             });
         }
-        
+
         return sortedResults;
     },
-    
+
     /**
      * Format a result item for display
      * Ensures consistent structure for SearchResults component
@@ -159,19 +169,20 @@ export const assetsSearchAdapter = {
             id: item.id,
             title: item.file, // Use filename as title for display
             subtitle: item.title || '', // Movie/show title as subtitle
-            imageUrl: item.location && item.file 
-                ? fetchPosterPreviewUrl(item.location, item.relativeFile || item.file)
-                : '',
+            imageUrl:
+                item.location && item.file
+                    ? fetchPosterPreviewUrl(item.location, item.relativeFile || item.file)
+                    : '',
             metadata: {
                 asset_type: item.asset_type,
                 year: item.year,
                 season_number: item.season_number,
-                title: item.title
+                title: item.title,
             },
             // Keep all original data
-            ...item
+            ...item,
         };
-    }
+    },
 };
 
 // Default export for easier importing

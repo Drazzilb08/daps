@@ -303,9 +303,7 @@ function ScheduleCard({ module, scheduleTime, runState, reload, openModal, toast
 
     const humanSchedule = scheduleToHuman(scheduleTime);
 
-    const tooltipText = running
-        ? `Cancel ${humanize(module)} Run`
-        : `Run ${humanize(module)} Now!`;
+    const tooltipText = running ? `Cancel ${humanize(module)} Run` : `Run ${humanize(module)} Now!`;
 
     return (
         <div className="card" tabIndex={0} onClick={handleCardClick}>
@@ -378,11 +376,13 @@ function ScheduleCard({ module, scheduleTime, runState, reload, openModal, toast
                         }}
                         ref={btnRef}
                     >
-                        {polling
-                            ? <LoadingSpinner size="small" />
-                            : !running
-                              ? getIcon('mi:play_arrow')
-                              : getIcon('mi:stop')}
+                        {polling ? (
+                            <LoadingSpinner size="small" />
+                        ) : !running ? (
+                            getIcon('mi:play_arrow')
+                        ) : (
+                            getIcon('mi:stop')
+                        )}
                     </button>
                     <TooltipFactory
                         anchor={btnRef.current}

@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 
 // Configuration
 const ITEM_HEIGHT = 60; // Height of each list item in pixels
-const OVERSCAN = 5;     // Number of items to render outside visible area
+const OVERSCAN = 5; // Number of items to render outside visible area
 
 export default function VirtualizedListView({
     results = [],
@@ -22,7 +22,7 @@ export default function VirtualizedListView({
     focusedResultIndex = -1,
     resultsContainerRef,
     enableVirtualization = true,
-    virtualizationThreshold = 100 // Enable virtualization for 100+ items
+    virtualizationThreshold = 100, // Enable virtualization for 100+ items
 }) {
     const scrollContainerRef = useRef(null);
     const [containerHeight, setContainerHeight] = useState(600);
@@ -34,7 +34,7 @@ export default function VirtualizedListView({
     // Update container height on resize
     useEffect(() => {
         if (!shouldVirtualize) return;
-        
+
         const updateHeight = () => {
             if (scrollContainerRef.current) {
                 const rect = scrollContainerRef.current.getBoundingClientRect();
@@ -44,12 +44,12 @@ export default function VirtualizedListView({
 
         updateHeight();
         window.addEventListener('resize', updateHeight);
-        
+
         return () => window.removeEventListener('resize', updateHeight);
     }, [shouldVirtualize]);
 
     // Handle scroll events
-    const handleScroll = useCallback((e) => {
+    const handleScroll = useCallback(e => {
         setScrollTop(e.target.scrollTop);
     }, []);
 
@@ -59,7 +59,7 @@ export default function VirtualizedListView({
             return {
                 startIndex: 0,
                 endIndex: results.length,
-                visibleItems: results.map((result, index) => ({ result, index }))
+                visibleItems: results.map((result, index) => ({ result, index })),
             };
         }
 
@@ -84,63 +84,68 @@ export default function VirtualizedListView({
     }, [shouldVirtualize, results, containerHeight, scrollTop]);
 
     // Render individual list item
-    const renderListItem = useCallback(({ result, index }) => {
-        const obj = result.original || result;
-        const displayTitle = getDisplayTitle(result);
-        const hoverProps = setupHoverPreview(result, hoverPreviewImgRef, enableHoverPreview);
-        const isFocused = focusedResultIndex === index;
+    const renderListItem = useCallback(
+        ({ result, index }) => {
+            const obj = result.original || result;
+            const displayTitle = getDisplayTitle(result);
+            const hoverProps = setupHoverPreview(result, hoverPreviewImgRef, enableHoverPreview);
+            const isFocused = focusedResultIndex === index;
 
-        // Position the item absolutely for virtualization
-        const style = shouldVirtualize ? {
-            position: 'absolute',
-            top: index * ITEM_HEIGHT,
-            left: 0,
-            right: 0,
-            height: ITEM_HEIGHT,
-        } : {};
+            // Position the item absolutely for virtualization
+            const style = shouldVirtualize
+                ? {
+                      position: 'absolute',
+                      top: index * ITEM_HEIGHT,
+                      left: 0,
+                      right: 0,
+                      height: ITEM_HEIGHT,
+                  }
+                : {};
 
-        return (
-            <div
-                key={getResultKey(result, index)}
-                className={`poster-list-item ${isFocused ? 'keyboard-focused' : ''}`}
-                style={style}
-                data-location={encodeURIComponent(obj.location || '')}
-                data-file={encodeURIComponent(obj.file || '')}
-                tabIndex={0}
-                title={displayTitle}
-                onClick={() => onResultClick(result)}
-                role="button"
-                aria-label={`Open ${displayTitle}`}
-                aria-describedby={`result-${index}-meta`}
-                {...hoverProps}
-            >
-                <span
-                    className="poster-file-label"
-                    dangerouslySetInnerHTML={{
-                        __html: highlightSearchTerm ? highlightSearchTerm(displayTitle, searchTerm) : displayTitle
-                    }}
-                />
-                
-                {renderMetadata && (
-                    <div id={`result-${index}-meta`}>
-                        {renderMetadata(result)}
-                    </div>
-                )}
-            </div>
-        );
-    }, [
-        getDisplayTitle, 
-        getResultKey, 
-        setupHoverPreview, 
-        hoverPreviewImgRef, 
-        enableHoverPreview, 
-        focusedResultIndex, 
-        onResultClick, 
-        highlightSearchTerm, 
-        searchTerm, 
-        renderMetadata,
-        shouldVirtualize
-    ]);
+            return (
+                <div
+                    key={getResultKey(result, index)}
+                    className={`poster-list-item ${isFocused ? 'keyboard-focused' : ''}`}
+                    style={style}
+                    data-location={encodeURIComponent(obj.location || '')}
+                    data-file={encodeURIComponent(obj.file || '')}
+                    tabIndex={0}
+                    title={displayTitle}
+                    onClick={() => onResultClick(result)}
+                    role="button"
+                    aria-label={`Open ${displayTitle}`}
+                    aria-describedby={`result-${index}-meta`}
+                    {...hoverProps}
+                >
+                    <span
+                        className="poster-file-label"
+                        dangerouslySetInnerHTML={{
+                            __html: highlightSearchTerm
+                                ? highlightSearchTerm(displayTitle, searchTerm)
+                                : displayTitle,
+                        }}
+                    />
+
+                    {renderMetadata && (
+                        <div id={`result-${index}-meta`}>{renderMetadata(result)}</div>
+                    )}
+                </div>
+            );
+        },
+        [
+            getDisplayTitle,
+            getResultKey,
+            setupHoverPreview,
+            hoverPreviewImgRef,
+            enableHoverPreview,
+            focusedResultIndex,
+            onResultClick,
+            highlightSearchTerm,
+            searchTerm,
+            renderMetadata,
+            shouldVirtualize,
+        ]
+    );
 
     // Non-virtualized rendering (for small datasets)
     if (!shouldVirtualize) {
@@ -160,14 +165,14 @@ export default function VirtualizedListView({
             <div className="virtualized-notice">
                 <small>Virtualized view - showing {results.length} items efficiently</small>
             </div>
-            
+
             <div
                 ref={scrollContainerRef}
                 className="poster-list-virtualized-container"
                 style={{
                     height: Math.min(600, containerHeight || 600), // Max height of 600px
                     overflow: 'auto',
-                    position: 'relative'
+                    position: 'relative',
                 }}
                 onScroll={handleScroll}
             >
@@ -176,7 +181,7 @@ export default function VirtualizedListView({
                     style={{
                         height: totalHeight,
                         position: 'relative',
-                        width: '100%'
+                        width: '100%',
                     }}
                 >
                     {visibleItems.map(({ result, index }) => renderListItem({ result, index }))}

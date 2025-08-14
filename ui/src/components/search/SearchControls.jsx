@@ -21,7 +21,7 @@ export default function SearchControls({
     sources = [],
     currentSource,
     onSourceChange,
-    
+
     // Search functionality
     searchTerm,
     onSearchTermChange,
@@ -30,22 +30,22 @@ export default function SearchControls({
     placeholder = 'Search...',
     isSearching = false,
     searchInputRef, // Phase 2 Enhancement: keyboard navigation
-    
+
     // Filters
     filters = [],
     activeFilters = {},
     onFilterChange,
-    
+
     // Sort and view options
     sortOptions = DEFAULT_SORT_OPTIONS,
     currentSort,
     onSortChange,
     currentView = 'grid',
     onViewChange,
-    
+
     // Additional data for dynamic options
     // searchData,
-    
+
     // Customization
     viewModes = DEFAULT_VIEW_MODES,
     showSearch = true,
@@ -57,20 +57,20 @@ export default function SearchControls({
     const searchBtnRef = useRef();
     // searchInputRef is now passed as a prop for keyboard navigation
     const filterRefs = useRef({});
-    
+
     // ===== TOOLTIP STATE =====
     const [hoveredView, setHoveredView] = useState(null);
     const [showSearchTip, setShowSearchTip] = useState(false);
     const [tooltipStates, setTooltipStates] = useState({});
-    
+
     // ===== DROPDOWN STATES =====
     const [dropdownStates, setDropdownStates] = useState({});
-    
+
     // ===== DROPDOWN CLICK OUTSIDE HANDLING =====
     useEffect(() => {
         const activeDropdowns = Object.keys(dropdownStates).filter(key => dropdownStates[key]);
         if (activeDropdowns.length === 0) return;
-        
+
         function handleClickOutside(e) {
             activeDropdowns.forEach(filterId => {
                 const ref = filterRefs.current[filterId];
@@ -79,27 +79,27 @@ export default function SearchControls({
                 }
             });
         }
-        
+
         document.addEventListener('click', handleClickOutside);
         return () => document.removeEventListener('click', handleClickOutside);
     }, [dropdownStates]);
-    
+
     // ===== HELPER FUNCTIONS =====
     const setTooltipState = (key, value) => {
         setTooltipStates(prev => ({ ...prev, [key]: value }));
     };
-    
-    const toggleDropdown = (filterId) => {
+
+    const toggleDropdown = filterId => {
         setDropdownStates(prev => ({ ...prev, [filterId]: !prev[filterId] }));
     };
-    
+
     const handleFilterSelect = (filterId, value) => {
         onFilterChange(filterId, value);
         setDropdownStates(prev => ({ ...prev, [filterId]: false }));
     };
-    
+
     // ===== KEYBOARD HANDLERS =====
-    const handleSearchKeyDown = (e) => {
+    const handleSearchKeyDown = e => {
         if (e.key === 'Enter') {
             e.preventDefault();
             onSearch();
@@ -108,18 +108,18 @@ export default function SearchControls({
             }
         }
     };
-    
+
     const handleFilterKeyDown = (e, filterId, value) => {
         if (e.key === 'Enter' || e.key === ' ') {
             e.preventDefault();
             handleFilterSelect(filterId, value);
         }
     };
-    
+
     // ===== RENDER FUNCTIONS =====
     const renderSourcePicker = () => {
         if (!sources.length) return null;
-        
+
         return (
             <div className="poster-source-picker">
                 {sources.map(source => (
@@ -149,13 +149,13 @@ export default function SearchControls({
             </div>
         );
     };
-    
+
     const renderSortSelect = () => {
         if (!showSort || !sortOptions.length) return null;
-        
+
         return (
-            <select 
-                value={currentSort} 
+            <select
+                value={currentSort}
                 onChange={e => onSortChange(e.target.value)}
                 disabled={isSearching}
             >
@@ -167,10 +167,10 @@ export default function SearchControls({
             </select>
         );
     };
-    
+
     const renderViewModeToggle = () => {
         if (!showViewToggle || !viewModes.length) return null;
-        
+
         return (
             <div className="poster-view-mode-group">
                 {viewModes.map(mode => (
@@ -201,12 +201,12 @@ export default function SearchControls({
             </div>
         );
     };
-    
-    const renderFilter = (filter) => {
+
+    const renderFilter = filter => {
         const { key, type, label, options, icon = 'mi:filter_list' } = filter;
         const isActive = dropdownStates[key];
         const currentValue = activeFilters[key];
-        
+
         if (type === 'dropdown') {
             return (
                 <div key={key} className="search-bar-icon search-bar-btn-icon">
@@ -249,19 +249,19 @@ export default function SearchControls({
                 </div>
             );
         }
-        
+
         // Add support for other filter types in the future
         return null;
     };
-    
+
     const renderSearchBar = () => {
         if (!showSearch) return null;
-        
+
         return (
             <div className="poster-search-bar-container">
                 {/* Render filter controls */}
                 {filters.map(filter => renderFilter(filter))}
-                
+
                 {/* Search input */}
                 <input
                     ref={searchInputRef}
@@ -279,16 +279,12 @@ export default function SearchControls({
                     aria-label={placeholder}
                     aria-describedby="search-instructions"
                 />
-                
+
                 {/* Screen reader instructions */}
-                <div 
-                    id="search-instructions" 
-                    className="sr-only"
-                    aria-live="polite"
-                >
+                <div id="search-instructions" className="sr-only" aria-live="polite">
                     Press Enter to search, Escape to clear, or use arrow keys to navigate results
                 </div>
-                
+
                 {/* Clear button */}
                 {!!searchTerm && (
                     <button
@@ -303,7 +299,7 @@ export default function SearchControls({
                         {getIcon('mi:close')}
                     </button>
                 )}
-                
+
                 {/* Search button */}
                 <button
                     className="search-btn"
@@ -328,7 +324,7 @@ export default function SearchControls({
             </div>
         );
     };
-    
+
     // ===== MAIN RENDER =====
     return (
         <div>

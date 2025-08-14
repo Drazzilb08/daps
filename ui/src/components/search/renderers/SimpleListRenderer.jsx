@@ -7,11 +7,15 @@ import { BaseSearchRenderer } from './BaseSearchRenderer.jsx';
 export class SimpleListRenderer extends BaseSearchRenderer {
     processResults(results, { currentSort }) {
         let sortedResults = [...results];
-        
+
         if (currentSort === 'alpha') {
-            sortedResults.sort((a, b) => this.getDisplayTitle(a).localeCompare(this.getDisplayTitle(b)));
+            sortedResults.sort((a, b) =>
+                this.getDisplayTitle(a).localeCompare(this.getDisplayTitle(b))
+            );
         } else if (currentSort === 'alpha-desc') {
-            sortedResults.sort((a, b) => this.getDisplayTitle(b).localeCompare(this.getDisplayTitle(a)));
+            sortedResults.sort((a, b) =>
+                this.getDisplayTitle(b).localeCompare(this.getDisplayTitle(a))
+            );
         } else if (currentSort === 'date') {
             sortedResults.sort((a, b) => {
                 const dateA = new Date(a.updated_at || a.added_at || a.created_at || 0);
@@ -19,14 +23,14 @@ export class SimpleListRenderer extends BaseSearchRenderer {
                 return dateB - dateA;
             });
         }
-        
+
         return sortedResults;
     }
 
     renderListItem(result, index, { searchTerm, onResultClick }) {
         const displayTitle = this.getDisplayTitle(result);
         const obj = result.original || result;
-        
+
         return (
             <div
                 key={this.getResultKey(result, index)}
@@ -41,15 +45,9 @@ export class SimpleListRenderer extends BaseSearchRenderer {
                         __html: this.highlightSearchTerm(displayTitle, searchTerm),
                     }}
                 />
-                {result.subtitle && (
-                    <span className="list-item-subtitle">
-                        {result.subtitle}
-                    </span>
-                )}
+                {result.subtitle && <span className="list-item-subtitle">{result.subtitle}</span>}
                 {obj.description && (
-                    <span className="list-item-description">
-                        {obj.description}
-                    </span>
+                    <span className="list-item-description">{obj.description}</span>
                 )}
             </div>
         );
@@ -57,7 +55,7 @@ export class SimpleListRenderer extends BaseSearchRenderer {
 
     renderGridItem(result, index, { searchTerm, onResultClick }) {
         const displayTitle = this.getDisplayTitle(result);
-        
+
         return (
             <div
                 key={this.getResultKey(result, index)}
@@ -77,48 +75,40 @@ export class SimpleListRenderer extends BaseSearchRenderer {
                         __html: this.highlightSearchTerm(displayTitle, searchTerm),
                     }}
                 />
-                {result.subtitle && (
-                    <span className="grid-item-subtitle">
-                        {result.subtitle}
-                    </span>
-                )}
+                {result.subtitle && <span className="grid-item-subtitle">{result.subtitle}</span>}
             </div>
         );
     }
 
-    render({
-        results,
-        searchTerm,
-        currentSort,
-        currentView,
-        onResultClick,
-        ...additionalProps
-    }) {
+    render({ results, searchTerm, currentSort, currentView, onResultClick, ...additionalProps }) {
         const processedResults = this.processResults(results, { currentSort });
-        
+
         if (currentView === 'list') {
             return (
-                <div className="poster-search-results simple-list-results" id="poster-search-results">
+                <div
+                    className="poster-search-results simple-list-results"
+                    id="poster-search-results"
+                >
                     {processedResults.map((result, index) =>
-                        this.renderListItem(result, index, { 
-                            searchTerm, 
+                        this.renderListItem(result, index, {
+                            searchTerm,
                             onResultClick,
-                            ...additionalProps 
+                            ...additionalProps,
                         })
                     )}
                 </div>
             );
         }
-        
+
         // Grid view
         return (
             <div className="poster-search-results simple-grid-results" id="poster-search-results">
                 <div className="poster-grid">
                     {processedResults.map((result, index) =>
-                        this.renderGridItem(result, index, { 
-                            searchTerm, 
+                        this.renderGridItem(result, index, {
+                            searchTerm,
                             onResultClick,
-                            ...additionalProps 
+                            ...additionalProps,
                         })
                     )}
                 </div>

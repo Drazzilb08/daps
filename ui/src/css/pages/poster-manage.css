@@ -315,7 +315,7 @@
     }
 
     /* ========== RESPONSIVE ADJUSTMENTS ========== */
-    @media (max-width: 768px) {
+    @media (width <= 768px) {
         .gdrive-pill {
             flex-direction: column;
             align-items: flex-start;
@@ -346,7 +346,7 @@
         }
     }
 
-    @media (max-width: 480px) {
+    @media (width <= 480px) {
         .gdrive-pill {
             padding: 12px;
         }

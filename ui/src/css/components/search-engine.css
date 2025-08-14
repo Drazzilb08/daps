@@ -7,10 +7,7 @@
     /* ======================================================
    SEARCH ENGINE: LAYOUT & ROOT
 ====================================================== */
-    .search-engine {
-        /* Base styles for SearchEngine component */
-    }
-    
+
     .search-engine .poster-search-root {
         margin-top: 2rem;
         margin-left: auto;
@@ -18,14 +15,6 @@
         max-width: 800px;
         min-width: 400px;
         padding: 0 2rem;
-    }
-
-    .search-engine .poster-search-card {
-        /* Card wrapper styles */
-    }
-
-    .search-engine .poster-search-content {
-        /* Content wrapper styles */
     }
 
     /* ======================================================
@@ -36,12 +25,9 @@
         align-items: center;
         justify-content: center;
         gap: 2em;
-        margin-bottom: 1.6em;
-        margin-top: 1.5em;
+        margin: 1.5em auto 1.6em;
         width: 85%;
         max-width: 800px;
-        margin-left: auto;
-        margin-right: auto;
     }
 
     .search-engine .poster-source-picker {
@@ -74,7 +60,7 @@
     .search-engine .source-picker-btn.active,
     .search-engine .source-picker-btn:focus {
         background: var(--primary, #1e88e5);
-        color: #fff;
+        color: var(--primary-contrast);
         opacity: 1;
     }
 
@@ -101,13 +87,8 @@
     .search-engine .view-mode-btn.active,
     .search-engine .view-mode-btn:focus {
         background: var(--primary, #1e88e5);
-        color: #fff;
+        color: var(--primary-contrast);
         opacity: 1;
-    }
-
-    /* Sort select styles - inherit from forms.css */
-    .search-engine select {
-        /* Use global form styles from forms.css */
     }
 
     /* ======================================================
@@ -257,7 +238,7 @@
     .search-engine .search-bar-btn-option:hover,
     .search-engine .search-bar-btn-option:focus {
         background: var(--primary, #388be5);
-        color: #fff;
+        color: var(--primary-contrast);
     }
 
     .search-engine .poster-search-bar.has-filter {
@@ -287,10 +268,6 @@
         letter-spacing: 0.01em;
         font-weight: 500;
         opacity: 0.9;
-    }
-
-    .search-engine .loading-spinner {
-        /* Use existing loading spinner styles */
     }
 
     /* ======================================================
@@ -343,7 +320,7 @@
 
     .search-engine .poster-grid-item:hover {
         background: var(--primary, #2456a8);
-        color: #fff;
+        color: var(--primary-contrast);
     }
 
     .search-engine .poster-thumb-img {
@@ -386,7 +363,7 @@
 
     .search-engine .poster-list-item:hover {
         background: var(--primary, #1e88e5);
-        color: #fff;
+        color: var(--primary-contrast);
     }
 
     /* ======================================================
@@ -457,7 +434,7 @@
     /* ======================================================
    SEARCH ENGINE: RESPONSIVE DESIGN (Phase 2 Mobile Enhancements)
 ====================================================== */
-    @media (max-width: 960px) {
+    @media (width <= 960px) {
         .search-engine .poster-search-root {
             max-width: 100%;
             min-width: auto;
@@ -479,7 +456,7 @@
         }
     }
 
-    @media (max-width: 600px) {
+    @media (width <= 600px) {
         .search-engine .poster-search-controls {
             flex-direction: column;
             align-items: stretch;
@@ -512,7 +489,7 @@
     }
 
     /* Mobile Touch Enhancements (Phase 2) */
-    @media (max-width: 480px) {
+    @media (width <= 480px) {
         /* Larger touch targets for mobile */
         .search-engine .source-picker-btn,
         .search-engine .view-mode-btn,
@@ -552,6 +529,7 @@
             min-height: 260px;
             padding: 0.75rem;
             border-radius: 8px;
+
             /* Larger tap target */
             min-width: 140px;
         }
@@ -561,6 +539,7 @@
             padding: 1rem;
             margin-bottom: 0.75rem;
             border-radius: 8px;
+
             /* Easier to tap */
             min-height: 60px;
         }
@@ -615,7 +594,7 @@
     }
 
     /* Extra small screens */
-    @media (max-width: 320px) {
+    @media (width <= 320px) {
         .search-engine .poster-search-root {
             margin: 1rem 0.5rem 0;
         }
@@ -638,7 +617,7 @@
     }
 
     /* Landscape mobile orientation */
-    @media (max-width: 768px) and (orientation: landscape) {
+    @media (width <= 768px) and (orientation: landscape) {
         .search-engine .poster-search-root {
             margin-top: 1rem;
         }
@@ -653,7 +632,7 @@
     }
 
     /* High DPI/Retina displays */
-    @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    @media (resolution >= 192dpi) {
         .search-engine .poster-grid-item,
         .search-engine .poster-list-item {
             /* Ensure crisp rendering on high-DPI displays */
@@ -678,18 +657,6 @@
     /* ======================================================
    SEARCH ENGINE: VARIANTS
 ====================================================== */
-    .search-engine--assets {
-        /* Specific styles for assets search variant */
-    }
-
-    .search-engine--gdrive {
-        /* Specific styles for gdrive search variant */
-    }
-
-    .search-engine--compact {
-        /* Compact variant styles */
-    }
-
     .search-engine--compact .poster-search-root {
         max-width: 600px;
         min-width: 400px;
@@ -708,7 +675,7 @@
     /* ======================================================
    SEARCH ENGINE: ENHANCED STATES (Phase 2 Enhancement)
 ====================================================== */
-    
+
     /* Loading States */
     .search-loading-container {
         display: flex;
@@ -831,8 +798,10 @@
     .poster-list-item.keyboard-focused {
         outline: 2px solid var(--primary, #3b82f6);
         outline-offset: 2px;
-        background: var(--bg-focus, rgba(59, 130, 246, 0.1));
-        transition: outline 0.2s ease, background-color 0.2s ease;
+        background: var(--bg-focus, rgb(59 130 246 / 10%));
+        transition:
+            outline 0.2s ease,
+            background-color 0.2s ease;
     }
 
     .poster-grid-item.keyboard-focused .poster-image,
@@ -855,7 +824,7 @@
         padding: 0;
         margin: -1px;
         overflow: hidden;
-        clip: rect(0, 0, 0, 0);
+        clip-path: rect(0, 0, 0, 0);
         white-space: nowrap;
         border: 0;
     }
@@ -876,11 +845,6 @@
         border: 1px solid var(--border);
         border-radius: 8px;
         background: var(--bg);
-    }
-
-    .poster-grid-virtualized-content,
-    .poster-list-virtualized-content {
-        /* Container for absolutely positioned virtualized items */
     }
 
     /* Virtualized grid items maintain original styling but with absolute positioning */
@@ -907,11 +871,11 @@
             background: var(--bg-error-dark, #7f1d1d);
             border-color: var(--border-error-dark, #991b1b);
         }
-        
+
         .search-error-title {
             color: var(--text-error-dark, #fca5a5);
         }
-        
+
         .search-empty-message kbd {
             background: var(--bg-secondary-dark, #374151);
             border-color: var(--border-dark);
@@ -921,7 +885,7 @@
         .poster-grid-item.keyboard-focused,
         .poster-list-item.keyboard-focused {
             outline-color: var(--primary-light, #60a5fa);
-            background: var(--bg-focus-dark, rgba(96, 165, 250, 0.1));
+            background: var(--bg-focus-dark, rgb(96 165 250 / 10%));
         }
 
         .virtualized-notice {

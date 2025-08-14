@@ -15,7 +15,7 @@ export default function GridView({
     renderMetadata = () => null,
     className = 'poster-search-results',
     focusedResultIndex = -1, // Phase 2 Enhancement: keyboard navigation
-    resultsContainerRef
+    resultsContainerRef,
 }) {
     return (
         <div className={className} id="poster-search-results" ref={resultsContainerRef}>
@@ -25,7 +25,7 @@ export default function GridView({
                     const displayTitle = getDisplayTitle(result);
                     const imageUrl = getImageUrl(result);
                     const isFocused = focusedResultIndex === index;
-                    
+
                     return (
                         <div
                             className={`poster-grid-item ${isFocused ? 'keyboard-focused' : ''}`}

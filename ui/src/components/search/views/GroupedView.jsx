@@ -40,7 +40,7 @@ export default function GroupedView({
         setupHoverPreview,
         hoverPreviewImgRef,
         enableHoverPreview,
-        renderMetadata
+        renderMetadata,
     };
 
     if (currentView === 'list') {
@@ -52,7 +52,10 @@ export default function GroupedView({
                             {groupingHelper.getGroupLabel(groups[location], location)}
                         </div>
                         <ListView
-                            results={groupingHelper.sortFilesInGroup(groups[location], getDisplayTitle)}
+                            results={groupingHelper.sortFilesInGroup(
+                                groups[location],
+                                getDisplayTitle
+                            )}
                             className="" // No wrapper class since we're already wrapped
                             {...viewProps}
                         />
@@ -75,7 +78,7 @@ export default function GroupedView({
                             const obj = result.original || result;
                             const displayTitle = getDisplayTitle(result);
                             const imageUrl = getImageUrl(result);
-                            
+
                             return (
                                 <div
                                     className="poster-grid-item"

@@ -64,12 +64,10 @@
     }
 
     /* ========== INPUT CONTROLS ========== */
+    .input,
     .field__input input,
     .field__input select,
-    .field__input textarea,
-    .input,
-    select,
-    textarea {
+    .field__input textarea {
         display: block;
         width: 100%;
         padding: var(--control-padding-y) var(--control-padding-x);
@@ -89,6 +87,22 @@
     }
 
     select {
+        display: block;
+        width: 100%;
+        padding: var(--control-padding-y) var(--control-padding-x);
+        min-height: var(--control-min-height);
+        background: var(--input-bg, var(--surface));
+        color: var(--text-color);
+        border: var(--border-width-2) solid var(--divider);
+        box-shadow: var(--shadow-1);
+        border-radius: var(--control-radius);
+        font-size: var(--font-size-2);
+        font-family: var(--font-family);
+        box-sizing: border-box;
+        transition:
+            border-color var(--duration-fast),
+            box-shadow var(--duration-fast);
+        appearance: none;
         background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ff7300'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
         background-position: right var(--space-3) center;
@@ -100,11 +114,24 @@
     }
 
     textarea {
+        display: block;
+        width: 100%;
+        padding: var(--control-padding-y) var(--control-padding-x);
+        background: var(--input-bg, var(--surface));
+        color: var(--text-color);
+        border: var(--border-width-2) solid var(--divider);
+        box-shadow: var(--shadow-1);
+        border-radius: var(--control-radius);
+        font-family: var(--font-family);
+        box-sizing: border-box;
+        transition:
+            border-color var(--duration-fast),
+            box-shadow var(--duration-fast);
+        appearance: none;
         min-height: 4rem;
         height: auto;
         resize: vertical;
         overflow-y: hidden !important;
-        box-sizing: border-box;
         font-size: 1.01rem;
         line-height: 1.23;
     }
@@ -371,7 +398,7 @@
     }
 
     /* ========== DESKTOP FORM LAYOUTS ========== */
-    @media (min-width: 1025px) {
+    @media (width >= 1025px) {
         .field,
         .settings-field-row,
         .modal-field-row {
@@ -412,7 +439,7 @@
     }
 
     /* ========== ENHANCED MOBILE TOUCH TARGETS ========== */
-    @media (max-width: 600px) {
+    @media (width <= 600px) {
         input[type='checkbox'] {
             width: 28px !important;
             height: 28px !important;

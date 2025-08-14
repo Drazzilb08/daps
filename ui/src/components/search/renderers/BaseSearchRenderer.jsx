@@ -27,28 +27,30 @@ export class BaseSearchRenderer {
      * @returns {React.Element} Rendered error
      */
     renderError(error) {
-        const isNetworkError = error.includes('fetch') || error.includes('network') || error.includes('connection');
-        const isDataError = error.includes('data') || error.includes('cache') || error.includes('load');
+        const isNetworkError =
+            error.includes('fetch') || error.includes('network') || error.includes('connection');
+        const isDataError =
+            error.includes('data') || error.includes('cache') || error.includes('load');
         const isConfigError = error.includes('config') || error.includes('setting');
-        
+
         return (
-            <div 
-                className="search-error-container"
-                role="alert"
-                aria-live="assertive"
-            >
+            <div className="search-error-container" role="alert" aria-live="assertive">
                 <div className="search-error-icon" aria-hidden="true">
                     {isNetworkError ? '🌐' : isDataError ? '📊' : isConfigError ? '⚙️' : '⚠️'}
                 </div>
                 <div className="search-error-content">
                     <div className="search-error-title">
-                        {isNetworkError ? 'Connection Error' : 
-                         isDataError ? 'Data Loading Error' :
-                         isConfigError ? 'Configuration Error' : 'Search Error'}
+                        {isNetworkError
+                            ? 'Connection Error'
+                            : isDataError
+                              ? 'Data Loading Error'
+                              : isConfigError
+                                ? 'Configuration Error'
+                                : 'Search Error'}
                     </div>
                     <div className="search-error-message">{error}</div>
                     <div className="search-error-actions">
-                        <button 
+                        <button
                             className="search-retry-btn"
                             onClick={() => window.location.reload()}
                         >
@@ -68,32 +70,30 @@ export class BaseSearchRenderer {
     renderEmptyState(searchTerm) {
         if (!searchTerm || !searchTerm.trim()) {
             return (
-                <div 
-                    className="search-empty-container"
-                    role="status"
-                    aria-live="polite"
-                >
-                    <div className="search-empty-icon" aria-hidden="true">🔍</div>
+                <div className="search-empty-container" role="status" aria-live="polite">
+                    <div className="search-empty-icon" aria-hidden="true">
+                        🔍
+                    </div>
                     <div className="search-empty-content">
                         <div className="search-empty-title">Ready to Search</div>
                         <div className="search-empty-message">
-                            Type a search term and press <kbd>Enter</kbd> or click <strong>Search</strong>.
+                            Type a search term and press <kbd>Enter</kbd> or click{' '}
+                            <strong>Search</strong>.
                         </div>
                     </div>
                 </div>
             );
         }
         return (
-            <div 
-                className="search-empty-container"
-                role="status"
-                aria-live="polite"
-            >
-                <div className="search-empty-icon" aria-hidden="true">📭</div>
+            <div className="search-empty-container" role="status" aria-live="polite">
+                <div className="search-empty-icon" aria-hidden="true">
+                    📭
+                </div>
                 <div className="search-empty-content">
                     <div className="search-empty-title">No Results Found</div>
                     <div className="search-empty-message">
-                        No results found for &ldquo;<strong>{searchTerm}</strong>&rdquo;. Try adjusting your search terms or filters.
+                        No results found for &ldquo;<strong>{searchTerm}</strong>&rdquo;. Try
+                        adjusting your search terms or filters.
                     </div>
                 </div>
             </div>
@@ -118,12 +118,7 @@ export class BaseSearchRenderer {
      */
     getResultKey(result, index) {
         const obj = result.original || result;
-        return [
-            obj.id || 'item',
-            obj.location || '',
-            obj.file || obj.title || '',
-            index
-        ].join('|');
+        return [obj.id || 'item', obj.location || '', obj.file || obj.title || '', index].join('|');
     }
 
     /**
@@ -144,7 +139,10 @@ export class BaseSearchRenderer {
      */
     highlightSearchTerm(text, searchTerm) {
         if (!searchTerm || !text) return text;
-        const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')})`, 'gi');
+        const regex = new RegExp(
+            `(${searchTerm.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\\\$&')})`,
+            'gi'
+        );
         return text.replace(regex, `<span class="highlight">$1</span>`);
     }
 }

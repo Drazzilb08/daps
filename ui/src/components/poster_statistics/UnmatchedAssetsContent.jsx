@@ -49,7 +49,9 @@ export default function UnmatchedAssetsContent({ data, loading, error, refresh }
                 />
             </div>
             {loading ? (
-                <div className="stats-loading"><LoadingSpinner /></div>
+                <div className="stats-loading">
+                    <LoadingSpinner />
+                </div>
             ) : error ? (
                 <div className="stats-error">{error}</div>
             ) : !STAT_TYPES.some(({ key }) => (data ?? {})[key] && (data ?? {})[key].total > 0) ? (

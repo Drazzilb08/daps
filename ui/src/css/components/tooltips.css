@@ -57,7 +57,7 @@
     }
 
     /* ========== RESPONSIVE OVERRIDES ========== */
-    @media (max-width: 600px) {
+    @media (width <= 600px) {
         .btn-tooltip {
             font-size: var(--font-size-2);
             padding: 0.41em 0.7em;

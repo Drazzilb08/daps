@@ -16,7 +16,7 @@ function Header() {
         // Hamburger logic for small screens only
         const hamburger = document.getElementById('sidebarToggle');
         if (!hamburger) return;
-        
+
         function handleHamburgerClick() {
             const body = document.body;
             const isOpen = !body.classList.contains('sidebar-open');
@@ -24,7 +24,7 @@ function Header() {
             hamburger.classList.toggle('opened', isOpen);
             hamburger.setAttribute('aria-expanded', String(isOpen));
         }
-        
+
         hamburger.addEventListener('click', handleHamburgerClick);
         return () => hamburger.removeEventListener('click', handleHamburgerClick);
     }, []);
@@ -36,29 +36,29 @@ function Header() {
                 closeMobileSidebar();
             }
         }
-        
+
         // Close sidebar when clicking outside on mobile
         function handleClickOutside(e) {
             const body = document.body;
             const sidebar = document.getElementById('sidebarNav');
             const hamburger = document.getElementById('sidebarToggle');
-            
+
             // Only handle on mobile when sidebar is open
             if (window.innerWidth >= 1024 || !body.classList.contains('sidebar-open')) {
                 return;
             }
-            
+
             // Don't close if clicking on sidebar or hamburger
             if (sidebar?.contains(e.target) || hamburger?.contains(e.target)) {
                 return;
             }
-            
+
             closeMobileSidebar();
         }
-        
+
         window.addEventListener('keydown', handleEsc);
         document.addEventListener('click', handleClickOutside);
-        
+
         return () => {
             window.removeEventListener('keydown', handleEsc);
             document.removeEventListener('click', handleClickOutside);

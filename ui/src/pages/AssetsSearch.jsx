@@ -6,20 +6,15 @@ import { useToast } from '../components/providers/ToastProvider';
 
 export default function AssetsSearch() {
     const toast = useToast();
-    
+
     const handleResultDelete = () => {
         toast('Asset updated in database', 'success');
     };
 
-    const handleError = (error) => {
+    const handleError = error => {
         console.error('Assets search error:', error);
         toast('Search error occurred', 'error');
     };
 
-    return (
-        <AssetsSearchEngine
-            onResultDelete={handleResultDelete}
-            onError={handleError}
-        />
-    );
+    return <AssetsSearchEngine onResultDelete={handleResultDelete} onError={handleError} />;
 }

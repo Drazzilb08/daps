@@ -6,11 +6,11 @@ export { default as SearchEngine } from './SearchEngine';
 export { default as SearchControls } from './SearchControls';
 
 // Pre-configured variants (main exports)
-export { 
-    AssetsSearchEngine, 
+export {
+    AssetsSearchEngine,
     GdriveSearchEngine,
     assetsSearchAdapter,
-    gdriveSearchAdapter
+    gdriveSearchAdapter,
 } from './SearchEngineFactory.jsx';
 
 // Factory as default export

@@ -17,7 +17,7 @@ export class PosterRenderer extends BaseSearchRenderer {
         if (groupBy && currentSort && currentSort.startsWith('priority-')) {
             return results;
         }
-        
+
         // Apply individual file sorting for non-priority sorts
         let sortedResults = [...results];
         if (currentSort === 'alpha') {
@@ -39,24 +39,21 @@ export class PosterRenderer extends BaseSearchRenderer {
                 return dateB - dateA;
             });
         }
-        
+
         return sortedResults;
     }
 
     // === HOVER PREVIEW SETUP ===
     setupHoverPreview = (result, hoverPreviewImgRef, enableHoverPreview) => {
         if (!enableHoverPreview || !hoverPreviewImgRef?.current) return {};
-        
+
         const obj = result.original || result;
-        
+
         return {
             onMouseOver: () => {
                 const img = hoverPreviewImgRef.current;
                 if (obj.location && obj.file) {
-                    let url = fetchPosterPreviewUrl(
-                        obj.location,
-                        obj.relativeFile || obj.file
-                    );
+                    let url = fetchPosterPreviewUrl(obj.location, obj.relativeFile || obj.file);
                     url += url.includes('?') ? '&thumb=1' : '?thumb=1';
                     img.src = url;
                     img.style.display = 'block';
@@ -70,52 +67,54 @@ export class PosterRenderer extends BaseSearchRenderer {
                 img.style.display = 'none';
                 img.src = '';
             },
-            onMouseMove: (e) => {
+            onMouseMove: e => {
                 const img = hoverPreviewImgRef.current;
                 if (img.style.display === 'block') {
                     const imgWidth = img.naturalWidth ? Math.min(img.naturalWidth, 200) : 200;
                     const imgHeight = img.naturalHeight ? Math.min(img.naturalHeight, 200) : 200;
                     const vpWidth = window.innerWidth;
                     const vpHeight = window.innerHeight;
-                    
+
                     let left = e.pageX + 14;
                     let top = e.pageY + 14;
-                    
-                    if (left + imgWidth > vpWidth - 10) left = Math.max(10, vpWidth - imgWidth - 10);
-                    if (top + imgHeight > vpHeight - 10) top = Math.max(10, vpHeight - imgHeight - 10);
-                    
+
+                    if (left + imgWidth > vpWidth - 10)
+                        left = Math.max(10, vpWidth - imgWidth - 10);
+                    if (top + imgHeight > vpHeight - 10)
+                        top = Math.max(10, vpHeight - imgHeight - 10);
+
                     img.style.left = left + 'px';
                     img.style.top = top + 'px';
                 }
-            }
+            },
         };
-    }
+    };
 
     // === IMAGE URL GENERATION ===
-    getImageUrl = (result) => {
+    getImageUrl = result => {
         const obj = result.original || result;
-        
+
         // If result has explicit imageUrl (from adapter formatting)
         if (result.imageUrl) {
             return result.imageUrl;
         }
-        
+
         // Generate from location/file (existing pattern)
         if (obj.location && obj.file) {
             let url = fetchPosterPreviewUrl(obj.location, obj.relativeFile || obj.file);
             url += url.includes('?') ? '&thumb=1' : '?thumb=1';
             return url;
         }
-        
+
         return '';
-    }
+    };
 
     // === METADATA RENDERING ===
-    renderAssetMetadata = (result) => {
+    renderAssetMetadata = result => {
         const obj = result.original || result;
-        
+
         if (!obj.asset_type) return null;
-        
+
         return (
             <div className="poster-asset-meta">
                 {obj.asset_type === 'movie' && obj.year && (
@@ -130,13 +129,11 @@ export class PosterRenderer extends BaseSearchRenderer {
                     </span>
                 )}
                 {obj.asset_type === 'collection' && (
-                    <span className="meta-collection">
-                        {obj.title} (Collection)
-                    </span>
+                    <span className="meta-collection">{obj.title} (Collection)</span>
                 )}
             </div>
         );
-    }
+    };
 
     // === MAIN RENDER METHOD ===
     render({
@@ -156,12 +153,11 @@ export class PosterRenderer extends BaseSearchRenderer {
         ...additionalProps
     }) {
         const processedResults = this.processResults(results, { currentSort, groupBy });
-        
+
         // Determine if we should use virtualization
-        const shouldUseVirtualization = enableVirtualization && 
-                                       processedResults.length >= virtualizationThreshold &&
-                                       !groupBy; // Don't virtualize grouped views yet
-        
+        const shouldUseVirtualization =
+            enableVirtualization && processedResults.length >= virtualizationThreshold && !groupBy; // Don't virtualize grouped views yet
+
         // Common props for all views
         const viewProps = {
             results: processedResults,
@@ -180,9 +176,9 @@ export class PosterRenderer extends BaseSearchRenderer {
             resultsContainerRef,
             enableVirtualization,
             virtualizationThreshold,
-            ...additionalProps
+            ...additionalProps,
         };
-        
+
         // === GROUPED RENDERING (when groupBy is specified) ===
         if (groupBy === 'location') {
             return (
@@ -194,7 +190,7 @@ export class PosterRenderer extends BaseSearchRenderer {
                 />
             );
         }
-        
+
         // === NON-GROUPED RENDERING ===
         if (currentView === 'list') {
             // Use virtualized list for large datasets
@@ -203,7 +199,7 @@ export class PosterRenderer extends BaseSearchRenderer {
             }
             return <ListView {...viewProps} />;
         }
-        
+
         // Use virtualized grid for large datasets
         if (shouldUseVirtualization) {
             return <VirtualizedGridView {...viewProps} />;

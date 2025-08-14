@@ -10,7 +10,7 @@
         padding: 0;
         margin: -1px;
         overflow: hidden;
-        clip: rect(0, 0, 0, 0);
+        clip-path: rect(0, 0, 0, 0);
         white-space: nowrap;
         border: 0;
     }
@@ -48,7 +48,7 @@
     }
 
     /* responsive utilities */
-    @media (max-width: 1024px) {
+    @media (width <= 1024px) {
         .u-mobile-hidden {
             display: none !important;
         }
@@ -71,7 +71,7 @@
         }
     }
 
-    @media (min-width: 1025px) {
+    @media (width >= 1025px) {
         .u-desktop-hidden {
             display: none !important;
         }

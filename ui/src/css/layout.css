@@ -30,9 +30,6 @@
 ======================== */
 
     /* MOBILE: hamburger visible, sidebar hidden */
-    .hamburger.menu {
-        display: block;
-    }
 
     .container {
         margin-left: 0;
@@ -47,7 +44,7 @@
     }
 
     /* DESKTOP: hamburger hidden, sidebar always visible */
-    @media (min-width: 1024px) {
+    @media (width >= 1024px) {
         .hamburger.menu {
             display: none;
         }
@@ -109,7 +106,7 @@
         align-items: center;
         padding: 0;
         border-bottom: 1px solid var(--divider);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* fallback */
+        box-shadow: 0 4px 10px rgb(0 0 0 / 15%); /* fallback */
         box-shadow: var(--shadow-2);
         z-index: 100; /* fallback */
         z-index: var(--z-sticky);
@@ -143,7 +140,7 @@
     }
 
     /* Hide hamburger on desktop */
-    @media (min-width: 1024px) {
+    @media (width >= 1024px) {
         .hamburger.menu {
             display: none;
         }

@@ -23,7 +23,7 @@ export const groupingHelper = {
      */
     getGroupOrder(groups, currentSort, priorityOrder = {}) {
         let groupOrder = Object.keys(groups);
-        
+
         if (currentSort === 'priority-asc') {
             groupOrder = groupOrder.sort((a, b) => {
                 const pa = priorityOrder[a] ?? 9999;
@@ -41,7 +41,7 @@ export const groupingHelper = {
         } else if (currentSort === 'alpha-desc') {
             groupOrder = groupOrder.sort((a, b) => b.localeCompare(a));
         }
-        
+
         return groupOrder;
     },
 
@@ -57,5 +57,5 @@ export const groupingHelper = {
      */
     sortFilesInGroup(files, getDisplayTitle) {
         return files.sort((a, b) => getDisplayTitle(a).localeCompare(getDisplayTitle(b)));
-    }
+    },
 };

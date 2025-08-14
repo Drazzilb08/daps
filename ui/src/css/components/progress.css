@@ -90,8 +90,9 @@
         border: none;
         border-radius: var(--radius-1);
     }
+
     /* Mobile responsive fixes */
-    @media (max-width: 768px) {
+    @media (width <= 768px) {
         .progress-bar {
             height: 28px;
             min-height: 28px;

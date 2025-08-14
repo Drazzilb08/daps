@@ -436,19 +436,26 @@ export default function LogViewer() {
                                     onFocus={() => setShowUploadTip(true)}
                                     onBlur={() => setShowUploadTip(false)}
                                 >
-                                    {uploadState.uploading
-                                        ? <LoadingSpinner size="small" style={{ verticalAlign: 'middle' }} />
-                                        : uploadState.lastUrl
-                                          ? uploadState.linkOpened
-                                              ? getIcon('mi:open_in_new', {
-                                                    style: { verticalAlign: 'middle' },
-                                                })
-                                              : getIcon('mi:link', {
-                                                    style: { verticalAlign: 'middle' },
-                                                })
-                                          : getIcon('mi:upload', {
+                                    {uploadState.uploading ? (
+                                        <LoadingSpinner
+                                            size="small"
+                                            style={{ verticalAlign: 'middle' }}
+                                        />
+                                    ) : uploadState.lastUrl ? (
+                                        uploadState.linkOpened ? (
+                                            getIcon('mi:open_in_new', {
                                                 style: { verticalAlign: 'middle' },
-                                            })}
+                                            })
+                                        ) : (
+                                            getIcon('mi:link', {
+                                                style: { verticalAlign: 'middle' },
+                                            })
+                                        )
+                                    ) : (
+                                        getIcon('mi:upload', {
+                                            style: { verticalAlign: 'middle' },
+                                        })
+                                    )}
                                 </button>
                                 <TooltipFactory
                                     anchor={uploadBtnRef.current}

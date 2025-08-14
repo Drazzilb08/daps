@@ -25,9 +25,9 @@
         overflow: hidden auto;
         scrollbar-width: thin;
         scrollbar-color: var(--muted, #ff9500) var(--surface, #18191b);
-            padding-top: var(--space-6); /* 2rem - generous spacing */
-    padding-inline: var(--space-4); /* 1rem - side gutters */
-    padding-bottom: var(--space-4); /* 1rem - bottom space */
+        padding-top: var(--space-6); /* 2rem - generous spacing */
+        padding-inline: var(--space-4); /* 1rem - side gutters */
+        padding-bottom: var(--space-4); /* 1rem - bottom space */
     }
 
     .settings-form::-webkit-scrollbar {
@@ -468,7 +468,6 @@
         margin: 0 0.6rem 0 0;
         background: var(--surface);
         border-radius: 16px;
-
         padding: 1.2rem 1.2rem 1.3rem;
         box-sizing: border-box;
         min-height: 120px;
@@ -493,7 +492,6 @@
         border-radius: 16px;
         padding: 1rem 1.25rem;
         margin-bottom: 1.5rem;
-
         background: var(--surface);
         transition:
             box-shadow 0.18s,
@@ -703,6 +701,7 @@
     /* ======================================================
    MEDIA QUERIES
 ====================================================== */
+
     /* MOBILE-FIRST: small screen defaults */
     .settings-splash {
         max-width: 100vw;
@@ -732,7 +731,7 @@
     }
 
     /* TABLET: enhanced layout */
-    @media (min-width: 769px) {
+    @media (width >= 769px) {
         .settings-splash {
             max-width: 700px;
             margin: 2.2rem auto 0;
@@ -772,7 +771,7 @@
     }
 
     /* DESKTOP: centered layout with constraints */
-    @media (min-width: 1025px) {
+    @media (width >= 1025px) {
         .settings-fields-list {
             max-width: 75%;
             width: 100%;
@@ -889,7 +888,7 @@
     }
 
     /* DESKTOP: toolbar and instances layout */
-    @media (min-width: 1025px) {
+    @media (width >= 1025px) {
         .settings-toolbar-bar {
             position: sticky;
             top: 0;

@@ -34,7 +34,7 @@ export class SimpleListRenderer extends BaseSearchRenderer {
         return (
             <div
                 key={this.getResultKey(result, index)}
-                className="poster-list-item simple-list-item"
+                className="search-list-item simple-list-item"
                 tabIndex={0}
                 title={displayTitle}
                 onClick={() => onResultClick(result)}
@@ -59,7 +59,7 @@ export class SimpleListRenderer extends BaseSearchRenderer {
         return (
             <div
                 key={this.getResultKey(result, index)}
-                className="poster-grid-item simple-grid-item"
+                className="search-grid-item simple-grid-item"
                 tabIndex={0}
                 title={displayTitle}
                 onClick={() => onResultClick(result)}
@@ -86,8 +86,8 @@ export class SimpleListRenderer extends BaseSearchRenderer {
         if (currentView === 'list') {
             return (
                 <div
-                    className="poster-search-results simple-list-results"
-                    id="poster-search-results"
+                    className="search-results simple-list-results"
+                    id="search-results"
                 >
                     {processedResults.map((result, index) =>
                         this.renderListItem(result, index, {
@@ -102,8 +102,8 @@ export class SimpleListRenderer extends BaseSearchRenderer {
 
         // Grid view
         return (
-            <div className="poster-search-results simple-grid-results" id="poster-search-results">
-                <div className="poster-grid">
+            <div className="search-results simple-grid-results" id="search-results">
+                <div className="search-grid">
                     {processedResults.map((result, index) =>
                         this.renderGridItem(result, index, {
                             searchTerm,

@@ -25,7 +25,7 @@ export default function ModularSearchResults({
             `Unknown renderer: ${renderer}. Available renderers:`,
             Object.keys(RENDERERS)
         );
-        return <div className="poster-search-error">Invalid renderer configuration</div>;
+        return <div className="search-error">Invalid renderer configuration</div>;
     }
 
     // ===== ERROR STATE =====

@@ -1,17 +1,25 @@
 // ui/src/components/search/index.js
-// Main exports for the SearchEngine system
+// Main exports for the search system
 
 // Core components
-export { default as SearchEngine } from './SearchEngine';
+export { default as SearchCore } from './core/SearchCore';
 export { default as SearchControls } from './SearchControls';
+export { default as ModularSearchResults } from './ModularSearchResults';
+export { default as HoverPreview } from './HoverPreview';
+export { default as ModalTrigger } from './ModalTrigger';
 
-// Pre-configured variants (main exports)
+// Plugin system exports
 export {
-    AssetsSearchEngine,
-    GdriveSearchEngine,
-    assetsSearchAdapter,
-    gdriveSearchAdapter,
-} from './SearchEngineFactory.jsx';
+    searchPluginRegistry,
+    AssetsSearchComponent,
+    GdriveSearchComponent,
+    createSearchComponent,
+    SimpleSearchPlugin
+} from './plugins';
 
-// Factory as default export
-export { default } from './SearchEngineFactory.jsx';
+// Legacy adapters (still usable with SearchCore)
+export { assetsSearchAdapter } from './adapters/AssetsSearchAdapter';
+export { gdriveSearchAdapter } from './adapters/GdriveSearchAdapter';
+
+// Default export is the plugin registry
+export { default } from './plugins';

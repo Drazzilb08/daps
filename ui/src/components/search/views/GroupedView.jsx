@@ -19,12 +19,12 @@ export default function GroupedView({
     hoverPreviewImgRef,
     enableHoverPreview,
     renderMetadata,
-    className = 'poster-search-results',
+    className = 'search-results',
     groupingHelper, // Helper that provides grouping functions
 }) {
     if (!groupingHelper) {
         console.error('GroupedView requires a groupingHelper prop');
-        return <div className="poster-search-error">Grouping configuration error</div>;
+        return <div className="search-error">Grouping configuration error</div>;
     }
 
     const groups = groupingHelper.groupByLocation(results);
@@ -45,10 +45,10 @@ export default function GroupedView({
 
     if (currentView === 'list') {
         return (
-            <div className={className} id="poster-search-results">
+            <div className={className} id="search-results">
                 {groupOrder.map(location => (
                     <React.Fragment key={location}>
-                        <div className="poster-owner-label">
+                        <div className="owner-label">
                             {groupingHelper.getGroupLabel(groups[location], location)}
                         </div>
                         <ListView
@@ -67,13 +67,13 @@ export default function GroupedView({
 
     // Grid view with groups
     return (
-        <div className={className} id="poster-search-results">
+        <div className={className} id="search-results">
             {groupOrder.map(location => (
-                <div key={location} className="poster-owner-group">
-                    <div className="poster-owner-label">
+                <div key={location} className="owner-group">
+                    <div className="owner-label">
                         {groupingHelper.getGroupLabel(groups[location], location)}
                     </div>
-                    <div className="poster-grid">
+                    <div className="search-grid">
                         {groups[location].map((result, index) => {
                             const obj = result.original || result;
                             const displayTitle = getDisplayTitle(result);
@@ -81,7 +81,7 @@ export default function GroupedView({
 
                             return (
                                 <div
-                                    className="poster-grid-item"
+                                    className="search-grid-item"
                                     data-location={encodeURIComponent(obj.location || '')}
                                     data-file={encodeURIComponent(obj.file || '')}
                                     tabIndex={0}

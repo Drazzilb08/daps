@@ -1,8 +1,8 @@
-// ui/src/components/search/SearchEngineFactory.js
-// Pre-configured SearchEngine variants that replicate existing functionality
+// ui/src/components/search/SearchEngineFactory.jsx
+// Pre-configured SearchEngine variants that replicate EXACT original functionality and UI
 
 import React, { useMemo } from 'react';
-import SearchEngine from './SearchEngine';
+import SearchCore from './core/SearchCore';
 import { assetsSearchAdapter } from './adapters/AssetsSearchAdapter';
 import { gdriveSearchAdapter } from './adapters/GdriveSearchAdapter';
 
@@ -11,7 +11,7 @@ export function AssetsSearchEngine({
     onResultDelete,
     onError,
     enableVirtualization = true,
-    virtualizationThreshold = 100, // Lower threshold for Assets since they often have many results
+    virtualizationThreshold = 100,
     ...props
 }) {
     // Enhanced adapter that applies filters in the search step - memoized to prevent infinite loops
@@ -27,10 +27,10 @@ export function AssetsSearchEngine({
         sort(results, sortOption) {
             return assetsSearchAdapter.sort(results, sortOption);
         },
-    }), []); // Empty dependency array since assetsSearchAdapter is stable
+    }), []);
 
     return (
-        <SearchEngine
+        <SearchCore
             searchAdapter={enhancedAssetsAdapter}
             // Sources - only Assets for this variant
             sources={[
@@ -62,13 +62,13 @@ export function AssetsSearchEngine({
                 { value: 'alpha-desc', label: 'Z-A' },
                 { value: 'date', label: 'Date Added' },
             ]}
-            // UI Configuration
+            // UI Configuration - EXACT same as original
             placeholder="Search posters in Assets Directory..."
             defaultView="grid"
             defaultSort="alpha"
             defaultSource="assets"
             enableHoverPreview={true}
-            renderer="poster" // Use poster renderer without grouping
+            renderer="poster"
             // Event handlers
             onError={onError}
             onResultDelete={onResultDelete}
@@ -88,13 +88,13 @@ export function GdriveSearchEngine({
     onSourceChange,
     onError,
     enableVirtualization = true,
-    virtualizationThreshold = 150, // Higher threshold for GDrive since results are usually grouped
+    virtualizationThreshold = 150,
     ...props
 }) {
-    // State for dynamic owner filtering
+    // State for dynamic owner filtering - EXACT same as original
     const [availableOwners, setAvailableOwners] = React.useState([]);
 
-    // Handle data loaded to extract available owners
+    // Handle data loaded to extract available owners - EXACT same as original
     const handleDataLoaded = data => {
         // Use gdriveOwners from adapter data (already extracted and sorted)
         if (data && data.gdriveOwners) {
@@ -105,7 +105,8 @@ export function GdriveSearchEngine({
 
         if (onDataLoaded) onDataLoaded(data);
     };
-    // Enhanced adapter that handles GDrive-specific filtering and sorting - memoized to prevent infinite loops
+
+    // Enhanced adapter that handles GDrive-specific filtering and sorting - EXACT same as original
     const enhancedGdriveAdapter = useMemo(() => ({
         ...gdriveSearchAdapter,
 
@@ -133,18 +134,18 @@ export function GdriveSearchEngine({
             this._lastLoadedData = data;
             return data;
         },
-    }), []); // Empty dependency array since gdriveSearchAdapter is stable
+    }), []);
 
-    // Dynamic tooltip for custom source based on availability
+    // Dynamic tooltip for custom source based on availability - EXACT same as original
     const customTooltip =
         customLocations && customLocations.length > 0
             ? 'Search posters in user-defined folders from Poster Renamerr settings.'
             : 'No custom sources defined in Poster Renamerr settings.';
 
     return (
-        <SearchEngine
+        <SearchCore
             searchAdapter={enhancedGdriveAdapter}
-            // Sources - GDrive and Custom
+            // Sources - GDrive and Custom - EXACT same as original
             sources={[
                 {
                     key: 'gdrive',
@@ -159,7 +160,7 @@ export function GdriveSearchEngine({
                     tooltip: customTooltip,
                 },
             ]}
-            // Filters - GDrive owner filter (conditionally shown)
+            // Filters - GDrive owner filter (conditionally shown) - EXACT same as original
             filters={
                 availableOwners.length > 0
                     ? [
@@ -179,7 +180,7 @@ export function GdriveSearchEngine({
                       ]
                     : []
             }
-            // Sort options - replicate exact options from GdriveSearchControls
+            // Sort options - EXACT same as original
             sortOptions={[
                 { value: 'priority-asc', label: 'Priority ↑' },
                 { value: 'priority-desc', label: 'Priority ↓' },
@@ -187,13 +188,13 @@ export function GdriveSearchEngine({
                 { value: 'alpha-desc', label: 'Z-A' },
                 { value: 'date', label: 'Date Added' },
             ]}
-            // UI Configuration
+            // UI Configuration - EXACT same as original
             placeholder="Search posters in GDrive/Custom sources..."
             defaultView="grid"
             defaultSort="priority-asc"
             defaultSource="gdrive"
             enableHoverPreview={true}
-            renderer="poster" // Use poster renderer with location grouping
+            renderer="poster"
             groupBy="location" // Enable location-based grouping for GDrive
             // Event handlers
             onError={onError}
@@ -209,14 +210,14 @@ export function GdriveSearchEngine({
 }
 
 // ===== INDEX EXPORTS =====
-// Main exports for easy importing
-export { default as SearchEngine } from './SearchEngine';
+// Main exports for easy importing - EXACT same as original
+export { default as SearchCore } from './core/SearchCore';
 export { assetsSearchAdapter } from './adapters/AssetsSearchAdapter';
 export { gdriveSearchAdapter } from './adapters/GdriveSearchAdapter';
 
-// Default export object for convenience
+// Default export object for convenience - EXACT same as original
 export default {
-    SearchEngine,
+    SearchCore,
     AssetsSearchEngine,
     GdriveSearchEngine,
     assetsSearchAdapter,

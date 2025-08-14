@@ -19,7 +19,7 @@ export default function VirtualizedGridView({
     getImageUrl,
     highlightSearchTerm,
     renderMetadata = () => null,
-    className = 'poster-search-results',
+    className = 'search-results',
     focusedResultIndex = -1,
     resultsContainerRef,
     enableVirtualization = true,
@@ -132,7 +132,7 @@ export default function VirtualizedGridView({
             return (
                 <div
                     key={getResultKey(result, index)}
-                    className={`poster-grid-item ${isFocused ? 'keyboard-focused' : ''}`}
+                    className={`search-grid-item ${isFocused ? 'keyboard-focused' : ''}`}
                     style={style}
                     data-location={encodeURIComponent(obj.location || '')}
                     data-file={encodeURIComponent(obj.file || '')}
@@ -185,8 +185,8 @@ export default function VirtualizedGridView({
     // Non-virtualized rendering (for small datasets)
     if (!shouldVirtualize) {
         return (
-            <div className={className} id="poster-search-results" ref={resultsContainerRef}>
-                <div className="poster-grid">
+            <div className={className} id="search-results" ref={resultsContainerRef}>
+                <div className="search-grid">
                     {results.map((result, index) => renderGridItem({ result, index }))}
                 </div>
             </div>
@@ -200,14 +200,14 @@ export default function VirtualizedGridView({
     const totalHeight = totalRows * (ITEM_HEIGHT + GAP) + GAP;
 
     return (
-        <div className={className} id="poster-search-results" ref={resultsContainerRef}>
+        <div className={className} id="search-results" ref={resultsContainerRef}>
             <div className="virtualized-notice">
                 <small>Virtualized view - showing {results.length} items efficiently</small>
             </div>
 
             <div
                 ref={scrollContainerRef}
-                className="poster-grid-virtualized-container"
+                className="search-grid-virtualized-container"
                 style={{
                     height: Math.min(600, containerSize.height || 600), // Max height of 600px
                     overflow: 'auto',
@@ -216,7 +216,7 @@ export default function VirtualizedGridView({
                 onScroll={handleScroll}
             >
                 <div
-                    className="poster-grid-virtualized-content"
+                    className="search-grid-virtualized-content"
                     style={{
                         height: totalHeight,
                         position: 'relative',

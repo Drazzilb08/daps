@@ -18,7 +18,7 @@ export default function VirtualizedListView({
     hoverPreviewImgRef,
     enableHoverPreview,
     renderMetadata = () => null,
-    className = 'poster-search-results',
+    className = 'search-results',
     focusedResultIndex = -1,
     resultsContainerRef,
     enableVirtualization = true,
@@ -105,7 +105,7 @@ export default function VirtualizedListView({
             return (
                 <div
                     key={getResultKey(result, index)}
-                    className={`poster-list-item ${isFocused ? 'keyboard-focused' : ''}`}
+                    className={`search-list-item ${isFocused ? 'keyboard-focused' : ''}`}
                     style={style}
                     data-location={encodeURIComponent(obj.location || '')}
                     data-file={encodeURIComponent(obj.file || '')}
@@ -150,7 +150,7 @@ export default function VirtualizedListView({
     // Non-virtualized rendering (for small datasets)
     if (!shouldVirtualize) {
         return (
-            <div className={className} id="poster-search-results" ref={resultsContainerRef}>
+            <div className={className} id="search-results" ref={resultsContainerRef}>
                 {results.map((result, index) => renderListItem({ result, index }))}
             </div>
         );
@@ -161,14 +161,14 @@ export default function VirtualizedListView({
     const totalHeight = results.length * ITEM_HEIGHT;
 
     return (
-        <div className={className} id="poster-search-results" ref={resultsContainerRef}>
+        <div className={className} id="search-results" ref={resultsContainerRef}>
             <div className="virtualized-notice">
                 <small>Virtualized view - showing {results.length} items efficiently</small>
             </div>
 
             <div
                 ref={scrollContainerRef}
-                className="poster-list-virtualized-container"
+                className="search-list-virtualized-container"
                 style={{
                     height: Math.min(600, containerHeight || 600), // Max height of 600px
                     overflow: 'auto',
@@ -177,7 +177,7 @@ export default function VirtualizedListView({
                 onScroll={handleScroll}
             >
                 <div
-                    className="poster-list-virtualized-content"
+                    className="search-list-virtualized-content"
                     style={{
                         height: totalHeight,
                         position: 'relative',

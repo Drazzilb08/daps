@@ -14,12 +14,12 @@ export default function ListView({
     hoverPreviewImgRef,
     enableHoverPreview,
     renderMetadata = () => null,
-    className = 'poster-search-results',
+    className = 'search-results',
     focusedResultIndex = -1, // Phase 2 Enhancement: keyboard navigation
     resultsContainerRef,
 }) {
     return (
-        <div className={className} id="poster-search-results" ref={resultsContainerRef}>
+        <div className={className} id="search-results" ref={resultsContainerRef}>
             {results.map((result, index) => {
                 const obj = result.original || result;
                 const displayTitle = getDisplayTitle(result);
@@ -32,7 +32,7 @@ export default function ListView({
 
                 return (
                     <div
-                        className={`poster-list-item ${isFocused ? 'keyboard-focused' : ''}`}
+                        className={`search-list-item ${isFocused ? 'keyboard-focused' : ''}`}
                         data-location={encodeURIComponent(obj.location || '')}
                         data-file={encodeURIComponent(obj.file || '')}
                         tabIndex={0}

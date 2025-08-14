@@ -116,7 +116,7 @@ export class PosterRenderer extends BaseSearchRenderer {
         if (!obj.asset_type) return null;
 
         return (
-            <div className="poster-asset-meta">
+            <div className="search-item-meta">
                 {obj.asset_type === 'movie' && obj.year && (
                     <span className="meta-movie">
                         {obj.title} ({obj.year})

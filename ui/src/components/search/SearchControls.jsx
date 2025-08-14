@@ -121,7 +121,7 @@ export default function SearchControls({
         if (!sources.length) return null;
 
         return (
-            <div className="poster-source-picker">
+            <div className="source-picker">
                 {sources.map(source => (
                     <React.Fragment key={source.key}>
                         <button
@@ -172,7 +172,7 @@ export default function SearchControls({
         if (!showViewToggle || !viewModes.length) return null;
 
         return (
-            <div className="poster-view-mode-group">
+            <div className="view-mode-group">
                 {viewModes.map(mode => (
                     <React.Fragment key={mode.key}>
                         <button
@@ -258,7 +258,7 @@ export default function SearchControls({
         if (!showSearch) return null;
 
         return (
-            <div className="poster-search-bar-container">
+            <div className="search-bar-container">
                 {/* Render filter controls */}
                 {filters.map(filter => renderFilter(filter))}
 
@@ -267,7 +267,7 @@ export default function SearchControls({
                     ref={searchInputRef}
                     type="text"
                     id="search-input"
-                    className="poster-search-bar"
+                    className="search-bar"
                     placeholder={placeholder}
                     autoComplete="off"
                     spellCheck={false}
@@ -328,7 +328,7 @@ export default function SearchControls({
     // ===== MAIN RENDER =====
     return (
         <div>
-            <div className="poster-search-controls">
+            <div className="search-controls">
                 {renderSourcePicker()}
                 {renderSortSelect()}
                 {renderViewModeToggle()}

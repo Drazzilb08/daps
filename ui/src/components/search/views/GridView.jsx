@@ -13,13 +13,13 @@ export default function GridView({
     getImageUrl,
     highlightSearchTerm,
     renderMetadata = () => null,
-    className = 'poster-search-results',
+    className = 'search-results',
     focusedResultIndex = -1, // Phase 2 Enhancement: keyboard navigation
     resultsContainerRef,
 }) {
     return (
-        <div className={className} id="poster-search-results" ref={resultsContainerRef}>
-            <div className="poster-grid">
+        <div className={className} id="search-results" ref={resultsContainerRef}>
+            <div className="search-grid">
                 {results.map((result, index) => {
                     const obj = result.original || result;
                     const displayTitle = getDisplayTitle(result);
@@ -28,7 +28,7 @@ export default function GridView({
 
                     return (
                         <div
-                            className={`poster-grid-item ${isFocused ? 'keyboard-focused' : ''}`}
+                            className={`search-grid-item ${isFocused ? 'keyboard-focused' : ''}`}
                             data-location={encodeURIComponent(obj.location || '')}
                             data-file={encodeURIComponent(obj.file || '')}
                             tabIndex={0}

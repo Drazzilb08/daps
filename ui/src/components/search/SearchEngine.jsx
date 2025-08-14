@@ -10,6 +10,12 @@ import useHoverPreview from './HoverPreview';
 import LoadingSpinner from '../common/LoadingSpinner';
 import { useToast } from '../providers/ToastProvider';
 
+// Stable default functions to prevent infinite loops
+const defaultOnError = () => {};
+const defaultOnResultDelete = () => {};
+const defaultOnDataLoaded = () => {};
+const defaultOnSourceChange = () => {};
+
 export default function SearchEngine({
     // Adapter for search logic
     searchAdapter,
@@ -34,11 +40,11 @@ export default function SearchEngine({
     groupBy = null, // Grouping configuration (e.g., 'location' for GDrive)
 
     // Event handlers
-    onError = () => {},
+    onError = defaultOnError,
     onResultClick = null,
-    onResultDelete = () => {},
-    onDataLoaded = () => {},
-    onSourceChange = () => {},
+    onResultDelete = defaultOnResultDelete,
+    onDataLoaded = defaultOnDataLoaded,
+    onSourceChange = defaultOnSourceChange,
 
     // Additional props for customization
     // debounceMs = 300, // Reserved for future autocomplete features
@@ -137,7 +143,7 @@ export default function SearchEngine({
         return () => {
             cancelled = true;
         };
-    }, [searchAdapter, currentSource, onDataLoaded, onError, toast]); // Include all dependencies
+    }, [searchAdapter, currentSource, onDataLoaded, onError]); // toast is only used for side effects, not a dependency
 
     // ===== SEARCH LOGIC =====
     const performSearch = useCallback(
@@ -193,7 +199,7 @@ export default function SearchEngine({
             currentSource,
             currentSort,
             onError,
-            toast,
+            // toast is only used for side effects, not a dependency
         ]
     );
 

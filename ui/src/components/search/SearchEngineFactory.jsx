@@ -1,7 +1,7 @@
 // ui/src/components/search/SearchEngineFactory.js
 // Pre-configured SearchEngine variants that replicate existing functionality
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import SearchEngine from './SearchEngine';
 import { assetsSearchAdapter } from './adapters/AssetsSearchAdapter';
 import { gdriveSearchAdapter } from './adapters/GdriveSearchAdapter';
@@ -14,8 +14,8 @@ export function AssetsSearchEngine({
     virtualizationThreshold = 100, // Lower threshold for Assets since they often have many results
     ...props
 }) {
-    // Enhanced adapter that applies filters in the search step
-    const enhancedAssetsAdapter = {
+    // Enhanced adapter that applies filters in the search step - memoized to prevent infinite loops
+    const enhancedAssetsAdapter = useMemo(() => ({
         ...assetsSearchAdapter,
 
         // Override search to apply filters properly
@@ -27,7 +27,7 @@ export function AssetsSearchEngine({
         sort(results, sortOption) {
             return assetsSearchAdapter.sort(results, sortOption);
         },
-    };
+    }), []); // Empty dependency array since assetsSearchAdapter is stable
 
     return (
         <SearchEngine
@@ -105,8 +105,8 @@ export function GdriveSearchEngine({
 
         if (onDataLoaded) onDataLoaded(data);
     };
-    // Enhanced adapter that handles GDrive-specific filtering and sorting
-    const enhancedGdriveAdapter = {
+    // Enhanced adapter that handles GDrive-specific filtering and sorting - memoized to prevent infinite loops
+    const enhancedGdriveAdapter = useMemo(() => ({
         ...gdriveSearchAdapter,
 
         // Override search to handle the more complex GDrive filtering
@@ -133,7 +133,7 @@ export function GdriveSearchEngine({
             this._lastLoadedData = data;
             return data;
         },
-    };
+    }), []); // Empty dependency array since gdriveSearchAdapter is stable
 
     // Dynamic tooltip for custom source based on availability
     const customTooltip =

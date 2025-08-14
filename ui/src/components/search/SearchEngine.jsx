@@ -185,7 +185,16 @@ export default function SearchEngine({
                 }
             }, 0);
         },
-        [searchAdapter, searchData, pendingSearchTerm, activeFilters, currentSource, currentSort, onError, toast]
+        [
+            searchAdapter,
+            searchData,
+            pendingSearchTerm,
+            activeFilters,
+            currentSource,
+            currentSort,
+            onError,
+            toast,
+        ]
     );
 
     // Re-apply filters and sorting to existing search results (don't re-search)

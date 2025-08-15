@@ -23,12 +23,12 @@ const defaultOnSourceChange = () => {};
 export default function SearchCore({
     // Data adapter - this is what makes each search type unique
     searchAdapter,
-    
+
     // Configuration - can be provided directly or via plugin
     sources = [],
     filters = [],
     sortOptions = [],
-    
+
     // UI Configuration
     className = 'search-engine',
     placeholder = 'Search...',
@@ -36,28 +36,36 @@ export default function SearchCore({
     defaultView = 'grid',
     defaultSort = 'alpha',
     defaultSource = null,
-    
+
+    // Autocomplete configuration
+    enableAutocomplete = false,
+    autocompleteMinLength = 2,
+
     // Results display configuration
     renderer = 'simple',
     groupBy = null,
-    
+
     // Event handlers
     onError = defaultOnError,
     onResultClick = null,
     onResultDelete = defaultOnResultDelete,
     onDataLoaded = defaultOnDataLoaded,
     onSourceChange = defaultOnSourceChange,
-    
+
+    // Refresh functionality
+    showRefreshControls = false,
+    onRefresh = null,
+    isRefreshing = false,
+
     // Virtualization
     enableVirtualization = true,
     virtualizationThreshold = 100,
-    
+
     ...additionalProps
 }) {
     // ===== STATE MANAGEMENT =====
     const [isLoading, setIsLoading] = useState(false);
     const [searchData, setSearchData] = useState(null);
-    const [error, setError] = useState(null);
 
     // Search state
     const [pendingSearchTerm, setPendingSearchTerm] = useState('');
@@ -105,7 +113,6 @@ export default function SearchCore({
 
         const loadData = async () => {
             setIsLoading(true);
-            setError(null);
 
             try {
                 const data = await searchAdapter.loadInitialData(currentSource);
@@ -119,9 +126,6 @@ export default function SearchCore({
                 }
             } catch (err) {
                 if (!cancelled) {
-                    const errorMessage = err.message || 'Failed to load data';
-                    setError(errorMessage);
-
                     toast.error('Failed to load data');
                     if (onError) onError(err);
                 }
@@ -185,7 +189,6 @@ export default function SearchCore({
                     setSearchResults(results);
                 } catch (err) {
                     console.error('Search error:', err);
-                    setError(err.message || 'Search failed');
                     toast('Search failed', 'error');
                     if (onError) onError(err);
                     setSearchResults([]);
@@ -202,24 +205,45 @@ export default function SearchCore({
         if (!searchTerm || !searchData || !searchAdapter?.search) return;
 
         const applyFiltersAndSort = () => {
-            let results = searchAdapter.search(searchData, searchTerm, {}, currentSource);
+            try {
+                let results = searchAdapter.search(searchData, searchTerm, {}, currentSource);
 
-            if (searchAdapter.filter) {
-                results = searchAdapter.filter(results, activeFilters, currentSource);
+                // Ensure results is always an array
+                if (!Array.isArray(results)) {
+                    console.warn('SearchCore: search() returned non-array:', results);
+                    results = [];
+                }
+
+                if (searchAdapter.filter) {
+                    results = searchAdapter.filter(results, activeFilters, currentSource);
+                    // Ensure filter result is always an array
+                    if (!Array.isArray(results)) {
+                        console.warn('SearchCore: filter() returned non-array:', results);
+                        results = [];
+                    }
+                }
+
+                if (searchAdapter.sort && currentSort && !currentSort.startsWith('priority-')) {
+                    results = searchAdapter.sort(results, currentSort, currentSource);
+                    // Ensure sort result is always an array
+                    if (!Array.isArray(results)) {
+                        console.warn('SearchCore: sort() returned non-array:', results);
+                        results = [];
+                    }
+                }
+
+                if (searchAdapter.formatResult && results.length > 0) {
+                    results = results.map(item => ({
+                        ...searchAdapter.formatResult(item, currentSource),
+                        original: item,
+                    }));
+                }
+
+                setSearchResults(results);
+            } catch (error) {
+                console.error('SearchCore: applyFiltersAndSort error:', error);
+                setSearchResults([]);
             }
-
-            if (searchAdapter.sort && currentSort && !currentSort.startsWith('priority-')) {
-                results = searchAdapter.sort(results, currentSort, currentSource);
-            }
-
-            if (searchAdapter.formatResult) {
-                results = results.map(item => ({
-                    ...searchAdapter.formatResult(item, currentSource),
-                    original: item,
-                }));
-            }
-
-            setSearchResults(results);
         };
 
         applyFiltersAndSort();
@@ -256,7 +280,7 @@ export default function SearchCore({
         if (debounceTimeoutRef.current) {
             clearTimeout(debounceTimeoutRef.current);
         }
-        
+
         setPendingSearchTerm('');
         setSearchTerm('');
         setSearchResults([]);
@@ -345,7 +369,15 @@ export default function SearchCore({
                     break;
             }
         },
-        [modalInfo, searchTerm, pendingSearchTerm, searchResults, focusedResultIndex, handleClearSearch, handleResultClick]
+        [
+            modalInfo,
+            searchTerm,
+            pendingSearchTerm,
+            searchResults,
+            focusedResultIndex,
+            handleClearSearch,
+            handleResultClick,
+        ]
     );
 
     useEffect(() => {
@@ -360,21 +392,16 @@ export default function SearchCore({
     }, [handleGlobalKeyDown]);
 
     // ===== ERROR HANDLING =====
-    const displayError = null; // Remove error banner completely
+    const displayError = null;
 
     // ===== RENDER =====
     return (
         <div className={className}>
-            <div
-                className="search-root"
-                role="search"
-                aria-label="Search interface"
-            >
+            <div className="search-root" role="search" aria-label="Search interface">
                 <SearchControls
                     sources={sources}
                     currentSource={currentSource}
                     onSourceChange={handleSourceChange}
-                    
                     searchTerm={pendingSearchTerm}
                     onSearchTermChange={handleSearchTermChange}
                     onSearch={handleSearch}
@@ -382,18 +409,21 @@ export default function SearchCore({
                     placeholder={placeholder}
                     isSearching={isSearching || isLoading}
                     searchInputRef={searchInputRef}
-                    
+                    enableAutocomplete={enableAutocomplete}
+                    autocompleteMinLength={autocompleteMinLength}
+                    searchAdapter={searchAdapter}
                     filters={filters}
                     activeFilters={activeFilters}
                     onFilterChange={handleFilterChange}
-                    
                     sortOptions={sortOptions}
                     currentSort={currentSort}
                     onSortChange={setCurrentSort}
                     currentView={currentView}
                     onViewChange={setCurrentView}
-                    
                     searchData={searchData}
+                    showRefreshControls={showRefreshControls}
+                    onRefresh={onRefresh}
+                    isRefreshing={isRefreshing}
                     {...additionalProps}
                 />
 

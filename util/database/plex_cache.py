@@ -73,6 +73,12 @@ class PlexCache(DatabaseBase):
             ),
         )
 
+    def get_all(self) -> list:
+        """Return all records from plex_media_cache as a list of dicts."""
+        return (
+            self.execute_query("SELECT * FROM plex_media_cache", fetch_all=True) or []
+        )
+
     def clear(self) -> None:
         """Delete all rows from the plex_media_cache table."""
         self.execute_query("DELETE FROM plex_media_cache")

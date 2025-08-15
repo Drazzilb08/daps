@@ -14,7 +14,7 @@ export {
     AssetsSearchComponent,
     GdriveSearchComponent,
     createSearchComponent,
-    SimpleSearchPlugin
+    SimpleSearchPlugin,
 } from './plugins';
 
 // Legacy adapters (still usable with SearchCore)

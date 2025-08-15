@@ -12,10 +12,13 @@ export default function GdriveSearch() {
         toast('Poster updated in database', 'success');
     }, [toast]);
 
-    const handleError = useCallback(error => {
-        console.error('GDrive search error:', error);
-        toast('Search error occurred', 'error');
-    }, [toast]);
+    const handleError = useCallback(
+        error => {
+            console.error('GDrive search error:', error);
+            toast('Search error occurred', 'error');
+        },
+        [toast]
+    );
 
     return <GdriveSearchEngine onResultDelete={handleResultDelete} onError={handleError} />;
 }

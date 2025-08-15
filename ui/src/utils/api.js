@@ -256,6 +256,28 @@ export async function fetchCollectionCache() {
     return extractData(data, 'collection_cache') || [];
 }
 
+// Get all plex media cache entries (not cached - frequently changing data)
+export async function fetchPlexMediaCache() {
+    const res = await fetch('/api/cache/plex');
+    const data = await handleApiResponse(res);
+    return extractData(data, 'plex_media_cache') || [];
+}
+
+// Refresh database caches
+export async function refreshMediaDatabase(payload) {
+    const res = await fetch('/api/cache/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+    });
+    const data = await handleApiResponse(res);
+    return {
+        success: true,
+        job_id: extractData(data, 'job_id'),
+        message: data.message,
+    };
+}
+
 // Delete media cache entry by id (not cached - action)
 export async function deleteMediaCacheById(id) {
     if (!id) throw new Error('Missing id for deletion');

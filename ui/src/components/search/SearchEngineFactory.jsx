@@ -15,19 +15,22 @@ export function AssetsSearchEngine({
     ...props
 }) {
     // Enhanced adapter that applies filters in the search step - memoized to prevent infinite loops
-    const enhancedAssetsAdapter = useMemo(() => ({
-        ...assetsSearchAdapter,
+    const enhancedAssetsAdapter = useMemo(
+        () => ({
+            ...assetsSearchAdapter,
 
-        // Override search to apply filters properly
-        search(data, searchTerm, filters) {
-            return assetsSearchAdapter.search(data, searchTerm, filters);
-        },
+            // Override search to apply filters properly
+            search(data, searchTerm, filters) {
+                return assetsSearchAdapter.search(data, searchTerm, filters);
+            },
 
-        // Override sort to handle the priority properly
-        sort(results, sortOption) {
-            return assetsSearchAdapter.sort(results, sortOption);
-        },
-    }), []);
+            // Override sort to handle the priority properly
+            sort(results, sortOption) {
+                return assetsSearchAdapter.sort(results, sortOption);
+            },
+        }),
+        []
+    );
 
     return (
         <SearchCore
@@ -107,34 +110,37 @@ export function GdriveSearchEngine({
     };
 
     // Enhanced adapter that handles GDrive-specific filtering and sorting - EXACT same as original
-    const enhancedGdriveAdapter = useMemo(() => ({
-        ...gdriveSearchAdapter,
+    const enhancedGdriveAdapter = useMemo(
+        () => ({
+            ...gdriveSearchAdapter,
 
-        // Override search to handle the more complex GDrive filtering
-        search(data, searchTerm, filters, currentSource) {
-            // First do the basic search
-            let results = gdriveSearchAdapter.search(data, searchTerm, filters, currentSource);
+            // Override search to handle the more complex GDrive filtering
+            search(data, searchTerm, filters, currentSource) {
+                // First do the basic search
+                let results = gdriveSearchAdapter.search(data, searchTerm, filters, currentSource);
 
-            // Then apply additional filters (including owner filtering)
-            results = gdriveSearchAdapter.filter(results, filters, currentSource);
+                // Then apply additional filters (including owner filtering)
+                results = gdriveSearchAdapter.filter(results, filters, currentSource);
 
-            return results;
-        },
+                return results;
+            },
 
-        // Override sort to pass through priority order
-        sort(results, sortOption, currentSource) {
-            const data = this._lastLoadedData;
-            const priorityOrder = data?.priorityOrder || {};
-            return gdriveSearchAdapter.sort(results, sortOption, currentSource, priorityOrder);
-        },
+            // Override sort to pass through priority order
+            sort(results, sortOption, currentSource) {
+                const data = this._lastLoadedData;
+                const priorityOrder = data?.priorityOrder || {};
+                return gdriveSearchAdapter.sort(results, sortOption, currentSource, priorityOrder);
+            },
 
-        // Store data for sort function access
-        async loadInitialData(currentSource) {
-            const data = await gdriveSearchAdapter.loadInitialData(currentSource);
-            this._lastLoadedData = data;
-            return data;
-        },
-    }), []);
+            // Store data for sort function access
+            async loadInitialData(currentSource) {
+                const data = await gdriveSearchAdapter.loadInitialData(currentSource);
+                this._lastLoadedData = data;
+                return data;
+            },
+        }),
+        []
+    );
 
     // Dynamic tooltip for custom source based on availability - EXACT same as original
     const customTooltip =

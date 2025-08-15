@@ -70,8 +70,31 @@ export class PosterRenderer extends BaseSearchRenderer {
             onMouseMove: e => {
                 const img = hoverPreviewImgRef.current;
                 if (img.style.display === 'block') {
-                    const imgWidth = img.naturalWidth ? Math.min(img.naturalWidth, 200) : 200;
-                    const imgHeight = img.naturalHeight ? Math.min(img.naturalHeight, 200) : 200;
+                    // Smaller preview for better UX - max 150px width, maintain aspect ratio
+                    const maxWidth = 150;
+                    const maxHeight = 200;
+
+                    let imgWidth, imgHeight;
+                    if (img.naturalWidth && img.naturalHeight) {
+                        const aspectRatio = img.naturalWidth / img.naturalHeight;
+                        if (aspectRatio > 1) {
+                            // Landscape: limit by width
+                            imgWidth = Math.min(img.naturalWidth, maxWidth);
+                            imgHeight = imgWidth / aspectRatio;
+                        } else {
+                            // Portrait: limit by height
+                            imgHeight = Math.min(img.naturalHeight, maxHeight);
+                            imgWidth = imgHeight * aspectRatio;
+                        }
+                    } else {
+                        imgWidth = maxWidth;
+                        imgHeight = maxHeight;
+                    }
+
+                    // Set the image size
+                    img.style.width = imgWidth + 'px';
+                    img.style.height = imgHeight + 'px';
+
                     const vpWidth = window.innerWidth;
                     const vpHeight = window.innerHeight;
 
@@ -122,10 +145,12 @@ export class PosterRenderer extends BaseSearchRenderer {
                         {obj.title} ({obj.year})
                     </span>
                 )}
-                {obj.asset_type === 'show' && (
-                    <span className="meta-show">
-                        {obj.title}
-                        {obj.season_number != null ? ` — Season ${obj.season_number}` : ''}
+                {obj.asset_type === 'movie' && result.instanceCount > 1 && (
+                    <span className="meta-subtitle">Instances: {result.instanceCount}</span>
+                )}
+                {obj.asset_type === 'show' && result.seasonCount > 0 && (
+                    <span className="meta-subtitle">
+                        {result.seasonCount === 1 ? `Season: 1` : `Seasons: ${result.seasonCount}`}
                     </span>
                 )}
                 {obj.asset_type === 'collection' && (

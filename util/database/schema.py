@@ -135,6 +135,13 @@ class SchemaManager:
                 ColumnDefinition("renamed_file", "TEXT"),
                 ColumnDefinition("file_hash", "TEXT"),
                 ColumnDefinition("poster_url", "TEXT"),
+                ColumnDefinition(
+                    "plex_mapping_id", "INTEGER"
+                ),  # Foreign key to plex_media_cache.id
+            ],
+            indexes=[
+                "CREATE INDEX IF NOT EXISTS media_cache_plex_mapping_idx ON media_cache (plex_mapping_id)",
+                "CREATE INDEX IF NOT EXISTS media_cache_instance_idx ON media_cache (instance_name)",
             ],
         )
         self._add_table(media_cache)

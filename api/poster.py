@@ -250,6 +250,96 @@ async def get_collection_cache(
         )
 
 
+@router.get("/api/cache/plex")
+async def get_plex_cache(
+    logger: Any = Depends(get_web_logger), db: DapsDB = Depends(get_database)
+) -> Dict[str, Any]:
+    """
+    Retrieve the plex media cache from the database.
+
+    Returns all cached plex media items for display and management.
+    """
+    try:
+        logger.debug("Serving GET /api/cache/plex")
+
+        plex_cache = db.plex.get_all()
+
+        return {
+            "success": True,
+            "message": f"Retrieved {len(plex_cache) if plex_cache else 0} plex cache items",
+            "data": {"plex_media_cache": plex_cache or []},
+        }
+
+    except Exception as e:
+        logger.error(f"Error retrieving plex cache: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "message": f"Error retrieving plex cache: {str(e)}",
+                "error_code": "PLEX_CACHE_RETRIEVAL_ERROR",
+            },
+        )
+
+
+@router.post("/api/cache/refresh")
+async def refresh_cache(
+    request: Request,
+    logger: Any = Depends(get_web_logger),
+    db: DapsDB = Depends(get_database),
+) -> Dict[str, Any]:
+    """Refresh database caches based on payload configuration."""
+    try:
+        payload = await request.json()
+        logger.debug(f"Serving POST /api/cache/refresh with payload: {payload}")
+
+        # Extract refresh configuration
+        arr_instances = payload.get("arr_instances", [])
+        plex_instances = payload.get("plex_instances", [])
+        libraries = payload.get("libraries", [])
+        update_mappings = payload.get("update_mappings", False)
+
+        # Create a background job for cache refresh
+        job_payload = {
+            "arr_instances": arr_instances,
+            "plex_instances": plex_instances,
+            "libraries": libraries,
+            "update_mappings": update_mappings,
+        }
+
+        # Use existing job system
+        result = db.worker.enqueue_job("jobs", job_payload, job_type="cache_refresh")
+
+        if result.get("success"):
+            job_id = result.get("data", {}).get("job_id")
+            logger.info(f"Cache refresh job queued: {job_id}")
+            return {
+                "success": True,
+                "message": "Cache refresh initiated",
+                "data": {"job_id": job_id},
+            }
+        else:
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "success": False,
+                    "message": f"Error enqueuing cache refresh: {result.get('message', 'Unknown error')}",
+                    "error_code": "CACHE_REFRESH_ENQUEUE_ERROR",
+                },
+            )
+
+    except Exception as e:
+        logger.error(f"Error serving POST /api/cache/refresh: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "success": False,
+                "message": f"Error initiating cache refresh: {str(e)}",
+                "error_code": "CACHE_REFRESH_ERROR",
+            },
+        )
+
+
 @router.delete("/api/cache/media/{id}")
 async def delete_media_cache_by_id(
     id: int, logger: Any = Depends(get_web_logger), db: DapsDB = Depends(get_database)

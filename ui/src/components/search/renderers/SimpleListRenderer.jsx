@@ -85,10 +85,7 @@ export class SimpleListRenderer extends BaseSearchRenderer {
 
         if (currentView === 'list') {
             return (
-                <div
-                    className="search-results simple-list-results"
-                    id="search-results"
-                >
+                <div className="search-results simple-list-results" id="search-results">
                     {processedResults.map((result, index) =>
                         this.renderListItem(result, index, {
                             searchTerm,

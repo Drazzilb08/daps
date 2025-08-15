@@ -19,16 +19,16 @@ class PluginRegistry {
     registerPlugin(config) {
         // Validate plugin
         PluginValidator.validate(config);
-        
+
         // Create plugin instance with business logic isolation
         const plugin = this.createPlugin(config);
-        
+
         // Register
         this.plugins.set(config.id, plugin);
-        
+
         // Execute init hook
         this.executeHook(plugin, 'onInit');
-        
+
         console.log(`✅ Plugin '${config.id}' registered`);
         return plugin;
     }
@@ -57,7 +57,7 @@ class PluginRegistry {
                 id: plugin.id,
                 name: plugin.name,
                 version: plugin.version,
-                sources: plugin.uiConfig.sources.map(s => s.key)
+                sources: plugin.uiConfig.sources.map(s => s.key),
             };
         });
     }
@@ -67,14 +67,14 @@ class PluginRegistry {
      */
     unregisterPlugin(pluginId) {
         const plugin = this.plugins.get(pluginId);
-        
+
         if (plugin) {
             this.executeHook(plugin, 'onDestroy');
             this.plugins.delete(pluginId);
             console.log(`🗑️ Plugin '${pluginId}' unregistered`);
             return true;
         }
-        
+
         return false;
     }
 
@@ -88,59 +88,61 @@ class PluginRegistry {
             name: config.name,
             version: config.version,
             description: config.description,
-            
+
             // UI configuration (controls shared components)
             uiConfig: Object.freeze({ ...config.uiConfig }),
-            
+
             // Event handlers (plugin-specific business logic)
             eventHandlers: Object.freeze({ ...config.eventHandlers }),
-            
+
             // Dynamic configuration
             dynamicConfig: Object.freeze({ ...config.dynamicConfig }),
-            
+
             // Isolated adapter with error boundaries
             adapter: this.createIsolatedAdapter(config.id, config.adapter),
-            
+
             // Plugin state (completely isolated per plugin)
             _state: {},
             _errors: [],
             _mounted: false,
-            
+
             // Keep reference to original config for hooks
             _originalConfig: config,
-            
+
             // Plugin state management
             setState: (key, value) => {
                 plugin._state[key] = value;
             },
-            
-            getState: (key) => {
+
+            getState: key => {
                 return key ? plugin._state[key] : { ...plugin._state };
             },
-            
+
             clearState: () => {
                 plugin._state = {};
             },
-            
+
             // Plugin error management
-            logError: (error) => {
+            logError: error => {
                 const errorEntry = {
                     timestamp: new Date(),
                     pluginId: config.id,
                     error: error.message || error,
-                    stack: error.stack
+                    stack: error.stack,
                 };
-                
+
                 plugin._errors.push(errorEntry);
                 console.error(`[Plugin ${config.id}]:`, error);
-                
+
                 // Execute plugin error handler
                 this.executeEventHandler(plugin, 'onError', error);
             },
-            
+
             getErrors: () => [...plugin._errors],
-            clearErrors: () => { plugin._errors = []; },
-            
+            clearErrors: () => {
+                plugin._errors = [];
+            },
+
             // Plugin lifecycle
             mount: () => {
                 if (!plugin._mounted) {
@@ -148,13 +150,13 @@ class PluginRegistry {
                     this.executeHook(plugin, 'onMount');
                 }
             },
-            
+
             unmount: () => {
                 if (plugin._mounted) {
                     plugin._mounted = false;
                     this.executeHook(plugin, 'onUnmount');
                 }
-            }
+            },
         };
 
         return plugin;
@@ -165,32 +167,71 @@ class PluginRegistry {
      */
     createIsolatedAdapter(pluginId, adapter) {
         const isolatedAdapter = {};
-        
+
+        // Methods that should remain synchronous
+        const syncMethods = [
+            'search',
+            'filter',
+            'sort',
+            'formatResult',
+            'getAutocompleteSuggestions',
+        ];
+
         // Wrap each adapter method with error boundaries
         for (const [methodName, method] of Object.entries(adapter)) {
             if (typeof method === 'function') {
-                isolatedAdapter[methodName] = async (...args) => {
-                    try {
-                        const result = await method.apply(adapter, args);
-                        return result;
-                    } catch (error) {
-                        console.error(`[Plugin ${pluginId}] Adapter method ${methodName} failed:`, error);
-                        
-                        // Log to plugin
-                        const plugin = this.plugins.get(pluginId);
-                        if (plugin) {
-                            plugin.logError(error);
+                const isSync = syncMethods.includes(methodName);
+
+                if (isSync) {
+                    // Keep synchronous methods synchronous
+                    isolatedAdapter[methodName] = (...args) => {
+                        try {
+                            const result = method.apply(adapter, args);
+                            return result;
+                        } catch (error) {
+                            console.error(
+                                `[Plugin ${pluginId}] Adapter method ${methodName} failed:`,
+                                error
+                            );
+
+                            // Log to plugin
+                            const plugin = this.plugins.get(pluginId);
+                            if (plugin) {
+                                plugin.logError(error);
+                            }
+
+                            // Return safe fallback
+                            return this.getAdapterFallback(methodName, args, error);
                         }
-                        
-                        // Return safe fallback
-                        return this.getAdapterFallback(methodName, args, error);
-                    }
-                };
+                    };
+                } else {
+                    // Keep async methods async
+                    isolatedAdapter[methodName] = async (...args) => {
+                        try {
+                            const result = await method.apply(adapter, args);
+                            return result;
+                        } catch (error) {
+                            console.error(
+                                `[Plugin ${pluginId}] Adapter method ${methodName} failed:`,
+                                error
+                            );
+
+                            // Log to plugin
+                            const plugin = this.plugins.get(pluginId);
+                            if (plugin) {
+                                plugin.logError(error);
+                            }
+
+                            // Return safe fallback
+                            return this.getAdapterFallback(methodName, args, error);
+                        }
+                    };
+                }
             } else {
                 isolatedAdapter[methodName] = method;
             }
         }
-        
+
         return isolatedAdapter;
     }
 
@@ -199,7 +240,7 @@ class PluginRegistry {
      */
     executeHook(plugin, hookName, ...args) {
         const hook = plugin._originalConfig?.hooks?.[hookName];
-        
+
         if (hook && typeof hook === 'function') {
             try {
                 hook(plugin, ...args);
@@ -215,7 +256,7 @@ class PluginRegistry {
      */
     executeEventHandler(plugin, eventName, ...args) {
         const handler = plugin.eventHandlers[eventName];
-        
+
         if (handler && typeof handler === 'function') {
             try {
                 return handler(plugin, ...args);
@@ -233,9 +274,9 @@ class PluginRegistry {
     getAdapterFallback(methodName, args, error) {
         switch (methodName) {
             case 'loadInitialData':
-                return { 
+                return {
                     error: error.message || 'Failed to load data',
-                    data: null 
+                    data: null,
                 };
             case 'search':
                 return [];
@@ -251,7 +292,7 @@ class PluginRegistry {
                     subtitle: '',
                     imageUrl: '',
                     metadata: {},
-                    ...item
+                    ...item,
                 };
             }
             default:

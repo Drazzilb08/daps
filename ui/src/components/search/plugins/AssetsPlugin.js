@@ -14,7 +14,7 @@ export const assetsPluginConfig = new PluginBuilder('assets-search', 'Assets Sea
     .addSource('assets', 'Assets', 'mi:folder', 'Search Assets')
     .addFilter(
         'assetTypeFilter',
-        'dropdown', 
+        'dropdown',
         'Filter by type of asset in Assets tab',
         [
             { value: 'all', label: 'All' },
@@ -37,7 +37,7 @@ export const assetsPluginConfig = new PluginBuilder('assets-search', 'Assets Sea
             { value: 'alpha', label: 'A-Z' },
             { value: 'alpha-desc', label: 'Z-A' },
             { value: 'date', label: 'Date Added' },
-        ]
+        ],
     })
     .setEventHandlers({
         onDataLoaded: (_, data) => {
@@ -45,7 +45,7 @@ export const assetsPluginConfig = new PluginBuilder('assets-search', 'Assets Sea
         },
         onError: (_, error) => {
             console.warn('Assets plugin error:', error.message);
-        }
+        },
     })
     .addHooks({
         onInit: () => {
@@ -53,7 +53,7 @@ export const assetsPluginConfig = new PluginBuilder('assets-search', 'Assets Sea
         },
         onDestroy: () => {
             console.log('Assets Search Plugin destroyed');
-        }
+        },
     })
     .build();
 

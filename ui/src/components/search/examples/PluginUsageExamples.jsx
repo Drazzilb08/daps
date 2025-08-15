@@ -2,11 +2,11 @@
 // Examples demonstrating plugin isolation and usage
 
 import React from 'react';
-import { 
-    AssetsSearchComponent, 
-    GdriveSearchComponent, 
+import {
+    AssetsSearchComponent,
+    GdriveSearchComponent,
     SearchCore,
-    searchPluginRegistry 
+    searchPluginRegistry,
 } from '../plugins';
 import { assetsSearchAdapter } from '../adapters/AssetsSearchAdapter';
 
@@ -17,13 +17,13 @@ export function Example1_PluginComponents() {
     return (
         <div>
             <h2>Assets Search (Plugin)</h2>
-            <AssetsSearchComponent 
-                onResultClick={(result) => console.log('Assets result clicked:', result)}
+            <AssetsSearchComponent
+                onResultClick={result => console.log('Assets result clicked:', result)}
             />
-            
+
             <h2>GDrive Search (Plugin)</h2>
-            <GdriveSearchComponent 
-                onResultClick={(result) => console.log('GDrive result clicked:', result)}
+            <GdriveSearchComponent
+                onResultClick={result => console.log('GDrive result clicked:', result)}
             />
         </div>
     );
@@ -38,9 +38,7 @@ export function Example2_DirectCore() {
             <h2>Direct SearchCore Usage</h2>
             <SearchCore
                 searchAdapter={assetsSearchAdapter}
-                sources={[
-                    { key: 'assets', label: 'Assets', icon: 'mi:folder' }
-                ]}
+                sources={[{ key: 'assets', label: 'Assets', icon: 'mi:folder' }]}
                 filters={[
                     {
                         key: 'assetTypeFilter',
@@ -49,17 +47,17 @@ export function Example2_DirectCore() {
                         options: [
                             { value: 'all', label: 'All' },
                             { value: 'movies', label: 'Movies' },
-                            { value: 'shows', label: 'Shows' }
-                        ]
-                    }
+                            { value: 'shows', label: 'Shows' },
+                        ],
+                    },
                 ]}
                 sortOptions={[
                     { value: 'alpha', label: 'A-Z' },
-                    { value: 'alpha-desc', label: 'Z-A' }
+                    { value: 'alpha-desc', label: 'Z-A' },
                 ]}
                 placeholder="Search assets directly..."
                 renderer="poster"
-                onResultClick={(result) => console.log('Direct core result:', result)}
+                onResultClick={result => console.log('Direct core result:', result)}
             />
         </div>
     );
@@ -77,54 +75,50 @@ export function Example3_CustomPlugin() {
                 name: 'Custom Test Plugin',
                 version: '1.0.0',
                 description: 'A test plugin for demonstration',
-                
+
                 adapter: {
                     async loadInitialData() {
                         return {
-                            testData: ['item1', 'item2', 'item3']
+                            testData: ['item1', 'item2', 'item3'],
                         };
                     },
-                    
+
                     search(data, searchTerm) {
                         if (!searchTerm) return [];
-                        return data.testData.filter(item => 
+                        return data.testData.filter(item =>
                             item.toLowerCase().includes(searchTerm.toLowerCase())
                         );
                     },
-                    
+
                     formatResult(item) {
                         return {
                             id: item,
                             title: item,
                             subtitle: 'Test item',
                             imageUrl: '',
-                            metadata: { type: 'test' }
+                            metadata: { type: 'test' },
                         };
-                    }
+                    },
                 },
-                
-                sources: [
-                    { key: 'test', label: 'Test Source', icon: 'mi:science' }
-                ],
-                
+
+                sources: [{ key: 'test', label: 'Test Source', icon: 'mi:science' }],
+
                 filters: [],
-                
-                sortOptions: [
-                    { value: 'alpha', label: 'A-Z' }
-                ],
-                
+
+                sortOptions: [{ value: 'alpha', label: 'A-Z' }],
+
                 ui: {
                     placeholder: 'Search test items...',
                     defaultView: 'list',
                     defaultSort: 'alpha',
                     renderer: 'simple',
-                    enableHoverPreview: false
+                    enableHoverPreview: false,
                 },
-                
+
                 hooks: {
                     onInit: () => console.log('Custom plugin initialized'),
-                    onDataLoaded: (data) => console.log('Custom plugin data loaded:', data)
-                }
+                    onDataLoaded: data => console.log('Custom plugin data loaded:', data),
+                },
             });
         }
     }, []);
@@ -142,13 +136,13 @@ export function Example3_CustomPlugin() {
  */
 export function Example4_PluginIsolation() {
     const [pluginList, setPluginList] = React.useState([]);
-    
+
     React.useEffect(() => {
         const plugins = searchPluginRegistry.listPlugins();
         setPluginList(plugins);
     }, []);
 
-    const handlePluginError = (pluginId) => {
+    const handlePluginError = pluginId => {
         // Simulate an error in one plugin
         const plugin = searchPluginRegistry.getPlugin(pluginId);
         if (plugin) {
@@ -168,7 +162,7 @@ export function Example4_PluginIsolation() {
                         <br />
                         Sources: {plugin.sources.join(', ')}
                         <br />
-                        <button 
+                        <button
                             onClick={() => handlePluginError(plugin.id)}
                             style={{ fontSize: '12px', padding: '2px 8px' }}
                         >
@@ -177,7 +171,7 @@ export function Example4_PluginIsolation() {
                     </li>
                 ))}
             </ul>
-            
+
             <p>
                 Each plugin is completely isolated. Errors in one plugin won&apos;t affect others.
                 Click &ldquo;Simulate Error&rdquo; to test error boundaries.
@@ -193,10 +187,10 @@ export default function PluginUsageExamples() {
     const [activeExample, setActiveExample] = React.useState('plugins');
 
     const examples = {
-        'plugins': { component: Example1_PluginComponents, title: 'Plugin Components' },
-        'direct': { component: Example2_DirectCore, title: 'Direct Core Usage' },
-        'custom': { component: Example3_CustomPlugin, title: 'Custom Plugin' },
-        'isolation': { component: Example4_PluginIsolation, title: 'Plugin Isolation' }
+        plugins: { component: Example1_PluginComponents, title: 'Plugin Components' },
+        direct: { component: Example2_DirectCore, title: 'Direct Core Usage' },
+        custom: { component: Example3_CustomPlugin, title: 'Custom Plugin' },
+        isolation: { component: Example4_PluginIsolation, title: 'Plugin Isolation' },
     };
 
     const ActiveComponent = examples[activeExample].component;
@@ -204,7 +198,7 @@ export default function PluginUsageExamples() {
     return (
         <div style={{ padding: '20px' }}>
             <h1>Search Plugin System Examples</h1>
-            
+
             <nav style={{ marginBottom: '20px' }}>
                 {Object.entries(examples).map(([key, { title }]) => (
                     <button
@@ -216,7 +210,7 @@ export default function PluginUsageExamples() {
                             backgroundColor: activeExample === key ? '#007acc' : '#f0f0f0',
                             color: activeExample === key ? 'white' : 'black',
                             border: '1px solid #ccc',
-                            cursor: 'pointer'
+                            cursor: 'pointer',
                         }}
                     >
                         {title}

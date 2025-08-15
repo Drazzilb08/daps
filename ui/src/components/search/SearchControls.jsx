@@ -31,6 +31,11 @@ export default function SearchControls({
     isSearching = false,
     searchInputRef, // Phase 2 Enhancement: keyboard navigation
 
+    // Autocomplete functionality
+    enableAutocomplete = false,
+    autocompleteMinLength = 2,
+    searchAdapter = null,
+
     // Filters
     filters = [],
     activeFilters = {},
@@ -45,6 +50,12 @@ export default function SearchControls({
 
     // Additional data for dynamic options
     // searchData,
+
+    // Refresh functionality
+    showRefreshControls = false,
+    onRefresh,
+    isRefreshing = false,
+    searchData = null,
 
     // Customization
     viewModes = DEFAULT_VIEW_MODES,
@@ -66,6 +77,29 @@ export default function SearchControls({
     // ===== DROPDOWN STATES =====
     const [dropdownStates, setDropdownStates] = useState({});
 
+    // ===== AUTOCOMPLETE STATE =====
+    const [autocompleteSuggestions, setAutocompleteSuggestions] = useState([]);
+    const [showAutocomplete, setShowAutocomplete] = useState(false);
+    const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(-1);
+    const autocompleteRef = useRef();
+
+    // ===== REFRESH POPOVER STATE =====
+    const [showRefreshPopover, setShowRefreshPopover] = useState(false);
+    const [selectedRefreshOptions, setSelectedRefreshOptions] = useState({
+        arrInstances: [],
+        plexInstances: [],
+        libraries: [],
+    });
+    const refreshButtonRef = useRef();
+    const refreshPopoverRef = useRef();
+
+    // ===== MODULE SELECTOR STATE =====
+    const [showModulePopover, setShowModulePopover] = useState(false);
+    const [showModuleTooltip, setShowModuleTooltip] = useState(false);
+    const [showRefreshTooltip, setShowRefreshTooltip] = useState(false);
+    const moduleButtonRef = useRef();
+    const modulePopoverRef = useRef();
+
     // ===== DROPDOWN CLICK OUTSIDE HANDLING =====
     useEffect(() => {
         const activeDropdowns = Object.keys(dropdownStates).filter(key => dropdownStates[key]);
@@ -84,6 +118,88 @@ export default function SearchControls({
         return () => document.removeEventListener('click', handleClickOutside);
     }, [dropdownStates]);
 
+    // ===== REFRESH POPOVER CLICK OUTSIDE HANDLING =====
+    useEffect(() => {
+        if (!showRefreshPopover) return;
+
+        function handleClickOutside(e) {
+            if (
+                refreshButtonRef.current &&
+                !refreshButtonRef.current.contains(e.target) &&
+                refreshPopoverRef.current &&
+                !refreshPopoverRef.current.contains(e.target)
+            ) {
+                setShowRefreshPopover(false);
+            }
+        }
+
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [showRefreshPopover]);
+
+    // ===== MODULE POPOVER CLICK OUTSIDE HANDLING =====
+    useEffect(() => {
+        if (!showModulePopover) return;
+
+        function handleClickOutside(e) {
+            if (
+                moduleButtonRef.current &&
+                !moduleButtonRef.current.contains(e.target) &&
+                modulePopoverRef.current &&
+                !modulePopoverRef.current.contains(e.target)
+            ) {
+                setShowModulePopover(false);
+            }
+        }
+
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [showModulePopover]);
+
+    // ===== AUTOCOMPLETE EFFECTS =====
+    // Handle autocomplete suggestions when search term changes
+    useEffect(() => {
+        if (!enableAutocomplete || !searchAdapter?.getAutocompleteSuggestions) {
+            return;
+        }
+
+        if (searchTerm.length >= autocompleteMinLength) {
+            try {
+                const suggestions = searchAdapter.getAutocompleteSuggestions(searchTerm);
+                setAutocompleteSuggestions(suggestions);
+                setShowAutocomplete(suggestions.length > 0);
+                setSelectedSuggestionIndex(-1);
+            } catch (error) {
+                console.warn('Autocomplete error:', error);
+                setAutocompleteSuggestions([]);
+                setShowAutocomplete(false);
+            }
+        } else {
+            setAutocompleteSuggestions([]);
+            setShowAutocomplete(false);
+        }
+    }, [searchTerm, enableAutocomplete, autocompleteMinLength, searchAdapter]);
+
+    // Handle clicking outside autocomplete to close it
+    useEffect(() => {
+        if (!showAutocomplete) return;
+
+        function handleClickOutside(e) {
+            if (
+                autocompleteRef.current &&
+                !autocompleteRef.current.contains(e.target) &&
+                searchInputRef.current &&
+                !searchInputRef.current.contains(e.target)
+            ) {
+                setShowAutocomplete(false);
+                setSelectedSuggestionIndex(-1);
+            }
+        }
+
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [showAutocomplete, searchInputRef]);
+
     // ===== HELPER FUNCTIONS =====
     const setTooltipState = (key, value) => {
         setTooltipStates(prev => ({ ...prev, [key]: value }));
@@ -98,8 +214,55 @@ export default function SearchControls({
         setDropdownStates(prev => ({ ...prev, [filterId]: false }));
     };
 
+    // ===== AUTOCOMPLETE HELPER FUNCTIONS =====
+    const selectSuggestion = suggestion => {
+        onSearchTermChange(suggestion.title);
+        setShowAutocomplete(false);
+        setSelectedSuggestionIndex(-1);
+        // Optionally trigger search immediately
+        setTimeout(() => onSearch(), 100);
+    };
+
+    const navigateAutocomplete = direction => {
+        if (!showAutocomplete || autocompleteSuggestions.length === 0) return;
+
+        let newIndex = selectedSuggestionIndex;
+        if (direction === 'down') {
+            newIndex = newIndex < autocompleteSuggestions.length - 1 ? newIndex + 1 : -1;
+        } else if (direction === 'up') {
+            newIndex = newIndex > -1 ? newIndex - 1 : autocompleteSuggestions.length - 1;
+        }
+        setSelectedSuggestionIndex(newIndex);
+    };
+
     // ===== KEYBOARD HANDLERS =====
     const handleSearchKeyDown = e => {
+        // Handle autocomplete navigation
+        if (showAutocomplete && autocompleteSuggestions.length > 0) {
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                navigateAutocomplete('down');
+                return;
+            }
+            if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                navigateAutocomplete('up');
+                return;
+            }
+            if (e.key === 'Enter' && selectedSuggestionIndex >= 0) {
+                e.preventDefault();
+                selectSuggestion(autocompleteSuggestions[selectedSuggestionIndex]);
+                return;
+            }
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                setShowAutocomplete(false);
+                setSelectedSuggestionIndex(-1);
+                return;
+            }
+        }
+
+        // Default search behavior
         if (e.key === 'Enter') {
             e.preventDefault();
             onSearch();
@@ -116,39 +279,150 @@ export default function SearchControls({
         }
     };
 
-    // ===== RENDER FUNCTIONS =====
-    const renderSourcePicker = () => {
-        if (!sources.length) return null;
-
-        return (
-            <div className="source-picker">
-                {sources.map(source => (
-                    <React.Fragment key={source.key}>
-                        <button
-                            type="button"
-                            ref={el => (viewBtnRefs.current[source.key] = el)}
-                            className={`btn source-picker-btn${currentSource === source.key ? ' active' : ''}`}
-                            onClick={() => onSourceChange(source.key)}
-                            onMouseEnter={() => setTooltipState(`source-${source.key}`, true)}
-                            onMouseLeave={() => setTooltipState(`source-${source.key}`, false)}
-                            onFocus={() => setTooltipState(`source-${source.key}`, true)}
-                            onBlur={() => setTooltipState(`source-${source.key}`, false)}
-                            aria-pressed={currentSource === source.key}
-                            aria-label={`Select ${source.label} source`}
-                        >
-                            {source.icon && <span className="icon">{getIcon(source.icon)}</span>}
-                            <span style={{ marginLeft: source.icon ? 8 : 0 }}>{source.label}</span>
-                        </button>
-                        <TooltipFactory
-                            anchor={viewBtnRefs.current[source.key]}
-                            text={source.tooltip || `Search ${source.label}`}
-                            show={tooltipStates[`source-${source.key}`]}
-                        />
-                    </React.Fragment>
-                ))}
-            </div>
-        );
+    // ===== REFRESH HANDLERS =====
+    const handleRefreshToggle = () => {
+        setShowRefreshPopover(prev => !prev);
     };
+
+    // ===== MODULE SELECTOR HANDLERS =====
+    const handleModuleToggle = () => {
+        setShowModulePopover(prev => !prev);
+    };
+
+    const handleModuleSelect = moduleKey => {
+        onSourceChange(moduleKey);
+        setShowModulePopover(false);
+    };
+
+    const handleRefreshOptionToggle = (category, item) => {
+        setSelectedRefreshOptions(prev => {
+            if (category === 'libraries') {
+                // When toggling a library, automatically include/exclude the associated Plex instance
+                const library = availableLibraries.find(
+                    lib => lib.name === item || lib.displayName === item
+                );
+                const isCurrentlySelected = prev.libraries.includes(item);
+
+                let newLibraries;
+                let newPlexInstances = [...prev.plexInstances];
+
+                if (isCurrentlySelected) {
+                    // Removing library
+                    newLibraries = prev.libraries.filter(x => x !== item);
+
+                    // Check if this was the last library for this Plex instance
+                    if (library) {
+                        const otherLibrariesForSameInstance = newLibraries.some(libName => {
+                            const lib = availableLibraries.find(
+                                l => l.name === libName || l.displayName === libName
+                            );
+                            return lib && lib.instance === library.instance;
+                        });
+
+                        // If no other libraries from this instance are selected, remove the Plex instance
+                        if (!otherLibrariesForSameInstance) {
+                            newPlexInstances = newPlexInstances.filter(x => x !== library.instance);
+                        }
+                    }
+                } else {
+                    // Adding library
+                    newLibraries = [...prev.libraries, item];
+
+                    // Automatically add the associated Plex instance
+                    if (library && !newPlexInstances.includes(library.instance)) {
+                        newPlexInstances.push(library.instance);
+                    }
+                }
+
+                return {
+                    ...prev,
+                    libraries: newLibraries,
+                    plexInstances: newPlexInstances,
+                };
+            } else {
+                // For other categories (ARR instances, Plex instances), use normal toggle
+                return {
+                    ...prev,
+                    [category]: prev[category].includes(item)
+                        ? prev[category].filter(x => x !== item)
+                        : [...prev[category], item],
+                };
+            }
+        });
+    };
+
+    const handleRefreshExecute = () => {
+        if (onRefresh) {
+            onRefresh(selectedRefreshOptions);
+        }
+        setShowRefreshPopover(false);
+    };
+
+    // Libraries state for dynamic loading
+    const [availableLibraries, setAvailableLibraries] = useState([]);
+    const [loadingLibraries, setLoadingLibraries] = useState(false);
+
+    const handleLoadLibraries = async () => {
+        setLoadingLibraries(true);
+        try {
+            // Fetch instances first to get Plex instances
+            const instancesResponse = await fetch('/api/instances/');
+            const instancesData = await instancesResponse.json();
+
+            const plexInstances = instancesData.data?.plex || {};
+            const librariesWithInstance = [];
+
+            // Load libraries for each Plex instance and track which instance they belong to
+            for (const [instanceName] of Object.entries(plexInstances)) {
+                try {
+                    const librariesResponse = await fetch(
+                        `/api/plex/libraries?instance=${encodeURIComponent(instanceName)}`
+                    );
+                    const librariesData = await librariesResponse.json();
+
+                    if (librariesData.success && librariesData.data?.libraries) {
+                        librariesData.data.libraries.forEach(lib => {
+                            librariesWithInstance.push({
+                                name: lib,
+                                instance: instanceName,
+                                displayName: `${lib} (${instanceName})`,
+                            });
+                        });
+                    }
+                } catch (error) {
+                    console.warn(`Failed to load libraries for ${instanceName}:`, error);
+                }
+            }
+
+            setAvailableLibraries(librariesWithInstance);
+        } catch (error) {
+            console.error('Failed to load libraries:', error);
+        } finally {
+            setLoadingLibraries(false);
+        }
+    };
+
+    const getAvailableRefreshOptions = () => {
+        // Extract instances from search data
+        const arrInstances = new Set();
+        const plexInstances = new Set(['plex_1']); // Default Plex instance
+
+        if (searchData?.aggregatedItems) {
+            searchData.aggregatedItems.forEach(item => {
+                if (item.instances) {
+                    item.instances.forEach(instance => arrInstances.add(instance));
+                }
+            });
+        }
+
+        return {
+            arrInstances: Array.from(arrInstances),
+            plexInstances: Array.from(plexInstances),
+            libraries: availableLibraries,
+        };
+    };
+
+    // ===== RENDER FUNCTIONS =====
 
     const renderSortSelect = () => {
         if (!showSort || !sortOptions.length) return null;
@@ -260,7 +534,11 @@ export default function SearchControls({
         return (
             <div className="search-bar-container">
                 {/* Render filter controls */}
-                {filters.map(filter => renderFilter(filter))}
+                {filters.map((filter, index) => (
+                    <React.Fragment key={filter.id || `filter-${index}`}>
+                        {renderFilter(filter)}
+                    </React.Fragment>
+                ))}
 
                 {/* Search input */}
                 <input
@@ -279,6 +557,38 @@ export default function SearchControls({
                     aria-label={placeholder}
                     aria-describedby="search-instructions"
                 />
+
+                {/* Autocomplete dropdown */}
+                {showAutocomplete && autocompleteSuggestions.length > 0 && (
+                    <div ref={autocompleteRef} className="search-autocomplete-dropdown">
+                        {autocompleteSuggestions.map((suggestion, index) => (
+                            <div
+                                key={suggestion.id || index}
+                                className={`search-autocomplete-item${index === selectedSuggestionIndex ? ' highlighted' : ''}`}
+                                onClick={() => selectSuggestion(suggestion)}
+                                onMouseEnter={() => setSelectedSuggestionIndex(index)}
+                            >
+                                <div className="autocomplete-title">{suggestion.title}</div>
+                                <div className="autocomplete-subtitle">
+                                    {suggestion.year} • {suggestion.type}
+                                    {suggestion.countType &&
+                                        suggestion.instanceCount > 0 &&
+                                        ` • ${suggestion.instanceCount} ${suggestion.countType}`}
+                                    {/* Debug logging for autocomplete display */}
+                                    {suggestion.title &&
+                                        suggestion.title.toLowerCase().includes('broke') &&
+                                        console.log('AUTOCOMPLETE UI - Rendering:', {
+                                            title: suggestion.title,
+                                            instanceCount: suggestion.instanceCount,
+                                            countType: suggestion.countType,
+                                            year: suggestion.year,
+                                            type: suggestion.type,
+                                        })}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
 
                 {/* Screen reader instructions */}
                 <div id="search-instructions" className="sr-only" aria-live="polite">
@@ -325,13 +635,229 @@ export default function SearchControls({
         );
     };
 
+    const renderModuleSelector = () => {
+        if (!sources.length) return null;
+
+        return (
+            <div className="module-selector">
+                <button
+                    ref={moduleButtonRef}
+                    type="button"
+                    className={`btn btn-secondary module-btn${showModulePopover ? ' active' : ''}`}
+                    onClick={handleModuleToggle}
+                    onMouseEnter={() => setShowModuleTooltip(true)}
+                    onMouseLeave={() => setShowModuleTooltip(false)}
+                    onFocus={() => setShowModuleTooltip(true)}
+                    onBlur={() => setShowModuleTooltip(false)}
+                    title="Select module"
+                >
+                    {getIcon('mi:apps')}
+                    Module
+                </button>
+                <TooltipFactory
+                    anchor={moduleButtonRef.current}
+                    text="Select module"
+                    show={showModuleTooltip && !showModulePopover}
+                />
+
+                {showModulePopover && (
+                    <div ref={modulePopoverRef} className="module-popover">
+                        <div className="module-popover-header">
+                            <h4>Select Module</h4>
+                        </div>
+                        <div className="module-popover-content">
+                            {sources.map(source => (
+                                <button
+                                    key={source.key}
+                                    type="button"
+                                    className={`module-option${currentSource === source.key ? ' active' : ''}`}
+                                    onClick={() => handleModuleSelect(source.key)}
+                                >
+                                    {source.icon && (
+                                        <span className="module-option-icon">
+                                            {getIcon(source.icon)}
+                                        </span>
+                                    )}
+                                    <span className="module-option-label">{source.label}</span>
+                                    {source.tooltip && (
+                                        <span className="module-option-tooltip">
+                                            {source.tooltip}
+                                        </span>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
+    const renderRefreshButton = () => {
+        if (!showRefreshControls) return null;
+
+        const availableOptions = getAvailableRefreshOptions();
+
+        return (
+            <div className="refresh-controls">
+                <button
+                    ref={refreshButtonRef}
+                    type="button"
+                    className={`btn btn-secondary refresh-btn${showRefreshPopover ? ' active' : ''}`}
+                    onClick={handleRefreshToggle}
+                    onMouseEnter={() => setShowRefreshTooltip(true)}
+                    onMouseLeave={() => setShowRefreshTooltip(false)}
+                    onFocus={() => setShowRefreshTooltip(true)}
+                    onBlur={() => setShowRefreshTooltip(false)}
+                    disabled={isRefreshing}
+                    title={isRefreshing ? 'Refreshing...' : 'Refresh Database'}
+                >
+                    {getIcon('mi:refresh')}
+                    {isRefreshing ? 'Refreshing...' : 'Refresh'}
+                </button>
+                <TooltipFactory
+                    anchor={refreshButtonRef.current}
+                    text={isRefreshing ? 'Refreshing...' : 'Refresh Database'}
+                    show={showRefreshTooltip && !showRefreshPopover}
+                />
+
+                {showRefreshPopover && (
+                    <div ref={refreshPopoverRef} className="refresh-popover">
+                        <div className="refresh-popover-header">
+                            <h4>Refresh Database</h4>
+                        </div>
+                        <div className="refresh-popover-content">
+                            {availableOptions.arrInstances.length > 0 && (
+                                <div className="refresh-section">
+                                    <h5>ARR Instances</h5>
+                                    {availableOptions.arrInstances.map(instance => (
+                                        <div key={instance} className="checkbox-row">
+                                            <input
+                                                type="checkbox"
+                                                id={`arr-${instance}`}
+                                                checked={selectedRefreshOptions.arrInstances.includes(
+                                                    instance
+                                                )}
+                                                onChange={() =>
+                                                    handleRefreshOptionToggle(
+                                                        'arrInstances',
+                                                        instance
+                                                    )
+                                                }
+                                            />
+                                            <label htmlFor={`arr-${instance}`}>{instance}</label>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+
+                            <div className="refresh-section">
+                                <div
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        marginBottom: '0.75rem',
+                                    }}
+                                >
+                                    <h5 style={{ margin: 0 }}>Plex Libraries</h5>
+                                    <button
+                                        type="button"
+                                        onClick={handleLoadLibraries}
+                                        disabled={loadingLibraries}
+                                        className="btn btn-secondary btn-sm"
+                                        style={{
+                                            padding: '0.25rem 0.5rem',
+                                            fontSize: '0.8rem',
+                                            minHeight: '28px',
+                                        }}
+                                    >
+                                        {loadingLibraries ? 'Loading...' : 'Load Libraries'}
+                                    </button>
+                                </div>
+                                {availableOptions.libraries.length > 0 ? (
+                                    availableOptions.libraries.map(library => (
+                                        <div key={library.name || library} className="checkbox-row">
+                                            <input
+                                                type="checkbox"
+                                                id={`lib-${library.name || library}`}
+                                                checked={selectedRefreshOptions.libraries.includes(
+                                                    library.name || library
+                                                )}
+                                                onChange={() =>
+                                                    handleRefreshOptionToggle(
+                                                        'libraries',
+                                                        library.name || library
+                                                    )
+                                                }
+                                            />
+                                            <label htmlFor={`lib-${library.name || library}`}>
+                                                {library.displayName || library}
+                                            </label>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div
+                                        style={{
+                                            color: 'var(--text-muted)',
+                                            fontSize: '0.85rem',
+                                            padding: '0.5rem 0',
+                                            fontStyle: 'italic',
+                                        }}
+                                    >
+                                        Click &quot;Load Libraries&quot; to see available options
+                                    </div>
+                                )}
+                            </div>
+
+                            {selectedRefreshOptions.plexInstances.length > 0 && (
+                                <div
+                                    style={{
+                                        marginTop: '1rem',
+                                        padding: '0.75rem',
+                                        backgroundColor: 'var(--bg-info, #f0f9ff)',
+                                        border: '1px solid var(--border-info, #bae6fd)',
+                                        borderRadius: '6px',
+                                        fontSize: '0.85rem',
+                                        color: 'var(--text-info, #0369a1)',
+                                    }}
+                                >
+                                    <strong>Auto-selected Plex instances:</strong>{' '}
+                                    {selectedRefreshOptions.plexInstances.join(', ')}
+                                </div>
+                            )}
+                        </div>
+                        <div className="refresh-popover-actions">
+                            <button
+                                type="button"
+                                className="btn btn-secondary"
+                                onClick={() => setShowRefreshPopover(false)}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                type="button"
+                                className="btn btn-primary"
+                                onClick={handleRefreshExecute}
+                                disabled={isRefreshing}
+                            >
+                                {isRefreshing ? 'Refreshing...' : 'Refresh Selected'}
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    };
+
     // ===== MAIN RENDER =====
     return (
         <div>
             <div className="search-controls">
-                {renderSourcePicker()}
+                {renderModuleSelector()}
                 {renderSortSelect()}
                 {renderViewModeToggle()}
+                {renderRefreshButton()}
             </div>
             {renderSearchBar()}
         </div>

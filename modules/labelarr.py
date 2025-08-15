@@ -308,7 +308,7 @@ class Labelarr(DapsModule):
                 # Build instance map for Connector based on self.config.mappings
                 instance_map = self._build_instance_map()
 
-                # Refresh caches for the targeted instances/libraries
+                # Refresh Database for the targeted instances/libraries
                 with Connector(
                     db=db,
                     logger=self.logger,

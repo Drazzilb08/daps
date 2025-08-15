@@ -246,6 +246,53 @@
     }
 
     /* ======================================================
+   SEARCH ENGINE: AUTOCOMPLETE
+====================================================== */
+    .search-engine .search-autocomplete-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--input-bg, #181a1b);
+        border: 1px solid var(--border-color, #353d44);
+        border-top: none;
+        border-radius: 0 0 8px 8px;
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1000;
+        box-shadow: 0 4px 12px rgb(0 0 0 / 30%);
+    }
+
+    .search-engine .search-autocomplete-item {
+        padding: 0.75em 1em;
+        cursor: pointer;
+        border-bottom: 1px solid var(--border-color, #353d44);
+        transition: background-color 0.15s ease;
+    }
+
+    .search-engine .search-autocomplete-item:last-child {
+        border-bottom: none;
+    }
+
+    .search-engine .search-autocomplete-item:hover,
+    .search-engine .search-autocomplete-item.highlighted {
+        background: var(--hover-bg, #2a2d30);
+    }
+
+    .search-engine .autocomplete-title {
+        font-size: 1em;
+        font-weight: 500;
+        color: var(--text-color, #e3e3e3);
+        margin-bottom: 0.25em;
+    }
+
+    .search-engine .autocomplete-subtitle {
+        font-size: 0.85em;
+        color: var(--text-muted, #999);
+        opacity: 0.8;
+    }
+
+    /* ======================================================
    SEARCH ENGINE: LOADING & EMPTY STATES
 ====================================================== */
     .search-engine .search-empty {
@@ -896,6 +943,310 @@
 
         .search-list-virtualized-content .search-list-item:hover {
             background: var(--bg-hover-dark, #374151);
+        }
+    }
+
+    /* ======================================================
+   MODULE SELECTOR & REFRESH CONTROLS (Phase 2 Enhancement)
+====================================================== */
+    .search-engine .module-selector,
+    .search-engine .refresh-controls {
+        position: relative;
+    }
+
+    .search-engine .module-btn {
+        background: none;
+        border: none;
+        border-radius: 6px;
+        padding: 0.38em 0.62em;
+        font-size: 1.16em;
+        color: var(--text-color, #bfc4d0);
+        cursor: pointer;
+        transition:
+            background 0.13s,
+            color 0.11s;
+        opacity: 0.8;
+        display: flex;
+        align-items: center;
+        gap: 0.34em;
+        white-space: nowrap;
+    }
+
+    .search-engine .module-btn.active,
+    .search-engine .module-btn:focus {
+        background: var(--primary, #1e88e5);
+        color: var(--primary-contrast);
+        opacity: 1;
+    }
+
+    .search-engine .module-btn:hover:not(:disabled) {
+        background: var(--primary, #1e88e5);
+        color: var(--primary-contrast);
+        opacity: 1;
+    }
+
+    .search-engine .refresh-btn {
+        background: none;
+        border: none;
+        border-radius: 6px;
+        padding: 0.38em 0.62em;
+        font-size: 1.16em;
+        color: var(--text-color, #bfc4d0);
+        cursor: pointer;
+        transition:
+            background 0.13s,
+            color 0.11s;
+        opacity: 0.8;
+        display: flex;
+        align-items: center;
+        gap: 0.34em;
+        white-space: nowrap;
+    }
+
+    .search-engine .refresh-btn.active,
+    .search-engine .refresh-btn:focus {
+        background: var(--primary, #1e88e5);
+        color: var(--primary-contrast);
+        opacity: 1;
+    }
+
+    .search-engine .refresh-btn:hover:not(:disabled) {
+        background: var(--primary, #1e88e5);
+        color: var(--primary-contrast);
+        opacity: 1;
+    }
+
+    .search-engine .refresh-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .search-engine .module-popover,
+    .search-engine .refresh-popover {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 0.5rem;
+        background: var(--surface, #fff);
+        border: 1px solid var(--border, #e2e8f0);
+        border-radius: var(--radius-3, 12px);
+        box-shadow:
+            0 20px 25px -5px rgb(0 0 0 / 10%),
+            0 10px 10px -5px rgb(0 0 0 / 4%);
+        padding: 0;
+        min-width: 320px;
+        max-width: 380px;
+        z-index: 9999;
+        animation: slide-down 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .search-engine .module-popover {
+        min-width: 240px;
+        max-width: 300px;
+    }
+
+    @keyframes slide-down {
+        from {
+            opacity: 0;
+            transform: translateY(-8px) scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .search-engine .module-popover-header,
+    .search-engine .refresh-popover-header {
+        padding: 1.25rem 1.5rem 1rem;
+        border-bottom: 1px solid var(--border, #e2e8f0);
+        background: transparent;
+        border-radius: var(--radius-3, 12px) var(--radius-3, 12px) 0 0;
+    }
+
+    .search-engine .module-popover-header h4,
+    .search-engine .refresh-popover-header h4 {
+        margin: 0;
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--text);
+    }
+
+    .search-engine .module-popover-content,
+    .search-engine .refresh-popover-content {
+        padding: 1.25rem 1.5rem;
+        max-height: 350px;
+        overflow-y: auto;
+    }
+
+    .search-engine .module-popover-content {
+        padding: 1rem 0;
+    }
+
+    .search-engine .module-option {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        width: 100%;
+        padding: 0.75rem 1.5rem;
+        background: none;
+        border: none;
+        text-align: left;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: var(--text);
+        border-bottom: 1px solid var(--border-light, #f1f5f9);
+    }
+
+    .search-engine .module-option:last-child {
+        border-bottom: none;
+    }
+
+    .search-engine .module-option:hover,
+    .search-engine .module-option.active {
+        background: var(--primary, #1e88e5);
+        color: var(--primary-contrast, white);
+    }
+
+    .search-engine .module-option-icon {
+        font-size: 1.1em;
+        flex-shrink: 0;
+        opacity: 0.8;
+    }
+
+    .search-engine .module-option-label {
+        font-weight: 500;
+        flex: 1;
+    }
+
+    .search-engine .module-option-tooltip {
+        font-size: 0.85em;
+        opacity: 0.7;
+        margin-top: 0.125rem;
+        display: block;
+    }
+
+    .search-engine .refresh-section {
+        margin-bottom: 1.75rem;
+    }
+
+    .search-engine .refresh-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .search-engine .refresh-section h5 {
+        margin: 0 0 0.875rem;
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text, #374151);
+    }
+
+    /* Use the forms.css checkbox-row styling within popover */
+    .search-engine .refresh-popover .checkbox-row {
+        margin-bottom: 0.5rem;
+    }
+
+    .search-engine .refresh-popover .checkbox-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .search-engine .refresh-popover-actions {
+        padding: 1.25rem 1.5rem;
+        border-top: 1px solid var(--border, #e2e8f0);
+        display: flex;
+        justify-content: flex-end;
+        gap: 0.75rem;
+        background: var(--surface, #fff);
+        border-radius: 0 0 var(--radius-3, 12px) var(--radius-3, 12px);
+    }
+
+    .search-engine .refresh-popover-actions .btn {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        border: 1px solid;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-height: 36px;
+    }
+
+    .search-engine .refresh-popover-actions .btn-secondary {
+        background: var(--bg);
+        color: var(--text);
+        border-color: var(--border);
+    }
+
+    .search-engine .refresh-popover-actions .btn-secondary:hover:not(:disabled) {
+        background: var(--bg-hover, #f1f5f9);
+    }
+
+    .search-engine .refresh-popover-actions .btn-primary {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+    }
+
+    .search-engine .refresh-popover-actions .btn-primary:hover:not(:disabled) {
+        background: var(--primary-dark);
+    }
+
+    .search-engine .refresh-popover-actions .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    /* Dark mode support for module selector and refresh controls */
+    @media (prefers-color-scheme: dark) {
+        .search-engine .module-popover,
+        .search-engine .refresh-popover {
+            background: var(--surface-dark, #1f2937);
+            border-color: var(--border-dark, #374151);
+            box-shadow:
+                0 20px 25px -5px rgb(0 0 0 / 40%),
+                0 10px 10px -5px rgb(0 0 0 / 20%);
+        }
+
+        .search-engine .module-popover-header,
+        .search-engine .refresh-popover-header {
+            border-color: var(--border-dark, #374151);
+        }
+
+        .search-engine .refresh-popover-actions {
+            background: var(--surface-dark, #1f2937);
+            border-color: var(--border-dark, #374151);
+        }
+
+        .search-engine .refresh-section h5 {
+            color: var(--text-dark, #f3f4f6);
+        }
+
+        .search-engine .module-option {
+            color: var(--text-dark, #f3f4f6);
+            border-color: var(--border-dark, #374151);
+        }
+
+        .search-engine .module-option:hover,
+        .search-engine .module-option.active {
+            background: var(--primary, #1e88e5);
+            color: var(--primary-contrast, white);
+        }
+    }
+
+    /* Mobile responsive adjustments for module selector and refresh popovers */
+    @media (width <= 768px) {
+        .search-engine .module-popover,
+        .search-engine .refresh-popover {
+            right: -1rem;
+            left: -1rem;
+            min-width: auto;
+            max-width: none;
+        }
+
+        .search-engine .module-popover-content,
+        .search-engine .refresh-popover-content {
+            max-height: 250px;
         }
     }
 }

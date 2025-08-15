@@ -9,25 +9,25 @@ import { gdriveSearchAdapter } from '../adapters/GdriveSearchAdapter';
  */
 const enhancedGdriveAdapter = {
     ...gdriveSearchAdapter,
-    
+
     _lastLoadedData: null,
-    
+
     async loadInitialData(currentSource) {
         const data = await gdriveSearchAdapter.loadInitialData(currentSource);
         this._lastLoadedData = data;
         return data;
     },
-    
+
     search(data, searchTerm, filters, currentSource) {
         let results = gdriveSearchAdapter.search(data, searchTerm, filters, currentSource);
         results = gdriveSearchAdapter.filter(results, filters, currentSource);
         return results;
     },
-    
+
     sort(results, sortOption, currentSource) {
         const priorityOrder = this._lastLoadedData?.priorityOrder || {};
         return gdriveSearchAdapter.sort(results, sortOption, currentSource, priorityOrder);
-    }
+    },
 };
 
 /**
@@ -37,8 +37,18 @@ const enhancedGdriveAdapter = {
 export const gdrivePluginConfig = new PluginBuilder('gdrive-search', 'GDrive Search')
     .setMetadata('1.0.0', 'Search and browse posters from Google Drive and custom sources')
     .setAdapter(enhancedGdriveAdapter)
-    .addSource('gdrive', 'GDrive', 'mi:cloud', 'Search posters in Google Drive sources (from GDrive Sync settings)')
-    .addSource('custom', 'Custom', 'mi:folder_special', 'Search posters in user-defined folders from Poster Renamerr settings')
+    .addSource(
+        'gdrive',
+        'GDrive',
+        'mi:cloud',
+        'Search posters in Google Drive sources (from GDrive Sync settings)'
+    )
+    .addSource(
+        'custom',
+        'Custom',
+        'mi:folder_special',
+        'Search posters in user-defined folders from Poster Renamerr settings'
+    )
     .setUI({
         placeholder: 'Search posters in GDrive/Custom sources...',
         defaultView: 'grid',
@@ -55,7 +65,7 @@ export const gdrivePluginConfig = new PluginBuilder('gdrive-search', 'GDrive Sea
             { value: 'alpha', label: 'A-Z' },
             { value: 'alpha-desc', label: 'Z-A' },
             { value: 'date', label: 'Date Added' },
-        ]
+        ],
     })
     .setDynamicConfig({
         // Dynamic filters based on loaded data
@@ -63,23 +73,25 @@ export const gdrivePluginConfig = new PluginBuilder('gdrive-search', 'GDrive Sea
             if (data && data.gdriveOwners && data.gdriveOwners.length > 0) {
                 // Store available owners in plugin state
                 plugin.setState('availableOwners', data.gdriveOwners);
-                
-                return [{
-                    key: 'selectedGDriveOwner',
-                    type: 'dropdown',
-                    label: 'Filter by GDrive owner',
-                    icon: 'mi:person',
-                    options: [
-                        { value: '', label: 'All Owners' },
-                        ...data.gdriveOwners.map(owner => ({
-                            value: owner,
-                            label: owner,
-                        })),
-                    ],
-                }];
+
+                return [
+                    {
+                        key: 'selectedGDriveOwner',
+                        type: 'dropdown',
+                        label: 'Filter by GDrive owner',
+                        icon: 'mi:person',
+                        options: [
+                            { value: '', label: 'All Owners' },
+                            ...data.gdriveOwners.map(owner => ({
+                                value: owner,
+                                label: owner,
+                            })),
+                        ],
+                    },
+                ];
             }
             return [];
-        }
+        },
     })
     .setEventHandlers({
         onDataLoaded: (_, data) => {
@@ -87,7 +99,7 @@ export const gdrivePluginConfig = new PluginBuilder('gdrive-search', 'GDrive Sea
         },
         onError: (_, error) => {
             console.warn('GDrive plugin error:', error.message);
-        }
+        },
     })
     .addHooks({
         onInit: () => {
@@ -95,7 +107,7 @@ export const gdrivePluginConfig = new PluginBuilder('gdrive-search', 'GDrive Sea
         },
         onDestroy: () => {
             console.log('GDrive Search Plugin destroyed');
-        }
+        },
     })
     .build();
 

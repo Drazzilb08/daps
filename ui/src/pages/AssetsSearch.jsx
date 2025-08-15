@@ -12,10 +12,13 @@ export default function AssetsSearch() {
         toast('Asset updated in database', 'success');
     }, [toast]);
 
-    const handleError = useCallback(error => {
-        console.error('Assets search error:', error);
-        toast('Search error occurred', 'error');
-    }, [toast]);
+    const handleError = useCallback(
+        error => {
+            console.error('Assets search error:', error);
+            toast('Search error occurred', 'error');
+        },
+        [toast]
+    );
 
     return <AssetsSearchEngine onResultDelete={handleResultDelete} onError={handleError} />;
 }

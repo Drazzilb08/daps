@@ -259,7 +259,7 @@ def main(config: SimpleNamespace) -> None:
                         continue
                     if app.connect_status:
                         logger.info(f"Fetching {app.instance_name} data...")
-                        results = app.get_parsed_media(include_episode=False)
+                        results = app.get_parsed_media(include_episode=False, include_unmonitored=False if config.ignore_unmonitored else True)
                         if results:
                             if instance_type == "radarr":
                                 media_dict["movies"].extend(results)

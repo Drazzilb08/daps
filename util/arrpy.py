@@ -547,12 +547,13 @@ class RadarrClient(BaseARRClient):
         endpoint = f"{self.url}/api/v3/moviefile/{media_id}"
         return self.make_delete_request(endpoint)
 
-    def get_parsed_media(self, include_episode: bool = False) -> List[Dict[str, Any]]:
+    def get_parsed_media(self, include_episode: bool = False, include_unmonitored: bool = True) -> List[Dict[str, Any]]:
         """
         Return a structured list of normalized movie items.
 
         Args:
             include_episode (bool): Ignored for Radarr.
+            include_unmonitored (bool): Include unmonitored items. Defaults to True
         Returns:
             List[Dict[str, Any]]: List of normalized media entries.
         """
@@ -577,6 +578,8 @@ class RadarrClient(BaseARRClient):
                 folder = item["path"][item["path"].rfind("\\") + 1 :]
             else:
                 folder = os.path.basename(os.path.normpath(item["path"]))
+            if not include_unmonitored and not item.get("monitored", False):
+                continue
             media_dict.append(
                 {
                     "title": unidecode(html.unescape(title)),
@@ -922,12 +925,13 @@ class SonarrClient(BaseARRClient):
         endpoint = f"{self.url}/api/v3/series/{media_id}"
         return self.make_delete_request(endpoint)
 
-    def get_parsed_media(self, include_episode: bool = False) -> List[Dict[str, Any]]:
+    def get_parsed_media(self, include_episode: bool = False, include_unmonitored: bool = True) -> List[Dict[str, Any]]:
         """
         Return a structured list of normalized series items.
 
         Args:
             include_episode (bool): If True, include episode-level metadata.
+            include_unmonitored (bool): Include unmonitored items. Defaults to True
         Returns:
             List[Dict[str, Any]]: List of normalized media entries.
         """
@@ -951,7 +955,7 @@ class SonarrClient(BaseARRClient):
                             "episode_id": ep["id"],
                             "has_file": ep["hasFile"],
                         }
-                        for ep in episode_data
+                        for ep in episode_data if include_unmonitored or ep.get("monitored", False)
                     ]
                 else:
                     episode_list = []
@@ -966,6 +970,8 @@ class SonarrClient(BaseARRClient):
                     season_stats = season["statistics"]["episodeCount"]
                 except Exception:
                     season_stats = 0
+                if not include_unmonitored and not season.get("monitored", False):
+                    continue
                 season_list.append(
                     {
                         "season_number": season["seasonNumber"],
@@ -990,6 +996,8 @@ class SonarrClient(BaseARRClient):
                 folder = item["path"][item["path"].rfind("\\") + 1 :]
             else:
                 folder = os.path.basename(os.path.normpath(item["path"]))
+            if not include_unmonitored and not item.get("monitored", False):
+                continue
             media_dict.append(
                 {
                     "title": unidecode(html.unescape(title)),

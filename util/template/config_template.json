@@ -66,15 +66,16 @@
     "source_dirs": [],
     "instances": [],
     "ignore_root_folders": [],
-    
-    "ignore_collections": []
+
+    "ignore_collections": [],
+    "ignore_unmonitored": false
   },
   "poster_cleanarr": {
     "log_level": "info",
     "dry_run": true,
     "source_dirs": [],
     "instances": [],
-    
+
     "ignore_media": []
   },
   "upgradinatorr": {

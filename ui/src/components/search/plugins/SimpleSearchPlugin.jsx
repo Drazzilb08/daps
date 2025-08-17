@@ -133,7 +133,7 @@ export default function SimpleSearchPlugin({ pluginId, overrideConfig = {}, ...a
             onError={handleError}
             onResultDelete={handleResultDelete}
             onSourceChange={handleSourceChange}
-            // Pass through additional props
+            // Pass through additional props including refreshTrigger
             {...additionalProps}
         />
     );

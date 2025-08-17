@@ -239,14 +239,23 @@ export const mediaSearchAdapter = {
 
     /**
      * Search function for filtering aggregated media items
+     * Supports advanced search patterns: tmdb:123, imdb:tt123456, tvdb:789
      */
     search(data, searchTerm) {
         if (!searchTerm) {
             return data.aggregatedItems || [];
         }
 
-        const lowerTerm = searchTerm.toLowerCase();
+        const trimmedTerm = searchTerm.trim();
+        
+        // Check for advanced search patterns
+        const advancedSearchMatch = this.parseAdvancedSearchTerm(trimmedTerm);
+        if (advancedSearchMatch) {
+            return this.performAdvancedSearch(data.aggregatedItems || [], advancedSearchMatch);
+        }
 
+        // Standard text search
+        const lowerTerm = trimmedTerm.toLowerCase();
         return (data.aggregatedItems || []).filter(item => {
             return (
                 item.title?.toLowerCase().includes(lowerTerm) ||
@@ -254,6 +263,51 @@ export const mediaSearchAdapter = {
                 item.instances?.some(instance => instance.toLowerCase().includes(lowerTerm)) ||
                 item.year?.toString().includes(lowerTerm)
             );
+        });
+    },
+
+    /**
+     * Parse advanced search terms like tmdb:123, imdb:tt123456, tvdb:789
+     */
+    parseAdvancedSearchTerm(searchTerm) {
+        const patterns = [
+            { type: 'tmdb', regex: /^tmdb:(\d+)$/i },
+            { type: 'imdb', regex: /^imdb:(tt\d+|\d+)$/i },
+            { type: 'tvdb', regex: /^tvdb:(\d+)$/i }
+        ];
+
+        for (const pattern of patterns) {
+            const match = searchTerm.match(pattern.regex);
+            if (match) {
+                let id = match[1];
+                // Normalize IMDB IDs - add 'tt' prefix if not present
+                if (pattern.type === 'imdb' && !id.startsWith('tt')) {
+                    id = 'tt' + id;
+                }
+                return { type: pattern.type, id };
+            }
+        }
+
+        return null;
+    },
+
+    /**
+     * Perform advanced search based on database IDs
+     */
+    performAdvancedSearch(items, searchCriteria) {
+        const { type, id } = searchCriteria;
+
+        return items.filter(item => {
+            switch (type) {
+                case 'tmdb':
+                    return item.tmdb_id && item.tmdb_id.toString() === id;
+                case 'imdb':
+                    return item.imdb_id && item.imdb_id === id;
+                case 'tvdb':
+                    return item.tvdb_id && item.tvdb_id.toString() === id;
+                default:
+                    return false;
+            }
         });
     },
 

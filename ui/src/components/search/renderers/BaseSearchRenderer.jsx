@@ -80,6 +80,14 @@ export class BaseSearchRenderer {
                             Type a search term and press <kbd>Enter</kbd> or click{' '}
                             <strong>Search</strong>.
                         </div>
+                        <div className="search-empty-advanced">
+                            <div className="search-empty-advanced-title">
+                                <strong>Advanced Search:</strong>
+                            </div>
+                            <div className="search-empty-advanced-options">
+                                Use <code>tmdb:123</code>, <code>imdb:tt123456</code>, or <code>tvdb:789</code> to search by database IDs
+                            </div>
+                        </div>
                     </div>
                 </div>
             );

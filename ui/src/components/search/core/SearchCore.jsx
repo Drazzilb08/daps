@@ -143,7 +143,7 @@ export default function SearchCore({
         return () => {
             cancelled = true;
         };
-    }, [searchAdapter, currentSource, onDataLoaded, onError, toast]);
+    }, [searchAdapter, currentSource, onDataLoaded, onError, toast, additionalProps.refreshTrigger]);
 
     // ===== SEARCH LOGIC =====
     const performSearch = useCallback(

@@ -867,6 +867,31 @@
         border-left: 4px solid var(--warning, #f59e0b);
     }
 
+    .search-empty-advanced {
+        color: var(--text-muted, #64748b);
+        font-size: 0.9rem;
+        line-height: 1.4;
+        margin-bottom: 1rem;
+        padding: 0.75rem;
+        background: var(--bg-info, #f0f9ff);
+        border: 1px solid var(--border-info, #bae6fd);
+        border-radius: 6px;
+    }
+
+    .search-empty-advanced-title {
+        margin-bottom: 0.5rem;
+    }
+
+    .search-empty-advanced-options code {
+        padding: 0.1rem 0.3rem;
+        background: var(--bg-secondary, #f3f4f6);
+        border: 1px solid var(--border);
+        border-radius: 3px;
+        font-size: 0.85em;
+        font-family: monospace;
+        margin: 0 0.2rem;
+    }
+
     .search-empty-message kbd {
         padding: 0.1rem 0.3rem;
         background: var(--bg-secondary, #f3f4f6);

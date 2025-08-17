@@ -29,6 +29,7 @@ export default function MediaSearch() {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [selectedMediaItem, setSelectedMediaItem] = useState(null);
     const [rootConfig, setRootConfig] = useState({});
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
 
     // Load root configuration on component mount
     useEffect(() => {
@@ -56,7 +57,11 @@ export default function MediaSearch() {
                     update_mappings: true,
                 });
                 console.log('MediaSearch: Refresh result:', result);
-                toast('Cache refresh initiated successfully', 'success');
+                toast('Cache refresh completed successfully', 'success');
+                
+                // Force refresh of search data by adding a refresh trigger to the component
+                // This will cause the MediaSearchComponent to reload its data
+                setRefreshTrigger(prev => prev + 1);
             } catch (error) {
                 console.error('MediaSearch: Refresh error:', error);
                 toast('Failed to refresh Database', 'error');
@@ -87,6 +92,7 @@ export default function MediaSearch() {
                 isRefreshing={isRefreshing}
                 showRefreshControls={true}
                 onResultClick={handleResultClick}
+                refreshTrigger={refreshTrigger}
             />
 
             {selectedMediaItem && (() => {

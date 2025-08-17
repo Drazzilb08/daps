@@ -4,11 +4,13 @@
 import React from 'react';
 import SimpleListRenderer from './renderers/SimpleListRenderer';
 import PosterRenderer from './renderers/PosterRenderer';
+import MediaSearchRenderer from './renderers/MediaSearchRenderer';
 
 // Registry of available renderers
 const RENDERERS = {
     simple: new SimpleListRenderer(),
     poster: new PosterRenderer(), // Generic poster renderer for both assets and grouped displays
+    'media-search': MediaSearchRenderer, // Custom renderer for media search with refresh suggestions
 };
 
 export default function ModularSearchResults({

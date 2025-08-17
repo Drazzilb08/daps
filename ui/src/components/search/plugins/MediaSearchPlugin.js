@@ -174,7 +174,7 @@ export const mediaSearchPluginConfig = new PluginBuilder('media-search', 'Media 
         defaultView: 'grid', // Grid view for consistent UI
         defaultSort: 'alpha',
         defaultSource: 'labelarr',
-        renderer: 'poster', // Use poster renderer for image display
+        renderer: 'media-search', // Use custom media search renderer with refresh suggestions
         enableHoverPreview: true, // Enable hover previews for list view
         enableVirtualization: true,
         virtualizationThreshold: 50,

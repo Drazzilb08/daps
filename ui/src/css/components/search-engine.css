@@ -829,6 +829,42 @@
     .search-empty-message {
         color: var(--text-muted);
         line-height: 1.4;
+        margin-bottom: 1rem;
+    }
+
+    .search-empty-suggestion {
+        color: var(--text-muted, #64748b);
+        font-size: 0.9rem;
+        line-height: 1.4;
+        margin-bottom: 0.75rem;
+        padding: 0.75rem;
+        background: var(--bg-info, #f0f9ff);
+        border: 1px solid var(--border-info, #bae6fd);
+        border-radius: 6px;
+    }
+
+    .search-empty-suggestions {
+        margin-top: 1rem;
+    }
+
+    .search-empty-suggestion ul {
+        margin: 0.5rem 0 0 1rem;
+        padding: 0;
+    }
+
+    .search-empty-suggestion li {
+        margin-bottom: 0.25rem;
+    }
+
+    .search-empty-refresh-notice {
+        color: var(--text-muted, #64748b);
+        font-size: 0.9rem;
+        line-height: 1.4;
+        padding: 0.75rem;
+        background: var(--bg-warning, #fffbeb);
+        border: 1px solid var(--border-warning, #fed7aa);
+        border-radius: 6px;
+        border-left: 4px solid var(--warning, #f59e0b);
     }
 
     .search-empty-message kbd {
@@ -1129,10 +1165,14 @@
 
     .search-engine .refresh-section {
         margin-bottom: 1.75rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid var(--border-light, #e5e7eb);
     }
 
     .search-engine .refresh-section:last-child {
         margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
     }
 
     .search-engine .refresh-section h5 {
@@ -1145,6 +1185,15 @@
     /* Use the forms.css checkbox-row styling within popover */
     .search-engine .refresh-popover .checkbox-row {
         margin-bottom: 0.5rem;
+        padding: 0.5rem;
+        border-radius: 4px;
+        transition: background-color 0.15s ease;
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .search-engine .refresh-popover .checkbox-row:hover {
+        background-color: var(--bg-hover, #f1f5f9);
     }
 
     .search-engine .refresh-popover .checkbox-row:last-child {
@@ -1218,8 +1267,29 @@
             border-color: var(--border-dark, #374151);
         }
 
+        .search-engine .refresh-section {
+            border-bottom-color: var(--border-dark, #374151);
+        }
+
         .search-engine .refresh-section h5 {
             color: var(--text-color, #f3f4f6);
+        }
+
+        .search-engine .refresh-popover .checkbox-row:hover {
+            background-color: var(--bg-hover-dark, #374151);
+        }
+
+        .search-empty-suggestion {
+            background: var(--bg-info-dark, #1e3a8a);
+            border-color: var(--border-info-dark, #3b82f6);
+            color: var(--text-info-dark, #dbeafe);
+        }
+
+        .search-empty-refresh-notice {
+            background: var(--bg-warning-dark, #92400e);
+            border-color: var(--border-warning-dark, #d97706);
+            color: var(--text-warning-dark, #fef3c7);
+            border-left-color: var(--warning-dark, #f59e0b);
         }
 
         .search-engine .module-option {

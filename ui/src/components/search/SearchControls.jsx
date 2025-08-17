@@ -2,7 +2,7 @@
 // Generic controls component that replicates existing poster_search control patterns
 
 import React, { useRef, useState, useEffect } from 'react';
-import { getIcon } from '../../utils/tools';
+import { getIcon, humanize } from '../../utils/tools';
 import TooltipFactory from '../Tooltip';
 
 const DEFAULT_VIEW_MODES = [
@@ -55,7 +55,6 @@ export default function SearchControls({
     showRefreshControls = false,
     onRefresh,
     isRefreshing = false,
-    searchData = null,
 
     // Customization
     viewModes = DEFAULT_VIEW_MODES,
@@ -402,22 +401,71 @@ export default function SearchControls({
         }
     };
 
-    const getAvailableRefreshOptions = () => {
-        // Extract instances from search data
-        const arrInstances = new Set();
-        const plexInstances = new Set(['plex_1']); // Default Plex instance
+    // State to store available instances from API
+    const [availableInstances, setAvailableInstances] = useState({
+        radarrInstances: [],
+        sonarrInstances: [],
+        plexInstances: [],
+    });
 
-        if (searchData?.aggregatedItems) {
-            searchData.aggregatedItems.forEach(item => {
-                if (item.instances) {
-                    item.instances.forEach(instance => arrInstances.add(instance));
+    // Load available instances from API on component mount
+    useEffect(() => {
+        const loadInstances = async () => {
+            try {
+                const response = await fetch('/api/instances/');
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    const radarrInstances = [];
+                    const sonarrInstances = [];
+                    const plexInstances = [];
+                    
+                    // Extract Radarr instances
+                    if (data.data.radarr) {
+                        radarrInstances.push(...Object.keys(data.data.radarr));
+                    }
+                    
+                    // Extract Sonarr instances
+                    if (data.data.sonarr) {
+                        sonarrInstances.push(...Object.keys(data.data.sonarr));
+                    }
+                    
+                    // Extract Plex instances
+                    if (data.data.plex) {
+                        plexInstances.push(...Object.keys(data.data.plex));
+                    }
+                    
+                    setAvailableInstances({
+                        radarrInstances,
+                        sonarrInstances,
+                        plexInstances,
+                    });
                 }
-            });
-        }
+            } catch (error) {
+                console.warn('Failed to load instances for refresh options:', error);
+                setAvailableInstances({
+                    radarrInstances: [],
+                    sonarrInstances: [],
+                    plexInstances: [],
+                });
+            }
+        };
+        
+        loadInstances();
+    }, []);
 
+    const getAvailableRefreshOptions = () => {
+        // Combine Radarr and Sonarr for backwards compatibility with API
+        const allArrInstances = [
+            ...availableInstances.radarrInstances,
+            ...availableInstances.sonarrInstances,
+        ];
+        
         return {
-            arrInstances: Array.from(arrInstances),
-            plexInstances: Array.from(plexInstances),
+            radarrInstances: availableInstances.radarrInstances,
+            sonarrInstances: availableInstances.sonarrInstances,
+            arrInstances: allArrInstances, // For API compatibility
+            plexInstances: availableInstances.plexInstances,
             libraries: availableLibraries,
         };
     };
@@ -727,27 +775,81 @@ export default function SearchControls({
                             <h4>Refresh Database</h4>
                         </div>
                         <div className="refresh-popover-content">
-                            {availableOptions.arrInstances.length > 0 && (
+                            {/* Radarr Instances Section */}
+                            {availableOptions.radarrInstances.length > 0 ? (
                                 <div className="refresh-section">
-                                    <h5>ARR Instances</h5>
-                                    {availableOptions.arrInstances.map(instance => (
-                                        <div key={instance} className="checkbox-row">
+                                    <h5>Radarr Instances</h5>
+                                    {availableOptions.radarrInstances.map(instance => (
+                                        <div 
+                                            key={instance} 
+                                            className="checkbox-row"
+                                            onClick={() => handleRefreshOptionToggle('arrInstances', instance)}
+                                        >
                                             <input
                                                 type="checkbox"
-                                                id={`arr-${instance}`}
+                                                id={`radarr-${instance}`}
                                                 checked={selectedRefreshOptions.arrInstances.includes(
                                                     instance
                                                 )}
-                                                onChange={() =>
-                                                    handleRefreshOptionToggle(
-                                                        'arrInstances',
-                                                        instance
-                                                    )
-                                                }
+                                                onChange={() => {}} // Handle via parent div click
+                                                onClick={(e) => e.stopPropagation()} // Prevent double-firing
                                             />
-                                            <label htmlFor={`arr-${instance}`}>{instance}</label>
+                                            <label htmlFor={`radarr-${instance}`}>{humanize(instance)}</label>
                                         </div>
                                     ))}
+                                </div>
+                            ) : (
+                                <div className="refresh-section">
+                                    <h5>Radarr Instances</h5>
+                                    <div
+                                        style={{
+                                            color: 'var(--text-muted)',
+                                            fontSize: '0.85rem',
+                                            padding: '0.5rem 0',
+                                            fontStyle: 'italic',
+                                        }}
+                                    >
+                                        No Radarr instances configured
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Sonarr Instances Section */}
+                            {availableOptions.sonarrInstances.length > 0 ? (
+                                <div className="refresh-section">
+                                    <h5>Sonarr Instances</h5>
+                                    {availableOptions.sonarrInstances.map(instance => (
+                                        <div 
+                                            key={instance} 
+                                            className="checkbox-row"
+                                            onClick={() => handleRefreshOptionToggle('arrInstances', instance)}
+                                        >
+                                            <input
+                                                type="checkbox"
+                                                id={`sonarr-${instance}`}
+                                                checked={selectedRefreshOptions.arrInstances.includes(
+                                                    instance
+                                                )}
+                                                onChange={() => {}} // Handle via parent div click
+                                                onClick={(e) => e.stopPropagation()} // Prevent double-firing
+                                            />
+                                            <label htmlFor={`sonarr-${instance}`}>{humanize(instance)}</label>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="refresh-section">
+                                    <h5>Sonarr Instances</h5>
+                                    <div
+                                        style={{
+                                            color: 'var(--text-muted)',
+                                            fontSize: '0.85rem',
+                                            padding: '0.5rem 0',
+                                            fontStyle: 'italic',
+                                        }}
+                                    >
+                                        No Sonarr instances configured
+                                    </div>
                                 </div>
                             )}
 
@@ -777,19 +879,19 @@ export default function SearchControls({
                                 </div>
                                 {availableOptions.libraries.length > 0 ? (
                                     availableOptions.libraries.map(library => (
-                                        <div key={library.name || library} className="checkbox-row">
+                                        <div 
+                                            key={library.name || library} 
+                                            className="checkbox-row"
+                                            onClick={() => handleRefreshOptionToggle('libraries', library.name || library)}
+                                        >
                                             <input
                                                 type="checkbox"
                                                 id={`lib-${library.name || library}`}
                                                 checked={selectedRefreshOptions.libraries.includes(
                                                     library.name || library
                                                 )}
-                                                onChange={() =>
-                                                    handleRefreshOptionToggle(
-                                                        'libraries',
-                                                        library.name || library
-                                                    )
-                                                }
+                                                onChange={() => {}} // Handle via parent div click
+                                                onClick={(e) => e.stopPropagation()} // Prevent double-firing
                                             />
                                             <label htmlFor={`lib-${library.name || library}`}>
                                                 {library.displayName || library}

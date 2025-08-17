@@ -1,8 +1,65 @@
 // ui/src/components/search/plugins/AssetsPlugin.js
 // Assets search plugin with isolated business logic
 
+import React from 'react';
 import { PluginBuilder } from './PluginSchema';
 import { assetsSearchAdapter } from '../adapters/AssetsSearchAdapter';
+import ModalFactory from '../../modals/ModalFactory';
+import { fetchPosterPreviewUrl } from '../../../utils/api';
+
+/**
+ * Create poster modal schema for assets
+ */
+function createAssetsPosterModal(obj, onClose, onDeleted) {
+    // DB asset record
+    const isAsset = !!obj.asset_type;
+
+    // Image URL
+    let url = '';
+    if (obj.location && obj.file) {
+        url = fetchPosterPreviewUrl(obj.location, obj.file);
+    }
+
+    // For gdrive/custom, parse as before
+    let displayTitle = obj.title || obj.file;
+    let displayYear = obj.year;
+
+    // For legacy/gdrive/custom, parse from file string
+    if (!isAsset) {
+        let fileName = obj.file || '';
+        fileName = fileName.replace(/\.(jpg|jpeg|png)$/i, '');
+        let cleanTitle = fileName.replace(/\{(tmdb|tvdb|imdb-tt)[^}]+\}/gi, '').trim();
+        cleanTitle = cleanTitle.replace(/-+\s*Season.*$/i, '').trim();
+        const titleMatch = cleanTitle.match(/^(.*?)(?:\s*\((\d{4})\))?$/);
+        displayTitle = titleMatch && titleMatch[1] ? titleMatch[1].trim() : cleanTitle;
+        displayYear = titleMatch && titleMatch[2] ? titleMatch[2] : '';
+    }
+
+    // Create schema for ModalFactory
+    const schema = [
+        {
+            key: 'poster',
+            label: '',
+            type: 'poster',
+            value: url,
+            caption: obj.file || '',
+            previewUrl: url,
+            ...obj,
+            onDeleted,
+        },
+    ];
+
+    return (
+        <ModalFactory
+            schema={schema}
+            entry={{ ...obj, poster: url }}
+            title={displayTitle + (displayYear ? ` (${displayYear})` : '')}
+            footerButtons={[]}
+            modalClass="modal-content-fit"
+            onClose={onClose}
+        />
+    );
+}
 
 /**
  * Assets Search Plugin
@@ -33,6 +90,7 @@ export const assetsPluginConfig = new PluginBuilder('assets-search', 'Assets Sea
         enableHoverPreview: true,
         enableVirtualization: true,
         virtualizationThreshold: 100,
+        modalComponent: createAssetsPosterModal,
         sortOptions: [
             { value: 'alpha', label: 'A-Z' },
             { value: 'alpha-desc', label: 'Z-A' },

@@ -38,6 +38,8 @@ def process_job(job: Dict[str, Any], logger) -> Dict[str, Any]:
             return _process_upload_posters_job(payload, logger, job_id)
         elif job_type == "module_run":
             return _process_module_run_job(payload, logger, job_id)
+        elif job_type == "cache_refresh":
+            return _process_cache_refresh_job(payload, logger, job_id)
         else:
             return {
                 "status": 400,
@@ -656,3 +658,129 @@ def simple_job_processor(job: Dict[str, Any], logger) -> Dict[str, Any]:
 
     else:
         return {"success": False, "message": f"Unknown job type: {job_type}"}
+
+
+def _process_cache_refresh_job(
+    payload: Dict[str, Any], logger, job_id: int
+) -> Dict[str, Any]:
+    """
+    Process cache refresh job by syncing ARR and Plex databases.
+
+    Args:
+        payload: Job payload containing refresh configuration
+        logger: Logger instance
+        job_id: Job ID for tracking
+
+    Returns:
+        dict: Processing result
+    """
+    log = logger.get_adapter("CACHE_REFRESH")
+    log.info(f"[JOB:{job_id}] Starting cache refresh")
+
+    try:
+        from util.connector import Connector
+
+        # Extract refresh configuration from payload
+        arr_instances = payload.get("arr_instances", [])
+        plex_instances = payload.get("plex_instances", [])
+        libraries = payload.get("libraries", [])
+        update_mappings = payload.get("update_mappings", False)
+
+        log.info(
+            f"[JOB:{job_id}] Refresh config - ARR: {len(arr_instances)}, Plex: {len(plex_instances)}, Libraries: {len(libraries)}, Mappings: {update_mappings}"
+        )
+
+        # Construct instance_map from payload data for Connector
+        # Expected format: {'arrs': ['Radarr Test'], 'plex': {'plex_1': ['Test Movies']}}
+        instance_map = {}
+
+        # Add ARR instances to map
+        if arr_instances:
+            instance_map["arrs"] = arr_instances
+
+        # Add Plex instances with libraries to map
+        if plex_instances:
+            plex_map = {}
+            for plex_instance in plex_instances:
+                # Use libraries if specified, otherwise use empty list (all libraries)
+                plex_map[plex_instance] = libraries if libraries else []
+            instance_map["plex"] = plex_map
+
+        # Initialize connector with proper instance_map and database
+        with DapsDB(logger=logger) as db:
+            with Connector(
+                db=db, instance_map=instance_map, logger=logger
+            ) as connector:
+                results = connector.sync_all_databases()
+
+                # Log results
+                arr_results = results.get("arr", [])
+                plex_results = results.get("plex", [])
+                collections_results = results.get("collections", [])
+                mapping_results = results.get("mappings", {})
+
+                arr_success = len([r for r in arr_results if r.success])
+                plex_success = len([r for r in plex_results if r.success])
+                collections_success = len([r for r in collections_results if r.success])
+
+                log.info(
+                    f"[JOB:{job_id}] Sync results - ARR: {arr_success}/{len(arr_results)}, Plex: {plex_success}/{len(plex_results)}, Collections: {collections_success}/{len(collections_results)}"
+                )
+
+                if isinstance(mapping_results, dict) and "updated" in mapping_results:
+                    log.info(
+                        f"[JOB:{job_id}] Plex mappings - Updated: {mapping_results['updated']}, No match: {mapping_results['no_match']}"
+                    )
+
+                # Determine overall success
+                total_attempted = (
+                    len(arr_results) + len(plex_results) + len(collections_results)
+                )
+                total_successful = arr_success + plex_success + collections_success
+
+                success = total_successful == total_attempted and total_attempted > 0
+
+                # Convert SyncResult objects to dictionaries for JSON serialization
+                serializable_results = {}
+                for key, value in results.items():
+                    if key == "mappings":
+                        serializable_results[key] = value  # Already a dict
+                    else:
+                        # Convert SyncResult objects to dicts
+                        serializable_results[key] = [
+                            {
+                                "instance_name": r.instance_name,
+                                "instance_type": r.instance_type,
+                                "success": r.success,
+                                "items_processed": r.items_processed,
+                                "error_message": r.error_message,
+                                "duration": r.duration,
+                            }
+                            for r in value
+                        ]
+
+                return {
+                    "status": 200,
+                    "success": success,
+                    "message": f"Cache refresh completed: {total_successful}/{total_attempted} instances successful",
+                    "data": {
+                        "arr_synced": len(arr_results),
+                        "plex_synced": len(plex_results),
+                        "collections_synced": len(collections_results),
+                        "mappings_updated": (
+                            mapping_results.get("updated", 0)
+                            if isinstance(mapping_results, dict)
+                            else 0
+                        ),
+                        "results": serializable_results,
+                    },
+                }
+
+    except Exception as e:
+        log.error(f"[JOB:{job_id}] Cache refresh failed: {e}", exc_info=True)
+        return {
+            "status": 500,
+            "success": False,
+            "message": f"Cache refresh failed: {str(e)}",
+            "error_code": "CACHE_REFRESH_FAILED",
+        }

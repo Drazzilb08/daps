@@ -17,6 +17,7 @@ from api import (
     config as config_router,
     instances as plex_router,
     jobs as job_router,
+    labelarr as labelarr_router,
     logs as logs_router,
     modules as modules_router,
     notifications as notifications_router,
@@ -232,6 +233,7 @@ app.include_router(modules_router.router)
 app.include_router(plex_router.router)
 app.include_router(notifications_router.router)
 app.include_router(poster_search_router.router)
+app.include_router(labelarr_router.router)
 app.include_router(job_router.router)
 app.include_router(router)
 

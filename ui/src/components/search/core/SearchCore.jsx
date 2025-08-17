@@ -4,7 +4,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import SearchControls from '../SearchControls';
 import ModularSearchResults from '../ModularSearchResults';
-import ModalTrigger from '../ModalTrigger';
 import useHoverPreview from '../HoverPreview';
 import LoadingSpinner from '../../common/LoadingSpinner';
 import { useToast } from '../../providers/ToastProvider';
@@ -44,6 +43,9 @@ export default function SearchCore({
     // Results display configuration
     renderer = 'simple',
     groupBy = null,
+
+    // Modal configuration - plugin can provide custom modal component
+    modalComponent = null,
 
     // Event handlers
     onError = defaultOnError,
@@ -141,7 +143,7 @@ export default function SearchCore({
         return () => {
             cancelled = true;
         };
-    }, [searchAdapter, currentSource]); // Remove unstable functions from deps
+    }, [searchAdapter, currentSource, onDataLoaded, onError, toast]);
 
     // ===== SEARCH LOGIC =====
     const performSearch = useCallback(
@@ -197,7 +199,16 @@ export default function SearchCore({
                 }
             }, 0);
         },
-        [searchAdapter, searchData, pendingSearchTerm, activeFilters, currentSource, currentSort]
+        [
+            searchAdapter,
+            searchData,
+            pendingSearchTerm,
+            activeFilters,
+            currentSource,
+            currentSort,
+            onError,
+            toast,
+        ]
     );
 
     // Re-apply filters and sorting to existing search results
@@ -462,13 +473,13 @@ export default function SearchCore({
                 )}
             </div>
 
-            {modalInfo && (
-                <ModalTrigger
-                    obj={modalInfo}
-                    onClose={handleModalClose}
-                    onDeleted={handleResultDeleted}
-                />
-            )}
+            {modalInfo &&
+                modalComponent &&
+                React.createElement(modalComponent, {
+                    obj: modalInfo,
+                    onClose: handleModalClose,
+                    onDeleted: handleResultDeleted,
+                })}
         </div>
     );
 }

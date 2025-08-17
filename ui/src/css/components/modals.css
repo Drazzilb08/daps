@@ -287,6 +287,87 @@
     }
 
     /* ======================
+   FLEXIBLE MODAL LAYOUTS
+====================== */
+
+    /* Two-column layout */
+    .modal-two-column-layout {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: var(--space-5);
+        width: 100%;
+    }
+
+    .modal-column-left,
+    .modal-column-right {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+    }
+
+    .modal-column-section {
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+        box-shadow: none;
+        position: relative;
+        overflow: visible;
+        transition: none;
+    }
+
+    .modal-column-section::before {
+        display: none;
+    }
+
+    .modal-column-section:hover {
+        box-shadow: none;
+        border-color: transparent;
+        transform: none;
+    }
+
+    /* Section-based layout */
+    .modal-section {
+        margin-bottom: var(--space-4);
+    }
+
+    .modal-section-title {
+        font-weight: var(--font-weight-medium);
+        font-size: var(--font-size-2);
+        color: var(--primary);
+        margin-bottom: var(--space-3);
+        border-bottom: 1px solid var(--divider);
+        padding-bottom: var(--space-2);
+        display: block;
+    }
+
+    .modal-section-title::before {
+        display: none;
+    }
+
+    .modal-section-content {
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+        box-shadow: none;
+        position: relative;
+        overflow: visible;
+    }
+
+    .modal-section-content::before {
+        display: none;
+    }
+
+    /* Mobile responsiveness for layouts */
+    @media (width <= 768px) {
+        .modal-two-column-layout {
+            grid-template-columns: 1fr;
+            gap: var(--space-3);
+        }
+    }
+
+    /* ======================
    BODY AND FORM LAYOUT
 ====================== */
     .modal-body {

@@ -2,7 +2,7 @@
 .DEFAULT_GOAL := help
 SHELL := /bin/bash
 
-VENV := venv
+VENV := .venv
 PY := python3
 UI := ui
 NPM := npm

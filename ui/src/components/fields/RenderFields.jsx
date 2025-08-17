@@ -19,10 +19,17 @@ export function renderField(field, immediateData, moduleConfig, rootConfig, cont
               console.warn(`onChange not provided for field ${field.key}, value:`, value);
           };
 
+    // Use field.value if provided (computed values), otherwise fall back to form data or defaultValue
+    const value = field.value !== undefined 
+        ? field.value 
+        : immediateData?.[field.key] !== undefined 
+            ? immediateData[field.key]
+            : field.defaultValue;
+
     return (
         <Renderer
             field={field}
-            value={immediateData?.[field.key]}
+            value={value}
             onChange={onChange}
             moduleConfig={moduleConfig}
             rootConfig={rootConfig}

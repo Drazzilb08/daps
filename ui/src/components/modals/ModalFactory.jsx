@@ -14,6 +14,7 @@ export default function ModalFactory({
     moduleConfig = null,
     rootConfig = null,
     modalClass = 'modal-content',
+    layout = null,
     onClose,
     onButtonClick = {},
     fieldRefs = {},
@@ -123,27 +124,113 @@ export default function ModalFactory({
         return {};
     }
 
+    // Render a single field with all necessary props
+    function renderSingleField(field, index) {
+        return (
+            <React.Fragment key={field.key || index}>
+                {renderField(field, formData, moduleConfig, rootConfig, {
+                    onChange: (key, val) => handleFieldChange(key, val),
+                    index,
+                    ref: fieldRefs?.[field.key],
+                    highlightInvalid: !!invalidFields[field.key],
+                    errorMessage: invalidFields[field.key] || null,
+                    ...getExtraPropsForField(field),
+                })}
+            </React.Fragment>
+        );
+    }
+
+    // Render schema fields based on layout configuration
+    function renderModalContent() {
+        const validFields = schema.filter(f => f && typeof f === 'object' && f.key);
+
+        if (!validFields.length) {
+            return null;
+        }
+
+        // If no layout specified, use default sequential rendering
+        if (!layout) {
+            return validFields.map((field, i) => renderSingleField(field, i));
+        }
+
+        // Handle different layout types
+        switch (layout.type) {
+            case 'two-column':
+                return renderTwoColumnLayout(validFields);
+            case 'sections':
+                return renderSectionLayout(validFields);
+            case 'custom':
+                return renderCustomLayout(validFields);
+            default:
+                return validFields.map((field, i) => renderSingleField(field, i));
+        }
+    }
+
+    // Render two-column layout
+    function renderTwoColumnLayout(validFields) {
+        const fieldMap = validFields.reduce((acc, field) => {
+            acc[field.key] = field;
+            return acc;
+        }, {});
+
+        const leftFields = layout.leftColumn?.map(key => fieldMap[key]).filter(Boolean) || [];
+        const rightFields = layout.rightColumn?.map(key => fieldMap[key]).filter(Boolean) || [];
+
+        return (
+            <div className="modal-two-column-layout">
+                <div className="modal-column-left">
+                    {leftFields.map((field, i) => (
+                        <div key={field.key} className="modal-column-section">
+                            {renderSingleField(field, i)}
+                        </div>
+                    ))}
+                </div>
+                <div className="modal-column-right">
+                    {rightFields.map((field, i) => (
+                        <div key={field.key} className="modal-column-section">
+                            {renderSingleField(field, i)}
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    }
+
+    // Render section-based layout
+    function renderSectionLayout(validFields) {
+        return (
+            layout.sections?.map((section, sectionIndex) => {
+                const sectionFields =
+                    section.fields
+                        ?.map(key => validFields.find(f => f.key === key))
+                        .filter(Boolean) || [];
+
+                return (
+                    <div key={sectionIndex} className="modal-section">
+                        {section.title && (
+                            <div className="modal-section-title">{section.title}</div>
+                        )}
+                        <div className="modal-section-content">
+                            {sectionFields.map((field, i) => renderSingleField(field, i))}
+                        </div>
+                    </div>
+                );
+            }) || null
+        );
+    }
+
+    // Render custom layout (for future expansion)
+    function renderCustomLayout(validFields) {
+        // For now, fall back to default
+        return validFields.map((field, i) => renderSingleField(field, i));
+    }
+
     return ReactDOM.createPortal(
         <div className="modal show">
             <div className={modalClass} ref={modalRef}>
                 <ModalHeader title={title} onClose={onClose} />
                 <div className="modal-body" ref={formRef}>
-                    {schema.length > 0
-                        ? schema
-                              .filter(f => f && typeof f === 'object' && f.key)
-                              .map((field, i) => (
-                                  <React.Fragment key={field.key || i}>
-                                      {renderField(field, formData, moduleConfig, rootConfig, {
-                                          onChange: (key, val) => handleFieldChange(key, val),
-                                          index: i,
-                                          ref: fieldRefs?.[field.key],
-                                          highlightInvalid: !!invalidFields[field.key],
-                                          errorMessage: invalidFields[field.key] || null,
-                                          ...getExtraPropsForField(field),
-                                      })}
-                                  </React.Fragment>
-                              ))
-                        : null}
+                    {renderModalContent()}
                     {children && !schema.length && children}
                 </div>
                 <ModalFooter buttons={footerButtons} onButtonClick={wrappedButtonHandler} />

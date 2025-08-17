@@ -5,6 +5,8 @@ import * as ColorFields from './color';
 import * as CustomFields from './custom';
 import PosterField from './image/PosterField';
 import InstancesField from './instances/InstancesField';
+import MediaInfoField from './display/MediaInfoField';
+import MediaDisplayField from './display/MediaDisplayField';
 
 // You can add more groups (color, custom, etc.) as you implement them
 
@@ -16,6 +18,7 @@ export const FIELD_RENDERERS = {
     float: BasicFields.FloatField,
     textarea: BasicFields.TextareaField,
     json: BasicFields.JsonField,
+    hidden: BasicFields.HiddenField,
 
     // Select fields
     dropdown: SelectFields.DropdownField,
@@ -25,6 +28,13 @@ export const FIELD_RENDERERS = {
     holiday_presets: SelectFields.HolidayPresetsField,
     holiday_schedule: SelectFields.HolidayScheduleField,
     schedule: SelectFields.ScheduleField,
+
+    // Tag management fields
+    tag_select: SelectFields.TagSelectField,
+    tag_display: SelectFields.TagDisplayField,
+    tag_multiselect: SelectFields.TagMultiSelectField,
+    media_info_display: MediaInfoField,
+    media_display: MediaDisplayField,
 
     // Dir fields
     dir_picker: DirFields.DirPickerField,

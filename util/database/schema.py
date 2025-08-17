@@ -97,6 +97,7 @@ class SchemaManager:
         plex_media_cache = TableDefinition(
             name="plex_media_cache",
             columns=[
+                ColumnDefinition("id", "INTEGER", primary_key=True, nullable=False),
                 ColumnDefinition("plex_id", "TEXT", nullable=False),
                 ColumnDefinition("instance_name", "TEXT", nullable=False),
                 ColumnDefinition("asset_type", "TEXT"),
@@ -108,7 +109,7 @@ class SchemaManager:
                 ColumnDefinition("guids", "TEXT"),
                 ColumnDefinition("labels", "TEXT"),
             ],
-            constraints=["PRIMARY KEY (plex_id, instance_name)"],
+            constraints=["UNIQUE (plex_id, instance_name)"],
         )
         self._add_table(plex_media_cache)
 

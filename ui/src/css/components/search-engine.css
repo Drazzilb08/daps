@@ -432,7 +432,7 @@
         letter-spacing: 0.01em;
     }
 
-    .search-engine .meta-movie {
+    /* .search-engine .meta-movie {
         color: var(--accent, #ff9800);
     }
 
@@ -446,7 +446,7 @@
 
     .search-engine .meta-subtitle {
         color: var(--text-muted, #aaa);
-    }
+    } */
 
     /* ======================================================
    SEARCH ENGINE: HOVER PREVIEW
@@ -1219,7 +1219,7 @@
         }
 
         .search-engine .refresh-section h5 {
-            color: var(--text-dark, #f3f4f6);
+            color: var(--text-color, #f3f4f6);
         }
 
         .search-engine .module-option {

@@ -4,3 +4,4 @@ export { NumberField } from './NumberField.jsx';
 export { FloatField } from './FloatField.jsx';
 export { TextareaField } from './TextareaField.jsx';
 export { JsonField } from './JsonField.jsx';
+export { HiddenField } from './HiddenField.jsx';

@@ -607,6 +607,177 @@ class Connector:
         normalized_selected = {normalize(lib) for lib in selected_libraries}
         return [lib for lib in all_libraries if normalize(lib) in normalized_selected]
 
+    def update_media_plex_mappings(self) -> Dict[str, int]:
+        """
+        Update plex_mapping_id in media_cache table using labelarr.py matching logic.
+        This creates pre-computed mappings between ARR media and Plex items for faster access.
+
+        Returns:
+            Dict with mapping statistics: {'updated': count, 'no_match': count}
+        """
+        if self.logger:
+            self.logger.info("Starting media-to-plex mapping update...")
+
+        stats = {"updated": 0, "no_match": 0}
+
+        try:
+            # Import normalization function from labelarr logic
+
+            # Get all media cache entries that need mapping
+            media_items = [
+                item
+                for item in self.db.media.get_all()
+                if item.get("plex_mapping_id") is None
+            ]
+
+            if not media_items:
+                if self.logger:
+                    self.logger.info("No media items need plex mapping")
+                return stats
+
+            # Get all plex media cache entries for matching
+            plex_items = self.db.plex.get_all()
+
+            if self.logger and plex_items:
+                self.logger.debug(f"First plex_item keys: {list(plex_items[0].keys())}")
+
+            if not plex_items:
+                if self.logger:
+                    self.logger.warning("No plex items found for mapping")
+                return stats
+
+            # Process each media item for mapping using direct database-to-database matching
+            for media_item in media_items:
+                plex_mapping_id = self._find_plex_match(media_item, plex_items)
+
+                if plex_mapping_id:
+                    # Update the media_cache record with the mapping
+                    self.db.media.execute_query(
+                        "UPDATE media_cache SET plex_mapping_id = ? WHERE id = ?",
+                        (plex_mapping_id, media_item["id"]),
+                    )
+                    stats["updated"] += 1
+                else:
+                    stats["no_match"] += 1
+
+            if self.logger:
+                self.logger.info(
+                    f"Plex mapping complete: {stats['updated']} mapped, {stats['no_match']} no match"
+                )
+
+        except Exception as e:
+            if self.logger:
+                self.logger.error(f"Error updating plex mappings: {e}")
+            raise ConnectorError(f"Plex mapping update failed: {e}")
+
+        return stats
+
+    def _find_plex_match(self, media_item, plex_items):
+        """Simple direct table-to-table matching: media_cache → plex_media_cache"""
+        from util.normalization import normalize_titles
+
+        # Extract media item data
+        media_tmdb = self._get_clean_id(media_item.get("tmdb_id"))
+        media_tvdb = self._get_clean_id(media_item.get("tvdb_id"))
+        media_imdb = self._get_clean_id(media_item.get("imdb_id"))
+        media_season = media_item.get("season_number")
+        media_title = normalize_titles(media_item.get("title"))
+        media_year = str(media_item.get("year") or "")
+
+        # Simple direct comparison - match ALL criteria
+        for plex_item in plex_items:
+            # Parse plex item data
+            guids = self._parse_plex_guids(plex_item.get("guids", ""))
+            plex_tmdb = self._get_clean_id(guids.get("tmdb"))
+            plex_tvdb = self._get_clean_id(guids.get("tvdb"))
+            plex_imdb = self._get_clean_id(guids.get("imdb"))
+            plex_season = plex_item.get("season_number")
+            plex_title = normalize_titles(plex_item.get("title"))
+            plex_year = str(plex_item.get("year") or "")
+
+            # Match: title + year + season + IDs
+            title_match = media_title == plex_title
+            year_match = media_year == plex_year
+
+            # Special handling for Season 0 - can match either NULL or 0
+            if media_season == 0:
+                season_match = plex_season is None or plex_season == 0
+            else:
+                season_match = media_season == plex_season
+
+            # ID matches (any one ID match is sufficient, but all must match if present)
+            id_match = False
+            if media_tmdb and plex_tmdb and media_tmdb == plex_tmdb:
+                id_match = True
+            elif media_tvdb and plex_tvdb and media_tvdb == plex_tvdb:
+                id_match = True
+            elif media_imdb and plex_imdb and media_imdb == plex_imdb:
+                id_match = True
+
+            # Match if: (title+year+season) OR (ID+season)
+            if season_match and (id_match or (title_match and year_match)):
+                if self.logger:
+                    match_type = "ID" if id_match else "title+year"
+                    rowid = self._get_plex_rowid(plex_item)
+                    self.logger.debug(
+                        f"✓ Direct match found for '{media_item.get('title')}' season {media_season} using {match_type}, rowid={rowid}"
+                    )
+                return self._get_plex_rowid(plex_item)
+
+        if self.logger:
+            self.logger.warning(
+                f"✗ No direct match found for '{media_item.get('title')}' season {media_season}"
+            )
+        return None
+
+    def _get_plex_rowid(self, plex_item):
+        """Get the database ID for a plex item"""
+        return plex_item.get("id")
+
+    def _parse_plex_guids(self, guids_str):
+        """Parse Plex GUID string into structured data (from labelarr.py logic)"""
+        import json
+
+        guids = {}
+        if not guids_str:
+            return guids
+
+        try:
+            parsed = json.loads(guids_str)
+
+            # Handle different possible formats
+            guid_array = []
+            if isinstance(parsed, list):
+                guid_array = parsed
+            elif isinstance(parsed, str):
+                guid_array = [parsed]
+            elif parsed and isinstance(parsed, dict):
+                guid_array = list(parsed.values())
+
+            for guid in guid_array:
+                if isinstance(guid, str):
+                    if "themoviedb://" in guid:
+                        guids["tmdb"] = guid.replace(
+                            "com.plexapp.agents.themoviedb://", ""
+                        ).split("?")[0]
+                    elif "thetvdb://" in guid:
+                        guids["tvdb"] = guid.replace(
+                            "com.plexapp.agents.thetvdb://", ""
+                        ).split("?")[0]
+                    elif "imdb://" in guid:
+                        guids["imdb"] = guid.replace(
+                            "com.plexapp.agents.imdb://", ""
+                        ).split("?")[0]
+
+        except Exception:
+            pass  # Return empty dict on parse error
+
+        return guids
+
+    def _get_clean_id(self, val):
+        """Normalize IDs into comparable strings or None (from labelarr.py logic)"""
+        return str(val).strip() if val not in (None, "null", "", "None") else None
+
     def sync_all_databases(self) -> Dict[str, List[SyncResult]]:
         """Sync all databases and return results"""
         if self.logger:
@@ -619,13 +790,24 @@ class Connector:
             results["plex"] = self.update_plex_database()
             results["collections"] = self.update_collections_database()
 
+            # Update plex mappings after both ARR and Plex data are synced
+            try:
+                mapping_stats = self.update_media_plex_mappings()
+                results["mappings"] = mapping_stats
+            except Exception as e:
+                if self.logger:
+                    self.logger.warning(f"Plex mapping update failed: {e}")
+                results["mappings"] = {"error": str(e)}
+
             if self.logger:
+                # Only count sync results, not mapping results which is a dict
+                sync_result_keys = ["arr", "plex", "collections"]
                 total_successful = sum(
-                    len([r for r in sync_results if r.success])
-                    for sync_results in results.values()
+                    len([r for r in results.get(key, []) if r.success])
+                    for key in sync_result_keys
                 )
                 total_attempted = sum(
-                    len(sync_results) for sync_results in results.values()
+                    len(results.get(key, [])) for key in sync_result_keys
                 )
 
                 self.logger.info(

@@ -114,19 +114,17 @@ class MediaCache(DatabaseBase):
             INSERT INTO media_cache
                 (identity_key, asset_type, title, normalized_title,
                 year, tmdb_id, tvdb_id, imdb_id, folder, tags,
-                season_number, matched, instance_name, source, original_file, renamed_file, file_hash, poster_url)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                season_number, matched, instance_name, source, poster_url)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(identity_key)
             DO UPDATE SET
                 normalized_title=excluded.normalized_title,
                 folder=excluded.folder,
                 tags=excluded.tags,
-                matched=excluded.matched,
                 source=excluded.source,
-                original_file=excluded.original_file,
-                renamed_file=excluded.renamed_file,
-                file_hash=excluded.file_hash,
                 poster_url=excluded.poster_url
+                -- Preserve: matched, original_file, renamed_file, file_hash, plex_mapping_id
+                -- These fields should only be updated by specific operations, not ARR sync
             """,
             (
                 identity_key,
@@ -143,9 +141,6 @@ class MediaCache(DatabaseBase):
                 0,
                 instance_name,
                 instance_type,
-                record.get("original_file") or None,
-                record.get("renamed_file") or None,
-                record.get("file_hash") or None,
                 record.get("poster_url") or None,
             ),
         )

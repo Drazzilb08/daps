@@ -6,7 +6,6 @@ export { default as SearchCore } from './core/SearchCore';
 export { default as SearchControls } from './SearchControls';
 export { default as ModularSearchResults } from './ModularSearchResults';
 export { default as HoverPreview } from './HoverPreview';
-export { default as ModalTrigger } from './ModalTrigger';
 
 // Plugin system exports
 export {

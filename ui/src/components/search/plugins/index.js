@@ -4,8 +4,8 @@
 import React from 'react';
 
 // Import all plugins to automatically register them
-import './AssetsPlugin';
-import './GdrivePlugin';
+import './AssetsPlugin.jsx';
+import './GdrivePlugin.jsx';
 import './MediaSearchPlugin';
 
 // Export plugin system
@@ -13,8 +13,8 @@ export { default as pluginRegistry } from './PluginRegistry';
 export { PluginBuilder, PluginValidator } from './PluginSchema';
 
 // Export plugin configs for direct access if needed
-export { assetsPluginConfig } from './AssetsPlugin';
-export { gdrivePluginConfig } from './GdrivePlugin';
+export { assetsPluginConfig } from './AssetsPlugin.jsx';
+export { gdrivePluginConfig } from './GdrivePlugin.jsx';
 export { mediaSearchPluginConfig } from './MediaSearchPlugin';
 
 // Import SimpleSearchPlugin for createSearchComponent

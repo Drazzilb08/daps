@@ -5,3 +5,6 @@ export { GdrivePresetsField } from './GdrivePresetsField.jsx';
 export { HolidayPresetsField } from './HolidayPresetsField.jsx';
 export { HolidayScheduleField } from './HolidayScheduleField.jsx';
 export { ScheduleField } from './ScheduleField.jsx';
+export { TagSelectField } from './TagSelectField.jsx';
+export { TagDisplayField } from './TagDisplayField.jsx';
+export { TagMultiSelectField } from './TagMultiSelectField.jsx';

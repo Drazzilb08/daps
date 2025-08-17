@@ -71,8 +71,19 @@ export const mediaSearchAdapter = {
         const plexLookup = this.createPlexLookup(plexItems);
 
         for (const item of mediaItems) {
-            // Only include items that have plex mappings
-            const plexData = this.findPlexMapping(item, plexLookup);
+            // Use pre-computed plex mapping if available, otherwise fall back to manual matching
+            let plexData = null;
+
+            if (item.plex_mapping_id) {
+                // Fast lookup using pre-computed mapping
+                plexData = plexItems.find(p => p.id === item.plex_mapping_id);
+            }
+
+            if (!plexData) {
+                // Fallback to manual matching for items without pre-computed mappings
+                plexData = this.findPlexMapping(item, plexLookup);
+            }
+
             if (!plexData) continue;
 
             // Create unique key: tmdb_id || tvdb_id || imdb_id || normalized_title+year+type
@@ -88,7 +99,7 @@ export const mediaSearchAdapter = {
                     instances: [item.instance_name],
                     instanceCount: 1,
                     allInstanceData: [item],
-                    plexLabels: plexData.labels || [],
+                    plexLabels: this.parseLabels(plexData.labels),
                     plexData: plexData,
                     plex_mapping_id: plexData.id, // Add mapping reference
                 });
@@ -96,12 +107,15 @@ export const mediaSearchAdapter = {
                 const existing = grouped.get(key);
                 // Only aggregate if same type (movies with movies, shows with shows)
                 if (existing.asset_type === item.asset_type) {
-                    existing.instances.push(item.instance_name);
-                    existing.instanceCount++;
+                    // Only add instance_name if it's not already in the array (avoid duplicates)
+                    if (!existing.instances.includes(item.instance_name)) {
+                        existing.instances.push(item.instance_name);
+                        existing.instanceCount++;
+                    }
                     existing.allInstanceData.push(item);
                     // Keep Plex data from first occurrence (they should be the same)
                     if (!existing.plexLabels && plexData.labels) {
-                        existing.plexLabels = plexData.labels;
+                        existing.plexLabels = this.parseLabels(plexData.labels);
                     }
                 }
             }
@@ -135,6 +149,7 @@ export const mediaSearchAdapter = {
 
     /**
      * Find matching plex item for a media item
+     * Now uses pre-computed plex_mapping_id when available for faster lookups
      */
     findPlexMapping(mediaItem, plexLookup) {
         // Try TMDB ID first
@@ -158,6 +173,24 @@ export const mediaSearchAdapter = {
         // Fallback to title+year+type
         const titleKey = `${mediaItem.normalized_title}:${mediaItem.year}:${mediaItem.asset_type}`;
         return plexLookup.get(titleKey);
+    },
+
+    /**
+     * Parse Plex labels from JSON string to array
+     */
+    parseLabels(labelsString) {
+        if (!labelsString) return [];
+
+        if (Array.isArray(labelsString)) {
+            return labelsString;
+        }
+
+        try {
+            return JSON.parse(labelsString);
+        } catch (error) {
+            console.warn('Error parsing Plex labels:', error, 'Raw labels string:', labelsString);
+            return [];
+        }
     },
 
     /**
@@ -268,9 +301,22 @@ export const mediaSearchAdapter = {
                     (a, b) => (parseInt(b.year) || 0) - (parseInt(a.year) || 0)
                 );
             case 'recently_added':
-                return sortedResults.sort(
-                    (a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0)
-                );
+                return sortedResults.sort((a, b) => {
+                    // Get the most recent created_at from all instance data
+                    const getLatestCreatedAt = item => {
+                        if (!item.allInstanceData || item.allInstanceData.length === 0) {
+                            return new Date(item.created_at || 0);
+                        }
+
+                        const dates = item.allInstanceData
+                            .map(instance => new Date(instance.created_at || 0))
+                            .filter(date => !isNaN(date.getTime()));
+
+                        return dates.length > 0 ? new Date(Math.max(...dates)) : new Date(0);
+                    };
+
+                    return getLatestCreatedAt(b) - getLatestCreatedAt(a);
+                });
             default:
                 return sortedResults;
         }
@@ -284,27 +330,18 @@ export const mediaSearchAdapter = {
         const firstInstance = item.allInstanceData?.[0] || item;
         const posterUrl = this.getPosterUrl(firstInstance);
 
-        const subtitle = this.generateSubtitle(item);
-        const badge = this.generateBadge(item);
         const seasonInfo = this.getSeasonInfo(item);
-
-        // Get instance count for movies (for display purposes)
-        const movieInstanceCount =
-            item.asset_type === 'movie' ? this.getUniqueInstanceCount(item) : item.instanceCount;
 
         return {
             id: item.id,
-            title: item.title,
-            subtitle: subtitle,
+            title: item.title, // Raw title - let renderer format with year
             year: item.year,
             type: item.asset_type,
             instances: item.instances,
-            instanceCount: movieInstanceCount,
-            badge: badge,
             plexLabels: item.plexLabels || [],
             allInstanceData: item.allInstanceData,
             plex_mapping_id: item.plex_mapping_id,
-            // Season information for TV shows
+            // Raw season information for TV shows - let renderer format
             seasonCount: seasonInfo.count,
             seasonNumbers: seasonInfo.numbers,
             seasonDisplay: seasonInfo.display,
@@ -323,24 +360,19 @@ export const mediaSearchAdapter = {
      */
     generateSubtitle(item) {
         if (item.asset_type === 'show') {
-            // For TV shows, show seasons count with "Seasons:" prefix
+            // For TV shows, show seasons count
             const seasons = this.getActualSeasonCount(item);
             if (seasons > 1) {
-                return `${item.year} • Seasons: ${seasons}`;
+                return `Seasons: ${seasons}`;
             } else if (seasons === 1) {
-                return `${item.year} • Season: 1`;
+                return `Season: 1`;
             } else {
-                return `${item.year} • show`;
+                // For shows with no season data, don't show redundant "show" label
+                return '';
             }
         } else if (item.asset_type === 'movie') {
-            // For movies, show instance count only if multiple ARR instances have the same movie
-            const uniqueInstances = this.getUniqueInstanceCount(item);
-            if (uniqueInstances > 1) {
-                return `${item.year} • ${uniqueInstances} instances`;
-            } else {
-                // Don't show "1 instance", just show year and type
-                return `${item.year} • movie`;
-            }
+            // Movies should not have any subtitle - title already includes the year
+            return '';
         }
 
         // Default fallback

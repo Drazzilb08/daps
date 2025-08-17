@@ -1,5 +1,4 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { fetchAvailableTagsForInstance } from '../../../utils/api';
 
 export const TagSelectField = React.memo(function TagSelectField({
     field,
@@ -8,10 +7,8 @@ export const TagSelectField = React.memo(function TagSelectField({
     highlightInvalid = false,
     errorMessage = null,
     // Additional props for tag field
-    sourceInstance = null, // ARR instance to load tags from
+    availableTags = [], // Pre-defined available tags
 }) {
-    const [availableTags, setAvailableTags] = useState([]);
-    const [loadingTags, setLoadingTags] = useState(false);
     const [currentInput, setCurrentInput] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
     // Remove filteredTags state - we'll compute this with useMemo instead
@@ -33,25 +30,14 @@ export const TagSelectField = React.memo(function TagSelectField({
         selectedTags
     });
 
-    // Load tags when source instance changes
-    useEffect(() => {
-        if (!sourceInstance) return;
-
-        const loadTags = async () => {
-            setLoadingTags(true);
-            try {
-                const tags = await fetchAvailableTagsForInstance(sourceInstance);
-                setAvailableTags(tags);
-            } catch (error) {
-                console.error('Failed to load tags:', error);
-                setAvailableTags([]);
-            } finally {
-                setLoadingTags(false);
-            }
-        };
-
-        loadTags();
-    }, [sourceInstance]);
+    // Convert availableTags to consistent format if they're simple strings
+    const normalizedAvailableTags = useMemo(() => {
+        return availableTags.map(tag => 
+            typeof tag === 'string' 
+                ? { id: tag, label: tag }
+                : tag
+        );
+    }, [availableTags]);
 
     // Filter available tags based on current input (using useMemo to prevent infinite loops)
     const filteredTags = useMemo(() => {
@@ -60,14 +46,14 @@ export const TagSelectField = React.memo(function TagSelectField({
         }
 
         const query = currentInput.toLowerCase();
-        return availableTags
+        return normalizedAvailableTags
             .filter(tag => {
                 const matchesQuery = tag.label.toLowerCase().includes(query);
                 const notSelected = !selectedTags.includes(tag.label);
                 return matchesQuery && notSelected;
             })
             .slice(0, 10); // Limit to 10 suggestions
-    }, [currentInput, availableTags, selectedTags]);
+    }, [currentInput, normalizedAvailableTags, selectedTags]);
 
     // Handle clicking outside to close suggestions
     useEffect(() => {
@@ -174,13 +160,10 @@ export const TagSelectField = React.memo(function TagSelectField({
                                 onChange={handleInputChange}
                                 onKeyDown={handleInputKeyDown}
                                 onFocus={() => currentInput.trim() && setShowSuggestions(true)}
-                                disabled={loadingTags}
                             />
                         )}
                     </div>
 
-                    {/* Loading indicator */}
-                    {loadingTags && <div className="tag-select-loading">Loading tags...</div>}
 
                     {/* Suggestions dropdown */}
                     {allowCustom && showSuggestions && filteredTags.length > 0 && (

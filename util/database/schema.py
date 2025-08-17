@@ -137,6 +137,9 @@ class SchemaManager:
                 ColumnDefinition("file_hash", "TEXT"),
                 ColumnDefinition("poster_url", "TEXT"),
                 ColumnDefinition(
+                    "arr_id", "INTEGER"
+                ),  # ARR media ID for direct API operations
+                ColumnDefinition(
                     "plex_mapping_id", "INTEGER"
                 ),  # Foreign key to plex_media_cache.id
             ],

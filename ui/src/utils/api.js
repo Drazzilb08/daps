@@ -781,17 +781,6 @@ export function getCacheStats() {
 // ========== LABELARR API FUNCTIONS ==========
 
 /**
- * Get available tags from a specific ARR instance
- * @param {string} instanceName - Name of the ARR instance (Radarr/Sonarr)
- * @returns {Promise<Array>} - Array of tag objects with id, label, and name
- */
-export async function fetchAvailableTagsForInstance(instanceName) {
-    const res = await fetch(`/api/labelarr/tags/${encodeURIComponent(instanceName)}`);
-    const data = await handleApiResponse(res);
-    return extractData(data, 'tags') || [];
-}
-
-/**
  * Sync tags from ARR instance to Plex labels
  * @param {Object} payload - Sync request payload
  * @param {string} payload.source_instance - ARR instance name
@@ -818,13 +807,3 @@ export async function syncTagsToMedia(payload) {
     };
 }
 
-/**
- * Get status of a tag sync job
- * @param {string} jobId - Job ID returned from sync endpoint
- * @returns {Promise<Object>} - Job status and progress information
- */
-export async function getSyncJobStatus(jobId) {
-    const res = await fetch(`/api/labelarr/status/${encodeURIComponent(jobId)}`);
-    const data = await handleApiResponse(res);
-    return data.data || {};
-}

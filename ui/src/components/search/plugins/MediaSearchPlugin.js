@@ -4,6 +4,7 @@
 import { PluginBuilder } from './PluginSchema';
 import { mediaSearchAdapter } from '../adapters/MediaSearchAdapter';
 import pluginRegistry from './PluginRegistry';
+import subPluginRegistry from './subplugins';
 
 /**
  * Enhanced Media adapter with sub-plugin system
@@ -20,12 +21,12 @@ const enhancedMediaAdapter = {
      * Initialize sub-plugin registry
      */
     initializeSubPlugins() {
-        // TODO: Import and register sub-plugins when they're created
-        // For now, set up the registry structure
-        this._subPluginRegistry = new Map();
-        this._activeSubPlugin = 'labelarr'; // Default sub-plugin
+        // Use the imported sub-plugin registry
+        this._subPluginRegistry = subPluginRegistry;
+        this._activeSubPlugin = subPluginRegistry.getDefaultPlugin();
 
-        console.log('MediaSearchAdapter: Sub-plugin registry initialized');
+        console.log('MediaSearchAdapter: Sub-plugin registry initialized with plugins:', 
+            subPluginRegistry.getStats());
     },
 
     /**
@@ -47,6 +48,16 @@ const enhancedMediaAdapter = {
     },
 
     /**
+     * Get sub-plugin for media item
+     */
+    getSubPluginForItem(mediaItem) {
+        if (!this._subPluginRegistry) {
+            return null;
+        }
+        return this._subPluginRegistry.findBestPlugin(mediaItem);
+    },
+
+    /**
      * Enhanced loadInitialData with sub-plugin initialization
      */
     async loadInitialData(currentSource) {
@@ -60,7 +71,7 @@ const enhancedMediaAdapter = {
         const result = {
             ...data,
             activeSubPlugin: this._activeSubPlugin,
-            availableSubPlugins: Array.from(this._subPluginRegistry.keys()),
+            availableSubPlugins: this._subPluginRegistry.getPluginIds(),
         };
 
         console.log(

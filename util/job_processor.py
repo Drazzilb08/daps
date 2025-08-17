@@ -40,6 +40,8 @@ def process_job(job: Dict[str, Any], logger) -> Dict[str, Any]:
             return _process_module_run_job(payload, logger, job_id)
         elif job_type == "cache_refresh":
             return _process_cache_refresh_job(payload, logger, job_id)
+        elif job_type == "labelarr_sync":
+            return _process_labelarr_sync_job(payload, logger, job_id)
         else:
             return {
                 "status": 400,
@@ -106,7 +108,7 @@ def _process_webhook_job(
 
             # Create direct ARR client connection
             client = create_arr_client(
-                instance_info["url"], instance_info["api_key"], arr_logger
+                instance_info["url"], instance_info["api"], arr_logger
             )
 
             if not client or not client.is_connected():
@@ -595,7 +597,7 @@ def _queue_upload_job(manifest: Dict[str, Any], logger, job_id: int) -> None:
         logger: Logger instance
         job_id: Current job ID for tracking
     """
-    log = logger.get_adapter("POST_RENAME")
+    log = logger.get_adapter("UPLOAD_POSTERS")
 
     try:
         upload_payload = {"manifest": manifest}
@@ -658,6 +660,92 @@ def simple_job_processor(job: Dict[str, Any], logger) -> Dict[str, Any]:
 
     else:
         return {"success": False, "message": f"Unknown job type: {job_type}"}
+
+
+def _process_labelarr_sync_job(
+    payload: Dict[str, Any], logger, job_id: int
+) -> Dict[str, Any]:
+    """
+    Process labelarr sync job using the existing labelarr module.
+
+    Args:
+        payload: Job payload containing sync request data
+        logger: Logger instance
+        job_id: Job ID for tracking
+
+    Returns:
+        dict: Processing result
+    """
+    log = logger.get_adapter("LABELARR_SYNC")
+    log.info(f"[JOB:{job_id}] Starting labelarr sync")
+
+    try:
+        from modules.labelarr import Labelarr
+
+        # Extract sync parameters from payload
+        source_instance = payload.get("source_instance")
+        media_cache_id = payload.get("media_cache_id")
+        plex_mapping_id = payload.get("plex_mapping_id")
+        tag_actions = payload.get("tag_actions", {})
+        plex_instance = payload.get("plex_instance", "plex_1")
+        dry_run = payload.get("dry_run", False)
+
+        if not source_instance or not media_cache_id:
+            return {
+                "status": 400,
+                "success": False,
+                "message": "Missing required parameters: source_instance or media_cache_id",
+                "error_code": "MISSING_PARAMETERS",
+            }
+
+        log.info(
+            f"[JOB:{job_id}] Syncing tags for media {media_cache_id} from {source_instance} to {plex_instance}"
+        )
+
+        # Create labelarr instance
+        labelarr = Labelarr(logger=logger)
+
+        # Execute sync using labelarr module's adhoc method - keeps all business logic in the module
+        result = labelarr.labelarr_sync_adhoc(
+            source_instance=source_instance,
+            media_cache_id=media_cache_id,
+            tag_actions=tag_actions,
+            plex_instance=plex_instance,
+            plex_mapping_id=plex_mapping_id,
+            dry_run=dry_run,
+        )
+
+        # Convert to job processor format
+        if result["success"]:
+            return {
+                "status": 200,
+                "success": True,
+                "message": result["message"],
+                "data": result.get("data", {}),
+            }
+        else:
+            # Map error codes to appropriate HTTP status codes
+            status_code = 500  # Default
+            if result.get("error_code") in ["MEDIA_NOT_FOUND", "PLEX_ITEM_NOT_FOUND"]:
+                status_code = 404
+            elif result.get("error_code") == "PLEX_CONNECTION_FAILED":
+                status_code = 503
+
+            return {
+                "status": status_code,
+                "success": False,
+                "message": result["message"],
+                "error_code": result.get("error_code", "LABELARR_SYNC_FAILED"),
+            }
+
+    except Exception as e:
+        log.error(f"[JOB:{job_id}] Labelarr sync failed: {e}", exc_info=True)
+        return {
+            "status": 500,
+            "success": False,
+            "message": f"Labelarr sync failed: {str(e)}",
+            "error_code": "LABELARR_SYNC_FAILED",
+        }
 
 
 def _process_cache_refresh_job(

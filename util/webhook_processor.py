@@ -200,7 +200,7 @@ class WebhookProcessor:
                         "found": True,
                         "name": name,
                         "type": media_type,
-                        "api_key": info.api,
+                        "api": info.api,
                         "url": info.url,
                         "host": host,
                         "port": port,

@@ -78,6 +78,7 @@ class MediaCache(DatabaseBase):
             "tags",
             "season_number",
             "poster_url",
+            "arr_id",
         ]
         record = {k: item.get(k) for k in required_keys}
         record["asset_type"] = asset_type
@@ -93,6 +94,7 @@ class MediaCache(DatabaseBase):
             "imdb_id",
             "season_number",
             "poster_url",
+            "arr_id",
         ]:
             if record[field] == "" or (
                 isinstance(record[field], str) and record[field].strip() == ""
@@ -114,15 +116,16 @@ class MediaCache(DatabaseBase):
             INSERT INTO media_cache
                 (identity_key, asset_type, title, normalized_title,
                 year, tmdb_id, tvdb_id, imdb_id, folder, tags,
-                season_number, matched, instance_name, source, poster_url)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                season_number, matched, instance_name, source, poster_url, arr_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(identity_key)
             DO UPDATE SET
                 normalized_title=excluded.normalized_title,
                 folder=excluded.folder,
                 tags=excluded.tags,
                 source=excluded.source,
-                poster_url=excluded.poster_url
+                poster_url=excluded.poster_url,
+                arr_id=excluded.arr_id
                 -- Preserve: matched, original_file, renamed_file, file_hash, plex_mapping_id
                 -- These fields should only be updated by specific operations, not ARR sync
             """,
@@ -142,6 +145,7 @@ class MediaCache(DatabaseBase):
                 instance_name,
                 instance_type,
                 record.get("poster_url") or None,
+                record.get("arr_id") or None,
             ),
         )
 
@@ -344,6 +348,7 @@ class MediaCache(DatabaseBase):
         renamed_file: Optional[Any] = None,
         file_hash: Optional[Any] = None,
         poster_url: Optional[Any] = None,
+        arr_id: Optional[Any] = None,
     ) -> None:
         """Update fields for a given media record."""
         set_clauses = []
@@ -368,6 +373,10 @@ class MediaCache(DatabaseBase):
         if poster_url is not None:
             set_clauses.append("poster_url=?")
             params.append(poster_url)
+
+        if arr_id is not None:
+            set_clauses.append("arr_id=?")
+            params.append(arr_id)
 
         if not set_clauses:
             return

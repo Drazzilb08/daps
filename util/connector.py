@@ -623,20 +623,24 @@ class Connector:
         try:
             # Import normalization function from labelarr logic
 
-            # Get all media cache entries that need mapping
+            # Get all plex media cache entries for validation
+            plex_items = self.db.plex.get_all()
+            valid_plex_ids = (
+                {item.get("id") for item in plex_items} if plex_items else set()
+            )
+
+            # Get all media cache entries that need mapping (NULL or invalid plex_mapping_id)
             media_items = [
                 item
                 for item in self.db.media.get_all()
                 if item.get("plex_mapping_id") is None
+                or item.get("plex_mapping_id") not in valid_plex_ids
             ]
 
             if not media_items:
                 if self.logger:
                     self.logger.info("No media items need plex mapping")
                 return stats
-
-            # Get all plex media cache entries for matching
-            plex_items = self.db.plex.get_all()
 
             if self.logger and plex_items:
                 self.logger.debug(f"First plex_item keys: {list(plex_items[0].keys())}")

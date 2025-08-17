@@ -599,6 +599,33 @@ class RadarrClient(BaseARRClient):
         endpoint = f"{self.url}/api/v3/movie/editor"
         return self.make_put_request(endpoint, json=payload)
 
+    def add_tags_by_name(
+        self, media_id: Union[int, List[int]], tag_names: Union[str, List[str]]
+    ) -> Any:
+        """
+        Add tag(s) to one or more movies by tag name(s).
+        Args:
+            media_id (Union[int, List[int]]): Movie ID(s).
+            tag_names (Union[str, List[str]]): Tag name(s).
+        Returns:
+            Any: API response.
+        """
+        if isinstance(tag_names, str):
+            tag_names = [tag_names]
+
+        tag_ids = []
+        for tag_name in tag_names:
+            tag_id = self.get_tag_id_from_name(tag_name)
+            tag_ids.append(tag_id)
+
+        if isinstance(media_id, int):
+            media_id = [media_id]
+
+        payload = {"movieIds": media_id, "tags": tag_ids, "applyTags": "add"}
+        self.logger.debug(f"Add tags by name payload: {payload}")
+        endpoint = f"{self.url}/api/v3/movie/editor"
+        return self.make_put_request(endpoint, json=payload)
+
     def remove_tags(self, media_ids: List[int], tag_id: int) -> Any:
         """
         Remove a tag from movies.
@@ -610,6 +637,30 @@ class RadarrClient(BaseARRClient):
         """
         payload = {"movieIds": media_ids, "tags": [tag_id], "applyTags": "remove"}
         self.logger.debug(f"Remove tag payload: {payload}")
+        endpoint = f"{self.url}/api/v3/movie/editor"
+        return self.make_put_request(endpoint, json=payload)
+
+    def remove_tags_by_name(
+        self, media_ids: List[int], tag_names: Union[str, List[str]]
+    ) -> Any:
+        """
+        Remove tag(s) from movies by tag name(s).
+        Args:
+            media_ids (List[int]): Movie IDs.
+            tag_names (Union[str, List[str]]): Tag name(s).
+        Returns:
+            Any: API response.
+        """
+        if isinstance(tag_names, str):
+            tag_names = [tag_names]
+
+        tag_ids = []
+        for tag_name in tag_names:
+            tag_id = self.get_tag_id_from_name(tag_name)
+            tag_ids.append(tag_id)
+
+        payload = {"movieIds": media_ids, "tags": tag_ids, "applyTags": "remove"}
+        self.logger.debug(f"Remove tags by name payload: {payload}")
         endpoint = f"{self.url}/api/v3/movie/editor"
         return self.make_put_request(endpoint, json=payload)
 
@@ -835,6 +886,33 @@ class SonarrClient(BaseARRClient):
         endpoint = f"{self.url}/api/v3/series/editor"
         return self.make_put_request(endpoint, json=payload)
 
+    def add_tags_by_name(
+        self, media_id: Union[int, List[int]], tag_names: Union[str, List[str]]
+    ) -> Any:
+        """
+        Add tag(s) to one or more series by tag name(s).
+        Args:
+            media_id (Union[int, List[int]]): Series ID(s).
+            tag_names (Union[str, List[str]]): Tag name(s).
+        Returns:
+            Any: API response.
+        """
+        if isinstance(tag_names, str):
+            tag_names = [tag_names]
+
+        tag_ids = []
+        for tag_name in tag_names:
+            tag_id = self.get_tag_id_from_name(tag_name)
+            tag_ids.append(tag_id)
+
+        if isinstance(media_id, int):
+            media_id = [media_id]
+
+        payload = {"seriesIds": media_id, "tags": tag_ids, "applyTags": "add"}
+        self.logger.debug(f"Add tags by name payload: {payload}")
+        endpoint = f"{self.url}/api/v3/series/editor"
+        return self.make_put_request(endpoint, json=payload)
+
     def remove_tags(self, media_ids: List[int], tag_id: int) -> Any:
         """
         Remove a tag from series.
@@ -846,6 +924,30 @@ class SonarrClient(BaseARRClient):
         """
         payload = {"seriesIds": media_ids, "tags": [tag_id], "applyTags": "remove"}
         self.logger.debug(f"Remove tag payload: {payload}")
+        endpoint = f"{self.url}/api/v3/series/editor"
+        return self.make_put_request(endpoint, json=payload)
+
+    def remove_tags_by_name(
+        self, media_ids: List[int], tag_names: Union[str, List[str]]
+    ) -> Any:
+        """
+        Remove tag(s) from series by tag name(s).
+        Args:
+            media_ids (List[int]): Series IDs.
+            tag_names (Union[str, List[str]]): Tag name(s).
+        Returns:
+            Any: API response.
+        """
+        if isinstance(tag_names, str):
+            tag_names = [tag_names]
+
+        tag_ids = []
+        for tag_name in tag_names:
+            tag_id = self.get_tag_id_from_name(tag_name)
+            tag_ids.append(tag_id)
+
+        payload = {"seriesIds": media_ids, "tags": tag_ids, "applyTags": "remove"}
+        self.logger.debug(f"Remove tags by name payload: {payload}")
         endpoint = f"{self.url}/api/v3/series/editor"
         return self.make_put_request(endpoint, json=payload)
 
@@ -1271,6 +1373,7 @@ def normalize_arr_media(
             "title": unidecode(html.unescape(title or "")),
             "year": year,
             "media_id": item.get("id"),
+            "arr_id": item.get("id"),  # ARR media ID for direct API operations
             "tmdb_id": item.get("tmdbId"),
             "imdb_id": item.get("imdbId"),
             "monitored": item.get("monitored"),
@@ -1332,6 +1435,7 @@ def normalize_arr_media(
             "title": unidecode(html.unescape(title or "")),
             "year": year,
             "media_id": item.get("id"),
+            "arr_id": item.get("id"),  # ARR media ID for direct API operations
             "tvdb_id": item.get("tvdbId"),
             "imdb_id": item.get("imdbId"),
             "monitored": item.get("monitored"),

@@ -11,26 +11,16 @@ class PlexCache(DatabaseBase):
 
     @staticmethod
     def _canonical_key(item: dict) -> tuple:
-        """Returns the unique key for plex_media_cache."""
+        """Returns the unique key for plex_media_cache matching database UNIQUE constraint (plex_id, instance_name)."""
 
         def norm_str(val):
             if val in (None, "", "None"):
                 return None
             return str(val).strip() if isinstance(val, str) else val
 
-        def norm_int(val):
-            if val in (None, "", "None"):
-                return None
-            try:
-                return int(val)
-            except Exception:
-                return None
-
         return (
-            norm_str(item.get("title")),
-            norm_int(item.get("year")),
-            norm_str(item.get("library_name")),
             norm_str(item.get("plex_id")),
+            norm_str(item.get("instance_name")),
         )
 
     def upsert(self, item: dict) -> None:
@@ -55,9 +45,18 @@ class PlexCache(DatabaseBase):
 
         self.execute_query(
             """
-            INSERT OR REPLACE INTO plex_media_cache
+            INSERT INTO plex_media_cache
                 (plex_id, instance_name, asset_type, library_name, title, normalized_title, season_number, year, guids, labels)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(plex_id, instance_name) DO UPDATE SET
+                asset_type = excluded.asset_type,
+                library_name = excluded.library_name,
+                title = excluded.title,
+                normalized_title = excluded.normalized_title,
+                season_number = excluded.season_number,
+                year = excluded.year,
+                guids = excluded.guids,
+                labels = excluded.labels
             """,
             (
                 item["plex_id"],
@@ -71,6 +70,12 @@ class PlexCache(DatabaseBase):
                 json.dumps(item["guids"]),
                 json.dumps(item["labels"]),
             ),
+        )
+
+    def get_by_id(self, id: int) -> Optional[dict]:
+        """Return a single plex_media_cache row by its unique integer ID."""
+        return self.execute_query(
+            "SELECT * FROM plex_media_cache WHERE id=?", (id,), fetch_one=True
         )
 
     def get_all(self) -> list:
@@ -119,12 +124,12 @@ class PlexCache(DatabaseBase):
         self, item: dict, logger: Optional[Any] = None, instance_name: str = None
     ) -> None:
         """
-        Delete a single record from plex_media_cache using the canonical key (title, year, library_name, plex_id).
+        Delete a single record from plex_media_cache using the canonical key (plex_id, instance_name).
         """
         key = self._canonical_key(item)
         sql = """
             DELETE FROM plex_media_cache
-            WHERE title=? AND year IS ? AND library_name IS ? AND plex_id IS ?
+            WHERE plex_id=? AND instance_name=?
         """
 
         self.execute_query(sql, key)

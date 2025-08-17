@@ -3,14 +3,14 @@
 import json
 import sys
 from collections import defaultdict
-from typing import Dict, List, Optional
+from typing import Any, Dict, List, Optional
 
+from util.arr import create_arr_client
 from util.base_module import DapsModule
 from util.connector import Connector
 from util.database import DapsDB
 from util.helper import create_table, print_settings
 from util.logger import Logger
-from util.normalization import normalize_titles
 from util.notification import NotificationManager
 from util.plex import PlexClient
 
@@ -25,10 +25,6 @@ class Labelarr(DapsModule):
         """
         super().__init__(logger)
 
-    def _get_id(self, val: Optional[object]) -> Optional[str]:
-        """Normalize IDs from rows/guids into comparable strings or None."""
-        return str(val) if val not in (None, "null", "") else None
-
     def _parse_tags(self, raw) -> List[str]:
         """Safely convert a stored tags field (list or JSON string) into a list[str]."""
         if isinstance(raw, list):
@@ -41,6 +37,24 @@ class Labelarr(DapsModule):
             except Exception:
                 return []
         return []
+
+    def _get_arr_config(self, instance_name: str):
+        """Get ARR instance configuration for a given instance name."""
+        # Check Radarr instances
+        if (
+            hasattr(self.full_config.instances, "radarr")
+            and instance_name in self.full_config.instances.radarr
+        ):
+            return self.full_config.instances.radarr[instance_name]
+
+        # Check Sonarr instances
+        if (
+            hasattr(self.full_config.instances, "sonarr")
+            and instance_name in self.full_config.instances.sonarr
+        ):
+            return self.full_config.instances.sonarr[instance_name]
+
+        return None
 
     def _parse_labels(self, raw) -> List[str]:
         """Safely convert a stored labels field (list or JSON string) into a list[str]."""
@@ -67,43 +81,6 @@ class Labelarr(DapsModule):
             except Exception:
                 return {}
         return {}
-
-    def _build_arr_indexes(self, arr_data: List[Dict]) -> Dict[str, Dict]:
-        """
-        Build fast lookup tables for ARR items by various IDs and title/year.
-
-        Returns:
-            {
-              "dual": {"tmdb_imdb": {...}, "tvdb_imdb": {...}},
-              "maps": {"tmdb": {...}, "tvdb": {...}, "imdb": {...}, "title_year": {...}}
-            }
-        """
-        dual = {"tmdb_imdb": {}, "tvdb_imdb": {}}
-        maps = {"tmdb": {}, "tvdb": {}, "imdb": {}, "title_year": {}}
-
-        for item in arr_data:
-            arr_item = dict(item)
-            arr_item["tags"] = self._parse_tags(item.get("tags"))
-
-            tid_tmdb = self._get_id(item.get("tmdb_id"))
-            tid_tvdb = self._get_id(item.get("tvdb_id"))
-            tid_imdb = self._get_id(item.get("imdb_id"))
-
-            if tid_tmdb and tid_imdb:
-                dual["tmdb_imdb"][(tid_tmdb, tid_imdb)] = arr_item
-            if tid_tvdb and tid_imdb:
-                dual["tvdb_imdb"][(tid_tvdb, tid_imdb)] = arr_item
-            if tid_tmdb:
-                maps["tmdb"][tid_tmdb] = arr_item
-            if tid_tvdb:
-                maps["tvdb"][tid_tvdb] = arr_item
-            if tid_imdb:
-                maps["imdb"][tid_imdb] = arr_item
-
-            key = (normalize_titles(item.get("title")), str(item.get("year") or ""))
-            maps["title_year"][key] = arr_item
-
-        return {"dual": dual, "maps": maps}
 
     def _build_instance_map(self) -> Dict[str, object]:
         """
@@ -154,17 +131,15 @@ class Labelarr(DapsModule):
         plex_client: PlexClient,
         plex_item: Dict,
         labels_lower: Dict[str, str],
-        arr_indexes: Dict[str, Dict],
         db: DapsDB,
     ) -> Optional[Dict]:
         """
-        Sync labels for a SINGLE Plex item using prebuilt ARR indexes.
+        Sync labels for a SINGLE Plex item using connector-based mapping.
 
         Args:
             plex_client: Connected PlexClient
             plex_item: row dict from db.plex
             labels_lower: {lower_label: original_cased_label} for target labels
-            arr_indexes: dict returned by _build_arr_indexes
             db: DapsDB
 
         Returns:
@@ -177,78 +152,24 @@ class Labelarr(DapsModule):
             and plex_item.get("season_number") not in (None, "", "None")
         ) or asset_type in ("season", "episode"):
             return None
-        plex_labels = self._parse_labels(plex_item.get("labels"))
-        guids = self._parse_guids(plex_item.get("guids"))
 
+        plex_labels = self._parse_labels(plex_item.get("labels"))
         new_labels = list(plex_labels)
         plex_label_set = {lbl.lower() for lbl in plex_labels if isinstance(lbl, str)}
 
-        plex_ids = {
-            "tmdb": self._get_id(guids.get("tmdb") or plex_item.get("tmdb_id")),
-            "tvdb": self._get_id(guids.get("tvdb") or plex_item.get("tvdb_id")),
-            "imdb": self._get_id(guids.get("imdb") or plex_item.get("imdb_id")),
-        }
-        key = (
-            normalize_titles(plex_item.get("title")),
-            str(plex_item.get("year") or ""),
-        )
+        # Get the corresponding ARR media item using plex_mapping_id (connector-based approach)
+        plex_item_id = plex_item.get("id")
 
-        dual = arr_indexes["dual"]
-        maps = arr_indexes["maps"]
+        # Find ARR media item that points to this plex item
+        arr_items = [
+            item
+            for item in db.media.get_all()
+            if item.get("plex_mapping_id") == plex_item_id
+        ]
 
-        arr_item = None
-        match_type = "NO MATCH"
-
-        if plex_ids["tmdb"] and plex_ids["imdb"]:
-            arr_item = dual["tmdb_imdb"].get((plex_ids["tmdb"], plex_ids["imdb"]))
-            if arr_item:
-                match_type = "TMDB+IMDB"
-        if not arr_item and plex_ids["tvdb"] and plex_ids["imdb"]:
-            arr_item = dual["tvdb_imdb"].get((plex_ids["tvdb"], plex_ids["imdb"]))
-            if arr_item:
-                match_type = "TVDB+IMDB"
-        if not arr_item and plex_ids["tmdb"]:
-            arr_item = maps["tmdb"].get(plex_ids["tmdb"])
-            if arr_item:
-                match_type = "TMDB"
-        if not arr_item and plex_ids["tvdb"]:
-            arr_item = maps["tvdb"].get(plex_ids["tvdb"])
-            if arr_item:
-                match_type = "TVDB"
-        if not arr_item and plex_ids["imdb"]:
-            arr_item = maps["imdb"].get(plex_ids["imdb"])
-            if arr_item:
-                match_type = "IMDB"
-        if not arr_item:
-            arr_item = maps["title_year"].get(key)
-            if arr_item:
-                match_type = "TITLE/YEAR"
-
-        add_remove: Dict[str, str] = {}
-
-        if arr_item:
-            arr_label_set = {
-                tag.lower() for tag in arr_item["tags"] if isinstance(tag, str)
-            }
-            for label_lc, label in labels_lower.items():
-                in_arr = label_lc in arr_label_set
-                in_plex = label_lc in plex_label_set
-                if in_arr and not in_plex:
-                    add_remove[label] = "add"
-                    plex_client.add_label(plex_item, label, self.config.dry_run)
-                    new_labels.append(label)
-                    plex_label_set.add(label_lc)
-                elif in_plex and not in_arr:
-                    add_remove[label] = "remove"
-                    plex_client.remove_label(plex_item, label, self.config.dry_run)
-                    new_labels = [
-                        li
-                        for li in new_labels
-                        if not (isinstance(li, str) and li.lower() == label_lc)
-                    ]
-                    plex_label_set.discard(label_lc)
-        else:
-            # No ARR match: remove any of the target labels that exist in Plex
+        if not arr_items:
+            # No ARR mapping found: remove any of the target labels that exist in Plex
+            add_remove: Dict[str, str] = {}
             for label_lc, label in labels_lower.items():
                 if label_lc in plex_label_set:
                     add_remove[label] = "remove"
@@ -260,11 +181,57 @@ class Labelarr(DapsModule):
                     ]
                     plex_label_set.discard(label_lc)
 
+            if not add_remove:
+                return None
+
+            self.logger.debug(
+                f"Sync '{plex_item.get('title')}' ({plex_item.get('year')}) [NO MAPPING]: {add_remove}"
+            )
+
+            if not self.config.dry_run:
+                updated_item = dict(plex_item)
+                updated_item["labels"] = new_labels
+                db.plex.upsert(updated_item)
+
+            return {
+                "title": plex_item.get("title"),
+                "year": plex_item.get("year"),
+                "add_remove": add_remove,
+            }
+
+        # Use the first matching ARR item (should only be one due to unique constraint)
+        arr_item = arr_items[0]
+
+        # Compare tags between ARR and Plex items
+        arr_tags = self._parse_tags(arr_item.get("tags", []))
+        arr_label_set = {tag.lower() for tag in arr_tags if isinstance(tag, str)}
+
+        add_remove: Dict[str, str] = {}
+
+        for label_lc, label in labels_lower.items():
+            in_arr = label_lc in arr_label_set
+            in_plex = label_lc in plex_label_set
+
+            if in_arr and not in_plex:
+                add_remove[label] = "add"
+                plex_client.add_label(plex_item, label, self.config.dry_run)
+                new_labels.append(label)
+                plex_label_set.add(label_lc)
+            elif in_plex and not in_arr:
+                add_remove[label] = "remove"
+                plex_client.remove_label(plex_item, label, self.config.dry_run)
+                new_labels = [
+                    li
+                    for li in new_labels
+                    if not (isinstance(li, str) and li.lower() == label_lc)
+                ]
+                plex_label_set.discard(label_lc)
+
         if not add_remove:
             return None
 
         self.logger.debug(
-            f"Sync '{plex_item.get('title')}' ({plex_item.get('year')}) [{match_type}]: {add_remove}"
+            f"Sync '{plex_item.get('title')}' ({plex_item.get('year')}) [MAPPED]: {add_remove}"
         )
 
         if not self.config.dry_run:
@@ -308,7 +275,7 @@ class Labelarr(DapsModule):
                 # Build instance map for Connector based on self.config.mappings
                 instance_map = self._build_instance_map()
 
-                # Refresh Database for the targeted instances/libraries
+                # Refresh Database for the targeted instances/libraries and update mappings
                 with Connector(
                     db=db,
                     logger=self.logger,
@@ -316,6 +283,8 @@ class Labelarr(DapsModule):
                 ) as connector:
                     connector.update_arr_database()
                     connector.update_plex_database()
+                    # Update media-plex mappings using connector approach
+                    connector.update_media_plex_mappings()
 
                 output: List[Dict] = []
 
@@ -355,8 +324,6 @@ class Labelarr(DapsModule):
                         else:
                             # Fallback: allow both if we can't infer
                             allowed_types = {"movie", "show"}
-
-                    arr_indexes = self._build_arr_indexes(filtered_arr)
 
                     # For each Plex instance/library in this mapping, pull items and sync one-by-one
                     for plex_instance in mapping.plex_instances:
@@ -409,7 +376,6 @@ class Labelarr(DapsModule):
                                 plex_client=plex_client,
                                 plex_item=plex_item,
                                 labels_lower=labels_lower,
-                                arr_indexes=arr_indexes,
                                 db=db,
                             )
                             if result:
@@ -432,3 +398,243 @@ class Labelarr(DapsModule):
             self.logger.error("\n\n")
         finally:
             self.logger.log_outro()
+
+    def labelarr_sync_adhoc(
+        self,
+        source_instance: str,
+        media_cache_id: int,
+        tag_actions: Dict[str, List[str]],
+        plex_instance: Optional[str] = None,
+        plex_mapping_id: Optional[int] = None,
+        dry_run: bool = False,
+    ) -> Dict[str, Any]:
+        """
+        Perform ad-hoc tag sync for a specific media item.
+        Similar to poster_renamerr.run_poster_rename_adhoc() and sync_gdrive.sync_folder_adhoc().
+
+        Args:
+            source_instance: ARR instance name
+            media_cache_id: Media cache ID
+            tag_actions: Dict with 'add' and 'remove' lists of tags
+            plex_instance: Target Plex instance
+            plex_mapping_id: Optional Plex mapping ID
+            dry_run: Whether to perform a dry run
+
+        Returns:
+            Dict with sync results
+        """
+        log = self.logger.get_adapter("LABELARR_ADHOC")
+        log.info(f"Starting adhoc tag sync for media {media_cache_id}")
+
+        try:
+            with DapsDB(logger=self.logger) as db:
+                # Get the specific media item
+                media_item = db.media.get_by_id(media_cache_id)
+                if not media_item:
+                    return {
+                        "success": False,
+                        "message": f"Media item {media_cache_id} not found",
+                        "error_code": "MEDIA_NOT_FOUND",
+                    }
+
+                # Get the corresponding Plex item
+                if plex_mapping_id:
+                    plex_item = db.plex.get_by_id(plex_mapping_id)
+                else:
+                    # Use existing connector mapping logic
+                    from util.connector import Connector
+
+                    # Validate plex_instance and create minimal instance map for this operation
+                    if not plex_instance or plex_instance in ("undefined", "null", ""):
+                        # Get first available plex instance as fallback
+                        available_plex = list(self.full_config.instances.plex.keys())
+                        if available_plex:
+                            plex_instance = available_plex[0]
+                        else:
+                            return {
+                                "success": False,
+                                "message": "No Plex instances available for sync",
+                                "error_code": "NO_PLEX_INSTANCES",
+                            }
+
+                    instance_map = {
+                        "arrs": [source_instance],
+                        "plex": {plex_instance: []},  # Empty libraries = all libraries
+                    }
+
+                    with Connector(
+                        db=db, logger=self.logger, instance_map=instance_map
+                    ) as connector:
+                        # Update mappings if needed
+                        connector.update_media_plex_mappings()
+
+                    # Get updated media item with mapping
+                    media_item = db.media.get_by_id(media_cache_id)
+                    plex_mapping_id = media_item.get("plex_mapping_id")
+
+                    if plex_mapping_id:
+                        plex_item = db.plex.get_by_id(plex_mapping_id)
+                    else:
+                        plex_item = None
+
+                if not plex_item:
+                    return {
+                        "success": False,
+                        "message": f"No matching Plex item found for media {media_item.get('title')}",
+                        "error_code": "PLEX_ITEM_NOT_FOUND",
+                    }
+
+                # Connect to Plex
+                plex_config = self.full_config.instances.plex[plex_instance]
+                plex_client = PlexClient(plex_config.url, plex_config.api, self.logger)
+
+                if not plex_client.is_connected():
+                    return {
+                        "success": False,
+                        "message": f"Failed to connect to Plex instance '{plex_instance}'",
+                        "error_code": "PLEX_CONNECTION_FAILED",
+                    }
+
+                # Apply tag actions to media item
+                current_tags = self._parse_tags(media_item.get("tags", []))
+                tags_to_add = tag_actions.get("add", [])
+                tags_to_remove = tag_actions.get("remove", [])
+
+                # Update tags
+                updated_tags = [
+                    tag for tag in current_tags if tag not in tags_to_remove
+                ]
+                updated_tags.extend(
+                    [tag for tag in tags_to_add if tag not in updated_tags]
+                )
+
+                # Update the media_cache database with new tags if there are changes
+                if tags_to_add or tags_to_remove:
+                    log.info(
+                        f"Updating media_cache with tags: add={tags_to_add}, remove={tags_to_remove}"
+                    )
+
+                    if not dry_run:
+                        # Update ARR instance with new tags
+                        arr_id = media_item.get("arr_id")
+                        if arr_id and (tags_to_add or tags_to_remove):
+                            try:
+                                # Get ARR client for the source instance
+                                arr_config = self._get_arr_config(source_instance)
+                                if arr_config:
+                                    arr_client = create_arr_client(
+                                        arr_config.url, arr_config.api, self.logger
+                                    )
+
+                                    if arr_client and arr_client.is_connected():
+                                        # Add tags to ARR
+                                        if tags_to_add:
+                                            log.info(
+                                                f"Adding tags {tags_to_add} to ARR item {arr_id}"
+                                            )
+                                            arr_client.add_tags_by_name(
+                                                arr_id, tags_to_add
+                                            )
+
+                                        # Remove tags from ARR
+                                        if tags_to_remove:
+                                            log.info(
+                                                f"Removing tags {tags_to_remove} from ARR item {arr_id}"
+                                            )
+                                            arr_client.remove_tags_by_name(
+                                                [arr_id], tags_to_remove
+                                            )
+
+                                        log.info(
+                                            f"Successfully updated ARR instance {source_instance}"
+                                        )
+                                    else:
+                                        log.warning(
+                                            f"Failed to connect to ARR instance {source_instance}"
+                                        )
+                                else:
+                                    log.warning(
+                                        f"ARR config not found for instance {source_instance}"
+                                    )
+                            except Exception as e:
+                                log.error(
+                                    f"Failed to update ARR instance {source_instance}: {e}"
+                                )
+
+                        # Update database to reflect the new tag state
+                        updated_media_item = dict(media_item)
+                        updated_media_item["tags"] = updated_tags
+                        db.media.upsert(
+                            updated_media_item,
+                            asset_type=media_item.get("asset_type"),
+                            instance_type=media_item.get("instance_type"),
+                            instance_name=source_instance,
+                        )
+                        log.debug(
+                            f"Updated media_cache record {media_cache_id} with new tags: {updated_tags}"
+                        )
+
+                # Create labels mapping for sync (use the tags we want to manage)
+                all_tags = list(
+                    set(
+                        tags_to_add
+                        + [tag for tag in current_tags if tag not in tags_to_remove]
+                    )
+                )
+                labels_lower = {tag.lower(): tag for tag in all_tags}
+
+                # Set dry_run config temporarily
+                original_dry_run = getattr(self.config, "dry_run", False)
+                self.config.dry_run = dry_run
+
+                try:
+                    # Execute sync using labelarr's existing business logic (connector-based)
+                    sync_result = self.sync_to_plex(
+                        plex_client=plex_client,
+                        plex_item=plex_item,
+                        labels_lower=labels_lower,
+                        db=db,
+                    )
+
+                    # Process result
+                    if sync_result:
+                        log.info(
+                            f"Sync completed with changes: {sync_result['add_remove']}"
+                        )
+                        return {
+                            "success": True,
+                            "message": "Tag sync completed successfully",
+                            "data": {
+                                "title": sync_result["title"],
+                                "year": sync_result["year"],
+                                "changes": sync_result["add_remove"],
+                                "media_cache_id": media_cache_id,
+                                "plex_mapping_id": plex_item.get("id"),
+                                "tag_actions": tag_actions,
+                            },
+                        }
+                    else:
+                        log.info("No changes needed - tags already in sync")
+                        return {
+                            "success": True,
+                            "message": "No changes needed - tags already in sync",
+                            "data": {
+                                "title": plex_item.get("title"),
+                                "year": plex_item.get("year"),
+                                "changes": {},
+                                "media_cache_id": media_cache_id,
+                                "plex_mapping_id": plex_item.get("id"),
+                                "tag_actions": tag_actions,
+                            },
+                        }
+                finally:
+                    # Restore original dry_run setting
+                    self.config.dry_run = original_dry_run
+
+        except Exception as e:
+            log.error(f"Labelarr adhoc sync failed: {e}", exc_info=True)
+            return {
+                "success": False,
+                "message": f"Labelarr sync failed: {str(e)}",
+                "error_code": "LABELARR_SYNC_FAILED",
+            }

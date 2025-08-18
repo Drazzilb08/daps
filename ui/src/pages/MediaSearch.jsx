@@ -1,7 +1,7 @@
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import { MediaSearchComponent } from '../components/search/plugins';
 import ModalFactory from '../components/modals/ModalFactory';
-import { refreshMediaDatabase, fetchConfig } from '../utils/api';
+import { refreshMediaDatabase, fetchConfig, fetchJobDetail } from '../utils/api';
 import { useToast } from '../components/providers/ToastProvider';
 import { subPluginRegistry } from '../components/search/plugins/subplugins';
 import '../css/pages/media-search.css';
@@ -30,6 +30,9 @@ export default function MediaSearch() {
     const [selectedMediaItem, setSelectedMediaItem] = useState(null);
     const [rootConfig, setRootConfig] = useState({});
     const [refreshTrigger, setRefreshTrigger] = useState(0);
+    
+    // Job tracking for refresh polling
+    const refreshJobPoller = useRef(null);
 
     // Load root configuration on component mount
     useEffect(() => {
@@ -45,9 +48,72 @@ export default function MediaSearch() {
         loadConfig();
     }, []);
 
+    // Cleanup job poller on unmount
+    useEffect(() => {
+        return () => {
+            if (refreshJobPoller.current) {
+                clearInterval(refreshJobPoller.current);
+            }
+        };
+    }, []);
+
+    // Start polling job progress
+    const startRefreshJobPolling = useCallback((jobId) => {
+        console.log(`Starting polling for refresh job ${jobId}`);
+        
+        // Clear existing poller
+        if (refreshJobPoller.current) {
+            clearInterval(refreshJobPoller.current);
+        }
+        
+        refreshJobPoller.current = setInterval(async () => {
+            try {
+                const response = await fetchJobDetail(jobId);
+                console.log(`Refresh job ${jobId} status:`, response);
+                
+                // Handle the response structure - fetchJobDetail returns the job object directly
+                const job = response.job || response;
+                
+                // Map database status values to our UI states
+                const dbStatus = job.status;
+                let isFinished = false;
+                
+                if (dbStatus === 'success') {
+                    isFinished = true;
+                    // Job completed successfully
+                    toast('Database refresh completed! Search results have been updated.', 'success');
+                    
+                    // Force refresh of search data
+                    setRefreshTrigger(prev => prev + 1);
+                } else if (dbStatus === 'error') {
+                    isFinished = true;
+                    // Job failed
+                    toast(`Database refresh failed: ${job.error || 'Unknown error'}`, 'error');
+                }
+                
+                // Stop polling and reset state if finished
+                if (isFinished) {
+                    console.log(`Refresh job ${jobId} finished with status: ${dbStatus}`);
+                    clearInterval(refreshJobPoller.current);
+                    refreshJobPoller.current = null;
+                    setIsRefreshing(false);
+                }
+            } catch (e) {
+                console.error(`Error polling refresh job ${jobId}:`, e);
+                toast(`Error checking refresh status: ${e.message}`, 'error');
+                
+                // Stop polling on error
+                clearInterval(refreshJobPoller.current);
+                refreshJobPoller.current = null;
+                setIsRefreshing(false);
+            }
+        }, 2000); // Poll every 2 seconds
+    }, [toast]);
+
     const handleRefresh = useCallback(
         async refreshOptions => {
             setIsRefreshing(true);
+            
             try {
                 console.log('MediaSearch: Starting cache refresh...', refreshOptions);
                 const result = await refreshMediaDatabase({
@@ -57,19 +123,23 @@ export default function MediaSearch() {
                     update_mappings: true,
                 });
                 console.log('MediaSearch: Refresh result:', result);
-                toast('Cache refresh completed successfully', 'success');
                 
-                // Force refresh of search data by adding a refresh trigger to the component
-                // This will cause the MediaSearchComponent to reload its data
-                setRefreshTrigger(prev => prev + 1);
+                if (result.job_id) {
+                    // Start polling the job - no immediate toast, wait for completion
+                    startRefreshJobPolling(result.job_id);
+                } else {
+                    // No job ID returned, treat as immediate completion
+                    toast('Cache refresh completed successfully', 'success');
+                    setRefreshTrigger(prev => prev + 1);
+                    setIsRefreshing(false);
+                }
             } catch (error) {
                 console.error('MediaSearch: Refresh error:', error);
-                toast('Failed to refresh Database', 'error');
-            } finally {
+                toast('Failed to start refresh', 'error');
                 setIsRefreshing(false);
             }
         },
-        [toast]
+        [toast, startRefreshJobPolling]
     );
 
     const handleResultClick = useCallback(mediaItem => {
@@ -91,6 +161,7 @@ export default function MediaSearch() {
                 onRefresh={handleRefresh}
                 isRefreshing={isRefreshing}
                 showRefreshControls={true}
+                showAdvancedSearchHelp={true}
                 onResultClick={handleResultClick}
                 refreshTrigger={refreshTrigger}
             />

@@ -56,6 +56,9 @@ export default function SearchControls({
     onRefresh,
     isRefreshing = false,
 
+    // Help functionality (for MediaSearch only)
+    showAdvancedSearchHelp = false,
+
     // Customization
     viewModes = DEFAULT_VIEW_MODES,
     showSearch = true,
@@ -91,6 +94,12 @@ export default function SearchControls({
     });
     const refreshButtonRef = useRef();
     const refreshPopoverRef = useRef();
+
+    // ===== HELP POPOVER STATE =====
+    const [showHelpPopover, setShowHelpPopover] = useState(false);
+    const [showHelpTooltip, setShowHelpTooltip] = useState(false);
+    const helpButtonRef = useRef();
+    const helpPopoverRef = useRef();
 
     // ===== MODULE SELECTOR STATE =====
     const [showModulePopover, setShowModulePopover] = useState(false);
@@ -154,6 +163,25 @@ export default function SearchControls({
         document.addEventListener('click', handleClickOutside);
         return () => document.removeEventListener('click', handleClickOutside);
     }, [showModulePopover]);
+
+    // ===== HELP POPOVER CLICK OUTSIDE HANDLING =====
+    useEffect(() => {
+        if (!showHelpPopover) return;
+
+        function handleClickOutside(e) {
+            if (
+                helpButtonRef.current &&
+                !helpButtonRef.current.contains(e.target) &&
+                helpPopoverRef.current &&
+                !helpPopoverRef.current.contains(e.target)
+            ) {
+                setShowHelpPopover(false);
+            }
+        }
+
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+    }, [showHelpPopover]);
 
     // ===== AUTOCOMPLETE EFFECTS =====
     // Handle autocomplete suggestions when search term changes
@@ -291,6 +319,81 @@ export default function SearchControls({
     const handleModuleSelect = moduleKey => {
         onSourceChange(moduleKey);
         setShowModulePopover(false);
+    };
+
+    // ===== HELP HANDLERS =====
+    const handleHelpToggle = () => {
+        setShowHelpPopover(prev => !prev);
+    };
+
+    // ===== SELECT ALL / DESELECT ALL HANDLERS =====
+    const handleSelectAllRadarr = () => {
+        setSelectedRefreshOptions(prev => ({
+            ...prev,
+            arrInstances: [...new Set([...prev.arrInstances, ...availableInstances.radarrInstances])],
+        }));
+    };
+
+    const handleDeselectAllRadarr = () => {
+        setSelectedRefreshOptions(prev => ({
+            ...prev,
+            arrInstances: prev.arrInstances.filter(instance => !availableInstances.radarrInstances.includes(instance)),
+        }));
+    };
+
+    const handleSelectAllSonarr = () => {
+        setSelectedRefreshOptions(prev => ({
+            ...prev,
+            arrInstances: [...new Set([...prev.arrInstances, ...availableInstances.sonarrInstances])],
+        }));
+    };
+
+    const handleDeselectAllSonarr = () => {
+        setSelectedRefreshOptions(prev => ({
+            ...prev,
+            arrInstances: prev.arrInstances.filter(instance => !availableInstances.sonarrInstances.includes(instance)),
+        }));
+    };
+
+    const handleSelectAllLibraries = () => {
+        const allLibraries = availableLibraries.map(lib => lib.name || lib);
+        const allPlexInstances = [...new Set(availableLibraries.map(lib => lib.instance))];
+        setSelectedRefreshOptions(prev => ({
+            ...prev,
+            libraries: allLibraries,
+            plexInstances: allPlexInstances,
+        }));
+    };
+
+    const handleDeselectAllLibraries = () => {
+        setSelectedRefreshOptions(prev => ({
+            ...prev,
+            libraries: [],
+            plexInstances: [],
+        }));
+    };
+
+    const handleSelectAllOverall = () => {
+        const allInstances = [
+            ...availableInstances.radarrInstances,
+            ...availableInstances.sonarrInstances,
+        ];
+        const allLibraries = availableLibraries.map(lib => lib.name || lib);
+        const allPlexInstances = [...new Set(availableLibraries.map(lib => lib.instance))];
+        
+        setSelectedRefreshOptions({
+            arrInstances: allInstances,
+            libraries: allLibraries,
+            plexInstances: allPlexInstances,
+        });
+    };
+
+    const handleDeselectAllOverall = () => {
+        setSelectedRefreshOptions({
+            arrInstances: [],
+            libraries: [],
+            plexInstances: [],
+        });
     };
 
     const handleRefreshOptionToggle = (category, item) => {
@@ -580,7 +683,7 @@ export default function SearchControls({
         if (!showSearch) return null;
 
         return (
-            <div className="search-bar-container">
+            <div className={`search-bar-container${searchTerm ? ' has-clear-btn' : ''}`}>
                 {/* Render filter controls */}
                 {filters.map((filter, index) => (
                     <React.Fragment key={filter.id || `filter-${index}`}>
@@ -679,6 +782,57 @@ export default function SearchControls({
                     text="Run search"
                     show={showSearchTip}
                 />
+
+                {/* Help button - only for MediaSearch */}
+                {showAdvancedSearchHelp && (
+                    <>
+                        <button
+                            className="search-btn help-btn"
+                            type="button"
+                            aria-label="Show search help"
+                            ref={helpButtonRef}
+                            title="Search help"
+                            onClick={handleHelpToggle}
+                            onMouseEnter={() => setShowHelpTooltip(true)}
+                            onMouseLeave={() => setShowHelpTooltip(false)}
+                            onFocus={() => setShowHelpTooltip(true)}
+                            onBlur={() => setShowHelpTooltip(false)}
+                        >
+                            {getIcon('mi:help')}
+                        </button>
+                        <TooltipFactory
+                            anchor={helpButtonRef.current}
+                            text="Search help"
+                            show={showHelpTooltip && !showHelpPopover}
+                        />
+
+                        {/* Help popover */}
+                        {showHelpPopover && (
+                            <div ref={helpPopoverRef} className="help-popover">
+                                <div className="help-popover-header">
+                                    <h4>Advanced Search</h4>
+                                </div>
+                                <div className="help-popover-content">
+                                    <p>Use database IDs for precise searches:</p>
+                                    <div className="help-examples">
+                                        <div className="help-example">
+                                            <code>tmdb:123</code>
+                                            <span>Search by TMDb ID</span>
+                                        </div>
+                                        <div className="help-example">
+                                            <code>imdb:tt123456</code>
+                                            <span>Search by IMDb ID</span>
+                                        </div>
+                                        <div className="help-example">
+                                            <code>tvdb:789</code>
+                                            <span>Search by TVDb ID</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
             </div>
         );
     };
@@ -773,12 +927,50 @@ export default function SearchControls({
                     <div ref={refreshPopoverRef} className="refresh-popover">
                         <div className="refresh-popover-header">
                             <h4>Refresh Database</h4>
+                            <div className="overall-select-buttons">
+                                <button
+                                    type="button"
+                                    className="select-icon-btn"
+                                    onClick={handleSelectAllOverall}
+                                    title="Select all instances and libraries"
+                                >
+                                    {getIcon('mi:select_all')}
+                                </button>
+                                <button
+                                    type="button"
+                                    className="select-icon-btn"
+                                    onClick={handleDeselectAllOverall}
+                                    title="Deselect everything"
+                                >
+                                    {getIcon('mi:clear')}
+                                </button>
+                            </div>
                         </div>
                         <div className="refresh-popover-content">
                             {/* Radarr Instances Section */}
                             {availableOptions.radarrInstances.length > 0 ? (
                                 <div className="refresh-section">
-                                    <h5>Radarr Instances</h5>
+                                    <div className="refresh-section-header">
+                                        <h5>Radarr Instances</h5>
+                                        <div className="select-all-buttons">
+                                            <button
+                                                type="button"
+                                                className="select-icon-btn"
+                                                onClick={handleSelectAllRadarr}
+                                                title="Select all Radarr instances"
+                                            >
+                                                {getIcon('mi:check_box')}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="select-icon-btn"
+                                                onClick={handleDeselectAllRadarr}
+                                                title="Deselect all Radarr instances"
+                                            >
+                                                {getIcon('mi:check_box_outline_blank')}
+                                            </button>
+                                        </div>
+                                    </div>
                                     {availableOptions.radarrInstances.map(instance => (
                                         <div 
                                             key={instance} 
@@ -817,7 +1009,27 @@ export default function SearchControls({
                             {/* Sonarr Instances Section */}
                             {availableOptions.sonarrInstances.length > 0 ? (
                                 <div className="refresh-section">
-                                    <h5>Sonarr Instances</h5>
+                                    <div className="refresh-section-header">
+                                        <h5>Sonarr Instances</h5>
+                                        <div className="select-all-buttons">
+                                            <button
+                                                type="button"
+                                                className="select-icon-btn"
+                                                onClick={handleSelectAllSonarr}
+                                                title="Select all Sonarr instances"
+                                            >
+                                                {getIcon('mi:check_box')}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                className="select-icon-btn"
+                                                onClick={handleDeselectAllSonarr}
+                                                title="Deselect all Sonarr instances"
+                                            >
+                                                {getIcon('mi:check_box_outline_blank')}
+                                            </button>
+                                        </div>
+                                    </div>
                                     {availableOptions.sonarrInstances.map(instance => (
                                         <div 
                                             key={instance} 
@@ -854,28 +1066,38 @@ export default function SearchControls({
                             )}
 
                             <div className="refresh-section">
-                                <div
-                                    style={{
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center',
-                                        marginBottom: '0.75rem',
-                                    }}
-                                >
-                                    <h5 style={{ margin: 0 }}>Plex Libraries</h5>
-                                    <button
-                                        type="button"
-                                        onClick={handleLoadLibraries}
-                                        disabled={loadingLibraries}
-                                        className="btn btn-secondary btn-sm"
-                                        style={{
-                                            padding: '0.25rem 0.5rem',
-                                            fontSize: '0.8rem',
-                                            minHeight: '28px',
-                                        }}
-                                    >
-                                        {loadingLibraries ? 'Loading...' : 'Load Libraries'}
-                                    </button>
+                                <div className="refresh-section-header">
+                                    <h5>Plex Libraries</h5>
+                                    <div className="library-controls">
+                                        <button
+                                            type="button"
+                                            onClick={handleLoadLibraries}
+                                            disabled={loadingLibraries}
+                                            className="btn btn-secondary btn-sm"
+                                        >
+                                            {loadingLibraries ? 'Loading...' : 'Load Libraries'}
+                                        </button>
+                                        {availableOptions.libraries.length > 0 && (
+                                            <div className="select-all-buttons">
+                                                <button
+                                                    type="button"
+                                                    className="select-icon-btn"
+                                                    onClick={handleSelectAllLibraries}
+                                                    title="Select all libraries"
+                                                >
+                                                    {getIcon('mi:check_box')}
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    className="select-icon-btn"
+                                                    onClick={handleDeselectAllLibraries}
+                                                    title="Deselect all libraries"
+                                                >
+                                                    {getIcon('mi:check_box_outline_blank')}
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                                 {availableOptions.libraries.length > 0 ? (
                                     availableOptions.libraries.map(library => (

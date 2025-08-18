@@ -938,15 +938,6 @@
     }
 
     /* Result Virtualization Styles (Phase 2 Enhancement) */
-    .virtualized-notice {
-        text-align: center;
-        padding: 0.5rem;
-        background: var(--bg-info, #f0f9ff);
-        border: 1px solid var(--border-info, #bae6fd);
-        border-radius: 4px;
-        margin-bottom: 1rem;
-        color: var(--text-info, #0369a1);
-    }
 
     .search-grid-virtualized-container,
     .search-list-virtualized-container {
@@ -996,11 +987,6 @@
             background: var(--bg-focus-dark, rgb(96 165 250 / 10%));
         }
 
-        .virtualized-notice {
-            background: var(--bg-info-dark, #1e3a8a);
-            border-color: var(--border-info-dark, #3b82f6);
-            color: var(--text-info-dark, #93c5fd);
-        }
 
         .search-list-virtualized-content .search-list-item:hover {
             background: var(--bg-hover-dark, #374151);
@@ -1083,7 +1069,8 @@
     }
 
     .search-engine .module-popover,
-    .search-engine .refresh-popover {
+    .search-engine .refresh-popover,
+    .search-engine .help-popover {
         position: absolute;
         top: 100%;
         right: 0;
@@ -1119,15 +1106,20 @@
     }
 
     .search-engine .module-popover-header,
-    .search-engine .refresh-popover-header {
+    .search-engine .refresh-popover-header,
+    .search-engine .help-popover-header {
         padding: 1.25rem 1.5rem 1rem;
         border-bottom: 1px solid var(--border, #e2e8f0);
         background: transparent;
         border-radius: var(--radius-3, 12px) var(--radius-3, 12px) 0 0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
     }
 
     .search-engine .module-popover-header h4,
-    .search-engine .refresh-popover-header h4 {
+    .search-engine .refresh-popover-header h4,
+    .search-engine .help-popover-header h4 {
         margin: 0;
         font-size: 1rem;
         font-weight: 600;
@@ -1135,7 +1127,8 @@
     }
 
     .search-engine .module-popover-content,
-    .search-engine .refresh-popover-content {
+    .search-engine .refresh-popover-content,
+    .search-engine .help-popover-content {
         padding: 1.25rem 1.5rem;
         max-height: 350px;
         overflow-y: auto;
@@ -1343,5 +1336,148 @@
         .search-engine .refresh-popover-content {
             max-height: 250px;
         }
+
+        .search-engine .help-popover {
+            right: -1rem;
+            left: -1rem;
+            min-width: auto;
+            max-width: none;
+        }
+    }
+
+    /* Help popover specific styles */
+    .search-engine .help-popover {
+        min-width: 280px;
+        max-width: 350px;
+    }
+
+    .search-engine .help-popover-content p {
+        margin: 0 0 1rem;
+        color: var(--text-muted, #64748b);
+        font-size: 0.9rem;
+    }
+
+    .search-engine .help-examples {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .search-engine .help-example {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.5rem;
+        background: var(--surface-variant, #f8fafc);
+        border-radius: var(--radius-2, 8px);
+        border: 1px solid var(--border-light, #e2e8f0);
+    }
+
+    .search-engine .help-example code {
+        background: var(--accent, #1e88e5);
+        color: white;
+        padding: 0.25rem 0.5rem;
+        border-radius: var(--radius-1, 4px);
+        font-family: var(--font-mono, 'SF Mono', 'Monaco', 'Cascadia Code', monospace);
+        font-size: 0.85rem;
+        font-weight: 500;
+        min-width: 100px;
+        text-align: center;
+    }
+
+    .search-engine .help-example span {
+        color: var(--text, #1f2937);
+        font-size: 0.9rem;
+        flex: 1;
+    }
+
+    /* Dark mode styles for help popover */
+    @media (prefers-color-scheme: dark) {
+        .search-engine .help-popover-content p {
+            color: var(--text-muted-dark, #9ca3af);
+        }
+
+        .search-engine .help-example {
+            background: var(--surface-variant-dark, #1f2937);
+            border-color: var(--border-dark, #374151);
+        }
+
+        .search-engine .help-example span {
+            color: var(--text-dark, #f3f4f6);
+        }
+    }
+
+    /* Help button positioning - between clear and search buttons */
+    .search-engine .help-btn {
+        right: 50px !important; /* Position between clear and search */
+    }
+
+    /* When clear button is present, move it further left to make room */
+    .search-bar-container.has-clear-btn .clear-btn {
+        right: 85px !important; /* Move clear button left: X ? [search] */
+    }
+
+    /* Refresh popover section headers with controls */
+    .search-engine .refresh-section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.75rem;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .search-engine .refresh-section-header h5 {
+        margin: 0;
+        flex: 1;
+        min-width: fit-content;
+    }
+
+    .search-engine .select-all-buttons {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .search-engine .select-icon-btn {
+        background: none;
+        border: none;
+        color: var(--text-muted, #64748b);
+        font-size: 1.1rem;
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: var(--radius-1, 4px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: color 0.2s, background-color 0.2s;
+    }
+
+    .search-engine .select-icon-btn:hover {
+        color: var(--primary, #1e88e5);
+        background-color: var(--surface-variant, rgb(30 136 229 / 10%));
+    }
+
+    .search-engine .overall-select-buttons {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+    }
+
+    .search-engine .overall-select-buttons .select-icon-btn {
+        font-size: 1.2rem;
+    }
+
+    .search-engine .library-controls {
+        display: flex;
+        gap: 0.75rem;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .search-engine .instance-type {
+        font-weight: 600;
+        color: var(--text-muted, #64748b);
+        margin-right: 0.25rem;
     }
 }

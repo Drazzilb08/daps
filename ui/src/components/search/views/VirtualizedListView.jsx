@@ -162,10 +162,6 @@ export default function VirtualizedListView({
 
     return (
         <div className={className} id="search-results" ref={resultsContainerRef}>
-            <div className="virtualized-notice">
-                <small>Virtualized view - showing {results.length} items efficiently</small>
-            </div>
-
             <div
                 ref={scrollContainerRef}
                 className="search-list-virtualized-container"

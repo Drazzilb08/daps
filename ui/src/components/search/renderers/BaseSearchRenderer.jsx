@@ -69,6 +69,7 @@ export class BaseSearchRenderer {
      */
     renderEmptyState(searchTerm) {
         if (!searchTerm || !searchTerm.trim()) {
+            // Simple centered message without the big white box
             return (
                 <div className="search-empty-container" role="status" aria-live="polite">
                     <div className="search-empty-icon" aria-hidden="true">
@@ -79,14 +80,6 @@ export class BaseSearchRenderer {
                         <div className="search-empty-message">
                             Type a search term and press <kbd>Enter</kbd> or click{' '}
                             <strong>Search</strong>.
-                        </div>
-                        <div className="search-empty-advanced">
-                            <div className="search-empty-advanced-title">
-                                <strong>Advanced Search:</strong>
-                            </div>
-                            <div className="search-empty-advanced-options">
-                                Use <code>tmdb:123</code>, <code>imdb:tt123456</code>, or <code>tvdb:789</code> to search by database IDs
-                            </div>
                         </div>
                     </div>
                 </div>

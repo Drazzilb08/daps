@@ -82,11 +82,6 @@ const enhancedGdriveAdapter = {
         results = gdriveSearchAdapter.filter(results, filters, currentSource);
         return results;
     },
-
-    sort(results, sortOption, currentSource) {
-        const priorityOrder = this._lastLoadedData?.priorityOrder || {};
-        return gdriveSearchAdapter.sort(results, sortOption, currentSource, priorityOrder);
-    },
 };
 
 /**

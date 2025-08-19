@@ -23,11 +23,6 @@ export function AssetsSearchEngine({
             search(data, searchTerm, filters) {
                 return assetsSearchAdapter.search(data, searchTerm, filters);
             },
-
-            // Override sort to handle the priority properly
-            sort(results, sortOption) {
-                return assetsSearchAdapter.sort(results, sortOption);
-            },
         }),
         []
     );
@@ -123,13 +118,6 @@ export function GdriveSearchEngine({
                 results = gdriveSearchAdapter.filter(results, filters, currentSource);
 
                 return results;
-            },
-
-            // Override sort to pass through priority order
-            sort(results, sortOption, currentSource) {
-                const data = this._lastLoadedData;
-                const priorityOrder = data?.priorityOrder || {};
-                return gdriveSearchAdapter.sort(results, sortOption, currentSource, priorityOrder);
             },
 
             // Store data for sort function access

@@ -95,6 +95,33 @@ export default function SimpleSearchPlugin({ pluginId, overrideConfig = {}, ...a
         [plugin, additionalProps]
     );
 
+    // Dynamic sort options based on current source (for GDrive plugin)
+    const [currentSourceForSort, setCurrentSourceForSort] = React.useState(
+        plugin?.uiConfig?.defaultSource || overrideConfig.defaultSource || 'gdrive'
+    );
+    
+    const config = plugin ? {
+        ...plugin.uiConfig,
+        ...overrideConfig,
+    } : { sortOptions: [] };
+    
+    const dynamicSortOptions = React.useMemo(() => {
+        // Only apply dynamic filtering for gdrive-search plugin
+        if (pluginId === 'gdrive-search' && currentSourceForSort === 'custom') {
+            // Filter out priority sorting options for custom sources
+            return config.sortOptions.filter(option => 
+                !option.value.startsWith('priority-')
+            );
+        }
+        return config.sortOptions;
+    }, [config.sortOptions, currentSourceForSort, pluginId]);
+    
+    // Handle source changes to update sort options
+    const handleSourceChangeWithSort = React.useCallback(newSource => {
+        setCurrentSourceForSort(newSource);
+        handleSourceChange(newSource);
+    }, [handleSourceChange]);
+
     // Mount/unmount plugin
     React.useEffect(() => {
         if (plugin) {
@@ -119,12 +146,6 @@ export default function SimpleSearchPlugin({ pluginId, overrideConfig = {}, ...a
         );
     }
 
-    // Apply overrides to plugin configuration
-    const config = {
-        ...plugin.uiConfig,
-        ...overrideConfig,
-    };
-
     return (
         <SearchCore
             // Data adapter (isolated per plugin)
@@ -132,7 +153,7 @@ export default function SimpleSearchPlugin({ pluginId, overrideConfig = {}, ...a
             // UI configuration (controls shared components)
             sources={config.sources}
             filters={[...config.filters, ...dynamicFilters]}
-            sortOptions={config.sortOptions}
+            sortOptions={dynamicSortOptions}
             // UI behavior settings
             placeholder={config.placeholder}
             defaultView={config.defaultView}
@@ -156,7 +177,7 @@ export default function SimpleSearchPlugin({ pluginId, overrideConfig = {}, ...a
             onDataLoaded={handleDataLoaded}
             onError={handleError}
             onResultDelete={handleResultDelete}
-            onSourceChange={handleSourceChange}
+            onSourceChange={handleSourceChangeWithSort}
             onRefresh={handleRefresh}
             // Pass through additional props including refreshTrigger
             {...additionalProps}

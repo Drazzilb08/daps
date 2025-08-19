@@ -7,37 +7,13 @@ import { fetchPosterPreviewUrl } from '../../../utils/api';
 import GridView from '../views/GridView';
 import ListView from '../views/ListView';
 import { groupingHelper } from '../helpers/groupingHelper';
+import { SearchSorter } from '../sorting';
 
 export class PosterRenderer extends BaseSearchRenderer {
-    processResults(results, { currentSort, groupBy }) {
-        // For grouped displays with priority sorting, don't sort individual files
-        if (groupBy && currentSort && currentSort.startsWith('priority-')) {
-            return results;
-        }
-
-        // Apply individual file sorting for non-priority sorts
-        let sortedResults = [...results];
-        if (currentSort === 'alpha') {
-            sortedResults.sort((a, b) => {
-                const titleA = this.getDisplayTitle(a);
-                const titleB = this.getDisplayTitle(b);
-                return titleA.localeCompare(titleB);
-            });
-        } else if (currentSort === 'alpha-desc') {
-            sortedResults.sort((a, b) => {
-                const titleA = this.getDisplayTitle(a);
-                const titleB = this.getDisplayTitle(b);
-                return titleB.localeCompare(titleA);
-            });
-        } else if (currentSort === 'date') {
-            sortedResults.sort((a, b) => {
-                const dateA = new Date(a.updated_at || a.added_at || a.last_indexed || 0);
-                const dateB = new Date(b.updated_at || b.added_at || b.last_indexed || 0);
-                return dateB - dateA;
-            });
-        }
-
-        return sortedResults;
+    processResults(results) {
+        // Results are already sorted by SearchSorter in SearchCore
+        // Renderer only handles display logic, not sorting
+        return results;
     }
 
     // === HOVER PREVIEW SETUP ===
@@ -258,11 +234,22 @@ export class PosterRenderer extends BaseSearchRenderer {
             // Apply grouping helper to process results for display
             const groupedResults = groupingHelper.groupByOwner(processedResults);
 
+            // Get owner priority order from additional props (passed from SearchCore)
+            const ownerPriorityOrder = additionalProps.ownerPriorityOrder || {};
+
+            // Get the proper group order based on sorting and priority
+            const groupOrder = SearchSorter.sortGroups(groupedResults, currentSort, {
+                priorityOrder,
+                ownerPriorityOrder,
+                groupBy: 'owner',
+            });
+
             const groupedViewProps = {
                 ...viewProps,
                 results: processedResults,
                 isGrouped: true,
                 groups: groupedResults,
+                groupOrder,
                 groupBy: 'owner',
             };
 

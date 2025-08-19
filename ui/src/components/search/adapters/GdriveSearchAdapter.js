@@ -106,15 +106,20 @@ export const gdriveSearchAdapter = {
             }
 
             // Priority order - match GDrive locations to source_dirs positions
-            // This is the complex part: GDrive locations get priority based on their position in source_dirs
+            // Last entry in source_dirs has highest priority
             const priorityOrder = {};
+            const ownerPriorityOrder = {};
 
             // For each GDrive location, check if it exists in source_dirs and assign priority
             gdriveLocations.forEach(gdrive => {
                 const sourceIndex = sourceDirs.indexOf(gdrive.location);
                 if (sourceIndex !== -1) {
-                    // Found in source_dirs - assign priority based on position
-                    priorityOrder[gdrive.location] = sourceDirs.length - sourceIndex - 1;
+                    // Found in source_dirs - later positions = higher priority values
+                    const priority = sourceIndex;
+                    priorityOrder[gdrive.location] = priority;
+
+                    // Also map owner name to priority for group sorting
+                    ownerPriorityOrder[gdrive.name] = priority;
                 }
             });
 
@@ -131,6 +136,7 @@ export const gdriveSearchAdapter = {
                 customFiles,
                 gdriveOwners,
                 priorityOrder,
+                ownerPriorityOrder,
                 errorSources,
                 files: [...gdriveFiles, ...customFiles], // Combined for easier access
             };
@@ -149,6 +155,7 @@ export const gdriveSearchAdapter = {
                 customFiles: [],
                 gdriveOwners: [],
                 priorityOrder: {},
+                ownerPriorityOrder: {},
                 errorSources: ['Configuration'],
                 files: [],
             };
@@ -204,29 +211,6 @@ export const gdriveSearchAdapter = {
         }
 
         return filtered;
-    },
-
-    /**
-     * Sort search results
-     * Replicates the exact sorting logic from GdriveSearch.jsx useMemo
-     */
-    sort(results, sortOption, currentSource, priorityOrder) {
-        const sortedResults = [...results];
-
-        if (sortOption === 'priority-asc' || sortOption === 'priority-desc') {
-            sortedResults.sort((a, b) => {
-                const pa = priorityOrder[a.location] ?? 9999;
-                const pb = priorityOrder[b.location] ?? 9999;
-                return sortOption === 'priority-asc' ? pa - pb : pb - pa;
-            });
-        } else if (sortOption === 'alpha') {
-            sortedResults.sort((a, b) => a.file.localeCompare(b.file));
-        } else if (sortOption === 'alpha-desc') {
-            sortedResults.sort((a, b) => b.file.localeCompare(a.file));
-        }
-        // Note: Date sort could be added here if needed
-
-        return sortedResults;
     },
 
     /**

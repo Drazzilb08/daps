@@ -336,47 +336,6 @@ export const mediaSearchAdapter = {
     },
 
     /**
-     * Sort function for ordering results
-     */
-    sort(results, sortOption) {
-        const sortedResults = [...results];
-
-        switch (sortOption) {
-            case 'alpha':
-                return sortedResults.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
-            case 'alpha-desc':
-                return sortedResults.sort((a, b) => (b.title || '').localeCompare(a.title || ''));
-            case 'year_asc':
-                return sortedResults.sort(
-                    (a, b) => (parseInt(a.year) || 0) - (parseInt(b.year) || 0)
-                );
-            case 'year_desc':
-                return sortedResults.sort(
-                    (a, b) => (parseInt(b.year) || 0) - (parseInt(a.year) || 0)
-                );
-            case 'recently_added':
-                return sortedResults.sort((a, b) => {
-                    // Get the most recent created_at from all instance data
-                    const getLatestCreatedAt = item => {
-                        if (!item.allInstanceData || item.allInstanceData.length === 0) {
-                            return new Date(item.created_at || 0);
-                        }
-
-                        const dates = item.allInstanceData
-                            .map(instance => new Date(instance.created_at || 0))
-                            .filter(date => !isNaN(date.getTime()));
-
-                        return dates.length > 0 ? new Date(Math.max(...dates)) : new Date(0);
-                    };
-
-                    return getLatestCreatedAt(b) - getLatestCreatedAt(a);
-                });
-            default:
-                return sortedResults;
-        }
-    },
-
-    /**
      * Format result for display in search results
      */
     formatResult(item) {

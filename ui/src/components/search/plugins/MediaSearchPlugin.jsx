@@ -128,19 +128,6 @@ const enhancedMediaAdapter = {
         return result;
     },
 
-    sort(results, sortOption) {
-        console.log('Enhanced adapter sort called:', {
-            results: Array.isArray(results) ? `Array(${results.length})` : typeof results,
-            sortOption,
-        });
-        const result = mediaSearchAdapter.sort(results, sortOption);
-        console.log(
-            'Enhanced adapter sort result:',
-            Array.isArray(result) ? `Array(${result.length})` : typeof result
-        );
-        return result;
-    },
-
     getAutocompleteSuggestions(searchTerm) {
         return mediaSearchAdapter.getAutocompleteSuggestions(searchTerm);
     },

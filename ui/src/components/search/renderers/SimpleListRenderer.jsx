@@ -5,26 +5,10 @@ import React from 'react';
 import { BaseSearchRenderer } from './BaseSearchRenderer.jsx';
 
 export class SimpleListRenderer extends BaseSearchRenderer {
-    processResults(results, { currentSort }) {
-        let sortedResults = [...results];
-
-        if (currentSort === 'alpha') {
-            sortedResults.sort((a, b) =>
-                this.getDisplayTitle(a).localeCompare(this.getDisplayTitle(b))
-            );
-        } else if (currentSort === 'alpha-desc') {
-            sortedResults.sort((a, b) =>
-                this.getDisplayTitle(b).localeCompare(this.getDisplayTitle(a))
-            );
-        } else if (currentSort === 'date') {
-            sortedResults.sort((a, b) => {
-                const dateA = new Date(a.updated_at || a.added_at || a.created_at || 0);
-                const dateB = new Date(b.updated_at || b.added_at || b.created_at || 0);
-                return dateB - dateA;
-            });
-        }
-
-        return sortedResults;
+    processResults(results) {
+        // Results are already sorted by SearchSorter in SearchCore
+        // Renderer only handles display logic, not sorting
+        return results;
     }
 
     renderListItem(result, index, { searchTerm, onResultClick }) {

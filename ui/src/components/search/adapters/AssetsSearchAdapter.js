@@ -139,28 +139,6 @@ export const assetsSearchAdapter = {
     },
 
     /**
-     * Sort search results
-     * Replicates the exact sorting logic from AssetsSearch.jsx
-     */
-    sort(results, sortOption) {
-        const sortedResults = [...results];
-
-        if (sortOption === 'alpha') {
-            sortedResults.sort((a, b) => a.file.localeCompare(b.file));
-        } else if (sortOption === 'alpha-desc') {
-            sortedResults.sort((a, b) => b.file.localeCompare(a.file));
-        } else if (sortOption === 'date') {
-            sortedResults.sort((a, b) => {
-                const dateA = new Date(a.last_indexed || a.added_at || 0);
-                const dateB = new Date(b.last_indexed || b.added_at || 0);
-                return dateB - dateA;
-            });
-        }
-
-        return sortedResults;
-    },
-
-    /**
      * Format a result item for display
      * Ensures consistent structure for SearchResults component
      */

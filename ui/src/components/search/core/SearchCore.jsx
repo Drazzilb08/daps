@@ -7,6 +7,7 @@ import SearchResults from '../SearchResults';
 import useHoverPreview from '../HoverPreview';
 import LoadingSpinner from '../../common/LoadingSpinner';
 import { useToast } from '../../providers/ToastProvider';
+import { SearchSorter } from '../sorting';
 
 // Stable default functions to prevent infinite loops
 const defaultOnError = () => {};
@@ -79,7 +80,7 @@ export default function SearchCore({
     const [pendingSearchTerm, setPendingSearchTerm] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
     const [searchResults, setSearchResults] = useState([]);
-    const [isSearching, setIsSearching] = useState(false);
+    const [hasUserSearched, setHasUserSearched] = useState(false);
 
     // UI state
     const [currentSource, setCurrentSource] = useState(defaultSource || sources[0]?.key || null);
@@ -173,78 +174,26 @@ export default function SearchCore({
     }, [searchAdapter, currentSource, stableOnDataLoaded, stableOnError, toast, refreshTrigger]);
 
     // ===== SEARCH LOGIC =====
-    const performSearch = useCallback(
-        (overrideTerm = undefined) => {
-            if (!searchAdapter?.search || !searchData) return;
+    // Search is now handled by the useEffect that processes results based on searchTerm changes
 
-            setIsSearching(true);
-
-            setTimeout(() => {
-                try {
-                    const term = overrideTerm !== undefined ? overrideTerm : pendingSearchTerm;
-
-                    let results = searchAdapter.search(searchData, term, {}, currentSource);
-
-                    // Ensure results is always an array
-                    if (!Array.isArray(results)) {
-                        console.warn('Search adapter returned non-array:', results);
-                        results = [];
-                    }
-
-                    if (searchAdapter.filter) {
-                        results = searchAdapter.filter(results, activeFilters, currentSource);
-                        if (!Array.isArray(results)) {
-                            console.warn('Filter adapter returned non-array:', results);
-                            results = [];
-                        }
-                    }
-
-                    if (searchAdapter.sort && currentSort && !currentSort.startsWith('priority-')) {
-                        results = searchAdapter.sort(results, currentSort, currentSource);
-                        if (!Array.isArray(results)) {
-                            console.warn('Sort adapter returned non-array:', results);
-                            results = [];
-                        }
-                    }
-
-                    if (searchAdapter.formatResult && results.length > 0) {
-                        results = results.map(item => ({
-                            ...searchAdapter.formatResult(item, currentSource),
-                            original: item,
-                        }));
-                    }
-
-                    setSearchTerm(term || '');
-                    setSearchResults(results);
-                } catch (err) {
-                    console.error('Search error:', err);
-                    toast('Search failed', 'error');
-                    stableOnError(err);
-                    setSearchResults([]);
-                } finally {
-                    setIsSearching(false);
-                }
-            }, 0);
-        },
-        [
-            searchAdapter,
-            searchData,
-            pendingSearchTerm,
-            activeFilters,
-            currentSource,
-            currentSort,
-            stableOnError,
-            toast,
-        ]
-    );
-
-    // Re-apply filters and sorting to existing search results
+    // Apply filters and sorting to results (works for both search results and initial data)
     useEffect(() => {
-        if (!searchTerm || !searchData || !searchAdapter?.search) return;
+        if (!searchData || !searchAdapter?.search) return;
 
-        const applyFiltersAndSort = () => {
+        const processResults = () => {
             try {
-                let results = searchAdapter.search(searchData, searchTerm, {}, currentSource);
+                // Get results based on whether the user has actively searched
+                let results;
+                if (searchTerm && searchTerm.trim()) {
+                    // User is actively searching: filter data by search term
+                    results = searchAdapter.search(searchData, searchTerm, {}, currentSource);
+                } else if (hasUserSearched) {
+                    // User previously searched but cleared search: show all data with sorting/filtering
+                    results = searchAdapter.search(searchData, '', {}, currentSource);
+                } else {
+                    // Initial state: no results until user searches
+                    results = [];
+                }
 
                 // Ensure results is always an array
                 if (!Array.isArray(results)) {
@@ -252,6 +201,7 @@ export default function SearchCore({
                     results = [];
                 }
 
+                // Apply filters
                 if (searchAdapter.filter) {
                     results = searchAdapter.filter(results, activeFilters, currentSource);
                     // Ensure filter result is always an array
@@ -261,15 +211,24 @@ export default function SearchCore({
                     }
                 }
 
-                if (searchAdapter.sort && currentSort && !currentSort.startsWith('priority-')) {
-                    results = searchAdapter.sort(results, currentSort, currentSource);
+                // Apply sorting
+                if (currentSort) {
+                    const searchType = SearchSorter.inferSearchType(results);
+                    results = SearchSorter.sort(results, currentSort, {
+                        priorityOrder: searchData?.priorityOrder || {},
+                        ownerPriorityOrder: searchData?.ownerPriorityOrder || {},
+                        groupBy,
+                        currentSource,
+                        searchType,
+                    });
                     // Ensure sort result is always an array
                     if (!Array.isArray(results)) {
-                        console.warn('SearchCore: sort() returned non-array:', results);
+                        console.warn('SearchSorter returned non-array:', results);
                         results = [];
                     }
                 }
 
+                // Format results for display
                 if (searchAdapter.formatResult && results.length > 0) {
                     results = results.map(item => ({
                         ...searchAdapter.formatResult(item, currentSource),
@@ -279,13 +238,13 @@ export default function SearchCore({
 
                 setSearchResults(results);
             } catch (error) {
-                console.error('SearchCore: applyFiltersAndSort error:', error);
+                console.error('SearchCore: processResults error:', error);
                 setSearchResults([]);
             }
         };
 
-        applyFiltersAndSort();
-    }, [activeFilters, currentSort, currentSource, searchAdapter, searchData, searchTerm]);
+        processResults();
+    }, [activeFilters, currentSort, currentSource, groupBy, hasUserSearched, searchAdapter, searchData, searchTerm]);
 
     // ===== EVENT HANDLERS =====
     const handleSearchTermChange = useCallback(newTerm => {
@@ -293,7 +252,7 @@ export default function SearchCore({
 
         if (!newTerm.trim()) {
             setSearchTerm('');
-            setSearchResults([]);
+            // Don't clear results - let useEffect handle displaying all data
         }
     }, []);
 
@@ -301,7 +260,8 @@ export default function SearchCore({
         if (debounceTimeoutRef.current) {
             clearTimeout(debounceTimeoutRef.current);
         }
-        performSearch();
+        setHasUserSearched(true); // Mark that user has explicitly searched
+        setSearchTerm(pendingSearchTerm); // Apply the pending search term
     };
 
     const handleClearSearch = useCallback(() => {
@@ -323,6 +283,7 @@ export default function SearchCore({
         setSearchTerm('');
         setSearchResults([]);
         setActiveFilters({});
+        setHasUserSearched(false); // Reset search state for new source
 
         setCurrentSource(newSource);
         onSourceChange(newSource);
@@ -445,7 +406,7 @@ export default function SearchCore({
                     onSearch={handleSearch}
                     onClear={handleClearSearch}
                     placeholder={placeholder}
-                    isSearching={isSearching || isLoading}
+                    isSearching={isLoading}
                     searchInputRef={searchInputRef}
                     enableAutocomplete={enableAutocomplete}
                     autocompleteMinLength={autocompleteMinLength}
@@ -466,7 +427,7 @@ export default function SearchCore({
                     {...additionalProps}
                 />
 
-                {isLoading || isSearching ? (
+                {isLoading ? (
                     <div
                         className="search-loading-container"
                         role="status"
@@ -476,7 +437,7 @@ export default function SearchCore({
                         <div className="search-loading-content">
                             <LoadingSpinner />
                             <div className="search-loading-text">
-                                {isLoading ? 'Loading search data...' : 'Searching...'}
+                                Loading search data...
                             </div>
                         </div>
                     </div>
@@ -492,6 +453,7 @@ export default function SearchCore({
                         hoverPreviewImgRef={activeHoverPreviewRef}
                         enableHoverPreview={enableHoverPreview}
                         priorityOrder={searchData?.priorityOrder || {}}
+                        ownerPriorityOrder={searchData?.ownerPriorityOrder || {}}
                         groupBy={groupBy}
                         focusedResultIndex={focusedResultIndex}
                         resultsContainerRef={resultsContainerRef}

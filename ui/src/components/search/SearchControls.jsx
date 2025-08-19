@@ -330,28 +330,36 @@ export default function SearchControls({
     const handleSelectAllRadarr = () => {
         setSelectedRefreshOptions(prev => ({
             ...prev,
-            arrInstances: [...new Set([...prev.arrInstances, ...availableInstances.radarrInstances])],
+            arrInstances: [
+                ...new Set([...prev.arrInstances, ...availableInstances.radarrInstances]),
+            ],
         }));
     };
 
     const handleDeselectAllRadarr = () => {
         setSelectedRefreshOptions(prev => ({
             ...prev,
-            arrInstances: prev.arrInstances.filter(instance => !availableInstances.radarrInstances.includes(instance)),
+            arrInstances: prev.arrInstances.filter(
+                instance => !availableInstances.radarrInstances.includes(instance)
+            ),
         }));
     };
 
     const handleSelectAllSonarr = () => {
         setSelectedRefreshOptions(prev => ({
             ...prev,
-            arrInstances: [...new Set([...prev.arrInstances, ...availableInstances.sonarrInstances])],
+            arrInstances: [
+                ...new Set([...prev.arrInstances, ...availableInstances.sonarrInstances]),
+            ],
         }));
     };
 
     const handleDeselectAllSonarr = () => {
         setSelectedRefreshOptions(prev => ({
             ...prev,
-            arrInstances: prev.arrInstances.filter(instance => !availableInstances.sonarrInstances.includes(instance)),
+            arrInstances: prev.arrInstances.filter(
+                instance => !availableInstances.sonarrInstances.includes(instance)
+            ),
         }));
     };
 
@@ -380,7 +388,7 @@ export default function SearchControls({
         ];
         const allLibraries = availableLibraries.map(lib => lib.name || lib);
         const allPlexInstances = [...new Set(availableLibraries.map(lib => lib.instance))];
-        
+
         setSelectedRefreshOptions({
             arrInstances: allInstances,
             libraries: allLibraries,
@@ -517,27 +525,27 @@ export default function SearchControls({
             try {
                 const response = await fetch('/api/instances/');
                 const data = await response.json();
-                
+
                 if (data.success && data.data) {
                     const radarrInstances = [];
                     const sonarrInstances = [];
                     const plexInstances = [];
-                    
+
                     // Extract Radarr instances
                     if (data.data.radarr) {
                         radarrInstances.push(...Object.keys(data.data.radarr));
                     }
-                    
+
                     // Extract Sonarr instances
                     if (data.data.sonarr) {
                         sonarrInstances.push(...Object.keys(data.data.sonarr));
                     }
-                    
+
                     // Extract Plex instances
                     if (data.data.plex) {
                         plexInstances.push(...Object.keys(data.data.plex));
                     }
-                    
+
                     setAvailableInstances({
                         radarrInstances,
                         sonarrInstances,
@@ -553,7 +561,7 @@ export default function SearchControls({
                 });
             }
         };
-        
+
         loadInstances();
     }, []);
 
@@ -563,7 +571,7 @@ export default function SearchControls({
             ...availableInstances.radarrInstances,
             ...availableInstances.sonarrInstances,
         ];
-        
+
         return {
             radarrInstances: availableInstances.radarrInstances,
             sonarrInstances: availableInstances.sonarrInstances,
@@ -972,10 +980,12 @@ export default function SearchControls({
                                         </div>
                                     </div>
                                     {availableOptions.radarrInstances.map(instance => (
-                                        <div 
-                                            key={instance} 
+                                        <div
+                                            key={instance}
                                             className="checkbox-row"
-                                            onClick={() => handleRefreshOptionToggle('arrInstances', instance)}
+                                            onClick={() =>
+                                                handleRefreshOptionToggle('arrInstances', instance)
+                                            }
                                         >
                                             <input
                                                 type="checkbox"
@@ -984,9 +994,11 @@ export default function SearchControls({
                                                     instance
                                                 )}
                                                 onChange={() => {}} // Handle via parent div click
-                                                onClick={(e) => e.stopPropagation()} // Prevent double-firing
+                                                onClick={e => e.stopPropagation()} // Prevent double-firing
                                             />
-                                            <label htmlFor={`radarr-${instance}`}>{humanize(instance)}</label>
+                                            <label htmlFor={`radarr-${instance}`}>
+                                                {humanize(instance)}
+                                            </label>
                                         </div>
                                     ))}
                                 </div>
@@ -1031,10 +1043,12 @@ export default function SearchControls({
                                         </div>
                                     </div>
                                     {availableOptions.sonarrInstances.map(instance => (
-                                        <div 
-                                            key={instance} 
+                                        <div
+                                            key={instance}
                                             className="checkbox-row"
-                                            onClick={() => handleRefreshOptionToggle('arrInstances', instance)}
+                                            onClick={() =>
+                                                handleRefreshOptionToggle('arrInstances', instance)
+                                            }
                                         >
                                             <input
                                                 type="checkbox"
@@ -1043,9 +1057,11 @@ export default function SearchControls({
                                                     instance
                                                 )}
                                                 onChange={() => {}} // Handle via parent div click
-                                                onClick={(e) => e.stopPropagation()} // Prevent double-firing
+                                                onClick={e => e.stopPropagation()} // Prevent double-firing
                                             />
-                                            <label htmlFor={`sonarr-${instance}`}>{humanize(instance)}</label>
+                                            <label htmlFor={`sonarr-${instance}`}>
+                                                {humanize(instance)}
+                                            </label>
                                         </div>
                                     ))}
                                 </div>
@@ -1101,10 +1117,15 @@ export default function SearchControls({
                                 </div>
                                 {availableOptions.libraries.length > 0 ? (
                                     availableOptions.libraries.map(library => (
-                                        <div 
-                                            key={library.name || library} 
+                                        <div
+                                            key={library.name || library}
                                             className="checkbox-row"
-                                            onClick={() => handleRefreshOptionToggle('libraries', library.name || library)}
+                                            onClick={() =>
+                                                handleRefreshOptionToggle(
+                                                    'libraries',
+                                                    library.name || library
+                                                )
+                                            }
                                         >
                                             <input
                                                 type="checkbox"
@@ -1113,7 +1134,7 @@ export default function SearchControls({
                                                     library.name || library
                                                 )}
                                                 onChange={() => {}} // Handle via parent div click
-                                                onClick={(e) => e.stopPropagation()} // Prevent double-firing
+                                                onClick={e => e.stopPropagation()} // Prevent double-firing
                                             />
                                             <label htmlFor={`lib-${library.name || library}`}>
                                                 {library.displayName || library}

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { ModalHeader, ModalFooter, useDynamicFieldConditions } from './helpers/ModalHelpers';
 import { useFocusTrap, useModalCloseOnOutsideClick } from './helpers/useModalHelpers';
@@ -17,6 +17,7 @@ export default function ModalFactory({
     layout = null,
     onClose,
     onButtonClick = {},
+    onFieldChange = null,
     fieldRefs = {},
     children,
     isSmallModal = false,
@@ -25,10 +26,37 @@ export default function ModalFactory({
     const formRef = useRef();
     const [formData, setFormData] = useState({ ...entry });
     const [invalidFields, setInvalidFields] = useState({});
+    const [isUpdating, setIsUpdating] = useState(false);
 
     useFocusTrap(modalRef);
     useModalCloseOnOutsideClick(modalRef, onClose);
     useDynamicFieldConditions(schema, rootConfig, formRef);
+
+    // Handle schema updates with smooth transition and preserve form data
+    useEffect(() => {
+        if (schema.length > 0) {
+            setIsUpdating(true);
+
+            // Preserve existing form data when schema updates
+            setFormData(prev => {
+                const newData = { ...entry };
+                // Preserve values that exist in both old and new schema
+                schema.forEach(field => {
+                    if (prev[field.key] !== undefined) {
+                        newData[field.key] = prev[field.key];
+                    } else if (field.value !== undefined) {
+                        newData[field.key] = field.value;
+                    } else if (field.defaultValue !== undefined) {
+                        newData[field.key] = field.defaultValue;
+                    }
+                });
+                return newData;
+            });
+
+            const timer = setTimeout(() => setIsUpdating(false), 100);
+            return () => clearTimeout(timer);
+        }
+    }, [schema, entry]);
 
     // If small modal, use SmallModalFactory
     if (isSmallModal) {
@@ -61,6 +89,11 @@ export default function ModalFactory({
             }
             return { ...prev, [fieldKey]: newValue };
         });
+
+        // Call external field change handler if provided
+        if (onFieldChange) {
+            onFieldChange(fieldKey, newValue);
+        }
     }
 
     function handlePresetApply(data) {
@@ -229,7 +262,7 @@ export default function ModalFactory({
         <div className="modal show">
             <div className={modalClass} ref={modalRef}>
                 <ModalHeader title={title} onClose={onClose} />
-                <div className="modal-body" ref={formRef}>
+                <div className={`modal-body${isUpdating ? ' modal-updating' : ''}`} ref={formRef}>
                     {renderModalContent()}
                     {children && !schema.length && children}
                 </div>

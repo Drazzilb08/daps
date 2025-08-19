@@ -1,7 +1,12 @@
 // ui/src/components/search/plugins/subplugins/LabelarrSubPlugin.js
 // Labelarr sub-plugin for media tag management
 
-import { syncTagsToMedia, fetchMediaCache, fetchPlexMediaCache } from '../../../../utils/api';
+import {
+    syncTagsToMedia,
+    fetchMediaCache,
+    fetchPlexMediaCache,
+    fetchPosterPreviewUrl,
+} from '../../../../utils/api';
 
 /**
  * Labelarr Sub-Plugin
@@ -21,12 +26,14 @@ export class LabelarrSubPlugin {
      */
     canHandle(mediaItem) {
         // Labelarr can handle any media item that has ARR instances
-        const hasArrInstances = mediaItem.instances && 
-            mediaItem.instances.some(instance => 
-                instance.toLowerCase().includes('radarr') || 
-                instance.toLowerCase().includes('sonarr')
+        const hasArrInstances =
+            mediaItem.instances &&
+            mediaItem.instances.some(
+                instance =>
+                    instance.toLowerCase().includes('radarr') ||
+                    instance.toLowerCase().includes('sonarr')
             );
-        
+
         return hasArrInstances;
     }
 
@@ -40,11 +47,16 @@ export class LabelarrSubPlugin {
     /**
      * Create the modal schema for tag management
      */
-    createModalSchema(mediaItem) {
+    // eslint-disable-next-line no-unused-vars
+    createModalSchema(mediaItem, rootConfig = {}, selectedInstance = null) {
         const schema = [];
 
+        // Get ARR instances and determine which one to use
+        const arrInstances = this._getArrInstances(mediaItem);
+        const currentInstance = selectedInstance || arrInstances[0];
+
         // Parse ARR tags and Plex labels with normalization
-        const arrTags = this._parseArrTags(mediaItem);
+        const arrTags = this._parseArrTags(mediaItem, currentInstance);
         const plexLabels = this._parsePlexLabels(mediaItem);
 
         // Calculate tag states
@@ -61,16 +73,24 @@ export class LabelarrSubPlugin {
         });
 
         // ARR Instance Selection - only show if multiple ARR instances
-        const arrInstances = this._getArrInstances(mediaItem);
         if (arrInstances.length > 1) {
             schema.push({
                 key: 'selected_arr_instance',
                 label: 'ARR Instance',
                 type: 'dropdown',
-                value: arrInstances[0],
+                value: currentInstance,
                 options: arrInstances.map(instance => ({ value: instance, label: instance })),
                 description: 'Select which ARR instance to manage tags for',
+                onChange: true, // Enable reactive updates
             });
+        }
+
+        // Calculate poster URL
+        let posterUrl = '';
+        if (mediaItem.location && mediaItem.file) {
+            posterUrl = fetchPosterPreviewUrl(mediaItem.location, mediaItem.file);
+        } else if (mediaItem.posterUrl || mediaItem.imageUrl) {
+            posterUrl = mediaItem.posterUrl || mediaItem.imageUrl;
         }
 
         // Media Display
@@ -81,8 +101,9 @@ export class LabelarrSubPlugin {
             value: {
                 title: mediaItem.title,
                 year: mediaItem.year,
-                type: mediaItem.asset_type?.charAt(0).toUpperCase() + mediaItem.asset_type?.slice(1),
-                posterUrl: mediaItem.posterUrl || mediaItem.imageUrl,
+                type:
+                    mediaItem.asset_type?.charAt(0).toUpperCase() + mediaItem.asset_type?.slice(1),
+                posterUrl: posterUrl,
                 folder: mediaItem.folder,
                 instances: arrInstances,
                 status: 'Downloaded',
@@ -114,7 +135,8 @@ export class LabelarrSubPlugin {
             allowAdd: true,
             allowRemove: true,
             placeholder: 'Add or remove synced tags...',
-            description: 'Manage tags that are synced between ARR and Plex. Adding tags here will add to both systems, removing will remove from both.',
+            description:
+                'Manage tags that are synced between ARR and Plex. Adding tags here will add to both systems, removing will remove from both.',
         });
 
         // Plex Labels (Read-only)
@@ -137,12 +159,7 @@ export class LabelarrSubPlugin {
         return {
             type: 'two-column',
             leftColumn: ['media_display'],
-            rightColumn: [
-                'selected_arr_instance',
-                'current_tags',
-                'manage_tags',
-                'plex_labels',
-            ],
+            rightColumn: ['selected_arr_instance', 'current_tags', 'manage_tags', 'plex_labels'],
         };
     }
 
@@ -217,19 +234,16 @@ export class LabelarrSubPlugin {
 
             if (result.success) {
                 toast('Tags synced successfully', 'success');
-                
+
                 // Trigger data refresh for display - fetch fresh data for next modal open
                 try {
-                    await Promise.all([
-                        fetchMediaCache(),
-                        fetchPlexMediaCache()
-                    ]);
+                    await Promise.all([fetchMediaCache(), fetchPlexMediaCache()]);
                     console.log('Display data refreshed after tag sync');
                 } catch (refreshError) {
                     console.warn('Failed to refresh display data:', refreshError);
                     // Non-blocking - sync still succeeded
                 }
-                
+
                 closeModal();
             } else {
                 toast('Tag sync failed', 'error');
@@ -241,18 +255,29 @@ export class LabelarrSubPlugin {
     }
 
     /**
-     * Parse ARR tags from media item
+     * Parse ARR tags from media item for a specific instance
      */
-    _parseArrTags(mediaItem) {
-        const firstInstance = mediaItem.allInstanceData?.[0];
-        if (!firstInstance?.tags) return [];
+    _parseArrTags(mediaItem, instanceName = null) {
+        if (!mediaItem.allInstanceData) return [];
+
+        // Find the specific instance data
+        let instanceData;
+        if (instanceName) {
+            instanceData = mediaItem.allInstanceData.find(
+                data => data.instance_name === instanceName
+            );
+        } else {
+            instanceData = mediaItem.allInstanceData[0];
+        }
+
+        if (!instanceData?.tags) return [];
 
         let tags = [];
-        if (Array.isArray(firstInstance.tags)) {
-            tags = firstInstance.tags;
+        if (Array.isArray(instanceData.tags)) {
+            tags = instanceData.tags;
         } else {
             try {
-                tags = JSON.parse(firstInstance.tags);
+                tags = JSON.parse(instanceData.tags);
             } catch {
                 return [];
             }
@@ -301,11 +326,10 @@ export class LabelarrSubPlugin {
     _getArrInstances(mediaItem) {
         return (mediaItem.instances || []).filter(
             instance =>
-                instance.toLowerCase().includes('radarr') || 
+                instance.toLowerCase().includes('radarr') ||
                 instance.toLowerCase().includes('sonarr')
         );
     }
-
 }
 
 // Export singleton instance

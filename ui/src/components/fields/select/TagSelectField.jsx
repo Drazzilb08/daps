@@ -22,21 +22,17 @@ export const TagSelectField = React.memo(function TagSelectField({
     const allowCustom = field.allowAdd !== false; // Default to true unless explicitly false
     const allowRemove = field.allowRemove !== false; // Default to true unless explicitly false
     const placeholder = field.placeholder || 'Add tags...';
-    
+
     // Debug logging
     console.log('TagSelectField render:', {
         fieldKey: field.key,
         value,
-        selectedTags
+        selectedTags,
     });
 
     // Convert availableTags to consistent format if they're simple strings
     const normalizedAvailableTags = useMemo(() => {
-        return availableTags.map(tag => 
-            typeof tag === 'string' 
-                ? { id: tag, label: tag }
-                : tag
-        );
+        return availableTags.map(tag => (typeof tag === 'string' ? { id: tag, label: tag } : tag));
     }, [availableTags]);
 
     // Filter available tags based on current input (using useMemo to prevent infinite loops)
@@ -135,7 +131,7 @@ export const TagSelectField = React.memo(function TagSelectField({
                                     <button
                                         type="button"
                                         className="tag-select-remove"
-                                        onClick={(e) => {
+                                        onClick={e => {
                                             e.preventDefault();
                                             e.stopPropagation();
                                             removeTag(tag);
@@ -163,7 +159,6 @@ export const TagSelectField = React.memo(function TagSelectField({
                             />
                         )}
                     </div>
-
 
                     {/* Suggestions dropdown */}
                     {allowCustom && showSuggestions && filteredTags.length > 0 && (

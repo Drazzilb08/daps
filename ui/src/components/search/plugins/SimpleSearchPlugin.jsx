@@ -78,6 +78,23 @@ export default function SimpleSearchPlugin({ pluginId, overrideConfig = {}, ...a
         [plugin, additionalProps]
     );
 
+    const handleRefresh = React.useCallback(
+        refreshOptions => {
+            if (plugin) {
+                pluginRegistry.executeEventHandler(
+                    plugin,
+                    'onRefresh',
+                    refreshOptions,
+                    additionalProps
+                );
+            }
+            if (additionalProps.onRefresh) {
+                additionalProps.onRefresh(refreshOptions);
+            }
+        },
+        [plugin, additionalProps]
+    );
+
     // Mount/unmount plugin
     React.useEffect(() => {
         if (plugin) {
@@ -128,11 +145,17 @@ export default function SimpleSearchPlugin({ pluginId, overrideConfig = {}, ...a
             virtualizationThreshold={config.virtualizationThreshold}
             enableAutocomplete={config.enableAutocomplete}
             autocompleteMinLength={config.autocompleteMinLength}
+            // Refresh controls
+            showRefreshControls={config.showRefreshControls}
+            showAdvancedSearchHelp={config.showAdvancedSearchHelp}
+            // Modal component (plugin-provided)
+            modalComponent={config.modalComponent}
             // Event handlers (plugin-specific business logic)
             onDataLoaded={handleDataLoaded}
             onError={handleError}
             onResultDelete={handleResultDelete}
             onSourceChange={handleSourceChange}
+            onRefresh={handleRefresh}
             // Pass through additional props including refreshTrigger
             {...additionalProps}
         />

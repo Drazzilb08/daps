@@ -20,7 +20,7 @@ class SubPluginRegistry {
         }
 
         this.plugins.set(plugin.id, plugin);
-        
+
         // Set first registered plugin as default
         if (!this.defaultPlugin) {
             this.defaultPlugin = plugin.id;

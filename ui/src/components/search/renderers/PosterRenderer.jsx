@@ -6,9 +6,6 @@ import { BaseSearchRenderer } from './BaseSearchRenderer.jsx';
 import { fetchPosterPreviewUrl } from '../../../utils/api';
 import GridView from '../views/GridView';
 import ListView from '../views/ListView';
-import GroupedView from '../views/GroupedView';
-import VirtualizedGridView from '../views/VirtualizedGridView';
-import VirtualizedListView from '../views/VirtualizedListView';
 import { groupingHelper } from '../helpers/groupingHelper';
 
 export class PosterRenderer extends BaseSearchRenderer {
@@ -120,21 +117,26 @@ export class PosterRenderer extends BaseSearchRenderer {
     getDisplayTitle(result) {
         const obj = result.original || result;
 
-        // For media search results, format title with year
-        if (result.type === 'movie' || result.type === 'show') {
-            const title = result.title || obj.title || 'Untitled';
-            const year = result.year || obj.year;
-            return year ? `${title} (${year})` : title;
+        // All adapters now provide consistent title/year/type format
+        const title = result.title || obj.title || obj.file || 'Untitled';
+        const year = result.year || obj.year;
+        const type = result.type || obj.type || obj.asset_type;
+
+        // Format title with year for movies and shows (consistent across all plugins)
+        if (year && (type === 'movie' || type === 'show' || type === 'collection')) {
+            return `${title} (${year})`;
         }
 
-        // For file-based results (GdriveSearch, AssetsSearch), use base implementation
-        return result.title || obj.file || obj.title || 'Untitled';
+        return title;
     }
 
     // === SUBTITLE GENERATION ===
     generateSubtitle(result) {
-        if (result.type === 'show') {
-            // For TV shows, show seasons count
+        const obj = result.original || result;
+        const type = result.type || obj.type || obj.asset_type;
+
+        if (type === 'show') {
+            // For TV shows, show seasons count if available (MediaSearch data)
             const seasonCount = result.seasonCount || 0;
             if (seasonCount > 1) {
                 return `Seasons: ${seasonCount}`;
@@ -143,46 +145,49 @@ export class PosterRenderer extends BaseSearchRenderer {
             } else {
                 return '';
             }
-        } else if (result.type === 'movie') {
-            // Movies should not have any subtitle - title already includes the year
+        } else if (type === 'movie' || type === 'collection') {
+            // Movies and collections should not have any subtitle - title already includes the year
             return '';
         }
 
-        // For file-based results, return empty or basic info
+        // For file-based results without clear type, return empty
         return '';
     }
 
     // === METADATA RENDERING ===
     renderAssetMetadata = result => {
         const obj = result.original || result;
+        const type = result.type || obj.type || obj.asset_type;
         const subtitle = this.generateSubtitle(result);
 
-        // For media search results, show subtitle
-        if (result.type === 'movie' || result.type === 'show') {
+        // For all results with consistent type information, show subtitle if available
+        if (type === 'movie' || type === 'show' || type === 'collection') {
             return subtitle ? <div className="search-result-subtitle">{subtitle}</div> : null;
         }
 
-        // For file-based results (assets, gdrive), show asset metadata
-        if (!obj.asset_type) return null;
+        // For legacy file-based results without standardized format, show basic metadata
+        if (obj.asset_type && !type) {
+            return (
+                <div className="poster-asset-meta">
+                    {obj.asset_type === 'movie' && obj.year && (
+                        <span className="meta-movie">
+                            {obj.title} ({obj.year})
+                        </span>
+                    )}
+                    {obj.asset_type === 'show' && (
+                        <span className="meta-show">
+                            {obj.title}
+                            {obj.season_number != null ? ` — Season ${obj.season_number}` : ''}
+                        </span>
+                    )}
+                    {obj.asset_type === 'collection' && (
+                        <span className="meta-collection">{obj.title} (Collection)</span>
+                    )}
+                </div>
+            );
+        }
 
-        return (
-            <div className="poster-asset-meta">
-                {obj.asset_type === 'movie' && obj.year && (
-                    <span className="meta-movie">
-                        {obj.title} ({obj.year})
-                    </span>
-                )}
-                {obj.asset_type === 'show' && (
-                    <span className="meta-show">
-                        {obj.title}
-                        {obj.season_number != null ? ` — Season ${obj.season_number}` : ''}
-                    </span>
-                )}
-                {obj.asset_type === 'collection' && (
-                    <span className="meta-collection">{obj.title} (Collection)</span>
-                )}
-            </div>
-        );
+        return null;
     };
 
     // === MAIN RENDER METHOD ===
@@ -204,9 +209,7 @@ export class PosterRenderer extends BaseSearchRenderer {
     }) {
         const processedResults = this.processResults(results, { currentSort, groupBy });
 
-        // Determine if we should use virtualization
-        const shouldUseVirtualization =
-            enableVirtualization && processedResults.length >= virtualizationThreshold && !groupBy; // Don't virtualize grouped views yet
+        // Virtualization is now always enabled in the views themselves
 
         // Common props for all views
         const viewProps = {
@@ -230,30 +233,32 @@ export class PosterRenderer extends BaseSearchRenderer {
         };
 
         // === GROUPED RENDERING (when groupBy is specified) ===
+        // Note: Grouping functionality simplified - handled directly by views
         if (groupBy === 'location') {
-            return (
-                <GroupedView
-                    {...viewProps}
-                    currentView={currentView}
-                    priorityOrder={priorityOrder}
-                    groupingHelper={groupingHelper}
-                />
-            );
+            // Apply grouping helper to process results for display
+            const groupedResults = groupingHelper.groupByLocation(processedResults, priorityOrder);
+            // Temporarily disable grouping - needs proper implementation
+            console.warn('Location grouping temporarily disabled');
+            const flattenedResults = processedResults;
+
+            const groupedViewProps = {
+                ...viewProps,
+                results: flattenedResults,
+                isGrouped: true,
+                groups: groupedResults,
+            };
+
+            if (currentView === 'list') {
+                return <ListView {...groupedViewProps} />;
+            }
+            return <GridView {...groupedViewProps} />;
         }
 
         // === NON-GROUPED RENDERING ===
         if (currentView === 'list') {
-            // Use virtualized list for large datasets
-            if (shouldUseVirtualization) {
-                return <VirtualizedListView {...viewProps} />;
-            }
             return <ListView {...viewProps} />;
         }
 
-        // Use virtualized grid for large datasets
-        if (shouldUseVirtualization) {
-            return <VirtualizedGridView {...viewProps} />;
-        }
         return <GridView {...viewProps} />;
     }
 }

@@ -3,7 +3,7 @@
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import SearchControls from '../SearchControls';
-import ModularSearchResults from '../ModularSearchResults';
+import SearchResults from '../SearchResults';
 import useHoverPreview from '../HoverPreview';
 import LoadingSpinner from '../../common/LoadingSpinner';
 import { useToast } from '../../providers/ToastProvider';
@@ -63,6 +63,9 @@ export default function SearchCore({
     enableVirtualization = true,
     virtualizationThreshold = 100,
 
+    // Refresh trigger - extract explicitly to avoid dependency array issues
+    refreshTrigger = 0,
+
     ...additionalProps
 }) {
     // ===== STATE MANAGEMENT =====
@@ -96,6 +99,27 @@ export default function SearchCore({
     const hoverPreviewImgRef = useHoverPreview();
     const activeHoverPreviewRef = enableHoverPreview ? hoverPreviewImgRef : null;
 
+    // Stable callback refs to prevent infinite loops
+    const onDataLoadedRef = useRef(onDataLoaded);
+    const onErrorRef = useRef(onError);
+
+    // Update refs when callbacks change
+    useEffect(() => {
+        onDataLoadedRef.current = onDataLoaded;
+    }, [onDataLoaded]);
+
+    useEffect(() => {
+        onErrorRef.current = onError;
+    }, [onError]);
+
+    const stableOnDataLoaded = useCallback(data => {
+        if (onDataLoadedRef.current) onDataLoadedRef.current(data);
+    }, []);
+
+    const stableOnError = useCallback(error => {
+        if (onErrorRef.current) onErrorRef.current(error);
+    }, []);
+
     // Cleanup on unmount
     useEffect(() => {
         const timeoutRef = debounceTimeoutRef;
@@ -120,7 +144,7 @@ export default function SearchCore({
                 const data = await searchAdapter.loadInitialData(currentSource);
                 if (!cancelled) {
                     setSearchData(data);
-                    if (onDataLoaded) onDataLoaded(data);
+                    stableOnDataLoaded(data);
 
                     if (data.errorSources && data.errorSources.length > 0) {
                         console.warn('Some sources failed to load:', data.errorSources);
@@ -129,7 +153,7 @@ export default function SearchCore({
             } catch (err) {
                 if (!cancelled) {
                     toast.error('Failed to load data');
-                    if (onError) onError(err);
+                    stableOnError(err);
                 }
             } finally {
                 if (!cancelled) {
@@ -143,7 +167,7 @@ export default function SearchCore({
         return () => {
             cancelled = true;
         };
-    }, [searchAdapter, currentSource, onDataLoaded, onError, toast, additionalProps.refreshTrigger]);
+    }, [searchAdapter, currentSource, stableOnDataLoaded, stableOnError, toast, refreshTrigger]);
 
     // ===== SEARCH LOGIC =====
     const performSearch = useCallback(
@@ -192,7 +216,7 @@ export default function SearchCore({
                 } catch (err) {
                     console.error('Search error:', err);
                     toast('Search failed', 'error');
-                    if (onError) onError(err);
+                    stableOnError(err);
                     setSearchResults([]);
                 } finally {
                     setIsSearching(false);
@@ -206,7 +230,7 @@ export default function SearchCore({
             activeFilters,
             currentSource,
             currentSort,
-            onError,
+            stableOnError,
             toast,
         ]
     );
@@ -453,7 +477,7 @@ export default function SearchCore({
                         </div>
                     </div>
                 ) : (
-                    <ModularSearchResults
+                    <SearchResults
                         error={displayError}
                         results={searchResults}
                         searchTerm={searchTerm}

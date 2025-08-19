@@ -20,11 +20,16 @@ export const DropdownField = React.memo(function DropdownField({
                     value={value ?? ''}
                     onChange={e => onChange(e.target.value)}
                 >
-                    {field.options.map(opt => (
-                        <option key={opt} value={opt}>
-                            {opt}
-                        </option>
-                    ))}
+                    {field.options.map(opt => {
+                        // Handle both string options and {value, label} objects
+                        const value = typeof opt === 'string' ? opt : opt.value;
+                        const label = typeof opt === 'string' ? opt : opt.label;
+                        return (
+                            <option key={value} value={value}>
+                                {label}
+                            </option>
+                        );
+                    })}
                 </select>
                 {field.description && <div className="field-help-text">{field.description}</div>}
                 {errorMessage && <div className="field-error-text">{errorMessage}</div>}

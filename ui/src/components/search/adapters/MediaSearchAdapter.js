@@ -247,7 +247,7 @@ export const mediaSearchAdapter = {
         }
 
         const trimmedTerm = searchTerm.trim();
-        
+
         // Check for advanced search patterns
         const advancedSearchMatch = this.parseAdvancedSearchTerm(trimmedTerm);
         if (advancedSearchMatch) {
@@ -273,7 +273,7 @@ export const mediaSearchAdapter = {
         const patterns = [
             { type: 'tmdb', regex: /^tmdb:(\d+)$/i },
             { type: 'imdb', regex: /^imdb:(tt\d+|\d+)$/i },
-            { type: 'tvdb', regex: /^tvdb:(\d+)$/i }
+            { type: 'tvdb', regex: /^tvdb:(\d+)$/i },
         ];
 
         for (const pattern of patterns) {

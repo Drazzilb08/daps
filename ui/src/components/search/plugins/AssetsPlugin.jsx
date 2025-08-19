@@ -10,7 +10,7 @@ import { fetchPosterPreviewUrl } from '../../../utils/api';
 /**
  * Create poster modal schema for assets
  */
-function createAssetsPosterModal(obj, onClose, onDeleted) {
+function createAssetsPosterModal({ obj, onClose, onDeleted }) {
     // DB asset record
     const isAsset = !!obj.asset_type;
 
@@ -88,8 +88,6 @@ export const assetsPluginConfig = new PluginBuilder('assets-search', 'Assets Sea
         defaultSource: 'assets',
         renderer: 'poster',
         enableHoverPreview: true,
-        enableVirtualization: true,
-        virtualizationThreshold: 100,
         modalComponent: createAssetsPosterModal,
         sortOptions: [
             { value: 'alpha', label: 'A-Z' },

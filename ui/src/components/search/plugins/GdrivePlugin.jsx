@@ -10,7 +10,7 @@ import { fetchPosterPreviewUrl } from '../../../utils/api';
 /**
  * Create poster modal for GDrive items
  */
-function createGdrivePosterModal(obj, onClose, onDeleted) {
+function createGdrivePosterModal({ obj, onClose, onDeleted }) {
     // DB asset record
     const isAsset = !!obj.asset_type;
 
@@ -113,8 +113,6 @@ export const gdrivePluginConfig = new PluginBuilder('gdrive-search', 'GDrive Sea
         renderer: 'poster',
         groupBy: 'location',
         enableHoverPreview: true,
-        enableVirtualization: true,
-        virtualizationThreshold: 150,
         modalComponent: createGdrivePosterModal,
         sortOptions: [
             { value: 'priority-asc', label: 'Priority ↑' },

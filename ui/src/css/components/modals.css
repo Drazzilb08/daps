@@ -380,6 +380,12 @@
         padding: var(--space-4) var(--space-6) var(--space-4);
         scrollbar-width: none;
         -ms-overflow-style: none;
+        transition: opacity 0.15s ease-in-out;
+    }
+
+    .modal-body.modal-updating {
+        opacity: 0.7;
+        pointer-events: none;
     }
 
     .modal-body::-webkit-scrollbar {

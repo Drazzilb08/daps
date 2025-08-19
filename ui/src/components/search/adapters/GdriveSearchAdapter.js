@@ -234,12 +234,53 @@ export const gdriveSearchAdapter = {
      * Ensures consistent structure for SearchResults component
      */
     formatResult(item) {
+        // Parse title and year from filename to match MediaSearch format
+        let parsedTitle = item.file;
+        let parsedYear = '';
+        let parsedType = '';
+
+        if (item.file) {
+            // Remove file extension
+            let fileName = item.file.replace(/\.(jpg|jpeg|png|webp|gif)$/i, '');
+
+            // Remove database IDs like {tmdb-123456}
+            fileName = fileName.replace(/\{(tmdb|tvdb|imdb-tt)[^}]+\}/gi, '').trim();
+
+            // Remove season information like "- Season 1"
+            fileName = fileName.replace(/-+\s*Season.*$/i, '').trim();
+
+            // Extract year from parentheses
+            const yearMatch = fileName.match(/^(.*?)\s*\((\d{4})\)\s*(.*)$/);
+            if (yearMatch) {
+                parsedTitle = yearMatch[1].trim();
+                parsedYear = yearMatch[2];
+                // Check if there's additional info after year that might indicate type
+                const afterYear = yearMatch[3].trim();
+                if (afterYear.toLowerCase().includes('collection')) {
+                    parsedType = 'collection';
+                } else {
+                    // Default to movie for files with years
+                    parsedType = 'movie';
+                }
+            } else {
+                parsedTitle = fileName;
+                // Without year info, assume it's a show or unknown
+                parsedType = '';
+            }
+        }
+
         return {
             id: `${item.location}|${item.file}`, // Create unique ID
-            title: item.file, // Use filename as title for display
-            subtitle: item.name || '', // Owner/source name as subtitle
+            title: parsedTitle, // Parsed title without filename artifacts
+            year: parsedYear, // Extracted year for consistent display
+            type: parsedType, // Inferred type (movie/show/collection)
+            instanceCount: 1, // Single instance for file-based items
+            instances: [item.name || 'Unknown'], // Source name as instance
             imageUrl:
                 item.location && item.file ? fetchPosterPreviewUrl(item.location, item.file) : '',
+            // Keep original data for compatibility
+            original: item,
+            // Metadata for backwards compatibility
             metadata: {
                 owner: item.name,
                 source: item.location,

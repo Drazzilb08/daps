@@ -165,14 +165,53 @@ export const assetsSearchAdapter = {
      * Ensures consistent structure for SearchResults component
      */
     formatResult(item) {
+        // For assets, prefer the database title over filename parsing
+        let displayTitle = item.title || item.file;
+        let displayYear = item.year || '';
+        let displayType = item.asset_type || '';
+
+        // If no database title, parse from filename like GDrive
+        if (!item.title && item.file) {
+            // Remove file extension
+            let fileName = item.file.replace(/\.(jpg|jpeg|png|webp|gif)$/i, '');
+
+            // Remove database IDs like {tmdb-123456}
+            fileName = fileName.replace(/\{(tmdb|tvdb|imdb-tt)[^}]+\}/gi, '').trim();
+
+            // Remove season information like "- Season 1"
+            fileName = fileName.replace(/-+\s*Season.*$/i, '').trim();
+
+            // Extract year from parentheses
+            const yearMatch = fileName.match(/^(.*?)\s*\((\d{4})\)\s*(.*)$/);
+            if (yearMatch) {
+                displayTitle = yearMatch[1].trim();
+                if (!displayYear) displayYear = yearMatch[2];
+                // Check if there's additional info after year that might indicate type
+                const afterYear = yearMatch[3].trim();
+                if (afterYear.toLowerCase().includes('collection') && !displayType) {
+                    displayType = 'collection';
+                } else if (!displayType) {
+                    displayType = 'movie';
+                }
+            } else {
+                displayTitle = fileName;
+            }
+        }
+
         return {
             id: item.id,
-            title: item.file, // Use filename as title for display
-            subtitle: item.title || '', // Movie/show title as subtitle
+            title: displayTitle, // Database title or parsed filename
+            year: displayYear, // Database year or parsed year
+            type: displayType, // Database asset_type or inferred type
+            instanceCount: 1, // Single instance for file-based items
+            instances: ['Assets'], // Static instance name for assets
             imageUrl:
                 item.location && item.file
                     ? fetchPosterPreviewUrl(item.location, item.relativeFile || item.file)
                     : '',
+            // Keep original data for compatibility
+            original: item,
+            // Metadata for backwards compatibility
             metadata: {
                 asset_type: item.asset_type,
                 year: item.year,

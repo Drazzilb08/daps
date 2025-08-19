@@ -806,4 +806,3 @@ export async function syncTagsToMedia(payload) {
         data: data.data,
     };
 }
-

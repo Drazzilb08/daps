@@ -321,12 +321,12 @@
    SEARCH ENGINE: RESULTS LAYOUT
 ====================================================== */
     .search-engine .search-results {
-        margin-top: 1.5em;
-        padding: 0 1rem;
+        margin-top: 1em;
+        /* Removed padding for true edge-to-edge layout */
     }
 
     .search-engine .owner-group {
-        margin-bottom: 2.5em;
+        margin-bottom: 1.5em;
     }
 
     .search-engine .owner-label {
@@ -342,32 +342,78 @@
    SEARCH ENGINE: GRID VIEW
 ====================================================== */
     .search-engine .search-grid {
+        /* CSS Custom Properties - Single source of truth for virtualization */
+        --grid-gap: 1.2em;
+        --item-min-width: 140px;
+        --item-width: 160px;
+        --item-height: 320px;
+
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 1.2em;
-        margin-top: 1.3em;
+        grid-template-columns: repeat(auto-fill, minmax(var(--item-min-width), 1fr));
+        gap: var(--grid-gap);
+        margin-top: 1em;
+        position: relative; /* For absolute positioned virtualized items */
     }
 
     .search-engine .search-grid-item {
         display: flex;
         flex-direction: column;
-        align-items: center;
         background: var(--surface-alt, #24282c);
-        border-radius: 10px;
-        padding: 0.7em 0.7em 0.9em;
-        text-align: center;
-        box-shadow: 0 1px 5px rgb(0 0 0 / 5%);
+        border-radius: 8px;
+        padding: 0.5em;
+        box-shadow: 0 1px 3px rgb(0 0 0 / 8%);
         cursor: pointer;
-        transition: background 0.14s;
-        min-width: 140px;
-        max-width: 200px;
-        min-height: 340px;
+        transition: background 0.2s ease;
         box-sizing: border-box;
+        width: 160px;
+        height: 320px;
+        overflow: hidden;
     }
 
     .search-engine .search-grid-item:hover {
         background: var(--primary, #2456a8);
         color: var(--primary-contrast);
+    }
+
+    /* Grid Item Content Layout - Optimized Space Usage */
+    .search-engine .search-grid-item-image {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.5em;
+        overflow: hidden;
+        border-radius: 4px;
+    }
+
+    .search-engine .search-grid-item-poster {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 2/3; /* Movie poster ratio 1000x1500 */
+        object-fit: cover;
+        border-radius: 4px;
+    }
+
+    .search-engine .search-grid-item-details {
+        flex-shrink: 0;
+        text-align: center;
+    }
+
+    .search-engine .search-grid-item-title {
+        font-size: 0.875em;
+        font-weight: 500;
+        line-height: 1.2;
+        margin-bottom: 0.25em;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+    }
+
+    .search-engine .search-grid-item-metadata {
+        font-size: 0.75em;
+        opacity: 0.7;
+        line-height: 1.2;
     }
 
     .search-engine .poster-thumb-img {
@@ -396,7 +442,7 @@
     .search-engine .search-list {
         list-style: none;
         padding: 0;
-        margin-top: 1.2em;
+        margin-top: 1em;
     }
 
     .search-engine .search-list-item {
@@ -493,13 +539,19 @@
         }
 
         .search-engine .search-grid {
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 1em;
+            /* Responsive override of custom properties */
+            --grid-gap: 1em;
+            --item-min-width: 120px;
+            --item-width: 120px;
+            --item-height: 280px;
+
+            grid-template-columns: repeat(auto-fill, minmax(var(--item-min-width), 1fr));
+            gap: var(--grid-gap);
         }
 
         .search-engine .search-grid-item {
-            min-width: 120px;
-            min-height: 280px;
+            min-width: var(--item-min-width);
+            min-height: var(--item-height);
         }
     }
 
@@ -520,13 +572,19 @@
         }
 
         .search-engine .search-grid {
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 0.8em;
+            /* Mobile responsive override of custom properties */
+            --grid-gap: 0.8em;
+            --item-min-width: 100px;
+            --item-width: 100px;
+            --item-height: 240px;
+
+            grid-template-columns: repeat(auto-fill, minmax(var(--item-min-width), 1fr));
+            gap: var(--grid-gap);
         }
 
         .search-engine .search-grid-item {
-            min-width: 100px;
-            min-height: 240px;
+            min-width: var(--item-min-width);
+            min-height: var(--item-height);
             padding: 0.5em;
         }
 
@@ -986,7 +1044,6 @@
             outline-color: var(--primary-light, #60a5fa);
             background: var(--bg-focus-dark, rgb(96 165 250 / 10%));
         }
-
 
         .search-list-virtualized-content .search-list-item:hover {
             background: var(--bg-hover-dark, #374151);
@@ -1450,7 +1507,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: color 0.2s, background-color 0.2s;
+        transition:
+            color 0.2s,
+            background-color 0.2s;
     }
 
     .search-engine .select-icon-btn:hover {

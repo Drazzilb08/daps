@@ -1,10 +1,55 @@
 // ui/src/components/search/renderers/MediaSearchRenderer.jsx
 // Custom renderer for media search with database refresh suggestions
 
-import React from 'react';
+import React, { useState, useRef } from 'react';
 import PosterRenderer from './PosterRenderer.jsx';
+import Tooltip from '../../Tooltip.jsx';
 
 export class MediaSearchRenderer extends PosterRenderer {
+    /**
+     * Render metadata for media search items including multiple instance indicators
+     * @param {Object} result - Media search result
+     * @returns {React.Element} Rendered metadata
+     */
+    renderAssetMetadata = result => {
+        const hasMultipleInstances = result.instanceCount > 1;
+
+        // Only show indicator for items with multiple instances
+        if (!hasMultipleInstances) {
+            return null;
+        }
+
+        const instancesList = result.instances?.join(', ') || '';
+
+        // Use React hooks inside a functional component
+        const InstanceIndicator = () => {
+            const [showTooltip, setShowTooltip] = useState(false);
+            const indicatorRef = useRef(null);
+
+            return (
+                <div className="media-search-metadata">
+                    <div
+                        ref={indicatorRef}
+                        className="multiple-instances-indicator"
+                        onMouseEnter={() => setShowTooltip(true)}
+                        onMouseLeave={() => setShowTooltip(false)}
+                        aria-label={`This item is available in ${result.instanceCount} instances: ${instancesList}`}
+                    >
+                        {result.instanceCount}
+                    </div>
+                    <Tooltip
+                        anchor={indicatorRef.current}
+                        text={`Available in ${result.instanceCount} instances: ${instancesList}`}
+                        show={showTooltip}
+                        position="top"
+                    />
+                </div>
+            );
+        };
+
+        return <InstanceIndicator />;
+    };
+
     /**
      * Enhanced empty state for media search with refresh suggestions
      * @param {string} searchTerm - Current search term
@@ -33,13 +78,15 @@ export class MediaSearchRenderer extends PosterRenderer {
                             <strong>Advanced Search:</strong>
                         </div>
                         <div className="search-empty-advanced-options">
-                            Try searching with database IDs: <code>tmdb:123</code>, <code>imdb:tt123456</code>, or <code>tvdb:789</code>
+                            Try searching with database IDs: <code>tmdb:123</code>,{' '}
+                            <code>imdb:tt123456</code>, or <code>tvdb:789</code>
                         </div>
                     </div>
                     <div className="search-empty-refresh-notice">
-                        <strong>Missing content?</strong> If you expect to see this item but it&apos;s not appearing, 
-                        try <strong>refreshing your database</strong> using the refresh button above to sync the latest data 
-                        from your Radarr, Sonarr, and Plex instances.
+                        <strong>Missing content?</strong> If you expect to see this item but
+                        it&apos;s not appearing, try <strong>refreshing your database</strong> using
+                        the refresh button above to sync the latest data from your Radarr, Sonarr,
+                        and Plex instances.
                     </div>
                 </div>
             </div>

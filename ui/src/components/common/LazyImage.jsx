@@ -15,17 +15,28 @@ export default function LazyImage({
     onError = null,
     threshold = 0.1,
     rootMargin = '50px',
+    fallbackSrc, // Extract to prevent DOM attribute warning
     ...props
 }) {
     const [isLoaded, setIsLoaded] = useState(false);
     const [isInView, setIsInView] = useState(false);
     const [hasError, setHasError] = useState(false);
+    const [currentSrc, setCurrentSrc] = useState(src);
+    const [triedFallback, setTriedFallback] = useState(false);
     const imgRef = useRef(null);
     const observerRef = useRef(null);
 
+    // Reset state when src changes
+    useEffect(() => {
+        setCurrentSrc(src);
+        setTriedFallback(false);
+        setHasError(false);
+        setIsLoaded(false);
+    }, [src]);
+
     useEffect(() => {
         const img = imgRef.current;
-        if (!img || !src) return;
+        if (!img || !currentSrc) return;
 
         // Create intersection observer for lazy loading
         observerRef.current = new IntersectionObserver(
@@ -44,7 +55,7 @@ export default function LazyImage({
         return () => {
             observerRef.current?.disconnect();
         };
-    }, [src, threshold, rootMargin]);
+    }, [currentSrc, threshold, rootMargin]);
 
     const handleLoad = e => {
         setIsLoaded(true);
@@ -53,6 +64,15 @@ export default function LazyImage({
     };
 
     const handleError = e => {
+        // Try fallback if available and not already tried
+        if (fallbackSrc && !triedFallback) {
+            setTriedFallback(true);
+            setCurrentSrc(fallbackSrc);
+            setIsLoaded(false);
+            return;
+        }
+
+        // Show error if no fallback or fallback also failed
         setHasError(true);
         setIsLoaded(false);
         onError?.(e);
@@ -84,9 +104,9 @@ export default function LazyImage({
                 )}
 
                 {/* Actual image */}
-                {isInView && src && !hasError && (
+                {isInView && currentSrc && !hasError && (
                     <img
-                        src={src}
+                        src={currentSrc}
                         alt={alt}
                         className={`lazy-image ${isLoaded ? 'lazy-image--loaded' : 'lazy-image--loading'}`}
                         onLoad={handleLoad}
@@ -122,9 +142,9 @@ export default function LazyImage({
             )}
 
             {/* Actual image - only load when in view */}
-            {isInView && src && !hasError && (
+            {isInView && currentSrc && !hasError && (
                 <img
-                    src={src}
+                    src={currentSrc}
                     alt={alt}
                     className={`lazy-image ${isLoaded ? 'lazy-image--loaded' : 'lazy-image--loading'}`}
                     onLoad={handleLoad}

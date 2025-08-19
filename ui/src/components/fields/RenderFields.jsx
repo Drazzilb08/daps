@@ -20,11 +20,12 @@ export function renderField(field, immediateData, moduleConfig, rootConfig, cont
           };
 
     // Use field.value if provided (computed values), otherwise fall back to form data or defaultValue
-    const value = field.value !== undefined 
-        ? field.value 
-        : immediateData?.[field.key] !== undefined 
-            ? immediateData[field.key]
-            : field.defaultValue;
+    const value =
+        field.value !== undefined
+            ? field.value
+            : immediateData?.[field.key] !== undefined
+              ? immediateData[field.key]
+              : field.defaultValue;
 
     return (
         <Renderer

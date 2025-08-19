@@ -29,16 +29,37 @@ export default function GridView({
     const [scrollTop, setScrollTop] = useState(0);
     const isGrouped = groupBy !== null;
 
-    // Performance: Use static values to avoid getComputedStyle() on every render
-    const itemWidth = 160;
+    // Performance: Use base values and calculate dynamic sizing for edge-to-edge layout
+    const baseItemWidth = 160;
     const itemHeight = 320;
     const gap = 19.2; // 1.2em ≈ 19.2px
 
-    // Calculate items per row using CSS values
-    const itemsPerRow =
-        containerSize.width > 0
-            ? Math.max(1, Math.floor(containerSize.width / (itemWidth + gap)))
-            : 1;
+    // Calculate items per row and dynamic width for edge-to-edge layout with responsive behavior
+    const { itemsPerRow, itemWidth, responsiveGap } = useMemo(() => {
+        if (containerSize.width <= 0)
+            return { itemsPerRow: 1, itemWidth: baseItemWidth, responsiveGap: gap };
+
+        // Responsive gap and minimum width based on screen size
+        const isMobile = containerSize.width <= 768;
+        const currentGap = isMobile ? 12.8 : gap; // 0.8em vs 1.2em
+        const minWidth = isMobile ? 100 : 140;
+
+        // Calculate how many items fit with base width
+        const baseItemsPerRow = Math.max(
+            1,
+            Math.floor(containerSize.width / (minWidth + currentGap))
+        );
+
+        // Calculate actual item width to fill container completely (edge-to-edge)
+        const actualItemWidth =
+            (containerSize.width - (baseItemsPerRow - 1) * currentGap) / baseItemsPerRow;
+
+        return {
+            itemsPerRow: baseItemsPerRow,
+            itemWidth: Math.max(minWidth, actualItemWidth),
+            responsiveGap: currentGap,
+        };
+    }, [containerSize.width, baseItemWidth, gap]);
 
     // Update container size on resize (always virtualized)
     useEffect(() => {
@@ -62,7 +83,7 @@ export default function GridView({
     // Calculate visible items (always virtualized for consistent performance)
     const visibleData = useMemo(() => {
         const totalRows = Math.ceil(results.length / itemsPerRow);
-        const rowHeight = itemHeight + gap;
+        const rowHeight = itemHeight + responsiveGap;
         const visibleStartRow = Math.floor(scrollTop / rowHeight);
         const visibleEndRow = Math.min(
             totalRows,
@@ -80,10 +101,11 @@ export default function GridView({
         }
 
         return { visibleItems };
-    }, [results, scrollTop, containerSize.height, itemsPerRow, itemHeight, gap]);
+    }, [results, scrollTop, containerSize.height, itemsPerRow, itemHeight, responsiveGap]);
 
-    // Total height for virtual scrolling using CSS values
-    const totalHeight = Math.ceil(results.length / itemsPerRow) * (itemHeight + gap) - gap;
+    // Total height for virtual scrolling using dynamic values
+    const totalHeight =
+        Math.ceil(results.length / itemsPerRow) * (itemHeight + responsiveGap) - responsiveGap;
 
     // Group results if needed
     const groupedResults = useMemo(() => {
@@ -107,11 +129,11 @@ export default function GridView({
         const imageUrl = getImageUrl ? getImageUrl(result) : '';
         const isFocused = focusedResultIndex === index;
 
-        // Always virtualized - position using CSS values for perfect responsive behavior
+        // Always virtualized - position using dynamic values for edge-to-edge layout
         const style = {
             position: 'absolute',
-            top: Math.floor(index / itemsPerRow) * (itemHeight + gap),
-            left: (index % itemsPerRow) * (itemWidth + gap),
+            top: Math.floor(index / itemsPerRow) * (itemHeight + responsiveGap),
+            left: (index % itemsPerRow) * (itemWidth + responsiveGap),
             width: itemWidth,
             height: itemHeight,
         };
@@ -174,7 +196,7 @@ export default function GridView({
             <div
                 className="search-grid"
                 style={{
-                    height: '50vh', // Height constraint for virtualization
+                    height: 'calc(100vh - 220px)', // Dynamic height based on viewport minus header/controls
                     overflow: 'auto',
                     position: 'relative',
                 }}
@@ -211,7 +233,7 @@ export default function GridView({
                     ref={containerRef}
                     className="search-grid"
                     style={{
-                        height: '70vh', // Restore height constraint for proper virtualization
+                        height: 'calc(100vh - 220px)', // Dynamic height based on viewport minus header/controls
                         overflow: 'auto',
                         position: 'relative',
                     }}

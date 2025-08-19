@@ -254,6 +254,24 @@ export class PosterRenderer extends BaseSearchRenderer {
             return <GridView {...groupedViewProps} />;
         }
 
+        if (groupBy === 'owner') {
+            // Apply grouping helper to process results for display
+            const groupedResults = groupingHelper.groupByOwner(processedResults);
+
+            const groupedViewProps = {
+                ...viewProps,
+                results: processedResults,
+                isGrouped: true,
+                groups: groupedResults,
+                groupBy: 'owner',
+            };
+
+            if (currentView === 'list') {
+                return <ListView {...groupedViewProps} />;
+            }
+            return <GridView {...groupedViewProps} />;
+        }
+
         // === NON-GROUPED RENDERING ===
         if (currentView === 'list') {
             return <ListView {...viewProps} />;

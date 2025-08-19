@@ -27,7 +27,6 @@ export default function GridView({
     const containerRef = useRef(null);
     const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
     const [scrollTop, setScrollTop] = useState(0);
-    const isGrouped = groupBy !== null;
 
     // Performance: Use base values and calculate dynamic sizing for edge-to-edge layout
     const baseItemWidth = 160;
@@ -80,120 +79,257 @@ export default function GridView({
         setScrollTop(e.target.scrollTop);
     }, []);
 
-    // Calculate visible items (always virtualized for consistent performance)
-    const visibleData = useMemo(() => {
-        const totalRows = Math.ceil(results.length / itemsPerRow);
-        const rowHeight = itemHeight + responsiveGap;
-        const visibleStartRow = Math.floor(scrollTop / rowHeight);
-        const visibleEndRow = Math.min(
-            totalRows,
-            Math.ceil((scrollTop + containerSize.height) / rowHeight)
-        );
+    // Group results for proper rendering
+    const groupedData = useMemo(() => {
+        if (!groupBy) return { isGrouped: false, groups: [], allItems: results };
 
-        const startIndex = Math.max(0, (visibleStartRow - 3) * itemsPerRow); // 3 row overscan
-        const endIndex = Math.min(results.length, (visibleEndRow + 3) * itemsPerRow);
-
-        const visibleItems = [];
-        for (let i = startIndex; i < endIndex; i++) {
-            if (results[i]) {
-                visibleItems.push({ index: i, result: results[i] });
-            }
-        }
-
-        return { visibleItems };
-    }, [results, scrollTop, containerSize.height, itemsPerRow, itemHeight, responsiveGap]);
-
-    // Total height for virtual scrolling using dynamic values
-    const totalHeight =
-        Math.ceil(results.length / itemsPerRow) * (itemHeight + responsiveGap) - responsiveGap;
-
-    // Group results if needed
-    const groupedResults = useMemo(() => {
-        if (!groupBy) return { ungrouped: results };
-
+        // Group results first
         const groups = {};
         results.forEach(item => {
-            const groupKey = item[groupBy] || item.original?.[groupBy] || 'Unknown';
+            let groupKey;
+            if (groupBy === 'owner') {
+                groupKey = item.name || item.original?.name || 'Unknown';
+            } else {
+                groupKey = item[groupBy] || item.original?.[groupBy] || 'Unknown';
+            }
             if (!groups[groupKey]) groups[groupKey] = [];
             groups[groupKey].push(item);
         });
-        return groups;
+
+        // Convert to array of group objects
+        const groupArray = Object.entries(groups).map(([groupKey, items]) => ({
+            groupKey,
+            items,
+            itemCount: items.length,
+        }));
+
+        return { isGrouped: true, groups: groupArray, allItems: results };
     }, [results, groupBy]);
 
-    // Render a single grid item
-    const renderGridItem = ({ result, index }) => {
-        const obj = result.original || result;
-        const displayTitle = getDisplayTitle
-            ? getDisplayTitle(result)
-            : result.title || obj.title || 'Untitled';
-        const imageUrl = getImageUrl ? getImageUrl(result) : '';
-        const isFocused = focusedResultIndex === index;
+    // Calculate total height and visible content
+    const layoutData = useMemo(() => {
+        if (!groupedData.isGrouped) {
+            // Non-grouped layout - standard grid
+            const totalRows = Math.ceil(results.length / itemsPerRow);
+            const totalHeight = totalRows * (itemHeight + responsiveGap) - responsiveGap;
+            return { totalHeight, isGrouped: false, results };
+        }
 
-        // Always virtualized - position using dynamic values for edge-to-edge layout
-        const style = {
-            position: 'absolute',
-            top: Math.floor(index / itemsPerRow) * (itemHeight + responsiveGap),
-            left: (index % itemsPerRow) * (itemWidth + responsiveGap),
-            width: itemWidth,
-            height: itemHeight,
+        // Grouped layout - calculate positions for groups and items
+        let currentY = 0;
+        const headerHeight = 50; // Height for group headers
+        const groupGap = 20; // Gap between groups
+
+        const layoutGroups = groupedData.groups.map(group => {
+            const groupStartY = currentY;
+            currentY += headerHeight; // Header height
+
+            // Calculate grid for items in this group
+            const groupRows = Math.ceil(group.items.length / itemsPerRow);
+            const groupItemsHeight = groupRows * (itemHeight + responsiveGap) - responsiveGap;
+
+            const groupData = {
+                groupKey: group.groupKey,
+                itemCount: group.itemCount,
+                headerY: groupStartY,
+                itemsStartY: currentY,
+                items: group.items,
+                height: headerHeight + groupItemsHeight,
+            };
+
+            currentY += groupItemsHeight + groupGap;
+            return groupData;
+        });
+
+        return {
+            totalHeight: currentY - groupGap,
+            isGrouped: true,
+            groups: layoutGroups,
         };
+    }, [groupedData, itemsPerRow, itemHeight, responsiveGap, results]);
 
-        return (
-            <div
-                key={getResultKey ? getResultKey(result, index) : `grid-item-${index}`}
-                className={`search-grid-item ${isFocused ? 'keyboard-focused' : ''}`}
-                style={style}
-                data-location={encodeURIComponent(obj.location || '')}
-                data-file={encodeURIComponent(obj.file || '')}
-                tabIndex={0}
-                title={displayTitle}
-                onClick={() => onResultClick(result)}
-                role="button"
-                aria-label={`Open ${displayTitle}`}
-                aria-describedby={`result-${index}-meta`}
-            >
-                <div className="search-grid-item-image">
-                    {imageUrl && (
-                        <LazyImage
-                            src={imageUrl}
-                            alt={displayTitle}
-                            className="search-grid-item-poster"
-                            fallbackSrc="/placeholder-poster.jpg"
+    // Calculate visible items based on scroll position
+    const visibleData = useMemo(() => {
+        if (!layoutData.isGrouped) {
+            // Standard non-grouped virtualization
+            const totalRows = Math.ceil(results.length / itemsPerRow);
+            const rowHeight = itemHeight + responsiveGap;
+            const visibleStartRow = Math.floor(scrollTop / rowHeight);
+            const visibleEndRow = Math.min(
+                totalRows,
+                Math.ceil((scrollTop + containerSize.height) / rowHeight)
+            );
+
+            const startIndex = Math.max(0, (visibleStartRow - 3) * itemsPerRow);
+            const endIndex = Math.min(results.length, (visibleEndRow + 3) * itemsPerRow);
+
+            const visibleItems = [];
+            for (let i = startIndex; i < endIndex; i++) {
+                if (results[i]) {
+                    visibleItems.push({
+                        type: 'item',
+                        index: i,
+                        result: results[i],
+                        y: Math.floor(i / itemsPerRow) * (itemHeight + responsiveGap),
+                        x: (i % itemsPerRow) * (itemWidth + responsiveGap),
+                    });
+                }
+            }
+            return { visibleItems };
+        }
+
+        // Grouped virtualization
+        const visibleContent = [];
+        const viewportTop = scrollTop;
+        const viewportBottom = scrollTop + containerSize.height;
+
+        layoutData.groups.forEach(group => {
+            const groupBottom = group.headerY + group.height;
+
+            // Check if group is in viewport
+            if (groupBottom < viewportTop || group.headerY > viewportBottom) return;
+
+            // Add group header if visible
+            if (group.headerY >= viewportTop - 100 && group.headerY <= viewportBottom + 100) {
+                visibleContent.push({
+                    type: 'header',
+                    groupKey: group.groupKey,
+                    itemCount: group.itemCount,
+                    y: group.headerY,
+                });
+            }
+
+            // Add visible items from this group
+            group.items.forEach((item, itemIndex) => {
+                const itemY =
+                    group.itemsStartY +
+                    Math.floor(itemIndex / itemsPerRow) * (itemHeight + responsiveGap);
+                const itemX = (itemIndex % itemsPerRow) * (itemWidth + responsiveGap);
+                const itemBottom = itemY + itemHeight;
+
+                if (itemBottom >= viewportTop - 100 && itemY <= viewportBottom + 100) {
+                    visibleContent.push({
+                        type: 'item',
+                        result: item,
+                        itemIndex,
+                        y: itemY,
+                        x: itemX,
+                    });
+                }
+            });
+        });
+
+        return { visibleItems: visibleContent };
+    }, [
+        layoutData,
+        scrollTop,
+        containerSize.height,
+        itemsPerRow,
+        itemHeight,
+        responsiveGap,
+        itemWidth,
+        results,
+    ]);
+
+    // Render content based on type
+    const renderContent = (item, index) => {
+        if (item.type === 'header') {
+            return (
+                <div
+                    key={`group-header-${item.groupKey}`}
+                    className="owner-label"
+                    style={{
+                        position: 'absolute',
+                        top: item.y,
+                        left: 0,
+                        width: '100%',
+                        height: 50,
+                        display: 'flex',
+                        alignItems: 'center',
+                        padding: '0 20px',
+                        zIndex: 10,
+                    }}
+                >
+                    <span className="owner-name">{item.groupKey}</span>
+                    <span className="owner-count" style={{ marginLeft: 8 }}>
+                        ({item.itemCount} items)
+                    </span>
+                </div>
+            );
+        }
+
+        if (item.type === 'item') {
+            const obj = item.result.original || item.result;
+            const displayTitle = getDisplayTitle
+                ? getDisplayTitle(item.result)
+                : item.result.title || obj.title || 'Untitled';
+            const imageUrl = getImageUrl ? getImageUrl(item.result) : '';
+            const isFocused = focusedResultIndex === (item.index || index);
+
+            return (
+                <div
+                    key={getResultKey ? getResultKey(item.result, index) : `grid-item-${index}`}
+                    className={`search-grid-item ${isFocused ? 'keyboard-focused' : ''}`}
+                    style={{
+                        position: 'absolute',
+                        top: item.y,
+                        left: item.x,
+                        width: itemWidth,
+                        height: itemHeight,
+                    }}
+                    data-location={encodeURIComponent(obj.location || '')}
+                    data-file={encodeURIComponent(obj.file || '')}
+                    tabIndex={0}
+                    title={displayTitle}
+                    onClick={() => onResultClick(item.result)}
+                    role="button"
+                    aria-label={`Open ${displayTitle}`}
+                    aria-describedby={`result-${index}-meta`}
+                >
+                    <div className="search-grid-item-image">
+                        {imageUrl && (
+                            <LazyImage
+                                src={imageUrl}
+                                alt={displayTitle}
+                                className="search-grid-item-poster"
+                                fallbackSrc="/placeholder-poster.jpg"
+                            />
+                        )}
+                        {renderMetadata && (
+                            <div id={`result-${index}-meta`} className="search-grid-item-metadata">
+                                {renderMetadata(item.result)}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="search-grid-item-details">
+                        <div
+                            className="search-grid-item-title"
+                            dangerouslySetInnerHTML={{
+                                __html: highlightSearchTerm
+                                    ? highlightSearchTerm(displayTitle, searchTerm)
+                                    : displayTitle,
+                            }}
                         />
-                    )}
-                    {renderMetadata && (
-                        <div id={`result-${index}-meta`} className="search-grid-item-metadata">
-                            {renderMetadata(result)}
-                        </div>
-                    )}
+                    </div>
                 </div>
+            );
+        }
 
-                <div className="search-grid-item-details">
-                    <div
-                        className="search-grid-item-title"
-                        dangerouslySetInnerHTML={{
-                            __html: highlightSearchTerm
-                                ? highlightSearchTerm(displayTitle, searchTerm)
-                                : displayTitle,
-                        }}
-                    />
-                </div>
-            </div>
-        );
+        return null;
     };
 
-    // Render group header
-    const renderGroupHeader = (groupKey, itemCount) => (
-        <div className="owner-label">
-            <span className="owner-name">{groupKey}</span>
-            <span className="owner-count">({itemCount} items)</span>
-        </div>
-    );
+    if (!results.length) return null;
 
-    // Render group of items (always virtualized)
-    const renderGroup = groupItems => {
-        return (
+    // Unified CSS classes (virtualization is transparent)
+    let containerClasses = className;
+    if (layoutData.isGrouped) containerClasses += ' search-results-grouped';
+
+    return (
+        <div className={containerClasses} ref={resultsContainerRef}>
+            {/* Always use unified virtualized display - works for both grouped and non-grouped */}
             <div
+                ref={containerRef}
                 className="search-grid"
                 style={{
                     height: 'calc(100vh - 220px)', // Dynamic height based on viewport minus header/controls
@@ -202,48 +338,10 @@ export default function GridView({
                 }}
                 onScroll={handleScroll}
             >
-                <div style={{ height: totalHeight, position: 'relative' }}>
-                    {visibleData.visibleItems
-                        .filter(({ result }) => groupItems.includes(result))
-                        .map(renderGridItem)}
+                <div style={{ height: layoutData.totalHeight, position: 'relative' }}>
+                    {visibleData.visibleItems.map((item, index) => renderContent(item, index))}
                 </div>
             </div>
-        );
-    };
-
-    if (!results.length) return null;
-
-    // Unified CSS classes (virtualization is transparent)
-    let containerClasses = className;
-    if (isGrouped) containerClasses += ' search-results-grouped';
-
-    return (
-        <div className={containerClasses} ref={resultsContainerRef}>
-            {isGrouped ? (
-                // Grouped display
-                Object.entries(groupedResults).map(([groupKey, groupItems]) => (
-                    <div key={groupKey} className="owner-group">
-                        {renderGroupHeader(groupKey, groupItems.length)}
-                        {renderGroup(groupItems)}
-                    </div>
-                ))
-            ) : (
-                // Always virtualized unified display
-                <div
-                    ref={containerRef}
-                    className="search-grid"
-                    style={{
-                        height: 'calc(100vh - 220px)', // Dynamic height based on viewport minus header/controls
-                        overflow: 'auto',
-                        position: 'relative',
-                    }}
-                    onScroll={handleScroll}
-                >
-                    <div style={{ height: totalHeight, position: 'relative' }}>
-                        {visibleData.visibleItems.map(renderGridItem)}
-                    </div>
-                </div>
-            )}
         </div>
     );
 }

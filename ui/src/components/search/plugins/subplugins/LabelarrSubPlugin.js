@@ -87,7 +87,7 @@ export class LabelarrSubPlugin {
 
         // Calculate poster URL - use existing posterUrl from MediaSearchAdapter
         let posterUrl = mediaItem.posterUrl || mediaItem.imageUrl || '';
-        
+
         // Fallback: if no posterUrl exists, try constructing from location/file (legacy support)
         if (!posterUrl && mediaItem.location && mediaItem.file) {
             posterUrl = fetchPosterPreviewUrl(mediaItem.location, mediaItem.file);

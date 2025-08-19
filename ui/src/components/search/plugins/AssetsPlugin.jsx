@@ -44,7 +44,10 @@ function createAssetsPosterModal({ obj, onClose, onDeleted }) {
             value: url,
             caption: obj.file || '',
             previewUrl: url,
-            ...obj,
+            // Only include specific needed properties, not entire object
+            location: obj.location,
+            file: obj.file,
+            asset_type: obj.asset_type,
             onDeleted,
         },
     ];

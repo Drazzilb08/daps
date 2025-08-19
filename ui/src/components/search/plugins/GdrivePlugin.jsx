@@ -43,7 +43,10 @@ function createGdrivePosterModal({ obj, onClose, onDeleted }) {
             value: url,
             caption: obj.file || '',
             previewUrl: url,
-            ...obj,
+            // Only include specific needed properties, not entire object
+            location: obj.location,
+            file: obj.file,
+            name: obj.name,
             onDeleted,
         },
     ];
@@ -111,7 +114,7 @@ export const gdrivePluginConfig = new PluginBuilder('gdrive-search', 'GDrive Sea
         defaultSort: 'priority-asc',
         defaultSource: 'gdrive',
         renderer: 'poster',
-        groupBy: 'location',
+        groupBy: 'owner',
         enableHoverPreview: true,
         modalComponent: createGdrivePosterModal,
         selectorLabel: 'Source',

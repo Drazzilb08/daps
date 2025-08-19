@@ -78,7 +78,12 @@ export default function ListView({
 
         const groups = {};
         results.forEach(item => {
-            const groupKey = item[groupBy] || item.original?.[groupBy] || 'Unknown';
+            let groupKey;
+            if (groupBy === 'owner') {
+                groupKey = item.name || item.original?.name || 'Unknown';
+            } else {
+                groupKey = item[groupBy] || item.original?.[groupBy] || 'Unknown';
+            }
             if (!groups[groupKey]) groups[groupKey] = [];
             groups[groupKey].push(item);
         });
@@ -90,7 +95,7 @@ export default function ListView({
         const obj = result.original || result;
         const displayTitle = result.title || obj.title || 'Untitled';
         const year = result.year || obj.year || '';
-        const type = result.type || obj.asset_type || '';
+        const type = result.mediaType || result.type || obj.asset_type || '';
         const instanceCount = result.instanceCount || 1;
         const instances = result.instances || [result.instance_name || 'Unknown'];
         const isFocused = focusedResultIndex === index;

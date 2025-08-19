@@ -273,7 +273,7 @@ export const gdriveSearchAdapter = {
             id: `${item.location}|${item.file}`, // Create unique ID
             title: parsedTitle, // Parsed title without filename artifacts
             year: parsedYear, // Extracted year for consistent display
-            type: parsedType, // Inferred type (movie/show/collection)
+            mediaType: parsedType, // Inferred type (movie/show/collection) - renamed to avoid field conflicts
             instanceCount: 1, // Single instance for file-based items
             instances: [item.name || 'Unknown'], // Source name as instance
             imageUrl:
@@ -284,6 +284,7 @@ export const gdriveSearchAdapter = {
             metadata: {
                 owner: item.name,
                 source: item.location,
+                mediaType: parsedType, // Store in metadata too
             },
             // Keep all original data
             ...item,

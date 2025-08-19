@@ -19,6 +19,20 @@ export const groupingHelper = {
     },
 
     /**
+     * Group files by owner (for GDrive searches)
+     */
+    groupByOwner(files) {
+        const groups = {};
+        files.forEach(fileObj => {
+            const obj = fileObj.original || fileObj;
+            const owner = obj.name || 'Unknown';
+            if (!groups[owner]) groups[owner] = [];
+            groups[owner].push(fileObj);
+        });
+        return groups;
+    },
+
+    /**
      * Get group order based on sorting and priority
      */
     getGroupOrder(groups, currentSort, priorityOrder = {}) {

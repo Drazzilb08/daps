@@ -387,6 +387,7 @@ export const mediaSearchAdapter = {
         const seasonInfo = this.getSeasonInfo(item);
 
         return {
+            ...item,
             id: item.id,
             title: item.title, // Raw title - let renderer format with year
             year: item.year,
@@ -405,7 +406,6 @@ export const mediaSearchAdapter = {
             // Route to media management modal instead of poster modal
             modalType: 'media-management',
             activeSubPlugin: 'labelarr', // Default sub-plugin
-            ...item,
         };
     },
 

@@ -340,7 +340,7 @@ export default function SearchCore({
             if (onResultClick) {
                 onResultClick(result);
             } else {
-                setModalInfo(result.original || result);
+                setModalInfo(result);
             }
         },
         [onResultClick]

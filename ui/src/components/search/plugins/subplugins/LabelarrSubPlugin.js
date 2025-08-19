@@ -85,12 +85,12 @@ export class LabelarrSubPlugin {
             });
         }
 
-        // Calculate poster URL
-        let posterUrl = '';
-        if (mediaItem.location && mediaItem.file) {
+        // Calculate poster URL - use existing posterUrl from MediaSearchAdapter
+        let posterUrl = mediaItem.posterUrl || mediaItem.imageUrl || '';
+        
+        // Fallback: if no posterUrl exists, try constructing from location/file (legacy support)
+        if (!posterUrl && mediaItem.location && mediaItem.file) {
             posterUrl = fetchPosterPreviewUrl(mediaItem.location, mediaItem.file);
-        } else if (mediaItem.posterUrl || mediaItem.imageUrl) {
-            posterUrl = mediaItem.posterUrl || mediaItem.imageUrl;
         }
 
         // Media Display

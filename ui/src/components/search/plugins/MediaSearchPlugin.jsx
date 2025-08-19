@@ -185,6 +185,7 @@ export const mediaSearchPluginConfig = new PluginBuilder('media-search', 'Media 
         showRefreshControls: true, // Enable refresh controls for MediaSearch
         showAdvancedSearchHelp: true, // Enable advanced search help
         modalComponent: MediaModalComponent, // Plugin-provided modal component for media management
+        selectorLabel: 'Module',
         sortOptions: [
             { value: 'alpha', label: 'A-Z' },
             { value: 'alpha-desc', label: 'Z-A' },

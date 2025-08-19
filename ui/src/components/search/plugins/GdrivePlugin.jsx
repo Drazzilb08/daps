@@ -114,6 +114,7 @@ export const gdrivePluginConfig = new PluginBuilder('gdrive-search', 'GDrive Sea
         groupBy: 'location',
         enableHoverPreview: true,
         modalComponent: createGdrivePosterModal,
+        selectorLabel: 'Source',
         sortOptions: [
             { value: 'priority-asc', label: 'Priority ↑' },
             { value: 'priority-desc', label: 'Priority ↓' },

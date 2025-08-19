@@ -148,6 +148,8 @@ export default function SimpleSearchPlugin({ pluginId, overrideConfig = {}, ...a
             // Refresh controls
             showRefreshControls={config.showRefreshControls}
             showAdvancedSearchHelp={config.showAdvancedSearchHelp}
+            // UI Customization
+            selectorLabel={config.selectorLabel}
             // Modal component (plugin-provided)
             modalComponent={config.modalComponent}
             // Event handlers (plugin-specific business logic)

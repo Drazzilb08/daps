@@ -89,6 +89,7 @@ export const assetsPluginConfig = new PluginBuilder('assets-search', 'Assets Sea
         renderer: 'poster',
         enableHoverPreview: true,
         modalComponent: createAssetsPosterModal,
+        selectorLabel: 'Source',
         sortOptions: [
             { value: 'alpha', label: 'A-Z' },
             { value: 'alpha-desc', label: 'Z-A' },

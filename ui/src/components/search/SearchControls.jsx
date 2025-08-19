@@ -64,6 +64,7 @@ export default function SearchControls({
     showSearch = true,
     showSort = true,
     showViewToggle = true,
+    selectorLabel = 'Source',
 }) {
     // ===== REFS =====
     const viewBtnRefs = useRef({});
@@ -101,12 +102,12 @@ export default function SearchControls({
     const helpButtonRef = useRef();
     const helpPopoverRef = useRef();
 
-    // ===== MODULE SELECTOR STATE =====
-    const [showModulePopover, setShowModulePopover] = useState(false);
-    const [showModuleTooltip, setShowModuleTooltip] = useState(false);
+    // ===== SELECTOR STATE =====
+    const [showSelectorPopover, setShowSelectorPopover] = useState(false);
+    const [showSelectorTooltip, setShowSelectorTooltip] = useState(false);
     const [showRefreshTooltip, setShowRefreshTooltip] = useState(false);
-    const moduleButtonRef = useRef();
-    const modulePopoverRef = useRef();
+    const selectorButtonRef = useRef();
+    const selectorPopoverRef = useRef();
 
     // ===== DROPDOWN CLICK OUTSIDE HANDLING =====
     useEffect(() => {
@@ -145,24 +146,24 @@ export default function SearchControls({
         return () => document.removeEventListener('click', handleClickOutside);
     }, [showRefreshPopover]);
 
-    // ===== MODULE POPOVER CLICK OUTSIDE HANDLING =====
+    // ===== SELECTOR POPOVER CLICK OUTSIDE HANDLING =====
     useEffect(() => {
-        if (!showModulePopover) return;
+        if (!showSelectorPopover) return;
 
         function handleClickOutside(e) {
             if (
-                moduleButtonRef.current &&
-                !moduleButtonRef.current.contains(e.target) &&
-                modulePopoverRef.current &&
-                !modulePopoverRef.current.contains(e.target)
+                selectorButtonRef.current &&
+                !selectorButtonRef.current.contains(e.target) &&
+                selectorPopoverRef.current &&
+                !selectorPopoverRef.current.contains(e.target)
             ) {
-                setShowModulePopover(false);
+                setShowSelectorPopover(false);
             }
         }
 
         document.addEventListener('click', handleClickOutside);
         return () => document.removeEventListener('click', handleClickOutside);
-    }, [showModulePopover]);
+    }, [showSelectorPopover]);
 
     // ===== HELP POPOVER CLICK OUTSIDE HANDLING =====
     useEffect(() => {
@@ -311,14 +312,14 @@ export default function SearchControls({
         setShowRefreshPopover(prev => !prev);
     };
 
-    // ===== MODULE SELECTOR HANDLERS =====
-    const handleModuleToggle = () => {
-        setShowModulePopover(prev => !prev);
+    // ===== SELECTOR HANDLERS =====
+    const handleSelectorToggle = () => {
+        setShowSelectorPopover(prev => !prev);
     };
 
-    const handleModuleSelect = moduleKey => {
-        onSourceChange(moduleKey);
-        setShowModulePopover(false);
+    const handleSelectorSelect = itemKey => {
+        onSourceChange(itemKey);
+        setShowSelectorPopover(false);
     };
 
     // ===== HELP HANDLERS =====
@@ -845,52 +846,52 @@ export default function SearchControls({
         );
     };
 
-    const renderModuleSelector = () => {
+    const renderSelector = () => {
         if (!sources.length) return null;
 
         return (
-            <div className="module-selector">
+            <div className="selector-container">
                 <button
-                    ref={moduleButtonRef}
+                    ref={selectorButtonRef}
                     type="button"
-                    className={`btn btn-secondary module-btn${showModulePopover ? ' active' : ''}`}
-                    onClick={handleModuleToggle}
-                    onMouseEnter={() => setShowModuleTooltip(true)}
-                    onMouseLeave={() => setShowModuleTooltip(false)}
-                    onFocus={() => setShowModuleTooltip(true)}
-                    onBlur={() => setShowModuleTooltip(false)}
-                    title="Select module"
+                    className={`btn btn-secondary selector-btn${showSelectorPopover ? ' active' : ''}`}
+                    onClick={handleSelectorToggle}
+                    onMouseEnter={() => setShowSelectorTooltip(true)}
+                    onMouseLeave={() => setShowSelectorTooltip(false)}
+                    onFocus={() => setShowSelectorTooltip(true)}
+                    onBlur={() => setShowSelectorTooltip(false)}
+                    title={`Select ${selectorLabel.toLowerCase()}`}
                 >
                     {getIcon('mi:apps')}
-                    Module
+                    {selectorLabel}
                 </button>
                 <TooltipFactory
-                    anchor={moduleButtonRef.current}
-                    text="Select module"
-                    show={showModuleTooltip && !showModulePopover}
+                    anchor={selectorButtonRef.current}
+                    text={`Select ${selectorLabel.toLowerCase()}`}
+                    show={showSelectorTooltip && !showSelectorPopover}
                 />
 
-                {showModulePopover && (
-                    <div ref={modulePopoverRef} className="module-popover">
-                        <div className="module-popover-header">
-                            <h4>Select Module</h4>
+                {showSelectorPopover && (
+                    <div ref={selectorPopoverRef} className="selector-popover">
+                        <div className="selector-popover-header">
+                            <h4>Select {selectorLabel}</h4>
                         </div>
-                        <div className="module-popover-content">
+                        <div className="selector-popover-content">
                             {sources.map(source => (
                                 <button
                                     key={source.key}
                                     type="button"
-                                    className={`module-option${currentSource === source.key ? ' active' : ''}`}
-                                    onClick={() => handleModuleSelect(source.key)}
+                                    className={`selector-option${currentSource === source.key ? ' active' : ''}`}
+                                    onClick={() => handleSelectorSelect(source.key)}
                                 >
                                     {source.icon && (
-                                        <span className="module-option-icon">
+                                        <span className="selector-option-icon">
                                             {getIcon(source.icon)}
                                         </span>
                                     )}
-                                    <span className="module-option-label">{source.label}</span>
+                                    <span className="selector-option-label">{source.label}</span>
                                     {source.tooltip && (
-                                        <span className="module-option-tooltip">
+                                        <span className="selector-option-tooltip">
                                             {source.tooltip}
                                         </span>
                                     )}
@@ -1199,7 +1200,7 @@ export default function SearchControls({
     return (
         <div>
             <div className="search-controls">
-                {renderModuleSelector()}
+                {renderSelector()}
                 {renderSortSelect()}
                 {renderViewModeToggle()}
                 {renderRefreshButton()}

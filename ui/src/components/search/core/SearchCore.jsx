@@ -63,6 +63,9 @@ export default function SearchCore({
     enableVirtualization = true,
     virtualizationThreshold = 100,
 
+    // UI Customization
+    selectorLabel = 'Source',
+
     // Refresh trigger - extract explicitly to avoid dependency array issues
     refreshTrigger = 0,
 
@@ -459,6 +462,7 @@ export default function SearchCore({
                     showRefreshControls={showRefreshControls}
                     onRefresh={onRefresh}
                     isRefreshing={isRefreshing}
+                    selectorLabel={selectorLabel}
                     {...additionalProps}
                 />
 

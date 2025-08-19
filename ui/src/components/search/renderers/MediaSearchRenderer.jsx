@@ -27,16 +27,34 @@ export class MediaSearchRenderer extends PosterRenderer {
             const indicatorRef = useRef(null);
 
             return (
-                <div className="media-search-metadata">
-                    <div
-                        ref={indicatorRef}
-                        className="multiple-instances-indicator"
-                        onMouseEnter={() => setShowTooltip(true)}
-                        onMouseLeave={() => setShowTooltip(false)}
-                        aria-label={`This item is available in ${result.instanceCount} instances: ${instancesList}`}
-                    >
-                        {result.instanceCount}
-                    </div>
+                <div
+                    ref={indicatorRef}
+                    className="multiple-instances-indicator"
+                    onMouseEnter={() => setShowTooltip(true)}
+                    onMouseLeave={() => setShowTooltip(false)}
+                    aria-label={`This item is available in ${result.instanceCount} instances: ${instancesList}`}
+                    style={{
+                        position: 'absolute',
+                        top: '8px',
+                        left: '8px',
+                        zIndex: 10,
+                        background: 'var(--accent)',
+                        color: 'var(--text-color)',
+                        borderRadius: '50%',
+                        width: '24px',
+                        height: '24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '0.8rem',
+                        fontWeight: '700',
+                        cursor: 'help',
+                        transition: 'all 0.2s ease',
+                        boxShadow: '0 2px 6px rgb(0 0 0 / 40%)',
+                        lineHeight: '1',
+                    }}
+                >
+                    {result.instanceCount}
                     <Tooltip
                         anchor={indicatorRef.current}
                         text={`Available in ${result.instanceCount} instances: ${instancesList}`}

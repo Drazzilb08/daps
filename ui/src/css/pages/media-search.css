@@ -4,17 +4,10 @@
         /* Page-specific styles will go here */
     }
 
-    /* Multiple Instance Indicator */
-    .media-search-metadata {
-        position: absolute;
-        top: 8px;
-        left: 8px;
-        z-index: 10;
-    }
-
+    /* Multiple Instance Indicator - Grid view overlay */
     .multiple-instances-indicator {
-        background: var(--accent, #ffb300);
-        color: var(--text-color, #000);
+        background: var(--accent);
+        color: var(--text-color);
         border-radius: 50%;
         width: 24px;
         height: 24px;

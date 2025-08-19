@@ -161,6 +161,11 @@ export default function GridView({
                             fallbackSrc="/placeholder-poster.jpg"
                         />
                     )}
+                    {renderMetadata && (
+                        <div id={`result-${index}-meta`} className="search-grid-item-metadata">
+                            {renderMetadata(result)}
+                        </div>
+                    )}
                 </div>
 
                 <div className="search-grid-item-details">
@@ -172,11 +177,6 @@ export default function GridView({
                                 : displayTitle,
                         }}
                     />
-                    {renderMetadata && (
-                        <div id={`result-${index}-meta`} className="search-grid-item-metadata">
-                            {renderMetadata(result)}
-                        </div>
-                    )}
                 </div>
             </div>
         );

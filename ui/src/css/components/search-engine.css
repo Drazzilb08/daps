@@ -393,6 +393,7 @@
         overflow: hidden;
         border-radius: 6px;
         background: var(--surface-darker, #1a1d21);
+        position: relative;
     }
 
     .search-engine .search-grid-item-poster {

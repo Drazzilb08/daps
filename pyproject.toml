@@ -21,11 +21,6 @@ target-version = "py39"
 extend-select = []
 ignore = ["E203"]
 
-[tool.coverage.run]
-branch = true
-source = ["."]
-omit = ["tests/*", "setup.py"]
-
 [tool.pytest.ini_options]
 minversion = "6.0"
 addopts = "-ra -q"

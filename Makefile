@@ -2,9 +2,10 @@
 .DEFAULT_GOAL := help
 SHELL := /bin/bash
 
-VENV := .venv
+ROOT := /Users/drazzilb/GitHub/daps
+VENV := $(ROOT)/.venv
 PY := python3
-UI := ui
+UI := $(ROOT)/ui
 NPM := npm
 
 .PHONY: help bootstrap venv install dev lock format check fix lint test coverage clean \
@@ -19,42 +20,42 @@ venv: ## Create venv if missing
 	test -d $(VENV) || $(PY) -m venv $(VENV)
 
 install: venv ## Install backend requirements
-	./$(VENV)/bin/python -m pip install --upgrade pip
-	./$(VENV)/bin/pip install -r requirements.txt
+	$(VENV)/bin/python -m pip install --upgrade pip
+	$(VENV)/bin/pip install -r $(ROOT)/requirements.txt
 
 dev: venv ## Install backend dev tools (black, isort, ruff, pytest)
-	./$(VENV)/bin/pip install -U black isort ruff pytest pytest-cov
+	$(VENV)/bin/pip install -U black isort ruff pytest pytest-cov
 
 lock: ## Freeze current venv into requirements.txt
-	./$(VENV)/bin/pip freeze > requirements.txt
+	$(VENV)/bin/pip freeze > $(ROOT)/requirements.txt
 
 format: venv ## Format backend (isort + black)
-	./$(VENV)/bin/isort .
-	./$(VENV)/bin/black .
+	$(VENV)/bin/isort $(ROOT)
+	$(VENV)/bin/black $(ROOT)
 
 check: venv ## Check backend formatting and lint (no changes)
-	./$(VENV)/bin/ruff check .
-	./$(VENV)/bin/isort --check-only .
-	./$(VENV)/bin/black --check .
+	$(VENV)/bin/ruff check $(ROOT)
+	$(VENV)/bin/isort --check-only $(ROOT)
+	$(VENV)/bin/black --check $(ROOT)
 
 fix: venv ## Auto-fix backend with Ruff, then format
-	./$(VENV)/bin/ruff check --fix .
-	./$(VENV)/bin/isort .
-	./$(VENV)/bin/black .
+	$(VENV)/bin/ruff check --fix $(ROOT)
+	$(VENV)/bin/isort $(ROOT)
+	$(VENV)/bin/black $(ROOT)
 
 lint: venv ## Lint backend with Ruff
-	./$(VENV)/bin/ruff check .
+	$(VENV)/bin/ruff check $(ROOT)
 
 test: venv ## Run backend tests
-	./$(VENV)/bin/pytest
+	$(VENV)/bin/pytest
 
 coverage: venv ## Run backend tests with coverage (HTML report in htmlcov/)
-	./$(VENV)/bin/pytest --cov --cov-report=term-missing --cov-report=html
+	$(VENV)/bin/pytest --cov --cov-report=term-missing --cov-report=html
 
 clean: ## Clean Python caches, build artifacts, coverage
-	find . -name '__pycache__' -type d -prune -exec rm -rf {} +
-	find . -name '*.pyc' -delete
-	rm -rf .pytest_cache .ruff_cache .mypy_cache .coverage htmlcov build dist *.egg-info
+	find $(ROOT) -name '__pycache__' -type d -prune -exec rm -rf {} +
+	find $(ROOT) -name '*.pyc' -delete
+	rm -rf $(ROOT)/.pytest_cache $(ROOT)/.ruff_cache $(ROOT)/.mypy_cache $(ROOT)/.coverage $(ROOT)/htmlcov $(ROOT)/build $(ROOT)/dist $(ROOT)/*.egg-info
 
 # ---- UI (React) ----
 ui-install: ## Install UI dependencies (npm ci)

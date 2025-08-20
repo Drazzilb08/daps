@@ -29,6 +29,9 @@ const MediaManagement = lazy(() => import('./pages/MediaManage'));
 const MediaSearch = lazy(() => import('./pages/MediaSearch'));
 const MediaStatistics = lazy(() => import('./pages/MediaStatistics'));
 
+// Development pages
+const PopoverTest = lazy(() => import('./pages/dev/PopoverTest'));
+
 // Import LoadingSpinner component
 import LoadingSpinner from './components/common/LoadingSpinner';
 
@@ -177,6 +180,16 @@ export default function App() {
                                                         />
                                                     </Routes>
                                                 </UnsavedChangesProvider>
+                                            </RouteErrorBoundary>
+                                        }
+                                    />
+
+                                    {/* Development Routes */}
+                                    <Route
+                                        path="/dev/popover"
+                                        element={
+                                            <RouteErrorBoundary routeName="Popover Test">
+                                                <PopoverTest />
                                             </RouteErrorBoundary>
                                         }
                                     />

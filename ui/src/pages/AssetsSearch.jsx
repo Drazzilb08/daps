@@ -4,6 +4,8 @@
 import React, { useCallback } from 'react';
 import { AssetsSearchComponent } from '../components/search/plugins';
 import { useToast } from '../components/providers/ToastProvider';
+import SearchJumpBarProvider from '../components/search/SearchJumpBarProvider';
+import PageLevelJumpBar from '../components/search/PageLevelJumpBar';
 
 export default function AssetsSearch() {
     const toast = useToast();
@@ -17,10 +19,13 @@ export default function AssetsSearch() {
     );
 
     return (
-        <AssetsSearchComponent
-            onError={handleError}
-            // Plugin system handles modal creation automatically via modalComponent config
-            // Note: No onResultClick provided - SearchCore will use modalComponent from plugin config
-        />
+        <SearchJumpBarProvider>
+            <PageLevelJumpBar />
+            <AssetsSearchComponent
+                onError={handleError}
+                // Plugin system handles modal creation automatically via modalComponent config
+                // Note: No onResultClick provided - SearchCore will use modalComponent from plugin config
+            />
+        </SearchJumpBarProvider>
     );
 }

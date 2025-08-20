@@ -93,6 +93,7 @@ export const assetsPluginConfig = new PluginBuilder('assets-search', 'Assets Sea
         enableHoverPreview: true,
         modalComponent: createAssetsPosterModal,
         selectorLabel: 'Source',
+        showJumpBar: true, // Enable jump bar for browsing assets
         sortOptions: [
             { value: 'alpha', label: 'A-Z' },
             { value: 'alpha-desc', label: 'Z-A' },

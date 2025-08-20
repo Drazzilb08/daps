@@ -326,6 +326,13 @@
         /* Removed padding for true edge-to-edge layout */
     }
 
+    .search-engine .search-grid-container {
+        display: flex;
+        position: relative;
+        width: 100%;
+        flex-direction: row-reverse; /* Jump bar on right */
+    }
+
     .search-engine .owner-group {
         margin-bottom: 1.5em;
     }
@@ -337,6 +344,82 @@
         color: var(--primary, #388be5);
         letter-spacing: 0.01em;
         padding-left: 0.15em;
+    }
+
+    /* ======================================================
+   SEARCH ENGINE: PAGE LEVEL JUMP BAR
+====================================================== */
+    .page-level-jump-bar {
+        /* Positioning handled by inline styles in component */
+    }
+
+    .page-level-jump-bar .search-jump-bar {
+        position: relative;
+        width: 32px;
+        min-width: 32px;
+        background: var(--surface, #1b1d1f);
+        border: 1px solid var(--border-color, #353d44);
+        border-right: none;
+        border-radius: 8px 0 0 8px;
+        box-shadow: -2px 0 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .page-level-jump-bar .jump-bar-letters,
+    .search-engine .jump-bar-letters {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 0.5em 0;
+        gap: 1px;
+    }
+
+    .page-level-jump-bar .jump-bar-letter,
+    .search-engine .jump-bar-letter {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 26px;
+        height: 22px;
+        background: none;
+        border: none;
+        color: var(--text-color, #e3e3e3);
+        font-size: 0.7em;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: 3px;
+        transition: all 0.15s ease;
+        opacity: 0.8;
+        user-select: none;
+    }
+
+    .page-level-jump-bar .jump-bar-letter:hover:not(:disabled),
+    .search-engine .jump-bar-letter:hover:not(:disabled) {
+        background: var(--primary, #1e88e5);
+        color: var(--primary-contrast, white);
+        opacity: 1;
+        transform: scale(1.1);
+    }
+
+    .page-level-jump-bar .jump-bar-letter.active,
+    .search-engine .jump-bar-letter.active {
+        background: var(--primary, #1e88e5);
+        color: var(--primary-contrast, white);
+        opacity: 1;
+        transform: scale(1.15);
+    }
+
+    .page-level-jump-bar .jump-bar-letter:disabled,
+    .page-level-jump-bar .jump-bar-letter.unavailable,
+    .search-engine .jump-bar-letter:disabled,
+    .search-engine .jump-bar-letter.unavailable {
+        opacity: 0.3;
+        cursor: not-allowed;
+        color: var(--text-muted, #666);
+    }
+
+    .page-level-jump-bar .jump-bar-letter.disabled,
+    .search-engine .jump-bar-letter.disabled {
+        pointer-events: none;
     }
 
     /* ======================================================
@@ -577,6 +660,22 @@
             min-width: var(--item-min-width);
             min-height: var(--item-height);
         }
+
+        /* Jump bar adjustments for tablets */
+        .page-level-jump-bar {
+            width: 24px;
+        }
+
+        .page-level-jump-bar .search-jump-bar {
+            width: 24px;
+            min-width: 24px;
+        }
+
+        .page-level-jump-bar .jump-bar-letter {
+            width: 20px;
+            height: 18px;
+            font-size: 0.6em;
+        }
     }
 
     @media (width <= 600px) {
@@ -614,6 +713,11 @@
 
         .search-engine .poster-file-label {
             font-size: 0.9em;
+        }
+
+        /* Hide jump bar on mobile to maximize space */
+        .page-level-jump-bar {
+            display: none;
         }
     }
 

@@ -8,6 +8,7 @@ import useHoverPreview from '../HoverPreview';
 import LoadingSpinner from '../../common/LoadingSpinner';
 import { useToast } from '../../providers/ToastProvider';
 import { SearchSorter } from '../sorting';
+import { useSearchJumpBar } from '../SearchJumpBarProvider';
 
 // Stable default functions to prevent infinite loops
 const defaultOnError = () => {};
@@ -44,6 +45,7 @@ export default function SearchCore({
     // Results display configuration
     renderer = 'simple',
     groupBy = null,
+    showJumpBar = true, // Control jump bar visibility
 
     // Modal configuration - plugin can provide custom modal component
     modalComponent = null,
@@ -97,6 +99,7 @@ export default function SearchCore({
     // ===== HOOKS =====
     const toast = useToast();
     const isMountedRef = useRef(true);
+    const { updateJumpBarData } = useSearchJumpBar();
     const debounceTimeoutRef = useRef(null);
     const searchInputRef = useRef(null);
     const resultsContainerRef = useRef(null);
@@ -244,7 +247,28 @@ export default function SearchCore({
         };
 
         processResults();
-    }, [activeFilters, currentSort, currentSource, groupBy, hasUserSearched, searchAdapter, searchData, searchTerm]);
+    }, [
+        activeFilters,
+        currentSort,
+        currentSource,
+        groupBy,
+        hasUserSearched,
+        searchAdapter,
+        searchData,
+        searchTerm,
+    ]);
+
+    // ===== JUMP BAR DATA PROVIDER =====
+    // Update page-level jump bar with current search data
+    useEffect(() => {
+        updateJumpBarData({
+            results: searchResults,
+            currentSort,
+            getDisplayTitle: searchAdapter?.getDisplayTitle || null,
+            showJumpBar: showJumpBar && searchResults.length > 20,
+            scrollToLetter: null, // Will be set when GridView provides scroll function
+        });
+    }, [searchResults, currentSort, showJumpBar, searchAdapter, updateJumpBarData]);
 
     // ===== EVENT HANDLERS =====
     const handleSearchTermChange = useCallback(newTerm => {
@@ -436,9 +460,7 @@ export default function SearchCore({
                     >
                         <div className="search-loading-content">
                             <LoadingSpinner />
-                            <div className="search-loading-text">
-                                Loading search data...
-                            </div>
+                            <div className="search-loading-text">Loading search data...</div>
                         </div>
                     </div>
                 ) : (

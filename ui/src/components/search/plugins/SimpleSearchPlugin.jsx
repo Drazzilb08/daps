@@ -99,28 +99,31 @@ export default function SimpleSearchPlugin({ pluginId, overrideConfig = {}, ...a
     const [currentSourceForSort, setCurrentSourceForSort] = React.useState(
         plugin?.uiConfig?.defaultSource || overrideConfig.defaultSource || 'gdrive'
     );
-    
-    const config = plugin ? {
-        ...plugin.uiConfig,
-        ...overrideConfig,
-    } : { sortOptions: [] };
-    
+
+    const config = plugin
+        ? {
+              ...plugin.uiConfig,
+              ...overrideConfig,
+          }
+        : { sortOptions: [] };
+
     const dynamicSortOptions = React.useMemo(() => {
         // Only apply dynamic filtering for gdrive-search plugin
         if (pluginId === 'gdrive-search' && currentSourceForSort === 'custom') {
             // Filter out priority sorting options for custom sources
-            return config.sortOptions.filter(option => 
-                !option.value.startsWith('priority-')
-            );
+            return config.sortOptions.filter(option => !option.value.startsWith('priority-'));
         }
         return config.sortOptions;
     }, [config.sortOptions, currentSourceForSort, pluginId]);
-    
+
     // Handle source changes to update sort options
-    const handleSourceChangeWithSort = React.useCallback(newSource => {
-        setCurrentSourceForSort(newSource);
-        handleSourceChange(newSource);
-    }, [handleSourceChange]);
+    const handleSourceChangeWithSort = React.useCallback(
+        newSource => {
+            setCurrentSourceForSort(newSource);
+            handleSourceChange(newSource);
+        },
+        [handleSourceChange]
+    );
 
     // Mount/unmount plugin
     React.useEffect(() => {
@@ -171,6 +174,7 @@ export default function SimpleSearchPlugin({ pluginId, overrideConfig = {}, ...a
             showAdvancedSearchHelp={config.showAdvancedSearchHelp}
             // UI Customization
             selectorLabel={config.selectorLabel}
+            showJumpBar={config.showJumpBar}
             // Modal component (plugin-provided)
             modalComponent={config.modalComponent}
             // Event handlers (plugin-specific business logic)

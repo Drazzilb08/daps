@@ -173,6 +173,7 @@ export const mediaSearchPluginConfig = new PluginBuilder('media-search', 'Media 
         showAdvancedSearchHelp: true, // Enable advanced search help
         modalComponent: MediaModalComponent, // Plugin-provided modal component for media management
         selectorLabel: 'Module',
+        showJumpBar: true, // Enable jump bar for browsing media
         sortOptions: [
             { value: 'alpha', label: 'A-Z' },
             { value: 'alpha-desc', label: 'Z-A' },

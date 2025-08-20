@@ -3,6 +3,7 @@
 
 import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import LazyImage from '../../common/LazyImage';
+import { useSearchJumpBar } from '../SearchJumpBarProvider';
 
 // CSS-First Configuration: All values read from CSS custom properties
 // No hardcoded values - CSS is the single source of truth
@@ -27,6 +28,9 @@ export default function GridView({
     const containerRef = useRef(null);
     const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
     const [scrollTop, setScrollTop] = useState(0);
+
+    // Jump bar context for page-level communication
+    const { updateJumpBarData } = useSearchJumpBar();
 
     // Performance: Use base values and calculate dynamic sizing for edge-to-edge layout
     const baseItemWidth = 160;
@@ -231,6 +235,115 @@ export default function GridView({
         results,
     ]);
 
+    // Jump bar navigation handler for page-level jump bar
+    const handleJumpToLetter = useCallback(
+        letter => {
+            if (!containerRef.current || !results.length) return;
+
+            if (!layoutData.isGrouped) {
+                // Non-grouped layout - find first matching item
+                let targetIndex = -1;
+                for (let i = 0; i < results.length; i++) {
+                    const item = results[i];
+                    const title = getDisplayTitle
+                        ? getDisplayTitle(item)
+                        : item.title ||
+                          item.original?.title ||
+                          item.name ||
+                          item.original?.name ||
+                          'Unknown';
+
+                    const firstChar = title.trim().charAt(0).toUpperCase();
+
+                    if (letter === '#' && /[0-9]/.test(firstChar)) {
+                        targetIndex = i;
+                        break;
+                    } else if (
+                        firstChar &&
+                        firstChar.match(/[\u00C0-\u017F\u0180-\u024F]/) &&
+                        firstChar === letter
+                    ) {
+                        targetIndex = i;
+                        break;
+                    } else if (firstChar === letter) {
+                        targetIndex = i;
+                        break;
+                    }
+                }
+
+                if (targetIndex >= 0) {
+                    const rowHeight = itemHeight + responsiveGap;
+                    const targetRow = Math.floor(targetIndex / itemsPerRow);
+                    const targetScrollTop = targetRow * rowHeight;
+
+                    containerRef.current.scrollTo({
+                        top: targetScrollTop,
+                        behavior: 'smooth',
+                    });
+                }
+            } else {
+                // Grouped layout - find first group or item that matches
+                let targetY = -1;
+
+                for (const group of layoutData.groups) {
+                    // Check if group title matches
+                    const groupFirstChar = group.groupKey.trim().charAt(0).toUpperCase();
+                    if (
+                        (letter === '#' && /[0-9]/.test(groupFirstChar)) ||
+                        (groupFirstChar &&
+                            groupFirstChar.match(/[\u00C0-\u017F\u0180-\u024F]/) &&
+                            groupFirstChar === letter) ||
+                        groupFirstChar === letter
+                    ) {
+                        targetY = group.headerY;
+                        break;
+                    }
+
+                    // Check items in group
+                    for (const item of group.items) {
+                        const title = getDisplayTitle
+                            ? getDisplayTitle(item)
+                            : item.title ||
+                              item.original?.title ||
+                              item.name ||
+                              item.original?.name ||
+                              'Unknown';
+
+                        const firstChar = title.trim().charAt(0).toUpperCase();
+
+                        if (
+                            (letter === '#' && /[0-9]/.test(firstChar)) ||
+                            (firstChar &&
+                                firstChar.match(/[\u00C0-\u017F\u0180-\u024F]/) &&
+                                firstChar === letter) ||
+                            firstChar === letter
+                        ) {
+                            targetY = group.headerY;
+                            break;
+                        }
+                    }
+
+                    if (targetY >= 0) break;
+                }
+
+                if (targetY >= 0) {
+                    containerRef.current.scrollTo({
+                        top: targetY,
+                        behavior: 'smooth',
+                    });
+                }
+            }
+        },
+        [results, getDisplayTitle, itemHeight, responsiveGap, itemsPerRow, layoutData]
+    );
+
+    // Register scroll function with jump bar context
+    useEffect(() => {
+        updateJumpBarData({
+            scrollToLetter: handleJumpToLetter,
+        });
+    }, [handleJumpToLetter, updateJumpBarData]);
+
     // Render content based on type
     const renderContent = (item, index) => {
         if (item.type === 'header') {
@@ -327,7 +440,7 @@ export default function GridView({
 
     return (
         <div className={containerClasses} ref={resultsContainerRef}>
-            {/* Always use unified virtualized display - works for both grouped and non-grouped */}
+            {/* Simplified grid - no jump bar, positioned at page level */}
             <div
                 ref={containerRef}
                 className="search-grid"

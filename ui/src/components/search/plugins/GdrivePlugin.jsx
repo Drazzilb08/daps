@@ -113,6 +113,7 @@ export const gdrivePluginConfig = new PluginBuilder('gdrive-search', 'GDrive Sea
         enableHoverPreview: true,
         modalComponent: createGdrivePosterModal,
         selectorLabel: 'Source',
+        showJumpBar: false, // Focus on search functionality, not browsing
         sortOptions: [
             { value: 'priority-asc', label: 'Priority ↑' },
             { value: 'priority-desc', label: 'Priority ↓' },

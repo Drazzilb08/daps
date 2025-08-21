@@ -80,22 +80,20 @@
             color 0.14s,
             background 0.14s;
         box-shadow: none;
-        font-weight: 500;
+        font-weight: var(--font-weight-medium);
+        font-size: var(--font-size-1);
         text-decoration: none;
         display: flex;
         align-items: center;
-        gap: 0.75rem; /* fallback */
         gap: var(--space-3);
         min-height: 28px;
-        padding: 0.5rem 0.75rem 0.5rem 0.5rem; /* fallback */
         padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
-        border-radius: 0 6px 6px 0; /* fallback */
         border-radius: 0 var(--radius-2) var(--radius-2) 0;
         position: relative;
         outline: none;
         border: none;
         letter-spacing: 0.01em;
-        line-height: 1.22;
+        line-height: var(--line-height);
         z-index: 1;
     }
 
@@ -120,9 +118,9 @@
     }
 
     .sidebar-link--sub {
-        font-weight: 400;
-        padding: 0.31em 0.2em 0.31em 0.4em;
-        border-radius: 4px; /* fallback */
+        font-weight: var(--font-weight-regular);
+        font-size: var(--font-size-1);
+        padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
         border-radius: var(--radius-1);
         min-height: 34px;
         margin-left: 0;
@@ -134,9 +132,9 @@
         color: inherit;
         opacity: 0.87;
         flex-shrink: 0;
-        margin-right: 0.1em;
-        margin-left: 0.5em;
-        font-size: 20px;
+        margin-right: 0;
+        margin-left: 0;
+        font-size: var(--font-size-3);
     }
 
     /* Sidebar highlight bar */

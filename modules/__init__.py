@@ -1,5 +1,6 @@
 # modules/__init__.py
 
+from .border_replacerr import BorderReplacerr
 from .health_checkarr import HealthCheckarr
 from .jduparr import Jduparr
 from .labelarr import Labelarr
@@ -11,6 +12,7 @@ from .unmatched_assets import UnmatchedAssets
 from .upgradinatorr import Upgradinatorr
 
 MODULES = {
+    "border_replacerr": BorderReplacerr,
     "poster_renamerr": PosterRenamerr,
     "labelarr": Labelarr,
     "health_checkarr": HealthCheckarr,

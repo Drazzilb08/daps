@@ -440,18 +440,27 @@ export default function GridView({
 
     return (
         <div className={containerClasses} ref={resultsContainerRef}>
-            {/* Simplified grid - no jump bar, positioned at page level */}
+            {/* Grid container with improved structure to prevent footer issues */}
             <div
                 ref={containerRef}
                 className="search-grid"
                 style={{
-                    height: 'calc(100vh - 220px)', // Dynamic height based on viewport minus header/controls
+                    height: 'calc(100vh - 280px)', // Adjusted for proper spacing
                     overflow: 'auto',
                     position: 'relative',
+                    background: 'var(--bg)',
+                    borderRadius: 'var(--radius-2)',
                 }}
                 onScroll={handleScroll}
             >
-                <div style={{ height: layoutData.totalHeight, position: 'relative' }}>
+                {/* Content wrapper with exact height to prevent phantom footer */}
+                <div
+                    style={{
+                        height: Math.max(layoutData.totalHeight, containerSize.height || 400),
+                        position: 'relative',
+                        minHeight: '100%',
+                    }}
+                >
                     {visibleData.visibleItems.map((item, index) => renderContent(item, index))}
                 </div>
             </div>

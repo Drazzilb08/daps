@@ -23,11 +23,28 @@
     .search-engine .search-controls {
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 2em;
-        margin: 1.5em auto 1.6em;
-        width: 85%;
-        max-width: 800px;
+        justify-content: space-between;
+        gap: var(--space-4);
+        margin: var(--space-4) auto var(--space-5);
+        width: 100%;
+        max-width: 1200px;
+        padding: 0 var(--space-4);
+    }
+
+    /* Left side controls group */
+    .search-engine .search-controls__left {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        flex: 0 0 auto;
+    }
+
+    /* Right side controls group */
+    .search-engine .search-controls__right {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        flex: 0 0 auto;
     }
 
     .search-engine .source-picker {
@@ -96,9 +113,9 @@
 ====================================================== */
     .search-engine .search-bar-container {
         position: relative;
-        width: 85%;
-        max-width: 800px;
-        margin: 1em auto 0.4em;
+        width: 100%;
+        max-width: 900px;
+        margin: 0 auto var(--space-3);
         display: flex;
         align-items: center;
     }
@@ -114,15 +131,19 @@
 
     .search-engine .search-bar {
         width: 100%;
-        font-size: 1.18em;
-        padding: 0.82em 2.6em 0.82em 3em;
-        border-radius: 8px;
-        border: 1px solid var(--border-color, #353d44);
-        background: var(--input-bg, #181a1b);
-        color: var(--text-color, #e3e3e3);
+        font-size: var(--font-size-2);
+        padding: var(--space-3) 3em var(--space-3) 3em;
+        border-radius: var(--radius-2);
+        border: var(--border-width-1) solid var(--divider);
+        background: var(--input-bg);
+        color: var(--text-color);
         outline: none;
-        transition: border-color 0.14s;
+        transition:
+            border-color 0.2s ease,
+            box-shadow 0.2s ease;
         box-sizing: border-box;
+        min-height: 44px;
+        max-height: 44px;
     }
 
     .search-engine .search-bar:focus {
@@ -350,18 +371,30 @@
    SEARCH ENGINE: PAGE LEVEL JUMP BAR
 ====================================================== */
     .page-level-jump-bar {
-        /* Positioning handled by inline styles in component */
+        /* Full height extension with fixed positioning */
+        position: fixed;
+        top: 50%;
+        right: var(--space-4);
+        transform: translateY(-50%);
+        height: auto;
+        max-height: calc(100vh - 200px);
+        min-height: 300px;
+        z-index: 1000;
+        pointer-events: auto;
     }
 
     .page-level-jump-bar .search-jump-bar {
         position: relative;
-        width: 32px;
-        min-width: 32px;
-        background: var(--surface, #1b1d1f);
-        border: 1px solid var(--border-color, #353d44);
-        border-right: none;
-        border-radius: 8px 0 0 8px;
-        box-shadow: -2px 0 8px rgba(0, 0, 0, 0.2);
+        width: var(--space-8);
+        min-width: var(--space-8);
+        height: 100%;
+        background: var(--surface);
+        border: var(--border-width-1) solid var(--divider);
+        border-radius: var(--radius-3);
+        box-shadow: 0 var(--space-2) var(--space-6) color-mix(in oklab, var(--bg) 70%, transparent);
+        display: flex;
+        flex-direction: column;
+        backdrop-filter: blur(8px);
     }
 
     .page-level-jump-bar .jump-bar-letters,
@@ -369,8 +402,20 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        padding: 0.5em 0;
-        gap: 1px;
+        padding: var(--space-2) 0;
+        gap: var(--space-1);
+        flex: 1;
+        justify-content: flex-start;
+        overflow-y: hidden; /* Never allow jumpbar to scroll */
+        max-height: calc(100vh - 200px);
+        scrollbar-width: none; /* Hide scrollbar for Firefox */
+        -ms-overflow-style: none; /* Hide scrollbar for IE/Edge */
+    }
+
+    /* Hide scrollbar for webkit browsers */
+    .page-level-jump-bar .jump-bar-letters::-webkit-scrollbar,
+    .search-engine .jump-bar-letters::-webkit-scrollbar {
+        display: none;
     }
 
     .page-level-jump-bar .jump-bar-letter,
@@ -378,34 +423,35 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 26px;
-        height: 22px;
+        width: var(--space-7);
+        height: var(--space-6);
         background: none;
         border: none;
-        color: var(--text-color, #e3e3e3);
-        font-size: 0.7em;
-        font-weight: 600;
+        color: var(--text-color);
+        font-size: var(--font-size-1);
+        font-weight: var(--font-weight-semibold);
         cursor: pointer;
-        border-radius: 3px;
+        border-radius: var(--radius-2);
         transition: all 0.15s ease;
         opacity: 0.8;
         user-select: none;
+        min-height: 32px; /* Accessibility: minimum touch target */
     }
 
     .page-level-jump-bar .jump-bar-letter:hover:not(:disabled),
     .search-engine .jump-bar-letter:hover:not(:disabled) {
-        background: var(--primary, #1e88e5);
-        color: var(--primary-contrast, white);
+        background: var(--primary);
+        color: var(--surface);
         opacity: 1;
-        transform: scale(1.1);
+        transform: scale(1.05);
     }
 
     .page-level-jump-bar .jump-bar-letter.active,
     .search-engine .jump-bar-letter.active {
-        background: var(--primary, #1e88e5);
-        color: var(--primary-contrast, white);
+        background: var(--primary);
+        color: var(--surface);
         opacity: 1;
-        transform: scale(1.15);
+        transform: scale(1.1);
     }
 
     .page-level-jump-bar .jump-bar-letter:disabled,
@@ -414,7 +460,7 @@
     .search-engine .jump-bar-letter.unavailable {
         opacity: 0.3;
         cursor: not-allowed;
-        color: var(--text-muted, #666);
+        color: var(--muted);
     }
 
     .page-level-jump-bar .jump-bar-letter.disabled,
@@ -427,15 +473,19 @@
 ====================================================== */
     .search-engine .search-grid {
         /* CSS Custom Properties - Single source of truth for virtualization */
-        --grid-gap: 1.2em;
+        --grid-gap: var(--space-4);
         --item-min-width: 140px;
         --item-width: 160px;
         --item-height: 320px;
 
-        /* Virtualization-friendly: No CSS Grid layout, just container */
-        margin-top: 1em;
+        /* Virtualization-friendly container with proper spacing */
+        margin-top: var(--space-3);
         position: relative;
         width: 100%;
+
+        /* Add proper margin for scrollbar space */
+        margin-right: var(--space-3);
+        padding-right: var(--space-2);
 
         /* Virtual items are absolutely positioned by JS */
     }
@@ -663,18 +713,19 @@
 
         /* Jump bar adjustments for tablets */
         .page-level-jump-bar {
-            width: 24px;
+            width: var(--space-7);
         }
 
         .page-level-jump-bar .search-jump-bar {
-            width: 24px;
-            min-width: 24px;
+            width: var(--space-7);
+            min-width: var(--space-7);
         }
 
         .page-level-jump-bar .jump-bar-letter {
-            width: 20px;
-            height: 18px;
-            font-size: 0.6em;
+            width: var(--space-6);
+            height: var(--space-5);
+            font-size: var(--font-size-0);
+            min-height: 28px; /* Accessibility: minimum touch target for tablets */
         }
     }
 
@@ -1123,13 +1174,60 @@
         border: 0;
     }
 
-    /* Result Virtualization Styles (Phase 2 Enhancement) */
+    /* Result Virtualization Styles (Enhanced) */
 
     .search-grid-virtualized-container,
     .search-list-virtualized-container {
         border: 1px solid var(--border);
         border-radius: 8px;
         background: var(--bg);
+
+        /* Optimize viewport sizing */
+        height: calc(100vh - 280px); /* Adjust based on header and controls height */
+        min-height: 400px;
+        max-height: 800px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    /* Virtualized content wrapper with proper scrolling */
+    .search-grid-virtualized-content,
+    .search-list-virtualized-content {
+        height: 100%;
+        overflow: auto;
+
+        /* Add scroll gutter to prevent overlap */
+        scrollbar-gutter: stable;
+        padding-right: var(--space-2);
+
+        /* Custom scrollbar styling */
+        scrollbar-width: thin;
+        scrollbar-color: var(--primary) var(--surface-variant);
+    }
+
+    /* Webkit scrollbar styling */
+    .search-grid-virtualized-content::-webkit-scrollbar,
+    .search-list-virtualized-content::-webkit-scrollbar {
+        width: 8px;
+        height: 8px;
+    }
+
+    .search-grid-virtualized-content::-webkit-scrollbar-track,
+    .search-list-virtualized-content::-webkit-scrollbar-track {
+        background: var(--surface-variant);
+        border-radius: var(--radius-1);
+    }
+
+    .search-grid-virtualized-content::-webkit-scrollbar-thumb,
+    .search-list-virtualized-content::-webkit-scrollbar-thumb {
+        background: var(--primary);
+        border-radius: var(--radius-1);
+        transition: background-color 0.2s ease;
+    }
+
+    .search-grid-virtualized-content::-webkit-scrollbar-thumb:hover,
+    .search-list-virtualized-content::-webkit-scrollbar-thumb:hover {
+        background: var(--primary-highlight);
     }
 
     /* Virtualized grid items maintain original styling but with absolute positioning */

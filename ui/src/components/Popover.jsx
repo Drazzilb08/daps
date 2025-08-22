@@ -17,6 +17,7 @@ import ReactDOM from 'react-dom';
  * @param {boolean} props.closeOnClickOutside - Close when clicking outside
  * @param {boolean} props.closeOnEscape - Close when pressing Escape key
  * @param {boolean} props.trapFocus - Trap focus within popover
+ * @param {boolean} props.preventBodyScroll - Prevent body scroll when popover is open
  * @param {string} props.ariaLabel - ARIA label for accessibility
  * @param {string} props.ariaDescribedBy - ARIA described by attribute
  */
@@ -33,6 +34,7 @@ const Popover = React.memo(
         closeOnClickOutside = true,
         closeOnEscape = true,
         trapFocus = false,
+        preventBodyScroll = false,
         ariaLabel,
         ariaDescribedBy,
     }) => {
@@ -193,6 +195,18 @@ const Popover = React.memo(
             }
         }, [show, trapFocus]);
 
+        // Body scroll prevention
+        useEffect(() => {
+            if (!show || !preventBodyScroll) return;
+
+            const originalStyle = window.getComputedStyle(document.body).overflow;
+            document.body.style.overflow = 'hidden';
+
+            return () => {
+                document.body.style.overflow = originalStyle;
+            };
+        }, [show, preventBodyScroll]);
+
         if (!show || !triggerRef?.current) return null;
 
         const popoverClasses = [
@@ -251,6 +265,7 @@ Popover.propTypes = {
     closeOnClickOutside: PropTypes.bool,
     closeOnEscape: PropTypes.bool,
     trapFocus: PropTypes.bool,
+    preventBodyScroll: PropTypes.bool,
     ariaLabel: PropTypes.string,
     ariaDescribedBy: PropTypes.string,
 };

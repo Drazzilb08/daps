@@ -322,13 +322,17 @@ export default function SearchCore({
 
     // ===== JUMP BAR DATA PROVIDER =====
     // Update page-level jump bar with current search data
+    // Initialize with proper default state to prevent race conditions
     useEffect(() => {
         updateJumpBarData({
             results: searchResults,
             currentSort,
             getDisplayTitle: searchAdapter?.getDisplayTitle || null,
             showJumpBar: showJumpBar && searchResults.length > 20,
-            scrollToLetter: null, // Will be set when GridView provides scroll function
+            scrollToLetter: () => {
+                // Default no-op function prevents race condition errors
+                console.warn('Jump bar scroll function not yet initialized');
+            },
         });
     }, [searchResults, currentSort, showJumpBar, searchAdapter, updateJumpBarData]);
 

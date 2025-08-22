@@ -56,14 +56,9 @@
         overflow: hidden;
     }
 
-    /* Ensure proper grid spacing and prevent overlaps */
-    .search-engine .search-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 1.5rem;
-        padding: 1rem 0;
-        align-items: start;
-    }
+    /* Grid layout is now handled by @tanstack/react-virtual in JavaScript */
+
+    /* .search-engine .search-grid styles moved to search-engine.css */
 
     /* Fix poster image sizing with consistent aspect ratio */
     .search-grid-item .poster-thumb-img {
@@ -221,28 +216,8 @@
         }
     }
 
-    /* Responsive grid adjustments */
-    @media (width >= 1400px) {
-        .search-engine .search-grid {
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 2rem;
-        }
-    }
-
-    @media (width <= 1200px) {
-        .search-engine .search-grid {
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 1.25rem;
-        }
-    }
-
+    /* Responsive adjustments for grid items (CSS Grid layout removed) */
     @media (width <= 768px) {
-        .search-engine .search-grid {
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 1rem;
-            padding: 0.75rem 0;
-        }
-
         .search-grid-item {
             min-height: 260px;
         }
@@ -253,11 +228,6 @@
     }
 
     @media (width <= 480px) {
-        .search-engine .search-grid {
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 0.75rem;
-        }
-
         .search-grid-item {
             min-height: 240px;
         }

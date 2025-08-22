@@ -26,6 +26,10 @@
     --space-4: 1rem;
     --space-5: 1.5rem;
     --space-6: 2rem;
+    --space-7: 3rem;
+    --space-8: 4rem;
+    --space-9: 5rem;
+    --space-10: 6rem;
 
     /* Radii & borders */
     --radius-0: 0;
@@ -52,7 +56,8 @@
     --line-height: 1.5;
     --font-weight-regular: 400;
     --font-weight-medium: 500;
-    --font-weight-bold: 600;
+    --font-weight-semibold: 600;
+    --font-weight-bold: 700;
 
     /* Motion */
     --duration-fast: 120ms;

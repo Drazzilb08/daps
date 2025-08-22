@@ -15,6 +15,11 @@
         max-width: 95%;
         min-width: 400px;
         padding: 0 2rem;
+
+        /* Natural block layout - no forced heights */
+        display: block; /* Remove flex behaviors that might force height */
+        min-height: auto; /* Content-driven height, not viewport-based */
+        height: auto; /* Natural height based on content */
     }
 
     /* ======================================================
@@ -29,6 +34,9 @@
         width: 100%;
         max-width: 1200px;
         padding: 0 var(--space-4);
+
+        /* Fixed height to prevent layout shifts */
+        flex-shrink: 0;
     }
 
     /* Left side controls group */
@@ -118,6 +126,9 @@
         margin: 0 auto var(--space-3);
         display: flex;
         align-items: center;
+
+        /* Fixed height to prevent layout shifts */
+        flex-shrink: 0;
     }
 
     .search-engine .search-bar-icon {
@@ -280,7 +291,7 @@
         border-radius: 0 0 8px 8px;
         max-height: 300px;
         overflow-y: auto;
-        z-index: 1000;
+        z-index: var(--z-dropdown);
         box-shadow: 0 4px 12px rgb(0 0 0 / 30%);
     }
 
@@ -344,14 +355,34 @@
     .search-engine .search-results {
         margin-top: 1em;
 
-        /* Removed padding for true edge-to-edge layout */
+        /* Container-based layout system for coordinated positioning */
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-areas: 'content jumpbar';
+        gap: var(--space-4);
+        align-items: start;
+
+        /* Content-driven sizing within grid structure */
+        min-height: auto;
+        max-height: none;
+        height: auto;
+    }
+
+    .search-engine .search-content-area {
+        grid-area: content;
+        min-width: 0; /* Prevent grid blowout */
+    }
+
+    .search-engine .search-jump-bar-area {
+        grid-area: jumpbar;
+        position: sticky;
+        top: var(--space-4);
+        align-self: start;
     }
 
     .search-engine .search-grid-container {
-        display: flex;
-        position: relative;
-        width: 100%;
-        flex-direction: row-reverse; /* Jump bar on right */
+        /* Legacy container - now handled by grid layout above */
+        display: contents; /* Flatten into parent grid */
     }
 
     .search-engine .owner-group {
@@ -371,15 +402,14 @@
    SEARCH ENGINE: PAGE LEVEL JUMP BAR
 ====================================================== */
     .page-level-jump-bar {
-        /* Full height extension with fixed positioning */
-        position: fixed;
-        top: 50%;
-        right: var(--space-4);
-        transform: translateY(-50%);
+        /* Container-relative positioning - coordinates with grid layout */
+        position: relative; /* Changed from fixed to relative */
+        width: var(--space-8);
+        min-width: var(--space-8);
         height: auto;
         max-height: calc(100vh - 200px);
         min-height: 300px;
-        z-index: 1000;
+        z-index: var(--z-sticky); /* Use design token instead of magic number */
         pointer-events: auto;
     }
 
@@ -443,7 +473,8 @@
         background: var(--primary);
         color: var(--surface);
         opacity: 1;
-        transform: scale(1.05);
+
+        /* Removed transform to prevent stacking context isolation */
     }
 
     .page-level-jump-bar .jump-bar-letter.active,
@@ -451,7 +482,8 @@
         background: var(--primary);
         color: var(--surface);
         opacity: 1;
-        transform: scale(1.1);
+
+        /* Removed transform to prevent stacking context isolation */
     }
 
     .page-level-jump-bar .jump-bar-letter:disabled,
@@ -478,16 +510,22 @@
         --item-width: 160px;
         --item-height: 320px;
 
-        /* Virtualization-friendly container with proper spacing */
+        /* Clean container layout - no artificial margins */
         margin-top: var(--space-3);
         position: relative;
         width: 100%;
 
-        /* Add proper margin for scrollbar space */
-        margin-right: var(--space-3);
-        padding-right: var(--space-2);
+        /* Removed margin-right - spacing now handled by parent grid layout */
 
         /* Virtual items are absolutely positioned by JS */
+    }
+
+    .search-engine .search-grid-row {
+        /* Grid row wrapper for virtualized items */
+
+        /* Uses CSS Grid for proper alignment and spacing */
+
+        /* Position and transform handled by @tanstack/react-virtual */
     }
 
     .search-engine .search-grid-item {
@@ -702,8 +740,7 @@
             --item-width: 120px;
             --item-height: 280px;
 
-            grid-template-columns: repeat(auto-fill, minmax(var(--item-min-width), 1fr));
-            gap: var(--grid-gap);
+            /* Removed grid-template-columns - layout handled by React Virtual */
         }
 
         .search-engine .search-grid-item {
@@ -726,6 +763,12 @@
             height: var(--space-5);
             font-size: var(--font-size-0);
             min-height: 28px; /* Accessibility: minimum touch target for tablets */
+        }
+
+        /* Responsive jump bar sizing for tablets */
+        .page-level-jump-bar {
+            width: var(--space-7);
+            min-width: var(--space-7);
         }
     }
 
@@ -752,8 +795,7 @@
             --item-width: 100px;
             --item-height: 240px;
 
-            grid-template-columns: repeat(auto-fill, minmax(var(--item-min-width), 1fr));
-            gap: var(--grid-gap);
+            /* Removed grid-template-columns - layout handled by React Virtual */
         }
 
         .search-engine .search-grid-item {
@@ -766,9 +808,29 @@
             font-size: 0.9em;
         }
 
-        /* Hide jump bar on mobile to maximize space */
+        /* Mobile-optimized jump bar - compact but functional */
         .page-level-jump-bar {
-            display: none;
+            width: var(--space-6);
+            min-width: var(--space-6);
+            max-height: calc(100vh - 300px);
+            min-height: 200px;
+        }
+
+        .page-level-jump-bar .search-jump-bar {
+            width: var(--space-6);
+            min-width: var(--space-6);
+        }
+
+        .page-level-jump-bar .jump-bar-letter {
+            width: var(--space-5);
+            height: var(--space-4);
+            font-size: var(--font-size-0);
+            min-height: 24px; /* Smaller but still accessible */
+        }
+
+        /* Adjust search results layout for mobile jump bar */
+        .search-engine .search-results {
+            gap: var(--space-2); /* Smaller gap on mobile */
         }
     }
 
@@ -804,8 +866,7 @@
 
         /* Mobile-friendly grid */
         .search-engine .search-grid {
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 1rem;
+            /* Removed grid-template-columns - layout handled by React Virtual */
             padding: 0 0.5rem;
         }
 
@@ -884,8 +945,7 @@
         }
 
         .search-engine .search-grid {
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            gap: 0.75rem;
+            /* Removed grid-template-columns - layout handled by React Virtual */
             padding: 0 0.25rem;
         }
 
@@ -907,7 +967,7 @@
         }
 
         .search-engine .search-grid {
-            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            /* Removed grid-template-columns - layout handled by React Virtual */
         }
 
         .search-engine .search-grid-item {
@@ -947,8 +1007,7 @@
     }
 
     .search-engine--compact .search-grid {
-        grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-        gap: 0.8em;
+        /* Removed grid-template-columns - layout handled by React Virtual */
     }
 
     .search-engine--compact .search-grid-item {
@@ -1182,27 +1241,25 @@
         border-radius: 8px;
         background: var(--bg);
 
-        /* Optimize viewport sizing */
-        height: calc(100vh - 280px); /* Adjust based on header and controls height */
-        min-height: 400px;
-        max-height: 800px;
-        overflow: hidden;
+        /* Natural content-driven sizing */
+        height: auto; /* Natural height based on content */
+        min-height: auto; /* No artificial minimums */
+        max-height: none; /* No artificial maximums */
+        overflow: visible; /* Natural overflow handling */
         position: relative;
     }
 
-    /* Virtualized content wrapper with proper scrolling */
+    /* Virtualized content wrapper - natural sizing */
     .search-grid-virtualized-content,
     .search-list-virtualized-content {
-        height: 100%;
-        overflow: auto;
+        height: auto; /* Natural height based on content */
+        overflow: visible; /* No artificial scrolling constraints */
 
-        /* Add scroll gutter to prevent overlap */
-        scrollbar-gutter: stable;
-        padding-right: var(--space-2);
+        /* Remove scroll gutter as we're using natural sizing */
+        scrollbar-gutter: auto;
+        padding-right: 0;
 
-        /* Custom scrollbar styling */
-        scrollbar-width: thin;
-        scrollbar-color: var(--primary) var(--surface-variant);
+        /* No scrollbars needed with natural sizing */
     }
 
     /* Webkit scrollbar styling */

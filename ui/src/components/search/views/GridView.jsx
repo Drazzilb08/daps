@@ -1,7 +1,8 @@
 // ui/src/components/search/views/GridView.jsx
-// Grid View with hybrid virtualization - used by all search types
+// Grid View with @tanstack/react-virtual - used by all search types
 
-import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
+import React, { useRef, useEffect, useCallback, useMemo, useState } from 'react';
+import { useVirtualizer } from '@tanstack/react-virtual';
 import LazyImage from '../../common/LazyImage';
 import { useSearchJumpBar } from '../SearchJumpBarProvider';
 
@@ -24,68 +25,84 @@ export default function GridView({
     // Simplified configuration - always virtualized
     groupBy = null,
 }) {
-    // Always virtualized - single unified system
+    // Container ref for @tanstack/react-virtual
     const containerRef = useRef(null);
-    const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
-    const [scrollTop, setScrollTop] = useState(0);
 
     // Jump bar context for page-level communication
     const { updateJumpBarData } = useSearchJumpBar();
 
-    // Performance: Use base values and calculate dynamic sizing for edge-to-edge layout
+    // CSS-First Configuration: Grid dimensions
     const baseItemWidth = 160;
     const itemHeight = 320;
     const gap = 19.2; // 1.2em ≈ 19.2px
 
-    // Calculate items per row and dynamic width for edge-to-edge layout with responsive behavior
-    const { itemsPerRow, itemWidth, responsiveGap } = useMemo(() => {
-        if (containerSize.width <= 0)
-            return { itemsPerRow: 1, itemWidth: baseItemWidth, responsiveGap: gap };
+    // State for container dimensions
+    const [containerWidth, setContainerWidth] = useState(0);
+
+    // Calculate grid layout for responsive design
+    const gridLayout = useMemo(() => {
+        if (containerWidth <= 0) {
+            // Default layout for initial render
+            return { itemsPerRow: 4, itemWidth: baseItemWidth, responsiveGap: gap };
+        }
 
         // Responsive gap and minimum width based on screen size
-        const isMobile = containerSize.width <= 768;
+        const isMobile = containerWidth <= 768;
         const currentGap = isMobile ? 12.8 : gap; // 0.8em vs 1.2em
         const minWidth = isMobile ? 100 : 140;
 
         // Calculate how many items fit with base width
-        const baseItemsPerRow = Math.max(
-            1,
-            Math.floor(containerSize.width / (minWidth + currentGap))
-        );
+        const itemsPerRow = Math.max(1, Math.floor(containerWidth / (minWidth + currentGap)));
 
         // Calculate actual item width to fill container completely (edge-to-edge)
-        const actualItemWidth =
-            (containerSize.width - (baseItemsPerRow - 1) * currentGap) / baseItemsPerRow;
+        const actualItemWidth = (containerWidth - (itemsPerRow - 1) * currentGap) / itemsPerRow;
 
         return {
-            itemsPerRow: baseItemsPerRow,
+            itemsPerRow,
             itemWidth: Math.max(minWidth, actualItemWidth),
             responsiveGap: currentGap,
         };
-    }, [containerSize.width, baseItemWidth, gap]);
+    }, [containerWidth, baseItemWidth, gap]);
 
-    // Update container size on resize (always virtualized)
+    // Update container width on resize - with proper timing
     useEffect(() => {
         const updateSize = () => {
             if (containerRef.current) {
-                const rect = containerRef.current.getBoundingClientRect();
-                setContainerSize({ width: rect.width, height: rect.height });
+                // Use requestAnimationFrame to ensure layout is complete
+                requestAnimationFrame(() => {
+                    if (containerRef.current) {
+                        const rect = containerRef.current.getBoundingClientRect();
+                        setContainerWidth(rect.width);
+                    }
+                });
             }
         };
 
-        updateSize();
+        // Delay initial measurement to ensure CSS layout is complete
+        const timeoutId = setTimeout(updateSize, 100);
+
+        // Listen for resize events
         window.addEventListener('resize', updateSize);
-        return () => window.removeEventListener('resize', updateSize);
+
+        return () => {
+            clearTimeout(timeoutId);
+            window.removeEventListener('resize', updateSize);
+        };
     }, []);
 
-    // Handle scroll (always virtualized)
-    const handleScroll = useCallback(e => {
-        setScrollTop(e.target.scrollTop);
-    }, []);
+    // Prepare data for virtualization (convert to rows for grid layout)
+    const virtualData = useMemo(() => {
+        const { itemsPerRow } = gridLayout;
 
-    // Group results for proper rendering
-    const groupedData = useMemo(() => {
-        if (!groupBy) return { isGrouped: false, groups: [], allItems: results };
+        if (!groupBy) {
+            // Convert items to rows for grid virtualization
+            const rows = [];
+            for (let i = 0; i < results.length; i += itemsPerRow) {
+                const rowItems = results.slice(i, i + itemsPerRow);
+                rows.push({ type: 'row', items: rowItems, startIndex: i });
+            }
+            return rows;
+        }
 
         // Group results first
         const groups = {};
@@ -100,368 +117,283 @@ export default function GridView({
             groups[groupKey].push(item);
         });
 
-        // Convert to array of group objects
-        const groupArray = Object.entries(groups).map(([groupKey, items]) => ({
-            groupKey,
-            items,
-            itemCount: items.length,
-        }));
+        // Convert to flat array with headers and item rows
+        const flatData = [];
+        Object.entries(groups).forEach(([groupKey, items]) => {
+            flatData.push({ type: 'header', groupKey, itemCount: items.length });
 
-        return { isGrouped: true, groups: groupArray, allItems: results };
-    }, [results, groupBy]);
-
-    // Calculate total height and visible content
-    const layoutData = useMemo(() => {
-        if (!groupedData.isGrouped) {
-            // Non-grouped layout - standard grid
-            const totalRows = Math.ceil(results.length / itemsPerRow);
-            const totalHeight = totalRows * (itemHeight + responsiveGap) - responsiveGap;
-            return { totalHeight, isGrouped: false, results };
-        }
-
-        // Grouped layout - calculate positions for groups and items
-        let currentY = 0;
-        const headerHeight = 50; // Height for group headers
-        const groupGap = 20; // Gap between groups
-
-        const layoutGroups = groupedData.groups.map(group => {
-            const groupStartY = currentY;
-            currentY += headerHeight; // Header height
-
-            // Calculate grid for items in this group
-            const groupRows = Math.ceil(group.items.length / itemsPerRow);
-            const groupItemsHeight = groupRows * (itemHeight + responsiveGap) - responsiveGap;
-
-            const groupData = {
-                groupKey: group.groupKey,
-                itemCount: group.itemCount,
-                headerY: groupStartY,
-                itemsStartY: currentY,
-                items: group.items,
-                height: headerHeight + groupItemsHeight,
-            };
-
-            currentY += groupItemsHeight + groupGap;
-            return groupData;
+            // Convert group items to rows
+            for (let i = 0; i < items.length; i += itemsPerRow) {
+                const rowItems = items.slice(i, i + itemsPerRow);
+                flatData.push({ type: 'row', items: rowItems, startIndex: i, groupKey });
+            }
         });
 
-        return {
-            totalHeight: currentY - groupGap,
-            isGrouped: true,
-            groups: layoutGroups,
-        };
-    }, [groupedData, itemsPerRow, itemHeight, responsiveGap, results]);
+        return flatData;
+    }, [results, groupBy, gridLayout]);
 
-    // Calculate visible items based on scroll position
-    const visibleData = useMemo(() => {
-        if (!layoutData.isGrouped) {
-            // Standard non-grouped virtualization
-            const totalRows = Math.ceil(results.length / itemsPerRow);
-            const rowHeight = itemHeight + responsiveGap;
-            const visibleStartRow = Math.floor(scrollTop / rowHeight);
-            const visibleEndRow = Math.min(
-                totalRows,
-                Math.ceil((scrollTop + containerSize.height) / rowHeight)
-            );
+    // Fixed height container for proper virtualization
+    const containerHeight = useMemo(() => {
+        if (!virtualData.length) return 400; // Reasonable default for empty state
 
-            const startIndex = Math.max(0, (visibleStartRow - 3) * itemsPerRow);
-            const endIndex = Math.min(results.length, (visibleEndRow + 3) * itemsPerRow);
+        // Fixed height enables virtualization by creating a scrollable viewport
+        // This is essential for @tanstack/react-virtual to work correctly
+        return '100vh'; // Match ListView.jsx pattern - consistent height for scrolling
+    }, [virtualData]);
 
-            const visibleItems = [];
-            for (let i = startIndex; i < endIndex; i++) {
-                if (results[i]) {
-                    visibleItems.push({
-                        type: 'item',
-                        index: i,
-                        result: results[i],
-                        y: Math.floor(i / itemsPerRow) * (itemHeight + responsiveGap),
-                        x: (i % itemsPerRow) * (itemWidth + responsiveGap),
-                    });
+    // Use @tanstack/react-virtual for virtualization
+    const virtualizer = useVirtualizer({
+        count: virtualData.length,
+        getScrollElement: () => containerRef.current,
+        estimateSize: useCallback(
+            index => {
+                const item = virtualData[index];
+                if (item?.type === 'header') {
+                    return 50; // Header height
                 }
+                // For grid rows, return row height
+                return itemHeight + gap;
+            },
+            [virtualData, itemHeight, gap]
+        ),
+        overscan: 3, // Reduced overscan for better space utilization
+    });
+
+    // Performance monitoring - ensure virtualization is working
+    useEffect(() => {
+        if (import.meta.env.DEV) {
+            const virtualItems = virtualizer.getVirtualItems();
+            const totalItems = virtualData.length;
+            const renderedItems = virtualItems.length;
+
+            if (totalItems > 100 && renderedItems > totalItems * 0.5) {
+                console.warn(
+                    `GridView Performance Warning: Rendering ${renderedItems}/${totalItems} items. ` +
+                        `Expected ~30-50 items for proper virtualization. Check container height and overflow settings.`
+                );
+            } else if (totalItems > 20) {
+                console.log(
+                    `GridView Virtualization OK: Rendering ${renderedItems}/${totalItems} items`
+                );
             }
-            return { visibleItems };
         }
-
-        // Grouped virtualization
-        const visibleContent = [];
-        const viewportTop = scrollTop;
-        const viewportBottom = scrollTop + containerSize.height;
-
-        layoutData.groups.forEach(group => {
-            const groupBottom = group.headerY + group.height;
-
-            // Check if group is in viewport
-            if (groupBottom < viewportTop || group.headerY > viewportBottom) return;
-
-            // Add group header if visible
-            if (group.headerY >= viewportTop - 100 && group.headerY <= viewportBottom + 100) {
-                visibleContent.push({
-                    type: 'header',
-                    groupKey: group.groupKey,
-                    itemCount: group.itemCount,
-                    y: group.headerY,
-                });
-            }
-
-            // Add visible items from this group
-            group.items.forEach((item, itemIndex) => {
-                const itemY =
-                    group.itemsStartY +
-                    Math.floor(itemIndex / itemsPerRow) * (itemHeight + responsiveGap);
-                const itemX = (itemIndex % itemsPerRow) * (itemWidth + responsiveGap);
-                const itemBottom = itemY + itemHeight;
-
-                if (itemBottom >= viewportTop - 100 && itemY <= viewportBottom + 100) {
-                    visibleContent.push({
-                        type: 'item',
-                        result: item,
-                        itemIndex,
-                        y: itemY,
-                        x: itemX,
-                    });
-                }
-            });
-        });
-
-        return { visibleItems: visibleContent };
-    }, [
-        layoutData,
-        scrollTop,
-        containerSize.height,
-        itemsPerRow,
-        itemHeight,
-        responsiveGap,
-        itemWidth,
-        results,
-    ]);
+    }, [virtualizer, virtualData.length]);
 
     // Jump bar navigation handler for page-level jump bar
     const handleJumpToLetter = useCallback(
         letter => {
-            if (!containerRef.current || !results.length) return;
+            if (!containerRef.current || !virtualData.length) return;
 
-            if (!layoutData.isGrouped) {
-                // Non-grouped layout - find first matching item
-                let targetIndex = -1;
-                for (let i = 0; i < results.length; i++) {
-                    const item = results[i];
-                    const title = getDisplayTitle
-                        ? getDisplayTitle(item)
-                        : item.title ||
-                          item.original?.title ||
-                          item.name ||
-                          item.original?.name ||
-                          'Unknown';
-
-                    const firstChar = title.trim().charAt(0).toUpperCase();
-
-                    if (letter === '#' && /[0-9]/.test(firstChar)) {
-                        targetIndex = i;
-                        break;
-                    } else if (
-                        firstChar &&
-                        firstChar.match(/[\u00C0-\u017F\u0180-\u024F]/) &&
-                        firstChar === letter
-                    ) {
-                        targetIndex = i;
-                        break;
-                    } else if (firstChar === letter) {
+            let targetIndex = -1;
+            for (let i = 0; i < virtualData.length; i++) {
+                const dataItem = virtualData[i];
+                if (dataItem.type === 'header') {
+                    const firstChar = dataItem.groupKey.trim().charAt(0).toUpperCase();
+                    if ((letter === '#' && /[0-9]/.test(firstChar)) || firstChar === letter) {
                         targetIndex = i;
                         break;
                     }
-                }
-
-                if (targetIndex >= 0) {
-                    const rowHeight = itemHeight + responsiveGap;
-                    const targetRow = Math.floor(targetIndex / itemsPerRow);
-                    const targetScrollTop = targetRow * rowHeight;
-
-                    containerRef.current.scrollTo({
-                        top: targetScrollTop,
-                        behavior: 'smooth',
-                    });
-                }
-            } else {
-                // Grouped layout - find first group or item that matches
-                let targetY = -1;
-
-                for (const group of layoutData.groups) {
-                    // Check if group title matches
-                    const groupFirstChar = group.groupKey.trim().charAt(0).toUpperCase();
-                    if (
-                        (letter === '#' && /[0-9]/.test(groupFirstChar)) ||
-                        (groupFirstChar &&
-                            groupFirstChar.match(/[\u00C0-\u017F\u0180-\u024F]/) &&
-                            groupFirstChar === letter) ||
-                        groupFirstChar === letter
-                    ) {
-                        targetY = group.headerY;
-                        break;
-                    }
-
-                    // Check items in group
-                    for (const item of group.items) {
+                } else if (dataItem.type === 'row') {
+                    // Check first item in row
+                    const firstItem = dataItem.items[0];
+                    if (firstItem) {
                         const title = getDisplayTitle
-                            ? getDisplayTitle(item)
-                            : item.title ||
-                              item.original?.title ||
-                              item.name ||
-                              item.original?.name ||
+                            ? getDisplayTitle(firstItem)
+                            : firstItem.title ||
+                              firstItem.original?.title ||
+                              firstItem.name ||
+                              firstItem.original?.name ||
                               'Unknown';
 
                         const firstChar = title.trim().charAt(0).toUpperCase();
-
-                        if (
-                            (letter === '#' && /[0-9]/.test(firstChar)) ||
-                            (firstChar &&
-                                firstChar.match(/[\u00C0-\u017F\u0180-\u024F]/) &&
-                                firstChar === letter) ||
-                            firstChar === letter
-                        ) {
-                            targetY = group.headerY;
+                        if ((letter === '#' && /[0-9]/.test(firstChar)) || firstChar === letter) {
+                            targetIndex = i;
                             break;
                         }
                     }
-
-                    if (targetY >= 0) break;
-                }
-
-                if (targetY >= 0) {
-                    containerRef.current.scrollTo({
-                        top: targetY,
-                        behavior: 'smooth',
-                    });
                 }
             }
+
+            if (targetIndex >= 0) {
+                virtualizer.scrollToIndex(targetIndex, { behavior: 'smooth' });
+            }
         },
-        [results, getDisplayTitle, itemHeight, responsiveGap, itemsPerRow, layoutData]
+        [virtualData, getDisplayTitle, virtualizer]
     );
 
-    // Register scroll function with jump bar context
+    // Register scroll function with jump bar context - prevent circular dependency
     useEffect(() => {
-        updateJumpBarData({
-            scrollToLetter: handleJumpToLetter,
-        });
-    }, [handleJumpToLetter, updateJumpBarData]);
-
-    // Render content based on type
-    const renderContent = (item, index) => {
-        if (item.type === 'header') {
-            return (
-                <div
-                    key={`group-header-${item.groupKey}`}
-                    className="owner-label"
-                    style={{
-                        position: 'absolute',
-                        top: item.y,
-                        left: 0,
-                        width: '100%',
-                        height: 50,
-                        display: 'flex',
-                        alignItems: 'center',
-                        padding: '0 20px',
-                        zIndex: 10,
-                    }}
-                >
-                    <span className="owner-name">{item.groupKey}</span>
-                    <span className="owner-count" style={{ marginLeft: 8 }}>
-                        ({item.itemCount} items)
-                    </span>
-                </div>
-            );
+        // Only update if we have valid data and the function has changed
+        if (virtualData.length > 0 && handleJumpToLetter) {
+            updateJumpBarData({
+                scrollToLetter: handleJumpToLetter,
+            });
         }
+    }, [handleJumpToLetter, updateJumpBarData, virtualData.length]);
 
-        if (item.type === 'item') {
-            const obj = item.result.original || item.result;
-            const displayTitle = getDisplayTitle
-                ? getDisplayTitle(item.result)
-                : item.result.title || obj.title || 'Untitled';
-            const imageUrl = getImageUrl ? getImageUrl(item.result) : '';
-            const isFocused = focusedResultIndex === (item.index || index);
+    // Render individual virtual item (row or header)
+    const renderVirtualItem = useCallback(
+        virtualItem => {
+            const dataItem = virtualData[virtualItem.index];
+            const { itemWidth, responsiveGap, itemsPerRow } = gridLayout;
 
-            return (
-                <div
-                    key={getResultKey ? getResultKey(item.result, index) : `grid-item-${index}`}
-                    className={`search-grid-item ${isFocused ? 'keyboard-focused' : ''}`}
-                    style={{
-                        position: 'absolute',
-                        top: item.y,
-                        left: item.x,
-                        width: itemWidth,
-                        height: itemHeight,
-                    }}
-                    data-location={encodeURIComponent(obj.location || '')}
-                    data-file={encodeURIComponent(obj.file || '')}
-                    tabIndex={0}
-                    title={displayTitle}
-                    onClick={() => onResultClick(item.result)}
-                    role="button"
-                    aria-label={`Open ${displayTitle}`}
-                    aria-describedby={`result-${index}-meta`}
-                >
-                    <div className="search-grid-item-image">
-                        {imageUrl && (
-                            <LazyImage
-                                src={imageUrl}
-                                alt={displayTitle}
-                                className="search-grid-item-poster"
-                                fallbackSrc="/placeholder-poster.jpg"
-                            />
-                        )}
-                        {renderMetadata && (
-                            <div id={`result-${index}-meta`} className="search-grid-item-metadata">
-                                {renderMetadata(item.result)}
-                            </div>
-                        )}
+            if (dataItem.type === 'header') {
+                return (
+                    <div
+                        key={`group-header-${dataItem.groupKey}`}
+                        className="owner-label"
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: virtualItem.size,
+                            transform: `translateY(${virtualItem.start}px)`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            padding: '0 20px',
+                            zIndex: 10,
+                        }}
+                    >
+                        <span className="owner-name">{dataItem.groupKey}</span>
+                        <span className="owner-count" style={{ marginLeft: 8 }}>
+                            ({dataItem.itemCount} items)
+                        </span>
                     </div>
+                );
+            }
 
-                    <div className="search-grid-item-details">
-                        <div
-                            className="search-grid-item-title"
-                            dangerouslySetInnerHTML={{
-                                __html: highlightSearchTerm
-                                    ? highlightSearchTerm(displayTitle, searchTerm)
-                                    : displayTitle,
-                            }}
-                        />
+            if (dataItem.type === 'row') {
+                return (
+                    <div
+                        key={`grid-row-${virtualItem.index}`}
+                        className="search-grid-row"
+                        style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: virtualItem.size,
+                            transform: `translateY(${virtualItem.start}px)`,
+                            display: 'grid',
+                            gridTemplateColumns: `repeat(${itemsPerRow}, ${itemWidth}px)`,
+                            gap: `${responsiveGap}px`,
+                            justifyContent: 'start',
+                        }}
+                    >
+                        {dataItem.items.map((item, colIndex) => {
+                            const obj = item.original || item;
+                            const displayTitle = getDisplayTitle
+                                ? getDisplayTitle(item)
+                                : item.title || obj.title || 'Untitled';
+                            const imageUrl = getImageUrl ? getImageUrl(item) : '';
+                            const actualIndex = dataItem.startIndex + colIndex;
+                            const isFocused = focusedResultIndex === actualIndex;
+
+                            return (
+                                <div
+                                    key={
+                                        getResultKey
+                                            ? getResultKey(item, actualIndex)
+                                            : `grid-item-${actualIndex}`
+                                    }
+                                    className={`search-grid-item ${isFocused ? 'keyboard-focused' : ''}`}
+                                    style={{
+                                        width: `${itemWidth}px`,
+                                        height: `${itemHeight}px`,
+                                    }}
+                                    data-location={encodeURIComponent(obj.location || '')}
+                                    data-file={encodeURIComponent(obj.file || '')}
+                                    tabIndex={0}
+                                    title={displayTitle}
+                                    onClick={() => onResultClick(item)}
+                                    role="button"
+                                    aria-label={`Open ${displayTitle}`}
+                                    aria-describedby={`result-${actualIndex}-meta`}
+                                >
+                                    <div className="search-grid-item-image">
+                                        {imageUrl && (
+                                            <LazyImage
+                                                src={imageUrl}
+                                                alt={displayTitle}
+                                                className="search-grid-item-poster"
+                                                fallbackSrc="/placeholder-poster.jpg"
+                                            />
+                                        )}
+                                        {renderMetadata && (
+                                            <div
+                                                id={`result-${actualIndex}-meta`}
+                                                className="search-grid-item-metadata"
+                                            >
+                                                {renderMetadata(item)}
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    <div className="search-grid-item-details">
+                                        <div
+                                            className="search-grid-item-title"
+                                            dangerouslySetInnerHTML={{
+                                                __html: highlightSearchTerm
+                                                    ? highlightSearchTerm(displayTitle, searchTerm)
+                                                    : displayTitle,
+                                            }}
+                                        />
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
-                </div>
-            );
-        }
+                );
+            }
 
-        return null;
-    };
+            return null;
+        },
+        [
+            virtualData,
+            gridLayout,
+            itemHeight,
+            getDisplayTitle,
+            getImageUrl,
+            highlightSearchTerm,
+            searchTerm,
+            renderMetadata,
+            onResultClick,
+            getResultKey,
+            focusedResultIndex,
+        ]
+    );
 
     if (!results.length) return null;
 
     // Unified CSS classes (virtualization is transparent)
     let containerClasses = className;
-    if (layoutData.isGrouped) containerClasses += ' search-results-grouped';
+    if (groupBy) containerClasses += ' search-results-grouped';
 
     return (
         <div className={containerClasses} ref={resultsContainerRef}>
-            {/* Grid container with improved structure to prevent footer issues */}
+            {/* Grid container with @tanstack/react-virtual */}
             <div
                 ref={containerRef}
                 className="search-grid"
                 style={{
-                    height: 'calc(100vh - 280px)', // Adjusted for proper spacing
-                    overflow: 'auto',
+                    height: containerHeight, // Fixed height for proper virtualization
+                    minHeight: containerHeight, // Consistent minimum height
+                    overflow: 'auto', // Enable scrolling - essential for virtualization
                     position: 'relative',
                     background: 'var(--bg)',
                     borderRadius: 'var(--radius-2)',
                 }}
-                onScroll={handleScroll}
             >
-                {/* Content wrapper with exact height to prevent phantom footer */}
+                {/* Virtual content wrapper */}
                 <div
                     style={{
-                        height: Math.max(layoutData.totalHeight, containerSize.height || 400),
+                        height: virtualizer.getTotalSize(),
                         position: 'relative',
-                        minHeight: '100%',
+                        width: '100%',
                     }}
                 >
-                    {visibleData.visibleItems.map((item, index) => renderContent(item, index))}
+                    {virtualizer.getVirtualItems().map(renderVirtualItem)}
                 </div>
             </div>
         </div>

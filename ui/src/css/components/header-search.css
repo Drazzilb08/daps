@@ -144,7 +144,7 @@
         border: var(--border-width-1) solid var(--divider);
         border-radius: var(--radius-2);
         box-shadow: 0 4px 12px color-mix(in oklab, var(--bg) 80%, transparent);
-        z-index: 1000;
+        z-index: var(--z-dropdown);
         max-height: 300px;
         overflow-y: auto;
         margin-top: var(--space-1);
@@ -332,6 +332,7 @@
         100% {
             transform: rotate(0deg);
         }
+
         50% {
             transform: rotate(180deg);
         }

@@ -9,6 +9,7 @@ import LoadingSpinner from '../../common/LoadingSpinner';
 import { useToast } from '../../providers/ToastProvider';
 import { SearchSorter } from '../sorting';
 import { useSearchJumpBar } from '../SearchJumpBarProvider';
+import { useHeaderSearch } from '../../../contexts/HeaderSearchProvider';
 
 // Stable default functions to prevent infinite loops
 const defaultOnError = () => {};
@@ -100,6 +101,7 @@ export default function SearchCore({
     const toast = useToast();
     const isMountedRef = useRef(true);
     const { updateJumpBarData } = useSearchJumpBar();
+    const { registerPageSearch } = useHeaderSearch();
     const debounceTimeoutRef = useRef(null);
     const searchInputRef = useRef(null);
     const resultsContainerRef = useRef(null);
@@ -137,6 +139,66 @@ export default function SearchCore({
             }
         };
     }, []);
+
+    // ===== HEADER SEARCH INTEGRATION =====
+    // Register this SearchCore with the HeaderSearchProvider
+    useEffect(() => {
+        if (!registerPageSearch) return;
+
+        const searchCoreAPI = {
+            executeSearch: term => {
+                setPendingSearchTerm(term);
+                setSearchTerm(term);
+                setHasUserSearched(true);
+            },
+            changeSource: newSource => {
+                setCurrentSource(newSource);
+                onSourceChange(newSource);
+            },
+            changeView: newView => {
+                setCurrentView(newView);
+            },
+            changeSort: newSort => {
+                setCurrentSort(newSort);
+            },
+            changeFilter: (filterKey, value) => {
+                setActiveFilters(prev => ({
+                    ...prev,
+                    [filterKey]: value,
+                }));
+            },
+            executeRefresh: options => {
+                if (onRefresh) {
+                    onRefresh(options);
+                }
+            },
+        };
+
+        const searchConfig = {
+            adapter: searchAdapter,
+            sources,
+            filters,
+            sortOptions,
+            defaultView,
+            defaultSort,
+            defaultSource: currentSource,
+            showRefreshControls,
+        };
+
+        registerPageSearch(searchCoreAPI, searchConfig);
+    }, [
+        registerPageSearch,
+        searchAdapter,
+        sources,
+        filters,
+        sortOptions,
+        defaultView,
+        defaultSort,
+        currentSource,
+        showRefreshControls,
+        onSourceChange,
+        onRefresh,
+    ]);
 
     // ===== DATA LOADING =====
     useEffect(() => {

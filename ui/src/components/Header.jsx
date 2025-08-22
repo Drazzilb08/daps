@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import HeaderSearch from './HeaderSearch';
 
 // Helper function to close mobile sidebar
 function closeMobileSidebar() {
@@ -71,6 +72,10 @@ function Header() {
             <a href="/" className="nav-logo">
                 <img src="/img/favicon-32x32.png" alt="DAPS logo" />
             </a>
+
+            {/* Header Search - only shows on search pages */}
+            <HeaderSearch />
+
             <button
                 className="hamburger menu"
                 id="sidebarToggle"

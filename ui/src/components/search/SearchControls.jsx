@@ -6,6 +6,24 @@ import { getIcon, humanize } from '../../utils/tools';
 import TooltipFactory from '../Tooltip';
 import Popover from '../Popover';
 import usePopover from '../../hooks/usePopover';
+import { useHeaderSearch } from '../../contexts/HeaderSearchProvider';
+
+// Internal component that uses the header search context
+function SearchControlsInner(props) {
+    const headerSearchContext = useHeaderSearch();
+    const isHeaderSearchActive = headerSearchContext?.isSearchPage();
+
+    return <SearchControlsCore {...props} isHeaderSearchActive={isHeaderSearchActive} />;
+}
+
+// Wrapper component that handles the error
+function SearchControlsWrapper(props) {
+    try {
+        return <SearchControlsInner {...props} />;
+    } catch {
+        return <SearchControlsCore {...props} isHeaderSearchActive={false} />;
+    }
+}
 
 const DEFAULT_VIEW_MODES = [
     { key: 'grid', icon: 'mi:grid_view', label: 'Grid', tooltip: 'Grid view' },
@@ -18,7 +36,9 @@ const DEFAULT_SORT_OPTIONS = [
     { value: 'date', label: 'Date Added' },
 ];
 
-export default function SearchControls({
+// Core component logic
+function SearchControlsCore({
+    isHeaderSearchActive = false,
     // Source management
     sources = [],
     currentSource,
@@ -68,6 +88,10 @@ export default function SearchControls({
     showViewToggle = true,
     selectorLabel = 'Source',
 }) {
+    // If header search is active, hide the page-level search bar and some controls
+    const shouldShowSearch = showSearch && !isHeaderSearchActive;
+    const shouldShowSelector = sources.length > 0 && !isHeaderSearchActive;
+    const shouldShowRefresh = showRefreshControls && !isHeaderSearchActive;
     // ===== REFS =====
     const viewBtnRefs = useRef({});
     const searchBtnRef = useRef();
@@ -628,7 +652,7 @@ export default function SearchControls({
     };
 
     const renderSearchBar = () => {
-        if (!showSearch) return null;
+        if (!shouldShowSearch) return null;
 
         return (
             <div className={`search-bar-container${searchTerm ? ' has-clear-btn' : ''}`}>
@@ -789,7 +813,7 @@ export default function SearchControls({
     };
 
     const renderSelector = () => {
-        if (!sources.length) return null;
+        if (!shouldShowSelector) return null;
 
         return (
             <div className="selector-container">
@@ -849,7 +873,7 @@ export default function SearchControls({
     };
 
     const renderRefreshButton = () => {
-        if (!showRefreshControls) return null;
+        if (!shouldShowRefresh) return null;
 
         const availableOptions = getAvailableRefreshOptions();
 
@@ -1278,15 +1302,27 @@ export default function SearchControls({
     };
 
     // ===== MAIN RENDER =====
+    // If header search is active, hide all page-level controls
+    if (isHeaderSearchActive) {
+        return null;
+    }
+
+    // Normal page-level search controls with reorganized layout
     return (
         <div>
             <div className="search-controls">
-                {renderSelector()}
-                {renderSortSelect()}
-                {renderViewModeToggle()}
-                {renderRefreshButton()}
+                <div className="search-controls__left">
+                    {renderSelector()}
+                    {renderRefreshButton()}
+                </div>
+                <div className="search-controls__right">
+                    {renderSortSelect()}
+                    {renderViewModeToggle()}
+                </div>
             </div>
             {renderSearchBar()}
         </div>
     );
 }
+
+export default SearchControlsWrapper;

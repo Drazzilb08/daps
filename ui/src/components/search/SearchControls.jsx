@@ -683,16 +683,16 @@ function SearchControlsCore({
 
                 {/* Autocomplete dropdown */}
                 {showAutocomplete && autocompleteSuggestions.length > 0 && (
-                    <div ref={autocompleteRef} className="search-autocomplete-dropdown">
+                    <div ref={autocompleteRef} className="search-autocomplete">
                         {autocompleteSuggestions.map((suggestion, index) => (
                             <div
                                 key={suggestion.id || index}
-                                className={`search-autocomplete-item${index === selectedSuggestionIndex ? ' highlighted' : ''}`}
+                                className={`search-autocomplete__item${index === selectedSuggestionIndex ? ' search-autocomplete__item--highlighted' : ''}`}
                                 onClick={() => selectSuggestion(suggestion)}
                                 onMouseEnter={() => setSelectedSuggestionIndex(index)}
                             >
-                                <div className="autocomplete-title">{suggestion.title}</div>
-                                <div className="autocomplete-subtitle">
+                                <div className="search-autocomplete__title">{suggestion.title}</div>
+                                <div className="search-autocomplete__subtitle">
                                     {suggestion.year} • {suggestion.type}
                                     {suggestion.countType &&
                                         suggestion.instanceCount > 0 &&
@@ -907,7 +907,7 @@ function SearchControlsCore({
                     variant="actions"
                     position="bottom"
                     ariaLabel="Refresh database options"
-                    className="refresh-popover-wide"
+                    className="popover--wide"
                 >
                     <div
                         className="refresh-popover-header"

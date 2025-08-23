@@ -20,13 +20,16 @@ export class PosterRenderer extends BaseSearchRenderer {
     setupHoverPreview = (result, hoverPreviewImgRef, enableHoverPreview) => {
         if (!enableHoverPreview || !hoverPreviewImgRef?.current) return {};
 
-        const obj = result.original || result;
+        const posterData = result.original || result;
 
         return {
             onMouseOver: () => {
                 const img = hoverPreviewImgRef.current;
-                if (obj.location && obj.file) {
-                    let url = fetchPosterPreviewUrl(obj.location, obj.relativeFile || obj.file);
+                if (posterData.location && posterData.file) {
+                    let url = fetchPosterPreviewUrl(
+                        posterData.location,
+                        posterData.relativeFile || posterData.file
+                    );
                     url += url.includes('?') ? '&thumb=1' : '?thumb=1';
                     img.src = url;
                     img.style.display = 'block';
@@ -72,7 +75,7 @@ export class PosterRenderer extends BaseSearchRenderer {
 
     // === IMAGE URL GENERATION ===
     getImageUrl = result => {
-        const obj = result.original || result;
+        const posterData = result.original || result;
 
         // If result has explicit imageUrl (from adapter formatting)
         if (result.imageUrl) {
@@ -80,8 +83,11 @@ export class PosterRenderer extends BaseSearchRenderer {
         }
 
         // Generate from location/file (existing pattern)
-        if (obj.location && obj.file) {
-            let url = fetchPosterPreviewUrl(obj.location, obj.relativeFile || obj.file);
+        if (posterData.location && posterData.file) {
+            let url = fetchPosterPreviewUrl(
+                posterData.location,
+                posterData.relativeFile || posterData.file
+            );
             url += url.includes('?') ? '&thumb=1' : '?thumb=1';
             return url;
         }
@@ -91,12 +97,12 @@ export class PosterRenderer extends BaseSearchRenderer {
 
     // === TITLE FORMATTING ===
     getDisplayTitle(result) {
-        const obj = result.original || result;
+        const posterData = result.original || result;
 
         // All adapters now provide consistent title/year/type format
-        const title = result.title || obj.title || obj.file || 'Untitled';
-        const year = result.year || obj.year;
-        const type = result.type || obj.type || obj.asset_type;
+        const title = result.title || posterData.title || posterData.file || 'Untitled';
+        const year = result.year || posterData.year;
+        const type = result.type || posterData.type || posterData.asset_type;
 
         // Format title with year for movies and shows (consistent across all plugins)
         if (year && (type === 'movie' || type === 'show' || type === 'collection')) {
@@ -108,8 +114,8 @@ export class PosterRenderer extends BaseSearchRenderer {
 
     // === SUBTITLE GENERATION ===
     generateSubtitle(result) {
-        const obj = result.original || result;
-        const type = result.type || obj.type || obj.asset_type;
+        const posterData = result.original || result;
+        const type = result.type || posterData.type || posterData.asset_type;
 
         if (type === 'show') {
             // For TV shows, show seasons count if available (MediaSearch data)
@@ -132,8 +138,8 @@ export class PosterRenderer extends BaseSearchRenderer {
 
     // === METADATA RENDERING ===
     renderAssetMetadata = result => {
-        const obj = result.original || result;
-        const type = result.type || obj.type || obj.asset_type;
+        const posterData = result.original || result;
+        const type = result.type || posterData.type || posterData.asset_type;
         const subtitle = this.generateSubtitle(result);
 
         // For all results with consistent type information, show subtitle if available
@@ -142,22 +148,24 @@ export class PosterRenderer extends BaseSearchRenderer {
         }
 
         // For legacy file-based results without standardized format, show basic metadata
-        if (obj.asset_type && !type) {
+        if (posterData.asset_type && !type) {
             return (
                 <div className="poster-asset-meta">
-                    {obj.asset_type === 'movie' && obj.year && (
+                    {posterData.asset_type === 'movie' && posterData.year && (
                         <span className="meta-movie">
-                            {obj.title} ({obj.year})
+                            {posterData.title} ({posterData.year})
                         </span>
                     )}
-                    {obj.asset_type === 'show' && (
+                    {posterData.asset_type === 'show' && (
                         <span className="meta-show">
-                            {obj.title}
-                            {obj.season_number != null ? ` — Season ${obj.season_number}` : ''}
+                            {posterData.title}
+                            {posterData.season_number != null
+                                ? ` — Season ${posterData.season_number}`
+                                : ''}
                         </span>
                     )}
-                    {obj.asset_type === 'collection' && (
-                        <span className="meta-collection">{obj.title} (Collection)</span>
+                    {posterData.asset_type === 'collection' && (
+                        <span className="meta-collection">{posterData.title} (Collection)</span>
                     )}
                 </div>
             );

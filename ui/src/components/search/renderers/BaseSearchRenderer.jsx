@@ -118,8 +118,13 @@ export class BaseSearchRenderer {
      * @returns {string} Unique key
      */
     getResultKey(result, index) {
-        const obj = result.original || result;
-        return [obj.id || 'item', obj.location || '', obj.file || obj.title || '', index].join('|');
+        const searchResultData = result.original || result;
+        return [
+            searchResultData.id || 'item',
+            searchResultData.location || '',
+            searchResultData.file || searchResultData.title || '',
+            index,
+        ].join('|');
     }
 
     /**
@@ -128,8 +133,8 @@ export class BaseSearchRenderer {
      * @returns {string} Display title
      */
     getDisplayTitle(result) {
-        const obj = result.original || result;
-        return result.title || obj.file || obj.title || 'Untitled';
+        const searchResultData = result.original || result;
+        return result.title || searchResultData.file || searchResultData.title || 'Untitled';
     }
 
     /**

@@ -10,8 +10,8 @@ export const groupingHelper = {
     groupByLocation(files) {
         const groups = {};
         files.forEach(fileObj => {
-            const obj = fileObj.original || fileObj;
-            const location = obj.location || 'Unknown';
+            const fileData = fileObj.original || fileObj;
+            const location = fileData.location || 'Unknown';
             if (!groups[location]) groups[location] = [];
             groups[location].push(fileObj);
         });
@@ -24,8 +24,8 @@ export const groupingHelper = {
     groupByOwner(files) {
         const groups = {};
         files.forEach(fileObj => {
-            const obj = fileObj.original || fileObj;
-            const owner = obj.name || 'Unknown';
+            const fileData = fileObj.original || fileObj;
+            const owner = fileData.name || 'Unknown';
             if (!groups[owner]) groups[owner] = [];
             groups[owner].push(fileObj);
         });

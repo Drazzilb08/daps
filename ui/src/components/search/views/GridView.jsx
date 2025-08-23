@@ -177,8 +177,16 @@ export default function GridView({
         return rows;
     }, [results, gridColumns]);
 
-    const cardHeight = 280; // Approximate height of a media card
-    const gap = 16;
+    // Calculate responsive card height based on MediaCard component structure:
+    // - Poster: 180px width × 3/2 aspect ratio = 270px height  
+    // - Content area varies by grid columns (responsive breakpoints):
+    //   - Mobile (2-3 cols): 50px min-height + 16px padding = 66px
+    //   - Desktop (4+ cols): 60px min-height + 24px padding = 84px
+    // - Gap varies: 12px on small screens, 16px on larger screens
+    const isMobile = gridColumns <= 3; // Mobile breakpoints use 2-3 columns
+    const contentHeight = isMobile ? 66 : 84;
+    const cardHeight = 270 + contentHeight; // Poster + content area
+    const gap = isMobile ? 12 : 16;
     const rowHeight = cardHeight + gap;
 
     // Virtualization setup - always enabled for consistent performance

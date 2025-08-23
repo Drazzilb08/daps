@@ -89,7 +89,7 @@ export const assetsPluginConfig = new PluginBuilder('assets-search', 'Assets Sea
         defaultView: 'grid',
         defaultSort: 'alpha',
         defaultSource: 'assets',
-        renderer: 'poster',
+        // No renderer needed - SearchResults uses GridView/ListView directly
         enableHoverPreview: true,
         modalComponent: createAssetsPosterModal,
         selectorLabel: 'Source',

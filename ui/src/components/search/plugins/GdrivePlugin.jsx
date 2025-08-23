@@ -108,7 +108,7 @@ export const gdrivePluginConfig = new PluginBuilder('gdrive-search', 'GDrive Sea
         defaultView: 'grid',
         defaultSort: 'priority-asc',
         defaultSource: 'gdrive',
-        renderer: 'poster',
+        // No renderer needed - SearchResults uses GridView/ListView directly
         groupBy: 'owner',
         enableHoverPreview: true,
         modalComponent: createGdrivePosterModal,

@@ -165,7 +165,7 @@ export const mediaSearchPluginConfig = new PluginBuilder('media-search', 'Media 
         defaultView: 'grid', // Grid view for consistent UI
         defaultSort: 'alpha',
         defaultSource: 'labelarr',
-        renderer: 'media-search', // Use specialized renderer with instance indicators and enhanced empty states
+        // No renderer needed - SearchResults uses GridView/ListView directly
         enableHoverPreview: true, // Enable hover previews for list view
         enableAutocomplete: true, // Enable autocomplete functionality
         autocompleteMinLength: 2, // Start autocomplete after 2 characters

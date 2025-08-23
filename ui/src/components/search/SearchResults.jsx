@@ -1,66 +1,115 @@
-// ui/src/components/search/ModularSearchResults.jsx
-// Modular search results component that dispatches to pluggable renderers
+// ui/src/components/search/SearchResults.jsx
+// Simple search results that uses GridView/ListView directly
 
 import React from 'react';
-import SimpleListRenderer from './renderers/SimpleListRenderer';
-import PosterRenderer from './renderers/PosterRenderer';
-import MediaSearchRenderer from './renderers/MediaSearchRenderer';
+import GridView from './views/GridView';
+import ListView from './views/ListView';
 
-// Registry of available renderers
-const RENDERERS = {
-    simple: new SimpleListRenderer(),
-    poster: new PosterRenderer(), // Generic poster renderer for both assets and grouped displays
-    'media-search': MediaSearchRenderer, // Custom renderer for media search with refresh suggestions
+// Helper functions that will be moved to the views eventually
+const getImageUrl = result => {
+    const posterData = result.original || result;
+    if (result.imageUrl) return result.imageUrl;
+    if (posterData.location && posterData.file) {
+        return `/api/poster/preview?location=${encodeURIComponent(posterData.location)}&file=${encodeURIComponent(posterData.relativeFile || posterData.file)}&thumb=1`;
+    }
+    return '';
 };
 
-export default function ModularSearchResults({
+const getDisplayTitle = result => {
+    const posterData = result.original || result;
+    const title = result.title || posterData.title || posterData.file || 'Untitled';
+    const year = result.year || posterData.year;
+    const type = result.type || posterData.type || posterData.asset_type;
+
+    if (year && (type === 'movie' || type === 'show' || type === 'collection')) {
+        return `${title} (${year})`;
+    }
+    return title;
+};
+
+const renderMetadata = result => {
+    // MediaSearch-style instance indicators
+    if (result.instanceCount > 1) {
+        return <div className="multiple-instances-indicator">{result.instanceCount}</div>;
+    }
+    return null;
+};
+
+export default function SearchResults({
     error,
     results = [],
     searchTerm,
-    renderer = 'simple', // Which renderer to use
-    ...renderProps
+    currentView = 'grid',
+    ...viewProps
 }) {
-    const searchRenderer = RENDERERS[renderer];
-
-    if (!searchRenderer) {
-        console.error(
-            `Unknown renderer: ${renderer}. Available renderers:`,
-            Object.keys(RENDERERS)
-        );
-        return <div className="search-error">Invalid renderer configuration</div>;
-    }
-
     // ===== ERROR STATE =====
     if (error) {
-        return searchRenderer.renderError(error);
+        return (
+            <div className="search-error-container" role="alert" aria-live="assertive">
+                <div className="search-error-icon" aria-hidden="true">
+                    ⚠️
+                </div>
+                <div className="search-error-content">
+                    <div className="search-error-title">Search Error</div>
+                    <div className="search-error-message">{error}</div>
+                </div>
+            </div>
+        );
     }
 
     // ===== EMPTY STATE =====
     if (!results.length) {
-        return searchRenderer.renderEmptyState(searchTerm);
+        if (!searchTerm || !searchTerm.trim()) {
+            return (
+                <div className="search-empty-container" role="status" aria-live="polite">
+                    <div className="search-empty-icon" aria-hidden="true">
+                        🔍
+                    </div>
+                    <div className="search-empty-content">
+                        <div className="search-empty-title">Ready to Search</div>
+                        <div className="search-empty-message">
+                            Type a search term and press <kbd>Enter</kbd> or click{' '}
+                            <strong>Search</strong>.
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        return (
+            <div className="search-empty-container" role="status" aria-live="polite">
+                <div className="search-empty-icon" aria-hidden="true">
+                    📭
+                </div>
+                <div className="search-empty-content">
+                    <div className="search-empty-title">No Results Found</div>
+                    <div className="search-empty-message">
+                        No results found for &ldquo;<strong>{searchTerm}</strong>&rdquo;. Try
+                        adjusting your search terms or filters.
+                    </div>
+                    <div className="search-empty-refresh-notice">
+                        <strong>Missing content?</strong> If you expect to see this item but
+                        it&apos;s not appearing, try <strong>refreshing your database</strong> using
+                        the refresh button above.
+                    </div>
+                </div>
+            </div>
+        );
     }
 
     // ===== RENDER RESULTS =====
-    return searchRenderer.render({
+    const commonProps = {
         results,
         searchTerm,
-        ...renderProps,
-    });
-}
+        getImageUrl,
+        getDisplayTitle,
+        renderMetadata,
+        ...viewProps,
+    };
 
-// Export renderer registry for extensibility
-export { RENDERERS };
-
-// Function to register new renderers
-export function registerRenderer(name, rendererInstance) {
-    if (!rendererInstance.render) {
-        throw new Error('Renderer must implement render() method');
+    if (currentView === 'list') {
+        return <ListView {...commonProps} />;
     }
-    RENDERERS[name] = rendererInstance;
-    console.log(`SearchRenderer '${name}' registered successfully`);
-}
 
-// Function to get available renderer names
-export function getAvailableRenderers() {
-    return Object.keys(RENDERERS);
+    return <GridView {...commonProps} />;
 }

@@ -17,8 +17,10 @@ export default function MediaSearch() {
     );
 
     return (
-        <div className="media-search-page">
-            <MediaSearchComponent className="media-search-content" onError={handleError} />
+        <div className="search-page-layout">
+            <div className="search-content-column">
+                <MediaSearchComponent onError={handleError} />
+            </div>
         </div>
     );
 }

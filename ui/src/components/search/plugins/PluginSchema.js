@@ -63,10 +63,6 @@ export const PLUGIN_SCHEMA = {
             renderer: { type: 'string', default: 'simple' },
             groupBy: { type: 'string', required: false },
             enableHoverPreview: { type: 'boolean', default: true },
-
-            // Virtualization settings
-            enableVirtualization: { type: 'boolean', default: true },
-            virtualizationThreshold: { type: 'number', default: 100 },
         },
     },
 
@@ -128,8 +124,6 @@ export class PluginBuilder {
                 defaultSort: 'alpha',
                 renderer: 'simple',
                 enableHoverPreview: true,
-                enableVirtualization: true,
-                virtualizationThreshold: 100,
             },
             eventHandlers: {},
             dynamicConfig: {},

@@ -179,8 +179,6 @@ export class PosterRenderer extends BaseSearchRenderer {
         groupBy = null, // 'location' to enable grouping
         focusedResultIndex = -1, // Phase 2 Enhancement: keyboard navigation
         resultsContainerRef,
-        enableVirtualization = true, // Phase 2 Enhancement: result virtualization
-        virtualizationThreshold = 100, // Enable for 100+ items
         ...additionalProps
     }) {
         const processedResults = this.processResults(results, { currentSort, groupBy });
@@ -203,8 +201,6 @@ export class PosterRenderer extends BaseSearchRenderer {
             renderMetadata: this.renderAssetMetadata,
             focusedResultIndex,
             resultsContainerRef,
-            enableVirtualization,
-            virtualizationThreshold,
             ...additionalProps,
         };
 

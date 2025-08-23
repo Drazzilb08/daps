@@ -7,13 +7,7 @@ import { assetsSearchAdapter } from './adapters/AssetsSearchAdapter';
 import { gdriveSearchAdapter } from './adapters/GdriveSearchAdapter';
 
 // ===== ASSETS SEARCH ENGINE =====
-export function AssetsSearchEngine({
-    onResultDelete,
-    onError,
-    enableVirtualization = true,
-    virtualizationThreshold = 100,
-    ...props
-}) {
+export function AssetsSearchEngine({ onResultDelete, onError, ...props }) {
     // Enhanced adapter that applies filters in the search step - memoized to prevent infinite loops
     const enhancedAssetsAdapter = useMemo(
         () => ({
@@ -70,9 +64,6 @@ export function AssetsSearchEngine({
             // Event handlers
             onError={onError}
             onResultDelete={onResultDelete}
-            // Virtualization configuration
-            enableVirtualization={enableVirtualization}
-            virtualizationThreshold={virtualizationThreshold}
             // Pass through any additional props
             {...props}
         />
@@ -85,8 +76,6 @@ export function GdriveSearchEngine({
     onDataLoaded,
     onSourceChange,
     onError,
-    enableVirtualization = true,
-    virtualizationThreshold = 150,
     ...props
 }) {
     // State for dynamic owner filtering - EXACT same as original
@@ -194,9 +183,6 @@ export function GdriveSearchEngine({
             onError={onError}
             onDataLoaded={handleDataLoaded}
             onSourceChange={onSourceChange}
-            // Virtualization configuration
-            enableVirtualization={enableVirtualization}
-            virtualizationThreshold={virtualizationThreshold}
             // Pass through any additional props
             {...props}
         />

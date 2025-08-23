@@ -109,7 +109,7 @@ MediaCard.displayName = 'MediaCard';
  * GridView - Clean, responsive grid layout for media browsing
  * Features:
  * - Responsive grid that adapts to screen size
- * - Virtualization for performance with large datasets
+ * - Always virtualized for consistent performance
  * - Clean media card design focusing on poster and title
  * - Keyboard navigation support
  * - Hover preview integration
@@ -126,8 +126,6 @@ export default function GridView({
     enableHoverPreview,
     focusedResultIndex = -1,
     resultsContainerRef,
-    enableVirtualization = true,
-    virtualizationThreshold = 100,
     // ...props // Unused for now
 }) {
     // State for responsive grid columns
@@ -183,50 +181,15 @@ export default function GridView({
     const gap = 16;
     const rowHeight = cardHeight + gap;
 
-    // Decide whether to use virtualization
-    const shouldVirtualize = enableVirtualization && results.length > virtualizationThreshold;
-
-    // Virtualization setup
+    // Virtualization setup - always enabled for consistent performance
     const virtualizer = useVirtualizer({
-        count: shouldVirtualize ? gridRows.length : 0,
+        count: gridRows.length,
         getScrollElement: () => resultsContainerRef?.current || null,
         estimateSize: () => rowHeight,
         overscan: 3, // Render 3 extra rows above/below viewport for smooth scrolling
     });
 
-    if (!shouldVirtualize) {
-        // Non-virtualized fallback for smaller datasets
-        return (
-            <div
-                className="grid-view"
-                ref={resultsContainerRef}
-                style={{
-                    '--grid-columns': gridColumns,
-                    '--card-width': '180px',
-                    '--gap': `${gap}px`,
-                }}
-            >
-                <div className="grid-view__container">
-                    {results.map((result, index) => (
-                        <MediaCard
-                            key={result.id || index}
-                            result={result}
-                            onResultClick={onResultClick}
-                            getImageUrl={getImageUrl}
-                            getDisplayTitle={getDisplayTitle}
-                            setupHoverPreview={setupHoverPreview}
-                            renderMetadata={renderMetadata}
-                            hoverPreviewImgRef={hoverPreviewImgRef}
-                            enableHoverPreview={enableHoverPreview}
-                            isFocused={index === focusedResultIndex}
-                        />
-                    ))}
-                </div>
-            </div>
-        );
-    }
-
-    // Virtualized version for large datasets
+    // Always use virtualization for consistent performance
     return (
         <div
             className="grid-view grid-view--virtualized"

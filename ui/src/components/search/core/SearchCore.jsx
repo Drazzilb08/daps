@@ -61,10 +61,6 @@ export default function SearchCore({
     onRefresh = null,
     isRefreshing = false,
 
-    // Virtualization
-    enableVirtualization = true,
-    virtualizationThreshold = 100,
-
     // UI Customization
     selectorLabel = 'Source',
 
@@ -525,8 +521,6 @@ export default function SearchCore({
                     groupBy={groupBy}
                     focusedResultIndex={focusedResultIndex}
                     resultsContainerRef={resultsContainerRef}
-                    enableVirtualization={enableVirtualization}
-                    virtualizationThreshold={virtualizationThreshold}
                 />
             )}
 

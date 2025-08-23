@@ -165,8 +165,6 @@ export default function SimpleSearchPlugin({ pluginId, overrideConfig = {}, ...a
             renderer={config.renderer}
             groupBy={config.groupBy}
             enableHoverPreview={config.enableHoverPreview}
-            enableVirtualization={config.enableVirtualization}
-            virtualizationThreshold={config.virtualizationThreshold}
             enableAutocomplete={config.enableAutocomplete}
             autocompleteMinLength={config.autocompleteMinLength}
             // Refresh controls

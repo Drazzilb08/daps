@@ -167,7 +167,7 @@ export default function SearchResults({
         getImageUrl,
         getDisplayTitle,
         renderMetadata: (result, position = 'overlay') =>
-            renderMetadata(result, currentView, position, { showTooltip, hideTooltip }),
+            renderMetadata(result, position, { showTooltip, hideTooltip }),
         ...viewProps,
     };
 

@@ -7,7 +7,7 @@
         transform: translateX(-50%);
         background: var(--surface-alt, #23252a);
         color: var(--text-color, #f3f3f3);
-        padding: 0.48em 1.24em;
+        padding: var(--tooltip-padding-y) var(--tooltip-padding-x);
         border-radius: var(--radius-3);
         font-size: var(--font-size-1);
         font-weight: var(--font-weight-medium);

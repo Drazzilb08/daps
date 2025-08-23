@@ -53,8 +53,8 @@
     }
 
     .popover--wide {
-        max-width: 480px;
-        min-width: 400px;
+        max-width: min(480px, calc(100vw - 24px));
+        min-width: min(400px, calc(100vw - 48px));
         padding: var(--space-4);
     }
 
@@ -230,11 +230,67 @@
         transform: scale(1) translateX(4px);
     }
 
+    /* ========== EDGE CASE POSITIONING ========== */
+
+    /* These classes handle special positioning cases where popovers are constrained by viewport edges */
+    .popover--edge-constrained {
+        /* Ensure content is always accessible */
+        max-width: min(320px, calc(100vw - 24px));
+        max-height: min(80vh, calc(100vh - 24px));
+        overflow: hidden auto;
+    }
+
+    /* Left edge constraint - popover pushed right */
+    .popover--left-edge {
+        transform-origin: left center;
+    }
+
+    .popover--left-edge.show {
+        transform: scale(1) translateX(4px);
+    }
+
+    /* Right edge constraint - popover pushed left */
+    .popover--right-edge {
+        transform-origin: right center;
+    }
+
+    .popover--right-edge.show {
+        transform: scale(1) translateX(-4px);
+    }
+
+    /* Top edge constraint - popover pushed down */
+    .popover--top-edge {
+        transform-origin: top center;
+    }
+
+    .popover--top-edge.show {
+        transform: scale(1) translateY(4px);
+    }
+
+    /* Bottom edge constraint - popover pushed up */
+    .popover--bottom-edge {
+        transform-origin: bottom center;
+    }
+
+    .popover--bottom-edge.show {
+        transform: scale(1) translateY(-4px);
+    }
+
     /* ========== RESPONSIVE BEHAVIOR ========== */
     @media (width <= 480px) {
         .popover {
-            max-width: 280px;
+            max-width: calc(100vw - 24px);
             font-size: var(--font-size-2);
+        }
+
+        .popover--wide {
+            max-width: calc(100vw - 24px);
+            min-width: calc(100vw - 48px);
+        }
+
+        .popover--edge-constrained {
+            max-width: calc(100vw - 16px);
+            margin: var(--space-2);
         }
 
         .popover__list-item {
@@ -243,7 +299,7 @@
         }
 
         .popover--help {
-            max-width: 260px;
+            max-width: calc(100vw - 32px);
             padding: var(--space-4);
         }
     }

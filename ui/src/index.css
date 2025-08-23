@@ -8,7 +8,6 @@
 @import url('./css/components/buttons.css');
 @import url('./css/components/cards.css');
 @import url('./css/components/forms.css');
-@import url('./css/components/header-search.css');
 @import url('./css/components/modals.css');
 @import url('./css/components/popover.css');
 @import url('./css/components/progress.css');
@@ -20,6 +19,7 @@
 @import url('./css/components/pills.css');
 @import url('./css/components/tables.css');
 @import url('./css/components/search-engine.css');
+@import url('./css/components/search-controls.css');
 @import url('./css/pages/media-search.css');
 @import url('./css/vendor/select2.css');
 @import url('./css/utilities.css');

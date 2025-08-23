@@ -15,7 +15,7 @@
     /* ====================== ERRORS ====================== */
     .instances-empty-message {
         color: var(--muted, #888);
-        font-size: 1.06em;
+        font-size: var(--font-size-15);
         margin: 1.5em 0 0.6em;
         padding: 0.6em 1em;
         border-radius: var(--radius-2);
@@ -34,7 +34,7 @@
     .poster-search-error {
         color: var(--error, #ff375f);
         margin-top: 2.5em;
-        font-size: 1.13em;
+        font-size: var(--font-size-16);
         text-align: center;
         font-weight: var(--font-weight-medium);
     }

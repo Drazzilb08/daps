@@ -6,7 +6,7 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        padding: 0.48em 1.1em;
+        padding: var(--button-padding-y) var(--button-padding-x);
         background: var(--primary);
         color: #fff;
         text-align: center;
@@ -21,7 +21,7 @@
             transform var(--duration-fast);
         text-decoration: none;
         min-height: var(--control-min-height);
-        min-width: 66px;
+        min-width: var(--space-10);
     }
 
     /* ========== BUTTON ICONS & CONTENT ========== */
@@ -35,7 +35,7 @@
 
     .btn span {
         display: inline-block;
-        min-width: 36px;
+        min-width: var(--space-7);
         text-align: center;
     }
 
@@ -123,7 +123,7 @@
             background var(--duration-fast),
             color var(--duration-fast);
         box-shadow: none;
-        font-size: 1.4rem;
+        font-size: var(--font-size-13);
         outline: none;
         cursor: pointer;
     }

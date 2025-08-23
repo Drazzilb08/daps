@@ -10,96 +10,117 @@
 
 :root {
     /* Layout */
-    --sidebar-width: 210px;
-    --sidebar-collapsed-width: 72px;
-    --header-height: 64px;
+    --sidebar-width: 210px; /* Main navigation sidebar width */
+    --sidebar-collapsed-width: 72px; /* Collapsed sidebar width */
+    --header-height: 64px; /* Main header height */
     --search-controls-height: 120px; /* Logical height for search controls area */
     --page-padding: 2rem; /* Standard page padding */
-    --container-max: 1200px;
-    --content-gutter: 1rem;
-    --container-padding-x: 1rem;
-    --container-padding-y: 1rem;
+    --container-max: 1200px; /* Maximum container width */
+    --content-gutter: 1rem; /* Content area gutter spacing */
+    --container-padding-x: 1rem; /* Container horizontal padding */
+    --container-padding-y: 1rem; /* Container vertical padding */
 
     /* Spacing scale */
-    --space-0: 0;
-    --space-1: 0.25rem;
-    --space-2: 0.5rem;
-    --space-3: 0.75rem;
-    --space-4: 1rem;
-    --space-5: 1.5rem;
-    --space-6: 2rem;
-    --space-7: 3rem;
-    --space-8: 4rem;
-    --space-9: 5rem;
-    --space-10: 6rem;
+    --space-0: 0; /* No spacing */
+    --space-1: 0.25rem; /* Extra small spacing - 4px */
+    --space-2: 0.5rem; /* Small spacing - 8px */
+    --space-3: 0.75rem; /* Medium-small spacing - 12px */
+    --space-4: 1rem; /* Base spacing unit - 16px */
+    --space-5: 1.5rem; /* Medium spacing - 24px */
+    --space-6: 2rem; /* Large spacing - 32px */
+    --space-7: 3rem; /* Extra large spacing - 48px */
+    --space-8: 4rem; /* XXL spacing - 64px */
+    --space-9: 5rem; /* XXXL spacing - 80px */
+    --space-10: 6rem; /* Maximum spacing - 96px */
+    --space-11: 0.48rem; /* Common component padding - 7.68px */
+    --space-12: 1.1rem; /* Common button/control padding - 17.6px */
 
     /* Radii & borders */
-    --radius-0: 0;
-    --radius-1: 4px;
-    --radius-2: 6px;
-    --radius-3: 8px;
-    --radius-round: 9999px;
-    --border-width-0: 0;
-    --border-width-1: 1px;
-    --border-width-2: 2px;
+    --radius-0: 0; /* No border radius */
+    --radius-1: 4px; /* Small border radius */
+    --radius-2: 6px; /* Medium border radius */
+    --radius-3: 8px; /* Large border radius */
+    --radius-round: 9999px; /* Fully rounded corners */
+    --border-width-0: 0; /* No border */
+    --border-width-1: 1px; /* Thin border */
+    --border-width-2: 2px; /* Thick border */
 
     /* Elevation */
-    --shadow-1: 0 1px 2px rgb(0 0 0 / 12%);
-    --shadow-2: 0 4px 10px rgb(0 0 0 / 15%);
-    --shadow-3: 0 8px 20px rgb(0 0 0 / 20%);
+    --shadow-1: 0 1px 2px rgb(0 0 0 / 12%); /* Subtle shadow for small elements */
+    --shadow-2: 0 4px 10px rgb(0 0 0 / 15%); /* Medium shadow for cards */
+    --shadow-3: 0 8px 20px rgb(0 0 0 / 20%); /* Heavy shadow for modals */
 
     /* Typography */
-    --font-family: 'Inter', system-ui, -apple-system, segoe ui, roboto, sans-serif;
-    --font-size-0: 0.75rem;
-    --font-size-1: 0.875rem;
-    --font-size-2: 1rem;
-    --font-size-3: 1.125rem;
-    --font-size-4: 1.25rem;
-    --font-size-5: 1.5rem;
-    --font-size-6: 1.875rem;
-    --font-size-7: 2.25rem;
-    --font-size-8: 3rem;
-    --font-size-9: 3.75rem;
-    --font-size-10: 4.5rem;
-    --line-height: 1.5;
-    --font-weight-regular: 400;
-    --font-weight-medium: 500;
-    --font-weight-semibold: 600;
-    --font-weight-bold: 700;
+    --font-family:
+        'Inter', system-ui, -apple-system, segoe ui, roboto, sans-serif; /* Primary font stack */
+
+    --font-size-0: 0.75rem; /* Extra small text - 12px */
+    --font-size-1: 0.875rem; /* Small text - 14px */
+    --font-size-2: 1rem; /* Base text size - 16px */
+    --font-size-3: 1.125rem; /* Medium text - 18px */
+    --font-size-4: 1.25rem; /* Large text - 20px */
+    --font-size-5: 1.5rem; /* Extra large text - 24px */
+    --font-size-6: 1.875rem; /* Small heading - 30px */
+    --font-size-7: 2.25rem; /* Medium heading - 36px */
+    --font-size-8: 3rem; /* Large heading - 48px */
+    --font-size-9: 3.75rem; /* Extra large heading - 60px */
+    --font-size-10: 4.5rem; /* Display heading - 72px */
+    --font-size-11: 1.04rem; /* Common modal/form size - 16.64px */
+    --font-size-12: 1.18rem; /* Modal headers - 18.88px */
+    --font-size-13: 1.4rem; /* Large buttons - 22.4px */
+    --font-size-14: 3.5rem; /* Large display text - 56px */
+    --font-size-15: 1.06rem; /* Headings - 16.96px */
+    --font-size-16: 1.13rem; /* Large headings - 18.08px */
+    --font-size-17: 0.87rem; /* Small text - 13.92px */
+    --font-size-18: 0.97rem; /* Form labels - 15.52px */
+    --font-size-19: 0.96rem; /* Small form text - 15.36px */
+    --font-size-20: 1.08rem; /* Medium form text - 17.28px */
+    --font-size-21: 1.45rem; /* Large modal headings - 23.2px */
+    --line-height: 1.5; /* Standard line height */
+    --font-weight-regular: 400; /* Regular font weight */
+    --font-weight-medium: 500; /* Medium font weight */
+    --font-weight-semibold: 600; /* Semibold font weight */
+    --font-weight-bold: 700; /* Bold font weight */
 
     /* Motion */
-    --duration-fast: 120ms;
-    --duration: 240ms;
-    --duration-slow: 360ms;
-    --easing: cubic-bezier(0.2, 0.8, 0.2, 1);
+    --duration-fast: 120ms; /* Fast transitions */
+    --duration: 240ms; /* Standard transition duration */
+    --duration-slow: 360ms; /* Slow transitions */
+    --duration-extra-slow: 600ms; /* Complex animations */
+    --easing: cubic-bezier(0.2, 0.8, 0.2, 1); /* Standard easing curve */
 
     /* Z-index scale */
-    --z-base: 1;
-    --z-sticky: 100;
-    --z-dropdown: 200;
-    --z-modal: 1000;
-    --z-toast: 2000;
-    --z-max: 9999;
+    --z-base: 1; /* Base layer elements */
+    --z-sticky: 100; /* Sticky elements */
+    --z-dropdown: 200; /* Dropdown menus */
+    --z-modal: 1000; /* Modal overlays */
+    --z-toast: 2000; /* Toast notifications */
+    --z-max: 9999; /* Maximum z-index */
 
     /* Controls */
-    --control-min-height: 44px;
-    --control-padding-x: 0.75rem;
-    --control-padding-y: 0.5rem;
+    --control-min-height: 44px; /* Minimum touch target height */
+    --control-padding-x: 0.75rem; /* Standard control horizontal padding */
+    --control-padding-y: 0.5rem; /* Standard control vertical padding */
+    --button-padding-x: 1.1rem; /* Standard button horizontal padding */
+    --button-padding-y: 0.48rem; /* Standard button vertical padding */
+    --modal-padding: 1.2rem; /* Standard modal padding */
+    --tooltip-padding-x: 1.24rem; /* Tooltip horizontal padding */
+    --tooltip-padding-y: 0.48rem; /* Tooltip vertical padding */
 
     /* Overlay & focus */
-    --overlay-bg: rgb(0 0 0 / 50%);
-    --backdrop-blur: 6px;
-    --focus-ring-size: 3px;
+    --overlay-bg: rgb(0 0 0 / 50%); /* Modal overlay background */
+    --backdrop-blur: 6px; /* Backdrop blur effect */
+    --focus-ring-size: 3px; /* Focus ring thickness */
 
     /* Breakpoints - for reference use only */
-    --bp-sm: 480px;
+    --bp-sm: 480px; /* Small screen breakpoint */
     --bp-touch: 600px; /* Enhanced touch targets */
-    --bp-md: 768px;
-    --bp-lg: 1024px;
-    --bp-xl: 1280px;
+    --bp-md: 768px; /* Medium screen breakpoint */
+    --bp-lg: 1024px; /* Large screen breakpoint */
+    --bp-xl: 1280px; /* Extra large screen breakpoint */
 
     /* Viewport units - safe for mobile browsers */
-    --app-vh: 100vh;
+    --app-vh: 100vh; /* Full viewport height with fallback */
 }
 
 /* Modern viewport units with fallback */
@@ -112,10 +133,10 @@
 /* Accessibility: Respect reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
     :root {
-        --duration-fast: 1ms;
-        --duration: 1ms;
-        --duration-slow: 1ms;
-        --easing: ease;
+        --duration-fast: 1ms; /* Reduced motion: fast transitions */
+        --duration: 1ms; /* Reduced motion: standard duration */
+        --duration-slow: 1ms; /* Reduced motion: slow transitions */
+        --easing: ease; /* Reduced motion: simple easing */
     }
 
     *,

@@ -4,11 +4,11 @@
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         max-width: 1080px;
-        margin: 0 auto 2.2rem;
-        gap: 1.5rem;
+        margin: 0 auto var(--space-6);
+        gap: var(--space-4);
         padding-left: 0;
         padding-right: 0;
-        padding-top: 4rem;
+        padding-top: var(--space-6);
         justify-items: center;
     }
 
@@ -19,7 +19,7 @@
         width: 100%;
         min-width: 220px;
         max-width: 220px;
-        padding: 1.16rem 1.3rem 1.08rem;
+        padding: var(--space-5) var(--space-5) var(--space-4);
         box-sizing: border-box;
     }
 
@@ -29,8 +29,8 @@
         align-items: center;
         justify-content: space-between;
         max-width: 900px;
-        margin: 0 auto 2.2rem;
-        padding: 2rem 1rem 0;
+        margin: 0 auto var(--space-6);
+        padding: var(--space-6) var(--space-4) 0;
     }
 
     .page-header h1 {
@@ -113,7 +113,7 @@
         align-items: flex-end;
         justify-content: space-between;
         pointer-events: auto;
-        z-index: 2;
+        z-index: var(--z-base);
         width: auto;
         margin: 0;
     }
@@ -157,8 +157,8 @@
             display: grid;
             grid-template-columns: 1fr;
             max-width: 98vw;
-            gap: 0.7rem;
-            padding: 0 0.1rem 1.6rem;
+            gap: var(--space-3);
+            padding: 0 var(--space-1) var(--space-4);
             margin: 0 auto;
             place-items: center center;
         }

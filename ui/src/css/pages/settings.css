@@ -182,7 +182,7 @@
         transform: scale(1.1);
         opacity: 1;
         box-shadow: 0 0 8px 2px var(--accent, #3183e2aa);
-        z-index: 1;
+        z-index: var(--z-base);
     }
 
     .arrow-btn[disabled] {
@@ -238,7 +238,7 @@
         padding: 0;
         box-shadow: 0 1.5px 7px rgb(0 0 0 / 8%);
         transition: background 0.18s;
-        z-index: 2;
+        z-index: var(--z-base);
     }
 
     .color-picker-swatch .remove-btn:hover {
@@ -286,7 +286,7 @@
         border-radius: 0;
         box-sizing: border-box;
         pointer-events: none;
-        z-index: 2;
+        z-index: var(--z-base);
         transition: border-color 0.18s;
     }
 

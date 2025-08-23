@@ -572,10 +572,7 @@ function HeaderSearchInner() {
 
     return (
         <div className="header-search">
-            {/* Left Spacer for Balance */}
-            <div className="header-search__spacer"></div>
-
-            {/* Search Input Section */}
+            {/* Search Input Section - Centered */}
             <div className="header-search__input-container">
                 <div className="header-search__input-wrapper">
                     <input

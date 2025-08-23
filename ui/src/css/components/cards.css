@@ -75,7 +75,7 @@
 
     /* ========== CARD ADD BUTTON ========== */
     .card-add-plus {
-        font-size: 3.5rem;
+        font-size: var(--font-size-14);
         line-height: 1;
         font-weight: var(--font-weight-bold);
         margin-bottom: 0.1em;
@@ -127,7 +127,7 @@
     }
 
     .card-last-run {
-        font-size: 0.87em;
+        font-size: var(--font-size-17);
         color: var(--text-secondary, #bdbdbd);
         display: flex;
         align-items: center;
@@ -139,7 +139,7 @@
     }
 
     .card-last-run .material-icons {
-        font-size: 1em !important;
+        font-size: var(--font-size-2) !important;
         vertical-align: middle;
         opacity: 0.77;
         line-height: 1;
@@ -149,7 +149,7 @@
     .card-noschedule {
         color: var(--text-muted, #8c8c8c);
         font-style: italic;
-        font-size: 1em;
+        font-size: var(--font-size-2);
         letter-spacing: 0.01em;
         opacity: 0.86;
     }

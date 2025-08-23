@@ -94,7 +94,7 @@
         border: none;
         letter-spacing: 0.01em;
         line-height: var(--line-height);
-        z-index: 1;
+        z-index: var(--z-base);
     }
 
     /* New toggle button style moved from inline styles */
@@ -147,7 +147,7 @@
         width: 3px;
         background: var(--primary);
         border-radius: 0 10px 10px 0;
-        z-index: 2;
+        z-index: var(--z-base);
         box-shadow: none;
     }
 

@@ -80,7 +80,7 @@
 
     /* ========== ERROR BOUNDARY ICON ========== */
     .error-boundary__icon {
-        font-size: 3rem;
+        font-size: var(--font-size-8);
         color: var(--error);
         margin-bottom: var(--space-2);
     }

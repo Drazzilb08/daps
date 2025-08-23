@@ -6,9 +6,9 @@
         position: relative;
         display: flex;
         align-items: center;
-        gap: 12px;
-        padding: 12px 16px;
-        margin-bottom: 8px;
+        gap: var(--space-3);
+        padding: var(--space-3) var(--space-4);
+        margin-bottom: var(--space-2);
         border: 1px solid var(--divider);
         border-radius: 8px;
         background: var(--surface);
@@ -59,14 +59,14 @@
         flex: 1;
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: var(--space-2);
         min-width: 0;
     }
 
     .gdrive-pill-info {
         display: flex;
         flex-direction: column;
-        gap: 4px;
+        gap: var(--space-1);
     }
 
     .gdrive-pill-name {
@@ -96,7 +96,7 @@
     .gdrive-pill-status {
         display: flex;
         flex-direction: column;
-        gap: 6px;
+        gap: var(--space-2);
     }
 
     .gdrive-pill-status-text {
@@ -139,8 +139,8 @@
     .gdrive-pill-actions {
         display: flex;
         flex-direction: column;
-        gap: 6px;
-        margin-left: 8px;
+        gap: var(--space-2);
+        margin-left: var(--space-2);
     }
 
     .gdrive-pill-cancel,
@@ -198,13 +198,13 @@
     .gdrive-pill-header {
         display: flex;
         align-items: center;
-        gap: 16px;
-        margin-bottom: 16px;
+        gap: var(--space-4);
+        margin-bottom: var(--space-4);
     }
 
     .gdrive-pill-search {
         flex: 1;
-        padding: 8px 12px;
+        padding: var(--space-2) var(--space-3);
         border: 1.5px solid var(--divider);
         border-radius: 6px;
         font-size: 0.9rem;
@@ -227,7 +227,7 @@
     .gdrive-pill-summary {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: var(--space-3);
     }
 
     .selected-count {
@@ -254,7 +254,7 @@
     /* ========== EMPTY STATE ========== */
     .gdrive-pill-empty {
         text-align: center;
-        padding: 32px 16px;
+        padding: var(--space-8) var(--space-4);
         color: var(--muted);
         font-style: italic;
         background: var(--surface-alt);
@@ -266,7 +266,7 @@
     .dashboard-summary {
         display: flex;
         align-items: center;
-        gap: 16px;
+        gap: var(--space-4);
         margin-left: auto;
     }
 
@@ -283,7 +283,7 @@
     .job-status-badge {
         display: inline-flex;
         align-items: center;
-        gap: 4px;
+        gap: var(--space-1);
         padding: 4px 8px;
         border-radius: 4px;
         font-size: 0.7rem;
@@ -319,20 +319,20 @@
         .gdrive-pill {
             flex-direction: column;
             align-items: flex-start;
-            gap: 12px;
-            padding: 16px;
+            gap: var(--space-3);
+            padding: var(--space-4);
         }
 
         .gdrive-pill-actions {
             flex-direction: row;
             margin-left: 0;
-            margin-top: 8px;
+            margin-top: var(--space-2);
             align-self: flex-end;
         }
 
         .gdrive-pill-header {
             flex-direction: column;
-            gap: 12px;
+            gap: var(--space-3);
             align-items: stretch;
         }
 
@@ -348,7 +348,7 @@
 
     @media (width <= 480px) {
         .gdrive-pill {
-            padding: 12px;
+            padding: var(--space-3);
         }
 
         .gdrive-pill-name {

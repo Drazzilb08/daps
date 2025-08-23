@@ -3,7 +3,7 @@
    SPLASH / NOTIFICATIONS PAGE LAYOUT
 ====================================================== */
     .splash-container {
-        z-index: 1;
+        z-index: var(--z-base);
         position: relative;
         overflow: hidden;
         width: 100%;

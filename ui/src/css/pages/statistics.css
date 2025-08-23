@@ -63,7 +63,7 @@
         position: absolute;
         left: 0;
         top: 0;
-        z-index: 1;
+        z-index: var(--z-base);
         transition: width 0.28s cubic-bezier(0.56, 0.21, 0.36, 0.95);
     }
 
@@ -74,7 +74,7 @@
         text-align: center;
         font-size: 0.99em;
         color: var(--text-color, #fff);
-        z-index: 2;
+        z-index: var(--z-base);
         pointer-events: none;
         user-select: none;
         font-weight: 600;

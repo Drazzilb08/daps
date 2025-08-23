@@ -3,6 +3,29 @@
 
 import React, { memo, useCallback, useMemo, useEffect, useState } from 'react';
 import { useVirtualizer } from '@tanstack/react-virtual';
+// Simple grouping functions (moved from deleted helpers)
+const groupByOwner = files => {
+    const groups = {};
+    files.forEach(fileObj => {
+        const fileData = fileObj.original || fileObj;
+        const owner = fileData.name || 'Unknown';
+        if (!groups[owner]) groups[owner] = [];
+        groups[owner].push(fileObj);
+    });
+    return groups;
+};
+
+const groupByLocation = files => {
+    const groups = {};
+    files.forEach(fileObj => {
+        const fileData = fileObj.original || fileObj;
+        const location = fileData.location || 'Unknown';
+        if (!groups[location]) groups[location] = [];
+        groups[location].push(fileObj);
+    });
+    return groups;
+};
+import { SearchSorter } from '../sorting';
 
 /**
  * MediaCard - Individual media item card component
@@ -106,6 +129,30 @@ const MediaCard = memo(
 MediaCard.displayName = 'MediaCard';
 
 /**
+ * GroupHeader - Header component for grouped sections
+ * Displays the group name with consistent styling
+ */
+const GroupHeader = memo(({ groupKey, groupBy }) => {
+    const getGroupLabel = () => {
+        if (groupBy === 'owner') {
+            return `Owner: ${groupKey}`;
+        }
+        if (groupBy === 'location') {
+            return `Location: ${groupKey}`;
+        }
+        return groupKey;
+    };
+
+    return (
+        <div className="group-header">
+            <h2 className="group-header__title">{getGroupLabel()}</h2>
+        </div>
+    );
+});
+
+GroupHeader.displayName = 'GroupHeader';
+
+/**
  * GridView - Clean, responsive grid layout for media browsing
  * Features:
  * - Responsive grid that adapts to screen size
@@ -116,6 +163,8 @@ MediaCard.displayName = 'MediaCard';
  */
 export default function GridView({
     results = [],
+    currentSort,
+    priorityOrder = {},
     // searchTerm, // Unused for now
     onResultClick,
     getDisplayTitle,
@@ -126,6 +175,8 @@ export default function GridView({
     enableHoverPreview,
     focusedResultIndex = -1,
     resultsContainerRef,
+    // Grouping configuration
+    groupBy = null,
     // ...props // Unused for now
 }) {
     // State for responsive grid columns
@@ -168,16 +219,118 @@ export default function GridView({
         };
     }, []);
 
-    // Group results into rows for virtualization
+    // Handle grouping logic internally - moved from PosterRenderer
+    const { processedGroups, processedGroupOrder } = useMemo(() => {
+        if (!groupBy || !results.length) {
+            return { processedGroups: null, processedGroupOrder: [] };
+        }
+
+        let computedGroups;
+        let computedGroupOrder;
+
+        if (groupBy === 'location') {
+            computedGroups = groupByLocation(results);
+            computedGroupOrder = Object.keys(computedGroups);
+        } else if (groupBy === 'owner') {
+            computedGroups = groupByOwner(results);
+
+            // Get the proper group order based on sorting and priority
+            computedGroupOrder = SearchSorter.sortGroups(computedGroups, currentSort, {
+                priorityOrder,
+                ownerPriorityOrder: priorityOrder?.ownerPriorityOrder || {},
+                groupBy: 'owner',
+            });
+        } else {
+            // Unknown groupBy - disable grouping
+            return { processedGroups: null, processedGroupOrder: [] };
+        }
+
+        return {
+            processedGroups: computedGroups,
+            processedGroupOrder: computedGroupOrder,
+        };
+    }, [results, groupBy, currentSort, priorityOrder]);
+
+    // Flatten grouped data for virtualization or use results directly
+    const flattenedItems = useMemo(() => {
+        console.log('GridView flattening debug:', {
+            hasGroupBy: !!groupBy,
+            hasProcessedGroups: !!processedGroups,
+            groupCount: processedGroups ? Object.keys(processedGroups).length : 0,
+            hasProcessedGroupOrder: !!processedGroupOrder?.length,
+            groupOrderLength: processedGroupOrder?.length || 0,
+            resultsLength: results.length,
+        });
+
+        if (!groupBy || !processedGroups || !processedGroupOrder?.length) {
+            console.log('GridView: Using NON-GROUPED path, rendering all items directly');
+            // Non-grouped: convert results to flat array of items
+            return results.map((result, index) => ({
+                type: 'item',
+                data: result,
+                originalIndex: index,
+            }));
+        }
+
+        // Grouped: flatten into alternating headers and items
+        console.log('GridView: Using GROUPED path, flattening groups for virtualization');
+        const flattened = [];
+        processedGroupOrder.forEach(groupKey => {
+            const groupItems = processedGroups[groupKey] || [];
+            if (groupItems.length > 0) {
+                // Add group header
+                flattened.push({
+                    type: 'header',
+                    groupKey,
+                    groupBy,
+                });
+                // Add group items
+                groupItems.forEach(item => {
+                    flattened.push({
+                        type: 'item',
+                        data: item,
+                    });
+                });
+            }
+        });
+        return flattened;
+    }, [results, groupBy, processedGroups, processedGroupOrder]);
+
+    // Group flattened items into rows for grid display
     const gridRows = useMemo(() => {
         const rows = [];
-        for (let i = 0; i < results.length; i += gridColumns) {
-            rows.push(results.slice(i, i + gridColumns));
-        }
-        return rows;
-    }, [results, gridColumns]);
+        let currentRow = [];
 
-    // Calculate responsive card height based on MediaCard component structure:
+        flattenedItems.forEach(item => {
+            if (item.type === 'header') {
+                // If we have items in current row, add it first
+                if (currentRow.length > 0) {
+                    rows.push(currentRow);
+                    currentRow = [];
+                }
+                // Add header as its own row
+                rows.push([item]);
+            } else {
+                // Add item to current row
+                currentRow.push(item);
+                // If row is full, start a new one
+                if (currentRow.length === gridColumns) {
+                    rows.push(currentRow);
+                    currentRow = [];
+                }
+            }
+        });
+
+        // Add any remaining items
+        if (currentRow.length > 0) {
+            rows.push(currentRow);
+        }
+
+        return rows;
+    }, [flattenedItems, gridColumns]);
+
+    // Calculate responsive heights for different row types
+    // Card heights based on MediaCard component structure:
     // - Poster: 180px width × 3/2 aspect ratio = 270px height
     // - Content area varies by grid columns (responsive breakpoints):
     //   - Mobile (2-3 cols): 50px min-height + 16px padding = 66px
@@ -187,13 +340,32 @@ export default function GridView({
     const contentHeight = isMobile ? 66 : 84;
     const cardHeight = 270 + contentHeight; // Poster + content area
     const gap = isMobile ? 12 : 16;
-    const rowHeight = cardHeight + gap;
+    const cardRowHeight = cardHeight + gap;
+
+    // Group header height: title + padding
+    const headerHeight = isMobile ? 60 : 80;
+
+    // Dynamic row height calculation
+    const getRowHeight = useCallback(
+        rowIndex => {
+            const row = gridRows[rowIndex];
+            if (!row || row.length === 0) return cardRowHeight;
+
+            // Check if this is a header row
+            if (row[0]?.type === 'header') {
+                return headerHeight;
+            }
+
+            return cardRowHeight;
+        },
+        [gridRows, cardRowHeight, headerHeight]
+    );
 
     // Virtualization setup - always enabled for consistent performance
     const virtualizer = useVirtualizer({
         count: gridRows.length,
         getScrollElement: () => resultsContainerRef?.current || null,
-        estimateSize: () => rowHeight,
+        estimateSize: getRowHeight,
         overscan: 3, // Render 3 extra rows above/below viewport for smooth scrolling
     });
 
@@ -221,6 +393,17 @@ export default function GridView({
                     const row = gridRows[virtualRow.index];
                     if (!row) return null;
 
+                    // Debug: Log virtualization behavior
+                    if (virtualRow.index === 0) {
+                        console.log('GridView Virtualizer Status:', {
+                            totalRows: gridRows.length,
+                            virtualItemsCount: virtualizer.getVirtualItems().length,
+                            totalSize: virtualizer.getTotalSize(),
+                            scrollElementHeight:
+                                resultsContainerRef?.current?.clientHeight || 'unknown',
+                        });
+                    }
+
                     return (
                         <div
                             key={virtualRow.key}
@@ -232,13 +415,25 @@ export default function GridView({
                                 transform: `translateY(${virtualRow.start}px)`,
                             }}
                         >
-                            <div className="grid-view__container">
-                                {row.map((result, colIndex) => {
+                            <div
+                                className={`grid-view__container ${row[0]?.type === 'header' ? 'grid-view__container--header' : ''}`}
+                            >
+                                {row.map((item, colIndex) => {
+                                    if (item.type === 'header') {
+                                        return (
+                                            <GroupHeader
+                                                key={`header-${item.groupKey}`}
+                                                groupKey={item.groupKey}
+                                                groupBy={item.groupBy}
+                                            />
+                                        );
+                                    }
+
                                     const globalIndex = virtualRow.index * gridColumns + colIndex;
                                     return (
                                         <MediaCard
-                                            key={result.id || globalIndex}
-                                            result={result}
+                                            key={item.data.id || `item-${globalIndex}`}
+                                            result={item.data}
                                             onResultClick={onResultClick}
                                             getImageUrl={getImageUrl}
                                             getDisplayTitle={getDisplayTitle}
@@ -246,7 +441,7 @@ export default function GridView({
                                             renderMetadata={renderMetadata}
                                             hoverPreviewImgRef={hoverPreviewImgRef}
                                             enableHoverPreview={enableHoverPreview}
-                                            isFocused={globalIndex === focusedResultIndex}
+                                            isFocused={item.originalIndex === focusedResultIndex}
                                         />
                                     );
                                 })}

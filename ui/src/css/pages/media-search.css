@@ -19,6 +19,30 @@
         overflow: hidden;
     }
 
+    /* ===== GENERIC SEARCH PAGE LAYOUT (for GDrive, Assets) ===== */
+    .search-page-layout {
+        display: flex;
+        height: calc(100vh - var(--header-height));
+        max-height: calc(100vh - var(--header-height));
+        overflow: hidden;
+    }
+
+    .search-content-column {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-width: 0; /* Allow content to shrink */
+        overflow: hidden;
+    }
+
+    /* ===== SEARCH CORE COMPONENT HEIGHT CONSTRAINTS ===== */
+    .search-engine {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+    }
+
     .media-search-jumpbar {
         flex-shrink: 0;
         width: 80px;

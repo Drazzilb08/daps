@@ -178,7 +178,7 @@ export default function GridView({
     }, [results, gridColumns]);
 
     // Calculate responsive card height based on MediaCard component structure:
-    // - Poster: 180px width × 3/2 aspect ratio = 270px height  
+    // - Poster: 180px width × 3/2 aspect ratio = 270px height
     // - Content area varies by grid columns (responsive breakpoints):
     //   - Mobile (2-3 cols): 50px min-height + 16px padding = 66px
     //   - Desktop (4+ cols): 60px min-height + 24px padding = 84px

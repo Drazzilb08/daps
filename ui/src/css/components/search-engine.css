@@ -1,4 +1,5 @@
 /* ui/src/css/components/search-engine.css */
+
 /* Search engine component styles including grid and list views */
 
 @layer components {
@@ -30,17 +31,9 @@
         border: var(--border-width-1) solid var(--divider);
         border-radius: var(--radius-3);
         overflow: hidden;
-        transition: all var(--duration) var(--easing);
         cursor: pointer;
         display: flex;
         flex-direction: column;
-    }
-
-    .media-card:hover {
-        background: var(--surface-alt);
-        border-color: var(--accent);
-        transform: translateY(-2px);
-        box-shadow: var(--shadow-2);
     }
 
     .media-card:focus-visible {
@@ -151,16 +144,9 @@
         background: var(--surface);
         border: var(--border-width-1) solid var(--divider);
         border-radius: var(--radius-2);
-        transition: all var(--duration) var(--easing);
         cursor: pointer;
         min-height: var(--control-min-height);
         align-items: center;
-    }
-
-    .list-item:hover {
-        background: var(--surface-alt);
-        border-color: var(--accent);
-        box-shadow: var(--shadow-1);
     }
 
     .list-item:focus-visible {
@@ -263,29 +249,30 @@
     /* ===== RESPONSIVE DESIGN ===== */
 
     /* Large screens */
-    @media (min-width: 1400px) {
+    @media (width >= 1400px) {
         .grid-view {
             --grid-columns: 8;
         }
     }
 
-    @media (min-width: 1200px) {
+    @media (width >= 1200px) {
         .grid-view {
             --grid-columns: 7;
         }
     }
 
     /* Desktop */
-    @media (min-width: 1024px) {
+    @media (width >= 1024px) {
         .grid-view {
             --grid-columns: 6;
         }
     }
 
     /* Tablet */
-    @media (max-width: 1023px) {
+    @media (width <= 1023px) {
         .grid-view {
             --grid-columns: 4;
+
             padding: var(--space-3);
         }
 
@@ -299,9 +286,10 @@
     }
 
     /* Small tablet */
-    @media (max-width: 767px) {
+    @media (width <= 767px) {
         .grid-view {
             --grid-columns: 3;
+
             padding: var(--space-2);
         }
 
@@ -323,7 +311,7 @@
     }
 
     /* Mobile */
-    @media (max-width: 599px) {
+    @media (width <= 599px) {
         .grid-view {
             --grid-columns: 2;
         }
@@ -349,7 +337,7 @@
     }
 
     /* Touch device enhancements */
-    @media (max-width: 600px) {
+    @media (width <= 600px) {
         .media-card,
         .list-item {
             min-height: var(--control-min-height); /* Ensure 44px touch targets */
@@ -372,7 +360,7 @@
         }
 
         .media-card__instance-badge {
-            border: 2px solid currentColor;
+            border: 2px solid currentcolor;
         }
     }
 
@@ -382,14 +370,6 @@
         .list-item,
         .media-card__poster-image {
             transition: none;
-        }
-
-        .media-card:hover .media-card__poster-image {
-            transform: none;
-        }
-
-        .media-card:hover {
-            transform: none;
         }
     }
 }

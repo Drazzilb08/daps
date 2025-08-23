@@ -4,11 +4,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import SearchControls from '../SearchControls';
 import SearchResults from '../SearchResults';
-import useHoverPreview from '../HoverPreview';
 import LoadingSpinner from '../../common/LoadingSpinner';
 import { useToast } from '../../providers/ToastProvider';
 import { SearchSorter } from '../sorting';
-import { useSearchJumpBar } from '../SearchJumpBarProvider';
 import { useHeaderSearch } from '../../../contexts/HeaderSearchProvider';
 
 // Stable default functions to prevent infinite loops
@@ -34,7 +32,7 @@ export default function SearchCore({
     // UI Configuration
     className = 'search-engine',
     placeholder = 'Search...',
-    enableHoverPreview = true,
+    // enableHoverPreview = true, // Unused for now
     defaultView = 'grid',
     defaultSort = 'alpha',
     defaultSource = null,
@@ -46,7 +44,7 @@ export default function SearchCore({
     // Results display configuration
     renderer = 'simple',
     groupBy = null,
-    showJumpBar = true, // Control jump bar visibility
+    // showJumpBar = true, // Control jump bar visibility - unused for now
 
     // Modal configuration - plugin can provide custom modal component
     modalComponent = null,
@@ -100,13 +98,10 @@ export default function SearchCore({
     // ===== HOOKS =====
     const toast = useToast();
     const isMountedRef = useRef(true);
-    const { updateJumpBarData } = useSearchJumpBar();
     const { registerPageSearch } = useHeaderSearch();
     const debounceTimeoutRef = useRef(null);
     const searchInputRef = useRef(null);
     const resultsContainerRef = useRef(null);
-    const hoverPreviewImgRef = useHoverPreview();
-    const activeHoverPreviewRef = enableHoverPreview ? hoverPreviewImgRef : null;
 
     // Stable callback refs to prevent infinite loops
     const onDataLoadedRef = useRef(onDataLoaded);
@@ -322,19 +317,7 @@ export default function SearchCore({
 
     // ===== JUMP BAR DATA PROVIDER =====
     // Update page-level jump bar with current search data
-    // Initialize with proper default state to prevent race conditions
-    useEffect(() => {
-        updateJumpBarData({
-            results: searchResults,
-            currentSort,
-            getDisplayTitle: searchAdapter?.getDisplayTitle || null,
-            showJumpBar: showJumpBar && searchResults.length > 20,
-            scrollToLetter: () => {
-                // Default no-op function prevents race condition errors
-                console.warn('Jump bar scroll function not yet initialized');
-            },
-        });
-    }, [searchResults, currentSort, showJumpBar, searchAdapter, updateJumpBarData]);
+    // Jump bar functionality removed for simplification
 
     // ===== EVENT HANDLERS =====
     const handleSearchTermChange = useCallback(newTerm => {
@@ -485,71 +468,67 @@ export default function SearchCore({
 
     // ===== RENDER =====
     return (
-        <div className={className}>
-            <div className="search-root" role="search" aria-label="Search interface">
-                <SearchControls
-                    sources={sources}
-                    currentSource={currentSource}
-                    onSourceChange={handleSourceChange}
-                    searchTerm={pendingSearchTerm}
-                    onSearchTermChange={handleSearchTermChange}
-                    onSearch={handleSearch}
-                    onClear={handleClearSearch}
-                    placeholder={placeholder}
-                    isSearching={isLoading}
-                    searchInputRef={searchInputRef}
-                    enableAutocomplete={enableAutocomplete}
-                    autocompleteMinLength={autocompleteMinLength}
-                    searchAdapter={searchAdapter}
-                    filters={filters}
-                    activeFilters={activeFilters}
-                    onFilterChange={handleFilterChange}
-                    sortOptions={sortOptions}
-                    currentSort={currentSort}
-                    onSortChange={setCurrentSort}
-                    currentView={currentView}
-                    onViewChange={setCurrentView}
-                    searchData={searchData}
-                    showRefreshControls={showRefreshControls}
-                    onRefresh={onRefresh}
-                    isRefreshing={isRefreshing}
-                    selectorLabel={selectorLabel}
-                    {...additionalProps}
-                />
+        <div className={className} role="search" aria-label="Search interface">
+            <SearchControls
+                sources={sources}
+                currentSource={currentSource}
+                onSourceChange={handleSourceChange}
+                searchTerm={pendingSearchTerm}
+                onSearchTermChange={handleSearchTermChange}
+                onSearch={handleSearch}
+                onClear={handleClearSearch}
+                placeholder={placeholder}
+                isSearching={isLoading}
+                searchInputRef={searchInputRef}
+                enableAutocomplete={enableAutocomplete}
+                autocompleteMinLength={autocompleteMinLength}
+                searchAdapter={searchAdapter}
+                filters={filters}
+                activeFilters={activeFilters}
+                onFilterChange={handleFilterChange}
+                sortOptions={sortOptions}
+                currentSort={currentSort}
+                onSortChange={setCurrentSort}
+                currentView={currentView}
+                onViewChange={setCurrentView}
+                searchData={searchData}
+                showRefreshControls={showRefreshControls}
+                onRefresh={onRefresh}
+                isRefreshing={isRefreshing}
+                selectorLabel={selectorLabel}
+                {...additionalProps}
+            />
 
-                {isLoading ? (
-                    <div
-                        className="search-loading-container"
-                        role="status"
-                        aria-live="polite"
-                        aria-label="Loading content"
-                    >
-                        <div className="search-loading-content">
-                            <LoadingSpinner />
-                            <div className="search-loading-text">Loading search data...</div>
-                        </div>
+            {isLoading ? (
+                <div
+                    className="search-loading-container"
+                    role="status"
+                    aria-live="polite"
+                    aria-label="Loading content"
+                >
+                    <div className="search-loading-content">
+                        <LoadingSpinner />
+                        <div className="search-loading-text">Loading search data...</div>
                     </div>
-                ) : (
-                    <SearchResults
-                        error={displayError}
-                        results={searchResults}
-                        searchTerm={searchTerm}
-                        renderer={renderer}
-                        currentSort={currentSort}
-                        currentView={currentView}
-                        onResultClick={handleResultClick}
-                        hoverPreviewImgRef={activeHoverPreviewRef}
-                        enableHoverPreview={enableHoverPreview}
-                        priorityOrder={searchData?.priorityOrder || {}}
-                        ownerPriorityOrder={searchData?.ownerPriorityOrder || {}}
-                        groupBy={groupBy}
-                        focusedResultIndex={focusedResultIndex}
-                        resultsContainerRef={resultsContainerRef}
-                        enableVirtualization={enableVirtualization}
-                        virtualizationThreshold={virtualizationThreshold}
-                    />
-                )}
-            </div>
+                </div>
+            ) : (
+                <SearchResults
+                    error={displayError}
+                    results={searchResults}
+                    searchTerm={searchTerm}
+                    renderer={renderer}
+                    currentSort={currentSort}
+                    currentView={currentView}
+                    onResultClick={handleResultClick}
+                    priorityOrder={searchData?.priorityOrder || {}}
+                    ownerPriorityOrder={searchData?.ownerPriorityOrder || {}}
+                    groupBy={groupBy}
+                    focusedResultIndex={focusedResultIndex}
+                    resultsContainerRef={resultsContainerRef}
+                    enableVirtualization={enableVirtualization}
+                    virtualizationThreshold={virtualizationThreshold}
+                />
+            )}
 
             {modalInfo &&
                 modalComponent &&

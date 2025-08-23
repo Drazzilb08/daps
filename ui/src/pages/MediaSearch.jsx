@@ -4,8 +4,6 @@
 import React, { useCallback } from 'react';
 import { MediaSearchComponent } from '../components/search/plugins';
 import { useToast } from '../components/providers/ToastProvider';
-import SearchJumpBarProvider from '../components/search/SearchJumpBarProvider';
-import PageLevelJumpBar from '../components/search/PageLevelJumpBar';
 
 export default function MediaSearch() {
     const toast = useToast();
@@ -19,14 +17,8 @@ export default function MediaSearch() {
     );
 
     return (
-        <SearchJumpBarProvider>
-            <PageLevelJumpBar />
-            <MediaSearchComponent
-                onError={handleError}
-                // Plugin system handles modal creation automatically via modalComponent config
-                // Plugin system handles refresh controls via showRefreshControls config
-                // Note: No onResultClick provided - SearchCore will use modalComponent from plugin config
-            />
-        </SearchJumpBarProvider>
+        <div className="media-search-page">
+            <MediaSearchComponent className="media-search-content" onError={handleError} />
+        </div>
     );
 }

@@ -1,1410 +1,395 @@
-/* ui/src/css/components/search-engine.css
- * Complete SearchEngine CSS system preserving all existing poster-search styles
- * Maintains 100% visual compatibility with current implementation
- */
+/* ui/src/css/components/search-engine.css */
+/* Search engine component styles including grid and list views */
 
 @layer components {
-    /* ======================================================
-   SEARCH ENGINE: LAYOUT & ROOT
-====================================================== */
-
-    .search-engine .search-root {
-        margin-top: 2rem;
-        margin-left: auto;
-        margin-right: auto;
-        max-width: 95%;
-        min-width: 400px;
-        padding: 0 2rem;
-
-        /* Natural block layout - no forced heights */
-        display: block; /* Remove flex behaviors that might force height */
-        min-height: auto; /* Content-driven height, not viewport-based */
-        height: auto; /* Natural height based on content */
-    }
-
-    /* ======================================================
-   SEARCH ENGINE: CONTROLS (SCOPE/SOURCE, SORT, VIEW)
-====================================================== */
-    .search-engine .search-controls {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: var(--space-4);
-        margin: var(--space-4) auto var(--space-5);
+    /* ===== GRID VIEW ===== */
+    .grid-view {
         width: 100%;
-        max-width: 1200px;
-        padding: 0 var(--space-4);
-
-        /* Fixed height to prevent layout shifts */
-        flex-shrink: 0;
+        padding: var(--space-4);
     }
 
-    /* Left side controls group */
-    .search-engine .search-controls__left {
-        display: flex;
-        align-items: center;
-        gap: var(--space-3);
-        flex: 0 0 auto;
-    }
-
-    /* Right side controls group */
-    .search-engine .search-controls__right {
-        display: flex;
-        align-items: center;
-        gap: var(--space-3);
-        flex: 0 0 auto;
-    }
-
-    .search-engine .source-picker {
-        display: flex;
-        gap: 0.5em;
-        border-radius: 9px;
-        padding: 0.19em 0.35em;
-        background: var(--bg);
-    }
-
-    .search-engine .source-picker-btn {
-        display: flex;
-        align-items: center;
-        gap: 0.34em;
-        border: none;
-        background: none;
-        padding: 0.34em 1em;
-        border-radius: 7px;
-        font-size: 1em;
-        font-weight: 500;
-        color: var(--text-color, #e3e3e3);
-        opacity: 0.8;
-        cursor: pointer;
-        transition:
-            background 0.14s,
-            color 0.13s,
-            opacity 0.12s;
-    }
-
-    .search-engine .source-picker-btn.active,
-    .search-engine .source-picker-btn:focus {
-        background: var(--primary, #1e88e5);
-        color: var(--primary-contrast);
-        opacity: 1;
-    }
-
-    .search-engine .view-mode-group {
-        display: flex;
-        gap: 0.32em;
-        margin-left: 0.9em;
-    }
-
-    .search-engine .view-mode-btn {
-        background: none;
-        border: none;
-        border-radius: 6px;
-        padding: 0.38em 0.62em;
-        font-size: 1.16em;
-        color: var(--text-color, #bfc4d0);
-        cursor: pointer;
-        transition:
-            background 0.13s,
-            color 0.11s;
-        opacity: 0.8;
-    }
-
-    .search-engine .view-mode-btn.active,
-    .search-engine .view-mode-btn:focus {
-        background: var(--primary, #1e88e5);
-        color: var(--primary-contrast);
-        opacity: 1;
-    }
-
-    /* ======================================================
-   SEARCH ENGINE: SEARCH BAR & FILTERS
-====================================================== */
-    .search-engine .search-bar-container {
-        position: relative;
-        width: 100%;
-        max-width: 900px;
-        margin: 0 auto var(--space-3);
-        display: flex;
-        align-items: center;
-
-        /* Fixed height to prevent layout shifts */
-        flex-shrink: 0;
-    }
-
-    .search-engine .search-bar-icon {
-        position: absolute;
-        left: 16px;
-        color: var(--text-muted, #999);
-        pointer-events: none;
-        z-index: 1;
-        font-size: 1.3em;
-    }
-
-    .search-engine .search-bar {
-        width: 100%;
-        font-size: var(--font-size-2);
-        padding: var(--space-3) 3em var(--space-3) 3em;
-        border-radius: var(--radius-2);
-        border: var(--border-width-1) solid var(--divider);
-        background: var(--input-bg);
-        color: var(--text-color);
-        outline: none;
-        transition:
-            border-color 0.2s ease,
-            box-shadow 0.2s ease;
-        box-sizing: border-box;
-        min-height: 44px;
-        max-height: 44px;
-    }
-
-    .search-engine .search-bar:focus {
-        border-color: var(--primary, #ff9800);
-    }
-
-    .search-engine .clear-btn {
-        position: absolute;
-        right: 48px;
-        background: none;
-        border: none;
-        color: var(--text-muted, #aaa);
-        font-size: 1.08em;
-        cursor: pointer;
+    .grid-view--virtualized {
+        /* Remove padding for virtualized version to use full height */
         padding: 0;
-        z-index: 2;
-        height: 32px;
-        width: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        border-radius: var(--radius-3);
     }
 
-    .search-engine .clear-btn:hover {
-        color: var(--primary, #ff9800);
-    }
-
-    .search-engine .search-btn {
-        position: absolute;
-        right: 10px;
-        background: none;
-        border: none;
-        color: var(--text-muted, #aaa);
-        font-size: 1.18em;
-        cursor: pointer;
-        z-index: 2;
-        height: 32px;
-        width: 32px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: color 0.12s;
-    }
-
-    .search-engine .search-btn:disabled {
-        color: #444;
-        cursor: not-allowed;
-    }
-
-    .search-engine .search-btn:hover:not(:disabled) {
-        color: var(--primary, #ff9800);
-    }
-
-    /* Filter button styles */
-    .search-engine .search-bar-icon.search-bar-btn-icon {
-        position: absolute;
-        left: 0.7em;
-        top: 0;
-        bottom: 0;
-        display: flex;
-        align-items: center;
-        z-index: 5;
-        height: 100%;
-        pointer-events: auto;
-    }
-
-    .search-engine .search-bar-btn {
-        background: none;
-        border: none;
-        outline: none;
-        display: flex;
-        align-items: center;
-        font-size: 1.22em;
-        color: var(--text-muted, #aaa);
-        cursor: pointer;
-        padding: 0 0.4em 0 0.2em;
-        border-radius: 7px 0 0 7px;
-        min-width: 0;
-        height: 40px;
-        transition:
-            background 0.12s,
-            color 0.12s;
-    }
-
-    .search-engine .search-bar-btn:hover,
-    .search-engine .search-bar-btn:focus {
-        color: var(--primary, #1e88e5);
-    }
-
-    .search-engine .search-bar-btn-dropdown {
-        position: absolute;
-        top: 2.55em;
-        left: 0.1em;
-        background: var(--surface, #1b1d1f);
-        border: 1px solid var(--border-color, #353d44);
-        border-radius: 7px;
-        min-width: 120px;
-        box-shadow: 0 3px 22px rgb(0 0 0 / 15%);
-        z-index: 999;
-        overflow: hidden;
-    }
-
-    .search-engine .search-bar-btn-option {
-        padding: 0.7em 1.1em 0.62em;
-        font-size: 1em;
-        color: var(--text-color, #e3e3e3);
-        cursor: pointer;
-        transition: background 0.1s;
-        background: none;
-    }
-
-    .search-engine .search-bar-btn-option.active,
-    .search-engine .search-bar-btn-option:hover,
-    .search-engine .search-bar-btn-option:focus {
-        background: var(--primary, #388be5);
-        color: var(--primary-contrast);
-    }
-
-    .search-engine .search-bar.has-filter {
-        padding-left: 2.4em;
-    }
-
-    /* ======================================================
-   SEARCH ENGINE: AUTOCOMPLETE
-====================================================== */
-    .search-engine .search-autocomplete-dropdown {
-        position: absolute;
-        top: 100%;
-        left: 0;
-        right: 0;
-        background: var(--input-bg, #181a1b);
-        border: 1px solid var(--border-color, #353d44);
-        border-top: none;
-        border-radius: 0 0 8px 8px;
-        max-height: 300px;
-        overflow-y: auto;
-        z-index: var(--z-dropdown);
-        box-shadow: 0 4px 12px rgb(0 0 0 / 30%);
-    }
-
-    .search-engine .search-autocomplete-item {
-        padding: 0.75em 1em;
-        cursor: pointer;
-        border-bottom: 1px solid var(--border-color, #353d44);
-        transition: background-color 0.15s ease;
-    }
-
-    .search-engine .search-autocomplete-item:last-child {
-        border-bottom: none;
-    }
-
-    .search-engine .search-autocomplete-item:hover,
-    .search-engine .search-autocomplete-item.highlighted {
-        background: var(--hover-bg, #2a2d30);
-    }
-
-    .search-engine .autocomplete-title {
-        font-size: 1em;
-        font-weight: 500;
-        color: var(--text-color, #e3e3e3);
-        margin-bottom: 0.25em;
-    }
-
-    .search-engine .autocomplete-subtitle {
-        font-size: 0.85em;
-        color: var(--text-muted, #999);
-        opacity: 0.8;
-    }
-
-    /* ======================================================
-   SEARCH ENGINE: LOADING & EMPTY STATES
-====================================================== */
-    .search-engine .search-empty {
-        margin-top: 2em;
-        color: var(--text-muted, #8c8c8c);
-        font-size: 1.12em;
-        text-align: center;
-        font-family: inherit;
-        letter-spacing: 0.01em;
-        font-weight: 500;
-        opacity: 0.85;
-    }
-
-    .search-engine .search-error {
-        margin-top: 2em;
-        color: var(--error, #ff6b6b);
-        font-size: 1.12em;
-        text-align: center;
-        font-family: inherit;
-        letter-spacing: 0.01em;
-        font-weight: 500;
-        opacity: 0.9;
-    }
-
-    /* ======================================================
-   SEARCH ENGINE: RESULTS LAYOUT
-====================================================== */
-    .search-engine .search-results {
-        margin-top: 1em;
-
-        /* Container-based layout system for coordinated positioning */
+    .grid-view__container {
         display: grid;
-        grid-template-columns: 1fr auto;
-        grid-template-areas: 'content jumpbar';
-        gap: var(--space-4);
-        align-items: start;
-
-        /* Content-driven sizing within grid structure */
-        min-height: auto;
-        max-height: none;
-        height: auto;
+        grid-template-columns: repeat(var(--grid-columns, 6), minmax(0, 1fr));
+        gap: var(--gap, var(--space-4));
+        justify-items: center;
+        padding: var(--space-2) var(--space-4); /* Add padding to container for virtualized version */
     }
 
-    .search-engine .search-content-area {
-        grid-area: content;
-        min-width: 0; /* Prevent grid blowout */
-    }
-
-    .search-engine .search-jump-bar-area {
-        grid-area: jumpbar;
-        position: sticky;
-        top: var(--space-4);
-        align-self: start;
-    }
-
-    .search-engine .search-grid-container {
-        /* Legacy container - now handled by grid layout above */
-        display: contents; /* Flatten into parent grid */
-    }
-
-    .search-engine .owner-group {
-        margin-bottom: 1.5em;
-    }
-
-    .search-engine .owner-label {
-        font-size: 1.08em;
-        font-weight: 600;
-        margin-bottom: 0.38em;
-        color: var(--primary, #388be5);
-        letter-spacing: 0.01em;
-        padding-left: 0.15em;
-    }
-
-    /* ======================================================
-   SEARCH ENGINE: PAGE LEVEL JUMP BAR
-====================================================== */
-    .page-level-jump-bar {
-        /* Container-relative positioning - coordinates with grid layout */
-        position: relative; /* Changed from fixed to relative */
-        width: var(--space-8);
-        min-width: var(--space-8);
-        height: auto;
-        max-height: calc(100vh - 200px);
-        min-height: 300px;
-        z-index: var(--z-sticky); /* Use design token instead of magic number */
-        pointer-events: auto;
-    }
-
-    .page-level-jump-bar .search-jump-bar {
-        position: relative;
-        width: var(--space-8);
-        min-width: var(--space-8);
-        height: 100%;
+    /* Media Card Component */
+    .media-card {
+        width: 100%;
+        max-width: 180px;
         background: var(--surface);
         border: var(--border-width-1) solid var(--divider);
         border-radius: var(--radius-3);
-        box-shadow: 0 var(--space-2) var(--space-6) color-mix(in oklab, var(--bg) 70%, transparent);
-        display: flex;
-        flex-direction: column;
-        backdrop-filter: blur(8px);
-    }
-
-    .page-level-jump-bar .jump-bar-letters,
-    .search-engine .jump-bar-letters {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: var(--space-2) 0;
-        gap: var(--space-1);
-        flex: 1;
-        justify-content: flex-start;
-        overflow-y: hidden; /* Never allow jumpbar to scroll */
-        max-height: calc(100vh - 200px);
-        scrollbar-width: none; /* Hide scrollbar for Firefox */
-        -ms-overflow-style: none; /* Hide scrollbar for IE/Edge */
-    }
-
-    /* Hide scrollbar for webkit browsers */
-    .page-level-jump-bar .jump-bar-letters::-webkit-scrollbar,
-    .search-engine .jump-bar-letters::-webkit-scrollbar {
-        display: none;
-    }
-
-    .page-level-jump-bar .jump-bar-letter,
-    .search-engine .jump-bar-letter {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: var(--space-7);
-        height: var(--space-6);
-        background: none;
-        border: none;
-        color: var(--text-color);
-        font-size: var(--font-size-1);
-        font-weight: var(--font-weight-semibold);
+        overflow: hidden;
+        transition: all var(--duration) var(--easing);
         cursor: pointer;
-        border-radius: var(--radius-2);
-        transition: all 0.15s ease;
-        opacity: 0.8;
-        user-select: none;
-        min-height: 32px; /* Accessibility: minimum touch target */
+        display: flex;
+        flex-direction: column;
     }
 
-    .page-level-jump-bar .jump-bar-letter:hover:not(:disabled),
-    .search-engine .jump-bar-letter:hover:not(:disabled) {
-        background: var(--primary);
-        color: var(--surface);
-        opacity: 1;
-
-        /* Removed transform to prevent stacking context isolation */
+    .media-card:hover {
+        background: var(--surface-alt);
+        border-color: var(--accent);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-2);
     }
 
-    .page-level-jump-bar .jump-bar-letter.active,
-    .search-engine .jump-bar-letter.active {
-        background: var(--primary);
-        color: var(--surface);
-        opacity: 1;
-
-        /* Removed transform to prevent stacking context isolation */
+    .media-card:focus-visible {
+        outline: var(--focus-ring-size) solid var(--accent);
+        outline-offset: 2px;
     }
 
-    .page-level-jump-bar .jump-bar-letter:disabled,
-    .page-level-jump-bar .jump-bar-letter.unavailable,
-    .search-engine .jump-bar-letter:disabled,
-    .search-engine .jump-bar-letter.unavailable {
-        opacity: 0.3;
-        cursor: not-allowed;
-        color: var(--muted);
+    .media-card--focused {
+        background: var(--surface-alt);
+        border-color: var(--accent);
+        box-shadow: var(--shadow-2);
     }
 
-    .page-level-jump-bar .jump-bar-letter.disabled,
-    .search-engine .jump-bar-letter.disabled {
-        pointer-events: none;
-    }
-
-    /* ======================================================
-   SEARCH ENGINE: GRID VIEW
-====================================================== */
-    .search-engine .search-grid {
-        /* CSS Custom Properties - Single source of truth for virtualization */
-        --grid-gap: var(--space-4);
-        --item-min-width: 140px;
-        --item-width: 160px;
-        --item-height: 320px;
-
-        /* Clean container layout - no artificial margins */
-        margin-top: var(--space-3);
+    .media-card__poster {
         position: relative;
         width: 100%;
-
-        /* Removed margin-right - spacing now handled by parent grid layout */
-
-        /* Virtual items are absolutely positioned by JS */
-    }
-
-    .search-engine .search-grid-row {
-        /* Grid row wrapper for virtualized items */
-
-        /* Uses CSS Grid for proper alignment and spacing */
-
-        /* Position and transform handled by @tanstack/react-virtual */
-    }
-
-    .search-engine .search-grid-item {
-        display: flex;
-        flex-direction: column;
-        background: var(--surface-alt, #24282c);
-        border-radius: 8px;
-        padding: 0.5em;
-        box-shadow: 0 2px 8px rgb(0 0 0 / 12%);
-        cursor: pointer;
-        transition: all 0.15s ease;
-        box-sizing: border-box;
-        overflow: hidden;
-        border: 1px solid var(--surface-border, rgb(255 255 255 / 5%));
-
-        /* Size set by virtualization JavaScript for edge-to-edge layout */
-    }
-
-    .search-engine .search-grid-item:hover {
-        background: var(--surface-hover, #2c3036);
-        box-shadow: 0 4px 16px rgb(0 0 0 / 20%);
-        border-color: var(--primary, #2456a8);
-
-        /* Remove translateY to prevent border cut-off */
-    }
-
-    .search-engine .search-grid-item:hover .search-grid-item-title {
-        color: var(--primary, #4a9eff);
-    }
-
-    /* Grid Item Content Layout - Optimized Space Usage */
-    .search-engine .search-grid-item-image {
-        /* Use aspect ratio that matches typical movie posters (2:3 ratio) */
         aspect-ratio: 2 / 3;
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 0.75em;
         overflow: hidden;
-        border-radius: 6px;
-        background: var(--surface-darker, #1a1d21);
-        position: relative;
+        background: var(--surface-alt);
     }
 
-    .search-engine .search-grid-item-poster {
+    .media-card__poster-image {
         width: 100%;
         height: 100%;
         object-fit: cover;
-        border-radius: 6px;
-        display: block;
-
-        /* Fill the container while maintaining aspect ratio */
     }
 
-    .search-engine .search-grid-item-details {
-        flex-shrink: 0;
-        text-align: center;
-        padding: 0 0.25em;
-        min-height: 2.5em; /* Consistent footer height */
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-    }
-
-    .search-engine .search-grid-item-title {
-        font-size: 0.8em;
-        font-weight: 600;
-        line-height: 1.3;
-        margin-bottom: 0.15em;
-        overflow: hidden;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        color: var(--text-primary, #fff);
-    }
-
-    .search-engine .search-grid-item-metadata {
-        font-size: 0.7em;
-        opacity: 0.75;
-        line-height: 1.2;
-        font-weight: 400;
-        color: var(--text-secondary, #a0a0a0);
-    }
-
-    .search-engine .poster-thumb-img {
-        max-width: 100%;
-        max-height: 240px;
-        object-fit: cover;
-        border-radius: 6px;
-        margin-bottom: 0.5em;
-        background: var(--surface-alt, #282c31);
-    }
-
-    .search-engine .poster-file-label {
-        word-break: break-all;
-        font-size: 0.98em;
-        color: var(--text-color, #e3e3e3);
-        font-family: inherit;
-        letter-spacing: 0.01em;
-        padding-left: 0.04em;
-        line-height: 1.1;
-        margin-top: 0.22em;
-    }
-
-    /* ======================================================
-   SEARCH ENGINE: LIST VIEW
-====================================================== */
-    .search-engine .search-list {
-        list-style: none;
-        padding: 0;
-        margin-top: 1em;
-    }
-
-    .search-engine .search-list-item {
-        background: var(--surface-alt, #23272b);
-        border-radius: 8px;
-        padding: 0.7em 1em;
-        margin-bottom: 0.6em;
-        cursor: pointer;
-        transition: background 0.12s;
-    }
-
-    .search-engine .search-list-item:hover {
-        background: var(--primary, #1e88e5);
-        color: var(--primary-contrast);
-    }
-
-    /* ======================================================
-   SEARCH ENGINE: ASSET METADATA
-====================================================== */
-    .search-engine .search-item-meta {
-        margin-top: 0.4em;
-        font-size: 0.9em;
-        color: var(--text-muted, #aaa);
-        text-align: center;
-    }
-
-    .search-engine .meta-movie,
-    .search-engine .meta-show,
-    .search-engine .meta-collection,
-    .search-engine .meta-subtitle {
-        display: inline-block;
-        font-weight: 500;
-        letter-spacing: 0.01em;
-    }
-
-    /* .search-engine .meta-movie {
-        color: var(--accent, #ff9800);
-    }
-
-    .search-engine .meta-show {
-        color: var(--success, #4caf50);
-    }
-
-    .search-engine .meta-collection {
-        color: var(--info, #2196f3);
-    }
-
-    .search-engine .meta-subtitle {
-        color: var(--text-muted, #aaa);
-    } */
-
-    /* ======================================================
-   SEARCH ENGINE: HOVER PREVIEW
-====================================================== */
-    .search-engine .hover-preview {
-        pointer-events: none;
-        position: fixed;
-        border: 1px solid var(--hover-preview-border, #444);
-        background: var(--card-bg);
-        max-width: 200px;
-        max-height: 200px;
-        border-radius: 8px;
-        z-index: 13000;
-        display: none;
-        box-shadow: 0 2px 14px var(--shadow);
-        transition:
-            left 0.13s cubic-bezier(0.3, 1.1, 0.6, 1),
-            top 0.13s cubic-bezier(0.3, 1.1, 0.6, 1);
-    }
-
-    /* ======================================================
-   SEARCH ENGINE: HIGHLIGHTING
-====================================================== */
-    .search-engine .highlight {
-        background: var(--primary, #2c4e72);
-        color: #fff;
-        border-radius: 3px;
-        padding: 0 0.14em;
-        font-weight: 600;
-    }
-
-    /* ======================================================
-   SEARCH ENGINE: RESPONSIVE DESIGN (Phase 2 Mobile Enhancements)
-====================================================== */
-    @media (width <= 960px) {
-        .search-engine .search-root {
-            max-width: 100%;
-            min-width: auto;
-            margin: 2rem 1rem 0;
-        }
-
-        .search-engine .search-controls {
-            gap: 1em;
-        }
-
-        .search-engine .search-grid {
-            /* Responsive override of custom properties */
-            --grid-gap: 1em;
-            --item-min-width: 120px;
-            --item-width: 120px;
-            --item-height: 280px;
-
-            /* Removed grid-template-columns - layout handled by React Virtual */
-        }
-
-        .search-engine .search-grid-item {
-            min-width: var(--item-min-width);
-            min-height: var(--item-height);
-        }
-
-        /* Jump bar adjustments for tablets */
-        .page-level-jump-bar {
-            width: var(--space-7);
-        }
-
-        .page-level-jump-bar .search-jump-bar {
-            width: var(--space-7);
-            min-width: var(--space-7);
-        }
-
-        .page-level-jump-bar .jump-bar-letter {
-            width: var(--space-6);
-            height: var(--space-5);
-            font-size: var(--font-size-0);
-            min-height: 28px; /* Accessibility: minimum touch target for tablets */
-        }
-
-        /* Responsive jump bar sizing for tablets */
-        .page-level-jump-bar {
-            width: var(--space-7);
-            min-width: var(--space-7);
-        }
-    }
-
-    @media (width <= 600px) {
-        .search-engine .search-controls {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 1em;
-        }
-
-        .search-engine .source-picker {
-            justify-content: center;
-        }
-
-        .search-engine .view-mode-group {
-            margin-left: 0;
-            justify-content: center;
-        }
-
-        .search-engine .search-grid {
-            /* Mobile responsive override of custom properties */
-            --grid-gap: 0.8em;
-            --item-min-width: 100px;
-            --item-width: 100px;
-            --item-height: 240px;
-
-            /* Removed grid-template-columns - layout handled by React Virtual */
-        }
-
-        .search-engine .search-grid-item {
-            min-width: var(--item-min-width);
-            min-height: var(--item-height);
-            padding: 0.5em;
-        }
-
-        .search-engine .poster-file-label {
-            font-size: 0.9em;
-        }
-
-        /* Mobile-optimized jump bar - compact but functional */
-        .page-level-jump-bar {
-            width: var(--space-6);
-            min-width: var(--space-6);
-            max-height: calc(100vh - 300px);
-            min-height: 200px;
-        }
-
-        .page-level-jump-bar .search-jump-bar {
-            width: var(--space-6);
-            min-width: var(--space-6);
-        }
-
-        .page-level-jump-bar .jump-bar-letter {
-            width: var(--space-5);
-            height: var(--space-4);
-            font-size: var(--font-size-0);
-            min-height: 24px; /* Smaller but still accessible */
-        }
-
-        /* Adjust search results layout for mobile jump bar */
-        .search-engine .search-results {
-            gap: var(--space-2); /* Smaller gap on mobile */
-        }
-    }
-
-    /* Mobile Touch Enhancements (Phase 2) */
-    @media (width <= 480px) {
-        /* Larger touch targets for mobile */
-        .search-engine .source-picker-btn,
-        .search-engine .view-mode-btn,
-        .search-engine .search-btn,
-        .search-engine .clear-btn {
-            min-height: 44px; /* Apple's recommended touch target size */
-            min-width: 44px;
-            padding: 0.75rem 1rem;
-        }
-
-        /* Mobile-optimized search controls */
-        .search-engine .search-controls {
-            flex-direction: column;
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .search-engine .search-bar-container {
-            flex-direction: column;
-            gap: 0.75rem;
-        }
-
-        .search-engine .search-bar {
-            font-size: 16px; /* Prevents zoom on iOS */
-            padding: 0.75rem 1rem;
-            border-radius: 8px;
-        }
-
-        /* Mobile-friendly grid */
-        .search-engine .search-grid {
-            /* Removed grid-template-columns - layout handled by React Virtual */
-            padding: 0 0.5rem;
-        }
-
-        .search-engine .search-grid-item {
-            min-height: 260px;
-            padding: 0.75rem;
-            border-radius: 8px;
-
-            /* Larger tap target */
-            min-width: 140px;
-        }
-
-        /* Mobile list view improvements */
-        .search-engine .search-list-item {
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            border-radius: 8px;
-
-            /* Easier to tap */
-            min-height: 60px;
-        }
-
-        .search-engine .poster-file-label {
-            font-size: 0.95rem;
-            line-height: 1.4;
-        }
-
-        /* Mobile loading states */
-        .search-loading-container {
-            min-height: 150px;
-            padding: 1.5rem;
-        }
-
-        .search-loading-text {
-            font-size: 1rem;
-            margin-top: 1rem;
-        }
-
-        /* Mobile error and empty states */
-        .search-error-container,
-        .search-empty-container {
-            margin: 1rem 0.5rem;
-            padding: 1.5rem 1rem;
-            border-radius: 8px;
-        }
-
-        .search-error-icon,
-        .search-empty-icon {
-            font-size: 2rem;
-            margin-bottom: 0.75rem;
-        }
-
-        .search-retry-btn {
-            padding: 0.75rem 1.5rem;
-            font-size: 1rem;
-            min-height: 44px;
-        }
-
-        /* Hide tooltips on mobile (touch devices) */
-        .search-engine .tooltip {
-            display: none;
-        }
-
-        /* Improve keyboard focus for mobile users with external keyboards */
-        .search-grid-item.keyboard-focused,
-        .search-list-item.keyboard-focused {
-            outline-width: 3px;
-            outline-offset: 3px;
-        }
-    }
-
-    /* Extra small screens */
-    @media (width <= 320px) {
-        .search-engine .search-root {
-            margin: 1rem 0.5rem 0;
-        }
-
-        .search-engine .search-grid {
-            /* Removed grid-template-columns - layout handled by React Virtual */
-            padding: 0 0.25rem;
-        }
-
-        .search-engine .search-grid-item {
-            min-width: 120px;
-            min-height: 240px;
-            padding: 0.5rem;
-        }
-
-        .search-engine .poster-file-label {
-            font-size: 0.85rem;
-        }
-    }
-
-    /* Landscape mobile orientation */
-    @media (width <= 768px) and (orientation: landscape) {
-        .search-engine .search-root {
-            margin-top: 1rem;
-        }
-
-        .search-engine .search-grid {
-            /* Removed grid-template-columns - layout handled by React Virtual */
-        }
-
-        .search-engine .search-grid-item {
-            min-height: 220px;
-        }
-    }
-
-    /* High DPI/Retina displays */
-    @media (resolution >= 192dpi) {
-        .search-engine .search-grid-item,
-        .search-engine .search-list-item {
-            /* Ensure crisp rendering on high-DPI displays */
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-    }
-
-    /* Reduce motion for users who prefer it */
-    @media (prefers-reduced-motion: reduce) {
-        .search-engine *,
-        .search-grid-item.keyboard-focused .poster-image,
-        .search-list-item.keyboard-focused,
-        .search-retry-btn,
-        .source-picker-btn,
-        .view-mode-btn {
-            transition: none !important;
-            animation: none !important;
-        }
-    }
-
-    /* ======================================================
-   SEARCH ENGINE: VARIANTS
-====================================================== */
-    .search-engine--compact .search-root {
-        max-width: 600px;
-        min-width: 400px;
-    }
-
-    .search-engine--compact .search-grid {
-        /* Removed grid-template-columns - layout handled by React Virtual */
-    }
-
-    .search-engine--compact .search-grid-item {
-        min-height: 200px;
-        padding: 0.5em;
-    }
-
-    /* ======================================================
-   SEARCH ENGINE: ENHANCED STATES (Phase 2 Enhancement)
-====================================================== */
-
-    /* Loading States */
-    .search-loading-container {
+    .media-card__poster-placeholder {
         display: flex;
         align-items: center;
         justify-content: center;
-        min-height: 200px;
-        padding: 2rem;
+        width: 100%;
+        height: 100%;
+        background: var(--surface-alt);
+        color: var(--muted);
     }
 
-    .search-loading-content {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 1rem;
-    }
-
-    .search-loading-text {
-        color: var(--text-muted);
-        font-size: 0.9rem;
-        text-align: center;
-    }
-
-    /* Enhanced Error States */
-    .search-error-container {
-        display: flex;
-        align-items: flex-start;
-        gap: 1rem;
-        padding: 1.5rem;
-        background: var(--bg-error, #fef2f2);
-        border: 1px solid var(--border-error, #fecaca);
-        border-radius: 8px;
-        margin: 1rem 0;
-    }
-
-    .search-error-icon {
-        font-size: 1.5rem;
-        flex-shrink: 0;
-    }
-
-    .search-error-content {
-        flex: 1;
-    }
-
-    .search-error-title {
-        font-weight: 600;
-        color: var(--text-error, #dc2626);
-        margin-bottom: 0.5rem;
-    }
-
-    .search-error-message {
-        color: var(--text-muted);
-        margin-bottom: 1rem;
-        line-height: 1.4;
-    }
-
-    .search-error-actions {
-        display: flex;
-        gap: 0.5rem;
-    }
-
-    .search-retry-btn {
-        padding: 0.25rem 0.75rem;
-        font-size: 0.875rem;
-        background: var(--primary);
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
-
-    .search-retry-btn:hover {
-        background: var(--primary-dark);
-    }
-
-    /* Enhanced Empty States */
-    .search-empty-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        min-height: 200px;
-        padding: 2rem;
-        text-align: center;
-    }
-
-    .search-empty-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-        opacity: 0.7;
-    }
-
-    .search-empty-content {
-        max-width: 400px;
-    }
-
-    .search-empty-title {
-        font-size: 1.1rem;
-        font-weight: 600;
-        color: var(--text);
-        margin-bottom: 0.5rem;
-    }
-
-    .search-empty-message {
-        color: var(--text-muted);
-        line-height: 1.4;
-        margin-bottom: 1rem;
-    }
-
-    .search-empty-suggestion {
-        color: var(--text-muted, #64748b);
-        font-size: 0.9rem;
-        line-height: 1.4;
-        margin-bottom: 0.75rem;
-        padding: 0.75rem;
-        background: var(--bg-info, #f0f9ff);
-        border: 1px solid var(--border-info, #bae6fd);
-        border-radius: 6px;
-    }
-
-    .search-empty-suggestions {
-        margin-top: 1rem;
-    }
-
-    .search-empty-suggestion ul {
-        margin: 0.5rem 0 0 1rem;
-        padding: 0;
-    }
-
-    .search-empty-suggestion li {
-        margin-bottom: 0.25rem;
-    }
-
-    .search-empty-refresh-notice {
-        color: var(--text-muted, #64748b);
-        font-size: 0.9rem;
-        line-height: 1.4;
-        padding: 0.75rem;
-        background: var(--bg-warning, #fffbeb);
-        border: 1px solid var(--border-warning, #fed7aa);
-        border-radius: 6px;
-        border-left: 4px solid var(--warning, #f59e0b);
-    }
-
-    .search-empty-advanced {
-        color: var(--text-muted, #64748b);
-        font-size: 0.9rem;
-        line-height: 1.4;
-        margin-bottom: 1rem;
-        padding: 0.75rem;
-        background: var(--bg-info, #f0f9ff);
-        border: 1px solid var(--border-info, #bae6fd);
-        border-radius: 6px;
-    }
-
-    .search-empty-advanced-title {
-        margin-bottom: 0.5rem;
-    }
-
-    .search-empty-advanced-options code {
-        padding: 0.1rem 0.3rem;
-        background: var(--bg-secondary, #f3f4f6);
-        border: 1px solid var(--border);
-        border-radius: 3px;
-        font-size: 0.85em;
-        font-family: monospace;
-        margin: 0 0.2rem;
-    }
-
-    .search-empty-message kbd {
-        padding: 0.1rem 0.3rem;
-        background: var(--bg-secondary, #f3f4f6);
-        border: 1px solid var(--border);
-        border-radius: 3px;
-        font-size: 0.85em;
-        font-family: monospace;
-    }
-
-    /* Keyboard Navigation Focus Styles (Phase 2 Enhancement) */
-    .search-grid-item.keyboard-focused,
-    .search-list-item.keyboard-focused {
-        outline: 2px solid var(--primary, #3b82f6);
-        outline-offset: 2px;
-        background: var(--bg-focus, rgb(59 130 246 / 10%));
-        transition:
-            outline 0.2s ease,
-            background-color 0.2s ease;
-    }
-
-    .search-grid-item.keyboard-focused .poster-image,
-    .search-list-item.keyboard-focused {
-        transform: scale(1.02);
-        transition: transform 0.2s ease;
-    }
-
-    /* Hide browser default focus outline on clickable items */
-    .search-grid-item:focus,
-    .search-list-item:focus {
-        outline: none;
-    }
-
-    /* Accessibility: Screen reader only content */
-    .sr-only {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        padding: 0;
-        margin: -1px;
-        overflow: hidden;
-        clip-path: rect(0, 0, 0, 0);
-        white-space: nowrap;
-        border: 0;
-    }
-
-    /* Result Virtualization Styles (Enhanced) */
-
-    .search-grid-virtualized-container,
-    .search-list-virtualized-container {
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        background: var(--bg);
-
-        /* Natural content-driven sizing */
-        height: auto; /* Natural height based on content */
-        min-height: auto; /* No artificial minimums */
-        max-height: none; /* No artificial maximums */
-        overflow: visible; /* Natural overflow handling */
-        position: relative;
-    }
-
-    /* Virtualized content wrapper - natural sizing */
-    .search-grid-virtualized-content,
-    .search-list-virtualized-content {
-        height: auto; /* Natural height based on content */
-        overflow: visible; /* No artificial scrolling constraints */
-
-        /* Remove scroll gutter as we're using natural sizing */
-        scrollbar-gutter: auto;
-        padding-right: 0;
-
-        /* No scrollbars needed with natural sizing */
-    }
-
-    /* Webkit scrollbar styling */
-    .search-grid-virtualized-content::-webkit-scrollbar,
-    .search-list-virtualized-content::-webkit-scrollbar {
-        width: 8px;
-        height: 8px;
-    }
-
-    .search-grid-virtualized-content::-webkit-scrollbar-track,
-    .search-list-virtualized-content::-webkit-scrollbar-track {
-        background: var(--surface-variant);
-        border-radius: var(--radius-1);
-    }
-
-    .search-grid-virtualized-content::-webkit-scrollbar-thumb,
-    .search-list-virtualized-content::-webkit-scrollbar-thumb {
-        background: var(--primary);
-        border-radius: var(--radius-1);
-        transition: background-color 0.2s ease;
-    }
-
-    .search-grid-virtualized-content::-webkit-scrollbar-thumb:hover,
-    .search-list-virtualized-content::-webkit-scrollbar-thumb:hover {
-        background: var(--primary-highlight);
-    }
-
-    /* Virtualized grid items maintain original styling but with absolute positioning */
-    .search-grid-virtualized-content .search-grid-item {
-        /* Absolute positioning is handled in JavaScript */
-        box-sizing: border-box;
-    }
-
-    /* Virtualized list items maintain original styling but with absolute positioning */
-    .search-list-virtualized-content .search-list-item {
-        /* Absolute positioning is handled in JavaScript */
-        box-sizing: border-box;
-        border-bottom: 1px solid var(--border);
-        padding: 0.75rem 1rem;
-    }
-
-    .search-list-virtualized-content .search-list-item:hover {
-        background: var(--bg-hover, #f8fafc);
-    }
-
-    /* Dark mode support for enhanced states */
-    @media (prefers-color-scheme: dark) {
-        .search-error-container {
-            background: var(--bg-error-dark, #7f1d1d);
-            border-color: var(--border-error-dark, #991b1b);
-        }
-
-        .search-error-title {
-            color: var(--text-error-dark, #fca5a5);
-        }
-
-        .search-empty-message kbd {
-            background: var(--bg-secondary-dark, #374151);
-            border-color: var(--border-dark);
-            color: var(--text-dark);
-        }
-
-        .search-grid-item.keyboard-focused,
-        .search-list-item.keyboard-focused {
-            outline-color: var(--primary-light, #60a5fa);
-            background: var(--bg-focus-dark, rgb(96 165 250 / 10%));
-        }
-
-        .search-list-virtualized-content .search-list-item:hover {
-            background: var(--bg-hover-dark, #374151);
-        }
-    }
-
-    /* ======================================================
-   MODULE SELECTOR & REFRESH CONTROLS (Phase 2 Enhancement)
-====================================================== */
-    .search-engine .selector-container,
-    .search-engine .refresh-controls {
-        position: relative;
-    }
-
-    .search-engine .selector-btn {
-        background: none;
-        border: none;
-        border-radius: 6px;
-        padding: 0.38em 0.62em;
-        font-size: 1.16em;
-        color: var(--text-color, #bfc4d0);
-        cursor: pointer;
-        transition:
-            background 0.13s,
-            color 0.11s;
-        opacity: 0.8;
-        display: flex;
-        align-items: center;
-        gap: 0.34em;
-        white-space: nowrap;
-    }
-
-    .search-engine .selector-btn.active,
-    .search-engine .selector-btn:focus {
-        background: var(--primary, #1e88e5);
-        color: var(--primary-contrast);
-        opacity: 1;
-    }
-
-    .search-engine .selector-btn:hover:not(:disabled) {
-        background: var(--primary, #1e88e5);
-        color: var(--primary-contrast);
-        opacity: 1;
-    }
-
-    .search-engine .refresh-btn {
-        background: none;
-        border: none;
-        border-radius: 6px;
-        padding: 0.38em 0.62em;
-        font-size: 1.16em;
-        color: var(--text-color, #bfc4d0);
-        cursor: pointer;
-        transition:
-            background 0.13s,
-            color 0.11s;
-        opacity: 0.8;
-        display: flex;
-        align-items: center;
-        gap: 0.34em;
-        white-space: nowrap;
-    }
-
-    .search-engine .refresh-btn.active,
-    .search-engine .refresh-btn:focus {
-        background: var(--primary, #1e88e5);
-        color: var(--primary-contrast);
-        opacity: 1;
-    }
-
-    .search-engine .refresh-btn:hover:not(:disabled) {
-        background: var(--primary, #1e88e5);
-        color: var(--primary-contrast);
-        opacity: 1;
-    }
-
-    .search-engine .refresh-btn:disabled {
+    .media-card__poster-icon {
+        font-size: var(--font-size-4);
         opacity: 0.6;
-        cursor: not-allowed;
+    }
+
+    .media-card__instance-badge {
+        position: absolute;
+        top: var(--space-2);
+        left: var(--space-2);
+        background: var(--accent);
+        color: var(--primary-contrast);
+        border-radius: var(--radius-round);
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: var(--font-size-0);
+        font-weight: var(--font-weight-bold);
+        line-height: 1;
+        z-index: var(--z-base);
+        box-shadow: 0 2px 6px rgb(0 0 0 / 30%);
+    }
+
+    .media-card__content {
+        padding: var(--space-3);
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-1);
+        min-height: 60px; /* Ensure consistent card heights */
+    }
+
+    .media-card__title {
+        font-size: var(--font-size-1);
+        font-weight: var(--font-weight-semibold);
+        color: var(--text-color);
+        margin: 0;
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .media-card__subtitle {
+        font-size: var(--font-size-0);
+        color: var(--muted);
+        margin: 0;
+        margin-top: auto; /* Push subtitle to bottom */
+    }
+
+    /* ===== LIST VIEW ===== */
+    .list-view {
+        width: 100%;
+        padding: var(--space-4);
+    }
+
+    .list-view__container {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-2);
+    }
+
+    /* List Item Component */
+    .list-item {
+        display: flex;
+        gap: var(--space-3);
+        padding: var(--space-3);
+        background: var(--surface);
+        border: var(--border-width-1) solid var(--divider);
+        border-radius: var(--radius-2);
+        transition: all var(--duration) var(--easing);
+        cursor: pointer;
+        min-height: var(--control-min-height);
+        align-items: center;
+    }
+
+    .list-item:hover {
+        background: var(--surface-alt);
+        border-color: var(--accent);
+        box-shadow: var(--shadow-1);
+    }
+
+    .list-item:focus-visible {
+        outline: var(--focus-ring-size) solid var(--accent);
+        outline-offset: 2px;
+    }
+
+    .list-item--focused {
+        background: var(--surface-alt);
+        border-color: var(--accent);
+        box-shadow: var(--shadow-1);
+    }
+
+    .list-item__poster {
+        flex-shrink: 0;
+        width: 60px;
+        height: 90px;
+        border-radius: var(--radius-1);
+        overflow: hidden;
+        background: var(--surface-alt);
+    }
+
+    .list-item__poster-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .list-item__poster-placeholder {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        background: var(--surface-alt);
+        color: var(--muted);
+    }
+
+    .list-item__poster-icon {
+        font-size: var(--font-size-3);
+        opacity: 0.6;
+    }
+
+    .list-item__content {
+        flex: 1;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: var(--space-4);
+        min-width: 0; /* Allow text to truncate */
+    }
+
+    .list-item__main {
+        flex: 1;
+        min-width: 0; /* Allow text to truncate */
+    }
+
+    .list-item__title {
+        font-size: var(--font-size-2);
+        font-weight: var(--font-weight-medium);
+        color: var(--text-color);
+        margin: 0 0 var(--space-1) 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .list-item__subtitle {
+        font-size: var(--font-size-1);
+        color: var(--muted);
+        margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .list-item__meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: var(--space-1);
+        flex-shrink: 0;
+        text-align: right;
+    }
+
+    .list-item__type {
+        font-size: var(--font-size-0);
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: var(--font-weight-medium);
+    }
+
+    .list-item__instances {
+        font-size: var(--font-size-0);
+        color: var(--accent);
+        font-weight: var(--font-weight-medium);
+    }
+
+    /* ===== RESPONSIVE DESIGN ===== */
+
+    /* Large screens */
+    @media (min-width: 1400px) {
+        .grid-view {
+            --grid-columns: 8;
+        }
+    }
+
+    @media (min-width: 1200px) {
+        .grid-view {
+            --grid-columns: 7;
+        }
+    }
+
+    /* Desktop */
+    @media (min-width: 1024px) {
+        .grid-view {
+            --grid-columns: 6;
+        }
+    }
+
+    /* Tablet */
+    @media (max-width: 1023px) {
+        .grid-view {
+            --grid-columns: 4;
+            padding: var(--space-3);
+        }
+
+        .grid-view--virtualized {
+            padding: 0;
+        }
+
+        .grid-view__container {
+            gap: var(--space-3);
+        }
+    }
+
+    /* Small tablet */
+    @media (max-width: 767px) {
+        .grid-view {
+            --grid-columns: 3;
+            padding: var(--space-2);
+        }
+
+        .grid-view--virtualized {
+            padding: 0;
+        }
+
+        .list-item {
+            padding: var(--space-2);
+        }
+
+        .list-item__content {
+            gap: var(--space-2);
+        }
+
+        .list-item__meta {
+            display: none; /* Hide secondary info on small screens */
+        }
+    }
+
+    /* Mobile */
+    @media (max-width: 599px) {
+        .grid-view {
+            --grid-columns: 2;
+        }
+
+        .grid-view--virtualized {
+            padding: 0;
+        }
+
+        .media-card__content {
+            padding: var(--space-2);
+            min-height: 50px;
+        }
+
+        .media-card__title {
+            font-size: var(--font-size-0);
+            -webkit-line-clamp: 3;
+        }
+
+        .list-item__poster {
+            width: 50px;
+            height: 75px;
+        }
+    }
+
+    /* Touch device enhancements */
+    @media (max-width: 600px) {
+        .media-card,
+        .list-item {
+            min-height: var(--control-min-height); /* Ensure 44px touch targets */
+        }
+
+        .media-card__instance-badge {
+            width: 28px;
+            height: 28px;
+            font-size: var(--font-size-1);
+        }
+    }
+
+    /* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+
+    /* High contrast mode support */
+    @media (prefers-contrast: high) {
+        .media-card,
+        .list-item {
+            border-width: 2px;
+        }
+
+        .media-card__instance-badge {
+            border: 2px solid currentColor;
+        }
+    }
+
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+        .media-card,
+        .list-item,
+        .media-card__poster-image {
+            transition: none;
+        }
+
+        .media-card:hover .media-card__poster-image {
+            transform: none;
+        }
+
+        .media-card:hover {
+            transform: none;
+        }
     }
 }

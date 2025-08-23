@@ -4,8 +4,6 @@
 import React, { useCallback } from 'react';
 import { GdriveSearchComponent } from '../components/search/plugins';
 import { useToast } from '../components/providers/ToastProvider';
-import SearchJumpBarProvider from '../components/search/SearchJumpBarProvider';
-import PageLevelJumpBar from '../components/search/PageLevelJumpBar';
 
 export default function GdriveSearch() {
     const toast = useToast();
@@ -19,13 +17,14 @@ export default function GdriveSearch() {
     );
 
     return (
-        <SearchJumpBarProvider>
-            <PageLevelJumpBar />
-            <GdriveSearchComponent
-                onError={handleError}
-                // Plugin system handles modal creation automatically via modalComponent config
-                // Note: No onResultClick provided - SearchCore will use modalComponent from plugin config
-            />
-        </SearchJumpBarProvider>
+        <div className="search-page-layout">
+            <div className="search-content-column">
+                <GdriveSearchComponent
+                    onError={handleError}
+                    // Plugin system handles modal creation automatically via modalComponent config
+                    // Note: No onResultClick provided - SearchCore will use modalComponent from plugin config
+                />
+            </div>
+        </div>
     );
 }

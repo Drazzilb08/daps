@@ -13,6 +13,8 @@
     --sidebar-width: 210px;
     --sidebar-collapsed-width: 72px;
     --header-height: 64px;
+    --search-controls-height: 120px; /* Logical height for search controls area */
+    --page-padding: 2rem; /* Standard page padding */
     --container-max: 1200px;
     --content-gutter: 1rem;
     --container-padding-x: 1rem;

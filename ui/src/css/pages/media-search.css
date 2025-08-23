@@ -1,239 +1,44 @@
+/* ui/src/css/pages/media-search.css */
+/* Media search page layout */
+
 @layer pages {
-    /* Media Search Page Styles */
+    /* ===== MEDIA SEARCH PAGE LAYOUT ===== */
     .media-search-page {
-        /* Page-specific styles will go here */
-    }
-
-    /* Multiple Instance Indicator - Grid view overlay */
-    .multiple-instances-indicator {
-        background: var(--accent);
-        color: var(--text-color);
-        border-radius: 50%;
-        width: 24px;
-        height: 24px;
         display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.8rem;
-        font-weight: 700;
-        cursor: help;
-        transition: all 0.2s ease;
-        box-shadow: 0 2px 6px rgb(0 0 0 / 40%);
-        line-height: 1;
-    }
-
-    .multiple-instances-indicator:hover {
-        transform: scale(1.1);
-        box-shadow: 0 3px 8px rgb(0 0 0 / 50%);
-    }
-
-    /* Adjust for list view */
-    .search-list-item .media-search-metadata {
-        position: static;
-        margin-left: auto;
-        flex-shrink: 0;
-    }
-
-    .search-list-item {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .search-list-item .poster-file-label {
-        flex: 1;
-        min-width: 0;
-    }
-
-    /* Grid view positioning and layout fixes */
-    .search-grid-item {
-        position: relative;
-        box-sizing: border-box;
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        min-height: 280px;
+        height: calc(100vh - var(--header-height));
+        max-height: calc(100vh - var(--header-height));
         overflow: hidden;
     }
 
-    /* Grid layout is now handled by @tanstack/react-virtual in JavaScript */
-
-    /* .search-engine .search-grid styles moved to search-engine.css */
-
-    /* Fix poster image sizing with consistent aspect ratio */
-    .search-grid-item .poster-thumb-img {
-        width: 100%;
-        height: 220px; /* Fixed height to maintain grid consistency */
-        object-fit: cover;
-        border-radius: 8px;
-        margin-bottom: 0.75rem;
-        flex-shrink: 0;
-        background: var(--surface-alt, #24282c); /* Fallback for loading/missing images */
-    }
-
-    /* Ensure proper text wrapping in grid view - override aggressive word-break */
-    .search-grid-item .poster-file-label {
-        display: block;
-        word-break: normal; /* Override break-all from search-engine.css */
-        overflow-wrap: break-word; /* Break long words only when needed */
-        hyphens: auto;
-        line-height: 1.4;
-        padding: 6px 4px;
-        text-align: center;
-        max-width: 100%;
-        box-sizing: border-box;
-    }
-
-    /* Table-like List View */
-    .search-list-header {
-        display: grid;
-        grid-template-columns: 1fr 80px 80px 120px;
-        gap: 16px;
-        padding: 12px 16px;
-        background: var(--surface-alt, #24282c);
-        border-bottom: 1px solid var(--border, #333);
-        font-weight: 600;
-        font-size: 0.9rem;
-        color: var(--text-secondary, #b0b0b0);
-        position: sticky;
-        top: 0;
-        z-index: 5;
-    }
-
-    .search-list-body {
+    .media-search-content {
+        flex: 1;
         display: flex;
         flex-direction: column;
+        min-width: 0; /* Allow content to shrink */
+        overflow: hidden;
     }
 
-    .search-list-row {
-        display: grid;
-        grid-template-columns: 1fr 80px 80px 120px;
-        gap: 16px;
-        padding: 16px;
-        background: var(--surface, #1a1d21);
-        border-bottom: 1px solid var(--border, #333);
-        cursor: pointer;
-        transition: all 0.2s ease;
-        align-items: center;
+    .media-search-jumpbar {
+        flex-shrink: 0;
+        width: 80px;
+        border-left: var(--border-width-1) solid var(--divider);
+        background: var(--bg);
+        overflow-y: auto;
     }
 
-    .search-list-row:hover {
-        background: var(--surface-hover, #252830);
-    }
+    /* ===== RESPONSIVE LAYOUT ===== */
 
-    .search-list-row:last-child {
-        border-bottom: none;
-    }
-
-    .search-list-col-title {
-        min-width: 0; /* Allow text truncation */
-    }
-
-    .search-list-col-year {
-        text-align: center;
-        color: var(--text-secondary, #b0b0b0);
-    }
-
-    .search-list-col-type {
-        text-align: center;
-        color: var(--text-secondary, #b0b0b0);
-        text-transform: capitalize;
-    }
-
-    .search-list-col-instances {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
-    }
-
-    .search-list-title {
-        font-weight: 500;
-        font-size: 1rem;
-        color: var(--text-color, #e3e3e3);
-        word-break: normal;
-        overflow-wrap: break-word;
-        line-height: 1.4;
-    }
-
-    .search-list-year,
-    .search-list-type,
-    .search-list-instances {
-        font-size: 0.9rem;
-    }
-
-    .search-list-instances {
-        color: var(--text-secondary, #b0b0b0);
-    }
-
-    /* Adjust multiple instance indicator for list view */
-    .search-list-row .media-search-metadata {
-        position: static;
-        margin: 0;
-    }
-
-    .search-list-row .multiple-instances-indicator {
-        position: static;
-        width: 20px;
-        height: 20px;
-        font-size: 0.7rem;
-    }
-
-    /* Responsive adjustments */
-    @media (width <= 768px) {
-        .search-list-header,
-        .search-list-row {
-            grid-template-columns: 1fr 60px 60px 100px;
-            gap: 12px;
-            padding: 12px;
-        }
-
-        .search-list-header {
-            font-size: 0.8rem;
-        }
-
-        .search-list-title {
-            font-size: 0.9rem;
-        }
-
-        .search-list-year,
-        .search-list-type,
-        .search-list-instances {
-            font-size: 0.8rem;
-        }
-    }
-
-    @media (width <= 480px) {
-        .search-list-header,
-        .search-list-row {
-            grid-template-columns: 1fr 50px 80px;
-            gap: 8px;
-        }
-
-        /* Hide year column on very small screens */
-        .search-list-col-year {
+    /* Hide jumpbar on smaller screens */
+    @media (max-width: 1023px) {
+        .media-search-jumpbar {
             display: none;
         }
     }
 
-    /* Responsive adjustments for grid items (CSS Grid layout removed) */
-    @media (width <= 768px) {
-        .search-grid-item {
-            min-height: 260px;
-        }
-
-        .search-grid-item .poster-thumb-img {
-            height: 180px; /* Fixed height for consistency */
-        }
-    }
-
-    @media (width <= 480px) {
-        .search-grid-item {
-            min-height: 240px;
-        }
-
-        .search-grid-item .poster-thumb-img {
-            height: 160px; /* Fixed height for consistency */
+    /* Mobile adjustments */
+    @media (max-width: 599px) {
+        .media-search-page {
+            height: calc(100vh - var(--header-height));
         }
     }
 }

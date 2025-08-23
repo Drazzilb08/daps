@@ -4,7 +4,6 @@ import { ModalHeader, ModalFooter, useDynamicFieldConditions } from './helpers/M
 import { useFocusTrap, useModalCloseOnOutsideClick } from './helpers/useModalHelpers';
 import { renderField } from '../fields/RenderFields';
 import { validateFields } from '../validation';
-import SmallModalFactory from './SmallModalFactory';
 
 export default function ModalFactory({
     title,
@@ -21,6 +20,8 @@ export default function ModalFactory({
     fieldRefs = {},
     children,
     isSmallModal = false,
+    maxWidth = 370,
+    minWidth = 0,
 }) {
     const modalRef = useRef();
     const formRef = useRef();
@@ -58,22 +59,62 @@ export default function ModalFactory({
         }
     }, [schema, entry]);
 
-    // If small modal, use SmallModalFactory
+    // If small modal, render compact version directly
     if (isSmallModal) {
         return (
-            <SmallModalFactory
-                title={title}
-                onClose={onClose}
-                actions={footerButtons.map(btn => ({
-                    id: btn.id,
-                    label: btn.label,
-                    className: btn.className || 'btn',
-                    onClick: () => onButtonClick[btn.id]?.({}),
-                    disabled: btn.disabled,
-                }))}
-            >
-                {children}
-            </SmallModalFactory>
+            <div className="modal show" tabIndex={-1}>
+                <div
+                    className="modal-content"
+                    ref={modalRef}
+                    style={{
+                        maxWidth,
+                        minWidth,
+                        borderRadius: 11,
+                        padding: 0,
+                        boxShadow:
+                            '0 6px 24px 0 rgba(30, 32, 44, 0.18), 0 1.2px 5px rgba(20, 20, 28, 0.12)',
+                    }}
+                >
+                    <ModalHeader title={title} onClose={onClose} />
+                    <div
+                        className="modal-body"
+                        style={{ padding: '1.7em 1.65em 0.6em 1.65em', textAlign: 'center' }}
+                    >
+                        {children}
+
+                        {/* Move buttons to body for small modals */}
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '0.7em',
+                                marginTop: '1.5em',
+                                width: '100%',
+                            }}
+                        >
+                            {footerButtons.map((btn, i) => (
+                                <button
+                                    key={btn.id || i}
+                                    type={btn.type || 'button'}
+                                    className={btn.className || 'btn'}
+                                    style={{ minWidth: 0, width: '100%' }}
+                                    onClick={() => onButtonClick[btn.id]?.({})}
+                                    disabled={btn.disabled}
+                                    autoFocus={btn.autoFocus}
+                                >
+                                    {btn.label}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                    <div
+                        className="modal-footer"
+                        style={{ padding: '0.5rem', minHeight: '0.5rem' }}
+                    >
+                        {/* Empty footer for consistent spacing */}
+                    </div>
+                </div>
+            </div>
         );
     }
 

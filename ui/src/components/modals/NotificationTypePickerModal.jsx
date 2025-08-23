@@ -1,5 +1,5 @@
 import React from 'react';
-import SmallModalFactory from './SmallModalFactory';
+import ModalFactory from './ModalFactory';
 
 export default function NotificationTypePickerModal({
     module,
@@ -9,19 +9,25 @@ export default function NotificationTypePickerModal({
     onClose,
 }) {
     const used = notifications?.[module] ? Object.keys(notifications[module]) : [];
+    const buttonHandlers = {};
+
+    notifyTypes.forEach(n => {
+        buttonHandlers[n.type] = () => onTypePicked({ type: n.type });
+    });
+
     return (
-        <SmallModalFactory
+        <ModalFactory
             title="Select Notification Type"
-            message=""
+            isSmallModal={true}
+            maxWidth={370}
             onClose={onClose}
-            actions={notifyTypes.map(n => ({
+            footerButtons={notifyTypes.map(n => ({
                 id: n.type,
                 label: n.label,
                 className: 'btn notify-type-btn',
-                onClick: () => onTypePicked({ type: n.type }),
                 disabled: used.includes(n.type),
             }))}
-            maxWidth={370}
+            onButtonClick={buttonHandlers}
         />
     );
 }

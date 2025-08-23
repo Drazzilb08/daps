@@ -159,8 +159,8 @@ export function UpgradinatorrCustomField({
         ];
     }
 
-    function showSeasonMonitored(item, rootConfig) {
-        return getInstanceType(item.instance, rootConfig) === 'sonarr';
+    function showSeasonMonitored(seriesItem, rootConfig) {
+        return getInstanceType(seriesItem.instance, rootConfig) === 'sonarr';
     }
 
     function getInstanceType(instanceName, rootConfig) {

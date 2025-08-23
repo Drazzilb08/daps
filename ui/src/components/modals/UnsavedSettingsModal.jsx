@@ -1,39 +1,41 @@
 import React from 'react';
-import SmallModalFactory from './SmallModalFactory';
+import ModalFactory from './ModalFactory';
 
 export default function UnsavedSettingsModal({ onSave, onDiscard, onCancel }) {
     return (
-        <SmallModalFactory
+        <ModalFactory
             title={null}
-            message={
-                <>
-                    You have unsaved changes.
-                    <br />
-                    What would you like to do?
-                </>
-            }
+            isSmallModal={true}
             onClose={onCancel}
-            actions={[
+            footerButtons={[
                 {
                     id: 'save',
                     label: 'Save',
                     className: 'btn btn--success',
-                    onClick: onSave,
                     autoFocus: true,
                 },
                 {
                     id: 'cancel',
                     label: 'Cancel',
                     className: 'btn btn--cancel',
-                    onClick: onCancel,
                 },
                 {
                     id: 'discard',
                     label: 'Discard',
                     className: 'btn btn--remove-item',
-                    onClick: onDiscard,
                 },
             ]}
-        />
+            onButtonClick={{
+                save: onSave,
+                cancel: onCancel,
+                discard: onDiscard,
+            }}
+        >
+            <>
+                You have unsaved changes.
+                <br />
+                What would you like to do?
+            </>
+        </ModalFactory>
     );
 }

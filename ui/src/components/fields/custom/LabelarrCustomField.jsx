@@ -2,14 +2,14 @@ import React, { useState } from 'react';
 import ModalFactory from '../../modals/ModalFactory';
 
 export function LabelarrCustomField({ field, value = [], onChange, rootConfig, moduleConfig }) {
-    const [modalIdx, setModalIdx] = useState(null);
+    const [editingMappingIndex, setEditingMappingIndex] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [modalEntry, setModalEntry] = useState(null);
 
     const subfields = Array.isArray(field.fields) ? field.fields : [];
 
     function openEdit(idx) {
-        setModalIdx(idx);
+        setEditingMappingIndex(idx);
         setModalEntry(
             idx !== null && idx !== undefined
                 ? { ...value[idx] }
@@ -22,23 +22,23 @@ export function LabelarrCustomField({ field, value = [], onChange, rootConfig, m
 
     function handleModalSave(formData) {
         let newArr = Array.isArray(value) ? [...value] : [];
-        if (modalIdx !== null && modalIdx !== undefined) {
-            newArr[modalIdx] = formData;
+        if (editingMappingIndex !== null && editingMappingIndex !== undefined) {
+            newArr[editingMappingIndex] = formData;
         } else {
             newArr.push(formData);
         }
         setShowModal(false);
-        setModalIdx(null);
+        setEditingMappingIndex(null);
         setModalEntry(null);
         if (onChange) onChange(newArr);
     }
 
     function handleModalDelete() {
-        if (modalIdx === null || modalIdx === undefined) return;
+        if (editingMappingIndex === null || editingMappingIndex === undefined) return;
         let newArr = [...value];
-        newArr.splice(modalIdx, 1);
+        newArr.splice(editingMappingIndex, 1);
         setShowModal(false);
-        setModalIdx(null);
+        setEditingMappingIndex(null);
         setModalEntry(null);
         if (onChange) onChange(newArr);
     }
@@ -50,7 +50,7 @@ export function LabelarrCustomField({ field, value = [], onChange, rootConfig, m
             handleModalDelete();
         } else if (btnId === 'cancel-modal-btn') {
             setShowModal(false);
-            setModalIdx(null);
+            setEditingMappingIndex(null);
             setModalEntry(null);
         }
         if (closeModal) closeModal();
@@ -102,41 +102,46 @@ export function LabelarrCustomField({ field, value = [], onChange, rootConfig, m
             return [createAddCard()];
         }
         return [
-            ...value.map((item, idx) => (
+            ...value.map((labelMapping, mappingIndex) => (
                 <div
                     className="settings-entry-card"
-                    key={idx}
+                    key={mappingIndex}
                     tabIndex={0}
                     role="button"
                     aria-label="Edit Mapping"
-                    onClick={() => openEdit(idx)}
-                    onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && openEdit(idx)}
+                    onClick={() => openEdit(mappingIndex)}
+                    onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && openEdit(mappingIndex)}
                 >
                     <div className="settings-entry-row settings-entry-main">
                         <span className="settings-label">App Instance:</span>
-                        <span className="settings-value">{item.app_instance || ''}</span>
+                        <span className="settings-value">{labelMapping.app_instance || ''}</span>
                     </div>
                     <div className="settings-entry-row">
                         <span className="settings-label">Labels:</span>
                         <span className="settings-value">
-                            {Array.isArray(item.labels)
-                                ? item.labels.join(', ')
-                                : item.labels || ''}
+                            {Array.isArray(labelMapping.labels)
+                                ? labelMapping.labels.join(', ')
+                                : labelMapping.labels || ''}
                         </span>
                     </div>
-                    {Array.isArray(item.plex_instances) &&
-                        item.plex_instances.length > 0 &&
-                        item.plex_instances.map((plex, pidx) => (
-                            <div className="settings-entry-row settings-plexmap-block" key={pidx}>
+                    {Array.isArray(labelMapping.plex_instances) &&
+                        labelMapping.plex_instances.length > 0 &&
+                        labelMapping.plex_instances.map((plexInstance, instanceIndex) => (
+                            <div
+                                className="settings-entry-row settings-plexmap-block"
+                                key={instanceIndex}
+                            >
                                 <span className="settings-label">Plex Libraries:</span>
                                 <span className="settings-value">
                                     <span className="settings-plex-name plex-pill">
-                                        {plex.instance ? plex.instance : `Plex ${pidx + 1}`}
+                                        {plexInstance.instance
+                                            ? plexInstance.instance
+                                            : `Plex ${instanceIndex + 1}`}
                                     </span>
                                     <span className="settings-plex-libs">
-                                        {Array.isArray(plex.library_names) &&
-                                        plex.library_names.length
-                                            ? ' ' + plex.library_names.join(', ')
+                                        {Array.isArray(plexInstance.library_names) &&
+                                        plexInstance.library_names.length
+                                            ? ' ' + plexInstance.library_names.join(', ')
                                             : ''}
                                     </span>
                                 </span>
@@ -160,18 +165,20 @@ export function LabelarrCustomField({ field, value = [], onChange, rootConfig, m
             {showModal && (
                 <ModalFactory
                     title={
-                        modalIdx !== null && modalIdx !== undefined
+                        editingMappingIndex !== null && editingMappingIndex !== undefined
                             ? `Edit ${field.label.replace(/s$/, '')}`
                             : `Add ${field.label.replace(/s$/, '')}`
                     }
                     schema={subfields}
                     entry={modalEntry}
-                    footerButtons={footerButtons(modalIdx !== null && modalIdx !== undefined)}
+                    footerButtons={footerButtons(
+                        editingMappingIndex !== null && editingMappingIndex !== undefined
+                    )}
                     rootConfig={rootConfig}
                     moduleConfig={moduleConfig}
                     onClose={() => {
                         setShowModal(false);
-                        setModalIdx(null);
+                        setEditingMappingIndex(null);
                         setModalEntry(null);
                     }}
                     onButtonClick={{

@@ -1,4 +1,5 @@
 /* ui/src/css/pages/media-search.css */
+
 /* Media search page layout */
 
 @layer pages {
@@ -29,14 +30,14 @@
     /* ===== RESPONSIVE LAYOUT ===== */
 
     /* Hide jumpbar on smaller screens */
-    @media (max-width: 1023px) {
+    @media (width <= 1023px) {
         .media-search-jumpbar {
             display: none;
         }
     }
 
     /* Mobile adjustments */
-    @media (max-width: 599px) {
+    @media (width <= 599px) {
         .media-search-page {
             height: calc(100vh - var(--header-height));
         }

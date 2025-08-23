@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
-import Layout from './components/Layout';
-import NotFound from './components/providers/NotFound';
+import Layout from './components/AppLayout';
+import NotFound from './pages/404Page';
 import RouteErrorBoundary from './components/providers/RouteErrorProvider';
 
 import { FIELD_RENDERERS } from './components/fields/FieldRegistry';

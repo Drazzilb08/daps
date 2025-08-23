@@ -102,14 +102,7 @@ const MediaCard = memo(
                     )}
 
                     {/* Instance count indicator for multiple instances */}
-                    {result.instanceCount > 1 && (
-                        <div
-                            className="media-card__instance-badge"
-                            title={`Available in ${result.instanceCount} instances: ${result.instances?.join(', ')}`}
-                        >
-                            {result.instanceCount}
-                        </div>
-                    )}
+                    {renderMetadata && renderMetadata(result, 'overlay')}
                 </div>
 
                 <div className="media-card__content">
@@ -118,9 +111,6 @@ const MediaCard = memo(
                     </h3>
                     {subtitle && <p className="media-card__subtitle">{subtitle}</p>}
                 </div>
-
-                {/* Render any additional metadata from the renderer */}
-                {renderMetadata && renderMetadata(result)}
             </div>
         );
     }

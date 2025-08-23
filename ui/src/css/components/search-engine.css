@@ -95,6 +95,23 @@
         box-shadow: 0 2px 6px rgb(0 0 0 / 30%);
     }
 
+    /* Unified instance indicator for inline positioning (list view) */
+    .instance-indicator--inline {
+        font-size: var(--font-size-0);
+        color: var(--accent);
+        font-weight: var(--font-weight-medium);
+    }
+
+    /* Add proper text formatting for instance indicators */
+    .instance-indicator--inline::before {
+        content: '';
+        margin-right: var(--space-1);
+    }
+
+    .instance-indicator--inline::after {
+        content: ' instances';
+    }
+
     .media-card__content {
         padding: var(--space-3);
         flex: 1;
@@ -284,12 +301,6 @@
         color: var(--muted);
         text-transform: uppercase;
         letter-spacing: 0.5px;
-        font-weight: var(--font-weight-medium);
-    }
-
-    .list-item__instances {
-        font-size: var(--font-size-0);
-        color: var(--accent);
         font-weight: var(--font-weight-medium);
     }
 

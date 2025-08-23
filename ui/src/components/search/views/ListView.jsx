@@ -38,6 +38,7 @@ const ListItem = memo(
         getImageUrl,
         getDisplayTitle,
         setupHoverPreview,
+        renderMetadata,
         hoverPreviewImgRef,
         enableHoverPreview,
         isFocused,
@@ -116,14 +117,7 @@ const ListItem = memo(
                                   : result.type || 'Media'}
                         </span>
 
-                        {result.instanceCount > 1 && (
-                            <span
-                                className="list-item__instances"
-                                title={`Available in ${result.instanceCount} instances: ${result.instances?.join(', ')}`}
-                            >
-                                {result.instanceCount} instances
-                            </span>
-                        )}
+                        {renderMetadata && renderMetadata(result, 'inline')}
                     </div>
                 </div>
             </div>
@@ -176,6 +170,7 @@ export default function ListView({
     getDisplayTitle,
     getImageUrl,
     setupHoverPreview,
+    renderMetadata,
     hoverPreviewImgRef,
     enableHoverPreview,
     focusedResultIndex = -1,
@@ -358,6 +353,7 @@ export default function ListView({
                                         getImageUrl={getImageUrl}
                                         getDisplayTitle={getDisplayTitle}
                                         setupHoverPreview={setupHoverPreview}
+                                        renderMetadata={renderMetadata}
                                         hoverPreviewImgRef={hoverPreviewImgRef}
                                         enableHoverPreview={enableHoverPreview}
                                         isFocused={item.originalIndex === focusedResultIndex}

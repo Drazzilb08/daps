@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import GridView from './views/GridView';
 import ListView from './views/ListView';
+import Tooltip from '../Tooltip';
 
 /**
  * Extracts image URL from search result
@@ -34,13 +35,36 @@ const getDisplayTitle = result => {
 };
 
 /**
- * Renders metadata indicators for search results
+ * Renders metadata indicators for search results with proper tooltip
  * @param {Object} result - Search result object
+ * @param {string} position - Position type ('overlay', 'inline') for styling
+ * @param {Object} tooltipState - Tooltip state management
  * @returns {JSX.Element|null} Metadata component or null
  */
-const renderMetadata = result => {
+const renderMetadata = (result, position = 'overlay', tooltipState = {}) => {
     if (result.instanceCount > 1) {
-        return <div className="multiple-instances-indicator">{result.instanceCount}</div>;
+        const className =
+            position === 'overlay' ? 'media-card__instance-badge' : 'instance-indicator--inline';
+
+        const tooltipText = `Available in ${result.instanceCount} instances${
+            result.instances ? `: ${result.instances.join(', ')}` : ''
+        }`;
+
+        const badgeId = `instance-badge-${result.id || result.title?.replace(/\s+/g, '-') || 'unknown'}`;
+
+        return (
+            <>
+                <div
+                    id={badgeId}
+                    className={className}
+                    onMouseEnter={e => tooltipState.showTooltip?.(e.currentTarget, tooltipText)}
+                    onMouseLeave={() => tooltipState.hideTooltip?.()}
+                    aria-label={tooltipText}
+                >
+                    {result.instanceCount}
+                </div>
+            </>
+        );
     }
     return null;
 };
@@ -62,6 +86,28 @@ export default function SearchResults({
     currentView = 'grid',
     ...viewProps
 }) {
+    // Tooltip state management
+    const [tooltipState, setTooltipState] = useState({
+        show: false,
+        anchor: null,
+        text: '',
+    });
+
+    const showTooltip = useCallback((anchor, text) => {
+        setTooltipState({
+            show: true,
+            anchor,
+            text,
+        });
+    }, []);
+
+    const hideTooltip = useCallback(() => {
+        setTooltipState({
+            show: false,
+            anchor: null,
+            text: '',
+        });
+    }, []);
     if (error) {
         return (
             <div className="search-error-container" role="alert" aria-live="assertive">
@@ -120,13 +166,21 @@ export default function SearchResults({
         searchTerm,
         getImageUrl,
         getDisplayTitle,
-        renderMetadata,
+        renderMetadata: (result, position = 'overlay') =>
+            renderMetadata(result, currentView, position, { showTooltip, hideTooltip }),
         ...viewProps,
     };
 
-    if (currentView === 'list') {
-        return <ListView {...commonProps} />;
-    }
+    return (
+        <>
+            {currentView === 'list' ? <ListView {...commonProps} /> : <GridView {...commonProps} />}
 
-    return <GridView {...commonProps} />;
+            <Tooltip
+                anchor={tooltipState.anchor}
+                text={tooltipState.text}
+                show={tooltipState.show}
+                position="top"
+            />
+        </>
+    );
 }

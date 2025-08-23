@@ -13,6 +13,7 @@ import ReactDOM from 'react-dom';
  */
 function TooltipFactory({ anchor, text, position = 'top', show }) {
     const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
+    const [tooltipDimensions, setTooltipDimensions] = useState({ width: 0, height: 0 });
 
     useEffect(() => {
         if (anchor && show) {
@@ -22,23 +23,71 @@ function TooltipFactory({ anchor, text, position = 'top', show }) {
                 left: rect.left + window.scrollX,
                 width: rect.width,
             });
+
+            // Create temporary tooltip to measure dimensions
+            const tempTooltip = document.createElement('div');
+            tempTooltip.className = 'btn-tooltip show';
+            tempTooltip.style.position = 'absolute';
+            tempTooltip.style.visibility = 'hidden';
+            tempTooltip.style.whiteSpace = 'nowrap';
+            tempTooltip.textContent = text;
+            document.body.appendChild(tempTooltip);
+
+            const tooltipRect = tempTooltip.getBoundingClientRect();
+            setTooltipDimensions({
+                width: tooltipRect.width,
+                height: tooltipRect.height,
+            });
+
+            document.body.removeChild(tempTooltip);
         }
-    }, [anchor, show]);
+    }, [anchor, show, text]);
 
     if (!show || !anchor) return null;
 
     const VERTICAL_OFFSET = 48;
+    const HORIZONTAL_PADDING = 8; // Minimum distance from screen edge
+
+    // Calculate initial position
+    let tooltipLeft = coords.left + coords.width / 2;
+    let tooltipTop =
+        position === 'top' ? coords.top - VERTICAL_OFFSET : coords.top + VERTICAL_OFFSET - 8;
+
+    // Boundary detection and adjustment
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    // Horizontal boundary detection
+    const tooltipHalfWidth = tooltipDimensions.width / 2;
+
+    if (tooltipLeft - tooltipHalfWidth < HORIZONTAL_PADDING) {
+        // Too far left - align to left edge with padding
+        tooltipLeft = tooltipHalfWidth + HORIZONTAL_PADDING;
+    } else if (tooltipLeft + tooltipHalfWidth > viewportWidth - HORIZONTAL_PADDING) {
+        // Too far right - align to right edge with padding
+        tooltipLeft = viewportWidth - tooltipHalfWidth - HORIZONTAL_PADDING;
+    }
+
+    // Vertical boundary detection
+    if (position === 'top' && tooltipTop < HORIZONTAL_PADDING) {
+        // Tooltip would go off top - flip to bottom
+        tooltipTop = coords.top + coords.width + HORIZONTAL_PADDING;
+    } else if (
+        position === 'bottom' &&
+        tooltipTop + tooltipDimensions.height > viewportHeight - HORIZONTAL_PADDING
+    ) {
+        // Tooltip would go off bottom - flip to top
+        tooltipTop = coords.top - tooltipDimensions.height - HORIZONTAL_PADDING;
+    }
 
     const style = {
         position: 'absolute',
         zIndex: 5000,
-        left: coords.left + coords.width / 2,
+        left: tooltipLeft,
+        top: tooltipTop,
         transform: 'translateX(-50%)',
         pointerEvents: 'none',
         whiteSpace: 'nowrap',
-        ...(position === 'top'
-            ? { top: coords.top - VERTICAL_OFFSET }
-            : { top: coords.top + VERTICAL_OFFSET - 8 }),
     };
 
     return ReactDOM.createPortal(

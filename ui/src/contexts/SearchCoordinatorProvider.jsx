@@ -1,16 +1,16 @@
 import React, { createContext, useContext, useState, useCallback, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 
-const HeaderSearchContext = createContext();
+const SearchCoordinatorContext = createContext();
 
 /**
- * HeaderSearchProvider - Manages state and communication between header search and page search components
+ * SearchCoordinatorProvider - Manages state and communication between header search and page search components
  * Provides a centralized way to coordinate search functionality across header and page interfaces
  * @param {Object} props - Component props
  * @param {React.ReactNode} props.children - Child components that need access to search context
  * @returns {JSX.Element} Context provider wrapping children
  */
-export function HeaderSearchProvider({ children }) {
+export function SearchCoordinatorProvider({ children }) {
     const [isHeaderSearchActive, setIsHeaderSearchActive] = useState(false);
     const [searchAdapter, setSearchAdapter] = useState(null);
     const [searchConfig, setSearchConfig] = useState(null);
@@ -143,20 +143,24 @@ export function HeaderSearchProvider({ children }) {
         headerSearchRef,
     };
 
-    return <HeaderSearchContext.Provider value={value}>{children}</HeaderSearchContext.Provider>;
+    return (
+        <SearchCoordinatorContext.Provider value={value}>
+            {children}
+        </SearchCoordinatorContext.Provider>
+    );
 }
 
 /**
- * Hook to access header search context
- * @returns {Object} Header search context value
- * @throws {Error} When used outside HeaderSearchProvider
+ * Hook to access search coordinator context
+ * @returns {Object} Search coordinator context value
+ * @throws {Error} When used outside SearchCoordinatorProvider
  */
-export function useHeaderSearch() {
-    const context = useContext(HeaderSearchContext);
+export function useSearchCoordinator() {
+    const context = useContext(SearchCoordinatorContext);
     if (!context) {
-        throw new Error('useHeaderSearch must be used within a HeaderSearchProvider');
+        throw new Error('useSearchCoordinator must be used within a SearchCoordinatorProvider');
     }
     return context;
 }
 
-export default HeaderSearchProvider;
+export default SearchCoordinatorProvider;

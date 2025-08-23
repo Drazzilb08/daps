@@ -7,7 +7,7 @@ import SearchResults from '../SearchResults';
 import LoadingSpinner from '../../common/LoadingSpinner';
 import { useToast } from '../../providers/ToastProvider';
 import { SearchSorter } from '../sorting';
-import { useHeaderSearch } from '../../../contexts/HeaderSearchProvider';
+import { useSearchCoordinator } from '../../../contexts/SearchCoordinatorProvider';
 
 // Stable default functions to prevent infinite loops
 const defaultOnError = () => {};
@@ -94,7 +94,7 @@ export default function SearchCore({
     // ===== HOOKS =====
     const toast = useToast();
     const isMountedRef = useRef(true);
-    const { registerPageSearch } = useHeaderSearch();
+    const { registerPageSearch } = useSearchCoordinator();
     const debounceTimeoutRef = useRef(null);
     const searchInputRef = useRef(null);
     const resultsContainerRef = useRef(null);

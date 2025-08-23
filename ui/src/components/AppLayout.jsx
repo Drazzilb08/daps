@@ -1,7 +1,7 @@
 import PropTypes from 'prop-types';
 import Sidebar from './NavigationSidebar';
 import Header from './AppHeader';
-import { HeaderSearchProvider } from '../contexts/HeaderSearchProvider';
+import { SearchCoordinatorProvider } from '../contexts/SearchCoordinatorProvider';
 
 /**
  * Main application layout component that wraps page content with header and sidebar
@@ -11,7 +11,7 @@ import { HeaderSearchProvider } from '../contexts/HeaderSearchProvider';
  */
 export default function Layout({ children }) {
     return (
-        <HeaderSearchProvider>
+        <SearchCoordinatorProvider>
             <div>
                 <Header />
                 <Sidebar />
@@ -21,7 +21,7 @@ export default function Layout({ children }) {
                     </div>
                 </main>
             </div>
-        </HeaderSearchProvider>
+        </SearchCoordinatorProvider>
     );
 }
 

@@ -6,11 +6,11 @@ import { getIcon, humanize } from '../../utils/tools';
 import TooltipFactory from '../Tooltip';
 import Popover from '../Popover';
 import usePopover from '../../hooks/usePopover';
-import { useHeaderSearch } from '../../contexts/HeaderSearchProvider';
+import { useSearchCoordinator } from '../../contexts/SearchCoordinatorProvider';
 
 // Internal component that uses the header search context
 function SearchControlsInner(props) {
-    const headerSearchContext = useHeaderSearch();
+    const headerSearchContext = useSearchCoordinator();
     const isHeaderSearchActive = headerSearchContext?.isSearchPage();
 
     return <SearchControlsCore {...props} isHeaderSearchActive={isHeaderSearchActive} />;

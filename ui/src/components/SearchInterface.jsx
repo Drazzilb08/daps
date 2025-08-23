@@ -4,7 +4,7 @@ import { getIcon, humanize } from '../utils/tools';
 import TooltipFactory from './Tooltip';
 import Popover from './Popover';
 import usePopover from '../hooks/usePopover';
-import { useHeaderSearch } from '../contexts/HeaderSearchProvider';
+import { useSearchCoordinator } from '../contexts/SearchCoordinatorProvider';
 
 /**
  * HeaderSearch - The main header search component that provides an immersive search experience
@@ -12,7 +12,7 @@ import { useHeaderSearch } from '../contexts/HeaderSearchProvider';
  */
 function HeaderSearchInner() {
     const location = useLocation();
-    const headerSearchContext = useHeaderSearch();
+    const headerSearchContext = useSearchCoordinator();
 
     // Local state for header search - always initialize all hooks
     const [searchTerm, setSearchTerm] = useState('');

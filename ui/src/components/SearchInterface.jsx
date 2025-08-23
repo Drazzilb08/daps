@@ -29,6 +29,7 @@ function HeaderSearchInner() {
 
     // Refs
     const searchInputRef = useRef(null);
+    const searchButtonRef = useRef(null);
     const autocompleteRef = useRef();
 
     // Popover states for header controls
@@ -599,6 +600,7 @@ function HeaderSearchInner() {
 
                     {/* Search button */}
                     <button
+                        ref={searchButtonRef}
                         type="button"
                         className="header-search__button header-search__button--search"
                         onClick={handleSearch}
@@ -611,7 +613,7 @@ function HeaderSearchInner() {
                         {getIcon(isSearching ? 'mi:hourglass_empty' : 'mi:search')}
                     </button>
                     <TooltipFactory
-                        anchor={searchInputRef.current}
+                        anchor={searchButtonRef.current}
                         text="Search"
                         show={showTooltips.search}
                     />

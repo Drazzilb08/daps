@@ -1,7 +1,7 @@
 # util/base_module.py
 
 from abc import ABC, abstractmethod
-from typing import Optional
+from typing import Any, Dict, Optional
 
 from util.config import load_config
 from util.logger import Logger
@@ -9,7 +9,7 @@ from util.logger import Logger
 
 class DapsModule(ABC):
     def __init__(
-        self, config: Optional[dict] = None, logger: Optional[Logger] = None
+        self, config: Optional[Dict[str, Any]] = None, logger: Optional[Logger] = None
     ) -> None:
         """
         Initialize module with optional logger injection.

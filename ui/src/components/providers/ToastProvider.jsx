@@ -1,15 +1,24 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 
-// Context for toasts
 const ToastContext = createContext();
 let toastBridge = null;
 
+/**
+ * Helper function to add a new toast to the queue
+ * @param {Function} setToasts - State setter for toasts array
+ * @param {string} message - Toast message
+ * @param {string} [type='info'] - Toast type (info, success, error)
+ * @param {number} [timeout=3000] - Auto-dismiss timeout in milliseconds
+ */
 function showToastHelper(setToasts, message, type = 'info', timeout = 3000) {
     const id = Date.now() + Math.random();
     setToasts(prev => [...prev, { id, message, type, timeout }]);
 }
 
-// Hook for using the toast function in your components
+/**
+ * Hook to access toast functionality in components
+ * @returns {Function & Object} Toast function with error, success, info methods
+ */
 export function useToast() {
     const showToast = useContext(ToastContext);
     const error = useCallback((msg, timeout) => showToast(msg, 'error', timeout), [showToast]);
@@ -18,7 +27,16 @@ export function useToast() {
     return Object.assign(showToast, { error, success, info });
 }
 
-// ToastMessage component for animation
+/**
+ * Individual toast message component with animation and auto-dismiss
+ * @param {Object} props - Component props
+ * @param {string} props.id - Unique toast identifier
+ * @param {string} props.message - Toast message text
+ * @param {string} props.type - Toast type for styling
+ * @param {number} props.timeout - Auto-dismiss timeout
+ * @param {Function} props.onRemove - Remove handler
+ * @returns {JSX.Element} Animated toast message
+ */
 function ToastMessage({ id, message, type, timeout, onRemove }) {
     const [show, setShow] = useState(false);
 
@@ -46,17 +64,20 @@ function ToastMessage({ id, message, type, timeout, onRemove }) {
     );
 }
 
+/**
+ * Toast provider that manages toast notifications system-wide
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.children - Child components
+ * @returns {JSX.Element} Toast provider with notification container
+ */
 export function ToastProvider({ children }) {
     const [toasts, setToasts] = useState([]);
-
-    // Show a new toast
     const showToast = useCallback((message, type = 'info', timeout = 3000) => {
         showToastHelper(setToasts, message, type, timeout);
     }, []);
 
     toastBridge = showToast;
 
-    // Remove a toast by ID
     const removeToast = useCallback(id => {
         setToasts(prev => prev.filter(t => t.id !== id));
     }, []);
@@ -72,6 +93,10 @@ export function ToastProvider({ children }) {
         </ToastContext.Provider>
     );
 }
+/**
+ * Global toast function that can be used outside of React components
+ * @param {...any} args - Arguments to pass to toast bridge
+ */
 export function toast(...args) {
     if (typeof toastBridge === 'function') toastBridge(...args);
 }

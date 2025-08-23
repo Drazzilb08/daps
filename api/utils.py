@@ -1,6 +1,6 @@
 # api/utils.py
 
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import Request
 from fastapi.responses import JSONResponse
@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from util.database import DapsDB
 
 
-def get_logger(request: Request, source="WEB") -> Any:
+def get_logger(request: Request, source: str = "WEB") -> Any:
     return request.app.state.logger.get_adapter(source)
 
 
@@ -27,7 +27,9 @@ def get_database(request: Request) -> DapsDB:
     return request.app.state.db
 
 
-def ok(message: str, data: Any | None = None, status_code: int = 200):
+def ok(
+    message: str, data: Optional[Any] = None, status_code: int = 200
+) -> JSONResponse:
     """Standard success response factory."""
     payload = {"success": True, "message": message}
     if data is not None:
@@ -39,9 +41,9 @@ def error(
     message: str,
     code: str = "UNKNOWN_ERROR",
     *,
-    data: Any | None = None,
+    data: Optional[Any] = None,
     status_code: int = 400,
-):
+) -> JSONResponse:
     """Standard error response factory."""
     payload = {"success": False, "message": message, "error_code": code}
     if data is not None:

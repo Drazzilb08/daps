@@ -1,8 +1,9 @@
 # api/modules.py
 
-from typing import Any
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from api.utils import error, get_database, get_logger, ok
@@ -20,7 +21,7 @@ class CancelRequest(BaseModel):
 router = APIRouter()
 
 
-def get_module_orchestrator(request: Request):
+def get_module_orchestrator(request: Request) -> Any:
     """Dependency injection for module orchestrator"""
     orchestrator = getattr(request.app.state, "module_orchestrator", None)
     if orchestrator is None:
@@ -33,8 +34,8 @@ async def run_module(
     request: Request,
     data: RunRequest,
     logger: Any = Depends(get_logger),
-    orchestrator=Depends(get_module_orchestrator),
-):
+    orchestrator: Any = Depends(get_module_orchestrator),
+) -> JSONResponse:
     """Run a module immediately via job queue with polling"""
     module = data.module
     logger.debug("Serving POST /api/run for module: %s", module)
@@ -81,8 +82,8 @@ async def module_status(
     request: Request,
     module: str,
     logger: Any = Depends(get_logger),
-    orchestrator=Depends(get_module_orchestrator),
-):
+    orchestrator: Any = Depends(get_module_orchestrator),
+) -> JSONResponse:
     """Get module status via job queue"""
     try:
         status = orchestrator.get_module_status(module)
@@ -103,8 +104,8 @@ async def cancel_module(
     request: Request,
     data: CancelRequest,
     logger: Any = Depends(get_logger),
-    orchestrator=Depends(get_module_orchestrator),
-):
+    orchestrator: Any = Depends(get_module_orchestrator),
+) -> JSONResponse:
     """Cancel a running module via job queue"""
     module = data.module
 
@@ -138,7 +139,7 @@ async def get_all_run_states(
     request: Request,
     logger: Any = Depends(get_logger),
     db: DapsDB = Depends(get_database),
-):
+) -> JSONResponse:
     """Get all run states from database"""
     try:
         run_states = db.run_state.get_all()
@@ -163,7 +164,7 @@ async def get_job_status(
     job_id: int,
     logger: Any = Depends(get_logger),
     db: DapsDB = Depends(get_database),
-):
+) -> JSONResponse:
     """Get status of a specific job"""
     try:
         job = db.worker.get_job_by_id("jobs", job_id)
@@ -187,11 +188,11 @@ async def get_job_status(
 @router.get("/api/jobs")
 async def list_jobs(
     request: Request,
-    status: str = None,
+    status: Optional[str] = None,
     limit: int = 50,
     logger: Any = Depends(get_logger),
     db: DapsDB = Depends(get_database),
-):
+) -> JSONResponse:
     """List recent jobs with optional filtering"""
     try:
         result = db.worker.list_jobs(status=status, limit=limit)
@@ -217,7 +218,7 @@ async def get_job_stats(
     request: Request,
     logger: Any = Depends(get_logger),
     db: DapsDB = Depends(get_database),
-):
+) -> JSONResponse:
     """Get job queue statistics"""
     try:
         result = db.worker.job_stats("jobs")
@@ -246,7 +247,7 @@ async def retry_job(
     job_id: int,
     logger: Any = Depends(get_logger),
     db: DapsDB = Depends(get_database),
-):
+) -> JSONResponse:
     """Retry a failed job"""
     try:
         success = db.worker.reset_job_to_pending("jobs", job_id)

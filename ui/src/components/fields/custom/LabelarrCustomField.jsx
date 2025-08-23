@@ -1,22 +1,91 @@
 import React, { useState } from 'react';
 import ModalFactory from '../../modals/ModalFactory';
 
+/**
+ * LabelarrCustomField - Complex field for managing ARR to Plex label mappings
+ *
+ * Provides a sophisticated interface for configuring label synchronization between
+ * ARR instances (Radarr/Sonarr) and Plex libraries. Handles nested configuration
+ * with add/edit/delete operations through modal interfaces.
+ *
+ * Features:
+ * - Card-based list interface for existing mappings
+ * - Modal forms for add/edit operations with validation
+ * - Dynamic subfield rendering based on field schema
+ * - Support for complex nested data structures
+ * - Keyboard accessibility and ARIA compliance
+ *
+ * Data structure:
+ * Each mapping contains:
+ * - app_instance: ARR instance name
+ * - labels: Array of label names to sync
+ * - plex_instances: Array of {instance, library_names} objects
+ *
+ * @param {Object} props - Component props
+ * @param {Object} props.field - Field configuration from schema
+ * @param {string} props.field.key - Field identifier
+ * @param {string} props.field.label - Display label
+ * @param {Array} props.field.fields - Subfield definitions for modal
+ * @param {string} [props.field.description] - Help text
+ * @param {Array} [props.value=[]] - Current mappings array
+ * @param {Function} props.onChange - Value change handler
+ * @param {Object} props.rootConfig - Full application configuration
+ * @param {Object} props.moduleConfig - Module-specific configuration
+ *
+ * @example
+ * // Field configuration in schema
+ * {
+ *   key: 'label_mappings',
+ *   label: 'Label Mappings',
+ *   type: 'labelarr_custom',
+ *   description: 'Configure ARR to Plex label synchronization',
+ *   fields: [
+ *     { key: 'app_instance', label: 'ARR Instance', type: 'text' },
+ *     { key: 'labels', label: 'Labels', type: 'tag_multi_select' },
+ *     { key: 'plex_instances', label: 'Plex Libraries', type: 'plex_mapping' }
+ *   ]
+ * }
+ *
+ * @example
+ * // Usage in settings form
+ * <LabelarrCustomField
+ *   field={fieldConfig}
+ *   value={currentMappings}
+ *   onChange={handleMappingChange}
+ *   rootConfig={appConfig}
+ *   moduleConfig={labelarrConfig}
+ * />
+ */
 export function LabelarrCustomField({ field, value = [], onChange, rootConfig, moduleConfig }) {
+    // Modal state management for add/edit operations
     const [editingMappingIndex, setEditingMappingIndex] = useState(null);
     const [showModal, setShowModal] = useState(false);
     const [modalEntry, setModalEntry] = useState(null);
 
+    // Extract subfield definitions from field configuration
     const subfields = Array.isArray(field.fields) ? field.fields : [];
 
+    /**
+     * Open modal for editing existing mapping or creating new one
+     *
+     * Prepares modal state with either existing mapping data (edit mode)
+     * or default values from subfield schema (add mode).
+     *
+     * @param {number|null} idx - Index of mapping to edit, null for new mapping
+     */
     function openEdit(idx) {
         setEditingMappingIndex(idx);
+
+        // Set modal entry data based on operation mode
         setModalEntry(
             idx !== null && idx !== undefined
-                ? { ...value[idx] }
+                ? { ...value[idx] } // Edit mode: clone existing mapping
                 : Object.fromEntries(
+                      // Add mode: use field defaults
                       subfields.map(f => [f.key, Array.isArray(f.default) ? [] : (f.default ?? '')])
                   )
         );
+
         setShowModal(true);
     }
 

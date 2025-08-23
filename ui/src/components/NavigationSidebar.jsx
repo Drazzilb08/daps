@@ -2,7 +2,9 @@ import React from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { getIcon } from '../utils/tools';
 
-// Helper function to close mobile sidebar
+/**
+ * Closes the mobile navigation sidebar
+ */
 function closeMobileSidebar() {
     const body = document.body;
     const hamburger = document.getElementById('sidebarToggle');
@@ -59,6 +61,12 @@ const NAV = [
     { to: '/logs', icon: 'receipt_long', label: 'Logs' },
 ];
 
+/**
+ * Checks if a navigation item or its children are currently active
+ * @param {Object} navigationItem - Navigation item to check
+ * @param {Object} location - React Router location object
+ * @returns {boolean} True if item or child is active
+ */
 function isParentActive(navigationItem, location) {
     if (navigationItem.to && location.pathname === navigationItem.to) return true;
     if (
@@ -69,12 +77,16 @@ function isParentActive(navigationItem, location) {
     return false;
 }
 
+/**
+ * Main navigation sidebar component with collapsible sections
+ * @returns {JSX.Element} Navigation sidebar with menu items and dropdowns
+ */
 export default function Sidebar() {
     const location = useLocation();
     const navigate = useNavigate();
     const [openDropdown, setOpenDropdown] = React.useState(null);
 
-    // Always close dropdown when route changes to a non-child
+    // Close dropdown when navigating away from child routes
     React.useEffect(() => {
         const parentForPath = NAV.find(
             item => item.children && item.children.some(sub => location.pathname.startsWith(sub.to))
@@ -90,7 +102,6 @@ export default function Sidebar() {
                 {NAV.map(item => {
                     const isActiveSection = isParentActive(item, location);
 
-                    // Simple link, no children
                     if (!item.children) {
                         return (
                             <li
@@ -112,7 +123,6 @@ export default function Sidebar() {
                         );
                     }
 
-                    // Dropdown parent with NO 'to:' -- pure dropdown, only one open at a time
                     if (!item.to && item.children && item.children.length > 0) {
                         const isChildRoute = item.children.some(sub =>
                             location.pathname.startsWith(sub.to)
@@ -129,13 +139,11 @@ export default function Sidebar() {
                                     aria-expanded={isOpen}
                                     onClick={() => {
                                         if (!isOpen) {
-                                            // When opening, always navigate to first child
                                             setOpenDropdown(item.label);
                                             if (!isChildRoute && item.children[0]?.to) {
                                                 navigate(item.children[0].to);
                                             }
                                         }
-                                        // Do not allow closing by clicking again
                                     }}
                                 >
                                     <span className="icon">{getIcon(`mi:${item.icon}`)}</span>
@@ -167,7 +175,6 @@ export default function Sidebar() {
                         );
                     }
 
-                    // Has 'to:' and children (dropdown opens if active as before)
                     return (
                         <li
                             key={item.to}
@@ -206,7 +213,7 @@ export default function Sidebar() {
                     );
                 })}
             </ul>
-            <div className="sidebar-footer">{/* Footer content */}</div>
+            <div className="sidebar-footer"></div>
         </nav>
     );
 }

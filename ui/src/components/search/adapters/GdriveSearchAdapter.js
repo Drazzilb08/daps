@@ -8,22 +8,35 @@ function isImageFile(filename) {
     return /\.(jpe?g|png|webp|gif)$/i.test(filename);
 }
 
-// Cache for loaded data to prevent multiple loads
-let cachedData = null;
-let isLoading = false;
+/**
+ * Module-level cache implementation for GDrive/Custom data
+ *
+ * Implements intelligent caching to prevent redundant API calls during the same session.
+ * Cache is invalidated when configuration changes or when explicitly cleared.
+ * Thread-safe loading prevents concurrent fetch operations.
+ */
+let cachedData = null; // Stores loaded configuration and file data
+let isLoading = false; // Prevents concurrent load operations
 
 export const gdriveSearchAdapter = {
     /**
-     * Clear data cache (call this when configuration changes)
+     * Clear cached data when configuration changes
+     *
+     * Call this method when GDrive locations or custom directories are modified
+     * to ensure fresh data is loaded on next search operation.
      */
     clearLocationCache() {
-        cachedData = null; // Clear data cache
-        isLoading = false;
-        console.log('GDrive data cache cleared');
+        cachedData = null; // Invalidate cached data
+        isLoading = false; // Reset loading state
+        console.log('GDrive data cache cleared - next search will reload from API');
     },
 
     /**
-     * Get status of data cache (for debugging)
+     * Get current cache state for debugging and monitoring
+     *
+     * @returns {Object} Cache status information
+     * @returns {boolean} hasCache - Whether data is currently cached
+     * @returns {boolean} isLoading - Whether a load operation is in progress
      */
     getCacheStatus() {
         return {

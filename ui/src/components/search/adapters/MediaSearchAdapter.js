@@ -65,55 +65,83 @@ export const mediaSearchAdapter = {
     /**
      * Aggregate media items by unique identifiers (same type only)
      * Groups movies with movies, shows with shows
+     *
+     * This algorithm performs intelligent deduplication and aggregation of media items
+     * across multiple ARR instances while preserving relationship to Plex data.
+     *
+     * Algorithm steps:
+     * 1. Create Plex lookup map for O(1) matching performance
+     * 2. For each media item, find corresponding Plex data (mapping or fallback)
+     * 3. Generate unique aggregation key based on available identifiers
+     * 4. Group items with same key, maintaining instance information
+     * 5. Ensure type consistency within groups (movies vs shows)
+     *
+     * @param {Array} mediaItems - Raw media items from ARR instances
+     * @param {Array} plexItems - Plex media data for mapping
+     * @returns {Array} Aggregated media items with instance and Plex data
      */
     aggregateMediaItems(mediaItems, plexItems) {
         const grouped = new Map();
         const plexLookup = this.createPlexLookup(plexItems);
 
         for (const item of mediaItems) {
-            // Use pre-computed plex mapping if available, otherwise fall back to manual matching
+            // STEP 1: Resolve Plex mapping with performance optimization
+            // Priority: pre-computed mapping > manual matching > skip item
             let plexData = null;
 
             if (item.plex_mapping_id) {
-                // Fast lookup using pre-computed mapping
+                // Fast O(1) lookup using pre-computed database mapping
+                // This avoids expensive GUID parsing and string matching
                 plexData = plexItems.find(p => p.id === item.plex_mapping_id);
             }
 
             if (!plexData) {
-                // Fallback to manual matching for items without pre-computed mappings
+                // Fallback to manual matching algorithm for legacy items
+                // Uses TMDB/TVDB/IMDB IDs and title+year+type matching
                 plexData = this.findPlexMapping(item, plexLookup);
             }
 
+            // Skip items without Plex mapping - they can't be properly aggregated
             if (!plexData) continue;
 
-            // Create unique key: tmdb_id || tvdb_id || imdb_id || normalized_title+year+type
+            // STEP 2: Generate unique aggregation key with fallback hierarchy
+            // Priority: tmdb_id > tvdb_id > imdb_id > normalized_title+year+type
+            // This ensures items representing the same content are grouped together
             const key =
                 item.tmdb_id ||
                 item.tvdb_id ||
                 item.imdb_id ||
                 `${item.normalized_title}:${item.year}:${item.asset_type}`;
 
+            // STEP 3: Group items by unique key, maintaining instance relationships
             if (!grouped.has(key)) {
+                // First occurrence: create new aggregated item
                 grouped.set(key, {
-                    ...item,
-                    instances: [item.instance_name],
+                    ...item, // Base item data
+                    instances: [item.instance_name], // Track ARR instances
                     instanceCount: 1,
-                    allInstanceData: [item],
+                    allInstanceData: [item], // Keep all database rows for analysis
                     plexLabels: this.parseLabels(plexData.labels),
                     plexData: plexData,
-                    plex_mapping_id: plexData.id, // Add mapping reference
+                    plex_mapping_id: plexData.id, // Maintain mapping reference
                 });
             } else {
                 const existing = grouped.get(key);
-                // Only aggregate if same type (movies with movies, shows with shows)
+
+                // STEP 4: Aggregate additional instances with type validation
+                // Only merge items of the same type to prevent movies/shows mixing
                 if (existing.asset_type === item.asset_type) {
-                    // Only add instance_name if it's not already in the array (avoid duplicates)
+                    // Prevent duplicate instance names (same ARR instance, different seasons)
                     if (!existing.instances.includes(item.instance_name)) {
                         existing.instances.push(item.instance_name);
                         existing.instanceCount++;
                     }
+
+                    // Always add to allInstanceData for comprehensive season/episode tracking
                     existing.allInstanceData.push(item);
-                    // Keep Plex data from first occurrence (they should be the same)
+
+                    // Preserve Plex labels from first valid occurrence
+                    // All instances should have same Plex data, but handle missing labels
                     if (!existing.plexLabels && plexData.labels) {
                         existing.plexLabels = this.parseLabels(plexData.labels);
                     }
@@ -125,21 +153,36 @@ export const mediaSearchAdapter = {
     },
 
     /**
-     * Create a lookup map for plex items for efficient matching
+     * Create optimized lookup map for plex items to enable O(1) matching
+     *
+     * This creates multiple index entries per Plex item to support different
+     * matching strategies with constant-time lookups instead of linear searches.
+     *
+     * Indexing strategy:
+     * - GUID-based keys: 'tmdb:12345', 'tvdb:67890', 'imdb:tt1234567'
+     * - Title fallback: 'normalized_title:year:type'
+     *
+     * @param {Array} plexItems - Plex media items with GUID data
+     * @returns {Map} Lookup map for O(1) Plex item retrieval
      */
     createPlexLookup(plexItems) {
         const lookup = new Map();
 
         for (const plexItem of plexItems) {
-            // Parse guids for matching
+            // Parse complex GUID JSON structure into searchable identifiers
+            // Handles various Plex agent formats and edge cases
             const guids = this.parseGuids(plexItem.guids);
 
-            // Add entries for each guid type
+            // Create multiple lookup entries per item for different match scenarios
+            // This allows fallback matching when primary IDs aren't available
+
+            // GUID-based lookups (most reliable)
             if (guids.tmdb) lookup.set(`tmdb:${guids.tmdb}`, plexItem);
             if (guids.tvdb) lookup.set(`tvdb:${guids.tvdb}`, plexItem);
             if (guids.imdb) lookup.set(`imdb:${guids.imdb}`, plexItem);
 
-            // Also add title+year fallback
+            // Title-based fallback for items without reliable GUIDs
+            // Used when TMDB/TVDB/IMDB matching fails
             const titleKey = `${plexItem.normalized_title}:${plexItem.year}:${plexItem.asset_type}`;
             lookup.set(titleKey, plexItem);
         }
@@ -194,7 +237,19 @@ export const mediaSearchAdapter = {
     },
 
     /**
-     * Parse Plex GUID string into structured data
+     * Parse complex Plex GUID JSON into structured identifiers
+     *
+     * Plex stores external database IDs in various formats within a JSON structure.
+     * This parser handles multiple agent formats and data structures to extract
+     * TMDB, TVDB, and IMDB identifiers for reliable media matching.
+     *
+     * Supported GUID formats:
+     * - Array: ["com.plexapp.agents.themoviedb://12345", ...]
+     * - String: "com.plexapp.agents.themoviedb://12345"
+     * - Object: {"0": "com.plexapp.agents.themoviedb://12345", ...}
+     *
+     * @param {string} guidsString - JSON string containing Plex GUID data
+     * @returns {Object} Parsed GUIDs with tmdb, tvdb, imdb properties
      */
     parseGuids(guidsString) {
         const guids = {};
@@ -203,34 +258,45 @@ export const mediaSearchAdapter = {
         try {
             const parsed = JSON.parse(guidsString);
 
-            // Handle different possible formats
+            // Normalize different JSON structures to array format
+            // Plex can store GUIDs as array, string, or object depending on version
             let guidArray = [];
             if (Array.isArray(parsed)) {
+                // Most common: direct array of GUID strings
                 guidArray = parsed;
             } else if (typeof parsed === 'string') {
-                // If it's a single string, wrap in array
+                // Single GUID: wrap in array for consistent processing
                 guidArray = [parsed];
             } else if (parsed && typeof parsed === 'object') {
-                // If it's an object, try to extract values
+                // Object format: extract all values (may be indexed)
                 guidArray = Object.values(parsed);
             }
 
+            // Extract database IDs from Plex agent URIs
+            // Pattern: 'com.plexapp.agents.{service}://{id}?{optional_params}'
             for (const guid of guidArray) {
                 if (typeof guid === 'string') {
+                    // Parse TMDB IDs (movies and TV shows)
                     if (guid.includes('themoviedb://')) {
                         guids.tmdb = guid
                             .replace('com.plexapp.agents.themoviedb://', '')
-                            .split('?')[0];
-                    } else if (guid.includes('thetvdb://')) {
+                            .split('?')[0]; // Remove query parameters
+                    }
+                    // Parse TVDB IDs (TV shows primarily)
+                    else if (guid.includes('thetvdb://')) {
                         guids.tvdb = guid
                             .replace('com.plexapp.agents.thetvdb://', '')
                             .split('?')[0];
-                    } else if (guid.includes('imdb://')) {
+                    }
+                    // Parse IMDB IDs (movies and shows)
+                    else if (guid.includes('imdb://')) {
                         guids.imdb = guid.replace('com.plexapp.agents.imdb://', '').split('?')[0];
                     }
                 }
             }
         } catch (error) {
+            // Log parsing failures for debugging but don't throw
+            // Invalid GUID data shouldn't break the entire aggregation process
             console.warn('Error parsing Plex GUIDs:', error, 'Raw GUIDs string:', guidsString);
         }
 
@@ -238,29 +304,45 @@ export const mediaSearchAdapter = {
     },
 
     /**
-     * Search function for filtering aggregated media items
-     * Supports advanced search patterns: tmdb:123, imdb:tt123456, tvdb:789
+     * Multi-modal search function for filtering aggregated media items
+     *
+     * Supports both standard text search and advanced database ID search patterns.
+     * Search is performed against aggregated items with optimized field matching.
+     *
+     * Search modes:
+     * 1. Advanced patterns: 'tmdb:123', 'imdb:tt123456', 'tvdb:789'
+     * 2. Standard text: matches title, normalized_title, instances, year
+     *
+     * @param {Object} data - Search data containing aggregatedItems array
+     * @param {string} searchTerm - User search input
+     * @returns {Array} Filtered items matching search criteria
      */
     search(data, searchTerm) {
+        // Return all items if no search term provided
         if (!searchTerm) {
             return data.aggregatedItems || [];
         }
 
         const trimmedTerm = searchTerm.trim();
 
-        // Check for advanced search patterns
+        // ADVANCED SEARCH: Check for database ID patterns first
+        // Patterns like 'tmdb:12345' provide exact matching capabilities
         const advancedSearchMatch = this.parseAdvancedSearchTerm(trimmedTerm);
         if (advancedSearchMatch) {
             return this.performAdvancedSearch(data.aggregatedItems || [], advancedSearchMatch);
         }
 
-        // Standard text search
+        // STANDARD SEARCH: Multi-field text matching with case-insensitive search
         const lowerTerm = trimmedTerm.toLowerCase();
         return (data.aggregatedItems || []).filter(item => {
             return (
+                // Primary title search (display title)
                 item.title?.toLowerCase().includes(lowerTerm) ||
+                // Normalized title search (cleaned for matching)
                 item.normalized_title?.toLowerCase().includes(lowerTerm) ||
+                // Instance search (ARR instance names)
                 item.instances?.some(instance => instance.toLowerCase().includes(lowerTerm)) ||
+                // Year search (release year)
                 item.year?.toString().includes(lowerTerm)
             );
         });

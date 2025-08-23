@@ -1,11 +1,12 @@
-// ui/src/components/search/SearchResults.jsx
-// Simple search results that uses GridView/ListView directly
-
 import React from 'react';
 import GridView from './views/GridView';
 import ListView from './views/ListView';
 
-// Helper functions that will be moved to the views eventually
+/**
+ * Extracts image URL from search result
+ * @param {Object} result - Search result object
+ * @returns {string} Image URL or empty string
+ */
 const getImageUrl = result => {
     const posterData = result.original || result;
     if (result.imageUrl) return result.imageUrl;
@@ -15,6 +16,11 @@ const getImageUrl = result => {
     return '';
 };
 
+/**
+ * Generates display title from search result with year and type info
+ * @param {Object} result - Search result object
+ * @returns {string} Formatted display title
+ */
 const getDisplayTitle = result => {
     const posterData = result.original || result;
     const title = result.title || posterData.title || posterData.file || 'Untitled';
@@ -27,14 +33,28 @@ const getDisplayTitle = result => {
     return title;
 };
 
+/**
+ * Renders metadata indicators for search results
+ * @param {Object} result - Search result object
+ * @returns {JSX.Element|null} Metadata component or null
+ */
 const renderMetadata = result => {
-    // MediaSearch-style instance indicators
     if (result.instanceCount > 1) {
         return <div className="multiple-instances-indicator">{result.instanceCount}</div>;
     }
     return null;
 };
 
+/**
+ * Search results component that renders results in grid or list view
+ * @param {Object} props - Component props
+ * @param {string|null} props.error - Error message to display
+ * @param {Array} [props.results=[]] - Array of search results
+ * @param {string} props.searchTerm - Current search term
+ * @param {string} [props.currentView='grid'] - View mode (grid/list)
+ * @param {Object} props.viewProps - Additional props for view components
+ * @returns {JSX.Element} Rendered search results or empty/error state
+ */
 export default function SearchResults({
     error,
     results = [],
@@ -42,7 +62,6 @@ export default function SearchResults({
     currentView = 'grid',
     ...viewProps
 }) {
-    // ===== ERROR STATE =====
     if (error) {
         return (
             <div className="search-error-container" role="alert" aria-live="assertive">
@@ -57,7 +76,6 @@ export default function SearchResults({
         );
     }
 
-    // ===== EMPTY STATE =====
     if (!results.length) {
         if (!searchTerm || !searchTerm.trim()) {
             return (
@@ -97,7 +115,6 @@ export default function SearchResults({
         );
     }
 
-    // ===== RENDER RESULTS =====
     const commonProps = {
         results,
         searchTerm,

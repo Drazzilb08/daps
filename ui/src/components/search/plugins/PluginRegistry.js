@@ -4,32 +4,111 @@
 import { PluginValidator } from './PluginSchema';
 
 /**
- * Plugin Registry
- * Manages plugins with business logic isolation but shared UI components
+ * Plugin Registry - Advanced plugin management system
+ *
+ * Provides a robust architecture for isolating business logic while sharing UI components.
+ * Each plugin maintains its own state, error handling, and lifecycle management while
+ * leveraging common UI elements through configuration.
+ *
+ * Architecture principles:
+ * - Business logic isolation: Each plugin has independent adapters and state
+ * - Shared UI components: Common SearchResults, SearchControls, etc.
+ * - Error boundaries: Plugin failures don't crash the entire system
+ * - State management: Per-plugin state with controlled access
+ * - Lifecycle hooks: Plugin initialization, mounting, and cleanup
+ *
+ * Plugin lifecycle:
+ * 1. Registration: Plugin config validation and instance creation
+ * 2. Initialization: onInit hook execution
+ * 3. Mounting: onMount hook when plugin becomes active
+ * 4. Operation: Event handlers and adapter method execution
+ * 5. Unmounting: onUnmount hook when plugin deactivates
+ * 6. Destruction: onDestroy hook and cleanup
+ *
+ * @example
+ * // Register a new plugin
+ * const mediaPlugin = pluginRegistry.registerPlugin({
+ *   id: 'media-search',
+ *   name: 'Media Search',
+ *   adapter: mediaSearchAdapter,
+ *   uiConfig: {
+ *     sources: [{ key: 'all', label: 'All Media', icon: 'movie' }],
+ *     placeholder: 'Search movies and shows...'
+ *   }
+ * });
+ *
+ * @example
+ * // Access plugin for search operations
+ * const plugin = pluginRegistry.getPlugin('media-search');
+ * const results = await plugin.adapter.loadInitialData();
  */
 class PluginRegistry {
     constructor() {
-        this.plugins = new Map();
-        this.initialized = false;
+        this.plugins = new Map(); // Plugin storage with ID-based indexing
+        this.initialized = false; // Registry initialization state
     }
 
     /**
-     * Register a smart plugin with isolated business logic
+     * Register a plugin with comprehensive validation and initialization
+     *
+     * Performs complete plugin lifecycle management including validation,
+     * isolation setup, registration, and initialization hook execution.
+     *
+     * Registration process:
+     * 1. Validate plugin configuration against schema
+     * 2. Create isolated plugin instance with error boundaries
+     * 3. Store plugin in registry with unique ID
+     * 4. Execute initialization hooks
+     * 5. Return plugin instance for immediate use
+     *
+     * @param {Object} config - Complete plugin configuration
+     * @param {string} config.id - Unique plugin identifier
+     * @param {string} config.name - Human-readable plugin name
+     * @param {Object} config.adapter - Business logic adapter with required methods
+     * @param {Object} config.uiConfig - UI behavior configuration
+     * @param {Object} [config.eventHandlers] - Plugin-specific event handlers
+     * @param {Object} [config.hooks] - Lifecycle hooks (onInit, onMount, etc.)
+     * @returns {Object} Registered plugin instance with isolation and state management
+     * @throws {Error} If plugin configuration is invalid or ID conflicts exist
+     *
+     * @example
+     * // Register media search plugin with full configuration
+     * const mediaPlugin = pluginRegistry.registerPlugin({
+     *   id: 'media-search',
+     *   name: 'Media Search',
+     *   adapter: {
+     *     loadInitialData: async () => { return []; },
+     *     search: (data, term) => { return []; },
+     *     formatResult: (item) => { return item; }
+     *   },
+     *   uiConfig: {
+     *     sources: [{ key: 'all', label: 'All Media' }],
+     *     placeholder: 'Search movies and shows...'
+     *   },
+     *   hooks: {
+     *     onInit: (plugin) => console.log('Media plugin initialized')
+     *   }
+     * });
      */
     registerPlugin(config) {
-        // Validate plugin
+        // Step 1: Comprehensive validation of plugin configuration
         PluginValidator.validate(config);
 
-        // Create plugin instance with business logic isolation
+        // Step 2: Check for ID conflicts before creating plugin instance
+        if (this.plugins.has(config.id)) {
+            throw new Error(`Plugin ID '${config.id}' already registered`);
+        }
+
+        // Step 3: Create isolated plugin instance with error boundaries
         const plugin = this.createPlugin(config);
 
-        // Register
+        // Step 4: Register plugin in the global registry
         this.plugins.set(config.id, plugin);
 
-        // Execute init hook
+        // Step 5: Execute initialization hook for plugin setup
         this.executeHook(plugin, 'onInit');
 
-        console.log(`✅ Plugin '${config.id}' registered`);
+        console.log(`✅ Plugin '${config.id}' registered successfully`);
         return plugin;
     }
 

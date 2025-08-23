@@ -2,13 +2,14 @@ import os
 import threading
 from contextlib import asynccontextmanager
 from pathlib import Path
-from typing import Any
+from typing import Any, AsyncGenerator
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import (
     FileResponse,
     HTMLResponse,
+    JSONResponse,
 )
 from fastapi.staticfiles import StaticFiles
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -30,7 +31,7 @@ from util.version import get_version
 
 
 @asynccontextmanager
-async def lifespan(app):
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """FastAPI lifespan context manager with proper startup/shutdown"""
 
     logger = app.state.logger
@@ -120,7 +121,9 @@ async def lifespan(app):
                     ("background_worker", app.state.background_worker)
                 )
 
-            def stop_worker_with_timeout(name, worker, timeout=8):
+            def stop_worker_with_timeout(
+                name: str, worker: Any, timeout: int = 8
+            ) -> None:
                 try:
                     if log:
                         log.debug(f"Stopping {name}...")
@@ -189,7 +192,7 @@ app.mount(
 
 
 @app.exception_handler(Exception)
-async def handle_exception(request: Request, exc: Exception):
+async def handle_exception(request: Request, exc: Exception) -> JSONResponse:
     """Catch-all exception handler with standardized payload."""
     logger = get_logger(request, "ERROR")
     logger.error(f"Unhandled Exception: {exc}", exc_info=True)
@@ -199,7 +202,9 @@ async def handle_exception(request: Request, exc: Exception):
 
 
 @app.exception_handler(StarletteHTTPException)
-async def handle_http_exception(request: Request, exc: StarletteHTTPException):
+async def handle_http_exception(
+    request: Request, exc: StarletteHTTPException
+) -> JSONResponse:
     """Standardize HTTPException responses into the common error envelope."""
     logger = get_logger(request, "ERROR")
     logger.warning(f"HTTP {exc.status_code}: {exc.detail}")
@@ -218,7 +223,9 @@ async def handle_http_exception(request: Request, exc: StarletteHTTPException):
 
 
 @app.exception_handler(RequestValidationError)
-async def handle_validation_exception(request: Request, exc: RequestValidationError):
+async def handle_validation_exception(
+    request: Request, exc: RequestValidationError
+) -> JSONResponse:
     """Return a normalized 422 for validation errors."""
     logger = get_logger(request, "ERROR")
     logger.warning(f"Validation error: {exc.errors()}")
@@ -239,7 +246,7 @@ app.include_router(router)
 
 
 @app.get("/api/version")
-async def get_version_route(logger: Any = Depends(get_logger)):
+async def get_version_route(logger: Any = Depends(get_logger)) -> JSONResponse:
     """FIXED: Standardized response format"""
     try:
         version = get_version()
@@ -253,7 +260,7 @@ async def get_version_route(logger: Any = Depends(get_logger)):
 
 
 @app.get("/api/list")
-async def list_dir(path: str = "/", logger: Any = Depends(get_logger)):
+async def list_dir(path: str = "/", logger: Any = Depends(get_logger)) -> JSONResponse:
     """FIXED: Standardized response format"""
     try:
         resolved = Path(path).expanduser().resolve()
@@ -288,7 +295,7 @@ async def list_dir(path: str = "/", logger: Any = Depends(get_logger)):
 
 
 @app.post("/api/create-folder")
-async def create_folder(path: str, logger: Any = Depends(get_logger)):
+async def create_folder(path: str, logger: Any = Depends(get_logger)) -> JSONResponse:
     """FIXED: Standardized response format"""
     try:
         resolved = Path(path).expanduser().resolve()
@@ -306,7 +313,9 @@ async def create_folder(path: str, logger: Any = Depends(get_logger)):
 
 
 @app.post("/api/test-endpoint")
-async def test_endpoint(request: Request, logger: Any = Depends(get_logger)):
+async def test_endpoint(
+    request: Request, logger: Any = Depends(get_logger)
+) -> JSONResponse:
     """FIXED: Standardized response format"""
     logger.debug("Serving POST /api/test-endpoint")
     try:
@@ -324,7 +333,7 @@ async def test_endpoint(request: Request, logger: Any = Depends(get_logger)):
 
 
 @app.get("/", response_class=HTMLResponse)
-async def root():
+async def root() -> HTMLResponse:
     """Serves the main index.html page."""
     html_path = Path(__file__).parents[1] / "templates" / "index.html"
     try:
@@ -338,7 +347,7 @@ async def root():
 
 
 @app.get("/{full_path:path}", response_class=HTMLResponse)
-async def serve_spa(full_path: str):
+async def serve_spa(full_path: str) -> FileResponse:
     """Serve index.html for all non-API, non-assets routes (for SPA)"""
     # Exclude API and static asset paths
     if (

@@ -3,6 +3,21 @@ import PropTypes from 'prop-types';
 import TooltipFactory from './Tooltip';
 import { getIcon } from '../utils/tools';
 
+/**
+ * Dashboard card component with collapsible content and optional header actions
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} props.icon - Icon to display in header
+ * @param {string} props.title - Card title text
+ * @param {React.ReactNode} [props.headerActions=null] - Optional header action buttons
+ * @param {boolean} props.open - Whether card is expanded
+ * @param {Function} props.onToggle - Handler for expand/collapse toggle
+ * @param {React.RefObject} props.toggleRef - Ref for toggle button
+ * @param {React.RefObject} props.cardRef - Ref for card container
+ * @param {boolean} props.hoveredToggle - Whether toggle button is hovered
+ * @param {Function} props.setHoveredToggle - Handler for hover state
+ * @param {React.ReactNode} props.children - Card content
+ * @returns {JSX.Element} Collapsible dashboard card
+ */
 function DashboardContent({
     icon,
     title,

@@ -1,14 +1,16 @@
-// ui/src/components/search/SearchEngineFactory.jsx
-// Pre-configured SearchEngine variants that replicate EXACT original functionality and UI
-
 import React, { useMemo } from 'react';
 import SearchCore from './core/SearchCore';
 import { assetsSearchAdapter } from './adapters/AssetsSearchAdapter';
 import { gdriveSearchAdapter } from './adapters/GdriveSearchAdapter';
 
-// ===== ASSETS SEARCH ENGINE =====
+/**
+ * Pre-configured search engine for assets with built-in filtering and sorting
+ * @param {Object} props - Component props
+ * @param {Function} props.onResultDelete - Handler for result deletion
+ * @param {Function} props.onError - Error handler
+ * @returns {JSX.Element} Configured assets search engine
+ */
 export function AssetsSearchEngine({ onResultDelete, onError, ...props }) {
-    // Enhanced adapter that applies filters in the search step - memoized to prevent infinite loops
     const enhancedAssetsAdapter = useMemo(
         () => ({
             ...assetsSearchAdapter,

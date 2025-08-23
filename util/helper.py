@@ -28,7 +28,15 @@ from util.normalization import (
 
 
 def print_json(data: Any, logger: Any, module_name: str, type_: str) -> None:
-    """Write data as JSON to a debug file for troubleshooting."""
+    """
+    Write data as JSON to a debug file for troubleshooting.
+
+    Args:
+        data: The data structure to write as JSON
+        logger: Logger instance for debug messages
+        module_name: Name of the module (used for directory structure)
+        type_: Type/name of the data being written (used for filename)
+    """
     log_base = os.getenv("LOG_DIR")
     if log_base:
         debug_dir = Path(log_base) / module_name / "debug"
@@ -44,7 +52,13 @@ def print_json(data: Any, logger: Any, module_name: str, type_: str) -> None:
 
 
 def print_settings(logger: Any, module_config: Any) -> None:
-    """Print module configuration in YAML format with sensitive data redacted."""
+    """
+    Print module configuration in YAML format with sensitive data redacted.
+
+    Args:
+        logger: Logger instance for output
+        module_config: Module configuration object to display
+    """
     logger.debug(create_table([["Script Settings"]]))
 
     def ns_to_dict(obj: Any) -> Any:
@@ -117,7 +131,17 @@ def dict_diff(
     new: Union[Dict[str, Any], List[Any], Any],
     path: str = "",
 ) -> List[Tuple[str, Any, Any]]:
-    """Compare two data structures and return list of (path, old_value, new_value) differences."""
+    """
+    Compare two data structures and return list of (path, old_value, new_value) differences.
+
+    Args:
+        old: Original data structure
+        new: Updated data structure
+        path: Current path in the data structure (used for recursion)
+
+    Returns:
+        List of tuples containing (path, old_value, new_value) for each difference found
+    """
     diffs = []
     if isinstance(old, (list, tuple)) and isinstance(new, (list, tuple)):
         minlen = min(len(old), len(new))
@@ -222,7 +246,15 @@ def create_table(data: List[List[Any]]) -> str:
 
 
 def create_bar(middle_text: str) -> str:
-    """Create a horizontal separator bar with centered text (80 chars total)."""
+    """
+    Create a horizontal separator bar with centered text (80 chars total).
+
+    Args:
+        middle_text: Text to center in the bar
+
+    Returns:
+        Formatted horizontal bar string with centered text
+    """
     total_length = 80
     if len(middle_text) == 1:
 
@@ -277,7 +309,15 @@ def progress(
 
 
 def get_log_dir(module_name: str) -> str:
-    """Get log directory path for module, creating if needed."""
+    """
+    Get log directory path for module, creating if needed.
+
+    Args:
+        module_name: Name of the module
+
+    Returns:
+        Absolute path to the module's log directory
+    """
     log_base = os.getenv("LOG_DIR")
     if log_base:
         log_dir = Path(log_base) / module_name
@@ -288,7 +328,12 @@ def get_log_dir(module_name: str) -> str:
 
 
 def get_config_dir() -> str:
-    """Get config directory path (Docker: /config, Standard: ../config)."""
+    """
+    Get config directory path (Docker: /config, Standard: ../config).
+
+    Returns:
+        Absolute path to the configuration directory
+    """
     if os.environ.get("DOCKER_ENV"):
         config_dir = os.getenv("CONFIG_DIR", "/config")
     else:

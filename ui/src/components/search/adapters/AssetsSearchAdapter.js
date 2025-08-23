@@ -64,46 +64,62 @@ export const assetsSearchAdapter = {
     },
 
     /**
-     * Search through assets data
-     * Replicates the exact getAllAssets() and doSearch() logic from AssetsSearch.jsx
+     * Multi-stage asset search and filtering algorithm
+     *
+     * This implements a comprehensive search pipeline that processes both media and
+     * collection assets through normalization, deduplication, and filtering stages.
+     *
+     * Algorithm pipeline:
+     * 1. Data normalization: Unify collection and media cache structures
+     * 2. File filtering: Include only valid image files
+     * 3. Deduplication: Remove duplicate file paths using location+file key
+     * 4. Type filtering: Apply asset type restrictions
+     * 5. Text search: Filter by filename content
+     *
+     * @param {Object} data - Contains assetsDir, mediaCache, collectionCache
+     * @param {string} searchTerm - User search query for filename filtering
+     * @param {Object} filters - Filter configuration object
+     * @returns {Array} Filtered and deduplicated asset objects
      */
     search(data, searchTerm, filters) {
         if (!data) return [];
 
         const { assetsDir, mediaCache, collectionCache } = data;
 
-        // Step 1: Flatten both caches (exact same logic as getAllAssets())
+        // STAGE 1: Normalize heterogeneous cache data into unified asset structure
+        // Collections and media items have different schemas - normalize for consistent processing
         const allAssets = [
+            // Process collection cache: standardize field names and paths
             ...collectionCache.map(c => ({
-                ...c,
-                file: c.renamed_file || c.original_file,
+                ...c, // Preserve all original data
+                file: c.renamed_file || c.original_file, // Prefer renamed over original
                 location: assetsDir,
-                asset_type: 'collection',
-                relativeFile:
-                    c.renamed_file || c.original_file
-                        ? (c.renamed_file || c.original_file)
-                              .replace(assetsDir + '/', '')
-                              .replace(assetsDir + '\\', '')
-                        : '',
+                asset_type: 'collection', // Explicit type for filtering
+                relativeFile: this.computeRelativePath(
+                    c.renamed_file || c.original_file,
+                    assetsDir
+                ),
             })),
+            // Process media cache: handle type variations and path normalization
             ...mediaCache.map(m => ({
-                ...m,
-                file: m.renamed_file || m.original_file,
+                ...m, // Preserve all original data
+                file: m.renamed_file || m.original_file, // Prefer renamed over original
                 location: assetsDir,
-                asset_type: m.asset_type || m.type || 'movie',
-                relativeFile:
-                    m.renamed_file || m.original_file
-                        ? (m.renamed_file || m.original_file)
-                              .replace(assetsDir + '/', '')
-                              .replace(assetsDir + '\\', '')
-                        : '',
+                asset_type: m.asset_type || m.type || 'movie', // Handle schema variations
+                relativeFile: this.computeRelativePath(
+                    m.renamed_file || m.original_file,
+                    assetsDir
+                ),
             })),
-        ].filter(obj => obj.file && isImageFile(obj.file));
+        ].filter(obj => obj.file && isImageFile(obj.file)); // Only include valid image files
 
-        // Step 2: Deduplicate based on absolute file path (exact same logic)
+        // STAGE 2: Deduplication using composite key strategy
+        // Multiple cache entries might reference the same physical file
         const seen = new Set();
         const uniqueAssets = [];
         for (const asset of allAssets) {
+            // Create unique identifier from location + filename
+            // This handles cases where same file exists in multiple cache entries
             const key = asset.location + '|' + asset.file;
             if (!seen.has(key)) {
                 uniqueAssets.push(asset);
@@ -113,7 +129,7 @@ export const assetsSearchAdapter = {
 
         let filteredAssets = uniqueAssets;
 
-        // Step 3: Apply asset type filter (exact same logic as existing)
+        // STAGE 3: Apply asset type filtering with mapping normalization
         const assetTypeFilter = filters.assetTypeFilter || filters.assetType;
         const assetTypeMap = {
             collections: 'collection',
@@ -122,12 +138,14 @@ export const assetsSearchAdapter = {
         };
 
         if (assetTypeFilter && assetTypeFilter !== 'all') {
+            const targetType = assetTypeMap[assetTypeFilter];
             filteredAssets = filteredAssets.filter(
-                obj => (obj.asset_type || '').toLowerCase() === assetTypeMap[assetTypeFilter]
+                obj => (obj.asset_type || '').toLowerCase() === targetType
             );
         }
 
-        // Step 4: Apply search term filter (exact same logic)
+        // STAGE 4: Apply filename-based text search
+        // Search operates on the actual filename, not metadata titles
         if (searchTerm && searchTerm.trim()) {
             const lc = searchTerm.trim().toLowerCase();
             filteredAssets = filteredAssets.filter(
@@ -136,6 +154,19 @@ export const assetsSearchAdapter = {
         }
 
         return filteredAssets;
+    },
+
+    /**
+     * Compute relative file path with cross-platform path handling
+     * @private
+     * @param {string} filePath - Full file path
+     * @param {string} basePath - Base directory path
+     * @returns {string} Relative path from basePath
+     */
+    computeRelativePath(filePath, basePath) {
+        if (!filePath) return '';
+        // Handle both Unix and Windows path separators
+        return filePath.replace(basePath + '/', '').replace(basePath + '\\', '');
     },
 
     /**

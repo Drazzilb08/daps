@@ -1,7 +1,8 @@
 import copy
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, Query, Request
+from fastapi.responses import JSONResponse
 
 from api.utils import error, get_logger, ok
 from util.config import DapsConfig, load_config, save_config
@@ -26,7 +27,7 @@ async def get_config_route(
     config: DapsConfig = Depends(get_config),
     logger: Any = Depends(get_logger),
     section: Optional[str] = Query(None, description="Optional config section"),
-) -> Dict[str, Any]:
+) -> JSONResponse:
     """
     Retrieve configuration data, optionally filtered by section.
 
@@ -64,7 +65,7 @@ async def get_config_route(
 @router.post("/api/config")
 async def update_config_route(
     request: Request, logger: Any = Depends(get_logger)
-) -> Dict[str, Any]:
+) -> JSONResponse:
     """
     Update configuration with provided data.
 

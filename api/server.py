@@ -24,7 +24,7 @@ def start_web_server(
         module_orchestrator: ModuleOrchestrator instance for handling module execution
     """
 
-    def run_server():
+    def run_server() -> None:
         try:
             from api.main import app
 

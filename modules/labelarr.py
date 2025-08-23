@@ -25,8 +25,16 @@ class Labelarr(DapsModule):
         """
         super().__init__(logger)
 
-    def _parse_tags(self, raw) -> List[str]:
-        """Safely convert a stored tags field (list or JSON string) into a list[str]."""
+    def _parse_tags(self, raw: Any) -> List[str]:
+        """
+        Safely convert a stored tags field (list or JSON string) into a list[str].
+
+        Args:
+            raw: Raw tags data from database (list, JSON string, or other)
+
+        Returns:
+            List of string tags, empty list if parsing fails
+        """
         if isinstance(raw, list):
             return [t for t in raw if isinstance(t, str)]
         if isinstance(raw, str):
@@ -38,8 +46,16 @@ class Labelarr(DapsModule):
                 return []
         return []
 
-    def _get_arr_config(self, instance_name: str):
-        """Get ARR instance configuration for a given instance name."""
+    def _get_arr_config(self, instance_name: str) -> Optional[Any]:
+        """
+        Get ARR instance configuration for a given instance name.
+
+        Args:
+            instance_name: Name of the ARR instance to look up
+
+        Returns:
+            Instance configuration object, or None if not found
+        """
         # Check Radarr instances
         if (
             hasattr(self.full_config.instances, "radarr")
@@ -56,8 +72,16 @@ class Labelarr(DapsModule):
 
         return None
 
-    def _parse_labels(self, raw) -> List[str]:
-        """Safely convert a stored labels field (list or JSON string) into a list[str]."""
+    def _parse_labels(self, raw: Any) -> List[str]:
+        """
+        Safely convert a stored labels field (list or JSON string) into a list[str].
+
+        Args:
+            raw: Raw labels data from database (list, JSON string, or other)
+
+        Returns:
+            List of string labels, empty list if parsing fails
+        """
         if isinstance(raw, list):
             return [t for t in raw if isinstance(t, str)]
         if isinstance(raw, str):
@@ -69,8 +93,16 @@ class Labelarr(DapsModule):
                 return []
         return []
 
-    def _parse_guids(self, raw) -> Dict[str, str]:
-        """Safely convert a stored guids field (dict or JSON string) into a dict."""
+    def _parse_guids(self, raw: Any) -> Dict[str, str]:
+        """
+        Safely convert a stored guids field (dict or JSON string) into a dict.
+
+        Args:
+            raw: Raw GUID data from database (dict, JSON string, or other)
+
+        Returns:
+            Dictionary of GUIDs, empty dict if parsing fails
+        """
         if isinstance(raw, dict):
             return raw
         if isinstance(raw, str):
@@ -82,9 +114,13 @@ class Labelarr(DapsModule):
                 return {}
         return {}
 
-    def _build_instance_map(self) -> Dict[str, object]:
+    def _build_instance_map(self) -> Dict[str, Any]:
         """
         Build the instance map for Connector from self.config.mappings.
+
+        Returns:
+            Dictionary mapping instance types to their configurations
+            Format: {'arrs': [instance_names], 'plex': {instance: [libraries]}}
         """
         arrs = set()
         plex_map: Dict[str, set] = {}
@@ -129,21 +165,22 @@ class Labelarr(DapsModule):
     def sync_to_plex(
         self,
         plex_client: PlexClient,
-        plex_item: Dict,
+        plex_item: Dict[str, Any],
         labels_lower: Dict[str, str],
         db: DapsDB,
-    ) -> Optional[Dict]:
+    ) -> Optional[Dict[str, Any]]:
         """
         Sync labels for a SINGLE Plex item using connector-based mapping.
 
         Args:
-            plex_client: Connected PlexClient
-            plex_item: row dict from db.plex
-            labels_lower: {lower_label: original_cased_label} for target labels
-            db: DapsDB
+            plex_client: Connected PlexClient instance
+            plex_item: Database row dictionary from db.plex
+            labels_lower: Mapping of lowercase labels to original-cased labels
+            db: DapsDB instance for database operations
 
         Returns:
-            dict(title, year, add_remove) if a change occurred; otherwise None.
+            Dictionary containing title, year, and add_remove changes if any occurred,
+            None if no changes were made
         """
         # Only label root items: movies or root show rows (no season context)
         asset_type = plex_item.get("asset_type")
@@ -245,8 +282,13 @@ class Labelarr(DapsModule):
             "add_remove": add_remove,
         }
 
-    def handle_messages(self, data_dict: List[Dict]) -> None:
-        """Display results in a formatted table"""
+    def handle_messages(self, data_dict: List[Dict[str, Any]]) -> None:
+        """
+        Display label synchronization results in a formatted table.
+
+        Args:
+            data_dict: List of sync result dictionaries containing title, year, and add_remove data
+        """
         table: List[List[str]] = [["Results"]]
         self.logger.info(create_table(table))
 
@@ -263,6 +305,17 @@ class Labelarr(DapsModule):
                 self.logger.info(f"  - {entry}")
 
     def run(self) -> None:
+        """
+        Main execution method for the Labelarr module.
+
+        Synchronizes labels between ARR applications (Radarr/Sonarr) and Plex libraries
+        based on configured mappings. Processes each mapping independently to ensure
+        proper label management across different media types and instances.
+
+        Raises:
+            KeyboardInterrupt: When user interrupts execution
+            Exception: For any other errors during processing
+        """
         try:
             with DapsDB(logger=self.logger) as db:
                 if self.config.log_level.lower() == "debug":

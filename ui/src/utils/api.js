@@ -1,3 +1,8 @@
+/**
+ * API utilities with intelligent caching and standardized error handling
+ * Provides a comprehensive interface to DAPS backend services
+ */
+
 // ========== CACHING LAYER ==========
 
 const cache = new Map();
@@ -14,7 +19,10 @@ const CACHE_KEYS = {
 };
 
 /**
- * Cache management utilities
+ * Generates cache key with optional parameters
+ * @param {string} baseKey - Base cache key
+ * @param {Object} [params={}] - Optional parameters to include in key
+ * @returns {string} Generated cache key
  */
 function getCacheKey(baseKey, params = {}) {
     const paramString =
@@ -27,15 +35,31 @@ function getCacheKey(baseKey, params = {}) {
     return `${baseKey}${paramString}`;
 }
 
+/**
+ * Checks if cache entry is still valid
+ * @param {Object} entry - Cache entry with timestamp
+ * @returns {boolean} Whether entry is within TTL
+ */
 function isCacheValid(entry) {
     return entry && Date.now() - entry.timestamp < CACHE_TTL;
 }
 
+/**
+ * Retrieves data from cache if valid
+ * @param {string} key - Cache key
+ * @returns {*|null} Cached data or null if invalid/missing
+ */
 function getFromCache(key) {
     const entry = cache.get(key);
     return isCacheValid(entry) ? entry.data : null;
 }
 
+/**
+ * Stores data in cache with timestamp
+ * @param {string} key - Cache key
+ * @param {*} data - Data to cache
+ * @returns {*} The cached data
+ */
 function setCache(key, data) {
     cache.set(key, {
         data,
@@ -44,6 +68,10 @@ function setCache(key, data) {
     return data;
 }
 
+/**
+ * Clears cache entries by pattern or all entries
+ * @param {string|null} [pattern=null] - Pattern to match keys, or null for all
+ */
 function clearCache(pattern = null) {
     if (pattern) {
         // Clear specific pattern
@@ -59,13 +87,39 @@ function clearCache(pattern = null) {
 }
 
 /**
- * Cacheable wrapper for API calls
- * @param {string} cacheKey - Cache key for this request
- * @param {Function} apiCall - Function that returns a Promise
- * @param {boolean} forceRefresh - Skip cache and force fresh data
- * @returns {Promise} - Cached or fresh API data
+ * Intelligent cache wrapper for API calls with automatic cache management
+ *
+ * Provides transparent caching layer that reduces API load and improves performance.
+ * Automatically handles cache validation, expiration, and forced refresh scenarios.
+ *
+ * Cache strategy:
+ * - Check cache validity before making API calls
+ * - Store results with timestamps for TTL validation
+ * - Support forced refresh to bypass cache when needed
+ * - Return cached data immediately for valid entries
+ *
+ * @param {string} cacheKey - Unique identifier for this cache entry
+ * @param {Function} apiCall - Async function that performs the actual API request
+ * @param {boolean} [forceRefresh=false] - Skip cache validation and fetch fresh data
+ * @returns {Promise<*>} Cached data or fresh API response
+ *
+ * @example
+ * // Basic usage with automatic caching
+ * const config = await withCache('config', () => fetchConfig());
+ *
+ * @example
+ * // Force refresh to bypass cache
+ * const freshConfig = await withCache('config', () => fetchConfig(), true);
+ *
+ * @example
+ * // Parameterized cache key
+ * const userPosts = await withCache(
+ *   `posts_${userId}`,
+ *   () => fetchUserPosts(userId)
+ * );
  */
 async function withCache(cacheKey, apiCall, forceRefresh = false) {
+    // Fast path: return cached data if valid and not forcing refresh
     if (!forceRefresh) {
         const cached = getFromCache(cacheKey);
         if (cached !== null) {
@@ -73,6 +127,7 @@ async function withCache(cacheKey, apiCall, forceRefresh = false) {
         }
     }
 
+    // Slow path: execute API call and cache result
     const result = await apiCall();
     return setCache(cacheKey, result);
 }
@@ -80,18 +135,54 @@ async function withCache(cacheKey, apiCall, forceRefresh = false) {
 // ========== HELPER FUNCTIONS ==========
 
 /**
- * Handle standardized API responses
- * @param {Response} res - Fetch response object
- * @returns {Promise<Object>} - Parsed response data
+ * Standardized API response handler with comprehensive error processing
+ *
+ * Processes all API responses according to DAPS backend conventions,
+ * handling both HTTP-level errors and application-level error responses.
+ * Provides consistent error information across the application.
+ *
+ * Response structure expectation:
+ * {
+ *   "success": boolean,
+ *   "message": string,
+ *   "data": object,
+ *   "error_code": string (optional)
+ * }
+ *
+ * @param {Response} res - Fetch API Response object
+ * @returns {Promise<Object>} Parsed JSON response with success validation
+ * @throws {Error} Enhanced error with code and status information
+ *
+ * @example
+ * // Successful response handling
+ * const response = await fetch('/api/config');
+ * const data = await handleApiResponse(response);
+ * console.log(data.message, data.data);
+ *
+ * @example
+ * // Error handling with enhanced error info
+ * try {
+ *   const response = await fetch('/api/invalid-endpoint');
+ *   await handleApiResponse(response);
+ * } catch (error) {
+ *   console.log('Error:', error.message);
+ *   console.log('Status:', error.status);
+ *   console.log('Code:', error.code);
+ * }
  */
 async function handleApiResponse(res) {
+    // Parse JSON response with fallback for malformed responses
     const data = await res.json().catch(() => ({}));
 
+    // Check for HTTP errors or application-level failures
     if (!res.ok || !data.success) {
         const errorMessage = data.message || `API Error (${res.status})`;
         const error = new Error(errorMessage);
-        error.code = data.error_code;
-        error.status = res.status;
+
+        // Attach additional error context for debugging and handling
+        error.code = data.error_code; // Application error code
+        error.status = res.status; // HTTP status code
+
         throw error;
     }
 
@@ -111,14 +202,22 @@ function extractData(response, field = null) {
 
 // ========== JOB MANAGEMENT FUNCTIONS ==========
 
-// Get details of a specific job by ID (not cached - real-time data)
+/**
+ * Fetches details of a specific job by ID
+ * @param {string} jobId - Job identifier
+ * @returns {Promise<Object>} Job details
+ */
 export async function fetchJobDetail(jobId) {
     const res = await fetch(`/api/jobs/${jobId}`);
     const data = await handleApiResponse(res);
     return extractData(data, 'job');
 }
 
-// Retry a failed job (not cached - action)
+/**
+ * Retries a failed job
+ * @param {string} jobId - Job identifier to retry
+ * @returns {Promise<Object>} Retry response with new job ID
+ */
 export async function retryJob(jobId) {
     const res = await fetch(`/api/job/${jobId}/retry`, {
         method: 'POST',
@@ -126,7 +225,6 @@ export async function retryJob(jobId) {
     });
     const data = await handleApiResponse(res);
 
-    // Clear job-related cache after retry
     clearCache('job');
 
     return {
@@ -136,7 +234,12 @@ export async function retryJob(jobId) {
     };
 }
 
-// List jobs with optional filtering (not cached - real-time data)
+/**
+ * Lists jobs with optional filtering
+ * @param {string|null} [status=null] - Filter by job status
+ * @param {number} [limit=50] - Maximum number of jobs to return
+ * @returns {Promise<Array>} Array of job objects
+ */
 export async function fetchJobs(status = null, limit = 50) {
     let url = `/api/jobs?limit=${limit}`;
     if (status) url += `&status=${encodeURIComponent(status)}`;
@@ -146,7 +249,11 @@ export async function fetchJobs(status = null, limit = 50) {
     return extractData(data, 'jobs') || [];
 }
 
-// Get job statistics (cached)
+/**
+ * Fetches job statistics with caching
+ * @param {boolean} [forceRefresh=false] - Skip cache
+ * @returns {Promise<Object>} Job statistics
+ */
 export async function fetchJobStats(forceRefresh = false) {
     return await withCache(
         CACHE_KEYS.JOB_STATS,
@@ -161,19 +268,46 @@ export async function fetchJobStats(forceRefresh = false) {
 
 // ========== GDRIVE SYNC FUNCTIONS ==========
 
-// Run GDrive sync (not cached - action)
+/**
+ * Execute GDrive synchronization for specified locations
+ *
+ * Initiates poster synchronization jobs for one or more GDrive locations.
+ * Handles both single and bulk sync operations with proper job tracking.
+ *
+ * @param {Array<string>} gdrive_names - Array of GDrive location names to sync
+ * @returns {Promise<Object>} Sync response with job information
+ * @returns {boolean} success - Operation success status
+ * @returns {string} message - Status message from backend
+ * @returns {string} [job_id] - Single job identifier (for single sync)
+ * @returns {string} [name] - GDrive location name (for single sync)
+ * @returns {Array} [jobs] - Array of job objects (for bulk sync)
+ *
+ * @throws {Error} When sync starts but returns no job information
+ *
+ * @example
+ * // Sync single GDrive location
+ * const result = await runGDriveAdhocSync(['primary-gdrive']);
+ * console.log('Job started:', result.job_id);
+ *
+ * @example
+ * // Bulk sync multiple locations
+ * const result = await runGDriveAdhocSync(['gdrive-1', 'gdrive-2']);
+ * result.jobs.forEach(job => console.log('Job:', job.id));
+ */
 export async function runGDriveAdhocSync(gdrive_names) {
+    // Build query string for multiple GDrive locations
     const qs = gdrive_names.map(n => `gdrive_names=${encodeURIComponent(n)}`).join('&');
     const res = await fetch(`/api/run/gdrive?${qs}`, { method: 'POST' });
     const data = await handleApiResponse(res);
 
-    // Clear relevant cache after sync action
+    // Invalidate GDrive-related cache entries after sync initiation
     clearCache('gdrive');
 
     const responseData = extractData(data);
 
-    // Handle single vs multiple jobs
+    // Handle different response formats based on sync scope
     if (responseData.job_id) {
+        // Single sync operation response
         return {
             success: true,
             message: data.message,
@@ -181,6 +315,7 @@ export async function runGDriveAdhocSync(gdrive_names) {
             name: responseData.name,
         };
     } else if (responseData.jobs) {
+        // Bulk sync operation response
         return {
             success: true,
             message: data.message,
@@ -188,6 +323,7 @@ export async function runGDriveAdhocSync(gdrive_names) {
         };
     }
 
+    // Unexpected response format - should not occur with valid backend
     throw new Error('Sync started but no job information returned');
 }
 
@@ -482,10 +618,55 @@ export async function fetchInstances(forceRefresh = false) {
     );
 }
 
-// Test instance (not cached - action)
+/**
+ * Test connectivity and authentication for service instances
+ *
+ * Validates that a service instance (Radarr, Sonarr, Plex, etc.) is properly
+ * configured and accessible. Performs connection test and API authentication.
+ *
+ * @param {string} service - Service type (radarr, sonarr, plex, etc.)
+ * @param {Object} entry - Instance configuration object
+ * @param {string} entry.name - Display name for the instance
+ * @param {string} entry.url - Base URL for the service API
+ * @param {string} entry.api - API key or authentication token
+ * @returns {Promise<Object>} Test result with success status and details
+ * @returns {boolean} success - Whether the test passed
+ * @returns {string} message - Detailed status message
+ * @returns {number} [status_code] - HTTP response code (on success)
+ * @returns {string} [error_code] - Error code (on failure)
+ *
+ * @example
+ * // Test Radarr instance configuration
+ * const testResult = await testInstance('radarr', {
+ *   name: 'Main Radarr',
+ *   url: 'http://localhost:7878',
+ *   api: 'your-api-key-here'
+ * });
+ *
+ * if (testResult.success) {
+ *   console.log('Connection successful:', testResult.message);
+ * } else {
+ *   console.error('Connection failed:', testResult.message);
+ * }
+ *
+ * @example
+ * // Test with error handling
+ * try {
+ *   const result = await testInstance('sonarr', instanceConfig);
+ *   // Handle result...
+ * } catch (error) {
+ *   // Network or parsing errors are caught internally
+ *   // This shouldn't throw, but defensive coding is good practice
+ * }
+ */
 export async function testInstance(service, entry) {
+    // Validate required parameters before making API call
     if (!service || !entry || !entry.name || !entry.url || !entry.api) {
-        return { success: false, message: 'Missing required instance parameters' };
+        return {
+            success: false,
+            message:
+                'Missing required instance parameters: service, name, url, and api are all required',
+        };
     }
 
     try {
@@ -494,18 +675,20 @@ export async function testInstance(service, entry) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 service,
-                name: entry.name.trim(),
-                url: entry.url.trim(),
-                api: entry.api.trim(),
+                name: entry.name.trim(), // Clean whitespace from user input
+                url: entry.url.trim(), // Clean URL formatting
+                api: entry.api.trim(), // Clean API key
             }),
         });
         const data = await handleApiResponse(res);
+
         return {
             success: true,
             message: data.message,
             status_code: extractData(data, 'status_code'),
         };
     } catch (error) {
+        // Convert API errors to standardized response format
         return {
             success: false,
             message: error.message,

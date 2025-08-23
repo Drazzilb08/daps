@@ -2,8 +2,41 @@
 // Plugin schema for plugins with isolated business logic but shared UI
 
 /**
- * Plugin Schema
- * Plugins control behavior through configuration - UI components remain shared
+ * Plugin Schema Definition - Comprehensive plugin architecture specification
+ *
+ * Defines the complete structure and validation rules for DAPS search plugins.
+ * This schema enables plugins to provide isolated business logic while leveraging
+ * shared UI components through declarative configuration.
+ *
+ * Architecture philosophy:
+ * - Separation of concerns: Business logic (adapters) vs UI behavior (configuration)
+ * - Declarative UI control: Plugins define what UI shows, not how it renders
+ * - Isolation boundaries: Each plugin operates independently with error containment
+ * - Extensibility: New plugin types can be added without UI changes
+ *
+ * Schema categories:
+ * 1. Metadata: Basic plugin identification and description
+ * 2. Adapter: Isolated business logic for data operations
+ * 3. UI Configuration: Declarative control of shared UI components
+ * 4. Event Handlers: Plugin-specific response to user interactions
+ * 5. Dynamic Configuration: Runtime behavior modification
+ * 6. Lifecycle Hooks: Plugin initialization and cleanup
+ *
+ * @example
+ * // Example plugin following this schema
+ * const examplePlugin = {
+ *   id: 'media-search',
+ *   name: 'Media Search',
+ *   adapter: {
+ *     loadInitialData: async () => ({ items: [] }),
+ *     search: (data, term) => data.items.filter(...),
+ *     formatResult: (item) => ({ ...item, formatted: true })
+ *   },
+ *   uiConfig: {
+ *     sources: [{ key: 'all', label: 'All Media' }],
+ *     placeholder: 'Search your media library...'
+ *   }
+ * };
  */
 export const PLUGIN_SCHEMA = {
     // Plugin metadata
@@ -106,7 +139,42 @@ export const PLUGIN_SCHEMA = {
 };
 
 /**
- * Plugin Builder
+ * Plugin Builder - Fluent API for plugin construction
+ *
+ * Provides a chainable interface for building plugin configurations with
+ * validation, defaults, and type safety. Simplifies plugin creation by
+ * offering a structured approach to configuration assembly.
+ *
+ * Builder pattern benefits:
+ * - Progressive configuration: Build plugins step by step
+ * - Validation on build: Catch configuration errors early
+ * - Sensible defaults: Minimize required configuration
+ * - Type safety: Method chaining with validation
+ * - Immutable result: Built configs are frozen for safety
+ *
+ * @example
+ * // Basic plugin with minimal configuration
+ * const simplePlugin = new PluginBuilder('simple-search', 'Simple Search')
+ *   .setAdapter(simpleAdapter)
+ *   .addSource('all', 'All Items', 'search')
+ *   .build();
+ *
+ * @example
+ * // Complex plugin with full configuration
+ * const complexPlugin = new PluginBuilder('media-search', 'Media Search')
+ *   .setMetadata('2.0.0', 'Advanced media search with filtering')
+ *   .setAdapter(mediaAdapter)
+ *   .addSource('movies', 'Movies', 'movie')
+ *   .addSource('shows', 'TV Shows', 'tv')
+ *   .addFilter('type', 'select', 'Content Type', ['movie', 'show'])
+ *   .setSortOptions([{key: 'title', label: 'Title'}, {key: 'year', label: 'Year'}])
+ *   .setEventHandlers({
+ *     onResultClick: (plugin, result) => showModal(result)
+ *   })
+ *   .addHooks({
+ *     onInit: (plugin) => plugin.setState('initialized', true)
+ *   })
+ *   .build();
  */
 export class PluginBuilder {
     constructor(id, name) {

@@ -2,6 +2,15 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 
+/**
+ * Tooltip component that creates a portal-rendered tooltip positioned relative to an anchor element
+ * @param {Object} props - Component props
+ * @param {HTMLElement} props.anchor - DOM element to anchor tooltip to
+ * @param {string} props.text - Text content to display in tooltip
+ * @param {string} [props.position='top'] - Tooltip position relative to anchor
+ * @param {boolean} props.show - Whether tooltip is visible
+ * @returns {JSX.Element|null} Portal-rendered tooltip or null
+ */
 function TooltipFactory({ anchor, text, position = 'top', show }) {
     const [coords, setCoords] = useState({ top: 0, left: 0, width: 0 });
 
@@ -18,7 +27,7 @@ function TooltipFactory({ anchor, text, position = 'top', show }) {
 
     if (!show || !anchor) return null;
 
-    const VERTICAL_OFFSET = 48; // px, adjust as needed
+    const VERTICAL_OFFSET = 48;
 
     const style = {
         position: 'absolute',
@@ -29,7 +38,7 @@ function TooltipFactory({ anchor, text, position = 'top', show }) {
         whiteSpace: 'nowrap',
         ...(position === 'top'
             ? { top: coords.top - VERTICAL_OFFSET }
-            : { top: coords.top + VERTICAL_OFFSET - 8 }), // -8 so arrow is closer, tweak as you like
+            : { top: coords.top + VERTICAL_OFFSET - 8 }),
     };
 
     return ReactDOM.createPortal(

@@ -5,7 +5,7 @@ import atexit
 import signal
 import sys
 import threading
-from typing import Optional
+from typing import Any, List, Optional
 
 from util.config import DapsConfig, load_config
 from util.logger import Logger
@@ -29,11 +29,11 @@ class DapsApplication:
         self._cleanup_lock = threading.Lock()
         self._cleanup_started = threading.Event()
 
-    def setup_signal_handlers(self):
+    def setup_signal_handlers(self) -> None:
         """Set up signal handlers for graceful shutdown"""
         import os
 
-        def hard_exit(signum, frame):
+        def hard_exit(signum: int, frame: Any) -> None:
             if self.logger:
                 self.logger.get_adapter("MAIN").warning(
                     f"Received second signal {signum}, force exiting immediately"
@@ -44,7 +44,7 @@ class DapsApplication:
                 )
             os._exit(1)
 
-        def first_signal(signum, frame):
+        def first_signal(signum: int, frame: Any) -> None:
             if self.logger:
                 self.logger.get_adapter("MAIN").info(
                     f"Received signal {signum}, initiating shutdown..."
@@ -68,7 +68,7 @@ class DapsApplication:
         signal.signal(signal.SIGTERM, first_signal)
         atexit.register(self.cleanup)
 
-    def cleanup(self):
+    def cleanup(self) -> None:
         """Clean up resources (idempotent, thread-safe)"""
         if self.cleanup_done:
             return
@@ -101,7 +101,7 @@ class DapsApplication:
                     print(f"[MAIN] Error during cleanup: {e}")
                 self.cleanup_done = True
 
-    def run(self, args):
+    def run(self, args: argparse.Namespace) -> int:
         """Main application run method"""
         try:
             try:
@@ -153,7 +153,7 @@ class DapsApplication:
                 print(f"[MAIN] FATAL exception: {e}", file=sys.stderr)
             return 1
 
-    def run_cli_modules(self, modules):
+    def run_cli_modules(self, modules: List[str]) -> int:
         """Run CLI modules - simple execution without job queue overhead"""
         try:
             if self.logger:
@@ -171,7 +171,7 @@ class DapsApplication:
                 print(f"[MAIN] CLI error: {e}", file=sys.stderr)
             return 1
 
-    def run_server_mode(self):
+    def run_server_mode(self) -> int:
         """Run server mode with full infrastructure"""
         if self.logger:
             self.logger.get_adapter("MAIN").info("Starting DAPS server...")
@@ -207,7 +207,7 @@ class DapsApplication:
                 print(f"[MAIN] Server error: {e}", file=sys.stderr)
             return 1
 
-    def start_web_server(self):
+    def start_web_server(self) -> None:
         try:
             from api.server import start_web_server
 
@@ -227,7 +227,7 @@ class DapsApplication:
                 print(f"[MAIN] Failed to start web server: {e}")
             raise
 
-    def run_scheduler_loop(self):
+    def run_scheduler_loop(self) -> None:
         """Run the scheduler loop with proper shutdown handling"""
         try:
             # Start scheduler
@@ -248,7 +248,7 @@ class DapsApplication:
             raise
 
 
-def parse_args():
+def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Run DAPS modules, schedule, or web UI."
     )
@@ -259,7 +259,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
+def main() -> None:
     args = parse_args()
     app = DapsApplication()
     exit_code = app.run(args)

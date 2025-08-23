@@ -125,20 +125,20 @@
     }
 
     /* ===== GROUP HEADERS ===== */
-    
+
     .group-header {
         width: 100%;
         padding: var(--space-4) var(--space-2);
         margin-bottom: var(--space-2);
         border-bottom: var(--border-width-1) solid var(--divider);
     }
-    
+
     .group-header--list {
         padding: var(--space-3) 0;
         margin: 0;
         border-bottom: var(--border-width-1) solid var(--divider);
     }
-    
+
     .group-header__title {
         font-size: var(--font-size-2);
         font-weight: var(--font-weight-semibold);
@@ -149,13 +149,13 @@
         letter-spacing: 0.5px;
         opacity: 0.8;
     }
-    
+
     /* Grid view specific group header styling */
     .grid-view__container--header {
         grid-column: 1 / -1; /* Span all columns */
         display: block !important; /* Override grid display for header */
     }
-    
+
     .grid-view__container--header .group-header {
         text-align: center;
         padding: var(--space-3) var(--space-4);
@@ -394,11 +394,11 @@
         .list-view--virtualized .list-view__container {
             padding: 0 var(--space-2); /* Use same padding as tablet */
         }
-        
+
         .group-header__title {
             font-size: var(--font-size-1);
         }
-        
+
         .grid-view__container--header .group-header {
             padding: var(--space-2) var(--space-3);
         }

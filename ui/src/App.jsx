@@ -12,7 +12,7 @@ import { ThemeProvider } from './components/providers/ThemeProvider';
 import { GlobalErrorProvider } from './components/providers/GlobalErrorProvider';
 import { UnsavedChangesProvider } from './components/providers/UnsavedChangesProvider';
 
-// Lazy load page components
+// Lazy load page components for performance optimization
 const Splash = lazy(() => import('./pages/Splash'));
 const Schedule = lazy(() => import('./pages/Schedule'));
 const Instances = lazy(() => import('./pages/Instances'));
@@ -32,10 +32,12 @@ const MediaStatistics = lazy(() => import('./pages/MediaStatistics'));
 // Development pages
 const PopoverTest = lazy(() => import('./pages/dev/PopoverTest'));
 
-// Import LoadingSpinner component
 import LoadingSpinner from './components/common/LoadingSpinner';
 
-// Loading component for Suspense fallback
+/**
+ * Loading fallback component for Suspense boundaries
+ * @returns {JSX.Element} Loading indicator with spinner and text
+ */
 const SuspenseLoading = () => (
     <div className="loading-container">
         <LoadingSpinner size="large" />
@@ -43,6 +45,10 @@ const SuspenseLoading = () => (
     </div>
 );
 
+/**
+ * Main application component that sets up routing and global providers
+ * @returns {JSX.Element} Complete application with routing and error boundaries
+ */
 export default function App() {
     return (
         <ToastProvider>

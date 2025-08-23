@@ -4,7 +4,7 @@ import os
 import sqlite3
 import threading
 from contextlib import contextmanager
-from typing import Any
+from typing import Any, Dict, Generator, List, Tuple, Union
 
 from util.logger import Logger
 
@@ -12,7 +12,7 @@ from util.logger import Logger
 class DatabaseBase:
     """Base class for all database operations with proper resource management."""
 
-    def __init__(self, logger: Logger, db_path: str):
+    def __init__(self, logger: Logger, db_path: str) -> None:
         self.db_path = db_path
         self._ensure_db_directory()
         self.lock = threading.Lock()
@@ -31,7 +31,7 @@ class DatabaseBase:
             os.makedirs(db_dir, exist_ok=True)
 
     @contextmanager
-    def get_connection(self):
+    def get_connection(self) -> Generator[sqlite3.Connection, None, None]:
         """
         Context manager for database connections.
         Ensures proper connection cleanup and thread safety.
@@ -57,18 +57,18 @@ class DatabaseBase:
                 except Exception:
                     pass
 
-    def _dict_factory(self, cursor: Any, row: Any) -> dict:
+    def _dict_factory(self, cursor: Any, row: Any) -> Dict[str, Any]:
         """Return rows as dictionaries."""
         return {col[0]: row[idx] for idx, col in enumerate(cursor.description)}
 
     def execute_query(
         self,
         sql: str,
-        params: tuple = (),
+        params: Tuple[Any, ...] = (),
         fetch_all: bool = False,
         fetch_one: bool = False,
         last_row_id: bool = False,
-    ):
+    ) -> Union[List[Dict[str, Any]], Dict[str, Any], int, None]:
         """
         Execute a query with proper connection handling.
 
@@ -94,7 +94,9 @@ class DatabaseBase:
                 conn.commit()
                 return cursor.rowcount
 
-    def execute_transaction(self, operations: list) -> None:
+    def execute_transaction(
+        self, operations: List[Tuple[str, Tuple[Any, ...]]]
+    ) -> None:
         """
         Execute multiple operations in a single transaction.
 

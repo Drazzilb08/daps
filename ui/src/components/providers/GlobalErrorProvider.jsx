@@ -3,11 +3,43 @@ import { useToast } from '../providers/ToastProvider';
 
 const GlobalErrorContext = createContext();
 
+/**
+ * Hook to access global error context
+ *
+ * Provides access to error reporting and debugging utilities for components
+ * that need to report errors or access error state.
+ *
+ * @returns {Object} Global error context value
+ * @returns {Function} returns.reportError - Function to report errors manually
+ * @returns {Array} returns.errors - Array of reported errors
+ * @returns {Function} returns.clearErrors - Function to clear error state
+ *
+ * @example
+ * function MyComponent() {
+ *   const { reportError } = useGlobalError();
+ *
+ *   const handleRiskyOperation = async () => {
+ *     try {
+ *       await riskyApiCall();
+ *     } catch (error) {
+ *       reportError(error, { context: 'MyComponent' });
+ *     }
+ *   };
+ * }
+ */
 export function useGlobalError() {
     return useContext(GlobalErrorContext);
 }
 
-// Get safe debug info without exposing secrets
+/**
+ * Generate safe debug information for field renderers without exposing secrets
+ *
+ * Creates debugging output that shows field renderer availability and types
+ * without revealing sensitive configuration data or function implementations.
+ *
+ * @param {Object} fieldRenderers - Field renderer registry object
+ * @returns {string} Safe debug information string
+ */
 function getSafeFieldRendererDebug(fieldRenderers) {
     if (fieldRenderers) {
         return Object.entries(fieldRenderers)
@@ -20,9 +52,18 @@ function getSafeFieldRendererDebug(fieldRenderers) {
     return '(FIELD_RENDERERS not available)';
 }
 
+/**
+ * Generate safe debug information for settings schema without exposing sensitive values
+ *
+ * Creates a sanitized view of the settings schema that shows structure and field
+ * types while protecting sensitive configuration values and internal details.
+ *
+ * @param {Array} settingsSchema - Array of module schema definitions
+ * @returns {Array|null} Sanitized schema structure or null if unavailable
+ */
 function getSafeSchemaDebug(settingsSchema) {
     if (settingsSchema) {
-        // Only expose structure, not values
+        // Only expose structure, not sensitive values
         return settingsSchema.map(module => ({
             key: module.key,
             fields:
@@ -36,6 +77,19 @@ function getSafeSchemaDebug(settingsSchema) {
     return null;
 }
 
+/**
+ * Collect safe browser environment information for error reporting
+ *
+ * Gathers non-sensitive browser and environment data that helps with
+ * debugging errors without exposing user privacy or sensitive information.
+ *
+ * @returns {Object} Browser environment information
+ * @returns {string} returns.userAgent - Browser user agent string
+ * @returns {string} returns.url - Current page URL
+ * @returns {string} returns.timestamp - ISO timestamp of error
+ * @returns {string} returns.viewport - Browser viewport dimensions
+ * @returns {string} returns.platform - Operating system platform
+ */
 function getBrowserInfo() {
     return {
         userAgent: navigator.userAgent,

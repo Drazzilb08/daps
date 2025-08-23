@@ -3,6 +3,19 @@ import PropTypes from 'prop-types';
 import TooltipFactory from './Tooltip';
 import '../css/components/progress.css';
 
+/**
+ * Progress bar component with optional tooltip and state variants
+ * @param {Object} props - Component props
+ * @param {number|null} [props.value=null] - Progress value (0-100)
+ * @param {boolean} [props.active=false] - Whether bar is in active state
+ * @param {string} [props.className=''] - Additional CSS classes
+ * @param {Object} [props.style={}] - Inline styles
+ * @param {boolean} [props.done=false] - Whether operation is complete
+ * @param {boolean} [props.error=false] - Whether operation has error
+ * @param {string} [props.tooltip=''] - Tooltip text on hover
+ * @param {Object} props - Additional props passed to container
+ * @returns {JSX.Element} Styled progress bar with optional states
+ */
 function ProgressBar({
     value = null,
     active = false,

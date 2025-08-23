@@ -1,5 +1,15 @@
 import React from 'react';
 
+/**
+ * Number input field component with min/max/step support and validation
+ * @param {Object} props - Component props
+ * @param {Object} props.field - Field configuration with min/max/step properties
+ * @param {number|string} props.value - Current field value
+ * @param {Function} props.onChange - Value change handler
+ * @param {boolean} [props.highlightInvalid=false] - Whether to show error styling
+ * @param {string|null} [props.errorMessage=null] - Error message to display
+ * @returns {JSX.Element} Number input field with validation
+ */
 export const NumberField = React.memo(function NumberField({
     field,
     value,

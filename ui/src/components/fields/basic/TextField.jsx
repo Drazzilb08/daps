@@ -1,5 +1,15 @@
 import React from 'react';
 
+/**
+ * Text input field component with validation support
+ * @param {Object} props - Component props
+ * @param {Object} props.field - Field configuration object
+ * @param {string} props.value - Current field value
+ * @param {Function} props.onChange - Value change handler
+ * @param {boolean} [props.highlightInvalid=false] - Whether to show error styling
+ * @param {string|null} [props.errorMessage=null] - Error message to display
+ * @returns {JSX.Element} Text input field with label and validation
+ */
 export const TextField = React.memo(function TextField({
     field,
     value,

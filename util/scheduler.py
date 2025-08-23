@@ -3,7 +3,7 @@
 import time
 from datetime import datetime
 from logging import Logger
-from typing import Dict
+from typing import Any, Dict, Optional
 
 from croniter import croniter
 from dateutil import tz
@@ -15,7 +15,7 @@ SCHEDULER_POLL_INTERVAL_SECONDS = 5
 SCHEDULER_UPTIME_LOG_INTERVAL_SECONDS = 60
 
 
-def check_schedule(script_name: str, schedule: str, logger: Logger) -> bool:
+def check_schedule(script_name: str, schedule: str, logger: Optional[Logger]) -> bool:
     """Check if the current time matches the given schedule for a script."""
     next_run_times: Dict[str, datetime] = {}
     try:
@@ -97,7 +97,7 @@ def check_schedule(script_name: str, schedule: str, logger: Logger) -> bool:
         return False
 
 
-def print_schedule_table(logger, schedule):
+def print_schedule_table(logger: Optional[Any], schedule: Dict[str, str]) -> None:
     """Print the current schedule table using util.helper.create_table for consistency."""
     if logger is None:
         return
@@ -110,13 +110,15 @@ def print_schedule_table(logger, schedule):
 class DapsScheduler:
     """Pure scheduling logic - delegates execution to ModuleOrchestrator via job queue"""
 
-    def __init__(self, config, logger, module_orchestrator):
+    def __init__(
+        self, config: Any, logger: Optional[Any], module_orchestrator: Any
+    ) -> None:
         self.config = config
         self.logger = logger
         self.module_orchestrator = module_orchestrator
         self.running = False
 
-    def start(self):
+    def start(self) -> None:
         """Start the scheduler loop"""
         schedule = self.config.schedule
 
@@ -170,11 +172,11 @@ class DapsScheduler:
             else:
                 print("[SCHEDULER] Scheduler loop ended")
 
-    def stop(self):
+    def stop(self) -> None:
         """Stop the scheduler"""
         self.running = False
 
-    def _tick(self, schedule):
+    def _tick(self, schedule: Dict[str, str]) -> None:
         """Check for due modules and queue them for execution"""
         try:
             for name, sched in schedule.items():

@@ -418,7 +418,7 @@
        REFRESH POPOVER SCROLLING
     =========================== */
 
-    .refresh-popover-wide {
+    .popover--wide {
         max-height: 80vh;
         overflow: hidden auto;
     }
@@ -569,6 +569,60 @@
 
     .filter-option:focus:not(:focus-visible) {
         outline: none;
+    }
+
+    /* ===========================
+       PAGE SEARCH AUTOCOMPLETE
+    =========================== */
+
+    /* Page search autocomplete uses same patterns as header search */
+    .search-autocomplete {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--surface);
+        border: var(--border-width-1) solid var(--divider);
+        border-radius: var(--radius-2);
+        box-shadow: 0 4px 12px color-mix(in oklab, var(--bg) 80%, transparent);
+        z-index: var(--z-dropdown);
+        max-height: 300px;
+        overflow-y: auto;
+        margin-top: var(--space-1);
+    }
+
+    .search-autocomplete__item {
+        padding: var(--space-3) var(--space-4);
+        cursor: pointer;
+        border-bottom: var(--border-width-1) solid var(--divider);
+        transition: background-color 0.15s ease;
+        min-height: 44px; /* Accessibility: minimum touch target */
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .search-autocomplete__item:last-child {
+        border-bottom: none;
+    }
+
+    .search-autocomplete__item:hover,
+    .search-autocomplete__item--highlighted {
+        background: var(--surface-variant);
+    }
+
+    .search-autocomplete__title {
+        font-weight: var(--font-weight-medium);
+        color: var(--text-color);
+        font-size: var(--font-size-2);
+        line-height: 1.4;
+    }
+
+    .search-autocomplete__subtitle {
+        font-size: var(--font-size-1);
+        color: var(--muted);
+        margin-top: var(--space-1);
+        line-height: 1.3;
     }
 
     /* ===========================

@@ -52,7 +52,7 @@
         min-width: 140px;
     }
 
-    .popover.refresh-popover-wide {
+    .popover--wide {
         max-width: 480px;
         min-width: 400px;
         padding: var(--space-4);

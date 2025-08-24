@@ -143,7 +143,6 @@
         display: block;
         align-self: center;
         flex: 0 0 auto;
-        order: 3; /* Place hamburger after header search */
     }
 
     .hamburger.menu svg {

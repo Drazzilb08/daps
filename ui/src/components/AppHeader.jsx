@@ -75,8 +75,6 @@ function Header() {
                 <img src="/img/favicon-32x32.png" alt="DAPS logo" />
             </a>
 
-            <SearchInterface />
-
             <button
                 className="hamburger menu"
                 id="sidebarToggle"
@@ -95,6 +93,8 @@ function Header() {
                     />
                 </svg>
             </button>
+
+            <SearchInterface />
         </div>
     );
 }

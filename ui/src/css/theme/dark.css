@@ -46,7 +46,6 @@
     --btn-disabled-opacity: 0.5;
     --btn-active-transform: translateY(1px);
     --btn-hover-transform: translateY(-1px);
-    
 
     /* Focus and interaction states */
     --focus-ring: 0 0 0 3px color-mix(in oklab, #ff7300 25%, transparent);

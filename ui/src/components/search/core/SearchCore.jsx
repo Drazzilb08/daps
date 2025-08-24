@@ -76,6 +76,7 @@ export default function SearchCore({
     // Search state
     const [pendingSearchTerm, setPendingSearchTerm] = useState('');
     const [searchTerm, setSearchTerm] = useState('');
+    const [searchOptions, setSearchOptions] = useState({});
     const [searchResults, setSearchResults] = useState([]);
     const [hasUserSearched, setHasUserSearched] = useState(false);
 
@@ -137,9 +138,10 @@ export default function SearchCore({
         if (!registerPageSearch) return;
 
         const searchCoreAPI = {
-            executeSearch: term => {
+            executeSearch: (term, options = {}) => {
                 setPendingSearchTerm(term);
                 setSearchTerm(term);
+                setSearchOptions(options);
                 setHasUserSearched(true);
             },
             changeSource: newSource => {
@@ -243,6 +245,20 @@ export default function SearchCore({
                 if (searchTerm && searchTerm.trim()) {
                     // User is actively searching: filter data by search term
                     results = searchAdapter.search(searchData, searchTerm, {}, currentSource);
+
+                    // Apply exact match filtering if specified (autocomplete selection)
+                    if (searchOptions.exactMatch && searchOptions.suggestionData) {
+                        // Filter to only show the specific selected item
+                        const suggestionData = searchOptions.suggestionData;
+                        results = results.filter(item => {
+                            // Match by ID if available, otherwise by title
+                            if (suggestionData.id && item.id) {
+                                return item.id === suggestionData.id;
+                            }
+                            // Fallback to exact title match
+                            return item.title === suggestionData.title;
+                        });
+                    }
                 } else if (hasUserSearched) {
                     // User previously searched but cleared search: show all data with sorting/filtering
                     results = searchAdapter.search(searchData, '', {}, currentSource);
@@ -309,6 +325,7 @@ export default function SearchCore({
         searchAdapter,
         searchData,
         searchTerm,
+        searchOptions,
     ]);
 
     // ===== JUMP BAR DATA PROVIDER =====
@@ -318,6 +335,9 @@ export default function SearchCore({
     // ===== EVENT HANDLERS =====
     const handleSearchTermChange = useCallback(newTerm => {
         setPendingSearchTerm(newTerm);
+
+        // Clear exact match options when user manually types (not autocomplete selection)
+        setSearchOptions({});
 
         if (!newTerm.trim()) {
             setSearchTerm('');
@@ -339,6 +359,7 @@ export default function SearchCore({
         }
         setPendingSearchTerm('');
         setSearchTerm('');
+        setSearchOptions({});
         setSearchResults([]);
         setActiveFilters({});
     }, []);
@@ -350,6 +371,7 @@ export default function SearchCore({
 
         setPendingSearchTerm('');
         setSearchTerm('');
+        setSearchOptions({});
         setSearchResults([]);
         setActiveFilters({});
         setHasUserSearched(false); // Reset search state for new source

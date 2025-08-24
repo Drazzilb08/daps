@@ -41,7 +41,7 @@
     --primary-contrast: #fff;
 
     /* Button semantic colors - REMOVED lazy variable-to-variable references */
-    
+
     /* Button state colors */
     --btn-disabled-opacity: 0.5;
     --btn-active-transform: translateY(1px);

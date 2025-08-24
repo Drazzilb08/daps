@@ -761,7 +761,7 @@ function HeaderSearchInner() {
                     </button>
                     <TooltipFactory
                         anchor={viewPopover.triggerRef.current}
-                        text={`Switch to ${currentView === 'grid' ? 'list' : 'grid'} view`}
+                        text="Select view mode"
                         show={showTooltips.view && !viewPopover.show}
                     />
 

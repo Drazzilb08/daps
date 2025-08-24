@@ -191,6 +191,10 @@
         font-weight: var(--font-weight-medium);
     }
 
+    .popover__list-icon {
+        margin-right: var(--space-2);
+    }
+
     .popover__divider {
         height: var(--border-width-1);
         background-color: var(--divider);

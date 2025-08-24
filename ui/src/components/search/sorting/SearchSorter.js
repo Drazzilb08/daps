@@ -219,11 +219,26 @@ export class SearchSorter {
                 groupOrder = groupOrder.sort((a, b) => {
                     // Use appropriate priority mapping based on groupBy
                     const priorityMap = groupBy === 'owner' ? ownerPriorityOrder : priorityOrder;
-                    const pa = priorityMap[a] ?? 9999;
-                    const pb = priorityMap[b] ?? 9999;
+                    const pa = priorityMap[a] ?? -1; // Use -1 as fallback so unmapped groups appear last
+                    const pb = priorityMap[b] ?? -1; // Use -1 as fallback so unmapped groups appear last
+
+                    // Debug logging for priority groups
+                    if (
+                        a === 'BZ' ||
+                        a === 'Drazzilb' ||
+                        a === 'Chris DC' ||
+                        b === 'BZ' ||
+                        b === 'Drazzilb' ||
+                        b === 'Chris DC'
+                    ) {
+                        console.log(
+                            `Group sort debug: ${a}(${pa}) vs ${b}(${pb}), groupBy=${groupBy}`
+                        );
+                        console.log('ownerPriorityOrder:', ownerPriorityOrder);
+                    }
 
                     if (pa !== pb) {
-                        return pb - pa; // Higher values = higher priority
+                        return pb - pa; // Higher priority values first: pb - pa makes higher pa values sort earlier
                     }
 
                     return a.localeCompare(b); // Secondary alphabetical sort
@@ -233,11 +248,11 @@ export class SearchSorter {
             case 'priority-desc':
                 groupOrder = groupOrder.sort((a, b) => {
                     const priorityMap = groupBy === 'owner' ? ownerPriorityOrder : priorityOrder;
-                    const pa = priorityMap[a] ?? -1;
-                    const pb = priorityMap[b] ?? -1;
+                    const pa = priorityMap[a] ?? -1; // Use -1 as fallback so unmapped groups appear last
+                    const pb = priorityMap[b] ?? -1; // Use -1 as fallback so unmapped groups appear last
 
                     if (pa !== pb) {
-                        return pa - pb; // Lower values = higher priority for desc
+                        return pa - pb; // Lower priority values first: pa - pb makes lower pa values sort earlier
                     }
 
                     return a.localeCompare(b); // Secondary alphabetical sort

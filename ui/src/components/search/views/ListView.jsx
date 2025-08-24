@@ -165,6 +165,7 @@ export default function ListView({
     results = [],
     currentSort,
     priorityOrder = {},
+    ownerPriorityOrder = {},
     // searchTerm, // Unused for now
     onResultClick,
     getDisplayTitle,
@@ -221,7 +222,7 @@ export default function ListView({
             // Get the proper group order based on sorting and priority
             computedGroupOrder = SearchSorter.sortGroups(computedGroups, currentSort, {
                 priorityOrder,
-                ownerPriorityOrder: priorityOrder?.ownerPriorityOrder || {},
+                ownerPriorityOrder,
                 groupBy: 'owner',
             });
         } else {

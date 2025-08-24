@@ -30,6 +30,7 @@ function HeaderSearchInner() {
     // Refs
     const searchInputRef = useRef(null);
     const searchButtonRef = useRef(null);
+    const clearButtonRef = useRef(null);
     const autocompleteRef = useRef();
 
     // Popover states for header controls
@@ -620,17 +621,25 @@ function HeaderSearchInner() {
 
                     {/* Clear button */}
                     {searchTerm && (
-                        <button
-                            type="button"
-                            className="header-search__button header-search__button--clear"
-                            onClick={handleClear}
-                            onMouseEnter={() => setTooltip('clear', true)}
-                            onMouseLeave={() => setTooltip('clear', false)}
-                            onFocus={() => setTooltip('clear', true)}
-                            onBlur={() => setTooltip('clear', false)}
-                        >
-                            {getIcon('mi:close')}
-                        </button>
+                        <>
+                            <button
+                                ref={clearButtonRef}
+                                type="button"
+                                className="header-search__button header-search__button--clear"
+                                onClick={handleClear}
+                                onMouseEnter={() => setTooltip('clear', true)}
+                                onMouseLeave={() => setTooltip('clear', false)}
+                                onFocus={() => setTooltip('clear', true)}
+                                onBlur={() => setTooltip('clear', false)}
+                            >
+                                {getIcon('mi:close')}
+                            </button>
+                            <TooltipFactory
+                                anchor={clearButtonRef.current}
+                                text="Clear search"
+                                show={showTooltips.clear}
+                            />
+                        </>
                     )}
                 </div>
 

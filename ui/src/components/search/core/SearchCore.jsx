@@ -521,6 +521,7 @@ export default function SearchCore({
                     groupBy={groupBy}
                     focusedResultIndex={focusedResultIndex}
                     resultsContainerRef={resultsContainerRef}
+                    showRefreshControls={showRefreshControls}
                 />
             )}
 

@@ -76,6 +76,7 @@ const renderMetadata = (result, position = 'overlay', tooltipState = {}) => {
  * @param {Array} [props.results=[]] - Array of search results
  * @param {string} props.searchTerm - Current search term
  * @param {string} [props.currentView='grid'] - View mode (grid/list)
+ * @param {boolean} [props.showRefreshControls=false] - Whether refresh functionality is available
  * @param {Object} props.viewProps - Additional props for view components
  * @returns {JSX.Element} Rendered search results or empty/error state
  */
@@ -84,6 +85,7 @@ export default function SearchResults({
     results = [],
     searchTerm,
     currentView = 'grid',
+    showRefreshControls = false,
     ...viewProps
 }) {
     // Tooltip state management
@@ -151,11 +153,13 @@ export default function SearchResults({
                         No results found for &ldquo;<strong>{searchTerm}</strong>&rdquo;. Try
                         adjusting your search terms or filters.
                     </div>
-                    <div className="search-empty-refresh-notice">
-                        <strong>Missing content?</strong> If you expect to see this item but
-                        it&apos;s not appearing, try <strong>refreshing your database</strong> using
-                        the refresh button above.
-                    </div>
+                    {showRefreshControls && (
+                        <div className="search-empty-refresh-notice">
+                            <strong>Missing content?</strong> If you expect to see this item but
+                            it&apos;s not appearing, try <strong>refreshing your database</strong>{' '}
+                            using the refresh button above.
+                        </div>
+                    )}
                 </div>
             </div>
         );

@@ -428,6 +428,40 @@ export default function SearchCore({
                     });
                     break;
 
+                case 'PageDown':
+                    e.preventDefault();
+                    if (resultsContainerRef.current) {
+                        const container = resultsContainerRef.current;
+                        const scrollAmount = container.clientHeight * 0.8; // Scroll by 80% of viewport height
+                        const currentScrollTop = container.scrollTop;
+                        const maxScrollTop = container.scrollHeight - container.clientHeight;
+                        const newScrollTop = Math.min(
+                            currentScrollTop + scrollAmount,
+                            maxScrollTop
+                        );
+
+                        container.scrollTo({
+                            top: newScrollTop,
+                            behavior: 'smooth',
+                        });
+                    }
+                    break;
+
+                case 'PageUp':
+                    e.preventDefault();
+                    if (resultsContainerRef.current) {
+                        const container = resultsContainerRef.current;
+                        const scrollAmount = container.clientHeight * 0.8; // Scroll by 80% of viewport height
+                        const currentScrollTop = container.scrollTop;
+                        const newScrollTop = Math.max(currentScrollTop - scrollAmount, 0);
+
+                        container.scrollTo({
+                            top: newScrollTop,
+                            behavior: 'smooth',
+                        });
+                    }
+                    break;
+
                 case 'Enter':
                     if (focusedResultIndex >= 0 && focusedResultIndex < searchResults.length) {
                         e.preventDefault();

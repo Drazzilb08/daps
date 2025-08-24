@@ -126,8 +126,10 @@ export const gdriveSearchAdapter = {
             // For each GDrive location, check if it exists in source_dirs and assign priority
             gdriveLocations.forEach(gdrive => {
                 const sourceIndex = sourceDirs.indexOf(gdrive.location);
+
                 if (sourceIndex !== -1) {
                     // Found in source_dirs - later positions = higher priority values
+                    // Use index directly so last item gets highest priority
                     const priority = sourceIndex;
                     priorityOrder[gdrive.location] = priority;
 

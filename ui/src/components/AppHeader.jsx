@@ -42,23 +42,20 @@ function Header() {
     };
 
     const handleMobileSearchCollapse = () => {
-        // Add slide-out animation class
-        const headerSearchExpanded = document.querySelector('.header-search-expanded');
-        if (headerSearchExpanded) {
-            headerSearchExpanded.classList.add('back-button-closing');
+        const searchContainer = document.querySelector('.search-container.mobile-expanded');
+
+        if (searchContainer) {
+            searchContainer.classList.add('back-button-closing');
 
             // Wait for animation to complete before actually collapsing
             setTimeout(() => {
-                // Remove CSS class from body and reset focus state
                 document.body.classList.remove('mobile-search-active');
                 setIsMobileSearchExpanded(false);
                 setSearchInputFocused(false);
-
-                // Clean up animation class
-                headerSearchExpanded.classList.remove('back-button-closing');
-            }, 300); // Match the 300ms animation duration
+                searchContainer.classList.remove('back-button-closing');
+            }, 320); // Matched to CSS animation duration (0.3s) plus small buffer
         } else {
-            // Fallback if element not found - immediate collapse
+            // Fallback if elements not found - immediate collapse
             document.body.classList.remove('mobile-search-active');
             setIsMobileSearchExpanded(false);
             setSearchInputFocused(false);

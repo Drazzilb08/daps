@@ -716,7 +716,7 @@
 
         .search-empty-icon,
         .search-error-icon {
-            font-size: var(--font-size-3);
+            font-size: var(--font-size-21);
         }
     }
 }

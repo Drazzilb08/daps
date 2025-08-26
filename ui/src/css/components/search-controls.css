@@ -807,14 +807,55 @@
         transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Mobile animation states */
+    /* ===========================
+       MAIN CONTENT STABILIZATION DURING MOBILE SEARCH ANIMATIONS
+    =========================== */
+
+    /* Mobile animation states with complete main content isolation */
     @media (width <= 768px) {
+        /* CRITICAL: Main content stabilization during mobile search animations */
+        body.mobile-search-active main {
+            /* Lock main content position to prevent jumping during header animations */
+            position: relative;
+            top: 0;
+            left: 0;
+            transform: translateZ(0); /* Force GPU layer */
+            will-change: auto; /* Prevent unnecessary repaints */
+
+            /* Ensure main content layout is completely stable */
+            margin-top: 0; /* Override any header-dependent margins */
+            padding-top: 0; /* Remove any dynamic top padding */
+
+            /* Prevent any reflow or repaint during animations */
+            contain: layout style paint;
+        }
+
+        /* CRITICAL: Prevent main content container from responding to header changes */
+        body.mobile-search-active .container,
+        body.mobile-search-active .page-content {
+            position: static; /* Maintain normal document flow */
+            margin-top: 0; /* Remove header-dependent spacing */
+            transform: translateZ(0); /* GPU acceleration for stability */
+            will-change: auto;
+        }
+
+        /* Header-only animation scope - main content remains completely unaffected */
         .header-search--mobile-expanded {
             animation: mobile-search-expand 0.3s ease-out;
         }
 
         .header-search--mobile-collapsed {
             animation: mobile-search-collapse 0.3s ease-in;
+        }
+
+        /* Mobile search slide animations - right to left slide in */
+        .search-container.mobile-expanded {
+            animation: mobile-search-slide-in 0.3s ease-out;
+        }
+
+        /* Simple search container slide-out */
+        .search-container.mobile-expanded.back-button-closing {
+            animation: mobile-search-slide-out 0.3s ease-out;
         }
     }
 
@@ -866,6 +907,32 @@
         to {
             opacity: 0;
             transform: translateY(-15px) scale(0.95);
+        }
+    }
+
+    /* Mobile search slide-in animation - right to left */
+    @keyframes mobile-search-slide-in {
+        from {
+            opacity: 0;
+            transform: translateX(100%);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /* Mobile search slide-out animation - up direction */
+    @keyframes mobile-search-slide-out {
+        from {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        to {
+            opacity: 0;
+            transform: translateX(-100%);
         }
     }
 
@@ -1853,6 +1920,14 @@
         }
 
         .header-search--loading .header-search__button--search {
+            animation: none;
+        }
+
+        /* Disable slide animations when motion is reduced */
+        .search-container.mobile-expanded,
+        .header-search-expanded,
+        .search-container.mobile-expanded.back-button-closing,
+        .header-search-expanded.back-button-closing {
             animation: none;
         }
     }

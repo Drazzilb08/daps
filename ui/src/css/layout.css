@@ -302,10 +302,20 @@
         }
     }
 
-    /* Adjust container margin when mobile search is expanded */
+    /* CRITICAL FIX: Stable container margin during mobile search - prevents main content jumping */
     body.mobile-search-active .container {
-        margin-top: calc(var(--header-height) + 120px);
-        transition: margin-top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        /* Remove dynamic margin that causes main content to jump during animations */
+        margin-top: var(--header-height);
+
+        /* Add fixed top padding to account for expanded header without affecting layout flow */
+        padding-top: 120px;
+
+        /* Disable margin transitions during animations to prevent jumping */
+        transition: none;
+
+        /* Force stable positioning to prevent animation interference */
+        position: relative;
+        transform: translateZ(0);
     }
 
     /* Body state for mobile search active - used by main content to hide duplicates */

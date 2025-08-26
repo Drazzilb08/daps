@@ -519,7 +519,7 @@
     }
 
     .search-empty-icon {
-        font-size: var(--font-size-4);
+        font-size: 44px;
         line-height: 1;
         margin-bottom: var(--space-2);
         opacity: 0.7;

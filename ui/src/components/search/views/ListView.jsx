@@ -234,7 +234,7 @@ export default function ListView({
             processedGroups: computedGroups,
             processedGroupOrder: computedGroupOrder,
         };
-    }, [results, groupBy, currentSort, priorityOrder]);
+    }, [results, groupBy, currentSort, priorityOrder, ownerPriorityOrder]);
 
     // Flatten grouped data for virtualization or use results directly
     const flattenedItems = useMemo(() => {

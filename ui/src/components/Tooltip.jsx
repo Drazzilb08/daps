@@ -104,6 +104,12 @@ function calculateTooltipPosition(
  * @returns {JSX.Element|null} Portal-rendered tooltip or null
  */
 function TooltipFactory({ anchor, text, position = 'top', show }) {
+    // Detect mobile/touch devices and disable tooltips
+    const isMobileDevice = () => {
+        return window.innerWidth <= 768 || 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    };
+
+    // Don't render tooltips on mobile/touch devices
     const [tooltipDimensions, setTooltipDimensions] = useState({ width: 0, height: 0 });
     const [calculatedPosition, setCalculatedPosition] = useState({
         top: 0,
@@ -113,7 +119,7 @@ function TooltipFactory({ anchor, text, position = 'top', show }) {
 
     // Measure tooltip dimensions when text changes
     useEffect(() => {
-        if (!text) return;
+        if (!text || isMobileDevice()) return;
 
         // Create temporary tooltip to measure dimensions
         const tempTooltip = document.createElement('div');
@@ -137,7 +143,7 @@ function TooltipFactory({ anchor, text, position = 'top', show }) {
 
     // Calculate position when shown, anchor changes, or dimensions are available
     useEffect(() => {
-        if (!anchor || !show || tooltipDimensions.width === 0) return;
+        if (!anchor || !show || tooltipDimensions.width === 0 || isMobileDevice()) return;
 
         const newPosition = calculateTooltipPosition(anchor, tooltipDimensions, position, 8);
         setCalculatedPosition(newPosition);
@@ -162,7 +168,8 @@ function TooltipFactory({ anchor, text, position = 'top', show }) {
         };
     }, [anchor, show, position, tooltipDimensions]);
 
-    if (!show || !anchor || tooltipDimensions.width === 0) return null;
+    // Early return after hooks for mobile devices or when not ready to show
+    if (isMobileDevice() || !show || !anchor || tooltipDimensions.width === 0) return null;
 
     const style = {
         position: 'absolute',

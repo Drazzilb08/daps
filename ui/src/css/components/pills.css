@@ -10,7 +10,7 @@
 
     /* ========== BASE PILL ========== */
     .pill {
-        background: var(--surface-alt, #25292f);
+        background: var(--surface-alt);
         color: var(--muted);
         border-radius: var(--radius-round);
         padding: 0.48em 1.5em;
@@ -32,8 +32,8 @@
     .pill.active,
     .pill:focus {
         background: var(--primary);
-        color: #fff;
-        box-shadow: 0 0 0 2.5px var(--focus, #ff9500);
+        color: var(--primary-contrast);
+        box-shadow: 0 0 0 2.5px var(--focus);
         transform: translateY(-1px) scale(1.03);
     }
 
@@ -45,7 +45,7 @@
 
     .pill:hover:not(.active) {
         background: var(--focus);
-        color: #fff;
+        color: var(--primary-contrast);
         transform: translateY(-1px) scale(1.03);
     }
 
@@ -63,7 +63,7 @@
 
     .pill--accent {
         background: var(--accent);
-        color: #fff;
+        color: var(--primary-contrast);
     }
 
     .pill--accent:hover:not(.active) {
@@ -80,7 +80,7 @@
     .pill--outline.active {
         background: var(--primary);
         border-color: var(--primary);
-        color: #fff;
+        color: var(--primary-contrast);
     }
 
     /* ========== WEEKDAY PILLS ========== */
@@ -96,7 +96,7 @@
     .monthday-pill {
         border: none;
         border-radius: var(--radius-3);
-        background: var(--surface-alt, #25292f);
+        background: var(--surface-alt);
         color: var(--muted);
         font-size: var(--font-size-1);
         padding: 0.22em 0.95em;
@@ -117,15 +117,15 @@
     .monthday-pill.active,
     .monthday-pill:focus {
         background: var(--accent);
-        color: #fff;
-        box-shadow: 0 0 0 2px var(--focus, #ff9500);
+        color: var(--primary-contrast);
+        box-shadow: 0 0 0 2px var(--focus);
         outline: none;
     }
 
     .weekday-pill:hover:not(.active),
     .monthday-pill:hover:not(.active) {
         background: var(--focus);
-        color: #fff;
+        color: var(--primary-contrast);
     }
 
     /* ========== CARD PILLS (for tags/badges) ========== */
@@ -148,7 +148,7 @@
         display: inline-flex;
         align-items: center;
         gap: 0.5em;
-        background: var(--input-bg, #f6f8fa);
+        background: var(--input-bg);
         border-radius: var(--radius-3);
         padding: 0.18em 0.88em 0.18em 0.56em;
         min-height: 30px;
@@ -165,22 +165,22 @@
 
     .instance-pill:hover {
         background: color-mix(in srgb, var(--primary) 6%, var(--input-bg) 94%);
-        border-color: var(--primary-fade, #e3f1ff);
+        border-color: var(--primary-fade);
     }
 
     .instance-pill.checked {
-        border-color: var(--primary, #47b1f6);
+        border-color: var(--primary);
     }
 
     .instance-pill input[type='checkbox'] {
         margin-right: 0.46em;
         cursor: pointer;
-        accent-color: var(--primary, #47b1f6);
+        accent-color: var(--primary);
         width: 18px;
         height: 18px;
         border-radius: 2px;
-        background: #fff;
-        border: 2px solid var(--divider, #ccc);
+        background: var(--primary-contrast);
+        border: 2px solid var(--divider);
         transition:
             border-color var(--duration),
             background var(--duration-fast);
@@ -188,7 +188,7 @@
 
     .instance-pill input[type='checkbox']:hover,
     .instance-pill input[type='checkbox']:focus {
-        background: #fff;
+        background: var(--primary-contrast);
     }
 
     .instance-pill input[type='checkbox']:checked {
@@ -214,7 +214,8 @@
             gap: 0.7em;
             padding: 0.48em 1.1em;
             background: var(--surface-alt);
-            border: var(--border-width-1) solid rgb(0 0 0 / 22%);
+            border: var(--border-width-1) solid
+                color-mix(in oklab, var(--text-color) 22%, transparent);
             border-radius: var(--radius-2);
             font-size: var(--font-size-1);
             font-weight: var(--font-weight-medium);

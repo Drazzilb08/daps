@@ -1,13 +1,25 @@
-import React from 'react';
-import ModalFactory from './ModalFactory';
+import React, { useEffect } from 'react';
+import { useModal } from '../../hooks/useModal.jsx';
 
+/**
+ * Unsaved Settings Modal using new useModal hook
+ * Demonstrates simplified modal API compared to ModalFactory
+ */
 export default function UnsavedSettingsModal({ onSave, onDiscard, onCancel }) {
-    return (
-        <ModalFactory
-            title={null}
-            isSmallModal={true}
-            onClose={onCancel}
-            footerButtons={[
+    const { openSmallModal, ModalRenderer } = useModal();
+
+    useEffect(() => {
+        // Open modal on component mount
+        const modal = openSmallModal({
+            title: null,
+            children: (
+                <>
+                    You have unsaved changes.
+                    <br />
+                    What would you like to do?
+                </>
+            ),
+            footerButtons: [
                 {
                     id: 'save',
                     label: 'Save',
@@ -24,18 +36,26 @@ export default function UnsavedSettingsModal({ onSave, onDiscard, onCancel }) {
                     label: 'Discard',
                     className: 'btn btn--remove-item',
                 },
-            ]}
-            onButtonClick={{
-                save: onSave,
-                cancel: onCancel,
-                discard: onDiscard,
-            }}
-        >
-            <>
-                You have unsaved changes.
-                <br />
-                What would you like to do?
-            </>
-        </ModalFactory>
-    );
+            ],
+            onButtonClick: {
+                save: ({ closeModal }) => {
+                    onSave && onSave();
+                    closeModal();
+                },
+                cancel: ({ closeModal }) => {
+                    onCancel && onCancel();
+                    closeModal();
+                },
+                discard: ({ closeModal }) => {
+                    onDiscard && onDiscard();
+                    closeModal();
+                },
+            },
+        });
+
+        // Auto-close modal when component unmounts
+        return () => modal.close();
+    }, [openSmallModal, onSave, onDiscard, onCancel]);
+
+    return <ModalRenderer />;
 }

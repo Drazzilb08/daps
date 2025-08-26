@@ -10,6 +10,7 @@
     --success-highlight: #36e06d;
     --error: #e11e39;
     --error-highlight: #ff3b30;
+    --error-bg: rgb(225 30 57 / 7%);
     --caution: #e6b500;
     --caution-highlight: #fc0;
     --info: #1978d7;
@@ -40,7 +41,25 @@
     /* Primary contrast color for light theme */
     --primary-contrast: #fff;
 
-    /* Button semantic colors - REMOVED lazy variable-to-variable references */
+    /* Button color system */
+    --btn-primary-bg: #4a5568;
+    --btn-primary-fg: #fff;
+    --btn-primary-hover: #5a6a7a;
+    --btn-secondary-bg: #e6e6ea;
+    --btn-secondary-fg: #4a5568;
+    --btn-secondary-hover: #d6d6da;
+    --btn-success-bg: #1cab40;
+    --btn-success-fg: #fff;
+    --btn-success-hover: #36e06d;
+    --btn-warning-bg: #e6b500;
+    --btn-warning-fg: #fff;
+    --btn-warning-hover: #fc3;
+    --btn-danger-bg: #e11e39;
+    --btn-danger-fg: #fff;
+    --btn-danger-hover: #ff3b30;
+    --btn-info-bg: #1978d7;
+    --btn-info-fg: #fff;
+    --btn-info-hover: #4a9eff;
 
     /* Button state colors */
     --btn-disabled-opacity: 0.5;

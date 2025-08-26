@@ -38,7 +38,7 @@
         margin-top: var(--space-3);
         font-family: monospace;
         font-size: var(--font-size-1);
-        color: var(--text-muted);
+        color: var(--muted);
         white-space: pre-wrap;
         max-width: 100%;
         overflow-x: auto;
@@ -51,8 +51,8 @@
         margin-right: var(--space-2);
         padding: var(--space-2) var(--space-3);
         border: none;
-        background: #d8dee9;
-        color: #2e3440;
+        background: var(--btn-neutral-bg);
+        color: var(--btn-neutral-fg);
         border-radius: var(--radius-1);
         cursor: pointer;
         font-size: var(--font-size-2);
@@ -61,7 +61,7 @@
     }
 
     .error-boundary button:hover {
-        background: #eceff4;
+        background: var(--btn-neutral-hover);
     }
 
     .error-boundary button:focus {

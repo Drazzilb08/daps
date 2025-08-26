@@ -14,25 +14,25 @@
 
     /* ====================== ERRORS ====================== */
     .instances-empty-message {
-        color: var(--muted, #888);
+        color: var(--muted);
         font-size: var(--font-size-15);
         margin: 1.5em 0 0.6em;
         padding: 0.6em 1em;
         border-radius: var(--radius-2);
-        background: var(--surface-alt, #25292e);
+        background: var(--surface-alt);
         text-align: center;
     }
 
     .instances-empty-message.field-error {
-        border: var(--border-width-2) solid var(--error, #ff375f);
+        border: var(--border-width-2) solid var(--error);
         background: rgb(255 55 95 / 7%);
-        color: var(--error, #ff375f);
-        box-shadow: 0 0 0 var(--border-width-2) var(--error, #f1636365);
+        color: var(--error);
+        box-shadow: 0 0 0 var(--border-width-2) color-mix(in srgb, var(--error) 40%, transparent);
         font-weight: var(--font-weight-medium);
     }
 
     .poster-search-error {
-        color: var(--error, #ff375f);
+        color: var(--error);
         margin-top: 2.5em;
         font-size: var(--font-size-16);
         text-align: center;

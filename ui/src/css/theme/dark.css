@@ -11,6 +11,7 @@
     --success-highlight: #30d16e;
     --error: #ff375f;
     --error-highlight: #ff3b30;
+    --error-bg: rgb(255 55 95 / 7%);
     --caution: #ff9f0a;
     --caution-highlight: #fc0;
     --info: #5ac8fa;
@@ -31,6 +32,7 @@
     --toolbar: #1f2227;
     --text-color: #e3e3e3;
     --muted: #a9a9a9;
+    --on-surface-variant: #b5b5b5;
     --link-color: #3e7bfa;
     --divider: #292c30;
     --input-bg: #21242a;
@@ -41,6 +43,34 @@
 
     /* Primary contrast color for dark theme */
     --primary-contrast: #fff;
+
+    /* Button color system */
+    --btn-primary-bg: #4a5568;
+    --btn-primary-fg: #fff;
+    --btn-primary-hover: #5a6a7a;
+    --btn-secondary-bg: #2d3748;
+    --btn-secondary-fg: #a0aec0;
+    --btn-secondary-hover: #4a5568;
+    --btn-success-bg: #38a169;
+    --btn-success-fg: #fff;
+    --btn-success-hover: #48bb78;
+    --btn-warning-bg: #d69e2e;
+    --btn-warning-fg: #fff;
+    --btn-warning-hover: #ecc94b;
+    --btn-danger-bg: #e53e3e;
+    --btn-danger-fg: #fff;
+    --btn-danger-hover: #fc8181;
+    --btn-info-bg: #3182ce;
+    --btn-info-fg: #fff;
+    --btn-info-hover: #4299e1;
+    --btn-neutral-bg: #4a5568;
+    --btn-neutral-fg: #e3e3e3;
+    --btn-neutral-hover: #5a6a7a;
+
+    /* Progress bar system */
+    --progress-bar-bg: color-mix(in oklab, var(--surface-variant) 80%, var(--divider) 20%);
+    --progress-bar-fg: var(--accent);
+    --progress-bar-label: var(--text-color);
 
     /* Button interaction states */
     --btn-disabled-opacity: 0.5;

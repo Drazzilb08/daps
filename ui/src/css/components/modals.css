@@ -37,7 +37,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        background: rgb(24 25 31 / 64%);
+        background: var(--overlya-bg);
         backdrop-filter: blur(var(--backdrop-blur));
         opacity: 0;
         pointer-events: none;
@@ -55,8 +55,8 @@
 
     /* ========== MOBILE-FIRST MODALS ========== */
     .modal-content {
-        background: var(--surface, #23272b);
-        color: var(--text-color, #e3e3e3);
+        background: var(--surface);
+        color: var(--text-color);
         border-radius: 0;
         width: 100vw;
         max-width: 100vw;
@@ -71,8 +71,8 @@
     }
 
     .modal-content-fit {
-        background: var(--surface, #23272b);
-        color: var(--text-color, #e3e3e3);
+        background: var(--surface);
+        color: var(--text-color);
         border-radius: 0;
         width: 100vw;
         max-width: 100vw;
@@ -120,21 +120,21 @@
         justify-content: space-between;
         min-height: 2.6em;
         padding: var(--space-4) var(--space-6) var(--space-2);
-        border-bottom: var(--border-width-1) solid var(--divider, #292c30);
+        border-bottom: var(--border-width-1) solid var(--divider);
     }
 
     .modal-header h2 {
         font-size: var(--font-size-12);
         font-weight: 700;
         margin: 0;
-        color: var(--text-color, #e3e3e3);
+        color: var(--text-color);
         flex: 1;
         line-height: 1.19;
     }
 
     .modal-close-x {
         font-size: var(--font-size-21);
-        color: var(--muted, #a9a9a9);
+        color: var(--muted);
         background: none;
         border: none;
         cursor: pointer;
@@ -149,7 +149,7 @@
 
     .modal-close-x:hover,
     .modal-close-x:focus {
-        color: var(--error, #ff375f);
+        color: var(--error);
     }
 
     .modal-footer {
@@ -157,7 +157,7 @@
         justify-content: space-between;
         align-items: center;
         gap: var(--space-4);
-        border-top: var(--border-width-1) solid var(--divider, #292c30);
+        border-top: var(--border-width-1) solid var(--divider);
         padding: var(--space-4) var(--space-6);
         background: var(--surface);
         position: sticky;
@@ -511,10 +511,10 @@
         list-style: none;
         background: var(--input-bg);
         border-radius: 8px;
-        box-shadow: 0 1px 4px rgb(30 32 44 / 4%);
+        box-shadow: var(--shadow-1);
         max-height: 210px;
         overflow-y: auto;
-        border: 1px solid var(--divider, #22242a);
+        border: var(--border-width-1) solid var(--divider);
     }
 
     .dir-list li {
@@ -522,9 +522,9 @@
         align-items: center;
         padding: 0.48em 1em 0.48em 1.12em;
         font-size: 1.06em;
-        color: var(--text-color, #c4c9d4);
+        color: var(--text-color);
         cursor: pointer;
-        border-bottom: 1px solid var(--divider, #23242b);
+        border-bottom: var(--border-width-1) solid var(--divider);
         user-select: none;
         transition:
             background 0.13s,
@@ -545,25 +545,25 @@
 
     .dir-list li:hover,
     .dir-list li:focus {
-        background: rgb(110 130 180 / 7%);
-        color: var(--primary, #3391ff);
+        background: color-mix(in oklab, var(--accent) 7%, transparent);
+        color: var(--primary);
     }
 
     .dir-list li:active {
-        background: rgb(60 90 150 / 12%);
-        color: var(--primary, #297cd6);
+        background: color-mix(in oklab, var(--accent) 12%, transparent);
+        color: var(--primary);
     }
 
     .dir-list li.dir-parent {
-        color: var(--accent, #ffb300);
+        color: var(--accent);
         font-weight: 500;
         letter-spacing: 0.01em;
     }
 
     .dir-list li.dir-parent:hover,
     .dir-list li.dir-parent:focus {
-        background: rgb(255 205 70 / 10%);
-        color: var(--accent, #ffb300);
+        background: color-mix(in oklab, var(--caution) 10%, transparent);
+        color: var(--accent);
     }
 
     .dir-list::-webkit-scrollbar {
@@ -572,13 +572,13 @@
     }
 
     .dir-list::-webkit-scrollbar-thumb {
-        background: var(--divider, #25252a);
+        background: var(--divider);
         border-radius: 4px;
     }
 
     .dir-list li.active {
-        background: var(--primary, #3693f8);
-        color: #fff;
+        background: var(--primary);
+        color: var(--primary-contrast);
     }
 
     /* ======================
@@ -610,7 +610,7 @@
 
     .pill {
         border: none;
-        background: var(--surface-alt, #25292f);
+        background: var(--surface-alt);
         color: var(--muted);
         border-radius: 99px;
         padding: 0.48em 1.5em;
@@ -630,14 +630,14 @@
     .pill.active,
     .pill:focus {
         background: var(--primary);
-        color: #fff;
-        box-shadow: 0 0 0 2.5px var(--focus, #ff9500);
+        color: var(--primary-contrast);
+        box-shadow: 0 0 0 2.5px var(--focus);
         transform: translateY(-1px) scale(1.03);
     }
 
     .pill:hover:not(.active) {
         background: var(--focus);
-        color: #fff;
+        color: var(--primary-contrast);
         transform: translateY(-1px) scale(1.03);
     }
 
@@ -700,13 +700,13 @@
         color: var(--error);
         font-size: 1.04em;
         font-weight: 600;
-        background: rgb(255 55 95 / 7%);
+        background: var(--error-bg);
         border-radius: 7px;
         padding: 0.33em 0.7em;
         margin: 0;
         line-height: 1.36;
         letter-spacing: 0.01em;
-        box-shadow: 0 2px 10px 0 rgb(255 55 95 / 3%);
+        box-shadow: var(--shadow-2);
         animation: fade-in-row 0.21s 0.09s cubic-bezier(0.61, 0.13, 0.55, 1.21) backwards;
     }
 
@@ -719,7 +719,7 @@
         font-style: italic;
         line-height: 1.36;
         letter-spacing: 0.01em;
-        box-shadow: 0 2px 10px 0 rgb(50 215 75 / 2%);
+        box-shadow: var(--shadow-2);
         animation: fade-in-row 0.21s 0.11s cubic-bezier(0.61, 0.13, 0.55, 1.21) backwards;
     }
 
@@ -745,15 +745,15 @@
         display: block;
         cursor: default;
         border-radius: 7px;
-        box-shadow: 0 2px 18px 0 rgb(30 32 44 / 13%);
-        background: var(--surface-alt, #282c31);
+        box-shadow: var(--shadow-2);
+        background: var(--surface-alt);
         margin-bottom: 0.75rem;
     }
 
     .modal-poster-caption {
         text-align: center;
         font-size: 1.07rem;
-        color: var(--muted, #a9a9a9);
+        color: var(--muted);
         margin-top: 0.34em;
         margin-bottom: 0.18em;
         max-width: 95%;
@@ -774,7 +774,7 @@
         display: flex;
         align-items: center;
         gap: 0.21em;
-        color: var(--primary, #3391ff);
+        color: var(--primary);
         background: none;
         text-decoration: none;
         font-weight: 500;
@@ -787,14 +787,14 @@
 
     .modal-poster-action-row a.id-link:hover {
         text-decoration: underline;
-        color: var(--accent, #e09019);
-        background: var(--surface-alt, #21252b);
+        color: var(--accent);
+        background: var(--surface-alt);
     }
 
     .modal-poster-action-row .id-label {
         vertical-align: middle;
         font-size: 0.98em;
-        color: var(--text-color, #e3e3e3);
+        color: var(--text-color);
         font-family: inherit;
         letter-spacing: 0.01em;
         padding-left: 0.04em;
@@ -884,12 +884,10 @@
     GDrive Preset Card
 ====================== */
     .gdrive-preset-card {
-        background: var(--surface-alt, #262932);
-        color: var(--text-color, #e3e3e3);
+        background: var(--surface-alt);
+        color: var(--text-color);
         border-radius: 9px;
-        box-shadow:
-            0 3px 12px 0 rgb(30 32 44 / 13%),
-            0 1px 4px rgb(20 20 28 / 10%);
+        box-shadow: var(--shadow-3);
         margin: 1.3em 0 0.8em;
         padding: 1.35em 2em 1.3em;
         max-width: 530px;
@@ -899,7 +897,7 @@
         flex-direction: column;
         gap: 0.55em;
         font-size: 1.04em;
-        border: 1px solid var(--divider, #282c30);
+        border: var(--border-width-1) solid var(--divider);
     }
 
     .gdrive-preset-card-row {
@@ -911,7 +909,7 @@
 
     .gdrive-preset-card-label {
         min-width: 70px;
-        color: var(--primary, #3391ff);
+        color: var(--primary);
         font-weight: 500;
         letter-spacing: 0.02em;
         text-align: left;
@@ -920,13 +918,13 @@
 
     .gdrive-preset-card-value {
         flex: 1 1 auto;
-        color: var(--text-color, #e3e3e3);
+        color: var(--text-color);
         overflow-wrap: break-word;
     }
 
     .gdrive-preset-card-content {
-        background: var(--surface, #21242b);
-        color: var(--text-color, #e3e3e3);
+        background: var(--surface);
+        color: var(--text-color);
         border-radius: 7px;
         padding: 0.8em 1em;
         margin-top: 0.2em;

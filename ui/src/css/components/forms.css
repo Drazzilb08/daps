@@ -72,7 +72,7 @@
         width: 100%;
         padding: var(--control-padding-y) var(--control-padding-x);
         min-height: var(--control-min-height);
-        background: var(--input-bg, var(--surface));
+        background: var(--input-bg);
         color: var(--text-color);
         border: var(--border-width-2) solid var(--divider);
         box-shadow: var(--shadow-1);
@@ -91,7 +91,7 @@
         width: 100%;
         padding: var(--control-padding-y) var(--control-padding-x);
         min-height: var(--control-min-height);
-        background: var(--input-bg, var(--surface));
+        background: var(--input-bg);
         color: var(--text-color);
         border: var(--border-width-2) solid var(--divider);
         box-shadow: var(--shadow-1);
@@ -103,7 +103,7 @@
             border-color var(--duration-fast),
             box-shadow var(--duration-fast);
         appearance: none;
-        background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23ff7300'/%3E%3C/svg%3E");
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='currentColor'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
         background-position: right var(--space-3) center;
         background-size: 0.65rem auto;
@@ -117,7 +117,7 @@
         display: block;
         width: 100%;
         padding: var(--control-padding-y) var(--control-padding-x);
-        background: var(--input-bg, var(--surface));
+        background: var(--input-bg);
         color: var(--text-color);
         border: var(--border-width-2) solid var(--divider);
         box-shadow: var(--shadow-1);
@@ -131,7 +131,7 @@
         min-height: 4rem;
         height: auto;
         resize: vertical;
-        overflow-y: hidden !important;
+        overflow-y: hidden;
         font-size: var(--font-size-11);
         line-height: 1.23;
     }
@@ -147,7 +147,7 @@
     /* ========== FIELD STATES ========== */
     .field__error,
     .field-error-text {
-        color: var(--error, #ff375f);
+        color: var(--error);
         font-size: var(--font-size-18);
         font-weight: var(--font-weight-medium);
         margin-top: 0.18em;
@@ -166,8 +166,8 @@
     }
 
     .input-error {
-        border: var(--border-width-2) solid var(--error, #ff375f) !important;
-        background: rgb(255 55 95 / 7%) !important;
+        border: var(--border-width-2) solid var(--error);
+        background: var(--error-bg);
     }
 
     /* ========== CHECKBOXES ========== */
@@ -187,9 +187,9 @@
         aspect-ratio: 1/1;
         width: 22px;
         height: 22px;
-        border: var(--border-width-2) solid var(--divider, #ccc);
+        border: var(--border-width-2) solid var(--divider);
         border-radius: var(--radius-2);
-        background: #fff;
+        background: var(--surface);
         cursor: pointer;
         margin: 0 var(--space-3) 0 0;
         box-shadow: var(--shadow-1);
@@ -223,8 +223,8 @@
         top: 48%;
         width: 44%;
         height: 26%;
-        border-left: 2.2px solid #fff;
-        border-bottom: 2.2px solid #fff;
+        border-left: 2.2px solid var(--surface);
+        border-bottom: 2.2px solid var(--surface);
         transform: translate(-50%, -50%) scale(0.55) rotate(-45deg);
         opacity: 0;
         transition:
@@ -253,12 +253,12 @@
         width: 46px;
         height: 28px;
         border-radius: var(--radius-round);
-        background: var(--switch-bg, #444952);
+        background: var(--switch-bg);
         transition:
             background 0.22s,
             box-shadow var(--duration);
         box-shadow: var(--shadow-1);
-        border: var(--border-width-2) solid var(--divider, #292c30);
+        border: var(--border-width-2) solid var(--divider);
         vertical-align: middle;
         flex-shrink: 0;
     }
@@ -271,7 +271,7 @@
         width: 20px;
         height: 20px;
         border-radius: var(--radius-round);
-        background: var(--switch-knob, #fff);
+        background: var(--switch-knob);
         transition:
             transform 0.23s cubic-bezier(0.4, 0, 0.2, 1),
             background 0.23s;
@@ -279,17 +279,17 @@
     }
 
     .toggle-switch-input:checked + .slider {
-        background: var(--switch-bg-active, #3e7bfa);
-        border-color: var(--switch-bg-active, #3e7bfa);
+        background: var(--switch-bg-active);
+        border-color: var(--switch-bg-active);
     }
 
     .toggle-switch-input:checked + .slider::before {
         transform: translateX(18px);
-        background: var(--surface, #262a30);
+        background: var(--surface);
     }
 
     .toggle-switch-input:focus + .slider {
-        box-shadow: 0 0 0 2.5px var(--focus, #ff9500);
+        box-shadow: 0 0 0 2.5px var(--focus);
         outline: none;
     }
 
@@ -333,9 +333,9 @@
     }
 
     .password-wrapper .toggle-password {
-        background: none !important;
-        border: none !important;
-        box-shadow: none !important;
+        background: none;
+        border: none;
+        box-shadow: none;
         position: absolute;
         top: 50%;
         right: var(--space-2);
@@ -368,7 +368,7 @@
         width: 38px;
         height: 38px;
         border-radius: var(--radius-2);
-        border: var(--border-width-2) solid var(--divider, #eee);
+        border: var(--border-width-2) solid var(--divider);
         margin: 0 0.33em 0 0;
         box-shadow: var(--shadow-1);
         position: relative;
@@ -394,7 +394,7 @@
     }
 
     .color-picker-swatch input[type='color']:focus {
-        box-shadow: 0 0 0 var(--border-width-2) var(--accent, #3af) inset;
+        box-shadow: 0 0 0 var(--border-width-2) var(--accent) inset;
     }
 
     /* ========== DESKTOP FORM LAYOUTS ========== */
@@ -441,32 +441,32 @@
     /* ========== ENHANCED MOBILE TOUCH TARGETS ========== */
     @media (width <= 600px) {
         input[type='checkbox'] {
-            width: 28px !important;
-            height: 28px !important;
-            min-width: 28px !important;
-            min-height: 28px !important;
-            max-width: 28px !important;
-            max-height: 28px !important;
-            margin: 0 var(--space-3) 0 0 !important;
-            border-radius: var(--radius-2) !important;
+            width: 28px;
+            height: 28px;
+            min-width: 28px;
+            min-height: 28px;
+            max-width: 28px;
+            max-height: 28px;
+            margin: 0 var(--space-3) 0 0;
+            border-radius: var(--radius-2);
         }
 
         .toggle-switch-input + .slider {
-            width: 54px !important;
-            height: 33px !important;
-            border-radius: var(--radius-round) !important;
+            width: 54px;
+            height: 33px;
+            border-radius: var(--radius-round);
         }
 
         .toggle-switch-input + .slider::before {
-            width: 25px !important;
-            height: 25px !important;
-            left: 4px !important;
-            top: 4px !important;
-            border-radius: var(--radius-round) !important;
+            width: 25px;
+            height: 25px;
+            left: 4px;
+            top: 4px;
+            border-radius: var(--radius-round);
         }
 
         .toggle-switch-input:checked + .slider::before {
-            transform: translateX(21px) !important;
+            transform: translateX(21px);
         }
     }
 
@@ -487,7 +487,7 @@
         padding: var(--space-1);
         border: var(--border-width-2) solid var(--divider);
         border-radius: var(--control-radius);
-        background: var(--input-bg, var(--surface));
+        background: var(--input-bg);
         cursor: text;
     }
 

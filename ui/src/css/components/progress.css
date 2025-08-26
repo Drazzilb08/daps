@@ -4,7 +4,7 @@
         max-width: 340px;
         height: 24px;
         min-height: 24px;
-        background: var(--progress-bar-bg, #e3e9f2); /* the unfilled bar color */
+        background: var(--progress-bar-bg); /* the unfilled bar color */
         border-radius: var(--radius-2);
         position: relative;
         overflow: hidden;
@@ -17,7 +17,7 @@
     }
 
     .progress-bar__inner {
-        background: var(--progress-bar-fg, #3183e2); /* the filled bar color */
+        background: var(--progress-bar-fg); /* the filled bar color */
         height: 100%;
         width: 0%;
         border-radius: var(--radius-2);
@@ -39,7 +39,7 @@
         font-size: 0.875rem;
         font-weight: 600;
         line-height: 1.2;
-        color: var(--progress-bar-label, #1a2636); /* default: dark text */
+        color: var(--progress-bar-label); /* default: dark text */
         letter-spacing: 0.01em;
         pointer-events: none;
         user-select: none;
@@ -48,8 +48,8 @@
 
     /* Invert text color for better contrast when bar >50% */
     .progress-bar__label--invert {
-        color: #fff;
-        text-shadow: 0 1px 5px rgb(10 20 50 / 30%);
+        color: var(--primary-contrast);
+        text-shadow: 0 1px 5px color-mix(in oklab, var(--text-color) 30%, transparent);
     }
 
     /* Indeterminate state */
@@ -85,7 +85,7 @@
     .progress-bar-divider {
         width: 96%;
         height: 1.5px;
-        background: rgb(255 255 255 / 8%);
+        background: color-mix(in oklab, var(--primary-contrast) 8%, transparent);
         margin: 0.34em 0 0.5em;
         border: none;
         border-radius: var(--radius-1);

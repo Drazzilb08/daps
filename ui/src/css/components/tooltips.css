@@ -5,8 +5,8 @@
         z-index: var(--z-dropdown);
         left: 50%;
         transform: translateX(-50%);
-        background: var(--surface-alt, #23252a);
-        color: var(--text-color, #f3f3f3);
+        background: var(--surface-alt);
+        color: var(--text-color);
         padding: var(--tooltip-padding-y) var(--tooltip-padding-x);
         border-radius: var(--radius-3);
         font-size: var(--font-size-1);
@@ -21,7 +21,7 @@
             opacity var(--duration-fast) cubic-bezier(0.52, 0, 0.39, 1.01),
             transform var(--duration) cubic-bezier(0.52, 0, 0.39, 1.01);
         white-space: pre-line;
-        border: var(--border-width-1) solid var(--divider, #31363d);
+        border: var(--border-width-1) solid var(--divider);
     }
 
     /* ========== TOOLTIP STATES ========== */
@@ -46,14 +46,14 @@
         bottom: -8px;
         border-left: 7px solid transparent;
         border-right: 7px solid transparent;
-        border-top: 8px solid var(--surface-alt, #23252a);
+        border-top: 8px solid var(--surface-alt);
     }
 
     .btn-tooltip[data-pos='bottom']::after {
         top: -8px;
         border-left: 7px solid transparent;
         border-right: 7px solid transparent;
-        border-bottom: 8px solid var(--surface-alt, #23252a);
+        border-bottom: 8px solid var(--surface-alt);
     }
 
     /* ========== RESPONSIVE OVERRIDES ========== */

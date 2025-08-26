@@ -412,7 +412,7 @@
 
     .line {
         fill: none;
-        stroke: var(--primary, #ff9500);
+        stroke: var(--primary);
         stroke-width: 6;
         transition:
             stroke-dasharray var(--duration-extra-slow) cubic-bezier(0.4, 0, 0.2, 1),
@@ -452,7 +452,7 @@
     .view-frame,
     #settingsForm {
         scrollbar-width: thin;
-        scrollbar-color: var(--muted, #ff9500) var(--surface, #18191b);
+        scrollbar-color: var(--muted) var(--surface);
         overflow: hidden auto;
     }
 
@@ -460,33 +460,33 @@
     .view-frame::-webkit-scrollbar,
     #settingsForm::-webkit-scrollbar {
         width: 10px;
-        background: var(--surface, #18191b);
+        background: var(--surface);
         border-radius: 8px;
     }
 
     .view-frame::-webkit-scrollbar-thumb,
     #settingsForm::-webkit-scrollbar-thumb {
-        background: linear-gradient(135deg, var(--accent, #ff9500), var(--primary, #222));
+        background: linear-gradient(135deg, var(--accent), var(--surface-dim));
         border-radius: 8px;
         min-height: 40px;
-        border: 2px solid var(--surface, #18191b);
+        border: 2px solid var(--surface);
         transition: background 0.2s;
     }
 
     .view-frame::-webkit-scrollbar-thumb:hover,
     #settingsForm::-webkit-scrollbar-thumb:hover {
-        background: linear-gradient(135deg, var(--accent, #ffd36c), var(--primary, #ff9500));
+        background: linear-gradient(135deg, var(--caution-highlight), var(--primary));
     }
 
     .view-frame::-webkit-scrollbar-track,
     #settingsForm::-webkit-scrollbar-track {
-        background: var(--surface, #18191b);
+        background: var(--surface);
         border-radius: 8px;
     }
 
     .view-frame::-webkit-scrollbar-corner,
     #settingsForm::-webkit-scrollbar-corner {
-        background: var(--surface, #18191b);
+        background: var(--surface);
     }
 
     /* ========================

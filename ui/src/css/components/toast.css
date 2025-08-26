@@ -43,25 +43,25 @@
     /* ========== TOAST VARIANTS ========== */
     .toast.success {
         background: var(--success);
-        color: #fff;
+        color: var(--primary-contrast);
         border-left: 4px solid var(--success-highlight);
     }
 
     .toast.error {
         background: var(--error);
-        color: #fff;
+        color: var(--primary-contrast);
         border-left: 4px solid var(--error-highlight);
     }
 
     .toast.info {
         background: var(--info);
-        color: #fff;
+        color: var(--primary-contrast);
         border-left: 4px solid var(--info-highlight);
     }
 
     .toast.warning {
         background: var(--warning);
-        color: #fff;
+        color: var(--primary-contrast);
         border-left: 4px solid var(--warning-highlight);
     }
 

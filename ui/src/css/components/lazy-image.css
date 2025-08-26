@@ -43,7 +43,7 @@
         background: linear-gradient(
             90deg,
             transparent 0%,
-            rgb(255 255 255 / 10%) 50%,
+            color-mix(in oklab, var(--primary-contrast) 10%, transparent) 50%,
             transparent 100%
         );
         animation: shimmer 1.5s infinite;
@@ -134,7 +134,7 @@
         cursor: default;
         border-radius: var(--radius-2);
         box-shadow: var(--shadow-2);
-        background: var(--surface-alt, #282c31);
+        background: var(--surface-alt);
         margin: 0 auto var(--space-4);
         position: relative;
     }

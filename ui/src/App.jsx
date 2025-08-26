@@ -31,6 +31,8 @@ const MediaStatistics = lazy(() => import('./pages/MediaStatistics'));
 
 // Development pages
 const PopoverTest = lazy(() => import('./pages/dev/PopoverTest'));
+const ModalExamples = lazy(() => import('./components/modals/examples/ModalExamples'));
+const ApiDataTest = lazy(() => import('./pages/dev/ApiDataTest'));
 
 import LoadingSpinner from './components/common/LoadingSpinner';
 
@@ -196,6 +198,22 @@ export default function App() {
                                         element={
                                             <RouteErrorBoundary routeName="Popover Test">
                                                 <PopoverTest />
+                                            </RouteErrorBoundary>
+                                        }
+                                    />
+                                    <Route
+                                        path="/dev/modals"
+                                        element={
+                                            <RouteErrorBoundary routeName="Modal Examples">
+                                                <ModalExamples />
+                                            </RouteErrorBoundary>
+                                        }
+                                    />
+                                    <Route
+                                        path="/dev/api-data"
+                                        element={
+                                            <RouteErrorBoundary routeName="API Data Hook Test">
+                                                <ApiDataTest />
                                             </RouteErrorBoundary>
                                         }
                                     />

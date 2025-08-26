@@ -40,7 +40,7 @@
     }
 
     .spinner--white {
-        border-color: #fff;
+        border-color: var(--primary-contrast);
         border-top-color: transparent;
     }
 
@@ -90,9 +90,9 @@
     .skeleton {
         background: linear-gradient(
             90deg,
-            var(--surface-dim, #f0f0f0) 25%,
-            var(--surface-variant, #e0e0e0) 50%,
-            var(--surface-dim, #f0f0f0) 75%
+            var(--surface-dim) 25%,
+            var(--surface-variant) 50%,
+            var(--surface-dim) 75%
         );
         background-size: 200% 100%;
         animation: skeleton-shimmer 1.5s infinite;

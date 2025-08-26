@@ -1,31 +1,9 @@
 // ui/src/components/search/views/ListView.jsx
 // Clean, simple list view for media browsing
 
-import React, { memo, useCallback, useEffect, useState, useMemo } from 'react';
-import { useVirtualizer } from '@tanstack/react-virtual';
-// Simple grouping functions (moved from deleted helpers)
-const groupByOwner = files => {
-    const groups = {};
-    files.forEach(fileObj => {
-        const fileData = fileObj.original || fileObj;
-        const owner = fileData.name || 'Unknown';
-        if (!groups[owner]) groups[owner] = [];
-        groups[owner].push(fileObj);
-    });
-    return groups;
-};
-
-const groupByLocation = files => {
-    const groups = {};
-    files.forEach(fileObj => {
-        const fileData = fileObj.original || fileObj;
-        const location = fileData.location || 'Unknown';
-        if (!groups[location]) groups[location] = [];
-        groups[location].push(fileObj);
-    });
-    return groups;
-};
-import { SearchSorter } from '../sorting';
+import React, { memo, useCallback, useEffect, useState } from 'react';
+import { useSearchView } from '../../../hooks/useSearchView';
+import { SearchResultsGrouping, VirtualizedContainer } from '../components';
 
 /**
  * ListItem - Individual media item in list format
@@ -128,30 +106,6 @@ const ListItem = memo(
 ListItem.displayName = 'ListItem';
 
 /**
- * GroupHeader - Header component for grouped sections in list view
- * Displays the group name with consistent styling
- */
-const GroupHeader = memo(({ groupKey, groupBy }) => {
-    const getGroupLabel = () => {
-        if (groupBy === 'owner') {
-            return `Owner: ${groupKey}`;
-        }
-        if (groupBy === 'location') {
-            return `Location: ${groupKey}`;
-        }
-        return groupKey;
-    };
-
-    return (
-        <div className="group-header group-header--list">
-            <h2 className="group-header__title">{getGroupLabel()}</h2>
-        </div>
-    );
-});
-
-GroupHeader.displayName = 'GroupHeader';
-
-/**
  * ListView - Simple, scannable list layout for media browsing
  * Features:
  * - Always virtualized for consistent performance with GridView
@@ -204,71 +158,14 @@ export default function ListView({
         };
     }, []);
 
-    // Handle grouping logic internally - moved from PosterRenderer
-    const { processedGroups, processedGroupOrder } = useMemo(() => {
-        if (!groupBy || !results.length) {
-            return { processedGroups: null, processedGroupOrder: [] };
-        }
-
-        let computedGroups;
-        let computedGroupOrder;
-
-        if (groupBy === 'location') {
-            computedGroups = groupByLocation(results);
-            computedGroupOrder = Object.keys(computedGroups);
-        } else if (groupBy === 'owner') {
-            computedGroups = groupByOwner(results);
-
-            // Get the proper group order based on sorting and priority
-            computedGroupOrder = SearchSorter.sortGroups(computedGroups, currentSort, {
-                priorityOrder,
-                ownerPriorityOrder,
-                groupBy: 'owner',
-            });
-        } else {
-            // Unknown groupBy - disable grouping
-            return { processedGroups: null, processedGroupOrder: [] };
-        }
-
-        return {
-            processedGroups: computedGroups,
-            processedGroupOrder: computedGroupOrder,
-        };
-    }, [results, groupBy, currentSort, priorityOrder, ownerPriorityOrder]);
-
-    // Flatten grouped data for virtualization or use results directly
-    const flattenedItems = useMemo(() => {
-        if (!groupBy || !processedGroups || !processedGroupOrder?.length) {
-            // Non-grouped: convert results to flat array of items
-            return results.map((result, index) => ({
-                type: 'item',
-                data: result,
-                originalIndex: index,
-            }));
-        }
-
-        // Grouped: flatten into alternating headers and items
-        const flattened = [];
-        processedGroupOrder.forEach(groupKey => {
-            const groupItems = processedGroups[groupKey] || [];
-            if (groupItems.length > 0) {
-                // Add group header
-                flattened.push({
-                    type: 'header',
-                    groupKey,
-                    groupBy,
-                });
-                // Add group items
-                groupItems.forEach(item => {
-                    flattened.push({
-                        type: 'item',
-                        data: item,
-                    });
-                });
-            }
-        });
-        return flattened;
-    }, [results, groupBy, processedGroups, processedGroupOrder]);
+    // Use shared search view logic for grouping and flattening
+    const { flattenedItems } = useSearchView({
+        results,
+        groupBy,
+        currentSort,
+        priorityOrder,
+        ownerPriorityOrder,
+    });
 
     // Calculate responsive item height based on ListItem component structure:
     // - Base min-height: 44px (control-min-height for accessibility)
@@ -299,72 +196,59 @@ export default function ListView({
         [flattenedItems, itemHeight, headerHeight]
     );
 
-    // Virtualization setup - always enabled for consistent performance
-    const virtualizer = useVirtualizer({
-        count: flattenedItems.length,
-        getScrollElement: () => resultsContainerRef?.current || null,
-        estimateSize: getItemHeight,
-        overscan: 5, // Render 5 extra items above/below viewport for smooth scrolling
-    });
+    // Render function for virtualized items
+    const renderListItem = useCallback(
+        (virtualItem, flattenedItems) => {
+            const item = flattenedItems[virtualItem.index];
+            if (!item) return null;
+
+            return (
+                <div className="list-view__container">
+                    {item.type === 'header' ? (
+                        <SearchResultsGrouping
+                            key={`header-${item.groupKey}`}
+                            groupKey={item.groupKey}
+                            groupBy={item.groupBy}
+                            variant="list"
+                        />
+                    ) : (
+                        <ListItem
+                            key={item.data.id || `item-${virtualItem.index}`}
+                            result={item.data}
+                            onResultClick={onResultClick}
+                            getImageUrl={getImageUrl}
+                            getDisplayTitle={getDisplayTitle}
+                            setupHoverPreview={setupHoverPreview}
+                            renderMetadata={renderMetadata}
+                            hoverPreviewImgRef={hoverPreviewImgRef}
+                            enableHoverPreview={enableHoverPreview}
+                            isFocused={item.originalIndex === focusedResultIndex}
+                        />
+                    )}
+                </div>
+            );
+        },
+        [
+            onResultClick,
+            getImageUrl,
+            getDisplayTitle,
+            setupHoverPreview,
+            renderMetadata,
+            hoverPreviewImgRef,
+            enableHoverPreview,
+            focusedResultIndex,
+        ]
+    );
 
     // Always use virtualization for consistent performance with GridView
     return (
-        <div
+        <VirtualizedContainer
+            items={flattenedItems}
+            estimateSize={getItemHeight}
+            containerRef={resultsContainerRef}
+            renderItem={renderListItem}
             className="list-view list-view--virtualized"
-            ref={resultsContainerRef}
-            style={{
-                height: '100%', // Use full height of parent container
-                minHeight: '400px', // Minimum height for proper virtualization
-                overflow: 'auto',
-            }}
-        >
-            <div
-                style={{
-                    height: `${virtualizer.getTotalSize()}px`,
-                    position: 'relative',
-                }}
-            >
-                {virtualizer.getVirtualItems().map(virtualItem => {
-                    const item = flattenedItems[virtualItem.index];
-                    if (!item) return null;
-
-                    return (
-                        <div
-                            key={virtualItem.key}
-                            style={{
-                                position: 'absolute',
-                                top: 0,
-                                left: 0,
-                                right: 0,
-                                transform: `translateY(${virtualItem.start}px)`,
-                            }}
-                        >
-                            <div className="list-view__container">
-                                {item.type === 'header' ? (
-                                    <GroupHeader
-                                        key={`header-${item.groupKey}`}
-                                        groupKey={item.groupKey}
-                                        groupBy={item.groupBy}
-                                    />
-                                ) : (
-                                    <ListItem
-                                        key={item.data.id || `item-${virtualItem.index}`}
-                                        result={item.data}
-                                        onResultClick={onResultClick}
-                                        getImageUrl={getImageUrl}
-                                        getDisplayTitle={getDisplayTitle}
-                                        setupHoverPreview={setupHoverPreview}
-                                        renderMetadata={renderMetadata}
-                                        hoverPreviewImgRef={hoverPreviewImgRef}
-                                        enableHoverPreview={enableHoverPreview}
-                                        isFocused={item.originalIndex === focusedResultIndex}
-                                    />
-                                )}
-                            </div>
-                        </div>
-                    );
-                })}
-            </div>
-        </div>
+            overscan={5}
+        />
     );
 }

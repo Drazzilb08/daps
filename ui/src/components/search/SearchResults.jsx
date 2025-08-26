@@ -80,7 +80,7 @@ const renderMetadata = (result, position = 'overlay', tooltipState = {}) => {
  * @param {Object} props.viewProps - Additional props for view components
  * @returns {JSX.Element} Rendered search results or empty/error state
  */
-export default function SearchResults({
+function SearchResults({
     error,
     results = [],
     searchTerm,
@@ -188,3 +188,6 @@ export default function SearchResults({
         </>
     );
 }
+
+// Export memoized component for performance optimization
+export default React.memo(SearchResults);

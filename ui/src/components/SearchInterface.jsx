@@ -632,6 +632,23 @@ function HeaderSearchInner({
         return 'Module';
     };
 
+    // Get abbreviated label for module selector button
+    const getModuleLabelShort = () => {
+        const label = getModuleLabel();
+        switch (label) {
+            case 'Modules':
+                return 'MOD';
+            case 'Source':
+                return 'SRC';
+            case 'Asset Type':
+                return 'TYPE';
+            case 'Module':
+                return 'MOD';
+            default:
+                return 'MOD';
+        }
+    };
+
     // Check if we should hide the module selector completely
     const shouldHideModuleSelector = () => {
         return location.pathname.startsWith('/poster/search/assets');
@@ -825,7 +842,9 @@ function HeaderSearchInner({
                                     onBlur={() => setTooltip('module', false)}
                                 >
                                     {getIcon('mi:apps')}
-                                    <span className="search-control-label">MOD</span>
+                                    <span className="search-control-label">
+                                        {getModuleLabelShort()}
+                                    </span>
                                 </button>
                                 <TooltipFactory
                                     anchor={modulePopover.triggerRef.current}

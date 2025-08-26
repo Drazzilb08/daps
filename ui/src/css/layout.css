@@ -92,30 +92,28 @@
     }
 
     /* ========================
-   HEADER
+   MOBILE-FIRST HEADER - NO JAVASCRIPT STATE MANAGEMENT
 ======================== */
 
+    /* Base mobile styles - all layouts start here */
     .header-bar {
         width: 100%;
-        height: 64px; /* fallback */
         height: var(--header-height);
-        background: #191b1f; /* fallback */
         background: var(--header-bg);
         color: var(--header-fg);
         display: flex;
         align-items: center;
         padding: 0 var(--space-4);
-        border-bottom: 1px solid var(--divider);
-        box-shadow: 0 4px 10px rgb(0 0 0 / 15%); /* fallback */
         box-shadow: var(--shadow-2);
         z-index: var(--z-sticky);
         position: fixed;
         top: 0;
         left: 0;
-        gap: var(--space-4);
+        gap: var(--space-3);
+        box-sizing: border-box;
     }
 
-    /* Logo styling */
+    /* ===== LOGO - ALWAYS VISIBLE ===== */
     .nav-logo {
         flex-shrink: 0;
         display: flex;
@@ -129,10 +127,20 @@
         object-fit: contain;
     }
 
-    /* ========================
-   MOBILE-FIRST HAMBURGER & SIDEBAR
-======================== */
+    /* Mobile optimization - smaller logo */
+    @media (width <= 768px) {
+        .nav-logo img {
+            width: 24px;
+            height: 24px;
+        }
 
+        /* Hide logo when mobile search is active */
+        .mobile-search-expanded .nav-logo {
+            display: none;
+        }
+    }
+
+    /* ===== HAMBURGER MENU - MOBILE ONLY ===== */
     .hamburger.menu {
         background: transparent;
         border: none;
@@ -141,7 +149,6 @@
         width: var(--control-min-height);
         height: var(--control-min-height);
         display: block;
-        align-self: center;
         flex: 0 0 auto;
     }
 
@@ -152,12 +159,246 @@
         margin: 0 auto;
     }
 
+    /* Mobile optimization - smaller hamburger */
+    @media (width <= 768px) {
+        .hamburger.menu {
+            width: 36px;
+            height: 36px;
+        }
+
+        .hamburger.menu svg {
+            width: 36px;
+            height: 36px;
+        }
+
+        /* Hide hamburger when mobile search is active */
+        .mobile-search-expanded .hamburger.menu {
+            display: none;
+        }
+    }
+
     /* Hide hamburger on desktop */
     @media (width >= 1024px) {
         .hamburger.menu {
             display: none;
         }
     }
+
+    /* Header uses direct flexbox - no unnecessary wrappers */
+
+    /* ===== SEARCH CONTAINER ===== */
+    .search-container {
+        display: none; /* Hidden on mobile by default */
+        flex: 1; /* Takes available space for centering */
+        justify-content: center;
+    }
+
+    /* Desktop search interface - centered with flex */
+    @media (width >= 769px) {
+        .search-container {
+            display: flex;
+            align-items: center;
+        }
+
+        /* Search interface as a natural flex unit */
+        .search-interface {
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            white-space: nowrap;
+            max-width: 600px;
+        }
+
+        /* Hide mobile search trigger on desktop */
+        .header-search-trigger {
+            display: none;
+        }
+    }
+
+    /* Mobile search container - show when expanded */
+    @media (width <= 768px) {
+        .search-container.mobile-expanded {
+            display: block;
+            width: 100%;
+            flex: none;
+        }
+
+        /* Mobile search interface stacks vertically */
+        .search-container.mobile-expanded .search-interface {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-2);
+            width: 100%;
+        }
+    }
+
+    /* ===== MOBILE SEARCH TRIGGER - MOVED TO RIGHT SIDE ===== */
+    .header-search-trigger {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: var(--space-2);
+        width: var(--control-min-height);
+        height: var(--control-min-height);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-2);
+        color: var(--primary);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        margin-left: auto; /* Push to right side for better balance */
+        flex-shrink: 0;
+        font-size: var(--font-size-3);
+    }
+
+    .header-search-trigger:hover {
+        background: color-mix(in oklab, var(--primary) 10%, transparent);
+        color: var(--primary);
+        transform: scale(1.05);
+    }
+
+    .header-search-trigger:focus-visible {
+        outline: var(--border-width-2) solid var(--primary);
+        outline-offset: var(--border-width-1);
+        transform: scale(1.05);
+    }
+
+    .header-search-trigger:active {
+        transform: scale(0.95);
+    }
+
+    /* Hide search trigger on desktop */
+    @media (width >= 769px) {
+        .header-search-trigger {
+            display: none;
+        }
+    }
+
+    /* Mobile expanded header adjustments - Clean 2-row layout */
+    .header-bar.mobile-search-expanded {
+        flex-direction: column;
+        height: auto;
+        padding: var(--space-2) var(--space-4);
+        gap: var(--space-2);
+        align-items: stretch;
+    }
+
+    .header-bar.mobile-search-expanded .header-bar__content {
+        /* Main content maintains normal layout */
+        order: 1;
+    }
+
+    .header-bar.mobile-search-expanded .search-container {
+        /* Search container becomes row 2 */
+        order: 2;
+    }
+
+    /* Desktop reset for mobile expanded behavior */
+    @media (width >= 769px) {
+        .header-bar.mobile-search-expanded {
+            flex-direction: row;
+            height: var(--header-height);
+            padding: 0 var(--space-4);
+        }
+    }
+
+    /* Adjust container margin when mobile search is expanded */
+    body.mobile-search-active .container {
+        margin-top: calc(var(--header-height) + 120px);
+        transition: margin-top 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Body state for mobile search active - used by main content to hide duplicates */
+    body.mobile-search-active .sidebar {
+        /* Keep sidebar available but encourage collapse */
+        z-index: calc(var(--z-dropdown) - 1);
+    }
+
+    body.mobile-search-active .hamburger.menu {
+        /* Slightly reduce opacity when search is active to indicate secondary importance */
+        opacity: 0.8;
+    }
+
+    /* Smooth mobile search slide animations */
+    @keyframes mobile-search-slide-in {
+        from {
+            opacity: 0;
+            transform: translateX(-100%);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    @keyframes mobile-search-slide-out {
+        from {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        to {
+            opacity: 0;
+            transform: translateX(-100%);
+        }
+    }
+
+    /* Back button slide-out animation - slide from right to left (consistent direction) */
+    @keyframes back-button-slide-out {
+        from {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        to {
+            opacity: 0;
+            transform: translateX(-100%);
+        }
+    }
+
+    /* Controls appear animation for progressive disclosure */
+    @keyframes controls-appear {
+        from {
+            opacity: 0;
+            transform: translateY(-4px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Desktop responsive behavior */
+    @media (width >= 769px) {
+        .header-search--mobile-expanded {
+            /* Reset mobile styles for desktop */
+            position: static;
+            flex-direction: row;
+            padding: 0;
+            background: transparent;
+            border-bottom: none;
+            box-shadow: none;
+        }
+    }
+
+    /* Screen reader only content */
+    .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip-path: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+
+    /* ========================
+   HAMBURGER MENU ANIMATIONS
+======================== */
 
     .line {
         fill: none;

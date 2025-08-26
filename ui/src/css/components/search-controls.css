@@ -1,15 +1,110 @@
 /* Consolidated search controls and header search styles */
 
 @layer components {
+    /* ===== THREE-SECTION SEARCH LAYOUT ===== */
+    .search-layout {
+        display: flex;
+        align-items: center;
+        width: 100%;
+        min-height: var(--control-min-height);
+        padding: var(--space-3) 0;
+        gap: var(--space-3);
+    }
+
+    .search-layout__spacer {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .search-layout__center {
+        flex: 0 0 auto;
+        display: flex;
+        justify-content: center;
+        min-width: 300px;
+        max-width: 600px;
+        width: 100%;
+    }
+
+    .search-layout__right {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        min-width: 0;
+        gap: var(--space-2);
+    }
+
+    /* Desktop: Perfect centering with controls flowing right */
+    @media (width >= 769px) {
+        .search-layout {
+            justify-content: center;
+            position: relative;
+        }
+
+        .search-layout__center {
+            flex: 0 0 420px;
+            max-width: 420px;
+            min-width: 320px;
+        }
+
+        .search-layout__right {
+            flex: 1;
+            justify-content: flex-start;
+            margin-left: var(--space-3);
+        }
+
+        .search-layout__spacer:first-child {
+            flex: 1;
+        }
+
+        .search-layout__spacer:last-child {
+            flex: 1;
+        }
+    }
+
+    /* Mobile: Stack vertically for optimal touch experience */
+    @media (width <= 768px) {
+        .search-layout {
+            flex-direction: column;
+            align-items: stretch;
+            gap: var(--space-4);
+        }
+
+        .search-layout__spacer {
+            display: none;
+        }
+
+        .search-layout__center {
+            width: 100%;
+            max-width: none;
+            min-width: 0;
+        }
+
+        .search-layout__right {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* ===== SEARCH INTERFACE ROOT ===== */
+    .search-interface {
+        width: 100%;
+        background: transparent;
+        border-radius: var(--radius-3);
+        transition: all var(--duration) var(--easing);
+    }
+
+    .search-interface--focused {
+        /* Enhanced focus state for progressive disclosure */
+    }
+
     /* ===== SEARCH CONTROLS LAYOUT ===== */
     .search-controls {
         display: flex;
         align-items: center;
-        justify-content: space-between;
-        gap: var(--space-3);
-        padding: var(--space-3) 0;
-        margin-bottom: var(--space-4);
-        border-bottom: var(--border-width-1) solid var(--divider);
+        justify-content: flex-start;
+        gap: var(--space-2);
+        flex-wrap: nowrap;
     }
 
     .search-controls__left {
@@ -24,22 +119,76 @@
         gap: var(--space-3);
     }
 
+    /* ===== SEARCH INPUT CONTAINER ===== */
+    .search-input-container {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        max-width: 100%;
+        min-width: 0;
+    }
+
+    .search-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+        flex: 1;
+        background: var(--surface);
+        border: var(--border-width-1) solid var(--divider);
+        border-radius: var(--radius-3);
+        transition:
+            border-color var(--duration) var(--easing),
+            box-shadow var(--duration) var(--easing);
+        min-height: var(--control-min-height);
+        overflow: visible;
+        box-shadow: var(--shadow-1);
+    }
+
+    .search-input-wrapper:focus-within {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 var(--border-width-1) color-mix(in srgb, var(--primary) 25%, transparent);
+    }
+
     /* ===== SEARCH BAR CONTAINER ===== */
     .search-bar-container {
         position: relative;
         display: flex;
         align-items: center;
-        margin-bottom: var(--space-4);
         gap: var(--space-2);
-        background: var(--input-bg);
+        background: var(--surface);
         border: var(--border-width-1) solid var(--divider);
         border-radius: var(--radius-3);
-        transition: border-color 0.2s ease;
+        transition: border-color var(--duration) var(--easing);
+    }
+
+    /* Desktop search controls layout */
+    @media (width >= 769px) {
+        .search-controls {
+            display: flex;
+            flex-flow: row nowrap;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0;
+        }
+
+        .search-controls__left,
+        .search-controls__right {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: var(--space-3);
+        }
+
+        .search-bar-container {
+            margin-bottom: 0;
+            margin-top: var(--space-3);
+        }
     }
 
     .search-bar-container:focus-within {
-        border-color: var(--accent);
-        box-shadow: 0 0 0 var(--border-width-1) color-mix(in srgb, var(--accent) 25%, transparent);
+        border-color: var(--primary);
+        box-shadow: 0 0 0 var(--border-width-1) color-mix(in srgb, var(--primary) 25%, transparent);
     }
 
     .search-bar-container.has-clear-btn {
@@ -47,11 +196,35 @@
     }
 
     /* ===== SEARCH INPUT ===== */
+    .search-input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        padding: var(--space-3) var(--space-4);
+        font-size: var(--font-size-2);
+        color: var(--text-color);
+        outline: none;
+        min-height: var(--control-min-height);
+        font-weight: var(--font-weight-medium);
+        box-sizing: border-box;
+        min-width: 0;
+    }
+
+    .search-input::placeholder {
+        color: var(--muted);
+        font-weight: var(--font-weight-regular);
+    }
+
+    .search-input:disabled {
+        opacity: var(--btn-disabled-opacity);
+        cursor: not-allowed;
+    }
+
     .search-bar {
         flex: 1;
         background: transparent;
         border: none;
-        padding: var(--control-padding-y) var(--control-padding-x);
+        padding: var(--space-3) var(--space-4);
         font-size: var(--font-size-2);
         color: var(--text-color);
         outline: none;
@@ -63,11 +236,60 @@
     }
 
     .search-bar:disabled {
-        opacity: 0.6;
+        opacity: var(--btn-disabled-opacity);
         cursor: not-allowed;
     }
 
     /* ===== SEARCH BUTTONS ===== */
+    .search-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+        padding: var(--space-2);
+        margin: 0;
+        border-radius: var(--radius-2);
+        cursor: pointer;
+        transition: all var(--duration) var(--easing);
+        min-width: var(--control-min-height);
+        min-height: var(--control-min-height);
+        font-size: var(--font-size-3);
+        flex-shrink: 0;
+    }
+
+    .search-button--search {
+        color: var(--primary);
+    }
+
+    .search-button--search:hover:not(:disabled) {
+        background: color-mix(in srgb, var(--primary) 10%, transparent);
+        color: var(--primary);
+    }
+
+    .search-button--clear {
+        color: var(--muted);
+    }
+
+    .search-button--clear:hover:not(:disabled) {
+        background: color-mix(in srgb, var(--error) 10%, transparent);
+        color: var(--error);
+    }
+
+    .search-button:focus-visible {
+        outline: var(--border-width-2) solid var(--primary);
+        outline-offset: var(--border-width-1);
+    }
+
+    .search-button:focus:not(:focus-visible) {
+        outline: none;
+    }
+
+    .search-button:disabled {
+        opacity: var(--btn-disabled-opacity);
+        cursor: not-allowed;
+    }
+
     .search-btn {
         display: flex;
         align-items: center;
@@ -77,27 +299,27 @@
         padding: var(--space-2);
         margin: var(--space-1);
         border-radius: var(--radius-2);
-        color: var(--accent);
+        color: var(--primary);
         cursor: pointer;
-        transition: all 0.2s ease;
+        transition: all var(--duration) var(--easing);
         min-width: var(--control-min-height);
         min-height: var(--control-min-height);
         font-size: var(--font-size-3);
     }
 
     .search-btn:focus-visible {
-        outline: var(--border-width-2) solid var(--accent);
+        outline: var(--border-width-2) solid var(--primary);
         outline-offset: var(--border-width-1);
     }
 
     .search-btn:disabled {
-        opacity: 0.4;
+        opacity: var(--btn-disabled-opacity);
         cursor: not-allowed;
     }
 
     .search-btn:hover:not(:disabled) {
-        background: var(--surface-alt);
-        color: var(--accent-highlight);
+        background: var(--surface-variant);
+        color: var(--primary);
     }
 
     .clear-btn {
@@ -122,7 +344,7 @@
     }
 
     .clear-btn:hover:not(:disabled) {
-        background: color-mix(in srgb, var(--error) 15%, transparent);
+        background: color-mix(in srgb, var(--error) 10%, transparent);
         color: var(--error);
     }
 
@@ -161,11 +383,117 @@
     }
 
     .search-bar-btn:hover:not(:disabled) {
-        background: var(--surface-alt);
+        background: var(--surface-variant);
         color: var(--text-color);
     }
 
+    /* ===== SEARCH CONTROL BUTTONS ===== */
+    .search-control {
+        position: relative;
+        display: flex;
+        align-items: center;
+    }
+
+    .search-control-button {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        background: var(--surface);
+        border: var(--border-width-1) solid var(--divider);
+        border-radius: var(--radius-2);
+        padding: var(--space-2) var(--space-3);
+        color: var(--muted);
+        cursor: pointer;
+        transition: all var(--duration) var(--easing);
+        font-size: var(--font-size-2);
+        font-weight: var(--font-weight-medium);
+        min-height: var(--control-min-height);
+        white-space: nowrap;
+        flex-direction: row;
+        justify-content: center;
+        min-width: var(--control-min-height);
+        box-shadow: var(--shadow-1);
+    }
+
+    .search-control-button:hover:not(:disabled) {
+        background: var(--surface-variant);
+        border-color: var(--primary);
+        color: var(--text-color);
+        transform: var(--btn-hover-transform);
+    }
+
+    .search-control-button:focus-visible {
+        outline: var(--border-width-2) solid var(--primary);
+        outline-offset: var(--border-width-1);
+    }
+
+    .search-control-button:focus:not(:focus-visible) {
+        outline: none;
+    }
+
+    .search-control-button.active {
+        background: color-mix(in srgb, var(--primary) 15%, transparent);
+        border-color: var(--primary);
+        color: var(--primary);
+    }
+
+    .search-control-label {
+        font-size: var(--font-size-1);
+        font-weight: var(--font-weight-medium);
+    }
+
     /* ===== DROPDOWN STYLES ===== */
+
+    /* ===== AUTOCOMPLETE DROPDOWN ===== */
+    .search-autocomplete {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--surface);
+        border: var(--border-width-1) solid var(--divider);
+        border-radius: var(--radius-2);
+        box-shadow: var(--shadow-3);
+        z-index: var(--z-dropdown);
+        max-height: 300px;
+        overflow-y: auto;
+        margin-top: var(--space-1);
+    }
+
+    .search-autocomplete-item {
+        padding: var(--space-3) var(--space-4);
+        cursor: pointer;
+        border-bottom: var(--border-width-1) solid var(--divider);
+        transition: background-color var(--duration-fast) var(--easing);
+        min-height: var(--control-min-height);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .search-autocomplete-item:last-child {
+        border-bottom: none;
+    }
+
+    .search-autocomplete-item:hover,
+    .search-autocomplete-item--highlighted {
+        background: var(--surface-variant);
+    }
+
+    .search-autocomplete-title {
+        font-weight: var(--font-weight-medium);
+        color: var(--text-color);
+        font-size: var(--font-size-2);
+        line-height: 1.4;
+    }
+
+    .search-autocomplete-subtitle {
+        font-size: var(--font-size-1);
+        color: var(--muted);
+        margin-top: var(--space-1);
+        line-height: 1.3;
+    }
+
     .search-bar-btn-dropdown {
         position: absolute;
         top: 100%;
@@ -310,32 +638,125 @@
     /* ===== RESPONSIVE DESIGN ===== */
     @media (width <= 768px) {
         .search-controls {
+            flex-flow: row nowrap;
+            align-items: center;
+            justify-content: center;
+            gap: var(--space-2);
+            width: 100%;
+        }
+
+        .search-control-button {
+            flex: 1;
+            min-width: var(--control-min-height);
+            max-width: calc((100vw - 120px) / 5);
+            padding: var(--space-2) var(--space-1);
+            font-size: var(--font-size-3);
             flex-direction: column;
-            align-items: stretch;
-            gap: var(--space-3);
+            gap: 2px;
+            justify-content: center;
+            align-items: center;
+            background: var(--surface);
+            border: var(--border-width-1) solid var(--divider);
+            box-shadow: var(--shadow-1);
+            border-radius: var(--radius-2);
+            overflow: hidden;
+        }
+
+        .search-control-button:hover {
+            background: var(--surface-variant);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .search-control-label {
+            display: block;
+            font-size: 8px;
+            font-weight: var(--font-weight-bold);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            line-height: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Ensure touch targets meet accessibility requirements */
+        .search-button,
+        .search-control-button {
+            min-width: var(--control-min-height);
+            min-height: var(--control-min-height);
+        }
+    }
+
+    /* Desktop layout uses proper specificity */
+    @media (width >= 769px) {
+        .search-controls {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
         }
 
         .search-controls__left,
         .search-controls__right {
-            justify-content: center;
+            flex-direction: row;
         }
 
-        .search-bar-container {
-            order: -1; /* Put search bar first on mobile */
+        /* Fix control buttons - horizontal layout on desktop */
+        .search-control-button {
+            flex-direction: row;
+            gap: var(--space-2);
+            padding: var(--space-2) var(--space-3);
+            min-width: auto;
+            width: auto;
         }
     }
 
     @media (width <= 480px) {
-        .search-controls__left,
-        .search-controls__right {
-            flex-wrap: wrap;
-            gap: var(--space-2);
+        .search-controls {
+            gap: var(--space-1);
         }
 
-        .selector-btn,
-        .refresh-btn {
-            font-size: var(--font-size-1);
-            padding: var(--space-2) var(--space-3);
+        .search-control {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .search-control-button {
+            width: 100%;
+            min-width: 44px;
+            max-width: calc((100vw - 100px) / 5); /* Smart width for 5 buttons */
+            padding: var(--space-1);
+            font-size: var(--font-size-3);
+            flex-direction: column;
+            gap: 2px;
+            justify-content: center;
+            align-items: center;
+            border-radius: var(--radius-2);
+            background: var(--surface);
+            border: var(--border-width-1) solid var(--divider);
+            box-shadow: var(--shadow-1);
+            transition: all 0.2s ease;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .search-control-button:hover {
+            background: var(--surface-alt);
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .search-control-label {
+            font-size: 8px;
+            font-weight: var(--font-weight-bold);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            line-height: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
     }
 
@@ -379,14 +800,301 @@
     =========================== */
 
     .header-search {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Mobile animation states */
+    @media (width <= 768px) {
+        .header-search--mobile-expanded {
+            animation: mobile-search-expand 0.3s ease-out;
+        }
+
+        .header-search--mobile-collapsed {
+            animation: mobile-search-collapse 0.3s ease-in;
+        }
+    }
+
+    /* Mobile search animations */
+    @keyframes mobile-search-expand {
+        from {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes mobile-search-collapse {
+        from {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        to {
+            opacity: 0;
+            transform: translateY(-20px);
+        }
+    }
+
+    /* Mobile controls slide-in animation - enhanced */
+    @keyframes mobile-controls-slide-in {
+        from {
+            opacity: 0;
+            transform: translateY(15px) scale(0.95);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    /* Mobile controls slide-out animation */
+    @keyframes mobile-controls-slide-out {
+        from {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        to {
+            opacity: 0;
+            transform: translateY(-15px) scale(0.95);
+        }
+    }
+
+    /* Desktop - search input centered with controls flowing right */
+    @media (width >= 769px) {
+        .header-search {
+            /* Centering handled by absolute positioning in parent */
+            display: flex;
+            align-items: center;
+            gap: var(--space-3);
+            width: auto;
+            max-width: none;
+            padding: 0;
+            opacity: 1;
+            visibility: visible;
+            max-height: none;
+            overflow: visible;
+            transform: none;
+            animation: none;
+            white-space: nowrap;
+        }
+
+        /* Always show search interface on desktop - override ALL mobile states */
+        .header-search,
+        .header-search--mobile-collapsed,
+        .header-search--mobile-expanded {
+            display: flex;
+            opacity: 1;
+            visibility: visible;
+            max-height: none;
+            overflow: visible;
+            align-items: center;
+            width: auto;
+        }
+
+        /* Desktop input container - optimized width for centered layout */
+        .header-search__input-container {
+            max-width: 420px;
+            min-width: 300px;
+            width: 420px;
+            flex-shrink: 0;
+        }
+
+        /* Desktop controls positioned to flow right from search input */
+        .header-search__controls {
+            display: flex;
+            gap: var(--space-2);
+            flex-shrink: 0;
+            margin-left: 0;
+        }
+    }
+
+    /* ===========================
+       MOBILE SEARCH BACK BUTTON
+    =========================== */
+
+    .search-back-button {
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        padding: var(--space-2);
+        width: var(--control-min-height);
+        height: var(--control-min-height);
+        display: none; /* Hidden by default */
+        align-items: center;
+        justify-content: center;
+        border-radius: var(--radius-2);
+        color: var(--primary);
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+        margin-right: var(--space-2);
+        font-size: var(--font-size-3);
+    }
+
+    .search-back-button:hover {
+        background: color-mix(in oklab, var(--primary) 10%, transparent);
+        color: var(--primary);
+        transform: scale(1.05);
+    }
+
+    .search-back-button:focus-visible {
+        outline: var(--border-width-2) solid var(--primary);
+        outline-offset: var(--border-width-1);
+    }
+
+    /* Show back button on mobile expanded only */
+    @media (width <= 768px) {
+        .search-container.mobile-expanded .search-back-button {
+            display: flex;
+        }
+    }
+
+    /* Hide back button on desktop */
+    @media (width >= 769px) {
+        .search-back-button {
+            display: none;
+        }
+    }
+
+    .header-search__back-button {
         display: flex;
         align-items: center;
         justify-content: center;
-        position: relative;
-        width: 100%;
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 var(--space-4);
+        background: transparent;
+        border: none;
+        padding: var(--space-2);
+        margin-right: var(--space-2);
+        border-radius: var(--radius-2);
+        color: var(--primary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        min-width: 44px;
+        min-height: 44px;
+        flex-shrink: 0;
+        font-size: var(--font-size-3);
+    }
+
+    .header-search__back-button:hover {
+        background: color-mix(in oklab, var(--primary) 10%, transparent);
+        color: var(--primary);
+        border-radius: var(--radius-2);
+        transform: scale(1.05);
+    }
+
+    .header-search__back-button:focus-visible {
+        outline: var(--border-width-2) solid var(--primary);
+        outline-offset: var(--border-width-1);
+    }
+
+    /* Hide back button on desktop */
+    @media (width >= 769px) {
+        .header-search__back-button {
+            display: none;
+        }
+    }
+
+    /* ===========================
+       MOBILE RESPONSIVE STATES
+    =========================== */
+
+    /* Mobile collapsed state - completely hidden */
+    @media (width <= 768px) {
+        .header-search--mobile-collapsed {
+            display: none;
+        }
+
+        /* Mobile expanded state - clean header integration as permanent part */
+        .header-search--mobile-expanded {
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center all content horizontally */
+            gap: var(--space-2);
+            width: 100%;
+            background: transparent;
+            border-radius: 0;
+            box-shadow: none;
+            padding: 0;
+
+            /* Ensure mobile search stays within screen bounds */
+            max-width: 100vw;
+            box-sizing: border-box;
+        }
+
+        .header-search--mobile-expanded .header-search__input-container {
+            order: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+            gap: 0;
+            background: transparent;
+            padding: 0;
+            border-bottom: none;
+
+            /* Intelligent width management for mobile */
+            width: 100%;
+            max-width: 100%;
+            overflow: visible;
+            box-sizing: border-box;
+        }
+
+        /* Mobile input wrapper - ensure proper space allocation */
+        .header-search--mobile-expanded .header-search__input-wrapper {
+            flex: 1;
+            min-width: 0;
+
+            /* Reserve space for back button (~44px + margin) and potential clear button (~44px) */
+            max-width: calc(100% - 44px); /* Account for back button */
+        }
+
+        /* Mobile input field - prevent over-compression */
+        .header-search--mobile-expanded .header-search__input {
+            min-width: 120px; /* Minimum usable width */
+            flex: 1;
+        }
+
+        /* Controls row on mobile - intelligent space management with centered layout */
+        .header-search--mobile-expanded .header-search__controls {
+            display: flex;
+            order: 2;
+            width: 100%;
+            justify-content: center; /* Center the controls horizontally */
+            gap: var(--space-1);
+            padding: var(--space-2) 0;
+            background: transparent;
+            border-top: none;
+            margin-top: var(--space-1);
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            transition: all 0.3s ease; /* Add smooth transitions */
+            max-height: none;
+            overflow: hidden;
+
+            /* Prevent button overflow on narrow screens */
+            flex-wrap: nowrap;
+            min-height: 44px;
+        }
+
+        /* Remove focus-based visibility - controls are always there */
+        .header-search--mobile-expanded.header-search--controls-visible .header-search__controls {
+            /* No additional styles needed - controls are always visible */
+        }
+    }
+
+    /* Desktop - always show full interface */
+    @media (width >= 769px) {
+        .header-search--desktop {
+            display: flex;
+        }
     }
 
     /* ===========================
@@ -396,23 +1104,36 @@
     .header-search__input-container {
         position: relative;
         width: 100%;
-        max-width: 600px;
-        min-width: 300px;
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Desktop - constrained width */
+    @media (width >= 769px) {
+        .header-search__input-container {
+            max-width: 600px;
+            min-width: 300px;
+        }
     }
 
     .header-search__input-wrapper {
         position: relative;
         display: flex;
         align-items: center;
-        background: var(--input-bg);
+        background: var(--surface);
         border: var(--border-width-1) solid var(--divider);
         border-radius: var(--radius-3);
         transition:
             border-color 0.2s ease,
             box-shadow 0.2s ease;
-        min-height: 36px;
-        max-height: 36px;
-        overflow: hidden;
+        min-height: 44px;
+        max-height: 44px;
+        overflow: visible; /* Changed from hidden to visible to allow autocomplete dropdown */
+        box-shadow: var(--shadow-1);
+        flex: 1; /* Allow wrapper to grow and shrink with container */
+        min-width: 0; /* Enable proper flex shrinking */
     }
 
     .header-search__input-wrapper:focus-within {
@@ -428,9 +1149,11 @@
         font-size: var(--font-size-2);
         color: var(--text-color);
         outline: none;
-        min-height: 36px;
-        max-height: 36px;
+        min-height: 44px;
+        max-height: 44px;
         box-sizing: border-box;
+        font-weight: var(--font-weight-medium);
+        min-width: 0; /* Enable proper flex shrinking */
     }
 
     .header-search__input::placeholder {
@@ -503,6 +1226,9 @@
         border-radius: var(--radius-1);
     }
 
+    /* Removed mobile-specific margin to fix width expansion issue
+       Clear button now uses consistent spacing on all viewports */
+
     /* ===========================
        HEADER SEARCH CONTROLS
     =========================== */
@@ -511,9 +1237,71 @@
         display: flex;
         align-items: center;
         gap: var(--space-3);
-        position: absolute;
-        left: calc(50% + 300px + var(--space-4));
-        min-width: fit-content;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow-x: hidden; /* Prevent horizontal scroll on all breakpoints */
+    }
+
+    /* Mobile controls - intelligent space management for narrow screens */
+    @media (width <= 768px) {
+        .header-search__controls {
+            display: flex; /* Ensure flex display */
+            flex-flow: row nowrap; /* CRITICAL: Horizontal row layout */
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Smooth animations */
+            position: static;
+            width: 100%;
+            justify-content: center; /* CRITICAL: Center controls horizontally */
+            gap: var(--space-1);
+            padding: var(--space-2) 0 0 0;
+            margin: 0;
+            background: transparent;
+            border-top: none;
+            border-radius: 0;
+            box-shadow: none;
+
+            /* Prevent horizontal overflow on narrow screens */
+            overflow-x: hidden;
+
+            /* Enhanced mobile animations */
+            animation: mobile-controls-slide-in 0.3s ease-out;
+        }
+
+        /* Controls remain consistently visible - compatibility class */
+        .header-search__controls--visible {
+            /* Maintained for compatibility */
+        }
+    }
+
+    /* Desktop - controls always visible on the right with optimized spacing */
+    @media (width >= 769px) {
+        .header-search__controls {
+            position: static;
+            min-width: fit-content;
+            max-width: 300px;
+            opacity: 1;
+            visibility: visible;
+            transform: none;
+            gap: var(--space-1);
+            display: flex;
+            flex-shrink: 0;
+            background: transparent;
+            border: none;
+            overflow: visible;
+            flex-wrap: nowrap;
+            width: auto;
+        }
+
+        /* Ensure all control states are visible on desktop */
+        .header-search__controls,
+        .header-search__controls--visible {
+            display: flex;
+            opacity: 1;
+            visibility: visible;
+            background: transparent;
+            overflow: visible;
+        }
     }
 
     .header-search__control {
@@ -525,11 +1313,11 @@
     .header-search__control-button {
         display: flex;
         align-items: center;
-        gap: var(--space-2);
+        gap: var(--space-1);
         background: var(--surface);
         border: var(--border-width-1) solid var(--divider);
         border-radius: var(--radius-2);
-        padding: var(--space-2) var(--space-3);
+        padding: var(--space-2);
         color: var(--muted);
         cursor: pointer;
         transition: all 0.2s ease;
@@ -537,6 +1325,67 @@
         font-weight: var(--font-weight-medium);
         min-height: 44px;
         white-space: nowrap;
+        flex-direction: row;
+        justify-content: center;
+        min-width: 44px;
+    }
+
+    /* Desktop control buttons - more compact spacing */
+    @media (width >= 769px) {
+        .header-search__control-button {
+            padding: var(--space-1) var(--space-2);
+            gap: var(--space-1);
+            font-size: var(--font-size-1);
+        }
+    }
+
+    /* Mobile control buttons - optimized for narrow viewports with HORIZONTAL row layout */
+    @media (width <= 768px) {
+        .header-search--mobile-expanded .header-search__control-button {
+            padding: var(--space-1);
+            font-size: var(--font-size-3);
+            background: var(--surface);
+            border: var(--border-width-1) solid var(--divider);
+            box-shadow: var(--shadow-1);
+            font-weight: var(--font-weight-semibold);
+            min-width: 44px;
+            min-height: 44px;
+            justify-content: center;
+            align-items: center;
+            border-radius: var(--radius-2);
+            transition: all 0.2s ease;
+            flex-direction: column; /* Icons above text for compact mobile layout */
+            gap: 2px;
+            flex: 1;
+
+            /* Smart width management for 5 buttons on narrow screens */
+            max-width: calc((100vw - 100px) / 5);
+            overflow: hidden;
+        }
+
+        .header-search--mobile-expanded .header-search__control-button:hover {
+            background: var(--surface-alt);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .header-search--mobile-expanded .header-search__control-button:active {
+            background: var(--primary);
+            color: var(--primary-contrast);
+        }
+
+        /* Ultra-compact labels for mobile */
+        .header-search--mobile-expanded .header-search__control-label {
+            display: block;
+            font-size: 8px;
+            font-weight: var(--font-weight-bold);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            line-height: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     }
 
     .header-search__control-button:hover:not(:disabled) {
@@ -565,6 +1414,18 @@
         font-weight: var(--font-weight-medium);
     }
 
+    /* Hide labels on smaller desktop screens to save space */
+    @media (width >= 769px) and (width <= 1200px) {
+        .header-search__control-label {
+            display: none;
+        }
+
+        .header-search__control-button {
+            min-width: 40px;
+            padding: var(--space-1);
+        }
+    }
+
     /* ===========================
        AUTOCOMPLETE DROPDOWN
     =========================== */
@@ -582,6 +1443,39 @@
         max-height: 300px;
         overflow-y: auto;
         margin-top: var(--space-1);
+    }
+
+    /* Mobile autocomplete dropdown - proper specificity */
+    @media (width <= 768px) {
+        .header-search__input-container {
+            overflow: visible;
+        }
+
+        .header-search__input-wrapper {
+            overflow: visible;
+        }
+
+        .header-search--mobile-expanded .header-search__autocomplete {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            width: auto;
+            max-width: none;
+            z-index: calc(var(--z-dropdown) + 10);
+            max-height: 60vh;
+            box-shadow: 0 8px 24px rgb(0 0 0 / 25%);
+            margin-top: var(--space-1);
+            background: var(--surface);
+            border: var(--border-width-1) solid var(--divider);
+            border-radius: var(--radius-2);
+        }
+
+        /* Ensure mobile header containers don't clip the dropdown */
+        .header-search-expanded,
+        .header-search--mobile-expanded {
+            overflow: visible;
+        }
     }
 
     .header-search__autocomplete-item {
@@ -624,12 +1518,12 @@
 
     /* Tablet and smaller */
     @media (width <= 1024px) {
-        .header-search {
+        .header-search--desktop {
             gap: var(--space-3);
             padding: 0 var(--space-3);
         }
 
-        .header-search__controls {
+        .header-search--desktop .header-search__controls {
             position: static;
             left: auto;
             margin-left: var(--space-4);
@@ -646,38 +1540,73 @@
         }
     }
 
-    /* Mobile */
+    /* Enhanced Mobile Responsive Design */
     @media (width <= 768px) {
-        .header-search {
+        /* Collapsed Mobile Header */
+        .header-search--mobile.header-search--collapsed {
+            display: none; /* Hidden in collapsed state */
+        }
+
+        /* Expanded Mobile Header */
+        .header-search--mobile.header-search--expanded {
             flex-direction: column;
             gap: var(--space-3);
             padding: var(--space-2);
+            width: 100%;
+            max-width: none;
+            margin: 0;
         }
 
-        .header-search__input-container {
+        .header-search--mobile.header-search--expanded .header-search__input-container {
             order: 1;
             max-width: none;
+            min-width: 0;
         }
 
-        .header-search__controls {
+        .header-search--mobile.header-search--expanded .header-search__input-wrapper {
+            min-height: 44px;
+            max-height: 44px;
+        }
+
+        .header-search--mobile.header-search--expanded .header-search__input {
+            min-height: 44px;
+            max-height: 44px;
+            font-size: var(--font-size-2);
+        }
+
+        .header-search--mobile-expanded .header-search__controls {
+            display: flex; /* Show controls on mobile expanded */
+            flex-direction: row; /* CRITICAL: Horizontal row layout for mobile controls */
             order: 2;
-            position: static;
-            left: auto;
-            margin-left: 0;
-            justify-content: center;
-            flex-wrap: wrap;
+            width: 100%;
+            justify-content: center; /* CRITICAL: Center controls horizontally */
             gap: var(--space-1);
+            padding: var(--space-3);
+            background: transparent; /* Remove background for seamless integration */
+            border-top: none; /* Remove visual separation for seamless integration */
+            overflow-x: hidden; /* Prevent horizontal scroll */
+            box-sizing: border-box;
+
+            /* Mobile controls animation - enhanced */
+            animation: mobile-controls-slide-in 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            transform: translateY(0);
+            opacity: 1;
         }
 
-        .header-search__control-button {
-            min-width: 40px;
-            min-height: 40px;
+        .header-search--mobile-expanded .header-search__control-button {
+            min-width: 44px;
+            min-height: 44px;
             padding: var(--space-2);
         }
 
-        .header-search__button {
-            min-width: 40px;
-            min-height: 40px;
+        .header-search--mobile-expanded .header-search__button {
+            min-width: 44px;
+            min-height: 44px;
+        }
+
+        /* Ensure mobile controls have proper spacing */
+        .header-search--mobile-expanded .header-search__control {
+            min-width: 44px;
         }
     }
 

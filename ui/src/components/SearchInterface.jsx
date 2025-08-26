@@ -7,10 +7,20 @@ import usePopover from '../hooks/usePopover';
 import { useSearchCoordinator } from '../contexts/SearchCoordinatorProvider';
 
 /**
- * HeaderSearch - The main header search component that provides an immersive search experience
- * This component integrates seamlessly with the header design while maintaining full feature parity
+ * HeaderSearch - Unified search interface with responsive design
+ * Uses CSS media queries for mobile/desktop adaptation instead of conditional rendering
+ * @param {Function} onMobileCollapse - Function to collapse mobile search
+ * @param {boolean} searchInputFocused - Whether search input is currently focused
+ * @param {Function} onSearchInputFocus - Function called when search input receives focus
+ * @param {Function} onSearchInputBlur - Function called when search input loses focus
+ * @returns {JSX.Element} Search interface that adapts to mobile/desktop
  */
-function HeaderSearchInner() {
+function HeaderSearchInner({
+    onMobileCollapse,
+    searchInputFocused = false,
+    onSearchInputFocus,
+    onSearchInputBlur,
+}) {
     const location = useLocation();
     const headerSearchContext = useSearchCoordinator();
 
@@ -32,6 +42,7 @@ function HeaderSearchInner() {
     const searchButtonRef = useRef(null);
     const clearButtonRef = useRef(null);
     const autocompleteRef = useRef();
+    const headerSearchRef = useRef(null);
 
     // Popover states for header controls
     const modulePopover = usePopover(false);
@@ -180,12 +191,57 @@ function HeaderSearchInner() {
         return () => document.removeEventListener('click', handleClickOutside);
     }, [showAutocomplete]);
 
+    // Handle click outside mobile search area to close it
+    useEffect(() => {
+        const handleClickOutsideMobileSearch = e => {
+            // Don't close if clicking on popover content (which is rendered in portals)
+            const clickedElement = e.target;
+
+            // Check if click is on a popover element
+            const isPopoverClick =
+                clickedElement.closest('.popover') ||
+                clickedElement.closest('[role="dialog"]') ||
+                clickedElement.closest('.btn-tooltip');
+
+            // Check if click is on autocomplete dropdown
+            const isAutocompleteClick = clickedElement.closest('.header-search__autocomplete');
+
+            if (isPopoverClick || isAutocompleteClick) {
+                return; // Don't close mobile search for popover/autocomplete interactions
+            }
+
+            // Close mobile search if clicking outside the header search area
+            if (
+                headerSearchRef.current &&
+                !headerSearchRef.current.contains(e.target) &&
+                onMobileCollapse
+            ) {
+                onMobileCollapse();
+            }
+        };
+
+        // Add small delay to avoid immediate closure when opening
+        const timeoutId = setTimeout(() => {
+            document.addEventListener('click', handleClickOutsideMobileSearch);
+        }, 100);
+
+        return () => {
+            clearTimeout(timeoutId);
+            document.removeEventListener('click', handleClickOutsideMobileSearch);
+        };
+    }, [onMobileCollapse]);
+
     // Handle search execution
     const handleSearch = useCallback(() => {
         // Always execute search, even for empty/blank terms to return all results
         executeHeaderSearch(searchTerm.trim());
         setShowAutocomplete(false);
-    }, [searchTerm, executeHeaderSearch]);
+
+        // Auto-close mobile search after search execution if on mobile
+        if (window.innerWidth <= 768 && onMobileCollapse) {
+            onMobileCollapse();
+        }
+    }, [searchTerm, executeHeaderSearch, onMobileCollapse]);
 
     // Handle clear
     const handleClear = useCallback(() => {
@@ -567,807 +623,902 @@ function HeaderSearchInner() {
     const sortOptions = searchConfig?.sortOptions || [];
     const filters = searchConfig?.filters || [];
 
-    // Early returns after all hooks are called
-    if (!isSearchPage || !isSearchPage()) {
+    // Early returns after all hooks are called - only render on search pages
+    if (!isSearchPage()) {
         return null;
     }
 
+    // Single search interface with responsive CSS classes
+    const headerSearchClasses = [
+        'search-interface',
+        searchInputFocused ? 'search-interface--focused' : '',
+    ]
+        .filter(Boolean)
+        .join(' ');
+
     return (
-        <div className="header-search">
-            {/* Search Input Section - Centered */}
-            <div className="header-search__input-container">
-                <div className="header-search__input-wrapper">
-                    <input
-                        ref={searchInputRef}
-                        type="text"
-                        className="header-search__input"
-                        placeholder={getPlaceholder()}
-                        value={searchTerm}
-                        onChange={e => setSearchTerm(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        onFocus={() =>
-                            searchTerm.length >= 2 &&
-                            setShowAutocomplete(autocompleteSuggestions.length > 0)
-                        }
-                        disabled={isSearching}
-                        autoComplete="off"
-                        spellCheck={false}
-                        aria-label={getPlaceholder()}
-                        aria-describedby="header-search-instructions"
-                        aria-expanded={showAutocomplete}
-                        aria-owns={showAutocomplete ? 'header-search-autocomplete' : undefined}
-                        role="combobox"
-                    />
+        <div ref={headerSearchRef} className={headerSearchClasses}>
+            {/* Three-section flex layout: Left spacer - Search input (centered) - Controls + Right spacer */}
+            <div className="search-layout">
+                {/* Left spacer for centering */}
+                <div className="search-layout__spacer"></div>
 
-                    {/* Search button */}
-                    <button
-                        ref={searchButtonRef}
-                        type="button"
-                        className="header-search__button header-search__button--search"
-                        onClick={handleSearch}
-                        disabled={isSearching}
-                        onMouseEnter={() => setTooltip('search', true)}
-                        onMouseLeave={() => setTooltip('search', false)}
-                        onFocus={() => setTooltip('search', true)}
-                        onBlur={() => setTooltip('search', false)}
-                    >
-                        {getIcon(isSearching ? 'mi:hourglass_empty' : 'mi:search')}
-                    </button>
-                    <TooltipFactory
-                        anchor={searchButtonRef.current}
-                        text="Search"
-                        show={showTooltips.search}
-                    />
+                {/* Centered search input section */}
+                <div className="search-layout__center">
+                    <div className="search-input-container">
+                        {/* Mobile Back Button - Always present, shown/hidden via CSS media queries */}
+                        <button
+                            className="search-back-button"
+                            type="button"
+                            aria-label="Close search"
+                            onClick={onMobileCollapse}
+                        >
+                            {getIcon('mi:arrow_back')}
+                        </button>
+                        <div className="search-input-wrapper">
+                            <input
+                                ref={searchInputRef}
+                                type="text"
+                                className="search-input"
+                                placeholder={getPlaceholder()}
+                                value={searchTerm}
+                                onChange={e => setSearchTerm(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                                onFocus={() => {
+                                    // Show autocomplete if suggestions exist
+                                    if (searchTerm.length >= 2) {
+                                        setShowAutocomplete(autocompleteSuggestions.length > 0);
+                                    }
+                                    // Trigger progressive disclosure of controls
+                                    if (onSearchInputFocus) {
+                                        onSearchInputFocus();
+                                    }
+                                }}
+                                onBlur={() => {
+                                    // Delay blur to allow for interactions with controls
+                                    setTimeout(() => {
+                                        if (onSearchInputBlur) {
+                                            onSearchInputBlur();
+                                        }
+                                    }, 150);
+                                }}
+                                disabled={isSearching}
+                                autoComplete="off"
+                                spellCheck={false}
+                                aria-label={getPlaceholder()}
+                                aria-describedby="search-instructions"
+                                aria-expanded={showAutocomplete}
+                                aria-owns={showAutocomplete ? 'search-autocomplete' : undefined}
+                                role="combobox"
+                            />
 
-                    {/* Clear button */}
-                    {searchTerm && (
-                        <>
+                            {/* Search button */}
                             <button
-                                ref={clearButtonRef}
+                                ref={searchButtonRef}
                                 type="button"
-                                className="header-search__button header-search__button--clear"
-                                onClick={handleClear}
-                                onMouseEnter={() => setTooltip('clear', true)}
-                                onMouseLeave={() => setTooltip('clear', false)}
-                                onFocus={() => setTooltip('clear', true)}
-                                onBlur={() => setTooltip('clear', false)}
+                                className="search-button search-button--search"
+                                onClick={handleSearch}
+                                disabled={isSearching}
+                                onMouseEnter={() => setTooltip('search', true)}
+                                onMouseLeave={() => setTooltip('search', false)}
+                                onFocus={() => setTooltip('search', true)}
+                                onBlur={() => setTooltip('search', false)}
                             >
-                                {getIcon('mi:close')}
+                                {getIcon(isSearching ? 'mi:hourglass_empty' : 'mi:search')}
                             </button>
                             <TooltipFactory
-                                anchor={clearButtonRef.current}
-                                text="Clear search"
-                                show={showTooltips.clear}
+                                anchor={searchButtonRef.current}
+                                text="Search"
+                                show={showTooltips.search}
                             />
-                        </>
-                    )}
-                </div>
 
-                {/* Autocomplete dropdown */}
-                {showAutocomplete && autocompleteSuggestions.length > 0 && (
-                    <div
-                        ref={autocompleteRef}
-                        className="header-search__autocomplete"
-                        id="header-search-autocomplete"
-                        role="listbox"
-                        aria-label="Search suggestions"
-                    >
-                        {autocompleteSuggestions.map((suggestion, index) => (
+                            {/* Clear button */}
+                            {searchTerm && (
+                                <>
+                                    <button
+                                        ref={clearButtonRef}
+                                        type="button"
+                                        className="search-button search-button--clear"
+                                        onClick={handleClear}
+                                        onMouseEnter={() => setTooltip('clear', true)}
+                                        onMouseLeave={() => setTooltip('clear', false)}
+                                        onFocus={() => setTooltip('clear', true)}
+                                        onBlur={() => setTooltip('clear', false)}
+                                    >
+                                        {getIcon('mi:close')}
+                                    </button>
+                                    <TooltipFactory
+                                        anchor={clearButtonRef.current}
+                                        text="Clear search"
+                                        show={showTooltips.clear}
+                                    />
+                                </>
+                            )}
+                        </div>
+
+                        {/* Autocomplete dropdown */}
+                        {showAutocomplete && autocompleteSuggestions.length > 0 && (
                             <div
-                                key={suggestion.id || index}
-                                className={`header-search__autocomplete-item${
-                                    index === selectedSuggestionIndex
-                                        ? ' header-search__autocomplete-item--highlighted'
-                                        : ''
-                                }`}
-                                onClick={() => selectSuggestion(suggestion)}
-                                onMouseEnter={() => setSelectedSuggestionIndex(index)}
-                                role="option"
-                                aria-selected={index === selectedSuggestionIndex}
-                                id={`header-search-option-${index}`}
+                                ref={autocompleteRef}
+                                className="search-autocomplete"
+                                id="search-autocomplete"
+                                role="listbox"
+                                aria-label="Search suggestions"
                             >
-                                <div className="header-search__autocomplete-title">
-                                    {suggestion.title}
-                                </div>
-                                <div className="header-search__autocomplete-subtitle">
-                                    {suggestion.year} • {suggestion.type}
-                                    {suggestion.countType &&
-                                        suggestion.instanceCount > 0 &&
-                                        ` • ${suggestion.instanceCount} ${suggestion.countType}`}
-                                </div>
+                                {autocompleteSuggestions.map((suggestion, index) => (
+                                    <div
+                                        key={suggestion.id || index}
+                                        className={`search-autocomplete-item${
+                                            index === selectedSuggestionIndex
+                                                ? ' search-autocomplete-item--highlighted'
+                                                : ''
+                                        }`}
+                                        onClick={() => selectSuggestion(suggestion)}
+                                        onMouseEnter={() => setSelectedSuggestionIndex(index)}
+                                        role="option"
+                                        aria-selected={index === selectedSuggestionIndex}
+                                        id={`search-option-${index}`}
+                                    >
+                                        <div className="search-autocomplete-title">
+                                            {suggestion.title}
+                                        </div>
+                                        <div className="search-autocomplete-subtitle">
+                                            {suggestion.year} • {suggestion.type}
+                                            {suggestion.countType &&
+                                                suggestion.instanceCount > 0 &&
+                                                ` • ${suggestion.instanceCount} ${suggestion.countType}`}
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
-                        ))}
+                        )}
+
+                        {/* Screen reader instructions */}
+                        <div id="search-instructions" className="sr-only" aria-live="polite">
+                            Type to search, use arrow keys to navigate suggestions, press Enter to
+                            select
+                        </div>
                     </div>
-                )}
-
-                {/* Screen reader instructions */}
-                <div id="header-search-instructions" className="sr-only" aria-live="polite">
-                    Type to search, use arrow keys to navigate suggestions, press Enter to select
-                </div>
-            </div>
-
-            {/* Controls Section */}
-            <div className="header-search__controls">
-                {/* Module Selector */}
-                {sources.length > 0 && !shouldHideModuleSelector() && (
-                    <div className="header-search__control">
-                        <button
-                            ref={modulePopover.triggerRef}
-                            type="button"
-                            className={`header-search__control-button${modulePopover.show ? ' active' : ''}`}
-                            onClick={modulePopover.toggle}
-                            onMouseEnter={() => setTooltip('module', true)}
-                            onMouseLeave={() => setTooltip('module', false)}
-                            onFocus={() => setTooltip('module', true)}
-                            onBlur={() => setTooltip('module', false)}
-                        >
-                            {getIcon('mi:apps')}
-                            <span className="header-search__control-label">{getModuleLabel()}</span>
-                        </button>
-                        <TooltipFactory
-                            anchor={modulePopover.triggerRef.current}
-                            text="Select source"
-                            show={showTooltips.module && !modulePopover.show}
-                        />
-
-                        <Popover
-                            triggerRef={modulePopover.triggerRef}
-                            show={modulePopover.show}
-                            onClose={modulePopover.close}
-                            variant="selector"
-                            position="bottom"
-                            ariaLabel="Select source"
-                        >
-                            <div className="popover__title">Select {getModuleLabel()}</div>
-                            <ul className="popover__list">
-                                {sources.map(source => (
-                                    <li key={source.key}>
-                                        <button
-                                            type="button"
-                                            className={`popover__list-item${
-                                                currentSource === source.key
-                                                    ? ' popover__list-item--selected'
-                                                    : ''
-                                            }`}
-                                            onClick={() => handleSourceChange(source.key)}
-                                        >
-                                            {source.icon && (
-                                                <span className="popover__list-icon">
-                                                    {getIcon(source.icon)}
-                                                </span>
-                                            )}
-                                            <span>{source.label}</span>
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        </Popover>
-                    </div>
-                )}
-
-                {/* View Toggle */}
-                <div className="header-search__control">
-                    <button
-                        ref={viewPopover.triggerRef}
-                        type="button"
-                        className={`header-search__control-button${viewPopover.show ? ' active' : ''}`}
-                        onClick={viewPopover.toggle}
-                        onMouseEnter={() => setTooltip('view', true)}
-                        onMouseLeave={() => setTooltip('view', false)}
-                        onFocus={() => setTooltip('view', true)}
-                        onBlur={() => setTooltip('view', false)}
-                    >
-                        {getIcon(currentView === 'grid' ? 'mi:grid_view' : 'mi:list')}
-                    </button>
-                    <TooltipFactory
-                        anchor={viewPopover.triggerRef.current}
-                        text="Select view mode"
-                        show={showTooltips.view && !viewPopover.show}
-                    />
-
-                    <Popover
-                        triggerRef={viewPopover.triggerRef}
-                        show={viewPopover.show}
-                        onClose={viewPopover.close}
-                        variant="actions"
-                        position="bottom"
-                        ariaLabel="Select view mode"
-                    >
-                        <div className="popover__title">View Mode</div>
-                        <ul className="popover__list">
-                            <li>
-                                <button
-                                    type="button"
-                                    className={`popover__list-item${
-                                        currentView === 'grid'
-                                            ? ' popover__list-item--selected'
-                                            : ''
-                                    }`}
-                                    onClick={() => handleViewChange('grid')}
-                                >
-                                    <span className="popover__list-icon">
-                                        {getIcon('mi:grid_view')}
-                                    </span>
-                                    <span>Grid View</span>
-                                </button>
-                            </li>
-                            <li>
-                                <button
-                                    type="button"
-                                    className={`popover__list-item${
-                                        currentView === 'list'
-                                            ? ' popover__list-item--selected'
-                                            : ''
-                                    }`}
-                                    onClick={() => handleViewChange('list')}
-                                >
-                                    <span className="popover__list-icon">{getIcon('mi:list')}</span>
-                                    <span>List View</span>
-                                </button>
-                            </li>
-                        </ul>
-                    </Popover>
                 </div>
 
-                {/* Sort Options */}
-                {sortOptions.length > 0 && (
-                    <div className="header-search__control">
-                        <button
-                            ref={sortPopover.triggerRef}
-                            type="button"
-                            className={`header-search__control-button${sortPopover.show ? ' active' : ''}`}
-                            onClick={sortPopover.toggle}
-                            onMouseEnter={() => setTooltip('sort', true)}
-                            onMouseLeave={() => setTooltip('sort', false)}
-                            onFocus={() => setTooltip('sort', true)}
-                            onBlur={() => setTooltip('sort', false)}
-                        >
-                            {getIcon('mi:sort')}
-                        </button>
-                        <TooltipFactory
-                            anchor={sortPopover.triggerRef.current}
-                            text="Sort options"
-                            show={showTooltips.sort && !sortPopover.show}
-                        />
+                {/* Right section: Controls + Right spacer */}
+                <div className="search-layout__right">
+                    {/* Controls Section - Responsive visibility via CSS */}
+                    <div className="search-controls">
+                        {/* Module Selector */}
+                        {sources.length > 0 && !shouldHideModuleSelector() && (
+                            <div className="search-control">
+                                <button
+                                    ref={modulePopover.triggerRef}
+                                    type="button"
+                                    className={`search-control-button${modulePopover.show ? ' active' : ''}`}
+                                    onClick={modulePopover.toggle}
+                                    onMouseEnter={() => setTooltip('module', true)}
+                                    onMouseLeave={() => setTooltip('module', false)}
+                                    onFocus={() => setTooltip('module', true)}
+                                    onBlur={() => setTooltip('module', false)}
+                                >
+                                    {getIcon('mi:apps')}
+                                    <span className="search-control-label">MOD</span>
+                                </button>
+                                <TooltipFactory
+                                    anchor={modulePopover.triggerRef.current}
+                                    text={
+                                        getModuleLabel() === 'Modules' ? 'Select Module' : 'Source'
+                                    }
+                                    show={showTooltips.module && !modulePopover.show}
+                                />
 
-                        <Popover
-                            triggerRef={sortPopover.triggerRef}
-                            show={sortPopover.show}
-                            onClose={sortPopover.close}
-                            variant="actions"
-                            position="bottom"
-                            ariaLabel="Select sort order"
-                        >
-                            <div className="popover__title">Sort By</div>
-                            <ul className="popover__list">
-                                {sortOptions.map(option => (
-                                    <li key={option.value}>
-                                        <button
-                                            type="button"
-                                            className={`popover__list-item${
-                                                currentSort === option.value
-                                                    ? ' popover__list-item--selected'
-                                                    : ''
-                                            }`}
-                                            onClick={() => handleSortChange(option.value)}
-                                        >
-                                            <span>{option.label}</span>
-                                        </button>
-                                    </li>
-                                ))}
-                            </ul>
-                        </Popover>
-                    </div>
-                )}
-
-                {/* Filter Options */}
-                {filters.length > 0 && (
-                    <div className="header-search__control">
-                        <button
-                            ref={filterPopover.triggerRef}
-                            type="button"
-                            className={`header-search__control-button${filterPopover.show ? ' active' : ''}`}
-                            onClick={filterPopover.toggle}
-                            onMouseEnter={() => setTooltip('filter', true)}
-                            onMouseLeave={() => setTooltip('filter', false)}
-                            onFocus={() => setTooltip('filter', true)}
-                            onBlur={() => setTooltip('filter', false)}
-                        >
-                            {getIcon('mi:filter_list')}
-                        </button>
-                        <TooltipFactory
-                            anchor={filterPopover.triggerRef.current}
-                            text="Filter options"
-                            show={showTooltips.filter && !filterPopover.show}
-                        />
-
-                        <Popover
-                            triggerRef={filterPopover.triggerRef}
-                            show={filterPopover.show}
-                            onClose={filterPopover.close}
-                            variant="actions"
-                            position="bottom"
-                            ariaLabel="Filter options"
-                        >
-                            <div className="popover__title">Filters</div>
-                            <div className="popover__content">
-                                {filters.map(filter => (
-                                    <div key={filter.key} className="filter-group">
-                                        <div className="filter-label">{filter.label}</div>
-                                        <div className="filter-options">
-                                            {filter.options?.map(option => (
+                                <Popover
+                                    triggerRef={modulePopover.triggerRef}
+                                    show={modulePopover.show}
+                                    onClose={modulePopover.close}
+                                    variant="selector"
+                                    position="bottom"
+                                    ariaLabel="Select source"
+                                >
+                                    <div className="popover__title">Select {getModuleLabel()}</div>
+                                    <ul className="popover__list">
+                                        {sources.map(source => (
+                                            <li key={source.key}>
                                                 <button
-                                                    key={option.value}
                                                     type="button"
-                                                    className={`filter-option${
-                                                        activeFilters[filter.key] === option.value
-                                                            ? ' active'
+                                                    className={`popover__list-item${
+                                                        currentSource === source.key
+                                                            ? ' popover__list-item--selected'
                                                             : ''
                                                     }`}
-                                                    onClick={() =>
-                                                        handleFilterChange(filter.key, option.value)
-                                                    }
+                                                    onClick={() => handleSourceChange(source.key)}
                                                 >
-                                                    {option.label}
+                                                    {source.icon && (
+                                                        <span className="popover__list-icon">
+                                                            {getIcon(source.icon)}
+                                                        </span>
+                                                    )}
+                                                    <span>{source.label}</span>
                                                 </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                ))}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </Popover>
                             </div>
-                        </Popover>
-                    </div>
-                )}
+                        )}
 
-                {/* Refresh Button - only for MediaSearch */}
-                {location.pathname.startsWith('/media/search') && (
-                    <div className="header-search__control">
-                        <button
-                            ref={refreshPopover.triggerRef}
-                            type="button"
-                            className={`header-search__control-button${refreshPopover.show ? ' active' : ''}`}
-                            onClick={refreshPopover.toggle}
-                            onMouseEnter={() => setTooltip('refresh', true)}
-                            onMouseLeave={() => setTooltip('refresh', false)}
-                            onFocus={() => setTooltip('refresh', true)}
-                            onBlur={() => setTooltip('refresh', false)}
-                            disabled={false}
-                        >
-                            {getIcon('mi:refresh')}
-                        </button>
-                        <TooltipFactory
-                            anchor={refreshPopover.triggerRef.current}
-                            text="Refresh database"
-                            show={showTooltips.refresh && !refreshPopover.show}
-                        />
-
-                        <Popover
-                            triggerRef={refreshPopover.triggerRef}
-                            show={refreshPopover.show}
-                            onClose={refreshPopover.close}
-                            variant="actions"
-                            position="bottom"
-                            ariaLabel="Refresh database options"
-                            className="popover--wide"
-                            preventBodyScroll={true}
-                        >
-                            <div
-                                className="refresh-popover-header"
-                                style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'center',
-                                    marginBottom: 'var(--space-4)',
-                                }}
+                        {/* View Toggle */}
+                        <div className="search-control">
+                            <button
+                                ref={viewPopover.triggerRef}
+                                type="button"
+                                className={`search-control-button${viewPopover.show ? ' active' : ''}`}
+                                onClick={viewPopover.toggle}
+                                onMouseEnter={() => setTooltip('view', true)}
+                                onMouseLeave={() => setTooltip('view', false)}
+                                onFocus={() => setTooltip('view', true)}
+                                onBlur={() => setTooltip('view', false)}
                             >
-                                <div className="popover__title">Refresh Database</div>
-                                <div
-                                    className="overall-select-buttons"
-                                    style={{ display: 'flex', gap: 'var(--space-2)' }}
+                                {getIcon(currentView === 'grid' ? 'mi:grid_view' : 'mi:list')}
+                                <span className="search-control-label">
+                                    {currentView === 'grid' ? 'GRID' : 'LIST'}
+                                </span>
+                            </button>
+                            <TooltipFactory
+                                anchor={viewPopover.triggerRef.current}
+                                text="Select view mode"
+                                show={showTooltips.view && !viewPopover.show}
+                            />
+
+                            <Popover
+                                triggerRef={viewPopover.triggerRef}
+                                show={viewPopover.show}
+                                onClose={viewPopover.close}
+                                variant="actions"
+                                position="bottom"
+                                ariaLabel="Select view mode"
+                            >
+                                <div className="popover__title">View Mode</div>
+                                <ul className="popover__list">
+                                    <li>
+                                        <button
+                                            type="button"
+                                            className={`popover__list-item${
+                                                currentView === 'grid'
+                                                    ? ' popover__list-item--selected'
+                                                    : ''
+                                            }`}
+                                            onClick={() => handleViewChange('grid')}
+                                        >
+                                            <span className="popover__list-icon">
+                                                {getIcon('mi:grid_view')}
+                                            </span>
+                                            <span>Grid View</span>
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button
+                                            type="button"
+                                            className={`popover__list-item${
+                                                currentView === 'list'
+                                                    ? ' popover__list-item--selected'
+                                                    : ''
+                                            }`}
+                                            onClick={() => handleViewChange('list')}
+                                        >
+                                            <span className="popover__list-icon">
+                                                {getIcon('mi:list')}
+                                            </span>
+                                            <span>List View</span>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </Popover>
+                        </div>
+
+                        {/* Sort Options */}
+                        {sortOptions.length > 0 && (
+                            <div className="search-control">
+                                <button
+                                    ref={sortPopover.triggerRef}
+                                    type="button"
+                                    className={`search-control-button${sortPopover.show ? ' active' : ''}`}
+                                    onClick={sortPopover.toggle}
+                                    onMouseEnter={() => setTooltip('sort', true)}
+                                    onMouseLeave={() => setTooltip('sort', false)}
+                                    onFocus={() => setTooltip('sort', true)}
+                                    onBlur={() => setTooltip('sort', false)}
                                 >
-                                    <button
-                                        type="button"
-                                        className="select-icon-btn"
-                                        onClick={handleSelectAllOverall}
-                                        title="Select all instances and libraries"
-                                    >
-                                        {getIcon('mi:select_all')}
-                                    </button>
-                                    <button
-                                        type="button"
-                                        className="select-icon-btn"
-                                        onClick={handleDeselectAllOverall}
-                                        title="Deselect everything"
-                                    >
-                                        {getIcon('mi:clear')}
-                                    </button>
-                                </div>
+                                    {getIcon('mi:sort')}
+                                    <span className="search-control-label">SORT</span>
+                                </button>
+                                <TooltipFactory
+                                    anchor={sortPopover.triggerRef.current}
+                                    text="Sort options"
+                                    show={showTooltips.sort && !sortPopover.show}
+                                />
+
+                                <Popover
+                                    triggerRef={sortPopover.triggerRef}
+                                    show={sortPopover.show}
+                                    onClose={sortPopover.close}
+                                    variant="actions"
+                                    position="bottom"
+                                    ariaLabel="Select sort order"
+                                >
+                                    <div className="popover__title">Sort By</div>
+                                    <ul className="popover__list">
+                                        {sortOptions.map(option => (
+                                            <li key={option.value}>
+                                                <button
+                                                    type="button"
+                                                    className={`popover__list-item${
+                                                        currentSort === option.value
+                                                            ? ' popover__list-item--selected'
+                                                            : ''
+                                                    }`}
+                                                    onClick={() => handleSortChange(option.value)}
+                                                >
+                                                    <span>{option.label}</span>
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </Popover>
                             </div>
-                            <div className="refresh-popover-content">
-                                {/* Radarr Instances Section */}
-                                {availableInstances.radarrInstances.length > 0 ? (
-                                    <div
-                                        className="refresh-section"
-                                        style={{ marginBottom: 'var(--space-4)' }}
-                                    >
-                                        <div
-                                            className="refresh-section-header"
-                                            style={{
-                                                display: 'flex',
-                                                justifyContent: 'space-between',
-                                                alignItems: 'center',
-                                                marginBottom: 'var(--space-2)',
-                                            }}
-                                        >
-                                            <h5
-                                                style={{
-                                                    margin: 0,
-                                                    fontSize: 'var(--font-size-2)',
-                                                    fontWeight: 'var(--font-weight-semibold)',
-                                                }}
-                                            >
-                                                Radarr Instances
-                                            </h5>
-                                            <div
-                                                className="select-all-buttons"
-                                                style={{ display: 'flex', gap: 'var(--space-1)' }}
-                                            >
-                                                <button
-                                                    type="button"
-                                                    className="select-icon-btn"
-                                                    onClick={handleSelectAllRadarr}
-                                                    title="Select all Radarr instances"
-                                                >
-                                                    {getIcon('mi:check_box')}
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className="select-icon-btn"
-                                                    onClick={handleDeselectAllRadarr}
-                                                    title="Deselect all Radarr instances"
-                                                >
-                                                    {getIcon('mi:check_box_outline_blank')}
-                                                </button>
-                                            </div>
-                                        </div>
-                                        {availableInstances.radarrInstances.map(instance => (
-                                            <div
-                                                key={instance}
-                                                className="checkbox-row popover__list-item"
-                                                onClick={() =>
-                                                    handleRefreshOptionToggle(
-                                                        'arrInstances',
-                                                        instance
-                                                    )
-                                                }
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 'var(--space-2)',
-                                                }}
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    id={`header-radarr-${instance}`}
-                                                    checked={selectedRefreshOptions.arrInstances.includes(
-                                                        instance
-                                                    )}
-                                                    onChange={() => {}}
-                                                    onClick={e => e.stopPropagation()}
-                                                />
-                                                <label
-                                                    htmlFor={`header-radarr-${instance}`}
-                                                    style={{ flex: 1, cursor: 'pointer' }}
-                                                >
-                                                    {humanize(instance)}
-                                                </label>
+                        )}
+
+                        {/* Filter Options */}
+                        {filters.length > 0 && (
+                            <div className="search-control">
+                                <button
+                                    ref={filterPopover.triggerRef}
+                                    type="button"
+                                    className={`search-control-button${filterPopover.show ? ' active' : ''}`}
+                                    onClick={filterPopover.toggle}
+                                    onMouseEnter={() => setTooltip('filter', true)}
+                                    onMouseLeave={() => setTooltip('filter', false)}
+                                    onFocus={() => setTooltip('filter', true)}
+                                    onBlur={() => setTooltip('filter', false)}
+                                >
+                                    {getIcon('mi:tune')}
+                                    <span className="search-control-label">FILTER</span>
+                                </button>
+                                <TooltipFactory
+                                    anchor={filterPopover.triggerRef.current}
+                                    text="Filter options"
+                                    show={showTooltips.filter && !filterPopover.show}
+                                />
+
+                                <Popover
+                                    triggerRef={filterPopover.triggerRef}
+                                    show={filterPopover.show}
+                                    onClose={filterPopover.close}
+                                    variant="actions"
+                                    position="bottom"
+                                    ariaLabel="Filter options"
+                                >
+                                    <div className="popover__title">Filters</div>
+                                    <div className="popover__content">
+                                        {filters.map(filter => (
+                                            <div key={filter.key} className="filter-group">
+                                                <div className="filter-label">{filter.label}</div>
+                                                <div className="filter-options">
+                                                    {filter.options?.map(option => (
+                                                        <button
+                                                            key={option.value}
+                                                            type="button"
+                                                            className={`filter-option${
+                                                                activeFilters[filter.key] ===
+                                                                option.value
+                                                                    ? ' active'
+                                                                    : ''
+                                                            }`}
+                                                            onClick={() =>
+                                                                handleFilterChange(
+                                                                    filter.key,
+                                                                    option.value
+                                                                )
+                                                            }
+                                                        >
+                                                            {option.label}
+                                                        </button>
+                                                    ))}
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
-                                ) : (
-                                    <div
-                                        className="refresh-section"
-                                        style={{ marginBottom: 'var(--space-4)' }}
-                                    >
-                                        <h5
-                                            style={{
-                                                margin: '0 0 var(--space-2) 0',
-                                                fontSize: 'var(--font-size-2)',
-                                                fontWeight: 'var(--font-weight-semibold)',
-                                            }}
-                                        >
-                                            Radarr Instances
-                                        </h5>
-                                        <div
-                                            style={{
-                                                color: 'var(--text-secondary)',
-                                                fontSize: 'var(--font-size-1)',
-                                                fontStyle: 'italic',
-                                            }}
-                                        >
-                                            No Radarr instances configured
-                                        </div>
-                                    </div>
-                                )}
+                                </Popover>
+                            </div>
+                        )}
 
-                                {/* Sonarr Instances Section */}
-                                {availableInstances.sonarrInstances.length > 0 ? (
-                                    <div
-                                        className="refresh-section"
-                                        style={{ marginBottom: 'var(--space-4)' }}
-                                    >
-                                        <div
-                                            className="refresh-section-header"
-                                            style={{
-                                                display: 'flex',
-                                                justifyContent: 'space-between',
-                                                alignItems: 'center',
-                                                marginBottom: 'var(--space-2)',
-                                            }}
-                                        >
-                                            <h5
-                                                style={{
-                                                    margin: 0,
-                                                    fontSize: 'var(--font-size-2)',
-                                                    fontWeight: 'var(--font-weight-semibold)',
-                                                }}
-                                            >
-                                                Sonarr Instances
-                                            </h5>
-                                            <div
-                                                className="select-all-buttons"
-                                                style={{ display: 'flex', gap: 'var(--space-1)' }}
-                                            >
-                                                <button
-                                                    type="button"
-                                                    className="select-icon-btn"
-                                                    onClick={handleSelectAllSonarr}
-                                                    title="Select all Sonarr instances"
-                                                >
-                                                    {getIcon('mi:check_box')}
-                                                </button>
-                                                <button
-                                                    type="button"
-                                                    className="select-icon-btn"
-                                                    onClick={handleDeselectAllSonarr}
-                                                    title="Deselect all Sonarr instances"
-                                                >
-                                                    {getIcon('mi:check_box_outline_blank')}
-                                                </button>
-                                            </div>
-                                        </div>
-                                        {availableInstances.sonarrInstances.map(instance => (
-                                            <div
-                                                key={instance}
-                                                className="checkbox-row popover__list-item"
-                                                onClick={() =>
-                                                    handleRefreshOptionToggle(
-                                                        'arrInstances',
-                                                        instance
-                                                    )
-                                                }
-                                                style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 'var(--space-2)',
-                                                }}
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    id={`header-sonarr-${instance}`}
-                                                    checked={selectedRefreshOptions.arrInstances.includes(
-                                                        instance
-                                                    )}
-                                                    onChange={() => {}}
-                                                    onClick={e => e.stopPropagation()}
-                                                />
-                                                <label
-                                                    htmlFor={`header-sonarr-${instance}`}
-                                                    style={{ flex: 1, cursor: 'pointer' }}
-                                                >
-                                                    {humanize(instance)}
-                                                </label>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div
-                                        className="refresh-section"
-                                        style={{ marginBottom: 'var(--space-4)' }}
-                                    >
-                                        <h5
-                                            style={{
-                                                margin: '0 0 var(--space-2) 0',
-                                                fontSize: 'var(--font-size-2)',
-                                                fontWeight: 'var(--font-weight-semibold)',
-                                            }}
-                                        >
-                                            Sonarr Instances
-                                        </h5>
-                                        <div
-                                            style={{
-                                                color: 'var(--text-secondary)',
-                                                fontSize: 'var(--font-size-1)',
-                                                fontStyle: 'italic',
-                                            }}
-                                        >
-                                            No Sonarr instances configured
-                                        </div>
-                                    </div>
-                                )}
+                        {/* Refresh Button - only for MediaSearch */}
+                        {location.pathname.startsWith('/media/search') && (
+                            <div className="search-control">
+                                <button
+                                    ref={refreshPopover.triggerRef}
+                                    type="button"
+                                    className={`search-control-button${refreshPopover.show ? ' active' : ''}`}
+                                    onClick={refreshPopover.toggle}
+                                    onMouseEnter={() => setTooltip('refresh', true)}
+                                    onMouseLeave={() => setTooltip('refresh', false)}
+                                    onFocus={() => setTooltip('refresh', true)}
+                                    onBlur={() => setTooltip('refresh', false)}
+                                    disabled={false}
+                                >
+                                    {getIcon('mi:refresh')}
+                                    <span className="search-control-label">REFRESH</span>
+                                </button>
+                                <TooltipFactory
+                                    anchor={refreshPopover.triggerRef.current}
+                                    text="Refresh database"
+                                    show={showTooltips.refresh && !refreshPopover.show}
+                                />
 
-                                <div
-                                    className="refresh-section"
-                                    style={{ marginBottom: 'var(--space-4)' }}
+                                <Popover
+                                    triggerRef={refreshPopover.triggerRef}
+                                    show={refreshPopover.show}
+                                    onClose={refreshPopover.close}
+                                    variant="actions"
+                                    position="bottom"
+                                    ariaLabel="Refresh database options"
+                                    className="popover--wide"
+                                    preventBodyScroll={true}
                                 >
                                     <div
-                                        className="refresh-section-header"
+                                        className="refresh-popover-header"
                                         style={{
                                             display: 'flex',
                                             justifyContent: 'space-between',
                                             alignItems: 'center',
-                                            marginBottom: 'var(--space-2)',
+                                            marginBottom: 'var(--space-4)',
                                         }}
                                     >
-                                        <h5
-                                            style={{
-                                                margin: 0,
-                                                fontSize: 'var(--font-size-2)',
-                                                fontWeight: 'var(--font-weight-semibold)',
-                                            }}
-                                        >
-                                            Plex Libraries
-                                        </h5>
+                                        <div className="popover__title">Refresh Database</div>
                                         <div
-                                            className="library-controls"
-                                            style={{
-                                                display: 'flex',
-                                                alignItems: 'center',
-                                                gap: 'var(--space-2)',
-                                            }}
+                                            className="overall-select-buttons"
+                                            style={{ display: 'flex', gap: 'var(--space-2)' }}
                                         >
                                             <button
                                                 type="button"
-                                                onClick={handleLoadLibraries}
-                                                disabled={loadingLibraries}
-                                                className="btn btn-secondary btn-sm"
+                                                className="select-icon-btn"
+                                                onClick={handleSelectAllOverall}
+                                                title="Select all instances and libraries"
                                             >
-                                                {loadingLibraries ? 'Loading...' : 'Load Libraries'}
+                                                {getIcon('mi:select_all')}
                                             </button>
-                                            {availableLibraries.length > 0 && (
+                                            <button
+                                                type="button"
+                                                className="select-icon-btn"
+                                                onClick={handleDeselectAllOverall}
+                                                title="Deselect everything"
+                                            >
+                                                {getIcon('mi:clear')}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div className="refresh-popover-content">
+                                        {/* Radarr Instances Section */}
+                                        {availableInstances.radarrInstances.length > 0 ? (
+                                            <div
+                                                className="refresh-section"
+                                                style={{ marginBottom: 'var(--space-4)' }}
+                                            >
                                                 <div
-                                                    className="select-all-buttons"
+                                                    className="refresh-section-header"
                                                     style={{
                                                         display: 'flex',
-                                                        gap: 'var(--space-1)',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'center',
+                                                        marginBottom: 'var(--space-2)',
+                                                    }}
+                                                >
+                                                    <h5
+                                                        style={{
+                                                            margin: 0,
+                                                            fontSize: 'var(--font-size-2)',
+                                                            fontWeight:
+                                                                'var(--font-weight-semibold)',
+                                                        }}
+                                                    >
+                                                        Radarr Instances
+                                                    </h5>
+                                                    <div
+                                                        className="select-all-buttons"
+                                                        style={{
+                                                            display: 'flex',
+                                                            gap: 'var(--space-1)',
+                                                        }}
+                                                    >
+                                                        <button
+                                                            type="button"
+                                                            className="select-icon-btn"
+                                                            onClick={handleSelectAllRadarr}
+                                                            title="Select all Radarr instances"
+                                                        >
+                                                            {getIcon('mi:check_box')}
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="select-icon-btn"
+                                                            onClick={handleDeselectAllRadarr}
+                                                            title="Deselect all Radarr instances"
+                                                        >
+                                                            {getIcon('mi:check_box_outline_blank')}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                {availableInstances.radarrInstances.map(
+                                                    instance => (
+                                                        <div
+                                                            key={instance}
+                                                            className="checkbox-row popover__list-item"
+                                                            onClick={() =>
+                                                                handleRefreshOptionToggle(
+                                                                    'arrInstances',
+                                                                    instance
+                                                                )
+                                                            }
+                                                            style={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 'var(--space-2)',
+                                                            }}
+                                                        >
+                                                            <input
+                                                                type="checkbox"
+                                                                id={`header-radarr-${instance}`}
+                                                                checked={selectedRefreshOptions.arrInstances.includes(
+                                                                    instance
+                                                                )}
+                                                                onChange={() => {}}
+                                                                onClick={e => e.stopPropagation()}
+                                                            />
+                                                            <label
+                                                                htmlFor={`header-radarr-${instance}`}
+                                                                style={{
+                                                                    flex: 1,
+                                                                    cursor: 'pointer',
+                                                                }}
+                                                            >
+                                                                {humanize(instance)}
+                                                            </label>
+                                                        </div>
+                                                    )
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div
+                                                className="refresh-section"
+                                                style={{ marginBottom: 'var(--space-4)' }}
+                                            >
+                                                <h5
+                                                    style={{
+                                                        margin: '0 0 var(--space-2) 0',
+                                                        fontSize: 'var(--font-size-2)',
+                                                        fontWeight: 'var(--font-weight-semibold)',
+                                                    }}
+                                                >
+                                                    Radarr Instances
+                                                </h5>
+                                                <div
+                                                    style={{
+                                                        color: 'var(--text-secondary)',
+                                                        fontSize: 'var(--font-size-1)',
+                                                        fontStyle: 'italic',
+                                                    }}
+                                                >
+                                                    No Radarr instances configured
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        {/* Sonarr Instances Section */}
+                                        {availableInstances.sonarrInstances.length > 0 ? (
+                                            <div
+                                                className="refresh-section"
+                                                style={{ marginBottom: 'var(--space-4)' }}
+                                            >
+                                                <div
+                                                    className="refresh-section-header"
+                                                    style={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'center',
+                                                        marginBottom: 'var(--space-2)',
+                                                    }}
+                                                >
+                                                    <h5
+                                                        style={{
+                                                            margin: 0,
+                                                            fontSize: 'var(--font-size-2)',
+                                                            fontWeight:
+                                                                'var(--font-weight-semibold)',
+                                                        }}
+                                                    >
+                                                        Sonarr Instances
+                                                    </h5>
+                                                    <div
+                                                        className="select-all-buttons"
+                                                        style={{
+                                                            display: 'flex',
+                                                            gap: 'var(--space-1)',
+                                                        }}
+                                                    >
+                                                        <button
+                                                            type="button"
+                                                            className="select-icon-btn"
+                                                            onClick={handleSelectAllSonarr}
+                                                            title="Select all Sonarr instances"
+                                                        >
+                                                            {getIcon('mi:check_box')}
+                                                        </button>
+                                                        <button
+                                                            type="button"
+                                                            className="select-icon-btn"
+                                                            onClick={handleDeselectAllSonarr}
+                                                            title="Deselect all Sonarr instances"
+                                                        >
+                                                            {getIcon('mi:check_box_outline_blank')}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                                {availableInstances.sonarrInstances.map(
+                                                    instance => (
+                                                        <div
+                                                            key={instance}
+                                                            className="checkbox-row popover__list-item"
+                                                            onClick={() =>
+                                                                handleRefreshOptionToggle(
+                                                                    'arrInstances',
+                                                                    instance
+                                                                )
+                                                            }
+                                                            style={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: 'var(--space-2)',
+                                                            }}
+                                                        >
+                                                            <input
+                                                                type="checkbox"
+                                                                id={`header-sonarr-${instance}`}
+                                                                checked={selectedRefreshOptions.arrInstances.includes(
+                                                                    instance
+                                                                )}
+                                                                onChange={() => {}}
+                                                                onClick={e => e.stopPropagation()}
+                                                            />
+                                                            <label
+                                                                htmlFor={`header-sonarr-${instance}`}
+                                                                style={{
+                                                                    flex: 1,
+                                                                    cursor: 'pointer',
+                                                                }}
+                                                            >
+                                                                {humanize(instance)}
+                                                            </label>
+                                                        </div>
+                                                    )
+                                                )}
+                                            </div>
+                                        ) : (
+                                            <div
+                                                className="refresh-section"
+                                                style={{ marginBottom: 'var(--space-4)' }}
+                                            >
+                                                <h5
+                                                    style={{
+                                                        margin: '0 0 var(--space-2) 0',
+                                                        fontSize: 'var(--font-size-2)',
+                                                        fontWeight: 'var(--font-weight-semibold)',
+                                                    }}
+                                                >
+                                                    Sonarr Instances
+                                                </h5>
+                                                <div
+                                                    style={{
+                                                        color: 'var(--text-secondary)',
+                                                        fontSize: 'var(--font-size-1)',
+                                                        fontStyle: 'italic',
+                                                    }}
+                                                >
+                                                    No Sonarr instances configured
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div
+                                            className="refresh-section"
+                                            style={{ marginBottom: 'var(--space-4)' }}
+                                        >
+                                            <div
+                                                className="refresh-section-header"
+                                                style={{
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'center',
+                                                    marginBottom: 'var(--space-2)',
+                                                }}
+                                            >
+                                                <h5
+                                                    style={{
+                                                        margin: 0,
+                                                        fontSize: 'var(--font-size-2)',
+                                                        fontWeight: 'var(--font-weight-semibold)',
+                                                    }}
+                                                >
+                                                    Plex Libraries
+                                                </h5>
+                                                <div
+                                                    className="library-controls"
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: 'var(--space-2)',
                                                     }}
                                                 >
                                                     <button
                                                         type="button"
-                                                        className="select-icon-btn"
-                                                        onClick={handleSelectAllLibraries}
-                                                        title="Select all libraries"
+                                                        onClick={handleLoadLibraries}
+                                                        disabled={loadingLibraries}
+                                                        className="btn btn-secondary btn-sm"
                                                     >
-                                                        {getIcon('mi:check_box')}
+                                                        {loadingLibraries
+                                                            ? 'Loading...'
+                                                            : 'Load Libraries'}
                                                     </button>
-                                                    <button
-                                                        type="button"
-                                                        className="select-icon-btn"
-                                                        onClick={handleDeselectAllLibraries}
-                                                        title="Deselect all libraries"
+                                                    {availableLibraries.length > 0 && (
+                                                        <div
+                                                            className="select-all-buttons"
+                                                            style={{
+                                                                display: 'flex',
+                                                                gap: 'var(--space-1)',
+                                                            }}
+                                                        >
+                                                            <button
+                                                                type="button"
+                                                                className="select-icon-btn"
+                                                                onClick={handleSelectAllLibraries}
+                                                                title="Select all libraries"
+                                                            >
+                                                                {getIcon('mi:check_box')}
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                className="select-icon-btn"
+                                                                onClick={handleDeselectAllLibraries}
+                                                                title="Deselect all libraries"
+                                                            >
+                                                                {getIcon(
+                                                                    'mi:check_box_outline_blank'
+                                                                )}
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            {availableLibraries.length > 0 ? (
+                                                availableLibraries.map(library => (
+                                                    <div
+                                                        key={library.name || library}
+                                                        className="checkbox-row popover__list-item"
+                                                        onClick={() =>
+                                                            handleRefreshOptionToggle(
+                                                                'libraries',
+                                                                library.name || library
+                                                            )
+                                                        }
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            gap: 'var(--space-2)',
+                                                        }}
                                                     >
-                                                        {getIcon('mi:check_box_outline_blank')}
-                                                    </button>
+                                                        <input
+                                                            type="checkbox"
+                                                            id={`header-lib-${library.name || library}`}
+                                                            checked={selectedRefreshOptions.libraries.includes(
+                                                                library.name || library
+                                                            )}
+                                                            onChange={() => {}}
+                                                            onClick={e => e.stopPropagation()}
+                                                        />
+                                                        <label
+                                                            htmlFor={`header-lib-${library.name || library}`}
+                                                            style={{ flex: 1, cursor: 'pointer' }}
+                                                        >
+                                                            {library.displayName || library}
+                                                        </label>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div
+                                                    style={{
+                                                        color: 'var(--text-secondary)',
+                                                        fontSize: 'var(--font-size-1)',
+                                                        fontStyle: 'italic',
+                                                    }}
+                                                >
+                                                    Click &ldquo;Load Libraries&rdquo; to see
+                                                    available options
                                                 </div>
                                             )}
                                         </div>
-                                    </div>
-                                    {availableLibraries.length > 0 ? (
-                                        availableLibraries.map(library => (
+
+                                        {selectedRefreshOptions.plexInstances.length > 0 && (
                                             <div
-                                                key={library.name || library}
-                                                className="checkbox-row popover__list-item"
-                                                onClick={() =>
-                                                    handleRefreshOptionToggle(
-                                                        'libraries',
-                                                        library.name || library
-                                                    )
-                                                }
                                                 style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    gap: 'var(--space-2)',
+                                                    padding: 'var(--space-3)',
+                                                    backgroundColor: 'var(--surface-variant)',
+                                                    border: `var(--border-width-1) solid var(--accent)`,
+                                                    borderRadius: 'var(--radius-2)',
+                                                    fontSize: 'var(--font-size-1)',
+                                                    color: 'var(--text-secondary)',
                                                 }}
                                             >
-                                                <input
-                                                    type="checkbox"
-                                                    id={`header-lib-${library.name || library}`}
-                                                    checked={selectedRefreshOptions.libraries.includes(
-                                                        library.name || library
-                                                    )}
-                                                    onChange={() => {}}
-                                                    onClick={e => e.stopPropagation()}
-                                                />
-                                                <label
-                                                    htmlFor={`header-lib-${library.name || library}`}
-                                                    style={{ flex: 1, cursor: 'pointer' }}
-                                                >
-                                                    {library.displayName || library}
-                                                </label>
+                                                <strong>Auto-selected Plex instances:</strong>{' '}
+                                                {selectedRefreshOptions.plexInstances.join(', ')}
                                             </div>
-                                        ))
-                                    ) : (
-                                        <div
-                                            style={{
-                                                color: 'var(--text-secondary)',
-                                                fontSize: 'var(--font-size-1)',
-                                                fontStyle: 'italic',
-                                            }}
-                                        >
-                                            Click &ldquo;Load Libraries&rdquo; to see available
-                                            options
-                                        </div>
-                                    )}
-                                </div>
-
-                                {selectedRefreshOptions.plexInstances.length > 0 && (
+                                        )}
+                                    </div>
                                     <div
+                                        className="popover__divider"
+                                        style={{ margin: 'var(--space-4) 0' }}
+                                    ></div>
+                                    <div
+                                        className="refresh-popover-actions"
                                         style={{
-                                            padding: 'var(--space-3)',
-                                            backgroundColor: 'var(--surface-variant)',
-                                            border: `var(--border-width-1) solid var(--accent)`,
-                                            borderRadius: 'var(--radius-2)',
-                                            fontSize: 'var(--font-size-1)',
-                                            color: 'var(--text-secondary)',
+                                            display: 'flex',
+                                            justifyContent: 'flex-end',
+                                            gap: 'var(--space-3)',
                                         }}
                                     >
-                                        <strong>Auto-selected Plex instances:</strong>{' '}
-                                        {selectedRefreshOptions.plexInstances.join(', ')}
+                                        <button
+                                            type="button"
+                                            className="btn btn-secondary"
+                                            onClick={refreshPopover.close}
+                                        >
+                                            Cancel
+                                        </button>
+                                        <button
+                                            type="button"
+                                            className="btn btn-primary"
+                                            onClick={handleRefreshExecute}
+                                            disabled={false}
+                                        >
+                                            Refresh Selected
+                                        </button>
                                     </div>
-                                )}
+                                </Popover>
                             </div>
-                            <div
-                                className="popover__divider"
-                                style={{ margin: 'var(--space-4) 0' }}
-                            ></div>
-                            <div
-                                className="refresh-popover-actions"
-                                style={{
-                                    display: 'flex',
-                                    justifyContent: 'flex-end',
-                                    gap: 'var(--space-3)',
-                                }}
-                            >
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary"
-                                    onClick={refreshPopover.close}
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="button"
-                                    className="btn btn-primary"
-                                    onClick={handleRefreshExecute}
-                                    disabled={false}
-                                >
-                                    Refresh Selected
-                                </button>
-                            </div>
-                        </Popover>
+                        )}
                     </div>
-                )}
+                    {/* Right spacer for balanced centering */}
+                    <div className="search-layout__spacer"></div>
+                </div>
             </div>
         </div>
     );
 }
 
 // Wrapper to handle context errors gracefully
-export default function HeaderSearch() {
+export default function HeaderSearch({
+    onMobileCollapse,
+    searchInputFocused,
+    onSearchInputFocus,
+    onSearchInputBlur,
+    ...props
+}) {
     let component = null;
 
     try {
-        component = <HeaderSearchInner />;
+        component = (
+            <HeaderSearchInner
+                onMobileCollapse={onMobileCollapse}
+                searchInputFocused={searchInputFocused}
+                onSearchInputFocus={onSearchInputFocus}
+                onSearchInputBlur={onSearchInputBlur}
+                {...props}
+            />
+        );
     } catch {
         component = null;
     }

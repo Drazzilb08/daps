@@ -64,6 +64,9 @@ export default function SearchCore({
     // UI Customization
     selectorLabel = 'Source',
 
+    // Visibility control - for mobile header search coordination
+    hideMainSearchInterface = false,
+
     // Refresh trigger - extract explicitly to avoid dependency array issues
     refreshTrigger = 0,
 
@@ -521,35 +524,37 @@ export default function SearchCore({
     // ===== RENDER =====
     return (
         <div className={className} role="search" aria-label="Search interface">
-            <SearchControls
-                sources={sources}
-                currentSource={currentSource}
-                onSourceChange={handleSourceChange}
-                searchTerm={pendingSearchTerm}
-                onSearchTermChange={handleSearchTermChange}
-                onSearch={handleSearch}
-                onClear={handleClearSearch}
-                placeholder={placeholder}
-                isSearching={isLoading}
-                searchInputRef={searchInputRef}
-                enableAutocomplete={enableAutocomplete}
-                autocompleteMinLength={autocompleteMinLength}
-                searchAdapter={searchAdapter}
-                filters={filters}
-                activeFilters={activeFilters}
-                onFilterChange={handleFilterChange}
-                sortOptions={sortOptions}
-                currentSort={currentSort}
-                onSortChange={setCurrentSort}
-                currentView={currentView}
-                onViewChange={setCurrentView}
-                searchData={searchData}
-                showRefreshControls={showRefreshControls}
-                onRefresh={onRefresh}
-                isRefreshing={isRefreshing}
-                selectorLabel={selectorLabel}
-                {...additionalProps}
-            />
+            {!hideMainSearchInterface && (
+                <SearchControls
+                    sources={sources}
+                    currentSource={currentSource}
+                    onSourceChange={handleSourceChange}
+                    searchTerm={pendingSearchTerm}
+                    onSearchTermChange={handleSearchTermChange}
+                    onSearch={handleSearch}
+                    onClear={handleClearSearch}
+                    placeholder={placeholder}
+                    isSearching={isLoading}
+                    searchInputRef={searchInputRef}
+                    enableAutocomplete={enableAutocomplete}
+                    autocompleteMinLength={autocompleteMinLength}
+                    searchAdapter={searchAdapter}
+                    filters={filters}
+                    activeFilters={activeFilters}
+                    onFilterChange={handleFilterChange}
+                    sortOptions={sortOptions}
+                    currentSort={currentSort}
+                    onSortChange={setCurrentSort}
+                    currentView={currentView}
+                    onViewChange={setCurrentView}
+                    searchData={searchData}
+                    showRefreshControls={showRefreshControls}
+                    onRefresh={onRefresh}
+                    isRefreshing={isRefreshing}
+                    selectorLabel={selectorLabel}
+                    {...additionalProps}
+                />
+            )}
 
             {isLoading ? (
                 <div

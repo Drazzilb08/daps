@@ -181,7 +181,7 @@ export default function SimpleSearchPlugin({ pluginId, overrideConfig = {}, ...a
             onResultDelete={handleResultDelete}
             onSourceChange={handleSourceChangeWithSort}
             onRefresh={handleRefresh}
-            // Pass through additional props including refreshTrigger
+            // Pass through additional props including refreshTrigger and hideMainSearchInterface
             {...additionalProps}
         />
     );

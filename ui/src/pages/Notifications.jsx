@@ -198,7 +198,7 @@ export default function Notifications() {
     // --- Render ---
     return (
         <>
-            <div className="card-list" id="notifications-list">
+            <div className="notifications-list">
                 {!notifications || Object.keys(notifications).length === 0 ? (
                     <AddNotificationCard
                         module={null}

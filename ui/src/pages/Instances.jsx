@@ -220,7 +220,7 @@ export default function Instances() {
     // ---- Render ----
     return (
         <>
-            <div className="card-list" id="instances-list">
+            <div className="instances-list">
                 {Object.entries(instances).map(([service, items]) => (
                     <InstanceGroup
                         key={service}

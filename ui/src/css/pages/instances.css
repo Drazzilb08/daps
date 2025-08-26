@@ -1,14 +1,14 @@
 @layer pages {
     /* ========== INSTANCE PAGE: LAYOUT & GROUPS ========== */
 
-    #instances-list {
+    .instances-list {
         display: block;
         width: 100%;
         margin: 4rem auto;
     }
 
-    #instances-list .card,
-    #instances-list .card.card-add {
+    .instances-list .card,
+    .instances-list .card.card-add {
         aspect-ratio: 1 / 1;
         width: 100%;
         min-width: 220px;
@@ -34,7 +34,8 @@
         width: 28px;
         height: 28px;
         display: block;
-        filter: drop-shadow(0 0 2px #fff5) drop-shadow(0 0 1px #ffeb3b33);
+        filter: drop-shadow(0 0 2px color-mix(in srgb, var(--primary-contrast) 30%, transparent))
+            drop-shadow(0 0 1px color-mix(in srgb, var(--caution-highlight) 20%, transparent));
     }
 
     .instance-group {
@@ -77,7 +78,7 @@
     }
 
     @media (width <= 600px) {
-        #instances-list {
+        .instances-list {
             display: grid !important;
             grid-template-columns: 1fr !important;
             max-width: 98vw !important;
@@ -87,8 +88,8 @@
             place-items: center center !important;
         }
 
-        #instances-list .card,
-        #instances-list .card.card-add {
+        .instances-list .card,
+        .instances-list .card.card-add {
             width: 95vw !important;
             min-width: 82vw !important;
             max-width: 95vw !important;
@@ -98,7 +99,7 @@
             margin-right: auto !important;
             border-radius: 17px !important;
             padding: 1.16rem 1.1rem 1.08rem !important;
-            background: var(--surface, #191b22) !important;
+            background: var(--surface) !important;
             font-size: 0.98rem !important;
         }
     }

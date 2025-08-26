@@ -1,13 +1,14 @@
 // ui/src/components/search/core/SearchCore.jsx
 // Core search functionality as reusable components - NOT plugins
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useEffect, useCallback, useRef, useMemo } from 'react';
 import SearchControls from '../SearchControls';
 import SearchResults from '../SearchResults';
 import LoadingSpinner from '../../common/LoadingSpinner';
-import { useToast } from '../../providers/ToastProvider';
-import { SearchSorter } from '../sorting';
 import { useSearchCoordinator } from '../../../contexts/SearchCoordinatorProvider';
+import { useSearchState } from '../../../hooks/useSearchState';
+import { useSearchData } from '../../../hooks/useSearchData';
+import { useKeyboardNavigation } from '../../../hooks/useKeyboardNavigation';
 
 // Stable default functions to prevent infinite loops
 const defaultOnError = () => {};
@@ -20,7 +21,7 @@ const defaultOnSourceChange = () => {};
  * This handles all the common search UI patterns and state management
  * Only the data adapter changes between different search types
  */
-export default function SearchCore({
+function SearchCore({
     // Data adapter - this is what makes each search type unique
     searchAdapter,
 
@@ -73,33 +74,50 @@ export default function SearchCore({
     ...additionalProps
 }) {
     // ===== STATE MANAGEMENT =====
-    const [isLoading, setIsLoading] = useState(false);
-    const [searchData, setSearchData] = useState(null);
+    // Use centralized search state hook instead of manual state management
+    const {
+        // State values
+        isLoading,
+        setIsLoading,
+        searchData,
+        setSearchData,
+        pendingSearchTerm,
+        searchTerm,
+        searchOptions,
+        searchResults,
+        setSearchResults,
+        hasUserSearched,
+        currentSource,
+        currentSort,
+        currentView,
+        activeFilters,
+        modalInfo,
+        focusedResultIndex,
 
-    // Search state
-    const [pendingSearchTerm, setPendingSearchTerm] = useState('');
-    const [searchTerm, setSearchTerm] = useState('');
-    const [searchOptions, setSearchOptions] = useState({});
-    const [searchResults, setSearchResults] = useState([]);
-    const [hasUserSearched, setHasUserSearched] = useState(false);
-
-    // UI state
-    const [currentSource, setCurrentSource] = useState(defaultSource || sources[0]?.key || null);
-    const [currentSort, setCurrentSort] = useState(defaultSort);
-    const [currentView, setCurrentView] = useState(defaultView);
-    const [activeFilters, setActiveFilters] = useState({});
-
-    // Modal state
-    const [modalInfo, setModalInfo] = useState(null);
-
-    // Keyboard navigation state
-    const [focusedResultIndex, setFocusedResultIndex] = useState(-1);
+        // State actions
+        executeSearchWithTerm,
+        updatePendingSearchTerm,
+        executeSearch,
+        clearSearch,
+        changeSource,
+        updateSort,
+        updateView,
+        updateFilter,
+        openModal,
+        closeModal,
+        setFocusIndex,
+        resetFocusIndex,
+    } = useSearchState({
+        defaultSource: defaultSource || sources[0]?.key || null,
+        defaultSort,
+        defaultView,
+        sources,
+        onSourceChange,
+    });
 
     // ===== HOOKS =====
-    const toast = useToast();
     const isMountedRef = useRef(true);
     const { registerPageSearch } = useSearchCoordinator();
-    const debounceTimeoutRef = useRef(null);
     const searchInputRef = useRef(null);
     const resultsContainerRef = useRef(null);
 
@@ -124,14 +142,75 @@ export default function SearchCore({
         if (onErrorRef.current) onErrorRef.current(error);
     }, []);
 
+    // ===== DATA MANAGEMENT HOOK =====
+    // Memoize searchState to prevent infinite loops from object recreation
+    const memoizedSearchState = useMemo(
+        () => ({
+            isLoading,
+            setIsLoading,
+            searchData,
+            setSearchData,
+            searchTerm,
+            searchOptions,
+            hasUserSearched,
+            activeFilters,
+            currentSort,
+            setSearchResults,
+        }),
+        [
+            isLoading,
+            setIsLoading,
+            searchData,
+            setSearchData,
+            searchTerm,
+            searchOptions,
+            hasUserSearched,
+            activeFilters,
+            currentSort,
+            setSearchResults,
+        ]
+    );
+
+    // Use useSearchData hook to handle data loading and search processing
+    const { refreshData, getAutocompleteSuggestions } = useSearchData({
+        searchAdapter,
+        currentSource,
+        searchState: memoizedSearchState,
+        groupBy,
+        onDataLoaded: stableOnDataLoaded,
+        onError: stableOnError,
+        refreshTrigger,
+    });
+
+    // ===== KEYBOARD NAVIGATION HOOK =====
+    // Use useKeyboardNavigation hook to handle keyboard shortcuts and navigation
+    const { getKeyboardShortcuts, hasFocusedResult } = useKeyboardNavigation({
+        searchState: {
+            modalInfo,
+            searchTerm,
+            pendingSearchTerm,
+            searchResults,
+            focusedResultIndex,
+            closeModal,
+            clearSearch: clearSearch,
+            resetFocusIndex,
+            setFocusIndex,
+        },
+        onResultClick: result => {
+            if (onResultClick) {
+                onResultClick(result);
+            } else {
+                openModal(result);
+            }
+        },
+        searchInputRef,
+        resultsContainerRef,
+    });
+
     // Cleanup on unmount
     useEffect(() => {
-        const timeoutRef = debounceTimeoutRef;
         return () => {
             isMountedRef.current = false;
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current);
-            }
         };
     }, []);
 
@@ -141,27 +220,12 @@ export default function SearchCore({
         if (!registerPageSearch) return;
 
         const searchCoreAPI = {
-            executeSearch: (term, options = {}) => {
-                setPendingSearchTerm(term);
-                setSearchTerm(term);
-                setSearchOptions(options);
-                setHasUserSearched(true);
-            },
-            changeSource: newSource => {
-                setCurrentSource(newSource);
-                onSourceChange(newSource);
-            },
-            changeView: newView => {
-                setCurrentView(newView);
-            },
-            changeSort: newSort => {
-                setCurrentSort(newSort);
-            },
+            executeSearch: executeSearchWithTerm,
+            changeSource: changeSource,
+            changeView: updateView,
+            changeSort: updateSort,
             changeFilter: (filterKey, value) => {
-                setActiveFilters(prev => ({
-                    ...prev,
-                    [filterKey]: value,
-                }));
+                updateFilter(filterKey, value);
             },
             executeRefresh: options => {
                 if (onRefresh) {
@@ -192,331 +256,68 @@ export default function SearchCore({
         defaultSort,
         currentSource,
         showRefreshControls,
+        executeSearchWithTerm,
+        changeSource,
+        updateView,
+        updateSort,
+        updateFilter,
         onSourceChange,
         onRefresh,
     ]);
 
     // ===== DATA LOADING =====
-    useEffect(() => {
-        if (!searchAdapter?.loadInitialData || !currentSource) return;
-
-        let cancelled = false;
-
-        const loadData = async () => {
-            setIsLoading(true);
-
-            try {
-                const data = await searchAdapter.loadInitialData(currentSource);
-                if (!cancelled) {
-                    setSearchData(data);
-                    stableOnDataLoaded(data);
-
-                    if (data.errorSources && data.errorSources.length > 0) {
-                        console.warn('Some sources failed to load:', data.errorSources);
-                    }
-                }
-            } catch (err) {
-                if (!cancelled) {
-                    toast.error('Failed to load data');
-                    stableOnError(err);
-                }
-            } finally {
-                if (!cancelled) {
-                    setIsLoading(false);
-                }
-            }
-        };
-
-        loadData();
-
-        return () => {
-            cancelled = true;
-        };
-    }, [searchAdapter, currentSource, stableOnDataLoaded, stableOnError, toast, refreshTrigger]);
+    // Data loading is now handled by useSearchData hook
+    // No manual data loading effect needed
 
     // ===== SEARCH LOGIC =====
-    // Search is now handled by the useEffect that processes results based on searchTerm changes
-
-    // Apply filters and sorting to results (works for both search results and initial data)
-    useEffect(() => {
-        if (!searchData || !searchAdapter?.search) return;
-
-        const processResults = () => {
-            try {
-                // Get results based on whether the user has actively searched
-                let results;
-                if (searchTerm && searchTerm.trim()) {
-                    // User is actively searching: filter data by search term
-                    results = searchAdapter.search(searchData, searchTerm, {}, currentSource);
-
-                    // Apply exact match filtering if specified (autocomplete selection)
-                    if (searchOptions.exactMatch && searchOptions.suggestionData) {
-                        // Filter to only show the specific selected item
-                        const suggestionData = searchOptions.suggestionData;
-                        results = results.filter(item => {
-                            // Match by ID if available, otherwise by title
-                            if (suggestionData.id && item.id) {
-                                return item.id === suggestionData.id;
-                            }
-                            // Fallback to exact title match
-                            return item.title === suggestionData.title;
-                        });
-                    }
-                } else if (hasUserSearched) {
-                    // User previously searched but cleared search: show all data with sorting/filtering
-                    results = searchAdapter.search(searchData, '', {}, currentSource);
-                } else {
-                    // Initial state: no results until user searches
-                    results = [];
-                }
-
-                // Ensure results is always an array
-                if (!Array.isArray(results)) {
-                    console.warn('SearchCore: search() returned non-array:', results);
-                    results = [];
-                }
-
-                // Apply filters
-                if (searchAdapter.filter) {
-                    results = searchAdapter.filter(results, activeFilters, currentSource);
-                    // Ensure filter result is always an array
-                    if (!Array.isArray(results)) {
-                        console.warn('SearchCore: filter() returned non-array:', results);
-                        results = [];
-                    }
-                }
-
-                // Apply sorting
-                if (currentSort) {
-                    const searchType = SearchSorter.inferSearchType(results);
-                    results = SearchSorter.sort(results, currentSort, {
-                        priorityOrder: searchData?.priorityOrder || {},
-                        ownerPriorityOrder: searchData?.ownerPriorityOrder || {},
-                        groupBy,
-                        currentSource,
-                        searchType,
-                    });
-                    // Ensure sort result is always an array
-                    if (!Array.isArray(results)) {
-                        console.warn('SearchSorter returned non-array:', results);
-                        results = [];
-                    }
-                }
-
-                // Format results for display
-                if (searchAdapter.formatResult && results.length > 0) {
-                    results = results.map(item => ({
-                        ...searchAdapter.formatResult(item, currentSource),
-                        original: item,
-                    }));
-                }
-
-                setSearchResults(results);
-            } catch (error) {
-                console.error('SearchCore: processResults error:', error);
-                setSearchResults([]);
-            }
-        };
-
-        processResults();
-    }, [
-        activeFilters,
-        currentSort,
-        currentSource,
-        groupBy,
-        hasUserSearched,
-        searchAdapter,
-        searchData,
-        searchTerm,
-        searchOptions,
-    ]);
+    // Search processing is now handled by useSearchData hook
+    // No manual search processing effect needed
 
     // ===== JUMP BAR DATA PROVIDER =====
     // Update page-level jump bar with current search data
     // Jump bar functionality removed for simplification
 
     // ===== EVENT HANDLERS =====
-    const handleSearchTermChange = useCallback(newTerm => {
-        setPendingSearchTerm(newTerm);
+    // Use hook actions instead of manual state management
+    const handleSearchTermChange = updatePendingSearchTerm;
 
-        // Clear exact match options when user manually types (not autocomplete selection)
-        setSearchOptions({});
+    const handleSearch = executeSearch;
 
-        if (!newTerm.trim()) {
-            setSearchTerm('');
-            // Don't clear results - let useEffect handle displaying all data
-        }
-    }, []);
+    const handleClearSearch = clearSearch;
 
-    const handleSearch = () => {
-        if (debounceTimeoutRef.current) {
-            clearTimeout(debounceTimeoutRef.current);
-        }
-        setHasUserSearched(true); // Mark that user has explicitly searched
-        setSearchTerm(pendingSearchTerm); // Apply the pending search term
-    };
-
-    const handleClearSearch = useCallback(() => {
-        if (debounceTimeoutRef.current) {
-            clearTimeout(debounceTimeoutRef.current);
-        }
-        setPendingSearchTerm('');
-        setSearchTerm('');
-        setSearchOptions({});
-        setSearchResults([]);
-        setActiveFilters({});
-    }, []);
-
-    const handleSourceChange = newSource => {
-        if (debounceTimeoutRef.current) {
-            clearTimeout(debounceTimeoutRef.current);
-        }
-
-        setPendingSearchTerm('');
-        setSearchTerm('');
-        setSearchOptions({});
-        setSearchResults([]);
-        setActiveFilters({});
-        setHasUserSearched(false); // Reset search state for new source
-
-        setCurrentSource(newSource);
-        onSourceChange(newSource);
-    };
+    const handleSourceChange = changeSource;
 
     const handleFilterChange = (filterKey, value) => {
-        setActiveFilters(prev => ({
-            ...prev,
-            [filterKey]: value,
-        }));
+        updateFilter(filterKey, value);
     };
 
+    // Event handlers now use the keyboard navigation hook
     const handleResultClick = useCallback(
         result => {
             if (onResultClick) {
                 onResultClick(result);
             } else {
-                setModalInfo(result);
+                openModal(result);
             }
         },
-        [onResultClick]
+        [onResultClick, openModal]
     );
 
-    const handleModalClose = () => {
-        setModalInfo(null);
-    };
+    const handleModalClose = closeModal;
 
     const handleResultDeleted = () => {
-        setModalInfo(null);
+        closeModal();
         if (onResultDelete) onResultDelete();
     };
 
     // ===== KEYBOARD NAVIGATION =====
-    const handleGlobalKeyDown = useCallback(
-        e => {
-            if (
-                e.target.tagName === 'INPUT' ||
-                e.target.tagName === 'TEXTAREA' ||
-                e.target.tagName === 'SELECT'
-            ) {
-                return;
-            }
+    // Keyboard navigation is now handled by useKeyboardNavigation hook
+    // The hook automatically registers global keyboard event listeners
 
-            switch (e.key) {
-                case '/':
-                    e.preventDefault();
-                    searchInputRef.current?.focus();
-                    break;
-
-                case 'Escape':
-                    e.preventDefault();
-                    if (modalInfo) {
-                        setModalInfo(null);
-                    } else if (searchTerm || pendingSearchTerm) {
-                        handleClearSearch();
-                        setFocusedResultIndex(-1);
-                    }
-                    break;
-
-                case 'ArrowDown':
-                    e.preventDefault();
-                    setFocusedResultIndex(prev => {
-                        const nextIndex = prev < searchResults.length - 1 ? prev + 1 : 0;
-                        return nextIndex;
-                    });
-                    break;
-
-                case 'ArrowUp':
-                    e.preventDefault();
-                    setFocusedResultIndex(prev => {
-                        const nextIndex = prev > 0 ? prev - 1 : searchResults.length - 1;
-                        return nextIndex;
-                    });
-                    break;
-
-                case 'PageDown':
-                    e.preventDefault();
-                    if (resultsContainerRef.current) {
-                        const container = resultsContainerRef.current;
-                        const scrollAmount = container.clientHeight * 0.8; // Scroll by 80% of viewport height
-                        const currentScrollTop = container.scrollTop;
-                        const maxScrollTop = container.scrollHeight - container.clientHeight;
-                        const newScrollTop = Math.min(
-                            currentScrollTop + scrollAmount,
-                            maxScrollTop
-                        );
-
-                        container.scrollTo({
-                            top: newScrollTop,
-                            behavior: 'smooth',
-                        });
-                    }
-                    break;
-
-                case 'PageUp':
-                    e.preventDefault();
-                    if (resultsContainerRef.current) {
-                        const container = resultsContainerRef.current;
-                        const scrollAmount = container.clientHeight * 0.8; // Scroll by 80% of viewport height
-                        const currentScrollTop = container.scrollTop;
-                        const newScrollTop = Math.max(currentScrollTop - scrollAmount, 0);
-
-                        container.scrollTo({
-                            top: newScrollTop,
-                            behavior: 'smooth',
-                        });
-                    }
-                    break;
-
-                case 'Enter':
-                    if (focusedResultIndex >= 0 && focusedResultIndex < searchResults.length) {
-                        e.preventDefault();
-                        const focusedResult = searchResults[focusedResultIndex];
-                        handleResultClick(focusedResult);
-                    }
-                    break;
-            }
-        },
-        [
-            modalInfo,
-            searchTerm,
-            pendingSearchTerm,
-            searchResults,
-            focusedResultIndex,
-            handleClearSearch,
-            handleResultClick,
-        ]
-    );
-
+    // Reset focus index when results change
     useEffect(() => {
-        setFocusedResultIndex(-1);
-    }, [searchResults]);
-
-    useEffect(() => {
-        document.addEventListener('keydown', handleGlobalKeyDown);
-        return () => {
-            document.removeEventListener('keydown', handleGlobalKeyDown);
-        };
-    }, [handleGlobalKeyDown]);
+        resetFocusIndex();
+    }, [searchResults, resetFocusIndex]);
 
     // ===== ERROR HANDLING =====
     const displayError = null;
@@ -544,9 +345,9 @@ export default function SearchCore({
                     onFilterChange={handleFilterChange}
                     sortOptions={sortOptions}
                     currentSort={currentSort}
-                    onSortChange={setCurrentSort}
+                    onSortChange={updateSort}
                     currentView={currentView}
-                    onViewChange={setCurrentView}
+                    onViewChange={updateView}
                     searchData={searchData}
                     showRefreshControls={showRefreshControls}
                     onRefresh={onRefresh}
@@ -583,6 +384,10 @@ export default function SearchCore({
                     focusedResultIndex={focusedResultIndex}
                     resultsContainerRef={resultsContainerRef}
                     showRefreshControls={showRefreshControls}
+                    refreshData={refreshData}
+                    getAutocompleteSuggestions={getAutocompleteSuggestions}
+                    keyboardShortcuts={getKeyboardShortcuts()}
+                    hasFocusedResult={hasFocusedResult}
                 />
             )}
 
@@ -596,3 +401,6 @@ export default function SearchCore({
         </div>
     );
 }
+
+// Export memoized component for performance optimization
+export default React.memo(SearchCore);

@@ -1,14 +1,14 @@
 @layer pages {
     /* ===================== NOTIFICATIONS LIST ROOT ===================== */
-    #notifications-list {
+    .notifications-list {
         display: block;
         width: 100%;
         margin: 4rem auto;
     }
 
     /* ===================== NOTIFICATION CARDS ===================== */
-    #notifications-list .card,
-    #notifications-list .card.card-add {
+    .notifications-list .card,
+    .notifications-list .card.card-add {
         aspect-ratio: 1 / 1;
         width: 100%;
         min-width: 220px;
@@ -105,7 +105,7 @@
 
     .notify-type-btn:hover {
         background: var(--focus);
-        color: #fff;
+        color: var(--primary-contrast);
         border-color: var(--focus);
     }
 
@@ -183,7 +183,7 @@
     }
 
     @media (width <= 600px) {
-        #notification-list .card-list {
+        .notification-list .card-list {
             display: grid !important;
             grid-template-columns: 1fr !important;
             max-width: 98vw !important;
@@ -193,8 +193,8 @@
             place-items: center center !important;
         }
 
-        #notifications-list .card,
-        #notifications-list .card.card-add {
+        .notifications-list .card,
+        .notifications-list .card.card-add {
             width: 95vw !important;
             min-width: 82vw !important;
             max-width: 95vw !important;
@@ -204,7 +204,7 @@
             margin-right: auto !important;
             border-radius: 17px !important;
             padding: 1.16rem 1.1rem 1.08rem !important;
-            background: var(--surface, #191b22) !important;
+            background: var(--surface) !important;
             font-size: 0.98rem !important;
         }
     }

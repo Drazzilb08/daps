@@ -12,8 +12,19 @@
     /* Layout */
     --sidebar-width: 210px; /* Main navigation sidebar width */
     --sidebar-collapsed-width: 72px; /* Collapsed sidebar width */
-    --header-height: 64px; /* Main header height */
+
+    /* Header - Mobile-First Fluid Scaling */
+    --header-height-mobile: 56px; /* Mobile header height */
+    --header-height-desktop: 64px; /* Desktop header height */
+    --header-height: clamp(
+        var(--header-height-mobile),
+        8vw,
+        var(--header-height-desktop)
+    ); /* Fluid header height */
+
+    /* Search Interface */
     --search-controls-height: 120px; /* Logical height for search controls area */
+    --search-input-height: 44px; /* Minimum search input height for touch accessibility */
     --page-padding: 2rem; /* Standard page padding */
     --container-max: 1200px; /* Maximum container width */
     --content-gutter: 1rem; /* Content area gutter spacing */

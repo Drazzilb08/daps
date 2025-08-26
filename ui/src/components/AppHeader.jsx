@@ -1,4 +1,6 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
+import { getIcon } from '../utils/tools';
 import SearchInterface from './SearchInterface';
 
 /**
@@ -15,10 +17,75 @@ function closeMobileSidebar() {
 }
 
 /**
- * Application header component with navigation toggle and search interface
- * @returns {JSX.Element} Header with logo, search, and mobile hamburger menu
+ * Application header component with clean mobile-first search interface
+ * Implements collapsed/expanded states matching modern mobile UX patterns
+ * @returns {JSX.Element} Header with logo, hamburger, and responsive search interface
  */
 function Header() {
+    const location = useLocation();
+    const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(false);
+    const [searchInputFocused, setSearchInputFocused] = useState(false);
+
+    // Check if current page is a search page
+    const isSearchPage = () => {
+        const searchPages = ['/media/search', '/poster/search/assets', '/poster/search/gdrive'];
+        return searchPages.some(page => location.pathname.startsWith(page));
+    };
+
+    // Handle mobile search expand/collapse with clean state management
+    const handleMobileSearchExpand = () => {
+        // Auto-collapse sidebar when expanding search for better UX
+        closeMobileSidebar();
+        // Add CSS class to body to track mobile search state
+        document.body.classList.add('mobile-search-active');
+        setIsMobileSearchExpanded(true);
+    };
+
+    const handleMobileSearchCollapse = () => {
+        // Add slide-out animation class
+        const headerSearchExpanded = document.querySelector('.header-search-expanded');
+        if (headerSearchExpanded) {
+            headerSearchExpanded.classList.add('back-button-closing');
+
+            // Wait for animation to complete before actually collapsing
+            setTimeout(() => {
+                // Remove CSS class from body and reset focus state
+                document.body.classList.remove('mobile-search-active');
+                setIsMobileSearchExpanded(false);
+                setSearchInputFocused(false);
+
+                // Clean up animation class
+                headerSearchExpanded.classList.remove('back-button-closing');
+            }, 300); // Match the 300ms animation duration
+        } else {
+            // Fallback if element not found - immediate collapse
+            document.body.classList.remove('mobile-search-active');
+            setIsMobileSearchExpanded(false);
+            setSearchInputFocused(false);
+        }
+    };
+
+    // Close mobile search when route changes
+    useEffect(() => {
+        setIsMobileSearchExpanded(false);
+    }, [location.pathname]);
+
+    // Reset mobile search state on viewport resize (desktop → mobile → desktop transitions)
+    useEffect(() => {
+        function handleResize() {
+            // If viewport is desktop size and mobile search is expanded, reset state
+            if (window.innerWidth >= 769 && isMobileSearchExpanded) {
+                document.body.classList.remove('mobile-search-active');
+                setIsMobileSearchExpanded(false);
+                setSearchInputFocused(false);
+            }
+        }
+
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, [isMobileSearchExpanded]);
+
+    // Hamburger menu click handler
     useEffect(() => {
         const hamburger = document.getElementById('sidebarToggle');
         if (!hamburger) return;
@@ -35,6 +102,7 @@ function Header() {
         return () => hamburger.removeEventListener('click', handleHamburgerClick);
     }, []);
 
+    // Sidebar close handlers (Escape key and click outside)
     useEffect(() => {
         function handleEsc(e) {
             if (e.key === 'Escape') {
@@ -70,11 +138,13 @@ function Header() {
     }, []);
 
     return (
-        <div className="header-bar">
+        <header className={`header-bar${isMobileSearchExpanded ? ' mobile-search-expanded' : ''}`}>
+            {/* Logo - Always visible */}
             <a href="/" className="nav-logo">
                 <img src="/img/favicon-32x32.png" alt="DAPS logo" />
             </a>
 
+            {/* Hamburger Menu - Always visible, maintains functionality throughout all states */}
             <button
                 className="hamburger menu"
                 id="sidebarToggle"
@@ -94,8 +164,33 @@ function Header() {
                 </svg>
             </button>
 
-            <SearchInterface />
-        </div>
+            {/* Single Search Interface - Responsive design handles mobile/desktop */}
+            {isSearchPage() && (
+                <div
+                    className={`search-container ${isMobileSearchExpanded ? 'mobile-expanded' : ''}`}
+                >
+                    <SearchInterface
+                        onMobileCollapse={handleMobileSearchCollapse}
+                        searchInputFocused={searchInputFocused}
+                        onSearchInputFocus={() => setSearchInputFocused(true)}
+                        onSearchInputBlur={() => setSearchInputFocused(false)}
+                    />
+                </div>
+            )}
+
+            {/* Mobile Search Trigger - Only visible on mobile */}
+            {isSearchPage() && (
+                <button
+                    className="header-search-trigger"
+                    type="button"
+                    aria-label="Search"
+                    onClick={isMobileSearchExpanded ? undefined : handleMobileSearchExpand}
+                    style={isMobileSearchExpanded ? { display: 'none' } : {}}
+                >
+                    {getIcon('mi:search')}
+                </button>
+            )}
+        </header>
     );
 }
 

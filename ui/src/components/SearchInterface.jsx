@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { getIcon, humanize } from '../utils/tools';
 import TooltipFactory from './Tooltip';
@@ -22,6 +22,8 @@ function HeaderSearchInner({
     onSearchInputBlur,
 }) {
     const location = useLocation();
+    // Generate unique key for search input to prevent browser autocomplete across navigation
+    const [inputKey, setInputKey] = useState(() => `search-${location.pathname}-${Date.now()}`);
     const headerSearchContext = useSearchCoordinator();
 
     // Local state for header search - always initialize all hooks
@@ -104,6 +106,23 @@ function HeaderSearchInner({
             setCurrentSort(searchConfig.defaultSort || 'alpha');
         }
     }, [searchConfig]);
+
+    // Prevent browser autocomplete by clearing search term and regenerating input key on location change
+    useEffect(() => {
+        // Clear any existing search term to prevent browser form restoration
+        setSearchTerm('');
+        // Generate new unique key to force React to create a fresh input element
+        setInputKey(`search-${location.pathname}-${Date.now()}`);
+
+        // Additional safeguard: programmatically clear the input field value after a short delay
+        const clearInputTimeout = setTimeout(() => {
+            if (searchInputRef.current && searchInputRef.current.value) {
+                searchInputRef.current.value = '';
+            }
+        }, 50);
+
+        return () => clearTimeout(clearInputTimeout);
+    }, [location.pathname]);
 
     // Load available instances from API on component mount
     useEffect(() => {
@@ -658,7 +677,9 @@ function HeaderSearchInner({
                         <div className="search-input-wrapper">
                             <input
                                 ref={searchInputRef}
+                                key={inputKey}
                                 type="text"
+                                name={inputKey}
                                 className="search-input"
                                 placeholder={getPlaceholder()}
                                 value={searchTerm}
@@ -683,8 +704,13 @@ function HeaderSearchInner({
                                     }, 150);
                                 }}
                                 disabled={isSearching}
-                                autoComplete="off"
+                                autoComplete="new-password"
+                                autoCapitalize="none"
+                                autoCorrect="off"
                                 spellCheck={false}
+                                data-form="false"
+                                data-lpignore="true"
+                                data-1p-ignore="true"
                                 aria-label={getPlaceholder()}
                                 aria-describedby="search-instructions"
                                 aria-expanded={showAutocomplete}
@@ -803,9 +829,7 @@ function HeaderSearchInner({
                                 </button>
                                 <TooltipFactory
                                     anchor={modulePopover.triggerRef.current}
-                                    text={
-                                        getModuleLabel() === 'Modules' ? 'Select Module' : 'Source'
-                                    }
+                                    text={`Select ${getModuleLabel()}`}
                                     show={showTooltips.module && !modulePopover.show}
                                 />
 

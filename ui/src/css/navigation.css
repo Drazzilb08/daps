@@ -25,7 +25,7 @@
     }
 
     /* DESKTOP: sidebar always visible */
-    @media (width >= 1024px) {
+    @media (width >= 769px) {
         nav.sidebar {
             left: 0;
             box-shadow: none;

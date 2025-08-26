@@ -113,7 +113,7 @@ function Header() {
             const hamburger = document.getElementById('sidebarToggle');
 
             // Only handle clicks outside when mobile sidebar is open
-            if (window.innerWidth >= 1024 || !body.classList.contains('sidebar-open')) {
+            if (window.innerWidth >= 769 || !body.classList.contains('sidebar-open')) {
                 return;
             }
 

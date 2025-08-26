@@ -44,7 +44,7 @@
     }
 
     /* DESKTOP: hamburger hidden, sidebar always visible */
-    @media (width >= 1024px) {
+    @media (width >= 769px) {
         .hamburger.menu {
             display: none;
         }
@@ -178,7 +178,7 @@
     }
 
     /* Hide hamburger on desktop */
-    @media (width >= 1024px) {
+    @media (width >= 769px) {
         .hamburger.menu {
             display: none;
         }

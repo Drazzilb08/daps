@@ -4,7 +4,7 @@
  * Integrates seamlessly with existing ToastProvider and API utilities
  */
 
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { useToast } from '../components/providers/ToastProvider';
 
 /**
@@ -355,44 +355,156 @@ export function useApiMutation(apiFunction, options = {}) {
 /**
  * Hook for managing multiple related API calls
  *
- * Useful for components that need to fetch different types of data
- * and coordinate loading states between multiple API endpoints.
+ * This hook is designed to work with a fixed set of queries defined at the component level.
+ * For dynamic queries, consider using individual useApiData hooks or a different pattern.
  *
  * @param {Object} queries - Object mapping query names to API configurations
  *
  * @returns {Object} Combined state for all queries
  *
  * @example
- * // Load multiple data sources
- * const { data, isLoading, errors } = useApiQueries({
+ * // Load multiple data sources with fixed query structure
+ * const queries = useMemo(() => ({
  *   config: { apiFunction: fetchConfig },
  *   instances: { apiFunction: fetchInstances },
  *   stats: { apiFunction: fetchJobStats },
- * });
+ * }), []);
+ *
+ * const { data, isLoading, errors } = useApiQueries(queries);
  *
  * // Access individual results
  * const config = data.config;
  * const instances = data.instances;
  * const isConfigLoading = isLoading.config;
+ *
+ * @deprecated This hook has limitations with React's rules of hooks.
+ * Consider using individual useApiData hooks for better flexibility and safety.
+ *
+ * @example
+ * // Recommended approach for multiple API calls
+ * const configQuery = useApiData({ apiFunction: fetchConfig });
+ * const instancesQuery = useApiData({ apiFunction: fetchInstances });
+ * const statsQuery = useApiData({ apiFunction: fetchJobStats });
+ *
+ * const isAnyLoading = configQuery.isLoading || instancesQuery.isLoading || statsQuery.isLoading;
  */
 export function useApiQueries(queries) {
-    const results = {};
-    const combinedData = {};
-    const combinedLoading = {};
-    const combinedErrors = {};
+    // Create a stable reference for the queries to prevent unnecessary re-renders
+    const stableQueries = useMemo(() => queries, [queries]);
 
-    // Execute each query with useApiData
-    Object.entries(queries).forEach(([key, config]) => {
-        results[key] = useApiData(config);
-        combinedData[key] = results[key].data;
-        combinedLoading[key] = results[key].isLoading;
-        combinedErrors[key] = results[key].error;
-    });
+    // Use individual state management instead of dynamic hook calls
+    const [results, setResults] = useState({});
+    const [combinedData, setCombinedData] = useState({});
+    const [combinedLoading, setCombinedLoading] = useState({});
+    const [combinedErrors, setCombinedErrors] = useState({});
+
+    // Track initialization
+    const [initialized, setInitialized] = useState(false);
+    const queryKeysRef = useRef([]);
+
+    // Initialize queries only once when the component mounts or queries change
+    useEffect(() => {
+        const queryKeys = Object.keys(stableQueries);
+
+        // Check if queries structure has changed
+        const keysChanged = JSON.stringify(queryKeys) !== JSON.stringify(queryKeysRef.current);
+
+        if (!initialized || keysChanged) {
+            console.warn(
+                'useApiQueries: This hook has limitations due to React rules of hooks. ' +
+                    'Consider using individual useApiData hooks for better safety and flexibility.'
+            );
+
+            queryKeysRef.current = queryKeys;
+            setInitialized(true);
+
+            // Initialize empty states for all query keys
+            const initialData = {};
+            const initialLoading = {};
+            const initialErrors = {};
+
+            queryKeys.forEach(key => {
+                initialData[key] = null;
+                initialLoading[key] = false;
+                initialErrors[key] = null;
+            });
+
+            setCombinedData(initialData);
+            setCombinedLoading(initialLoading);
+            setCombinedErrors(initialErrors);
+        }
+    }, [stableQueries, initialized]);
+
+    // Execute queries manually using the base API pattern
+    useEffect(() => {
+        if (!initialized) return;
+
+        const executeQueries = async () => {
+            const newResults = {};
+            const newData = {};
+            const newLoading = {};
+            const newErrors = {};
+
+            // Execute all queries sequentially to avoid race conditions
+            for (const [key, config] of Object.entries(stableQueries)) {
+                try {
+                    newLoading[key] = true;
+                    newErrors[key] = null;
+
+                    // Update loading state immediately
+                    setCombinedLoading(prev => ({ ...prev, [key]: true }));
+
+                    const { apiFunction, params = [], options = {} } = config;
+
+                    if (typeof apiFunction === 'function') {
+                        const result = await apiFunction(...params);
+                        const processedData = options.transform
+                            ? options.transform(result)
+                            : result;
+
+                        newData[key] = processedData;
+                        newResults[key] = {
+                            data: processedData,
+                            isLoading: false,
+                            error: null,
+                            hasExecuted: true,
+                        };
+                    }
+                } catch (error) {
+                    console.error(`useApiQueries - Error in query ${key}:`, error);
+                    newErrors[key] = error;
+                    newData[key] = null;
+                    newResults[key] = { data: null, isLoading: false, error, hasExecuted: true };
+                }
+
+                newLoading[key] = false;
+            }
+
+            // Update all states at once to prevent multiple re-renders
+            setResults(newResults);
+            setCombinedData(newData);
+            setCombinedLoading(newLoading);
+            setCombinedErrors(newErrors);
+        };
+
+        executeQueries();
+    }, [stableQueries, initialized]);
 
     // Calculate aggregate states
-    const isLoading = Object.values(combinedLoading).some(loading => loading);
-    const hasError = Object.values(combinedErrors).some(error => error);
-    const hasExecuted = Object.values(results).every(result => result.hasExecuted);
+    const isAnyLoading = useMemo(
+        () => Object.values(combinedLoading).some(loading => loading),
+        [combinedLoading]
+    );
+
+    const hasAnyError = useMemo(
+        () => Object.values(combinedErrors).some(error => error),
+        [combinedErrors]
+    );
+
+    const allExecuted = useMemo(
+        () => Object.values(results).every(result => result?.hasExecuted),
+        [results]
+    );
 
     return {
         data: combinedData,
@@ -400,9 +512,9 @@ export function useApiQueries(queries) {
         errors: combinedErrors,
 
         // Aggregate states
-        isAnyLoading: isLoading,
-        hasAnyError: hasError,
-        allExecuted: hasExecuted,
+        isAnyLoading,
+        hasAnyError,
+        allExecuted,
 
         // Individual query controls
         queries: results,

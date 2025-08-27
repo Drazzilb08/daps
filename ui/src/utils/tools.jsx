@@ -1,4 +1,4 @@
-import { fetchConfig } from './api.js';
+import { fetchConfig } from './api';
 
 let isDirty = false;
 

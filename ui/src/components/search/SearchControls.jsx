@@ -7,6 +7,7 @@ import TooltipFactory from '../Tooltip';
 import Popover from '../Popover';
 import usePopover from '../../hooks/usePopover';
 import { useSearchCoordinator } from '../../contexts/SearchCoordinatorProvider';
+import { fetchInstances, fetchPlexLibrariesByInstance } from '../../utils/api';
 
 // Internal component that uses the header search context
 function SearchControlsInner(props) {
@@ -440,22 +441,18 @@ function SearchControlsCore({
         setLoadingLibraries(true);
         try {
             // Fetch instances first to get Plex instances
-            const instancesResponse = await fetch('/api/instances/');
-            const instancesData = await instancesResponse.json();
+            const instancesData = await fetchInstances();
 
-            const plexInstances = instancesData.data?.plex || {};
+            const plexInstances = instancesData?.plex || {};
             const librariesWithInstance = [];
 
             // Load libraries for each Plex instance and track which instance they belong to
             for (const [instanceName] of Object.entries(plexInstances)) {
                 try {
-                    const librariesResponse = await fetch(
-                        `/api/plex/libraries?instance=${encodeURIComponent(instanceName)}`
-                    );
-                    const librariesData = await librariesResponse.json();
+                    const libraries = await fetchPlexLibrariesByInstance(instanceName);
 
-                    if (librariesData.success && librariesData.data?.libraries) {
-                        librariesData.data.libraries.forEach(lib => {
+                    if (libraries && libraries.length > 0) {
+                        libraries.forEach(lib => {
                             librariesWithInstance.push({
                                 name: lib,
                                 instance: instanceName,
@@ -487,27 +484,26 @@ function SearchControlsCore({
     useEffect(() => {
         const loadInstances = async () => {
             try {
-                const response = await fetch('/api/instances/');
-                const data = await response.json();
+                const data = await fetchInstances();
 
-                if (data.success && data.data) {
+                if (data) {
                     const radarrInstances = [];
                     const sonarrInstances = [];
                     const plexInstances = [];
 
                     // Extract Radarr instances
-                    if (data.data.radarr) {
-                        radarrInstances.push(...Object.keys(data.data.radarr));
+                    if (data.radarr) {
+                        radarrInstances.push(...Object.keys(data.radarr));
                     }
 
                     // Extract Sonarr instances
-                    if (data.data.sonarr) {
-                        sonarrInstances.push(...Object.keys(data.data.sonarr));
+                    if (data.sonarr) {
+                        sonarrInstances.push(...Object.keys(data.sonarr));
                     }
 
                     // Extract Plex instances
-                    if (data.data.plex) {
-                        plexInstances.push(...Object.keys(data.data.plex));
+                    if (data.plex) {
+                        plexInstances.push(...Object.keys(data.plex));
                     }
 
                     setAvailableInstances({

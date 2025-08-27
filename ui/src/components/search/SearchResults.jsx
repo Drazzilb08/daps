@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import GridView from './views/GridView';
 import ListView from './views/ListView';
 import Tooltip from '../Tooltip';
+import { getPosterPreviewUrl } from '../../utils/api';
 
 /**
  * Extracts image URL from search result
@@ -12,7 +13,11 @@ const getImageUrl = result => {
     const posterData = result.original || result;
     if (result.imageUrl) return result.imageUrl;
     if (posterData.location && posterData.file) {
-        return `/api/poster/preview?location=${encodeURIComponent(posterData.location)}&file=${encodeURIComponent(posterData.relativeFile || posterData.file)}&thumb=1`;
+        return getPosterPreviewUrl({
+            location: posterData.location,
+            file: posterData.relativeFile || posterData.file,
+            thumb: 1,
+        });
     }
     return '';
 };

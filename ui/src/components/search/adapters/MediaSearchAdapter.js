@@ -1,7 +1,11 @@
 // ui/src/components/search/adapters/MediaSearchAdapter.js
 // Business logic adapter for media search operations
 
-import { fetchMediaCache, fetchPlexMediaCache } from '../../../utils/api';
+import {
+    fetchMediaCache,
+    fetchPlexMediaCache,
+    getPosterPreviewUrlByPath,
+} from '../../../utils/api';
 
 /**
  * MediaSearchAdapter - Business logic for media management operations
@@ -639,7 +643,7 @@ export const mediaSearchAdapter = {
     getPosterUrl(item) {
         // Priority 1: renamed_file (local file) - serve via API endpoint
         if (item.renamed_file) {
-            return `/api/poster/preview?path=${encodeURIComponent(item.renamed_file)}`;
+            return getPosterPreviewUrlByPath(item.renamed_file);
         }
 
         // Priority 2: poster_url (TMDB/external)

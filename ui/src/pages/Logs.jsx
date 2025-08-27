@@ -1,5 +1,11 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { fetchLogFiles, fetchLogContent, fetchLogModules } from '../utils/api';
+import {
+    fetchLogFiles,
+    fetchLogContent,
+    fetchLogModules,
+    uploadLogToPaste,
+    getLogDownloadUrl,
+} from '../utils/api';
 import { humanize, getIcon } from '../utils/tools';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 import { moduleOrder } from '../utils/constants/constants';
@@ -283,19 +289,9 @@ export default function LogViewer() {
 
         setUploadState(s => ({ ...s, uploading: true, linkOpened: false }));
         try {
-            const res = await fetch('https://dpaste.com/api/v2/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({
-                    content: logText,
-                    syntax: 'text',
-                    expiry_days: '1',
-                }),
-            });
-            if (!res.ok) throw new Error('Upload failed');
-            const dpasteUrl = await res.text();
+            const result = await uploadLogToPaste(logText);
             setUploadState({
-                lastUrl: dpasteUrl,
+                lastUrl: result.url,
                 lastData: logText,
                 lastTime: now,
                 uploading: false,
@@ -318,7 +314,7 @@ export default function LogViewer() {
             return;
         }
         const link = document.createElement('a');
-        link.href = `/api/logs/${selectedModule}/${selectedLogFile}`;
+        link.href = getLogDownloadUrl(selectedModule, selectedLogFile);
         link.download = selectedLogFile;
         document.body.appendChild(link);
         link.click();

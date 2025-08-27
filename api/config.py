@@ -1,3 +1,10 @@
+"""
+Configuration management API endpoints for DAPS.
+
+Provides configuration retrieval, updates, and validation
+with support for section-based filtering and change tracking.
+"""
+
 import copy
 from typing import Any, Optional
 
@@ -19,19 +26,55 @@ def save_config_model(cfg: DapsConfig) -> None:
     save_config(cfg)
 
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/api",
+    tags=["Configuration"],
+    responses={
+        500: {"description": "Internal server error"},
+        400: {"description": "Configuration validation error"},
+    },
+)
 
 
-@router.get("/api/config")
-async def get_config_route(
+@router.get(
+    "/config",
+    summary="Get configuration",
+    description="Retrieve DAPS configuration data with optional section filtering.",
+    responses={
+        200: {
+            "description": "Configuration retrieved successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "message": "Configuration retrieved successfully",
+                        "data": {"instances": {"plex": {}, "radarr": {}, "sonarr": {}}},
+                    }
+                }
+            },
+        },
+        404: {"description": "Configuration section not found"},
+    },
+)
+async def get_config(
     config: DapsConfig = Depends(get_config),
     logger: Any = Depends(get_logger),
-    section: Optional[str] = Query(None, description="Optional config section"),
+    section: Optional[str] = Query(
+        None, description="Optional config section to retrieve"
+    ),
 ) -> JSONResponse:
     """
-    Retrieve configuration data, optionally filtered by section.
+    Retrieve DAPS configuration data.
 
-    Returns the full configuration or a specific section if requested.
+    Returns the complete configuration or a specific section if requested.
+    Used by the frontend for populating configuration forms and displaying
+    current settings.
+
+    Args:
+        section: Optional section name to filter results (e.g., 'instances', 'modules')
+
+    Returns:
+        Configuration data (complete or filtered by section)
     """
     logger.debug(f"Serving GET /api/config section={section!r}")
 
@@ -62,14 +105,41 @@ async def get_config_route(
         )
 
 
-@router.post("/api/config")
-async def update_config_route(
+@router.post(
+    "/config",
+    summary="Update configuration",
+    description="Update DAPS configuration with validation and change tracking.",
+    responses={
+        200: {
+            "description": "Configuration updated successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "message": "Configuration updated with 3 changes",
+                        "data": {"changes_count": 3},
+                    }
+                }
+            },
+        },
+        400: {"description": "Configuration validation failed"},
+    },
+)
+async def update_config(
     request: Request, logger: Any = Depends(get_logger)
 ) -> JSONResponse:
     """
-    Update configuration with provided data.
+    Update DAPS configuration with validation.
 
-    Validates the incoming configuration and saves changes to disk.
+    Accepts partial or complete configuration updates, validates them
+    against the configuration schema, tracks changes for logging,
+    and persists valid changes to disk.
+
+    The request body should contain configuration data in the same
+    structure as the GET endpoint returns.
+
+    Returns:
+        Confirmation of update with count of changes applied
     """
     try:
         incoming = await request.json()
@@ -110,6 +180,6 @@ async def update_config_route(
         logger.error(f"Configuration update failed: {e}")
         return error(
             f"Configuration update failed: {str(e)}",
-            "CONFIG_UPDATE_ERROR",
+            code="CONFIG_UPDATE_ERROR",
             status_code=500,
         )

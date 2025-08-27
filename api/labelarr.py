@@ -1,12 +1,27 @@
-from typing import Any, Dict, List, Optional
+"""
+Labelarr tag synchronization API endpoints for DAPS.
+
+Provides tag synchronization functionality between ARR services
+(Radarr/Sonarr) and Plex for automated label management.
+"""
+
+from typing import Any, List, Optional
 
 from fastapi import APIRouter, Depends, Request
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from api.utils import error, get_database, get_logger, ok
 from util.config import DapsConfig, load_config
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/api",
+    tags=["Labelarr"],
+    responses={
+        500: {"description": "Internal server error"},
+        404: {"description": "Instance or resource not found"},
+    },
+)
 
 
 class TagActions(BaseModel):
@@ -32,26 +47,56 @@ def get_config() -> DapsConfig:
     return load_config()
 
 
-@router.post("/api/labelarr/sync")
+@router.post(
+    "/labelarr/sync",
+    summary="Sync tags to Plex",
+    description="Synchronize tags from ARR services to Plex labels through background job processing.",
+    responses={
+        200: {
+            "description": "Tag sync job created successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "message": "Labelarr sync job created successfully",
+                        "data": {
+                            "job_id": 123,
+                            "status": "queued",
+                            "media_cache_id": 456,
+                            "source_instance": "radarr-main",
+                            "plex_instance": "plex-main",
+                        },
+                    }
+                }
+            },
+        },
+        404: {"description": "ARR or Plex instance not found in configuration"},
+    },
+)
 async def sync_tags_to_plex(
     request_data: SyncTagsRequest,
     request: Request,
     config: DapsConfig = Depends(get_config),
     logger: Any = Depends(get_logger),
-) -> Dict[str, Any]:
+) -> JSONResponse:
     """
-    Sync tags from ARR instance to Plex labels.
+    Synchronize tags from ARR instance to Plex labels.
 
-    Creates a background job to handle the sync operation using the labelarr module.
+    Creates a background job to handle the tag sync operation using the
+    labelarr module. Tags can be explicitly added or removed, and the
+    operation supports dry-run mode for testing.
+
+    The sync process maps media between ARR services and Plex, then
+    applies the specified tag operations to maintain label consistency.
 
     Args:
-        request_data: Sync request containing media IDs, tags, and target Plex instance
+        request_data: Sync request with media IDs, tag operations, and instances
         request: FastAPI request object for database access
-        config: Application configuration
-        logger: Logger instance
+        config: Application configuration for instance validation
+        logger: Logger instance for operation tracking
 
     Returns:
-        Dict containing job_id for tracking sync progress
+        Job ID and status for monitoring sync progress
     """
     try:
         logger.info(
@@ -139,7 +184,7 @@ async def sync_tags_to_plex(
                     "status": "queued",
                     "media_cache_id": request_data.media_cache_id,
                     "source_instance": request_data.source_instance,
-                    "plex_instance": plex_instance,  # Use determined plex_instance
+                    "plex_instance": plex_instance,
                 },
             )
         else:

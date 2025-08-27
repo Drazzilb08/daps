@@ -1,6 +1,11 @@
-# api/modules.py
+"""
+Module execution API endpoints for DAPS.
 
-from typing import Any, Optional
+Provides module orchestration functionality including execution,
+status monitoring, cancellation, and run state management.
+"""
+
+from typing import Any
 
 from fastapi import APIRouter, Depends, Request
 from fastapi.responses import JSONResponse
@@ -11,14 +16,25 @@ from util.database import DapsDB
 
 
 class RunRequest(BaseModel):
+    """Request model for running a module."""
+
     module: str
 
 
 class CancelRequest(BaseModel):
+    """Request model for canceling a module."""
+
     module: str
 
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/api",
+    tags=["Modules"],
+    responses={
+        500: {"description": "Internal server error"},
+        400: {"description": "Bad request or invalid module state"},
+    },
+)
 
 
 def get_module_orchestrator(request: Request) -> Any:
@@ -29,14 +45,45 @@ def get_module_orchestrator(request: Request) -> Any:
     return orchestrator
 
 
-@router.post("/api/run")
+@router.post(
+    "/modules/run",
+    summary="Execute module",
+    description="Execute a DAPS module immediately with real-time status monitoring.",
+    responses={
+        200: {
+            "description": "Module executed successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "message": "Module sync_gdrive completed successfully",
+                        "data": {"module": "sync_gdrive", "status": "completed"},
+                    }
+                }
+            },
+        },
+        400: {"description": "Module already running or invalid module name"},
+    },
+)
 async def run_module(
     request: Request,
     data: RunRequest,
     logger: Any = Depends(get_logger),
     orchestrator: Any = Depends(get_module_orchestrator),
 ) -> JSONResponse:
-    """Run a module immediately via job queue with polling"""
+    """
+    Execute a DAPS module immediately.
+
+    Runs the specified module through the job queue system with
+    real-time monitoring. Prevents duplicate executions of the
+    same module and provides immediate feedback on completion.
+
+    Args:
+        data: Request containing the module name to execute
+
+    Returns:
+        Module execution result with status and any output data
+    """
     module = data.module
     logger.debug("Serving POST /api/run for module: %s", module)
 
@@ -77,14 +124,48 @@ async def run_module(
         )
 
 
-@router.get("/api/status")
+@router.get(
+    "/modules/status",
+    summary="Get module status",
+    description="Retrieve the current execution status of a specific module.",
+    responses={
+        200: {
+            "description": "Module status retrieved successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "message": "Status retrieved for module sync_gdrive",
+                        "data": {
+                            "running": False,
+                            "last_run": "2024-01-01T12:00:00Z",
+                            "status": "completed",
+                        },
+                    }
+                }
+            },
+        }
+    },
+)
 async def module_status(
     request: Request,
     module: str,
     logger: Any = Depends(get_logger),
     orchestrator: Any = Depends(get_module_orchestrator),
 ) -> JSONResponse:
-    """Get module status via job queue"""
+    """
+    Get the current execution status of a module.
+
+    Returns detailed status information including whether the
+    module is currently running, last execution time, and
+    current state for monitoring purposes.
+
+    Args:
+        module: Name of the module to check status for
+
+    Returns:
+        Module status with execution state and timestamps
+    """
     try:
         status = orchestrator.get_module_status(module)
 
@@ -99,14 +180,45 @@ async def module_status(
         )
 
 
-@router.post("/api/cancel")
+@router.post(
+    "/modules/cancel",
+    summary="Cancel module execution",
+    description="Cancel a currently running module and terminate its execution.",
+    responses={
+        200: {
+            "description": "Module cancelled successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "message": "Module sync_gdrive cancelled successfully",
+                        "data": {"module": "sync_gdrive", "status": "cancelled"},
+                    }
+                }
+            },
+        },
+        400: {"description": "Module not running or cannot be cancelled"},
+    },
+)
 async def cancel_module(
     request: Request,
     data: CancelRequest,
     logger: Any = Depends(get_logger),
     orchestrator: Any = Depends(get_module_orchestrator),
 ) -> JSONResponse:
-    """Cancel a running module via job queue"""
+    """
+    Cancel a currently running module.
+
+    Attempts to gracefully terminate a running module execution.
+    The module will be marked as cancelled and any cleanup
+    operations will be performed.
+
+    Args:
+        data: Request containing the module name to cancel
+
+    Returns:
+        Cancellation confirmation with updated module status
+    """
     module = data.module
 
     try:
@@ -134,13 +246,49 @@ async def cancel_module(
         )
 
 
-@router.get("/api/run_state")
+@router.get(
+    "/modules/run-states",
+    summary="Get all module run states",
+    description="Retrieve run state information for all registered modules.",
+    responses={
+        200: {
+            "description": "Run states retrieved successfully",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "success": True,
+                        "message": "Retrieved 5 run states",
+                        "data": {
+                            "run_states": [
+                                {
+                                    "module": "sync_gdrive",
+                                    "last_run": "2024-01-01T12:00:00Z",
+                                    "status": "completed",
+                                    "duration": 120,
+                                }
+                            ]
+                        },
+                    }
+                }
+            },
+        }
+    },
+)
 async def get_all_run_states(
     request: Request,
     logger: Any = Depends(get_logger),
     db: DapsDB = Depends(get_database),
 ) -> JSONResponse:
-    """Get all run states from database"""
+    """
+    Retrieve run state information for all modules.
+
+    Returns execution history and current state for all
+    registered DAPS modules including timestamps, durations,
+    and execution results.
+
+    Returns:
+        Complete run state information for all modules
+    """
     try:
         run_states = db.run_state.get_all()
 
@@ -154,120 +302,4 @@ async def get_all_run_states(
             f"Error getting run states: {str(e)}",
             code="RUN_STATE_ERROR",
             status_code=500,
-        )
-
-
-# Additional job-related endpoints for monitoring
-@router.get("/api/job/{job_id}")
-async def get_job_status(
-    request: Request,
-    job_id: int,
-    logger: Any = Depends(get_logger),
-    db: DapsDB = Depends(get_database),
-) -> JSONResponse:
-    """Get status of a specific job"""
-    try:
-        job = db.worker.get_job_by_id("jobs", job_id)
-
-        if not job:
-            return error(
-                f"Job {job_id} not found", code="JOB_NOT_FOUND", status_code=404
-            )
-
-        return ok(f"Job {job_id} status retrieved", data={"job": job})
-
-    except Exception as e:
-        logger.error(f"Error getting job {job_id}: {e}")
-        return error(
-            f"Error getting job status: {str(e)}",
-            code="JOB_STATUS_ERROR",
-            status_code=500,
-        )
-
-
-@router.get("/api/jobs")
-async def list_jobs(
-    request: Request,
-    status: Optional[str] = None,
-    limit: int = 50,
-    logger: Any = Depends(get_logger),
-    db: DapsDB = Depends(get_database),
-) -> JSONResponse:
-    """List recent jobs with optional filtering"""
-    try:
-        result = db.worker.list_jobs(status=status, limit=limit)
-
-        if result["success"]:
-            return ok(result["message"], data=result["data"])
-        else:
-            return error(
-                result["message"],
-                code=result.get("error_code", "LIST_JOBS_ERROR"),
-                status_code=500,
-            )
-
-    except Exception as e:
-        logger.error(f"Error listing jobs: {e}")
-        return error(
-            f"Error listing jobs: {str(e)}", code="LIST_JOBS_ERROR", status_code=500
-        )
-
-
-@router.get("/api/jobs/stats")
-async def get_job_stats(
-    request: Request,
-    logger: Any = Depends(get_logger),
-    db: DapsDB = Depends(get_database),
-) -> JSONResponse:
-    """Get job queue statistics"""
-    try:
-        result = db.worker.job_stats("jobs")
-
-        if result["success"]:
-            return ok(result["message"], data={"stats": result["data"]})
-        else:
-            return error(
-                result["message"],
-                code=result.get("error_code", "JOB_STATS_ERROR"),
-                status_code=500,
-            )
-
-    except Exception as e:
-        logger.error(f"Error getting job stats: {e}")
-        return error(
-            f"Error getting job stats: {str(e)}",
-            code="JOB_STATS_ERROR",
-            status_code=500,
-        )
-
-
-@router.post("/api/job/{job_id}/retry")
-async def retry_job(
-    request: Request,
-    job_id: int,
-    logger: Any = Depends(get_logger),
-    db: DapsDB = Depends(get_database),
-) -> JSONResponse:
-    """Retry a failed job"""
-    try:
-        success = db.worker.reset_job_to_pending("jobs", job_id)
-
-        if success is None:
-            return error(
-                f"Job {job_id} not found", code="JOB_NOT_FOUND", status_code=404
-            )
-        elif success is False:
-            return error(
-                f"Job {job_id} cannot be retried (not in error/success state)",
-                code="JOB_NOT_RETRYABLE",
-                status_code=400,
-            )
-        else:
-            logger.info(f"Job {job_id} reset to pending for retry")
-            return ok(f"Job {job_id} queued for retry", data={"job_id": job_id})
-
-    except Exception as e:
-        logger.error(f"Error retrying job {job_id}: {e}")
-        return error(
-            f"Error retrying job: {str(e)}", code="JOB_RETRY_ERROR", status_code=500
         )

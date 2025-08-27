@@ -1,10 +1,9 @@
-import os
 import threading
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Any, AsyncGenerator
 
-from fastapi import APIRouter, Depends, FastAPI, HTTPException, Request
+from fastapi import APIRouter, FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import (
     FileResponse,
@@ -16,18 +15,22 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from api import (
     config as config_router,
-    instances as plex_router,
-    jobs as job_router,
+    instances as instances_router,
+    jobs as jobs_router,
     labelarr as labelarr_router,
     logs as logs_router,
+    media as media_router,
     modules as modules_router,
     notifications as notifications_router,
-    poster as poster_search_router,
+    posters as posters_router,
+    system as system_router,
+    webhooks as webhooks_router,
 )
-from api.utils import error, get_logger, ok
+from api.utils import error, get_logger
 from util.database import DapsDB
 from util.job_processor import process_job
-from util.version import get_version
+
+# Version functionality now in system.py
 
 
 @asynccontextmanager
@@ -165,7 +168,31 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
                 log.error(f"Error during FastAPI shutdown: {e}", exc_info=True)
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    title="DAPS API",
+    description="Dynamic Asset and Poster System - Media automation and poster management API",
+    version="3.0.0-alpha",
+    lifespan=lifespan,
+    tags_metadata=[
+        {"name": "System", "description": "System-level operations and utilities"},
+        {
+            "name": "Configuration",
+            "description": "Application configuration management",
+        },
+        {
+            "name": "Service Instances",
+            "description": "Plex, Radarr, and Sonarr instance management",
+        },
+        {"name": "Jobs", "description": "Background job queue management"},
+        {"name": "Modules", "description": "Module execution and orchestration"},
+        {"name": "Logs", "description": "Log file access and management"},
+        {"name": "Media Cache", "description": "Media cache operations and management"},
+        {"name": "Posters", "description": "Poster management and statistics"},
+        {"name": "Webhooks", "description": "Webhook processing and automation"},
+        {"name": "Notifications", "description": "Notification testing and management"},
+        {"name": "Labelarr", "description": "Tag synchronization between ARR and Plex"},
+    ],
+)
 router = APIRouter()
 
 # Mount static directories - all served from templates after build
@@ -234,102 +261,22 @@ async def handle_validation_exception(
     )
 
 
+# Register API routers with proper organization
+app.include_router(system_router.router)
 app.include_router(config_router.router)
-app.include_router(logs_router.router)
+app.include_router(instances_router.router)
+app.include_router(jobs_router.router)
 app.include_router(modules_router.router)
-app.include_router(plex_router.router)
+app.include_router(logs_router.router)
+app.include_router(media_router.router)
+app.include_router(posters_router.router)
+app.include_router(webhooks_router.router)
 app.include_router(notifications_router.router)
-app.include_router(poster_search_router.router)
 app.include_router(labelarr_router.router)
-app.include_router(job_router.router)
 app.include_router(router)
 
 
-@app.get("/api/version")
-async def get_version_route(logger: Any = Depends(get_logger)) -> JSONResponse:
-    """FIXED: Standardized response format"""
-    try:
-        version = get_version()
-        logger.debug(f"Serving GET /api/version: {version}")
-        return ok("Version retrieved", {"version": version})
-    except Exception as e:
-        logger.error(f"Error getting version: {e}")
-        return error(
-            f"Error getting version: {str(e)}", code="VERSION_ERROR", status_code=500
-        )
-
-
-@app.get("/api/list")
-async def list_dir(path: str = "/", logger: Any = Depends(get_logger)) -> JSONResponse:
-    """FIXED: Standardized response format"""
-    try:
-        resolved = Path(path).expanduser().resolve()
-        if not resolved.exists() or not resolved.is_dir():
-            return error(
-                "Invalid path",
-                code="INVALID_PATH",
-                status_code=400,
-                data={"directories": [], "exists": False, "writable": False},
-            )
-
-        dirs = [
-            p.name
-            for p in resolved.iterdir()
-            if p.is_dir() and not p.name.startswith(".")
-        ]
-        dirs.sort()
-
-        return ok(
-            f"Listed {len(dirs)} directories",
-            {
-                "directories": dirs,
-                "exists": True,
-                "writable": os.access(resolved, os.W_OK),
-            },
-        )
-    except Exception as e:
-        logger.error(f"Error listing directory {path}: {e}")
-        return error(
-            f"Error listing directory: {str(e)}", code="LIST_DIR_ERROR", status_code=500
-        )
-
-
-@app.post("/api/create-folder")
-async def create_folder(path: str, logger: Any = Depends(get_logger)) -> JSONResponse:
-    """FIXED: Standardized response format"""
-    try:
-        resolved = Path(path).expanduser().resolve()
-        logger.info(f"Creating folder: {resolved}")
-        resolved.mkdir(parents=True, exist_ok=False)
-
-        return ok("Folder created", {"path": str(resolved)})
-    except Exception as e:
-        logger.error(f"Error creating folder {path}: {e}")
-        return error(
-            f"Error creating folder: {str(e)}",
-            code="CREATE_FOLDER_ERROR",
-            status_code=500,
-        )
-
-
-@app.post("/api/test-endpoint")
-async def test_endpoint(
-    request: Request, logger: Any = Depends(get_logger)
-) -> JSONResponse:
-    """FIXED: Standardized response format"""
-    logger.debug("Serving POST /api/test-endpoint")
-    try:
-        data = await request.json()
-        logger.debug(f"Received data: {data}")
-
-        return ok("Test endpoint working", {"received": data})
-    except Exception as e:
-        logger.error(f"Error reading data: {e}")
-        return error(
-            f"Error reading request data: {str(e)}",
-            code="REQUEST_DATA_ERROR",
-            status_code=400,
-        )
+# Generic endpoints moved to system.py router
 
 
 @app.get("/", response_class=HTMLResponse)

@@ -5,10 +5,17 @@ from fastapi import APIRouter, Depends
 from api.utils import error, get_database, get_logger, ok
 from util.database import DapsDB
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/api",
+    tags=["Jobs"],
+    responses={
+        500: {"description": "Internal server error"},
+        404: {"description": "Job not found"},
+    },
+)
 
 
-@router.get("/api/jobs/{job_id}")
+@router.get("/jobs/{job_id}")
 async def get_job_detail(
     job_id: int, logger: Any = Depends(get_logger), db: DapsDB = Depends(get_database)
 ) -> Dict[str, Any]:
@@ -30,7 +37,7 @@ async def get_job_detail(
         )
 
 
-@router.get("/api/jobs")
+@router.get("/jobs")
 async def list_jobs(
     status: Optional[str] = None,
     limit: int = 50,
@@ -52,11 +59,11 @@ async def list_jobs(
     except Exception as e:
         logger.error(f"Error listing jobs: {e}")
         return error(
-            f"Error listing jobs: {str(e)}", "JOBS_LIST_ERROR", status_code=500
+            f"Error listing jobs: {str(e)}", code="JOBS_LIST_ERROR", status_code=500
         )
 
 
-@router.get("/api/jobs/stats")
+@router.get("/jobs/stats")
 async def get_job_stats(
     logger: Any = Depends(get_logger), db: DapsDB = Depends(get_database)
 ) -> Dict[str, Any]:
@@ -78,7 +85,7 @@ async def get_job_stats(
         )
 
 
-@router.post("/api/job/{job_id}/retry")
+@router.post("/jobs/{job_id}/retry")
 async def retry_job(
     job_id: int, logger: Any = Depends(get_logger), db: DapsDB = Depends(get_database)
 ) -> Dict[str, Any]:

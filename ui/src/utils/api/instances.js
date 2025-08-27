@@ -12,7 +12,7 @@ export async function fetchInstances(forceRefresh = false) {
     return await withCache(
         CACHE_KEYS.INSTANCES,
         async () => {
-            const res = await fetch('/api/instances/');
+            const res = await fetch('/api/instances');
             const data = await handleApiResponse(res);
             return extractData(data);
         },
@@ -123,9 +123,7 @@ export async function fetchPlexLibrariesByInstance(instanceName, forceRefresh = 
     return await withCache(
         cacheKey,
         async () => {
-            const response = await fetch(
-                `/api/plex/libraries?instance=${encodeURIComponent(instanceName)}`
-            );
+            const response = await fetch(`/api/plex/${encodeURIComponent(instanceName)}/libraries`);
             const data = await handleApiResponse(response);
             return extractData(data, 'libraries') || [];
         },

@@ -79,6 +79,15 @@ class MediaCache(DatabaseBase):
             "season_number",
             "poster_url",
             "arr_id",
+            # Advanced search filtering fields
+            "status",
+            "rating",
+            "studio",
+            "edition",
+            "runtime",
+            "language",
+            "monitored",
+            "genre",
         ]
         record = {k: item.get(k) for k in required_keys}
         record["asset_type"] = asset_type
@@ -95,6 +104,7 @@ class MediaCache(DatabaseBase):
             "season_number",
             "poster_url",
             "arr_id",
+            "runtime",
         ]:
             if record[field] == "" or (
                 isinstance(record[field], str) and record[field].strip() == ""
@@ -116,8 +126,9 @@ class MediaCache(DatabaseBase):
             INSERT INTO media_cache
                 (identity_key, asset_type, title, normalized_title,
                 year, tmdb_id, tvdb_id, imdb_id, folder, tags,
-                season_number, matched, instance_name, source, poster_url, arr_id)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                season_number, matched, instance_name, source, poster_url, arr_id,
+                status, rating, studio, edition, runtime, language, monitored, genre)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(identity_key)
             DO UPDATE SET
                 normalized_title=excluded.normalized_title,
@@ -125,7 +136,15 @@ class MediaCache(DatabaseBase):
                 tags=excluded.tags,
                 source=excluded.source,
                 poster_url=excluded.poster_url,
-                arr_id=excluded.arr_id
+                arr_id=excluded.arr_id,
+                status=excluded.status,
+                rating=excluded.rating,
+                studio=excluded.studio,
+                edition=excluded.edition,
+                runtime=excluded.runtime,
+                language=excluded.language,
+                monitored=excluded.monitored,
+                genre=excluded.genre
                 -- Preserve: matched, original_file, renamed_file, file_hash, plex_mapping_id
                 -- These fields should only be updated by specific operations, not ARR sync
             """,
@@ -146,6 +165,14 @@ class MediaCache(DatabaseBase):
                 instance_type,
                 record.get("poster_url") or None,
                 record.get("arr_id") or None,
+                record.get("status") or None,
+                record.get("rating") or None,
+                record.get("studio") or None,
+                record.get("edition") or None,
+                record.get("runtime") or None,
+                record.get("language") or None,
+                record.get("monitored", True),  # Default to True if not specified
+                record.get("genre") or None,
             ),
         )
 
@@ -349,6 +376,14 @@ class MediaCache(DatabaseBase):
         file_hash: Optional[Any] = None,
         poster_url: Optional[Any] = None,
         arr_id: Optional[Any] = None,
+        # Advanced search fields
+        status: Optional[Any] = None,
+        rating: Optional[Any] = None,
+        studio: Optional[Any] = None,
+        edition: Optional[Any] = None,
+        runtime: Optional[Any] = None,
+        language: Optional[Any] = None,
+        monitored: Optional[Any] = None,
     ) -> None:
         """Update fields for a given media record."""
         set_clauses = []
@@ -377,6 +412,35 @@ class MediaCache(DatabaseBase):
         if arr_id is not None:
             set_clauses.append("arr_id=?")
             params.append(arr_id)
+
+        # Advanced search fields
+        if status is not None:
+            set_clauses.append("status=?")
+            params.append(status)
+
+        if rating is not None:
+            set_clauses.append("rating=?")
+            params.append(rating)
+
+        if studio is not None:
+            set_clauses.append("studio=?")
+            params.append(studio)
+
+        if edition is not None:
+            set_clauses.append("edition=?")
+            params.append(edition)
+
+        if runtime is not None:
+            set_clauses.append("runtime=?")
+            params.append(runtime)
+
+        if language is not None:
+            set_clauses.append("language=?")
+            params.append(language)
+
+        if monitored is not None:
+            set_clauses.append("monitored=?")
+            params.append(int(bool(monitored)))
 
         if not set_clauses:
             return
@@ -434,7 +498,9 @@ class MediaCache(DatabaseBase):
 
         # Add/update items that are present in fresh_media
         for key, item in fresh_map.items():
+            # Use standard upsert (now includes genre and cast as simple fields)
             self.upsert(item, asset_type, instance_type, instance_name)
+
             if key not in db_map and logger:
                 season = item.get("season_number")
                 season_str = f" Season: {season}," if season is not None else ""

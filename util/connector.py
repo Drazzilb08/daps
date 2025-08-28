@@ -340,10 +340,12 @@ class Connector:
                         duration=time.time() - start_time,
                     )
 
-                # Process media data
+                # Process media data - this now preserves all metadata including genres and cast
                 fresh_media = self._process_arr_media(raw_media, asset_type)
 
-                # Sync to database
+                # Sync to database with enhanced metadata
+                # The sync_for_instance method will automatically use upsert_with_metadata
+                # when genres or cast_data are present in the media items
                 try:
                     self.db.media.sync_for_instance(
                         instance_config.name,
@@ -392,23 +394,29 @@ class Connector:
             )
 
     def _process_arr_media(self, raw_media: List[Dict], asset_type: str) -> List[Dict]:
-        """Process raw ARR media data for database"""
+        """Process raw ARR media data for database, preserving all metadata including genres and cast"""
         fresh_media = []
 
         if asset_type == "show":
-            # Create entries for main show and each season
+            # Create entries for main show and each season, preserving all metadata
             for show in raw_media:
-                # Main show entry
+                # Main show entry - preserve all metadata fields
                 show_row = dict(show)
                 show_row["season_number"] = None
                 fresh_media.append(show_row)
 
-                # Season entries
+                # Season entries - inherit metadata from parent show
                 for season in show.get("seasons", []):
-                    season_row = dict(show)
+                    season_row = dict(show)  # Copy all parent show metadata
                     season_row["season_number"] = season.get("season_number")
+                    # Preserve genres and cast_data from parent show for each season
+                    if "genres" in show:
+                        season_row["genres"] = show["genres"]
+                    if "cast_data" in show:
+                        season_row["cast_data"] = show["cast_data"]
                     fresh_media.append(season_row)
         else:
+            # For movies, data is already properly formatted
             fresh_media = raw_media
 
         return fresh_media

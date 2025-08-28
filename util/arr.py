@@ -1,4 +1,5 @@
 import html
+import json
 import logging
 import os
 import time
@@ -568,12 +569,13 @@ class RadarrClient(BaseARRClient):
 
     def get_media(self) -> Optional[List[Dict[str, Any]]]:
         """
-        Get all movies from Radarr.
+        Get all movies from Radarr with enhanced metadata.
 
         Returns:
-            Optional[List[Dict[str, Any]]]: List of movies.
+            Optional[List[Dict[str, Any]]]: List of movies with full metadata including genres, ratings, etc.
         """
-        endpoint = f"{self.url}/api/v3/movie"
+        # Use includeImages=false to reduce payload size while keeping metadata
+        endpoint = f"{self.url}/api/v3/movie?includeImages=false"
         return self.make_get_request(endpoint)
 
     def get_movie(self, media_id: int) -> Any:
@@ -581,7 +583,9 @@ class RadarrClient(BaseARRClient):
         result = self.make_get_request(endpoint)
         tags = self.get_all_tags() or []
         if result:
-            return normalize_arr_media(result, tags, arr_type="radarr")
+            return normalize_arr_media(
+                result, tags, arr_type="radarr", logger=self.logger
+            )
 
     def add_tags(self, media_id: Union[int, List[int]], tag_id: int) -> Any:
         """
@@ -834,7 +838,8 @@ class RadarrClient(BaseARRClient):
         items = self.get_media()
         tags = self.get_all_tags() or []
         return [
-            normalize_arr_media(item, tags, arr_type="radarr") for item in items or []
+            normalize_arr_media(item, tags, arr_type="radarr", logger=self.logger)
+            for item in items or []
         ]
 
 
@@ -855,12 +860,13 @@ class SonarrClient(BaseARRClient):
 
     def get_media(self) -> Optional[List[Dict[str, Any]]]:
         """
-        Get all series from Sonarr.
+        Get all series from Sonarr with enhanced metadata.
 
         Returns:
-            Optional[List[Dict[str, Any]]]: List of series.
+            Optional[List[Dict[str, Any]]]: List of series with full metadata including genres, ratings, etc.
         """
-        endpoint = f"{self.url}/api/v3/series"
+        # Use includeSeasonImages=false to reduce payload size while keeping metadata
+        endpoint = f"{self.url}/api/v3/series?includeSeasonImages=false"
         return self.make_get_request(endpoint)
 
     def get_show(self, media_id: int) -> Any:
@@ -868,7 +874,9 @@ class SonarrClient(BaseARRClient):
         result = self.make_get_request(endpoint)
         tags = self.get_all_tags() or []
         if result:
-            return normalize_arr_media(result, tags, arr_type="sonarr")
+            return normalize_arr_media(
+                result, tags, arr_type="sonarr", logger=self.logger
+            )
 
     def add_tags(self, media_id: Union[int, List[int]], tag_id: int) -> Any:
         """
@@ -1229,6 +1237,7 @@ class SonarrClient(BaseARRClient):
                 arr_type="sonarr",
                 include_episode=include_episode,
                 episode_lookup=episode_lookup,
+                logger=self.logger,
             )
             for item in items or []
         ]
@@ -1335,14 +1344,25 @@ def extract_poster_url(item: dict) -> Optional[str]:
 
 
 def normalize_arr_media(
-    item, tags, arr_type, include_episode=False, episode_lookup=None
+    item, tags, arr_type, include_episode=False, episode_lookup=None, logger=None
 ):
     """
     Normalize a single ARR media item (Radarr/Sonarr) into a unified dict structure.
     - arr_type: "radarr" or "sonarr"
     - include_episode: (sonarr only) whether to pull episode data
     - episode_lookup: func(media_id, season_number) -> episode list (for Sonarr)
+    - logger: Optional logger for debugging metadata extraction
     """
+
+    def extract_language_code(language_obj):
+        """Extract language code from ARR language object or return as string."""
+        if language_obj is None:
+            return None
+        if isinstance(language_obj, dict):
+            # ARR returns language as dict like {"id": 1, "name": "English"}
+            return language_obj.get("name", str(language_obj))
+        return str(language_obj)
+
     tag_lookup = {tag.get("id"): tag.get("label") for tag in tags or []}
     tags_field = item.get("tags") or []
     tag_names = [tag_lookup.get(tid, str(tid)) for tid in tags_field if tid is not None]
@@ -1369,6 +1389,45 @@ def normalize_arr_media(
     if arr_type == "radarr":
         movie_file = item.get("movieFile") or {}
         file_id = movie_file.get("id")
+
+        # Extract additional metadata for advanced search filtering
+        certification = item.get("certification")
+
+        # Extract studio/network from production companies or studio
+        studio = item.get("studio") or ""
+        if not studio:
+            # Try to get from production companies if available
+            companies = item.get("productionCompanies", [])
+            if companies and isinstance(companies, list):
+                # Extract name from company dict if it's a dict, otherwise use as string
+                first_company = companies[0]
+                if isinstance(first_company, dict):
+                    studio = first_company.get("name", str(first_company))
+                else:
+                    studio = str(first_company)
+            elif companies:
+                studio = str(companies)
+
+        # Extract genres - handle both list of strings and list of objects
+        genres = []
+        genre_data = item.get("genres", [])
+        if isinstance(genre_data, list):
+            for genre in genre_data:
+                if isinstance(genre, str):
+                    genres.append(genre)
+                elif isinstance(genre, dict) and genre.get("name"):
+                    genres.append(genre["name"])
+
+        # Skip user ratings - inconsistent between Radarr/Sonarr
+        user_rating = None
+
+        # Debug logging for extracted metadata
+        if logger and (genres or certification or studio):
+            logger.debug(
+                f"Extracted metadata for {item.get('title')}: "
+                f"genres={genres}, rating={certification}, studio={studio}"
+            )
+
         return {
             "title": unidecode(html.unescape(title or "")),
             "year": year,
@@ -1394,6 +1453,16 @@ def normalize_arr_media(
             "seasons": None,
             "season_numbers": None,
             "poster_url": poster_url,
+            # Advanced search filtering fields
+            "rating": certification,  # Content rating (PG, R, etc.)
+            "user_rating": user_rating,  # User/critic rating
+            "studio": studio,  # Production studio
+            "edition": None,  # Not typically available from ARR
+            "runtime": item.get("runtime"),  # Duration in minutes
+            "language": extract_language_code(
+                item.get("originalLanguage")
+            ),  # Original language
+            "genre": json.dumps(genres) if genres else None,  # JSON string of genres
         }
     else:
         season_list = []
@@ -1431,6 +1500,50 @@ def normalize_arr_media(
                     "episode_data": episode_list,
                 }
             )
+        # Extract additional metadata for advanced search filtering (Sonarr)
+        certification = item.get("certification")
+
+        # Extract network/studio
+        network = item.get("network") or item.get("studio") or ""
+
+        # Extract genres - handle both list of strings and list of objects
+        genres = []
+        genre_data = item.get("genres", [])
+        if isinstance(genre_data, list):
+            for genre in genre_data:
+                if isinstance(genre, str):
+                    genres.append(genre)
+                elif isinstance(genre, dict) and genre.get("name"):
+                    genres.append(genre["name"])
+
+        # Skip user ratings - inconsistent between Radarr/Sonarr
+        user_rating = None
+
+        # Debug logging for extracted metadata
+        if logger and (genres or certification or network):
+            logger.debug(
+                f"Extracted metadata for {item.get('title')}: "
+                f"genres={genres}, rating={certification}, network={network}"
+            )
+
+        # Calculate average runtime from seasons if available
+        avg_runtime = item.get("runtime")
+        if not avg_runtime and season_list:
+            # Try to calculate from season data if available
+            total_runtime = 0
+            episode_count = 0
+            for season in season_list:
+                stats = season.get("statistics", {})
+                if stats.get("totalEpisodeCount"):
+                    # Estimate based on typical TV episode length (varies by genre/network)
+                    total_runtime += (
+                        stats.get("totalEpisodeCount", 0) * 45
+                    )  # Assume 45 min episodes
+                    episode_count += stats.get("totalEpisodeCount", 0)
+
+            if episode_count > 0:
+                avg_runtime = total_runtime // episode_count
+
         return {
             "title": unidecode(html.unescape(title or "")),
             "year": year,
@@ -1457,4 +1570,14 @@ def normalize_arr_media(
             "media_folder": None,
             "seasons": season_list,
             "poster_url": poster_url,
+            # Advanced search filtering fields
+            "rating": certification,  # Content rating (TV-MA, TV-14, etc.)
+            "user_rating": user_rating,  # User/critic rating
+            "studio": network,  # TV Network/Studio
+            "edition": None,  # Not typically available from ARR
+            "runtime": avg_runtime,  # Average episode runtime in minutes
+            "language": extract_language_code(
+                item.get("originalLanguage")
+            ),  # Original language
+            "genre": json.dumps(genres) if genres else None,  # JSON string of genres
         }

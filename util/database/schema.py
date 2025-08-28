@@ -113,7 +113,7 @@ class SchemaManager:
         )
         self._add_table(plex_media_cache)
 
-        # Media Cache
+        # Media Cache - Enhanced with advanced search filtering fields
         media_cache = TableDefinition(
             name="media_cache",
             columns=[
@@ -142,10 +142,36 @@ class SchemaManager:
                 ColumnDefinition(
                     "plex_mapping_id", "INTEGER"
                 ),  # Foreign key to plex_media_cache.id
+                # Advanced search filtering fields
+                ColumnDefinition(
+                    "status", "TEXT"
+                ),  # available, missing, downloading, etc.
+                ColumnDefinition(
+                    "rating", "TEXT"
+                ),  # Content rating (PG, R, TV-MA, etc.)
+                ColumnDefinition("studio", "TEXT"),  # Production studio/network
+                ColumnDefinition(
+                    "edition", "TEXT"
+                ),  # Edition info (Director's Cut, etc.)
+                ColumnDefinition("runtime", "INTEGER"),  # Duration in minutes
+                ColumnDefinition(
+                    "language", "TEXT"
+                ),  # Original language (en, fr, etc.)
+                ColumnDefinition(
+                    "monitored", "BOOLEAN", default=1
+                ),  # Whether item is monitored
+                ColumnDefinition("genre", "TEXT"),  # JSON array of genres
             ],
             indexes=[
                 "CREATE INDEX IF NOT EXISTS media_cache_plex_mapping_idx ON media_cache (plex_mapping_id)",
                 "CREATE INDEX IF NOT EXISTS media_cache_instance_idx ON media_cache (instance_name)",
+                # Advanced search filtering indexes
+                "CREATE INDEX IF NOT EXISTS media_cache_status_idx ON media_cache (status)",
+                "CREATE INDEX IF NOT EXISTS media_cache_rating_idx ON media_cache (rating)",
+                "CREATE INDEX IF NOT EXISTS media_cache_studio_idx ON media_cache (studio)",
+                "CREATE INDEX IF NOT EXISTS media_cache_runtime_idx ON media_cache (runtime)",
+                "CREATE INDEX IF NOT EXISTS media_cache_language_idx ON media_cache (language)",
+                "CREATE INDEX IF NOT EXISTS media_cache_monitored_idx ON media_cache (monitored)",
             ],
         )
         self._add_table(media_cache)

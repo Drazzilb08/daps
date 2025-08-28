@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import Popover from '../../components/Popover';
 import usePopover from '../../hooks/usePopover';
 
@@ -9,19 +9,6 @@ import usePopover from '../../hooks/usePopover';
  * Access via /dev/popover
  */
 const PopoverTest = () => {
-    // Test various popover instances
-    const helpPopover = usePopover(false);
-    const selectorPopover = usePopover(false);
-    const actionsPopover = usePopover(false);
-    const defaultPopover = usePopover(false);
-    const positionPopover = usePopover(false);
-    const focusTrapPopover = usePopover(false);
-    const longContentPopover = usePopover(false);
-    const complexContentPopover = usePopover(false);
-    const filterPopover = usePopover(false);
-    const multiFilterPopover = usePopover(false);
-    const filterBuilderPopover = usePopover(false);
-
     // Test positioning states
     const [currentPosition, setCurrentPosition] = useState('auto');
     const [selectedOption, setSelectedOption] = useState('option1');
@@ -199,6 +186,221 @@ const PopoverTest = () => {
         setFilterConditions(filterConditions.filter(c => c.id !== conditionId));
     };
 
+    // Schema-driven popover configuration
+    const popoverSchema = useMemo(
+        () => ({
+            popovers: {
+                default: {
+                    variant: 'default',
+                    position: 'bottom',
+                    ariaLabel: 'Default popover example',
+                    content: {
+                        type: 'custom',
+                        component: 'SimpleContent',
+                        title: 'Default Popover',
+                        text: 'This is a basic popover with default styling. It can contain any content including text, links, and other elements.',
+                    },
+                },
+                help: {
+                    variant: 'help',
+                    position: 'bottom',
+                    ariaLabel: 'Help popover with instructions',
+                    content: {
+                        type: 'custom',
+                        component: 'HelpContent',
+                        title: 'How to Use Search',
+                        sections: [
+                            {
+                                title: 'Basic Search',
+                                content: 'Type your query in the search box and press Enter.',
+                                items: [
+                                    'Use quotes for exact matches',
+                                    'Use * for wildcards',
+                                    'Use - to exclude terms',
+                                ],
+                            },
+                            {
+                                title: 'Advanced Filters',
+                                content: 'Click on filter buttons to refine your search.',
+                                items: ['Genre filters', 'Date ranges', 'Quality settings'],
+                            },
+                        ],
+                    },
+                },
+                selector: {
+                    variant: 'selector',
+                    position: 'bottom',
+                    ariaLabel: 'Source selector',
+                    content: {
+                        type: 'list',
+                        items: selectorOptions,
+                        selectedValue: selectedOption,
+                        onSelect: setSelectedOption,
+                    },
+                },
+                actions: {
+                    variant: 'actions',
+                    position: 'bottom',
+                    ariaLabel: 'Actions menu',
+                    content: {
+                        type: 'list',
+                        items: actionItems,
+                    },
+                },
+                position: {
+                    variant: 'default',
+                    position: currentPosition,
+                    ariaLabel: 'Position test popover',
+                    content: {
+                        type: 'custom',
+                        component: 'SimpleContent',
+                        text: `This popover is positioned: ${currentPosition}. Try changing positions and clicking near viewport edges.`,
+                    },
+                },
+                focusTrap: {
+                    variant: 'default',
+                    position: 'bottom',
+                    trapFocus: true,
+                    ariaLabel: 'Focus trap test',
+                    content: {
+                        type: 'custom',
+                        component: 'FocusTrapContent',
+                        title: 'Focus Trap Test',
+                        text: 'Use Tab and Shift+Tab to navigate. Focus should stay within this popover.',
+                    },
+                },
+                longContent: {
+                    variant: 'default',
+                    position: 'bottom',
+                    className: 'popover--wide',
+                    ariaLabel: 'Long content test',
+                    content: {
+                        type: 'custom',
+                        component: 'LongContent',
+                    },
+                },
+                complexContent: {
+                    variant: 'default',
+                    position: 'bottom',
+                    trapFocus: true,
+                    className: 'popover--form',
+                    ariaLabel: 'Configuration form',
+                    content: {
+                        type: 'form',
+                        title: 'Configuration Settings',
+                        fields: [
+                            { name: 'username', type: 'text', label: 'Username', required: true },
+                            { name: 'email', type: 'email', label: 'Email', required: true },
+                            {
+                                name: 'notifications',
+                                type: 'select',
+                                label: 'Notifications',
+                                options: [
+                                    { value: 'all', label: 'All notifications' },
+                                    { value: 'important', label: 'Important only' },
+                                    { value: 'none', label: 'None' },
+                                ],
+                            },
+                            { name: 'autoSave', type: 'checkbox', label: 'Enable auto-save' },
+                        ],
+                    },
+                },
+                filterGenre: {
+                    variant: 'selector',
+                    position: 'bottom',
+                    className: 'popover--filter',
+                    ariaLabel: 'Genre filter',
+                    content: {
+                        type: 'multiSelect',
+                        title: 'Select Genres',
+                        options: genreOptions.map(genre => ({ key: genre, label: genre })),
+                        selected: { binding: 'selectedGenre', setter: 'setSelectedGenre' },
+                        searchable: true,
+                    },
+                },
+                multiFilter: {
+                    variant: 'default',
+                    position: 'bottom',
+                    className: 'popover--wide popover--filter',
+                    ariaLabel: 'Multi-filter hub',
+                    content: {
+                        type: 'filterHub',
+                        title: 'Filter Media',
+                        categories: [
+                            { key: 'genre', label: 'Genre', count: selectedGenre.length },
+                            {
+                                key: 'status',
+                                label: 'Status',
+                                count: selectedStatus !== 'all' ? 1 : 0,
+                            },
+                            {
+                                key: 'rating',
+                                label: 'Rating',
+                                count: selectedRating.min > 0 || selectedRating.max < 10 ? 1 : 0,
+                            },
+                            {
+                                key: 'year',
+                                label: 'Year',
+                                count: selectedYear.min > 1900 || selectedYear.max < 2024 ? 1 : 0,
+                            },
+                        ],
+                    },
+                },
+                filterBuilder: {
+                    variant: 'default',
+                    position: 'bottom',
+                    className: 'popover--wide popover--filter',
+                    trapFocus: true,
+                    ariaLabel: 'Filter builder',
+                    content: {
+                        type: 'filterBuilder',
+                        title: 'Build Advanced Filters',
+                        fields: filterFields,
+                        operators: getOperatorsForField,
+                        conditions: { binding: 'filterConditions', setter: 'setFilterConditions' },
+                    },
+                },
+            },
+        }),
+        [
+            currentPosition,
+            selectedOption,
+            selectedGenre,
+            selectedStatus,
+            selectedRating,
+            selectedYear,
+            filterConditions,
+            newFilterField,
+            newFilterOperator,
+            newFilterValue,
+            selectorOptions,
+            actionItems,
+            genreOptions,
+            filterFields,
+        ]
+    );
+
+    // State refs for schema processing
+    const stateRefs = useMemo(
+        () => ({
+            selectedOption: { value: selectedOption, setValue: setSelectedOption },
+            selectedGenre: { value: selectedGenre, setValue: setSelectedGenre },
+            currentPosition: { value: currentPosition, setValue: setCurrentPosition },
+        }),
+        [selectedOption, selectedGenre, currentPosition]
+    );
+
+    // Initialize schema-driven popovers
+    const { popovers, isValid, validationErrors } = usePopover(popoverSchema, stateRefs);
+
+    // Log validation status in development
+    if (typeof window !== 'undefined' && window.location?.hostname === 'localhost') {
+        console.log('Schema validation:', isValid ? 'Valid' : 'Invalid');
+        if (!isValid) {
+            console.warn('Validation errors:', validationErrors);
+        }
+    }
+
     return (
         <div className="popover-test-page">
             <div className="page-header">
@@ -215,153 +417,165 @@ const PopoverTest = () => {
                         <div className="test-item">
                             <h3>Default Variant</h3>
                             <button
-                                ref={defaultPopover.triggerRef}
+                                ref={popovers.default?.triggerRef}
                                 className="btn btn-primary"
-                                onClick={defaultPopover.toggle}
+                                onClick={popovers.default?.toggle}
                             >
                                 Default Popover
                             </button>
-                            <Popover
-                                triggerRef={defaultPopover.triggerRef}
-                                show={defaultPopover.show}
-                                onClose={defaultPopover.close}
-                                variant="default"
-                                position="bottom"
-                                ariaLabel="Default popover example"
-                            >
-                                <div className="popover__title">Default Popover</div>
-                                <div className="popover__content">
-                                    This is a basic popover with default styling. It can contain any
-                                    content including text, links, and other elements.
-                                </div>
-                            </Popover>
+                            {popovers.default && (
+                                <Popover
+                                    triggerRef={popovers.default.triggerRef}
+                                    show={popovers.default.show}
+                                    onClose={popovers.default.close}
+                                    variant={popovers.default.variant}
+                                    position={popovers.default.position}
+                                    ariaLabel={popovers.default.ariaLabel}
+                                >
+                                    <div className="popover__title">
+                                        {popovers.default.content?.title}
+                                    </div>
+                                    <div className="popover__content">
+                                        {popovers.default.content?.text}
+                                    </div>
+                                </Popover>
+                            )}
                         </div>
 
                         {/* Help Variant */}
                         <div className="test-item">
                             <h3>Help Variant</h3>
                             <button
-                                ref={helpPopover.triggerRef}
+                                ref={popovers.help?.triggerRef}
                                 className="btn btn-secondary"
-                                onClick={helpPopover.toggle}
+                                onClick={popovers.help?.toggle}
                             >
                                 Help Popover
                             </button>
-                            <Popover
-                                triggerRef={helpPopover.triggerRef}
-                                show={helpPopover.show}
-                                onClose={helpPopover.close}
-                                variant="help"
-                                position="bottom"
-                                ariaLabel="Help information"
-                            >
-                                <div className="popover__title">Search Help</div>
-                                <div className="popover__content">
-                                    <p>Use these search operators:</p>
-                                    <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
-                                        <li>
-                                            <code>title:Avatar</code> - Search by title
-                                        </li>
-                                        <li>
-                                            <code>year:2009</code> - Search by year
-                                        </li>
-                                        <li>
-                                            <code>genre:Action</code> - Search by genre
-                                        </li>
-                                    </ul>
-                                </div>
-                            </Popover>
+                            {popovers.help && (
+                                <Popover
+                                    triggerRef={popovers.help.triggerRef}
+                                    show={popovers.help.show}
+                                    onClose={popovers.help.close}
+                                    variant={popovers.help.variant}
+                                    position={popovers.help.position}
+                                    ariaLabel={popovers.help.ariaLabel}
+                                >
+                                    <div className="popover__title">Search Help</div>
+                                    <div className="popover__content">
+                                        <p>Use these search operators:</p>
+                                        <ul style={{ margin: '0.5rem 0', paddingLeft: '1.5rem' }}>
+                                            <li>
+                                                <code>title:Avatar</code> - Search by title
+                                            </li>
+                                            <li>
+                                                <code>year:2009</code> - Search by year
+                                            </li>
+                                            <li>
+                                                <code>genre:Action</code> - Search by genre
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </Popover>
+                            )}
                         </div>
 
                         {/* Selector Variant */}
                         <div className="test-item">
                             <h3>Selector Variant</h3>
                             <button
-                                ref={selectorPopover.triggerRef}
+                                ref={popovers.selector?.triggerRef}
                                 className="btn btn-secondary"
-                                onClick={selectorPopover.toggle}
+                                onClick={popovers.selector?.toggle}
                             >
                                 Source:{' '}
                                 {selectorOptions.find(opt => opt.key === selectedOption)?.label}
                             </button>
-                            <Popover
-                                triggerRef={selectorPopover.triggerRef}
-                                show={selectorPopover.show}
-                                onClose={selectorPopover.close}
-                                variant="selector"
-                                position="bottom"
-                                ariaLabel="Select source"
-                            >
-                                <div className="popover__title">Select Source</div>
-                                <ul className="popover__list">
-                                    {selectorOptions.map(option => (
-                                        <li key={option.key}>
-                                            <button
-                                                className={`popover__list-item${selectedOption === option.key ? ' popover__list-item--selected' : ''}`}
-                                                onClick={() => {
-                                                    setSelectedOption(option.key);
-                                                    selectorPopover.close();
-                                                }}
-                                            >
-                                                {option.icon && (
-                                                    <span style={{ marginRight: '0.5rem' }}>
-                                                        {option.icon === 'mi:star' && '⭐'}
-                                                        {option.icon === 'mi:favorite' && '❤️'}
-                                                        {option.icon === 'mi:bookmark' && '🔖'}
-                                                    </span>
-                                                )}
-                                                {option.label}
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </Popover>
+                            {popovers.selector && (
+                                <Popover
+                                    triggerRef={popovers.selector.triggerRef}
+                                    show={popovers.selector.show}
+                                    onClose={popovers.selector.close}
+                                    variant="selector"
+                                    position="bottom"
+                                    ariaLabel="Select source"
+                                >
+                                    <div className="popover__title">Select Source</div>
+                                    <ul className="popover__list">
+                                        {selectorOptions.map(option => (
+                                            <li key={option.key}>
+                                                <button
+                                                    className={`popover__list-item${selectedOption === option.key ? ' popover__list-item--selected' : ''}`}
+                                                    onClick={() => {
+                                                        setSelectedOption(option.key);
+                                                        popovers.selector.close();
+                                                    }}
+                                                >
+                                                    {option.icon && (
+                                                        <span style={{ marginRight: '0.5rem' }}>
+                                                            {option.icon === 'mi:star' && '⭐'}
+                                                            {option.icon === 'mi:favorite' && '❤️'}
+                                                            {option.icon === 'mi:bookmark' && '🔖'}
+                                                        </span>
+                                                    )}
+                                                    {option.label}
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </Popover>
+                            )}
                         </div>
 
                         {/* Actions Variant */}
                         <div className="test-item">
                             <h3>Actions Variant</h3>
                             <button
-                                ref={actionsPopover.triggerRef}
+                                ref={popovers.actions?.triggerRef}
                                 className="btn btn-secondary"
-                                onClick={actionsPopover.toggle}
+                                onClick={popovers.actions?.toggle}
                             >
                                 Actions Menu
                             </button>
-                            <Popover
-                                triggerRef={actionsPopover.triggerRef}
-                                show={actionsPopover.show}
-                                onClose={actionsPopover.close}
-                                variant="actions"
-                                position="bottom"
-                                ariaLabel="Available actions"
-                            >
-                                <ul className="popover__list">
-                                    {actionItems.map(action => (
-                                        <li key={action.key}>
-                                            <button
-                                                className={`popover__list-item${action.danger ? ' danger' : ''}`}
-                                                onClick={() => {
-                                                    alert(`${action.label} clicked!`);
-                                                    actionsPopover.close();
-                                                }}
-                                                style={
-                                                    action.danger ? { color: 'var(--error)' } : {}
-                                                }
-                                            >
-                                                {action.icon && (
-                                                    <span style={{ marginRight: '0.5rem' }}>
-                                                        {action.icon === 'mi:edit' && '✏️'}
-                                                        {action.icon === 'mi:content_copy' && '📋'}
-                                                        {action.icon === 'mi:delete' && '🗑️'}
-                                                    </span>
-                                                )}
-                                                {action.label}
-                                            </button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </Popover>
+                            {popovers.actions && (
+                                <Popover
+                                    triggerRef={popovers.actions.triggerRef}
+                                    show={popovers.actions.show}
+                                    onClose={popovers.actions.close}
+                                    variant="actions"
+                                    position="bottom"
+                                    ariaLabel="Available actions"
+                                >
+                                    <ul className="popover__list">
+                                        {actionItems.map(action => (
+                                            <li key={action.key}>
+                                                <button
+                                                    className={`popover__list-item${action.danger ? ' danger' : ''}`}
+                                                    onClick={() => {
+                                                        alert(`${action.label} clicked!`);
+                                                        popovers.actions.close();
+                                                    }}
+                                                    style={
+                                                        action.danger
+                                                            ? { color: 'var(--error)' }
+                                                            : {}
+                                                    }
+                                                >
+                                                    {action.icon && (
+                                                        <span style={{ marginRight: '0.5rem' }}>
+                                                            {action.icon === 'mi:edit' && '✏️'}
+                                                            {action.icon === 'mi:content_copy' &&
+                                                                '📋'}
+                                                            {action.icon === 'mi:delete' && '🗑️'}
+                                                        </span>
+                                                    )}
+                                                    {action.label}
+                                                </button>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </Popover>
+                            )}
                         </div>
                     </div>
                 </section>
@@ -396,26 +610,29 @@ const PopoverTest = () => {
                         }}
                     >
                         <button
-                            ref={positionPopover.triggerRef}
+                            ref={popovers.position?.triggerRef}
                             className="btn btn-primary"
-                            onClick={positionPopover.toggle}
+                            onClick={popovers.position?.toggle}
                         >
                             Test Position ({currentPosition})
                         </button>
-                        <Popover
-                            triggerRef={positionPopover.triggerRef}
-                            show={positionPopover.show}
-                            onClose={positionPopover.close}
-                            variant="default"
-                            position={currentPosition}
-                            ariaLabel="Position test popover"
-                        >
-                            <div className="popover__title">Position: {currentPosition}</div>
-                            <div className="popover__content">
-                                This popover is positioned using the &ldquo;{currentPosition}&rdquo;
-                                setting. Try different positions and see how the popover adapts!
-                            </div>
-                        </Popover>
+                        {popovers.position && (
+                            <Popover
+                                triggerRef={popovers.position.triggerRef}
+                                show={popovers.position.show}
+                                onClose={popovers.position.close}
+                                variant="default"
+                                position={currentPosition}
+                                ariaLabel="Position test popover"
+                            >
+                                <div className="popover__title">Position: {currentPosition}</div>
+                                <div className="popover__content">
+                                    This popover is positioned using the &ldquo;{currentPosition}
+                                    &rdquo; setting. Try different positions and see how the popover
+                                    adapts!
+                                </div>
+                            </Popover>
+                        )}
                     </div>
                 </section>
 
@@ -427,107 +644,113 @@ const PopoverTest = () => {
                         <div className="test-item">
                             <h3>Focus Trap</h3>
                             <button
-                                ref={focusTrapPopover.triggerRef}
+                                ref={popovers.focusTrap?.triggerRef}
                                 className="btn btn-primary"
-                                onClick={focusTrapPopover.toggle}
+                                onClick={popovers.focusTrap?.toggle}
                             >
                                 Focus Trap Test
                             </button>
-                            <Popover
-                                triggerRef={focusTrapPopover.triggerRef}
-                                show={focusTrapPopover.show}
-                                onClose={focusTrapPopover.close}
-                                variant="default"
-                                position="bottom"
-                                trapFocus={true}
-                                ariaLabel="Focus trap test"
-                            >
-                                <div className="popover__title">Focus Trap Enabled</div>
-                                <div className="popover__content">
-                                    <p>
-                                        This popover traps focus. Try tabbing through these
-                                        elements:
-                                    </p>
-                                    <button
-                                        className="btn btn-sm btn-secondary"
-                                        style={{ margin: '0.25rem' }}
-                                    >
-                                        Button 1
-                                    </button>
-                                    <button
-                                        className="btn btn-sm btn-secondary"
-                                        style={{ margin: '0.25rem' }}
-                                    >
-                                        Button 2
-                                    </button>
-                                    <input
-                                        type="text"
-                                        placeholder="Test input"
-                                        style={{
-                                            width: '100%',
-                                            margin: '0.5rem 0',
-                                            padding: '0.5rem',
-                                            border: '1px solid var(--divider)',
-                                            borderRadius: 'var(--radius-2)',
-                                        }}
-                                    />
-                                    <button
-                                        className="btn btn-sm btn-primary"
-                                        onClick={focusTrapPopover.close}
-                                        style={{ margin: '0.25rem' }}
-                                    >
-                                        Close
-                                    </button>
-                                </div>
-                            </Popover>
+                            {popovers.focusTrap && (
+                                <Popover
+                                    triggerRef={popovers.focusTrap.triggerRef}
+                                    show={popovers.focusTrap.show}
+                                    onClose={popovers.focusTrap.close}
+                                    variant="default"
+                                    position="bottom"
+                                    trapFocus={true}
+                                    ariaLabel="Focus trap test"
+                                >
+                                    <div className="popover__title">Focus Trap Enabled</div>
+                                    <div className="popover__content">
+                                        <p>
+                                            This popover traps focus. Try tabbing through these
+                                            elements:
+                                        </p>
+                                        <button
+                                            className="btn btn-sm btn-secondary"
+                                            style={{ margin: '0.25rem' }}
+                                        >
+                                            Button 1
+                                        </button>
+                                        <button
+                                            className="btn btn-sm btn-secondary"
+                                            style={{ margin: '0.25rem' }}
+                                        >
+                                            Button 2
+                                        </button>
+                                        <input
+                                            type="text"
+                                            placeholder="Test input"
+                                            style={{
+                                                width: '100%',
+                                                margin: '0.5rem 0',
+                                                padding: '0.5rem',
+                                                border: '1px solid var(--divider)',
+                                                borderRadius: 'var(--radius-2)',
+                                            }}
+                                        />
+                                        <button
+                                            className="btn btn-sm btn-primary"
+                                            onClick={popovers.focusTrap.close}
+                                            style={{ margin: '0.25rem' }}
+                                        >
+                                            Close
+                                        </button>
+                                    </div>
+                                </Popover>
+                            )}
                         </div>
 
                         {/* Long Content Test */}
                         <div className="test-item">
                             <h3>Long Content</h3>
                             <button
-                                ref={longContentPopover.triggerRef}
+                                ref={popovers.longContent?.triggerRef}
                                 className="btn btn-primary"
-                                onClick={longContentPopover.toggle}
+                                onClick={popovers.longContent?.toggle}
                             >
                                 Long Content Test
                             </button>
-                            <Popover
-                                triggerRef={longContentPopover.triggerRef}
-                                show={longContentPopover.show}
-                                onClose={longContentPopover.close}
-                                variant="default"
-                                position="bottom"
-                                ariaLabel="Long content test"
-                            >
-                                <div className="popover__title">Long Content Example</div>
-                                <div className="popover__content">
-                                    <p>
-                                        This popover contains a lot of content to test scrolling and
-                                        max-width constraints.
-                                    </p>
-                                    <p>
-                                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed
-                                        do eiusmod tempor incididunt ut labore et dolore magna
-                                        aliqua. Ut enim ad minim veniam, quis nostrud exercitation
-                                        ullamco laboris.
-                                    </p>
-                                    <p>
-                                        Duis aute irure dolor in reprehenderit in voluptate velit
-                                        esse cillum dolore eu fugiat nulla pariatur. Excepteur sint
-                                        occaecat cupidatat non proident.
-                                    </p>
-                                    <ul style={{ margin: '1rem 0', paddingLeft: '1.5rem' }}>
-                                        <li>First list item with some long text that might wrap</li>
-                                        <li>Second list item</li>
-                                        <li>Third list item</li>
-                                    </ul>
-                                    <p>
-                                        The popover should handle this content gracefully with
-                                        proper max-width and scrolling if needed.
-                                    </p>
-                                </div>
-                            </Popover>
+                            {popovers.longContent && (
+                                <Popover
+                                    triggerRef={popovers.longContent.triggerRef}
+                                    show={popovers.longContent.show}
+                                    onClose={popovers.longContent.close}
+                                    variant="default"
+                                    position="bottom"
+                                    ariaLabel="Long content test"
+                                >
+                                    <div className="popover__title">Long Content Example</div>
+                                    <div className="popover__content">
+                                        <p>
+                                            This popover contains a lot of content to test scrolling
+                                            and max-width constraints.
+                                        </p>
+                                        <p>
+                                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                                            Sed do eiusmod tempor incididunt ut labore et dolore
+                                            magna aliqua. Ut enim ad minim veniam, quis nostrud
+                                            exercitation ullamco laboris.
+                                        </p>
+                                        <p>
+                                            Duis aute irure dolor in reprehenderit in voluptate
+                                            velit esse cillum dolore eu fugiat nulla pariatur.
+                                            Excepteur sint occaecat cupidatat non proident.
+                                        </p>
+                                        <ul style={{ margin: '1rem 0', paddingLeft: '1.5rem' }}>
+                                            <li>
+                                                First list item with some long text that might wrap
+                                            </li>
+                                            <li>Second list item</li>
+                                            <li>Third list item</li>
+                                        </ul>
+                                        <p>
+                                            The popover should handle this content gracefully with
+                                            proper max-width and scrolling if needed.
+                                        </p>
+                                    </div>
+                                </Popover>
+                            )}
                         </div>
                     </div>
                 </section>
@@ -579,93 +802,95 @@ const PopoverTest = () => {
                             <h3>Form Content</h3>
                             <p>Test popover with interactive form elements:</p>
                             <button
-                                ref={complexContentPopover.triggerRef}
+                                ref={popovers.complexContent?.triggerRef}
                                 className="btn btn-primary"
-                                onClick={complexContentPopover.toggle}
+                                onClick={popovers.complexContent?.toggle}
                             >
                                 Configuration Form
                             </button>
-                            <Popover
-                                triggerRef={complexContentPopover.triggerRef}
-                                show={complexContentPopover.show}
-                                onClose={complexContentPopover.close}
-                                variant="default"
-                                position="bottom"
-                                ariaLabel="Configuration form"
-                            >
-                                <div className="popover__title">Configuration</div>
-                                <div className="popover__content">
-                                    <form
-                                        style={{
-                                            display: 'flex',
-                                            flexDirection: 'column',
-                                            gap: '1rem',
-                                        }}
-                                    >
-                                        <div>
-                                            <label htmlFor="config-name">Name:</label>
-                                            <input
-                                                type="text"
-                                                id="config-name"
-                                                placeholder="Enter name..."
-                                                style={{
-                                                    width: '100%',
-                                                    padding: '0.5rem',
-                                                    border: '1px solid var(--divider)',
-                                                    borderRadius: '4px',
-                                                    marginTop: '0.25rem',
-                                                }}
-                                            />
-                                        </div>
-
-                                        <div>
-                                            <label htmlFor="config-type">Type:</label>
-                                            <select
-                                                id="config-type"
-                                                style={{
-                                                    width: '100%',
-                                                    padding: '0.5rem',
-                                                    border: '1px solid var(--divider)',
-                                                    borderRadius: '4px',
-                                                    marginTop: '0.25rem',
-                                                }}
-                                            >
-                                                <option>Production</option>
-                                                <option>Development</option>
-                                                <option>Testing</option>
-                                            </select>
-                                        </div>
-
-                                        <div
+                            {popovers.complexContent && (
+                                <Popover
+                                    triggerRef={popovers.complexContent.triggerRef}
+                                    show={popovers.complexContent.show}
+                                    onClose={popovers.complexContent.close}
+                                    variant="default"
+                                    position="bottom"
+                                    ariaLabel="Configuration form"
+                                >
+                                    <div className="popover__title">Configuration</div>
+                                    <div className="popover__content">
+                                        <form
                                             style={{
                                                 display: 'flex',
-                                                justifyContent: 'flex-end',
-                                                gap: '0.5rem',
-                                                marginTop: '1rem',
+                                                flexDirection: 'column',
+                                                gap: '1rem',
                                             }}
                                         >
-                                            <button
-                                                type="button"
-                                                className="btn btn-secondary"
-                                                onClick={complexContentPopover.close}
-                                            >
-                                                Cancel
-                                            </button>
-                                            <button
-                                                type="submit"
-                                                className="btn btn-primary"
-                                                onClick={e => {
-                                                    e.preventDefault();
-                                                    alert('Configuration saved!');
-                                                    complexContentPopover.close();
+                                            <div>
+                                                <label htmlFor="config-name">Name:</label>
+                                                <input
+                                                    type="text"
+                                                    id="config-name"
+                                                    placeholder="Enter name..."
+                                                    style={{
+                                                        width: '100%',
+                                                        padding: '0.5rem',
+                                                        border: '1px solid var(--divider)',
+                                                        borderRadius: '4px',
+                                                        marginTop: '0.25rem',
+                                                    }}
+                                                />
+                                            </div>
+
+                                            <div>
+                                                <label htmlFor="config-type">Type:</label>
+                                                <select
+                                                    id="config-type"
+                                                    style={{
+                                                        width: '100%',
+                                                        padding: '0.5rem',
+                                                        border: '1px solid var(--divider)',
+                                                        borderRadius: '4px',
+                                                        marginTop: '0.25rem',
+                                                    }}
+                                                >
+                                                    <option>Production</option>
+                                                    <option>Development</option>
+                                                    <option>Testing</option>
+                                                </select>
+                                            </div>
+
+                                            <div
+                                                style={{
+                                                    display: 'flex',
+                                                    justifyContent: 'flex-end',
+                                                    gap: '0.5rem',
+                                                    marginTop: '1rem',
                                                 }}
                                             >
-                                                Save
-                                            </button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </Popover>
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-secondary"
+                                                    onClick={popovers.complexContent.close}
+                                                >
+                                                    Cancel
+                                                </button>
+                                                <button
+                                                    type="submit"
+                                                    className="btn btn-primary"
+                                                    onClick={e => {
+                                                        e.preventDefault();
+                                                        alert('Configuration saved!');
+                                                        popovers.complexContent.close();
+                                                    }}
+                                                >
+                                                    Save
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </Popover>
+                            )}
                         </div>
                     </div>
                 </section>
@@ -692,103 +917,106 @@ const PopoverTest = () => {
                                 Single filter with multi-select capability
                             </p>
                             <button
-                                ref={filterPopover.triggerRef}
+                                ref={popovers.filterGenre?.triggerRef}
                                 className="btn btn-secondary"
-                                onClick={filterPopover.toggle}
+                                onClick={popovers.filterGenre?.toggle}
                             >
                                 Genre {selectedGenre.length > 0 && `(${selectedGenre.length})`}
                             </button>
-                            <Popover
-                                triggerRef={filterPopover.triggerRef}
-                                show={filterPopover.show}
-                                onClose={filterPopover.close}
-                                variant="selector"
-                                position="bottom"
-                                trapFocus={true}
-                                ariaLabel="Select genres"
-                            >
-                                <div className="popover__title">Filter by Genre</div>
-                                <div className="popover__content">
-                                    <div style={{ marginBottom: '1rem' }}>
-                                        <input
-                                            type="text"
-                                            placeholder="Search genres..."
-                                            style={{
-                                                width: '100%',
-                                                padding: '0.5rem',
-                                                border: '1px solid var(--divider)',
-                                                borderRadius: 'var(--radius-2)',
-                                                fontSize: 'var(--font-size-1)',
-                                            }}
-                                        />
-                                    </div>
-                                    <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                                        {genreOptions.map(genre => (
-                                            <label
-                                                key={genre}
+                            {popovers.filterGenre && (
+                                <Popover
+                                    triggerRef={popovers.filterGenre.triggerRef}
+                                    show={popovers.filterGenre.show}
+                                    onClose={popovers.filterGenre.close}
+                                    variant="selector"
+                                    position="bottom"
+                                    trapFocus={true}
+                                    ariaLabel="Select genres"
+                                >
+                                    <div className="popover__title">Filter by Genre</div>
+                                    <div className="popover__content">
+                                        <div style={{ marginBottom: '1rem' }}>
+                                            <input
+                                                type="text"
+                                                placeholder="Search genres..."
                                                 style={{
-                                                    display: 'flex',
-                                                    alignItems: 'center',
+                                                    width: '100%',
                                                     padding: '0.5rem',
-                                                    cursor: 'pointer',
-                                                    borderRadius: 'var(--radius-1)',
-                                                    transition: 'background-color 0.2s',
+                                                    border: '1px solid var(--divider)',
+                                                    borderRadius: 'var(--radius-2)',
+                                                    fontSize: 'var(--font-size-1)',
                                                 }}
-                                                onMouseEnter={e =>
-                                                    (e.target.style.backgroundColor =
-                                                        'var(--surface-alt)')
-                                                }
-                                                onMouseLeave={e =>
-                                                    (e.target.style.backgroundColor = 'transparent')
-                                                }
-                                            >
-                                                <input
-                                                    type="checkbox"
-                                                    checked={selectedGenre.includes(genre)}
-                                                    onChange={e => {
-                                                        if (e.target.checked) {
-                                                            setSelectedGenre([
-                                                                ...selectedGenre,
-                                                                genre,
-                                                            ]);
-                                                        } else {
-                                                            setSelectedGenre(
-                                                                selectedGenre.filter(
-                                                                    g => g !== genre
-                                                                )
-                                                            );
-                                                        }
+                                            />
+                                        </div>
+                                        <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                                            {genreOptions.map(genre => (
+                                                <label
+                                                    key={genre}
+                                                    style={{
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        padding: '0.5rem',
+                                                        cursor: 'pointer',
+                                                        borderRadius: 'var(--radius-1)',
+                                                        transition: 'background-color 0.2s',
                                                     }}
-                                                    style={{ marginRight: '0.5rem' }}
-                                                />
-                                                {genre}
-                                            </label>
-                                        ))}
-                                    </div>
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            marginTop: '1rem',
-                                            paddingTop: '1rem',
-                                            borderTop: '1px solid var(--divider)',
-                                        }}
-                                    >
-                                        <button
-                                            className="btn btn-sm btn-secondary"
-                                            onClick={() => setSelectedGenre([])}
+                                                    onMouseEnter={e =>
+                                                        (e.target.style.backgroundColor =
+                                                            'var(--surface-alt)')
+                                                    }
+                                                    onMouseLeave={e =>
+                                                        (e.target.style.backgroundColor =
+                                                            'transparent')
+                                                    }
+                                                >
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedGenre.includes(genre)}
+                                                        onChange={e => {
+                                                            if (e.target.checked) {
+                                                                setSelectedGenre([
+                                                                    ...selectedGenre,
+                                                                    genre,
+                                                                ]);
+                                                            } else {
+                                                                setSelectedGenre(
+                                                                    selectedGenre.filter(
+                                                                        g => g !== genre
+                                                                    )
+                                                                );
+                                                            }
+                                                        }}
+                                                        style={{ marginRight: '0.5rem' }}
+                                                    />
+                                                    {genre}
+                                                </label>
+                                            ))}
+                                        </div>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                marginTop: '1rem',
+                                                paddingTop: '1rem',
+                                                borderTop: '1px solid var(--divider)',
+                                            }}
                                         >
-                                            Clear All
-                                        </button>
-                                        <button
-                                            className="btn btn-sm btn-primary"
-                                            onClick={filterPopover.close}
-                                        >
-                                            Apply ({selectedGenre.length})
-                                        </button>
+                                            <button
+                                                className="btn btn-sm btn-secondary"
+                                                onClick={() => setSelectedGenre([])}
+                                            >
+                                                Clear All
+                                            </button>
+                                            <button
+                                                className="btn btn-sm btn-primary"
+                                                onClick={popovers.filterGenre.close}
+                                            >
+                                                Apply ({selectedGenre.length})
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            </Popover>
+                                </Popover>
+                            )}
                         </div>
 
                         {/* Multi-Filter Hub */}
@@ -804,113 +1032,115 @@ const PopoverTest = () => {
                                 Central hub for managing multiple filter types
                             </p>
                             <button
-                                ref={multiFilterPopover.triggerRef}
+                                ref={popovers.multiFilter?.triggerRef}
                                 className="btn btn-secondary"
-                                onClick={multiFilterPopover.toggle}
+                                onClick={popovers.multiFilter?.toggle}
                             >
                                 Filters{' '}
                                 {filterCategories.reduce((sum, cat) => sum + cat.count, 0) > 0 &&
                                     `(${filterCategories.reduce((sum, cat) => sum + cat.count, 0)})`}
                             </button>
-                            <Popover
-                                triggerRef={multiFilterPopover.triggerRef}
-                                show={multiFilterPopover.show}
-                                onClose={multiFilterPopover.close}
-                                variant="default"
-                                position="bottom"
-                                trapFocus={true}
-                                ariaLabel="Media filters"
-                            >
-                                <div className="popover__title">Filter Media</div>
-                                <div className="popover__content">
-                                    <div style={{ marginBottom: '1rem' }}>
-                                        <input
-                                            type="text"
-                                            placeholder="Quick search..."
-                                            value={searchQuery}
-                                            onChange={e => setSearchQuery(e.target.value)}
-                                            style={{
-                                                width: '100%',
-                                                padding: '0.5rem',
-                                                border: '1px solid var(--divider)',
-                                                borderRadius: 'var(--radius-2)',
-                                                fontSize: 'var(--font-size-1)',
-                                            }}
-                                        />
-                                    </div>
+                            {popovers.multiFilter && (
+                                <Popover
+                                    triggerRef={popovers.multiFilter.triggerRef}
+                                    show={popovers.multiFilter.show}
+                                    onClose={popovers.multiFilter.close}
+                                    variant="default"
+                                    position="bottom"
+                                    trapFocus={true}
+                                    ariaLabel="Media filters"
+                                >
+                                    <div className="popover__title">Filter Media</div>
+                                    <div className="popover__content">
+                                        <div style={{ marginBottom: '1rem' }}>
+                                            <input
+                                                type="text"
+                                                placeholder="Quick search..."
+                                                value={searchQuery}
+                                                onChange={e => setSearchQuery(e.target.value)}
+                                                style={{
+                                                    width: '100%',
+                                                    padding: '0.5rem',
+                                                    border: '1px solid var(--divider)',
+                                                    borderRadius: 'var(--radius-2)',
+                                                    fontSize: 'var(--font-size-1)',
+                                                }}
+                                            />
+                                        </div>
 
-                                    <div style={{ marginBottom: '1rem' }}>
-                                        <h4
+                                        <div style={{ marginBottom: '1rem' }}>
+                                            <h4
+                                                style={{
+                                                    fontSize: 'var(--font-size-1)',
+                                                    fontWeight: '600',
+                                                    marginBottom: '0.5rem',
+                                                    color: 'var(--text-primary)',
+                                                }}
+                                            >
+                                                Filter Categories
+                                            </h4>
+                                            <div style={{ display: 'grid', gap: '0.5rem' }}>
+                                                {filterCategories.map(category => (
+                                                    <button
+                                                        key={category.key}
+                                                        className="popover__list-item"
+                                                        style={{
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between',
+                                                            alignItems: 'center',
+                                                            width: '100%',
+                                                            textAlign: 'left',
+                                                        }}
+                                                    >
+                                                        <span>{category.label}</span>
+                                                        {category.count > 0 && (
+                                                            <span
+                                                                style={{
+                                                                    background: 'var(--primary)',
+                                                                    color: 'white',
+                                                                    padding: '0.125rem 0.5rem',
+                                                                    borderRadius: '999px',
+                                                                    fontSize: 'var(--font-size-0)',
+                                                                    fontWeight: '500',
+                                                                }}
+                                                            >
+                                                                {category.count}
+                                                            </span>
+                                                        )}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div
                                             style={{
-                                                fontSize: 'var(--font-size-1)',
-                                                fontWeight: '600',
-                                                marginBottom: '0.5rem',
-                                                color: 'var(--text-primary)',
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                paddingTop: '1rem',
+                                                borderTop: '1px solid var(--divider)',
                                             }}
                                         >
-                                            Filter Categories
-                                        </h4>
-                                        <div style={{ display: 'grid', gap: '0.5rem' }}>
-                                            {filterCategories.map(category => (
-                                                <button
-                                                    key={category.key}
-                                                    className="popover__list-item"
-                                                    style={{
-                                                        display: 'flex',
-                                                        justifyContent: 'space-between',
-                                                        alignItems: 'center',
-                                                        width: '100%',
-                                                        textAlign: 'left',
-                                                    }}
-                                                >
-                                                    <span>{category.label}</span>
-                                                    {category.count > 0 && (
-                                                        <span
-                                                            style={{
-                                                                background: 'var(--primary)',
-                                                                color: 'white',
-                                                                padding: '0.125rem 0.5rem',
-                                                                borderRadius: '999px',
-                                                                fontSize: 'var(--font-size-0)',
-                                                                fontWeight: '500',
-                                                            }}
-                                                        >
-                                                            {category.count}
-                                                        </span>
-                                                    )}
-                                                </button>
-                                            ))}
+                                            <button
+                                                className="btn btn-sm btn-secondary"
+                                                onClick={() => {
+                                                    setSelectedGenre([]);
+                                                    setSelectedStatus('all');
+                                                    setSelectedRating({ min: 0, max: 10 });
+                                                    setSelectedYear({ min: 1900, max: 2024 });
+                                                }}
+                                            >
+                                                Reset All
+                                            </button>
+                                            <button
+                                                className="btn btn-sm btn-primary"
+                                                onClick={popovers.multiFilter.close}
+                                            >
+                                                Apply Filters
+                                            </button>
                                         </div>
                                     </div>
-
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            paddingTop: '1rem',
-                                            borderTop: '1px solid var(--divider)',
-                                        }}
-                                    >
-                                        <button
-                                            className="btn btn-sm btn-secondary"
-                                            onClick={() => {
-                                                setSelectedGenre([]);
-                                                setSelectedStatus('all');
-                                                setSelectedRating({ min: 0, max: 10 });
-                                                setSelectedYear({ min: 1900, max: 2024 });
-                                            }}
-                                        >
-                                            Reset All
-                                        </button>
-                                        <button
-                                            className="btn btn-sm btn-primary"
-                                            onClick={multiFilterPopover.close}
-                                        >
-                                            Apply Filters
-                                        </button>
-                                    </div>
-                                </div>
-                            </Popover>
+                                </Popover>
+                            )}
                         </div>
 
                         {/* Filter Builder */}
@@ -1016,27 +1246,28 @@ const PopoverTest = () => {
                             )}
 
                             <button
-                                ref={filterBuilderPopover.triggerRef}
+                                ref={popovers.filterBuilder?.triggerRef}
                                 className="btn btn-secondary"
-                                onClick={filterBuilderPopover.toggle}
+                                onClick={popovers.filterBuilder?.toggle}
                             >
                                 {filterConditions.length > 0
                                     ? `Edit Filters (${filterConditions.length})`
                                     : 'Build Filters'}
                             </button>
-                            <Popover
-                                triggerRef={filterBuilderPopover.triggerRef}
-                                show={filterBuilderPopover.show}
-                                onClose={filterBuilderPopover.close}
-                                variant="default"
-                                position="bottom"
-                                trapFocus={true}
-                                ariaLabel="Filter builder"
-                                className="popover--wide"
-                            >
-                                <div className="popover__title">Filter Builder</div>
-                                <div className="popover__content">
-                                    {/* Quick Presets - Hidden for now, keep for future database integration 
+                            {popovers.filterBuilder && (
+                                <Popover
+                                    triggerRef={popovers.filterBuilder.triggerRef}
+                                    show={popovers.filterBuilder.show}
+                                    onClose={popovers.filterBuilder.close}
+                                    variant="default"
+                                    position="bottom"
+                                    trapFocus={true}
+                                    ariaLabel="Filter builder"
+                                    className="popover--wide"
+                                >
+                                    <div className="popover__title">Filter Builder</div>
+                                    <div className="popover__content">
+                                        {/* Quick Presets - Hidden for now, keep for future database integration 
                                     <div style={{ marginBottom: '1.5rem' }}>
                                         <label
                                             style={{
@@ -1075,524 +1306,555 @@ const PopoverTest = () => {
                                     </div>
                                     */}
 
-                                    {/* Add New Filter */}
-                                    <div
-                                        style={{
-                                            marginBottom: '1.5rem',
-                                            padding: '1.25rem',
-                                            background: 'var(--surface)',
-                                            borderRadius: 'var(--radius-3)',
-                                            border: '1px solid var(--divider)',
-                                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-                                        }}
-                                    >
-                                        <h4
-                                            style={{
-                                                fontSize: 'var(--font-size-2)',
-                                                fontWeight: '600',
-                                                marginBottom: '1.25rem',
-                                                color: 'var(--text-primary)',
-                                                borderBottom: '2px solid var(--primary)',
-                                                paddingBottom: '0.5rem',
-                                                display: 'inline-block',
-                                            }}
-                                        >
-                                            Add Filter Condition
-                                        </h4>
-
+                                        {/* Add New Filter */}
                                         <div
                                             style={{
-                                                display: 'grid',
-                                                gridTemplateColumns: '1fr 1fr 1.2fr auto',
-                                                gap: '0.75rem',
-                                                alignItems: 'end',
+                                                marginBottom: '1.5rem',
+                                                padding: '1.25rem',
+                                                background: 'var(--surface)',
+                                                borderRadius: 'var(--radius-3)',
+                                                border: '1px solid var(--divider)',
+                                                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
                                             }}
                                         >
-                                            {/* Field Selection */}
-                                            <div>
-                                                <label
-                                                    style={{
-                                                        fontSize: 'var(--font-size-1)',
-                                                        fontWeight: '500',
-                                                        color: 'var(--text-primary)',
-                                                        marginBottom: '0.5rem',
-                                                        display: 'block',
-                                                    }}
-                                                >
-                                                    Field
-                                                </label>
-                                                <select
-                                                    value={newFilterField}
-                                                    onChange={e => {
-                                                        setNewFilterField(e.target.value);
-                                                        const field = filterFields.find(
-                                                            f => f.key === e.target.value
-                                                        );
-                                                        const operators = getOperatorsForField(
-                                                            field.type
-                                                        );
-                                                        setNewFilterOperator(operators[0].key);
-                                                        setNewFilterValue('');
-                                                    }}
-                                                    style={{
-                                                        width: '100%',
-                                                        padding: '0.5rem',
-                                                        border: '1px solid var(--divider)',
-                                                        borderRadius: 'var(--radius-1)',
-                                                        fontSize: 'var(--font-size-1)',
-                                                        backgroundColor: 'var(--surface)',
-                                                    }}
-                                                >
-                                                    {filterFields.map(field => (
-                                                        <option key={field.key} value={field.key}>
-                                                            {field.label}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-
-                                            {/* Operator Selection */}
-                                            <div>
-                                                <label
-                                                    style={{
-                                                        fontSize: 'var(--font-size-1)',
-                                                        fontWeight: '500',
-                                                        color: 'var(--text-primary)',
-                                                        marginBottom: '0.5rem',
-                                                        display: 'block',
-                                                    }}
-                                                >
-                                                    Operator
-                                                </label>
-                                                <select
-                                                    value={newFilterOperator}
-                                                    onChange={e =>
-                                                        setNewFilterOperator(e.target.value)
-                                                    }
-                                                    style={{
-                                                        width: '100%',
-                                                        padding: '0.5rem',
-                                                        border: '1px solid var(--divider)',
-                                                        borderRadius: 'var(--radius-1)',
-                                                        fontSize: 'var(--font-size-1)',
-                                                        backgroundColor: 'var(--surface)',
-                                                    }}
-                                                >
-                                                    {getOperatorsForField(
-                                                        filterFields.find(
-                                                            f => f.key === newFilterField
-                                                        )?.type
-                                                    ).map(operator => (
-                                                        <option
-                                                            key={operator.key}
-                                                            value={operator.key}
-                                                        >
-                                                            {operator.label}
-                                                        </option>
-                                                    ))}
-                                                </select>
-                                            </div>
-
-                                            {/* Value Input */}
-                                            <div>
-                                                <label
-                                                    style={{
-                                                        fontSize: 'var(--font-size-1)',
-                                                        fontWeight: '500',
-                                                        color: 'var(--text-primary)',
-                                                        marginBottom: '0.5rem',
-                                                        display: 'block',
-                                                    }}
-                                                >
-                                                    Value
-                                                </label>
-                                                {(() => {
-                                                    const field = filterFields.find(
-                                                        f => f.key === newFilterField
-                                                    );
-                                                    if (
-                                                        field.type === 'range' &&
-                                                        field.key === 'year'
-                                                    ) {
-                                                        return (
-                                                            <div
-                                                                style={{
-                                                                    display: 'flex',
-                                                                    flexDirection: 'column',
-                                                                    gap: '0.5rem',
-                                                                    padding: '0.75rem',
-                                                                    background:
-                                                                        'var(--surface-alt)',
-                                                                    borderRadius: 'var(--radius-2)',
-                                                                    border: '1px solid var(--divider)',
-                                                                }}
-                                                            >
-                                                                <div
-                                                                    style={{
-                                                                        display: 'flex',
-                                                                        alignItems: 'center',
-                                                                        gap: '0.75rem',
-                                                                    }}
-                                                                >
-                                                                    <input
-                                                                        type="range"
-                                                                        min={field.min}
-                                                                        max={field.max}
-                                                                        value={
-                                                                            newFilterValue ||
-                                                                            field.min
-                                                                        }
-                                                                        onChange={e =>
-                                                                            setNewFilterValue(
-                                                                                e.target.value
-                                                                            )
-                                                                        }
-                                                                        style={{
-                                                                            flex: '1',
-                                                                            height: '6px',
-                                                                            borderRadius: '3px',
-                                                                            background:
-                                                                                'var(--divider)',
-                                                                            outline: 'none',
-                                                                            accentColor:
-                                                                                'var(--primary)',
-                                                                        }}
-                                                                    />
-                                                                    <span
-                                                                        style={{
-                                                                            fontSize:
-                                                                                'var(--font-size-1)',
-                                                                            fontWeight: '600',
-                                                                            color: 'var(--primary)',
-                                                                            minWidth: '50px',
-                                                                            textAlign: 'center',
-                                                                            padding:
-                                                                                '0.25rem 0.5rem',
-                                                                            background:
-                                                                                'var(--surface)',
-                                                                            borderRadius:
-                                                                                'var(--radius-1)',
-                                                                            border: '1px solid var(--primary)',
-                                                                        }}
-                                                                    >
-                                                                        {newFilterValue ||
-                                                                            field.min}
-                                                                    </span>
-                                                                </div>
-                                                                <div
-                                                                    style={{
-                                                                        display: 'flex',
-                                                                        justifyContent:
-                                                                            'space-between',
-                                                                        fontSize:
-                                                                            'var(--font-size-0)',
-                                                                        color: 'var(--text-secondary)',
-                                                                    }}
-                                                                >
-                                                                    <span>{field.min}</span>
-                                                                    <span>{field.max}</span>
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    } else if (field.type === 'select') {
-                                                        return (
-                                                            <select
-                                                                value={newFilterValue}
-                                                                onChange={e =>
-                                                                    setNewFilterValue(
-                                                                        e.target.value
-                                                                    )
-                                                                }
-                                                                style={{
-                                                                    width: '100%',
-                                                                    padding: '0.5rem',
-                                                                    border: '1px solid var(--divider)',
-                                                                    borderRadius: 'var(--radius-1)',
-                                                                    fontSize: 'var(--font-size-1)',
-                                                                    backgroundColor:
-                                                                        'var(--surface)',
-                                                                }}
-                                                            >
-                                                                <option value="">Select...</option>
-                                                                {field.options.map(option => (
-                                                                    <option
-                                                                        key={
-                                                                            typeof option ===
-                                                                            'string'
-                                                                                ? option
-                                                                                : option.key
-                                                                        }
-                                                                        value={
-                                                                            typeof option ===
-                                                                            'string'
-                                                                                ? option
-                                                                                : option.key
-                                                                        }
-                                                                    >
-                                                                        {typeof option === 'string'
-                                                                            ? option
-                                                                            : option.label}
-                                                                    </option>
-                                                                ))}
-                                                            </select>
-                                                        );
-                                                    } else if (field.type === 'boolean') {
-                                                        return (
-                                                            <select
-                                                                value={newFilterValue}
-                                                                onChange={e =>
-                                                                    setNewFilterValue(
-                                                                        e.target.value
-                                                                    )
-                                                                }
-                                                                style={{
-                                                                    width: '100%',
-                                                                    padding: '0.5rem',
-                                                                    border: '1px solid var(--divider)',
-                                                                    borderRadius: 'var(--radius-1)',
-                                                                    fontSize: 'var(--font-size-1)',
-                                                                    backgroundColor:
-                                                                        'var(--surface)',
-                                                                }}
-                                                            >
-                                                                <option value="">Select...</option>
-                                                                <option value="true">Yes</option>
-                                                                <option value="false">No</option>
-                                                            </select>
-                                                        );
-                                                    } else {
-                                                        return (
-                                                            <input
-                                                                type="text"
-                                                                placeholder="Enter value..."
-                                                                value={newFilterValue}
-                                                                onChange={e =>
-                                                                    setNewFilterValue(
-                                                                        e.target.value
-                                                                    )
-                                                                }
-                                                                style={{
-                                                                    width: '100%',
-                                                                    padding: '0.5rem',
-                                                                    border: '1px solid var(--divider)',
-                                                                    borderRadius: 'var(--radius-1)',
-                                                                    fontSize: 'var(--font-size-1)',
-                                                                }}
-                                                            />
-                                                        );
-                                                    }
-                                                })()}
-                                            </div>
-
-                                            {/* Add Button */}
-                                            <button
-                                                onClick={addFilterCondition}
-                                                disabled={!newFilterValue}
-                                                className="btn btn-primary"
-                                                style={{
-                                                    opacity: !newFilterValue ? '0.5' : '1',
-                                                    cursor: !newFilterValue
-                                                        ? 'not-allowed'
-                                                        : 'pointer',
-                                                    padding: '0.75rem 1.5rem',
-                                                    fontSize: 'var(--font-size-1)',
-                                                    fontWeight: '600',
-                                                    borderRadius: 'var(--radius-2)',
-                                                    minHeight: '44px',
-                                                    display: 'flex',
-                                                    alignItems: 'center',
-                                                    justifyContent: 'center',
-                                                    gap: '0.5rem',
-                                                    boxShadow: !newFilterValue
-                                                        ? 'none'
-                                                        : '0 2px 4px rgba(var(--primary-rgb), 0.3)',
-                                                    transform: 'translateY(0)',
-                                                    transition: 'all 0.2s ease',
-                                                }}
-                                                onMouseEnter={e => {
-                                                    if (!e.target.disabled) {
-                                                        e.target.style.transform =
-                                                            'translateY(-1px)';
-                                                        e.target.style.boxShadow =
-                                                            '0 4px 8px rgba(var(--primary-rgb), 0.4)';
-                                                    }
-                                                }}
-                                                onMouseLeave={e => {
-                                                    e.target.style.transform = 'translateY(0)';
-                                                    e.target.style.boxShadow = !e.target.disabled
-                                                        ? '0 2px 4px rgba(var(--primary-rgb), 0.3)'
-                                                        : 'none';
-                                                }}
-                                            >
-                                                ➕ Add
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    {/* Active Conditions */}
-                                    {filterConditions.length > 0 && (
-                                        <div style={{ marginBottom: '1.5rem' }}>
                                             <h4
                                                 style={{
                                                     fontSize: 'var(--font-size-2)',
                                                     fontWeight: '600',
-                                                    marginBottom: '0.75rem',
+                                                    marginBottom: '1.25rem',
                                                     color: 'var(--text-primary)',
-                                                    borderBottom: '2px solid var(--success)',
+                                                    borderBottom: '2px solid var(--primary)',
                                                     paddingBottom: '0.5rem',
                                                     display: 'inline-block',
                                                 }}
                                             >
-                                                📋 Active Filters ({filterConditions.length})
+                                                Add Filter Condition
                                             </h4>
+
                                             <div
                                                 style={{
-                                                    maxHeight: '200px',
-                                                    overflowY: 'auto',
-                                                    padding: '1rem',
-                                                    background: 'var(--surface)',
-                                                    borderRadius: 'var(--radius-3)',
-                                                    border: '1px solid var(--divider)',
-                                                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                                                    display: 'grid',
+                                                    gridTemplateColumns: '1fr 1fr 1.2fr auto',
+                                                    gap: '0.75rem',
+                                                    alignItems: 'end',
                                                 }}
                                             >
-                                                {filterConditions.map((condition, index) => (
-                                                    <div
-                                                        key={condition.id}
+                                                {/* Field Selection */}
+                                                <div>
+                                                    <label
                                                         style={{
-                                                            display: 'flex',
-                                                            alignItems: 'center',
-                                                            justifyContent: 'space-between',
-                                                            padding: '0.75rem 1rem',
-                                                            marginBottom:
-                                                                index < filterConditions.length - 1
-                                                                    ? '0.75rem'
-                                                                    : '0',
-                                                            background: 'var(--surface-alt)',
-                                                            borderRadius: 'var(--radius-2)',
-                                                            border: '1px solid var(--divider)',
-                                                            boxShadow:
-                                                                '0 1px 2px rgba(0, 0, 0, 0.05)',
+                                                            fontSize: 'var(--font-size-1)',
+                                                            fontWeight: '500',
+                                                            color: 'var(--text-primary)',
+                                                            marginBottom: '0.5rem',
+                                                            display: 'block',
                                                         }}
                                                     >
-                                                        <span
-                                                            style={{
-                                                                fontSize: 'var(--font-size-1)',
-                                                                lineHeight: '1.4',
-                                                            }}
-                                                        >
-                                                            {condition.logic && (
-                                                                <span
+                                                        Field
+                                                    </label>
+                                                    <select
+                                                        value={newFilterField}
+                                                        onChange={e => {
+                                                            setNewFilterField(e.target.value);
+                                                            const field = filterFields.find(
+                                                                f => f.key === e.target.value
+                                                            );
+                                                            const operators = getOperatorsForField(
+                                                                field.type
+                                                            );
+                                                            setNewFilterOperator(operators[0].key);
+                                                            setNewFilterValue('');
+                                                        }}
+                                                        style={{
+                                                            width: '100%',
+                                                            padding: '0.5rem',
+                                                            border: '1px solid var(--divider)',
+                                                            borderRadius: 'var(--radius-1)',
+                                                            fontSize: 'var(--font-size-1)',
+                                                            backgroundColor: 'var(--surface)',
+                                                        }}
+                                                    >
+                                                        {filterFields.map(field => (
+                                                            <option
+                                                                key={field.key}
+                                                                value={field.key}
+                                                            >
+                                                                {field.label}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+
+                                                {/* Operator Selection */}
+                                                <div>
+                                                    <label
+                                                        style={{
+                                                            fontSize: 'var(--font-size-1)',
+                                                            fontWeight: '500',
+                                                            color: 'var(--text-primary)',
+                                                            marginBottom: '0.5rem',
+                                                            display: 'block',
+                                                        }}
+                                                    >
+                                                        Operator
+                                                    </label>
+                                                    <select
+                                                        value={newFilterOperator}
+                                                        onChange={e =>
+                                                            setNewFilterOperator(e.target.value)
+                                                        }
+                                                        style={{
+                                                            width: '100%',
+                                                            padding: '0.5rem',
+                                                            border: '1px solid var(--divider)',
+                                                            borderRadius: 'var(--radius-1)',
+                                                            fontSize: 'var(--font-size-1)',
+                                                            backgroundColor: 'var(--surface)',
+                                                        }}
+                                                    >
+                                                        {getOperatorsForField(
+                                                            filterFields.find(
+                                                                f => f.key === newFilterField
+                                                            )?.type
+                                                        ).map(operator => (
+                                                            <option
+                                                                key={operator.key}
+                                                                value={operator.key}
+                                                            >
+                                                                {operator.label}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+
+                                                {/* Value Input */}
+                                                <div>
+                                                    <label
+                                                        style={{
+                                                            fontSize: 'var(--font-size-1)',
+                                                            fontWeight: '500',
+                                                            color: 'var(--text-primary)',
+                                                            marginBottom: '0.5rem',
+                                                            display: 'block',
+                                                        }}
+                                                    >
+                                                        Value
+                                                    </label>
+                                                    {(() => {
+                                                        const field = filterFields.find(
+                                                            f => f.key === newFilterField
+                                                        );
+                                                        if (
+                                                            field.type === 'range' &&
+                                                            field.key === 'year'
+                                                        ) {
+                                                            return (
+                                                                <div
                                                                     style={{
+                                                                        display: 'flex',
+                                                                        flexDirection: 'column',
+                                                                        gap: '0.5rem',
+                                                                        padding: '0.75rem',
                                                                         background:
-                                                                            'var(--warning)',
-                                                                        color: 'white',
-                                                                        padding: '0.125rem 0.5rem',
+                                                                            'var(--surface-alt)',
+                                                                        borderRadius:
+                                                                            'var(--radius-2)',
+                                                                        border: '1px solid var(--divider)',
+                                                                    }}
+                                                                >
+                                                                    <div
+                                                                        style={{
+                                                                            display: 'flex',
+                                                                            alignItems: 'center',
+                                                                            gap: '0.75rem',
+                                                                        }}
+                                                                    >
+                                                                        <input
+                                                                            type="range"
+                                                                            min={field.min}
+                                                                            max={field.max}
+                                                                            value={
+                                                                                newFilterValue ||
+                                                                                field.min
+                                                                            }
+                                                                            onChange={e =>
+                                                                                setNewFilterValue(
+                                                                                    e.target.value
+                                                                                )
+                                                                            }
+                                                                            style={{
+                                                                                flex: '1',
+                                                                                height: '6px',
+                                                                                borderRadius: '3px',
+                                                                                background:
+                                                                                    'var(--divider)',
+                                                                                outline: 'none',
+                                                                                accentColor:
+                                                                                    'var(--primary)',
+                                                                            }}
+                                                                        />
+                                                                        <span
+                                                                            style={{
+                                                                                fontSize:
+                                                                                    'var(--font-size-1)',
+                                                                                fontWeight: '600',
+                                                                                color: 'var(--primary)',
+                                                                                minWidth: '50px',
+                                                                                textAlign: 'center',
+                                                                                padding:
+                                                                                    '0.25rem 0.5rem',
+                                                                                background:
+                                                                                    'var(--surface)',
+                                                                                borderRadius:
+                                                                                    'var(--radius-1)',
+                                                                                border: '1px solid var(--primary)',
+                                                                            }}
+                                                                        >
+                                                                            {newFilterValue ||
+                                                                                field.min}
+                                                                        </span>
+                                                                    </div>
+                                                                    <div
+                                                                        style={{
+                                                                            display: 'flex',
+                                                                            justifyContent:
+                                                                                'space-between',
+                                                                            fontSize:
+                                                                                'var(--font-size-0)',
+                                                                            color: 'var(--text-secondary)',
+                                                                        }}
+                                                                    >
+                                                                        <span>{field.min}</span>
+                                                                        <span>{field.max}</span>
+                                                                    </div>
+                                                                </div>
+                                                            );
+                                                        } else if (field.type === 'select') {
+                                                            return (
+                                                                <select
+                                                                    value={newFilterValue}
+                                                                    onChange={e =>
+                                                                        setNewFilterValue(
+                                                                            e.target.value
+                                                                        )
+                                                                    }
+                                                                    style={{
+                                                                        width: '100%',
+                                                                        padding: '0.5rem',
+                                                                        border: '1px solid var(--divider)',
                                                                         borderRadius:
                                                                             'var(--radius-1)',
                                                                         fontSize:
-                                                                            'var(--font-size-0)',
-                                                                        fontWeight: '600',
-                                                                        marginRight: '0.5rem',
+                                                                            'var(--font-size-1)',
+                                                                        backgroundColor:
+                                                                            'var(--surface)',
                                                                     }}
                                                                 >
-                                                                    {condition.logic}
-                                                                </span>
-                                                            )}
-                                                            <strong
-                                                                style={{ color: 'var(--primary)' }}
-                                                            >
-                                                                {condition.fieldLabel}
-                                                            </strong>{' '}
-                                                            <span
-                                                                style={{
-                                                                    color: 'var(--text-secondary)',
-                                                                }}
-                                                            >
-                                                                {condition.operatorLabel.toLowerCase()}
-                                                            </span>{' '}
-                                                            <em
-                                                                style={{
-                                                                    color: 'var(--success)',
-                                                                    fontWeight: '500',
-                                                                    background: 'var(--surface)',
-                                                                    padding: '0.125rem 0.375rem',
-                                                                    borderRadius: 'var(--radius-1)',
-                                                                    fontStyle: 'normal',
-                                                                }}
-                                                            >
-                                                                &quot;{condition.value}&quot;
-                                                            </em>
-                                                        </span>
-                                                        <button
-                                                            onClick={() =>
-                                                                removeFilterCondition(condition.id)
-                                                            }
-                                                            className="btn btn-sm"
-                                                            style={{
-                                                                padding: '0.375rem 0.75rem',
-                                                                background: 'var(--error)',
-                                                                color: 'white',
-                                                                border: 'none',
-                                                                borderRadius: 'var(--radius-2)',
-                                                                fontSize: 'var(--font-size-0)',
-                                                                fontWeight: '500',
-                                                                transition: 'all 0.2s ease',
-                                                            }}
-                                                            onMouseEnter={e => {
-                                                                e.target.style.transform =
-                                                                    'scale(1.05)';
-                                                                e.target.style.boxShadow =
-                                                                    '0 2px 4px rgba(0, 0, 0, 0.2)';
-                                                            }}
-                                                            onMouseLeave={e => {
-                                                                e.target.style.transform =
-                                                                    'scale(1)';
-                                                                e.target.style.boxShadow = 'none';
-                                                            }}
-                                                        >
-                                                            🗑️ Remove
-                                                        </button>
-                                                    </div>
-                                                ))}
+                                                                    <option value="">
+                                                                        Select...
+                                                                    </option>
+                                                                    {field.options.map(option => (
+                                                                        <option
+                                                                            key={
+                                                                                typeof option ===
+                                                                                'string'
+                                                                                    ? option
+                                                                                    : option.key
+                                                                            }
+                                                                            value={
+                                                                                typeof option ===
+                                                                                'string'
+                                                                                    ? option
+                                                                                    : option.key
+                                                                            }
+                                                                        >
+                                                                            {typeof option ===
+                                                                            'string'
+                                                                                ? option
+                                                                                : option.label}
+                                                                        </option>
+                                                                    ))}
+                                                                </select>
+                                                            );
+                                                        } else if (field.type === 'boolean') {
+                                                            return (
+                                                                <select
+                                                                    value={newFilterValue}
+                                                                    onChange={e =>
+                                                                        setNewFilterValue(
+                                                                            e.target.value
+                                                                        )
+                                                                    }
+                                                                    style={{
+                                                                        width: '100%',
+                                                                        padding: '0.5rem',
+                                                                        border: '1px solid var(--divider)',
+                                                                        borderRadius:
+                                                                            'var(--radius-1)',
+                                                                        fontSize:
+                                                                            'var(--font-size-1)',
+                                                                        backgroundColor:
+                                                                            'var(--surface)',
+                                                                    }}
+                                                                >
+                                                                    <option value="">
+                                                                        Select...
+                                                                    </option>
+                                                                    <option value="true">
+                                                                        Yes
+                                                                    </option>
+                                                                    <option value="false">
+                                                                        No
+                                                                    </option>
+                                                                </select>
+                                                            );
+                                                        } else {
+                                                            return (
+                                                                <input
+                                                                    type="text"
+                                                                    placeholder="Enter value..."
+                                                                    value={newFilterValue}
+                                                                    onChange={e =>
+                                                                        setNewFilterValue(
+                                                                            e.target.value
+                                                                        )
+                                                                    }
+                                                                    style={{
+                                                                        width: '100%',
+                                                                        padding: '0.5rem',
+                                                                        border: '1px solid var(--divider)',
+                                                                        borderRadius:
+                                                                            'var(--radius-1)',
+                                                                        fontSize:
+                                                                            'var(--font-size-1)',
+                                                                    }}
+                                                                />
+                                                            );
+                                                        }
+                                                    })()}
+                                                </div>
+
+                                                {/* Add Button */}
+                                                <button
+                                                    onClick={addFilterCondition}
+                                                    disabled={!newFilterValue}
+                                                    className="btn btn-primary"
+                                                    style={{
+                                                        opacity: !newFilterValue ? '0.5' : '1',
+                                                        cursor: !newFilterValue
+                                                            ? 'not-allowed'
+                                                            : 'pointer',
+                                                        padding: '0.75rem 1.5rem',
+                                                        fontSize: 'var(--font-size-1)',
+                                                        fontWeight: '600',
+                                                        borderRadius: 'var(--radius-2)',
+                                                        minHeight: '44px',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        justifyContent: 'center',
+                                                        gap: '0.5rem',
+                                                        boxShadow: !newFilterValue
+                                                            ? 'none'
+                                                            : '0 2px 4px rgba(var(--primary-rgb), 0.3)',
+                                                        transform: 'translateY(0)',
+                                                        transition: 'all 0.2s ease',
+                                                    }}
+                                                    onMouseEnter={e => {
+                                                        if (!e.target.disabled) {
+                                                            e.target.style.transform =
+                                                                'translateY(-1px)';
+                                                            e.target.style.boxShadow =
+                                                                '0 4px 8px rgba(var(--primary-rgb), 0.4)';
+                                                        }
+                                                    }}
+                                                    onMouseLeave={e => {
+                                                        e.target.style.transform = 'translateY(0)';
+                                                        e.target.style.boxShadow = !e.target
+                                                            .disabled
+                                                            ? '0 2px 4px rgba(var(--primary-rgb), 0.3)'
+                                                            : 'none';
+                                                    }}
+                                                >
+                                                    ➕ Add
+                                                </button>
                                             </div>
                                         </div>
-                                    )}
 
-                                    <div
-                                        style={{
-                                            display: 'flex',
-                                            justifyContent: 'space-between',
-                                            paddingTop: '1rem',
-                                            borderTop: '1px solid var(--divider)',
-                                        }}
-                                    >
-                                        <button
-                                            className="btn btn-sm btn-secondary"
-                                            onClick={() => setFilterConditions([])}
+                                        {/* Active Conditions */}
+                                        {filterConditions.length > 0 && (
+                                            <div style={{ marginBottom: '1.5rem' }}>
+                                                <h4
+                                                    style={{
+                                                        fontSize: 'var(--font-size-2)',
+                                                        fontWeight: '600',
+                                                        marginBottom: '0.75rem',
+                                                        color: 'var(--text-primary)',
+                                                        borderBottom: '2px solid var(--success)',
+                                                        paddingBottom: '0.5rem',
+                                                        display: 'inline-block',
+                                                    }}
+                                                >
+                                                    📋 Active Filters ({filterConditions.length})
+                                                </h4>
+                                                <div
+                                                    style={{
+                                                        maxHeight: '200px',
+                                                        overflowY: 'auto',
+                                                        padding: '1rem',
+                                                        background: 'var(--surface)',
+                                                        borderRadius: 'var(--radius-3)',
+                                                        border: '1px solid var(--divider)',
+                                                        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                                                    }}
+                                                >
+                                                    {filterConditions.map((condition, index) => (
+                                                        <div
+                                                            key={condition.id}
+                                                            style={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                justifyContent: 'space-between',
+                                                                padding: '0.75rem 1rem',
+                                                                marginBottom:
+                                                                    index <
+                                                                    filterConditions.length - 1
+                                                                        ? '0.75rem'
+                                                                        : '0',
+                                                                background: 'var(--surface-alt)',
+                                                                borderRadius: 'var(--radius-2)',
+                                                                border: '1px solid var(--divider)',
+                                                                boxShadow:
+                                                                    '0 1px 2px rgba(0, 0, 0, 0.05)',
+                                                            }}
+                                                        >
+                                                            <span
+                                                                style={{
+                                                                    fontSize: 'var(--font-size-1)',
+                                                                    lineHeight: '1.4',
+                                                                }}
+                                                            >
+                                                                {condition.logic && (
+                                                                    <span
+                                                                        style={{
+                                                                            background:
+                                                                                'var(--warning)',
+                                                                            color: 'white',
+                                                                            padding:
+                                                                                '0.125rem 0.5rem',
+                                                                            borderRadius:
+                                                                                'var(--radius-1)',
+                                                                            fontSize:
+                                                                                'var(--font-size-0)',
+                                                                            fontWeight: '600',
+                                                                            marginRight: '0.5rem',
+                                                                        }}
+                                                                    >
+                                                                        {condition.logic}
+                                                                    </span>
+                                                                )}
+                                                                <strong
+                                                                    style={{
+                                                                        color: 'var(--primary)',
+                                                                    }}
+                                                                >
+                                                                    {condition.fieldLabel}
+                                                                </strong>{' '}
+                                                                <span
+                                                                    style={{
+                                                                        color: 'var(--text-secondary)',
+                                                                    }}
+                                                                >
+                                                                    {condition.operatorLabel.toLowerCase()}
+                                                                </span>{' '}
+                                                                <em
+                                                                    style={{
+                                                                        color: 'var(--success)',
+                                                                        fontWeight: '500',
+                                                                        background:
+                                                                            'var(--surface)',
+                                                                        padding:
+                                                                            '0.125rem 0.375rem',
+                                                                        borderRadius:
+                                                                            'var(--radius-1)',
+                                                                        fontStyle: 'normal',
+                                                                    }}
+                                                                >
+                                                                    &quot;{condition.value}&quot;
+                                                                </em>
+                                                            </span>
+                                                            <button
+                                                                onClick={() =>
+                                                                    removeFilterCondition(
+                                                                        condition.id
+                                                                    )
+                                                                }
+                                                                className="btn btn-sm"
+                                                                style={{
+                                                                    padding: '0.375rem 0.75rem',
+                                                                    background: 'var(--error)',
+                                                                    color: 'white',
+                                                                    border: 'none',
+                                                                    borderRadius: 'var(--radius-2)',
+                                                                    fontSize: 'var(--font-size-0)',
+                                                                    fontWeight: '500',
+                                                                    transition: 'all 0.2s ease',
+                                                                }}
+                                                                onMouseEnter={e => {
+                                                                    e.target.style.transform =
+                                                                        'scale(1.05)';
+                                                                    e.target.style.boxShadow =
+                                                                        '0 2px 4px rgba(0, 0, 0, 0.2)';
+                                                                }}
+                                                                onMouseLeave={e => {
+                                                                    e.target.style.transform =
+                                                                        'scale(1)';
+                                                                    e.target.style.boxShadow =
+                                                                        'none';
+                                                                }}
+                                                            >
+                                                                🗑️ Remove
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                paddingTop: '1rem',
+                                                borderTop: '1px solid var(--divider)',
+                                            }}
                                         >
-                                            Clear All
-                                        </button>
-                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
                                             <button
                                                 className="btn btn-sm btn-secondary"
-                                                onClick={() => {
-                                                    // In real implementation, save current conditions as preset
-                                                    console.log('Save preset');
-                                                }}
+                                                onClick={() => setFilterConditions([])}
                                             >
-                                                Save Preset
+                                                Clear All
                                             </button>
-                                            <button
-                                                className="btn btn-sm btn-primary"
-                                                onClick={filterBuilderPopover.close}
-                                            >
-                                                Apply Filters
-                                            </button>
+                                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                                <button
+                                                    className="btn btn-sm btn-secondary"
+                                                    onClick={() => {
+                                                        // In real implementation, save current conditions as preset
+                                                        console.log('Save preset');
+                                                    }}
+                                                >
+                                                    Save Preset
+                                                </button>
+                                                <button
+                                                    className="btn btn-sm btn-primary"
+                                                    onClick={popovers.filterBuilder.close}
+                                                >
+                                                    Apply Filters
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                            </Popover>
+                                </Popover>
+                            )}
                         </div>
                     </div>
 

@@ -18,10 +18,32 @@ const PopoverTest = () => {
     const focusTrapPopover = usePopover(false);
     const longContentPopover = usePopover(false);
     const complexContentPopover = usePopover(false);
+    const filterPopover = usePopover(false);
+    const multiFilterPopover = usePopover(false);
+    const filterBuilderPopover = usePopover(false);
 
     // Test positioning states
     const [currentPosition, setCurrentPosition] = useState('auto');
     const [selectedOption, setSelectedOption] = useState('option1');
+
+    // Filter states for demos
+    const [selectedGenre, setSelectedGenre] = useState([]);
+    const [selectedStatus, setSelectedStatus] = useState('all');
+    const [selectedRating, setSelectedRating] = useState({ min: 0, max: 10 });
+    const [selectedYear, setSelectedYear] = useState({ min: 1900, max: 2024 });
+    const [searchQuery, setSearchQuery] = useState('');
+
+    // Filter builder states
+    const [filterConditions, setFilterConditions] = useState([]);
+    const [newFilterField, setNewFilterField] = useState('genre');
+    const [newFilterOperator, setNewFilterOperator] = useState('equals');
+    const [newFilterValue, setNewFilterValue] = useState('');
+    // Filter presets - kept for future database integration
+    // const [filterPresets] = useState([
+    //     { id: 1, name: 'High-Rated Recent Movies', conditions: [] },
+    //     { id: 2, name: 'Action & Sci-Fi', conditions: [] },
+    //     { id: 3, name: 'Unwatched Classics', conditions: [] },
+    // ]);
 
     // Mock data for testing
     const selectorOptions = [
@@ -38,6 +60,144 @@ const PopoverTest = () => {
     ];
 
     const positions = ['auto', 'top', 'bottom', 'left', 'right'];
+
+    // Mock filter data for media search
+    const genreOptions = [
+        'Action',
+        'Adventure',
+        'Comedy',
+        'Drama',
+        'Horror',
+        'Sci-Fi',
+        'Thriller',
+        'Romance',
+        'Documentary',
+        'Animation',
+    ];
+
+    const statusOptions = [
+        { key: 'all', label: 'All Status' },
+        { key: 'wanted', label: 'Wanted' },
+        { key: 'downloaded', label: 'Downloaded' },
+        { key: 'monitored', label: 'Monitored' },
+        { key: 'unmonitored', label: 'Unmonitored' },
+        { key: 'missing', label: 'Missing' },
+    ];
+
+    const studioOptions = [
+        'Marvel Studios',
+        'Warner Bros',
+        'Universal',
+        'Disney',
+        'Sony Pictures',
+        'Paramount',
+        'Netflix',
+        'HBO',
+        'Amazon Studios',
+        'Apple TV+',
+    ];
+
+    const languageOptions = [
+        'English',
+        'Spanish',
+        'French',
+        'German',
+        'Italian',
+        'Japanese',
+        'Korean',
+        'Chinese',
+        'Portuguese',
+        'Russian',
+    ];
+
+    const filterCategories = [
+        { key: 'genre', label: 'Genre', count: selectedGenre.length },
+        { key: 'status', label: 'Status', count: selectedStatus !== 'all' ? 1 : 0 },
+        {
+            key: 'rating',
+            label: 'Rating',
+            count: selectedRating.min > 0 || selectedRating.max < 10 ? 1 : 0,
+        },
+        {
+            key: 'year',
+            label: 'Year',
+            count: selectedYear.min > 1900 || selectedYear.max < 2024 ? 1 : 0,
+        },
+        { key: 'studio', label: 'Studio', count: 0 },
+        { key: 'language', label: 'Language', count: 0 },
+    ];
+
+    // Filter builder field definitions
+    const filterFields = [
+        { key: 'genre', label: 'Genre', type: 'multiselect', options: genreOptions },
+        { key: 'year', label: 'Year', type: 'range', min: 1900, max: 2024 },
+        { key: 'rating', label: 'Rating', type: 'range', min: 0, max: 10, step: 0.1 },
+        { key: 'status', label: 'Status', type: 'select', options: statusOptions },
+        { key: 'studio', label: 'Studio', type: 'multiselect', options: studioOptions },
+        { key: 'language', label: 'Language', type: 'select', options: languageOptions },
+        { key: 'title', label: 'Title', type: 'text' },
+        { key: 'cast', label: 'Cast', type: 'text' },
+        { key: 'runtime', label: 'Runtime (mins)', type: 'range', min: 0, max: 300 },
+        { key: 'monitored', label: 'Monitored', type: 'boolean' },
+        { key: 'imdb_id', label: 'IMDB ID', type: 'text' },
+        { key: 'tmdb_id', label: 'TMDB ID', type: 'text' },
+        { key: 'tvdb_id', label: 'TVDB ID', type: 'text' },
+    ];
+
+    // Get operators based on field type
+    const getOperatorsForField = fieldType => {
+        switch (fieldType) {
+            case 'text':
+                return [
+                    { key: 'contains', label: 'Contains' },
+                    { key: 'equals', label: 'Equals' },
+                    { key: 'starts_with', label: 'Starts with' },
+                    { key: 'not_contains', label: 'Does not contain' },
+                ];
+            case 'range':
+                return [
+                    { key: 'equals', label: 'Equals' },
+                    { key: 'greater_than', label: 'Greater than' },
+                    { key: 'less_than', label: 'Less than' },
+                    { key: 'between', label: 'Between' },
+                ];
+            case 'select':
+            case 'multiselect':
+                return [
+                    { key: 'equals', label: 'Is' },
+                    { key: 'not_equals', label: 'Is not' },
+                    { key: 'in', label: 'Is one of' },
+                ];
+            case 'boolean':
+                return [{ key: 'equals', label: 'Is' }];
+            default:
+                return [{ key: 'equals', label: 'Equals' }];
+        }
+    };
+
+    const addFilterCondition = () => {
+        if (!newFilterValue) return;
+
+        const field = filterFields.find(f => f.key === newFilterField);
+        const operator = getOperatorsForField(field.type).find(o => o.key === newFilterOperator);
+
+        const newCondition = {
+            id: Date.now(),
+            field: newFilterField,
+            fieldLabel: field.label,
+            operator: newFilterOperator,
+            operatorLabel: operator.label,
+            value: newFilterValue,
+            logic: filterConditions.length > 0 ? 'AND' : null,
+        };
+
+        setFilterConditions([...filterConditions, newCondition]);
+        setNewFilterValue('');
+    };
+
+    const removeFilterCondition = conditionId => {
+        setFilterConditions(filterConditions.filter(c => c.id !== conditionId));
+    };
 
     return (
         <div className="popover-test-page">
@@ -509,6 +669,1099 @@ const PopoverTest = () => {
                         </div>
                     </div>
                 </section>
+
+                {/* Media Search Filter Demos */}
+                <section className="test-section">
+                    <h2>Media Search Filters</h2>
+                    <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
+                        Demonstration of different filtering approaches for media search
+                        functionality.
+                    </p>
+
+                    <div className="test-grid">
+                        {/* Single Filter Popover */}
+                        <div className="test-item">
+                            <h3>Genre Filter (Multi-Select)</h3>
+                            <p
+                                style={{
+                                    color: 'var(--text-secondary)',
+                                    fontSize: 'var(--font-size-1)',
+                                    marginBottom: '1rem',
+                                }}
+                            >
+                                Single filter with multi-select capability
+                            </p>
+                            <button
+                                ref={filterPopover.triggerRef}
+                                className="btn btn-secondary"
+                                onClick={filterPopover.toggle}
+                            >
+                                Genre {selectedGenre.length > 0 && `(${selectedGenre.length})`}
+                            </button>
+                            <Popover
+                                triggerRef={filterPopover.triggerRef}
+                                show={filterPopover.show}
+                                onClose={filterPopover.close}
+                                variant="selector"
+                                position="bottom"
+                                trapFocus={true}
+                                ariaLabel="Select genres"
+                            >
+                                <div className="popover__title">Filter by Genre</div>
+                                <div className="popover__content">
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <input
+                                            type="text"
+                                            placeholder="Search genres..."
+                                            style={{
+                                                width: '100%',
+                                                padding: '0.5rem',
+                                                border: '1px solid var(--divider)',
+                                                borderRadius: 'var(--radius-2)',
+                                                fontSize: 'var(--font-size-1)',
+                                            }}
+                                        />
+                                    </div>
+                                    <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                                        {genreOptions.map(genre => (
+                                            <label
+                                                key={genre}
+                                                style={{
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    padding: '0.5rem',
+                                                    cursor: 'pointer',
+                                                    borderRadius: 'var(--radius-1)',
+                                                    transition: 'background-color 0.2s',
+                                                }}
+                                                onMouseEnter={e =>
+                                                    (e.target.style.backgroundColor =
+                                                        'var(--surface-alt)')
+                                                }
+                                                onMouseLeave={e =>
+                                                    (e.target.style.backgroundColor = 'transparent')
+                                                }
+                                            >
+                                                <input
+                                                    type="checkbox"
+                                                    checked={selectedGenre.includes(genre)}
+                                                    onChange={e => {
+                                                        if (e.target.checked) {
+                                                            setSelectedGenre([
+                                                                ...selectedGenre,
+                                                                genre,
+                                                            ]);
+                                                        } else {
+                                                            setSelectedGenre(
+                                                                selectedGenre.filter(
+                                                                    g => g !== genre
+                                                                )
+                                                            );
+                                                        }
+                                                    }}
+                                                    style={{ marginRight: '0.5rem' }}
+                                                />
+                                                {genre}
+                                            </label>
+                                        ))}
+                                    </div>
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            marginTop: '1rem',
+                                            paddingTop: '1rem',
+                                            borderTop: '1px solid var(--divider)',
+                                        }}
+                                    >
+                                        <button
+                                            className="btn btn-sm btn-secondary"
+                                            onClick={() => setSelectedGenre([])}
+                                        >
+                                            Clear All
+                                        </button>
+                                        <button
+                                            className="btn btn-sm btn-primary"
+                                            onClick={filterPopover.close}
+                                        >
+                                            Apply ({selectedGenre.length})
+                                        </button>
+                                    </div>
+                                </div>
+                            </Popover>
+                        </div>
+
+                        {/* Multi-Filter Hub */}
+                        <div className="test-item">
+                            <h3>Multi-Filter Hub</h3>
+                            <p
+                                style={{
+                                    color: 'var(--text-secondary)',
+                                    fontSize: 'var(--font-size-1)',
+                                    marginBottom: '1rem',
+                                }}
+                            >
+                                Central hub for managing multiple filter types
+                            </p>
+                            <button
+                                ref={multiFilterPopover.triggerRef}
+                                className="btn btn-secondary"
+                                onClick={multiFilterPopover.toggle}
+                            >
+                                Filters{' '}
+                                {filterCategories.reduce((sum, cat) => sum + cat.count, 0) > 0 &&
+                                    `(${filterCategories.reduce((sum, cat) => sum + cat.count, 0)})`}
+                            </button>
+                            <Popover
+                                triggerRef={multiFilterPopover.triggerRef}
+                                show={multiFilterPopover.show}
+                                onClose={multiFilterPopover.close}
+                                variant="default"
+                                position="bottom"
+                                trapFocus={true}
+                                ariaLabel="Media filters"
+                            >
+                                <div className="popover__title">Filter Media</div>
+                                <div className="popover__content">
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <input
+                                            type="text"
+                                            placeholder="Quick search..."
+                                            value={searchQuery}
+                                            onChange={e => setSearchQuery(e.target.value)}
+                                            style={{
+                                                width: '100%',
+                                                padding: '0.5rem',
+                                                border: '1px solid var(--divider)',
+                                                borderRadius: 'var(--radius-2)',
+                                                fontSize: 'var(--font-size-1)',
+                                            }}
+                                        />
+                                    </div>
+
+                                    <div style={{ marginBottom: '1rem' }}>
+                                        <h4
+                                            style={{
+                                                fontSize: 'var(--font-size-1)',
+                                                fontWeight: '600',
+                                                marginBottom: '0.5rem',
+                                                color: 'var(--text-primary)',
+                                            }}
+                                        >
+                                            Filter Categories
+                                        </h4>
+                                        <div style={{ display: 'grid', gap: '0.5rem' }}>
+                                            {filterCategories.map(category => (
+                                                <button
+                                                    key={category.key}
+                                                    className="popover__list-item"
+                                                    style={{
+                                                        display: 'flex',
+                                                        justifyContent: 'space-between',
+                                                        alignItems: 'center',
+                                                        width: '100%',
+                                                        textAlign: 'left',
+                                                    }}
+                                                >
+                                                    <span>{category.label}</span>
+                                                    {category.count > 0 && (
+                                                        <span
+                                                            style={{
+                                                                background: 'var(--primary)',
+                                                                color: 'white',
+                                                                padding: '0.125rem 0.5rem',
+                                                                borderRadius: '999px',
+                                                                fontSize: 'var(--font-size-0)',
+                                                                fontWeight: '500',
+                                                            }}
+                                                        >
+                                                            {category.count}
+                                                        </span>
+                                                    )}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            paddingTop: '1rem',
+                                            borderTop: '1px solid var(--divider)',
+                                        }}
+                                    >
+                                        <button
+                                            className="btn btn-sm btn-secondary"
+                                            onClick={() => {
+                                                setSelectedGenre([]);
+                                                setSelectedStatus('all');
+                                                setSelectedRating({ min: 0, max: 10 });
+                                                setSelectedYear({ min: 1900, max: 2024 });
+                                            }}
+                                        >
+                                            Reset All
+                                        </button>
+                                        <button
+                                            className="btn btn-sm btn-primary"
+                                            onClick={multiFilterPopover.close}
+                                        >
+                                            Apply Filters
+                                        </button>
+                                    </div>
+                                </div>
+                            </Popover>
+                        </div>
+
+                        {/* Filter Builder */}
+                        <div className="test-item">
+                            <h3>Filter Builder</h3>
+                            <p
+                                style={{
+                                    color: 'var(--text-secondary)',
+                                    fontSize: 'var(--font-size-1)',
+                                    marginBottom: '1rem',
+                                }}
+                            >
+                                Comprehensive filter builder with all media fields
+                            </p>
+
+                            {/* Active Filters Display */}
+                            {filterConditions.length > 0 && (
+                                <div
+                                    style={{
+                                        marginBottom: '1rem',
+                                        padding: '0.75rem',
+                                        background: 'var(--surface-alt)',
+                                        borderRadius: 'var(--radius-2)',
+                                        border: '1px solid var(--divider)',
+                                    }}
+                                >
+                                    <h4
+                                        style={{
+                                            fontSize: 'var(--font-size-1)',
+                                            fontWeight: '600',
+                                            marginBottom: '0.5rem',
+                                            color: 'var(--text-primary)',
+                                        }}
+                                    >
+                                        Active Filters ({filterConditions.length})
+                                    </h4>
+                                    <div
+                                        style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}
+                                    >
+                                        {filterConditions.map((condition, index) => (
+                                            <div
+                                                key={condition.id}
+                                                style={{ display: 'flex', alignItems: 'center' }}
+                                            >
+                                                {condition.logic && index > 0 && (
+                                                    <span
+                                                        style={{
+                                                            margin: '0 0.5rem',
+                                                            fontSize: 'var(--font-size-0)',
+                                                            fontWeight: '600',
+                                                            color: 'var(--text-secondary)',
+                                                        }}
+                                                    >
+                                                        {condition.logic}
+                                                    </span>
+                                                )}
+                                                <div
+                                                    style={{
+                                                        display: 'inline-flex',
+                                                        alignItems: 'center',
+                                                        background: 'var(--primary)',
+                                                        color: 'white',
+                                                        padding: '0.25rem 0.5rem',
+                                                        borderRadius: 'var(--radius-1)',
+                                                        fontSize: 'var(--font-size-0)',
+                                                        gap: '0.25rem',
+                                                    }}
+                                                >
+                                                    <span>
+                                                        {condition.fieldLabel}{' '}
+                                                        {condition.operatorLabel.toLowerCase()}{' '}
+                                                        &quot;
+                                                        {condition.value}&quot;
+                                                    </span>
+                                                    <button
+                                                        onClick={() =>
+                                                            removeFilterCondition(condition.id)
+                                                        }
+                                                        style={{
+                                                            background: 'none',
+                                                            border: 'none',
+                                                            color: 'white',
+                                                            cursor: 'pointer',
+                                                            padding: '0',
+                                                            marginLeft: '0.25rem',
+                                                            fontSize: 'var(--font-size-0)',
+                                                            opacity: '0.8',
+                                                        }}
+                                                        onMouseEnter={e =>
+                                                            (e.target.style.opacity = '1')
+                                                        }
+                                                        onMouseLeave={e =>
+                                                            (e.target.style.opacity = '0.8')
+                                                        }
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            <button
+                                ref={filterBuilderPopover.triggerRef}
+                                className="btn btn-secondary"
+                                onClick={filterBuilderPopover.toggle}
+                            >
+                                {filterConditions.length > 0
+                                    ? `Edit Filters (${filterConditions.length})`
+                                    : 'Build Filters'}
+                            </button>
+                            <Popover
+                                triggerRef={filterBuilderPopover.triggerRef}
+                                show={filterBuilderPopover.show}
+                                onClose={filterBuilderPopover.close}
+                                variant="default"
+                                position="bottom"
+                                trapFocus={true}
+                                ariaLabel="Filter builder"
+                                className="popover--wide"
+                            >
+                                <div className="popover__title">Filter Builder</div>
+                                <div className="popover__content">
+                                    {/* Quick Presets - Hidden for now, keep for future database integration 
+                                    <div style={{ marginBottom: '1.5rem' }}>
+                                        <label
+                                            style={{
+                                                display: 'block',
+                                                fontSize: 'var(--font-size-1)',
+                                                fontWeight: '500',
+                                                marginBottom: '0.5rem',
+                                                color: 'var(--text-primary)',
+                                            }}
+                                        >
+                                            Quick Presets
+                                        </label>
+                                        <div
+                                            style={{
+                                                display: 'flex',
+                                                gap: '0.5rem',
+                                                flexWrap: 'wrap',
+                                            }}
+                                        >
+                                            {[].map(preset => (
+                                                <button
+                                                    key={preset.id}
+                                                    className="btn btn-sm btn-secondary"
+                                                    onClick={() => {
+                                                        // In real implementation, load preset conditions
+                                                        console.log(
+                                                            'Load preset:',
+                                                            preset.name
+                                                        );
+                                                    }}
+                                                >
+                                                    {preset.name}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    */}
+
+                                    {/* Add New Filter */}
+                                    <div
+                                        style={{
+                                            marginBottom: '1.5rem',
+                                            padding: '1.25rem',
+                                            background: 'var(--surface)',
+                                            borderRadius: 'var(--radius-3)',
+                                            border: '1px solid var(--divider)',
+                                            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                                        }}
+                                    >
+                                        <h4
+                                            style={{
+                                                fontSize: 'var(--font-size-2)',
+                                                fontWeight: '600',
+                                                marginBottom: '1.25rem',
+                                                color: 'var(--text-primary)',
+                                                borderBottom: '2px solid var(--primary)',
+                                                paddingBottom: '0.5rem',
+                                                display: 'inline-block',
+                                            }}
+                                        >
+                                            Add Filter Condition
+                                        </h4>
+
+                                        <div
+                                            style={{
+                                                display: 'grid',
+                                                gridTemplateColumns: '1fr 1fr 1.2fr auto',
+                                                gap: '0.75rem',
+                                                alignItems: 'end',
+                                            }}
+                                        >
+                                            {/* Field Selection */}
+                                            <div>
+                                                <label
+                                                    style={{
+                                                        fontSize: 'var(--font-size-1)',
+                                                        fontWeight: '500',
+                                                        color: 'var(--text-primary)',
+                                                        marginBottom: '0.5rem',
+                                                        display: 'block',
+                                                    }}
+                                                >
+                                                    Field
+                                                </label>
+                                                <select
+                                                    value={newFilterField}
+                                                    onChange={e => {
+                                                        setNewFilterField(e.target.value);
+                                                        const field = filterFields.find(
+                                                            f => f.key === e.target.value
+                                                        );
+                                                        const operators = getOperatorsForField(
+                                                            field.type
+                                                        );
+                                                        setNewFilterOperator(operators[0].key);
+                                                        setNewFilterValue('');
+                                                    }}
+                                                    style={{
+                                                        width: '100%',
+                                                        padding: '0.5rem',
+                                                        border: '1px solid var(--divider)',
+                                                        borderRadius: 'var(--radius-1)',
+                                                        fontSize: 'var(--font-size-1)',
+                                                        backgroundColor: 'var(--surface)',
+                                                    }}
+                                                >
+                                                    {filterFields.map(field => (
+                                                        <option key={field.key} value={field.key}>
+                                                            {field.label}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            {/* Operator Selection */}
+                                            <div>
+                                                <label
+                                                    style={{
+                                                        fontSize: 'var(--font-size-1)',
+                                                        fontWeight: '500',
+                                                        color: 'var(--text-primary)',
+                                                        marginBottom: '0.5rem',
+                                                        display: 'block',
+                                                    }}
+                                                >
+                                                    Operator
+                                                </label>
+                                                <select
+                                                    value={newFilterOperator}
+                                                    onChange={e =>
+                                                        setNewFilterOperator(e.target.value)
+                                                    }
+                                                    style={{
+                                                        width: '100%',
+                                                        padding: '0.5rem',
+                                                        border: '1px solid var(--divider)',
+                                                        borderRadius: 'var(--radius-1)',
+                                                        fontSize: 'var(--font-size-1)',
+                                                        backgroundColor: 'var(--surface)',
+                                                    }}
+                                                >
+                                                    {getOperatorsForField(
+                                                        filterFields.find(
+                                                            f => f.key === newFilterField
+                                                        )?.type
+                                                    ).map(operator => (
+                                                        <option
+                                                            key={operator.key}
+                                                            value={operator.key}
+                                                        >
+                                                            {operator.label}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+
+                                            {/* Value Input */}
+                                            <div>
+                                                <label
+                                                    style={{
+                                                        fontSize: 'var(--font-size-1)',
+                                                        fontWeight: '500',
+                                                        color: 'var(--text-primary)',
+                                                        marginBottom: '0.5rem',
+                                                        display: 'block',
+                                                    }}
+                                                >
+                                                    Value
+                                                </label>
+                                                {(() => {
+                                                    const field = filterFields.find(
+                                                        f => f.key === newFilterField
+                                                    );
+                                                    if (
+                                                        field.type === 'range' &&
+                                                        field.key === 'year'
+                                                    ) {
+                                                        return (
+                                                            <div
+                                                                style={{
+                                                                    display: 'flex',
+                                                                    flexDirection: 'column',
+                                                                    gap: '0.5rem',
+                                                                    padding: '0.75rem',
+                                                                    background:
+                                                                        'var(--surface-alt)',
+                                                                    borderRadius: 'var(--radius-2)',
+                                                                    border: '1px solid var(--divider)',
+                                                                }}
+                                                            >
+                                                                <div
+                                                                    style={{
+                                                                        display: 'flex',
+                                                                        alignItems: 'center',
+                                                                        gap: '0.75rem',
+                                                                    }}
+                                                                >
+                                                                    <input
+                                                                        type="range"
+                                                                        min={field.min}
+                                                                        max={field.max}
+                                                                        value={
+                                                                            newFilterValue ||
+                                                                            field.min
+                                                                        }
+                                                                        onChange={e =>
+                                                                            setNewFilterValue(
+                                                                                e.target.value
+                                                                            )
+                                                                        }
+                                                                        style={{
+                                                                            flex: '1',
+                                                                            height: '6px',
+                                                                            borderRadius: '3px',
+                                                                            background:
+                                                                                'var(--divider)',
+                                                                            outline: 'none',
+                                                                            accentColor:
+                                                                                'var(--primary)',
+                                                                        }}
+                                                                    />
+                                                                    <span
+                                                                        style={{
+                                                                            fontSize:
+                                                                                'var(--font-size-1)',
+                                                                            fontWeight: '600',
+                                                                            color: 'var(--primary)',
+                                                                            minWidth: '50px',
+                                                                            textAlign: 'center',
+                                                                            padding:
+                                                                                '0.25rem 0.5rem',
+                                                                            background:
+                                                                                'var(--surface)',
+                                                                            borderRadius:
+                                                                                'var(--radius-1)',
+                                                                            border: '1px solid var(--primary)',
+                                                                        }}
+                                                                    >
+                                                                        {newFilterValue ||
+                                                                            field.min}
+                                                                    </span>
+                                                                </div>
+                                                                <div
+                                                                    style={{
+                                                                        display: 'flex',
+                                                                        justifyContent:
+                                                                            'space-between',
+                                                                        fontSize:
+                                                                            'var(--font-size-0)',
+                                                                        color: 'var(--text-secondary)',
+                                                                    }}
+                                                                >
+                                                                    <span>{field.min}</span>
+                                                                    <span>{field.max}</span>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    } else if (field.type === 'select') {
+                                                        return (
+                                                            <select
+                                                                value={newFilterValue}
+                                                                onChange={e =>
+                                                                    setNewFilterValue(
+                                                                        e.target.value
+                                                                    )
+                                                                }
+                                                                style={{
+                                                                    width: '100%',
+                                                                    padding: '0.5rem',
+                                                                    border: '1px solid var(--divider)',
+                                                                    borderRadius: 'var(--radius-1)',
+                                                                    fontSize: 'var(--font-size-1)',
+                                                                    backgroundColor:
+                                                                        'var(--surface)',
+                                                                }}
+                                                            >
+                                                                <option value="">Select...</option>
+                                                                {field.options.map(option => (
+                                                                    <option
+                                                                        key={
+                                                                            typeof option ===
+                                                                            'string'
+                                                                                ? option
+                                                                                : option.key
+                                                                        }
+                                                                        value={
+                                                                            typeof option ===
+                                                                            'string'
+                                                                                ? option
+                                                                                : option.key
+                                                                        }
+                                                                    >
+                                                                        {typeof option === 'string'
+                                                                            ? option
+                                                                            : option.label}
+                                                                    </option>
+                                                                ))}
+                                                            </select>
+                                                        );
+                                                    } else if (field.type === 'boolean') {
+                                                        return (
+                                                            <select
+                                                                value={newFilterValue}
+                                                                onChange={e =>
+                                                                    setNewFilterValue(
+                                                                        e.target.value
+                                                                    )
+                                                                }
+                                                                style={{
+                                                                    width: '100%',
+                                                                    padding: '0.5rem',
+                                                                    border: '1px solid var(--divider)',
+                                                                    borderRadius: 'var(--radius-1)',
+                                                                    fontSize: 'var(--font-size-1)',
+                                                                    backgroundColor:
+                                                                        'var(--surface)',
+                                                                }}
+                                                            >
+                                                                <option value="">Select...</option>
+                                                                <option value="true">Yes</option>
+                                                                <option value="false">No</option>
+                                                            </select>
+                                                        );
+                                                    } else {
+                                                        return (
+                                                            <input
+                                                                type="text"
+                                                                placeholder="Enter value..."
+                                                                value={newFilterValue}
+                                                                onChange={e =>
+                                                                    setNewFilterValue(
+                                                                        e.target.value
+                                                                    )
+                                                                }
+                                                                style={{
+                                                                    width: '100%',
+                                                                    padding: '0.5rem',
+                                                                    border: '1px solid var(--divider)',
+                                                                    borderRadius: 'var(--radius-1)',
+                                                                    fontSize: 'var(--font-size-1)',
+                                                                }}
+                                                            />
+                                                        );
+                                                    }
+                                                })()}
+                                            </div>
+
+                                            {/* Add Button */}
+                                            <button
+                                                onClick={addFilterCondition}
+                                                disabled={!newFilterValue}
+                                                className="btn btn-primary"
+                                                style={{
+                                                    opacity: !newFilterValue ? '0.5' : '1',
+                                                    cursor: !newFilterValue
+                                                        ? 'not-allowed'
+                                                        : 'pointer',
+                                                    padding: '0.75rem 1.5rem',
+                                                    fontSize: 'var(--font-size-1)',
+                                                    fontWeight: '600',
+                                                    borderRadius: 'var(--radius-2)',
+                                                    minHeight: '44px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    justifyContent: 'center',
+                                                    gap: '0.5rem',
+                                                    boxShadow: !newFilterValue
+                                                        ? 'none'
+                                                        : '0 2px 4px rgba(var(--primary-rgb), 0.3)',
+                                                    transform: 'translateY(0)',
+                                                    transition: 'all 0.2s ease',
+                                                }}
+                                                onMouseEnter={e => {
+                                                    if (!e.target.disabled) {
+                                                        e.target.style.transform =
+                                                            'translateY(-1px)';
+                                                        e.target.style.boxShadow =
+                                                            '0 4px 8px rgba(var(--primary-rgb), 0.4)';
+                                                    }
+                                                }}
+                                                onMouseLeave={e => {
+                                                    e.target.style.transform = 'translateY(0)';
+                                                    e.target.style.boxShadow = !e.target.disabled
+                                                        ? '0 2px 4px rgba(var(--primary-rgb), 0.3)'
+                                                        : 'none';
+                                                }}
+                                            >
+                                                ➕ Add
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Active Conditions */}
+                                    {filterConditions.length > 0 && (
+                                        <div style={{ marginBottom: '1.5rem' }}>
+                                            <h4
+                                                style={{
+                                                    fontSize: 'var(--font-size-2)',
+                                                    fontWeight: '600',
+                                                    marginBottom: '0.75rem',
+                                                    color: 'var(--text-primary)',
+                                                    borderBottom: '2px solid var(--success)',
+                                                    paddingBottom: '0.5rem',
+                                                    display: 'inline-block',
+                                                }}
+                                            >
+                                                📋 Active Filters ({filterConditions.length})
+                                            </h4>
+                                            <div
+                                                style={{
+                                                    maxHeight: '200px',
+                                                    overflowY: 'auto',
+                                                    padding: '1rem',
+                                                    background: 'var(--surface)',
+                                                    borderRadius: 'var(--radius-3)',
+                                                    border: '1px solid var(--divider)',
+                                                    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
+                                                }}
+                                            >
+                                                {filterConditions.map((condition, index) => (
+                                                    <div
+                                                        key={condition.id}
+                                                        style={{
+                                                            display: 'flex',
+                                                            alignItems: 'center',
+                                                            justifyContent: 'space-between',
+                                                            padding: '0.75rem 1rem',
+                                                            marginBottom:
+                                                                index < filterConditions.length - 1
+                                                                    ? '0.75rem'
+                                                                    : '0',
+                                                            background: 'var(--surface-alt)',
+                                                            borderRadius: 'var(--radius-2)',
+                                                            border: '1px solid var(--divider)',
+                                                            boxShadow:
+                                                                '0 1px 2px rgba(0, 0, 0, 0.05)',
+                                                        }}
+                                                    >
+                                                        <span
+                                                            style={{
+                                                                fontSize: 'var(--font-size-1)',
+                                                                lineHeight: '1.4',
+                                                            }}
+                                                        >
+                                                            {condition.logic && (
+                                                                <span
+                                                                    style={{
+                                                                        background:
+                                                                            'var(--warning)',
+                                                                        color: 'white',
+                                                                        padding: '0.125rem 0.5rem',
+                                                                        borderRadius:
+                                                                            'var(--radius-1)',
+                                                                        fontSize:
+                                                                            'var(--font-size-0)',
+                                                                        fontWeight: '600',
+                                                                        marginRight: '0.5rem',
+                                                                    }}
+                                                                >
+                                                                    {condition.logic}
+                                                                </span>
+                                                            )}
+                                                            <strong
+                                                                style={{ color: 'var(--primary)' }}
+                                                            >
+                                                                {condition.fieldLabel}
+                                                            </strong>{' '}
+                                                            <span
+                                                                style={{
+                                                                    color: 'var(--text-secondary)',
+                                                                }}
+                                                            >
+                                                                {condition.operatorLabel.toLowerCase()}
+                                                            </span>{' '}
+                                                            <em
+                                                                style={{
+                                                                    color: 'var(--success)',
+                                                                    fontWeight: '500',
+                                                                    background: 'var(--surface)',
+                                                                    padding: '0.125rem 0.375rem',
+                                                                    borderRadius: 'var(--radius-1)',
+                                                                    fontStyle: 'normal',
+                                                                }}
+                                                            >
+                                                                &quot;{condition.value}&quot;
+                                                            </em>
+                                                        </span>
+                                                        <button
+                                                            onClick={() =>
+                                                                removeFilterCondition(condition.id)
+                                                            }
+                                                            className="btn btn-sm"
+                                                            style={{
+                                                                padding: '0.375rem 0.75rem',
+                                                                background: 'var(--error)',
+                                                                color: 'white',
+                                                                border: 'none',
+                                                                borderRadius: 'var(--radius-2)',
+                                                                fontSize: 'var(--font-size-0)',
+                                                                fontWeight: '500',
+                                                                transition: 'all 0.2s ease',
+                                                            }}
+                                                            onMouseEnter={e => {
+                                                                e.target.style.transform =
+                                                                    'scale(1.05)';
+                                                                e.target.style.boxShadow =
+                                                                    '0 2px 4px rgba(0, 0, 0, 0.2)';
+                                                            }}
+                                                            onMouseLeave={e => {
+                                                                e.target.style.transform =
+                                                                    'scale(1)';
+                                                                e.target.style.boxShadow = 'none';
+                                                            }}
+                                                        >
+                                                            🗑️ Remove
+                                                        </button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    <div
+                                        style={{
+                                            display: 'flex',
+                                            justifyContent: 'space-between',
+                                            paddingTop: '1rem',
+                                            borderTop: '1px solid var(--divider)',
+                                        }}
+                                    >
+                                        <button
+                                            className="btn btn-sm btn-secondary"
+                                            onClick={() => setFilterConditions([])}
+                                        >
+                                            Clear All
+                                        </button>
+                                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                            <button
+                                                className="btn btn-sm btn-secondary"
+                                                onClick={() => {
+                                                    // In real implementation, save current conditions as preset
+                                                    console.log('Save preset');
+                                                }}
+                                            >
+                                                Save Preset
+                                            </button>
+                                            <button
+                                                className="btn btn-sm btn-primary"
+                                                onClick={filterBuilderPopover.close}
+                                            >
+                                                Apply Filters
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </Popover>
+                        </div>
+                    </div>
+
+                    {/* Filter Examples Documentation */}
+                    <div className="test-notes" style={{ marginTop: '2rem' }}>
+                        <h3>Filter Implementation Approaches</h3>
+                        <div
+                            style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                                gap: '1.5rem',
+                            }}
+                        >
+                            <div>
+                                <h4
+                                    style={{
+                                        fontSize: 'var(--font-size-1)',
+                                        fontWeight: '600',
+                                        marginBottom: '0.5rem',
+                                    }}
+                                >
+                                    Single Filter Approach
+                                </h4>
+                                <ul
+                                    style={{
+                                        fontSize: 'var(--font-size-1)',
+                                        color: 'var(--text-secondary)',
+                                    }}
+                                >
+                                    <li>One popover per filter type</li>
+                                    <li>Multi-select with checkboxes</li>
+                                    <li>Search within filter options</li>
+                                    <li>Clear all and apply actions</li>
+                                    <li>Good for focused filtering</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4
+                                    style={{
+                                        fontSize: 'var(--font-size-1)',
+                                        fontWeight: '600',
+                                        marginBottom: '0.5rem',
+                                    }}
+                                >
+                                    Multi-Filter Hub
+                                </h4>
+                                <ul
+                                    style={{
+                                        fontSize: 'var(--font-size-1)',
+                                        color: 'var(--text-secondary)',
+                                    }}
+                                >
+                                    <li>Central filter management</li>
+                                    <li>Quick search integration</li>
+                                    <li>Filter category overview</li>
+                                    <li>Badge counts for active filters</li>
+                                    <li>Unified apply/reset actions</li>
+                                </ul>
+                            </div>
+                            <div>
+                                <h4
+                                    style={{
+                                        fontSize: 'var(--font-size-1)',
+                                        fontWeight: '600',
+                                        marginBottom: '0.5rem',
+                                    }}
+                                >
+                                    Advanced Builder
+                                </h4>
+                                <ul
+                                    style={{
+                                        fontSize: 'var(--font-size-1)',
+                                        color: 'var(--text-secondary)',
+                                    }}
+                                >
+                                    <li>Range inputs for numeric values</li>
+                                    <li>Dropdown selections</li>
+                                    <li>Complex filter combinations</li>
+                                    <li>Operator support (&gt;, &lt;, =)</li>
+                                    <li>Power user oriented</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div
+                            style={{
+                                marginTop: '1.5rem',
+                                padding: '1rem',
+                                background: 'var(--surface-alt)',
+                                borderRadius: 'var(--radius-2)',
+                            }}
+                        >
+                            <h4
+                                style={{
+                                    fontSize: 'var(--font-size-1)',
+                                    fontWeight: '600',
+                                    marginBottom: '0.5rem',
+                                }}
+                            >
+                                Testing Focus Trap
+                            </h4>
+                            <ul
+                                style={{
+                                    fontSize: 'var(--font-size-1)',
+                                    color: 'var(--text-secondary)',
+                                    marginBottom: '1rem',
+                                }}
+                            >
+                                <li>
+                                    <strong>Open filter popover:</strong> Click on any filter button
+                                    above
+                                </li>
+                                <li>
+                                    <strong>Tab navigation:</strong> Press Tab to cycle through
+                                    focusable elements
+                                </li>
+                                <li>
+                                    <strong>Reverse tab:</strong> Press Shift+Tab to cycle backwards
+                                </li>
+                                <li>
+                                    <strong>Focus wrapping:</strong> Focus should wrap from last to
+                                    first element
+                                </li>
+                                <li>
+                                    <strong>Close and reset:</strong> Press Escape to close, or
+                                    click outside
+                                </li>
+                            </ul>
+
+                            <h4
+                                style={{
+                                    fontSize: 'var(--font-size-1)',
+                                    fontWeight: '600',
+                                    marginBottom: '0.5rem',
+                                }}
+                            >
+                                Implementation Considerations
+                            </h4>
+                            <ul
+                                style={{
+                                    fontSize: 'var(--font-size-1)',
+                                    color: 'var(--text-secondary)',
+                                    margin: 0,
+                                }}
+                            >
+                                <li>
+                                    <strong>Performance:</strong> Consider virtualization for large
+                                    option lists
+                                </li>
+                                <li>
+                                    <strong>Persistence:</strong> Save filter states in URL params
+                                    or localStorage
+                                </li>
+                                <li>
+                                    <strong>Accessibility:</strong> Proper ARIA labels and keyboard
+                                    navigation
+                                </li>
+                                <li>
+                                    <strong>Mobile:</strong> Consider drawer/sheet approach on
+                                    mobile devices
+                                </li>
+                                <li>
+                                    <strong>Integration:</strong> Connect with search API and result
+                                    updates
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
             </div>
 
             <style>{`
@@ -589,6 +1842,12 @@ const PopoverTest = () => {
                     margin-bottom: 0.5rem;
                 }
 
+                /* Wide popover for filter builder */
+                .popover--wide {
+                    max-width: min(600px, calc(100vw - 24px));
+                    min-width: min(500px, calc(100vw - 48px));
+                }
+
                 @media (max-width: 768px) {
                     .popover-test-page {
                         padding: 1rem;
@@ -600,6 +1859,11 @@ const PopoverTest = () => {
 
                     .test-section {
                         padding: 1rem;
+                    }
+                    
+                    .popover--wide {
+                        max-width: calc(100vw - 24px);
+                        min-width: calc(100vw - 48px);
                     }
                 }
             `}</style>

@@ -280,17 +280,29 @@ const Popover = React.memo(
                 // Focus trap handling
                 if (trapFocus && event.key === 'Tab') {
                     const focusableElements = popoverRef.current?.querySelectorAll(
-                        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                        'button:not([disabled]), [href]:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled])'
                     );
 
                     if (focusableElements?.length) {
-                        const first = focusableElements[0];
-                        const last = focusableElements[focusableElements.length - 1];
+                        // Convert NodeList to Array for easier manipulation
+                        const elements = Array.from(focusableElements);
+                        const first = elements[0];
+                        const last = elements[elements.length - 1];
 
-                        if (event.shiftKey && document.activeElement === first) {
-                            event.preventDefault();
-                            last.focus();
-                        } else if (!event.shiftKey && document.activeElement === last) {
+                        // Only trap focus if the active element is within the popover
+                        const activeElement = document.activeElement;
+                        const isActiveInPopover = popoverRef.current?.contains(activeElement);
+
+                        if (isActiveInPopover) {
+                            if (event.shiftKey && activeElement === first) {
+                                event.preventDefault();
+                                last.focus();
+                            } else if (!event.shiftKey && activeElement === last) {
+                                event.preventDefault();
+                                first.focus();
+                            }
+                        } else if (!isActiveInPopover) {
+                            // If focus is outside popover, bring it back to the first element
                             event.preventDefault();
                             first.focus();
                         }
@@ -338,14 +350,22 @@ const Popover = React.memo(
 
         // Focus management
         useEffect(() => {
-            if (show && trapFocus) {
-                const focusableElements = popoverRef.current?.querySelectorAll(
-                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-                );
+            if (show && trapFocus && popoverRef.current) {
+                // Small delay to ensure popover is rendered and visible
+                const timer = setTimeout(() => {
+                    const focusableElements = popoverRef.current?.querySelectorAll(
+                        'button:not([disabled]), [href]:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"]):not([disabled])'
+                    );
 
-                if (focusableElements?.length) {
-                    focusableElements[0].focus();
-                }
+                    if (focusableElements?.length) {
+                        const firstElement = focusableElements[0];
+                        if (firstElement && typeof firstElement.focus === 'function') {
+                            firstElement.focus();
+                        }
+                    }
+                }, 100);
+
+                return () => clearTimeout(timer);
             }
         }, [show, trapFocus]);
 

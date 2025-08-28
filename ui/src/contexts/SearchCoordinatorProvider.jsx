@@ -14,6 +14,12 @@ export function SearchCoordinatorProvider({ children }) {
     const [isHeaderSearchActive, setIsHeaderSearchActive] = useState(false);
     const [searchAdapter, setSearchAdapter] = useState(null);
     const [searchConfig, setSearchConfig] = useState(null);
+    const [isRefreshing, setIsRefreshingState] = useState(false);
+
+    // Memoize setIsRefreshing to prevent infinite loops
+    const setIsRefreshing = useCallback(value => {
+        setIsRefreshingState(value);
+    }, []);
 
     const pageSearchRef = useRef(null);
     const headerSearchRef = useRef(null);
@@ -27,8 +33,20 @@ export function SearchCoordinatorProvider({ children }) {
      */
     const registerPageSearch = useCallback((searchCore, config) => {
         pageSearchRef.current = searchCore;
-        setSearchAdapter(config.adapter);
-        setSearchConfig(config);
+        // Only update searchAdapter if it's actually different
+        setSearchAdapter(prevAdapter => {
+            if (prevAdapter !== config.adapter) {
+                return config.adapter;
+            }
+            return prevAdapter;
+        });
+        // Only update searchConfig if it's actually different to prevent infinite loops
+        setSearchConfig(prevConfig => {
+            if (!prevConfig || JSON.stringify(prevConfig) !== JSON.stringify(config)) {
+                return config;
+            }
+            return prevConfig;
+        });
     }, []);
 
     /**
@@ -125,6 +143,8 @@ export function SearchCoordinatorProvider({ children }) {
         setIsHeaderSearchActive,
         searchAdapter,
         searchConfig,
+        isRefreshing,
+        setIsRefreshing,
 
         registerPageSearch,
         registerHeaderSearch,

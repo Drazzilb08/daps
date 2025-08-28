@@ -77,7 +77,7 @@ function SearchControlsCore({
     // Refresh functionality
     showRefreshControls = false,
     onRefresh,
-    isRefreshing = false,
+    isRefreshing: isRefreshingProp = false, // Renamed to avoid conflict with global state
 
     // Help functionality (for MediaSearch only)
     showAdvancedSearchHelp = false,
@@ -89,6 +89,9 @@ function SearchControlsCore({
     showViewToggle = true,
     selectorLabel = 'Source',
 }) {
+    // Use the isRefreshing prop directly
+    const isRefreshing = isRefreshingProp;
+
     // If header search is active, hide the page-level search bar and some controls
     const shouldShowSearch = showSearch && !isHeaderSearchActive;
     const shouldShowSelector = sources.length > 0 && !isHeaderSearchActive;

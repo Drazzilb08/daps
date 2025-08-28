@@ -84,12 +84,13 @@ function HeaderSearchInner({
         changeFilter,
         executeRefresh,
         registerHeaderSearch,
+        isRefreshing,
     } = headerSearchContext;
 
     // Direct control management without schema (post-factory pattern refactor)
     // Controls are now implemented directly with PopoverFactory instead of schema-driven approach
 
-    // Register with HeaderSearchProvider
+    // Register with HeaderSearchProvider - run only once
     useEffect(() => {
         if (!registerHeaderSearch) return;
 
@@ -101,7 +102,7 @@ function HeaderSearchInner({
         };
 
         registerHeaderSearch(headerSearchAPI);
-    }, [registerHeaderSearch]);
+    }, []); // Empty dependency array - register only once
 
     // Initialize with current search config when it becomes available
     useEffect(() => {
@@ -552,14 +553,16 @@ function HeaderSearchInner({
                         onMouseLeave={() => setTooltip('refresh', false)}
                         onFocus={() => setTooltip('refresh', true)}
                         onBlur={() => setTooltip('refresh', false)}
-                        disabled={false}
+                        disabled={isRefreshing}
                     >
                         {getIcon('mi:refresh')}
-                        <span className="search-control-label">REFRESH</span>
+                        <span className="search-control-label">
+                            {isRefreshing ? 'Refreshing...' : 'REFRESH'}
+                        </span>
                     </button>
                     <TooltipFactory
                         anchor={refreshPopover.triggerRef.current}
-                        text="Refresh database"
+                        text={isRefreshing ? 'Refreshing...' : 'Refresh database'}
                         show={showTooltips.refresh && !refreshPopover.show}
                     />
 

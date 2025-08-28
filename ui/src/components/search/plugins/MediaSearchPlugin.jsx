@@ -5,7 +5,6 @@ import { PluginBuilder } from './PluginSchema';
 import { mediaSearchAdapter } from '../adapters/MediaSearchAdapter';
 import pluginRegistry from './PluginRegistry';
 import subPluginRegistry from './subplugins';
-import { refreshMediaDatabase, fetchJobDetail } from '../../../utils/api';
 import MediaModalComponent from './MediaModalComponent';
 
 /**
@@ -209,57 +208,10 @@ export const mediaSearchPluginConfig = new PluginBuilder('media-search', 'Media 
             console.log('Sub-plugin changed to:', newSubPlugin);
             adapter.setActiveSubPlugin(newSubPlugin);
         },
-        onRefresh: async (adapter, refreshOptions, { toast, setRefreshTrigger }) => {
-            console.log('MediaSearch: Starting cache refresh...', refreshOptions);
-
-            try {
-                const result = await refreshMediaDatabase({
-                    arr_instances: refreshOptions?.arrInstances || [],
-                    plex_instances: refreshOptions?.plexInstances || [],
-                    libraries: refreshOptions?.libraries || [],
-                    update_mappings: true,
-                });
-
-                console.log('MediaSearch: Refresh result:', result);
-
-                if (result.job_id) {
-                    // Start polling the job
-                    const pollJobStatus = async jobId => {
-                        const pollInterval = setInterval(async () => {
-                            try {
-                                const response = await fetchJobDetail(jobId);
-                                const job = response.job || response;
-                                const dbStatus = job.status;
-
-                                if (dbStatus === 'success') {
-                                    clearInterval(pollInterval);
-                                    toast(
-                                        'Database refresh completed! Search results have been updated.',
-                                        'success'
-                                    );
-                                    if (setRefreshTrigger) setRefreshTrigger(prev => prev + 1);
-                                } else if (dbStatus === 'error') {
-                                    clearInterval(pollInterval);
-                                    toast(
-                                        `Database refresh failed: ${job.error || 'Unknown error'}`,
-                                        'error'
-                                    );
-                                }
-                            } catch (e) {
-                                clearInterval(pollInterval);
-                                toast(`Error checking refresh status: ${e.message}`, 'error');
-                            }
-                        }, 2000);
-                    };
-
-                    pollJobStatus(result.job_id);
-                } else {
-                    toast('Cache refresh completed successfully', 'success');
-                    if (setRefreshTrigger) setRefreshTrigger(prev => prev + 1);
-                }
-            } catch (error) {
-                console.error('MediaSearch: Refresh error:', error);
-                toast('Failed to start refresh', 'error');
+        onRefresh: async (adapter, refreshOptions, { onRefresh }) => {
+            // Delegate to the parent page's refresh handler which has all the localStorage logic
+            if (onRefresh) {
+                onRefresh(refreshOptions);
             }
         },
     })

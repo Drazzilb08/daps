@@ -24,7 +24,11 @@ export function useToast() {
     const error = useCallback((msg, timeout) => showToast(msg, 'error', timeout), [showToast]);
     const success = useCallback((msg, timeout) => showToast(msg, 'success', timeout), [showToast]);
     const info = useCallback((msg, timeout) => showToast(msg, 'info', timeout), [showToast]);
-    return Object.assign(showToast, { error, success, info });
+
+    // Memoize the toast object to prevent new object creation on every render
+    return React.useMemo(() => {
+        return Object.assign(showToast, { error, success, info });
+    }, [showToast, error, success, info]);
 }
 
 /**

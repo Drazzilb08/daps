@@ -170,6 +170,7 @@ export default function SimpleSearchPlugin({ pluginId, overrideConfig = {}, ...a
             // Refresh controls
             showRefreshControls={config.showRefreshControls}
             showAdvancedSearchHelp={config.showAdvancedSearchHelp}
+            isRefreshing={additionalProps.isRefreshing}
             // UI Customization
             selectorLabel={config.selectorLabel}
             showJumpBar={config.showJumpBar}

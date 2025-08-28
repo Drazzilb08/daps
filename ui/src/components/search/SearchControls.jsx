@@ -4,7 +4,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { getIcon, humanize } from '../../utils/tools';
 import TooltipFactory from '../Tooltip';
-import Popover from '../Popover';
+import PopoverFactory from '../PopoverFactory';
 import usePopover from '../../hooks/usePopover';
 import { useSearchCoordinator } from '../../contexts/SearchCoordinatorProvider';
 import { fetchInstances, fetchPlexLibrariesByInstance } from '../../utils/api';
@@ -114,7 +114,7 @@ function SearchControlsCore({
     const autocompleteRef = useRef();
 
     // ===== REFRESH POPOVER STATE =====
-    const refreshPopover = usePopover(false);
+    const refreshPopover = usePopover();
     const [selectedRefreshOptions, setSelectedRefreshOptions] = useState({
         arrInstances: [],
         plexInstances: [],
@@ -122,11 +122,11 @@ function SearchControlsCore({
     });
 
     // ===== HELP POPOVER STATE =====
-    const helpPopover = usePopover(false);
+    const helpPopover = usePopover();
     const [showHelpTooltip, setShowHelpTooltip] = useState(false);
 
     // ===== SELECTOR STATE =====
-    const selectorPopover = usePopover(false);
+    const selectorPopover = usePopover();
     const [showSelectorTooltip, setShowSelectorTooltip] = useState(false);
     const [showRefreshTooltip, setShowRefreshTooltip] = useState(false);
 
@@ -775,15 +775,15 @@ function SearchControlsCore({
                         />
 
                         {/* Help popover */}
-                        <Popover
-                            triggerRef={helpPopover.triggerRef}
+                        <PopoverFactory
+                            variant="help"
                             show={helpPopover.show}
                             onClose={helpPopover.close}
-                            variant="help"
+                            triggerRef={helpPopover.triggerRef}
                             position="bottom"
                             ariaLabel="Advanced search help"
+                            title="Advanced Search"
                         >
-                            <div className="popover__title">Advanced Search</div>
                             <div className="popover__content">
                                 <p>Use database IDs for precise searches:</p>
                                 <div className="help-examples">
@@ -801,7 +801,7 @@ function SearchControlsCore({
                                     </div>
                                 </div>
                             </div>
-                        </Popover>
+                        </PopoverFactory>
                     </>
                 )}
             </div>
@@ -833,15 +833,15 @@ function SearchControlsCore({
                     show={showSelectorTooltip && !selectorPopover.show}
                 />
 
-                <Popover
-                    triggerRef={selectorPopover.triggerRef}
+                <PopoverFactory
+                    variant="selector"
                     show={selectorPopover.show}
                     onClose={selectorPopover.close}
-                    variant="selector"
+                    triggerRef={selectorPopover.triggerRef}
                     position="bottom"
                     ariaLabel={`Select ${selectorLabel.toLowerCase()}`}
+                    title={`Select ${selectorLabel}`}
                 >
-                    <div className="popover__title">Select {selectorLabel}</div>
                     <ul className="popover__list">
                         {sources.map(source => (
                             <li key={source.key}>
@@ -863,7 +863,7 @@ function SearchControlsCore({
                             </li>
                         ))}
                     </ul>
-                </Popover>
+                </PopoverFactory>
             </div>
         );
     };
@@ -896,11 +896,11 @@ function SearchControlsCore({
                     show={showRefreshTooltip && !refreshPopover.show}
                 />
 
-                <Popover
-                    triggerRef={refreshPopover.triggerRef}
+                <PopoverFactory
+                    variant="default"
                     show={refreshPopover.show}
                     onClose={refreshPopover.close}
-                    variant="actions"
+                    triggerRef={refreshPopover.triggerRef}
                     position="bottom"
                     ariaLabel="Refresh database options"
                     className="popover--wide"
@@ -1292,7 +1292,7 @@ function SearchControlsCore({
                             {isRefreshing ? 'Refreshing...' : 'Refresh Selected'}
                         </button>
                     </div>
-                </Popover>
+                </PopoverFactory>
             </div>
         );
     };

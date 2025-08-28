@@ -1,157 +1,79 @@
-import { useState, useRef, useCallback, useMemo } from 'react';
-import { validatePopoverSchema, processPopoverSchema } from '../utils/popoverSchema';
+import { useState, useRef, useCallback } from 'react';
 
 /**
- * Schema-driven popover management hook
+ * Simple popover management hook following the useModal pattern
  *
- * Manages multiple popovers through a single schema configuration, providing
- * centralized state management and consistent behavior across all popover instances.
+ * Provides clean API for popover state management without schema complexity.
+ * Modeled after useModal for consistency with DAPS architecture patterns.
  *
- * @param {Object} schema - Popover configuration schema defining all popovers and their behavior
- * @param {Object} stateRefs - Map of state values and setters from component
+ * @param {boolean} [initialState=false] - Initial visibility state
  * @returns {Object} Popover management interface
- * @returns {Object} returns.popovers - Map of popover controls keyed by schema ID
- * @returns {Function} returns.closeAll - Function to close all open popovers
- * @returns {boolean} returns.isValid - Whether the schema is valid
- * @returns {Array} returns.validationErrors - Array of validation errors if invalid
+ * @returns {boolean} returns.show - Whether popover is visible
+ * @returns {Function} returns.open - Open the popover
+ * @returns {Function} returns.close - Close the popover
+ * @returns {Function} returns.toggle - Toggle popover visibility
+ * @returns {Object} returns.triggerRef - Ref for popover trigger element
  *
  * @example
- * // Schema-driven popover usage
+ * // Simple popover usage
  * function MyComponent() {
- *   const schema = {
- *     popovers: {
- *       help: {
- *         variant: 'help',
- *         content: { type: 'simple', text: 'This is help content' }
- *       },
- *       actions: {
- *         variant: 'actions',
- *         content: { type: 'list', options: ['Edit', 'Delete', 'Share'] }
- *       }
- *     }
- *   };
- *
- *   const { popovers } = usePopover(schema);
+ *   const helpPopover = usePopover();
+ *   const actionsPopover = usePopover();
  *
  *   return (
  *     <>
- *       <button ref={popovers.help.triggerRef} onClick={popovers.help.toggle}>
+ *       <button ref={helpPopover.triggerRef} onClick={helpPopover.toggle}>
  *         Help
  *       </button>
- *       <Popover show={popovers.help.show} onClose={popovers.help.close}>
- *         {popovers.help.content}
- *       </Popover>
+ *       <PopoverFactory
+ *         variant="help"
+ *         show={helpPopover.show}
+ *         onClose={helpPopover.close}
+ *         triggerRef={helpPopover.triggerRef}
+ *         title="Help Information"
+ *         content="This is help content"
+ *       />
+ *
+ *       <button ref={actionsPopover.triggerRef} onClick={actionsPopover.toggle}>
+ *         Actions
+ *       </button>
+ *       <PopoverFactory
+ *         variant="actions"
+ *         show={actionsPopover.show}
+ *         onClose={actionsPopover.close}
+ *         triggerRef={actionsPopover.triggerRef}
+ *         options={[
+ *           { key: 'edit', label: 'Edit' },
+ *           { key: 'delete', label: 'Delete' }
+ *         ]}
+ *         onSelect={handleActionSelect}
+ *       />
  *     </>
  *   );
  * }
  */
-const usePopover = (schema, stateRefs = {}) => {
-    // Validate schema once
-    const validation = useMemo(() => {
-        return validatePopoverSchema(schema);
-    }, [schema]);
+const usePopover = (initialState = false) => {
+    const [show, setShow] = useState(initialState);
+    const triggerRef = useRef(null);
 
-    // Process schema if valid
-    const processedSchema = useMemo(() => {
-        if (!validation.isValid) return null;
-        return processPopoverSchema(schema, stateRefs);
-    }, [schema, stateRefs, validation.isValid]);
-
-    // Simple popover visibility states - just a map of boolean values
-    const [popoverStates, setPopoverStates] = useState({});
-
-    // Create stable refs for each popover key - use simple object with refs
-    const triggerRefsMap = useRef({});
-
-    // Ensure refs exist for all popover keys
-    if (processedSchema) {
-        Object.keys(processedSchema.popovers).forEach(key => {
-            if (!triggerRefsMap.current[key]) {
-                triggerRefsMap.current[key] = { current: null };
-            }
-        });
-    }
-
-    // Simple toggle functions
-    const openPopover = useCallback(key => {
-        setPopoverStates(prev => ({ ...prev, [key]: true }));
+    const open = useCallback(() => {
+        setShow(true);
     }, []);
 
-    const closePopover = useCallback(key => {
-        setPopoverStates(prev => ({ ...prev, [key]: false }));
+    const close = useCallback(() => {
+        setShow(false);
     }, []);
 
-    const togglePopover = useCallback(key => {
-        setPopoverStates(prev => ({
-            ...prev,
-            [key]: !prev[key],
-        }));
+    const toggle = useCallback(() => {
+        setShow(prev => !prev);
     }, []);
-
-    const closeAll = useCallback(() => {
-        setPopoverStates({});
-    }, []);
-
-    // Build popover controls
-    const popovers = useMemo(() => {
-        if (!processedSchema || !validation.isValid) {
-            return {};
-        }
-
-        const controls = {};
-
-        Object.entries(processedSchema.popovers).forEach(([key, popoverDef]) => {
-            const triggerRef = triggerRefsMap.current[key];
-            const show = Boolean(popoverStates[key]);
-
-            controls[key] = {
-                // State
-                show,
-
-                // Control functions - use arrow functions to maintain 'this' context
-                open: () => openPopover(key),
-                close: () => closePopover(key),
-                toggle: () => togglePopover(key),
-
-                // Trigger ref
-                triggerRef,
-
-                // Popover props
-                variant: popoverDef.variant || 'default',
-                className: popoverDef.className || '',
-                position: popoverDef.position || 'auto',
-                offset: popoverDef.offset || 8,
-                trapFocus: popoverDef.trapFocus || false,
-                closeOnClickOutside: popoverDef.closeOnClickOutside !== false,
-                closeOnEscape: popoverDef.closeOnEscape !== false,
-                preventBodyScroll: popoverDef.preventBodyScroll || false,
-                ariaLabel: popoverDef.ariaLabel,
-                ariaDescribedBy: popoverDef.ariaDescribedBy,
-
-                // Content
-                content: popoverDef.content || null,
-            };
-        });
-
-        return controls;
-    }, [
-        processedSchema,
-        validation.isValid,
-        popoverStates,
-        openPopover,
-        closePopover,
-        togglePopover,
-    ]);
 
     return {
-        popovers,
-        closeAll,
-        isValid: validation.isValid,
-        validationErrors: validation.errors,
-        processedSchema:
-            typeof window !== 'undefined' && window.location?.hostname === 'localhost'
-                ? processedSchema
-                : undefined,
+        show,
+        open,
+        close,
+        toggle,
+        triggerRef,
     };
 };
 

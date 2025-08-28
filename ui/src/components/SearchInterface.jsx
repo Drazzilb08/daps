@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { getIcon, humanize } from '../utils/tools';
 import TooltipFactory from './Tooltip';
-import Popover from './Popover';
+import PopoverFactory from './PopoverFactory';
 import usePopover from '../hooks/usePopover';
 import { useSearchCoordinator } from '../contexts/SearchCoordinatorProvider';
 import {
@@ -72,12 +72,8 @@ function HeaderSearchInner({
     const autocompleteRef = useRef();
     const headerSearchRef = useRef(null);
 
-    // Popover states for header controls
-    const modulePopover = usePopover(false);
-    const viewPopover = usePopover(false);
-    const sortPopover = usePopover(false);
-    const filterPopover = usePopover(false);
-    const refreshPopover = usePopover(false);
+    // Refresh popover using new simplified pattern
+    const refreshPopover = usePopover();
 
     // Tooltip states
     const [showTooltips, setShowTooltips] = useState({});
@@ -559,6 +555,12 @@ function HeaderSearchInner({
         refreshPopover.close();
     }, [executeRefresh, selectedRefreshOptions, refreshPopover]);
 
+    // Control popovers using new simplified pattern
+    const modulePopover = usePopover();
+    const viewPopover = usePopover();
+    const sortPopover = usePopover();
+    const filterPopover = usePopover();
+
     // Get the appropriate popover for a control
     const getControlPopover = useCallback(
         controlKey => {
@@ -653,20 +655,23 @@ function HeaderSearchInner({
     // Render control popover content based on type
     const renderControlPopover = useCallback(
         (control, popover, currentValue, options) => {
+            if (!popover || !popover.triggerRef) {
+                return null;
+            }
             return (
-                <Popover
-                    triggerRef={popover.triggerRef}
+                <PopoverFactory
+                    variant={control.type === 'filter' ? 'actions' : 'selector'}
                     show={popover.show}
                     onClose={popover.close}
-                    variant={control.type === 'filter' ? 'actions' : 'selector'}
+                    triggerRef={popover.triggerRef}
                     position="bottom"
                     ariaLabel={control.popoverTitle}
+                    title={control.popoverTitle}
                 >
-                    <div className="popover__title">{control.popoverTitle}</div>
                     {control.type === 'filter'
                         ? renderFilterContent(control, options, popover)
                         : renderSelectorContent(control, options, currentValue, popover)}
-                </Popover>
+                </PopoverFactory>
             );
         },
         [renderFilterContent, renderSelectorContent]
@@ -697,15 +702,14 @@ function HeaderSearchInner({
                         show={showTooltips.refresh && !refreshPopover.show}
                     />
 
-                    <Popover
-                        triggerRef={refreshPopover.triggerRef}
+                    <PopoverFactory
+                        variant="default"
                         show={refreshPopover.show}
                         onClose={refreshPopover.close}
-                        variant="actions"
+                        triggerRef={refreshPopover.triggerRef}
                         position="bottom"
                         ariaLabel="Refresh database options"
                         className="popover--wide"
-                        preventBodyScroll={true}
                     >
                         <div
                             className="refresh-popover-header"
@@ -1115,7 +1119,7 @@ function HeaderSearchInner({
                                 Refresh Selected
                             </button>
                         </div>
-                    </Popover>
+                    </PopoverFactory>
                 </div>
             );
         },
@@ -1169,9 +1173,9 @@ function HeaderSearchInner({
                         <span className="search-control-label">{control.label}</span>
                     </button>
                     <TooltipFactory
-                        anchor={popover.triggerRef.current}
+                        anchor={popover?.triggerRef?.current}
                         text={control.tooltip}
-                        show={showTooltips[control.key] && !popover.show}
+                        show={showTooltips[control.key] && !popover?.show}
                     />
 
                     {renderControlPopover(control, popover, currentValue, options)}

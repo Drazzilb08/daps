@@ -6,32 +6,13 @@ import PopoverFactory from './PopoverFactory';
 import usePopover from '../hooks/usePopover';
 import { useSearchCoordinator } from '../contexts/SearchCoordinatorProvider';
 import {
-    useSearchControls,
     getSearchPlaceholder,
     isSearchPage as checkIsSearchPage,
 } from '../hooks/useSearchControls';
-import { MEDIA_SEARCH_SCHEMA } from '../pages/MediaSearch';
-import { GDRIVE_SEARCH_SCHEMA } from '../pages/GdriveSearch';
-import { ASSETS_SEARCH_SCHEMA } from '../pages/AssetsSearch';
+// Schema imports removed - using direct PopoverFactory implementation
 import { fetchInstances, fetchPlexLibrariesByInstance } from '../utils/api';
 
-/**
- * Get control schema for current page
- * @param {string} pathname - Current route pathname
- * @returns {Object|null} Control schema object or null if not found
- */
-function getControlSchema(pathname) {
-    if (pathname.startsWith('/media/search')) {
-        return MEDIA_SEARCH_SCHEMA;
-    }
-    if (pathname.startsWith('/poster/search/gdrive')) {
-        return GDRIVE_SEARCH_SCHEMA;
-    }
-    if (pathname.startsWith('/poster/search/assets')) {
-        return ASSETS_SEARCH_SCHEMA;
-    }
-    return null;
-}
+// getControlSchema function removed - using direct PopoverFactory implementation
 
 /**
  * HeaderSearch - Unified search interface with responsive design
@@ -55,9 +36,9 @@ function HeaderSearchInner({
 
     // Local state for header search - always initialize all hooks
     const [searchTerm, setSearchTerm] = useState('');
-    const [currentView, setCurrentView] = useState('grid'); // eslint-disable-line no-unused-vars
-    const [currentSource, setCurrentSource] = useState(null); // eslint-disable-line no-unused-vars
-    const [currentSort, setCurrentSort] = useState('alpha'); // eslint-disable-line no-unused-vars
+    const [currentView, setCurrentView] = useState('grid');
+    const [currentSource, setCurrentSource] = useState(null);
+    const [currentSort, setCurrentSort] = useState('alpha');
     const [isSearching, setIsSearching] = useState(false);
 
     // Autocomplete state
@@ -105,14 +86,8 @@ function HeaderSearchInner({
         registerHeaderSearch,
     } = headerSearchContext;
 
-    // Get page-specific control schema and use it for controls
-    const currentSchema = getControlSchema(location.pathname);
-    const searchControls = useSearchControls(currentSchema, searchConfig, {
-        changeSource,
-        changeView,
-        changeSort,
-        changeFilter,
-    });
+    // Direct control management without schema (post-factory pattern refactor)
+    // Controls are now implemented directly with PopoverFactory instead of schema-driven approach
 
     // Register with HeaderSearchProvider
     useEffect(() => {
@@ -561,121 +536,7 @@ function HeaderSearchInner({
     const sortPopover = usePopover();
     const filterPopover = usePopover();
 
-    // Get the appropriate popover for a control
-    const getControlPopover = useCallback(
-        controlKey => {
-            switch (controlKey) {
-                case 'source':
-                    return modulePopover;
-                case 'view':
-                    return viewPopover;
-                case 'sort':
-                    return sortPopover;
-                case 'filter':
-                    return filterPopover;
-                default:
-                    return viewPopover; // fallback
-            }
-        },
-        [modulePopover, viewPopover, sortPopover, filterPopover]
-    );
-
-    // Render selector popover content
-    const renderSelectorContent = useCallback(
-        (control, options, currentValue, popover) => (
-            <ul className="popover__list">
-                {options.map(option => (
-                    <li key={option.key || option.value}>
-                        <button
-                            type="button"
-                            className={`popover__list-item${
-                                currentValue === (option.key || option.value)
-                                    ? ' popover__list-item--selected'
-                                    : ''
-                            }`}
-                            onClick={() => {
-                                searchControls.updateControl(
-                                    control.key,
-                                    option.key || option.value
-                                );
-                                popover.close();
-                            }}
-                        >
-                            {option.icon && (
-                                <span className="popover__list-icon">{getIcon(option.icon)}</span>
-                            )}
-                            <span>{option.label}</span>
-                        </button>
-                    </li>
-                ))}
-            </ul>
-        ),
-        [searchControls]
-    );
-
-    // Render filter popover content
-    const renderFilterContent = useCallback(
-        (control, options, popover) => (
-            <div className="popover__content">
-                {options.map(filter => (
-                    <div key={filter.key} className="filter-group">
-                        <div className="filter-label">{filter.label}</div>
-                        <div className="filter-options">
-                            {filter.options?.map(option => (
-                                <button
-                                    key={option.value}
-                                    type="button"
-                                    className={`filter-option${
-                                        searchControls.isControlActive('filter', {
-                                            filterKey: filter.key,
-                                            value: option.value,
-                                        })
-                                            ? ' active'
-                                            : ''
-                                    }`}
-                                    onClick={() => {
-                                        searchControls.updateControl('filter', {
-                                            filterKey: filter.key,
-                                            value: option.value,
-                                        });
-                                        popover.close();
-                                    }}
-                                >
-                                    {option.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                ))}
-            </div>
-        ),
-        [searchControls]
-    );
-
-    // Render control popover content based on type
-    const renderControlPopover = useCallback(
-        (control, popover, currentValue, options) => {
-            if (!popover || !popover.triggerRef) {
-                return null;
-            }
-            return (
-                <PopoverFactory
-                    variant={control.type === 'filter' ? 'actions' : 'selector'}
-                    show={popover.show}
-                    onClose={popover.close}
-                    triggerRef={popover.triggerRef}
-                    position="bottom"
-                    ariaLabel={control.popoverTitle}
-                    title={control.popoverTitle}
-                >
-                    {control.type === 'filter'
-                        ? renderFilterContent(control, options, popover)
-                        : renderSelectorContent(control, options, currentValue, popover)}
-                </PopoverFactory>
-            );
-        },
-        [renderFilterContent, renderSelectorContent]
-    );
+    // Old schema-based helper functions removed - using direct PopoverFactory implementation
 
     // Render refresh control with custom popover content
     const renderRefreshControl = useCallback(
@@ -1145,57 +1006,7 @@ function HeaderSearchInner({
         ]
     );
 
-    // Render standard popover-based control
-    const renderStandardControl = useCallback(
-        control => {
-            const popover = getControlPopover(control.key);
-            const currentValue = searchControls.getCurrentValue(control.key);
-            const options = control.options || [];
-
-            // Skip if no options for selector types
-            if (control.type === 'selector' && options.length === 0) {
-                return null;
-            }
-
-            return (
-                <div key={control.key} className="search-control">
-                    <button
-                        ref={popover.triggerRef}
-                        type="button"
-                        className={`search-control-button${popover.show ? ' active' : ''}`}
-                        onClick={popover.toggle}
-                        onMouseEnter={() => setTooltip(control.key, true)}
-                        onMouseLeave={() => setTooltip(control.key, false)}
-                        onFocus={() => setTooltip(control.key, true)}
-                        onBlur={() => setTooltip(control.key, false)}
-                    >
-                        {getIcon(control.icon)}
-                        <span className="search-control-label">{control.label}</span>
-                    </button>
-                    <TooltipFactory
-                        anchor={popover?.triggerRef?.current}
-                        text={control.tooltip}
-                        show={showTooltips[control.key] && !popover?.show}
-                    />
-
-                    {renderControlPopover(control, popover, currentValue, options)}
-                </div>
-            );
-        },
-        [searchControls, showTooltips, setTooltip, getControlPopover, renderControlPopover]
-    );
-
-    // Schema-driven control rendering helper
-    const renderSchemaControl = useCallback(
-        control => {
-            if (control.type === 'custom' && control.customComponent === 'refresh-popover') {
-                return renderRefreshControl(control);
-            }
-
-            return renderStandardControl(control);
-        },
-        [renderRefreshControl, renderStandardControl]
-    );
+    // Old schema-based control rendering functions removed - using direct implementation
 
     // Get current page placeholder from schema
     const placeholder = getSearchPlaceholder(location.pathname);
@@ -1367,9 +1178,263 @@ function HeaderSearchInner({
 
                 {/* Right section: Controls + Right spacer */}
                 <div className="search-layout__right">
-                    {/* Schema-driven Controls Section */}
+                    {/* Header Controls Section - Direct PopoverFactory Implementation */}
                     <div className="search-controls">
-                        {searchControls.controls.map(renderSchemaControl)}
+                        {/* MOD/Source Selector */}
+                        <div className="search-control">
+                            <button
+                                ref={modulePopover.triggerRef}
+                                type="button"
+                                className={`search-control-button${modulePopover.show ? ' active' : ''}`}
+                                onClick={modulePopover.toggle}
+                                onMouseEnter={() => setTooltip('source', true)}
+                                onMouseLeave={() => setTooltip('source', false)}
+                                onFocus={() => setTooltip('source', true)}
+                                onBlur={() => setTooltip('source', false)}
+                            >
+                                {getIcon('mi:apps')}
+                                <span className="search-control-label">MOD</span>
+                            </button>
+                            <TooltipFactory
+                                anchor={modulePopover.triggerRef.current}
+                                text="Select Module"
+                                show={showTooltips.source && !modulePopover.show}
+                            />
+
+                            <PopoverFactory
+                                variant="selector"
+                                show={modulePopover.show}
+                                onClose={modulePopover.close}
+                                triggerRef={modulePopover.triggerRef}
+                                position="bottom"
+                                ariaLabel="Select Module"
+                                title="Select Module"
+                            >
+                                <ul className="popover__list">
+                                    {searchConfig?.sources?.map(source => (
+                                        <li key={source.key || source.value}>
+                                            <button
+                                                type="button"
+                                                className={`popover__list-item${
+                                                    currentSource === (source.key || source.value)
+                                                        ? ' popover__list-item--selected'
+                                                        : ''
+                                                }`}
+                                                onClick={() => {
+                                                    changeSource(source.key || source.value);
+                                                    modulePopover.close();
+                                                }}
+                                            >
+                                                {source.icon && (
+                                                    <span className="popover__list-icon">
+                                                        {getIcon(source.icon)}
+                                                    </span>
+                                                )}
+                                                <span>{source.label}</span>
+                                            </button>
+                                        </li>
+                                    )) || []}
+                                </ul>
+                            </PopoverFactory>
+                        </div>
+
+                        {/* View Toggle */}
+                        <div className="search-control">
+                            <button
+                                ref={viewPopover.triggerRef}
+                                type="button"
+                                className={`search-control-button${viewPopover.show ? ' active' : ''}`}
+                                onClick={viewPopover.toggle}
+                                onMouseEnter={() => setTooltip('view', true)}
+                                onMouseLeave={() => setTooltip('view', false)}
+                                onFocus={() => setTooltip('view', true)}
+                                onBlur={() => setTooltip('view', false)}
+                            >
+                                {getIcon(currentView === 'grid' ? 'mi:grid_view' : 'mi:list')}
+                                <span className="search-control-label">
+                                    {currentView === 'grid' ? 'GRID' : 'LIST'}
+                                </span>
+                            </button>
+                            <TooltipFactory
+                                anchor={viewPopover.triggerRef.current}
+                                text="Select view mode"
+                                show={showTooltips.view && !viewPopover.show}
+                            />
+
+                            <PopoverFactory
+                                variant="selector"
+                                show={viewPopover.show}
+                                onClose={viewPopover.close}
+                                triggerRef={viewPopover.triggerRef}
+                                position="bottom"
+                                ariaLabel="View Mode"
+                                title="View Mode"
+                            >
+                                <ul className="popover__list">
+                                    <li>
+                                        <button
+                                            type="button"
+                                            className={`popover__list-item${
+                                                currentView === 'grid'
+                                                    ? ' popover__list-item--selected'
+                                                    : ''
+                                            }`}
+                                            onClick={() => {
+                                                changeView('grid');
+                                                viewPopover.close();
+                                            }}
+                                        >
+                                            <span className="popover__list-icon">
+                                                {getIcon('mi:grid_view')}
+                                            </span>
+                                            <span>Grid View</span>
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button
+                                            type="button"
+                                            className={`popover__list-item${
+                                                currentView === 'list'
+                                                    ? ' popover__list-item--selected'
+                                                    : ''
+                                            }`}
+                                            onClick={() => {
+                                                changeView('list');
+                                                viewPopover.close();
+                                            }}
+                                        >
+                                            <span className="popover__list-icon">
+                                                {getIcon('mi:list')}
+                                            </span>
+                                            <span>List View</span>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </PopoverFactory>
+                        </div>
+
+                        {/* Sort Selector */}
+                        <div className="search-control">
+                            <button
+                                ref={sortPopover.triggerRef}
+                                type="button"
+                                className={`search-control-button${sortPopover.show ? ' active' : ''}`}
+                                onClick={sortPopover.toggle}
+                                onMouseEnter={() => setTooltip('sort', true)}
+                                onMouseLeave={() => setTooltip('sort', false)}
+                                onFocus={() => setTooltip('sort', true)}
+                                onBlur={() => setTooltip('sort', false)}
+                            >
+                                {getIcon('mi:sort')}
+                                <span className="search-control-label">SORT</span>
+                            </button>
+                            <TooltipFactory
+                                anchor={sortPopover.triggerRef.current}
+                                text="Sort options"
+                                show={showTooltips.sort && !sortPopover.show}
+                            />
+
+                            <PopoverFactory
+                                variant="selector"
+                                show={sortPopover.show}
+                                onClose={sortPopover.close}
+                                triggerRef={sortPopover.triggerRef}
+                                position="bottom"
+                                ariaLabel="Sort By"
+                                title="Sort By"
+                            >
+                                <ul className="popover__list">
+                                    {searchConfig?.sortOptions?.map(option => (
+                                        <li key={option.key || option.value}>
+                                            <button
+                                                type="button"
+                                                className={`popover__list-item${
+                                                    currentSort === (option.key || option.value)
+                                                        ? ' popover__list-item--selected'
+                                                        : ''
+                                                }`}
+                                                onClick={() => {
+                                                    changeSort(option.key || option.value);
+                                                    sortPopover.close();
+                                                }}
+                                            >
+                                                {option.icon && (
+                                                    <span className="popover__list-icon">
+                                                        {getIcon(option.icon)}
+                                                    </span>
+                                                )}
+                                                <span>{option.label}</span>
+                                            </button>
+                                        </li>
+                                    )) || []}
+                                </ul>
+                            </PopoverFactory>
+                        </div>
+
+                        {/* Filter Button */}
+                        <div className="search-control">
+                            <button
+                                ref={filterPopover.triggerRef}
+                                type="button"
+                                className={`search-control-button${filterPopover.show ? ' active' : ''}`}
+                                onClick={filterPopover.toggle}
+                                onMouseEnter={() => setTooltip('filter', true)}
+                                onMouseLeave={() => setTooltip('filter', false)}
+                                onFocus={() => setTooltip('filter', true)}
+                                onBlur={() => setTooltip('filter', false)}
+                            >
+                                {getIcon('mi:tune')}
+                                <span className="search-control-label">FILTER</span>
+                            </button>
+                            <TooltipFactory
+                                anchor={filterPopover.triggerRef.current}
+                                text="Filter options"
+                                show={showTooltips.filter && !filterPopover.show}
+                            />
+
+                            <PopoverFactory
+                                variant="actions"
+                                show={filterPopover.show}
+                                onClose={filterPopover.close}
+                                triggerRef={filterPopover.triggerRef}
+                                position="bottom"
+                                ariaLabel="Filters"
+                                title="Filters"
+                            >
+                                <div className="popover__content">
+                                    {searchConfig?.filters?.map(filter => (
+                                        <div key={filter.key} className="filter-group">
+                                            <div className="filter-label">{filter.label}</div>
+                                            <div className="filter-options">
+                                                {filter.options?.map(option => (
+                                                    <button
+                                                        key={option.value}
+                                                        type="button"
+                                                        className="filter-option"
+                                                        onClick={() => {
+                                                            changeFilter(filter.key, option.value);
+                                                            filterPopover.close();
+                                                        }}
+                                                    >
+                                                        {option.label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )) || []}
+                                </div>
+                            </PopoverFactory>
+                        </div>
+
+                        {/* Refresh Control - Keep the existing renderRefreshControl */}
+                        {renderRefreshControl({
+                            key: 'refresh',
+                            type: 'custom',
+                            icon: 'mi:refresh',
+                            label: 'REFRESH',
+                            tooltip: 'Refresh database',
+                            customComponent: 'refresh-popover',
+                        })}
                     </div>
                     {/* Right spacer for balanced centering */}
                     <div className="search-layout__spacer"></div>

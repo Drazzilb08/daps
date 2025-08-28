@@ -105,8 +105,8 @@ export const mediaSearchAdapter = {
                 plexData = this.findPlexMapping(item, plexLookup);
             }
 
-            // Skip items without Plex mapping - they can't be properly aggregated
-            if (!plexData) continue;
+            // Include items without Plex mapping - they can still be displayed and managed
+            // if (!plexData) continue;
 
             // STEP 2: Generate unique aggregation key with fallback hierarchy
             // Priority: tmdb_id > tvdb_id > imdb_id > normalized_title+year+type
@@ -125,9 +125,9 @@ export const mediaSearchAdapter = {
                     instances: [item.instance_name], // Track ARR instances
                     instanceCount: 1,
                     allInstanceData: [item], // Keep all database rows for analysis
-                    plexLabels: this.parseLabels(plexData.labels),
+                    plexLabels: plexData ? this.parseLabels(plexData.labels) : [],
                     plexData: plexData,
-                    plex_mapping_id: plexData.id, // Maintain mapping reference
+                    plex_mapping_id: plexData ? plexData.id : null, // Maintain mapping reference
                 });
             } else {
                 const existing = grouped.get(key);
@@ -146,7 +146,7 @@ export const mediaSearchAdapter = {
 
                     // Preserve Plex labels from first valid occurrence
                     // All instances should have same Plex data, but handle missing labels
-                    if (!existing.plexLabels && plexData.labels) {
+                    if (!existing.plexLabels && plexData && plexData.labels) {
                         existing.plexLabels = this.parseLabels(plexData.labels);
                     }
                 }
@@ -425,9 +425,9 @@ export const mediaSearchAdapter = {
      * Format result for display in search results
      */
     formatResult(item) {
-        // Get poster from first instance (they should all have same poster)
-        const firstInstance = item.allInstanceData?.[0] || item;
-        const posterUrl = this.getPosterUrl(firstInstance);
+        // Get poster with priority: find instance with renamed_file, then any instance with poster_url, then first instance
+        const instanceWithPoster = this.findBestPosterInstance(item);
+        const posterUrl = this.getPosterUrl(instanceWithPoster);
 
         const seasonInfo = this.getSeasonInfo(item);
 
@@ -635,6 +635,29 @@ export const mediaSearchAdapter = {
         }
 
         return ranges;
+    },
+
+    /**
+     * Find the best instance for poster display
+     * Priority: instance with renamed_file -> instance with poster_url -> first instance
+     */
+    findBestPosterInstance(item) {
+        const allInstances = item.allInstanceData || [item];
+
+        // Priority 1: Find instance with renamed_file (local poster)
+        const instanceWithRenamed = allInstances.find(instance => instance.renamed_file);
+        if (instanceWithRenamed) {
+            return instanceWithRenamed;
+        }
+
+        // Priority 2: Find instance with poster_url (external poster)
+        const instanceWithPosterUrl = allInstances.find(instance => instance.poster_url);
+        if (instanceWithPosterUrl) {
+            return instanceWithPosterUrl;
+        }
+
+        // Priority 3: Use first instance as fallback
+        return allInstances[0] || item;
     },
 
     /**

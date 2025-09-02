@@ -2,7 +2,6 @@
 // Core search functionality as reusable components - NOT plugins
 
 import React, { useEffect, useCallback, useRef, useMemo } from 'react';
-import SearchControls from '../SearchControls';
 import SearchResults from '../SearchResults';
 import LoadingSpinner from '../../common/LoadingSpinner';
 import { useSearchCoordinator } from '../../../contexts/SearchCoordinatorProvider';
@@ -66,7 +65,6 @@ function SearchCore({
     selectorLabel = 'Source',
 
     // Visibility control - for mobile header search coordination
-    hideMainSearchInterface = false,
 
     // Refresh trigger - extract explicitly to avoid dependency array issues
     refreshTrigger = 0,
@@ -325,37 +323,6 @@ function SearchCore({
     // ===== RENDER =====
     return (
         <div className={className} role="search" aria-label="Search interface">
-            {!hideMainSearchInterface && (
-                <SearchControls
-                    sources={sources}
-                    currentSource={currentSource}
-                    onSourceChange={handleSourceChange}
-                    searchTerm={pendingSearchTerm}
-                    onSearchTermChange={handleSearchTermChange}
-                    onSearch={handleSearch}
-                    onClear={handleClearSearch}
-                    placeholder={placeholder}
-                    isSearching={isLoading}
-                    searchInputRef={searchInputRef}
-                    enableAutocomplete={enableAutocomplete}
-                    autocompleteMinLength={autocompleteMinLength}
-                    searchAdapter={searchAdapter}
-                    filters={filters}
-                    activeFilters={activeFilters}
-                    onFilterChange={handleFilterChange}
-                    sortOptions={sortOptions}
-                    currentSort={currentSort}
-                    onSortChange={updateSort}
-                    currentView={currentView}
-                    onViewChange={updateView}
-                    searchData={searchData}
-                    showRefreshControls={showRefreshControls}
-                    onRefresh={onRefresh}
-                    isRefreshing={isRefreshing}
-                    selectorLabel={selectorLabel}
-                    {...additionalProps}
-                />
-            )}
 
             {isLoading ? (
                 <div

@@ -312,22 +312,16 @@ export default function MediaSearch() {
         [toast]
     );
 
-    // Calculate whether to hide the main search interface (but always render SearchCore for coordination)
-    const hideMainSearchInterface = useMemo(
-        () => isMobile && isMobileSearchActive,
-        [isMobile, isMobileSearchActive]
-    );
 
     // Memoize props to prevent cascading re-renders
     const mediaSearchProps = useMemo(
         () => ({
             onError: handleError,
-            hideMainSearchInterface,
             onRefresh: handleRefresh,
             isRefreshing,
             refreshTrigger,
         }),
-        [handleError, hideMainSearchInterface, handleRefresh, isRefreshing, refreshTrigger]
+        [handleError, handleRefresh, isRefreshing, refreshTrigger]
     );
 
     return (

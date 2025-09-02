@@ -27,6 +27,11 @@
         margin: 0 0 0.55em 0.2em;
         letter-spacing: 0.01em;
         padding-left: 0.07em;
+
+        /* Mobile-first responsive */
+        max-width: 100%;
+        overflow: hidden;
+        box-sizing: border-box;
     }
 
     .instance-group-icon img,
@@ -78,6 +83,28 @@
     }
 
     @media (width <= 600px) {
+        .instance-group-header {
+            font-size: 1rem;
+            justify-content: center;
+            text-align: center;
+            margin: 0;
+            padding: 0 var(--space-3);
+            width: calc(100% - var(--space-6));
+            max-width: calc(100vw - var(--space-6));
+            flex-wrap: wrap;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+    }
+
+    @media (width <= 400px) {
+        .instance-group-header {
+            font-size: 0.95rem;
+            padding: 0 var(--space-4);
+            width: calc(100% - var(--space-8));
+
+        }
+
         .instances-list {
             display: grid;
             grid-template-columns: 1fr;

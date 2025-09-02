@@ -189,7 +189,7 @@
         height: var(--space-px-22);
         border: var(--border-width-2) solid var(--divider);
         border-radius: var(--radius-2);
-        background: var(--surface);
+        background: var(--text-color);
         cursor: pointer;
         margin: 0 var(--space-3) 0 0;
         box-shadow: var(--shadow-1);
@@ -205,15 +205,15 @@
 
     input[type='checkbox']:hover,
     input[type='checkbox']:focus {
-        border-color: var(--primary);
+        border-color: var(--accent);
         box-shadow: 0 0 0 var(--focus-ring-size)
             color-mix(in srgb, var(--accent) 26%, transparent 74%);
         outline: none;
     }
 
     input[type='checkbox']:checked {
-        background: var(--accent);
-        border-color: var(--accent);
+        background: var(--primary);
+        border-color: var(--primary);
     }
 
     input[type='checkbox']::after {
@@ -223,8 +223,8 @@
         top: 48%; /* Keep percentage-based positioning for checkbox centering */
         width: 44%; /* Keep percentage-based size for checkbox mark proportions */
         height: 26%; /* Keep percentage-based size for checkbox mark proportions */
-        border-left: var(--space-px-2-2) solid var(--surface);
-        border-bottom: var(--space-px-2-2) solid var(--surface);
+        border-left: var(--space-px-2-2) solid var(--text-color);
+        border-bottom: var(--space-px-2-2) solid var(--text-color);
         transform: translate(-50%, -50%) scale(0.55) rotate(-45deg); /* Keep specific scale and rotation for checkbox mark animation */
         opacity: 0;
         transition:
@@ -367,8 +367,8 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: var(--space-10); /* 96px enhanced for touch accessibility - closest available */
-        height: var(--space-10);
+        width: var(--space-7); /* 96px enhanced for touch accessibility - closest available */
+        height: var(--space-7);
         border-radius: var(--radius-2);
         border: var(--border-width-2) solid var(--divider);
         margin: var(--space-0) 0.33em var(--space-0) var(--space-0); /* Keep em-based margin for text scaling */
@@ -719,11 +719,6 @@
         background: var(--bg-secondary);
     }
 
-    .tag-multiselect-checkbox {
-        width: var(--space-4);
-        height: var(--space-4);
-        flex-shrink: 0;
-    }
 
     .tag-multiselect-label {
         flex: 1;

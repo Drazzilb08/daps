@@ -114,12 +114,14 @@
    FIELDS BLOCK
 ====================================================== */
     .settings-fields-list {
-        max-width: 75%;
         width: 100%;
+        max-width: 100%;
         align-items: stretch;
-        margin-left: auto;
-        margin-right: auto;
+        margin-left: 0;
+        margin-right: 0;
         box-sizing: border-box;
+        padding-left: var(--space-3);
+        padding-right: var(--space-3);
     }
 
     /* ======================================================
@@ -403,55 +405,9 @@
     }
 
     /* ========== PLEX/INSTANCES AREA ========== */
-    .instance-pill {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--space-2); /* 0.5rem = 0.5em */
-        background: var(--surface-variant);
-        border-radius: var(--radius-3); /* 8px, closest to 12px */
-        padding: var(--space-1) var(--space-3) var(--space-1) var(--space-2); /* ~0.18em 0.88em 0.18em 0.56em */
-        min-height: var(--space-7); /* 48px, closest to 30px but ensures touch accessibility */
-        border: var(--border-width-2) solid transparent; /* 2px, closest to 1.2px */
-        cursor: pointer;
-        margin-bottom: var(--space-1); /* 0.25rem ~= 0.16em */
-        margin-right: var(--space-2); /* 0.5rem ~= 0.54em */
-        user-select: none;
-        transition:
-            background var(--duration-fast),
-            border-color var(--duration-fast);
-    }
 
-    .instance-pill input[type='checkbox'] {
-        margin-right: var(--space-2); /* 0.5rem ~= 0.46em */
-        cursor: pointer;
-        accent-color: var(--primary);
-        width: var(--space-4); /* 16px, closest to 18px */
-        height: var(--space-4); /* 16px, closest to 18px */
-        border-radius: var(--border-width-2); /* 2px */
-        background: var(--primary-contrast);
-        border: var(--border-width-2) solid var(--divider);
-        transition:
-            border-color var(--duration-fast),
-            background var(--duration-fast);
-    }
 
-    .instance-pill:hover {
-        background: color-mix(in srgb, var(--primary) 6%, var(--input-bg) 94%);
-        border-color: var(--primary-container);
-    }
 
-    .instance-pill.checked {
-        border-color: var(--primary);
-    }
-
-    .instance-pill input[type='checkbox']:hover,
-    .instance-pill input[type='checkbox']:focus {
-        background: var(--primary-contrast);
-    }
-
-    .instance-pill input[type='checkbox']:checked {
-        background: var(--primary);
-    }
 
     .instances-multicol {
         display: flex;
@@ -566,44 +522,6 @@
         outline-offset: var(--border-width-2); /* 2px, closest to 1.5px */
     }
 
-    .instance-checkbox-container {
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        user-select: none;
-        height: var(--space-6); /* 32px, closest to 24px */
-        width: var(--space-6); /* 32px, closest to 24px */
-        margin-right: var(--space-3); /* 0.75rem ~= 0.8em */
-    }
-
-    .instance-checkbox-container input {
-        display: none;
-    }
-
-    .instance-checkbox-container svg {
-        overflow: visible;
-        display: block;
-    }
-
-    .instance-checkbox-path {
-        fill: none;
-        stroke: var(--accent);
-        stroke-width: 6; /* Keep SVG stroke width as number */
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        transition:
-            stroke-dasharray 0.5s cubic-bezier(0.58, 1.47, 0.63, 1.06),
-            stroke-dashoffset 0.5s cubic-bezier(0.58, 1.47, 0.63, 1.06);
-        stroke-dasharray: 241 9999999; /* Keep SVG animation values as numbers */
-        stroke-dashoffset: 0; /* Keep SVG animation values as numbers */
-        filter: drop-shadow(var(--shadow-2));
-    }
-
-    .instance-checkbox-container.checked .instance-checkbox-path {
-        stroke-dasharray: 70.5 9999999; /* Keep SVG animation values as numbers */
-        stroke-dashoffset: -262.27; /* Keep SVG animation values as numbers */
-        stroke: var(--accent);
-    }
 
     /* ======================================================
    TOOLBAR
@@ -636,13 +554,14 @@
         color: var(--primary-contrast);
         border: none;
         border-radius: var(--radius-2);
-        padding: 0.42em 1.32em 0.42em 1.05em;
-        font-size: 1.04rem;
+        padding: var(--space-2) var(--space-4);
+        font-size: var(--font-size-2);
         font-weight: 600;
         cursor: pointer;
         box-shadow: var(--shadow-1);
         outline: none;
-        min-width: 66px;
+        min-width: var(--space-px-96);
+        min-height: var(--control-min-height);
         opacity: 0.8;
         pointer-events: auto;
         transition:
@@ -766,12 +685,14 @@
 
     /* MOBILE-FIRST: field layout defaults */
     .settings-fields-list {
-        padding-left: var(--space-rem-0-7);
-        padding-right: var(--space-rem-0-7);
+        padding-left: var(--space-3);
+        padding-right: var(--space-3);
         box-sizing: border-box;
-        max-width: 100vw;
-        width: 100vw;
+        max-width: 100%;
+        width: 100%;
         min-width: 0;
+        margin-left: 0;
+        margin-right: 0;
     }
 
     /* DESKTOP: centered layout with constraints */
@@ -797,11 +718,12 @@
     }
 
     .settings-toolbar-btn {
-        font-size: 0.97rem;
-        padding: 0.34em 0.8em 0.34em 0.7em;
-        min-width: 50px;
-        margin-top: 0.25em;
-        margin-bottom: 0.2em;
+        font-size: var(--font-size-2);
+        padding: var(--space-2) var(--space-3);
+        min-width: var(--control-min-height);
+        min-height: var(--control-min-height);
+        margin-top: var(--space-1);
+        margin-bottom: var(--space-1);
     }
 
     .settings-page-title {

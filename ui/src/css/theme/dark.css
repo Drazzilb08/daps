@@ -69,8 +69,8 @@
 
     /* Progress bar system */
     --progress-bar-bg: color-mix(in oklab, var(--surface-variant) 80%, var(--divider) 20%);
-    --progress-bar-fg: var(--accent);
-    --progress-bar-label: var(--text-color);
+    --progress-bar-fg: #3e7bfa; /* Use direct accent color value */
+    --progress-bar-label: #e3e3e3; /* Use direct text color value */
 
     /* Button interaction states */
     --btn-disabled-opacity: 0.5;

@@ -3,7 +3,7 @@
     nav.sidebar {
         position: fixed;
         top: var(--header-height);
-        left: -210px;
+        left: calc(-1 * var(--sidebar-width)); /* Use calc instead of hardcoded value */
         width: var(--sidebar-width);
         height: calc(var(--app-vh) - var(--header-height));
         background: var(--sidebar-bg);
@@ -85,7 +85,7 @@
         display: flex;
         align-items: center;
         gap: var(--space-3);
-        min-height: var(--space-7); /* 28px -> 48px (3rem) */
+        min-height: var(--control-min-height); /* WCAG-compliant 44px minimum touch target */
         padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
         border-radius: 0 var(--radius-2) var(--radius-2) 0;
         position: relative;
@@ -121,7 +121,7 @@
         font-size: var(--font-size-1);
         padding: var(--space-2) var(--space-3) var(--space-2) var(--space-2);
         border-radius: var(--radius-1);
-        min-height: var(--space-4); /* 34px -> 64px (4rem) */
+        min-height: var(--control-min-height); /* WCAG-compliant 44px minimum touch target */
         margin-left: 0;
     }
 
@@ -162,8 +162,32 @@
         background: none;
     }
 
+    /* EMERGENCY FIX: Ensure submenu items have proper dimensions when displayed */
+    .settings-sub-menu.displayed,
+    .settings-sub-menu[style*='block'] {
+        display: flex !important;
+        flex-direction: column;
+    }
+
     .settings-sub-menu li {
         margin-bottom: var(--space-1); /* 0.02em -> 0.25rem */
+
+        /* CRITICAL: Ensure list items have proper layout */
+        display: block;
+        min-height: var(--control-min-height);
+        width: 100%;
+    }
+
+    .settings-sub-menu li a,
+    .settings-sub-menu li .sidebar-link {
+        /* EMERGENCY: Force submenu links to have proper dimensions when visible */
+        display: flex !important;
+        align-items: center;
+        min-height: var(--control-min-height) !important;
+        min-width: 100% !important;
+        padding: var(--space-2) var(--space-3) !important;
+        box-sizing: border-box;
+        width: 100%;
     }
 
     /* ======================================================

@@ -143,10 +143,14 @@ export function ColorListField({
                     try {
                         const poster = getPosterByIndex(posterAssets, i);
                         if (!poster) continue;
-                        const url = await getPosterPreviewUrl(poster, colorArray[i] || '#ffffff', {
-                            width: 156,
-                            height: 234,
-                        });
+                        const url = await getPosterPreviewUrl(
+                            poster,
+                            colorArray[i] || 'var(--primary-contrast)',
+                            {
+                                width: 156,
+                                height: 234,
+                            }
+                        );
                         if (!cancelled) out[i] = url;
                     } catch (error) {
                         console.error(`Failed to create preview for color ${i}:`, error);
@@ -185,7 +189,7 @@ export function ColorListField({
     }
 
     function handleAdd() {
-        const updatedArray = [...colorArray, '#ffffff'];
+        const updatedArray = [...colorArray, 'var(--primary-contrast)'];
         onChange?.(updatedArray);
     }
 
@@ -213,7 +217,7 @@ export function ColorListField({
                         <div key={idx} className="color-picker-swatch">
                             <input
                                 type="color"
-                                value={color || '#ffffff'}
+                                value={color || 'var(--primary-contrast)'}
                                 className={highlightInvalid ? 'input-error' : ''}
                                 onChange={e => handleColorChange(idx, e.target.value)}
                                 onInput={e => handleColorChange(idx, e.target.value)}
@@ -246,12 +250,12 @@ export function ColorListField({
                                         style={{
                                             width: 156,
                                             height: 234,
-                                            background: '#f0f0f0',
+                                            background: 'var(--surface-dim)',
                                             display: 'flex',
                                             alignItems: 'center',
                                             justifyContent: 'center',
                                             fontSize: '12px',
-                                            color: '#666',
+                                            color: 'var(--text-muted)',
                                         }}
                                     >
                                         Preview Error

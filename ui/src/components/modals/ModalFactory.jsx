@@ -93,8 +93,7 @@ export default function ModalFactory({
                         minWidth,
                         borderRadius: 11,
                         padding: 0,
-                        boxShadow:
-                            '0 6px 24px 0 rgba(30, 32, 44, 0.18), 0 1.2px 5px rgba(20, 20, 28, 0.12)',
+                        boxShadow: 'var(--shadow-3)',
                     }}
                 >
                     <ModalHeader title={title} onClose={onClose} />

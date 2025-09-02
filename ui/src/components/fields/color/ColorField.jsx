@@ -20,7 +20,7 @@ export function ColorField({
                     <input
                         type="color"
                         className={inputClass}
-                        value={typeof value === 'string' ? value : '#ffffff'}
+                        value={typeof value === 'string' ? value : 'var(--primary-contrast)'}
                         onChange={e => onChange?.(e.target.value)}
                     />
                 </div>

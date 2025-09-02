@@ -173,7 +173,7 @@ class RouteErrorBoundary extends React.Component {
                 border: '2px solid var(--error)',
                 borderRadius: '12px',
                 padding: '2rem',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.1)',
+                boxShadow: 'var(--shadow-3)',
             };
 
             const titleStyle = {
@@ -240,7 +240,7 @@ class RouteErrorBoundary extends React.Component {
 
             const copyButtonStyle = {
                 ...primaryButtonStyle,
-                background: copied ? '#28a745' : '#6c757d',
+                background: copied ? 'var(--success)' : 'var(--surface-variant)',
             };
 
             const detailsStyle = {

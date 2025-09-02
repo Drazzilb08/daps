@@ -41,7 +41,7 @@ function SortableRow({
             style={{
                 transform: CSS.Transform.toString(transform),
                 transition,
-                background: isDragging ? 'var(--surface-alt, #f3f3fc)' : undefined,
+                background: isDragging ? 'var(--surface-alt)' : undefined,
                 zIndex: isDragging ? 2 : undefined,
             }}
             data-row-key={id}

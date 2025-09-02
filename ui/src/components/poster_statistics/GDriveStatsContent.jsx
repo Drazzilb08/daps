@@ -151,7 +151,7 @@ export default function GDriveStatsContent({ data, loading, error, refresh }) {
                                                 style={{
                                                     width:
                                                         percent > 0
-                                                            ? `max(${percent}%, 18px)`
+                                                            ? `max(${percent}%, var(--space-px-18))`
                                                             : '0px',
                                                 }}
                                             />

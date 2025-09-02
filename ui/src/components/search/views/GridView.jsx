@@ -225,12 +225,7 @@ export default function GridView({
     }, [flattenedItems, gridColumns]);
 
     // Calculate responsive heights for different row types
-    // Card heights based on MediaCard component structure:
-    // - Poster: 180px width × 3/2 aspect ratio = 270px height
-    // - Content area varies by grid columns (responsive breakpoints):
-    //   - Mobile (2-3 cols): 50px min-height + 16px padding = 66px
-    //   - Desktop (4+ cols): 60px min-height + 24px padding = 84px
-    // - Gap varies: 12px on small screens, 16px on larger screens
+    // Card heights based on MediaCard component structure with responsive design tokens
     const isMobile = gridColumns <= 3; // Mobile breakpoints use 2-3 columns
     const contentHeight = isMobile ? 66 : 84;
     const cardHeight = 270 + contentHeight; // Poster + content area

@@ -167,14 +167,7 @@ export default function ListView({
         ownerPriorityOrder,
     });
 
-    // Calculate responsive item height based on ListItem component structure:
-    // - Base min-height: 44px (control-min-height for accessibility)
-    // - Padding: varies by screen size (12px default, 8px mobile)
-    // - Content: poster height (90px default, 75px mobile) + internal gaps
-    //
-    // Calculation breakdown:
-    // - Desktop: 90px poster + 24px padding (12px top/bottom) + 6px internal gaps = ~120px
-    // - Mobile: 75px poster + 16px padding (8px top/bottom) + 4px internal gaps = ~95px
+    // Calculate responsive item height based on ListItem component structure with design tokens
     const itemHeight = isMobile ? 95 : 120;
 
     // Group header height: title + padding

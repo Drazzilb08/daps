@@ -191,7 +191,7 @@ class GlobalErrorBoundary extends React.Component {
                         color: 'var(--text-color)',
                         border: '2px solid var(--error)',
                         borderRadius: '12px',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                        boxShadow: 'var(--shadow-3)',
                         margin: '2rem auto',
                         maxWidth: '800px',
                         padding: '2rem',
@@ -214,7 +214,7 @@ class GlobalErrorBoundary extends React.Component {
                         style={{
                             background: 'var(--input-bg)',
                             border: '1px solid var(--error)',
-                            borderRadius: '8px',
+                            borderRadius: 'var(--radius-3)',
                             padding: '1rem',
                             marginBottom: '1rem',
                             fontFamily: 'monospace',

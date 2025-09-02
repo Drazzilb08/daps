@@ -229,7 +229,7 @@ export default function ApiDataExamples() {
                 style={{
                     marginTop: '40px',
                     padding: '20px',
-                    backgroundColor: '#f5f5f5',
+                    backgroundColor: 'var(--surface-alt)',
                     borderRadius: '8px',
                 }}
             >

@@ -45,6 +45,49 @@
         letter-spacing: var(--space-em-0-01);
     }
 
+    /* Settings card content */
+    .card__section-title {
+        font-size: var(--font-size-4);
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 0.13em;
+    }
+
+    .card__section-desc {
+        font-size: var(--font-size-15);
+        color: var(--muted);
+    }
+
+    .card__entry-main {
+        font-size: var(--font-size-20);
+        font-weight: 600;
+        margin-bottom: var(--space-3);
+        color: var(--primary);
+    }
+
+    .card__entry-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: var(--space-1);
+        font-size: var(--font-size-20);
+        gap: var(--space-3);
+    }
+
+    .card__entry-label {
+        color: var(--primary);
+        font-weight: 500;
+        margin-right: var(--space-2);
+        min-width: var(--space-px-120);
+        display: inline-block;
+        text-align: left;
+    }
+
+    .card__entry-value {
+        flex: 1 1 0;
+        overflow-wrap: break-word;
+        color: var(--text-color);
+    }
+
     /* ========== CARD VARIANTS ========== */
     .card.card-add {
         align-items: center;
@@ -60,6 +103,78 @@
 
     .card.card-add:hover,
     .card.card-add:focus {
+        background: color-mix(in srgb, var(--accent) 12%, var(--surface) 88%);
+        color: var(--focus);
+        border-color: var(--focus);
+    }
+
+    /* Settings section link cards */
+    .card--settings {
+        display: flex;
+        flex-direction: column;
+        padding: var(--button-padding-x) var(--space-5);
+        background: var(--surface);
+        border-radius: var(--radius-3);
+        box-shadow: var(--shadow-2);
+        border: var(--border-width-2) solid transparent;
+        text-decoration: none;
+        color: var(--text-color);
+        transition:
+            border-color var(--duration-fast),
+            box-shadow var(--duration-fast),
+            background var(--duration-fast);
+        cursor: pointer;
+    }
+
+    .card--settings:hover {
+        border-color: var(--accent);
+        background: var(--surface-alt);
+        box-shadow: var(--shadow-2);
+        outline: none;
+    }
+
+    /* Settings entry cards */
+    .card--entry {
+        min-width: 240px;
+        padding: var(--space-4) var(--button-padding-x);
+        border-radius: var(--radius-3);
+        box-shadow: var(--shadow-1);
+        background: var(--surface-alt);
+        display: flex;
+        flex-direction: column;
+        cursor: pointer;
+        position: relative;
+        transition:
+            box-shadow var(--duration-fast),
+            border-color var(--duration-fast);
+    }
+
+    .card--entry:hover {
+        box-shadow: var(--shadow-2);
+        border-color: var(--accent);
+    }
+
+    /* Enhanced add card for settings */
+    .card--add {
+        justify-content: center;
+        align-items: center;
+        font-size: var(--font-size-7);
+        color: var(--muted);
+        background: transparent;
+        border: var(--space-rem-2-5-focus) dashed var(--accent);
+        min-width: 92px;
+        min-height: 92px;
+        cursor: pointer;
+        border-radius: var(--radius-3);
+        display: flex;
+        transition:
+            background var(--duration),
+            color var(--duration),
+            border-color var(--duration);
+    }
+
+    .card--add:hover,
+    .card--add:focus {
         background: color-mix(in srgb, var(--accent) 12%, var(--surface) 88%);
         color: var(--focus);
         border-color: var(--focus);
@@ -190,6 +305,94 @@
             padding: var(--space-4);
             background: var(--surface);
             font-size: var(--font-size-1);
+        }
+
+        /* Settings card mobile adjustments */
+        .card--settings {
+            padding: var(--space-em-0-9) var(--space-rem-0-7);
+            border-radius: 7px;
+            font-size: 0.98rem;
+            box-shadow: 0 1.5px 7px rgb(0 0 0 / 5%);
+        }
+
+        .card__section-title {
+            font-size: 1.07rem;
+            margin-bottom: 0.08em;
+        }
+
+        .card__section-desc {
+            font-size: 0.99rem;
+        }
+
+        .card__entry-row {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.1em;
+            margin-bottom: 0.7em;
+            width: 100%;
+        }
+
+        .card__entry-label {
+            margin-bottom: 0.15em;
+            font-size: 0.98em;
+            font-weight: 600;
+            color: var(--primary);
+            min-width: 0;
+            text-align: left;
+            display: block;
+        }
+
+        .card__entry-value {
+            font-size: 1em;
+            font-weight: 500;
+            color: var(--text-color);
+            margin-bottom: 0;
+            margin-left: 0;
+            width: 100%;
+            overflow-wrap: break-word;
+            text-align: left;
+            display: block;
+        }
+    }
+
+    /* Tablet responsive adjustments */
+    @media (width >= 769px) {
+        .card--settings {
+            padding: 1.1rem 1.5rem;
+            border-radius: var(--radius-3);
+            font-size: 1rem;
+            box-shadow: var(--shadow-2);
+        }
+
+        .card__section-title {
+            font-size: 1.23rem;
+            margin-bottom: 0.13em;
+        }
+
+        .card__section-desc {
+            font-size: 1.06rem;
+        }
+    }
+
+    /* Desktop responsive adjustments */
+    @media (width >= 1025px) {
+        .card__entry-row {
+            flex-direction: row;
+            align-items: center;
+            gap: 0.6em;
+            margin-bottom: 0.25em;
+        }
+
+        .card__entry-label {
+            margin-right: 0.4em;
+            min-width: var(--space-px-120);
+            text-align: right;
+            display: inline-block;
+        }
+
+        .card__entry-value {
+            flex: 1 1 0;
         }
     }
 } /* end @layer components */

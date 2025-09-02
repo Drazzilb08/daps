@@ -102,7 +102,6 @@
             font-size: 0.95rem;
             padding: 0 var(--space-4);
             width: calc(100% - var(--space-8));
-
         }
 
         .instances-list {

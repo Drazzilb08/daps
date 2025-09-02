@@ -143,7 +143,6 @@
         opacity: 0.94;
     }
 
-
     /* ========== RESPONSIVE OVERRIDES ========== */
     @media (width <= 1024px) {
         .pill,
@@ -156,7 +155,6 @@
         .monthday-pills {
             gap: 0.12em 0.16em;
         }
-
     }
 
     @media (width <= 600px) {

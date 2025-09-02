@@ -70,41 +70,7 @@
         gap: var(--space-5); /* 1.5rem, closest to 1.3rem */
     }
 
-    .settings-section-link {
-        display: flex;
-        flex-direction: column;
-        padding: var(--button-padding-x) var(--space-5); /* 1.1rem 1.5rem */
-        background: var(--surface);
-        border-radius: var(--radius-3);
-        box-shadow: var(--shadow-2);
-        border: var(--border-width-2) solid transparent;
-        text-decoration: none;
-        color: var(--text-color);
-        transition:
-            border-color var(--duration-fast),
-            box-shadow var(--duration-fast),
-            background var(--duration-fast);
-        cursor: pointer;
-    }
-
-    .settings-section-link:hover {
-        border-color: var(--accent);
-        background: var(--surface-alt);
-        box-shadow: var(--shadow-2);
-        outline: none;
-    }
-
-    .settings-section-title {
-        font-size: var(--font-size-4); /* 1.25rem, closest to 1.23rem */
-        font-weight: 700;
-        color: var(--primary);
-        margin-bottom: 0.13em; /* Keep em for relative spacing */
-    }
-
-    .settings-section-desc {
-        font-size: var(--font-size-15); /* 1.06rem exact match */
-        color: var(--muted);
-    }
+    /* Settings section links now use .card--settings from cards.css */
 
     .settings-section {
         margin-bottom: 2.6em;
@@ -313,82 +279,7 @@
         margin: var(--space-3) 0 var(--space-4); /* 0.75rem 0 1rem, closest to 0.6em 0 1.2em */
     }
 
-    .settings-entry-card,
-    .settings-add-card {
-        min-width: 240px; /* Keep minimum card width */
-        padding: var(--space-4) var(--button-padding-x); /* 1rem 1.1rem */
-        border-radius: var(--radius-3); /* 8px, closest to 10px */
-        box-shadow: var(--shadow-1); /* Standard subtle shadow */
-        background: var(--surface-alt);
-        display: flex;
-        flex-direction: column;
-        cursor: pointer;
-        position: relative;
-        transition:
-            box-shadow var(--duration-fast),
-            border-color var(--duration-fast);
-    }
-
-    .settings-entry-card:hover {
-        box-shadow: var(--shadow-2); /* Medium shadow for hover */
-        border-color: var(--accent);
-    }
-
-    .settings-entry-main {
-        font-size: var(--font-size-20); /* 1.08rem ~= 1.2rem */
-        font-weight: 600;
-        margin-bottom: var(--space-3); /* 0.75rem ~= 0.6em */
-        color: var(--primary);
-    }
-
-    .settings-label {
-        color: var(--primary);
-        font-weight: 500;
-        margin-right: var(--space-2); /* 0.5rem ~= 0.4em */
-        min-width: var(--space-px-120);
-        display: inline-block;
-        text-align: left;
-    }
-
-    .settings-entry-row {
-        display: flex;
-        align-items: center;
-        margin-bottom: var(--space-1); /* 0.25rem = 0.25em */
-        font-size: var(--font-size-20); /* 1.08rem exact match */
-        gap: var(--space-3); /* 0.75rem ~= 0.6em */
-    }
-
-    .settings-value {
-        flex: 1 1 0;
-        overflow-wrap: break-word;
-        color: var(--text-color);
-    }
-
-    .settings-entry-row.settings-entry-main .settings-value {
-        color: var(--primary);
-        font-size: var(--font-size-16); /* 1.13rem, closest to 1.14rem */
-        font-weight: 700;
-    }
-
-    .settings-add-card {
-        justify-content: center;
-        align-items: center;
-        font-size: var(--font-size-7); /* 2.25rem, closest to 2.3rem */
-        color: var(--muted);
-        background: transparent;
-        border: var(--space-rem-2-5-focus) dashed var(--accent);
-        min-width: 92px; /* Keep minimum add card dimensions */
-        min-height: 92px; /* Keep minimum add card dimensions */
-        cursor: pointer;
-        border-radius: var(--radius-3); /* 8px, closest to 10px */
-        display: flex;
-    }
-    .settings-add-card:hover,
-    .settings-add-card:focus {
-        background: color-mix(in srgb, var(--accent) 12%, var(--surface) 88%);
-        color: var(--focus);
-        border-color: var(--focus);
-    }
+    /* Settings entry and add cards now use .card--entry and .card--add from cards.css */
 
     .settings-entry-swatches {
         display: inline-flex;
@@ -429,7 +320,6 @@
             border-color var(--duration-fast);
     }
 
-
     .instance-pill:hover {
         background: color-mix(in srgb, var(--accent) 6%, var(--input-bg) 94%);
         border-color: color-mix(in srgb, var(--accent) 20%, var(--divider) 80%);
@@ -438,7 +328,6 @@
     .instance-pill.checked {
         border-color: var(--accent);
     }
-
 
     .instances-multicol {
         display: flex;
@@ -553,7 +442,6 @@
         outline-offset: var(--border-width-2); /* 2px, closest to 1.5px */
     }
 
-
     /* ======================================================
    TOOLBAR
 ====================================================== */
@@ -656,33 +544,7 @@
    MEDIA QUERIES
 ====================================================== */
 
-    /* MOBILE-FIRST: small screen defaults */
-    .settings-splash {
-        max-width: 100vw;
-        margin: 1rem 0 0;
-        padding: 0 0.5rem 1.1rem;
-    }
-
-    .settings-splash-title {
-        font-size: 1.6rem;
-        margin-bottom: 1rem;
-    }
-
-    .settings-section-link {
-        padding: var(--space-em-0-9) var(--space-rem-0-7);
-        border-radius: 7px;
-        font-size: 0.98rem;
-        box-shadow: 0 1.5px 7px rgb(0 0 0 / 5%);
-    }
-
-    .settings-section-title {
-        font-size: 1.07rem;
-        margin-bottom: 0.08em;
-    }
-
-    .settings-section-desc {
-        font-size: 0.99rem;
-    }
+    /* Mobile-first adjustments moved to top-level rules above */
 
     /* TABLET: enhanced layout */
     @media (width >= 769px) {
@@ -696,35 +558,9 @@
             font-size: 2.3rem;
             margin-bottom: 1.7rem;
         }
-
-        .settings-section-link {
-            padding: 1.1rem 1.5rem;
-            border-radius: var(--radius-3);
-            font-size: 1rem;
-            box-shadow: var(--shadow-2);
-        }
-
-        .settings-section-title {
-            font-size: 1.23rem;
-            margin-bottom: 0.13em;
-        }
-
-        .settings-section-desc {
-            font-size: 1.06rem;
-        }
     }
 
-    /* MOBILE-FIRST: field layout defaults */
-    .settings-fields-list {
-        padding-left: var(--space-3);
-        padding-right: var(--space-3);
-        box-sizing: border-box;
-        max-width: 100%;
-        width: 100%;
-        min-width: 0;
-        margin-left: 0;
-        margin-right: 0;
-    }
+    /* Field layout defaults moved to top-level rules above */
 
     /* DESKTOP: centered layout with constraints */
     @media (width >= 1025px) {
@@ -739,109 +575,14 @@
         }
     }
 
-    /* MOBILE-FIRST: mobile toolbar layout */
-    .settings-toolbar-bar {
-        padding: 0 0.6rem 0 0.5rem;
-        min-height: var(--control-min-height);
-        position: static;
-        top: auto;
-        z-index: initial;
-    }
+    /* Mobile toolbar layout defaults moved to top-level rules above */
 
-    .settings-toolbar-btn {
-        font-size: var(--font-size-2);
-        padding: var(--space-2) var(--space-3);
-        min-width: var(--control-min-height);
-        min-height: var(--control-min-height);
-        margin-top: var(--space-1);
-        margin-bottom: var(--space-1);
-    }
+    /* Mobile instances layout defaults moved to top-level rules above */
 
-    .settings-page-title {
-        font-size: 1.05rem;
-        font-weight: 700;
-        margin-bottom: 0.24em;
-    }
-
-    /* MOBILE-FIRST: instances layout */
-    .instances-multicol {
-        flex-direction: column;
-        align-items: stretch;
-        width: 100%;
-        margin-bottom: 1.1rem;
-        gap: 0.8rem;
-    }
-
-    .instance-type-col {
-        width: 100%;
-        max-width: 100%;
-        min-width: 0;
-        box-sizing: border-box;
-        margin: 0 0 0.5rem;
-        flex: 1 1 100%;
-    }
-
-    .instance-library-list {
-        display: grid;
-        grid-template-columns: 1fr;
-        gap: 0.5rem 0;
-        margin-top: 0.32em;
-        margin-bottom: 0.11em;
-        padding: 0;
-        max-height: 0;
-        opacity: 0;
-        pointer-events: none;
-        overflow: hidden;
-        transition:
-            max-height 0.38s cubic-bezier(0.46, 0.03, 0.52, 0.96),
-            opacity 0.24s cubic-bezier(0.53, 0.15, 0.45, 0.96);
-        will-change: max-height, opacity;
-    }
-
-    .instance-library-list.expanded {
-        max-height: 1200px;
-        opacity: 1;
-        pointer-events: auto;
-        transition:
-            max-height 0.51s cubic-bezier(0.46, 0.03, 0.52, 0.96),
-            opacity 0.23s cubic-bezier(0.53, 0.15, 0.45, 0.96);
-    }
-
-    /* MOBILE-FIRST: card lists and entry rows */
+    /* MOBILE-FIRST: card lists */
     .settings-card-list.twocol {
         grid-template-columns: 1fr;
         gap: var(--space-rem-0-7);
-    }
-
-    .settings-entry-row {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 0.1em;
-        margin-bottom: 0.7em;
-        width: 100%;
-    }
-
-    .settings-label {
-        margin-bottom: 0.15em;
-        font-size: 0.98em;
-        font-weight: 600;
-        color: var(--primary);
-        min-width: 0;
-        text-align: left;
-        display: block;
-    }
-
-    .settings-value {
-        font-size: 1em;
-        font-weight: 500;
-        color: var(--text-color);
-        margin-bottom: 0;
-        margin-left: 0;
-        width: 100%;
-        overflow-wrap: break-word;
-        text-align: left;
-        display: block;
     }
 
     /* DESKTOP: toolbar and instances layout */
@@ -888,24 +629,6 @@
         .settings-card-list.twocol {
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 1.5rem;
-        }
-
-        .settings-entry-row {
-            flex-direction: row;
-            align-items: center;
-            gap: 0.6em;
-            margin-bottom: 0.25em;
-        }
-
-        .settings-label {
-            margin-right: 0.4em;
-            min-width: var(--space-px-120);
-            text-align: right;
-            display: inline-block;
-        }
-
-        .settings-value {
-            flex: 1 1 0;
         }
     }
 }

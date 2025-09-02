@@ -145,11 +145,9 @@
     --space-px-8: 8px; /* Small spacing */
 
     /* Media query breakpoint values (for use in media queries) */
-    --breakpoint-480: 480px; /* Small mobile */
-    --breakpoint-600: 600px; /* Touch enhanced */
+    --breakpoint-375: 375px; /* Mobile baseline */
     --breakpoint-768: 768px; /* Tablet */
-    --breakpoint-1024: 1024px; /* Desktop */
-    --breakpoint-1200: 1200px; /* Large desktop */
+    --breakpoint-1440: 1440px; /* Desktop */
 
     /* Radii & borders */
     --radius-0: 0; /* No border radius */
@@ -222,7 +220,7 @@
     --control-padding-x: 0.75rem; /* Standard control horizontal padding */
     --control-padding-y: 0.5rem; /* Standard control vertical padding */
     --control-radius: var(--radius-2); /* Standard control border radius */
-    --input-height: var(--control-min-height); /* Standard input height */
+    --input-height: 44px; /* Standard input height - matches control-min-height */
     --button-padding-x: 1.1rem; /* Standard button horizontal padding */
     --button-padding-y: 0.48rem; /* Standard button vertical padding */
     --modal-padding: 1.2rem; /* Standard modal padding */
@@ -235,11 +233,9 @@
     --focus-ring-size: 3px; /* Focus ring thickness */
 
     /* Breakpoints - for reference use only */
-    --bp-sm: 480px; /* Small screen breakpoint */
-    --bp-touch: 600px; /* Enhanced touch targets */
-    --bp-md: 768px; /* Medium screen breakpoint */
-    --bp-lg: 1024px; /* Large screen breakpoint */
-    --bp-xl: 1280px; /* Extra large screen breakpoint */
+    --bp-sm: 375px; /* Mobile baseline breakpoint */
+    --bp-md: 768px; /* Tablet breakpoint */
+    --bp-lg: 1440px; /* Desktop breakpoint */
 
     /* Viewport units - safe for mobile browsers */
     --app-vh: 100vh; /* Full viewport height with fallback */

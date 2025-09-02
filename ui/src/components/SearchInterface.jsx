@@ -19,7 +19,7 @@ import {
     ViewControl,
     SortControl,
     FilterControl,
-} from './search/SearchInterfaceControls';
+} from './search/SearchControls';
 
 /**
  * HeaderSearch - Unified search interface with responsive design

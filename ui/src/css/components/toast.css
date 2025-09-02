@@ -21,14 +21,14 @@
         border-radius: var(--radius-2) var(--radius-2) 0 0;
         box-shadow: var(--shadow-2);
         opacity: 0;
-        transform: translateY(20px);
+        transform: translateY(var(--space-5));
         transition:
             opacity 0.4s,
             transform 0.4s;
         font-size: var(--font-size-2);
         font-weight: var(--font-weight-medium);
-        min-width: 240px;
-        max-width: 98vw;
+        min-width: var(--space-px-240);
+        max-width: var(--vw-98);
         overflow-wrap: break-word;
         margin-bottom: 0;
         margin-top: auto;
@@ -44,25 +44,25 @@
     .toast.success {
         background: var(--success);
         color: var(--primary-contrast);
-        border-left: 4px solid var(--success-highlight);
+        border-left: var(--radius-1) solid var(--success-highlight);
     }
 
     .toast.error {
         background: var(--error);
         color: var(--primary-contrast);
-        border-left: 4px solid var(--error-highlight);
+        border-left: var(--radius-1) solid var(--error-highlight);
     }
 
     .toast.info {
         background: var(--info);
         color: var(--primary-contrast);
-        border-left: 4px solid var(--info-highlight);
+        border-left: var(--radius-1) solid var(--info-highlight);
     }
 
     .toast.warning {
         background: var(--warning);
         color: var(--primary-contrast);
-        border-left: 4px solid var(--warning-highlight);
+        border-left: var(--radius-1) solid var(--warning-highlight);
     }
 
     /* ========== RESPONSIVE OVERRIDES ========== */
@@ -71,19 +71,19 @@
             left: 0;
             right: 0;
             bottom: 0;
-            width: 100vw;
+            width: var(--vw-100);
             padding: 0;
             align-items: center;
-            max-width: 100vw;
+            max-width: var(--vw-100);
         }
 
         .toast {
             font-size: var(--font-size-1);
             padding: var(--space-3) var(--space-2);
             border-radius: 0;
-            width: 100vw;
+            width: var(--vw-100);
             min-width: 0;
-            max-width: 100vw;
+            max-width: var(--vw-100);
             margin: 0;
             padding-left: var(--space-4);
             padding-right: var(--space-4);

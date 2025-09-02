@@ -5,33 +5,36 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        min-height: 200px;
+        min-height: var(
+            --space-px-200
+        ); /* Keep specific min height for loading container usability */
+
         gap: var(--space-4);
     }
 
     /* ========== SPINNER ========== */
     .spinner {
-        border: 2.5px solid var(--accent);
-        border-top: 2.5px solid transparent;
+        border: var(--space-rem-2-5-focus) solid var(--accent); /* Keep specific border width for spinner visibility */
+        border-top: var(--space-rem-2-5-focus) solid transparent; /* Match spinner border width */
         border-radius: var(--radius-round);
-        width: 22px;
-        height: 22px;
-        animation: spin 1s linear infinite;
+        width: var(--space-px-22); /* Keep specific spinner size for visual balance */
+        height: var(--space-px-22);
+        animation: spin 1s linear infinite; /* Keep specific timing for smooth rotation */
         margin: auto;
         display: inline-block;
     }
 
     /* ========== SPINNER VARIANTS ========== */
     .spinner--large {
-        width: 32px;
-        height: 32px;
-        border-width: 3px;
+        width: var(--space-8); /* 64px for enhanced visibility - closest available */
+        height: var(--space-8);
+        border-width: var(--focus-ring-size); /* Keep specific border width for large spinner */
     }
 
     .spinner--small {
-        width: 16px;
-        height: 16px;
-        border-width: 2px;
+        width: var(--space-4); /* 16px exact match */
+        height: var(--space-4);
+        border-width: var(--border-width-2); /* 2px using design token */
     }
 
     .spinner--primary {
@@ -66,7 +69,7 @@
     /* ========== ANIMATIONS ========== */
     @keyframes spin {
         to {
-            transform: rotate(360deg);
+            transform: rotate(360deg); /* Full rotation for spinner animation */
         }
     }
 
@@ -78,12 +81,12 @@
         }
 
         50% {
-            opacity: 0.5;
+            opacity: 0.5; /* Keep specific opacity for pulse animation mid-point */
         }
     }
 
     .loading-pulse {
-        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; /* Keep specific timing for smooth pulsing */
     }
 
     /* ========== SKELETON LOADING ========== */
@@ -94,35 +97,35 @@
             var(--surface-variant) 50%,
             var(--surface-dim) 75%
         );
-        background-size: 200% 100%;
-        animation: skeleton-shimmer 1.5s infinite;
+        background-size: 200% 100%; /* Keep percentage-based size for skeleton shimmer */
+        animation: skeleton-shimmer 1.5s infinite; /* Keep specific timing for shimmer effect */
         border-radius: var(--radius-2);
     }
 
     @keyframes skeleton-shimmer {
         0% {
-            background-position: 200% 0;
+            background-position: 200% 0; /* Keep percentage-based position for shimmer start */
         }
 
         100% {
-            background-position: -200% 0;
+            background-position: -200% 0; /* Keep percentage-based position for shimmer end */
         }
     }
 
     .skeleton--text {
-        height: 1rem;
-        width: 100%;
+        height: var(--space-4); /* 1rem exact match */
+        width: 100%; /* Keep full width for text skeleton */
         margin-bottom: var(--space-2);
     }
 
     .skeleton--title {
-        height: 1.5rem;
-        width: 60%;
+        height: var(--space-5); /* 1.5rem exact match */
+        width: 60%; /* Keep percentage-based width for title skeleton */
         margin-bottom: var(--space-3);
     }
 
     .skeleton--circle {
         border-radius: var(--radius-round);
-        aspect-ratio: 1;
+        aspect-ratio: 1; /* Keep aspect ratio for circle skeleton */
     }
 } /* end @layer components */

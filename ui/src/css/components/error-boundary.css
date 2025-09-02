@@ -5,7 +5,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        min-height: 200px;
+        min-height: var(--space-px-200);
         padding: var(--space-6);
         background: var(--surface);
         border: var(--border-width-2) solid var(--error);
@@ -26,7 +26,7 @@
         font-size: var(--font-size-2);
         color: var(--text-color);
         margin: 0;
-        max-width: 500px;
+        max-width: var(--space-px-500);
         line-height: var(--line-height);
     }
 
@@ -66,7 +66,7 @@
 
     .error-boundary button:focus {
         outline: var(--focus-ring-size) solid var(--focus-ring-color);
-        outline-offset: 2px;
+        outline-offset: var(--border-width-2);
     }
 
     /* ========== ERROR BOUNDARY ACTIONS ========== */
@@ -94,7 +94,7 @@
     }
 
     .error-boundary--inline {
-        min-height: 100px;
+        min-height: var(--space-px-100);
         padding: var(--space-4);
         border-radius: var(--radius-2);
     }

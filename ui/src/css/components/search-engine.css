@@ -123,8 +123,8 @@
         background: var(--accent);
         color: var(--primary-contrast);
         border-radius: var(--radius-round);
-        width: 24px;
-        height: 24px;
+        width: var(--space-px-24);
+        height: var(--space-px-24);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -210,7 +210,7 @@
     /* Grid view specific group header styling */
     .grid-view__container--header {
         grid-column: 1 / -1; /* Span all columns */
-        display: block !important; /* Override grid display for header */
+        display: block; /* Override grid display for header */
     }
 
     .grid-view__container--header .group-header {
@@ -468,8 +468,8 @@
         }
 
         .media-card__instance-badge {
-            width: 28px;
-            height: 28px;
+            width: var(--space-px-28);
+            height: var(--space-px-28);
             font-size: var(--font-size-1);
         }
     }
@@ -519,7 +519,7 @@
     }
 
     .search-empty-icon {
-        font-size: 44px;
+        font-size: var(--font-size-44px);
         line-height: 1;
         margin-bottom: var(--space-2);
         opacity: 0.7;

@@ -163,7 +163,7 @@
 
     /* ========== ICON BUTTONS ========== */
     .btn--icon {
-        /* Layout - ensure exact 44px touch target */
+        /* Layout - ensure exact touch target minimum size */
         width: var(--control-min-height);
         height: var(--control-min-height);
         min-width: var(--control-min-height);
@@ -202,7 +202,7 @@
 
     .btn--icon:active {
         background: var(--btn-primary-hover);
-        color: var(--btn-info-hover);
+        color: var(--btn-primary-fg);
         transform: var(--btn-active-transform);
     }
 

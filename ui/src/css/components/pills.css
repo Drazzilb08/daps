@@ -176,11 +176,11 @@
         margin-right: 0.46em;
         cursor: pointer;
         accent-color: var(--primary);
-        width: 18px;
-        height: 18px;
-        border-radius: 2px;
+        width: var(--space-px-18);
+        height: var(--space-px-18);
+        border-radius: var(--radius-1);
         background: var(--primary-contrast);
-        border: 2px solid var(--divider);
+        border: var(--border-width-2) solid var(--divider);
         transition:
             border-color var(--duration),
             background var(--duration-fast);
@@ -200,8 +200,8 @@
         .pill,
         .weekday-pill,
         .monthday-pill {
-            font-size: var(--font-size-1) !important;
-            padding: 0.34em 0.82em !important;
+            font-size: var(--font-size-1);
+            padding: 0.34em 0.82em;
         }
 
         .monthday-pills {

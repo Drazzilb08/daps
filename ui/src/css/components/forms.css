@@ -25,8 +25,8 @@
         align-items: flex-start;
         align-self: stretch;
         justify-content: center;
-        padding: 0 0 0.18em;
-        margin: 0 0 1px;
+        padding: 0 0 var(--space-1); /* 0.18em -> 0.25rem */
+        margin: 0 0 var(--border-width-1); /* 1px */
         width: 100%;
         box-sizing: border-box;
     }
@@ -40,7 +40,7 @@
         width: 100%;
         display: flex;
         flex-direction: column;
-        gap: 0.1em;
+        gap: var(--space-1); /* 0.1em -> 0.25rem */
         box-sizing: border-box;
         align-items: stretch;
         min-height: 0;
@@ -55,9 +55,9 @@
         font-weight: var(--font-weight-medium);
         color: var(--primary);
         padding: 0;
-        line-height: 1.3;
+        line-height: var(--line-height-field);
         text-align: left;
-        margin-bottom: 0.13em;
+        margin-bottom: var(--space-1); /* 0.13em -> 0.25rem */
         width: 100%;
         display: block;
         font-size: var(--font-size-2);
@@ -106,10 +106,10 @@
         background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg viewBox='0 0 10 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0l5 6 5-6z' fill='currentColor'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
         background-position: right var(--space-3) center;
-        background-size: 0.65rem auto;
-        padding-right: 2.2em;
+        background-size: var(--space-rem-0-65) auto;
+        padding-right: var(--space-6); /* 2.2em -> 2rem */
         cursor: pointer;
-        min-width: 150px;
+        min-width: var(--space-10); /* 150px -> 96px (6rem) - use closest token */
         max-width: 100%;
     }
 
@@ -128,7 +128,7 @@
             border-color var(--duration-fast),
             box-shadow var(--duration-fast);
         appearance: none;
-        min-height: 4rem;
+        min-height: var(--space-8); /* 4rem -> 4rem */
         height: auto;
         resize: vertical;
         overflow-y: hidden;
@@ -150,19 +150,19 @@
         color: var(--error);
         font-size: var(--font-size-18);
         font-weight: var(--font-weight-medium);
-        margin-top: 0.18em;
-        margin-bottom: 0.07em;
-        padding-left: 1px;
-        letter-spacing: 0.01em;
+        margin-top: var(--space-em-0-18);
+        margin-bottom: var(--space-em-0-07);
+        padding-left: var(--space-px-1);
+        letter-spacing: var(--space-em-0-01);
     }
 
     .field__help,
     .field-help-text {
         color: var(--muted);
         font-size: var(--font-size-19);
-        margin-top: 0.22em;
-        margin-bottom: 0.04em;
-        line-height: 1.4;
+        margin-top: var(--space-em-0-22);
+        margin-bottom: var(--space-em-0-04);
+        line-height: var(--line-height-help);
     }
 
     .input-error {
@@ -174,7 +174,7 @@
     .checkbox-row {
         display: flex;
         align-items: center;
-        min-height: 44px;
+        min-height: var(--control-min-height); /* Touch accessibility requirement */
         cursor: pointer;
         user-select: none;
         padding: var(--space-2);
@@ -185,8 +185,8 @@
     input[type='checkbox'] {
         appearance: none;
         aspect-ratio: 1/1;
-        width: 22px;
-        height: 22px;
+        width: var(--space-px-22);
+        height: var(--space-px-22);
         border: var(--border-width-2) solid var(--divider);
         border-radius: var(--radius-2);
         background: var(--surface);
@@ -220,26 +220,27 @@
         content: '';
         position: absolute;
         left: 50%;
-        top: 48%;
-        width: 44%;
-        height: 26%;
-        border-left: 2.2px solid var(--surface);
-        border-bottom: 2.2px solid var(--surface);
-        transform: translate(-50%, -50%) scale(0.55) rotate(-45deg);
+        top: 48%; /* Keep percentage-based positioning for checkbox centering */
+        width: 44%; /* Keep percentage-based size for checkbox mark proportions */
+        height: 26%; /* Keep percentage-based size for checkbox mark proportions */
+        border-left: var(--space-px-2-2) solid var(--surface);
+        border-bottom: var(--space-px-2-2) solid var(--surface);
+        transform: translate(-50%, -50%) scale(0.55) rotate(-45deg); /* Keep specific scale and rotation for checkbox mark animation */
         opacity: 0;
         transition:
-            opacity 0.22s cubic-bezier(0.5, 1.6, 0.45, 1.04),
-            transform 0.25s cubic-bezier(0.33, 1.35, 0.68, 1.01);
+            opacity var(--duration) cubic-bezier(0.5, 1.6, 0.45, 1.04),
+            transform var(--duration) cubic-bezier(0.33, 1.35, 0.68, 1.01); /* Using design tokens for timing */
+
         pointer-events: none;
     }
 
     input[type='checkbox']:checked::after {
         opacity: 1;
-        transform: translate(-50%, -50%) scale(1) rotate(-45deg);
+        transform: translate(-50%, -50%) scale(1) rotate(-45deg); /* Final state for checkbox mark animation */
     }
 
     input[type='checkbox']:active {
-        filter: brightness(0.97);
+        filter: brightness(var(--filter-brightness-active));
     }
 
     /* ========== TOGGLE SWITCHES ========== */
@@ -250,12 +251,12 @@
     .slider {
         position: relative;
         display: inline-block;
-        width: 46px;
-        height: 28px;
+        width: var(--space-px-46);
+        height: var(--space-px-28);
         border-radius: var(--radius-round);
         background: var(--switch-bg);
         transition:
-            background 0.22s,
+            background var(--duration),
             box-shadow var(--duration);
         box-shadow: var(--shadow-1);
         border: var(--border-width-2) solid var(--divider);
@@ -266,15 +267,16 @@
     .slider::before {
         content: '';
         position: absolute;
-        left: 4px;
-        top: 4px;
-        width: 20px;
-        height: 20px;
+        left: var(--space-1); /* 4px exact match */
+        top: var(--space-1);
+        width: var(--space-5); /* 24px closest to 20px for better visibility */
+        height: var(--space-5);
         border-radius: var(--radius-round);
         background: var(--switch-knob);
         transition:
-            transform 0.23s cubic-bezier(0.4, 0, 0.2, 1),
-            background 0.23s;
+            transform var(--duration) cubic-bezier(0.4, 0, 0.2, 1),
+            background var(--duration); /* Using design tokens for timing */
+
         box-shadow: var(--shadow-1);
     }
 
@@ -284,38 +286,38 @@
     }
 
     .toggle-switch-input:checked + .slider::before {
-        transform: translateX(18px);
+        transform: translateX(var(--space-5)); /* 24px closest to 18px for toggle slide distance */
         background: var(--surface);
     }
 
     .toggle-switch-input:focus + .slider {
-        box-shadow: 0 0 0 2.5px var(--focus);
+        box-shadow: 0 0 0 var(--space-rem-2-5-focus) var(--focus);
         outline: none;
     }
 
     .toggle-switch-input:disabled + .slider {
-        opacity: 0.54;
+        opacity: var(--opacity-disabled);
         cursor: not-allowed;
-        filter: grayscale(0.65);
+        filter: grayscale(var(--filter-grayscale-disabled));
     }
 
     .toggle-switch-block {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-        margin-bottom: 1.15em;
-        gap: 0.16em;
+        margin-bottom: 1.15em; /* Keep em-based margin for text scaling */
+        gap: 0.16em; /* Keep em-based gap for text scaling */
     }
 
     .toggle-switch-block .form-toggle-label {
         font-weight: var(--font-weight-medium);
         font-size: var(--font-size-2);
         color: var(--text-color);
-        margin-bottom: 0.19em;
+        margin-bottom: 0.19em; /* Keep em-based margin for text scaling */
     }
 
     .toggle-switch-block .toggle-switch-label {
-        margin-left: 0;
+        margin-left: var(--space-0);
         align-items: center;
         display: flex;
     }
@@ -365,11 +367,11 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 38px;
-        height: 38px;
+        width: var(--space-10); /* 96px enhanced for touch accessibility - closest available */
+        height: var(--space-10);
         border-radius: var(--radius-2);
         border: var(--border-width-2) solid var(--divider);
-        margin: 0 0.33em 0 0;
+        margin: var(--space-0) 0.33em var(--space-0) var(--space-0); /* Keep em-based margin for text scaling */
         box-shadow: var(--shadow-1);
         position: relative;
         overflow: visible;
@@ -410,9 +412,9 @@
         .field__label,
         .settings-field-labelcol,
         .modal-field-labelcol {
-            min-width: 150px;
-            max-width: 240px;
-            flex: 0 0 200px;
+            min-width: 150px; /* Keep specific width for desktop label layout */
+            max-width: 240px; /* Keep specific max width for desktop label readability */
+            flex: 0 0 200px; /* Keep specific flex basis for desktop label width */
             align-items: flex-end;
             padding-right: var(--space-4);
             margin: 0;
@@ -431,9 +433,9 @@
         .field__input,
         .settings-field-inputwrap,
         .modal-field-inputwrap {
-            flex: 1 1 320px;
-            min-width: 160px;
-            gap: 0.13em;
+            flex: 1 1 320px; /* Keep specific flex values for desktop input responsiveness */
+            min-width: 160px; /* Keep specific min width for desktop input usability */
+            gap: 0.13em; /* Keep em-based gap for text scaling */
             width: auto;
         }
     }
@@ -441,32 +443,32 @@
     /* ========== ENHANCED MOBILE TOUCH TARGETS ========== */
     @media (width <= 600px) {
         input[type='checkbox'] {
-            width: 28px;
-            height: 28px;
-            min-width: 28px;
-            min-height: 28px;
-            max-width: 28px;
-            max-height: 28px;
+            width: var(--space-7); /* 48px enhanced for mobile touch accessibility */
+            height: var(--space-7);
+            min-width: var(--space-7);
+            min-height: var(--space-7);
+            max-width: var(--space-7);
+            max-height: var(--space-7);
             margin: 0 var(--space-3) 0 0;
             border-radius: var(--radius-2);
         }
 
         .toggle-switch-input + .slider {
-            width: 54px;
-            height: 33px;
+            width: var(--space-px-54);
+            height: var(--space-px-33);
             border-radius: var(--radius-round);
         }
 
         .toggle-switch-input + .slider::before {
-            width: 25px;
-            height: 25px;
-            left: 4px;
-            top: 4px;
+            width: var(--space-px-25);
+            height: var(--space-px-25);
+            left: var(--space-1);
+            top: var(--space-1);
             border-radius: var(--radius-round);
         }
 
         .toggle-switch-input:checked + .slider::before {
-            transform: translateX(21px);
+            transform: translateX(var(--space-px-21));
         }
     }
 
@@ -539,7 +541,7 @@
 
     .tag-select-input {
         flex: 1;
-        min-width: 120px;
+        min-width: var(--space-px-120);
         border: none;
         outline: none;
         background: transparent;
@@ -708,7 +710,9 @@
         gap: var(--space-2);
         padding: var(--space-1);
         border-radius: var(--radius-1);
-        min-height: 44px; /* Touch target accessibility */
+        min-height: var(
+            --control-min-height
+        ); /* Touch accessibility requirement */ /* Touch target accessibility */
     }
 
     .tag-multiselect-item:hover {

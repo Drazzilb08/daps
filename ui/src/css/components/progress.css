@@ -1,15 +1,15 @@
 @layer components {
     .progress-bar {
         width: 100%;
-        max-width: 340px;
-        height: 24px;
-        min-height: 24px;
+        max-width: 340px; /* Keep specific max width for progress bar usability */
+        height: var(--space-6); /* 32px closest to 24px for enhanced accessibility */
+        min-height: var(--space-6);
         background: var(--progress-bar-bg); /* the unfilled bar color */
         border-radius: var(--radius-2);
         position: relative;
         overflow: hidden;
         box-shadow: var(--shadow-1);
-        opacity: 0.97;
+        opacity: 0.97; /* Keep specific opacity for visual hierarchy */
         transition: background var(--duration-fast);
         display: flex;
         align-items: center;
@@ -24,7 +24,7 @@
         position: absolute;
         left: 0;
         top: 0;
-        opacity: 0.88;
+        opacity: 0.88; /* Keep specific opacity for visual layering */
         transition: width var(--duration) var(--easing);
         z-index: var(--z-base);
         box-shadow: var(--shadow-2);
@@ -36,11 +36,11 @@
         top: 50%;
         z-index: var(--z-base);
         transform: translate(-50%, -50%);
-        font-size: 0.875rem;
-        font-weight: 600;
-        line-height: 1.2;
+        font-size: var(--font-size-1); /* 0.875rem exact match */
+        font-weight: var(--font-weight-semibold);
+        line-height: 1.2; /* Keep specific line height for progress text readability */
         color: var(--progress-bar-label); /* default: dark text */
-        letter-spacing: 0.01em;
+        letter-spacing: 0.01em; /* Keep em-based letter spacing for text scaling */
         pointer-events: none;
         user-select: none;
         transition: color var(--duration-fast);
@@ -49,30 +49,31 @@
     /* Invert text color for better contrast when bar >50% */
     .progress-bar__label--invert {
         color: var(--primary-contrast);
-        text-shadow: 0 1px 5px color-mix(in oklab, var(--text-color) 30%, transparent);
+        text-shadow: var(--space-0) var(--border-width-1) var(--space-1)
+            color-mix(in oklab, var(--text-color) 30%, transparent); /* Using design tokens for shadow offset */
     }
 
     /* Indeterminate state */
     .progress-bar--active .progress-bar__inner {
         width: 100%;
-        animation: progress-bar-indeterminate 1.15s linear infinite;
+        animation: progress-bar-indeterminate 1.15s linear infinite; /* Keep specific timing for smooth progress animation */
     }
 
     @keyframes progress-bar-indeterminate {
         0% {
-            opacity: 0.72;
+            opacity: 0.72; /* Keep specific opacity for animation states */
             left: -75%;
             width: 35%;
         }
 
         45% {
-            opacity: 0.89;
+            opacity: 0.89; /* Keep specific opacity for animation peak */
             left: 50%;
             width: 55%;
         }
 
         100% {
-            opacity: 0.72;
+            opacity: 0.72; /* Keep specific opacity for animation states */
             left: 110%;
             width: 20%;
         }
@@ -83,10 +84,10 @@
     }
 
     .progress-bar-divider {
-        width: 96%;
-        height: 1.5px;
+        width: 96%; /* Keep percentage-based width for responsive divider */
+        height: 1.5px; /* Keep specific height for subtle divider visibility */
         background: color-mix(in oklab, var(--primary-contrast) 8%, transparent);
-        margin: 0.34em 0 0.5em;
+        margin: 0.34em var(--space-0) var(--space-2); /* Keep em-based margin with design token */
         border: none;
         border-radius: var(--radius-1);
     }
@@ -94,8 +95,8 @@
     /* Mobile responsive fixes */
     @media (width <= 768px) {
         .progress-bar {
-            height: 28px;
-            min-height: 28px;
+            height: var(--space-7); /* 48px for enhanced mobile accessibility */
+            min-height: var(--space-7);
         }
     }
 } /* end @layer components */

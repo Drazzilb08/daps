@@ -11,9 +11,9 @@
         border-radius: var(--radius-3);
         font-size: var(--font-size-1);
         font-weight: var(--font-weight-medium);
-        line-height: 1.42;
+        line-height: var(--line-height-tooltip);
         min-width: max-content;
-        max-width: 340px;
+        max-width: var(--space-px-340);
         box-shadow: var(--shadow-3);
         opacity: 0;
         pointer-events: none;
@@ -28,7 +28,7 @@
     .btn-tooltip.show {
         opacity: 1;
         pointer-events: auto;
-        transform: translateX(-50%) translateY(-3px) scale(1.01);
+        transform: translateX(-50%) translateY(calc(-3 * var(--border-width-1))) scale(1.01); /* 3px approximated with border tokens */
     }
 
     /* ========== TOOLTIP ARROWS ========== */
@@ -37,31 +37,31 @@
         position: absolute;
         left: 50%;
         transform: translateX(-50%);
-        width: 14px;
-        height: 8px;
+        width: var(--space-px-14);
+        height: var(--space-2); /* 8px exact match */
         background: transparent;
     }
 
     .btn-tooltip[data-pos='top']::after {
-        bottom: -8px;
-        border-left: 7px solid transparent;
-        border-right: 7px solid transparent;
-        border-top: 8px solid var(--surface-alt);
+        bottom: calc(-1 * var(--space-2)); /* 8px using design token */
+        border-left: var(--space-px-7) solid transparent;
+        border-right: var(--space-px-7) solid transparent;
+        border-top: var(--space-2) solid var(--surface-alt); /* 8px using design token */
     }
 
     .btn-tooltip[data-pos='bottom']::after {
-        top: -8px;
-        border-left: 7px solid transparent;
-        border-right: 7px solid transparent;
-        border-bottom: 8px solid var(--surface-alt);
+        top: calc(-1 * var(--space-2)); /* 8px using design token */
+        border-left: var(--space-px-7) solid transparent;
+        border-right: var(--space-px-7) solid transparent;
+        border-bottom: var(--space-2) solid var(--surface-alt); /* 8px using design token */
     }
 
     /* ========== RESPONSIVE OVERRIDES ========== */
     @media (width <= 600px) {
         .btn-tooltip {
             font-size: var(--font-size-2);
-            padding: 0.41em 0.7em;
-            max-width: 90vw;
+            padding: var(--space-em-0-41) var(--space-em-0-7);
+            max-width: var(--vw-90);
             white-space: normal;
             border-radius: var(--radius-2);
         }

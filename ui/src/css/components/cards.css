@@ -13,10 +13,10 @@
         box-shadow: var(--shadow-1);
         display: flex;
         flex-direction: column;
-        gap: 0.32rem;
+        gap: var(--space-rem-0-32);
         color: var(--text-color);
         cursor: pointer;
-        border: 1.5px solid transparent;
+        border: var(--border-width-2) solid transparent;
         transition:
             box-shadow var(--duration),
             background var(--duration),
@@ -35,14 +35,14 @@
     .card-title {
         font-size: var(--font-size-3);
         font-weight: var(--font-weight-bold);
-        margin-bottom: 0.18em;
+        margin-bottom: var(--space-em-0-18);
         color: var(--primary);
     }
 
     .card-meta {
         font-size: var(--font-size-2);
         color: var(--muted);
-        letter-spacing: 0.01em;
+        letter-spacing: var(--space-em-0-01);
     }
 
     /* ========== CARD VARIANTS ========== */
@@ -50,7 +50,7 @@
         align-items: center;
         justify-content: center;
         background: color-mix(in srgb, var(--accent) 6%, var(--surface) 94%);
-        border: 2.5px dashed var(--accent);
+        border: var(--space-rem-2-5-focus) dashed var(--accent);
         color: var(--accent);
         transition:
             border-color var(--duration),
@@ -78,7 +78,7 @@
         font-size: var(--font-size-14);
         line-height: 1;
         font-weight: var(--font-weight-bold);
-        margin-bottom: 0.1em;
+        margin-bottom: var(--space-em-0-1);
     }
 
     /* ========== CARD BODY & STRUCTURE ========== */
@@ -100,12 +100,12 @@
         background: color-mix(in srgb, var(--accent) 10%, var(--surface) 90%);
         color: var(--accent);
         border-radius: var(--radius-round);
-        padding: 0.16em 0.9em;
+        padding: var(--space-em-0-16) var(--space-em-0-9);
         font-size: var(--font-size-1);
-        margin: 0 0.18em 0.18em 0;
+        margin: 0 var(--space-em-0-18) var(--space-em-0-18) 0;
         font-weight: var(--font-weight-medium);
-        letter-spacing: 0.01em;
-        border: 1px solid var(--accent-dark);
+        letter-spacing: var(--space-em-0-01);
+        border: var(--border-width-1) solid var(--accent-dark);
         opacity: 0.94;
     }
 
@@ -114,8 +114,8 @@
         position: absolute;
         left: 0;
         right: 0;
-        bottom: 0.7em;
-        padding: 0 1em;
+        bottom: var(--space-em-0-7);
+        padding: 0 var(--space-em-1);
         display: flex;
         flex-direction: row;
         align-items: flex-end;
@@ -131,7 +131,7 @@
         color: var(--muted);
         display: flex;
         align-items: center;
-        gap: 0.18em;
+        gap: var(--space-em-0-18);
         pointer-events: none;
         user-select: none;
         min-width: 0;
@@ -139,7 +139,7 @@
     }
 
     .card-last-run .material-icons {
-        font-size: var(--font-size-2) !important;
+        font-size: var(--font-size-2);
         vertical-align: middle;
         opacity: 0.77;
         line-height: 1;
@@ -150,7 +150,7 @@
         color: var(--muted);
         font-style: italic;
         font-size: var(--font-size-2);
-        letter-spacing: 0.01em;
+        letter-spacing: var(--space-em-0-01);
         opacity: 0.86;
     }
 
@@ -168,28 +168,28 @@
 
     @media (width <= 600px) {
         .card-list {
-            display: grid !important;
-            grid-template-columns: 1fr !important;
-            max-width: 98vw !important;
-            gap: var(--space-3) !important;
-            padding: 0 var(--space-1) var(--space-5) !important;
-            margin: 0 auto !important;
-            place-items: center center !important;
+            display: grid;
+            grid-template-columns: 1fr;
+            max-width: var(--vw-98);
+            gap: var(--space-3);
+            padding: 0 var(--space-1) var(--space-5);
+            margin: 0 auto;
+            place-items: center center;
         }
 
         .card,
         .card.card-add {
-            width: 95vw !important;
-            min-width: 82vw !important;
-            max-width: 95vw !important;
-            box-sizing: border-box !important;
-            aspect-ratio: 1 / 1 !important;
-            margin-left: auto !important;
-            margin-right: auto !important;
-            border-radius: var(--radius-3) !important;
-            padding: var(--space-4) !important;
-            background: var(--surface) !important;
-            font-size: var(--font-size-1) !important;
+            width: var(--vw-95);
+            min-width: var(--vw-82);
+            max-width: var(--vw-95);
+            box-sizing: border-box;
+            aspect-ratio: 1 / 1;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: var(--radius-3);
+            padding: var(--space-4);
+            background: var(--surface);
+            font-size: var(--font-size-1);
         }
     }
 } /* end @layer components */

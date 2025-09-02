@@ -87,7 +87,7 @@
     }
 
     /* DESKTOP: constrained modal sizing */
-    @media (width >= 1024px) {
+    @media (width >= 1440px) {
         .modal-content {
             border-radius: var(--radius-3);
             width: var(--space-px-1000);
@@ -478,7 +478,7 @@
     }
 
     /* DESKTOP: Enhanced form layout */
-    @media (width >= 1024px) {
+    @media (width >= 1440px) {
         .modal-content .settings-field-labelcol,
         .modal-content .modal-field-labelcol {
             min-width: var(--space-px-150);
@@ -867,7 +867,7 @@
     }
 
     /* DESKTOP: full modal spacing */
-    @media (width >= 1024px) {
+    @media (width >= 1440px) {
         .modal-header,
         .modal-footer {
             padding-left: var(--space-6);
@@ -937,7 +937,7 @@
         padding: var(--space-0);
     }
 
-    @media (width <= 600px) {
+    @media (width <= 375px) {
         .gdrive-preset-card {
             max-width: var(--vw-100);
             border-radius: var(--radius-0);

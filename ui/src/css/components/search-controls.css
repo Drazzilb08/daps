@@ -35,7 +35,7 @@
     }
 
     /* Desktop: Perfect centering with controls flowing right */
-    @media (width >= 769px) {
+    @media (width >= 768px) {
         .search-layout {
             justify-content: center;
             position: relative;
@@ -163,7 +163,7 @@
     }
 
     /* Desktop search controls layout */
-    @media (width >= 769px) {
+    @media (width >= 768px) {
         .search-controls {
             display: flex;
             flex-flow: row nowrap;
@@ -690,7 +690,7 @@
     }
 
     /* Desktop layout uses proper specificity */
-    @media (width >= 769px) {
+    @media (width >= 768px) {
         .search-controls {
             flex-direction: row;
             align-items: center;
@@ -712,7 +712,7 @@
         }
     }
 
-    @media (width <= 480px) {
+    @media (width <= 375px) {
         .search-controls {
             gap: var(--space-1);
         }
@@ -937,7 +937,7 @@
     }
 
     /* Desktop - search input centered with controls flowing right */
-    @media (width >= 769px) {
+    @media (width >= 768px) {
         .header-search {
             /* Centering handled by absolute positioning in parent */
             display: flex;
@@ -1026,7 +1026,7 @@
     }
 
     /* Hide back button on desktop */
-    @media (width >= 769px) {
+    @media (width >= 768px) {
         .search-back-button {
             display: none;
         }
@@ -1063,7 +1063,7 @@
     }
 
     /* Hide back button on desktop */
-    @media (width >= 769px) {
+    @media (width >= 768px) {
         .header-search__back-button {
             display: none;
         }
@@ -1158,7 +1158,7 @@
     }
 
     /* Desktop - always show full interface */
-    @media (width >= 769px) {
+    @media (width >= 768px) {
         .header-search--desktop {
             display: flex;
         }
@@ -1178,7 +1178,7 @@
     }
 
     /* Desktop - constrained width */
-    @media (width >= 769px) {
+    @media (width >= 768px) {
         .header-search__input-container {
             max-width: 600px;
             min-width: 300px;
@@ -1342,7 +1342,7 @@
     }
 
     /* Desktop - controls always visible on the right with optimized spacing */
-    @media (width >= 769px) {
+    @media (width >= 768px) {
         .header-search__controls {
             position: static;
             min-width: fit-content;
@@ -1398,7 +1398,7 @@
     }
 
     /* Desktop control buttons - more compact spacing */
-    @media (width >= 769px) {
+    @media (width >= 768px) {
         .header-search__control-button {
             padding: var(--space-1) var(--space-2);
             gap: var(--space-1);
@@ -1482,7 +1482,7 @@
     }
 
     /* Hide labels on smaller desktop screens to save space */
-    @media (width >= 769px) and (width <= 1200px) {
+    @media (width >= 768px) and (width <= 1440px) {
         .header-search__control-label {
             display: none;
         }
@@ -1584,7 +1584,7 @@
     =========================== */
 
     /* Tablet and smaller */
-    @media (width <= 1024px) {
+    @media (width <= 1440px) {
         .header-search--desktop {
             gap: var(--space-3);
             padding: 0 var(--space-3);

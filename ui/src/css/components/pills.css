@@ -144,7 +144,7 @@
     }
 
     /* ========== RESPONSIVE OVERRIDES ========== */
-    @media (width <= 1024px) {
+    @media (width <= 1440px) {
         .pill,
         .weekday-pill,
         .monthday-pill {
@@ -157,6 +157,6 @@
         }
     }
 
-    @media (width <= 600px) {
+    @media (width <= 375px) {
     }
 } /* end @layer components */

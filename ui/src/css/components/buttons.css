@@ -58,7 +58,7 @@
     }
 
     /* ========== RESPONSIVE ENHANCEMENTS ========== */
-    @media (width >= 1025px) {
+    @media (width >= 1440px) {
         .btn {
             padding: var(--space-2) var(--space-5);
             font-size: var(--font-size-2);
@@ -159,6 +159,32 @@
         background: var(--btn-info-hover);
         transform: var(--btn-hover-transform);
         box-shadow: var(--shadow-2);
+    }
+
+    /* Notification button style (surface alternative with focus hover) */
+    .btn--notification {
+        background: var(--surface-alt);
+        color: var(--text-color);
+        border: 1.5px solid var(--divider);
+        font-weight: var(--font-weight-semibold);
+        gap: var(--space-2);
+        padding: var(--space-3) var(--space-4);
+        box-shadow: none;
+    }
+
+    .btn--notification:hover {
+        background: var(--focus);
+        color: var(--primary-contrast);
+        border-color: var(--focus);
+        transform: var(--btn-hover-transform);
+        box-shadow: var(--shadow-1);
+    }
+
+    .btn--notification:disabled,
+    .btn--notification[aria-disabled='true'] {
+        opacity: 0.5;
+        cursor: not-allowed;
+        pointer-events: none;
     }
 
     /* ========== ICON BUTTONS ========== */

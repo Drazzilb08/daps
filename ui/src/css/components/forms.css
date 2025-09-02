@@ -400,7 +400,7 @@
     }
 
     /* ========== DESKTOP FORM LAYOUTS ========== */
-    @media (width >= 1025px) {
+    @media (width >= 1440px) {
         .field,
         .settings-field-row,
         .modal-field-row {
@@ -441,7 +441,7 @@
     }
 
     /* ========== ENHANCED MOBILE TOUCH TARGETS ========== */
-    @media (width <= 600px) {
+    @media (width <= 375px) {
         input[type='checkbox'] {
             width: var(--space-7); /* 48px enhanced for mobile touch accessibility */
             height: var(--space-7);

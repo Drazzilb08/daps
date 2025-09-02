@@ -270,7 +270,7 @@
     }
 
     /* ========== RESPONSIVE OVERRIDES ========== */
-    @media (width <= 1024px) {
+    @media (width <= 1440px) {
         .card-list {
             grid-template-columns: repeat(2, 1fr);
             max-width: 100vw;
@@ -281,7 +281,7 @@
         }
     }
 
-    @media (width <= 600px) {
+    @media (width <= 375px) {
         .card-list {
             display: grid;
             grid-template-columns: 1fr;
@@ -357,7 +357,7 @@
     }
 
     /* Tablet responsive adjustments */
-    @media (width >= 769px) {
+    @media (width >= 768px) {
         .card--settings {
             padding: 1.1rem 1.5rem;
             border-radius: var(--radius-3);
@@ -376,7 +376,7 @@
     }
 
     /* Desktop responsive adjustments */
-    @media (width >= 1025px) {
+    @media (width >= 1440px) {
         .card__entry-row {
             flex-direction: row;
             align-items: center;

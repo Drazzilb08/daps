@@ -37,7 +37,7 @@
     }
 
     /* Hide jumpbar on smaller screens */
-    @media (width <= 1023px) {
+    @media (width <= 1440px) {
         .media-search-jumpbar {
             display: none;
         }
@@ -352,27 +352,27 @@
     /* ===== RESPONSIVE DESIGN ===== */
 
     /* Large screens */
-    @media (width >= 1400px) {
+    @media (width >= 1440px) {
         .grid-view {
             --grid-columns: 8;
         }
     }
 
-    @media (width >= 1200px) {
+    @media (width >= 1440px) {
         .grid-view {
             --grid-columns: 7;
         }
     }
 
     /* Desktop */
-    @media (width >= 1024px) {
+    @media (width >= 1440px) {
         .grid-view {
             --grid-columns: 6;
         }
     }
 
     /* Tablet */
-    @media (width <= 1023px) {
+    @media (width <= 1440px) {
         .grid-view {
             --grid-columns: 4;
 
@@ -389,7 +389,7 @@
     }
 
     /* Small tablet */
-    @media (width <= 767px) {
+    @media (width <= 768px) {
         .grid-view {
             --grid-columns: 3;
 
@@ -418,7 +418,7 @@
     }
 
     /* Mobile */
-    @media (width <= 599px) {
+    @media (width <= 375px) {
         /* Mobile adjustments for search page layout */
         .search-page-layout {
             height: calc(100vh - var(--header-height));
@@ -461,7 +461,7 @@
     }
 
     /* Touch device enhancements */
-    @media (width <= 600px) {
+    @media (width <= 375px) {
         .media-card,
         .list-item {
             min-height: var(--control-min-height); /* Ensure 44px touch targets */
@@ -676,7 +676,7 @@
     /* ===== RESPONSIVE ADJUSTMENTS FOR STATES ===== */
 
     /* Tablet and smaller */
-    @media (width <= 767px) {
+    @media (width <= 768px) {
         .search-empty-container,
         .search-loading-container,
         .search-error-container {
@@ -707,7 +707,7 @@
     }
 
     /* Mobile */
-    @media (width <= 599px) {
+    @media (width <= 375px) {
         .search-empty-container,
         .search-loading-container,
         .search-error-container {

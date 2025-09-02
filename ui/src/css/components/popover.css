@@ -281,7 +281,7 @@
     }
 
     /* ========== RESPONSIVE BEHAVIOR ========== */
-    @media (width <= 480px) {
+    @media (width <= 375px) {
         .popover {
             max-width: calc(100vw - 24px);
             font-size: var(--font-size-2);

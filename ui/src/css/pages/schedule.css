@@ -132,7 +132,7 @@
     }
 
     .card-last-run .material-icons {
-        font-size: 1em !important;
+        font-size: 1em;
         vertical-align: middle;
         opacity: 0.77;
         line-height: 1;
@@ -165,14 +165,14 @@
 
         .schedule-list .card,
         .schedule-list .card.card-add {
-            width: 95vw;
-            min-width: 82vw;
-            max-width: 95vw;
+            width: var(--vw-95);
+            min-width: var(--vw-82);
+            max-width: var(--vw-95);
             box-sizing: border-box;
             aspect-ratio: 1 / 1;
             margin-left: auto;
             margin-right: auto;
-            border-radius: 17px;
+            border-radius: var(--space-px-17);
             padding: 1.16rem 1.1rem 1.08rem;
             background: var(--surface, #191b22);
             font-size: 0.98rem;

@@ -122,16 +122,16 @@
     }
 
     .nav-logo img {
-        width: 32px;
-        height: 32px;
+        width: var(--space-5); /* 32px */
+        height: var(--space-5);
         object-fit: contain;
     }
 
     /* Mobile optimization - smaller logo */
     @media (width <= 768px) {
         .nav-logo img {
-            width: 24px;
-            height: 24px;
+            width: var(--space-5); /* 24px */
+            height: var(--space-5);
         }
 
         /* Hide logo when mobile search is active */
@@ -162,13 +162,13 @@
     /* Mobile optimization - smaller hamburger */
     @media (width <= 768px) {
         .hamburger.menu {
-            width: 36px;
-            height: 36px;
+            width: var(--space-7); /* 36px -> 48px (3rem) */
+            height: var(--space-7);
         }
 
         .hamburger.menu svg {
-            width: 36px;
-            height: 36px;
+            width: var(--space-7); /* 36px -> 48px (3rem) */
+            height: var(--space-7);
         }
 
         /* Hide hamburger when mobile search is active */
@@ -206,7 +206,7 @@
             align-items: center;
             gap: var(--space-3);
             white-space: nowrap;
-            max-width: 600px;
+            max-width: var(--container-max); /* 600px -> 1200px (use existing token) */
         }
 
         /* Hide mobile search trigger on desktop */
@@ -308,7 +308,7 @@
         margin-top: var(--header-height);
 
         /* Add fixed top padding to account for expanded header without affecting layout flow */
-        padding-top: 120px;
+        padding-top: var(--search-controls-height); /* 120px */
 
         /* Disable margin transitions during animations to prevent jumping */
         transition: none;
@@ -371,7 +371,7 @@
     @keyframes controls-appear {
         from {
             opacity: 0;
-            transform: translateY(-4px);
+            transform: translateY(calc(-1 * var(--space-1)));
         }
 
         to {
@@ -459,17 +459,17 @@
     /* WebKit browsers (Chrome, Edge, Safari) */
     .view-frame::-webkit-scrollbar,
     #settingsForm::-webkit-scrollbar {
-        width: 10px;
+        width: var(--space-2); /* 10px -> 8px */
         background: var(--surface);
-        border-radius: 8px;
+        border-radius: var(--radius-3);
     }
 
     .view-frame::-webkit-scrollbar-thumb,
     #settingsForm::-webkit-scrollbar-thumb {
         background: linear-gradient(135deg, var(--accent), var(--surface-dim));
-        border-radius: 8px;
-        min-height: 40px;
-        border: 2px solid var(--surface);
+        border-radius: var(--radius-3);
+        min-height: var(--control-min-height); /* 40px -> 44px */
+        border: var(--border-width-2) solid var(--surface);
         transition: background 0.2s;
     }
 
@@ -481,7 +481,7 @@
     .view-frame::-webkit-scrollbar-track,
     #settingsForm::-webkit-scrollbar-track {
         background: var(--surface);
-        border-radius: 8px;
+        border-radius: var(--radius-3);
     }
 
     .view-frame::-webkit-scrollbar-corner,
@@ -496,9 +496,9 @@
     h1,
     .main-header {
         color: var(--header-fg);
-        font-size: 2.2rem;
-        margin-top: 0.7em;
-        margin-bottom: 1em;
+        font-size: var(--font-size-7); /* 2.2rem -> 2.25rem (36px) */
+        margin-top: var(--space-3); /* 0.7em -> 0.75rem */
+        margin-bottom: var(--space-4); /* 1em -> 1rem */
         font-weight: 700;
         text-align: left;
         letter-spacing: -0.3px;
@@ -506,9 +506,9 @@
 
     h2 {
         color: var(--text-color);
-        font-size: 1.25rem;
-        margin-bottom: 1em;
-        margin-top: 1.7em;
+        font-size: var(--font-size-4); /* 1.25rem */
+        margin-bottom: var(--space-4); /* 1em -> 1rem */
+        margin-top: var(--space-6); /* 1.7em -> 2rem */
         font-weight: 600;
     }
 } /* end @layer base */

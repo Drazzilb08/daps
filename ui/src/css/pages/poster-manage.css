@@ -10,7 +10,7 @@
         padding: var(--space-3) var(--space-4);
         margin-bottom: var(--space-2);
         border: 1px solid var(--divider);
-        border-radius: 8px;
+        border-radius: var(--radius-3);
         background: var(--surface);
         cursor: pointer;
         transition: all 0.2s ease;
@@ -126,7 +126,7 @@
     .progress-bar-divider {
         height: 1px;
         background: var(--divider);
-        margin: 4px 0;
+        margin: var(--space-1) 0;
         opacity: 0.6;
     }
 
@@ -148,15 +148,15 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 32px;
-        height: 32px;
+        width: var(--space-px-32);
+        height: var(--space-px-32);
         border: none;
         border-radius: 6px;
         cursor: pointer;
         font-size: 1.1em;
         transition: all 0.2s ease;
         background: color-mix(in srgb, var(--surface-alt) 80%, transparent 20%);
-        backdrop-filter: blur(4px);
+        backdrop-filter: blur(var(--space-1));
     }
 
     .gdrive-pill-cancel {
@@ -234,7 +234,7 @@
         font-size: 0.8rem;
         color: var(--accent);
         font-weight: 500;
-        padding: 4px 8px;
+        padding: var(--space-1) var(--space-2);
         background: color-mix(in srgb, var(--accent) 10%, transparent 90%);
         border-radius: 12px;
         border: 1px solid color-mix(in srgb, var(--accent) 20%, transparent 80%);
@@ -258,7 +258,7 @@
         color: var(--muted);
         font-style: italic;
         background: var(--surface-alt);
-        border-radius: 8px;
+        border-radius: var(--radius-3);
         border: 1px dashed var(--divider);
     }
 
@@ -284,9 +284,9 @@
         display: inline-flex;
         align-items: center;
         gap: var(--space-1);
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 0.7rem;
+        padding: var(--space-1) var(--space-2);
+        border-radius: var(--radius-1);
+        font-size: var(--space-rem-0-7-small);
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: 0.025em;
@@ -361,8 +361,8 @@
 
         .gdrive-pill-cancel,
         .gdrive-pill-retry {
-            width: 28px;
-            height: 28px;
+            width: var(--space-px-28);
+            height: var(--space-px-28);
             font-size: 1rem;
         }
     }

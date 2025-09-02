@@ -71,7 +71,7 @@
         position: absolute;
         inset: 2px;
         background: var(--bg);
-        border-radius: 16px;
+        border-radius: var(--space-px-16);
         z-index: -1;
     }
 
@@ -178,8 +178,8 @@
     }
 
     .btn-icon {
-        width: 18px;
-        height: 18px;
+        width: var(--space-px-18);
+        height: var(--space-px-18);
         flex-shrink: 0;
     }
 
@@ -192,8 +192,8 @@
     }
 
     .decoration-dot {
-        width: 8px;
-        height: 8px;
+        width: var(--space-px-8);
+        height: var(--space-px-8);
         background: var(--accent);
         border-radius: 50%;
         animation: bounce 1.4s ease-in-out infinite both;

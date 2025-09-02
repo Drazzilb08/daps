@@ -31,8 +31,8 @@
 
     .instance-group-icon img,
     .instance-group-icon svg {
-        width: 28px;
-        height: 28px;
+        width: var(--space-px-28);
+        height: var(--space-px-28);
         display: block;
         filter: drop-shadow(0 0 2px color-mix(in srgb, var(--primary-contrast) 30%, transparent))
             drop-shadow(0 0 1px color-mix(in srgb, var(--caution-highlight) 20%, transparent));
@@ -70,7 +70,7 @@
         .instance-group .card-list {
             grid-template-columns: repeat(2, 1fr);
             max-width: 720px;
-            gap: 0.7rem;
+            gap: var(--space-rem-0-7);
             padding: 0 0.1rem 1.6rem;
             margin: 0 auto;
             place-items: center center;
@@ -79,28 +79,28 @@
 
     @media (width <= 600px) {
         .instances-list {
-            display: grid !important;
-            grid-template-columns: 1fr !important;
-            max-width: 98vw !important;
-            gap: 0.7rem !important;
-            padding: 0 0.1rem 1.6rem !important;
-            margin: 0 auto !important;
-            place-items: center center !important;
+            display: grid;
+            grid-template-columns: 1fr;
+            max-width: 98vw;
+            gap: var(--space-rem-0-7);
+            padding: 0 0.1rem 1.6rem;
+            margin: 0 auto;
+            place-items: center center;
         }
 
         .instances-list .card,
         .instances-list .card.card-add {
-            width: 95vw !important;
-            min-width: 82vw !important;
-            max-width: 95vw !important;
-            box-sizing: border-box !important;
-            aspect-ratio: 1 / 1 !important;
-            margin-left: auto !important;
-            margin-right: auto !important;
-            border-radius: 17px !important;
-            padding: 1.16rem 1.1rem 1.08rem !important;
-            background: var(--surface) !important;
-            font-size: 0.98rem !important;
+            width: var(--vw-95);
+            min-width: var(--vw-82);
+            max-width: var(--vw-95);
+            box-sizing: border-box;
+            aspect-ratio: 1 / 1;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: var(--space-px-17);
+            padding: 1.16rem 1.1rem 1.08rem;
+            background: var(--surface);
+            font-size: 0.98rem;
         }
     }
 }

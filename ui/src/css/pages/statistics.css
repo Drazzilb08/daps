@@ -25,12 +25,12 @@
     }
 
     .stats-table td:first-child {
-        color: var(--link-color, #38f);
+        color: var(--primary);
         font-weight: 600;
     }
 
     .stats-table tr:hover td {
-        background: var(--surface-alt, #23242a);
+        background: var(--surface-alt);
         color: var(--primary);
         transition: background 0.13s;
     }
@@ -42,23 +42,23 @@
     }
 
     .stat-bar-bg {
-        background: var(--surface-alt, #23242a);
-        border-radius: 4px;
-        height: 18px;
+        background: var(--surface-alt);
+        border-radius: var(--radius-1);
+        height: var(--space-px-18);
         min-width: 56px;
         width: 100%;
         display: flex;
         align-items: center;
         position: relative;
         overflow: hidden;
-        margin-right: 8px;
+        margin-right: var(--space-2);
     }
 
     .stat-bar-inner {
         background: var(--primary);
         height: 100%;
-        border-radius: 4px;
-        min-width: 18px;
+        border-radius: var(--radius-1);
+        min-width: var(--space-px-18);
         max-width: 100%;
         position: absolute;
         left: 0;
@@ -73,28 +73,28 @@
         width: 100%;
         text-align: center;
         font-size: 0.99em;
-        color: var(--text-color, #fff);
+        color: var(--text-color);
         z-index: var(--z-base);
         pointer-events: none;
         user-select: none;
         font-weight: 600;
-        line-height: 18px;
+        line-height: var(--space-px-18);
     }
 
     .stat-bar-label--muted {
-        color: var(--muted, #888);
+        color: var(--on-surface-variant);
     }
 
     .stats-footer {
         margin-top: 1.2em;
         font-size: 1.07em;
-        color: var(--muted, #aaa);
+        color: var(--on-surface-variant);
     }
 
     .stats-owner {
         display: flex;
         align-items: center;
-        gap: 7px;
+        gap: var(--space-px-7);
     }
 
     .stats-loading,
@@ -103,15 +103,15 @@
         text-align: center;
         margin: 2em 0;
         font-size: 1.18em;
-        color: var(--text-secondary, #aaa);
+        color: var(--on-surface-variant);
     }
 
     .stats-error {
-        color: var(--error, #e35555);
+        color: var(--error);
     }
 
     .empty-icon {
-        margin-right: 8px;
+        margin-right: var(--space-2);
     }
 
     .control-row {

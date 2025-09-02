@@ -11,8 +11,8 @@
 
     /* Header/title for dashboard */
     .dashboard-header {
-        margin-bottom: 18px;
-        padding-top: 18px;
+        margin-bottom: var(--space-px-18);
+        padding-top: var(--space-px-18);
         text-align: left;
     }
 
@@ -20,7 +20,7 @@
         font-size: 2.13em;
         font-weight: 800;
         margin-bottom: 2px;
-        color: var(--primary, #47b1f6);
+        color: var(--primary);
         letter-spacing: 0.01em;
     }
 
@@ -115,21 +115,21 @@
         line-height: 1;
         background: none;
         border: none;
-        color: var(--primary, #47b1f6);
+        color: var(--primary);
         cursor: pointer;
         transition: color var(--duration-fast);
     }
 
     .collapse-toggle:focus {
-        color: var(--focus, #67d7fc);
+        color: var(--focus);
     }
 
     .collapse-toggle .material-icons {
         font-size: 1.18em;
         width: 1.25em;
         height: 1.25em;
-        min-width: 0 !important;
-        max-width: 1.7em !important;
+        min-width: 0;
+        max-width: 1.7em;
         vertical-align: middle;
         display: inline-block;
         text-align: center;
@@ -137,9 +137,9 @@
 
     .dashboard-card-title .material-icons {
         font-size: 1.22em;
-        width: auto !important;
-        min-width: 0 !important;
-        max-width: 1.6em !important;
+        width: auto;
+        min-width: 0;
+        max-width: 1.6em;
         vertical-align: middle;
         display: inline-block;
         text-align: center;

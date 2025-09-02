@@ -16,8 +16,8 @@
     .instances-empty-message {
         color: var(--muted);
         font-size: var(--font-size-15);
-        margin: 1.5em 0 0.6em;
-        padding: 0.6em 1em;
+        margin: 1.5em var(--space-0) 0.6em; /* Keep em-based margin for text scaling */
+        padding: 0.6em var(--space-4); /* Keep em-based padding for text scaling */
         border-radius: var(--radius-2);
         background: var(--surface-alt);
         text-align: center;
@@ -25,7 +25,7 @@
 
     .instances-empty-message.field-error {
         border: var(--border-width-2) solid var(--error);
-        background: rgb(255 55 95 / 7%);
+        background: color-mix(in srgb, var(--error) 7%, transparent);
         color: var(--error);
         box-shadow: 0 0 0 var(--border-width-2) color-mix(in srgb, var(--error) 40%, transparent);
         font-weight: var(--font-weight-medium);
@@ -33,7 +33,7 @@
 
     .poster-search-error {
         color: var(--error);
-        margin-top: 2.5em;
+        margin-top: 2.5em; /* Keep em-based margin for text scaling */
         font-size: var(--font-size-16);
         text-align: center;
         font-weight: var(--font-weight-medium);
@@ -46,17 +46,17 @@
 
     /* ========== ANIMATIONS ========== */
     .fade-in {
-        animation: page-fade-in 0.33s cubic-bezier(0.36, 0.77, 0.53, 1.05);
+        animation: page-fade-in var(--duration-slow) cubic-bezier(0.36, 0.77, 0.53, 1.05); /* 360ms closest to 0.33s */
     }
 
     .fade-out {
-        animation: page-fade-out 0.33s cubic-bezier(0.36, 0.77, 0.53, 1.05);
+        animation: page-fade-out var(--duration-slow) cubic-bezier(0.36, 0.77, 0.53, 1.05); /* 360ms closest to 0.33s */
     }
 
     @keyframes page-fade-in {
         from {
             opacity: 0;
-            transform: translateY(10px);
+            transform: translateY(var(--space-3)); /* 12px closest to 10px */
         }
 
         to {
@@ -73,15 +73,15 @@
 
         to {
             opacity: 0;
-            transform: translateY(10px);
+            transform: translateY(var(--space-3)); /* 12px closest to 10px */
         }
     }
 
     /* ========== ICONS ========== */
     .icon img,
     .icon svg {
-        width: 34px;
-        height: 34px;
+        width: var(--control-min-height); /* 44px for enhanced touch accessibility */
+        height: var(--control-min-height);
         display: block;
         object-fit: contain;
         margin: 0 auto;

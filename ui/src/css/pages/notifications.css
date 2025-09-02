@@ -58,8 +58,8 @@
 
     .notification-type-icon {
         flex-shrink: 0;
-        width: 34px;
-        height: 34px;
+        width: var(--space-px-34);
+        height: var(--space-px-34);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -89,7 +89,7 @@
     .notify-type-btn {
         font-size: 1.13em;
         padding: 1.1em 2.2em;
-        border-radius: 7px;
+        border-radius: var(--space-px-7);
         background: var(--surface-alt);
         border: 1.5px solid var(--divider);
         color: var(--text-color);
@@ -116,16 +116,16 @@
 
     /* ===================== SMALL MODALS, BADGES, ETC ===================== */
     .small-modal {
-        max-width: 440px !important;
-        min-width: 260px !important;
+        max-width: 440px;
+        min-width: 260px;
     }
 
     .color-badge {
         display: inline-block;
-        border-radius: 4px;
-        padding: 0 7px;
-        margin-left: 5px;
-        min-width: 64px;
+        border-radius: var(--radius-1);
+        padding: 0 var(--space-px-7);
+        margin-left: var(--space-px-5);
+        min-width: var(--space-px-64);
         color: var(--text-color);
         background: var(--surface-alt);
         border: 1px solid var(--divider);
@@ -184,28 +184,28 @@
 
     @media (width <= 600px) {
         .notification-list .card-list {
-            display: grid !important;
-            grid-template-columns: 1fr !important;
-            max-width: 98vw !important;
-            gap: 0.7rem !important;
-            padding: 0 0.1rem 1.6rem !important;
-            margin: 0 auto !important;
-            place-items: center center !important;
+            display: grid;
+            grid-template-columns: 1fr;
+            max-width: 98vw;
+            gap: var(--space-rem-0-7);
+            padding: 0 0.1rem 1.6rem;
+            margin: 0 auto;
+            place-items: center center;
         }
 
         .notifications-list .card,
         .notifications-list .card.card-add {
-            width: 95vw !important;
-            min-width: 82vw !important;
-            max-width: 95vw !important;
-            box-sizing: border-box !important;
-            aspect-ratio: 1 / 1 !important;
-            margin-left: auto !important;
-            margin-right: auto !important;
-            border-radius: 17px !important;
-            padding: 1.16rem 1.1rem 1.08rem !important;
-            background: var(--surface) !important;
-            font-size: 0.98rem !important;
+            width: var(--vw-95);
+            min-width: var(--vw-82);
+            max-width: var(--vw-95);
+            box-sizing: border-box;
+            aspect-ratio: 1 / 1;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: var(--space-px-17);
+            padding: 1.16rem 1.1rem 1.08rem;
+            background: var(--surface);
+            font-size: 0.98rem;
         }
     }
 }

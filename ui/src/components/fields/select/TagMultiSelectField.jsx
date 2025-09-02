@@ -80,9 +80,7 @@ export const TagMultiSelectField = React.memo(function TagMultiSelectField({
                                         checked={selectedItems.includes(option)}
                                         onChange={() => handleItemToggle(option)}
                                     />
-                                    <span className="checkbox-label">
-                                        {option}
-                                    </span>
+                                    <span className="checkbox-label">{option}</span>
                                 </label>
                             ))
                         ) : (

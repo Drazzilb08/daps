@@ -65,11 +65,7 @@ function PlexInstanceCard({
                     ? 'Loading libraries...'
                     : libList.length
                       ? libList.map(lib => (
-                            <label
-                                key={lib}
-                                className="checkbox-row"
-                                tabIndex={0}
-                            >
+                            <label key={lib} className="checkbox-row" tabIndex={0}>
                                 <input
                                     type="checkbox"
                                     checked={libraries.includes(lib)}
@@ -100,10 +96,7 @@ function InstanceTypeColumn({ type, instances, selected, onToggle }) {
             {instances.map(instName => {
                 const isChecked = selected.includes(instName);
                 return (
-                    <label
-                        key={instName}
-                        className="checkbox-row"
-                    >
+                    <label key={instName} className="checkbox-row">
                         <input
                             type="checkbox"
                             checked={isChecked}

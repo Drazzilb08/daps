@@ -153,7 +153,7 @@ export function LabelarrCustomField({ field, value = [], onChange, rootConfig, m
     function createAddCard() {
         return (
             <div
-                className="settings-entry-card settings-add-card"
+                className="card--add"
                 tabIndex={0}
                 role="button"
                 aria-label="Add Mapping"
@@ -173,7 +173,7 @@ export function LabelarrCustomField({ field, value = [], onChange, rootConfig, m
         return [
             ...value.map((labelMapping, mappingIndex) => (
                 <div
-                    className="settings-entry-card"
+                    className="card--entry"
                     key={mappingIndex}
                     tabIndex={0}
                     role="button"
@@ -181,13 +181,13 @@ export function LabelarrCustomField({ field, value = [], onChange, rootConfig, m
                     onClick={() => openEdit(mappingIndex)}
                     onKeyDown={e => (e.key === 'Enter' || e.key === ' ') && openEdit(mappingIndex)}
                 >
-                    <div className="settings-entry-row settings-entry-main">
-                        <span className="settings-label">App Instance:</span>
-                        <span className="settings-value">{labelMapping.app_instance || ''}</span>
+                    <div className="card__entry-row card__entry-main">
+                        <span className="card__entry-label">App Instance:</span>
+                        <span className="card__entry-value">{labelMapping.app_instance || ''}</span>
                     </div>
-                    <div className="settings-entry-row">
-                        <span className="settings-label">Labels:</span>
-                        <span className="settings-value">
+                    <div className="card__entry-row">
+                        <span className="card__entry-label">Labels:</span>
+                        <span className="card__entry-value">
                             {Array.isArray(labelMapping.labels)
                                 ? labelMapping.labels.join(', ')
                                 : labelMapping.labels || ''}
@@ -197,11 +197,11 @@ export function LabelarrCustomField({ field, value = [], onChange, rootConfig, m
                         labelMapping.plex_instances.length > 0 &&
                         labelMapping.plex_instances.map((plexInstance, instanceIndex) => (
                             <div
-                                className="settings-entry-row settings-plexmap-block"
+                                className="card__entry-row settings-plexmap-block"
                                 key={instanceIndex}
                             >
-                                <span className="settings-label">Plex Libraries:</span>
-                                <span className="settings-value">
+                                <span className="card__entry-label">Plex Libraries:</span>
+                                <span className="card__entry-value">
                                     <span className="settings-plex-name plex-pill">
                                         {plexInstance.instance
                                             ? plexInstance.instance

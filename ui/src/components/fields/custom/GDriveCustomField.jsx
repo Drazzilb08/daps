@@ -65,7 +65,7 @@ export function GDriveCustomField({ field, value = [], onChange, rootConfig, mod
     function createAddCard() {
         return (
             <div
-                className="settings-entry-card settings-add-card"
+                className="card--add"
                 tabIndex={0}
                 role="button"
                 aria-label={`Add ${field.label.replace(/s$/, '')}`}
@@ -87,7 +87,7 @@ export function GDriveCustomField({ field, value = [], onChange, rootConfig, mod
         return [
             ...value.map((item, idx) => (
                 <div
-                    className="settings-entry-card"
+                    className="card--entry"
                     key={idx}
                     tabIndex={0}
                     role="button"
@@ -97,17 +97,17 @@ export function GDriveCustomField({ field, value = [], onChange, rootConfig, mod
                         if (e.key === 'Enter' || e.key === ' ') openEdit(idx);
                     }}
                 >
-                    <div className="settings-entry-row">
-                        <span className="settings-label">ID:</span>
-                        <span className="settings-value">{item.id || ''}</span>
+                    <div className="card__entry-row">
+                        <span className="card__entry-label">ID:</span>
+                        <span className="card__entry-value">{item.id || ''}</span>
                     </div>
-                    <div className="settings-entry-row">
-                        <span className="settings-label">Name:</span>
-                        <span className="settings-value">{item.name || ''}</span>
+                    <div className="card__entry-row">
+                        <span className="card__entry-label">Name:</span>
+                        <span className="card__entry-value">{item.name || ''}</span>
                     </div>
-                    <div className="settings-entry-row">
-                        <span className="settings-label">Location:</span>
-                        <span className="settings-value">{item.location || ''}</span>
+                    <div className="card__entry-row">
+                        <span className="card__entry-label">Location:</span>
+                        <span className="card__entry-value">{item.location || ''}</span>
                     </div>
                 </div>
             )),

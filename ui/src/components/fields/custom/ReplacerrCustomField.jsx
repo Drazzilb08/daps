@@ -84,7 +84,7 @@ export function ReplacerrCustomField({ field, value = [], onChange, rootConfig, 
     function createAddCard() {
         return (
             <div
-                className="settings-entry-card settings-add-card"
+                className="card--add"
                 tabIndex={0}
                 role="button"
                 aria-label={`Add ${field.label.replace(/s$/, '')}`}
@@ -104,7 +104,7 @@ export function ReplacerrCustomField({ field, value = [], onChange, rootConfig, 
         return [
             ...value.map((item, idx) => (
                 <div
-                    className="settings-entry-card"
+                    className="card--entry"
                     key={idx}
                     tabIndex={0}
                     role="button"
@@ -114,15 +114,15 @@ export function ReplacerrCustomField({ field, value = [], onChange, rootConfig, 
                         if (e.key === 'Enter' || e.key === ' ') openEdit(idx);
                     }}
                 >
-                    <div className="settings-entry-row settings-entry-main">
-                        <span className="settings-value">{item.name || ''}</span>
+                    <div className="card__entry-row card__entry-main">
+                        <span className="card__entry-value">{item.name || ''}</span>
                     </div>
-                    <div className="settings-entry-row">
-                        <span className="settings-label">Schedule:</span>
-                        <span className="settings-value">{formatSchedule(item.schedule)}</span>
+                    <div className="card__entry-row">
+                        <span className="card__entry-label">Schedule:</span>
+                        <span className="card__entry-value">{formatSchedule(item.schedule)}</span>
                     </div>
-                    <div className="settings-entry-row">
-                        <span className="settings-label">Colors:</span>
+                    <div className="card__entry-row">
+                        <span className="card__entry-label">Colors:</span>
                         <span className="settings-entry-swatches">
                             {(item.colors || []).map((color, i) => (
                                 <span

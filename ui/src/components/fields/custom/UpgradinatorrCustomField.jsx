@@ -93,7 +93,7 @@ export function UpgradinatorrCustomField({
     function createAddCard() {
         return (
             <div
-                className="settings-entry-card settings-add-card"
+                className="card--add"
                 tabIndex={0}
                 role="button"
                 aria-label={`Add ${field.label.replace(/s$/, '')}`}
@@ -113,7 +113,7 @@ export function UpgradinatorrCustomField({
         return [
             ...value.map((item, idx) => (
                 <div
-                    className="settings-entry-card"
+                    className="card--entry"
                     key={idx}
                     tabIndex={0}
                     role="button"
@@ -123,30 +123,30 @@ export function UpgradinatorrCustomField({
                         if (e.key === 'Enter' || e.key === ' ') openEdit(idx);
                     }}
                 >
-                    <div className="settings-entry-row settings-entry-main">
-                        <span className="settings-label">Instance:</span>
-                        <span className="settings-value">{item.instance || ''}</span>
+                    <div className="card__entry-row card__entry-main">
+                        <span className="card__entry-label">Instance:</span>
+                        <span className="card__entry-value">{item.instance || ''}</span>
                     </div>
-                    <div className="settings-entry-row">
-                        <span className="settings-label">Count:</span>
-                        <span className="settings-value">{item.count ?? ''}</span>
+                    <div className="card__entry-row">
+                        <span className="card__entry-label">Count:</span>
+                        <span className="card__entry-value">{item.count ?? ''}</span>
                     </div>
-                    <div className="settings-entry-row">
-                        <span className="settings-label">Tag Name:</span>
-                        <span className="settings-value">{item.tag_name || ''}</span>
+                    <div className="card__entry-row">
+                        <span className="card__entry-label">Tag Name:</span>
+                        <span className="card__entry-value">{item.tag_name || ''}</span>
                     </div>
-                    <div className="settings-entry-row">
-                        <span className="settings-label">Ignore Tag:</span>
-                        <span className="settings-value">{item.ignore_tag || ''}</span>
+                    <div className="card__entry-row">
+                        <span className="card__entry-label">Ignore Tag:</span>
+                        <span className="card__entry-value">{item.ignore_tag || ''}</span>
                     </div>
-                    <div className="settings-entry-row">
-                        <span className="settings-label">Unattended:</span>
-                        <span className="settings-value">{item.unattended ? 'Yes' : 'No'}</span>
+                    <div className="card__entry-row">
+                        <span className="card__entry-label">Unattended:</span>
+                        <span className="card__entry-value">{item.unattended ? 'Yes' : 'No'}</span>
                     </div>
                     {showSeasonMonitored(item, rootConfig) && (
-                        <div className="settings-entry-row">
-                            <span className="settings-label">Season Threshold:</span>
-                            <span className="settings-value">
+                        <div className="card__entry-row">
+                            <span className="card__entry-label">Season Threshold:</span>
+                            <span className="card__entry-value">
                                 {item.season_monitored_threshold != null
                                     ? `${Math.round(item.season_monitored_threshold * 100)} %`
                                     : ''}

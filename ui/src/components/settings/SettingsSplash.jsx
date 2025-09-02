@@ -9,7 +9,7 @@ export default function SettingsSplash({ onSelectModule }) {
             <div className="settings-section-list">
                 {SETTINGS_MODULES.map(mod => (
                     <a
-                        className="settings-section-link"
+                        className="card--settings"
                         href={`/settings?module_name=${mod.key}`}
                         key={mod.key}
                         tabIndex={0}
@@ -24,8 +24,8 @@ export default function SettingsSplash({ onSelectModule }) {
                             }
                         }}
                     >
-                        <div className="settings-section-title">{mod.name}</div>
-                        <div className="settings-section-desc">{mod.description}</div>
+                        <div className="card__section-title">{mod.name}</div>
+                        <div className="card__section-desc">{mod.description}</div>
                     </a>
                 ))}
             </div>

@@ -323,7 +323,6 @@ function SearchCore({
     // ===== RENDER =====
     return (
         <div className={className} role="search" aria-label="Search interface">
-
             {isLoading ? (
                 <div
                     className="search-loading-container"

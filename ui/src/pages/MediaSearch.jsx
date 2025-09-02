@@ -312,7 +312,6 @@ export default function MediaSearch() {
         [toast]
     );
 
-
     // Memoize props to prevent cascading re-renders
     const mediaSearchProps = useMemo(
         () => ({

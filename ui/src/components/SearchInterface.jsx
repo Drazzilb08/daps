@@ -14,12 +14,7 @@ import { useSearchEffects } from '../hooks/search/useSearchEffects';
 import SearchAutocomplete from './search/SearchAutocomplete';
 import SearchInputSection from './search/SearchInputSection';
 import RefreshControls from './search/RefreshControls';
-import {
-    ModuleControl,
-    ViewControl,
-    SortControl,
-    FilterControl,
-} from './search/SearchControls';
+import { ModuleControl, ViewControl, SortControl, FilterControl } from './search/SearchControls';
 
 /**
  * HeaderSearch - Unified search interface with responsive design

@@ -46,6 +46,111 @@
     --space-11: 0.48rem; /* Common component padding - 7.68px */
     --space-12: 1.1rem; /* Common button/control padding - 17.6px */
 
+    /* Additional commonly used values */
+    --space-px-7: 7px; /* Arrow/tooltip precise sizing */
+    --space-px-14: 14px; /* Tooltip arrow width */
+    --space-px-18: 18px; /* Small icon sizing */
+    --space-px-24: 24px; /* Medium icon sizing */
+    --space-px-28: 28px; /* Input/control heights */
+    --space-px-54: 54px; /* Switch/toggle width */
+    --space-px-120: 120px; /* Minimum dropdown width */
+    --space-px-210: 210px; /* Sidebar width */
+    --space-px-300: 300px; /* Medium container width */
+    --space-px-340: 340px; /* Tooltip max width */
+    --space-px-420: 420px; /* Search input optimal width */
+    --space-px-600: 600px; /* Medium breakpoint/container */
+    --space-px-900: 900px; /* Large content width */
+    --space-px-1080: 1080px; /* Max content width */
+
+    /* Common rem/em values used across components */
+    --space-rem-0-7: 0.7rem; /* Mobile modal padding */
+    --space-rem-2-5: 2.5rem; /* Large component spacing */
+    --space-rem-0-65: 0.65rem; /* Background size */
+    --space-rem-0-85: 0.85rem; /* Mobile footer gap */
+    --space-rem-0-88: 0.88rem; /* Mobile body gap */
+    --space-rem-1-1: 1.1rem; /* Modal padding */
+    --space-rem-0-7-small: 0.7rem; /* Small text */
+    --space-em-0-01: 0.01em; /* Fine letter spacing */
+    --space-em-0-04: 0.04em; /* Medium letter spacing */
+    --space-em-0-07: 0.07em; /* Fine margin bottom */
+    --space-em-0-16: 0.16em; /* Pill padding Y */
+    --space-em-0-18: 0.18em; /* Small margin/gap */
+    --space-em-0-22: 0.22em; /* Checkbox margin */
+    --space-em-0-35: 0.35em; /* Component margin */
+    --space-em-0-41: 0.41em; /* Mobile tooltip padding Y */
+    --space-em-0-7: 0.7em; /* Mobile tooltip padding X */
+    --space-em-0-9: 0.9em; /* Pill padding X */
+    --space-em-1: 1em; /* Base em spacing */
+    --space-em-1-5: 1.5em; /* Icon minimum width */
+    --space-em-0-1: 0.1em; /* Fine margin */
+    --space-em-0-13: 0.13em; /* Small margin */
+    --space-em-0-19: 0.19em; /* Gap spacing */
+    --space-em-0-2: 0.2em; /* Small margin/padding */
+    --space-em-0-21: 0.21em; /* Padding top */
+    --space-em-0-28: 0.28em; /* Button padding */
+    --space-em-0-32: 0.32em; /* Gap spacing */
+    --space-em-0-33: 0.33em; /* Margin/padding */
+    --space-em-0-34: 0.34em; /* Margin top */
+    --space-em-0-48: 0.48em; /* Form padding */
+    --space-em-0-55: 0.55em; /* Gap spacing */
+    --space-em-0-6: 0.6em; /* Gap/margin spacing */
+    --space-em-0-65: 0.65em; /* Gap spacing */
+    --space-em-1-1: 1.1em; /* Margin spacing */
+    --space-em-1-2: 1.2em; /* Gap/margin spacing */
+    --space-em-1-3: 1.3em; /* Margin spacing */
+    --space-em-1-35: 1.35em; /* Padding spacing */
+    --space-em-1-4: 1.4em; /* Padding left/right */
+    --space-em-1-55: 1.55em; /* Icon sizing */
+    --space-em-1-58: 1.58em; /* Icon max sizing */
+    --space-em-1-85: 1.85em; /* Min height */
+    --space-em-2-3: 2.3em; /* Mobile header height */
+    --space-em-2-5: 2.5em; /* Button height/min height */
+    --space-em-2-6: 2.6em; /* Header min height */
+    --space-em-0-8: 0.8em; /* Padding/margin spacing */
+    --space-em-0-85: 0.85em; /* Gap spacing */
+    --space-px-0-5: 0.5px; /* Fine letter spacing */
+    --space-px-1: 1px; /* Minimal padding/border */
+    --space-px-5: 5px; /* Small margin */
+    --space-px-22: 22px; /* Checkbox size */
+    --space-px-46: 46px; /* Switch width */
+    --space-px-33: 33px; /* Large switch height */
+    --space-px-25: 25px; /* Large switch knob size */
+    --space-px-21: 21px; /* Large switch knob translation */
+    --space-px-2-2: 2.2px; /* Checkbox border width */
+    --space-rem-2-5-focus: 2.5px; /* Focus ring size */
+    --space-px-60: 60px; /* Mobile label width */
+    --space-px-70: 70px; /* Label width */
+    --space-px-85: 85px; /* Flex basis width */
+    --space-px-90: 90px; /* Schedule input width */
+    --space-px-96: 96px; /* Button min width */
+    --space-px-100: 100px; /* Small container height */
+    --space-px-140: 140px; /* Form label width */
+    --space-px-150: 150px; /* Large form label width */
+    --space-px-160: 160px; /* Form flex basis */
+    --space-px-200: 200px; /* Form input min width */
+    --space-px-220: 220px; /* Container width */
+    --space-px-240: 240px; /* Large form label max width */
+    --space-px-280: 280px; /* Modal min height, form flex */
+    --space-px-320: 320px; /* Large form input flex */
+    --space-px-500: 500px; /* Error boundary max width */
+    --space-px-530: 530px; /* Card max width */
+    --space-px-1000: 1000px; /* Large modal width */
+    --space-px-188: 188px; /* Select max width */
+    --space-px-17: 17px; /* Border radius */
+    --space-px-234: 234px; /* Poster height */
+    --space-px-64: 64px; /* Instance card height */
+    --space-px-32: 32px; /* Button/icon size */
+    --space-px-34: 34px; /* Notification icon size */
+    --space-px-16: 16px; /* Border radius */
+    --space-px-8: 8px; /* Small spacing */
+
+    /* Media query breakpoint values (for use in media queries) */
+    --breakpoint-480: 480px; /* Small mobile */
+    --breakpoint-600: 600px; /* Touch enhanced */
+    --breakpoint-768: 768px; /* Tablet */
+    --breakpoint-1024: 1024px; /* Desktop */
+    --breakpoint-1200: 1200px; /* Large desktop */
+
     /* Radii & borders */
     --radius-0: 0; /* No border radius */
     --radius-1: 4px; /* Small border radius */
@@ -87,6 +192,7 @@
     --font-size-19: 0.96rem; /* Small form text - 15.36px */
     --font-size-20: 1.08rem; /* Medium form text - 17.28px */
     --font-size-21: 1.45rem; /* Large modal headings - 23.2px */
+    --font-size-44px: 44px; /* Large icon font size */
     --line-height: 1.5; /* Standard line height */
     --font-weight-regular: 400; /* Regular font weight */
     --font-weight-medium: 500; /* Medium font weight */
@@ -98,7 +204,10 @@
     --duration: 240ms; /* Standard transition duration */
     --duration-slow: 360ms; /* Slow transitions */
     --duration-extra-slow: 600ms; /* Complex animations */
+    --duration-0-09s: 0.09s; /* Animation delay */
+    --duration-0-11s: 0.11s; /* Animation delay */
     --easing: cubic-bezier(0.2, 0.8, 0.2, 1); /* Standard easing curve */
+    --easing-modal: cubic-bezier(0.61, 0.13, 0.55, 1.21); /* Modal animation easing */
 
     /* Z-index scale */
     --z-base: 1; /* Base layer elements */
@@ -112,6 +221,8 @@
     --control-min-height: 44px; /* Minimum touch target height */
     --control-padding-x: 0.75rem; /* Standard control horizontal padding */
     --control-padding-y: 0.5rem; /* Standard control vertical padding */
+    --control-radius: var(--radius-2); /* Standard control border radius */
+    --input-height: var(--control-min-height); /* Standard input height */
     --button-padding-x: 1.1rem; /* Standard button horizontal padding */
     --button-padding-y: 0.48rem; /* Standard button vertical padding */
     --modal-padding: 1.2rem; /* Standard modal padding */
@@ -132,6 +243,33 @@
 
     /* Viewport units - safe for mobile browsers */
     --app-vh: 100vh; /* Full viewport height with fallback */
+    --vw-82: 82vw; /* Large mobile width */
+    --vw-90: 90vw; /* Mobile tooltip width */
+    --vw-95: 95vw; /* Full mobile width */
+    --vw-97: 97vw; /* Large modal width */
+    --vw-98: 98vw; /* Maximum mobile width */
+    --vw-100: 100vw; /* Full viewport width */
+
+    /* Additional rem values */
+    --space-rem-0-32: 0.32rem; /* Card gap */
+    --vh-60: 60vh; /* Mobile dropdown height */
+    --vh-92: 92vh; /* Modal max height */
+
+    /* Line heights for specific components */
+    --line-height-tooltip: 1.42; /* Tooltip readability */
+    --line-height-field: 1.3; /* Label readability */
+    --line-height-help: 1.4; /* Help text readability */
+
+    /* Opacity values */
+    --opacity-disabled: 0.54; /* Disabled state */
+    --filter-grayscale-disabled: 0.65; /* Grayscale for disabled elements */
+    --filter-brightness-active: 0.97; /* Active state brightness */
+
+    /* Transform values */
+    --transform-scale-hover: 1.03; /* Hover scale effect */
+    --transform-scale-normal: 0.98; /* Normal scale */
+    --transform-translate-y-hover: -1px; /* Hover lift effect */
+    --transform-translate-y-drop: var(--space-2); /* Drop effect (8px) */
 }
 
 /* Modern viewport units with fallback */

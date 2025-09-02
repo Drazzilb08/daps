@@ -68,5 +68,18 @@
 
     /* Focus and interaction states */
     --focus-ring: 0 0 0 3px color-mix(in oklab, #ff7300 25%, transparent);
+    --focus-ring-color: color-mix(in oklab, #ff7300 25%, transparent);
     --focus-outline: 2px solid #ff7300;
+
+    /* Border colors */
+    --border-color: #ececf2;
+    --border-light: #f0f0f4;
+
+    /* Text variants */
+    --text-primary: #1a1a1a;
+    --text-muted: #5e5e5e;
+
+    /* Background variants */
+    --bg-primary: #fafbfe;
+    --bg-secondary: #f7f7fa;
 }

@@ -376,12 +376,18 @@
         font-size: var(--font-size-7); /* 2.25rem, closest to 2.3rem */
         color: var(--muted);
         background: transparent;
-        border: var(--border-width-2) dashed var(--outline-variant);
+        border: var(--space-rem-2-5-focus) dashed var(--accent);
         min-width: 92px; /* Keep minimum add card dimensions */
         min-height: 92px; /* Keep minimum add card dimensions */
         cursor: pointer;
         border-radius: var(--radius-3); /* 8px, closest to 10px */
         display: flex;
+    }
+    .settings-add-card:hover,
+    .settings-add-card:focus {
+        background: color-mix(in srgb, var(--accent) 12%, var(--surface) 88%);
+        color: var(--focus);
+        border-color: var(--focus);
     }
 
     .settings-entry-swatches {
@@ -405,8 +411,33 @@
     }
 
     /* ========== PLEX/INSTANCES AREA ========== */
+    .instance-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2); /* 0.5rem = 0.5em */
+        background: var(--surface-variant);
+        border-radius: var(--radius-3); /* 8px, closest to 12px */
+        padding: var(--space-1) var(--space-3) var(--space-1) var(--space-2); /* ~0.18em 0.88em 0.18em 0.56em */
+        min-height: var(--space-7); /* 48px, closest to 30px but ensures touch accessibility */
+        border: var(--border-width-2) solid transparent; /* 2px, closest to 1.2px */
+        cursor: pointer;
+        margin-bottom: var(--space-1); /* 0.25rem ~= 0.16em */
+        margin-right: var(--space-2); /* 0.5rem ~= 0.54em */
+        user-select: none;
+        transition:
+            background var(--duration-fast),
+            border-color var(--duration-fast);
+    }
 
 
+    .instance-pill:hover {
+        background: color-mix(in srgb, var(--accent) 6%, var(--input-bg) 94%);
+        border-color: color-mix(in srgb, var(--accent) 20%, var(--divider) 80%);
+    }
+
+    .instance-pill.checked {
+        border-color: var(--accent);
+    }
 
 
     .instances-multicol {

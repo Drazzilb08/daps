@@ -73,21 +73,17 @@ export const TagMultiSelectField = React.memo(function TagMultiSelectField({
                     <div className="tag-multiselect-list">
                         {availableOptions.length > 0 ? (
                             availableOptions.map((option, index) => (
-                                <div key={index} className="tag-multiselect-item">
+                                <label key={index} className="checkbox-row tag-multiselect-item">
                                     <input
                                         type="checkbox"
                                         id={`${field.key}-${index}`}
                                         checked={selectedItems.includes(option)}
                                         onChange={() => handleItemToggle(option)}
-                                        className="tag-multiselect-checkbox"
                                     />
-                                    <label
-                                        htmlFor={`${field.key}-${index}`}
-                                        className="tag-multiselect-label"
-                                    >
+                                    <span className="checkbox-label">
                                         {option}
-                                    </label>
-                                </div>
+                                    </span>
+                                </label>
                             ))
                         ) : (
                             <div className="tag-multiselect-empty">

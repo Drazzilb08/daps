@@ -39,20 +39,13 @@ function PlexInstanceCard({
     return (
         <div className="plex-instance-card">
             <div className="instance-type-label">
-                <label className={`instance-checkbox-container${selected ? ' checked' : ''}`}>
+                <label className="checkbox-row">
                     <input
                         type="checkbox"
                         checked={selected}
                         onChange={e => onSelect(e.target.checked)}
                         tabIndex={0}
                     />
-                    <svg viewBox="0 0 64 64" height={24} width={24}>
-                        <path
-                            d="M 0 16 V 56 A 8 8 90 0 0 8 64 H 56 A 8 8 90 0 0 64 56 V 8 A 8 8 90 0 0 56 0 H 8 A 8 8 90 0 0 0 8 V 16 L 32 48 L 64 16 V 8 A 8 8 90 0 0 56 0 H 8 A 8 8 90 0 0 0 8 V 56 A 8 8 90 0 0 8 64 H 56 A 8 8 90 0 0 64 56 V 16"
-                            pathLength="575.0541381835938"
-                            className="instance-checkbox-path"
-                        />
-                    </svg>
                 </label>
                 <span className="instance-label">{humanize(name)}</span>
                 {showAddPosters && typeof addPosters === 'boolean' && (
@@ -74,7 +67,7 @@ function PlexInstanceCard({
                       ? libList.map(lib => (
                             <label
                                 key={lib}
-                                className={`instance-pill${libraries.includes(lib) ? ' checked' : ''}`}
+                                className="checkbox-row"
                                 tabIndex={0}
                             >
                                 <input
@@ -89,7 +82,7 @@ function PlexInstanceCard({
                                         onLibsChange(nextLibs);
                                     }}
                                 />
-                                <span className="pill-label">{lib}</span>
+                                <span className="checkbox-label">{lib}</span>
                             </label>
                         ))
                       : 'No libraries found for this instance.'}
@@ -109,15 +102,14 @@ function InstanceTypeColumn({ type, instances, selected, onToggle }) {
                 return (
                     <label
                         key={instName}
-                        className={`instance-pill${isChecked ? ' checked' : ''}`}
-                        style={{ cursor: 'pointer' }}
+                        className="checkbox-row"
                     >
                         <input
                             type="checkbox"
                             checked={isChecked}
                             onChange={e => onToggle(instName, e.target.checked)}
                         />
-                        <span className="pill-label">{instName}</span>
+                        <span className="checkbox-label">{instName}</span>
                     </label>
                 );
             })}

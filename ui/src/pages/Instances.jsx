@@ -155,12 +155,12 @@ export default function Instances() {
         testClass = 'btn--info';
     } else if (testStatus === 'success') {
         testIcon = getIcon('mi:check', {
-            style: { color: '#27d545', fontSize: '1.5em', verticalAlign: 'middle' },
+            style: { color: 'var(--success)', fontSize: '1.5em', verticalAlign: 'middle' },
         });
         testClass = 'btn--info';
     } else if (testStatus === 'error') {
         testIcon = getIcon('mi:close', {
-            style: { color: '#ff375f', fontSize: '1.5em', verticalAlign: 'middle' },
+            style: { color: 'var(--error)', fontSize: '1.5em', verticalAlign: 'middle' },
         });
         testClass = 'btn--info';
     } else {

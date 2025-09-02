@@ -15,7 +15,7 @@ export const NOTIFICATIONS_SCHEMA = [
                 label: 'Embed Color',
                 type: 'color',
                 required: false,
-                placeholder: '#7289da',
+                placeholder: 'var(--accent)',
             },
             {
                 key: 'webhook',
@@ -43,7 +43,7 @@ export const NOTIFICATIONS_SCHEMA = [
                 label: 'Embed Color',
                 type: 'color',
                 required: false,
-                placeholder: '#ff7300',
+                placeholder: 'var(--primary)',
             },
             {
                 key: 'webhook',

@@ -63,6 +63,7 @@ export default function AssetsSearch() {
             <div className="search-content-column">
                 <AssetsSearchComponent
                     onError={handleError}
+                    hideMainSearchInterface={true}
                     // Plugin system handles modal creation automatically via modalComponent config
                     // Note: No onResultClick provided - SearchCore will use modalComponent from plugin config
                 />

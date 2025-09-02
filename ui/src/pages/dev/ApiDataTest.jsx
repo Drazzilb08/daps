@@ -42,7 +42,7 @@ function BasicConfigTest() {
     });
 
     return (
-        <div style={{ border: '1px solid #333', padding: '15px', borderRadius: '8px' }}>
+        <div className="test-section">
             <h3>🔄 Basic Auto-Loading Test</h3>
             <p>Tests automatic data fetching on component mount</p>
 
@@ -58,7 +58,9 @@ function BasicConfigTest() {
             </div>
 
             {error && (
-                <div style={{ color: '#ff6b6b', marginBottom: '10px' }}>Error: {error.message}</div>
+                <div className="error-message" style={{ marginBottom: '10px' }}>
+                    Error: {error.message}
+                </div>
             )}
 
             {config && (
@@ -92,7 +94,7 @@ function ManualStatsTest() {
     });
 
     return (
-        <div style={{ border: '1px solid #333', padding: '15px', borderRadius: '8px' }}>
+        <div className="test-section">
             <h3>🎯 Manual Execution Test</h3>
             <p>Tests on-demand data fetching with success notifications</p>
 
@@ -112,7 +114,9 @@ function ManualStatsTest() {
             </div>
 
             {error && (
-                <div style={{ color: '#ff6b6b', marginBottom: '10px' }}>Error: {error.message}</div>
+                <div className="error-message" style={{ marginBottom: '10px' }}>
+                    Error: {error.message}
+                </div>
             )}
 
             {hasExecuted && stats && (
@@ -165,7 +169,7 @@ function InstanceCountTest({ refreshTrigger }) {
     });
 
     return (
-        <div style={{ border: '1px solid #333', padding: '15px', borderRadius: '8px' }}>
+        <div className="test-section">
             <h3>🔄 Transform & Dependencies Test</h3>
             <p>Tests data transformation and dependency-based re-execution</p>
 
@@ -177,7 +181,9 @@ function InstanceCountTest({ refreshTrigger }) {
             </div>
 
             {error && (
-                <div style={{ color: '#ff6b6b', marginBottom: '10px' }}>Error: {error.message}</div>
+                <div className="error-message" style={{ marginBottom: '10px' }}>
+                    Error: {error.message}
+                </div>
             )}
 
             {instanceCount && (
@@ -217,7 +223,7 @@ function MultipleQueriesTest() {
     });
 
     return (
-        <div style={{ border: '1px solid #333', padding: '15px', borderRadius: '8px' }}>
+        <div className="test-section">
             <h3>🔀 Multiple Queries Test</h3>
             <p>Tests loading multiple data sources simultaneously</p>
 
@@ -230,9 +236,9 @@ function MultipleQueriesTest() {
                     <h4>Configuration</h4>
                     <div>
                         {isLoading.config && '🔄 Loading...'}
-                        {errors.config && <span style={{ color: '#ff6b6b' }}>❌ Error</span>}
+                        {errors.config && <span className="error-text">❌ Error</span>}
                         {data.config && !isLoading.config && (
-                            <span style={{ color: '#51cf66' }}>
+                            <span className="success-text">
                                 ✅ {Object.keys(data.config).length} sections
                             </span>
                         )}
@@ -243,9 +249,9 @@ function MultipleQueriesTest() {
                     <h4>Service Instances</h4>
                     <div>
                         {isLoading.instances && '🔄 Loading...'}
-                        {errors.instances && <span style={{ color: '#ff6b6b' }}>❌ Error</span>}
+                        {errors.instances && <span className="error-text">❌ Error</span>}
                         {data.instances && !isLoading.instances && (
-                            <span style={{ color: '#51cf66' }}>
+                            <span className="success-text">
                                 ✅ {Object.keys(data.instances).length} services
                             </span>
                         )}
@@ -256,9 +262,9 @@ function MultipleQueriesTest() {
                     <h4>Job Statistics</h4>
                     <div>
                         {isLoading.stats && '🔄 Loading...'}
-                        {errors.stats && <span style={{ color: '#ff6b6b' }}>❌ Error</span>}
+                        {errors.stats && <span className="error-text">❌ Error</span>}
                         {data.stats && !isLoading.stats && (
-                            <span style={{ color: '#51cf66' }}>
+                            <span className="success-text">
                                 ✅ {data.stats.total || 0} total jobs
                             </span>
                         )}
@@ -291,7 +297,7 @@ function MutationTest({ onRefresh }) {
     };
 
     return (
-        <div style={{ border: '1px solid #333', padding: '15px', borderRadius: '8px' }}>
+        <div className="test-section">
             <h3>💾 Mutation Test</h3>
             <p>Tests data mutation with success notifications</p>
 
@@ -317,7 +323,7 @@ function MutationTest({ onRefresh }) {
                 disabled={isSaving}
                 style={{
                     padding: '8px 16px',
-                    backgroundColor: isSaving ? '#666' : '#4dabf7',
+                    backgroundColor: isSaving ? 'var(--surface-variant)' : 'var(--primary)',
                     color: 'white',
                     border: 'none',
                     borderRadius: '4px',
@@ -327,7 +333,7 @@ function MutationTest({ onRefresh }) {
                 {isSaving ? '💾 Saving...' : '💾 Save Test Data'}
             </button>
 
-            <div style={{ marginTop: '10px', fontSize: '12px', color: '#aaa' }}>
+            <div className="muted-text" style={{ marginTop: '10px', fontSize: '12px' }}>
                 This will save test data to the configuration and trigger a refresh in other
                 components
             </div>

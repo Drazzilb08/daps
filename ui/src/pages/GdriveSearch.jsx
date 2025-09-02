@@ -74,6 +74,7 @@ export default function GdriveSearch() {
             <div className="search-content-column">
                 <GdriveSearchComponent
                     onError={handleError}
+                    hideMainSearchInterface={true}
                     // Plugin system handles modal creation automatically via modalComponent config
                     // Note: No onResultClick provided - SearchCore will use modalComponent from plugin config
                 />

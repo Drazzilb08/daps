@@ -289,7 +289,7 @@ function FilterControl({
                 tooltip={tooltip}
             />
             <PopoverFactory
-                variant="actions"
+                variant="selector"
                 show={popover.show}
                 onClose={popover.close}
                 triggerRef={popover.triggerRef}
@@ -297,28 +297,25 @@ function FilterControl({
                 ariaLabel="Filters"
                 title="Filters"
             >
-                <div className="popover__content">
-                    {searchConfig?.filters?.map(filter => (
-                        <div key={filter.key} className="filter-group">
-                            <div className="filter-label">{filter.label}</div>
-                            <div className="filter-options">
-                                {filter.options?.map(option => (
+                <ul className="popover__list">
+                    {searchConfig?.filters?.flatMap(
+                        filter =>
+                            filter.options?.map(option => (
+                                <li key={`${filter.key}-${option.value}`}>
                                     <button
-                                        key={option.value}
                                         type="button"
-                                        className="filter-option"
+                                        className="popover__list-item"
                                         onClick={() => {
                                             onChangeFilter(filter.key, option.value);
                                             popover.close();
                                         }}
                                     >
-                                        {option.label}
+                                        <span>{option.label}</span>
                                     </button>
-                                ))}
-                            </div>
-                        </div>
-                    )) || []}
-                </div>
+                                </li>
+                            )) || []
+                    ) || []}
+                </ul>
             </PopoverFactory>
         </div>
     );

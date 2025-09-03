@@ -21,7 +21,7 @@ export function useUIState() {
 /**
  * Provider component for global UI state management
  * Manages sidebar open/close state and mobile search active state
- * Applies corresponding CSS classes to document.body for styling compatibility
+ * Uses CSS custom properties for styling without DOM manipulation
  * @param {Object} props - Component props
  * @param {React.ReactNode} props.children - Child components
  */
@@ -29,32 +29,17 @@ export function UIStateProvider({ children }) {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [isMobileSearchActive, setIsMobileSearchActive] = useState(false);
 
-    // Apply/remove CSS classes to body based on state
-    // This maintains compatibility with existing CSS that depends on body classes
+    // Apply CSS custom properties and data attributes to root element for styling
     useEffect(() => {
-        if (isSidebarOpen) {
-            document.body.classList.add('sidebar-open');
-        } else {
-            document.body.classList.remove('sidebar-open');
-        }
-
-        return () => {
-            // Cleanup on unmount
-            document.body.classList.remove('sidebar-open');
-        };
+        const root = document.documentElement;
+        root.style.setProperty('--sidebar-open', isSidebarOpen ? '1' : '0');
+        root.setAttribute('data-sidebar-open', isSidebarOpen ? 'true' : 'false');
     }, [isSidebarOpen]);
 
     useEffect(() => {
-        if (isMobileSearchActive) {
-            document.body.classList.add('mobile-search-active');
-        } else {
-            document.body.classList.remove('mobile-search-active');
-        }
-
-        return () => {
-            // Cleanup on unmount
-            document.body.classList.remove('mobile-search-active');
-        };
+        const root = document.documentElement;
+        root.style.setProperty('--mobile-search-active', isMobileSearchActive ? '1' : '0');
+        root.setAttribute('data-mobile-search-active', isMobileSearchActive ? 'true' : 'false');
     }, [isMobileSearchActive]);
 
     // Actions for updating state

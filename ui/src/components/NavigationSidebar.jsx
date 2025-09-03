@@ -75,24 +75,14 @@ export default function Sidebar() {
     const [openDropdowns, setOpenDropdowns] = React.useState(new Set());
     const { closeSidebar } = useUIState();
 
-    // Manage dropdown visibility based on current route and user interaction
+    // Manage dropdown visibility based on current route - only keep active sections open
     React.useEffect(() => {
         const activeParents = NAV.filter(
             item => item.children && item.children.some(sub => location.pathname.startsWith(sub.to))
         ).map(item => item.label);
 
-        // Keep active route dropdowns open, close others unless explicitly opened
-        setOpenDropdowns(prevOpen => {
-            const newOpen = new Set(activeParents);
-            // Preserve user-opened dropdowns that aren't conflicting with active routes
-            prevOpen.forEach(label => {
-                const item = NAV.find(navItem => navItem.label === label);
-                if (item && !item.children?.some(sub => location.pathname.startsWith(sub.to))) {
-                    newOpen.add(label);
-                }
-            });
-            return newOpen;
-        });
+        // Only keep dropdowns open if they contain the current active route
+        setOpenDropdowns(new Set(activeParents));
     }, [location.pathname]);
 
     return (
@@ -139,17 +129,19 @@ export default function Sidebar() {
                                     onClick={() => {
                                         setOpenDropdowns(prev => {
                                             const newSet = new Set(prev);
-                                            if (newSet.has(item.label)) {
+                                            const wasOpen = newSet.has(item.label);
+                                            if (wasOpen) {
                                                 newSet.delete(item.label);
                                             } else {
                                                 newSet.add(item.label);
-                                                // Navigate to first child if not already on child route
-                                                if (!isChildRoute && item.children[0]?.to) {
-                                                    navigate(item.children[0].to);
-                                                }
                                             }
                                             return newSet;
                                         });
+                                        
+                                        // Navigate to first child if not already on child route (separate from state update)
+                                        if (!openDropdowns.has(item.label) && !isChildRoute && item.children[0]?.to) {
+                                            navigate(item.children[0].to);
+                                        }
                                     }}
                                 >
                                     <span className="icon">{getIcon(`mi:${item.icon}`)}</span>

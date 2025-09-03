@@ -44,14 +44,13 @@ export function humanize(key) {
 export function markDirty() {
     isDirty = true;
 
-    // Find save button (supports both fixed and regular variants)
-    const saveBtn = document.getElementById('saveBtnFixed') || document.getElementById('saveBtn');
-    if (saveBtn) {
-        saveBtn.classList.add('dirty'); // Visual indicator
-        saveBtn.classList.remove('saved'); // Remove saved state
-        saveBtn.disabled = false; // Enable saving
-        saveBtn.title = 'Save changes'; // User guidance
-    }
+    // Dispatch custom event for React components to handle UI updates
+    // This replaces direct DOM manipulation with an event-driven approach
+    window.dispatchEvent(
+        new CustomEvent('daps:form-dirty', {
+            detail: { isDirty: true },
+        })
+    );
 }
 
 /**
@@ -75,14 +74,13 @@ export function markDirty() {
 export function resetDirty() {
     isDirty = false;
 
-    // Find save button (supports both fixed and regular variants)
-    const saveBtn = document.getElementById('saveBtnFixed') || document.getElementById('saveBtn');
-    if (saveBtn) {
-        saveBtn.classList.remove('dirty'); // Remove dirty indicator
-        saveBtn.classList.add('saved'); // Visual confirmation
-        saveBtn.disabled = true; // Prevent unnecessary saves
-        saveBtn.title = 'All changes saved'; // User confirmation
-    }
+    // Dispatch custom event for React components to handle UI updates
+    // This replaces direct DOM manipulation with an event-driven approach
+    window.dispatchEvent(
+        new CustomEvent('daps:form-clean', {
+            detail: { isDirty: false },
+        })
+    );
 }
 
 /**

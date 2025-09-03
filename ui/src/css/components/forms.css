@@ -64,28 +64,6 @@
     }
 
     /* ========== INPUT CONTROLS ========== */
-    .input,
-    .field__input input,
-    .field__input select,
-    .field__input textarea {
-        display: block;
-        width: 100%;
-        padding: var(--control-padding-y) var(--control-padding-x);
-        min-height: var(--control-min-height);
-        background: var(--input-bg);
-        color: var(--text-color);
-        border: var(--border-width-2) solid var(--divider);
-        box-shadow: var(--shadow-1);
-        border-radius: var(--control-radius);
-        font-size: var(--font-size-2);
-        font-family: var(--font-family);
-        box-sizing: border-box;
-        transition:
-            border-color var(--duration-fast),
-            box-shadow var(--duration-fast);
-        appearance: none;
-    }
-
     select {
         display: block;
         width: 100%;
@@ -132,8 +110,28 @@
         height: auto;
         resize: vertical;
         overflow-y: hidden;
-        font-size: var(--font-size-11);
-        line-height: 1.23;
+    }
+
+    .input,
+    .field__input input,
+    .field__input select,
+    .field__input textarea {
+        display: block;
+        width: 100%;
+        padding: var(--control-padding-y) var(--control-padding-x);
+        min-height: var(--control-min-height);
+        background: var(--input-bg);
+        color: var(--text-color);
+        border: var(--border-width-2) solid var(--divider);
+        box-shadow: var(--shadow-1);
+        border-radius: var(--control-radius);
+        font-size: var(--font-size-2);
+        font-family: var(--font-family);
+        box-sizing: border-box;
+        transition:
+            border-color var(--duration-fast),
+            box-shadow var(--duration-fast);
+        appearance: none;
     }
 
     .input:focus,

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 
@@ -109,6 +109,9 @@ function TooltipFactory({ anchor, text, position = 'top', show }) {
         return window.innerWidth <= 768 || 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     };
 
+    // Ref for measuring tooltip dimensions
+    const measurementRef = useRef(null);
+
     // Don't render tooltips on mobile/touch devices
     const [tooltipDimensions, setTooltipDimensions] = useState({ width: 0, height: 0 });
     const [calculatedPosition, setCalculatedPosition] = useState({
@@ -117,28 +120,18 @@ function TooltipFactory({ anchor, text, position = 'top', show }) {
         actualPosition: position,
     });
 
-    // Measure tooltip dimensions when text changes
+    // Measure tooltip dimensions when text changes - using ref instead of DOM manipulation
     useEffect(() => {
         if (!text || isMobileDevice()) return;
 
-        // Create temporary tooltip to measure dimensions
-        const tempTooltip = document.createElement('div');
-        tempTooltip.className = 'btn-tooltip show';
-        tempTooltip.style.position = 'absolute';
-        tempTooltip.style.visibility = 'hidden';
-        tempTooltip.style.whiteSpace = 'nowrap';
-        tempTooltip.style.top = '-9999px';
-        tempTooltip.style.left = '-9999px';
-        tempTooltip.textContent = text;
-        document.body.appendChild(tempTooltip);
-
-        const tooltipRect = tempTooltip.getBoundingClientRect();
-        setTooltipDimensions({
-            width: tooltipRect.width,
-            height: tooltipRect.height,
-        });
-
-        document.body.removeChild(tempTooltip);
+        // Use CSS to create an off-screen measurement element
+        if (measurementRef.current) {
+            const tooltipRect = measurementRef.current.getBoundingClientRect();
+            setTooltipDimensions({
+                width: tooltipRect.width,
+                height: tooltipRect.height,
+            });
+        }
     }, [text]);
 
     // Calculate position when shown, anchor changes, or dimensions are available
@@ -182,9 +175,29 @@ function TooltipFactory({ anchor, text, position = 'top', show }) {
     };
 
     return ReactDOM.createPortal(
-        <div className="btn-tooltip show" style={style}>
-            {text}
-        </div>,
+        <>
+            {/* Measurement tooltip - always rendered but hidden */}
+            <div
+                ref={measurementRef}
+                className="btn-tooltip show"
+                style={{
+                    position: 'absolute',
+                    visibility: 'hidden',
+                    whiteSpace: 'nowrap',
+                    top: '-9999px',
+                    left: '-9999px',
+                    pointerEvents: 'none',
+                }}
+            >
+                {text}
+            </div>
+            {/* Visible tooltip - only shown when needed */}
+            {show && (
+                <div className="btn-tooltip show" style={style}>
+                    {text}
+                </div>
+            )}
+        </>,
         document.body
     );
 }

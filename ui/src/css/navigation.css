@@ -20,7 +20,8 @@
         border-right: none;
     }
 
-    body.sidebar-open nav.sidebar {
+    :root:where([style*='--sidebar-open: 1']) nav.sidebar,
+    :root:has([data-sidebar-open='true']) nav.sidebar {
         left: 0;
     }
 
@@ -31,7 +32,8 @@
             box-shadow: none;
         }
 
-        body.sidebar-open nav.sidebar {
+        :root:where([style*='--sidebar-open: 1']) nav.sidebar,
+        :root:has([data-sidebar-open='true']) nav.sidebar {
             left: 0;
         }
     }

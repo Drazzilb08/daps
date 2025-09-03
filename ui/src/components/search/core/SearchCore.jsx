@@ -31,15 +31,15 @@ function SearchCore({
 
     // UI Configuration
     className = 'search-engine',
-    placeholder = 'Search...',
+    // placeholder = 'Search...', // Unused - removed to fix ESLint
     // enableHoverPreview = true, // Unused for now
     defaultView = 'grid',
     defaultSort = 'alpha',
     defaultSource = null,
 
-    // Autocomplete configuration
-    enableAutocomplete = false,
-    autocompleteMinLength = 2,
+    // Autocomplete configuration - unused, commented out to fix ESLint
+    // enableAutocomplete = false,
+    // autocompleteMinLength = 2,
 
     // Results display configuration
     renderer = 'simple',
@@ -59,17 +59,17 @@ function SearchCore({
     // Refresh functionality
     showRefreshControls = false,
     onRefresh = null,
-    isRefreshing = false,
+    // isRefreshing = false, // Unused - removed to fix ESLint
 
-    // UI Customization
-    selectorLabel = 'Source',
+    // UI Customization - unused, commented out to fix ESLint
+    // selectorLabel = 'Source',
 
     // Visibility control - for mobile header search coordination
 
     // Refresh trigger - extract explicitly to avoid dependency array issues
     refreshTrigger = 0,
 
-    ...additionalProps
+    // ...additionalProps // Unused - removed to fix ESLint
 }) {
     // ===== STATE MANAGEMENT =====
     // Use centralized search state hook instead of manual state management
@@ -94,8 +94,8 @@ function SearchCore({
 
         // State actions
         executeSearchWithTerm,
-        updatePendingSearchTerm,
-        executeSearch,
+        // updatePendingSearchTerm, // Unused - removed to fix ESLint
+        // executeSearch, // Unused - removed to fix ESLint
         clearSearch,
         changeSource,
         updateSort,
@@ -276,18 +276,12 @@ function SearchCore({
     // Jump bar functionality removed for simplification
 
     // ===== EVENT HANDLERS =====
-    // Use hook actions instead of manual state management
-    const handleSearchTermChange = updatePendingSearchTerm;
-
-    const handleSearch = executeSearch;
-
-    const handleClearSearch = clearSearch;
-
-    const handleSourceChange = changeSource;
-
-    const handleFilterChange = (filterKey, value) => {
-        updateFilter(filterKey, value);
-    };
+    // Handlers removed - using hook actions directly to fix ESLint unused vars
+    // const handleSearchTermChange = updatePendingSearchTerm;
+    // const handleSearch = executeSearch;
+    // const handleClearSearch = clearSearch;
+    // const handleSourceChange = changeSource;
+    // const handleFilterChange = (filterKey, value) => { updateFilter(filterKey, value); };
 
     // Event handlers now use the keyboard navigation hook
     const handleResultClick = useCallback(

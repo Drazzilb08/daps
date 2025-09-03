@@ -11,7 +11,8 @@ export const TagSelectField = React.memo(function TagSelectField({
 }) {
     const [currentInput, setCurrentInput] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
-    // Remove filteredTags state - we'll compute this with useMemo instead
+    // Refs for component interaction
+    const containerRef = useRef(); // Single container ref for click outside detection
     const inputRef = useRef();
     const suggestionsRef = useRef();
 
@@ -51,22 +52,19 @@ export const TagSelectField = React.memo(function TagSelectField({
             .slice(0, 10); // Limit to 10 suggestions
     }, [currentInput, normalizedAvailableTags, selectedTags]);
 
-    // Handle clicking outside to close suggestions
+    // Handle clicking outside to close suggestions - using container ref pattern
     useEffect(() => {
         const handleClickOutside = event => {
-            if (
-                suggestionsRef.current &&
-                !suggestionsRef.current.contains(event.target) &&
-                inputRef.current &&
-                !inputRef.current.contains(event.target)
-            ) {
+            if (containerRef.current && !containerRef.current.contains(event.target)) {
                 setShowSuggestions(false);
             }
         };
 
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+        if (showSuggestions) {
+            document.addEventListener('mousedown', handleClickOutside);
+            return () => document.removeEventListener('mousedown', handleClickOutside);
+        }
+    }, [showSuggestions]);
 
     const addTag = tagLabel => {
         if (!tagLabel || selectedTags.includes(tagLabel)) return;
@@ -121,7 +119,7 @@ export const TagSelectField = React.memo(function TagSelectField({
                 <label htmlFor={field.key}>{field.label}</label>
             </div>
             <div className="settings-field-inputwrap">
-                <div className="tag-select-container">
+                <div ref={containerRef} className="tag-select-container">
                     {/* Selected Tags Display */}
                     <div className="tag-select-tags">
                         {selectedTags.map((tag, index) => (

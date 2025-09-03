@@ -73,27 +73,11 @@ function Header() {
         toggleSidebar();
     }, [toggleSidebar]);
 
-    /**
-     * Handle clicks outside sidebar to close it
-     * Uses event delegation instead of direct DOM queries
-     */
-    const handleClickOutside = useCallback(
-        e => {
-            // Only handle clicks when sidebar is open and on mobile
-            if (!isSidebarOpen || window.innerWidth >= 769) {
-                return;
-            }
-
-            // Check if click target is outside sidebar and hamburger using element selectors
-            const clickedSidebar = e.target.closest('#sidebarNav');
-            const clickedHamburger = e.target.closest('#sidebarToggle');
-
-            if (!clickedSidebar && !clickedHamburger) {
-                closeSidebar();
-            }
-        },
-        [isSidebarOpen, closeSidebar]
-    );
+    // Removed handleClickOutside - sidebar close will be handled by:
+    // 1. Hamburger button toggle (this component)
+    // 2. Navigation item clicks (NavigationSidebar component)
+    // 3. Backdrop component (if added to NavigationSidebar)
+    // This eliminates the need for document event listeners
 
     /**
      * Handle keyboard navigation (Escape key)
@@ -129,14 +113,12 @@ function Header() {
     useEffect(() => {
         window.addEventListener('resize', handleResize);
         window.addEventListener('keydown', handleKeyDown);
-        document.addEventListener('click', handleClickOutside);
 
         return () => {
             window.removeEventListener('resize', handleResize);
             window.removeEventListener('keydown', handleKeyDown);
-            document.removeEventListener('click', handleClickOutside);
         };
-    }, [handleResize, handleKeyDown, handleClickOutside]);
+    }, [handleResize, handleKeyDown]);
 
     // Hamburger visual state is now handled through CSS based on sidebar state
     // No direct DOM manipulation needed - CSS can use body.sidebar-open class

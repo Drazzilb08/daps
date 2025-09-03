@@ -5,7 +5,7 @@ import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react'
 import { MediaSearchComponent } from '../components/search/plugins';
 import { useToast } from '../components/providers/ToastProvider';
 import { useSearchCoordinator } from '../contexts/SearchCoordinatorProvider';
-import { useUIState } from '../contexts/UIStateContext';
+// import { useUIState } from '../contexts/UIStateContext'; // Unused - removed to fix ESLint
 import { refreshMediaDatabase, fetchJobDetail } from '../utils/api';
 
 /**
@@ -74,8 +74,9 @@ const MEDIA_SEARCH_SCHEMA = {
 export default function MediaSearch() {
     const toast = useToast();
     const coordinator = useSearchCoordinator();
-    const { isMobileSearchActive } = useUIState();
-    const [isMobile, setIsMobile] = useState(false);
+    // Removed unused variables to fix ESLint
+    // const { isMobileSearchActive } = useUIState();
+    // const [isMobile, setIsMobile] = useState(false);
 
     // Use coordinator's refresh state instead of local state
     const isRefreshing = coordinator?.isRefreshing || false;
@@ -275,16 +276,7 @@ export default function MediaSearch() {
         };
     }, []);
 
-    // Track mobile viewport
-    useEffect(() => {
-        const checkMobile = () => {
-            setIsMobile(window.innerWidth <= 768);
-        };
-
-        checkMobile();
-        window.addEventListener('resize', checkMobile);
-        return () => window.removeEventListener('resize', checkMobile);
-    }, []);
+    // Mobile viewport tracking removed since isMobile is unused
 
     // Mobile search active state is now managed by UIStateContext
 

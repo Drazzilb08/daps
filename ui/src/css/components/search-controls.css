@@ -790,7 +790,7 @@
         padding: 0;
         margin: -1px;
         overflow: hidden;
-        clip-path: rect(0, 0, 0, 0);
+        clip-path: inset(50%);
         white-space: nowrap;
         border: 0;
     }
@@ -814,7 +814,8 @@
     /* Mobile animation states with complete main content isolation */
     @media (width <= 768px) {
         /* CRITICAL: Main content stabilization during mobile search animations */
-        body.mobile-search-active main {
+        :root:where([style*='--mobile-search-active: 1']) main,
+        :root:has([data-mobile-search-active='true']) main {
             /* Lock main content position to prevent jumping during header animations */
             position: relative;
             top: 0;
@@ -831,8 +832,10 @@
         }
 
         /* CRITICAL: Prevent main content container from responding to header changes */
-        body.mobile-search-active .container,
-        body.mobile-search-active .page-content {
+        :root:where([style*='--mobile-search-active: 1']) .container,
+        :root:where([style*='--mobile-search-active: 1']) .page-content,
+        :root:has([data-mobile-search-active='true']) .container,
+        :root:has([data-mobile-search-active='true']) .page-content {
             position: static; /* Maintain normal document flow */
             margin-top: 0; /* Remove header-dependent spacing */
             transform: translateZ(0); /* GPU acceleration for stability */

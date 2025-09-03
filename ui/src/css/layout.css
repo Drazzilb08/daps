@@ -303,7 +303,8 @@
     }
 
     /* CRITICAL FIX: Stable container margin during mobile search - prevents main content jumping */
-    body.mobile-search-active .container {
+    :root:where([style*='--mobile-search-active: 1']) .container,
+    :root:has([data-mobile-search-active='true']) .container {
         /* Remove dynamic margin that causes main content to jump during animations */
         margin-top: var(--header-height);
 
@@ -318,13 +319,15 @@
         transform: translateZ(0);
     }
 
-    /* Body state for mobile search active - used by main content to hide duplicates */
-    body.mobile-search-active .sidebar {
+    /* Mobile search active state - used by main content to hide duplicates */
+    :root:where([style*='--mobile-search-active: 1']) .sidebar,
+    :root:has([data-mobile-search-active='true']) .sidebar {
         /* Keep sidebar available but encourage collapse */
         z-index: calc(var(--z-dropdown) - 1);
     }
 
-    body.mobile-search-active .hamburger.menu {
+    :root:where([style*='--mobile-search-active: 1']) .hamburger.menu,
+    :root:has([data-mobile-search-active='true']) .hamburger.menu {
         /* Slightly reduce opacity when search is active to indicate secondary importance */
         opacity: 0.8;
     }
@@ -401,7 +404,7 @@
         padding: 0;
         margin: -1px;
         overflow: hidden;
-        clip-path: rect(0, 0, 0, 0);
+        clip-path: inset(50%);
         white-space: nowrap;
         border: 0;
     }

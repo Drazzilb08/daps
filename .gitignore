@@ -30,7 +30,7 @@ screenshots/
 *.log
 *.ruff_cache
 *.pytest_cache
-config/
+/config/
 /.claude
 /.playwright-mcp
 

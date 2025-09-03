@@ -77,9 +77,9 @@ function HeaderSearchInner({
     });
 
     // Local state for header search - must be initialized before hooks that depend on setters
-    const [currentView, setCurrentView] = useState('grid');
-    const [currentSource, setCurrentSource] = useState(null);
-    const [currentSort, setCurrentSort] = useState('alpha');
+    const [, setCurrentView] = useState('grid');
+    const [, setCurrentSource] = useState(null);
+    const [, setCurrentSort] = useState('alpha');
 
     // Refs for DOM elements - must be initialized before hooks that depend on them
     const searchButtonRef = useRef(null);
@@ -240,6 +240,34 @@ function HeaderSearchInner({
                             tooltip={control.tooltip}
                         />
                     );
+                case 'custom':
+                    if (control.customComponent === 'refresh-popover') {
+                        return (
+                            <RefreshControls
+                                key={control.key}
+                                popover={refreshPopover}
+                                isRefreshing={isRefreshing}
+                                showTooltips={showTooltips}
+                                onTooltipChange={setTooltip}
+                                selectedRefreshOptions={selectedRefreshOptions}
+                                availableInstances={availableInstances}
+                                availableLibraries={availableLibraries}
+                                loadingLibraries={loadingLibraries}
+                                onLoadLibraries={handleLoadLibraries}
+                                onRefreshOptionToggle={handleRefreshOptionToggle}
+                                onSelectAllRadarr={handleSelectAllRadarr}
+                                onDeselectAllRadarr={handleDeselectAllRadarr}
+                                onSelectAllSonarr={handleSelectAllSonarr}
+                                onDeselectAllSonarr={handleDeselectAllSonarr}
+                                onSelectAllLibraries={handleSelectAllLibraries}
+                                onDeselectAllLibraries={handleDeselectAllLibraries}
+                                onSelectAllOverall={handleSelectAllOverall}
+                                onDeselectAllOverall={handleDeselectAllOverall}
+                                onRefreshExecute={handleRefreshExecuteWithPopover}
+                            />
+                        );
+                    }
+                    return null;
                 default:
                     return null;
             }
@@ -254,6 +282,23 @@ function HeaderSearchInner({
             setTooltip,
             searchConfig,
             schemaControls,
+            refreshPopover,
+            isRefreshing,
+            selectedRefreshOptions,
+            availableInstances,
+            availableLibraries,
+            loadingLibraries,
+            handleLoadLibraries,
+            handleRefreshOptionToggle,
+            handleSelectAllRadarr,
+            handleDeselectAllRadarr,
+            handleSelectAllSonarr,
+            handleDeselectAllSonarr,
+            handleSelectAllLibraries,
+            handleDeselectAllLibraries,
+            handleSelectAllOverall,
+            handleDeselectAllOverall,
+            handleRefreshExecuteWithPopover,
         ]
     );
 
@@ -339,31 +384,6 @@ function HeaderSearchInner({
                     {/* Header Controls Section - Now using schema-driven controls */}
                     <div className="search-controls">
                         {schemaControls?.controls?.map(control => renderSchemaControl(control))}
-
-                        {/* Refresh Control - Only show if plugin supports refresh */}
-                        {searchConfig?.showRefreshControls && (
-                            <RefreshControls
-                                popover={refreshPopover}
-                                isRefreshing={isRefreshing}
-                                showTooltips={showTooltips}
-                                onTooltipChange={setTooltip}
-                                selectedRefreshOptions={selectedRefreshOptions}
-                                availableInstances={availableInstances}
-                                availableLibraries={availableLibraries}
-                                loadingLibraries={loadingLibraries}
-                                onLoadLibraries={handleLoadLibraries}
-                                onRefreshOptionToggle={handleRefreshOptionToggle}
-                                onSelectAllRadarr={handleSelectAllRadarr}
-                                onDeselectAllRadarr={handleDeselectAllRadarr}
-                                onSelectAllSonarr={handleSelectAllSonarr}
-                                onDeselectAllSonarr={handleDeselectAllSonarr}
-                                onSelectAllLibraries={handleSelectAllLibraries}
-                                onDeselectAllLibraries={handleDeselectAllLibraries}
-                                onSelectAllOverall={handleSelectAllOverall}
-                                onDeselectAllOverall={handleDeselectAllOverall}
-                                onRefreshExecute={handleRefreshExecuteWithPopover}
-                            />
-                        )}
                     </div>
                     {/* Right spacer for balanced centering */}
                     <div className="search-layout__spacer"></div>

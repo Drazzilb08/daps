@@ -156,7 +156,4 @@
             gap: 0.12em 0.16em;
         }
     }
-
-    @media (width <= 375px) {
-    }
 } /* end @layer components */

@@ -579,10 +579,12 @@
 
     /* Mobile instances layout defaults moved to top-level rules above */
 
-    /* MOBILE-FIRST: card lists */
-    .settings-card-list.twocol {
-        grid-template-columns: 1fr;
-        gap: var(--space-rem-0-7);
+    /* MOBILE-FIRST: card lists - single column by default on mobile */
+    @media (width <= 1024px) {
+        .settings-card-list.twocol {
+            grid-template-columns: 1fr;
+            gap: var(--space-rem-0-7);
+        }
     }
 
     /* DESKTOP: toolbar and instances layout */

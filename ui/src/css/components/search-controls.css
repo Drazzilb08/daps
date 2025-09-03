@@ -1895,7 +1895,7 @@
        ACCESSIBILITY ENHANCEMENTS
     =========================== */
 
-    @media (prefers-contrast: high) {
+    @media (prefers-contrast: more) {
         .header-search__input-wrapper,
         .header-search__control-button {
             border-width: var(--border-width-2);

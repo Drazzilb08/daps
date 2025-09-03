@@ -92,7 +92,6 @@
             width: calc(100% - var(--space-6));
             max-width: calc(100vw - var(--space-6));
             flex-wrap: wrap;
-            word-break: break-word;
             overflow-wrap: break-word;
         }
     }

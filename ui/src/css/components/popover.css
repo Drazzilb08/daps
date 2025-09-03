@@ -328,7 +328,7 @@
     }
 
     /* High contrast mode support */
-    @media (prefers-contrast: high) {
+    @media (prefers-contrast: more) {
         .popover {
             border-width: var(--border-width-2);
         }

@@ -18,7 +18,7 @@
         max-width: 600px;
         width: 100%;
         gap: var(--space-7, 2.5rem);
-        animation: fadeInUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        animation: fade-in-up 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
 
     /* Hero Section */
@@ -90,7 +90,7 @@
 
     .not-found-code:active {
         transform: perspective(1000px) rotateY(0deg) rotateX(0deg) scale(0.95);
-        animation: glitchText 0.3s ease-out;
+        animation: glitch-text 0.3s ease-out;
     }
 
     /* Text Section */
@@ -208,7 +208,7 @@
     }
 
     /* Animations */
-    @keyframes fadeInUp {
+    @keyframes fade-in-up {
         from {
             opacity: 0;
             transform: translateY(30px);
@@ -230,7 +230,7 @@
         }
     }
 
-    @keyframes glitchText {
+    @keyframes glitch-text {
         0%,
         100% {
             transform: perspective(1000px) rotateY(0deg) rotateX(0deg) scale(0.95);

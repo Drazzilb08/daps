@@ -477,7 +477,7 @@
     /* ===== ACCESSIBILITY ENHANCEMENTS ===== */
 
     /* High contrast mode support */
-    @media (prefers-contrast: high) {
+    @media (prefers-contrast: more) {
         .media-card,
         .list-item {
             border-width: 2px;

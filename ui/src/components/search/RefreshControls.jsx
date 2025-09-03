@@ -275,7 +275,7 @@ function RefreshControls({
                             fontStyle: 'italic',
                         }}
                     >
-                        Click "Load Libraries" to see available options
+                        Click &ldquo;Load Libraries&rdquo; to see available options
                     </div>
                 )}
             </div>

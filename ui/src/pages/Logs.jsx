@@ -32,6 +32,7 @@ export default function LogViewer() {
 
     const refreshIntervalRef = useRef(null);
     const searchTimeoutRef = useRef(null);
+    const searchInputRef = useRef(null);
     const uploadBtnRef = useRef(null);
     const [showUploadTip, setShowUploadTip] = useState(false);
 
@@ -329,10 +330,9 @@ export default function LogViewer() {
         function onKeyDown(e) {
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
                 e.preventDefault();
-                const el = document.querySelector('.search-logs');
-                if (el) {
-                    el.focus();
-                    el.select();
+                if (searchInputRef.current) {
+                    searchInputRef.current.focus();
+                    searchInputRef.current.select();
                 }
             }
         }
@@ -391,6 +391,7 @@ export default function LogViewer() {
                             </select>
 
                             <input
+                                ref={searchInputRef}
                                 className="input search-logs"
                                 type="text"
                                 placeholder="Search logs..."

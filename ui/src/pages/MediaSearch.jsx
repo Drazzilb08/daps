@@ -5,6 +5,7 @@ import React, { useCallback, useState, useEffect, useRef, useMemo } from 'react'
 import { MediaSearchComponent } from '../components/search/plugins';
 import { useToast } from '../components/providers/ToastProvider';
 import { useSearchCoordinator } from '../contexts/SearchCoordinatorProvider';
+import { useUIState } from '../contexts/UIStateContext';
 import { refreshMediaDatabase, fetchJobDetail } from '../utils/api';
 
 /**
@@ -73,8 +74,8 @@ const MEDIA_SEARCH_SCHEMA = {
 export default function MediaSearch() {
     const toast = useToast();
     const coordinator = useSearchCoordinator();
+    const { isMobileSearchActive } = useUIState();
     const [isMobile, setIsMobile] = useState(false);
-    const [isMobileSearchActive, setIsMobileSearchActive] = useState(false);
 
     // Use coordinator's refresh state instead of local state
     const isRefreshing = coordinator?.isRefreshing || false;
@@ -285,24 +286,7 @@ export default function MediaSearch() {
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
 
-    // Track mobile search active state
-    useEffect(() => {
-        const checkMobileSearchState = () => {
-            setIsMobileSearchActive(document.body.classList.contains('mobile-search-active'));
-        };
-
-        // Initial check
-        checkMobileSearchState();
-
-        // Set up mutation observer to watch for class changes on body
-        const observer = new MutationObserver(checkMobileSearchState);
-        observer.observe(document.body, {
-            attributes: true,
-            attributeFilter: ['class'],
-        });
-
-        return () => observer.disconnect();
-    }, []);
+    // Mobile search active state is now managed by UIStateContext
 
     const handleError = useCallback(
         error => {

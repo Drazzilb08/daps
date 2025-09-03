@@ -1,19 +1,7 @@
 import React from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { getIcon } from '../utils/tools';
-
-/**
- * Closes the mobile navigation sidebar
- */
-function closeMobileSidebar() {
-    const body = document.body;
-    const hamburger = document.getElementById('sidebarToggle');
-    if (body.classList.contains('sidebar-open')) {
-        body.classList.remove('sidebar-open');
-        hamburger?.classList.remove('opened');
-        hamburger?.setAttribute('aria-expanded', 'false');
-    }
-}
+import { useUIState } from '../contexts/UIStateContext';
 
 const NAV = [
     { to: '/schedule', icon: 'event_note', label: 'Schedule' },
@@ -84,17 +72,28 @@ function isParentActive(navigationItem, location) {
 export default function Sidebar() {
     const location = useLocation();
     const navigate = useNavigate();
-    const [openDropdown, setOpenDropdown] = React.useState(null);
+    const [openDropdowns, setOpenDropdowns] = React.useState(new Set());
+    const { closeSidebar } = useUIState();
 
-    // Close dropdown when navigating away from child routes
+    // Manage dropdown visibility based on current route and user interaction
     React.useEffect(() => {
-        const parentForPath = NAV.find(
+        const activeParents = NAV.filter(
             item => item.children && item.children.some(sub => location.pathname.startsWith(sub.to))
-        );
-        if (!parentForPath || (parentForPath && parentForPath.label !== openDropdown)) {
-            setOpenDropdown(null);
-        }
-    }, [location.pathname, openDropdown]);
+        ).map(item => item.label);
+
+        // Keep active route dropdowns open, close others unless explicitly opened
+        setOpenDropdowns(prevOpen => {
+            const newOpen = new Set(activeParents);
+            // Preserve user-opened dropdowns that aren't conflicting with active routes
+            prevOpen.forEach(label => {
+                const item = NAV.find(navItem => navItem.label === label);
+                if (item && !item.children?.some(sub => location.pathname.startsWith(sub.to))) {
+                    newOpen.add(label);
+                }
+            });
+            return newOpen;
+        });
+    }, [location.pathname]);
 
     return (
         <nav className="sidebar" id="sidebarNav">
@@ -113,7 +112,7 @@ export default function Sidebar() {
                                     className={({ isActive }) =>
                                         `sidebar-link${isActive ? ' active' : ''}`
                                     }
-                                    onClick={closeMobileSidebar}
+                                    onClick={closeSidebar}
                                 >
                                     <span className="icon">{getIcon(`mi:${item.icon}`)}</span>
                                     {item.label}
@@ -127,7 +126,7 @@ export default function Sidebar() {
                         const isChildRoute = item.children.some(sub =>
                             location.pathname.startsWith(sub.to)
                         );
-                        const isOpen = openDropdown === item.label || isChildRoute;
+                        const isOpen = openDropdowns.has(item.label) || isChildRoute;
                         return (
                             <li
                                 key={item.label}
@@ -138,20 +137,26 @@ export default function Sidebar() {
                                     className="sidebar-link sidebar-link--toggle"
                                     aria-expanded={isOpen}
                                     onClick={() => {
-                                        if (!isOpen) {
-                                            setOpenDropdown(item.label);
-                                            if (!isChildRoute && item.children[0]?.to) {
-                                                navigate(item.children[0].to);
+                                        setOpenDropdowns(prev => {
+                                            const newSet = new Set(prev);
+                                            if (newSet.has(item.label)) {
+                                                newSet.delete(item.label);
+                                            } else {
+                                                newSet.add(item.label);
+                                                // Navigate to first child if not already on child route
+                                                if (!isChildRoute && item.children[0]?.to) {
+                                                    navigate(item.children[0].to);
+                                                }
                                             }
-                                        }
+                                            return newSet;
+                                        });
                                     }}
                                 >
                                     <span className="icon">{getIcon(`mi:${item.icon}`)}</span>
                                     {item.label}
                                 </button>
                                 <ul
-                                    className="settings-sub-menu"
-                                    style={{ display: isOpen ? 'block' : 'none' }}
+                                    className={`settings-sub-menu${isOpen ? ' settings-sub-menu--open' : ''}`}
                                 >
                                     {item.children.map(sub => (
                                         <li key={sub.to}>
@@ -161,8 +166,10 @@ export default function Sidebar() {
                                                     `sidebar-link sidebar-link--sub${isActive ? ' active' : ''}`
                                                 }
                                                 onClick={() => {
-                                                    setOpenDropdown(item.label);
-                                                    closeMobileSidebar();
+                                                    setOpenDropdowns(
+                                                        prev => new Set([...prev, item.label])
+                                                    );
+                                                    closeSidebar();
                                                 }}
                                             >
                                                 {sub.label}
@@ -175,6 +182,8 @@ export default function Sidebar() {
                         );
                     }
 
+                    // This handles items that have both a main route AND children (like Settings)
+                    const isOpen = openDropdowns.has(item.label) || isActiveSection;
                     return (
                         <li
                             key={item.to}
@@ -185,15 +194,18 @@ export default function Sidebar() {
                                 className={({ isActive }) =>
                                     `sidebar-link${isActive ? ' active' : ''}`
                                 }
-                                onClick={closeMobileSidebar}
+                                onClick={() => {
+                                    // Always open the dropdown when clicking the main settings link
+                                    setOpenDropdowns(prev => new Set([...prev, item.label]));
+                                    closeSidebar();
+                                }}
                             >
                                 <span className="icon">{getIcon(`mi:${item.icon}`)}</span>
                                 {item.label}
                             </NavLink>
                             {isActiveSection && <span className="sidebar-highlight" />}
                             <ul
-                                className="settings-sub-menu"
-                                style={{ display: isActiveSection ? 'block' : 'none' }}
+                                className={`settings-sub-menu${isOpen ? ' settings-sub-menu--open' : ''}`}
                             >
                                 {item.children.map(sub => (
                                     <li key={sub.to}>
@@ -202,7 +214,7 @@ export default function Sidebar() {
                                             className={({ isActive }) =>
                                                 `sidebar-link sidebar-link--sub${isActive ? ' active' : ''}`
                                             }
-                                            onClick={closeMobileSidebar}
+                                            onClick={closeSidebar}
                                         >
                                             {sub.label}
                                         </NavLink>

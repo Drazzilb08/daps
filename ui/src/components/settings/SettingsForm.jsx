@@ -17,6 +17,16 @@ export default function SettingsForm({ moduleName }) {
     const toast = useToast();
 
     const lastSavedDataRef = useRef({});
+    const fieldRefsRef = useRef({});
+
+    // Helper function to set field ref
+    const setFieldRef = useCallback((fieldKey, ref) => {
+        if (ref) {
+            fieldRefsRef.current[fieldKey] = ref;
+        } else {
+            delete fieldRefsRef.current[fieldKey];
+        }
+    }, []);
 
     // Load config on moduleName change
     useEffect(() => {
@@ -47,10 +57,18 @@ export default function SettingsForm({ moduleName }) {
         setInvalidFields(errors);
 
         if (Object.keys(errors).length > 0) {
-            setTimeout(() => {
-                const firstError = document.querySelector('.field-error, .input-error');
-                if (firstError) firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 0);
+            // Find the first error field from the schema field order
+            const schema = SETTINGS_SCHEMA.find(s => s.key === moduleName);
+            const firstErrorFieldKey = schema?.fields.find(field => errors[field.key])?.key;
+
+            if (firstErrorFieldKey && fieldRefsRef.current[firstErrorFieldKey]) {
+                setTimeout(() => {
+                    fieldRefsRef.current[firstErrorFieldKey].scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'center',
+                    });
+                }, 0);
+            }
             return;
         }
 
@@ -115,6 +133,7 @@ export default function SettingsForm({ moduleName }) {
                     {schema?.fields.map(field => (
                         <div
                             key={field.key}
+                            ref={ref => setFieldRef(field.key, ref)}
                             className={
                                 'settings-field-row' +
                                 (invalidFields[field.key] ? ' field-error' : '')

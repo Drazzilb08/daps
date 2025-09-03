@@ -1,138 +1,145 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { getIcon } from '../utils/tools';
 import SearchInterface from './SearchInterface';
-
-/**
- * Closes the mobile navigation sidebar and updates hamburger menu state
- */
-function closeMobileSidebar() {
-    const body = document.body;
-    const hamburger = document.getElementById('sidebarToggle');
-    if (body.classList.contains('sidebar-open')) {
-        body.classList.remove('sidebar-open');
-        hamburger?.classList.remove('opened');
-        hamburger?.setAttribute('aria-expanded', 'false');
-    }
-}
+import { useUIState } from '../contexts/UIStateContext';
 
 /**
  * Application header component with clean mobile-first search interface
  * Implements collapsed/expanded states matching modern mobile UX patterns
+ * All DOM manipulation replaced with React state management
  * @returns {JSX.Element} Header with logo, hamburger, and responsive search interface
  */
 function Header() {
     const location = useLocation();
+    const {
+        isSidebarOpen,
+        closeSidebar,
+        toggleSidebar,
+        activateMobileSearch,
+        deactivateMobileSearch,
+    } = useUIState();
+
+    // Local state for search interface
     const [isMobileSearchExpanded, setIsMobileSearchExpanded] = useState(false);
     const [searchInputFocused, setSearchInputFocused] = useState(false);
+    const [isSearchAnimating, setIsSearchAnimating] = useState(false);
+
+    // Refs for direct element access without DOM queries
+    const hamburgerRef = useRef(null);
+    const searchContainerRef = useRef(null);
 
     // Check if current page is a search page
-    const isSearchPage = () => {
+    const isSearchPage = useCallback(() => {
         const searchPages = ['/media/search', '/poster/search/assets', '/poster/search/gdrive'];
         return searchPages.some(page => location.pathname.startsWith(page));
-    };
+    }, [location.pathname]);
 
-    // Handle mobile search expand/collapse with clean state management
-    const handleMobileSearchExpand = () => {
-        // Auto-collapse sidebar when expanding search for better UX
-        closeMobileSidebar();
-        // Add CSS class to body to track mobile search state
-        document.body.classList.add('mobile-search-active');
+    /**
+     * Handle mobile search expansion with proper state management
+     * Replaces direct DOM manipulation with React state updates
+     */
+    const handleMobileSearchExpand = useCallback(() => {
+        // Close sidebar when expanding search for better UX
+        closeSidebar();
+        // Activate mobile search state
+        activateMobileSearch();
         setIsMobileSearchExpanded(true);
-    };
+    }, [closeSidebar, activateMobileSearch]);
 
-    const handleMobileSearchCollapse = () => {
-        const searchContainer = document.querySelector('.search-container.mobile-expanded');
+    /**
+     * Handle mobile search collapse with animation state tracking
+     * Uses React state instead of direct DOM class manipulation
+     */
+    const handleMobileSearchCollapse = useCallback(() => {
+        if (isSearchAnimating) return; // Prevent multiple simultaneous animations
 
-        if (searchContainer) {
-            searchContainer.classList.add('back-button-closing');
+        setIsSearchAnimating(true);
 
-            // Wait for animation to complete before actually collapsing
-            setTimeout(() => {
-                document.body.classList.remove('mobile-search-active');
-                setIsMobileSearchExpanded(false);
-                setSearchInputFocused(false);
-                searchContainer.classList.remove('back-button-closing');
-            }, 320); // Matched to CSS animation duration (0.3s) plus small buffer
-        } else {
-            // Fallback if elements not found - immediate collapse
-            document.body.classList.remove('mobile-search-active');
+        // Wait for CSS animation to complete before updating state
+        setTimeout(() => {
+            deactivateMobileSearch();
+            setIsMobileSearchExpanded(false);
+            setSearchInputFocused(false);
+            setIsSearchAnimating(false);
+        }, 320); // Matched to CSS animation duration (0.3s) plus small buffer
+    }, [isSearchAnimating, deactivateMobileSearch]);
+
+    /**
+     * Handle hamburger menu click with proper state management
+     * Uses React state instead of direct DOM element manipulation
+     */
+    const handleHamburgerClick = useCallback(() => {
+        toggleSidebar();
+    }, [toggleSidebar]);
+
+    /**
+     * Handle clicks outside sidebar to close it
+     * Uses event delegation instead of direct DOM queries
+     */
+    const handleClickOutside = useCallback(
+        e => {
+            // Only handle clicks when sidebar is open and on mobile
+            if (!isSidebarOpen || window.innerWidth >= 769) {
+                return;
+            }
+
+            // Check if click target is outside sidebar and hamburger using element selectors
+            const clickedSidebar = e.target.closest('#sidebarNav');
+            const clickedHamburger = e.target.closest('#sidebarToggle');
+
+            if (!clickedSidebar && !clickedHamburger) {
+                closeSidebar();
+            }
+        },
+        [isSidebarOpen, closeSidebar]
+    );
+
+    /**
+     * Handle keyboard navigation (Escape key)
+     */
+    const handleKeyDown = useCallback(
+        e => {
+            if (e.key === 'Escape' && isSidebarOpen) {
+                closeSidebar();
+            }
+        },
+        [isSidebarOpen, closeSidebar]
+    );
+
+    /**
+     * Handle viewport resize to reset mobile search on desktop transition
+     */
+    const handleResize = useCallback(() => {
+        // Reset mobile search state when transitioning to desktop
+        if (window.innerWidth >= 769 && isMobileSearchExpanded) {
+            deactivateMobileSearch();
             setIsMobileSearchExpanded(false);
             setSearchInputFocused(false);
         }
-    };
+    }, [isMobileSearchExpanded, deactivateMobileSearch]);
 
     // Close mobile search when route changes
     useEffect(() => {
         setIsMobileSearchExpanded(false);
+        setSearchInputFocused(false);
     }, [location.pathname]);
 
-    // Reset mobile search state on viewport resize (desktop → mobile → desktop transitions)
+    // Set up window event listeners with proper cleanup
     useEffect(() => {
-        function handleResize() {
-            // If viewport is desktop size and mobile search is expanded, reset state
-            if (window.innerWidth >= 769 && isMobileSearchExpanded) {
-                document.body.classList.remove('mobile-search-active');
-                setIsMobileSearchExpanded(false);
-                setSearchInputFocused(false);
-            }
-        }
-
         window.addEventListener('resize', handleResize);
-        return () => window.removeEventListener('resize', handleResize);
-    }, [isMobileSearchExpanded]);
-
-    // Hamburger menu click handler
-    useEffect(() => {
-        const hamburger = document.getElementById('sidebarToggle');
-        if (!hamburger) return;
-
-        function handleHamburgerClick() {
-            const body = document.body;
-            const isOpen = !body.classList.contains('sidebar-open');
-            body.classList.toggle('sidebar-open', isOpen);
-            hamburger.classList.toggle('opened', isOpen);
-            hamburger.setAttribute('aria-expanded', String(isOpen));
-        }
-
-        hamburger.addEventListener('click', handleHamburgerClick);
-        return () => hamburger.removeEventListener('click', handleHamburgerClick);
-    }, []);
-
-    // Sidebar close handlers (Escape key and click outside)
-    useEffect(() => {
-        function handleEsc(e) {
-            if (e.key === 'Escape') {
-                closeMobileSidebar();
-            }
-        }
-
-        function handleClickOutside(e) {
-            const body = document.body;
-            const sidebar = document.getElementById('sidebarNav');
-            const hamburger = document.getElementById('sidebarToggle');
-
-            // Only handle clicks outside when mobile sidebar is open
-            if (window.innerWidth >= 769 || !body.classList.contains('sidebar-open')) {
-                return;
-            }
-
-            // Ignore clicks on sidebar itself or hamburger button
-            if (sidebar?.contains(e.target) || hamburger?.contains(e.target)) {
-                return;
-            }
-
-            closeMobileSidebar();
-        }
-
-        window.addEventListener('keydown', handleEsc);
+        window.addEventListener('keydown', handleKeyDown);
         document.addEventListener('click', handleClickOutside);
 
         return () => {
-            window.removeEventListener('keydown', handleEsc);
+            window.removeEventListener('resize', handleResize);
+            window.removeEventListener('keydown', handleKeyDown);
             document.removeEventListener('click', handleClickOutside);
         };
-    }, []);
+    }, [handleResize, handleKeyDown, handleClickOutside]);
+
+    // Hamburger visual state is now handled through CSS based on sidebar state
+    // No direct DOM manipulation needed - CSS can use body.sidebar-open class
 
     return (
         <header className={`header-bar${isMobileSearchExpanded ? ' mobile-search-expanded' : ''}`}>
@@ -143,10 +150,12 @@ function Header() {
 
             {/* Hamburger Menu - Always visible, maintains functionality throughout all states */}
             <button
-                className="hamburger menu"
+                ref={hamburgerRef}
+                className={`hamburger menu${isSidebarOpen ? ' opened' : ''}`}
                 id="sidebarToggle"
                 aria-label="Main Menu"
-                aria-expanded="false"
+                aria-expanded={isSidebarOpen}
+                onClick={handleHamburgerClick}
             >
                 <svg width="44" height="44" viewBox="0 0 100 100">
                     <path
@@ -164,7 +173,8 @@ function Header() {
             {/* Single Search Interface - Responsive design handles mobile/desktop */}
             {isSearchPage() && (
                 <div
-                    className={`search-container ${isMobileSearchExpanded ? 'mobile-expanded' : ''}`}
+                    ref={searchContainerRef}
+                    className={`search-container ${isMobileSearchExpanded ? 'mobile-expanded' : ''}${isSearchAnimating ? ' back-button-closing' : ''}`}
                 >
                     <SearchInterface
                         onMobileCollapse={handleMobileSearchCollapse}

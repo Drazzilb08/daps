@@ -162,6 +162,12 @@
         background: none;
     }
 
+    /* Show submenu when open class is applied - replaces inline styles */
+    .settings-sub-menu--open {
+        display: flex;
+        flex-direction: column;
+    }
+
     /* EMERGENCY FIX: Ensure submenu items have proper dimensions when displayed */
     .settings-sub-menu.displayed,
     .settings-sub-menu[style*='block'] {

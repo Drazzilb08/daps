@@ -162,36 +162,39 @@
         background: none;
     }
 
-    /* Show submenu when open class is applied - replaces inline styles */
-    .settings-sub-menu--open {
+    /* Show submenu when open class is applied - using higher specificity for cascade control */
+    .menu .settings-sub-menu.settings-sub-menu--open {
         display: flex;
         flex-direction: column;
     }
 
-    /* EMERGENCY FIX: Ensure submenu items have proper dimensions when displayed */
-    .settings-sub-menu.displayed,
-    .settings-sub-menu[style*='block'] {
-        display: flex !important;
+    /* Handle legacy inline styles and dynamic display changes with higher specificity */
+    .menu .settings-sub-menu.displayed,
+    .menu .settings-sub-menu[style*='block'] {
+        display: flex;
         flex-direction: column;
     }
 
-    .settings-sub-menu li {
+    /* Submenu list items with proper cascade specificity */
+    .menu .settings-sub-menu li {
         margin-bottom: var(--space-1); /* 0.02em -> 0.25rem */
-
-        /* CRITICAL: Ensure list items have proper layout */
         display: block;
         min-height: var(--control-min-height);
         width: 100%;
     }
 
-    .settings-sub-menu li a,
-    .settings-sub-menu li .sidebar-link {
-        /* EMERGENCY: Force submenu links to have proper dimensions when visible */
-        display: flex !important;
+    /* Submenu links with higher specificity to override default link styles */
+    .menu .settings-sub-menu.settings-sub-menu--open li a,
+    .menu .settings-sub-menu.settings-sub-menu--open li .sidebar-link,
+    .menu .settings-sub-menu.displayed li a,
+    .menu .settings-sub-menu.displayed li .sidebar-link,
+    .menu .settings-sub-menu[style*='block'] li a,
+    .menu .settings-sub-menu[style*='block'] li .sidebar-link {
+        display: flex;
         align-items: center;
-        min-height: var(--control-min-height) !important;
-        min-width: 100% !important;
-        padding: var(--space-2) var(--space-3) !important;
+        min-height: var(--control-min-height);
+        min-width: 100%;
+        padding: var(--space-2) var(--space-3);
         box-sizing: border-box;
         width: 100%;
     }

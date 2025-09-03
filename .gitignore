@@ -23,7 +23,7 @@ env/
 ENV/
 .venv/
 .archives/
-logs/
+/logs/
 tests/
 screenshots/
 .extra_scripts/

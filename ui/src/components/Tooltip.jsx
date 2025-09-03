@@ -161,8 +161,11 @@ function TooltipFactory({ anchor, text, position = 'top', show }) {
         };
     }, [anchor, show, position, tooltipDimensions]);
 
-    // Early return after hooks for mobile devices or when not ready to show
-    if (isMobileDevice() || !show || !anchor || tooltipDimensions.width === 0) return null;
+    // Don't render on mobile devices
+    if (isMobileDevice()) return null;
+
+    // Always render measurement tooltip, but only show visible tooltip when ready
+    const shouldShowTooltip = show && anchor && tooltipDimensions.width > 0;
 
     const style = {
         position: 'absolute',
@@ -192,7 +195,7 @@ function TooltipFactory({ anchor, text, position = 'top', show }) {
                 {text}
             </div>
             {/* Visible tooltip - only shown when needed */}
-            {show && (
+            {shouldShowTooltip && (
                 <div className="btn-tooltip show" style={style}>
                     {text}
                 </div>

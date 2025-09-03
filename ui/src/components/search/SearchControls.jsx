@@ -61,16 +61,19 @@ function ModuleControl({
     searchConfig,
     currentSource,
     onChangeSource,
+    icon = 'mi:apps',
+    label = 'MOD',
+    tooltip = 'source',
 }) {
     return (
         <div className="search-control">
             <ControlButton
-                icon="mi:apps"
-                label="MOD"
+                icon={icon}
+                label={label}
                 popover={popover}
                 showTooltips={showTooltips}
                 onTooltipChange={onTooltipChange}
-                tooltip="source"
+                tooltip={tooltip}
             />
             <PopoverFactory
                 variant="selector"
@@ -122,7 +125,14 @@ function ModuleControl({
  * @param {Function} onChangeView - Callback when view mode is changed
  * @returns {JSX.Element} View control with popover selector
  */
-function ViewControl({ popover, showTooltips, onTooltipChange, currentView, onChangeView }) {
+function ViewControl({
+    popover,
+    showTooltips,
+    onTooltipChange,
+    currentView,
+    onChangeView,
+    tooltip = 'view',
+}) {
     return (
         <div className="search-control">
             <ControlButton
@@ -131,7 +141,7 @@ function ViewControl({ popover, showTooltips, onTooltipChange, currentView, onCh
                 popover={popover}
                 showTooltips={showTooltips}
                 onTooltipChange={onTooltipChange}
-                tooltip="view"
+                tooltip={tooltip}
             />
             <PopoverFactory
                 variant="selector"
@@ -198,6 +208,7 @@ function SortControl({
     searchConfig,
     currentSort,
     onChangeSort,
+    tooltip = 'sort',
 }) {
     return (
         <div className="search-control">
@@ -207,7 +218,7 @@ function SortControl({
                 popover={popover}
                 showTooltips={showTooltips}
                 onTooltipChange={onTooltipChange}
-                tooltip="sort"
+                tooltip={tooltip}
             />
             <PopoverFactory
                 variant="selector"
@@ -259,7 +270,14 @@ function SortControl({
  * @param {Function} onChangeFilter - Callback when filter is changed
  * @returns {JSX.Element} Filter control with popover options
  */
-function FilterControl({ popover, showTooltips, onTooltipChange, searchConfig, onChangeFilter }) {
+function FilterControl({
+    popover,
+    showTooltips,
+    onTooltipChange,
+    searchConfig,
+    onChangeFilter,
+    tooltip = 'filter',
+}) {
     return (
         <div className="search-control">
             <ControlButton
@@ -268,7 +286,7 @@ function FilterControl({ popover, showTooltips, onTooltipChange, searchConfig, o
                 popover={popover}
                 showTooltips={showTooltips}
                 onTooltipChange={onTooltipChange}
-                tooltip="filter"
+                tooltip={tooltip}
             />
             <PopoverFactory
                 variant="actions"

@@ -5,7 +5,11 @@ import { useSearchCoordinator } from '../contexts/SearchCoordinatorProvider';
 import {
     getSearchPlaceholder,
     isSearchPage as checkIsSearchPage,
+    useSearchControls,
 } from '../hooks/useSearchControls';
+import { ASSETS_SEARCH_SCHEMA } from '../pages/AssetsSearch';
+import { GDRIVE_SEARCH_SCHEMA } from '../pages/GdriveSearch';
+import { MEDIA_SEARCH_SCHEMA } from '../pages/MediaSearch';
 // Custom hooks for decomposed functionality
 import { useSearchState } from '../hooks/search/useSearchState';
 import { useInstancesData } from '../hooks/search/useInstancesData';
@@ -34,6 +38,22 @@ function HeaderSearchInner({
     const location = useLocation();
     const headerSearchContext = useSearchCoordinator();
 
+    // Get schema based on current route
+    const getPageSchema = useCallback(() => {
+        if (location.pathname.startsWith('/media/search')) {
+            return MEDIA_SEARCH_SCHEMA;
+        }
+        if (location.pathname.startsWith('/poster/search/assets')) {
+            return ASSETS_SEARCH_SCHEMA;
+        }
+        if (location.pathname.startsWith('/poster/search/gdrive')) {
+            return GDRIVE_SEARCH_SCHEMA;
+        }
+        return null;
+    }, [location.pathname]);
+
+    const pageSchema = getPageSchema();
+
     // Extract context values first to pass to useSearchState
     const {
         searchAdapter,
@@ -47,6 +67,14 @@ function HeaderSearchInner({
         registerHeaderSearch,
         isRefreshing,
     } = headerSearchContext;
+
+    // Use schema-driven controls
+    const schemaControls = useSearchControls(pageSchema, searchConfig, {
+        changeSource,
+        changeView,
+        changeSort,
+        changeFilter,
+    });
 
     // Local state for header search - must be initialized before hooks that depend on setters
     const [currentView, setCurrentView] = useState('grid');
@@ -142,6 +170,93 @@ function HeaderSearchInner({
     const sortPopover = usePopover();
     const filterPopover = usePopover();
 
+    // Helper function to render schema-driven controls
+    const renderSchemaControl = useCallback(
+        control => {
+            const popover =
+                control.key === 'view'
+                    ? viewPopover
+                    : control.key === 'sort'
+                      ? sortPopover
+                      : control.key === 'filter'
+                        ? filterPopover
+                        : modulePopover;
+
+            switch (control.type) {
+                case 'toggle':
+                    return (
+                        <ViewControl
+                            key={control.key}
+                            popover={popover}
+                            showTooltips={showTooltips}
+                            onTooltipChange={setTooltip}
+                            currentView={schemaControls.getCurrentValue('view')}
+                            onChangeView={schemaControls.updateControl}
+                            tooltip={control.tooltip}
+                            icon={control.icon}
+                            label={control.label}
+                        />
+                    );
+                case 'selector':
+                    if (control.key === 'sort') {
+                        return (
+                            <SortControl
+                                key={control.key}
+                                popover={popover}
+                                showTooltips={showTooltips}
+                                onTooltipChange={setTooltip}
+                                searchConfig={searchConfig}
+                                currentSort={schemaControls.getCurrentValue('sort')}
+                                onChangeSort={schemaControls.updateControl}
+                                tooltip={control.tooltip}
+                            />
+                        );
+                    } else if (control.key === 'source') {
+                        return (
+                            <ModuleControl
+                                key={control.key}
+                                popover={popover}
+                                showTooltips={showTooltips}
+                                onTooltipChange={setTooltip}
+                                searchConfig={searchConfig}
+                                currentSource={schemaControls.getCurrentValue('source')}
+                                onChangeSource={schemaControls.updateControl}
+                                icon={control.icon}
+                                label={control.label}
+                                tooltip={control.tooltip}
+                            />
+                        );
+                    }
+                    break;
+                case 'filter':
+                    return (
+                        <FilterControl
+                            key={control.key}
+                            popover={popover}
+                            showTooltips={showTooltips}
+                            onTooltipChange={setTooltip}
+                            searchConfig={searchConfig}
+                            onChangeFilter={schemaControls.updateControl}
+                            tooltip={control.tooltip}
+                        />
+                    );
+                default:
+                    return null;
+            }
+            return null;
+        },
+        [
+            viewPopover,
+            sortPopover,
+            filterPopover,
+            modulePopover,
+            showTooltips,
+            setTooltip,
+            searchConfig,
+            schemaControls,
+        ]
+    );
+
     // Old schema-based helper functions removed - using direct PopoverFactory implementation
 
     // Simplified refresh control callback - replaced with RefreshControls component
@@ -221,61 +336,34 @@ function HeaderSearchInner({
 
                 {/* Right section: Controls + Right spacer */}
                 <div className="search-layout__right">
-                    {/* Header Controls Section - Now using compound components */}
+                    {/* Header Controls Section - Now using schema-driven controls */}
                     <div className="search-controls">
-                        <ModuleControl
-                            popover={modulePopover}
-                            showTooltips={showTooltips}
-                            onTooltipChange={setTooltip}
-                            searchConfig={searchConfig}
-                            currentSource={currentSource}
-                            onChangeSource={changeSource}
-                        />
-                        <ViewControl
-                            popover={viewPopover}
-                            showTooltips={showTooltips}
-                            onTooltipChange={setTooltip}
-                            currentView={currentView}
-                            onChangeView={changeView}
-                        />
-                        <SortControl
-                            popover={sortPopover}
-                            showTooltips={showTooltips}
-                            onTooltipChange={setTooltip}
-                            searchConfig={searchConfig}
-                            currentSort={currentSort}
-                            onChangeSort={changeSort}
-                        />
-                        <FilterControl
-                            popover={filterPopover}
-                            showTooltips={showTooltips}
-                            onTooltipChange={setTooltip}
-                            searchConfig={searchConfig}
-                            onChangeFilter={changeFilter}
-                        />
+                        {schemaControls?.controls?.map(control => renderSchemaControl(control))}
 
-                        {/* Refresh Control - Now using compound component */}
-                        <RefreshControls
-                            popover={refreshPopover}
-                            isRefreshing={isRefreshing}
-                            showTooltips={showTooltips}
-                            onTooltipChange={setTooltip}
-                            selectedRefreshOptions={selectedRefreshOptions}
-                            availableInstances={availableInstances}
-                            availableLibraries={availableLibraries}
-                            loadingLibraries={loadingLibraries}
-                            onLoadLibraries={handleLoadLibraries}
-                            onRefreshOptionToggle={handleRefreshOptionToggle}
-                            onSelectAllRadarr={handleSelectAllRadarr}
-                            onDeselectAllRadarr={handleDeselectAllRadarr}
-                            onSelectAllSonarr={handleSelectAllSonarr}
-                            onDeselectAllSonarr={handleDeselectAllSonarr}
-                            onSelectAllLibraries={handleSelectAllLibraries}
-                            onDeselectAllLibraries={handleDeselectAllLibraries}
-                            onSelectAllOverall={handleSelectAllOverall}
-                            onDeselectAllOverall={handleDeselectAllOverall}
-                            onRefreshExecute={handleRefreshExecuteWithPopover}
-                        />
+                        {/* Refresh Control - Only show if plugin supports refresh */}
+                        {searchConfig?.showRefreshControls && (
+                            <RefreshControls
+                                popover={refreshPopover}
+                                isRefreshing={isRefreshing}
+                                showTooltips={showTooltips}
+                                onTooltipChange={setTooltip}
+                                selectedRefreshOptions={selectedRefreshOptions}
+                                availableInstances={availableInstances}
+                                availableLibraries={availableLibraries}
+                                loadingLibraries={loadingLibraries}
+                                onLoadLibraries={handleLoadLibraries}
+                                onRefreshOptionToggle={handleRefreshOptionToggle}
+                                onSelectAllRadarr={handleSelectAllRadarr}
+                                onDeselectAllRadarr={handleDeselectAllRadarr}
+                                onSelectAllSonarr={handleSelectAllSonarr}
+                                onDeselectAllSonarr={handleDeselectAllSonarr}
+                                onSelectAllLibraries={handleSelectAllLibraries}
+                                onDeselectAllLibraries={handleDeselectAllLibraries}
+                                onSelectAllOverall={handleSelectAllOverall}
+                                onDeselectAllOverall={handleDeselectAllOverall}
+                                onRefreshExecute={handleRefreshExecuteWithPopover}
+                            />
+                        )}
                     </div>
                     {/* Right spacer for balanced centering */}
                     <div className="search-layout__spacer"></div>

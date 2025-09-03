@@ -137,9 +137,13 @@ export default function Sidebar() {
                                             }
                                             return newSet;
                                         });
-                                        
+
                                         // Navigate to first child if not already on child route (separate from state update)
-                                        if (!openDropdowns.has(item.label) && !isChildRoute && item.children[0]?.to) {
+                                        if (
+                                            !openDropdowns.has(item.label) &&
+                                            !isChildRoute &&
+                                            item.children[0]?.to
+                                        ) {
                                             navigate(item.children[0].to);
                                         }
                                     }}

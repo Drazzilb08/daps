@@ -31,66 +31,68 @@ import SearchAutocomplete from './SearchAutocomplete';
  * @param {Function} onItemHover - Callback for autocomplete item hover
  * @returns {JSX.Element} Combined search input and autocomplete container
  */
-const SearchField = React.memo(({
-    // Input props
-    searchInputRef,
-    inputKey,
-    placeholder,
-    searchTerm,
-    onSearchTermChange,
-    onKeyDown,
-    onFocus,
-    onBlur,
-    isSearching,
-    onSearch,
-    onClear,
-    searchButtonRef,
-    clearButtonRef,
-    showTooltips,
-    onTooltipChange,
-    onMobileCollapse,
-    
-    // Autocomplete props
-    autocompleteRef,
-    showAutocomplete,
-    autocompleteSuggestions,
-    selectedSuggestionIndex,
-    onSelectSuggestion,
-    onItemHover,
-}) => {
-    return (
-        <div className="search-layout__center">
-            <SearchInputSection
-                searchInputRef={searchInputRef}
-                inputKey={inputKey}
-                placeholder={placeholder}
-                searchTerm={searchTerm}
-                onSearchTermChange={onSearchTermChange}
-                onKeyDown={onKeyDown}
-                onFocus={onFocus}
-                onBlur={onBlur}
-                isSearching={isSearching}
-                onSearch={onSearch}
-                onClear={onClear}
-                searchButtonRef={searchButtonRef}
-                clearButtonRef={clearButtonRef}
-                showTooltips={showTooltips}
-                onTooltipChange={onTooltipChange}
-                onMobileCollapse={onMobileCollapse}
-            />
+const SearchField = React.memo(
+    ({
+        // Input props
+        searchInputRef,
+        inputKey,
+        placeholder,
+        searchTerm,
+        onSearchTermChange,
+        onKeyDown,
+        onFocus,
+        onBlur,
+        isSearching,
+        onSearch,
+        onClear,
+        searchButtonRef,
+        clearButtonRef,
+        showTooltips,
+        onTooltipChange,
+        onMobileCollapse,
 
-            {/* Autocomplete dropdown - Now using compound component pattern */}
-            <SearchAutocomplete
-                show={showAutocomplete}
-                suggestions={autocompleteSuggestions}
-                selectedIndex={selectedSuggestionIndex}
-                autocompleteRef={autocompleteRef}
-                onSelectSuggestion={onSelectSuggestion}
-                onItemHover={onItemHover}
-            />
-        </div>
-    );
-});
+        // Autocomplete props
+        autocompleteRef,
+        showAutocomplete,
+        autocompleteSuggestions,
+        selectedSuggestionIndex,
+        onSelectSuggestion,
+        onItemHover,
+    }) => {
+        return (
+            <div className="search-layout__center">
+                <SearchInputSection
+                    searchInputRef={searchInputRef}
+                    inputKey={inputKey}
+                    placeholder={placeholder}
+                    searchTerm={searchTerm}
+                    onSearchTermChange={onSearchTermChange}
+                    onKeyDown={onKeyDown}
+                    onFocus={onFocus}
+                    onBlur={onBlur}
+                    isSearching={isSearching}
+                    onSearch={onSearch}
+                    onClear={onClear}
+                    searchButtonRef={searchButtonRef}
+                    clearButtonRef={clearButtonRef}
+                    showTooltips={showTooltips}
+                    onTooltipChange={onTooltipChange}
+                    onMobileCollapse={onMobileCollapse}
+                />
+
+                {/* Autocomplete dropdown - Now using compound component pattern */}
+                <SearchAutocomplete
+                    show={showAutocomplete}
+                    suggestions={autocompleteSuggestions}
+                    selectedIndex={selectedSuggestionIndex}
+                    autocompleteRef={autocompleteRef}
+                    onSelectSuggestion={onSelectSuggestion}
+                    onItemHover={onItemHover}
+                />
+            </div>
+        );
+    }
+);
 
 SearchField.displayName = 'SearchField';
 

@@ -109,7 +109,6 @@ function SearchInterface({
                     showTooltips={showTooltips}
                     onTooltipChange={setTooltip}
                     onMobileCollapse={onMobileCollapse}
-                    
                     // Autocomplete props
                     autocompleteRef={autocompleteRef}
                     showAutocomplete={showAutocomplete}

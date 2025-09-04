@@ -1,10 +1,7 @@
 import { useState, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useSearchCoordinator } from '../../contexts/SearchCoordinatorProvider';
-import {
-    getSearchPlaceholder,
-    useSearchControls,
-} from '../useSearchControls';
+import { getSearchPlaceholder, useSearchControls } from '../useSearchControls';
 import { ASSETS_SEARCH_SCHEMA } from '../../pages/AssetsSearch';
 import { GDRIVE_SEARCH_SCHEMA } from '../../pages/GdriveSearch';
 import { MEDIA_SEARCH_SCHEMA } from '../../pages/MediaSearch';
@@ -22,11 +19,7 @@ import { useSearchEffects } from './useSearchEffects';
  * @param {Function} onSearchInputBlur - Function called when search input loses focus
  * @returns {Object} All search state, handlers, and configuration
  */
-export function useSearchInterface({
-    onMobileCollapse,
-    onSearchInputFocus,
-    onSearchInputBlur,
-}) {
+export function useSearchInterface({ onMobileCollapse, onSearchInputFocus, onSearchInputBlur }) {
     const location = useLocation();
     const headerSearchContext = useSearchCoordinator();
 
@@ -111,7 +104,7 @@ export function useSearchInterface({
     // Create focus/blur handlers with autocomplete logic
     const handleInputFocus = useCallback(() => {
         const { searchTerm, autocompleteSuggestions, setShowAutocomplete } = searchStateResults;
-        
+
         // Show autocomplete if suggestions exist
         if (searchTerm.length >= 2 && autocompleteSuggestions.length > 0) {
             setShowAutocomplete(true);
@@ -139,26 +132,26 @@ export function useSearchInterface({
         location,
         pageSchema,
         placeholder,
-        
+
         // Context and configuration
         searchConfig,
         schemaControls,
         isRefreshing,
-        
+
         // Refs
         searchButtonRef,
         clearButtonRef,
         headerSearchRef,
-        
+
         // Search state (from useSearchState)
         ...searchStateResults,
-        
+
         // Instances data (from useInstancesData)
         ...instancesDataResults,
-        
+
         // Effects results (from useSearchEffects)
         ...effectsResults,
-        
+
         // Focus/blur handlers
         handleInputFocus,
         handleInputBlur,

@@ -191,7 +191,9 @@ function HeaderSearchInner({
                             showTooltips={showTooltips}
                             onTooltipChange={setTooltip}
                             currentView={schemaControls.getCurrentValue('view')}
-                            onChangeView={schemaControls.updateControl}
+                            onChangeView={viewValue =>
+                                schemaControls.updateControl('view', viewValue)
+                            }
                             tooltip={control.tooltip}
                             icon={control.icon}
                             label={control.label}
@@ -207,7 +209,9 @@ function HeaderSearchInner({
                                 onTooltipChange={setTooltip}
                                 searchConfig={searchConfig}
                                 currentSort={schemaControls.getCurrentValue('sort')}
-                                onChangeSort={schemaControls.updateControl}
+                                onChangeSort={sortValue =>
+                                    schemaControls.updateControl('sort', sortValue)
+                                }
                                 tooltip={control.tooltip}
                             />
                         );
@@ -220,7 +224,9 @@ function HeaderSearchInner({
                                 onTooltipChange={setTooltip}
                                 searchConfig={searchConfig}
                                 currentSource={schemaControls.getCurrentValue('source')}
-                                onChangeSource={schemaControls.updateControl}
+                                onChangeSource={sourceValue =>
+                                    schemaControls.updateControl('source', sourceValue)
+                                }
                                 icon={control.icon}
                                 label={control.label}
                                 tooltip={control.tooltip}
@@ -236,7 +242,9 @@ function HeaderSearchInner({
                             showTooltips={showTooltips}
                             onTooltipChange={setTooltip}
                             searchConfig={searchConfig}
-                            onChangeFilter={schemaControls.updateControl}
+                            onChangeFilter={(filterKey, value) =>
+                                schemaControls.updateControl('filter', { filterKey, value })
+                            }
                             tooltip={control.tooltip}
                         />
                     );

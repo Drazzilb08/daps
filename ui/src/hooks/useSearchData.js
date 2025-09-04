@@ -173,13 +173,16 @@ export function useSearchData({
                 // Apply sorting
                 if (searchState.currentSort) {
                     const searchType = SearchSorter.inferSearchType(results);
-                    results = SearchSorter.sort(results, searchState.currentSort, {
+                    const sortedResults = SearchSorter.sort(results, searchState.currentSort, {
                         priorityOrder: searchState.searchData?.priorityOrder || {},
                         ownerPriorityOrder: searchState.searchData?.ownerPriorityOrder || {},
                         groupBy,
                         currentSource,
                         searchType,
                     });
+
+                    results = sortedResults;
+
                     // Ensure sort result is always an array
                     if (!Array.isArray(results)) {
                         console.warn('SearchSorter returned non-array:', results);

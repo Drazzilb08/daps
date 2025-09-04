@@ -69,19 +69,20 @@ const PopoverTest = () => {
                     <h3>Available PopoverFactory Variants:</h3>
                     <ul className="variant-list">
                         <li>
-                            <code>variant="default"</code> - Basic content popover with custom
-                            children
+                            <code>variant=&quot;default&quot;</code> - Basic content popover with
+                            custom children
                         </li>
                         <li>
-                            <code>variant="help"</code> - Help text popover with title and content
+                            <code>variant=&quot;help&quot;</code> - Help text popover with title and
+                            content
                         </li>
                         <li>
-                            <code>variant="selector"</code> - Selection menu with list of options
-                            (used by search controls)
+                            <code>variant=&quot;selector&quot;</code> - Selection menu with list of
+                            options (used by search controls)
                         </li>
                         <li>
-                            <code>variant="actions"</code> - Action menu with buttons (edit, delete,
-                            etc.)
+                            <code>variant=&quot;actions&quot;</code> - Action menu with buttons
+                            (edit, delete, etc.)
                         </li>
                     </ul>
                 </div>

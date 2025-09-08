@@ -1,18 +1,12 @@
 # Node and frontend build
-node_modules/
-ui/node_modules/
-ui/dist/
-ui/.vite/
-ui/.cache/
-ui/coverage/
+*/node_modules/*
+*/dist/*
+*/.vite/*
+*/.cache/*
+*/coverage/*
 
 # Backend build output (static assets)
-templates/assets/
-templates/icons/
-templates/img/
-templates/posters/
-templates/
-
+templates/*
 
 # Python artifacts and test output
 __pycache__/

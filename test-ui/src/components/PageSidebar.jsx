@@ -1,21 +1,24 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect, useRef } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
+import { useUIState } from '../contexts/UIStateContext.jsx';
 
 /**
  * PageSidebar component for DAPS application
  * 
  * Provides hierarchical navigation for the DAPS media automation system.
  * Features collapsible hierarchy with full-width background active states.
- * Fixed width sidebar that doesn't scroll with main content.
+ * Mobile overlay at 768px breakpoint with touch-optimized interface.
  * 
  * Features:
  * - Collapsible hierarchical navigation (children show/hide based on parent active state)
  * - Full-width background active states (no border stripes)
+ * - Mobile overlay with backdrop at 768px breakpoint
+ * - Touch-optimized navigation targets (44px minimum)
  * - Material Design icons for visual hierarchy
  * - Professional media management interface styling
- * - Mobile-responsive behavior with touch-friendly targets
  * - WCAG 2.1 AA compliant accessibility
  * - Smooth expand/collapse animations
+ * - Outside click and navigation link click closes mobile menu
  */
 
 /**
@@ -62,14 +65,9 @@ const NAVIGATION_STRUCTURE = [
     type: 'parent',
     children: [
       {
-        id: 'gdrive-search',
-        label: 'Gdrive Search',
-        path: '/search/gdrive'
-      },
-      {
-        id: 'assets-search',
-        label: 'Assets Search',
-        path: '/search/assets'
+        id: 'posters-search',
+        label: 'Search',
+        path: '/posters/search'
       },
       {
         id: 'posters-manage',
@@ -108,14 +106,48 @@ const NAVIGATION_STRUCTURE = [
 
 const PageSidebar = React.memo(() => {
   const location = useLocation();
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  const { mobileMenuOpen, closeMobileMenu, isMobile } = useUIState();
+  const sidebarRef = useRef(null);
 
   /**
-   * Toggle sidebar collapse state (for future mobile implementation)
+   * Handle parent navigation link click - do NOT close mobile menu (shows children)
    */
-  const handleToggleCollapse = useCallback(() => {
-    setIsCollapsed(prev => !prev);
+  const handleParentNavLinkClick = useCallback(() => {
+    // Parent clicks should not close the mobile menu
+    // This allows users to see the children items
   }, []);
+
+  /**
+   * Handle child navigation link click - close mobile menu on mobile
+   */
+  const handleChildNavLinkClick = useCallback(() => {
+    if (isMobile && mobileMenuOpen) {
+      closeMobileMenu();
+    }
+  }, [isMobile, mobileMenuOpen, closeMobileMenu]);
+
+  /**
+   * Handle outside click to close mobile menu
+   */
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        isMobile && 
+        mobileMenuOpen && 
+        sidebarRef.current && 
+        !sidebarRef.current.contains(event.target)
+      ) {
+        // Check if click is on hamburger button (don't close if so)
+        const hamburgerButton = event.target.closest('.hamburger');
+        if (!hamburgerButton) {
+          closeMobileMenu();
+        }
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isMobile, mobileMenuOpen, closeMobileMenu]);
 
   /**
    * Collapsible Hierarchy Logic - Full-Width Background Active States
@@ -162,80 +194,73 @@ const PageSidebar = React.memo(() => {
 
   return (
     <aside 
-      className={`page-sidebar ${isCollapsed ? 'page-sidebar--collapsed' : ''}`}
-      role="navigation"
-      aria-label="Main navigation"
-    >
-      <div className="page-sidebar-content">
-        {/* Hierarchical Navigation */}
-        <nav className="page-sidebar-nav">
-          <ul className="nav-list" role="list">
-            {NAVIGATION_STRUCTURE.map((item) => (
-              <li key={item.id} className="nav-item">
-                {/* Parent Item or Single Item */}
-                <NavLink
-                  to={item.path}
-                  className={`nav-link nav-link--parent ${
-                    item.type === 'parent' && isParentActive(item) ? 'nav-link--parent-active' : ''
-                  } ${
-                    item.type === 'single' && isSingleActive(item.path) ? 'nav-link--active' : ''
-                  }`}
-                  aria-current={
-                    (item.type === 'parent' && isParentActive(item)) ||
-                    (item.type === 'single' && isSingleActive(item.path))
-                      ? 'page' : undefined
-                  }
-                >
-                  <span className="nav-icon material-symbols-outlined" aria-hidden="true">
-                    {item.icon}
-                  </span>
-                  <span className="nav-label">
-                    {item.label}
-                  </span>
-                </NavLink>
-
-                {/* Child Items - Only Visible When Parent is Active */}
-                {item.type === 'parent' && item.children && isParentActive(item) && (
-                  <ul className="nav-children" role="list">
-                    {item.children.map((child) => (
-                      <li key={child.id} className="nav-child-item">
-                        <NavLink
-                          to={child.path}
-                          className={`nav-link nav-link--child nav-link--child-in-active-section ${
-                            isChildActive(child.path) ? 'nav-link--child-active' : ''
-                          }`}
-                          aria-current={isChildActive(child.path) ? 'page' : undefined}
-                        >
-                          <span className="nav-label nav-label--child">
-                            {child.label}
-                          </span>
-                        </NavLink>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </li>
-            ))}
-          </ul>
-        </nav>
-
-        {/* Footer section for future use */}
-        <div className="page-sidebar-footer">
-          {/* Future: version info, user info, etc. */}
-        </div>
-      </div>
-
-      {/* Collapse toggle button - hidden for now, will be used for mobile */}
-      <button
-        className="sidebar-toggle"
-        onClick={handleToggleCollapse}
-        type="button"
-        aria-label={isCollapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-        style={{ display: 'none' }} // Hidden until mobile implementation
+        ref={sidebarRef}
+        className={`page-sidebar ${isMobile && mobileMenuOpen ? 'page-sidebar--mobile-open' : ''}`}
+        role="navigation"
+        aria-label="Main navigation"
+        aria-hidden={isMobile && !mobileMenuOpen}
       >
-        {isCollapsed ? '→' : '←'}
-      </button>
-    </aside>
+        <div className="page-sidebar-content">
+          {/* Hierarchical Navigation */}
+          <nav className="page-sidebar-nav">
+            <ul className="nav-list" role="list">
+              {NAVIGATION_STRUCTURE.map((item) => (
+                <li key={item.id} className="nav-item">
+                  {/* Parent Item or Single Item */}
+                  <NavLink
+                    to={item.path}
+                    onClick={handleParentNavLinkClick}
+                    className={`nav-link nav-link--parent ${
+                      item.type === 'parent' && isParentActive(item) ? 'nav-link--parent-active' : ''
+                    } ${
+                      item.type === 'single' && isSingleActive(item.path) ? 'nav-link--active' : ''
+                    }`}
+                    aria-current={
+                      (item.type === 'parent' && isParentActive(item)) ||
+                      (item.type === 'single' && isSingleActive(item.path))
+                        ? 'page' : undefined
+                    }
+                  >
+                    <span className="nav-icon material-symbols-outlined" aria-hidden="true">
+                      {item.icon}
+                    </span>
+                    <span className="nav-label">
+                      {item.label}
+                    </span>
+                  </NavLink>
+
+                  {/* Child Items - Only Visible When Parent is Active */}
+                  {item.type === 'parent' && item.children && isParentActive(item) && (
+                    <ul className="nav-children" role="list">
+                      {item.children.map((child) => (
+                        <li key={child.id} className="nav-child-item">
+                          <NavLink
+                            to={child.path}
+                            onClick={handleChildNavLinkClick}
+                            className={`nav-link nav-link--child nav-link--child-in-active-section ${
+                              isChildActive(child.path) ? 'nav-link--child-active' : ''
+                            }`}
+                            aria-current={isChildActive(child.path) ? 'page' : undefined}
+                          >
+                            <span className="nav-label nav-label--child">
+                              {child.label}
+                            </span>
+                          </NavLink>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </nav>
+
+          {/* Footer section for future use */}
+          <div className="page-sidebar-footer">
+            {/* Future: version info, user info, etc. */}
+          </div>
+        </div>
+      </aside>
   );
 });
 

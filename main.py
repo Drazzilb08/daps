@@ -5,8 +5,10 @@ import multiprocessing
 import os
 import sys
 import time
+from functools import partialmethod
 
 from prettytable import PrettyTable
+from tqdm import tqdm
 from watchdog.events import FileSystemEventHandler
 from watchdog.observers import Observer
 
@@ -30,6 +32,9 @@ list_of_python_modules = [
     "unmatched_assets",
     "jduparr",
 ]
+
+# Disable tqdm when no tty is detected
+tqdm.__init__ = partialmethod(tqdm.__init__, disable=None)
 
 
 class ScheduleFileHandler(FileSystemEventHandler):
@@ -249,7 +254,6 @@ def main():
                 waiting_message_shown = True
 
             for module_name, schedule_time in current_schedule.items():
-
                 if manager.is_already_running(module_name) or not schedule_time:
                     continue
 

@@ -1,4 +1,5 @@
 import React, { useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext.jsx';
 import { useUIState } from '../contexts/UIStateContext.jsx';
 
@@ -62,8 +63,8 @@ const PageHeader = React.memo(() => {
       <div className="page-header-content">
         {/* Brand/Logo Section with Hamburger */}
         <div className="page-header-brand">
-          {/* DAPS Logo and Title */}
-          <div className="page-header-logo-section">
+          {/* DAPS Logo and Title - Clickable Link to Home */}
+          <Link to="/" className="page-header-logo-section">
             <img 
               src="/img/favicon-32x32.png" 
               alt="DAPS Logo" 
@@ -75,7 +76,7 @@ const PageHeader = React.memo(() => {
               <span className="page-header-logo-text">DAPS</span>
               <span className="page-header-subtitle">Media Automation</span>
             </h1>
-          </div>
+          </Link>
 
           {/* Hamburger Menu Button */}
           <button

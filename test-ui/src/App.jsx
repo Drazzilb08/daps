@@ -77,13 +77,13 @@ const App = () => {
                       <Route path="dashboard" element={<DashboardPage />} />
                       
                       {/* Media Section - Hierarchical Routes */}
-                      <Route path="media" element={<div className="content-layout"><h1>Media Overview</h1><p>Media management overview - select a specific area below</p><ul><li><a href="/media/search">Media Search</a></li><li><a href="/media/library">Media Library</a></li><li><a href="/media/statistics">Media Statistics</a></li></ul></div>} />
+                      <Route path="media" element={<Navigate to="/media/search" replace />} />
                       <Route path="media/search" element={<div className="content-layout"><h1>Media Search</h1><p>Search for media content to add to your library</p></div>} />
                       <Route path="media/library" element={<div className="content-layout"><h1>Media Library</h1><p>Browse your existing media collection</p></div>} />
                       <Route path="media/statistics" element={<div className="content-layout"><h1>Media Statistics</h1><p>View media library statistics and analytics</p></div>} />
                       
                       {/* Posters Section - Hierarchical Routes */}
-                      <Route path="posters" element={<div className="content-layout"><h1>Posters Overview</h1><p>Poster management overview - select a specific area below</p><ul><li><a href="/posters/search">Poster Search</a></li><li><a href="/posters/manage">Poster Management</a></li><li><a href="/posters/statistics">Poster Statistics</a></li></ul></div>} />
+                      <Route path="posters" element={<Navigate to="/posters/search" replace />} />
                       <Route path="posters/search" element={<div className="content-layout"><h1>Poster Search</h1><p>Search for posters and artwork</p></div>} />
                       <Route path="posters/manage" element={<div className="content-layout"><h1>Poster Management</h1><p>Manage your poster and artwork collection</p></div>} />
                       <Route path="posters/statistics" element={<div className="content-layout"><h1>Poster Statistics</h1><p>View poster collection statistics</p></div>} />

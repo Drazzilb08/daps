@@ -65,9 +65,14 @@ const NAVIGATION_STRUCTURE = [
     type: 'parent',
     children: [
       {
-        id: 'posters-search',
-        label: 'Search',
-        path: '/posters/search'
+        id: 'gdrive-search',
+        label: 'Gdrive Search',
+        path: '/posters/search/gdrive'
+      },
+      {
+        id: 'assets-search',
+        label: 'Assets Search',
+        path: '/posters/search/assets'
       },
       {
         id: 'posters-manage',

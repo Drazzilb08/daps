@@ -140,6 +140,21 @@
     display: flex;
     align-items: center;
     gap: var(--space-3);
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+    padding: var(--space-1);
+    border-radius: var(--radius-1);
+    transition: background-color var(--transition-fast);
+  }
+
+  .page-header-logo-section:hover {
+    background: var(--color-surface-hover);
+  }
+
+  .page-header-logo-section:focus {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
   }
 
   .page-header-logo-image {

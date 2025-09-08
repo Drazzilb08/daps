@@ -191,6 +191,21 @@
     /* Reserved for future search interface */
   }
 
+  /* Context-Aware Header States */
+  .page-header.search-page .page-header-content {
+    gap: var(--space-4);
+  }
+
+  /* Search Area for Search Pages */
+  .page-header-search-area {
+    flex: 1;
+    max-width: 500px; /* Prevent search from becoming too wide */
+    margin: 0 auto; /* Center the search area */
+    display: flex;
+    align-items: center; /* Vertically center the search interface */
+    justify-content: center;
+  }
+
   /* Actions Section */
   .page-header-actions {
     display: flex;

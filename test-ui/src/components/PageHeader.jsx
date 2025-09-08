@@ -2,24 +2,39 @@ import React, { useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext.jsx';
 import { useUIState } from '../contexts/UIStateContext.jsx';
+import useSearchPageDetection from '../hooks/useSearchPageDetection.js';
+import SearchInterface from './SearchInterface.jsx';
 
 /**
- * PageHeader component for DAPS application
+ * PageHeader component for DAPS application - Phase 4D Context-Aware
  * 
- * Displays the DAPS brand logo with hamburger menu and theme toggle functionality.
- * Fixed position header that doesn't scroll with content.
+ * Context-aware header that adapts interface based on current page type:
+ * 
+ * Search Pages (/media/search, /posters/search/*):
+ * - Logo + Hamburger menu
+ * - Search Input Field with debounced input (300ms)
+ * - Smart Responsive Toolbar placeholder
+ * - Search State Indicator
+ * 
+ * Non-Search Pages:
+ * - Logo + Hamburger menu only
+ * - Clean, minimal header
+ * - Theme toggle (temporary for testing)
  * 
  * Features:
  * - DAPS logo from favicon-32x32.png
- * - Hamburger menu button for mobile sidebar
- * - Theme toggle button on the right (temporary for testing)
- * - 60px fixed height as specified
+ * - Animated hamburger menu with SVG
+ * - Route-based interface switching
+ * - Mobile-first responsive design (375px+)
+ * - Touch-optimized buttons (44px minimum)
  * - Uses design tokens for styling
- * - Mobile-first responsive design with touch-optimized buttons
  */
 const PageHeader = React.memo(() => {
   const { toggleTheme, isDarkTheme, isLightTheme, isSystemTheme, actualTheme } = useTheme();
   const { mobileMenuOpen, toggleMobileMenu } = useUIState();
+  
+  // Context-aware header detection
+  const { isSearchPage, searchPageType, searchSubtype } = useSearchPageDetection();
 
   /**
    * Handle theme toggle click
@@ -34,6 +49,14 @@ const PageHeader = React.memo(() => {
   const handleHamburgerClick = useCallback(() => {
     toggleMobileMenu();
   }, [toggleMobileMenu]);
+  
+  /**
+   * Handle search action from SearchInterface
+   */
+  const handleSearch = useCallback((searchTerm) => {
+    // TODO: Implement search logic based on searchPageType and searchSubtype
+    console.log('Search initiated:', { searchTerm, searchPageType, searchSubtype });
+  }, [searchPageType, searchSubtype]);
 
   /**
    * Get theme display text for button
@@ -59,7 +82,7 @@ const PageHeader = React.memo(() => {
   };
 
   return (
-    <header className="page-header" role="banner">
+    <header className={`page-header ${isSearchPage ? 'search-page' : 'non-search-page'}`} role="banner">
       <div className="page-header-content">
         {/* Brand/Logo Section with Hamburger */}
         <div className="page-header-brand">
@@ -99,29 +122,43 @@ const PageHeader = React.memo(() => {
           </button>
         </div>
 
-        {/* Header Spacer for Future Search Interface */}
-        <div className="page-header-spacer">
-          {/* Reserved space for future search interface */}
-        </div>
+        {/* Context-Aware Content Area */}
+        {isSearchPage ? (
+          /* Search Page Interface */
+          <div className="page-header-search-area">
+            <SearchInterface 
+              searchPageType={searchPageType}
+              searchSubtype={searchSubtype}
+              onSearch={handleSearch}
+            />
+          </div>
+        ) : (
+          /* Non-Search Page - Clean Spacer */
+          <div className="page-header-spacer">
+            {/* Clean minimal header for non-search pages */}
+          </div>
+        )}
 
-        {/* Actions Section */}
-        <div className="page-header-actions">
-          {/* Theme Toggle - Temporary for testing */}
-          <button
-            className="theme-toggle-button"
-            onClick={handleThemeToggle}
-            type="button"
-            aria-label={`Switch to ${isDarkTheme ? 'light' : 'dark'} theme`}
-            title={`Current: ${getThemeDisplayText()}. Click to toggle theme.`}
-          >
-            <span className="theme-toggle-icon material-symbols-outlined" aria-hidden="true">
-              {getThemeIconName()}
-            </span>
-            <span className="theme-toggle-text">
-              {getThemeDisplayText()}
-            </span>
-          </button>
-        </div>
+        {/* Actions Section - Only show on non-search pages */}
+        {!isSearchPage && (
+          <div className="page-header-actions">
+            {/* Theme Toggle - Temporary for testing */}
+            <button
+              className="theme-toggle-button"
+              onClick={handleThemeToggle}
+              type="button"
+              aria-label={`Switch to ${isDarkTheme ? 'light' : 'dark'} theme`}
+              title={`Current: ${getThemeDisplayText()}. Click to toggle theme.`}
+            >
+              <span className="theme-toggle-icon material-symbols-outlined" aria-hidden="true">
+                {getThemeIconName()}
+              </span>
+              <span className="theme-toggle-text">
+                {getThemeDisplayText()}
+              </span>
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );

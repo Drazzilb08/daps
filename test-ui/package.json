@@ -1,0 +1,24 @@
+{
+  "name": "daps-test-ui",
+  "version": "1.0.0",
+  "description": "DAPS Test UI - React 19 Frontend Recreation",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "prop-types": "15.8.1",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "react-router-dom": "7.7.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.4",
+    "vite": "^6.0.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

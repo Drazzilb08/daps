@@ -1,0 +1,145 @@
+/**
+ * Toast Component Styles
+ * Accessible toast notifications with proper animations
+ */
+
+@layer components {
+  /* Toast container positioned fixed for global toasts */
+  .toast-container {
+    position: fixed;
+    top: var(--space-4);
+    right: var(--space-4);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    max-width: 400px;
+    pointer-events: none;
+  }
+
+  /* Individual toast styling */
+  .toast {
+    min-width: 320px;
+    max-width: 400px;
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-2);
+    box-shadow: var(--shadow-lg);
+    pointer-events: auto;
+    transition: all 0.3s ease-in-out;
+    border-width: 2px;
+    border-style: solid;
+  }
+
+  /* Toast content layout */
+  .toast-content {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+
+  /* Toast icon */
+  .toast-icon {
+    font-size: var(--font-size-lg);
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  /* Toast message */
+  .toast-message {
+    flex: 1;
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-relaxed);
+    font-weight: 500;
+    color: white;
+    word-wrap: break-word;
+  }
+
+  /* Toast dismiss button */
+  .toast-dismiss {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: var(--font-size-base);
+    line-height: 1;
+    cursor: pointer;
+    padding: 0;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-1);
+    transition: background-color 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .toast-dismiss:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .toast-dismiss:focus {
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+  }
+
+  /* Toast animations */
+  .toast-hidden {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+
+  .toast-visible {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  /* Toast type-specific styles already handled in JS with CSS custom properties */
+  
+  /* Mobile responsive adjustments */
+  @media (max-width: 480px) {
+    .toast-container {
+      top: var(--space-3);
+      right: var(--space-3);
+      left: var(--space-3);
+      max-width: none;
+    }
+
+    .toast {
+      min-width: unset;
+      max-width: none;
+    }
+  }
+
+  /* Reduce motion for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    .toast {
+      transition: opacity 0.2s ease;
+    }
+
+    .toast-hidden {
+      transform: none;
+    }
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .toast {
+      border-width: 3px;
+    }
+  }
+
+  /* Screen reader only class */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+}

@@ -1,0 +1,274 @@
+/**
+ * Global Error Display Styles
+ * Modal overlay for critical application errors
+ */
+
+@layer components {
+  /* Error overlay covering full viewport */
+  .global-error-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1001; /* Above toasts */
+    padding: var(--space-4);
+  }
+
+  /* Error modal */
+  .global-error-modal {
+    max-width: 500px;
+    width: 100%;
+    border-radius: var(--radius-3);
+    border: 2px solid;
+    box-shadow: var(--shadow-2xl);
+    animation: errorModalIn 0.3s ease-out;
+  }
+
+  /* Modal header */
+  .global-error-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  /* Error icon */
+  .global-error-icon {
+    font-size: var(--font-size-xl);
+    flex-shrink: 0;
+  }
+
+  /* Error title */
+  .global-error-title {
+    flex: 1;
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: white;
+  }
+
+  /* Close button */
+  .global-error-close {
+    background: transparent;
+    border: none;
+    color: white;
+    font-size: var(--font-size-lg);
+    cursor: pointer;
+    padding: var(--space-1);
+    border-radius: var(--radius-1);
+    transition: background-color 0.2s ease;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .global-error-close:hover {
+    background-color: rgba(255, 255, 255, 0.2);
+  }
+
+  .global-error-close:focus {
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.3);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+  }
+
+  /* Modal content */
+  .global-error-content {
+    padding: var(--space-4);
+  }
+
+  /* Error message */
+  .global-error-message {
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-relaxed);
+    color: white;
+    margin: 0 0 var(--space-3) 0;
+  }
+
+  /* Technical details (dev only) */
+  .global-error-details {
+    margin-top: var(--space-3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius-2);
+  }
+
+  .global-error-details summary {
+    padding: var(--space-2);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-2);
+  }
+
+  .global-error-details summary:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+  }
+
+  .global-error-stack {
+    padding: var(--space-3);
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-normal);
+    color: rgba(255, 255, 255, 0.9);
+    background-color: rgba(0, 0, 0, 0.3);
+    margin: 0;
+    border-radius: 0 0 var(--radius-2) var(--radius-2);
+    overflow-x: auto;
+    max-height: 200px;
+    overflow-y: auto;
+  }
+
+  /* Modal actions */
+  .global-error-actions {
+    display: flex;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    justify-content: flex-end;
+  }
+
+  /* Action buttons */
+  .global-error-retry,
+  .global-error-dismiss {
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-2);
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 44px;
+    min-width: 80px;
+  }
+
+  .global-error-retry {
+    background-color: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: white;
+  }
+
+  .global-error-retry:hover:not(:disabled) {
+    background-color: rgba(255, 255, 255, 0.3);
+  }
+
+  .global-error-retry:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .global-error-dismiss {
+    background-color: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    color: white;
+  }
+
+  .global-error-dismiss:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+  }
+
+  /* Error boundary fallback */
+  .error-boundary-fallback {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 300px;
+    padding: var(--space-6);
+    text-align: center;
+    background: var(--color-surface);
+    border: 2px solid var(--color-error);
+    border-radius: var(--radius-3);
+    margin: var(--space-4);
+  }
+
+  .error-boundary-fallback h2 {
+    color: var(--color-error);
+    margin-bottom: var(--space-3);
+    font-size: var(--font-size-xl);
+  }
+
+  .error-boundary-fallback p {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-4);
+    max-width: 400px;
+  }
+
+  .error-boundary-fallback button {
+    background: var(--color-button-primary);
+    color: var(--color-button-primary-text);
+    border: none;
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-2);
+    font-size: var(--font-size-base);
+    font-weight: 500;
+    cursor: pointer;
+    min-height: 44px;
+    transition: background-color 0.2s ease;
+  }
+
+  .error-boundary-fallback button:hover {
+    background: var(--color-primary-hover);
+  }
+
+  /* Animations */
+  @keyframes errorModalIn {
+    from {
+      opacity: 0;
+      transform: scale(0.9) translateY(-20px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 480px) {
+    .global-error-overlay {
+      padding: var(--space-3);
+    }
+
+    .global-error-actions {
+      flex-direction: column;
+    }
+
+    .global-error-retry,
+    .global-error-dismiss {
+      width: 100%;
+    }
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .global-error-modal {
+      animation: none;
+    }
+
+    @keyframes errorModalIn {
+      from, to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+  }
+
+  /* High contrast mode */
+  @media (prefers-contrast: high) {
+    .global-error-modal {
+      border-width: 3px;
+    }
+
+    .global-error-retry,
+    .global-error-dismiss {
+      border-width: 2px;
+    }
+  }
+}

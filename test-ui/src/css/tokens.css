@@ -1,0 +1,172 @@
+/**
+ * DAPS Design Token System
+ * 
+ * This file defines the complete design token system for DAPS frontend.
+ * All measurements, spacing, typography, and layout values are centralized here.
+ * 
+ * Usage: var(--token-name)
+ * DO NOT use hardcoded values - always reference tokens
+ */
+
+:root {
+  /* =============================================================================
+     SPACING SCALE
+     Progressive spacing scale in 0.25rem (4px) increments
+     Base: 1rem = 16px, so --space-1 = 4px, --space-2 = 8px, etc.
+     ============================================================================= */
+  --space-0: 0;
+  --space-1: 0.25rem;    /* 4px */
+  --space-2: 0.5rem;     /* 8px */
+  --space-3: 0.75rem;    /* 12px */
+  --space-4: 1rem;       /* 16px */
+  --space-5: 1.25rem;    /* 20px */
+  --space-6: 1.5rem;     /* 24px */
+  --space-7: 1.75rem;    /* 28px */
+  --space-8: 2rem;       /* 32px */
+  --space-10: 2.5rem;    /* 40px */
+  --space-12: 3rem;      /* 48px */
+  --space-16: 4rem;      /* 64px */
+  --space-20: 5rem;      /* 80px */
+
+  /* =============================================================================
+     LAYOUT MEASUREMENTS
+     Specific measurements for DAPS UI components
+     ============================================================================= */
+  --sidebar-width: 210px;
+  --sidebar-collapsed: 72px;
+  --header-height: 64px;
+  --footer-height: 48px;
+  --content-max-width: 1200px;
+  --form-max-width: 600px;
+  --modal-max-width: 800px;
+  --card-max-width: 400px;
+
+  /* =============================================================================
+     TYPOGRAPHY SCALE
+     Progressive font sizes with consistent scaling ratio (~1.25)
+     Base: 16px minimum for accessibility
+     ============================================================================= */
+  --font-size-xs: 0.75rem;    /* 12px */
+  --font-size-sm: 0.875rem;   /* 14px */
+  --font-size-base: 1rem;     /* 16px - MINIMUM for accessibility */
+  --font-size-lg: 1.125rem;   /* 18px */
+  --font-size-xl: 1.25rem;    /* 20px */
+  --font-size-2xl: 1.5rem;    /* 24px */
+  --font-size-3xl: 1.875rem;  /* 30px */
+  --font-size-4xl: 2.25rem;   /* 36px */
+
+  /* Font weights */
+  --font-weight-light: 300;
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Line heights */
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.75;
+
+  /* Letter spacing */
+  --letter-spacing-tight: -0.025em;
+  --letter-spacing-normal: 0;
+  --letter-spacing-wide: 0.025em;
+
+  /* =============================================================================
+     BORDER RADII
+     Consistent border radius values for components
+     ============================================================================= */
+  --radius-none: 0;
+  --radius-1: 0.25rem;   /* 4px - Small elements */
+  --radius-2: 0.5rem;    /* 8px - Cards, buttons */
+  --radius-3: 0.75rem;   /* 12px - Larger components */
+  --radius-full: 9999px; /* Pills, badges */
+
+  /* =============================================================================
+     RESPONSIVE BREAKPOINTS
+     Mobile-first breakpoint system
+     ============================================================================= */
+  --breakpoint-mobile: 375px;   /* Small phones */
+  --breakpoint-mobile-lg: 425px; /* Large phones */
+  --breakpoint-tablet: 768px;   /* Tablets */
+  --breakpoint-desktop: 1024px; /* Small desktops */
+  --breakpoint-desktop-lg: 1200px; /* Large desktops */
+  --breakpoint-desktop-xl: 1440px; /* Extra large screens */
+
+  /* =============================================================================
+     TOUCH TARGETS & ACCESSIBILITY
+     Minimum sizes for touch-friendly interaction
+     ============================================================================= */
+  --touch-target-min: 44px;    /* WCAG minimum touch target */
+  --touch-target-comfortable: 48px; /* Comfortable touch target */
+  --focus-ring-width: 2px;     /* Focus indicator width */
+  --focus-ring-offset: 2px;    /* Focus indicator offset */
+
+  /* =============================================================================
+     SHADOWS & ELEVATION
+     Consistent shadow system for depth perception
+     ============================================================================= */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* =============================================================================
+     ANIMATION & TRANSITIONS
+     Consistent timing and easing for smooth interactions
+     ============================================================================= */
+  --transition-fast: 150ms ease-in-out;
+  --transition-normal: 250ms ease-in-out;
+  --transition-slow: 350ms ease-in-out;
+  
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* =============================================================================
+     Z-INDEX SCALE
+     Consistent layering system to prevent z-index conflicts
+     ============================================================================= */
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal-backdrop: 1040;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1070;
+  --z-toast: 1080;
+
+  /* =============================================================================
+     GRID & LAYOUT
+     Consistent grid and layout values
+     ============================================================================= */
+  --grid-columns: 12;
+  --container-padding: var(--space-4);
+  --container-padding-mobile: var(--space-3);
+  --section-spacing: var(--space-16);
+  --section-spacing-mobile: var(--space-12);
+
+  /* =============================================================================
+     FORM ELEMENTS
+     Consistent form element sizing
+     ============================================================================= */
+  --input-height: var(--touch-target-min);
+  --input-padding-x: var(--space-3);
+  --input-padding-y: var(--space-2);
+  --input-border-width: 1px;
+  
+  --button-height: var(--touch-target-min);
+  --button-padding-x: var(--space-4);
+  --button-padding-y: var(--space-2);
+  --button-border-width: 1px;
+
+  /* =============================================================================
+     CONTENT SPACING
+     Consistent content spacing patterns
+     ============================================================================= */
+  --content-gap: var(--space-6);
+  --content-gap-mobile: var(--space-4);
+  --paragraph-spacing: var(--space-4);
+  --list-spacing: var(--space-2);
+}

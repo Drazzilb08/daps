@@ -74,7 +74,78 @@
   .page-header-brand {
     display: flex;
     align-items: center;
+    gap: var(--space-3);
     flex-shrink: 0; /* Don't compress brand area */
+  }
+
+  /* Hamburger Menu Button */
+  .hamburger {
+    background: none;
+    border: none;
+    padding: var(--space-1);
+    cursor: pointer;
+    display: none; /* Hidden by default on desktop */
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: var(--radius-1);
+    transition: background-color var(--transition-fast);
+  }
+
+  .hamburger:hover {
+    background: var(--color-surface-hover);
+  }
+
+  .hamburger:focus {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  /* Hamburger Animation Styles */
+  .hamburger svg {
+    overflow: visible;
+  }
+
+  .line {
+    fill: none;
+    stroke: var(--primary);
+    stroke-width: 6;
+    transition:
+        stroke-dasharray var(--duration-extra-slow) cubic-bezier(0.4, 0, 0.2, 1),
+        stroke-dashoffset var(--duration-extra-slow) cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .line1 { stroke-dasharray: 60 207; }
+  .line2 { stroke-dasharray: 60 60; }
+  .line3 { stroke-dasharray: 60 207; }
+
+  .hamburger.menu.opened .line1 {
+    stroke-dasharray: 90 207;
+    stroke-dashoffset: -134;
+  }
+
+  .hamburger.menu.opened .line2 {
+    stroke-dasharray: 1 60;
+    stroke-dashoffset: -30;
+  }
+
+  .hamburger.menu.opened .line3 {
+    stroke-dasharray: 90 207;
+    stroke-dashoffset: -134;
+  }
+
+  /* Logo Section */
+  .page-header-logo-section {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .page-header-logo-image {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
   }
 
   .page-header-title {
@@ -84,7 +155,7 @@
     line-height: 1.2;
   }
 
-  .page-header-logo {
+  .page-header-logo-text {
     font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-primary);
@@ -97,6 +168,12 @@
     font-weight: var(--font-weight-medium);
     text-transform: uppercase;
     letter-spacing: var(--letter-spacing-wide);
+  }
+
+  /* Header Spacer for Future Search */
+  .page-header-spacer {
+    flex: 1;
+    /* Reserved for future search interface */
   }
 
   /* Actions Section */
@@ -157,6 +234,18 @@
   }
 
   /* Mobile responsive header */
+  @media (max-width: 768px) {
+    /* Show hamburger and adjust layout for mobile */
+    .hamburger {
+      display: flex;
+    }
+
+    /* Hide header text on mobile - keep only logo image and hamburger */
+    .page-header-title {
+      display: none;
+    }
+  }
+
   @media (max-width: 480px) {
     .page-header-content {
       padding: 0 var(--space-3);
@@ -175,7 +264,24 @@
     .theme-toggle-text {
       display: none; /* Show only icon on very small screens */
     }
+
+    /* Reduce gaps on very small screens */
+    .page-header-brand {
+      gap: var(--space-2);
+    }
+
+    .page-header-logo-section {
+      gap: var(--space-2);
+    }
+
+    /* Ensure logo is visible but not too large */
+    .page-header-logo-image {
+      width: 28px;
+      height: 28px;
+    }
   }
+
+  /* Desktop: hamburger already hidden by default */
 }
 
 /* =============================================================================
@@ -210,7 +316,7 @@
   }
 
   .nav-item {
-    margin-bottom: var(--space-1);
+    margin-bottom: 0; /* Remove margin to prevent gap in accent border */
   }
 
   /* =============================================================================
@@ -287,7 +393,6 @@
     list-style: none;
     margin: 0;
     padding: 0;
-    margin-top: var(--space-1);
   }
 
   .nav-child-item {
@@ -392,45 +497,73 @@
     background: var(--color-surface-hover);
   }
 
-  /* Mobile sidebar behavior - Hierarchical Navigation */
-  @media (max-width: 767px) {
+  /* Mobile Sidebar Backdrop - REMOVED per user feedback */
+
+  /* Mobile sidebar overlay behavior */
+  @media (max-width: 768px) {
     .page-sidebar {
-      flex: 0 0 60px; /* Collapsed sidebar on mobile */
+      position: fixed;
+      top: var(--header-height);
+      left: 0;
+      bottom: 0;
+      width: var(--sidebar-width);
+      max-width: 280px; /* Reasonable max width for mobile */
+      transform: translateX(-100%);
+      transition: transform var(--transition-normal);
+      z-index: var(--z-modal);
+      flex: none; /* Override flex sizing for fixed positioning */
+      overflow-y: auto; /* Ensure content is scrollable on mobile */
     }
 
-    /* Hide all labels on mobile */
+    .page-sidebar--mobile-open {
+      transform: translateX(0);
+    }
+
+    /* Ensure all navigation elements are visible on mobile when open */
     .nav-label,
     .nav-label--child {
-      display: none;
+      display: block;
     }
 
-    /* Hide child navigation on mobile */
     .nav-children {
-      display: none;
+      display: block;
     }
 
-    /* Center parent icons */
+    /* Restore normal padding for mobile overlay */
     .nav-link--parent {
-      justify-content: center;
-      padding: var(--space-3) var(--space-2);
+      padding: var(--space-3) var(--space-4);
+      justify-content: flex-start;
     }
 
     .nav-icon {
-      width: auto;
+      width: 20px; /* Restore icon width */
     }
 
     .page-sidebar-content {
-      padding: var(--space-3) 0;
+      padding: var(--space-4) 0;
     }
 
     .page-sidebar-footer {
-      display: none; /* Hide footer on mobile */
+      display: block; /* Show footer on mobile when open */
     }
 
-    /* Mobile active states - only show stripe for visual feedback */
+    /* Touch-optimized targets on mobile overlay */
+    .nav-link--parent,
+    .nav-link--child {
+      min-height: var(--touch-target-min);
+    }
+
+    /* Mobile active states - full width accent bar */
     .nav-link--parent-active::before,
     .nav-link--active::before {
-      width: 2px; /* Thinner stripe on mobile */
+      width: 3px; /* Full width accent bar on mobile */
+    }
+  }
+
+  /* Desktop: sidebar remains visible */
+  @media (min-width: 769px) {
+    .page-sidebar--mobile-open {
+      /* No special styling needed on desktop */
     }
   }
 

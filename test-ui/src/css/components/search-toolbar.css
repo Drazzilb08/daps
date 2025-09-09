@@ -1,0 +1,238 @@
+/**
+ * DAPS Search Toolbar Component Styles
+ * 
+ * Implements the smart toolbar design with:
+ * - Responsive layout with measurement-based overflow
+ * - Mobile-first design approach
+ * - Design system token integration
+ * - Accessibility-compliant interactions
+ * - Smooth animations and transitions
+ */
+
+@layer components {
+  .search-toolbar {
+    /* Base layout */
+    display: flex;
+    align-items: center;
+    width: 100%;
+    
+    /* Visual styling with design tokens */
+    background: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+    padding: var(--space-2) var(--space-3);
+    
+    /* Ensure proper z-index for overflow menus */
+    position: relative;
+    z-index: var(--z-index-toolbar, 10);
+  }
+
+  /* Button container */
+  .search-toolbar__buttons {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex: 1;
+    overflow: hidden; /* Prevent layout shift during measurement */
+  }
+
+  /* Individual toolbar button styling */
+  .search-toolbar__button {
+    flex-shrink: 0; /* Prevent buttons from compressing */
+  }
+
+  /* Overflow container */
+  .search-toolbar__overflow {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  /* Overflow button styling */
+  .search-toolbar__overflow-button {
+    /* Ensure overflow button is always visible */
+    flex-shrink: 0;
+  }
+
+  /* Overflow menu */
+  .search-toolbar__overflow-menu {
+    position: absolute;
+    top: calc(100% + var(--space-1));
+    right: 0;
+    z-index: var(--z-index-dropdown, 50);
+    
+    /* Visual styling */
+    background: var(--color-surface-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    box-shadow: var(--shadow-lg);
+    
+    /* Layout */
+    min-width: 150px;
+    padding: var(--space-1) 0;
+    
+    /* Animation */
+    opacity: 0;
+    transform: translateY(-8px);
+    animation: fadeInUp var(--transition-fast) ease-out forwards;
+  }
+
+  /* Overflow menu items */
+  .search-toolbar__overflow-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    
+    /* Touch-friendly sizing */
+    min-height: var(--touch-target-min);
+    padding: var(--space-2) var(--space-3);
+    
+    /* Visual styling */
+    background: transparent;
+    border: none;
+    color: var(--color-text-primary);
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-sm);
+    text-align: left;
+    
+    /* Interaction */
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+  }
+
+  .search-toolbar__overflow-item:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+  }
+
+  .search-toolbar__overflow-item:disabled {
+    color: var(--color-text-disabled);
+    cursor: not-allowed;
+  }
+
+  /* Overflow item icon and label */
+  .search-toolbar__overflow-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-base);
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .search-toolbar__overflow-label {
+    flex: 1;
+  }
+
+  /* Debug information (development only) */
+  .search-toolbar__debug {
+    margin-left: auto;
+    padding-left: var(--space-3);
+    font-family: var(--font-family-mono, monospace);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+    border-left: 1px solid var(--color-border);
+    pointer-events: none; /* Don't intercept clicks */
+    user-select: none; /* Don't allow text selection */
+  }
+
+  /* Measuring state - prevent layout shift */
+  .search-toolbar--measuring .search-toolbar__buttons {
+    visibility: hidden;
+  }
+
+  .search-toolbar--measuring::after {
+    content: "Measuring...";
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-tertiary);
+  }
+
+  /* Focus states for keyboard navigation */
+  .search-toolbar__overflow-item:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: -2px;
+    background: var(--color-surface-hover);
+  }
+
+  /* Animation keyframes */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeOutDown {
+    from {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    to {
+      opacity: 0;
+      transform: translateY(-8px);
+    }
+  }
+
+  /* Mobile-first responsive adjustments */
+  @media (max-width: 640px) {
+    .search-toolbar {
+      padding: var(--space-2);
+    }
+    
+    .search-toolbar__buttons {
+      gap: var(--space-1);
+    }
+    
+    .search-toolbar__overflow-menu {
+      right: var(--space-2);
+      left: var(--space-2);
+      min-width: unset;
+    }
+  }
+
+  /* Tablet adjustments */
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .search-toolbar {
+      padding: var(--space-3) var(--space-4);
+    }
+    
+    .search-toolbar__buttons {
+      gap: var(--space-2);
+    }
+  }
+
+  /* Desktop adjustments */
+  @media (min-width: 1025px) {
+    .search-toolbar {
+      padding: var(--space-3) var(--space-6);
+    }
+    
+    .search-toolbar__buttons {
+      gap: var(--space-3);
+    }
+  }
+}
+
+/* Dark theme specific adjustments */
+@layer components {
+  .search-toolbar {
+    --local-surface-elevated: var(--color-surface-secondary);
+  }
+}
+
+/* Light theme specific adjustments */
+[data-theme="light"] {
+  .search-toolbar {
+    --local-surface-elevated: var(--color-background);
+  }
+  
+  .search-toolbar__overflow-menu {
+    box-shadow: var(--shadow-md);
+  }
+}

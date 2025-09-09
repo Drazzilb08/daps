@@ -1,0 +1,158 @@
+/**
+ * DAPS Tool Button Component Styles
+ * 
+ * Implements the toolbar button design with:
+ * - Mobile-first responsive design
+ * - Touch-friendly sizing (44px minimum)
+ * - Design system token integration
+ * - Accessibility-compliant focus states
+ * - Priority-based visibility system
+ */
+
+@layer components {
+  .tool-button {
+    /* Base styling with design tokens */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    
+    /* Touch-friendly sizing */
+    min-height: var(--touch-target-min);
+    min-width: var(--touch-target-min);
+    padding: var(--space-2) var(--space-3);
+    
+    /* Typography */
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    line-height: 1;
+    
+    /* Visual styling */
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    color: var(--color-text-primary);
+    
+    /* Interaction */
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    
+    /* Remove default button styling */
+    appearance: none;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  /* Hover state */
+  .tool-button:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+    border-color: var(--color-border-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* Active state */
+  .tool-button--active,
+  .tool-button:active:not(:disabled) {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: var(--color-primary-text);
+  }
+
+  /* Disabled state */
+  .tool-button--disabled,
+  .tool-button:disabled {
+    background: var(--color-surface-disabled);
+    border-color: var(--color-border-disabled);
+    color: var(--color-text-disabled);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  /* Focus state for keyboard navigation */
+  .tool-button:focus-visible {
+    outline: 2px solid var(--color-focus-ring);
+    outline-offset: 2px;
+  }
+
+  /* Icon styling */
+  .tool-button__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-base);
+    line-height: 1;
+  }
+
+  /* Label styling */
+  .tool-button__label {
+    display: inline-block;
+  }
+
+  /* Compact variant for smaller screens */
+  @media (max-width: 768px) {
+    .tool-button {
+      padding: var(--space-2);
+      font-size: var(--font-size-xs);
+    }
+    
+    /* Hide labels on mobile, show icons only if available */
+    .tool-button__label {
+      display: none;
+    }
+    
+    .tool-button__icon + .tool-button__label {
+      display: none;
+    }
+    
+    /* Show label if no icon */
+    .tool-button:not(.tool-button__icon) .tool-button__label {
+      display: inline-block;
+    }
+  }
+
+  /* Priority-based responsive visibility */
+  /* Priority 4 (Low) - Hidden first on small screens */
+  @media (max-width: 640px) {
+    .tool-button[data-priority="4"] {
+      display: none;
+    }
+  }
+
+  /* Priority 3 (Medium) - Hidden on very small screens */
+  @media (max-width: 480px) {
+    .tool-button[data-priority="3"] {
+      display: none;
+    }
+  }
+
+  /* Priority 2 (High) - Hidden on mobile */
+  @media (max-width: 375px) {
+    .tool-button[data-priority="2"] {
+      display: none;
+    }
+  }
+
+  /* Priority 1 (Essential) - Always visible */
+  .tool-button[data-priority="1"] {
+    display: inline-flex;
+  }
+}
+
+/* Dark theme overrides (loaded by default) */
+@layer components {
+  .tool-button {
+    --local-surface: var(--color-surface-secondary);
+    --local-hover: var(--color-surface-tertiary);
+  }
+}
+
+/* Light theme overrides (activated via data-theme="light") */
+[data-theme="light"] {
+  .tool-button {
+    --local-surface: var(--color-background);
+    --local-hover: var(--color-surface);
+  }
+}

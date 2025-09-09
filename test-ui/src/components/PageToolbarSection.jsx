@@ -36,10 +36,10 @@ const PageToolbarSection = ({
     return () => window.removeEventListener('resize', updateWidth);
   }, []);
 
-  // Constants for width calculations (based on Radarr values)
-  const BUTTON_WIDTH = 70; // Average button width with padding
+  // Constants for width calculations (updated for compact buttons)
+  const BUTTON_WIDTH = 64; // Button width with padding and text
   const SEPARATOR_WIDTH = 8; // Separator width
-  const MORE_BUTTON_WIDTH = 60; // "More" button width
+  const MORE_BUTTON_WIDTH = 56; // "More" button width
 
   const { visibleButtons, overflowItems } = useMemo(() => {
     if (!collapseButtons || sectionWidth === 0) {

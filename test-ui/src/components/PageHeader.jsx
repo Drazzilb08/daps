@@ -139,26 +139,24 @@ const PageHeader = React.memo(() => {
           </div>
         )}
 
-        {/* Actions Section - Only show on non-search pages */}
-        {!isSearchPage && (
-          <div className="page-header-actions">
-            {/* Theme Toggle - Temporary for testing */}
-            <button
-              className="theme-toggle-button"
-              onClick={handleThemeToggle}
-              type="button"
-              aria-label={`Switch to ${isDarkTheme ? 'light' : 'dark'} theme`}
-              title={`Current: ${getThemeDisplayText()}. Click to toggle theme.`}
-            >
-              <span className="theme-toggle-icon material-symbols-outlined" aria-hidden="true">
-                {getThemeIconName()}
-              </span>
-              <span className="theme-toggle-text">
-                {getThemeDisplayText()}
-              </span>
-            </button>
-          </div>
-        )}
+        {/* Actions Section - Always show theme toggle */}
+        <div className="page-header-actions">
+          {/* Theme Toggle */}
+          <button
+            className="theme-toggle-button"
+            onClick={handleThemeToggle}
+            type="button"
+            aria-label={`Switch to ${isDarkTheme ? 'light' : 'dark'} theme`}
+            title={`Current: ${getThemeDisplayText()}. Click to toggle theme.`}
+          >
+            <span className="theme-toggle-icon material-symbols-outlined" aria-hidden="true">
+              {getThemeIconName()}
+            </span>
+            <span className="theme-toggle-text">
+              {getThemeDisplayText()}
+            </span>
+          </button>
+        </div>
       </div>
     </header>
   );

@@ -87,7 +87,7 @@ const DashboardPage = () => {
               <p>
                 This is test content block {i + 1}. It demonstrates that the layout properly handles 
                 scrolling content while keeping the header and sidebar in a fixed position. 
-                The Sonarr-style layout ensures that users can always access navigation 
+                The professional layout ensures that users can always access navigation 
                 and branding elements while browsing through large amounts of content.
               </p>
               <p>

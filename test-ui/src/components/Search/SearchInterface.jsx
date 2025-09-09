@@ -1,21 +1,28 @@
 import React, { useState, useCallback, useRef } from 'react';
+import PropTypes from 'prop-types';
 import { useDebounce } from '../../hooks/useDebounce.js';
 
 /**
- * Search Interface Component for DAPS application
+ * SearchInterface Component for DAPS application
  * 
- * Provides search functionality for search pages with:
- * - Debounced search input (300ms delay)
- * - Responsive design with mobile-first approach
+ * Professional search interface providing context-aware search functionality
+ * with debounced input, responsive design, and accessibility compliance.
+ * 
+ * Features:
+ * - Debounced search input (300ms delay) for performance optimization
+ * - Context-aware placeholder text based on search page type
+ * - Responsive design with mobile-first approach (375px+)
  * - Touch-optimized interaction targets (44px minimum)
- * - Real-time search state feedback
- * - Placeholder space for future toolbar components
+ * - Real-time search state feedback and visual indicators
+ * - WCAG 2.1 AA compliant with proper ARIA labels
+ * - Clear search functionality with keyboard accessibility
+ * - Form submission handling for Enter key support
  * 
  * @param {Object} props - Component props
  * @param {string} props.searchPageType - Type of search page ('media', 'posters')
- * @param {string} props.searchSubtype - Search subtype ('assets', 'gdrive') or null
- * @param {Function} props.onSearch - Callback function for search events
- * @param {string} props.placeholder - Placeholder text for search input
+ * @param {string} [props.searchSubtype] - Search subtype ('assets', 'gdrive') or null for basic search
+ * @param {Function} props.onSearch - Callback function for search events, receives search term as parameter
+ * @param {string} [props.placeholder] - Custom placeholder text, falls back to contextual placeholder
  */
 const SearchInterface = React.memo(({ 
   searchPageType, 
@@ -141,5 +148,12 @@ const SearchInterface = React.memo(({
 });
 
 SearchInterface.displayName = 'SearchInterface';
+
+SearchInterface.propTypes = {
+  searchPageType: PropTypes.string.isRequired,
+  searchSubtype: PropTypes.string,
+  onSearch: PropTypes.func.isRequired,
+  placeholder: PropTypes.string
+};
 
 export default SearchInterface;

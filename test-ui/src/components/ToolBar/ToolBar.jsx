@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 /**
  * ToolBar - Generic reusable toolbar component
  * 
- * Main container for toolbar sections and buttons following Radarr architecture.
+ * Main container for toolbar sections and buttons with professional architecture.
  * This is a generic component that can be used anywhere in the application.
  * 
  * @param {Object} props - Component props

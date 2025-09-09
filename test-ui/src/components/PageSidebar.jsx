@@ -23,7 +23,7 @@ import { useUIState } from '../contexts/UIStateContext.jsx';
 
 /**
  * Hierarchical navigation structure for DAPS
- * Structure matches media automation workflow and professional interfaces like Sonarr/Radarr
+ * Structure matches media automation workflow and professional interface standards
  */
 const NAVIGATION_STRUCTURE = [
   {

@@ -1,22 +1,41 @@
 /**
- * DAPS Search Interface Component
+ * SearchInterface Component Styles
  * 
- * Simple, clean search interface using design tokens.
+ * Professional search interface with context-aware styling following DAPS design system.
+ * Implements mobile-first responsive design with touch-optimized interaction targets.
+ * 
+ * Features:
+ * - Responsive search input with icon and clear button
+ * - Focus states with design token colors
+ * - Touch-optimized clear button (32px minimum)
+ * - Proper z-index layering for icon positioning
+ * - WCAG 2.1 AA compliant contrast and sizing
+ * - Smooth transitions using design token timing
+ * 
+ * Design System Integration:
+ * - Uses spacing tokens (--space-*) for consistent padding/margins
+ * - Uses color tokens (--color-*) for theming and accessibility
+ * - Uses radius tokens (--radius-*) for consistent border-radius
+ * - Uses transition tokens (--transition-*) for smooth animations
  */
 
 @layer components {
+  /* Main search interface container - full width responsive */
   .search-interface {
     width: 100%;
   }
 
+  /* Search form wrapper - handles form submission */
   .search-form {
     width: 100%;
   }
 
+  /* Input container - provides relative positioning context */
   .search-input-container {
     position: relative;
   }
 
+  /* Input wrapper - main visual container with flexbox layout */
   .search-input-wrapper {
     position: relative;
     display: flex;
@@ -24,46 +43,52 @@
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-2);
-    height: var(--input-height);
+    height: var(--input-height); /* Ensures consistent touch target height */
   }
 
+  /* Focus state - primary color border when input has focus */
   .search-input-wrapper:focus-within {
     border-color: var(--color-primary);
   }
 
+  /* Search icon - positioned absolutely on left side */
   .search-icon {
     position: absolute;
-    left: var(--space-3);
+    left: var(--space-3); /* Consistent with design token spacing */
     color: var(--color-text-secondary);
     font-size: var(--font-size-lg);
-    pointer-events: none;
-    z-index: 1;
+    pointer-events: none; /* Allows input to receive clicks */
+    z-index: 1; /* Above background, below clear button */
   }
 
+  /* Main search input field - flexible width with proper padding */
   .search-input {
     flex: 1;
+    /* Padding: vertical padding, right padding, vertical padding, left padding (account for icon) */
     padding: var(--input-padding-y) var(--space-4) var(--input-padding-y) var(--space-10);
     border: none;
     background: transparent;
     color: var(--color-text-primary);
     font-size: var(--font-size-base);
     font-family: var(--font-family-sans);
-    outline: none;
+    outline: none; /* Custom focus styling on wrapper */
     width: 100%;
     height: 100%;
   }
 
+  /* Placeholder text styling - secondary text color */
   .search-input::placeholder {
     color: var(--color-text-secondary);
   }
 
+  /* Clear button - positioned absolutely on right side */
   .search-clear {
     position: absolute;
     right: var(--space-2);
     top: 50%;
     transform: translateY(-50%);
-    width: var(--space-8);
-    height: var(--space-8);
+    width: var(--space-8);  /* 32px - touch-optimized size */
+    height: var(--space-8); /* 32px - touch-optimized size */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -72,9 +97,10 @@
     color: var(--color-text-secondary);
     cursor: pointer;
     border-radius: var(--radius-1);
-    transition: color var(--transition-normal);
+    transition: color var(--transition-normal); /* Smooth hover animation */
   }
 
+  /* Clear button hover state - enhanced visibility */
   .search-clear:hover {
     color: var(--color-text-primary);
   }

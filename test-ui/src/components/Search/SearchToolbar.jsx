@@ -5,14 +5,33 @@ import { ToolBar, Section, Button, Separator } from '../Toolbar';
 /**
  * SearchToolbar Component for DAPS Application
  * 
- * Intelligent responsive toolbar based on Radarr architecture patterns.
- * Provides context-aware tools for search pages with automatic overflow management.
+ * Professional context-aware toolbar implementing smart responsive architecture
+ * with measurement-based overflow management and dynamic tool configuration.
+ * 
+ * Features:
+ * - Context-aware tool configuration based on search page type and subtype
+ * - Automatic overflow management with measurement-based button collapsing
+ * - Dynamic left section (context tools) and static right section (constant tools)
+ * - Professional architecture following established UI patterns
+ * - Touch-optimized interaction targets (44px minimum)
+ * - Accessibility compliant with proper ARIA attributes
+ * - Visual separator between dynamic and constant tool sections
+ * 
+ * Toolbar Architecture:
+ * - Left Section: Dynamic tools that change based on context (collapsible)
+ * - Separator: Visual divider between sections
+ * - Right Section: Constant tools always visible (view, sort, filter)
+ * 
+ * Context Behavior:
+ * - Media pages: Refresh, Scan, Export tools
+ * - Poster pages: Refresh, Upload, Download tools
+ * - Poster + GDrive: Additional Sync tool
  * 
  * @param {Object} props - Component props
  * @param {string} [props.searchPageType='media'] - Type of search page ('media', 'posters')
- * @param {string} [props.searchSubtype] - Search subtype context
- * @param {Function} [props.onToolAction] - Tool action handler
- * @param {boolean} [props.disabled=false] - Disable all tools
+ * @param {string} [props.searchSubtype] - Search subtype context ('gdrive', 'assets') or null
+ * @param {Function} [props.onToolAction] - Tool action handler (action, toolData, event) => void
+ * @param {boolean} [props.disabled=false] - Disable all tool interactions
  */
 const SearchToolbar = React.memo(({ 
   searchPageType = 'media',
@@ -22,7 +41,13 @@ const SearchToolbar = React.memo(({
 }) => {
   
   /**
-   * Handle tool button clicks
+   * Handle tool button clicks with context data
+   * 
+   * Returns a click handler function that includes current search context
+   * and prevents action when disabled or no handler provided.
+   * 
+   * @param {string} action - The action identifier for the tool
+   * @returns {Function} Event handler function for button click
    */
   const handleToolClick = useCallback((action) => {
     return (event) => {
@@ -39,7 +64,14 @@ const SearchToolbar = React.memo(({
   }, [disabled, onToolAction, searchPageType, searchSubtype]);
 
   /**
-   * Get constant tools that always appear on the right
+   * Get constant tools that always appear on the right section
+   * 
+   * These tools are context-independent and always visible:
+   * - View: Toggle display mode (list/grid/card views)
+   * - Sort: Access sorting options and controls
+   * - Filter: Open filtering panel or quick filters
+   * 
+   * @returns {Array} Array of tool configuration objects
    */
   const getConstantTools = () => [
     {
@@ -63,7 +95,25 @@ const SearchToolbar = React.memo(({
   ];
 
   /**
-   * Get dynamic tools based on search context (left side)
+   * Get dynamic tools based on search context (left section)
+   * 
+   * Tools are dynamically configured based on searchPageType and searchSubtype:
+   * 
+   * All contexts:
+   * - Refresh: Reload/refresh current data
+   * 
+   * Media context:
+   * - Scan: Initiate media library scan
+   * - Export: Export search results or data
+   * 
+   * Poster context:
+   * - Upload: Upload poster files
+   * - Download: Download selected posters
+   * 
+   * Poster + GDrive context:
+   * - Sync: Synchronize with Google Drive
+   * 
+   * @returns {Array} Array of tool configuration objects for current context
    */
   const getDynamicTools = () => {
     const dynamicTools = [

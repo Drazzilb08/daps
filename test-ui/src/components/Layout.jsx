@@ -7,37 +7,52 @@ import SearchToolbar from './Search/SearchToolbar.jsx';
 import useSearchPageDetection from '../hooks/useSearchPageDetection.js';
 
 /**
- * Main layout component for DAPS application
+ * Layout - Main layout component for DAPS application
  * 
- * Implements Radarr-style flexbox layout structure:
- * - Fixed header at top (doesn't scroll)
- * - Smart search toolbar positioned below header
- * - Sidebar and main content below toolbar
- * - Main content area is scrollable
- * - Responsive design with mobile-first approach
+ * Professional responsive layout implementing context-aware interface design
+ * with dynamic toolbar display and mobile-first architecture.
+ * 
+ * Features:
+ * - Fixed header with context-aware search interface integration
+ * - Collapsible sidebar with hierarchical navigation
+ * - Context-aware toolbar display (only on search pages)
+ * - Responsive design with mobile breakpoints
+ * - Scrollable main content area with proper overflow handling
+ * - Touch-optimized mobile interface with overlay sidebar
+ * - Professional flexbox layout with proper semantic HTML
  * 
  * Layout Structure:
- * ┌─────────────────────────────────────────┐
- * │ HEADER (PageHeader with SearchInterface) │
- * ├─────────────────────────────────────────┤
- * │ SIDEBAR │ TOOLBAR (SearchToolbar)       │
- * ├─────────────────────────────────────────┤
- * │ SIDEBAR │ MAIN CONTENT                  │
- * └─────────────────────────────────────────┘
+ * - Header: Fixed position with PageHeader and SearchInterface
+ * - Main: Flexbox container with sidebar and content area
+ * - Sidebar: Collapsible navigation with mobile overlay
+ * - Toolbar: Context-aware SearchToolbar (search pages only)
+ * - Content: Scrollable main content area using React Router Outlet
+ * 
+ * Context Behavior:
+ * - Search pages (/media/search, /posters/search/*): Show SearchToolbar
+ * - Non-search pages: Clean layout without toolbar
+ * - Mobile: Overlay sidebar with backdrop and touch gestures
  * 
  * @param {Object} props - Component props
- * @param {React.ReactNode} props.children - Optional children (overrides Outlet if provided)
- * @param {Function} props.onToolbarAction - Handler for toolbar actions (search, filter, etc.)
+ * @param {React.ReactNode} [props.children] - Optional children (overrides Outlet if provided)
  */
 const Layout = ({ children }) => {
   // Detect if we're on a search page to show toolbar
   const { isSearchPage, searchPageType, searchSubtype } = useSearchPageDetection();
   
   /**
-   * Handle toolbar action
+   * Handle toolbar action from SearchToolbar component
+   * 
+   * Processes toolbar actions and delegates to appropriate handlers
+   * based on action type and current search context.
+   * 
+   * @param {string} action - The action type (refresh, scan, export, etc.)
+   * @param {Object} tool - Tool data including action and context information
+   * @param {Event} _event - DOM event that triggered the action (currently unused)
    */
-  const handleToolAction = React.useCallback((action, tool, event) => {
+  const handleToolAction = React.useCallback((action, tool, _event) => {
     console.log('Toolbar action:', { action, tool, searchPageType, searchSubtype });
+    // TODO: Implement specific action handlers based on action type
   }, [searchPageType, searchSubtype]);
 
   return (

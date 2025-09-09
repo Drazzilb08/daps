@@ -4,7 +4,7 @@ import PropTypes from 'prop-types';
 /**
  * OverflowMenuItem - Generic overflow menu item component
  * 
- * Menu item for toolbar overflow dropdown based on Radarr patterns.
+ * Menu item for toolbar overflow dropdown with professional styling.
  * Renders as a menu item with icon and label.
  * 
  * @param {Object} props - Component props

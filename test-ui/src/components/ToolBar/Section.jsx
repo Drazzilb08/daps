@@ -6,7 +6,7 @@ import OverflowMenuItem from './OverflowMenuItem.jsx';
 /**
  * Section - Generic toolbar section component with intelligent overflow management
  * 
- * Based on Radarr's architecture for responsive toolbar sections.
+ * Professional architecture for responsive toolbar sections.
  * Dynamically calculates which buttons fit and moves overflow to menu.
  * 
  * @param {Object} props - Component props

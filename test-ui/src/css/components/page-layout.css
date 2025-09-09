@@ -34,8 +34,23 @@
     overflow: hidden; /* Prevent container scroll */
   }
 
-  .page-content {
+  /* New container for toolbar and content */
+  .page-main-content {
     flex: 1 0 1px; /* Flex grow, don't shrink, minimal basis */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden; /* Prevent container scroll */
+  }
+
+  /* Page toolbar positioning */
+  .page-toolbar {
+    flex-shrink: 0; /* Don't shrink */
+    border-bottom: 1px solid var(--color-border);
+    z-index: var(--z-index-toolbar, 10);
+  }
+
+  .page-content {
+    flex: 1 1 auto; /* Fill remaining space after toolbar */
     overflow-y: auto; /* Scrollable content area */
     padding: var(--space-6) var(--space-4);
     background: var(--color-background);

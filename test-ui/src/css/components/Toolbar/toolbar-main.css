@@ -1,0 +1,75 @@
+/**
+ * PageToolbar Component Styles
+ * 
+ * Based on Radarr toolbar architecture with DAPS design system integration
+ */
+
+@layer components {
+  .page-toolbar {
+    display: flex;
+    justify-content: space-between;
+    flex: 0 0 auto;
+    padding: 0 var(--space-4);
+    height: var(--header-height);
+    background-color: var(--color-surface);
+    color: var(--color-text-primary);
+    line-height: var(--header-height);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .page-toolbar-section {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-width: 0; /* Allow flex shrinking below content width */
+    overflow: hidden; /* Prevent content from breaking out */
+  }
+
+  .page-toolbar-section--left {
+    justify-content: flex-start;
+    flex: 1; /* Take available space */
+  }
+
+  .page-toolbar-section--center {
+    justify-content: center;
+    flex: 1; /* Take available space */
+  }
+
+  .page-toolbar-section--right {
+    justify-content: flex-end;
+    flex: 0 0 auto; /* Don't grow, stay compact */
+  }
+
+  .page-toolbar-section-buttons {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    flex: 1;
+    min-width: 0; /* Allow flex shrinking below content width */
+  }
+
+  .page-toolbar-section-more {
+    position: relative;
+  }
+
+  .page-toolbar-section-overflow-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    z-index: var(--z-dropdown, 1000);
+    min-width: 160px;
+    padding: var(--space-1);
+    background: var(--color-surface-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    box-shadow: var(--shadow-lg);
+    margin-top: var(--space-1);
+  }
+
+  /* Mobile responsive adjustments */
+  @media (max-width: 767px) {
+    .page-toolbar {
+      padding: 0 var(--space-2);
+    }
+  }
+}

@@ -2,10 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 /**
- * PageToolbarButton component based on Radarr architecture
+ * Button - Generic toolbar button component
  * 
  * Individual toolbar button with icon, label, and state management.
  * Supports disabled, loading states and click handling.
+ * This is a reusable component that can be used in any toolbar context.
  * 
  * @param {Object} props - Component props
  * @param {string} props.label - Button label text
@@ -16,7 +17,7 @@ import PropTypes from 'prop-types';
  * @param {Function} [props.onPress] - Click handler
  * @param {React.ComponentType} [props.overflowComponent] - Overflow menu component
  */
-const PageToolbarButton = ({
+const Button = ({
   label,
   iconName,
   spinningName,
@@ -65,7 +66,7 @@ const PageToolbarButton = ({
   );
 };
 
-PageToolbarButton.propTypes = {
+Button.propTypes = {
   label: PropTypes.string.isRequired,
   iconName: PropTypes.string.isRequired,
   spinningName: PropTypes.string,
@@ -75,4 +76,4 @@ PageToolbarButton.propTypes = {
   overflowComponent: PropTypes.elementType
 };
 
-export default PageToolbarButton;
+export default Button;

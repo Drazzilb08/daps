@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTheme } from '../contexts/ThemeContext.jsx';
 import { useUIState } from '../contexts/UIStateContext.jsx';
 import useSearchPageDetection from '../hooks/useSearchPageDetection.js';
-import SearchInterface from './SearchInterface.jsx';
+import SearchInterface from './Search/SearchInterface.jsx';
 
 /**
  * PageHeader component for DAPS application - Phase 4D Context-Aware

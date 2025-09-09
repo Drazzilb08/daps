@@ -3,7 +3,7 @@ import { Outlet } from 'react-router-dom';
 import PropTypes from 'prop-types';
 import PageHeader from './PageHeader.jsx';
 import PageSidebar from './PageSidebar.jsx';
-import SearchToolbar from './SearchToolbar.jsx';
+import SearchToolbar from './Search/SearchToolbar.jsx';
 import useSearchPageDetection from '../hooks/useSearchPageDetection.js';
 
 /**

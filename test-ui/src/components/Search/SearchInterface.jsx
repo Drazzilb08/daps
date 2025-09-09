@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import { useDebounce } from '../hooks/useDebounce.js';
+import { useDebounce } from '../../hooks/useDebounce.js';
 
 /**
  * Search Interface Component for DAPS application

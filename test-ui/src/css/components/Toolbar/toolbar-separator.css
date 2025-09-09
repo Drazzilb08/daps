@@ -1,0 +1,17 @@
+/**
+ * PageToolbarSeparator Component Styles
+ * 
+ * Visual separator for toolbar sections based on Radarr patterns
+ */
+
+@layer components {
+  .page-toolbar-separator {
+    width: 1px;
+    height: 20px;
+    background: var(--color-text-secondary);
+    margin: 0 var(--space-3);
+    flex-shrink: 0;
+    align-self: center;
+    border-radius: 0.5px;
+  }
+}

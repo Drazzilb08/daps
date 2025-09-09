@@ -2,16 +2,16 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 /**
- * PageToolbar component based on Radarr architecture
+ * ToolBar - Generic reusable toolbar component
  * 
- * Main container for toolbar sections and buttons.
- * Provides consistent styling and layout for toolbar content.
+ * Main container for toolbar sections and buttons following Radarr architecture.
+ * This is a generic component that can be used anywhere in the application.
  * 
  * @param {Object} props - Component props
  * @param {string} [props.className] - Optional CSS class override
  * @param {React.ReactNode} props.children - Toolbar sections and content
  */
-const PageToolbar = ({ 
+const ToolBar = ({ 
   className = 'page-toolbar',
   children 
 }) => {
@@ -22,9 +22,9 @@ const PageToolbar = ({
   );
 };
 
-PageToolbar.propTypes = {
+ToolBar.propTypes = {
   className: PropTypes.string,
   children: PropTypes.node.isRequired
 };
 
-export default PageToolbar;
+export default ToolBar;

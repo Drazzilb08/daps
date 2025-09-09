@@ -1,20 +1,20 @@
 import React, { useMemo, useRef, useState, useLayoutEffect } from 'react';
 import PropTypes from 'prop-types';
-import PageToolbarButton from './PageToolbarButton.jsx';
-import PageToolbarOverflowMenuItem from './PageToolbarOverflowMenuItem.jsx';
+import Button from './Button.jsx';
+import OverflowMenuItem from './OverflowMenuItem.jsx';
 
 /**
- * PageToolbarSection component with intelligent overflow management
+ * Section - Generic toolbar section component with intelligent overflow management
  * 
  * Based on Radarr's architecture for responsive toolbar sections.
  * Dynamically calculates which buttons fit and moves overflow to menu.
  * 
  * @param {Object} props - Component props
  * @param {React.ReactNode} props.children - Toolbar buttons and separators
- * @param {string} [props.alignContent='left'] - Content alignment
- * @param {boolean} [props.collapseButtons=true] - Enable button collapse
+ * @param {string} [props.alignContent='left'] - Content alignment ('left', 'center', 'right')
+ * @param {boolean} [props.collapseButtons=true] - Enable button collapse/overflow
  */
-const PageToolbarSection = ({
+const Section = ({
   children,
   alignContent = 'left',
   collapseButtons = true
@@ -130,7 +130,7 @@ const PageToolbarSection = ({
         
         {overflowItems.length > 0 && (
           <div className="page-toolbar-section-more">
-            <PageToolbarButton
+            <Button
               label="More"
               iconName="more_horiz"
               onPress={handleMoreClick}
@@ -142,7 +142,7 @@ const PageToolbarSection = ({
                 onMouseLeave={handleOverflowClose}
               >
                 {overflowItems.map((itemProps, index) => (
-                  <PageToolbarOverflowMenuItem
+                  <OverflowMenuItem
                     key={index}
                     {...itemProps}
                     onPress={(event) => {
@@ -162,10 +162,10 @@ const PageToolbarSection = ({
   );
 };
 
-PageToolbarSection.propTypes = {
+Section.propTypes = {
   children: PropTypes.node.isRequired,
   alignContent: PropTypes.oneOf(['left', 'center', 'right']),
   collapseButtons: PropTypes.bool
 };
 
-export default PageToolbarSection;
+export default Section;

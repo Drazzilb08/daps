@@ -1,9 +1,6 @@
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
-import PageToolbar from './PageToolbar.jsx';
-import PageToolbarSection from './PageToolbarSection.jsx';
-import PageToolbarButton from './PageToolbarButton.jsx';
-import PageToolbarSeparator from './PageToolbarSeparator.jsx';
+import { ToolBar, Section, Button, Separator } from '../Toolbar';
 
 /**
  * SearchToolbar Component for DAPS Application
@@ -48,7 +45,7 @@ const SearchToolbar = React.memo(({
     {
       key: 'view',
       action: 'view',
-      iconName: 'view_list',
+      iconName: 'visibility',
       label: 'View'
     },
     {
@@ -60,7 +57,7 @@ const SearchToolbar = React.memo(({
     {
       key: 'filter',
       action: 'filter',
-      iconName: 'filter_list',
+      iconName: 'filter_alt',
       label: 'Filter'
     }
   ];
@@ -129,11 +126,11 @@ const SearchToolbar = React.memo(({
   const dynamicTools = getDynamicTools();
 
   return (
-    <PageToolbar>
+    <ToolBar>
       {/* Left section: Dynamic context-aware tools with overflow */}
-      <PageToolbarSection alignContent="left" collapseButtons={true}>
+      <Section alignContent="left" collapseButtons={true}>
         {dynamicTools.map((tool) => (
-          <PageToolbarButton
+          <Button
             key={tool.key}
             iconName={tool.iconName}
             label={tool.label}
@@ -141,15 +138,15 @@ const SearchToolbar = React.memo(({
             onPress={handleToolClick(tool.action)}
           />
         ))}
-      </PageToolbarSection>
+      </Section>
 
       {/* Visual separator between sections */}
-      <PageToolbarSeparator />
+      <Separator />
 
       {/* Right section: Constant tools always visible */}
-      <PageToolbarSection alignContent="right" collapseButtons={false}>
+      <Section alignContent="right" collapseButtons={false}>
         {constantTools.map((tool) => (
-          <PageToolbarButton
+          <Button
             key={tool.key}
             iconName={tool.iconName}
             label={tool.label}
@@ -157,8 +154,8 @@ const SearchToolbar = React.memo(({
             onPress={handleToolClick(tool.action)}
           />
         ))}
-      </PageToolbarSection>
-    </PageToolbar>
+      </Section>
+    </ToolBar>
   );
 });
 

@@ -2,7 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 /**
- * PageToolbarOverflowMenuItem component
+ * OverflowMenuItem - Generic overflow menu item component
  * 
  * Menu item for toolbar overflow dropdown based on Radarr patterns.
  * Renders as a menu item with icon and label.
@@ -14,7 +14,7 @@ import PropTypes from 'prop-types';
  * @param {boolean} [props.isSpinning=false] - Loading state
  * @param {Function} [props.onPress] - Click handler
  */
-const PageToolbarOverflowMenuItem = ({
+const OverflowMenuItem = ({
   iconName,
   label,
   isDisabled = false,
@@ -58,7 +58,7 @@ const PageToolbarOverflowMenuItem = ({
   );
 };
 
-PageToolbarOverflowMenuItem.propTypes = {
+OverflowMenuItem.propTypes = {
   iconName: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
   isDisabled: PropTypes.bool,
@@ -66,4 +66,4 @@ PageToolbarOverflowMenuItem.propTypes = {
   onPress: PropTypes.func
 };
 
-export default PageToolbarOverflowMenuItem;
+export default OverflowMenuItem;

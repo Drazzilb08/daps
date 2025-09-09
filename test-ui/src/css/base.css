@@ -319,7 +319,6 @@
   /* Enhanced focus for interactive elements */
   button:focus-visible,
   [role="button"]:focus-visible,
-  input:focus-visible,
   textarea:focus-visible,
   select:focus-visible,
   a:focus-visible {
@@ -327,6 +326,11 @@
     outline-offset: var(--focus-ring-offset);
     box-shadow: 0 0 0 var(--focus-ring-offset) var(--color-focus-ring-offset),
                 0 0 0 calc(var(--focus-ring-offset) + var(--focus-ring-width)) var(--color-focus-ring);
+  }
+
+  input:focus-visible {
+    border: 1px solid var(--color-primary);
+    outline: none;
   }
 
   /* Skip links for screen readers */

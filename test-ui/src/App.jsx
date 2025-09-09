@@ -78,7 +78,7 @@ const App = () => {
                       
                       {/* Media Section - Hierarchical Routes */}
                       <Route path="media" element={<Navigate to="/media/search" replace />} />
-                      <Route path="media/search" />
+                      <Route path="media/search" element={<div className="content-layout"><h1>Media Search</h1><p>Search through your media collection</p></div>} />
                       <Route path="media/library" element={<div className="content-layout"><h1>Media Library</h1><p>Browse your existing media collection</p></div>} />
                       <Route path="media/statistics" element={<div className="content-layout"><h1>Media Statistics</h1><p>View media library statistics and analytics</p></div>} />
                       

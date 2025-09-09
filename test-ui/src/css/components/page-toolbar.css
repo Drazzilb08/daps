@@ -21,21 +21,23 @@
     display: flex;
     align-items: center;
     gap: var(--space-1);
-    flex: 1;
     min-width: 0; /* Allow flex shrinking below content width */
     overflow: hidden; /* Prevent content from breaking out */
   }
 
   .page-toolbar-section--left {
     justify-content: flex-start;
+    flex: 1; /* Take available space */
   }
 
   .page-toolbar-section--center {
     justify-content: center;
+    flex: 1; /* Take available space */
   }
 
   .page-toolbar-section--right {
     justify-content: flex-end;
+    flex: 0 0 auto; /* Don't grow, stay compact */
   }
 
   .page-toolbar-section-buttons {

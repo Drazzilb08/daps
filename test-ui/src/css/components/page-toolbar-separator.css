@@ -7,9 +7,11 @@
 @layer components {
   .page-toolbar-separator {
     width: 1px;
-    height: 24px;
-    background: var(--color-border);
-    margin: 0 var(--space-1);
+    height: 20px;
+    background: var(--color-text-secondary);
+    margin: 0 var(--space-3);
     flex-shrink: 0;
+    align-self: center;
+    border-radius: 0.5px;
   }
 }

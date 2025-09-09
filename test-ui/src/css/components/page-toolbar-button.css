@@ -10,8 +10,8 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-width: 70px;
-    width: min-content;
+    min-width: 56px;
+    width: auto;
     padding: var(--space-1) var(--space-2);
     background: transparent;
     border: none;
@@ -69,14 +69,10 @@
 
   .page-toolbar-button-label {
     padding: 0 var(--space-1);
-    max-width: 100%;
-    max-height: 100%;
     color: inherit;
     font-size: var(--font-size-xs);
     line-height: 1;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
   }
 
   /* Overflow menu item styles */

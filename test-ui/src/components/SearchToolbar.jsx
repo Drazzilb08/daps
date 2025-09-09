@@ -42,39 +42,45 @@ const SearchToolbar = React.memo(({
   }, [disabled, onToolAction, searchPageType, searchSubtype]);
 
   /**
-   * Get tools based on search context
+   * Get constant tools that always appear on the right
    */
-  const getContextTools = () => {
-    const baseTools = [
+  const getConstantTools = () => [
+    {
+      key: 'view',
+      action: 'view',
+      iconName: 'view_list',
+      label: 'View'
+    },
+    {
+      key: 'sort',
+      action: 'sort',
+      iconName: 'sort',
+      label: 'Sort'
+    },
+    {
+      key: 'filter',
+      action: 'filter',
+      iconName: 'filter_list',
+      label: 'Filter'
+    }
+  ];
+
+  /**
+   * Get dynamic tools based on search context (left side)
+   */
+  const getDynamicTools = () => {
+    const dynamicTools = [
       {
         key: 'refresh',
         action: 'refresh',
         iconName: 'refresh',
         label: 'Refresh'
-      },
-      {
-        key: 'filter',
-        action: 'filter',
-        iconName: 'filter_list',
-        label: 'Filter'
-      },
-      {
-        key: 'sort',
-        action: 'sort',
-        iconName: 'sort',
-        label: 'Sort'
-      },
-      {
-        key: 'view',
-        action: 'view',
-        iconName: 'view_list',
-        label: 'View'
       }
     ];
 
     // Add context-specific tools
     if (searchPageType === 'media') {
-      baseTools.push(
+      dynamicTools.push(
         {
           key: 'scan',
           action: 'scan',
@@ -91,7 +97,16 @@ const SearchToolbar = React.memo(({
     }
 
     if (searchPageType === 'posters') {
-      baseTools.push(
+      if (searchSubtype === 'gdrive') {
+        dynamicTools.unshift({
+          key: 'sync',
+          action: 'sync',
+          iconName: 'sync',
+          label: 'Sync'
+        });
+      }
+      
+      dynamicTools.push(
         {
           key: 'upload',
           action: 'upload',
@@ -105,35 +120,42 @@ const SearchToolbar = React.memo(({
           label: 'Download'
         }
       );
-      
-      if (searchSubtype === 'gdrive') {
-        baseTools.unshift({
-          key: 'sync',
-          action: 'sync',
-          iconName: 'sync',
-          label: 'Sync'
-        });
-      }
     }
 
-    return baseTools;
+    return dynamicTools;
   };
 
-  const tools = getContextTools();
+  const constantTools = getConstantTools();
+  const dynamicTools = getDynamicTools();
 
   return (
     <PageToolbar>
+      {/* Left section: Dynamic context-aware tools with overflow */}
       <PageToolbarSection alignContent="left" collapseButtons={true}>
-        {tools.map((tool, index) => (
-          <React.Fragment key={tool.key}>
-            {index > 0 && index % 3 === 0 && <PageToolbarSeparator />}
-            <PageToolbarButton
-              iconName={tool.iconName}
-              label={tool.label}
-              isDisabled={disabled}
-              onPress={handleToolClick(tool.action)}
-            />
-          </React.Fragment>
+        {dynamicTools.map((tool) => (
+          <PageToolbarButton
+            key={tool.key}
+            iconName={tool.iconName}
+            label={tool.label}
+            isDisabled={disabled}
+            onPress={handleToolClick(tool.action)}
+          />
+        ))}
+      </PageToolbarSection>
+
+      {/* Visual separator between sections */}
+      <PageToolbarSeparator />
+
+      {/* Right section: Constant tools always visible */}
+      <PageToolbarSection alignContent="right" collapseButtons={false}>
+        {constantTools.map((tool) => (
+          <PageToolbarButton
+            key={tool.key}
+            iconName={tool.iconName}
+            label={tool.label}
+            isDisabled={disabled}
+            onPress={handleToolClick(tool.action)}
+          />
         ))}
       </PageToolbarSection>
     </PageToolbar>

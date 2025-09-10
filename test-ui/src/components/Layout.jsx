@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import PropTypes from 'prop-types';
+import FeatureErrorBoundary from './FeatureErrorBoundary.jsx';
 import PageHeader from './PageHeader.jsx';
 import PageSidebar from './PageSidebar.jsx';
 import SearchToolbar from './Search/SearchToolbar.jsx';
@@ -57,20 +58,47 @@ const Layout = ({ children }) => {
 
   return (
     <div className="page-layout">
-      <PageHeader />
+      <FeatureErrorBoundary 
+        featureName="Page Header" 
+        featureDescription="Main navigation and header"
+        critical={true}
+      >
+        <PageHeader />
+      </FeatureErrorBoundary>
+      
       <div className="page-main">
-        <PageSidebar />
+        <FeatureErrorBoundary 
+          featureName="Sidebar Navigation" 
+          featureDescription="Left navigation sidebar"
+          critical={true}
+        >
+          <PageSidebar />
+        </FeatureErrorBoundary>
+        
         <div className="page-main-content">
           {/* Toolbar only shows on search pages */}
           {isSearchPage && (
-            <SearchToolbar
-              searchPageType={searchPageType}
-              searchSubtype={searchSubtype}
-              onToolAction={handleToolAction}
-            />
+            <FeatureErrorBoundary 
+              featureName="Search Toolbar" 
+              featureDescription="Search page toolbar with actions"
+              critical={false}
+            >
+              <SearchToolbar
+                searchPageType={searchPageType}
+                searchSubtype={searchSubtype}
+                onToolAction={handleToolAction}
+              />
+            </FeatureErrorBoundary>
           )}
+          
           <main className="page-content">
-            {children || <Outlet />}
+            <FeatureErrorBoundary 
+              featureName="Page Content" 
+              featureDescription="Main page content area"
+              critical={false}
+            >
+              {children || <Outlet />}
+            </FeatureErrorBoundary>
           </main>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { useGlobalError } from './providers/GlobalErrorProvider';
+import { useGlobalError } from '../providers/GlobalErrorProvider';
 
 /**
  * Generic Error Boundary for graceful degradation

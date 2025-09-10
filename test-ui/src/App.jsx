@@ -8,6 +8,7 @@ import { UIStateProvider } from './contexts/UIStateContext.jsx';
 import { SearchCoordinatorProvider } from './contexts/SearchCoordinatorContext.jsx';
 import Layout from './components/Layout.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
+import ErrorTestPage from './pages/dev/ErrorTestPage.jsx';
 
 /**
  * DAPS Application Root - Phase 4 Ready
@@ -93,6 +94,9 @@ const App = () => {
                       <Route path="activity" element={<div className="content-layout"><h1>Activity</h1><p>System activity monitoring and logs</p></div>} />
                       <Route path="settings" element={<div className="content-layout"><h1>Settings</h1><p>Configuration settings and preferences</p></div>} />
                       <Route path="logs" element={<div className="content-layout"><h1>Logs</h1><p>System logs and debugging information</p></div>} />
+                      
+                      {/* Development Routes */}
+                      <Route path="dev/error-test" element={<ErrorTestPage />} />
                       
                     </Route>
                     <Route path="*" element={<Navigate to="/dashboard" replace />} />

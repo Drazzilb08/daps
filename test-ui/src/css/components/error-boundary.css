@@ -1,0 +1,784 @@
+/**
+ * Enhanced Error Boundary Styles - Ported from Main UI
+ * Professional multi-tier error boundary system with superior UX
+ */
+
+@layer components {
+    /* ========== GENERIC ERROR BOUNDARY ========== */
+    .error-boundary {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 200px;
+        padding: var(--space-4);
+        font-family: var(--font-family, system-ui, -apple-system, sans-serif);
+    }
+
+    .error-boundary__container {
+        max-width: 500px;
+        width: 100%;
+        background: var(--color-surface);
+        border: 2px solid var(--color-error);
+        border-radius: var(--radius-3);
+        padding: var(--space-5);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .error-boundary__header {
+        display: flex;
+        align-items: center;
+        gap: var(--space-3);
+        margin-bottom: var(--space-4);
+    }
+
+    .error-boundary__icon {
+        font-size: var(--font-size-2xl);
+        flex-shrink: 0;
+    }
+
+    .error-boundary__title {
+        color: var(--color-error);
+        font-size: var(--font-size-xl);
+        font-weight: var(--font-weight-semibold);
+        margin: 0;
+        line-height: var(--line-height-tight);
+    }
+
+    .error-boundary__content {
+        color: var(--color-text-primary);
+    }
+
+    .error-boundary__message {
+        margin: 0 0 var(--space-4) 0;
+        font-size: var(--font-size-base);
+        line-height: var(--line-height-relaxed);
+    }
+
+    .error-boundary__error-details {
+        background: var(--color-surface-alt);
+        border: 1px solid var(--color-error);
+        border-radius: var(--radius-2);
+        padding: var(--space-3);
+        margin-bottom: var(--space-4);
+        font-family: monospace;
+        font-size: var(--font-size-sm);
+        color: var(--color-error);
+        overflow-wrap: break-word;
+    }
+
+    .error-boundary__actions {
+        display: flex;
+        gap: var(--space-3);
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+
+    .error-boundary__button {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        min-height: 44px;
+        padding: var(--space-2) var(--space-4);
+        border: none;
+        border-radius: var(--radius-2);
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-medium);
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        text-decoration: none;
+    }
+
+    .error-boundary__button:focus {
+        outline: 2px solid var(--color-focus);
+        outline-offset: 2px;
+    }
+
+    .error-boundary__button--primary {
+        background: var(--color-primary);
+        color: white;
+    }
+
+    .error-boundary__button--primary:hover {
+        background: var(--color-primary-hover);
+        transform: translateY(-1px);
+    }
+
+    .error-boundary__button--secondary {
+        background: var(--color-surface-variant);
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border);
+    }
+
+    .error-boundary__button--secondary:hover {
+        background: var(--color-surface-alt);
+        transform: translateY(-1px);
+    }
+
+    .error-boundary__button-icon {
+        display: inline-block;
+        font-style: normal;
+    }
+
+    .error-boundary__help {
+        margin-top: var(--space-5);
+        padding-top: var(--space-4);
+        border-top: 1px solid var(--color-border);
+    }
+
+    .error-boundary__help-text {
+        margin: 0;
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+        text-align: center;
+        line-height: var(--line-height-relaxed);
+    }
+
+    /* ========== PAGE ERROR BOUNDARY ========== */
+    .page-error-boundary {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 60vh;
+        padding: var(--space-4);
+        font-family: var(--font-family, system-ui, -apple-system, sans-serif);
+    }
+
+    .page-error-boundary__container {
+        max-width: 600px;
+        width: 100%;
+        background: var(--color-surface);
+        border: 2px solid var(--color-error);
+        border-radius: var(--radius-3);
+        padding: var(--space-6);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .page-error-boundary__header {
+        text-align: center;
+        margin-bottom: var(--space-6);
+    }
+
+    .page-error-boundary__icon {
+        font-size: 4rem;
+        margin-bottom: var(--space-3);
+        display: block;
+    }
+
+    .page-error-boundary__title {
+        color: var(--color-error);
+        font-size: var(--font-size-3xl);
+        font-weight: var(--font-weight-bold);
+        margin: 0 0 var(--space-2) 0;
+        line-height: var(--line-height-tight);
+    }
+
+    .page-error-boundary__subtitle {
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-lg);
+        margin: 0;
+        line-height: var(--line-height-relaxed);
+    }
+
+    .page-error-boundary__content {
+        color: var(--color-text-primary);
+    }
+
+    .page-error-boundary__description {
+        background: var(--color-surface-alt);
+        border-radius: var(--radius-2);
+        padding: var(--space-4);
+        margin-bottom: var(--space-5);
+    }
+
+    .page-error-boundary__description p {
+        margin: 0;
+        font-size: var(--font-size-base);
+        line-height: var(--line-height-relaxed);
+    }
+
+    .page-error-boundary__error-details {
+        background: var(--color-surface-variant);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-2);
+        padding: var(--space-4);
+        margin-bottom: var(--space-5);
+    }
+
+    .page-error-boundary__error-title {
+        color: var(--color-text-primary);
+        font-size: var(--font-size-xl);
+        font-weight: var(--font-weight-semibold);
+        margin: 0 0 var(--space-3) 0;
+    }
+
+    .page-error-boundary__error-message,
+    .page-error-boundary__retry-info,
+    .page-error-boundary__timestamp {
+        margin-bottom: var(--space-2);
+        font-size: var(--font-size-sm);
+        font-family: monospace;
+        overflow-wrap: break-word;
+    }
+
+    .page-error-boundary__error-message:last-child,
+    .page-error-boundary__retry-info:last-child,
+    .page-error-boundary__timestamp:last-child {
+        margin-bottom: 0;
+    }
+
+    .page-error-boundary__actions {
+        display: flex;
+        gap: var(--space-3);
+        flex-wrap: wrap;
+        justify-content: center;
+        margin-bottom: var(--space-5);
+    }
+
+    .page-error-boundary__button {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        min-height: 44px;
+        padding: var(--space-2) var(--space-4);
+        border: none;
+        border-radius: var(--radius-2);
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-semibold);
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+        text-decoration: none;
+    }
+
+    .page-error-boundary__button:focus {
+        outline: 2px solid var(--color-focus);
+        outline-offset: 2px;
+    }
+
+    .page-error-boundary__button--primary {
+        background: var(--color-primary);
+        color: white;
+    }
+
+    .page-error-boundary__button--primary:hover {
+        background: var(--color-primary-hover);
+        transform: translateY(-1px);
+    }
+
+    .page-error-boundary__button--secondary {
+        background: var(--color-surface-variant);
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border);
+    }
+
+    .page-error-boundary__button--secondary:hover {
+        background: var(--color-surface-alt);
+        transform: translateY(-1px);
+    }
+
+    .page-error-boundary__button--neutral {
+        background: var(--color-surface);
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border);
+    }
+
+    .page-error-boundary__button--neutral:hover {
+        background: var(--color-surface-variant);
+        transform: translateY(-1px);
+    }
+
+    .page-error-boundary__button--copy {
+        background: var(--color-info);
+        color: white;
+        border: 1px solid var(--color-info);
+    }
+
+    .page-error-boundary__button--copy:hover {
+        background: var(--color-info-hover);
+        border-color: var(--color-info-hover);
+        transform: translateY(-1px);
+    }
+
+    .page-error-boundary__button--copy:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .page-error-boundary__button--success {
+        background: #16a34a !important; /* Green 600 */
+        border-color: #16a34a !important;
+        color: white !important;
+    }
+
+    .page-error-boundary__button--error {
+        background: #dc2626 !important; /* Red 600 */
+        border-color: #dc2626 !important;
+        color: white !important;
+    }
+
+    .page-error-boundary__button-icon {
+        display: inline-block;
+        font-style: normal;
+    }
+
+    .page-error-boundary__help {
+        margin-top: var(--space-5);
+    }
+
+    .page-error-boundary__help-box {
+        background: var(--color-surface-alt);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-2);
+        padding: var(--space-4);
+    }
+
+    .page-error-boundary__help-title {
+        color: var(--color-text-primary);
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-semibold);
+        margin: 0 0 var(--space-3) 0;
+    }
+
+    .page-error-boundary__help-list {
+        margin: 0;
+        padding-left: var(--space-5);
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-sm);
+        line-height: var(--line-height-relaxed);
+    }
+
+    .page-error-boundary__help-list li {
+        margin-bottom: var(--space-2);
+    }
+
+    .page-error-boundary__footer {
+        margin-top: var(--space-5);
+        padding-top: var(--space-4);
+        border-top: 1px solid var(--color-border);
+        text-align: center;
+    }
+
+    .page-error-boundary__footer-text {
+        margin: 0;
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+        line-height: var(--line-height-relaxed);
+    }
+
+    /* ========== FEATURE ERROR BOUNDARY ========== */
+    .feature-error-boundary {
+        font-family: var(--font-family, system-ui, -apple-system, sans-serif);
+    }
+
+    /* Inline mode (default) */
+    .feature-error-boundary--inline {
+        background: var(--color-surface);
+        border: 1px solid var(--color-error);
+        border-radius: var(--radius-2);
+        margin: var(--space-2) 0;
+    }
+
+    .feature-error-boundary--inline .feature-error-boundary__container {
+        padding: var(--space-4);
+    }
+
+    .feature-error-boundary__header {
+        display: flex;
+        align-items: flex-start;
+        gap: var(--space-3);
+        margin-bottom: var(--space-4);
+    }
+
+    .feature-error-boundary__icon {
+        font-size: var(--font-size-xl);
+        flex-shrink: 0;
+        margin-top: var(--space-1);
+    }
+
+    .feature-error-boundary__title-group {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .feature-error-boundary__title {
+        color: var(--color-error);
+        font-size: var(--font-size-lg);
+        font-weight: var(--font-weight-semibold);
+        margin: 0 0 var(--space-1) 0;
+        line-height: var(--line-height-tight);
+    }
+
+    .feature-error-boundary__description {
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-sm);
+        margin: 0;
+        line-height: var(--line-height-relaxed);
+    }
+
+    .feature-error-boundary__content {
+        color: var(--color-text-primary);
+    }
+
+    .feature-error-boundary__error-summary {
+        background: var(--color-surface-variant);
+        border: 1px solid var(--color-error);
+        border-radius: var(--radius-1);
+        padding: var(--space-3);
+        margin-bottom: var(--space-4);
+        font-size: var(--font-size-sm);
+        overflow-wrap: break-word;
+    }
+
+    .feature-error-boundary__attempt-count {
+        color: var(--color-text-secondary);
+        font-weight: var(--font-weight-normal);
+    }
+
+    .feature-error-boundary__actions {
+        display: flex;
+        gap: var(--space-2);
+        flex-wrap: wrap;
+    }
+
+    .feature-error-boundary__button {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-1);
+        min-height: 32px;
+        padding: var(--space-2) var(--space-3);
+        border: none;
+        border-radius: var(--radius-1);
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-medium);
+        cursor: pointer;
+        transition: all 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
+        text-decoration: none;
+    }
+
+    .feature-error-boundary__button:focus {
+        outline: 2px solid var(--color-focus);
+        outline-offset: 1px;
+    }
+
+    .feature-error-boundary__button--primary {
+        background: var(--color-primary);
+        color: white;
+    }
+
+    .feature-error-boundary__button--primary:hover {
+        background: var(--color-primary-hover);
+        transform: translateY(-1px);
+    }
+
+    .feature-error-boundary__button--secondary {
+        background: var(--color-surface-variant);
+        color: var(--color-text-primary);
+        border: 1px solid var(--color-border);
+    }
+
+    .feature-error-boundary__button--secondary:hover {
+        background: var(--color-surface-alt);
+    }
+
+    .feature-error-boundary__button--neutral {
+        background: transparent;
+        color: var(--color-text-secondary);
+        border: 1px solid var(--color-border-light);
+    }
+
+    .feature-error-boundary__button--neutral:hover {
+        background: var(--color-surface-variant);
+        color: var(--color-text-primary);
+    }
+
+    .feature-error-boundary__button--copy {
+        background: var(--color-info);
+        color: white;
+        border: 1px solid var(--color-info);
+    }
+
+    .feature-error-boundary__button--copy:hover {
+        background: var(--color-info-hover);
+        border-color: var(--color-info-hover);
+        transform: translateY(-1px);
+    }
+
+    .feature-error-boundary__button--copy:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .feature-error-boundary__button--success {
+        background: #16a34a !important; /* Green 600 */
+        border-color: #16a34a !important;
+        color: white !important;
+    }
+
+    .feature-error-boundary__button--error {
+        background: #dc2626 !important; /* Red 600 */
+        border-color: #dc2626 !important;
+        color: white !important;
+    }
+
+    /* Skipped state styling */
+    .feature-error-boundary--skipped {
+        background: var(--color-surface-alt);
+        border: 1px solid var(--color-warning);
+        border-radius: var(--radius-2);
+        margin: var(--space-2) 0;
+    }
+
+    .feature-error-boundary__skipped-notice {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-3);
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+    }
+
+    .feature-error-boundary__skipped-icon {
+        font-size: var(--font-size-base);
+        flex-shrink: 0;
+    }
+
+    .feature-error-boundary__skipped-text {
+        flex: 1;
+        font-weight: var(--font-weight-medium);
+    }
+
+    .feature-error-boundary__button-icon {
+        display: inline-block;
+        font-style: normal;
+    }
+
+    /* Critical/Overlay mode - Full screen modal */
+    .feature-error-boundary--overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(4px);
+    }
+
+    .feature-error-boundary__overlay-backdrop {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+    }
+
+    .feature-error-boundary__overlay-content {
+        position: relative;
+        background: var(--color-surface);
+        border: 2px solid var(--color-error);
+        border-radius: var(--radius-3);
+        padding: var(--space-6);
+        margin: var(--space-4);
+        max-width: 500px;
+        width: 100%;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: var(--shadow-xl);
+        z-index: 10000;
+    }
+
+    .feature-error-boundary__overlay-title {
+        color: var(--color-error);
+        font-size: var(--font-size-2xl);
+        font-weight: var(--font-weight-bold);
+        margin: 0 0 var(--space-4) 0;
+        text-align: center;
+        line-height: var(--line-height-tight);
+    }
+
+    .feature-error-boundary__overlay-message {
+        color: var(--color-text-primary);
+        font-size: var(--font-size-base);
+        margin: 0 0 var(--space-5) 0;
+        text-align: center;
+        line-height: var(--line-height-relaxed);
+    }
+
+    .feature-error-boundary__overlay-actions {
+        display: flex;
+        gap: var(--space-3);
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .feature-error-boundary__overlay-actions .feature-error-boundary__button {
+        min-height: 44px;
+        padding: var(--space-3) var(--space-4);
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-semibold);
+    }
+
+    /* Disabled state styling */
+    .feature-error-boundary--disabled {
+        background: var(--color-surface-alt);
+        border: 1px solid var(--color-text-disabled);
+        border-radius: var(--radius-2);
+        margin: var(--space-2) 0;
+        opacity: 0.7;
+    }
+
+    .feature-error-boundary__disabled-notice {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        padding: var(--space-3);
+        font-size: var(--font-size-sm);
+        color: var(--color-text-disabled);
+    }
+
+    .feature-error-boundary__disabled-icon {
+        font-size: var(--font-size-base);
+        flex-shrink: 0;
+    }
+
+    .feature-error-boundary__disabled-text {
+        flex: 1;
+        font-weight: var(--font-weight-medium);
+    }
+
+    /* Degraded notice styling */
+    .feature-error-boundary--degraded {
+        background: var(--color-warning-bg);
+        border: 1px solid var(--color-warning);
+        border-radius: var(--radius-2);
+        margin: var(--space-2) 0 var(--space-1) 0;
+        padding: var(--space-2);
+        text-align: center;
+        font-size: var(--font-size-xs);
+        color: var(--color-warning-text);
+        font-weight: var(--font-weight-medium);
+    }
+
+    .feature-error-boundary__degraded-notice {
+        margin: 0;
+        padding: 0;
+        font-size: inherit;
+        color: inherit;
+    }
+
+    /* ========== MOBILE-FIRST RESPONSIVE DESIGN ========== */
+
+    /* Mobile adjustments (375px baseline) */
+    @media (width <= 767px) {
+        .error-boundary__container,
+        .page-error-boundary__container {
+            margin: var(--space-2);
+            padding: var(--space-4);
+        }
+
+        .error-boundary__actions,
+        .page-error-boundary__actions,
+        .feature-error-boundary__actions {
+            flex-direction: column;
+        }
+
+        .error-boundary__button,
+        .page-error-boundary__button,
+        .feature-error-boundary__button {
+            width: 100%;
+            justify-content: center;
+        }
+
+        .page-error-boundary__title {
+            font-size: var(--font-size-2xl);
+        }
+
+        .page-error-boundary__icon {
+            font-size: 3rem;
+        }
+
+        .feature-error-boundary__header {
+            flex-direction: row;
+            align-items: center;
+        }
+
+        .feature-error-boundary__icon {
+            font-size: var(--font-size-lg);
+            margin-top: 0;
+        }
+
+        .feature-error-boundary__overlay-content {
+            margin: var(--space-2);
+            padding: var(--space-4);
+            max-height: 90vh;
+        }
+
+        .feature-error-boundary__overlay-title {
+            font-size: var(--font-size-xl);
+        }
+
+        .feature-error-boundary__overlay-actions {
+            flex-direction: column;
+        }
+
+        .feature-error-boundary__overlay-actions .feature-error-boundary__button {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+
+    /* Tablet and larger screens */
+    @media (width >= 768px) {
+        .error-boundary__button,
+        .page-error-boundary__button {
+            width: auto;
+            min-width: 96px;
+        }
+    }
+
+    /* Touch accessibility */
+    @media (hover: none) and (pointer: coarse) {
+        .error-boundary__button,
+        .page-error-boundary__button,
+        .feature-error-boundary__button {
+            min-height: 44px;
+            padding: var(--space-3) var(--space-4);
+        }
+    }
+
+    /* High contrast mode support */
+    @media (prefers-contrast: high) {
+        .error-boundary__container,
+        .page-error-boundary__container,
+        .feature-error-boundary--inline {
+            border-width: 2px;
+        }
+
+        .error-boundary__button:focus,
+        .page-error-boundary__button:focus,
+        .feature-error-boundary__button:focus {
+            outline-width: 3px;
+            outline-offset: 2px;
+        }
+    }
+
+    /* Reduced motion support */
+    @media (prefers-reduced-motion: reduce) {
+        .error-boundary__button,
+        .page-error-boundary__button,
+        .feature-error-boundary__button {
+            transition: none;
+        }
+
+        .error-boundary__button:hover,
+        .page-error-boundary__button:hover,
+        .feature-error-boundary__button:hover {
+            transform: none;
+        }
+    }
+} /* end @layer components */

@@ -221,7 +221,7 @@ export const GlobalErrorProvider = ({
       toastOptions
     });
 
-    toast.showError(error.userMessage, toastOptions);
+    toast.error(error.userMessage, toastOptions.timeout);
 
     // Auto-clear current error after toast timeout (unless critical)
     if (error.severity !== ERROR_SEVERITY.CRITICAL) {
@@ -343,10 +343,7 @@ export const showErrorWithRecovery = (toast, error, recoveryFn) => {
     ? `${error.userMessage}\n\nTip: You can try refreshing the page to recover.`
     : error.userMessage;
 
-  return toast.showError(recoveryMessage, {
-    timeout: error.severity === ERROR_SEVERITY.CRITICAL ? 0 : 8000,
-    persistent: error.severity === ERROR_SEVERITY.CRITICAL
-  });
+  return toast.error(recoveryMessage, error.severity === ERROR_SEVERITY.CRITICAL ? 0 : 8000);
 };
 
 /**

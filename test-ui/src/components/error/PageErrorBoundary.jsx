@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { useGlobalError } from '../contexts/GlobalErrorContext.jsx';
-import { useToast } from '../contexts/ToastContext.jsx';
+import { useGlobalError } from '../../contexts/GlobalErrorContext.jsx';
+import { useToast } from '../../contexts/ToastContext.jsx';
 
 /**
  * Page-level Error Boundary for route protection - Ported from Main UI

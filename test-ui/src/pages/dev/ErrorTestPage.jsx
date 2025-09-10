@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { useToast } from '../../contexts/ToastContext.jsx';
 import { useGlobalError, ERROR_TYPES, ERROR_SEVERITY } from '../../contexts/GlobalErrorContext.jsx';
-import PageErrorBoundary from '../../components/PageErrorBoundary.jsx';
-import FeatureErrorBoundary from '../../components/FeatureErrorBoundary.jsx';
+import { PageErrorBoundary, FeatureErrorBoundary } from '../../components/error';
 
 // Simple component that crashes when told to
 const CrashComponent = ({ shouldCrash, type = "demonstration" }) => {

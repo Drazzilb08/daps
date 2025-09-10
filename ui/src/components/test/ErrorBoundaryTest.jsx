@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { ErrorBoundary, PageErrorBoundary, FeatureErrorBoundary } from '../error';
+import ErrorBoundary from '../ErrorBoundary';
+import PageErrorBoundary from '../PageErrorBoundary';
+import FeatureErrorBoundary from '../FeatureErrorBoundary';
 
 /**
  * Test component that throws errors on demand

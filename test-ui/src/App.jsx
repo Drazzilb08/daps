@@ -5,7 +5,7 @@ import { ThemeProvider } from './contexts/ThemeContext.jsx';
 import { GlobalErrorProvider } from './contexts/GlobalErrorContext.jsx';
 import { UIStateProvider } from './contexts/UIStateContext.jsx';
 import { SearchCoordinatorProvider } from './contexts/SearchCoordinatorContext.jsx';
-import PageErrorBoundary from './components/PageErrorBoundary.jsx';
+import { PageErrorBoundary } from './components/error';
 import Layout from './components/Layout.jsx';
 import DashboardPage from './pages/DashboardPage.jsx';
 import ErrorTestPage from './pages/dev/ErrorTestPage.jsx';

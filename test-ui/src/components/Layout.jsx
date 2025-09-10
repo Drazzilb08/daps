@@ -1,7 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import FeatureErrorBoundary from './FeatureErrorBoundary.jsx';
+import { FeatureErrorBoundary } from './error';
 import PageHeader from './PageHeader.jsx';
 import PageSidebar from './PageSidebar.jsx';
 import SearchToolbar from './Search/SearchToolbar.jsx';

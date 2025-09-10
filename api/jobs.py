@@ -15,24 +15,24 @@ router = APIRouter(
 )
 
 
-@router.get("/jobs/{job_id}")
-async def get_job_detail(
-    job_id: int, logger: Any = Depends(get_logger), db: DapsDB = Depends(get_database)
+@router.get("/jobs/stats")
+async def get_job_stats(
+    logger: Any = Depends(get_logger), db: DapsDB = Depends(get_database)
 ) -> Dict[str, Any]:
-    """Retrieve job details by ID."""
+    """Retrieve job statistics."""
     try:
-        job = db.worker.get_job_by_id("jobs", job_id)
+        result = db.worker.job_stats("jobs", error_limit=10)
 
-        if not job:
-            return error(f"Job {job_id} not found", "JOB_NOT_FOUND", status_code=404)
-
-        return ok(f"Job {job_id} details retrieved", {"job": job})
+        if isinstance(result, dict) and "success" in result:
+            return result
+        else:
+            return ok("Job statistics retrieved", result if result else {"stats": {}})
 
     except Exception as e:
-        logger.error(f"Error fetching job {job_id}: {e}")
+        logger.error(f"Error fetching job stats: {e}")
         return error(
-            f"Error retrieving job details: {str(e)}",
-            "JOB_RETRIEVAL_ERROR",
+            f"Error retrieving job statistics: {str(e)}",
+            "JOB_STATS_ERROR",
             status_code=500,
         )
 
@@ -63,24 +63,24 @@ async def list_jobs(
         )
 
 
-@router.get("/jobs/stats")
-async def get_job_stats(
-    logger: Any = Depends(get_logger), db: DapsDB = Depends(get_database)
+@router.get("/jobs/{job_id}")
+async def get_job_detail(
+    job_id: int, logger: Any = Depends(get_logger), db: DapsDB = Depends(get_database)
 ) -> Dict[str, Any]:
-    """Retrieve job statistics."""
+    """Retrieve job details by ID."""
     try:
-        result = db.worker.job_stats("jobs", error_limit=10)
+        job = db.worker.get_job_by_id("jobs", job_id)
 
-        if isinstance(result, dict) and "success" in result:
-            return result
-        else:
-            return ok("Job statistics retrieved", result if result else {"stats": {}})
+        if not job:
+            return error(f"Job {job_id} not found", "JOB_NOT_FOUND", status_code=404)
+
+        return ok(f"Job {job_id} details retrieved", {"job": job})
 
     except Exception as e:
-        logger.error(f"Error fetching job stats: {e}")
+        logger.error(f"Error fetching job {job_id}: {e}")
         return error(
-            f"Error retrieving job statistics: {str(e)}",
-            "JOB_STATS_ERROR",
+            f"Error retrieving job details: {str(e)}",
+            "JOB_RETRIEVAL_ERROR",
             status_code=500,
         )
 

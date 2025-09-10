@@ -9,6 +9,7 @@ import { PageErrorBoundary } from './components/error';
 import Layout from './components/Layout.jsx';
 import Splash from './pages/Splash.jsx';
 import ErrorTestPage from './pages/dev/ErrorTestPage.jsx';
+import ApiTestPage from './pages/dev/ApiTestPage.jsx';
 
 /**
  * DAPS Application Root - Phase 4 Ready
@@ -98,6 +99,11 @@ const App = () => {
                       <Route path="dev/error-test" element={
                         <PageErrorBoundary pageName="Error Test" pageDescription="Error handling demonstration page">
                           <ErrorTestPage />
+                        </PageErrorBoundary>
+                      } />
+                      <Route path="dev/api-test" element={
+                        <PageErrorBoundary pageName="API Test" pageDescription="API layer functionality testing page">
+                          <ApiTestPage />
                         </PageErrorBoundary>
                       } />
                       

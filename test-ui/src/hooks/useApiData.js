@@ -1,0 +1,294 @@
+/**
+ * useApiData Hook - React Hook for API Data Management
+ * 
+ * Provides declarative API data fetching with:
+ * - Automatic loading state management
+ * - Integrated error handling with toast notifications
+ * - Retry capability
+ * - Data transformation
+ * - Request cancellation
+ * - Manual execution control
+ */
+
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useToast } from '../contexts/ToastContext.jsx';
+import { APIError } from '../utils/api/core.js';
+
+/**
+ * Custom hook for API data management with comprehensive state handling
+ * 
+ * @param {Object} config - Hook configuration
+ * @param {Function} config.apiFunction - Function that returns a promise (API call)
+ * @param {Object} config.options - Hook options
+ * @param {boolean} config.options.immediate - Execute on mount (default: true)
+ * @param {boolean} config.options.showErrorToast - Show error toast notifications (default: true)
+ * @param {boolean} config.options.showSuccessToast - Show success toast notifications (default: false)
+ * @param {string} config.options.successMessage - Custom success message
+ * @param {Function} config.options.transform - Data transformation function
+ * @param {number} config.options.retryAttempts - Number of retry attempts (default: 0)
+ * @param {number} config.options.retryDelay - Delay between retries in ms (default: 1000)
+ * @param {Function} config.options.shouldRetry - Function to determine if retry should happen
+ * @param {Array} config.dependencies - Dependencies for re-execution
+ * @returns {Object} Hook state and methods
+ */
+export const useApiData = ({ 
+  apiFunction, 
+  options = {}, 
+  dependencies = [] 
+}) => {
+  const {
+    immediate = true,
+    showErrorToast = true,
+    showSuccessToast = false,
+    successMessage = 'Operation completed successfully',
+    transform = null,
+    retryAttempts = 0,
+    retryDelay = 1000,
+    shouldRetry = null
+  } = options;
+
+  const toast = useToast();
+  
+  // State management
+  const [data, setData] = useState(null);
+  const [isLoading, setIsLoading] = useState(immediate);
+  const [error, setError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
+  
+  // Refs for cleanup and cancellation
+  const abortControllerRef = useRef(null);
+  const retryTimeoutRef = useRef(null);
+  const isMountedRef = useRef(true);
+
+  // Cleanup function
+  const cleanup = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current);
+      retryTimeoutRef.current = null;
+    }
+  }, []);
+
+  // Determine if retry should happen
+  const shouldAttemptRetry = useCallback((err, currentRetryCount) => {
+    if (currentRetryCount >= retryAttempts) return false;
+    
+    if (shouldRetry) {
+      return shouldRetry(err, currentRetryCount);
+    }
+    
+    // Default retry logic
+    if (err instanceof APIError) {
+      return err.isRetryable();
+    }
+    
+    // Retry network errors
+    return err.name === 'TypeError' || err.message.includes('fetch');
+  }, [retryAttempts, shouldRetry]);
+
+  // Execute API function with comprehensive error handling
+  const executeRequest = useCallback(async (retryAttempt = 0) => {
+    // Clean up previous request
+    cleanup();
+    
+    // Create new abort controller
+    abortControllerRef.current = new AbortController();
+    
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      if (retryAttempt > 0) {
+        setRetryCount(retryAttempt);
+      }
+      
+      // Execute API function
+      if (!apiFunction) {
+        throw new Error('API function is required');
+      }
+      
+      const result = await apiFunction();
+      
+      if (!isMountedRef.current) {
+        return;
+      }
+      
+      // Transform data if transformer provided
+      const finalData = transform ? transform(result) : result;
+      
+      setData(finalData);
+      setRetryCount(0);
+      
+      // Show success toast if enabled
+      if (showSuccessToast && toast && toast.success) {
+        toast.success(successMessage);
+      }
+      
+    } catch (err) {
+      if (!isMountedRef.current) {
+        return;
+      }
+      
+      // Handle aborted requests
+      if (err.name === 'AbortError') {
+        return;
+      }
+      
+      setError(err);
+      
+      // Determine if we should retry
+      if (shouldAttemptRetry(err, retryAttempt)) {
+        retryTimeoutRef.current = setTimeout(() => {
+          if (isMountedRef.current) {
+            executeRequest(retryAttempt + 1);
+          }
+        }, retryDelay);
+        return;
+      }
+      
+      // Show error toast if enabled
+      if (showErrorToast) {
+        let errorMessage = 'An unexpected error occurred';
+        
+        if (err instanceof APIError) {
+          errorMessage = err.message;
+        } else if (err.message) {
+          errorMessage = err.message;
+        }
+        
+        if (toast && toast.error) {
+          toast.error(errorMessage);
+        }
+      }
+      
+    } finally {
+      if (isMountedRef.current) {
+        setIsLoading(false);
+      }
+    }
+  }, [
+    apiFunction, 
+    transform, 
+    showSuccessToast, 
+    successMessage, 
+    showErrorToast,
+    shouldAttemptRetry,
+    retryDelay,
+    toast,
+    cleanup
+  ]);
+
+  // Manual execution function
+  const execute = useCallback(() => {
+    return executeRequest(0);
+  }, [executeRequest]);
+
+  // Retry function
+  const retry = useCallback(() => {
+    if (error) {
+      executeRequest(0);
+    }
+  }, [error, executeRequest]);
+
+  // Refresh function (alias for execute)
+  const refresh = useCallback(() => {
+    return execute();
+  }, [execute]);
+
+  // Effect for automatic execution
+  useEffect(() => {
+    if (immediate) {
+      executeRequest(0);
+    }
+    
+    // Cleanup previous request when dependencies change (but don't mark as unmounted)
+    return () => {
+      cleanup();
+    };
+  }, dependencies); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Cleanup on unmount
+  useEffect(() => {
+    // Ensure mounted ref is true when component mounts
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+      cleanup();
+    };
+  }, []); // Empty dependency array - only runs on mount/unmount
+
+  return {
+    /** Current data */
+    data,
+    
+    /** Loading state */
+    isLoading,
+    
+    /** Error state */
+    error,
+    
+    /** Current retry count */
+    retryCount,
+    
+    /** Manual execution function */
+    execute,
+    
+    /** Retry failed request */
+    retry,
+    
+    /** Refresh data (alias for execute) */
+    refresh,
+    
+    /** Clear current data and error */
+    clear: useCallback(() => {
+      setData(null);
+      setError(null);
+      setRetryCount(0);
+    }, []),
+    
+    /** Cancel ongoing request */
+    cancel: cleanup,
+  };
+};
+
+/**
+ * Simplified hook for basic API data fetching
+ * 
+ * @param {Function} apiFunction - API function to execute
+ * @param {Array} dependencies - Dependencies for re-execution
+ * @returns {Object} Basic hook state
+ */
+export const useApiCall = (apiFunction, dependencies = []) => {
+  return useApiData({
+    apiFunction,
+    dependencies,
+    options: {
+      immediate: true,
+      showErrorToast: true,
+    }
+  });
+};
+
+/**
+ * Hook for manual API operations (like form submissions)
+ * 
+ * @param {Function} apiFunction - API function to execute
+ * @param {Object} options - Hook options
+ * @returns {Object} Hook state with manual execution
+ */
+export const useApiMutation = (apiFunction, options = {}) => {
+  return useApiData({
+    apiFunction,
+    dependencies: [],
+    options: {
+      immediate: false,
+      showErrorToast: true,
+      showSuccessToast: true,
+      ...options
+    }
+  });
+};

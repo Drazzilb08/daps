@@ -56,6 +56,7 @@
 @import './components/Toolbar/toolbar.css';
 @import './components/tool-button.css';
 @import './components/search-toolbar.css';
+@import './components/spinner.css';
 
 /* =============================================================================
    GLOBAL UTILITIES

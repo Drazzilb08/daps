@@ -1,0 +1,66 @@
+/* Spinner Component Styles */
+@layer components {
+  .spinner {
+    display: inline-block;
+  }
+
+  .spinner-circle {
+    border: 2px solid var(--color-surface-variant);
+    border-top-color: var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  /* Size variations */
+  .spinner-small .spinner-circle {
+    width: 16px;
+    height: 16px;
+    border-width: 2px;
+  }
+
+  .spinner-medium .spinner-circle {
+    width: 24px;
+    height: 24px;
+    border-width: 2px;
+  }
+
+  .spinner-large .spinner-circle {
+    width: 32px;
+    height: 32px;
+    border-width: 3px;
+  }
+
+  /* Centered spinner for Suspense fallbacks */
+  .spinner-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    padding: var(--space-4);
+  }
+
+  .spinner-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .spinner-text {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    margin: 0;
+  }
+
+  /* Animation */
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Theme support */
+  [data-theme="dark"] .spinner-circle {
+    border-color: var(--color-surface-variant);
+    border-top-color: var(--color-primary);
+  }
+}

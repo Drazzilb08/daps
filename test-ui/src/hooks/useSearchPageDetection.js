@@ -30,7 +30,7 @@ const useSearchPageDetection = () => {
     }
     
     // Check for poster search pages
-    if (path === '/posters/search/assets') {
+    if (path === '/poster/search/assets') {
       return {
         isSearchPage: true,
         searchPageType: 'posters',
@@ -38,7 +38,7 @@ const useSearchPageDetection = () => {
       };
     }
     
-    if (path === '/posters/search/gdrive') {
+    if (path === '/poster/search/gdrive') {
       return {
         isSearchPage: true,
         searchPageType: 'posters',

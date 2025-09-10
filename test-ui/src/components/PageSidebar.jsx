@@ -22,8 +22,8 @@ import { useUIState } from '../contexts/UIStateContext.jsx';
  */
 
 /**
- * Hierarchical navigation structure for DAPS
- * Structure matches media automation workflow and professional interface standards
+ * Clean 5-item navigation structure for DAPS
+ * Updated structure with administrative functions moved to Settings context
  */
 const NAVIGATION_STRUCTURE = [
   {
@@ -46,9 +46,9 @@ const NAVIGATION_STRUCTURE = [
         path: '/media/search'
       },
       {
-        id: 'media-library',
-        label: 'Library',
-        path: '/media/library'
+        id: 'media-manage',
+        label: 'Manage',
+        path: '/media/manage'
       },
       {
         id: 'media-statistics',
@@ -58,47 +58,57 @@ const NAVIGATION_STRUCTURE = [
     ]
   },
   {
-    id: 'posters',
+    id: 'poster',
     label: 'Posters',
-    path: '/posters',
+    path: '/poster',
     icon: 'image',
     type: 'parent',
     children: [
       {
         id: 'gdrive-search',
-        label: 'Gdrive Search',
-        path: '/posters/search/gdrive'
+        label: 'GDrive Search',
+        path: '/poster/search/gdrive'
       },
       {
         id: 'assets-search',
         label: 'Assets Search',
-        path: '/posters/search/assets'
+        path: '/poster/search/assets'
       },
       {
-        id: 'posters-manage',
+        id: 'poster-manage',
         label: 'Manage',
-        path: '/posters/manage'
+        path: '/poster/manage'
       },
       {
-        id: 'posters-statistics',
+        id: 'poster-statistics',
         label: 'Statistics',
-        path: '/posters/statistics'
+        path: '/poster/statistics'
       }
     ]
-  },
-  {
-    id: 'activity',
-    label: 'Activity',
-    path: '/activity',
-    icon: 'vital_signs',
-    type: 'single'
   },
   {
     id: 'settings',
     label: 'Settings',
     path: '/settings',
     icon: 'settings',
-    type: 'single'
+    type: 'parent',
+    children: [
+      {
+        id: 'settings-schedule',
+        label: 'Schedule',
+        path: '/settings/schedule'
+      },
+      {
+        id: 'settings-instances',
+        label: 'Instances',
+        path: '/settings/instances'
+      },
+      {
+        id: 'settings-notifications',
+        label: 'Notifications',
+        path: '/settings/notifications'
+      }
+    ]
   },
   {
     id: 'logs',

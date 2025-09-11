@@ -100,6 +100,13 @@
   --color-link-hover: #4a85e8;                   /* 1 use */
   --color-link-visited: #4a85e8;                 /* 1 use */
 
+  /* Form input system */
+  --input-bg: #ffffff;                          /* Input background */
+  --color-input-bg: var(--input-bg);
+  --color-input-border: var(--border);
+  --color-input-text: var(--text-primary);
+  --color-input-placeholder: var(--text-tertiary);
+
   /* Focus system (8 total uses) */
   --color-focus-ring: var(--focus);              /* 7 uses */
   --color-focus-ring-offset: var(--bg);          /* 1 use */

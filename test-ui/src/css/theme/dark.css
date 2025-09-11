@@ -64,6 +64,8 @@
   --color-warning-text: #ffffff;
   --color-error: var(--error);
   --color-error-text: #ffffff;
+  --color-danger: var(--error); /* Alias for error */
+  --color-danger-surface: rgba(255, 55, 95, 0.1);
 
   /* Text hierarchy (30 total uses) */
   --color-text-primary: var(--text-primary);     /* 16 uses */
@@ -100,6 +102,13 @@
   --color-link: var(--accent);                   /* 1 use */
   --color-link-hover: #5a96ff;                   /* 1 use */
   --color-link-visited: #5a96ff;                 /* 1 use */
+
+  /* Form input system */
+  --input-bg: #21242a;                          /* Input background */
+  --color-input-bg: var(--input-bg);
+  --color-input-border: var(--border);
+  --color-input-text: var(--text-primary);
+  --color-input-placeholder: var(--text-tertiary);
 
   /* Focus system (8 total uses) */
   --color-focus-ring: var(--focus);              /* 7 uses */

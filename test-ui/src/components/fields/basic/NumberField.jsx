@@ -68,7 +68,7 @@ export const NumberField = React.memo(({
           type="button"
           onClick={handleDecrement}
           disabled={decrementDisabled}
-          className="number-field-button number-field-decrement"
+          className="btn btn--secondary btn--small number-field-decrement"
           aria-label={`Decrease ${field.label}`}
           tabIndex={disabled ? -1 : 0}
         >
@@ -97,7 +97,7 @@ export const NumberField = React.memo(({
           type="button"
           onClick={handleIncrement}
           disabled={incrementDisabled}
-          className="number-field-button number-field-increment"
+          className="btn btn--secondary btn--small number-field-increment"
           aria-label={`Increase ${field.label}`}
           tabIndex={disabled ? -1 : 0}
         >

@@ -77,43 +77,9 @@
     margin-bottom: var(--space-3);
   }
 
-  /* Test buttons */
+  /* Test buttons - uses unified .btn system */
   .test-button {
-    min-height: var(--touch-target-min);
-    padding: var(--space-2) var(--space-4);
-    border: none;
-    border-radius: var(--radius-1);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-  }
-
-  .test-button.primary {
-    background: var(--color-primary);
-    color: var(--color-primary-text);
-  }
-
-  .test-button.danger {
-    background: var(--color-error);
-    color: var(--color-error-text, white);
-  }
-
-  .test-button.info {
-    background: var(--color-info, var(--color-surface-elevated));
-    color: var(--color-info-text, var(--color-text-primary));
-    border: 1px solid var(--color-border);
-  }
-
-  .test-button.warning {
-    background: var(--color-warning, #f59e0b);
-    color: var(--color-warning-text, white);
-  }
-
-  .test-button.secondary {
-    background: var(--color-surface-elevated);
-    color: var(--color-text-primary);
-    border: 1px solid var(--color-border);
+    /* Additional specific styling if needed */
   }
 
   /* Form selects in test controls */

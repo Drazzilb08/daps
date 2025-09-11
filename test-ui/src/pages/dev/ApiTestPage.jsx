@@ -79,7 +79,7 @@ const VersionTestComponent = React.memo(() => {
         <button 
           onClick={execute} 
           disabled={isLoading}
-          className="test-button primary"
+          className="btn btn--primary"
         >
           {isLoading ? 'Loading...' : 'Get Version'}
         </button>
@@ -140,7 +140,7 @@ const ConfigTestComponent = React.memo(() => {
         <button 
           onClick={execute} 
           disabled={isLoading}
-          className="test-button primary"
+          className="btn btn--primary"
         >
           {isLoading ? 'Loading...' : 'Get Config'}
         </button>
@@ -185,7 +185,7 @@ const JobStatsTestComponent = React.memo(() => {
         <button 
           onClick={execute} 
           disabled={isLoading}
-          className="test-button primary"
+          className="btn btn--primary"
         >
           {isLoading ? 'Loading...' : 'Get Job Stats'}
         </button>
@@ -254,7 +254,7 @@ const ErrorTestComponent = React.memo(() => {
         <button 
           onClick={execute} 
           disabled={isLoading}
-          className="test-button danger"
+          className="btn btn--danger"
         >
           {isLoading ? 'Testing...' : 'Test Error'}
         </button>
@@ -297,19 +297,19 @@ const ToastTestComponent = React.memo(() => {
   return (
     <div className="toast-test">
       <div className="test-controls">
-        <button onClick={testToasts} className="test-button info">
+        <button onClick={testToasts} className="btn btn--info">
           Test All Toasts
         </button>
-        <button onClick={() => toast.success('Success toast!')} className="test-button primary">
+        <button onClick={() => toast.success('Success toast!')} className="btn btn--primary">
           Success
         </button>
-        <button onClick={() => toast.error('Error toast!')} className="test-button danger">
+        <button onClick={() => toast.error('Error toast!')} className="btn btn--danger">
           Error
         </button>
-        <button onClick={() => toast.warning('Warning toast!')} className="test-button warning">
+        <button onClick={() => toast.warning('Warning toast!')} className="btn btn--warning">
           Warning
         </button>
-        <button onClick={() => toast.info('Info toast!')} className="test-button secondary">
+        <button onClick={() => toast.info('Info toast!')} className="btn btn--secondary">
           Info
         </button>
       </div>

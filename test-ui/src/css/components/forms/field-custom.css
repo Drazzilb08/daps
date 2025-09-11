@@ -21,21 +21,7 @@
     flex-shrink: 0;
   }
 
-  /* JSON control button - now uses .btn .btn--secondary .btn--small utilities */
-  .json-control-button {
-    /* Extend .btn .btn--secondary .btn--small with component-specific styles */
-    transition: all 0.2s ease; /* Override DAPS no-hover requirement for JSON editor */
-  }
-
-  .json-control-button:hover:not(:disabled) {
-    background: var(--color-surface-hover);
-    color: var(--color-text-primary);
-  }
-
-  .json-control-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
+  /* JSON control buttons now use unified button system (.btn .btn--secondary .btn--small) */
 
   .json-field-container {
     position: relative;
@@ -187,15 +173,7 @@
   }
 
   /* Instance add button - now uses .btn utility */
-  .instance-add-button {
-    /* Uses .btn utility with component-specific font size */
-    font-size: var(--font-size-sm);
-    transition: all 0.2s ease; /* Override DAPS no-hover for better UX */
-  }
-
-  .instance-add-button:hover {
-    background: var(--color-primary-hover);
-  }
+  /* Instance add buttons now use unified button system (.btn .btn--primary .btn--small) */
 
   /* Placeholder Field Styles */
   .field-placeholder {

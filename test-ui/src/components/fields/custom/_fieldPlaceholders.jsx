@@ -145,7 +145,7 @@ export const JsonField = React.memo(({ field, value, onChange, disabled, highlig
             type="button"
             onClick={formatJson}
             disabled={disabled || !textValue.trim()}
-            className="json-control-button"
+            className="btn btn--secondary btn--small"
             title="Format JSON"
           >
             Format
@@ -154,7 +154,7 @@ export const JsonField = React.memo(({ field, value, onChange, disabled, highlig
             type="button"
             onClick={minifyJson}
             disabled={disabled || !textValue.trim()}
-            className="json-control-button"
+            className="btn btn--secondary btn--small"
             title="Minify JSON"
           >
             Minify
@@ -239,7 +239,7 @@ export const FloatField = React.memo(({ field, value, onChange, disabled = false
           type="button"
           onClick={handleDecrement}
           disabled={decrementDisabled}
-          className="number-field-button number-field-decrement"
+          className="btn btn--secondary number-field-button number-field-decrement"
           aria-label={`Decrease ${field.label}`}
           tabIndex={disabled ? -1 : 0}
         >
@@ -269,7 +269,7 @@ export const FloatField = React.memo(({ field, value, onChange, disabled = false
           type="button"
           onClick={handleIncrement}
           disabled={incrementDisabled}
-          className="number-field-button number-field-increment"
+          className="btn btn--secondary number-field-button number-field-increment"
           aria-label={`Increase ${field.label}`}
           tabIndex={disabled ? -1 : 0}
         >
@@ -330,7 +330,7 @@ export const DirField = React.memo(({ field, value, onChange, disabled, highligh
           type="button"
           onClick={handleBrowseClick}
           disabled={disabled}
-          className="dir-field-button"
+          className="btn btn--primary dir-field-button"
           title="Browse for directory"
         >
           Browse...
@@ -433,7 +433,7 @@ export const ColorListField = React.memo(({ field, value, onChange, disabled, hi
                 type="button"
                 onClick={() => handleRemoveColor(index)}
                 disabled={disabled || colorList.length <= 1}
-                className="btn-primary color-list-remove"
+                className="btn btn--danger color-list-remove"
                 title="Remove color"
               >
                 ×
@@ -446,7 +446,7 @@ export const ColorListField = React.memo(({ field, value, onChange, disabled, hi
           type="button"
           onClick={handleAddColor}
           disabled={disabled}
-          className="btn-primary color-list-add"
+          className="btn btn--primary color-list-add"
         >
           Add Color
         </button>
@@ -533,7 +533,7 @@ export const DirListField = React.memo(({ field, value, onChange, disabled, high
                   type="button"
                   onClick={() => handleBrowseClick(index)}
                   disabled={disabled}
-                  className="dir-field-button"
+                  className="btn btn--primary dir-field-button"
                   title="Browse for directory"
                 >
                   Browse...
@@ -544,7 +544,7 @@ export const DirListField = React.memo(({ field, value, onChange, disabled, high
                 type="button"
                 onClick={() => handleRemoveDir(index)}
                 disabled={disabled || dirList.length <= 1}
-                className="btn-primary dir-list-remove"
+                className="btn btn--danger dir-list-remove"
                 title="Remove directory"
               >
                 ×
@@ -557,7 +557,7 @@ export const DirListField = React.memo(({ field, value, onChange, disabled, high
           type="button"
           onClick={handleAddDir}
           disabled={disabled}
-          className="btn-primary dir-list-add"
+          className="btn btn--primary dir-list-add"
         >
           Add Directory
         </button>

@@ -217,39 +217,7 @@
   /* No hover states for number field container */
 
   /* Number field buttons - now use .btn .btn--icon utility base */
-  .number-field-button {
-    min-width: var(--touch-target-min);
-    height: var(--input-height);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--color-primary);
-    color: var(--color-primary-text);
-    border: none;
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    user-select: none;
-  }
-
-  /* No hover effects for number field buttons */
-
-  .number-field-button:active:not(:disabled) {
-    background: var(--color-primary);
-    transform: scale(0.95);
-  }
-
-  .number-field-button:disabled {
-    background: var(--color-surface-hover);
-    color: var(--color-text-disabled);
-    cursor: not-allowed;
-  }
-
-  .number-field-button:focus {
-    outline: none;
-    box-shadow: inset 0 0 0 2px var(--color-primary-text);
-  }
+  /* Number field buttons now use unified button system (.btn .btn--secondary .btn--small) */
 
   .number-field-display {
     flex: 1;

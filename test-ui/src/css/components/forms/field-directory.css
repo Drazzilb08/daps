@@ -16,62 +16,66 @@
     flex: 1;
   }
 
-  /* Directory button - now uses .btn utility as base */
+  /* Directory browse button - uses unified .btn system */
   .dir-field-button {
-    /* Extend .btn utility with component-specific styles */
+    /* Additional specific styling if needed */
     white-space: nowrap;
+    flex-shrink: 0;
   }
 
-  .dir-field-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  /* Directory List Field Styles - now use list utilities */
+  /* Directory List Field Styles */
   .dir-list-container {
-    /* Uses .list-container utility */
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
   }
 
   .dir-list-items {
-    /* Uses .list-items utility */
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
   }
 
   .dir-list-item {
-    /* Uses .list-item utility */
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    background: var(--color-surface-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
   }
 
   .dir-list-item .dir-field-container {
     flex: 1;
   }
 
-  /* Directory remove button - now uses .btn .btn--icon .btn--surface utilities */
+  /* Directory remove button - uses unified .btn system */
   .dir-list-remove {
-    /* Extend .btn .btn--icon .btn--surface with component-specific styles */
-    margin-top: 0; /* Align with input field */
+    /* Additional specific styling if needed */
+    min-width: var(--touch-target-min);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    margin-top: 0;
   }
 
-  .dir-list-remove:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  /* Directory add button - now uses .btn utility */
+  /* Directory add button - uses unified .btn system */
   .dir-list-add {
-    /* Extend .btn utility with component-specific styles */
+    /* Additional specific styling if needed */
+    padding: var(--space-2) var(--space-4);
   }
 
-  .dir-list-add:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  /* Mobile adjustments - now handled by utility classes */
+  /* Mobile adjustments */
   @media (max-width: 640px) {
-    /* .field-group utility handles horizontal to vertical conversion */
-    /* .list-item utility handles mobile stacking */
-    /* Additional component-specific mobile adjustments if needed */
     .dir-field-container {
-      /* Mobile behavior handled by .field-group utility */
+      flex-direction: column;
+      gap: var(--space-3);
+    }
+    
+    .dir-list-item {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--space-3);
     }
   }
 }

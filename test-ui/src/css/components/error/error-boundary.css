@@ -73,46 +73,11 @@
         justify-content: center;
     }
 
+    /* Error boundary buttons now extend unified button system */
     .error-boundary__button {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--space-2);
-        min-height: 44px;
-        padding: var(--space-2) var(--space-4);
-        border: none;
-        border-radius: var(--radius-2);
-        font-size: var(--font-size-base);
-        font-weight: var(--font-weight-medium);
-        cursor: pointer;
-        transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-        text-decoration: none;
+        /* Remove all custom styling - buttons will use unified .btn classes */
     }
 
-    .error-boundary__button:focus {
-        outline: 2px solid var(--color-focus);
-        outline-offset: 2px;
-    }
-
-    .error-boundary__button--primary {
-        background: var(--color-primary);
-        color: white;
-    }
-
-    .error-boundary__button--primary:hover {
-        background: var(--color-primary-hover);
-        transform: translateY(-1px);
-    }
-
-    .error-boundary__button--secondary {
-        background: var(--color-surface-variant);
-        color: var(--color-text-primary);
-        border: 1px solid var(--color-border);
-    }
-
-    .error-boundary__button--secondary:hover {
-        background: var(--color-surface-alt);
-        transform: translateY(-1px);
-    }
 
     .error-boundary__button-icon {
         display: inline-block;
@@ -234,87 +199,11 @@
         margin-bottom: var(--space-5);
     }
 
+    /* Page error boundary buttons now extend unified button system */
     .page-error-boundary__button {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--space-2);
-        min-height: 44px;
-        padding: var(--space-2) var(--space-4);
-        border: none;
-        border-radius: var(--radius-2);
-        font-size: var(--font-size-base);
-        font-weight: var(--font-weight-semibold);
-        cursor: pointer;
-        transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
-        text-decoration: none;
+        /* Remove all custom styling - buttons will use unified .btn classes */
     }
 
-    .page-error-boundary__button:focus {
-        outline: 2px solid var(--color-focus);
-        outline-offset: 2px;
-    }
-
-    .page-error-boundary__button--primary {
-        background: var(--color-primary);
-        color: white;
-    }
-
-    .page-error-boundary__button--primary:hover {
-        background: var(--color-primary-hover);
-        transform: translateY(-1px);
-    }
-
-    .page-error-boundary__button--secondary {
-        background: var(--color-surface-variant);
-        color: var(--color-text-primary);
-        border: 1px solid var(--color-border);
-    }
-
-    .page-error-boundary__button--secondary:hover {
-        background: var(--color-surface-alt);
-        transform: translateY(-1px);
-    }
-
-    .page-error-boundary__button--neutral {
-        background: var(--color-surface);
-        color: var(--color-text-primary);
-        border: 1px solid var(--color-border);
-    }
-
-    .page-error-boundary__button--neutral:hover {
-        background: var(--color-surface-variant);
-        transform: translateY(-1px);
-    }
-
-    .page-error-boundary__button--copy {
-        background: var(--color-info);
-        color: white;
-        border: 1px solid var(--color-info);
-    }
-
-    .page-error-boundary__button--copy:hover {
-        background: var(--color-info-hover);
-        border-color: var(--color-info-hover);
-        transform: translateY(-1px);
-    }
-
-    .page-error-boundary__button--copy:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    .page-error-boundary__button--success {
-        background: #16a34a !important; /* Green 600 */
-        border-color: #16a34a !important;
-        color: white !important;
-    }
-
-    .page-error-boundary__button--error {
-        background: #dc2626 !important; /* Red 600 */
-        border-color: #dc2626 !important;
-        color: white !important;
-    }
 
     .page-error-boundary__button-icon {
         display: inline-block;
@@ -440,86 +329,11 @@
         flex-wrap: wrap;
     }
 
+    /* Feature error boundary buttons now extend unified button system */
     .feature-error-boundary__button {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--space-1);
-        min-height: 32px;
-        padding: var(--space-2) var(--space-3);
-        border: none;
-        border-radius: var(--radius-1);
-        font-size: var(--font-size-sm);
-        font-weight: var(--font-weight-medium);
-        cursor: pointer;
-        transition: all 0.15s cubic-bezier(0.2, 0.8, 0.2, 1);
-        text-decoration: none;
+        /* Remove all custom styling - buttons will use unified .btn classes */
     }
 
-    .feature-error-boundary__button:focus {
-        outline: 2px solid var(--color-focus);
-        outline-offset: 1px;
-    }
-
-    .feature-error-boundary__button--primary {
-        background: var(--color-primary);
-        color: white;
-    }
-
-    .feature-error-boundary__button--primary:hover {
-        background: var(--color-primary-hover);
-        transform: translateY(-1px);
-    }
-
-    .feature-error-boundary__button--secondary {
-        background: var(--color-surface-variant);
-        color: var(--color-text-primary);
-        border: 1px solid var(--color-border);
-    }
-
-    .feature-error-boundary__button--secondary:hover {
-        background: var(--color-surface-alt);
-    }
-
-    .feature-error-boundary__button--neutral {
-        background: transparent;
-        color: var(--color-text-secondary);
-        border: 1px solid var(--color-border-light);
-    }
-
-    .feature-error-boundary__button--neutral:hover {
-        background: var(--color-surface-variant);
-        color: var(--color-text-primary);
-    }
-
-    .feature-error-boundary__button--copy {
-        background: var(--color-info);
-        color: white;
-        border: 1px solid var(--color-info);
-    }
-
-    .feature-error-boundary__button--copy:hover {
-        background: var(--color-info-hover);
-        border-color: var(--color-info-hover);
-        transform: translateY(-1px);
-    }
-
-    .feature-error-boundary__button--copy:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-        transform: none;
-    }
-
-    .feature-error-boundary__button--success {
-        background: #16a34a !important; /* Green 600 */
-        border-color: #16a34a !important;
-        color: white !important;
-    }
-
-    .feature-error-boundary__button--error {
-        background: #dc2626 !important; /* Red 600 */
-        border-color: #dc2626 !important;
-        color: white !important;
-    }
 
     /* Skipped state styling */
     .feature-error-boundary--skipped {

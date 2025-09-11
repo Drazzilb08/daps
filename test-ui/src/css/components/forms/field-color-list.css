@@ -1,0 +1,156 @@
+/**
+ * Color List Field Component Styles
+ * 
+ * Styles for the color_list field type that manages arrays of color values.
+ * Mobile-first design using DAPS design tokens.
+ */
+
+@layer components {
+  /* Color list container */
+  .color-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  /* Color list items container */
+  .color-list-items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  /* Individual color list item */
+  .color-list-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    background: var(--color-surface-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+  }
+
+  /* Color preview circle */
+  .color-list-preview {
+    width: var(--space-6);
+    height: var(--space-6);
+    border-radius: var(--radius-full);
+    border: 2px solid var(--color-border);
+    flex-shrink: 0;
+    cursor: pointer;
+  }
+
+  /* Input container for color picker and text input */
+  .color-list-input-container {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex: 1;
+  }
+
+  /* Color picker input */
+  .color-list-color-picker {
+    width: var(--space-8);
+    height: var(--space-8);
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-1);
+    background: transparent;
+    cursor: pointer;
+  }
+
+  /* Color text input */
+  .color-list-input {
+    flex: 1;
+    min-height: var(--input-height);
+    padding: var(--input-padding-y) var(--input-padding-x);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-mono);
+    background: var(--color-input-bg);
+    color: var(--color-input-text);
+    border: var(--input-border-width) solid var(--color-input-border);
+    border-radius: var(--radius-1);
+    transition: all var(--transition-fast);
+  }
+
+  .color-list-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background: var(--color-input-bg-focus);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-alpha-20);
+  }
+
+  .color-list-input.field-input--invalid {
+    border-color: var(--color-error);
+    background: var(--color-error-bg);
+  }
+
+  .color-list-input.field-input--invalid:focus {
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-alpha-20);
+  }
+
+  /* Remove button */
+  .color-list-remove {
+    /* Additional specific styling if needed - uses unified .btn system */
+    min-width: var(--touch-target-min);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+  }
+
+
+  /* Add button */
+  .color-list-add {
+    /* Additional specific styling if needed - uses unified .btn system */
+    padding: var(--space-2) var(--space-4);
+  }
+
+
+  /* Mobile responsive adjustments */
+  @media (max-width: 640px) {
+    .color-list-item {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--space-3);
+    }
+
+    .color-list-input-container {
+      order: 1;
+    }
+
+    .color-list-preview {
+      order: 2;
+      align-self: center;
+    }
+
+    .color-list-remove {
+      order: 3;
+      align-self: center;
+    }
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .color-list-preview {
+      border-width: 3px;
+    }
+
+    .color-list-input {
+      border-width: 2px;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .color-list-add,
+    .color-list-remove,
+    .color-list-input {
+      transition: none;
+    }
+
+    .color-list-add:hover:not(:disabled),
+    .color-list-remove:hover:not(:disabled) {
+      transform: none;
+    }
+  }
+}

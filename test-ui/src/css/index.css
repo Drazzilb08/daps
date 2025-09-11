@@ -61,7 +61,6 @@
 @import './components/search/search-toolbar.css';   /* Search toolbar */
 
 /* Error & Testing Components */
-@import './components/error/error-boundary.css';
 @import './components/error/error-test-page.css';
 @import './components/error/global-error.css';
 
@@ -80,6 +79,7 @@
 @import './components/forms/field-checkbox.css';
 @import './components/forms/field-textarea.css';
 @import './components/forms/field-directory.css';
+@import './components/forms/field-color-list.css';
 @import './components/forms/field-custom.css';
 @import './components/forms/form-layout.css';
 

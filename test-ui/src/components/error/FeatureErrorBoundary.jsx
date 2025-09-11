@@ -214,7 +214,7 @@ class FeatureErrorBoundaryBase extends Component {
                         </span>
                         <button
                             onClick={this.handleRetry}
-                            className="feature-error-boundary__button feature-error-boundary__button--neutral"
+                            className="btn btn--ghost btn--small"
                             type="button"
                             title="Try to load this feature again"
                         >
@@ -256,7 +256,7 @@ class FeatureErrorBoundaryBase extends Component {
                                 <div className="feature-error-boundary__overlay-actions">
                                     <button
                                         onClick={this.handleRetry}
-                                        className="feature-error-boundary__button feature-error-boundary__button--primary"
+                                        className="btn btn--primary"
                                         type="button"
                                     >
                                         <span className="feature-error-boundary__button-icon">🔄</span>
@@ -264,9 +264,9 @@ class FeatureErrorBoundaryBase extends Component {
                                     </button>
                                     <button
                                         onClick={this.handleCopyError}
-                                        className={`feature-error-boundary__button feature-error-boundary__button--copy ${
-                                            this.state.copySuccess ? 'feature-error-boundary__button--success' : 
-                                            this.state.copyError ? 'feature-error-boundary__button--error' : ''
+                                        className={`btn ${
+                                            this.state.copySuccess ? 'btn--success' : 
+                                            this.state.copyError ? 'btn--error' : 'btn--info'
                                         }`}
                                         type="button"
                                         disabled={this.state.copying}
@@ -282,7 +282,7 @@ class FeatureErrorBoundaryBase extends Component {
                                     </button>
                                     <button
                                         onClick={this.handleReload}
-                                        className="feature-error-boundary__button feature-error-boundary__button--secondary"
+                                        className="btn btn--secondary"
                                         type="button"
                                     >
                                         <span className="feature-error-boundary__button-icon">🔄</span>
@@ -352,7 +352,7 @@ class FeatureErrorBoundaryBase extends Component {
                                 <div className="feature-error-boundary__actions">
                                     <button
                                         onClick={this.handleRetry}
-                                        className="feature-error-boundary__button feature-error-boundary__button--primary"
+                                        className="btn btn--primary btn--small"
                                         type="button"
                                     >
                                         <span className="feature-error-boundary__button-icon">
@@ -364,7 +364,7 @@ class FeatureErrorBoundaryBase extends Component {
                                     {!critical && (
                                         <button
                                             onClick={this.handleSkip}
-                                            className="feature-error-boundary__button feature-error-boundary__button--secondary"
+                                            className="btn btn--secondary btn--small"
                                             type="button"
                                         >
                                             <span className="feature-error-boundary__button-icon">
@@ -376,9 +376,9 @@ class FeatureErrorBoundaryBase extends Component {
 
                                     <button
                                         onClick={this.handleCopyError}
-                                        className={`feature-error-boundary__button feature-error-boundary__button--copy ${
-                                            this.state.copySuccess ? 'feature-error-boundary__button--success' : 
-                                            this.state.copyError ? 'feature-error-boundary__button--error' : ''
+                                        className={`btn btn--small ${
+                                            this.state.copySuccess ? 'btn--success' : 
+                                            this.state.copyError ? 'btn--error' : 'btn--info'
                                         }`}
                                         type="button"
                                         disabled={this.state.copying}
@@ -395,7 +395,7 @@ class FeatureErrorBoundaryBase extends Component {
 
                                     <button
                                         onClick={this.handleReload}
-                                        className="feature-error-boundary__button feature-error-boundary__button--neutral"
+                                        className="btn btn--ghost btn--small"
                                         type="button"
                                     >
                                         <span className="feature-error-boundary__button-icon">
@@ -412,7 +412,7 @@ class FeatureErrorBoundaryBase extends Component {
                                             <p>This feature has failed multiple times. Consider reloading the application.</p>
                                             <button
                                                 onClick={this.handleReload}
-                                                className="feature-error-boundary__button feature-error-boundary__button--primary"
+                                                className="btn btn--primary btn--small"
                                                 type="button"
                                             >
                                                 Reload Application

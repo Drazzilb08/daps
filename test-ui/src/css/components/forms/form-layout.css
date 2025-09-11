@@ -150,74 +150,9 @@
     flex-wrap: wrap;
   }
 
-  /* Form buttons */
+  /* Form buttons - uses unified .btn system */
   .form-button {
-    min-height: var(--button-height);
-    padding: var(--button-padding-y) var(--button-padding-x);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    line-height: 1;
-    
-    background: var(--color-button-bg);
-    color: var(--color-button-text);
-    border: var(--button-border-width) solid var(--color-button-border);
-    border-radius: var(--radius-2);
-    
-    cursor: pointer;
-    transition: all var(--transition-fast);
-  }
-
-  .form-button:hover:not(:disabled) {
-    background: var(--color-button-bg-hover);
-    border-color: var(--color-button-border-hover);
-  }
-
-  .form-button:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-alpha-20);
-  }
-
-  .form-button:disabled {
-    background: var(--color-button-bg-disabled);
-    color: var(--color-button-text-disabled);
-    border-color: var(--color-button-border-disabled);
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-
-  /* Button variants */
-  .form-button--primary {
-    background: var(--color-primary);
-    color: var(--color-primary-text);
-    border-color: var(--color-primary);
-  }
-
-  .form-button--primary:hover:not(:disabled) {
-    background: var(--color-primary-hover);
-    border-color: var(--color-primary-hover);
-  }
-
-  .form-button--secondary {
-    background: transparent;
-    color: var(--color-text-primary);
-    border-color: var(--color-border);
-  }
-
-  .form-button--secondary:hover:not(:disabled) {
-    background: var(--color-button-secondary-hover);
-    border-color: var(--color-border-hover);
-  }
-
-  .form-button--danger {
-    background: var(--color-error);
-    color: var(--color-error-text);
-    border-color: var(--color-error);
-  }
-
-  .form-button--danger:hover:not(:disabled) {
-    background: var(--color-error-hover);
-    border-color: var(--color-error-hover);
+    /* Additional specific styling if needed */
   }
 
   /* Loading state */

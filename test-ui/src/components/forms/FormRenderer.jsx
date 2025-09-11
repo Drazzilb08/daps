@@ -262,7 +262,7 @@ export const FormRenderer = React.memo(({
         <div className="form-actions">
           <button
             type="submit"
-            className="form-button form-button--primary"
+            className="btn btn--primary"
             disabled={disabled || loading}
           >
             {loading ? 'Saving...' : submitText}

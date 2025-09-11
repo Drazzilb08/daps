@@ -49,24 +49,14 @@
     background-color: var(--color-input-bg-hover);
   }
 
-  /* Validation states */
-  .field-select--invalid {
-    border-color: var(--color-error);
-    background-color: var(--color-error-bg);
+  /* Validation states now handled by .is-invalid and .is-valid utilities */
+  /* Component-specific validation styling if needed */
+  .field-select.is-invalid {
+    /* Additional select-specific invalid styling can go here */
   }
 
-  .field-select--invalid:focus {
-    border-color: var(--color-error);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-alpha-20);
-  }
-
-  .field-select--valid {
-    border-color: var(--color-success);
-  }
-
-  .field-select--valid:focus {
-    border-color: var(--color-success);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-alpha-20);
+  .field-select.is-valid {
+    /* Additional select-specific valid styling can go here */
   }
 
   /* Disabled state */
@@ -107,21 +97,14 @@
     color: var(--color-primary-text);
   }
 
-  /* Size variants */
-  .field-select--small {
-    min-height: var(--touch-target-min);
-    padding: var(--space-1) calc(var(--space-2) + var(--space-6)) var(--space-1) var(--space-2);
-    font-size: var(--font-size-sm);
-    background-size: 14px 14px;
-    background-position: right var(--space-2) center;
+  /* Size variants now handled by .input-sm and .input-lg utilities */
+  /* Component-specific size adjustments handled in utilities */
+  .field-select.input-sm {
+    /* Additional small select styling handled by utility */
   }
 
-  .field-select--large {
-    min-height: var(--touch-target-comfortable);
-    padding: var(--space-3) calc(var(--space-4) + var(--space-6)) var(--space-3) var(--space-4);
-    font-size: var(--font-size-lg);
-    background-size: 18px 18px;
-    background-position: right var(--space-4) center;
+  .field-select.input-lg {
+    /* Additional large select styling handled by utility */
   }
 
   /* Custom dropdown component */

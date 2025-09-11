@@ -1,0 +1,305 @@
+/**
+ * List Utilities
+ * 
+ * Reusable list-related utility classes for containers, items,
+ * and common list interaction patterns. Designed for composition
+ * with component-specific styles in form fields.
+ */
+
+@layer utilities {
+  /* ==========================================================================
+     LIST CONTAINER UTILITIES
+     ========================================================================== */
+  
+  /* Basic list container - vertical stack */
+  .list-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  
+  /* List container with larger gap */
+  .list-container--lg {
+    gap: var(--space-3);
+  }
+  
+  /* List items wrapper */
+  .list-items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  /* ==========================================================================
+     LIST ITEM UTILITIES
+     ========================================================================== */
+  
+  /* Base list item - horizontal layout */
+  .list-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+  }
+  
+  /* List item with center alignment */
+  .list-item--center {
+    align-items: center;
+  }
+  
+  /* List item with background (for enhanced visibility) */
+  .list-item--elevated {
+    padding: var(--space-2);
+    background: var(--color-surface-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+  }
+  
+  /* List item with larger padding */
+  .list-item--padded {
+    padding: var(--space-3);
+    background: var(--color-surface-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+  }
+  
+  /* List item main content area */
+  .list-item__content {
+    flex: 1;
+    min-width: 0; /* Allow content to shrink */
+  }
+  
+  /* List item controls area */
+  .list-item__controls {
+    flex-shrink: 0;
+    display: flex;
+    gap: var(--space-1);
+    align-items: center;
+  }
+
+  /* ==========================================================================
+     REMOVABLE LIST ITEM UTILITIES
+     ========================================================================== */
+  
+  /* List item that can be removed */
+  .list-item--removable {
+    position: relative;
+  }
+  
+  /* Remove button for list items */
+  .list-item__remove {
+    min-width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    transition: none; /* No hover effects per DAPS requirements */
+    flex-shrink: 0;
+  }
+  
+  /* Small remove button variant */
+  .list-item__remove--small {
+    min-width: 32px;
+    width: 32px;
+    height: 32px;
+  }
+  
+  /* Remove button disabled state */
+  .list-item__remove:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* ==========================================================================
+     INTERACTIVE LIST UTILITIES
+     ========================================================================== */
+  
+  /* Interactive list item (for selection, etc.) */
+  .list-item--interactive {
+    cursor: pointer;
+    transition: background-color var(--transition-fast);
+  }
+  
+  /* Interactive item hover state */
+  .list-item--interactive:hover {
+    background: var(--color-surface-hover);
+  }
+  
+  /* Selected list item */
+  .list-item--selected {
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+    border-color: var(--color-primary);
+  }
+
+  /* ==========================================================================
+     SPECIALIZED LIST UTILITIES
+     ========================================================================== */
+  
+  /* Color list specific utilities */
+  .list-item--color {
+    align-items: center;
+    padding: var(--space-2);
+    background: var(--color-surface-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+  }
+  
+  /* Color preview in list item */
+  .list-item__color-preview {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    flex-shrink: 0;
+  }
+  
+  /* Input group within list item */
+  .list-item__input-group {
+    display: flex;
+    gap: var(--space-1);
+    flex: 1;
+    min-width: 0;
+  }
+  
+  /* Color picker within list item */
+  .list-item__color-picker {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    cursor: pointer;
+    padding: 0;
+    background: none;
+  }
+  
+  .list-item__color-picker::-webkit-color-swatch-wrapper {
+    padding: 2px;
+  }
+  
+  .list-item__color-picker::-webkit-color-swatch {
+    border: none;
+    border-radius: var(--radius-1);
+  }
+  
+  /* Text input within list item */
+  .list-item__input {
+    flex: 1;
+    min-width: 0;
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    background: var(--color-input-bg);
+    color: var(--color-text-primary);
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+  }
+
+  /* ==========================================================================
+     INSTANCE MANAGEMENT UTILITIES
+     ========================================================================== */
+  
+  /* Instance item header */
+  .list-item__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-2);
+    gap: var(--space-2);
+  }
+  
+  /* Instance item title */
+  .list-item__title {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+  }
+  
+  /* Instance item fields grid */
+  .list-item__fields {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+
+  /* ==========================================================================
+     MOBILE RESPONSIVE UTILITIES
+     ========================================================================== */
+  
+  /* Mobile adjustments */
+  @media (max-width: 640px) {
+    /* Stack list items vertically on mobile */
+    .list-item {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--space-1);
+    }
+    
+    .list-item--color {
+      flex-wrap: wrap;
+      gap: var(--space-1);
+    }
+    
+    /* Larger touch targets on mobile */
+    .list-item__remove {
+      width: 100%;
+      margin-top: var(--space-1);
+    }
+    
+    /* Instance header stack on mobile */
+    .list-item__header {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--space-2);
+    }
+    
+    /* Better input width on mobile */
+    .list-item__input {
+      min-width: 120px;
+    }
+  }
+  
+  /* Tablet and up - multi-column instance fields */
+  @media (min-width: 768px) {
+    .list-item__fields {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  /* Desktop - three column instance fields */
+  @media (min-width: 1024px) {
+    .list-item__fields {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* ==========================================================================
+     ACCESSIBILITY UTILITIES
+     ========================================================================== */
+  
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .list-item--elevated,
+    .list-item--padded,
+    .list-item--color {
+      border-width: 2px;
+    }
+    
+    .list-item__remove,
+    .list-item__color-picker {
+      border-width: 2px;
+    }
+  }
+  
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .list-item--interactive {
+      transition: none;
+    }
+  }
+}

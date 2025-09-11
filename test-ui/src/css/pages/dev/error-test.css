@@ -1,0 +1,220 @@
+/**
+ * Error Test Page Styles - Composable Design System
+ * 
+ * Page-specific styles for the Error Handling Demonstrations page.
+ * Replaces all inline styles with proper CSS classes following DAPS design patterns.
+ * 
+ * This file contains only truly page-specific styling that cannot be generalized.
+ * Most layout and component styles are achieved through composable utility classes.
+ */
+
+@layer pages {
+  /* Main page container */
+  .error-test-page {
+    padding: var(--space-4);
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  /* Page header */
+  .error-test-header {
+    text-align: center;
+    margin-bottom: var(--space-4);
+  }
+
+  .error-test-title {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-2);
+  }
+
+  .error-test-description {
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+    max-width: 60ch;
+    margin: 0 auto;
+  }
+
+  /* Demo sections */
+  .error-demo-section {
+    margin-bottom: var(--space-8);
+    padding: var(--space-4);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    background: var(--color-surface);
+  }
+
+  .error-demo-section__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-2);
+  }
+
+  .error-demo-section__description {
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-2);
+  }
+
+  .error-demo-section__description strong {
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-medium);
+  }
+
+  /* Toast notification demo */
+  .toast-buttons {
+    display: flex;
+    gap: var(--space-2);
+    flex-wrap: wrap;
+    margin-top: var(--space-3);
+  }
+
+  .toast-btn {
+    min-height: var(--touch-target-min);
+    padding: var(--space-2) var(--space-3);
+    color: white;
+    border: none;
+    border-radius: var(--radius-1);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    transition: opacity var(--transition-fast);
+  }
+
+  .toast-btn:hover {
+    opacity: 0.9;
+  }
+
+  .toast-btn--success {
+    background: var(--color-success, #10b981);
+  }
+
+  .toast-btn--error {
+    background: var(--color-error, #ef4444);
+  }
+
+  .toast-btn--warning {
+    background: var(--color-warning, #f59e0b);
+  }
+
+  .toast-btn--info {
+    background: var(--color-info, #3b82f6);
+  }
+
+  /* Global error demo */
+  .global-error-btn {
+    min-height: var(--touch-target-min);
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-secondary, #8b5cf6);
+    color: white;
+    border: none;
+    border-radius: var(--radius-1);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    transition: opacity var(--transition-fast);
+  }
+
+  .global-error-btn:hover {
+    opacity: 0.9;
+  }
+
+  /* Error trigger buttons */
+  .error-trigger-btn {
+    min-height: var(--touch-target-min);
+    padding: var(--space-2) var(--space-3);
+    color: white;
+    border: none;
+    border-radius: var(--radius-1);
+    cursor: pointer;
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    margin-bottom: var(--space-2);
+    transition: opacity var(--transition-fast);
+  }
+
+  .error-trigger-btn:hover {
+    opacity: 0.9;
+  }
+
+  .error-trigger-btn--critical {
+    background: #991b1b; /* Dark red for critical errors */
+  }
+
+  .error-trigger-btn--page {
+    background: #ea580c; /* Dark orange for page errors */
+  }
+
+  .error-trigger-btn--feature {
+    background: #1e40af; /* Dark blue for feature errors */
+  }
+
+  /* Reset buttons */
+  .error-reset-btn {
+    min-height: var(--touch-target-min);
+    padding: calc(var(--space-1) + 2px) var(--space-2);
+    background: var(--color-text-tertiary, #6b7280);
+    color: white;
+    border: none;
+    border-radius: var(--radius-1);
+    cursor: pointer;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    margin-top: var(--space-2);
+    transition: opacity var(--transition-fast);
+  }
+
+  .error-reset-btn:hover {
+    opacity: 0.9;
+  }
+
+  /* Working component demo */
+  .working-component {
+    padding: var(--space-4);
+    background: var(--color-surface-elevated, #f9fafb);
+    border-radius: var(--radius-2);
+    border: 1px solid var(--color-border);
+  }
+
+  .working-component p {
+    margin: 0;
+    color: var(--color-success, #10b981);
+    font-weight: var(--font-weight-medium);
+  }
+}
+
+/* Mobile-first responsive adjustments */
+@media (max-width: 767px) {
+  .error-test-page {
+    padding: var(--space-3);
+  }
+  
+  .error-demo-section {
+    padding: var(--space-3);
+    margin-bottom: var(--space-6);
+  }
+  
+  .toast-buttons {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .toast-btn,
+  .global-error-btn,
+  .error-trigger-btn {
+    width: 100%;
+    justify-self: stretch;
+  }
+}
+
+/* Ensure proper touch targets on all interactive elements */
+@media (hover: none) and (pointer: coarse) {
+  .toast-btn,
+  .global-error-btn,
+  .error-trigger-btn,
+  .error-reset-btn {
+    min-height: var(--touch-target-comfortable);
+    min-width: var(--touch-target-comfortable);
+  }
+}

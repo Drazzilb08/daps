@@ -1,0 +1,263 @@
+/**
+ * Form Utilities
+ * 
+ * Reusable form-related utility classes for validation states, 
+ * input sizes, button variants, and common field patterns.
+ * Designed for composition with component-specific styles.
+ */
+
+@layer utilities {
+  /* ==========================================================================
+     VALIDATION STATE UTILITIES
+     ========================================================================== */
+  
+  /* Invalid state - applies to inputs, textareas, selects */
+  .is-invalid {
+    border-color: var(--color-error) !important;
+    background: var(--color-error-bg) !important;
+  }
+  
+  .is-invalid:focus {
+    border-color: var(--color-error) !important;
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-alpha-20) !important;
+  }
+  
+  /* Valid state - applies to inputs, textareas, selects */
+  .is-valid {
+    border-color: var(--color-success) !important;
+  }
+  
+  .is-valid:focus {
+    border-color: var(--color-success) !important;
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-alpha-20) !important;
+  }
+  
+  /* Disabled state enhancements */
+  .is-disabled {
+    background: var(--color-input-bg-disabled) !important;
+    color: var(--color-input-text-disabled) !important;
+    border-color: var(--color-input-border-disabled) !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+  }
+
+  /* ==========================================================================
+     INPUT SIZE UTILITIES
+     ========================================================================== */
+  
+  /* Small input variant */
+  .input-sm {
+    min-height: var(--touch-target-min);
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--font-size-sm);
+  }
+  
+  /* Small select specific - account for dropdown arrow */
+  .input-sm.field-select {
+    padding-right: calc(var(--space-2) + var(--space-6));
+    background-size: 14px 14px;
+    background-position: right var(--space-2) center;
+  }
+  
+  /* Large input variant */
+  .input-lg {
+    min-height: var(--touch-target-comfortable);
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--font-size-lg);
+  }
+  
+  /* Large select specific - account for dropdown arrow */
+  .input-lg.field-select {
+    padding-right: calc(var(--space-4) + var(--space-6));
+    background-size: 18px 18px;
+    background-position: right var(--space-4) center;
+  }
+  
+  /* Large textarea specific */
+  .input-lg.field-textarea {
+    min-height: calc(var(--input-height) * 4);
+  }
+
+  /* ==========================================================================
+     BUTTON UTILITIES
+     ========================================================================== */
+  
+  /* Base button styles - primary variant */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--touch-target-min);
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+    line-height: var(--line-height-normal);
+    border: none;
+    border-radius: var(--radius-1);
+    cursor: pointer;
+    transition: none; /* No hover effects per DAPS requirements */
+    white-space: nowrap;
+    text-decoration: none;
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+  }
+  
+  /* Secondary button variant */
+  .btn--secondary {
+    background: var(--color-surface-secondary);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+  }
+  
+  /* Surface button variant (for remove buttons) */
+  .btn--surface {
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+  }
+  
+  /* Small button variant */
+  .btn--small {
+    min-height: 32px;
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--font-size-xs);
+  }
+  
+  /* Icon-only button (for remove buttons) */
+  .btn--icon {
+    min-width: var(--touch-target-min);
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+  }
+  
+  /* Icon-only small variant */
+  .btn--icon.btn--small {
+    min-width: 32px;
+    width: 32px;
+    height: 32px;
+  }
+  
+  /* Button disabled state */
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  /* Full width button */
+  .btn--full {
+    width: 100%;
+  }
+
+  /* ==========================================================================
+     FIELD GROUP UTILITIES
+     ========================================================================== */
+  
+  /* Horizontal field group (input + button) */
+  .field-group {
+    display: flex;
+    gap: var(--space-2);
+    align-items: stretch;
+  }
+  
+  /* Field group input takes remaining space */
+  .field-group__input {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  /* Field group button fixed width */
+  .field-group__button {
+    flex-shrink: 0;
+  }
+  
+  /* Vertical field group for mobile */
+  .field-group--vertical {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .field-group--vertical .field-group__button {
+    width: 100%;
+  }
+
+  /* ==========================================================================
+     FIELD CONTAINER UTILITIES
+     ========================================================================== */
+  
+  /* Stack container for vertical field lists */
+  .field-stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  
+  /* Stack with larger gap */
+  .field-stack--lg {
+    gap: var(--space-3);
+  }
+  
+  /* Input wrapper with relative positioning for icons/overlays */
+  .field-wrapper {
+    position: relative;
+  }
+
+  /* ==========================================================================
+     MOBILE RESPONSIVE UTILITIES
+     ========================================================================== */
+  
+  /* Mobile-specific overrides */
+  @media (max-width: 640px) {
+    /* Convert horizontal field groups to vertical on mobile */
+    .field-group {
+      flex-direction: column;
+    }
+    
+    .field-group .btn {
+      width: 100%;
+    }
+    
+    /* Larger touch targets on mobile */
+    .btn--icon {
+      min-width: 44px;
+      width: 44px;
+      height: 44px;
+    }
+    
+    /* Adjust small buttons for touch */
+    .btn--small {
+      min-height: 40px;
+      padding: var(--space-2) var(--space-3);
+      font-size: var(--font-size-sm);
+    }
+  }
+
+  /* ==========================================================================
+     ACCESSIBILITY UTILITIES
+     ========================================================================== */
+  
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .is-invalid,
+    .is-valid {
+      border-width: 2px !important;
+    }
+    
+    .btn {
+      border-width: 2px;
+    }
+  }
+  
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .btn {
+      transition: none;
+    }
+  }
+}

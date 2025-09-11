@@ -20,7 +20,7 @@ const SettingsSection = React.memo(({ section, isExpanded, onToggle }) => {
   // Define which field types are 100% complete vs incomplete/placeholder
   const COMPLETED_FIELDS = new Set([
     'text', 'password', 'number', 'float', 'textarea', 
-    'dropdown', 'check_box', 'json', 'color_list'
+    'dropdown', 'check_box', 'json', 'color_list', 'dir', 'dirlist'
   ]);
   
   // Filter out incomplete field types
@@ -156,11 +156,11 @@ const FieldCompletionStatus = React.memo(() => {
   // Define which field types are 100% complete vs incomplete/placeholder
   const COMPLETED_FIELD_TYPES = new Set([
     'text', 'password', 'number', 'float', 'textarea', 
-    'dropdown', 'check_box', 'json', 'color_list'
+    'dropdown', 'check_box', 'json', 'color_list', 'dir', 'dirlist'
   ]);
   
   const INCOMPLETE_FIELD_TYPES = new Set([
-    'dir', 'dirlist', 'dirlist_dragdrop', 'dirlist_options',
+    'dirlist_dragdrop', 'dirlist_options',
     'instances', 'instance_dropdown', 'gdrive_custom', 'gdrive_presets',
     'holiday_presets', 'holiday_schedule', 'replacerr_custom',
     'upgradinatorr_custom', 'labelarr_custom'

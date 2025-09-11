@@ -44,24 +44,14 @@
     opacity: 1;
   }
 
-  /* Validation states */
-  .field-textarea--invalid {
-    border-color: var(--color-error);
-    background: var(--color-error-bg);
+  /* Validation states now handled by .is-invalid and .is-valid utilities */
+  /* Component-specific validation styling if needed */
+  .field-textarea.is-invalid {
+    /* Additional textarea-specific invalid styling can go here */
   }
 
-  .field-textarea--invalid:focus {
-    border-color: var(--color-error);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-alpha-20);
-  }
-
-  .field-textarea--valid {
-    border-color: var(--color-success);
-  }
-
-  .field-textarea--valid:focus {
-    border-color: var(--color-success);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-alpha-20);
+  .field-textarea.is-valid {
+    /* Additional textarea-specific valid styling can go here */
   }
 
   /* Disabled state */
@@ -80,17 +70,15 @@
     resize: none;
   }
 
-  /* Size variants */
-  .field-textarea--small {
+  /* Size variants now handled by .input-sm and .input-lg utilities */
+  /* Component-specific size adjustments */
+  .field-textarea.input-sm {
     min-height: var(--input-height);
-    padding: var(--space-1) var(--space-2);
-    font-size: var(--font-size-sm);
+    /* Additional small textarea styling can go here */
   }
 
-  .field-textarea--large {
-    min-height: calc(var(--input-height) * 4);
-    padding: var(--space-3) var(--space-4);
-    font-size: var(--font-size-lg);
+  .field-textarea.input-lg {
+    /* Additional large textarea styling handled by utility */
   }
 
   /* Auto-resize variant */
@@ -108,7 +96,7 @@
     overflow-wrap: normal;
   }
 
-  /* Character counter wrapper */
+  /* Character counter wrapper - now uses .field-wrapper utility */
   .field-textarea-wrapper {
     position: relative;
   }

@@ -1,0 +1,286 @@
+/**
+ * Composable Button System - DAPS Design System
+ * 
+ * Reusable button components using React composition principles.
+ * Use multiple classes together instead of creating bespoke button variants.
+ * 
+ * Usage Examples:
+ * - Primary button: <button class="btn btn--primary">
+ * - Small secondary: <button class="btn btn--secondary btn--small">
+ * - Large danger: <button class="btn btn--danger btn--large">
+ */
+
+@layer components {
+  /* =============================================================================
+     BASE BUTTON - Foundation for all button styles
+     ============================================================================= */
+  .btn {
+    /* Layout */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    
+    /* Sizing */
+    min-height: var(--touch-target-min);
+    padding: var(--space-2) var(--space-3);
+    
+    /* Typography */
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    
+    /* Appearance */
+    background: transparent;
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    
+    /* Interaction */
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    user-select: none;
+  }
+
+  /* Focus state - accessible */
+  .btn:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  /* Disabled state */
+  .btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  /* =============================================================================
+     BUTTON VARIANTS - Semantic color variations
+     ============================================================================= */
+  
+  /* Primary button - main actions */
+  .btn--primary {
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+    border-color: var(--color-primary);
+  }
+
+  .btn--primary:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+  }
+
+  /* Secondary button - secondary actions */
+  .btn--secondary {
+    background: var(--color-accent);
+    color: var(--color-accent-text);
+    border-color: var(--color-accent);
+  }
+
+  .btn--secondary:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  /* Success button - confirmation actions */
+  .btn--success {
+    background: var(--color-success);
+    color: var(--color-success-text);
+    border-color: var(--color-success);
+  }
+
+  .btn--success:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  /* Warning button - caution actions */
+  .btn--warning {
+    background: var(--color-warning);
+    color: var(--color-warning-text);
+    border-color: var(--color-warning);
+  }
+
+  .btn--warning:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  /* Danger/Error button - destructive actions */
+  .btn--danger,
+  .btn--error {
+    background: var(--color-error);
+    color: var(--color-error-text);
+    border-color: var(--color-error);
+  }
+
+  .btn--danger:hover:not(:disabled),
+  .btn--error:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  /* Info button - informational actions */
+  .btn--info {
+    background: var(--color-accent);
+    color: var(--color-accent-text);
+    border-color: var(--color-accent);
+  }
+
+  .btn--info:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  /* Ghost button - subtle actions */
+  .btn--ghost {
+    background: transparent;
+    color: var(--color-text-primary);
+    border-color: var(--color-border);
+  }
+
+  .btn--ghost:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+  }
+
+  /* =============================================================================
+     BUTTON SIZES - Composable size variations
+     ============================================================================= */
+  
+  /* Small button */
+  .btn--small {
+    min-height: var(--touch-target-min);
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--font-size-sm);
+  }
+
+  /* Large button */
+  .btn--large {
+    min-height: var(--touch-target-comfortable);
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--font-size-lg);
+  }
+
+  /* =============================================================================
+     BUTTON MODIFIERS - Additional behavior classes
+     ============================================================================= */
+  
+  /* Full width button */
+  .btn--full {
+    width: 100%;
+  }
+
+  /* Compact button - reduced padding */
+  .btn--compact {
+    padding: var(--space-1) var(--space-2);
+  }
+
+  /* Icon-only button */
+  .btn--icon-only {
+    min-width: var(--touch-target-min);
+    padding: var(--space-2);
+    aspect-ratio: 1;
+  }
+
+  /* Loading state */
+  .btn--loading {
+    pointer-events: none;
+    position: relative;
+  }
+
+  .btn--loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid transparent;
+    border-top: 2px solid currentColor;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* =============================================================================
+     BUTTON GROUPS - For related actions
+     ============================================================================= */
+  
+  .btn-group {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .btn-group--attached .btn {
+    border-radius: 0;
+    border-right: none;
+  }
+
+  .btn-group--attached .btn:first-child {
+    border-radius: var(--radius-2) 0 0 var(--radius-2);
+  }
+
+  .btn-group--attached .btn:last-child {
+    border-radius: 0 var(--radius-2) var(--radius-2) 0;
+    border-right: 1px solid var(--color-border);
+  }
+
+  .btn-group--attached .btn:only-child {
+    border-radius: var(--radius-2);
+    border-right: 1px solid var(--color-border);
+  }
+
+  /* =============================================================================
+     MOBILE OPTIMIZATIONS
+     ============================================================================= */
+  
+  @media (max-width: 768px) {
+    /* Larger touch targets on mobile */
+    .btn {
+      min-height: var(--touch-target-comfortable);
+      padding: var(--space-3) var(--space-4);
+    }
+
+    .btn--small {
+      min-height: var(--touch-target-min);
+    }
+
+    /* Stack button groups vertically on mobile */
+    .btn-group {
+      flex-direction: column;
+      width: 100%;
+    }
+
+    .btn-group .btn {
+      width: 100%;
+    }
+  }
+
+  /* =============================================================================
+     ACCESSIBILITY ENHANCEMENTS
+     ============================================================================= */
+  
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .btn {
+      border-width: 2px;
+    }
+    
+    .btn:focus-visible {
+      outline-width: 3px;
+      outline-offset: 1px;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .btn {
+      transition: none;
+    }
+    
+    .btn--loading::after {
+      animation: none;
+    }
+  }
+}

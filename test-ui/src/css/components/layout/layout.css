@@ -1,0 +1,395 @@
+/**
+ * Composable Layout System - DAPS Design System
+ * 
+ * Reusable layout components using composition principles.
+ * These classes replace page-specific layout patterns with composable alternatives.
+ * 
+ * Usage Examples:
+ * - Page container: <div class="page-container">
+ * - Content section: <div class="content-section">
+ * - Card layout: <div class="card">
+ */
+
+@layer components {
+  /* =============================================================================
+     PAGE CONTAINERS - Standard page layout patterns
+     ============================================================================= */
+  
+  /* Standard page container - replaces page-specific containers */
+  .page-container {
+    padding: var(--space-4);
+    max-width: var(--content-max-width);
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  .page-container--narrow {
+    max-width: var(--form-max-width);
+  }
+
+  .page-container--wide {
+    max-width: none;
+    padding-left: var(--space-6);
+    padding-right: var(--space-6);
+  }
+
+  /* =============================================================================
+     CONTENT SECTIONS - Reusable section patterns
+     ============================================================================= */
+  
+  /* Standard content section - replaces api-test-section pattern */
+  .content-section {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    padding: var(--space-4);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: var(--space-6);
+  }
+
+  .content-section:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Section header pattern */
+  .section-header {
+    margin-bottom: var(--space-4);
+  }
+
+  .section-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-2);
+  }
+
+  .section-description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-relaxed);
+    margin: 0;
+  }
+
+  /* Section content with consistent spacing */
+  .section-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  /* =============================================================================
+     CARD SYSTEM - Flexible card layouts
+     ============================================================================= */
+  
+  /* Base card - lighter than content-section */
+  .card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    padding: var(--space-3);
+  }
+
+  .card--elevated {
+    box-shadow: var(--shadow-sm);
+  }
+
+  .card--padded {
+    padding: var(--space-4);
+  }
+
+  .card--large {
+    padding: var(--space-6);
+  }
+
+  /* =============================================================================
+     LAYOUT PATTERNS - Common arrangements
+     ============================================================================= */
+  
+  /* Stack - vertical arrangement with consistent gaps */
+  .stack {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .stack--tight {
+    gap: var(--space-2);
+  }
+
+  .stack--loose {
+    gap: var(--space-6);
+  }
+
+  .stack--xl {
+    gap: var(--space-8);
+  }
+
+  /* Cluster - horizontal arrangement with wrapping */
+  .cluster {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: center;
+  }
+
+  .cluster--tight {
+    gap: var(--space-1);
+  }
+
+  .cluster--loose {
+    gap: var(--space-3);
+  }
+
+  .cluster--justify-between {
+    justify-content: space-between;
+  }
+
+  .cluster--justify-center {
+    justify-content: center;
+  }
+
+  .cluster--justify-end {
+    justify-content: flex-end;
+  }
+
+  /* Split - two-column responsive layout */
+  .split {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  @media (min-width: 768px) {
+    .split {
+      flex-direction: row;
+      align-items: start;
+    }
+
+    .split > * {
+      flex: 1;
+    }
+
+    .split--uneven > :first-child {
+      flex: 2;
+    }
+
+    .split--uneven > :last-child {
+      flex: 1;
+    }
+  }
+
+  /* Grid - responsive grid layout */
+  .grid {
+    display: grid;
+    gap: var(--space-4);
+    grid-template-columns: 1fr;
+  }
+
+  .grid--2 {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+
+  .grid--3 {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+
+  .grid--4 {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  @media (min-width: 768px) {
+    .grid--2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .grid--3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    .grid--4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+
+  /* =============================================================================
+     RESPONSIVE DISPLAY - Show/hide patterns
+     ============================================================================= */
+  
+  .show-mobile {
+    display: block;
+  }
+
+  .show-desktop {
+    display: none;
+  }
+
+  @media (min-width: 768px) {
+    .show-mobile {
+      display: none;
+    }
+
+    .show-desktop {
+      display: block;
+    }
+  }
+
+  /* =============================================================================
+     STATE DISPLAYS - Common UI states
+     ============================================================================= */
+  
+  /* Loading state component */
+  .loading-display {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    padding: var(--space-3);
+  }
+
+  .loading-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--color-border);
+    border-top: 2px solid var(--color-primary);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  /* Error state component */
+  .error-display {
+    background: var(--color-danger-surface);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-2);
+    padding: var(--space-3);
+    color: var(--color-error);
+  }
+
+  .error-title {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    margin: 0 0 var(--space-1) 0;
+  }
+
+  .error-message {
+    font-size: var(--font-size-xs);
+    margin: 0;
+    color: var(--color-text-primary);
+  }
+
+  /* Success state component */
+  .success-display {
+    background: var(--color-success-opacity-20);
+    border: 1px solid var(--color-success);
+    border-radius: var(--radius-2);
+    padding: var(--space-3);
+    color: var(--color-success);
+  }
+
+  /* Info state component */
+  .info-display {
+    background: var(--color-primary-opacity-10);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-2);
+    padding: var(--space-3);
+    color: var(--color-primary);
+  }
+
+  /* =============================================================================
+     DATA DISPLAY - Common data presentation patterns
+     ============================================================================= */
+  
+  /* Code/JSON display */
+  .code-display {
+    background: var(--color-surface-elevated);
+    color: var(--color-text-primary);
+    padding: var(--space-3);
+    border-radius: var(--radius-2);
+    font-size: var(--font-size-xs);
+    font-family: var(--font-family-mono);
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid var(--color-border);
+  }
+
+  /* Statistics/metrics display */
+  .stats-grid {
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: 1fr;
+  }
+
+  @media (min-width: 768px) {
+    .stats-grid {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    }
+  }
+
+  .stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-3);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    font-size: var(--font-size-sm);
+  }
+
+  .stat-label {
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+
+  .stat-value {
+    color: var(--color-text-primary);
+    font-weight: var(--font-weight-medium);
+    margin: 0;
+  }
+
+  /* =============================================================================
+     MOBILE OPTIMIZATIONS
+     ============================================================================= */
+  
+  @media (max-width: 768px) {
+    .page-container {
+      padding: var(--space-3);
+    }
+
+    .content-section {
+      padding: var(--space-3);
+      margin-bottom: var(--space-4);
+    }
+
+    .section-title {
+      font-size: var(--font-size-base);
+    }
+
+    .cluster {
+      justify-content: stretch;
+    }
+
+    .cluster > * {
+      flex: 1;
+    }
+  }
+
+  /* =============================================================================
+     ANIMATIONS
+     ============================================================================= */
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .loading-spinner {
+      animation: none;
+    }
+  }
+}

@@ -47,16 +47,31 @@
    COMPONENT STYLES
    Individual component styles for context providers and UI elements.
    ============================================================================= */
-@import './components/toast.css';
-@import './components/error-boundary.css';
-@import './components/error-test-page.css';
-@import './components/global-error.css';
-@import './components/page-layout.css';
-@import './components/search-interface.css';
-@import './components/Toolbar/toolbar.css';
-@import './components/tool-button.css';
-@import './components/search-toolbar.css';
-@import './components/spinner.css';
+/* UI Components - reusable interface elements */
+@import './components/ui/button.css';         /* Reusable button system */
+@import './components/ui/spinner.css';        /* Loading spinners */
+@import './components/ui/toast.css';          /* Toast notifications */
+
+/* Layout Components - page structure and containers */
+@import './components/layout/layout.css';     /* Composable layout patterns */
+@import './components/layout/page-layout.css'; /* Page-specific layouts */
+
+/* Search Components - search interface elements */
+@import './components/search/search-interface.css'; /* Main search interface */
+@import './components/search/search-toolbar.css';   /* Search toolbar */
+
+/* Error & Testing Components */
+@import './components/error/error-boundary.css';
+@import './components/error/error-test-page.css';
+@import './components/error/global-error.css';
+
+/* UI Components - toolbar and tool buttons */
+@import './components/ui/Toolbar/toolbar.css';
+@import './components/ui/tool-button.css';
+
+/* Form system utilities - imported before components for proper cascade */
+@import './utilities/form-utilities.css';
+@import './utilities/list-utilities.css';
 
 /* Form system styles */
 @import './components/forms/field-base.css';
@@ -64,6 +79,7 @@
 @import './components/forms/field-select.css';
 @import './components/forms/field-checkbox.css';
 @import './components/forms/field-textarea.css';
+@import './components/forms/field-directory.css';
 @import './components/forms/field-custom.css';
 @import './components/forms/form-layout.css';
 
@@ -71,9 +87,18 @@
    PAGE STYLES
    Page-specific styling for individual pages and views.
    ============================================================================= */
-@import './pages/api-test.css';
-@import './pages/form-test.css';
-@import './pages/daps-settings.css';
+
+
+
+/* =============================================================================
+   DEV PAGE STYLES
+   Page-specific styling for individual pages and views.
+   ============================================================================= */
+@import './pages/dev/api-test.css';
+@import './pages/dev/form-test.css';
+@import './pages/dev/settings-test.css';
+@import './pages/dev/error-test.css';
+
 
 /* =============================================================================
    GLOBAL UTILITIES

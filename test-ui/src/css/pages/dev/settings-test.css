@@ -1,0 +1,321 @@
+/**
+ * Settings Test Page Styles - Composable Design System
+ * 
+ * Page-specific styles for the DAPS Settings Test page that showcases
+ * real DAPS configuration using the SETTINGS_SCHEMA.
+ * 
+ * This file contains only truly page-specific styling that cannot be generalized.
+ * Most layout and component styles are achieved through composable utility classes.
+ */
+
+@layer pages {
+  /* Main page container */
+  .daps-settings-page {
+    max-width: var(--content-max-width, 1200px);
+    margin: 0 auto;
+    padding: var(--space-4);
+  }
+
+  /* Page header section */
+  .daps-settings-header {
+    text-align: center;
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .daps-settings-title {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-2);
+  }
+
+  .daps-settings-description {
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+    max-width: 60ch;
+    margin: 0 auto var(--space-4);
+  }
+
+  .daps-settings-controls {
+    display: flex;
+    gap: var(--space-2);
+    justify-content: center;
+    margin-top: var(--space-4);
+  }
+
+  /* Field completion status section */
+  .field-completion-status {
+    background: var(--color-surface-elevated);
+    border-radius: var(--radius-2);
+    padding: var(--space-4);
+    margin-bottom: var(--space-6);
+    border: 1px solid var(--color-border);
+  }
+
+  .field-completion-status__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-3);
+    text-align: center;
+  }
+
+  /* Implementation summary grid */
+  .implementation-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+  }
+
+  .summary-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    padding: var(--space-3);
+    text-align: center;
+  }
+
+  .summary-card--completed {
+    border-color: var(--color-success);
+    background: var(--color-success-subtle, var(--color-surface));
+  }
+
+  .summary-card--incomplete {
+    border-color: var(--color-warning);
+    background: var(--color-warning-subtle, var(--color-surface));
+  }
+
+  .summary-number {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-1);
+  }
+
+  .summary-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+  }
+
+  /* Field type sections */
+  .field-type-sections {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  @media (min-width: 768px) {
+    .field-type-sections {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .field-type-section {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    padding: var(--space-3);
+  }
+
+  .field-type-section--completed {
+    border-color: var(--color-success);
+  }
+
+  .field-type-section--incomplete {
+    border-color: var(--color-warning);
+  }
+
+  .section-title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-2);
+  }
+
+  /* Field type badges */
+  .field-type-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+  }
+
+  .field-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-1);
+    font-size: var(--font-size-sm);
+    border: 1px solid;
+  }
+
+  .field-type-badge--completed {
+    border-color: var(--color-success);
+    background: var(--color-success-subtle, var(--color-surface));
+    color: var(--color-success-text, var(--color-text-primary));
+  }
+
+  .field-type-badge--incomplete {
+    border-color: var(--color-warning);
+    background: var(--color-warning-subtle, var(--color-surface));
+    color: var(--color-warning-text, var(--color-text-primary));
+  }
+
+  .field-type-name {
+    font-family: var(--font-mono);
+  }
+
+  .field-type-count {
+    background: var(--color-surface-elevated);
+    border-radius: var(--radius-full);
+    padding: 0 var(--space-1);
+    min-width: 20px;
+    text-align: center;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+  }
+
+  /* Settings sections container */
+  .settings-sections {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-bottom: var(--space-6);
+  }
+
+  /* Individual settings section */
+  .settings-section {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    overflow: hidden;
+  }
+
+  .settings-section--empty {
+    opacity: 0.7;
+  }
+
+  .settings-section__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    background: var(--color-surface-elevated);
+    border-bottom: 1px solid var(--color-border);
+    cursor: pointer;
+    min-height: var(--touch-target-min);
+  }
+
+  .settings-section__header:hover {
+    background: var(--color-surface-hover, var(--color-surface-elevated));
+  }
+
+  .settings-section__title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    margin: 0;
+    flex: 1;
+  }
+
+  .settings-section__badge {
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-full);
+  }
+
+  .settings-section__toggle {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--space-6);
+    height: var(--space-6);
+  }
+
+  .settings-section__content {
+    padding: var(--space-4);
+  }
+
+  .settings-section__empty-message {
+    color: var(--color-text-secondary);
+    font-style: italic;
+    text-align: center;
+    padding: var(--space-2) 0;
+  }
+
+  /* Page footer */
+  .daps-settings-footer {
+    text-align: center;
+    padding: var(--space-4);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .settings-footer__note {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    max-width: 60ch;
+    margin: 0 auto;
+  }
+
+  /* Control button styling (using composable pattern) */
+  .control-button {
+    min-height: var(--touch-target-min);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .control-button:hover {
+    background: var(--color-surface-hover, var(--color-surface-elevated));
+    border-color: var(--color-border-hover, var(--color-border));
+  }
+
+  .control-button.secondary {
+    background: var(--color-secondary, var(--color-surface));
+    color: var(--color-secondary-text, var(--color-text-primary));
+    border-color: var(--color-secondary, var(--color-border));
+  }
+
+  .control-button.secondary:hover {
+    background: var(--color-secondary-hover, var(--color-surface-elevated));
+  }
+}
+
+/* Mobile-first responsive adjustments */
+@media (max-width: 767px) {
+  .daps-settings-page {
+    padding: var(--space-3);
+  }
+  
+  .daps-settings-controls {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .control-button {
+    width: 100%;
+    max-width: 200px;
+  }
+
+  .settings-section__header {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .settings-section__content {
+    padding: var(--space-3);
+  }
+}

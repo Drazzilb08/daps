@@ -39,24 +39,14 @@
     opacity: 1;
   }
 
-  /* Validation states */
-  .field-input--invalid {
-    border-color: var(--color-error);
-    background: var(--color-error-bg);
+  /* Validation states now handled by .is-invalid and .is-valid utilities */
+  /* Component-specific validation styling if needed */
+  .field-input.is-invalid {
+    /* Additional input-specific invalid styling can go here */
   }
 
-  .field-input--invalid:focus {
-    border-color: var(--color-error);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-alpha-20);
-  }
-
-  .field-input--valid {
-    border-color: var(--color-success);
-  }
-
-  .field-input--valid:focus {
-    border-color: var(--color-success);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-alpha-20);
+  .field-input.is-valid {
+    /* Additional input-specific valid styling can go here */
   }
 
   /* Disabled state */
@@ -84,32 +74,23 @@
     text-align: right;
   }
 
-  /* Small input variant */
-  .field-input--small {
-    min-height: var(--touch-target-min);
-    padding: var(--space-1) var(--space-2);
-    font-size: var(--font-size-sm);
+  /* Size variants now handled by .input-sm and .input-lg utilities */
+  /* Component-specific size adjustments if needed */
+  .field-input.input-sm {
+    /* Additional small input styling can go here */
   }
 
-  /* Large input variant */
-  .field-input--large {
-    min-height: var(--touch-target-comfortable);
-    padding: var(--space-3) var(--space-4);
-    font-size: var(--font-size-lg);
+  .field-input.input-lg {
+    /* Additional large input styling can go here */
   }
 
-  /* Input group - for inputs with buttons or icons */
-  .field-input-group {
-    position: relative;
-    display: flex;
-    align-items: stretch;
-  }
-
-  .field-input-group .field-input {
+  /* Input groups now use .field-group utility classes */
+  /* Component-specific input group styling */
+  .field-group .field-input {
     border-radius: var(--radius-2) 0 0 var(--radius-2);
   }
 
-  .field-input-group .field-input-addon {
+  .field-input-addon {
     background: var(--color-primary);
     border: var(--input-border-width) solid var(--color-primary);
     border-left: none;
@@ -123,11 +104,39 @@
     cursor: pointer;
   }
 
-  /* Password toggle button - transparent background, primary icon */
+  /* Password input group container */
+  .field-input-group {
+    display: flex;
+    align-items: stretch;
+    background: var(--color-input-bg);
+    border: var(--input-border-width) solid var(--color-input-border);
+    border-radius: var(--radius-2);
+    overflow: hidden;
+    transition: all var(--transition-fast);
+  }
+
+  .field-input-group:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-alpha-20);
+  }
+
+  .field-input-group .field-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    border-radius: 0;
+  }
+
+  .field-input-group .field-input:focus {
+    box-shadow: none;
+    border-color: transparent;
+  }
+
+  /* Password toggle button - now uses btn utility base */
   .field-input-toggle {
     background: transparent;
     border: none;
-    border-radius: 0 var(--radius-2) var(--radius-2) 0;
+    border-radius: 0;
     padding: var(--input-padding-y) var(--input-padding-x);
     display: flex;
     align-items: center;
@@ -148,7 +157,7 @@
     cursor: not-allowed;
   }
 
-  /* Input with icon */
+  /* Input with icon - now uses .field-wrapper utility */
   .field-input-wrapper {
     position: relative;
   }
@@ -207,6 +216,7 @@
 
   /* No hover states for number field container */
 
+  /* Number field buttons - now use .btn .btn--icon utility base */
   .number-field-button {
     min-width: var(--touch-target-min);
     height: var(--input-height);

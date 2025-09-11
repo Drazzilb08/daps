@@ -30,7 +30,8 @@
     background: transparent;
   }
 
-  .checkbox-field--invalid {
+  /* Invalid state now uses .is-invalid utility on the entire field */
+  .checkbox-field.is-invalid {
     background: var(--color-error-bg);
     border: 1px solid var(--color-error);
   }
@@ -75,12 +76,12 @@
     box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-alpha-20);
   }
 
-  /* Invalid state */
-  .checkbox-field--invalid .checkbox-field__indicator {
+  /* Invalid state - updated to use .is-invalid utility */
+  .checkbox-field.is-invalid .checkbox-field__indicator {
     border-color: var(--color-error);
   }
 
-  .checkbox-field--invalid:not(.checkbox-field--disabled) .checkbox-field__input input:checked + .checkbox-field__indicator {
+  .checkbox-field.is-invalid:not(.checkbox-field--disabled) .checkbox-field__input input:checked + .checkbox-field__indicator {
     background: var(--color-error);
     border-color: var(--color-error);
   }

@@ -10,7 +10,7 @@ const CrashComponent = ({ shouldCrash, type = "demonstration" }) => {
   }
   
   return (
-    <div style={{ padding: '20px', background: '#f0f0f0', borderRadius: '8px' }}>
+    <div className="working-component">
       <p>✅ Component working normally</p>
     </div>
   );
@@ -51,51 +51,53 @@ const ErrorTestPage = () => {
   };
 
   return (
-    <div style={{ padding: '20px', maxWidth: '1200px', margin: '0 auto' }}>
-      <h1>🔬 Error Handling Demonstrations</h1>
-      <p>Click the buttons below to see different error handling approaches:</p>
+    <div className="error-test-page">
+      <div className="error-test-header">
+        <h1 className="error-test-title">🔬 Error Handling Demonstrations</h1>
+        <p className="error-test-description">Click the buttons below to see different error handling approaches:</p>
+      </div>
 
       {/* Toast Notifications */}
-      <section style={{ marginBottom: '40px', padding: '20px', border: '1px solid #ddd', borderRadius: '8px' }}>
-        <h2>🍞 Toast Notifications</h2>
-        <p><strong>What it is:</strong> Small popup notifications that appear briefly</p>
-        <p><strong>When to use:</strong> Success confirmations, alerts, quick feedback</p>
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          <button onClick={() => showToast('success')} style={{ padding: '8px 16px', background: 'green', color: 'white', border: 'none', borderRadius: '4px' }}>
+      <section className="error-demo-section">
+        <h2 className="error-demo-section__title">🍞 Toast Notifications</h2>
+        <p className="error-demo-section__description"><strong>What it is:</strong> Small popup notifications that appear briefly</p>
+        <p className="error-demo-section__description"><strong>When to use:</strong> Success confirmations, alerts, quick feedback</p>
+        <div className="toast-buttons">
+          <button onClick={() => showToast('success')} className="toast-btn toast-btn--success">
             Success Toast
           </button>
-          <button onClick={() => showToast('error')} style={{ padding: '8px 16px', background: 'red', color: 'white', border: 'none', borderRadius: '4px' }}>
+          <button onClick={() => showToast('error')} className="toast-btn toast-btn--error">
             Error Toast
           </button>
-          <button onClick={() => showToast('warning')} style={{ padding: '8px 16px', background: 'orange', color: 'white', border: 'none', borderRadius: '4px' }}>
+          <button onClick={() => showToast('warning')} className="toast-btn toast-btn--warning">
             Warning Toast
           </button>
-          <button onClick={() => showToast('info')} style={{ padding: '8px 16px', background: 'blue', color: 'white', border: 'none', borderRadius: '4px' }}>
+          <button onClick={() => showToast('info')} className="toast-btn toast-btn--info">
             Info Toast
           </button>
         </div>
       </section>
 
       {/* Global Error Handling */}
-      <section style={{ marginBottom: '40px', padding: '20px', border: '1px solid #ddd', borderRadius: '8px' }}>
-        <h2>🌐 Global Error Handling</h2>
-        <p><strong>What it is:</strong> Centralized error handling for the entire app</p>
-        <p><strong>When to use:</strong> Network failures, authentication issues, server errors</p>
-        <button onClick={showGlobalError} style={{ padding: '8px 16px', background: 'purple', color: 'white', border: 'none', borderRadius: '4px' }}>
+      <section className="error-demo-section">
+        <h2 className="error-demo-section__title">🌐 Global Error Handling</h2>
+        <p className="error-demo-section__description"><strong>What it is:</strong> Centralized error handling for the entire app</p>
+        <p className="error-demo-section__description"><strong>When to use:</strong> Network failures, authentication issues, server errors</p>
+        <button onClick={showGlobalError} className="global-error-btn">
           Trigger Global Error
         </button>
       </section>
 
       {/* Critical Feature Error (Full Screen Overlay) */}
-      <section style={{ marginBottom: '40px', padding: '20px', border: '1px solid #ddd', borderRadius: '8px' }}>
-        <h2>⚠️ Critical Feature Error</h2>
-        <p><strong>What it is:</strong> Full-screen overlay that blocks everything</p>
-        <p><strong>When to use:</strong> Essential features like navigation or authentication</p>
-        <p><strong>Visual behavior:</strong> Covers entire screen, forces user to resolve</p>
+      <section className="error-demo-section">
+        <h2 className="error-demo-section__title">⚠️ Critical Feature Error</h2>
+        <p className="error-demo-section__description"><strong>What it is:</strong> Full-screen overlay that blocks everything</p>
+        <p className="error-demo-section__description"><strong>When to use:</strong> Essential features like navigation or authentication</p>
+        <p className="error-demo-section__description"><strong>Visual behavior:</strong> Covers entire screen, forces user to resolve</p>
         
         <button 
           onClick={() => triggerCrash('critical')} 
-          style={{ padding: '8px 16px', background: 'darkred', color: 'white', border: 'none', borderRadius: '4px', marginBottom: '10px' }}
+          className="error-trigger-btn error-trigger-btn--critical"
         >
           Trigger Critical Error
         </button>
@@ -111,7 +113,7 @@ const ErrorTestPage = () => {
         {crashes.critical && (
           <button 
             onClick={() => resetCrash('critical')} 
-            style={{ padding: '6px 12px', background: 'gray', color: 'white', border: 'none', borderRadius: '4px', marginTop: '10px' }}
+            className="error-reset-btn"
           >
             Reset
           </button>
@@ -119,15 +121,15 @@ const ErrorTestPage = () => {
       </section>
 
       {/* Page Error (Full Page Replacement) */}
-      <section style={{ marginBottom: '40px', padding: '20px', border: '1px solid #ddd', borderRadius: '8px' }}>
-        <h2>📄 Page Error</h2>
-        <p><strong>What it is:</strong> Replaces entire page content with error page</p>
-        <p><strong>When to use:</strong> When entire pages/routes fail to load</p>
-        <p><strong>Visual behavior:</strong> Shows error page with navigation options</p>
+      <section className="error-demo-section">
+        <h2 className="error-demo-section__title">📄 Page Error</h2>
+        <p className="error-demo-section__description"><strong>What it is:</strong> Replaces entire page content with error page</p>
+        <p className="error-demo-section__description"><strong>When to use:</strong> When entire pages/routes fail to load</p>
+        <p className="error-demo-section__description"><strong>Visual behavior:</strong> Shows error page with navigation options</p>
         
         <button 
           onClick={() => triggerCrash('page')} 
-          style={{ padding: '8px 16px', background: 'darkorange', color: 'white', border: 'none', borderRadius: '4px', marginBottom: '10px' }}
+          className="error-trigger-btn error-trigger-btn--page"
         >
           Trigger Page Error
         </button>
@@ -139,7 +141,7 @@ const ErrorTestPage = () => {
         {crashes.page && (
           <button 
             onClick={() => resetCrash('page')} 
-            style={{ padding: '6px 12px', background: 'gray', color: 'white', border: 'none', borderRadius: '4px', marginTop: '10px' }}
+            className="error-reset-btn"
           >
             Reset
           </button>
@@ -147,15 +149,15 @@ const ErrorTestPage = () => {
       </section>
 
       {/* Feature Error (Inline Replacement) */}
-      <section style={{ marginBottom: '40px', padding: '20px', border: '1px solid #ddd', borderRadius: '8px' }}>
-        <h2>🛡️ Feature Error</h2>
-        <p><strong>What it is:</strong> Replaces just the broken component inline</p>
-        <p><strong>When to use:</strong> Individual features that might fail independently</p>
-        <p><strong>Visual behavior:</strong> Shows error UI in place of component, allows retry/skip</p>
+      <section className="error-demo-section">
+        <h2 className="error-demo-section__title">🛡️ Feature Error</h2>
+        <p className="error-demo-section__description"><strong>What it is:</strong> Replaces just the broken component inline</p>
+        <p className="error-demo-section__description"><strong>When to use:</strong> Individual features that might fail independently</p>
+        <p className="error-demo-section__description"><strong>Visual behavior:</strong> Shows error UI in place of component, allows retry/skip</p>
         
         <button 
           onClick={() => triggerCrash('feature')} 
-          style={{ padding: '8px 16px', background: 'darkblue', color: 'white', border: 'none', borderRadius: '4px', marginBottom: '10px' }}
+          className="error-trigger-btn error-trigger-btn--feature"
         >
           Trigger Feature Error
         </button>
@@ -170,7 +172,7 @@ const ErrorTestPage = () => {
         {crashes.feature && (
           <button 
             onClick={() => resetCrash('feature')} 
-            style={{ padding: '6px 12px', background: 'gray', color: 'white', border: 'none', borderRadius: '4px', marginTop: '10px' }}
+            className="error-reset-btn"
           >
             Reset
           </button>

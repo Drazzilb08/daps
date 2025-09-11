@@ -11,4 +11,6 @@
 @import './field-select.css';
 @import './field-checkbox.css';
 @import './field-textarea.css';
+@import './field-directory.css';
+@import './field-custom.css';
 @import './form-layout.css';

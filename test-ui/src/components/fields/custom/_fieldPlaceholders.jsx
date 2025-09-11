@@ -467,9 +467,116 @@ export const ColorListField = React.memo(({ field, value, onChange, disabled, hi
   );
 });
 
-export const DirListField = React.memo((props) => (
-  <PlaceholderField {...props} />
-));
+// Directory List Field - Manage an array of directory paths
+export const DirListField = React.memo(({ field, value, onChange, disabled, highlightInvalid, errorMessage }) => {
+  // Ensure value is always an array
+  const dirList = React.useMemo(() => {
+    if (Array.isArray(value)) return value;
+    if (typeof value === 'string' && value.trim()) {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [value];
+      } catch {
+        return [value];
+      }
+    }
+    return ['']; // Default empty directory
+  }, [value]);
+
+  const handleDirChange = React.useCallback((index, newDir) => {
+    const newList = [...dirList];
+    newList[index] = newDir;
+    onChange(newList);
+  }, [dirList, onChange]);
+
+  const handleAddDir = React.useCallback(() => {
+    const newList = [...dirList, ''];
+    onChange(newList);
+  }, [dirList, onChange]);
+
+  const handleRemoveDir = React.useCallback((index) => {
+    if (dirList.length <= 1) return; // Keep at least one directory
+    const newList = dirList.filter((_, i) => i !== index);
+    onChange(newList);
+  }, [dirList, onChange]);
+
+  const handleBrowseClick = React.useCallback((index) => {
+    // In a real implementation, this would open a directory picker dialog
+    // For now, just show a placeholder message
+    alert(`Directory browser not yet implemented for item ${index + 1}. Please type the path manually.`);
+  }, []);
+
+  const inputId = `field-${field.key}`;
+  
+  return (
+    <>
+      <label htmlFor={inputId} className="field-label">
+        {field.label}
+        {field.required && <span className="required-indicator">*</span>}
+      </label>
+      
+      <div className="dir-list-container">
+        <div className="dir-list-items">
+          {dirList.map((dir, index) => (
+            <div key={index} className="dir-list-item">
+              <div className="dir-field-container">
+                <input
+                  type="text"
+                  value={dir || ''}
+                  placeholder={field.placeholder || '/path/to/directory'}
+                  disabled={disabled}
+                  onChange={(e) => handleDirChange(index, e.target.value)}
+                  className={`field-input dir-field-input ${highlightInvalid ? 'field-input--invalid' : ''}`}
+                />
+                
+                <button
+                  type="button"
+                  onClick={() => handleBrowseClick(index)}
+                  disabled={disabled}
+                  className="dir-field-button"
+                  title="Browse for directory"
+                >
+                  Browse...
+                </button>
+              </div>
+              
+              <button
+                type="button"
+                onClick={() => handleRemoveDir(index)}
+                disabled={disabled || dirList.length <= 1}
+                className="btn-primary dir-list-remove"
+                title="Remove directory"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+        
+        <button
+          type="button"
+          onClick={handleAddDir}
+          disabled={disabled}
+          className="btn-primary dir-list-add"
+        >
+          Add Directory
+        </button>
+      </div>
+      
+      {field.description && (
+        <div id={`${inputId}-description`} className="field-description">
+          {field.description}
+        </div>
+      )}
+      
+      {errorMessage && (
+        <div id={`${inputId}-error`} className="field-error" role="alert">
+          {errorMessage}
+        </div>
+      )}
+    </>
+  );
+});
 
 export const InstanceDropdownField = React.memo((props) => (
   <PlaceholderField {...props} />

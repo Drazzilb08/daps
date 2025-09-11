@@ -1,0 +1,216 @@
+/**
+ * API Test Page Styles - DAPS Design System
+ * 
+ * Complete styling for API testing page with all components and states.
+ * Uses design tokens for consistent spacing, colors, and responsive design.
+ */
+
+@layer pages {
+  /* Main page container */
+  .api-test-page {
+    max-width: var(--content-max-width, 1200px);
+    margin: 0 auto;
+    padding: var(--space-4);
+  }
+
+  /* Page header */
+  .api-test-header {
+    text-align: center;
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .api-test-title {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-2);
+  }
+
+  .api-test-description {
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+    max-width: 60ch;
+    margin: 0 auto;
+  }
+
+  /* Test sections container */
+  .test-sections {
+    display: grid;
+    gap: var(--space-6);
+  }
+
+  /* Individual test section */
+  .api-test-section {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    padding: var(--space-4);
+  }
+
+  .test-section-title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-2);
+  }
+
+  .test-section-description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin-bottom: var(--space-4);
+  }
+
+  .test-section-content {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  /* Test controls */
+  .test-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    align-items: center;
+    margin-bottom: var(--space-3);
+  }
+
+  /* Test buttons */
+  .test-button {
+    min-height: var(--touch-target-min);
+    padding: var(--space-2) var(--space-4);
+    border: none;
+    border-radius: var(--radius-1);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .test-button.primary {
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+  }
+
+  .test-button.danger {
+    background: var(--color-error);
+    color: var(--color-error-text, white);
+  }
+
+  .test-button.info {
+    background: var(--color-info, var(--color-surface-elevated));
+    color: var(--color-info-text, var(--color-text-primary));
+    border: 1px solid var(--color-border);
+  }
+
+  .test-button.warning {
+    background: var(--color-warning, #f59e0b);
+    color: var(--color-warning-text, white);
+  }
+
+  .test-button.secondary {
+    background: var(--color-surface-elevated);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+  }
+
+  /* Form selects in test controls */
+  .domain-select, 
+  .error-type-select {
+    min-height: var(--touch-target-min);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-sm);
+  }
+
+  /* API response display */
+  .api-response-display {
+    background: var(--color-surface-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    padding: var(--space-3);
+  }
+
+  .response-title {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-2);
+  }
+
+  /* Loading state */
+  .loading-state {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    color: var(--color-text-secondary);
+  }
+
+  /* Error state */
+  .error-state {
+    padding: var(--space-3);
+    background: var(--color-error-bg, #fee2e2);
+    color: var(--color-error-text, #dc2626);
+    border-radius: var(--radius-1);
+    border: 1px solid var(--color-error, #dc2626);
+  }
+
+  /* Response data display */
+  .response-data {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    padding: var(--space-3);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  /* Test info display */
+  .test-info {
+    padding: var(--space-3);
+    background: var(--color-surface-elevated);
+    border-radius: var(--radius-1);
+    border: 1px solid var(--color-border);
+  }
+
+  /* Individual test containers */
+  .version-test,
+  .config-test,
+  .job-stats-test,
+  .error-test,
+  .toast-test {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 767px) {
+    .api-test-page {
+      padding: var(--space-3);
+    }
+
+    .test-controls {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .test-button,
+    .domain-select,
+    .error-type-select {
+      width: 100%;
+    }
+  }
+}

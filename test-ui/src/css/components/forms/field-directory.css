@@ -1,0 +1,77 @@
+/**
+ * Directory Field Component Styles
+ * 
+ * Styles for all directory-related field types: dir, dirlist, dirlist_dragdrop, dirlist_options
+ * Mobile-first design using DAPS design tokens.
+ */
+
+@layer components {
+  /* Single Directory Field Styles - now uses .field-group utility */
+  .dir-field-container {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .dir-field-input {
+    flex: 1;
+  }
+
+  /* Directory button - now uses .btn utility as base */
+  .dir-field-button {
+    /* Extend .btn utility with component-specific styles */
+    white-space: nowrap;
+  }
+
+  .dir-field-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Directory List Field Styles - now use list utilities */
+  .dir-list-container {
+    /* Uses .list-container utility */
+  }
+
+  .dir-list-items {
+    /* Uses .list-items utility */
+  }
+
+  .dir-list-item {
+    /* Uses .list-item utility */
+  }
+
+  .dir-list-item .dir-field-container {
+    flex: 1;
+  }
+
+  /* Directory remove button - now uses .btn .btn--icon .btn--surface utilities */
+  .dir-list-remove {
+    /* Extend .btn .btn--icon .btn--surface with component-specific styles */
+    margin-top: 0; /* Align with input field */
+  }
+
+  .dir-list-remove:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Directory add button - now uses .btn utility */
+  .dir-list-add {
+    /* Extend .btn utility with component-specific styles */
+  }
+
+  .dir-list-add:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Mobile adjustments - now handled by utility classes */
+  @media (max-width: 640px) {
+    /* .field-group utility handles horizontal to vertical conversion */
+    /* .list-item utility handles mobile stacking */
+    /* Additional component-specific mobile adjustments if needed */
+    .dir-field-container {
+      /* Mobile behavior handled by .field-group utility */
+    }
+  }
+}

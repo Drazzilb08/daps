@@ -9,8 +9,9 @@ import { PageErrorBoundary } from './components/error';
 import Layout from './components/Layout.jsx';
 import Splash from './pages/Splash.jsx';
 import ErrorTestPage from './pages/dev/ErrorTestPage.jsx';
-import DapsSettingsPage from './pages/dev/DapsSettingsPage.jsx';
+import SettingsTestPage from './pages/dev/SettingsTestPage.jsx';
 import FormTestPage from './pages/dev/FormTestPage.jsx';
+import ApiTestPage from './pages/dev/ApiTestPage.jsx';
 
 /**
  * DAPS Application Root - Phase 4 Ready
@@ -104,7 +105,7 @@ const App = () => {
                       } />
                       <Route path="dev/settings" element={
                         <PageErrorBoundary pageName="DAPS Settings" pageDescription="Real DAPS configuration settings page">
-                          <DapsSettingsPage />
+                          <SettingsTestPage />
                         </PageErrorBoundary>
                       } />
                       <Route path="dev/forms" element={
@@ -112,7 +113,11 @@ const App = () => {
                           <FormTestPage />
                         </PageErrorBoundary>
                       } />
-                      
+                      <Route path="dev/api-test" element={
+                        <PageErrorBoundary pageName="API Test" pageDescription="API Testing">
+                          <ApiTestPage />
+                        </PageErrorBoundary>
+                      } />
                     </Route>
                     <Route path="*" element={<Navigate to="/dashboard" replace />} />
                   </Routes>

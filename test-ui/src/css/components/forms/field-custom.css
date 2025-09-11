@@ -21,16 +21,10 @@
     flex-shrink: 0;
   }
 
+  /* JSON control button - now uses .btn .btn--secondary .btn--small utilities */
   .json-control-button {
-    min-height: 32px;
-    padding: var(--space-1) var(--space-2);
-    background: var(--color-surface-secondary);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-1);
-    color: var(--color-text-secondary);
-    font-size: var(--font-size-xs);
-    cursor: pointer;
-    transition: all 0.2s ease;
+    /* Extend .btn .btn--secondary .btn--small with component-specific styles */
+    transition: all 0.2s ease; /* Override DAPS no-hover requirement for JSON editor */
   }
 
   .json-control-button:hover:not(:disabled) {
@@ -94,82 +88,32 @@
     background: var(--color-error-bg, var(--color-surface-secondary));
   }
 
-  /* Directory Field Styles */
-  .dir-field-container {
-    display: flex;
-    gap: var(--space-2);
-  }
-
-  .dir-field-input {
-    flex: 1;
-  }
-
-  .dir-field-button {
-    /* Use standardized primary button styling */
-    min-height: var(--touch-target-min);
-    padding: var(--space-2) var(--space-3);
-    background: var(--color-primary);
-    color: var(--color-primary-text);
-    border: none;
-    border-radius: var(--radius-1);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    cursor: pointer;
-    transition: none; /* No hover effects */
-    white-space: nowrap;
-  }
-
-  .dir-field-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-  }
-
-  /* Color List Field Styles */
+  /* Color List Field Styles - now use list utilities */
   .color-list-container {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
+    /* Uses .list-container utility */
   }
 
   .color-list-items {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
+    /* Uses .list-items utility */
   }
 
   .color-list-item {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-2);
-    background: var(--color-surface-secondary);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-1);
+    /* Uses .list-item .list-item--color utilities */
   }
 
+  /* Color preview - now uses .list-item__color-preview utility */
   .color-list-preview {
-    width: 32px;
-    height: 32px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-1);
-    flex-shrink: 0;
+    /* Uses .list-item__color-preview utility */
   }
 
+  /* Color input container - now uses .list-item__input-group utility */
   .color-list-input-container {
-    display: flex;
-    gap: var(--space-1);
-    flex: 1;
-    min-width: 0;
+    /* Uses .list-item__input-group utility */
   }
 
+  /* Color picker - now uses .list-item__color-picker utility */
   .color-list-color-picker {
-    width: 32px;
-    height: 32px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-1);
-    cursor: pointer;
-    padding: 0;
-    background: none;
+    /* Uses .list-item__color-picker utility */
   }
 
   .color-list-color-picker::-webkit-color-swatch-wrapper {
@@ -181,30 +125,15 @@
     border-radius: var(--radius-1);
   }
 
+  /* Color input - now uses .list-item__input utility */
   .color-list-input {
-    flex: 1;
-    min-width: 0;
-    padding: var(--space-1) var(--space-2);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-1);
-    background: var(--color-input-bg);
-    color: var(--color-text-primary);
-    font-family: var(--font-family-mono);
-    font-size: var(--font-size-sm);
+    /* Uses .list-item__input utility */
   }
 
+  /* Color remove button - now uses .list-item__remove .list-item__remove--small utilities */
   .color-list-remove {
-    min-width: 32px;
-    height: 32px;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-1);
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
+    /* Uses .list-item__remove .list-item__remove--small utilities */
+    transition: all 0.2s ease; /* Override DAPS no-hover for better UX */
   }
 
   .color-list-remove:hover {
@@ -212,64 +141,39 @@
     color: var(--color-error);
   }
 
+  /* Color add button - now uses .btn utility */
   .color-list-add {
-    /* Use standardized primary button styling */
-    min-height: var(--touch-target-min);
-    padding: var(--space-2) var(--space-3);
-    background: var(--color-primary);
-    color: var(--color-primary-text);
-    border: none;
-    border-radius: var(--radius-1);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    cursor: pointer;
-    transition: none; /* No hover effects */
+    /* Uses .btn utility */
   }
 
-  /* Instance Management Field Styles */
+  /* Instance Management Field Styles - now use list utilities */
   .instances-field-container {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
+    /* Uses .list-container .list-container--lg utility */
   }
 
   .instances-list {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
+    /* Uses .list-items utility */
   }
 
   .instance-item {
-    padding: var(--space-3);
-    background: var(--color-surface-secondary);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-2);
+    /* Uses .list-item .list-item--padded utility */
   }
 
+  /* Instance item header - now uses .list-item__header utility */
   .instance-item-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: var(--space-2);
+    /* Uses .list-item__header utility */
   }
 
+  /* Instance item title - now uses .list-item__title utility */
   .instance-item-title {
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text-primary);
+    /* Uses .list-item__title utility */
   }
 
+  /* Instance remove button - now uses .list-item__remove .list-item__remove--small utilities */
   .instance-item-remove {
-    min-width: 32px;
-    height: 32px;
+    /* Uses .list-item__remove .list-item__remove--small utilities */
     background: transparent;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-1);
-    color: var(--color-text-secondary);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
+    transition: all 0.2s ease; /* Override DAPS no-hover for better UX */
   }
 
   .instance-item-remove:hover {
@@ -277,22 +181,16 @@
     color: var(--color-error);
   }
 
+  /* Instance item fields - now uses .list-item__fields utility */
   .instance-item-fields {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-2);
+    /* Uses .list-item__fields utility */
   }
 
+  /* Instance add button - now uses .btn utility */
   .instance-add-button {
-    min-height: 44px;
-    padding: var(--space-2) var(--space-3);
-    background: var(--color-primary);
-    border: none;
-    border-radius: var(--radius-1);
-    color: var(--color-primary-text);
+    /* Uses .btn utility with component-specific font size */
     font-size: var(--font-size-sm);
-    cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.2s ease; /* Override DAPS no-hover for better UX */
   }
 
   .instance-add-button:hover {
@@ -318,8 +216,13 @@
     font-size: var(--font-size-sm);
   }
 
-  /* Mobile adjustments */
+  /* Mobile adjustments - now handled by utility classes */
   @media (max-width: 640px) {
+    /* .list-item utilities handle mobile stacking */
+    /* .list-item__header utilities handle mobile header layout */
+    /* .list-item__fields utilities handle mobile grid layout */
+    
+    /* Component-specific mobile adjustments */
     .json-field-header {
       flex-direction: column;
       align-items: stretch;
@@ -327,33 +230,6 @@
 
     .json-field-controls {
       justify-content: flex-end;
-    }
-
-    .dir-field-container {
-      flex-direction: column;
-    }
-
-    .dir-field-button {
-      width: 100%;
-    }
-
-    .color-list-item {
-      flex-wrap: wrap;
-      gap: var(--space-1);
-    }
-
-    .color-list-input {
-      min-width: 120px;
-    }
-
-    .instance-item-header {
-      flex-direction: column;
-      align-items: stretch;
-      gap: var(--space-2);
-    }
-
-    .instance-item-fields {
-      grid-template-columns: 1fr;
     }
   }
 

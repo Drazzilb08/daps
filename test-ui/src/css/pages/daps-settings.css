@@ -61,7 +61,144 @@
     background: var(--color-surface-secondary);
   }
 
-  /* Field statistics section */
+  /* Field completion status section */
+  .field-completion-status {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    padding: var(--space-4);
+    margin-bottom: var(--space-6);
+  }
+
+  .field-completion-status__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-4);
+    text-align: center;
+  }
+
+  /* Summary cards */
+  .implementation-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-3);
+    margin-bottom: var(--space-5);
+  }
+
+  .summary-card {
+    background: var(--color-surface-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    padding: var(--space-3);
+    text-align: center;
+    transition: all 0.2s ease;
+  }
+
+  .summary-card--completed {
+    border-color: var(--color-success);
+    background: var(--color-success-bg, var(--color-surface-secondary));
+  }
+
+  .summary-card--incomplete {
+    border-color: var(--color-warning);
+    background: var(--color-warning-bg, var(--color-surface-secondary));
+  }
+
+  .summary-number {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-1);
+  }
+
+  .summary-card--completed .summary-number {
+    color: var(--color-success);
+  }
+
+  .summary-card--incomplete .summary-number {
+    color: var(--color-warning);
+  }
+
+  .summary-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-medium);
+  }
+
+  /* Field type sections */
+  .field-type-sections {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .field-type-section {
+    border-radius: var(--radius-2);
+    padding: var(--space-3);
+  }
+
+  .field-type-section--completed {
+    background: var(--color-success-bg, var(--color-surface-secondary));
+    border: 1px solid var(--color-success);
+  }
+
+  .field-type-section--incomplete {
+    background: var(--color-warning-bg, var(--color-surface-secondary));
+    border: 1px solid var(--color-warning);
+  }
+
+  .section-title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin: 0 0 var(--space-3) 0;
+  }
+
+  .field-type-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .field-type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    font-size: var(--font-size-sm);
+    transition: all 0.2s ease;
+  }
+
+  .field-type-badge--completed {
+    border-color: var(--color-success);
+  }
+
+  .field-type-badge--incomplete {
+    border-color: var(--color-warning);
+  }
+
+  .field-type-name {
+    font-family: var(--font-family-mono);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+  }
+
+  .field-type-count {
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-bold);
+    min-width: 20px;
+    text-align: center;
+  }
+
+  /* Field statistics section (legacy - keeping for compatibility) */
   .field-stats {
     background: var(--color-surface);
     border: 1px solid var(--color-border);
@@ -201,6 +338,26 @@
   @media (max-width: 640px) {
     .daps-settings-page {
       padding: var(--space-2);
+    }
+
+    .field-completion-status {
+      padding: var(--space-3);
+    }
+
+    .implementation-summary {
+      grid-template-columns: 1fr;
+    }
+
+    .field-type-sections {
+      gap: var(--space-3);
+    }
+
+    .field-type-section {
+      padding: var(--space-2);
+    }
+
+    .field-type-list {
+      gap: var(--space-1);
     }
 
     .field-stats__grid {

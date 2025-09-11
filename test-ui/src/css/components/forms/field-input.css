@@ -31,11 +31,7 @@
     box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-alpha-20);
   }
 
-  /* Hover state */
-  .field-input:hover:not(:focus):not(:disabled) {
-    border-color: var(--color-input-border-hover);
-    background: var(--color-input-bg-hover);
-  }
+  /* No hover states - removed per requirements */
 
   /* Placeholder styling */
   .field-input::placeholder {
@@ -114,16 +110,42 @@
   }
 
   .field-input-group .field-input-addon {
-    background: var(--color-input-addon-bg);
-    border: var(--input-border-width) solid var(--color-input-border);
+    background: var(--color-primary);
+    border: var(--input-border-width) solid var(--color-primary);
     border-left: none;
     border-radius: 0 var(--radius-2) var(--radius-2) 0;
     padding: var(--input-padding-y) var(--input-padding-x);
     display: flex;
     align-items: center;
     white-space: nowrap;
-    color: var(--color-text-secondary);
+    color: var(--color-primary-text);
     font-size: var(--font-size-sm);
+    cursor: pointer;
+  }
+
+  /* Password toggle button - transparent background, primary icon */
+  .field-input-toggle {
+    background: transparent;
+    border: none;
+    border-radius: 0 var(--radius-2) var(--radius-2) 0;
+    padding: var(--input-padding-y) var(--input-padding-x);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    min-width: 44px;
+    height: var(--input-height);
+    transition: all var(--transition-fast);
+  }
+
+  .field-input-toggle:focus {
+    outline: none;
+    background: var(--color-surface-hover);
+  }
+
+  .field-input-toggle:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
 
   /* Input with icon */
@@ -167,10 +189,92 @@
     }
   }
 
+  /* Number field container with +/- buttons */
+  .number-field-container {
+    display: flex;
+    align-items: stretch;
+    background: var(--color-input-bg);
+    border: var(--input-border-width) solid var(--color-input-border);
+    border-radius: var(--radius-2);
+    overflow: hidden;
+    transition: all var(--transition-fast);
+  }
+
+  .number-field-container:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+  }
+
+  /* No hover states for number field container */
+
+  .number-field-button {
+    min-width: var(--touch-target-min);
+    height: var(--input-height);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+    border: none;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    user-select: none;
+  }
+
+  /* No hover effects for number field buttons */
+
+  .number-field-button:active:not(:disabled) {
+    background: var(--color-primary);
+    transform: scale(0.95);
+  }
+
+  .number-field-button:disabled {
+    background: var(--color-surface-hover);
+    color: var(--color-text-disabled);
+    cursor: not-allowed;
+  }
+
+  .number-field-button:focus {
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--color-primary-text);
+  }
+
+  .number-field-display {
+    flex: 1;
+    border: none;
+    background: transparent;
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    font-weight: var(--font-weight-medium);
+    cursor: default;
+  }
+
+  .number-field-display:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
+  /* Invalid state for number field container */
+  .number-field-container:has(.field-input--invalid) {
+    border-color: var(--color-error);
+  }
+
+  .number-field-container:has(.field-input--invalid):focus-within {
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
+  }
+
   /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {
-    .field-input {
+    .field-input,
+    .number-field-container,
+    .number-field-button {
       transition: none;
+    }
+    
+    .number-field-button:active:not(:disabled) {
+      transform: none;
     }
   }
 }

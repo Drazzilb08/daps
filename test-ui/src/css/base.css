@@ -96,6 +96,31 @@
     cursor: pointer;
   }
 
+  /* Standard primary button theming */
+  .btn-primary {
+    min-height: var(--touch-target-min);
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+    border: none;
+    border-radius: var(--radius-1);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: none; /* No hover effects */
+  }
+
+  .btn-primary:disabled {
+    background: var(--color-surface-hover);
+    color: var(--color-text-disabled);
+    cursor: not-allowed;
+  }
+
+  .btn-primary:focus-visible {
+    outline: var(--focus-ring-width) solid var(--color-primary);
+    outline-offset: var(--focus-ring-offset);
+  }
+
   /* Remove default input styles */
   input,
   textarea,

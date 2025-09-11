@@ -49,9 +49,14 @@ export const FormRenderer = React.memo(({
     setValues(initialValues);
   }, [initialValues]);
   
-  // Form validation state
+  // Form validation state - only validate on submit when validateOnChange is false
   const validationErrors = useMemo(() => {
-    if (!validateOnChange && Object.keys(touched).length === 0) {
+    // Don't validate anything if validateOnChange is false
+    if (!validateOnChange) {
+      return {};
+    }
+    
+    if (Object.keys(touched).length === 0) {
       return {};
     }
     

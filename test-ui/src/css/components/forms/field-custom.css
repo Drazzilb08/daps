@@ -49,11 +49,27 @@
 
   .field-textarea--json {
     font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+    line-height: 1.4;
     tab-size: 2;
     white-space: pre;
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
+    background: var(--color-input-bg);
+    border: 1px solid var(--color-input-border);
+    border-radius: var(--radius-2);
     resize: vertical;
+    transition: all var(--transition-fast);
+  }
+
+  .field-textarea--json:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background: var(--color-input-bg-focus);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+  }
+
+  .field-textarea--json:hover:not(:focus) {
+    border-color: var(--color-input-border-hover);
+    background: var(--color-input-bg-hover);
   }
 
   .json-validation-indicator {
@@ -89,20 +105,18 @@
   }
 
   .dir-field-button {
-    min-height: 44px;
+    /* Use standardized primary button styling */
+    min-height: var(--touch-target-min);
     padding: var(--space-2) var(--space-3);
-    background: var(--color-surface-secondary);
-    border: 1px solid var(--color-border);
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+    border: none;
     border-radius: var(--radius-1);
-    color: var(--color-text-primary);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: none; /* No hover effects */
     white-space: nowrap;
-  }
-
-  .dir-field-button:hover:not(:disabled) {
-    background: var(--color-surface-hover);
   }
 
   .dir-field-button:disabled {
@@ -141,13 +155,39 @@
     flex-shrink: 0;
   }
 
+  .color-list-input-container {
+    display: flex;
+    gap: var(--space-1);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .color-list-color-picker {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    cursor: pointer;
+    padding: 0;
+    background: none;
+  }
+
+  .color-list-color-picker::-webkit-color-swatch-wrapper {
+    padding: 2px;
+  }
+
+  .color-list-color-picker::-webkit-color-swatch {
+    border: none;
+    border-radius: var(--radius-1);
+  }
+
   .color-list-input {
     flex: 1;
     min-width: 0;
     padding: var(--space-1) var(--space-2);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-1);
-    background: var(--color-surface);
+    background: var(--color-input-bg);
     color: var(--color-text-primary);
     font-family: var(--font-family-mono);
     font-size: var(--font-size-sm);
@@ -173,19 +213,17 @@
   }
 
   .color-list-add {
-    min-height: 44px;
+    /* Use standardized primary button styling */
+    min-height: var(--touch-target-min);
     padding: var(--space-2) var(--space-3);
-    background: var(--color-surface-secondary);
-    border: 1px solid var(--color-border);
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+    border: none;
     border-radius: var(--radius-1);
-    color: var(--color-text-primary);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .color-list-add:hover {
-    background: var(--color-surface-hover);
+    transition: none; /* No hover effects */
   }
 
   /* Instance Management Field Styles */

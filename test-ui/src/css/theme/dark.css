@@ -60,10 +60,13 @@
   /* State colors */
   --color-success: var(--success);
   --color-success-text: #ffffff;
+  --color-success-opacity-20: rgba(50, 215, 75, 0.2);
   --color-warning: var(--warning);
   --color-warning-text: #ffffff;
+  --color-warning-opacity-20: rgba(255, 159, 10, 0.2);
   --color-error: var(--error);
   --color-error-text: #ffffff;
+  --color-error-opacity-20: rgba(255, 55, 95, 0.2);
   --color-danger: var(--error); /* Alias for error */
   --color-danger-surface: rgba(255, 55, 95, 0.1);
 
@@ -106,9 +109,17 @@
   /* Form input system */
   --input-bg: #21242a;                          /* Input background */
   --color-input-bg: var(--input-bg);
+  --color-input-bg-hover: #252830;              /* Input hover background */
+  --color-input-bg-focus: var(--input-bg);      /* Input focus background */
+  --color-input-bg-disabled: #1a1d22;           /* Input disabled background */
+  --color-input-bg-readonly: #23262c;           /* Input readonly background */
   --color-input-border: var(--border);
+  --color-input-border-hover: var(--border-light);
+  --color-input-border-disabled: #202328;       /* Input disabled border */
   --color-input-text: var(--text-primary);
+  --color-input-text-disabled: var(--text-disabled);
   --color-input-placeholder: var(--text-tertiary);
+  --color-input-addon-bg: var(--surface-alt);   /* Input addon background */
 
   /* Focus system (8 total uses) */
   --color-focus-ring: var(--focus);              /* 7 uses */

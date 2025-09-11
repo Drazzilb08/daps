@@ -17,6 +17,17 @@ import { useToast } from '../../contexts/ToastContext.jsx';
 const SettingsSection = React.memo(({ section, isExpanded, onToggle }) => {
   const toast = useToast();
   
+  // Define which field types are 100% complete vs incomplete/placeholder
+  const COMPLETED_FIELDS = new Set([
+    'text', 'password', 'number', 'float', 'textarea', 
+    'dropdown', 'check_box', 'json', 'color_list'
+  ]);
+  
+  // Filter out incomplete field types
+  const completedFields = section.fields ? section.fields.filter(field => 
+    COMPLETED_FIELDS.has(field.type)
+  ) : [];
+  
   // Mock initial values for testing
   const getInitialValues = useCallback((fields) => {
     const values = {};
@@ -60,7 +71,7 @@ const SettingsSection = React.memo(({ section, isExpanded, onToggle }) => {
   }, []);
   
   const [formValues, setFormValues] = useState(() => 
-    getInitialValues(section.fields || [])
+    getInitialValues(completedFields)
   );
   
   const handleFormSubmit = useCallback((values) => {
@@ -74,8 +85,8 @@ const SettingsSection = React.memo(({ section, isExpanded, onToggle }) => {
     // console.log(`[${section.key}] Form changed:`, values);
   }, [section]);
   
-  // Skip sections with no fields
-  if (!section.fields || section.fields.length === 0) {
+  // Skip sections with no completed fields
+  if (completedFields.length === 0) {
     return (
       <div className="settings-section settings-section--empty">
         <div 
@@ -112,7 +123,7 @@ const SettingsSection = React.memo(({ section, isExpanded, onToggle }) => {
       >
         <h2 className="settings-section__title">{section.label}</h2>
         <div className="settings-section__badge">
-          {section.fields.length} field{section.fields.length !== 1 ? 's' : ''}
+          {completedFields.length} field{completedFields.length !== 1 ? 's' : ''}
         </div>
         <div className="settings-section__toggle">
           {isExpanded ? '−' : '+'}
@@ -122,7 +133,7 @@ const SettingsSection = React.memo(({ section, isExpanded, onToggle }) => {
       {isExpanded && (
         <div className="settings-section__content">
           <FormRenderer
-            schema={section}
+            schema={{...section, fields: completedFields}}
             initialValues={formValues}
             onSubmit={handleFormSubmit}
             onChange={handleFormChange}
@@ -139,40 +150,91 @@ const SettingsSection = React.memo(({ section, isExpanded, onToggle }) => {
 SettingsSection.displayName = 'SettingsSection';
 
 /**
- * Field type statistics component
+ * Field completion status component - shows which field types are implemented vs not
  */
-const FieldTypeStats = React.memo(() => {
-  const fieldTypes = {};
+const FieldCompletionStatus = React.memo(() => {
+  // Define which field types are 100% complete vs incomplete/placeholder
+  const COMPLETED_FIELD_TYPES = new Set([
+    'text', 'password', 'number', 'float', 'textarea', 
+    'dropdown', 'check_box', 'json', 'color_list'
+  ]);
   
+  const INCOMPLETE_FIELD_TYPES = new Set([
+    'dir', 'dirlist', 'dirlist_dragdrop', 'dirlist_options',
+    'instances', 'instance_dropdown', 'gdrive_custom', 'gdrive_presets',
+    'holiday_presets', 'holiday_schedule', 'replacerr_custom',
+    'upgradinatorr_custom', 'labelarr_custom'
+  ]);
+  
+  // Count field instances by type
+  const fieldTypeStats = {};
   SETTINGS_SCHEMA.forEach(section => {
     if (section.fields) {
       section.fields.forEach(field => {
-        fieldTypes[field.type] = (fieldTypes[field.type] || 0) + 1;
+        const type = field.type;
+        fieldTypeStats[type] = (fieldTypeStats[type] || 0) + 1;
       });
     }
   });
   
-  const totalFields = Object.values(fieldTypes).reduce((sum, count) => sum + count, 0);
+  // Separate completed vs incomplete field types
+  const completedTypes = Object.keys(fieldTypeStats).filter(type => 
+    COMPLETED_FIELD_TYPES.has(type)
+  ).sort();
+  
+  const incompleteTypes = Object.keys(fieldTypeStats).filter(type => 
+    INCOMPLETE_FIELD_TYPES.has(type)
+  ).sort();
   
   return (
-    <div className="field-stats">
-      <h3 className="field-stats__title">Field Type Coverage</h3>
-      <div className="field-stats__summary">
-        <strong>Total Fields:</strong> {totalFields} across {SETTINGS_SCHEMA.length} modules
+    <div className="field-completion-status">
+      <h3 className="field-completion-status__title">Field Implementation Progress</h3>
+      
+      <div className="implementation-summary">
+        <div className="summary-card summary-card--completed">
+          <div className="summary-number">{completedTypes.length}</div>
+          <div className="summary-label">Field Types Complete</div>
+        </div>
+        <div className="summary-card summary-card--incomplete">
+          <div className="summary-number">{incompleteTypes.length}</div>
+          <div className="summary-label">Field Types Incomplete</div>
+        </div>
+        <div className="summary-card">
+          <div className="summary-number">{completedTypes.length + incompleteTypes.length}</div>
+          <div className="summary-label">Total Field Types</div>
+        </div>
       </div>
-      <div className="field-stats__grid">
-        {Object.entries(fieldTypes).map(([type, count]) => (
-          <div key={type} className="field-stats__item">
-            <span className="field-stats__type">{type}</span>
-            <span className="field-stats__count">{count}</span>
+
+      <div className="field-type-sections">
+        <div className="field-type-section field-type-section--completed">
+          <h4 className="section-title">✅ Complete Field Types (Shown in Forms)</h4>
+          <div className="field-type-list">
+            {completedTypes.map(type => (
+              <div key={type} className="field-type-badge field-type-badge--completed">
+                <span className="field-type-name">{type}</span>
+                <span className="field-type-count">{fieldTypeStats[type]}</span>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
+
+        <div className="field-type-section field-type-section--incomplete">
+          <h4 className="section-title">🚧 Incomplete Field Types (Hidden from Forms)</h4>
+          <div className="field-type-list">
+            {incompleteTypes.map(type => (
+              <div key={type} className="field-type-badge field-type-badge--incomplete">
+                <span className="field-type-name">{type}</span>
+                <span className="field-type-count">{fieldTypeStats[type]}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   );
 });
 
-FieldTypeStats.displayName = 'FieldTypeStats';
+FieldCompletionStatus.displayName = 'FieldCompletionStatus';
 
 /**
  * Main DAPS Settings Page component
@@ -220,8 +282,8 @@ const DapsSettingsPage = () => {
         </div>
       </div>
 
-      {/* Field type statistics */}
-      <FieldTypeStats />
+      {/* Field completion status */}
+      <FieldCompletionStatus />
 
       {/* Settings sections */}
       <div className="settings-sections">

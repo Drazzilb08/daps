@@ -173,11 +173,6 @@ export const JsonField = React.memo(({ field, value, onChange, disabled, highlig
           rows={Math.max(8, Math.min(20, (textValue.match(/\n/g) || []).length + 3))}
           onChange={handleChange}
           className={`field-textarea field-textarea--json ${hasError ? 'field-textarea--invalid' : ''}`}
-          style={{ 
-            fontFamily: 'var(--font-family-mono)',
-            fontSize: 'var(--font-size-sm)',
-            lineHeight: '1.4'
-          }}
           spellCheck={false}
         />
         
@@ -209,22 +204,91 @@ export const JsonField = React.memo(({ field, value, onChange, disabled, highlig
   );
 });
 
-// Simple implementations for other field types
-export const FloatField = React.memo((props) => {
-  const handleChange = React.useCallback((e) => {
-    const floatValue = e.target.value === '' ? null : parseFloat(e.target.value);
-    props.onChange(floatValue);
-  }, [props.onChange]);
+// FloatField with button-only interface (same as NumberField but with decimal precision)
+export const FloatField = React.memo(({ field, value, onChange, disabled = false, highlightInvalid = false, errorMessage = null }) => {
+  const floatValue = value !== null && value !== undefined ? Number(value) : 0.0;
+  const step = field.step || 0.1;
+  const min = field.min !== undefined ? Number(field.min) : undefined;
+  const max = field.max !== undefined ? Number(field.max) : undefined;
 
+  const handleDecrement = React.useCallback(() => {
+    const newValue = Math.round((floatValue - step) * 100) / 100; // Round to 2 decimals
+    if (min !== undefined && newValue < min) return;
+    onChange(newValue);
+  }, [floatValue, step, min, onChange]);
+
+  const handleIncrement = React.useCallback(() => {
+    const newValue = Math.round((floatValue + step) * 100) / 100; // Round to 2 decimals
+    if (max !== undefined && newValue > max) return;
+    onChange(newValue);
+  }, [floatValue, step, max, onChange]);
+
+  const inputId = `field-${field.key}`;
+  const decrementDisabled = disabled || (min !== undefined && floatValue <= min);
+  const incrementDisabled = disabled || (max !== undefined && floatValue >= max);
+  
   return (
-    <input
-      type="number"
-      step="0.01"
-      value={props.value || ''}
-      onChange={handleChange}
-      className={`field-input ${props.highlightInvalid ? 'field-input--invalid' : ''}`}
-      disabled={props.disabled}
-    />
+    <>
+      <label htmlFor={inputId} className="field-label">
+        {field.label}
+        {field.required && <span className="required-indicator">*</span>}
+      </label>
+      
+      <div className="number-field-container">
+        <button
+          type="button"
+          onClick={handleDecrement}
+          disabled={decrementDisabled}
+          className="number-field-button number-field-decrement"
+          aria-label={`Decrease ${field.label}`}
+          tabIndex={disabled ? -1 : 0}
+        >
+          −
+        </button>
+        
+        <input
+          id={inputId}
+          type="text"
+          name={field.key}
+          value={floatValue.toFixed(2)}
+          readOnly
+          disabled={disabled}
+          required={field.required}
+          className={`field-input number-field-display ${highlightInvalid ? 'field-input--invalid' : ''}`}
+          aria-describedby={
+            (field.description || errorMessage) 
+              ? `${inputId}-description ${inputId}-error`.trim() 
+              : undefined
+          }
+          aria-invalid={highlightInvalid}
+          aria-label={`${field.label} value: ${floatValue.toFixed(2)}`}
+          tabIndex={-1}
+        />
+        
+        <button
+          type="button"
+          onClick={handleIncrement}
+          disabled={incrementDisabled}
+          className="number-field-button number-field-increment"
+          aria-label={`Increase ${field.label}`}
+          tabIndex={disabled ? -1 : 0}
+        >
+          +
+        </button>
+      </div>
+      
+      {field.description && (
+        <div id={`${inputId}-description`} className="field-description">
+          {field.description}
+        </div>
+      )}
+      
+      {errorMessage && (
+        <div id={`${inputId}-error`} className="field-error" role="alert">
+          {errorMessage}
+        </div>
+      )}
+    </>
   );
 });
 
@@ -345,21 +409,31 @@ export const ColorListField = React.memo(({ field, value, onChange, disabled, hi
                 title={`Color preview: ${color}`}
               />
               
-              <input
-                type="text"
-                value={color}
-                onChange={(e) => handleColorChange(index, e.target.value)}
-                placeholder="#FF0000"
-                disabled={disabled}
-                className={`color-list-input ${!isValidColor(color) ? 'field-input--invalid' : ''}`}
-                pattern="^#[0-9A-Fa-f]{6}$"
-              />
+              <div className="color-list-input-container">
+                <input
+                  type="color"
+                  value={isValidColor(color) ? color : '#000000'}
+                  onChange={(e) => handleColorChange(index, e.target.value)}
+                  disabled={disabled}
+                  className="color-list-color-picker"
+                  title="Choose color"
+                />
+                <input
+                  type="text"
+                  value={color}
+                  onChange={(e) => handleColorChange(index, e.target.value)}
+                  placeholder="#FF0000"
+                  disabled={disabled}
+                  className={`color-list-input ${!isValidColor(color) ? 'field-input--invalid' : ''}`}
+                  pattern="^#[0-9A-Fa-f]{6}$"
+                />
+              </div>
               
               <button
                 type="button"
                 onClick={() => handleRemoveColor(index)}
                 disabled={disabled || colorList.length <= 1}
-                className="color-list-remove"
+                className="btn-primary color-list-remove"
                 title="Remove color"
               >
                 ×
@@ -372,7 +446,7 @@ export const ColorListField = React.memo(({ field, value, onChange, disabled, hi
           type="button"
           onClick={handleAddColor}
           disabled={disabled}
-          className="color-list-add"
+          className="btn-primary color-list-add"
         >
           Add Color
         </button>

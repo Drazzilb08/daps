@@ -1,0 +1,273 @@
+/**
+ * FormRenderer - Schema-driven form component
+ * 
+ * Renders forms dynamically from schema configuration objects.
+ * Handles form state, validation, and field rendering.
+ */
+
+import React, { useState, useCallback, useMemo } from 'react';
+import FieldRegistry from '../fields/FieldRegistry.jsx';
+import { validateField, validateForm } from './utils/validation.js';
+import { useToast } from '../../contexts/ToastContext.jsx';
+
+/**
+ * FormRenderer component for schema-driven form generation
+ * 
+ * @param {Object} props - Component props
+ * @param {Object} props.schema - Form schema object with fields array
+ * @param {Object} props.initialValues - Initial form values
+ * @param {Function} props.onSubmit - Form submit handler (values) => void
+ * @param {Function} props.onChange - Form change handler (values) => void
+ * @param {boolean} props.disabled - Disable entire form
+ * @param {boolean} props.loading - Show loading state
+ * @param {string} props.submitText - Submit button text (default: "Save")
+ * @param {boolean} props.showSubmit - Show submit button (default: true)
+ * @param {boolean} props.validateOnChange - Validate fields on change (default: false)
+ * @param {string} props.layout - Form layout: 'vertical' | 'horizontal' (default: 'vertical')
+ */
+export const FormRenderer = React.memo(({
+  schema,
+  initialValues = {},
+  onSubmit,
+  onChange,
+  disabled = false,
+  loading = false,
+  submitText = "Save",
+  showSubmit = true,
+  validateOnChange = false,
+  layout = 'vertical'
+}) => {
+  const toast = useToast();
+  
+  // Form state
+  const [values, setValues] = useState(initialValues);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+  
+  // Update values when initialValues change
+  React.useEffect(() => {
+    setValues(initialValues);
+  }, [initialValues]);
+  
+  // Form validation state
+  const validationErrors = useMemo(() => {
+    if (!validateOnChange && Object.keys(touched).length === 0) {
+      return {};
+    }
+    
+    const formErrors = {};
+    
+    if (schema?.fields) {
+      schema.fields.forEach(field => {
+        const fieldValue = values[field.key];
+        const error = validateField(field, fieldValue, values);
+        if (error) {
+          formErrors[field.key] = error;
+        }
+      });
+    }
+    
+    return formErrors;
+  }, [schema, values, touched, validateOnChange]);
+  
+  // Handle field value change
+  const handleFieldChange = useCallback((fieldKey, value) => {
+    const newValues = { ...values, [fieldKey]: value };
+    setValues(newValues);
+    
+    // Mark field as touched
+    setTouched(prev => ({ ...prev, [fieldKey]: true }));
+    
+    // Clear field error if value is now valid
+    if (errors[fieldKey]) {
+      const field = schema?.fields?.find(f => f.key === fieldKey);
+      if (field && !validateField(field, value, newValues)) {
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[fieldKey];
+          return newErrors;
+        });
+      }
+    }
+    
+    // Notify parent of change
+    onChange?.(newValues);
+  }, [values, errors, schema, onChange]);
+  
+  // Handle form submission
+  const handleSubmit = useCallback(async (e) => {
+    e.preventDefault();
+    
+    if (disabled || loading) return;
+    
+    // Validate entire form
+    const formErrors = validateForm(schema, values);
+    
+    if (Object.keys(formErrors).length > 0) {
+      setErrors(formErrors);
+      setTouched(
+        Object.keys(formErrors).reduce((acc, key) => {
+          acc[key] = true;
+          return acc;
+        }, {})
+      );
+      
+      toast.error('Please fix validation errors before submitting');
+      return;
+    }
+    
+    try {
+      await onSubmit?.(values);
+    } catch (error) {
+      console.error('[FormRenderer] Submit error:', error);
+      toast.error('Failed to save form: ' + (error.message || 'Unknown error'));
+    }
+  }, [schema, values, disabled, loading, onSubmit, toast]);
+  
+  // Render individual field
+  const renderField = useCallback((field) => {
+    const FieldComponent = FieldRegistry.getField(field.type);
+    
+    if (!FieldComponent) {
+      return (
+        <div key={field.key} className="field-wrapper">
+          <div className="field-error">
+            Unknown field type: {field.type}
+          </div>
+        </div>
+      );
+    }
+    
+    const fieldValue = values[field.key];
+    const fieldError = validationErrors[field.key] || errors[field.key];
+    const isInvalid = Boolean(fieldError);
+    
+    return (
+      <div
+        key={field.key}
+        className={`field-wrapper ${isInvalid ? 'field-wrapper--invalid' : ''} ${disabled ? 'field-wrapper--disabled' : ''}`}
+      >
+        <FieldComponent
+          field={field}
+          value={fieldValue}
+          onChange={(value) => handleFieldChange(field.key, value)}
+          disabled={disabled || loading}
+          highlightInvalid={isInvalid}
+          errorMessage={fieldError}
+        />
+      </div>
+    );
+  }, [values, validationErrors, errors, disabled, loading, handleFieldChange]);
+  
+  // Handle nested field rendering for complex fields
+  const renderNestedFields = useCallback((parentField, nestedFields) => {
+    if (!nestedFields || !Array.isArray(nestedFields)) {
+      return null;
+    }
+    
+    return (
+      <div className="form-nested-fields">
+        {nestedFields.map(renderField)}
+      </div>
+    );
+  }, [renderField]);
+  
+  // Render form sections if schema has sections
+  const renderFormSections = useCallback(() => {
+    if (!schema?.fields) {
+      return <div className="field-error">No form fields defined</div>;
+    }
+    
+    // Group fields by section if they have section property
+    const sections = {};
+    const unSectionedFields = [];
+    
+    schema.fields.forEach(field => {
+      if (field.section) {
+        if (!sections[field.section]) {
+          sections[field.section] = [];
+        }
+        sections[field.section].push(field);
+      } else {
+        unSectionedFields.push(field);
+      }
+    });
+    
+    return (
+      <>
+        {/* Render unsectioned fields first */}
+        {unSectionedFields.map(renderField)}
+        
+        {/* Render sectioned fields */}
+        {Object.entries(sections).map(([sectionName, sectionFields]) => (
+          <div key={sectionName} className="form-section">
+            <div className="form-section__header">
+              <h3 className="form-section__title">{sectionName}</h3>
+            </div>
+            {sectionFields.map(renderField)}
+          </div>
+        ))}
+      </>
+    );
+  }, [schema, renderField]);
+  
+  if (!schema) {
+    return <div className="field-error">No schema provided</div>;
+  }
+  
+  return (
+    <form
+      onSubmit={handleSubmit}
+      className={`form ${layout === 'horizontal' ? 'form--horizontal' : ''} ${loading ? 'form--loading' : ''}`}
+      noValidate
+    >
+      {/* Render form validation summary if there are errors */}
+      {Object.keys(validationErrors).length > 0 && (
+        <div className="form-validation-summary">
+          <h4 className="form-validation-summary__title">Please fix the following errors:</h4>
+          <ul className="form-validation-summary__list">
+            {Object.entries(validationErrors).map(([fieldKey, error]) => {
+              const field = schema.fields?.find(f => f.key === fieldKey);
+              const fieldLabel = field?.label || fieldKey;
+              return (
+                <li key={fieldKey} className="form-validation-summary__item">
+                  {fieldLabel}: {error}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
+      )}
+      
+      {/* Form title and description */}
+      {schema.label && (
+        <div className="form-section__header">
+          <h2 className="form-section__title">{schema.label}</h2>
+          {schema.description && (
+            <p className="form-section__description">{schema.description}</p>
+          )}
+        </div>
+      )}
+      
+      {/* Render form fields */}
+      {renderFormSections()}
+      
+      {/* Form actions */}
+      {showSubmit && (
+        <div className="form-actions">
+          <button
+            type="submit"
+            className="form-button form-button--primary"
+            disabled={disabled || loading}
+          >
+            {loading ? 'Saving...' : submitText}
+          </button>
+        </div>
+      )}
+    </form>
+  );
+});
+
+FormRenderer.displayName = 'FormRenderer';
+
+export default FormRenderer;

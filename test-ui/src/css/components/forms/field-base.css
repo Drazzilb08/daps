@@ -1,0 +1,108 @@
+/**
+ * Base Field Styles
+ * 
+ * Foundation styles shared by all field components.
+ * Defines consistent field wrapper, label, and error patterns.
+ */
+
+@layer components {
+  /* Field wrapper - provides consistent spacing and layout */
+  .field-wrapper {
+    margin-bottom: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .field-wrapper.field-wrapper--inline {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  /* Field labels */
+  .field-label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    line-height: var(--line-height-tight);
+    margin-bottom: var(--space-1);
+  }
+
+  .field-label--inline {
+    margin-bottom: 0;
+    min-width: 120px;
+    flex-shrink: 0;
+  }
+
+  .field-label .required-indicator {
+    color: var(--color-error);
+    margin-left: var(--space-1);
+  }
+
+  /* Field descriptions/help text */
+  .field-description {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-normal);
+    margin-top: var(--space-1);
+  }
+
+  /* Field error messages */
+  .field-error {
+    font-size: var(--font-size-xs);
+    color: var(--color-error);
+    margin-top: var(--space-1);
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+  }
+
+  .field-error::before {
+    content: "⚠";
+    font-size: var(--font-size-sm);
+  }
+
+  /* Field validation states */
+  .field-wrapper--invalid .field-label {
+    color: var(--color-error);
+  }
+
+  .field-wrapper--valid .field-label {
+    color: var(--color-success);
+  }
+
+  /* Disabled state */
+  .field-wrapper--disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .field-wrapper--disabled .field-label {
+    color: var(--color-text-disabled);
+  }
+
+  /* Focus management for nested interactive elements */
+  .field-wrapper:focus-within .field-label {
+    color: var(--color-primary);
+  }
+
+  /* Responsive field layout */
+  @media (min-width: 768px) {
+    .field-row {
+      display: grid;
+      grid-template-columns: 200px 1fr;
+      gap: var(--space-3);
+      align-items: start;
+    }
+
+    .field-row .field-wrapper {
+      margin-bottom: var(--space-3);
+    }
+
+    .field-row .field-label {
+      margin-bottom: 0;
+      padding-top: var(--space-2);
+    }
+  }
+}

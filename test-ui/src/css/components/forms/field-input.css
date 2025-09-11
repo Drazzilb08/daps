@@ -1,0 +1,176 @@
+/**
+ * Input Field Styles
+ * 
+ * Styles for text, password, number, and other input-based fields.
+ * Includes focus states, validation, and accessibility features.
+ */
+
+@layer components {
+  /* Base input styling */
+  .field-input {
+    width: 100%;
+    min-height: var(--input-height);
+    padding: var(--input-padding-y) var(--input-padding-x);
+    font-size: var(--font-size-base); /* 16px minimum to prevent mobile zoom */
+    font-family: var(--font-family-sans);
+    line-height: var(--line-height-normal);
+    
+    background: var(--color-input-bg);
+    color: var(--color-input-text);
+    border: var(--input-border-width) solid var(--color-input-border);
+    border-radius: var(--radius-2);
+    
+    transition: all var(--transition-fast);
+  }
+
+  /* Focus state */
+  .field-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background: var(--color-input-bg-focus);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-alpha-20);
+  }
+
+  /* Hover state */
+  .field-input:hover:not(:focus):not(:disabled) {
+    border-color: var(--color-input-border-hover);
+    background: var(--color-input-bg-hover);
+  }
+
+  /* Placeholder styling */
+  .field-input::placeholder {
+    color: var(--color-input-placeholder);
+    opacity: 1;
+  }
+
+  /* Validation states */
+  .field-input--invalid {
+    border-color: var(--color-error);
+    background: var(--color-error-bg);
+  }
+
+  .field-input--invalid:focus {
+    border-color: var(--color-error);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-alpha-20);
+  }
+
+  .field-input--valid {
+    border-color: var(--color-success);
+  }
+
+  .field-input--valid:focus {
+    border-color: var(--color-success);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-alpha-20);
+  }
+
+  /* Disabled state */
+  .field-input:disabled {
+    background: var(--color-input-bg-disabled);
+    color: var(--color-input-text-disabled);
+    border-color: var(--color-input-border-disabled);
+    cursor: not-allowed;
+  }
+
+  /* Read-only state */
+  .field-input:read-only {
+    background: var(--color-input-bg-readonly);
+    cursor: default;
+  }
+
+  /* Password field specific styling */
+  .field-input--password {
+    font-family: monospace;
+    letter-spacing: 0.1em;
+  }
+
+  /* Number field specific styling */
+  .field-input--number {
+    text-align: right;
+  }
+
+  /* Small input variant */
+  .field-input--small {
+    min-height: var(--touch-target-min);
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--font-size-sm);
+  }
+
+  /* Large input variant */
+  .field-input--large {
+    min-height: var(--touch-target-comfortable);
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--font-size-lg);
+  }
+
+  /* Input group - for inputs with buttons or icons */
+  .field-input-group {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+  }
+
+  .field-input-group .field-input {
+    border-radius: var(--radius-2) 0 0 var(--radius-2);
+  }
+
+  .field-input-group .field-input-addon {
+    background: var(--color-input-addon-bg);
+    border: var(--input-border-width) solid var(--color-input-border);
+    border-left: none;
+    border-radius: 0 var(--radius-2) var(--radius-2) 0;
+    padding: var(--input-padding-y) var(--input-padding-x);
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+  }
+
+  /* Input with icon */
+  .field-input-wrapper {
+    position: relative;
+  }
+
+  .field-input-icon {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-tertiary);
+    pointer-events: none;
+  }
+
+  .field-input-icon--left {
+    left: var(--space-3);
+  }
+
+  .field-input-icon--right {
+    right: var(--space-3);
+  }
+
+  .field-input--with-left-icon {
+    padding-left: calc(var(--space-8) + var(--space-2));
+  }
+
+  .field-input--with-right-icon {
+    padding-right: calc(var(--space-8) + var(--space-2));
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .field-input {
+      border-width: 2px;
+    }
+    
+    .field-input:focus {
+      outline: 3px solid var(--color-primary);
+      outline-offset: 1px;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .field-input {
+      transition: none;
+    }
+  }
+}

@@ -58,11 +58,22 @@
 @import './components/search-toolbar.css';
 @import './components/spinner.css';
 
+/* Form system styles */
+@import './components/forms/field-base.css';
+@import './components/forms/field-input.css';
+@import './components/forms/field-select.css';
+@import './components/forms/field-checkbox.css';
+@import './components/forms/field-textarea.css';
+@import './components/forms/field-custom.css';
+@import './components/forms/form-layout.css';
+
 /* =============================================================================
    PAGE STYLES
    Page-specific styling for individual pages and views.
    ============================================================================= */
 @import './pages/api-test.css';
+@import './pages/form-test.css';
+@import './pages/daps-settings.css';
 
 /* =============================================================================
    GLOBAL UTILITIES

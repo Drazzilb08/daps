@@ -1,0 +1,334 @@
+/**
+ * Custom Field Component Styles
+ * 
+ * Styles for specialized field types like JSON, directory, color lists, etc.
+ * Mobile-first design using DAPS design tokens.
+ */
+
+@layer components {
+  /* JSON Field Styles */
+  .json-field-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: var(--space-2);
+    gap: var(--space-2);
+  }
+
+  .json-field-controls {
+    display: flex;
+    gap: var(--space-1);
+    flex-shrink: 0;
+  }
+
+  .json-control-button {
+    min-height: 32px;
+    padding: var(--space-1) var(--space-2);
+    background: var(--color-surface-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-xs);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .json-control-button:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+    color: var(--color-text-primary);
+  }
+
+  .json-control-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .json-field-container {
+    position: relative;
+  }
+
+  .field-textarea--json {
+    font-family: var(--font-family-mono);
+    tab-size: 2;
+    white-space: pre;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    resize: vertical;
+  }
+
+  .json-validation-indicator {
+    position: absolute;
+    top: var(--space-1);
+    right: var(--space-2);
+    font-size: var(--font-size-xs);
+    padding: var(--space-1);
+    border-radius: var(--radius-1);
+    background: var(--color-surface-secondary);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .json-validation-indicator--valid {
+    color: var(--color-success);
+    background: var(--color-success-bg, var(--color-surface-secondary));
+  }
+
+  .json-validation-indicator--error {
+    color: var(--color-error);
+    background: var(--color-error-bg, var(--color-surface-secondary));
+  }
+
+  /* Directory Field Styles */
+  .dir-field-container {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .dir-field-input {
+    flex: 1;
+  }
+
+  .dir-field-button {
+    min-height: 44px;
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-surface-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .dir-field-button:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+  }
+
+  .dir-field-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Color List Field Styles */
+  .color-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .color-list-items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .color-list-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    background: var(--color-surface-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+  }
+
+  .color-list-preview {
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    flex-shrink: 0;
+  }
+
+  .color-list-input {
+    flex: 1;
+    min-width: 0;
+    padding: var(--space-1) var(--space-2);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+  }
+
+  .color-list-remove {
+    min-width: 32px;
+    height: 32px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .color-list-remove:hover {
+    background: var(--color-error-bg, var(--color-surface-hover));
+    color: var(--color-error);
+  }
+
+  .color-list-add {
+    min-height: 44px;
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-surface-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .color-list-add:hover {
+    background: var(--color-surface-hover);
+  }
+
+  /* Instance Management Field Styles */
+  .instances-field-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .instances-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .instance-item {
+    padding: var(--space-3);
+    background: var(--color-surface-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+  }
+
+  .instance-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: var(--space-2);
+  }
+
+  .instance-item-title {
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+  }
+
+  .instance-item-remove {
+    min-width: 32px;
+    height: 32px;
+    background: transparent;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+  }
+
+  .instance-item-remove:hover {
+    background: var(--color-error-bg, var(--color-surface-hover));
+    color: var(--color-error);
+  }
+
+  .instance-item-fields {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+
+  .instance-add-button {
+    min-height: 44px;
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-primary);
+    border: none;
+    border-radius: var(--radius-1);
+    color: var(--color-primary-text);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .instance-add-button:hover {
+    background: var(--color-primary-hover);
+  }
+
+  /* Placeholder Field Styles */
+  .field-placeholder {
+    padding: var(--space-4);
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-2);
+    text-align: center;
+    color: var(--color-text-secondary);
+    font-style: italic;
+    background: var(--color-surface-secondary);
+  }
+
+  .field-placeholder code {
+    font-family: var(--font-family-mono);
+    background: var(--color-surface);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-1);
+    font-size: var(--font-size-sm);
+  }
+
+  /* Mobile adjustments */
+  @media (max-width: 640px) {
+    .json-field-header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .json-field-controls {
+      justify-content: flex-end;
+    }
+
+    .dir-field-container {
+      flex-direction: column;
+    }
+
+    .dir-field-button {
+      width: 100%;
+    }
+
+    .color-list-item {
+      flex-wrap: wrap;
+      gap: var(--space-1);
+    }
+
+    .color-list-input {
+      min-width: 120px;
+    }
+
+    .instance-item-header {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--space-2);
+    }
+
+    .instance-item-fields {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  /* Larger screens */
+  @media (min-width: 768px) {
+    .instance-item-fields {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .instance-item-fields {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+}

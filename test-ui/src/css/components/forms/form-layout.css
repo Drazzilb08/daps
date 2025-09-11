@@ -1,0 +1,363 @@
+/**
+ * Form Layout Styles
+ * 
+ * Layout patterns for forms, fieldsets, and form sections.
+ * Includes responsive behavior and accessibility features.
+ */
+
+@layer components {
+  /* Form container */
+  .form {
+    max-width: var(--form-max-width);
+    margin: 0 auto;
+  }
+
+  .form--full-width {
+    max-width: none;
+  }
+
+  .form--narrow {
+    max-width: 400px;
+  }
+
+  .form--wide {
+    max-width: 800px;
+  }
+
+  /* Form sections */
+  .form-section {
+    margin-bottom: var(--space-8);
+  }
+
+  .form-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .form-section__header {
+    margin-bottom: var(--space-4);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .form-section__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin: 0 0 var(--space-1) 0;
+  }
+
+  .form-section__description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+    line-height: var(--line-height-normal);
+  }
+
+  /* Fieldset styling */
+  .form-fieldset {
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    padding: var(--space-4);
+    margin-bottom: var(--space-6);
+  }
+
+  .form-fieldset:last-child {
+    margin-bottom: 0;
+  }
+
+  .form-fieldset__legend {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    padding: 0 var(--space-2);
+    margin-left: -var(--space-2);
+  }
+
+  /* Form groups */
+  .form-group {
+    margin-bottom: var(--space-6);
+  }
+
+  .form-group:last-child {
+    margin-bottom: 0;
+  }
+
+  .form-group--compact {
+    margin-bottom: var(--space-4);
+  }
+
+  .form-group--spacious {
+    margin-bottom: var(--space-8);
+  }
+
+  /* Form rows for multi-column layouts */
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+  }
+
+  .form-row:last-child {
+    margin-bottom: 0;
+  }
+
+  .form-row .field-wrapper {
+    margin-bottom: 0;
+  }
+
+  .form-col {
+    flex: 1;
+    min-width: 0; /* Prevent flex overflow */
+  }
+
+  .form-col--1 { flex: 0 0 calc(8.333% - var(--space-4)); }
+  .form-col--2 { flex: 0 0 calc(16.666% - var(--space-4)); }
+  .form-col--3 { flex: 0 0 calc(25% - var(--space-4)); }
+  .form-col--4 { flex: 0 0 calc(33.333% - var(--space-4)); }
+  .form-col--5 { flex: 0 0 calc(41.666% - var(--space-4)); }
+  .form-col--6 { flex: 0 0 calc(50% - var(--space-4)); }
+  .form-col--7 { flex: 0 0 calc(58.333% - var(--space-4)); }
+  .form-col--8 { flex: 0 0 calc(66.666% - var(--space-4)); }
+  .form-col--9 { flex: 0 0 calc(75% - var(--space-4)); }
+  .form-col--10 { flex: 0 0 calc(83.333% - var(--space-4)); }
+  .form-col--11 { flex: 0 0 calc(91.666% - var(--space-4)); }
+  .form-col--12 { flex: 0 0 calc(100% - var(--space-4)); }
+
+  /* Form actions */
+  .form-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-top: var(--space-6);
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .form-actions--center {
+    justify-content: center;
+  }
+
+  .form-actions--right {
+    justify-content: flex-end;
+  }
+
+  .form-actions--between {
+    justify-content: space-between;
+  }
+
+  .form-actions--wrap {
+    flex-wrap: wrap;
+  }
+
+  /* Form buttons */
+  .form-button {
+    min-height: var(--button-height);
+    padding: var(--button-padding-y) var(--button-padding-x);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1;
+    
+    background: var(--color-button-bg);
+    color: var(--color-button-text);
+    border: var(--button-border-width) solid var(--color-button-border);
+    border-radius: var(--radius-2);
+    
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .form-button:hover:not(:disabled) {
+    background: var(--color-button-bg-hover);
+    border-color: var(--color-button-border-hover);
+  }
+
+  .form-button:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-alpha-20);
+  }
+
+  .form-button:disabled {
+    background: var(--color-button-bg-disabled);
+    color: var(--color-button-text-disabled);
+    border-color: var(--color-button-border-disabled);
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+
+  /* Button variants */
+  .form-button--primary {
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+    border-color: var(--color-primary);
+  }
+
+  .form-button--primary:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+  }
+
+  .form-button--secondary {
+    background: transparent;
+    color: var(--color-text-primary);
+    border-color: var(--color-border);
+  }
+
+  .form-button--secondary:hover:not(:disabled) {
+    background: var(--color-button-secondary-hover);
+    border-color: var(--color-border-hover);
+  }
+
+  .form-button--danger {
+    background: var(--color-error);
+    color: var(--color-error-text);
+    border-color: var(--color-error);
+  }
+
+  .form-button--danger:hover:not(:disabled) {
+    background: var(--color-error-hover);
+    border-color: var(--color-error-hover);
+  }
+
+  /* Loading state */
+  .form--loading {
+    pointer-events: none;
+    opacity: 0.7;
+  }
+
+  .form--loading .form-button {
+    cursor: wait;
+  }
+
+  /* Form validation summary */
+  .form-validation-summary {
+    background: var(--color-error-bg);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-2);
+    padding: var(--space-3);
+    margin-bottom: var(--space-4);
+  }
+
+  .form-validation-summary__title {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-error);
+    margin: 0 0 var(--space-2) 0;
+  }
+
+  .form-validation-summary__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .form-validation-summary__item {
+    font-size: var(--font-size-sm);
+    color: var(--color-error);
+    margin-bottom: var(--space-1);
+  }
+
+  .form-validation-summary__item:last-child {
+    margin-bottom: 0;
+  }
+
+  .form-validation-summary__item::before {
+    content: "•";
+    margin-right: var(--space-1);
+  }
+
+  /* Progress indicator */
+  .form-progress {
+    margin-bottom: var(--space-6);
+  }
+
+  .form-progress__bar {
+    width: 100%;
+    height: 4px;
+    background: var(--color-border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .form-progress__fill {
+    height: 100%;
+    background: var(--color-primary);
+    border-radius: 2px;
+    transition: width var(--transition-normal);
+  }
+
+  .form-progress__text {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    margin-top: var(--space-1);
+    text-align: center;
+  }
+
+  /* Responsive behavior */
+  @media (max-width: 767px) {
+    .form {
+      padding: 0 var(--container-padding-mobile);
+    }
+    
+    .form-row {
+      flex-direction: column;
+      gap: 0;
+    }
+    
+    .form-row .field-wrapper {
+      margin-bottom: var(--space-4);
+    }
+    
+    .form-col,
+    .form-col--1,
+    .form-col--2,
+    .form-col--3,
+    .form-col--4,
+    .form-col--5,
+    .form-col--6,
+    .form-col--7,
+    .form-col--8,
+    .form-col--9,
+    .form-col--10,
+    .form-col--11,
+    .form-col--12 {
+      flex: none;
+      width: 100%;
+    }
+    
+    .form-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .form-actions--between {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    
+    .form-button {
+      width: 100%;
+      text-align: center;
+    }
+  }
+
+  @media (min-width: 768px) and (max-width: 1023px) {
+    .form-col--1,
+    .form-col--2,
+    .form-col--3 {
+      flex: 0 0 calc(50% - var(--space-2));
+    }
+  }
+
+  /* Dark theme adjustments */
+  @media (prefers-color-scheme: dark) {
+    .form-fieldset {
+      border-color: var(--color-border-dark);
+    }
+    
+    .form-section__header {
+      border-bottom-color: var(--color-border-dark);
+    }
+  }
+}

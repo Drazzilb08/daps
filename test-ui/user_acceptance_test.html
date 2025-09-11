@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAPS Forms - User Acceptance Test</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            background: #f5f5f5;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            border-left: 4px solid #007acc;
+        }
+        .test-results {
+            background: #e8f5e8;
+            border-left-color: #28a745;
+        }
+        .test-failed {
+            background: #ffeaa7;
+            border-left-color: #dc3545;
+        }
+        button {
+            background: #007acc;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #005c99;
+        }
+        .checklist {
+            list-style: none;
+            padding: 0;
+        }
+        .checklist li {
+            padding: 8px;
+            margin: 4px 0;
+            background: white;
+            border-radius: 4px;
+            border-left: 3px solid #ddd;
+        }
+        .checklist li.pass {
+            border-left-color: #28a745;
+            background: #f8fff8;
+        }
+        .checklist li.fail {
+            border-left-color: #dc3545;
+            background: #fff8f8;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .mobile-test {
+            width: 375px;
+            height: 667px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 DAPS Forms - User Acceptance Testing</h1>
+    
+    <div class="test-section">
+        <h2>📋 Test Mission</h2>
+        <p><strong>Can real users successfully configure their DAPS media automation with this form system?</strong></p>
+        <p>This test validates that non-technical users can navigate, understand, and complete DAPS configuration tasks.</p>
+    </div>
+
+    <div class="test-section">
+        <h2>🚀 Test Application</h2>
+        <p>Forms Test Page: <a href="http://localhost:5177/dev/forms" target="_blank">http://localhost:5177/dev/forms</a></p>
+        <button onclick="openFormsApp()">Open Forms Application</button>
+        <button onclick="openMobileView()">Open Mobile View (375px)</button>
+        <button onclick="runAutomatedTests()">Run Basic Accessibility Tests</button>
+    </div>
+
+    <div class="test-section">
+        <h2>✅ Core User Experience Checklist</h2>
+        <p>Complete this checklist by testing the forms application:</p>
+        
+        <ul class="checklist" id="checklist">
+            <li data-test="page-loads">
+                <strong>Page Loads Successfully</strong><br>
+                Forms page loads without errors, shows content immediately
+            </li>
+            <li data-test="field-visibility">
+                <strong>Form Fields Visible</strong><br>
+                All field types render properly with labels and descriptions
+            </li>
+            <li data-test="text-input">
+                <strong>Text Fields Work</strong><br>
+                Can type in text fields, see characters appear
+            </li>
+            <li data-test="password-toggle">
+                <strong>Password Show/Hide</strong><br>
+                Password field has working show/hide toggle
+            </li>
+            <li data-test="number-controls">
+                <strong>Number Controls</strong><br>
+                Number fields have +/- buttons that work
+            </li>
+            <li data-test="checkbox-toggle">
+                <strong>Checkbox Toggle</strong><br>
+                Checkboxes can be clicked and change state visually
+            </li>
+            <li data-test="dropdown-selection">
+                <strong>Dropdown Selection</strong><br>
+                Dropdowns open and allow option selection
+            </li>
+            <li data-test="textarea-input">
+                <strong>Textarea Input</strong><br>
+                Multi-line text areas accept input and resize appropriately
+            </li>
+            <li data-test="form-navigation">
+                <strong>Form Navigation</strong><br>
+                Can switch between Basic/Advanced/DAPS demo forms
+            </li>
+            <li data-test="validation-feedback">
+                <strong>Validation Feedback</strong><br>
+                Required fields show appropriate error messages when empty
+            </li>
+            <li data-test="mobile-friendly">
+                <strong>Mobile Interface</strong><br>
+                Forms work at 375px width, fields are touch-friendly (44px+)
+            </li>
+            <li data-test="keyboard-navigation">
+                <strong>Keyboard Navigation</strong><br>
+                Can tab through all fields, focus indicators visible
+            </li>
+            <li data-test="submit-workflow">
+                <strong>Submit Workflow</strong><br>
+                Forms can be submitted successfully with toast confirmation
+            </li>
+            <li data-test="professional-appearance">
+                <strong>Professional Appearance</strong><br>
+                Interface looks trustworthy and modern for DAPS users
+            </li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>📱 Mobile Testing</h2>
+        <p>Test the mobile experience at different viewport sizes:</p>
+        <div id="mobile-testing">
+            <iframe id="mobile-frame" class="mobile-test" src="about:blank"></iframe>
+        </div>
+        <button onclick="testMobileSize(375)">iPhone SE (375px)</button>
+        <button onclick="testMobileSize(768)">iPad (768px)</button>
+        <button onclick="testMobileSize(1024)">Desktop (1024px)</button>
+    </div>
+
+    <div class="test-section">
+        <h2>🎯 User Scenario Tests</h2>
+        <p>Complete these realistic user scenarios:</p>
+        <ol>
+            <li><strong>New DAPS User Setup</strong>: Fill out basic configuration with name, email, password</li>
+            <li><strong>Advanced Configuration</strong>: Configure directory paths and server instances</li>
+            <li><strong>Settings Validation</strong>: Try to submit with missing required fields</li>
+            <li><strong>Mobile Configuration</strong>: Complete a form using only touch on mobile view</li>
+        </ol>
+    </div>
+
+    <div class="test-section" id="test-results">
+        <h2>📊 Test Results</h2>
+        <div id="results-content">
+            <p>Run tests above to see results...</p>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Testing Instructions</h2>
+        <ol>
+            <li>Click "Open Forms Application" to access the DAPS form system</li>
+            <li>Test each form type (Basic, Advanced, DAPS) by clicking the demo buttons</li>
+            <li>Fill out forms and interact with all field types</li>
+            <li>Check the checklist items above as you verify functionality</li>
+            <li>Test mobile view using the mobile testing section</li>
+            <li>Try keyboard navigation using Tab, Enter, and Space keys</li>
+            <li>Report any issues that would prevent real users from succeeding</li>
+        </ol>
+    </div>
+
+    <script>
+        function openFormsApp() {
+            window.open('http://localhost:5177/dev/forms', '_blank');
+        }
+
+        function openMobileView() {
+            const width = 375;
+            const height = 667;
+            const left = (screen.width - width) / 2;
+            const top = (screen.height - height) / 2;
+            window.open('http://localhost:5177/dev/forms', 'mobile-test', 
+                       `width=${width},height=${height},left=${left},top=${top},resizable=yes`);
+        }
+
+        function testMobileSize(width) {
+            const frame = document.getElementById('mobile-frame');
+            frame.style.width = width + 'px';
+            frame.src = 'http://localhost:5177/dev/forms';
+        }
+
+        function markChecklistItem(testId, passed) {
+            const item = document.querySelector(`[data-test="${testId}"]`);
+            if (item) {
+                item.className = passed ? 'pass' : 'fail';
+            }
+        }
+
+        function runAutomatedTests() {
+            const results = document.getElementById('results-content');
+            results.innerHTML = '<p>Running automated accessibility tests...</p>';
+            
+            // Test if server is accessible
+            fetch('http://localhost:5177/dev/forms')
+                .then(response => {
+                    if (response.ok) {
+                        markChecklistItem('page-loads', true);
+                        results.innerHTML += '<p>✅ Server accessible - forms page loading</p>';
+                    } else {
+                        markChecklistItem('page-loads', false);
+                        results.innerHTML += '<p>❌ Server not accessible</p>';
+                    }
+                })
+                .catch(error => {
+                    markChecklistItem('page-loads', false);
+                    results.innerHTML += '<p>❌ Cannot connect to forms application</p>';
+                });
+
+            // Additional automated tests could be added here
+            setTimeout(() => {
+                results.innerHTML += '<p>🔍 Manual testing required for complete validation</p>';
+            }, 1000);
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                switch(e.key) {
+                    case '1':
+                        e.preventDefault();
+                        openFormsApp();
+                        break;
+                    case '2':
+                        e.preventDefault();
+                        openMobileView();
+                        break;
+                    case 't':
+                        e.preventDefault();
+                        runAutomatedTests();
+                        break;
+                }
+            }
+        });
+
+        // Show keyboard shortcuts
+        document.body.innerHTML += `
+            <div style="position: fixed; bottom: 10px; right: 10px; background: rgba(0,0,0,0.8); color: white; padding: 10px; border-radius: 4px; font-size: 12px;">
+                Shortcuts: Ctrl+1 (Forms) | Ctrl+2 (Mobile) | Ctrl+T (Test)
+            </div>
+        `;
+    </script>
+</body>
+</html>

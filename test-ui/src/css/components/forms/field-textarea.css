@@ -1,0 +1,258 @@
+/**
+ * Textarea Field Styles
+ * 
+ * Styles for textarea fields and multi-line text inputs.
+ * Includes auto-resize, validation states, and accessibility features.
+ */
+
+@layer components {
+  /* Base textarea styling */
+  .field-textarea {
+    width: 100%;
+    min-height: calc(var(--input-height) * 2);
+    padding: var(--input-padding-y) var(--input-padding-x);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+    line-height: var(--line-height-normal);
+    
+    background: var(--color-input-bg);
+    color: var(--color-input-text);
+    border: var(--input-border-width) solid var(--color-input-border);
+    border-radius: var(--radius-2);
+    
+    resize: vertical;
+    transition: all var(--transition-fast);
+  }
+
+  /* Focus state */
+  .field-textarea:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background: var(--color-input-bg-focus);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-alpha-20);
+  }
+
+  /* Hover state */
+  .field-textarea:hover:not(:focus):not(:disabled) {
+    border-color: var(--color-input-border-hover);
+    background: var(--color-input-bg-hover);
+  }
+
+  /* Placeholder styling */
+  .field-textarea::placeholder {
+    color: var(--color-input-placeholder);
+    opacity: 1;
+  }
+
+  /* Validation states */
+  .field-textarea--invalid {
+    border-color: var(--color-error);
+    background: var(--color-error-bg);
+  }
+
+  .field-textarea--invalid:focus {
+    border-color: var(--color-error);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-alpha-20);
+  }
+
+  .field-textarea--valid {
+    border-color: var(--color-success);
+  }
+
+  .field-textarea--valid:focus {
+    border-color: var(--color-success);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-alpha-20);
+  }
+
+  /* Disabled state */
+  .field-textarea:disabled {
+    background: var(--color-input-bg-disabled);
+    color: var(--color-input-text-disabled);
+    border-color: var(--color-input-border-disabled);
+    cursor: not-allowed;
+    resize: none;
+  }
+
+  /* Read-only state */
+  .field-textarea:read-only {
+    background: var(--color-input-bg-readonly);
+    cursor: default;
+    resize: none;
+  }
+
+  /* Size variants */
+  .field-textarea--small {
+    min-height: var(--input-height);
+    padding: var(--space-1) var(--space-2);
+    font-size: var(--font-size-sm);
+  }
+
+  .field-textarea--large {
+    min-height: calc(var(--input-height) * 4);
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--font-size-lg);
+  }
+
+  /* Auto-resize variant */
+  .field-textarea--auto-resize {
+    resize: none;
+    overflow: hidden;
+  }
+
+  /* Code/monospace variant */
+  .field-textarea--code {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+    line-height: 1.4;
+    white-space: pre;
+    overflow-wrap: normal;
+  }
+
+  /* Character counter wrapper */
+  .field-textarea-wrapper {
+    position: relative;
+  }
+
+  .field-textarea-counter {
+    position: absolute;
+    bottom: var(--space-2);
+    right: var(--space-2);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-tertiary);
+    background: var(--color-input-bg);
+    padding: var(--space-1);
+    border-radius: var(--radius-1);
+    pointer-events: none;
+  }
+
+  .field-textarea-counter--warning {
+    color: var(--color-warning);
+  }
+
+  .field-textarea-counter--error {
+    color: var(--color-error);
+  }
+
+  /* With counter, add padding to avoid overlap */
+  .field-textarea--with-counter {
+    padding-bottom: calc(var(--input-padding-y) + var(--space-6));
+  }
+
+  /* JSON textarea specific styling */
+  .field-textarea--json {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    tab-size: 2;
+  }
+
+  /* Syntax highlighting container for JSON */
+  .field-textarea-json-wrapper {
+    position: relative;
+    border: var(--input-border-width) solid var(--color-input-border);
+    border-radius: var(--radius-2);
+    overflow: hidden;
+  }
+
+  .field-textarea-json-wrapper .field-textarea {
+    border: none;
+    border-radius: 0;
+  }
+
+  .field-textarea-json-preview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: var(--input-padding-y) var(--input-padding-x);
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    pointer-events: none;
+    z-index: 1;
+    overflow: auto;
+  }
+
+  .field-textarea-json-wrapper .field-textarea {
+    background: transparent;
+    color: transparent;
+    caret-color: var(--color-text-primary);
+    z-index: 2;
+    position: relative;
+  }
+
+  /* JSON syntax highlighting colors */
+  .json-key { color: var(--color-json-key, #0451a5); }
+  .json-string { color: var(--color-json-string, #0a5d00); }
+  .json-number { color: var(--color-json-number, #001080); }
+  .json-boolean { color: var(--color-json-boolean, #0000ff); }
+  .json-null { color: var(--color-json-null, #001080); }
+  .json-punctuation { color: var(--color-json-punctuation, #000000); }
+
+  /* Error states for JSON */
+  .field-textarea--json-invalid {
+    border-color: var(--color-error);
+  }
+
+  .field-textarea-json-error {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--color-error-bg);
+    color: var(--color-error);
+    padding: var(--space-2);
+    font-size: var(--font-size-xs);
+    border: var(--input-border-width) solid var(--color-error);
+    border-top: none;
+    border-radius: 0 0 var(--radius-2) var(--radius-2);
+    z-index: var(--z-dropdown);
+  }
+
+  /* Resize handle styling */
+  .field-textarea::-webkit-resizer {
+    background: var(--color-input-border);
+  }
+
+  /* Scrollbar styling for webkit browsers */
+  .field-textarea::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  .field-textarea::-webkit-scrollbar-track {
+    background: var(--color-input-bg);
+  }
+
+  .field-textarea::-webkit-scrollbar-thumb {
+    background: var(--color-input-border);
+    border-radius: var(--radius-1);
+  }
+
+  .field-textarea::-webkit-scrollbar-thumb:hover {
+    background: var(--color-input-border-hover);
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .field-textarea {
+      border-width: 2px;
+    }
+    
+    .field-textarea:focus {
+      outline: 3px solid var(--color-primary);
+      outline-offset: 1px;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .field-textarea {
+      transition: none;
+    }
+  }
+}

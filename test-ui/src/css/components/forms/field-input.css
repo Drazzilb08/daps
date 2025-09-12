@@ -263,10 +263,49 @@
 
   /* Number field buttons - now use .btn .btn--icon utility base */
   /* Number field buttons now use unified button system (.btn .btn--secondary .btn--small) */
+  
+  /* Number field increment/decrement button styling */
+  .number-field-decrement,
+  .number-field-increment,
+  .number-field-button {
+    background: var(--color-surface-elevated) !important;
+    border: none !important;
+    color: var(--color-primary) !important;
+    box-shadow: none !important;
+    min-width: calc(var(--touch-target-min) + var(--space-2)) !important;
+    padding: var(--space-2) var(--space-3) !important;
+  }
+  
+  /* Left button (decrement) gets left border radius */
+  .number-field-decrement {
+    border-radius: var(--radius-2) 0 0 var(--radius-2) !important;
+  }
+  
+  /* Right button (increment) gets right border radius */
+  .number-field-increment,
+  .number-field-button.number-field-increment {
+    border-radius: 0 var(--radius-2) var(--radius-2) 0 !important;
+  }
+  
+  /* Generic number-field-button gets no radius by default (for middle position) */
+  .number-field-button {
+    border-radius: 0 !important;
+  }
+  
+  /* Hover state for number field buttons */
+  .number-field-decrement:hover:not(:disabled),
+  .number-field-increment:hover:not(:disabled),
+  .number-field-button:hover:not(:disabled) {
+    background: var(--color-surface-hover) !important;
+    border: none !important;
+    color: var(--color-primary) !important;
+    box-shadow: none !important;
+  }
 
   .number-field-display {
     flex: 1;
     border: none;
+    border-radius: 0 !important;
     background: transparent;
     text-align: center;
     font-variant-numeric: tabular-nums;
@@ -296,8 +335,5 @@
       transition: none;
     }
     
-    .number-field-button:active:not(:disabled) {
-      transform: none;
-    }
   }
 }

@@ -1,12 +1,12 @@
 /**
  * Checkbox Field Styles
  * 
- * Simple, accessible checkbox with large clickable area.
- * The entire field wrapper is clickable for better UX.
+ * Clean, professional checkbox with clickable wrapper.
+ * Focus on visual clarity over touch target size.
  */
 
 @layer components {
-  /* Main checkbox field wrapper */
+  /* Checkbox field wrapper - provides the clickable area */
   .checkbox-field {
     display: flex;
     align-items: flex-start;
@@ -16,21 +16,14 @@
     cursor: pointer;
     min-height: var(--touch-target-comfortable);
     transition: all var(--transition-fast);
-    background: transparent;
   }
-
-  /* No hover effects */
 
   .checkbox-field--disabled {
     opacity: 0.5;
     cursor: not-allowed;
   }
 
-  .checkbox-field--disabled:hover {
-    background: transparent;
-  }
-
-  /* Invalid state now uses .is-invalid utility on the entire field */
+  /* Invalid state */
   .checkbox-field.is-invalid {
     background: var(--color-error-bg);
     border: 1px solid var(--color-error);
@@ -40,7 +33,7 @@
   .checkbox-field__input {
     position: relative;
     flex-shrink: 0;
-    margin-top: 2px; /* Align with first line of label */
+    margin-top: 2px;
   }
 
   /* Hide the actual checkbox */
@@ -53,15 +46,27 @@
 
   /* Custom checkbox indicator */
   .checkbox-field__indicator {
-    width: 20px;
-    height: 20px;
-    border: 2px solid var(--color-border);
+    width: 18px;
+    height: 18px;
     border-radius: var(--radius-1);
-    background: var(--color-input-bg);
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all var(--transition-fast);
+  }
+
+  /* Light theme styling */
+  [data-theme="light"] .checkbox-field__indicator {
+    background: #ffffff;
+    border: 1px solid var(--color-text-secondary);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Dark theme styling */
+  [data-theme="dark"] .checkbox-field__indicator {
+    background: #ffffff;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 
   /* Checked state */
@@ -71,25 +76,23 @@
     color: var(--color-primary-text);
   }
 
+  /* Checkmark */
+  .checkbox-field:not(.checkbox-field--disabled) .checkbox-field__input input:checked + .checkbox-field__indicator::after {
+    font-size: 12px;
+    font-weight: bold;
+    color: var(--color-primary-text);
+  }
+
   /* Focus state */
   .checkbox-field:focus-within .checkbox-field__indicator {
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-alpha-20);
-  }
-
-  /* Invalid state - updated to use .is-invalid utility */
-  .checkbox-field.is-invalid .checkbox-field__indicator {
-    border-color: var(--color-error);
-  }
-
-  .checkbox-field.is-invalid:not(.checkbox-field--disabled) .checkbox-field__input input:checked + .checkbox-field__indicator {
-    background: var(--color-error);
-    border-color: var(--color-error);
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
   }
 
   /* Content area */
   .checkbox-field__content {
     flex: 1;
-    min-width: 0; /* Allow text to wrap */
+    min-width: 0;
   }
 
   /* Label */
@@ -106,12 +109,6 @@
     color: var(--color-text-disabled);
   }
 
-  /* Required indicator */
-  .required-indicator {
-    color: var(--color-error);
-    margin-left: var(--space-1);
-  }
-
   /* Description */
   .checkbox-field__description {
     font-size: var(--font-size-sm);
@@ -120,53 +117,54 @@
     margin-top: var(--space-1);
   }
 
-  .checkbox-field--disabled .checkbox-field__description {
-    color: var(--color-text-disabled);
+  /* Basic checkbox styling for direct usage */
+  input[type="checkbox"] {
+    appearance: none;
+    width: 18px;
+    height: 18px;
+    border-radius: var(--radius-1);
+    cursor: pointer;
+    position: relative;
+    transition: all var(--transition-fast);
+    margin-right: var(--space-2);
+    flex-shrink: 0;
   }
 
-  /* Error message */
-  .checkbox-field__error {
-    font-size: var(--font-size-sm);
-    color: var(--color-error);
-    margin-top: var(--space-1);
-    line-height: var(--line-height-relaxed);
+  /* Light theme - basic checkbox */
+  [data-theme="light"] input[type="checkbox"] {
+    background: #ffffff;
+    border: 1px solid var(--color-text-secondary);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
 
-  /* Keyboard navigation */
-  .checkbox-field:focus-within {
+  /* Dark theme - basic checkbox */
+  [data-theme="dark"] input[type="checkbox"] {
+    background: #ffffff;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Checked state for basic checkbox */
+  input[type="checkbox"]:checked {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  /* Checkmark for basic checkbox */
+  input[type="checkbox"]:checked::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--color-primary-text);
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  /* Focus state for basic checkbox */
+  input[type="checkbox"]:focus {
     outline: 2px solid var(--color-primary);
     outline-offset: 2px;
-  }
-
-  /* High contrast mode support */
-  @media (prefers-contrast: high) {
-    .checkbox-field__indicator {
-      border-width: 3px;
-    }
-    
-    .checkbox-field:focus-within {
-      outline-width: 3px;
-    }
-  }
-
-  /* Mobile adjustments */
-  @media (max-width: 640px) {
-    .checkbox-field {
-      padding: var(--space-4);
-      gap: var(--space-4);
-    }
-
-    .checkbox-field__indicator {
-      width: 24px;
-      height: 24px;
-    }
-  }
-
-  /* Reduced motion support */
-  @media (prefers-reduced-motion: reduce) {
-    .checkbox-field,
-    .checkbox-field__indicator {
-      transition: none;
-    }
   }
 }

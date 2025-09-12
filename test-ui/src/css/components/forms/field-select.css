@@ -1,12 +1,10 @@
 /**
  * Select Field Styles
  * 
- * Styles for dropdown/select fields and option elements.
- * Includes native select styling and custom dropdown components.
+ * Clean implementation of dropdown/select field styles using design tokens
  */
 
 @layer components {
-  /* Base select styling */
   .field-select {
     width: 100%;
     min-height: var(--input-height);
@@ -20,33 +18,62 @@
     border: var(--input-border-width) solid var(--color-input-border);
     border-radius: var(--radius-2);
     
-    /* Custom dropdown arrow */
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23999' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right var(--input-padding-x) center;
-    background-size: 16px 16px;
-    
-    /* Hide default arrow */
     appearance: none;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    
     cursor: pointer;
     transition: all var(--transition-fast);
   }
 
-  /* Focus state */
+  /* Select wrapper for custom arrow */
+  .field-select-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+  }
+
+  /* Remove default arrow background from select */
+  .field-select {
+    width: 100%;
+  }
+
+  /* Custom arrow using pseudo-element with mask */
+  .field-select-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: var(--input-padding-x);
+    width: 16px;
+    height: 12px;
+    background-color: var(--color-primary);
+    mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='black' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    mask-repeat: no-repeat;
+    mask-size: contain;
+    -webkit-mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='black' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-size: contain;
+    pointer-events: none;
+    transform: translateY(-50%);
+    transition: background-color var(--transition-fast);
+  }
+
   .field-select:focus {
     outline: none;
     border-color: var(--color-primary);
-    background: var(--color-input-bg-focus);
+    background-color: var(--color-input-bg-focus);
     box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-alpha-20);
   }
 
-  /* Hover state */
+  /* Hover state - consistent with textarea field pattern */
   .field-select:hover:not(:focus):not(:disabled) {
     border-color: var(--color-input-border-hover);
     background-color: var(--color-input-bg-hover);
+  }
+
+  .field-select:disabled {
+    background-color: var(--color-input-bg-disabled);
+    color: var(--color-input-text-disabled);
+    border-color: var(--color-input-border-disabled);
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 
   /* Validation states now handled by .is-invalid and .is-valid utilities */
@@ -59,16 +86,11 @@
     /* Additional select-specific valid styling can go here */
   }
 
-  /* Disabled state */
-  .field-select:disabled {
-    background: var(--color-input-bg-disabled);
-    color: var(--color-input-text-disabled);
-    border-color: var(--color-input-border-disabled);
-    cursor: not-allowed;
-    opacity: 0.6;
+  /* Legacy validation classes for consistency */
+  .field-select--invalid {
+    /* Additional select-specific invalid styling can go here */
   }
 
-  /* Option styling */
   .field-select option {
     background: var(--color-input-bg);
     color: var(--color-input-text);
@@ -95,137 +117,5 @@
   .field-select[multiple] option:checked {
     background: var(--color-primary);
     color: var(--color-primary-text);
-  }
-
-  /* Size variants now handled by .input-sm and .input-lg utilities */
-  /* Component-specific size adjustments handled in utilities */
-  .field-select.input-sm {
-    /* Additional small select styling handled by utility */
-  }
-
-  .field-select.input-lg {
-    /* Additional large select styling handled by utility */
-  }
-
-  /* Custom dropdown component */
-  .field-select-custom {
-    position: relative;
-  }
-
-  .field-select-custom__trigger {
-    width: 100%;
-    min-height: var(--input-height);
-    padding: var(--input-padding-y) calc(var(--input-padding-x) + var(--space-6)) var(--input-padding-y) var(--input-padding-x);
-    font-size: var(--font-size-base);
-    font-family: var(--font-family-sans);
-    
-    background: var(--color-input-bg);
-    color: var(--color-input-text);
-    border: var(--input-border-width) solid var(--color-input-border);
-    border-radius: var(--radius-2);
-    
-    cursor: pointer;
-    text-align: left;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    
-    transition: all var(--transition-fast);
-  }
-
-  .field-select-custom__trigger:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    background: var(--color-input-bg-focus);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-alpha-20);
-  }
-
-  .field-select-custom__arrow {
-    width: 16px;
-    height: 16px;
-    color: var(--color-text-tertiary);
-    transform: rotate(0deg);
-    transition: transform var(--transition-fast);
-  }
-
-  .field-select-custom--open .field-select-custom__arrow {
-    transform: rotate(180deg);
-  }
-
-  .field-select-custom__dropdown {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
-    z-index: var(--z-dropdown);
-    
-    background: var(--color-dropdown-bg);
-    border: var(--input-border-width) solid var(--color-input-border);
-    border-top: none;
-    border-radius: 0 0 var(--radius-2) var(--radius-2);
-    box-shadow: var(--shadow-md);
-    
-    max-height: 200px;
-    overflow-y: auto;
-  }
-
-  .field-select-custom__option {
-    padding: var(--space-2) var(--input-padding-x);
-    cursor: pointer;
-    color: var(--color-text-primary);
-    
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    
-    transition: background-color var(--transition-fast);
-  }
-
-  .field-select-custom__option:hover {
-    background: var(--color-dropdown-hover);
-  }
-
-  .field-select-custom__option--selected {
-    background: var(--color-primary);
-    color: var(--color-primary-text);
-  }
-
-  .field-select-custom__option--disabled {
-    color: var(--color-text-disabled);
-    cursor: not-allowed;
-    opacity: 0.6;
-  }
-
-  .field-select-custom__option--disabled:hover {
-    background: transparent;
-  }
-
-  /* Loading state */
-  .field-select--loading {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none'%3e%3ccircle cx='12' cy='12' r='3' fill='%23999'%3e%3canimate attributeName='r' values='3;6;3' dur='1s' repeatCount='indefinite'/%3e%3canimate attributeName='opacity' values='1;0.3;1' dur='1s' repeatCount='indefinite'/%3e%3c/circle%3e%3c/svg%3e");
-    cursor: wait;
-  }
-
-  /* High contrast mode support */
-  @media (prefers-contrast: high) {
-    .field-select {
-      border-width: 2px;
-    }
-    
-    .field-select:focus {
-      outline: 3px solid var(--color-primary);
-      outline-offset: 1px;
-    }
-  }
-
-  /* Reduced motion support */
-  @media (prefers-reduced-motion: reduce) {
-    .field-select {
-      transition: none;
-    }
-    
-    .field-select-custom__arrow {
-      transition: none;
-    }
   }
 }

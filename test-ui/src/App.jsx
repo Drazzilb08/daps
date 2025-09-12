@@ -10,7 +10,6 @@ import Layout from './components/Layout.jsx';
 import Splash from './pages/Splash.jsx';
 import ErrorTestPage from './pages/dev/ErrorTestPage.jsx';
 import SettingsTestPage from './pages/dev/SettingsTestPage.jsx';
-import FormTestPage from './pages/dev/FormTestPage.jsx';
 import ApiTestPage from './pages/dev/ApiTestPage.jsx';
 
 /**
@@ -106,11 +105,6 @@ const App = () => {
                       <Route path="dev/settings" element={
                         <PageErrorBoundary pageName="DAPS Settings" pageDescription="Real DAPS configuration settings page">
                           <SettingsTestPage />
-                        </PageErrorBoundary>
-                      } />
-                      <Route path="dev/forms" element={
-                        <PageErrorBoundary pageName="Form Test" pageDescription="Form system demonstration and testing page">
-                          <FormTestPage />
                         </PageErrorBoundary>
                       } />
                       <Route path="dev/api-test" element={

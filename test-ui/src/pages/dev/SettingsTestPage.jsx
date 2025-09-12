@@ -8,7 +8,7 @@
 
 import React, { useState, useCallback } from 'react';
 import { SETTINGS_SCHEMA } from '../../utils/constants/settings_schema.js';
-import { FormRenderer } from '../../components/forms/FormRenderer.jsx';
+import { FormRenderer } from '../../utils/forms/FormRenderer.jsx';
 import { useToast } from '../../contexts/ToastContext.jsx';
 
 /**
@@ -156,14 +156,14 @@ const FieldCompletionStatus = React.memo(() => {
   // Define which field types are 100% complete vs incomplete/placeholder
   const COMPLETED_FIELD_TYPES = new Set([
     'text', 'password', 'number', 'float', 'textarea', 
-    'dropdown', 'check_box', 'json', 'color_list', 'dir', 'dirlist'
+    'dropdown', 'check_box', 'json', 'color_list'
   ]);
   
   const INCOMPLETE_FIELD_TYPES = new Set([
     'dirlist_dragdrop', 'dirlist_options',
     'instances', 'instance_dropdown', 'gdrive_custom', 'gdrive_presets',
     'holiday_presets', 'holiday_schedule', 'replacerr_custom',
-    'upgradinatorr_custom', 'labelarr_custom'
+    'upgradinatorr_custom', 'labelarr_custom', 'color_list_poster', 'dir', 'dirlist'
   ]);
   
   // Count field instances by type

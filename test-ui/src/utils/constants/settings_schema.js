@@ -227,7 +227,7 @@ export const SETTINGS_SCHEMA = [
             {
                 key: 'border_colors',
                 label: 'Border Colors',
-                type: 'color_list',
+                type: 'color_list_poster',
                 preview: 'true',
                 description: 'List of colors to use for poster borders.',
             },

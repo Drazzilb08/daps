@@ -1,0 +1,361 @@
+/**
+ * FormRenderer Component Styles
+ * 
+ * Schema-driven form rendering with mobile-first responsive design.
+ * Integrates with DAPS design system and compositional field architecture.
+ */
+
+@layer components {
+  /* Form container */
+  .form-renderer {
+    width: 100%;
+    max-width: var(--form-max-width, 600px);
+    margin: 0 auto;
+    padding: var(--space-4);
+    background: var(--color-surface);
+    border-radius: var(--radius-3);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .form-renderer.mobile-optimized {
+    padding: var(--space-3);
+    margin: var(--space-2);
+    max-width: none;
+  }
+
+  .form-renderer.disabled {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+
+  .form-renderer.submitting {
+    opacity: 0.8;
+  }
+
+  /* Form layouts */
+  .form-layout-vertical .form-field {
+    margin-bottom: var(--space-4);
+  }
+
+  .form-layout-horizontal {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-4);
+  }
+
+  .form-layout-horizontal .form-field {
+    margin-bottom: 0;
+  }
+
+  /* Form header */
+  .form-header {
+    margin-bottom: var(--space-6);
+    text-align: center;
+  }
+
+  .form-title {
+    margin: 0 0 var(--space-2) 0;
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    line-height: var(--line-height-tight);
+  }
+
+  .form-description {
+    margin: 0;
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-relaxed);
+  }
+
+  /* Form progress indicator */
+  .form-progress {
+    margin-bottom: var(--space-6);
+    padding: var(--space-3);
+    background: var(--color-surface-variant);
+    border-radius: var(--radius-2);
+  }
+
+  .form-progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--color-border);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+    margin-bottom: var(--space-2);
+  }
+
+  .form-progress-fill {
+    height: 100%;
+    background: var(--color-primary);
+    border-radius: var(--radius-full);
+    transition: width var(--transition-fast) ease-in-out;
+  }
+
+  .form-progress-fill.valid {
+    background: var(--color-success);
+  }
+
+  .form-progress-fill.invalid {
+    background: var(--color-warning);
+  }
+
+  .form-progress-text {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    text-align: center;
+  }
+
+  /* Form content and field container */
+  .form-content {
+    margin-bottom: var(--space-6);
+  }
+
+  .form-field {
+    position: relative;
+  }
+
+  .form-field[data-field-type="hidden"] {
+    display: none;
+  }
+
+  /* Form sections */
+  .form-section {
+    margin-bottom: var(--space-6);
+  }
+
+  .form-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .form-section-header {
+    margin-bottom: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: var(--space-2);
+  }
+
+  .form-section-toggle {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    color: inherit;
+    text-align: left;
+  }
+
+  .form-section-toggle:hover {
+    color: var(--color-primary);
+  }
+
+  .form-section-toggle:focus {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-1);
+  }
+
+  .form-section-toggle-icon {
+    margin-right: var(--space-2);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    transition: transform var(--transition-fast) ease-in-out;
+  }
+
+  .form-section-toggle-icon.collapsed {
+    transform: rotate(-90deg);
+  }
+
+  .form-section-toggle-icon.expanded {
+    transform: rotate(0deg);
+  }
+
+  .form-section-title {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+  }
+
+  .form-section-description {
+    margin: var(--space-2) 0 0 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-relaxed);
+  }
+
+  .form-section-fields {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  /* Form actions */
+  .form-actions {
+    display: flex;
+    gap: var(--space-3);
+    justify-content: flex-end;
+    align-items: center;
+    padding-top: var(--space-4);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .form-actions button {
+    min-height: 44px; /* Touch target */
+    padding: var(--space-2) var(--space-4);
+    border-radius: var(--radius-2);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--transition-fast) ease-in-out;
+    border: 1px solid transparent;
+  }
+
+  .form-submit-button {
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+    border-color: var(--color-primary);
+  }
+
+  .form-submit-button:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+  }
+
+  .form-submit-button:active:not(:disabled) {
+    transform: translateY(0);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .form-submit-button:disabled {
+    background: var(--color-border);
+    color: var(--color-text-disabled);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+
+  .form-cancel-button {
+    background: var(--color-surface);
+    color: var(--color-text-secondary);
+    border-color: var(--color-border);
+  }
+
+  .form-cancel-button:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+    color: var(--color-text-primary);
+    border-color: var(--color-border-hover);
+  }
+
+  /* Submit error display */
+  .form-submit-error {
+    margin-bottom: var(--space-4);
+    padding: var(--space-3);
+    background: var(--color-error-bg);
+    color: var(--color-error-text);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-2);
+    font-size: var(--font-size-sm);
+  }
+
+  .form-submit-error strong {
+    font-weight: var(--font-weight-semibold);
+  }
+
+  /* Form renderer error state */
+  .form-renderer-error {
+    padding: var(--space-6);
+    text-align: center;
+    background: var(--color-error-bg);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-3);
+    color: var(--color-error-text);
+  }
+
+  .form-renderer-error h3 {
+    margin: 0 0 var(--space-2) 0;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .form-renderer-error p {
+    margin: 0;
+    font-size: var(--font-size-base);
+  }
+
+  /* Mobile responsive adjustments */
+  @media (max-width: 480px) {
+    .form-renderer {
+      padding: var(--space-3);
+      margin: var(--space-1);
+    }
+
+    .form-actions {
+      flex-direction: column-reverse;
+      align-items: stretch;
+    }
+
+    .form-actions button {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .form-layout-horizontal {
+      grid-template-columns: 1fr;
+      gap: var(--space-3);
+    }
+
+    .form-section-fields {
+      gap: var(--space-3);
+    }
+  }
+
+  /* Print styles */
+  @media print {
+    .form-renderer {
+      box-shadow: none;
+      border: 1px solid var(--color-border);
+    }
+
+    .form-actions,
+    .form-progress {
+      display: none;
+    }
+
+    .form-section-toggle-icon {
+      display: none;
+    }
+
+    .form-section[data-section-collapsible] .form-section-fields {
+      display: block !important;
+    }
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .form-renderer {
+      border: 2px solid;
+    }
+
+    .form-progress-fill {
+      border: 1px solid;
+    }
+
+    .form-actions button {
+      border-width: 2px;
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .form-progress-fill,
+    .form-section-toggle-icon,
+    .form-actions button {
+      transition: none;
+    }
+  }
+}

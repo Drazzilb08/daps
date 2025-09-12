@@ -73,6 +73,7 @@
 @import './utilities/list-utilities.css';
 
 /* Form system styles */
+@import './components/forms/field-primitives.css';  /* Base primitive components */
 @import './components/forms/field-base.css';
 @import './components/forms/field-input.css';
 @import './components/forms/field-select.css';
@@ -82,6 +83,7 @@
 @import './components/forms/field-color-list.css';
 @import './components/forms/field-custom.css';
 @import './components/forms/form-layout.css';
+@import './components/forms/form-renderer.css';  /* Schema-driven form renderer */
 
 /* =============================================================================
    PAGE STYLES
@@ -97,7 +99,9 @@
 @import './pages/dev/api-test.css';
 @import './pages/dev/form-test.css';
 @import './pages/dev/settings-test.css';
+@import './pages/dev/primitives-test.css';  /* Form primitives demonstration page */
 @import './pages/dev/error-test.css';
+@import './pages/form-test-page.css';  /* Schema-driven form test page */
 
 
 /* =============================================================================

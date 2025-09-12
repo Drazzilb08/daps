@@ -1,0 +1,251 @@
+/**
+ * Field Primitives CSS - Compositional Architecture
+ * 
+ * Base styling for all primitive components that get composed into field types.
+ * Uses design tokens exclusively - NO hardcoded values.
+ * Follows mobile-first responsive design principles.
+ * 
+ * Architecture: Base styles + compositional patterns for field construction
+ */
+
+@layer components {
+  
+  /* =============================================================================
+     FIELD WRAPPER - Universal container for ALL field types
+     ============================================================================= */
+  
+  .field-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    width: 100%;
+  }
+  
+  .field-wrapper--invalid {
+    /* Error state applies to entire field wrapper */
+  }
+  
+  /* Mobile-first responsive adjustments */
+  @media (max-width: 767px) {
+    .field-wrapper {
+      margin-bottom: var(--space-3); /* Tighter spacing on mobile */
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .field-wrapper {
+      margin-bottom: var(--space-5); /* More generous spacing on larger screens */
+    }
+  }
+  
+  /* =============================================================================
+     FIELD LABEL - Universal labeling for ALL field types
+     ============================================================================= */
+  
+  .field-label {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-1);
+    line-height: var(--line-height-tight);
+  }
+  
+  .required-indicator {
+    color: var(--color-error);
+    margin-left: var(--space-1);
+    font-weight: var(--font-weight-semibold);
+  }
+  
+  /* =============================================================================
+     INPUT BASE - Universal input styling for ALL input-based fields
+     ============================================================================= */
+  
+  .field-input {
+    /* Touch-friendly sizing */
+    min-height: var(--touch-target-min); /* 44px minimum for touch */
+    padding: var(--space-2) var(--space-3);
+    
+    /* Visual styling */
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    font-size: var(--font-size-base); /* Minimum 16px to prevent mobile zoom */
+    font-family: var(--font-family-sans);
+    line-height: var(--line-height-normal);
+    
+    /* Theme colors */
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    
+    /* Smooth interactions */
+    transition: border-color var(--transition-fast), 
+                box-shadow var(--transition-fast);
+    
+    /* Full width by default */
+    width: 100%;
+    box-sizing: border-box;
+  }
+  
+  .field-input::placeholder {
+    color: var(--color-text-tertiary);
+  }
+  
+  /* Focus state - WCAG compliance */
+  .field-input:focus {
+    outline: var(--focus-ring-width) solid var(--color-focus);
+    outline-offset: var(--focus-ring-offset);
+    border-color: var(--color-primary);
+  }
+  
+  /* Invalid/error state */
+  .field-input:invalid,
+  .field-wrapper--invalid .field-input {
+    border-color: var(--color-error);
+  }
+  
+  /* Disabled state */
+  .field-input:disabled {
+    background: var(--color-surface-disabled);
+    color: var(--color-text-disabled);
+    cursor: not-allowed;
+    opacity: 0.6;
+  }
+  
+  /* =============================================================================
+     TEXTAREA BASE - Universal textarea styling for ALL textarea-based fields
+     ============================================================================= */
+  
+  .field-textarea {
+    /* Inherit all input styles */
+    min-height: var(--touch-target-min);
+    padding: var(--space-2) var(--space-3);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-sans);
+    line-height: var(--line-height-normal);
+    background: var(--color-surface);
+    color: var(--color-text-primary);
+    transition: border-color var(--transition-fast), 
+                box-shadow var(--transition-fast);
+    width: 100%;
+    box-sizing: border-box;
+    
+    /* Textarea-specific */
+    resize: vertical;
+    min-height: calc(var(--touch-target-min) * 2); /* Minimum 2 lines visible */
+  }
+  
+  .field-textarea::placeholder {
+    color: var(--color-text-tertiary);
+  }
+  
+  /* Focus state - WCAG compliance */
+  .field-textarea:focus {
+    outline: var(--focus-ring-width) solid var(--color-focus);
+    outline-offset: var(--focus-ring-offset);
+    border-color: var(--color-primary);
+  }
+  
+  /* Invalid/error state */
+  .field-textarea:invalid,
+  .field-wrapper--invalid .field-textarea {
+    border-color: var(--color-error);
+  }
+  
+  /* Disabled state */
+  .field-textarea:disabled {
+    background: var(--color-surface-disabled);
+    color: var(--color-text-disabled);
+    cursor: not-allowed;
+    opacity: 0.6;
+    resize: none;
+  }
+  
+  /* =============================================================================
+     FIELD DESCRIPTION - Universal help text for ALL field types
+     ============================================================================= */
+  
+  .field-description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    line-height: var(--line-height-normal);
+  }
+  
+  /* =============================================================================
+     FIELD ERROR - Universal error display for ALL field types
+     ============================================================================= */
+  
+  .field-error {
+    font-size: var(--font-size-sm);
+    color: var(--color-error);
+    font-weight: var(--font-weight-medium);
+    line-height: var(--line-height-normal);
+  }
+  
+  /* =============================================================================
+     RESPONSIVE BEHAVIOR - Mobile-first progressive enhancement
+     ============================================================================= */
+  
+  /* Small mobile devices */
+  @media (max-width: 374px) {
+    .field-input,
+    .field-textarea {
+      padding: var(--space-2); /* Reduce padding on very small screens */
+    }
+  }
+  
+  /* Large mobile and tablet */
+  @media (min-width: 768px) {
+    .field-input,
+    .field-textarea {
+      padding: var(--space-3) var(--space-4); /* More generous padding */
+    }
+  }
+  
+  /* Desktop */
+  @media (min-width: 1024px) {
+    .field-wrapper {
+      max-width: var(--form-max-width); /* Constrain width on large screens */
+    }
+  }
+  
+  /* =============================================================================
+     COMPOSITION PATTERNS - Reusable patterns for complex field types
+     ============================================================================= */
+  
+  /* Horizontal field layout (for checkboxes, radio buttons) */
+  .field-wrapper--horizontal {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--space-3);
+  }
+  
+  .field-wrapper--horizontal .field-label {
+    margin-bottom: 0;
+    flex: 1;
+  }
+  
+  /* Inline field layout (for small inputs in groups) */
+  .field-wrapper--inline {
+    flex-direction: row;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-2);
+  }
+  
+  .field-wrapper--inline .field-input {
+    flex: 1;
+  }
+  
+  /* Compact field layout (for dense forms) */
+  .field-wrapper--compact {
+    margin-bottom: var(--space-2);
+    gap: var(--space-1);
+  }
+  
+  .field-wrapper--compact .field-label {
+    font-size: var(--font-size-xs);
+    margin-bottom: 0;
+  }
+}

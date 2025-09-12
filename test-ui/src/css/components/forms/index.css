@@ -6,11 +6,14 @@
  */
 
 /* Import all form component styles */
+@import './field-primitives.css';
 @import './field-base.css';
 @import './field-input.css';
 @import './field-select.css';
 @import './field-checkbox.css';
 @import './field-textarea.css';
+@import './field-float.css';
+@import './field-color-list.css';
 @import './field-directory.css';
 @import './field-custom.css';
 @import './form-layout.css';

@@ -6,7 +6,11 @@
  */
 
 @layer components {
-  /* JSON Field Styles */
+  /* JSON Field Styles - Enhanced compositional approach */
+  .json-field {
+    /* Inherits styles from FieldWrapper primitive */
+  }
+
   .json-field-header {
     display: flex;
     justify-content: space-between;
@@ -21,31 +25,60 @@
     flex-shrink: 0;
   }
 
-  /* JSON control buttons now use unified button system (.btn .btn--secondary .btn--small) */
+  /* JSON control buttons - 44px minimum for touch accessibility */
+  .json-field-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-height: 44px;
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-secondary);
+    color: var(--color-secondary-text);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .json-field-btn:hover:not(:disabled) {
+    background: var(--color-secondary-hover);
+    border-color: var(--color-secondary);
+    transform: translateY(-1px);
+  }
+
+  .json-field-btn:focus {
+    outline: var(--focus-ring-width) solid var(--color-secondary);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  .json-field-btn:disabled {
+    background: var(--color-border);
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .json-field-btn-icon {
+    font-size: var(--font-size-base);
+  }
 
   .json-field-container {
     position: relative;
   }
 
-  .field-textarea--json {
+  .json-field-textarea {
     font-family: var(--font-family-mono);
     font-size: var(--font-size-sm);
     line-height: 1.4;
     tab-size: 2;
     white-space: pre;
-    background: var(--color-input-bg);
-    border: 1px solid var(--color-input-border);
-    border-radius: var(--radius-2);
     resize: vertical;
-    transition: none;
   }
 
-  .field-textarea--json:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    background: var(--color-input-bg-focus);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
-    transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
+  .json-field-status {
+    margin-top: var(--space-2);
   }
 
 

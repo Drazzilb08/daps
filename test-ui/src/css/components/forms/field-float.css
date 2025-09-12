@@ -1,0 +1,69 @@
+/**
+ * Float Field Component - Percentage input (0-100%) mapping to decimal (0-1)
+ * 
+ * Styles for FloatField component built through InputBase primitive composition.
+ * Mobile-first design using DAPS design tokens with 44px touch targets.
+ */
+
+@layer components {
+  .float-field {
+    /* Inherits styles from FieldWrapper primitive */
+  }
+
+  .float-field-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .float-field-container .field-input {
+    padding-right: var(--space-8); /* Space for % suffix */
+  }
+
+  .float-field-suffix {
+    position: absolute;
+    right: var(--space-3);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    pointer-events: none;
+    user-select: none;
+  }
+
+  /* Focus state adjustments */
+  .float-field-container .field-input:focus + .float-field-suffix {
+    color: var(--color-primary);
+  }
+
+  /* Invalid state adjustments */
+  .field-wrapper--invalid .float-field-suffix {
+    color: var(--color-error);
+  }
+
+  /* Mobile responsive adjustments */
+  @media (max-width: 640px) {
+    .float-field-container .field-input {
+      font-size: var(--font-size-lg);
+      padding-right: var(--space-10);
+    }
+
+    .float-field-suffix {
+      right: var(--space-4);
+      font-size: var(--font-size-lg);
+    }
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .float-field-suffix {
+      font-weight: var(--font-weight-bold);
+    }
+  }
+
+  /* Reduced motion support */
+  @media (prefers-reduced-motion: reduce) {
+    .float-field-container .field-input {
+      transition: none;
+    }
+  }
+}

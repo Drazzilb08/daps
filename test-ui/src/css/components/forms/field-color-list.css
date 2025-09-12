@@ -1,108 +1,163 @@
 /**
- * Color List Field Component Styles
+ * Color Field Components - Color picker and color list management
  * 
- * Styles for the color_list field type that manages arrays of color values.
- * Mobile-first design using DAPS design tokens.
+ * Styles for ColorField and ColorListField components built through composition.
+ * Mobile-first design using DAPS design tokens with 44px touch targets.
  */
 
 @layer components {
-  /* Color list container */
+  /* Color Field Styles */
+  .color-field {
+    /* Inherits styles from FieldWrapper primitive */
+  }
+
+  .color-field-container {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .color-field-picker-wrapper {
+    position: relative;
+    flex-shrink: 0;
+  }
+
+  .color-field-picker {
+    position: absolute;
+    width: var(--space-10);
+    height: var(--space-10);
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .color-field-picker-label {
+    display: block;
+    width: var(--space-10);
+    height: var(--space-10);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-2);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .color-field-picker:focus + .color-field-picker-label {
+    outline: var(--focus-ring-width) solid var(--color-primary);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  .color-field-text {
+    flex: 1;
+    font-family: var(--font-family-mono);
+  }
+
+  /* Color List Field Styles */
+  .color-list-field {
+    /* Inherits styles from FieldWrapper primitive */
+  }
+
   .color-list-container {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
   }
 
-  /* Color list items container */
-  .color-list-items {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
+  .color-list-empty {
+    padding: var(--space-4);
+    text-align: center;
+    color: var(--color-text-muted);
+    font-style: italic;
+    background: var(--color-surface-elevated);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-2);
   }
 
   /* Individual color list item */
   .color-list-item {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--space-2);
-    padding: var(--space-2);
+    padding: var(--space-3);
     background: var(--color-surface-elevated);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-2);
   }
 
-  /* Color preview circle */
-  .color-list-preview {
-    width: var(--space-6);
-    height: var(--space-6);
-    border-radius: var(--radius-full);
-    border: 2px solid var(--color-border);
-    flex-shrink: 0;
-    cursor: pointer;
-  }
-
-  /* Input container for color picker and text input */
-  .color-list-input-container {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
+  .color-list-item-field {
     flex: 1;
-  }
-
-  /* Color picker input */
-  .color-list-color-picker {
-    width: var(--space-8);
-    height: var(--space-8);
-    padding: 0;
-    border: none;
-    border-radius: var(--radius-1);
-    background: transparent;
-    cursor: pointer;
-  }
-
-  /* Color text input */
-  .color-list-input {
-    flex: 1;
-    min-height: var(--input-height);
-    padding: var(--input-padding-y) var(--input-padding-x);
-    font-size: var(--font-size-base);
-    font-family: var(--font-family-mono);
-    background: var(--color-input-bg);
-    color: var(--color-input-text);
-    border: var(--input-border-width) solid var(--color-input-border);
-    border-radius: var(--radius-1);
-    transition: all var(--transition-fast);
-  }
-
-  .color-list-input:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    background: var(--color-input-bg-focus);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-alpha-20);
-  }
-
-  .color-list-input.field-input--invalid {
-    border-color: var(--color-error);
-    background: var(--color-error-bg);
-  }
-
-  .color-list-input.field-input--invalid:focus {
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-alpha-20);
   }
 
   /* Remove button */
-  .color-list-remove {
-    /* Additional specific styling if needed - uses unified .btn system */
+  .color-list-remove-btn {
+    min-height: var(--touch-target-min);
     min-width: var(--touch-target-min);
+    padding: var(--space-1);
+    background: var(--color-error);
+    color: var(--color-error-text);
+    border: none;
+    border-radius: var(--radius-1);
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    flex-shrink: 0;
+  }
+
+  .color-list-remove-btn:hover:not(:disabled) {
+    background: var(--color-error-hover);
+    transform: scale(1.05);
+  }
+
+  .color-list-remove-btn:focus {
+    outline: var(--focus-ring-width) solid var(--color-error);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  /* Add button */
+  .color-list-add-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-height: var(--touch-target-min);
+    padding: var(--space-3) var(--space-4);
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+    border: none;
+    border-radius: var(--radius-2);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+  }
+
+  .color-list-add-btn:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+    transform: translateY(-1px);
+  }
+
+  .color-list-add-btn:focus {
+    outline: var(--focus-ring-width) solid var(--color-primary);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  .color-list-add-btn:disabled {
+    background: var(--color-border);
+    color: var(--color-text-muted);
+    cursor: not-allowed;
+  }
+
+  .color-list-add-icon {
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
   }
 
-
-  /* Add button */
-  .color-list-add {
-    /* Additional specific styling if needed - uses unified .btn system */
-    padding: var(--space-2) var(--space-4);
+  /* Status and limits */
+  .color-list-limits {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    text-align: center;
+    padding: var(--space-1) var(--space-2);
+    background: var(--color-surface-elevated);
+    border-radius: var(--radius-1);
   }
 
 

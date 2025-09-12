@@ -1,11 +1,12 @@
 /**
  * DropdownField Component
  * 
- * Dropdown/select field with options support following the standard field interface.
+ * Dropdown/select field using primitive composition.
  * Supports validation states, accessibility features, and custom styling.
  */
 
 import React, { useCallback } from 'react';
+import { FieldWrapper, FieldLabel, FieldError, FieldDescription } from '../primitives';
 
 /**
  * DropdownField component for select input
@@ -34,11 +35,12 @@ export const DropdownField = React.memo(({
   const inputValue = value || '';
   
   return (
-    <>
-      <label htmlFor={inputId} className="field-label">
-        {field.label}
-        {field.required && <span className="required-indicator">*</span>}
-      </label>
+    <FieldWrapper invalid={highlightInvalid}>
+      <FieldLabel 
+        htmlFor={inputId} 
+        label={field.label} 
+        required={field.required} 
+      />
       
       <div className="field-select-wrapper">
         <select
@@ -51,32 +53,33 @@ export const DropdownField = React.memo(({
           className={`field-select ${highlightInvalid ? 'field-select--invalid' : ''}`}
           aria-describedby={
             (field.description || errorMessage) 
-              ? `${inputId}-description ${inputId}-error`.trim() 
+              ? `${inputId}-desc ${inputId}-error`.trim() 
               : undefined
           }
           aria-invalid={highlightInvalid}
         >
           {!field.required && <option value="">Select an option...</option>}
-          {field.options && field.options.map(option => (
-            <option key={option} value={option}>
-              {option}
-            </option>
-          ))}
+          {field.options && field.options.map((option, index) => {
+            const optionValue = typeof option === 'string' ? option : option.value;
+            const optionLabel = typeof option === 'string' ? option : option.label;
+            return (
+              <option key={optionValue || index} value={optionValue}>
+                {optionLabel}
+              </option>
+            );
+          })}
         </select>
       </div>
       
-      {field.description && (
-        <div id={`${inputId}-description`} className="field-description">
-          {field.description}
-        </div>
-      )}
-      
-      {errorMessage && (
-        <div id={`${inputId}-error`} className="field-error" role="alert">
-          {errorMessage}
-        </div>
-      )}
-    </>
+      <FieldDescription 
+        id={`${inputId}-desc`} 
+        description={field.description} 
+      />
+      <FieldError 
+        id={`${inputId}-error`} 
+        message={errorMessage} 
+      />
+    </FieldWrapper>
   );
 });
 

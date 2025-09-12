@@ -1,11 +1,12 @@
 /**
  * CheckboxField Component
  * 
- * Simple checkbox field with large clickable area.
+ * Checkbox field using primitive composition with large clickable area.
  * The entire wrapper including label is clickable.
  */
 
 import React, { useCallback } from 'react';
+import { FieldWrapper, FieldError, FieldDescription } from '../primitives';
 
 /**
  * CheckboxField component for boolean input
@@ -35,54 +36,56 @@ export const CheckboxField = React.memo(({
   const isChecked = Boolean(value);
   
   return (
-    <div 
-      className={`checkbox-field ${disabled ? 'checkbox-field--disabled' : ''} ${highlightInvalid ? 'checkbox-field--invalid' : ''}`}
-      onClick={handleClick}
-    >
-      <div className="checkbox-field__input">
-        <input
-          id={inputId}
-          type="checkbox"
-          name={field.key}
-          checked={isChecked}
-          disabled={disabled}
-          required={field.required}
-          onChange={() => {}} // Controlled by wrapper click
-          tabIndex={-1} // Use wrapper for keyboard navigation
-          aria-hidden="true" // Screen readers use the wrapper
-        />
-        <div className="checkbox-field__indicator" aria-hidden="true">
-          {isChecked && (
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-              <polyline points="20,6 9,17 4,12"/>
-            </svg>
-          )}
+    <FieldWrapper invalid={highlightInvalid}>
+      <div 
+        className={`checkbox-field ${disabled ? 'checkbox-field--disabled' : ''} ${highlightInvalid ? 'checkbox-field--invalid' : ''}`}
+        onClick={handleClick}
+      >
+        <div className="checkbox-field__input">
+          <input
+            id={inputId}
+            type="checkbox"
+            name={field.key}
+            checked={isChecked}
+            disabled={disabled}
+            required={field.required}
+            onChange={() => {}} // Controlled by wrapper click
+            tabIndex={-1} // Use wrapper for keyboard navigation
+            aria-hidden="true" // Screen readers use the wrapper
+          />
+          <div className="checkbox-field__indicator" aria-hidden="true">
+            {isChecked && (
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
+                <polyline points="20,6 9,17 4,12"/>
+              </svg>
+            )}
+          </div>
+        </div>
+        
+        <div className="checkbox-field__content">
+          <label 
+            htmlFor={inputId} 
+            className="checkbox-field__label"
+            onClick={(e) => e.preventDefault()} // Prevent double firing
+          >
+            {field.label}
+            {field.required && <span className="required-indicator">*</span>}
+          </label>
+          
+          <FieldDescription 
+            id={`${inputId}-desc`} 
+            description={field.description}
+            className="checkbox-field__description" 
+          />
+          
+          <FieldError 
+            id={`${inputId}-error`} 
+            message={errorMessage}
+            className="checkbox-field__error"
+          />
         </div>
       </div>
-      
-      <div className="checkbox-field__content">
-        <label 
-          htmlFor={inputId} 
-          className="checkbox-field__label"
-          onClick={(e) => e.preventDefault()} // Prevent double firing
-        >
-          {field.label}
-          {field.required && <span className="required-indicator">*</span>}
-        </label>
-        
-        {field.description && (
-          <div className="checkbox-field__description">
-            {field.description}
-          </div>
-        )}
-        
-        {errorMessage && (
-          <div className="checkbox-field__error" role="alert">
-            {errorMessage}
-          </div>
-        )}
-      </div>
-    </div>
+    </FieldWrapper>
   );
 });
 

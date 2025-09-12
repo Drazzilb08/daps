@@ -5,8 +5,11 @@
  * for clean imports and organization.
  */
 
+// Working implementations
+export { JsonField } from './JsonField.jsx';
+
+// Placeholder implementations
 export {
-  JsonField,
   FloatField,
   DirField,
   ColorListField,

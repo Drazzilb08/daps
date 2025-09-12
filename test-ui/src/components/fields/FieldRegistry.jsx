@@ -9,6 +9,8 @@
 import * as BasicFields from './basic';
 import * as SelectFields from './select';
 import * as CustomFields from './custom';
+import * as ColorFields from './color';
+import * as DirFields from './dir';
 
 /**
  * Field type to component mapping
@@ -26,39 +28,84 @@ const FIELD_COMPONENTS = {
   text: BasicFields.TextField,
   password: BasicFields.PasswordField,
   number: BasicFields.NumberField,
-  float: CustomFields.FloatField,
+  textarea: BasicFields.TextareaField,
+  float: BasicFields.FloatField,
+  hidden: BasicFields.HiddenField,
   
   // Boolean fields
   check_box: SelectFields.CheckboxField,
   
   // Selection fields
   dropdown: SelectFields.DropdownField,
-  instance_dropdown: CustomFields.InstanceDropdownField,
+  // multi_select: SelectFields.MultiSelectField, // TODO: Implement
+  // radio: SelectFields.RadioField, // TODO: Implement
   
-  // Text areas
-  textarea: BasicFields.TextareaField,
+  // Color fields
+  color: ColorFields.ColorField,
+  color_list: ColorFields.ColorListField,
   
-  // Specialized input fields
+  // Directory fields
+  dir: DirFields.DirField,
+  dir_list: DirFields.DirListField,
+  
+  // Specialized custom fields
   json: CustomFields.JsonField,
-  dir: CustomFields.DirField,
+  // instance_dropdown: CustomFields.InstanceDropdownField, // TODO: Test
   
-  // List fields
-  dirlist: CustomFields.DirListField,
-  dirlist_dragdrop: CustomFields.DirListDragDropField,
-  dirlist_options: CustomFields.DirListOptionsField,
-  color_list: CustomFields.ColorListField,
+  // List fields (legacy mappings for backward compatibility) - TODO: Test placeholders
+  // dirlist: DirFields.DirListField,
+  // dirlist_dragdrop: CustomFields.DirListDragDropField,
+  // dirlist_options: CustomFields.DirListOptionsField,
   
-  // Complex custom fields
-  instances: CustomFields.InstancesField,
-  gdrive_custom: CustomFields.GDriveCustomField,
-  replacerr_custom: CustomFields.ReplacerCustomField,
-  upgradinatorr_custom: CustomFields.UpgradinatorCustomField,
-  labelarr_custom: CustomFields.LabelarrCustomField,
+  // Complex custom fields - TODO: Test placeholders
+  // instances: CustomFields.InstancesField,
+  // gdrive_custom: CustomFields.GDriveCustomField,
+  // replacerr_custom: CustomFields.ReplacerCustomField,
+  // upgradinatorr_custom: CustomFields.UpgradinatorCustomField,
+  // labelarr_custom: CustomFields.LabelarrCustomField,
   
-  // Preset fields
-  gdrive_presets: CustomFields.GDrivePresetsField,
-  holiday_presets: CustomFields.HolidayPresetsField,
-  holiday_schedule: CustomFields.HolidayScheduleField
+  // Preset fields - TODO: Test placeholders
+  // gdrive_presets: CustomFields.GDrivePresetsField,
+  // holiday_presets: CustomFields.HolidayPresetsField,
+  // holiday_schedule: CustomFields.HolidayScheduleField
+};
+
+/**
+ * Fallback component for truly unknown field types (not in registry at all)
+ */
+const UnknownFieldType = ({ field }) => {
+  const inputId = `field-${field.key}`;
+  
+  return (
+    <>
+      <label htmlFor={inputId} className="field-label">
+        {field.label}
+        {field.required && <span className="required-indicator">*</span>}
+      </label>
+      
+      <div className="field-unknown">
+        <div style={{
+          padding: 'var(--space-4)',
+          background: 'var(--color-error-bg)',
+          border: '1px solid var(--color-error)',
+          borderRadius: 'var(--radius-2)',
+          textAlign: 'center',
+          color: 'var(--color-error-text)',
+          fontSize: 'var(--font-size-sm)'
+        }}>
+          <strong>Unknown field type "{field.type}"</strong>
+          <br />
+          <small>This field type is not recognized by the system</small>
+        </div>
+      </div>
+      
+      {field.description && (
+        <div id={`${inputId}-description`} className="field-description">
+          {field.description}
+        </div>
+      )}
+    </>
+  );
 };
 
 /**
@@ -68,13 +115,13 @@ export class FieldRegistry {
   /**
    * Get a field component by type
    * @param {string} fieldType - The field type string
-   * @returns {React.Component|null} The field component or null if not found
+   * @returns {React.Component} The field component or UnknownFieldType fallback
    */
   static getField(fieldType) {
     const component = FIELD_COMPONENTS[fieldType];
     if (!component) {
       console.warn(`[FieldRegistry] Unknown field type: ${fieldType}`);
-      return null;
+      return UnknownFieldType;
     }
     return component;
   }

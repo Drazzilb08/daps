@@ -24,50 +24,44 @@ import * as DirFields from './dir';
  * - errorMessage: String error message to display
  */
 const FIELD_COMPONENTS = {
-  // Basic input fields
+  // Working implementations
   text: BasicFields.TextField,
   password: BasicFields.PasswordField,
   number: BasicFields.NumberField,
   textarea: BasicFields.TextareaField,
   float: BasicFields.FloatField,
   hidden: BasicFields.HiddenField,
-  
-  // Boolean fields
   check_box: SelectFields.CheckboxField,
-  
-  // Selection fields
   dropdown: SelectFields.DropdownField,
-  // multi_select: SelectFields.MultiSelectField, // TODO: Implement
-  // radio: SelectFields.RadioField, // TODO: Implement
-  
-  // Color fields
-  color: ColorFields.ColorField,
-  color_list: ColorFields.ColorListField,
-  
-  // Directory fields
-  dir: DirFields.DirField,
-  dir_list: DirFields.DirListField,
-  
-  // Specialized custom fields
   json: CustomFields.JsonField,
-  // instance_dropdown: CustomFields.InstanceDropdownField, // TODO: Test
   
-  // List fields (legacy mappings for backward compatibility) - TODO: Test placeholders
-  // dirlist: DirFields.DirListField,
-  // dirlist_dragdrop: CustomFields.DirListDragDropField,
-  // dirlist_options: CustomFields.DirListOptionsField,
+  // Placeholders from DAPS settings schema
+  dirlist: CustomFields.DirListField,
+  dirlist_dragdrop: CustomFields.DirListDragDropField,
+  dirlist_options: CustomFields.DirListOptionsField,
+  color: CustomFields.ColorField,
+  color_list: CustomFields.ColorListField,
+  color_list_poster: CustomFields.ColorListField,
+  holiday_schedule: CustomFields.HolidayScheduleField,
+  holiday_presets: CustomFields.HolidayPresetsField,
+  gdrive_custom: CustomFields.GDriveCustomField,
+  gdrive_presets: CustomFields.GDrivePresetsField,
+  replacerr_custom: CustomFields.ReplacerCustomField,
+  upgradinatorr_custom: CustomFields.UpgradinatorCustomField,
+  labelarr_custom: CustomFields.LabelarrCustomField,
+  instances: CustomFields.InstancesField,
+  instance_dropdown: CustomFields.InstanceDropdownField,
+  dir: CustomFields.DirField,
   
-  // Complex custom fields - TODO: Test placeholders
-  // instances: CustomFields.InstancesField,
-  // gdrive_custom: CustomFields.GDriveCustomField,
-  // replacerr_custom: CustomFields.ReplacerCustomField,
-  // upgradinatorr_custom: CustomFields.UpgradinatorCustomField,
-  // labelarr_custom: CustomFields.LabelarrCustomField,
-  
-  // Preset fields - TODO: Test placeholders
-  // gdrive_presets: CustomFields.GDrivePresetsField,
-  // holiday_presets: CustomFields.HolidayPresetsField,
-  // holiday_schedule: CustomFields.HolidayScheduleField
+  // Placeholders from original field vision
+  schedule: CustomFields.ScheduleField,
+  tag_select: CustomFields.TagSelectField,
+  tag_display: CustomFields.TagDisplayField,
+  tag_multiselect: CustomFields.TagMultiSelectField,
+  media_info_display: CustomFields.MediaInfoDisplayField,
+  media_display: CustomFields.MediaDisplayField,
+  dir_picker: CustomFields.DirPickerField,
+  poster: CustomFields.PosterField,
 };
 
 /**
@@ -107,6 +101,16 @@ const UnknownFieldType = ({ field }) => {
     </>
   );
 };
+
+// Define which field types are actually working vs placeholders
+const WORKING_FIELD_TYPES = new Set([
+  // Basic input fields - WORKING ✅
+  'text', 'password', 'number', 'textarea', 'float', 'hidden',
+  // Selection fields - WORKING ✅
+  'check_box', 'dropdown',
+  // JSON field - WORKING ✅
+  'json'
+]);
 
 /**
  * FieldRegistry class provides methods to register, retrieve, and manage field components
@@ -148,11 +152,36 @@ export class FieldRegistry {
   }
   
   /**
-   * Get all registered field types
-   * @returns {string[]} Array of field type strings
+   * Get all registered field types (including placeholders)
+   * @returns {string[]} Array of all field type strings
    */
   static getFieldTypes() {
     return Object.keys(FIELD_COMPONENTS);
+  }
+  
+  /**
+   * Get only working field types (excludes placeholders)
+   * @returns {string[]} Array of actually working field type strings
+   */
+  static getWorkingFieldTypes() {
+    return Array.from(WORKING_FIELD_TYPES);
+  }
+  
+  /**
+   * Get only placeholder field types
+   * @returns {string[]} Array of placeholder field type strings
+   */
+  static getPlaceholderFieldTypes() {
+    return Object.keys(FIELD_COMPONENTS).filter(type => !WORKING_FIELD_TYPES.has(type));
+  }
+  
+  /**
+   * Check if a field type is actually working (not a placeholder)
+   * @param {string} fieldType - The field type string
+   * @returns {boolean} True if field type is working
+   */
+  static isWorkingFieldType(fieldType) {
+    return WORKING_FIELD_TYPES.has(fieldType);
   }
   
   /**

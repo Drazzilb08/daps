@@ -12,7 +12,6 @@ import ErrorTestPage from './pages/dev/ErrorTestPage.jsx';
 import SettingsTestPage from './pages/dev/SettingsTestPage.jsx';
 import ApiTestPage from './pages/dev/ApiTestPage.jsx';
 import PrimitivesTestPage from './pages/dev/PrimitivesTestPage.jsx';
-import FormTestPage from './pages/dev/FormTestPage.jsx';
 
 /**
  * DAPS Application Root - Phase 4 Ready
@@ -117,11 +116,6 @@ const App = () => {
                       <Route path="dev/primitives-test" element={
                         <PageErrorBoundary pageName="Form Primitives Test" pageDescription="Testing individual form primitive components">
                           <PrimitivesTestPage />
-                        </PageErrorBoundary>
-                      } />
-                      <Route path="dev/form-test" element={
-                        <PageErrorBoundary pageName="Schema-Driven Forms" pageDescription="Comprehensive demonstration of schema-driven form system">
-                          <FormTestPage />
                         </PageErrorBoundary>
                       } />
                     </Route>

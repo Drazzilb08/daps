@@ -39,10 +39,10 @@ const UnavailableField = ({ field }) => {
 
 // All field types - simple placeholders
 
-export const FloatField = React.memo((props) => <UnavailableField {...props} />);
+export const ColorField = React.memo((props) => <UnavailableField {...props} />);
+export const ColorListField = React.memo((props) => <UnavailableField {...props} />);
 
 export const DirField = React.memo((props) => <UnavailableField {...props} />);
-export const ColorListField = React.memo((props) => <UnavailableField {...props} />);
 
 export const DirListField = React.memo((props) => <UnavailableField {...props} />);
 export const InstanceDropdownField = React.memo((props) => <UnavailableField {...props} />);
@@ -56,3 +56,13 @@ export const HolidayPresetsField = React.memo((props) => <UnavailableField {...p
 export const HolidayScheduleField = React.memo((props) => <UnavailableField {...props} />);
 export const DirListDragDropField = React.memo((props) => <UnavailableField {...props} />);
 export const DirListOptionsField = React.memo((props) => <UnavailableField {...props} />);
+
+// Additional field types from original vision - currently placeholders
+export const ScheduleField = React.memo((props) => <UnavailableField {...props} />);
+export const TagSelectField = React.memo((props) => <UnavailableField {...props} />);
+export const TagDisplayField = React.memo((props) => <UnavailableField {...props} />);
+export const TagMultiSelectField = React.memo((props) => <UnavailableField {...props} />);
+export const MediaInfoDisplayField = React.memo((props) => <UnavailableField {...props} />);
+export const MediaDisplayField = React.memo((props) => <UnavailableField {...props} />);
+export const DirPickerField = React.memo((props) => <UnavailableField {...props} />);
+export const PosterField = React.memo((props) => <UnavailableField {...props} />);

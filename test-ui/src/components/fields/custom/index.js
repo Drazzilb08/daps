@@ -10,9 +10,9 @@ export { JsonField } from './JsonField.jsx';
 
 // Placeholder implementations
 export {
-  FloatField,
-  DirField,
+  ColorField,
   ColorListField,
+  DirField,
   DirListField,
   InstanceDropdownField,
   InstancesField,
@@ -24,5 +24,14 @@ export {
   HolidayPresetsField,
   HolidayScheduleField,
   DirListDragDropField,
-  DirListOptionsField
+  DirListOptionsField,
+  // Additional field types from original vision
+  ScheduleField,
+  TagSelectField,
+  TagDisplayField,
+  TagMultiSelectField,
+  MediaInfoDisplayField,
+  MediaDisplayField,
+  DirPickerField,
+  PosterField
 } from './_fieldPlaceholders.jsx';

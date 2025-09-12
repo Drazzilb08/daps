@@ -177,6 +177,271 @@
     font-weight: var(--font-weight-medium);
   }
 
+  /* Compositional Form System Progress Section */
+  .composition-progress {
+    background: var(--color-surface-elevated);
+    border-radius: var(--radius-2);
+    padding: var(--space-4);
+    margin-bottom: var(--space-6);
+    border: 1px solid var(--color-primary);
+    position: relative;
+  }
+
+  .composition-progress::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-success));
+    border-radius: var(--radius-2) var(--radius-2) 0 0;
+  }
+
+  .composition-progress__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-1);
+    text-align: center;
+  }
+
+  .composition-progress__subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    text-align: center;
+    margin-bottom: var(--space-4);
+  }
+
+  /* Phase Progress */
+  .phase-progress {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-bottom: var(--space-5);
+  }
+
+  .phase-item {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    overflow: hidden;
+  }
+
+  .phase-item--completed {
+    border-color: var(--color-success);
+  }
+
+  .phase-item--pending {
+    border-color: var(--color-warning);
+  }
+
+  .phase-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3);
+    background: var(--color-surface-elevated);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .phase-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--space-8);
+    height: var(--space-8);
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+    font-weight: var(--font-weight-bold);
+    border-radius: var(--radius-full);
+  }
+
+  .phase-item--completed .phase-number {
+    background: var(--color-success);
+  }
+
+  .phase-item--pending .phase-number {
+    background: var(--color-warning);
+  }
+
+  .phase-title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    flex: 1;
+  }
+
+  .phase-status {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-1);
+  }
+
+  .phase-item--completed .phase-status {
+    background: var(--color-success-subtle, var(--color-surface));
+    color: var(--color-success-text, var(--color-text-primary));
+  }
+
+  .phase-item--pending .phase-status {
+    background: var(--color-warning-subtle, var(--color-surface));
+    color: var(--color-warning-text, var(--color-text-primary));
+  }
+
+  .phase-content {
+    padding: var(--space-3);
+  }
+
+  /* Primitives Grid */
+  .primitives-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: var(--space-2);
+  }
+
+  .primitive-item {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    padding: var(--space-2);
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+  }
+
+  .primitive-name {
+    font-family: var(--font-family-mono);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-primary);
+    min-width: 100px;
+  }
+
+  .primitive-description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    flex: 1;
+  }
+
+  .primitive-status {
+    font-size: var(--font-size-sm);
+  }
+
+  /* Composition Stats */
+  .composition-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+  }
+
+  .stat {
+    text-align: center;
+    padding: var(--space-2);
+    background: var(--color-surface-elevated);
+    border-radius: var(--radius-1);
+  }
+
+  .stat-number {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-1);
+  }
+
+  .stat-label {
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+  }
+
+  /* Phase Goals List */
+  .phase-goals {
+    margin: var(--space-2) 0 0 var(--space-4);
+    color: var(--color-text-secondary);
+  }
+
+  .phase-goals li {
+    margin-bottom: var(--space-1);
+    font-size: var(--font-size-sm);
+  }
+
+  /* Implementation Analysis */
+  .implementation-analysis {
+    border-top: 1px solid var(--color-border);
+    padding-top: var(--space-4);
+  }
+
+  .implementation-analysis h4 {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-3);
+    text-align: center;
+  }
+
+  .analysis-grid {
+    display: grid;
+    gap: var(--space-4);
+  }
+
+  @media (min-width: 768px) {
+    .analysis-grid {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .analysis-card {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-2);
+    padding: var(--space-3);
+  }
+
+  .analysis-card--problem {
+    border-color: var(--color-error);
+  }
+
+  .analysis-card--solution {
+    border-color: var(--color-success);
+  }
+
+  .card-title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    margin-bottom: var(--space-3);
+  }
+
+  .analysis-card--problem .card-title {
+    color: var(--color-error-text, var(--color-text-primary));
+  }
+
+  .analysis-card--solution .card-title {
+    color: var(--color-success-text, var(--color-text-primary));
+  }
+
+  .issue-list,
+  .benefit-list {
+    margin: 0 0 var(--space-3) var(--space-4);
+  }
+
+  .issue-list li,
+  .benefit-list li {
+    margin-bottom: var(--space-1);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+  }
+
+  .impact {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    background: var(--color-surface-elevated);
+    padding: var(--space-2);
+    border-radius: var(--radius-1);
+    margin-top: var(--space-2);
+  }
+
   /* Settings sections container */
   .settings-sections {
     display: flex;

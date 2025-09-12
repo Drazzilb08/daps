@@ -7,7 +7,7 @@
   }
 
   /* Error Test Page Header */
-  .error-test-page .page-header {
+  .error-test-page-header {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -18,37 +18,37 @@
     border: 1px solid var(--color-border);
   }
 
-  .error-test-page .header-content h1 {
+  .error-test-page-header .header-content h1 {
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-text-primary);
     margin: 0 0 var(--space-2) 0;
   }
 
-  .error-test-page .header-content p {
+  .error-test-page-header .header-content p {
     font-size: var(--font-size-lg);
     color: var(--color-text-secondary);
     margin: 0;
   }
 
-  .error-test-page .header-stats {
+  .error-test-page-header .header-stats {
     display: flex;
     gap: var(--space-3);
   }
 
-  .error-test-page .stat {
+  .error-test-page-header .stat {
     text-align: center;
     min-width: 80px;
   }
 
-  .error-test-page .stat-value {
+  .error-test-page-header .stat-value {
     display: block;
     font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-primary);
   }
 
-  .error-test-page .stat-label {
+  .error-test-page-header .stat-label {
     display: block;
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
@@ -746,7 +746,7 @@
       gap: var(--space-3);
     }
 
-    .error-test-page .page-header {
+    .error-test-page-header {
       flex-direction: column;
       gap: var(--space-3);
       align-items: stretch;

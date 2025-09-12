@@ -51,6 +51,16 @@
     outline-offset: var(--focus-ring-offset);
   }
 
+  /* Universal click effect for all buttons */
+  button:active:not(:disabled),
+  [role="button"]:active:not(:disabled),
+  input[type="button"]:active:not(:disabled),
+  input[type="submit"]:active:not(:disabled),
+  input[type="reset"]:active:not(:disabled) {
+    transform: scale(0.98) !important;
+    transition: transform 0.1s ease !important;
+  }
+
   /* Disabled state */
   .btn:disabled {
     opacity: 0.6;
@@ -277,6 +287,15 @@
   @media (prefers-reduced-motion: reduce) {
     .btn {
       transition: none;
+    }
+    
+    /* Disable button click transforms for reduced motion */
+    button:active:not(:disabled),
+    [role="button"]:active:not(:disabled),
+    input[type="button"]:active:not(:disabled),
+    input[type="submit"]:active:not(:disabled),
+    input[type="reset"]:active:not(:disabled) {
+      transform: none !important;
     }
     
     .btn--loading::after {

@@ -1,11 +1,12 @@
 /**
  * PasswordField Component
  * 
- * Password input field with show/hide toggle functionality.
+ * Password input field with show/hide toggle using primitive composition.
  * Follows standard field interface with additional security considerations.
  */
 
 import React, { useState, useCallback } from 'react';
+import { FieldWrapper, FieldLabel, FieldError, FieldDescription, InputBase } from '../primitives';
 
 /**
  * PasswordField component for password input
@@ -40,14 +41,15 @@ export const PasswordField = React.memo(({
   const inputValue = value || '';
   
   return (
-    <>
-      <label htmlFor={inputId} className="field-label">
-        {field.label}
-        {field.required && <span className="required-indicator">*</span>}
-      </label>
+    <FieldWrapper invalid={highlightInvalid}>
+      <FieldLabel 
+        htmlFor={inputId} 
+        label={field.label} 
+        required={field.required} 
+      />
       
       <div className="field-input-group">
-        <input
+        <InputBase
           id={inputId}
           type={showPassword ? 'text' : 'password'}
           name={field.key}
@@ -58,14 +60,11 @@ export const PasswordField = React.memo(({
           maxLength={field.maxLength}
           minLength={field.minLength}
           onChange={handleChange}
-          className={`field-input field-input--password ${highlightInvalid ? 'field-input--invalid' : ''}`}
-          aria-describedby={
-            (field.description || errorMessage) 
-              ? `${inputId}-description ${inputId}-error`.trim() 
-              : undefined
-          }
-          aria-invalid={highlightInvalid}
+          className="field-input--password"
+          invalid={highlightInvalid}
           autoComplete="current-password"
+          aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
+          aria-invalid={highlightInvalid}
         />
         
         {inputValue && (
@@ -92,18 +91,15 @@ export const PasswordField = React.memo(({
         )}
       </div>
       
-      {field.description && (
-        <div id={`${inputId}-description`} className="field-description">
-          {field.description}
-        </div>
-      )}
-      
-      {errorMessage && (
-        <div id={`${inputId}-error`} className="field-error" role="alert">
-          {errorMessage}
-        </div>
-      )}
-    </>
+      <FieldDescription 
+        id={`${inputId}-desc`} 
+        description={field.description} 
+      />
+      <FieldError 
+        id={`${inputId}-error`} 
+        message={errorMessage} 
+      />
+    </FieldWrapper>
   );
 });
 

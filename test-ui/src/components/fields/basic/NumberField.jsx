@@ -1,11 +1,12 @@
 /**
  * NumberField Component
  * 
- * Number input field with +/- buttons only (no text input allowed).
+ * Number input field with +/- buttons using primitive composition.
  * Prevents text input and forces button-only interaction for better UX.
  */
 
 import React, { useCallback } from 'react';
+import { FieldWrapper, FieldLabel, FieldError, FieldDescription, InputBase } from '../primitives';
 
 export const NumberField = React.memo(({
   field,
@@ -57,11 +58,12 @@ export const NumberField = React.memo(({
   const incrementDisabled = disabled || (max !== undefined && numValue >= max);
   
   return (
-    <>
-      <label htmlFor={inputId} className="field-label">
-        {field.label}
-        {field.required && <span className="required-indicator">*</span>}
-      </label>
+    <FieldWrapper invalid={highlightInvalid}>
+      <FieldLabel 
+        htmlFor={inputId} 
+        label={field.label} 
+        required={field.required} 
+      />
       
       <div className="number-field-container">
         <button
@@ -75,7 +77,7 @@ export const NumberField = React.memo(({
           −
         </button>
         
-        <input
+        <InputBase
           id={inputId}
           type="text"
           name={field.key}
@@ -83,14 +85,11 @@ export const NumberField = React.memo(({
           onChange={handleInputChange}
           disabled={disabled}
           required={field.required}
-          className={`field-input number-field-display ${highlightInvalid ? 'field-input--invalid' : ''}`}
-          aria-describedby={
-            (field.description || errorMessage) 
-              ? `${inputId}-description ${inputId}-error`.trim() 
-              : undefined
-          }
-          aria-invalid={highlightInvalid}
           placeholder={field.placeholder}
+          invalid={highlightInvalid}
+          className="number-field-display"
+          aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
+          aria-invalid={highlightInvalid}
         />
         
         <button
@@ -105,18 +104,15 @@ export const NumberField = React.memo(({
         </button>
       </div>
       
-      {field.description && (
-        <div id={`${inputId}-description`} className="field-description">
-          {field.description}
-        </div>
-      )}
-      
-      {errorMessage && (
-        <div id={`${inputId}-error`} className="field-error" role="alert">
-          {errorMessage}
-        </div>
-      )}
-    </>
+      <FieldDescription 
+        id={`${inputId}-desc`} 
+        description={field.description} 
+      />
+      <FieldError 
+        id={`${inputId}-error`} 
+        message={errorMessage} 
+      />
+    </FieldWrapper>
   );
 });
 

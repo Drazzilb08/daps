@@ -1,10 +1,11 @@
 /**
  * TextareaField Component
  * 
- * Multi-line text input field with auto-resize support.
+ * Multi-line text input field using primitive composition.
  */
 
 import React, { useCallback } from 'react';
+import { FieldWrapper, FieldLabel, FieldError, FieldDescription, TextareaBase } from '../primitives';
 
 export const TextareaField = React.memo(({
   field,
@@ -19,19 +20,18 @@ export const TextareaField = React.memo(({
   }, [onChange]);
 
   const inputId = `field-${field.key}`;
-  const inputValue = value || '';
   
   return (
-    <>
-      <label htmlFor={inputId} className="field-label">
-        {field.label}
-        {field.required && <span className="required-indicator">*</span>}
-      </label>
-      
-      <textarea
+    <FieldWrapper invalid={highlightInvalid}>
+      <FieldLabel 
+        htmlFor={inputId} 
+        label={field.label} 
+        required={field.required} 
+      />
+      <TextareaBase
         id={inputId}
         name={field.key}
-        value={inputValue}
+        value={value || ''}
         placeholder={field.placeholder}
         disabled={disabled}
         required={field.required}
@@ -39,27 +39,19 @@ export const TextareaField = React.memo(({
         minLength={field.minLength}
         rows={field.rows || 4}
         onChange={handleChange}
-        className={`field-textarea ${highlightInvalid ? 'field-textarea--invalid' : ''}`}
-        aria-describedby={
-          (field.description || errorMessage) 
-            ? `${inputId}-description ${inputId}-error`.trim() 
-            : undefined
-        }
+        invalid={highlightInvalid}
+        aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
         aria-invalid={highlightInvalid}
       />
-      
-      {field.description && (
-        <div id={`${inputId}-description`} className="field-description">
-          {field.description}
-        </div>
-      )}
-      
-      {errorMessage && (
-        <div id={`${inputId}-error`} className="field-error" role="alert">
-          {errorMessage}
-        </div>
-      )}
-    </>
+      <FieldDescription 
+        id={`${inputId}-desc`} 
+        description={field.description} 
+      />
+      <FieldError 
+        id={`${inputId}-error`} 
+        message={errorMessage} 
+      />
+    </FieldWrapper>
   );
 });
 

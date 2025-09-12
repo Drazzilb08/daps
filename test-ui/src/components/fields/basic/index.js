@@ -9,3 +9,5 @@ export { TextField } from './TextField.jsx';
 export { PasswordField } from './PasswordField.jsx';
 export { NumberField } from './NumberField.jsx';
 export { TextareaField } from './TextareaField.jsx';
+export { FloatField } from './FloatField.jsx';
+export { HiddenField } from './HiddenField.jsx';

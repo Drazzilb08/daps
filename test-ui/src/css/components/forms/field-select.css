@@ -12,15 +12,25 @@
     font-size: var(--font-size-base);
     font-family: var(--font-family-sans);
     line-height: var(--line-height-normal);
-    
-    background: var(--color-input-bg);
     color: var(--color-input-text);
-    border: var(--input-border-width) solid var(--color-input-border);
     border-radius: var(--radius-2);
-    
     appearance: none;
     cursor: pointer;
     transition: all var(--transition-fast);
+  }
+
+  /* Light theme styling - consistent borders with checkbox pattern */
+  [data-theme="light"] .field-select {
+    background: var(--color-input-bg);
+    border: 1px solid var(--color-text-secondary);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Dark theme styling - consistent borders with checkbox pattern */
+  [data-theme="dark"] .field-select {
+    background: var(--color-input-bg);
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 
   /* Select wrapper for custom arrow */
@@ -59,14 +69,10 @@
     outline: none;
     border-color: var(--color-primary);
     background-color: var(--color-input-bg-focus);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-alpha-20);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
   }
 
-  /* Hover state - consistent with textarea field pattern */
-  .field-select:hover:not(:focus):not(:disabled) {
-    border-color: var(--color-input-border-hover);
-    background-color: var(--color-input-bg-hover);
-  }
+  /* No hover states - removed per requirements to match input and textarea fields */
 
   .field-select:disabled {
     background-color: var(--color-input-bg-disabled);
@@ -77,19 +83,6 @@
   }
 
   /* Validation states now handled by .is-invalid and .is-valid utilities */
-  /* Component-specific validation styling if needed */
-  .field-select.is-invalid {
-    /* Additional select-specific invalid styling can go here */
-  }
-
-  .field-select.is-valid {
-    /* Additional select-specific valid styling can go here */
-  }
-
-  /* Legacy validation classes for consistency */
-  .field-select--invalid {
-    /* Additional select-specific invalid styling can go here */
-  }
 
   .field-select option {
     background: var(--color-input-bg);

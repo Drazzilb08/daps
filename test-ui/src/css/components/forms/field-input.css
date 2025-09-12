@@ -14,13 +14,23 @@
     font-size: var(--font-size-base); /* 16px minimum to prevent mobile zoom */
     font-family: var(--font-family-sans);
     line-height: var(--line-height-normal);
-    
-    background: var(--color-input-bg);
     color: var(--color-input-text);
-    border: var(--input-border-width) solid var(--color-input-border);
     border-radius: var(--radius-2);
-    
     transition: all var(--transition-fast);
+  }
+
+  /* Light theme styling - consistent borders with checkbox pattern */
+  [data-theme="light"] .field-input {
+    background: var(--color-input-bg);
+    border: 1px solid var(--color-text-secondary);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Dark theme styling - consistent borders with checkbox pattern */
+  [data-theme="dark"] .field-input {
+    background: var(--color-input-bg);
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 
   /* Focus state */
@@ -28,7 +38,7 @@
     outline: none;
     border-color: var(--color-primary);
     background: var(--color-input-bg-focus);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-alpha-20);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
   }
 
   /* No hover states - removed per requirements */
@@ -92,7 +102,6 @@
 
   .field-input-addon {
     background: var(--color-primary);
-    border: var(--input-border-width) solid var(--color-primary);
     border-left: none;
     border-radius: 0 var(--radius-2) var(--radius-2) 0;
     padding: var(--input-padding-y) var(--input-padding-x);
@@ -104,20 +113,44 @@
     cursor: pointer;
   }
 
+  /* Light theme styling for addon - matches checkbox pattern */
+  [data-theme="light"] .field-input-addon {
+    border: 1px solid var(--color-primary);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Dark theme styling for addon - matches checkbox pattern */
+  [data-theme="dark"] .field-input-addon {
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
   /* Password input group container */
   .field-input-group {
     display: flex;
     align-items: stretch;
-    background: var(--color-input-bg);
-    border: var(--input-border-width) solid var(--color-input-border);
     border-radius: var(--radius-2);
     overflow: hidden;
     transition: all var(--transition-fast);
   }
 
+  /* Light theme styling for input group - consistent borders with checkbox pattern */
+  [data-theme="light"] .field-input-group {
+    background: var(--color-input-bg);
+    border: 1px solid var(--color-text-secondary);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Dark theme styling for input group - consistent borders with checkbox pattern */
+  [data-theme="dark"] .field-input-group {
+    background: var(--color-input-bg);
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
   .field-input-group:focus-within {
     border-color: var(--color-primary);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-alpha-20);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
   }
 
   .field-input-group .field-input {
@@ -202,11 +235,23 @@
   .number-field-container {
     display: flex;
     align-items: stretch;
-    background: var(--color-input-bg);
-    border: var(--input-border-width) solid var(--color-input-border);
     border-radius: var(--radius-2);
     overflow: hidden;
     transition: all var(--transition-fast);
+  }
+
+  /* Light theme styling for number field container - consistent borders with checkbox pattern */
+  [data-theme="light"] .number-field-container {
+    background: var(--color-input-bg);
+    border: 1px solid var(--color-text-secondary);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Dark theme styling for number field container - consistent borders with checkbox pattern */
+  [data-theme="dark"] .number-field-container {
+    background: var(--color-input-bg);
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 
   .number-field-container:focus-within {

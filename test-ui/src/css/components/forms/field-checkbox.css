@@ -57,14 +57,14 @@
 
   /* Light theme styling */
   [data-theme="light"] .checkbox-field__indicator {
-    background: #ffffff;
+    background: var(--color-input-bg);
     border: 1px solid var(--color-text-secondary);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
 
   /* Dark theme styling */
   [data-theme="dark"] .checkbox-field__indicator {
-    background: #ffffff;
+    background: var(--color-primary-text);
     border: none;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
@@ -78,15 +78,14 @@
 
   /* Checkmark */
   .checkbox-field:not(.checkbox-field--disabled) .checkbox-field__input input:checked + .checkbox-field__indicator::after {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
     font-weight: bold;
     color: var(--color-primary-text);
   }
 
-  /* Focus state */
+  /* Focus state - consistent box-shadow pattern with input, select, and textarea */
   .checkbox-field:focus-within .checkbox-field__indicator {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
   }
 
   /* Content area */
@@ -132,14 +131,14 @@
 
   /* Light theme - basic checkbox */
   [data-theme="light"] input[type="checkbox"] {
-    background: #ffffff;
+    background: var(--color-input-bg);
     border: 1px solid var(--color-text-secondary);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
 
   /* Dark theme - basic checkbox */
   [data-theme="dark"] input[type="checkbox"] {
-    background: #ffffff;
+    background: var(--color-input-bg);
     border: none;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
@@ -152,19 +151,17 @@
 
   /* Checkmark for basic checkbox */
   input[type="checkbox"]:checked::after {
-    content: '';
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
     color: var(--color-primary-text);
-    font-size: 12px;
+    font-size: var(--font-size-xs);
     font-weight: bold;
   }
 
-  /* Focus state for basic checkbox */
+  /* Focus state for basic checkbox - consistent box-shadow pattern */
   input[type="checkbox"]:focus {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
   }
 }

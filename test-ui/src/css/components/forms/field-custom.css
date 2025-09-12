@@ -37,7 +37,7 @@
     border: 1px solid var(--color-input-border);
     border-radius: var(--radius-2);
     resize: vertical;
-    transition: all var(--transition-fast);
+    transition: none;
   }
 
   .field-textarea--json:focus {
@@ -45,12 +45,9 @@
     border-color: var(--color-primary);
     background: var(--color-input-bg-focus);
     box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
   }
 
-  .field-textarea--json:hover:not(:focus) {
-    border-color: var(--color-input-border-hover);
-    background: var(--color-input-bg-hover);
-  }
 
   .json-validation-indicator {
     position: absolute;

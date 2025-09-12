@@ -14,14 +14,26 @@
     font-size: var(--font-size-base);
     font-family: var(--font-family-sans);
     line-height: var(--line-height-normal);
-    
-    background: var(--color-input-bg);
     color: var(--color-input-text);
-    border: var(--input-border-width) solid var(--color-input-border);
     border-radius: var(--radius-2);
-    
     resize: vertical;
-    transition: all var(--transition-fast);
+    transition: none;
+  }
+
+  /* Remove transition override - now consistent with input and select fields */
+
+  /* Light theme styling - consistent borders with checkbox pattern */
+  [data-theme="light"] .field-textarea {
+    background: var(--color-input-bg);
+    border: 1px solid var(--color-text-secondary);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Dark theme styling - consistent borders with checkbox pattern */
+  [data-theme="dark"] .field-textarea {
+    background: var(--color-input-bg);
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 
   /* Focus state */
@@ -29,14 +41,10 @@
     outline: none;
     border-color: var(--color-primary);
     background: var(--color-input-bg-focus);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-alpha-20);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
   }
 
-  /* Hover state */
-  .field-textarea:hover:not(:focus):not(:disabled) {
-    border-color: var(--color-input-border-hover);
-    background: var(--color-input-bg-hover);
-  }
 
   /* Placeholder styling */
   .field-textarea::placeholder {
@@ -45,14 +53,6 @@
   }
 
   /* Validation states now handled by .is-invalid and .is-valid utilities */
-  /* Component-specific validation styling if needed */
-  .field-textarea.is-invalid {
-    /* Additional textarea-specific invalid styling can go here */
-  }
-
-  .field-textarea.is-valid {
-    /* Additional textarea-specific valid styling can go here */
-  }
 
   /* Disabled state */
   .field-textarea:disabled {
@@ -74,11 +74,6 @@
   /* Component-specific size adjustments */
   .field-textarea.input-sm {
     min-height: var(--input-height);
-    /* Additional small textarea styling can go here */
-  }
-
-  .field-textarea.input-lg {
-    /* Additional large textarea styling handled by utility */
   }
 
   /* Auto-resize variant */
@@ -139,9 +134,20 @@
   /* Syntax highlighting container for JSON */
   .field-textarea-json-wrapper {
     position: relative;
-    border: var(--input-border-width) solid var(--color-input-border);
     border-radius: var(--radius-2);
     overflow: hidden;
+  }
+
+  /* Light theme styling for JSON wrapper - matches checkbox pattern exactly */
+  [data-theme="light"] .field-textarea-json-wrapper {
+    border: 1px solid var(--color-text-secondary);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  /* Dark theme styling for JSON wrapper - matches checkbox pattern exactly */
+  [data-theme="dark"] .field-textarea-json-wrapper {
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 
   .field-textarea-json-wrapper .field-textarea {
@@ -202,10 +208,6 @@
     z-index: var(--z-dropdown);
   }
 
-  /* Resize handle styling */
-  .field-textarea::-webkit-resizer {
-    background: var(--color-input-border);
-  }
 
   /* Scrollbar styling for webkit browsers */
   .field-textarea::-webkit-scrollbar {
@@ -221,9 +223,6 @@
     border-radius: var(--radius-1);
   }
 
-  .field-textarea::-webkit-scrollbar-thumb:hover {
-    background: var(--color-input-border-hover);
-  }
 
   /* High contrast mode support */
   @media (prefers-contrast: high) {

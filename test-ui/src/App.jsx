@@ -98,7 +98,7 @@ const App = () => {
                       <Route path="logs" element={<div className="content-layout"><h1>System Logs</h1><p>View system logs and debugging information</p></div>} />
                       
                       {/* Development Routes */}
-                      <Route path="dev/error-test" element={
+                      <Route path="dev/error" element={
                         <PageErrorBoundary pageName="Error Test" pageDescription="Error handling demonstration page">
                           <ErrorTestPage />
                         </PageErrorBoundary>
@@ -108,12 +108,12 @@ const App = () => {
                           <FieldTestPage />
                         </PageErrorBoundary>
                       } />
-                      <Route path="dev/api-test" element={
+                      <Route path="dev/api" element={
                         <PageErrorBoundary pageName="API Test" pageDescription="API Testing">
                           <ApiTestPage />
                         </PageErrorBoundary>
                       } />
-                      <Route path="dev/primitives-test" element={
+                      <Route path="dev/primitive" element={
                         <PageErrorBoundary pageName="Form Primitives Test" pageDescription="Testing individual form primitive components">
                           <PrimitivesTestPage />
                         </PageErrorBoundary>

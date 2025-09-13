@@ -73,10 +73,7 @@
         justify-content: center;
     }
 
-    /* Error boundary buttons now extend unified button system */
-    .error-boundary__button {
-        /* Remove all custom styling - buttons will use unified .btn classes */
-    }
+    /* Error boundary buttons use unified button system */
 
 
     .error-boundary__button-icon {
@@ -199,10 +196,7 @@
         margin-bottom: var(--space-5);
     }
 
-    /* Page error boundary buttons now extend unified button system */
-    .page-error-boundary__button {
-        /* Remove all custom styling - buttons will use unified .btn classes */
-    }
+    /* Page error boundary buttons use unified button system */
 
 
     .page-error-boundary__button-icon {
@@ -329,10 +323,7 @@
         flex-wrap: wrap;
     }
 
-    /* Feature error boundary buttons now extend unified button system */
-    .feature-error-boundary__button {
-        /* Remove all custom styling - buttons will use unified .btn classes */
-    }
+    /* Feature error boundary buttons use unified button system */
 
 
     /* Skipped state styling */
@@ -430,12 +421,7 @@
         flex-wrap: wrap;
     }
 
-    .feature-error-boundary__overlay-actions .feature-error-boundary__button {
-        min-height: 44px;
-        padding: var(--space-3) var(--space-4);
-        font-size: var(--font-size-base);
-        font-weight: var(--font-weight-semibold);
-    }
+    /* Overlay buttons inherit from unified button system, no custom styling needed */
 
     /* Disabled state styling */
     .feature-error-boundary--disabled {
@@ -467,14 +453,14 @@
 
     /* Degraded notice styling */
     .feature-error-boundary--degraded {
-        background: var(--color-warning-bg);
+        background: var(--color-warning-opacity-20);
         border: 1px solid var(--color-warning);
         border-radius: var(--radius-2);
         margin: var(--space-2) 0 var(--space-1) 0;
         padding: var(--space-2);
         text-align: center;
         font-size: var(--font-size-xs);
-        color: var(--color-warning-text);
+        color: var(--color-warning);
         font-weight: var(--font-weight-medium);
     }
 

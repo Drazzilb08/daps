@@ -61,6 +61,7 @@
 @import './components/search/search-toolbar.css';   /* Search toolbar */
 
 /* Error & Testing Components */
+@import './components/error/error-boundary.css';  /* Error boundary styles */
 @import './components/error/error-test-page.css';
 @import './components/error/global-error.css';
 

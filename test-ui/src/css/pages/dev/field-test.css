@@ -1,8 +1,8 @@
 /**
- * Settings Test Page Styles - Composable Design System
+ * Field Test Page Styles - Clean Development Testing Interface
  * 
- * Page-specific styles for the DAPS Settings Test page that showcases
- * real DAPS configuration using the SETTINGS_SCHEMA.
+ * Page-specific styles for the DAPS Field Test page focused on
+ * field development and testing workflow.
  * 
  * This file contains only truly page-specific styling that cannot be generalized.
  * Most layout and component styles are achieved through composable utility classes.
@@ -10,6 +10,12 @@
 
 @layer pages {
   /* Main page container */
+  .field-test-page {
+    max-width: var(--content-max-width, 1200px);
+    margin: 0 auto;
+    padding: var(--space-4);
+  }
+  
   .daps-settings-page {
     max-width: var(--content-max-width, 1200px);
     margin: 0 auto;
@@ -17,6 +23,13 @@
   }
 
   /* Page header section */
+  .field-test-page__header {
+    text-align: center;
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+  }
+  
   .daps-settings-header {
     text-align: center;
     margin-bottom: var(--space-6);
@@ -24,6 +37,13 @@
     border-bottom: 1px solid var(--color-border);
   }
 
+  .page-title {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-2);
+  }
+  
   .daps-settings-title {
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
@@ -31,6 +51,13 @@
     margin-bottom: var(--space-2);
   }
 
+  .page-description {
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+    max-width: 60ch;
+    margin: 0 auto var(--space-4);
+  }
+  
   .daps-settings-description {
     font-size: var(--font-size-base);
     color: var(--color-text-secondary);
@@ -45,7 +72,128 @@
     margin-top: var(--space-4);
   }
 
-  /* Field completion status section */
+  /* Field status overview section */
+  .field-status-overview {
+    background: var(--color-surface-elevated);
+    border-radius: var(--radius-2);
+    padding: var(--space-4);
+    margin-bottom: var(--space-6);
+    border: 1px solid var(--color-border);
+  }
+  
+  .field-status-overview__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-3);
+    text-align: center;
+  }
+  
+  /* Status summary metrics */
+  .status-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+  }
+  
+  .status-metric {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    padding: var(--space-3);
+    text-align: center;
+  }
+  
+  .status-metric--working {
+    border-color: var(--color-success);
+    background: var(--color-success-subtle, var(--color-surface));
+  }
+  
+  .status-metric--placeholder {
+    border-color: var(--color-error);
+    background: var(--color-error-subtle, var(--color-surface));
+  }
+  
+  .status-metric--progress {
+    border-color: var(--color-primary);
+    background: var(--color-primary-subtle, var(--color-surface));
+  }
+  
+  .metric-number {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-1);
+  }
+  
+  .metric-label {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+  }
+  
+  /* Field type lists */
+  .field-type-lists {
+    display: grid;
+    gap: var(--space-4);
+  }
+  
+  @media (min-width: 768px) {
+    .field-type-lists {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  
+  .field-type-group {
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-1);
+    padding: var(--space-3);
+  }
+  
+  .group-title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    margin-bottom: var(--space-2);
+  }
+  
+  .field-type-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-1);
+  }
+  
+  .field-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-1);
+    font-size: var(--font-size-sm);
+    font-family: var(--font-mono);
+    border: 1px solid;
+  }
+  
+  .field-badge--working {
+    border-color: var(--color-success);
+    background: var(--color-success-subtle, var(--color-surface));
+    color: var(--color-success-text, var(--color-text-primary));
+  }
+  
+  .field-badge--placeholder {
+    border-color: var(--color-error);
+    background: var(--color-error-subtle, var(--color-surface));
+    color: var(--color-error-text, var(--color-text-primary));
+  }
+  
+  .field-badge--more {
+    border-color: var(--color-border);
+    background: var(--color-surface-elevated);
+    color: var(--color-text-secondary);
+    font-style: italic;
+  }
+  
+  /* Field completion status section (legacy) */
   .field-completion-status {
     background: var(--color-surface-elevated);
     border-radius: var(--radius-2);
@@ -838,4 +986,405 @@
   .unapproved-fields-testing-demo .approval-section {
     padding: var(--space-3);
   }
+  
+  /* Mobile responsive for new field test interface */
+  .field-test-page {
+    padding: var(--space-3);
+  }
+  
+  .testing-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .testing-stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .testing-controls {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  
+  .filter-controls,
+  .field-type-selector {
+    width: 100%;
+  }
+  
+  .filter-select,
+  .field-type-select {
+    width: 100%;
+    min-width: auto;
+  }
+  
+  .config-controls {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  
+  .approval-actions {
+    flex-direction: column;
+  }
+  
+  .approval-btn {
+    width: 100%;
+  }
+  
+  .quick-action-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .quick-action-btn {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+/* Field Testing Section */
+.field-testing-section {
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-2);
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+  border: 1px solid var(--color-border);
+}
+
+.testing-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.testing-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.testing-stats {
+  display: flex;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.stat {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  background: var(--color-surface);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-1);
+  border: 1px solid var(--color-border);
+}
+
+/* Testing Controls */
+.testing-controls {
+  display: flex;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.filter-controls,
+.field-type-selector {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.filter-controls label,
+.field-type-selector label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+}
+
+.filter-select,
+.field-type-select {
+  min-height: var(--touch-target-min);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-1);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  min-width: 200px;
+}
+
+.filter-select:focus,
+.field-type-select:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+  border-color: var(--color-primary);
+}
+
+/* Field Tester Component */
+.field-tester-container {
+  margin-bottom: var(--space-4);
+}
+
+.field-tester {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-2);
+  padding: var(--space-4);
+}
+
+.field-tester--placeholder {
+  opacity: 0.7;
+  border-style: dashed;
+}
+
+.field-tester__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-4);
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.field-tester__title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  margin: 0;
+  font-family: var(--font-mono);
+}
+
+.field-tester__status {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.status-badge {
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-1);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge--placeholder {
+  background: var(--color-error-subtle, var(--color-surface));
+  color: var(--color-error-text, var(--color-text-primary));
+  border: 1px solid var(--color-error);
+}
+
+.status-badge--working {
+  background: var(--color-warning-subtle, var(--color-surface));
+  color: var(--color-warning-text, var(--color-text-primary));
+  border: 1px solid var(--color-warning);
+}
+
+.status-badge--approved {
+  background: var(--color-success-subtle, var(--color-surface));
+  color: var(--color-success-text, var(--color-text-primary));
+  border: 1px solid var(--color-success);
+}
+
+/* Field Configuration Section */
+.field-tester__config {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3);
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-1);
+  border: 1px solid var(--color-border);
+}
+
+.config-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.config-controls {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.config-control {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  cursor: pointer;
+}
+
+.config-control input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+}
+
+/* Field Test Area */
+.field-tester__test-area {
+  margin-bottom: var(--space-4);
+  padding: var(--space-3);
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-1);
+  border: 1px solid var(--color-border);
+}
+
+.test-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+/* Approval Section */
+.field-tester__approval {
+  padding: var(--space-3);
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-1);
+  border: 1px solid var(--color-primary);
+}
+
+.approval-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.approval-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.approval-btn {
+  min-height: var(--touch-target-min);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid;
+  border-radius: var(--radius-1);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.approval-btn--approve {
+  border-color: var(--color-success);
+  background: var(--color-success);
+  color: var(--color-success-text, white);
+}
+
+.approval-btn--approve:hover:not(:disabled) {
+  background: var(--color-success-hover, var(--color-success));
+}
+
+.approval-btn--approve.active {
+  background: var(--color-success-subtle, var(--color-surface));
+  color: var(--color-success-text, var(--color-text-primary));
+}
+
+.approval-btn--disapprove {
+  border-color: var(--color-warning);
+  background: var(--color-warning);
+  color: var(--color-warning-text, white);
+}
+
+.approval-btn--disapprove:hover:not(:disabled) {
+  background: var(--color-warning-hover, var(--color-warning));
+}
+
+.approval-btn--unapprove {
+  border-color: var(--color-error);
+  background: var(--color-error);
+  color: var(--color-error-text, white);
+}
+
+.approval-btn--unapprove:hover:not(:disabled) {
+  background: var(--color-error-hover, var(--color-error));
+}
+
+.approval-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Placeholder Field Display */
+.field-tester__placeholder {
+  padding: var(--space-4);
+  text-align: center;
+  color: var(--color-text-secondary);
+  font-style: italic;
+}
+
+/* Quick Actions Section */
+.quick-actions {
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+}
+
+.quick-actions-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+  text-align: center;
+}
+
+.quick-action-buttons {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.quick-action-btn {
+  min-height: var(--touch-target-min);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-1);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.quick-action-btn:hover {
+  background: var(--color-surface-hover, var(--color-surface-elevated));
+  border-color: var(--color-border-hover, var(--color-border));
+}
+
+.quick-action-btn--approve-all {
+  border-color: var(--color-success);
+  color: var(--color-success-text, var(--color-text-primary));
+}
+
+.quick-action-btn--approve-all:hover {
+  background: var(--color-success-subtle, var(--color-surface-elevated));
+}
+
+.quick-action-btn--reset {
+  border-color: var(--color-error);
+  color: var(--color-error-text, var(--color-text-primary));
+}
+
+.quick-action-btn--reset:hover {
+  background: var(--color-error-subtle, var(--color-surface-elevated));
+}
+
+.quick-action-btn--show-unapproved {
+  border-color: var(--color-warning);
+  color: var(--color-warning-text, var(--color-text-primary));
+}
+
+.quick-action-btn--show-unapproved:hover {
+  background: var(--color-warning-subtle, var(--color-surface-elevated));
 }

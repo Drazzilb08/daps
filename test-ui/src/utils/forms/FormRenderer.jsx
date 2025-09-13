@@ -24,6 +24,7 @@ import { useToast } from '../../contexts/ToastContext.jsx';
  * @param {boolean} props.showSubmit - Show submit button (default: true)
  * @param {boolean} props.validateOnChange - Validate fields on change (default: false)
  * @param {string} props.layout - Form layout: 'vertical' | 'horizontal' (default: 'vertical')
+ * @param {Object} props.customErrors - Custom error messages for testing purposes
  */
 export const FormRenderer = React.memo(({
   schema,
@@ -35,7 +36,8 @@ export const FormRenderer = React.memo(({
   submitText = "Save",
   showSubmit = true,
   validateOnChange = false,
-  layout = 'vertical'
+  layout = 'vertical',
+  customErrors = {}
 }) => {
   const toast = useToast();
   
@@ -144,19 +146,19 @@ export const FormRenderer = React.memo(({
     }
     
     const fieldValue = values[field.key];
-    const fieldError = validationErrors[field.key] || errors[field.key];
+    const fieldError = customErrors[field.key] || validationErrors[field.key] || errors[field.key];
     const isInvalid = Boolean(fieldError);
     
     return (
       <div
         key={field.key}
-        className={`field-wrapper ${isInvalid ? 'field-wrapper--invalid' : ''} ${disabled ? 'field-wrapper--disabled' : ''}`}
+        className={`field-wrapper ${isInvalid ? 'field-wrapper--invalid' : ''} ${(disabled || field.disabled) ? 'field-wrapper--disabled' : ''}`}
       >
         <FieldComponent
           field={field}
           value={fieldValue}
           onChange={(value) => handleFieldChange(field.key, value)}
-          disabled={disabled || loading}
+          disabled={disabled || loading || field.disabled}
           highlightInvalid={isInvalid}
           errorMessage={fieldError}
         />

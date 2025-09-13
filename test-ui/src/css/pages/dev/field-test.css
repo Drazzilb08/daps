@@ -584,3 +584,258 @@
     padding: var(--space-3);
   }
 }
+
+/* Visual status indicators using proper design tokens */
+.summary-status {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: var(--space-1);
+}
+
+.summary-card--approved {
+  border-color: var(--color-success);
+  background: var(--color-success-opacity-20);
+}
+
+.summary-card--approved .summary-status {
+  color: var(--color-success);
+}
+
+.summary-card--pending {
+  border-color: var(--color-warning);
+  background: var(--color-warning-opacity-20);
+}
+
+.summary-card--pending .summary-status {
+  color: var(--color-warning);
+}
+
+.summary-card--not-implemented {
+  border-color: var(--color-error);
+  background: var(--color-error-opacity-20);
+}
+
+.summary-card--not-implemented .summary-status {
+  color: var(--color-error);
+}
+
+.summary-card--progress {
+  border-color: var(--color-primary);
+  background: var(--color-primary-opacity-20);
+}
+
+.summary-card--progress .summary-status {
+  color: var(--color-primary);
+}
+
+/* Field sections with subtle status indicators */
+.field-type-section--approved {
+  border-left: var(--space-1) solid var(--color-success);
+  background: var(--color-success-opacity-20);
+}
+
+.field-type-section--pending {
+  border-left: var(--space-1) solid var(--color-warning);
+  background: var(--color-warning-opacity-20);
+}
+
+.field-type-section--not-implemented {
+  border-left: var(--space-1) solid var(--color-error);
+  background: var(--color-error-opacity-20);
+}
+
+.field-type-description {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-3);
+  font-style: italic;
+}
+
+.field-type-badge {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.field-type-status {
+  font-size: var(--font-size-lg);
+  flex-shrink: 0;
+}
+
+.approval-action {
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border-radius: var(--radius-2);
+  border: 1px solid var(--color-warning);
+  font-size: var(--font-size-sm);
+}
+
+.approval-action a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  font-weight: var(--font-weight-medium);
+}
+
+.approval-action a:hover {
+  color: var(--color-primary-hover);
+}
+
+/* Unapproved Fields Testing Demo Styles */
+.unapproved-fields-testing-section {
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-2);
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+  border: 1px solid var(--color-border);
+}
+
+.unapproved-fields-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+  text-align: center;
+}
+
+.unapproved-fields-description {
+  font-size: var(--font-size-base);
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-bottom: var(--space-4);
+}
+
+.unapproved-fields-testing-demo .test-section {
+  margin-bottom: var(--space-6);
+}
+
+.unapproved-fields-testing-demo .field-status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.unapproved-fields-testing-demo .status-card--pending {
+  border-color: var(--color-warning);
+  background: var(--color-warning-opacity-20);
+}
+
+.unapproved-fields-testing-demo .status-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-2);
+  color: var(--color-text-primary);
+}
+
+.unapproved-fields-testing-demo .status-details {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.unapproved-fields-testing-demo .status-details li {
+  padding: var(--space-1) 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.unapproved-fields-testing-demo .test-form-section {
+  background: var(--color-surface);
+  padding: var(--space-4);
+  border-radius: var(--radius-2);
+  margin-bottom: var(--space-6);
+  border: 1px solid var(--color-border);
+}
+
+.unapproved-fields-testing-demo .testing-instructions {
+  margin-bottom: var(--space-6);
+}
+
+.unapproved-fields-testing-demo .instructions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--space-4);
+}
+
+.unapproved-fields-testing-demo .instruction-card {
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border-radius: var(--radius-1);
+  border: 1px solid var(--color-border);
+}
+
+.unapproved-fields-testing-demo .instruction-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-medium);
+  margin-bottom: var(--space-2);
+  color: var(--color-primary);
+}
+
+.unapproved-fields-testing-demo .instruction-list {
+  padding-left: var(--space-4);
+  margin: 0;
+}
+
+.unapproved-fields-testing-demo .instruction-list li {
+  padding: var(--space-1) 0;
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-normal);
+}
+
+.unapproved-fields-testing-demo .approval-section {
+  background: var(--color-surface);
+  padding: var(--space-4);
+  border-radius: var(--radius-2);
+  border: 2px solid var(--color-primary);
+}
+
+.unapproved-fields-testing-demo .approval-description {
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-3);
+}
+
+.unapproved-fields-testing-demo .approval-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.unapproved-fields-testing-demo .approval-field {
+  padding: var(--space-2);
+  background: var(--color-surface-elevated);
+  border-radius: var(--radius-1);
+  border: 1px solid var(--color-border);
+}
+
+.unapproved-fields-testing-demo .approval-field strong {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+.unapproved-fields-testing-demo .approval-field em {
+  color: var(--color-text-tertiary);
+  font-style: italic;
+  font-size: var(--font-size-sm);
+}
+
+/* Mobile responsive for unapproved fields testing */
+@media (max-width: 640px) {
+  .unapproved-fields-testing-demo .field-status-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .unapproved-fields-testing-demo .instructions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .unapproved-fields-testing-demo .test-form-section {
+    padding: var(--space-3);
+  }
+
+  .unapproved-fields-testing-demo .approval-section {
+    padding: var(--space-3);
+  }
+}

@@ -80,7 +80,7 @@
 @import './components/forms/field-checkbox.css';
 @import './components/forms/field-textarea.css';
 @import './components/forms/field-directory.css';
-@import './components/forms/field-color-list.css';
+/* @import './components/forms/field-color-list.css'; */
 @import './components/forms/field-custom.css';
 @import './components/forms/form-layout.css';
 @import './components/forms/form-renderer.css';  /* Schema-driven form renderer */
@@ -98,10 +98,9 @@
    ============================================================================= */
 @import './pages/dev/api-test.css';
 @import './pages/dev/form-test.css';
-@import './pages/dev/settings-test.css';
+@import './pages/dev/field-test.css';
 @import './pages/dev/primitives-test.css';  /* Form primitives demonstration page */
 @import './pages/dev/error-test.css';
-@import './pages/form-test-page.css';  /* Schema-driven form test page */
 
 
 /* =============================================================================

@@ -327,6 +327,28 @@
     box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
   }
 
+  /* Percentage field support - wrapper for input with suffix */
+  .number-field-input-wrapper {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .number-field-input-wrapper .number-field-display {
+    padding-right: var(--space-6); /* Space for % suffix */
+  }
+
+  .number-field-suffix {
+    position: absolute;
+    right: var(--space-2);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    pointer-events: none;
+    user-select: none;
+  }
+
   /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {
     .field-input,

@@ -9,7 +9,7 @@ import { PageErrorBoundary } from './components/error';
 import Layout from './components/Layout.jsx';
 import Splash from './pages/Splash.jsx';
 import ErrorTestPage from './pages/dev/ErrorTestPage.jsx';
-import SettingsTestPage from './pages/dev/SettingsTestPage.jsx';
+import FieldTestPage from './pages/dev/FieldTestPage.jsx';
 import ApiTestPage from './pages/dev/ApiTestPage.jsx';
 import PrimitivesTestPage from './pages/dev/PrimitivesTestPage.jsx';
 
@@ -103,9 +103,9 @@ const App = () => {
                           <ErrorTestPage />
                         </PageErrorBoundary>
                       } />
-                      <Route path="dev/settings" element={
+                      <Route path="dev/forms" element={
                         <PageErrorBoundary pageName="DAPS Settings" pageDescription="Real DAPS configuration settings page">
-                          <SettingsTestPage />
+                          <FieldTestPage />
                         </PageErrorBoundary>
                       } />
                       <Route path="dev/api-test" element={

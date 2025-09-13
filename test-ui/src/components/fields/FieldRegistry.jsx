@@ -9,8 +9,7 @@
 import * as BasicFields from './basic';
 import * as SelectFields from './select';
 import * as CustomFields from './custom';
-import * as ColorFields from './color';
-import * as DirFields from './dir';
+
 
 /**
  * Field type to component mapping
@@ -102,14 +101,18 @@ const UnknownFieldType = ({ field }) => {
   );
 };
 
-// Define which field types are actually working vs placeholders
-const WORKING_FIELD_TYPES = new Set([
-  // Basic input fields - WORKING ✅
-  'text', 'password', 'number', 'textarea', 'float', 'hidden',
-  // Selection fields - WORKING ✅
+// Define which field types are IMPLEMENTED (NOT necessarily approved/complete)
+// IMPORTANT: No field is "complete" until explicitly approved by user
+const IMPLEMENTED_FIELD_TYPES = new Set([
+  // Basic input fields - APPROVED ✅
+  'text', 'password', 'number', 'textarea',
+  // Basic input fields - AWAITING APPROVAL ⏳ 
+  'float', 'hidden',
+  // Selection fields - APPROVED ✅
   'check_box', 'dropdown',
-  // JSON field - WORKING ✅
+  // JSON field - APPROVED ✅
   'json'
+  // Note: color field was deleted due to being broken
 ]);
 
 /**
@@ -160,28 +163,30 @@ export class FieldRegistry {
   }
   
   /**
-   * Get only working field types (excludes placeholders)
-   * @returns {string[]} Array of actually working field type strings
+   * Get only implemented field types (excludes placeholders)
+   * CRITICAL: "Implemented" does NOT mean approved or complete - requires user approval
+   * @returns {string[]} Array of implemented (but not necessarily approved) field type strings
    */
   static getWorkingFieldTypes() {
-    return Array.from(WORKING_FIELD_TYPES);
+    return Array.from(IMPLEMENTED_FIELD_TYPES);
   }
   
   /**
-   * Get only placeholder field types
+   * Get only placeholder field types  
    * @returns {string[]} Array of placeholder field type strings
    */
   static getPlaceholderFieldTypes() {
-    return Object.keys(FIELD_COMPONENTS).filter(type => !WORKING_FIELD_TYPES.has(type));
+    return Object.keys(FIELD_COMPONENTS).filter(type => !IMPLEMENTED_FIELD_TYPES.has(type));
   }
   
   /**
-   * Check if a field type is actually working (not a placeholder)
-   * @param {string} fieldType - The field type string
-   * @returns {boolean} True if field type is working
+   * Check if a field type is implemented (not a placeholder)
+   * CRITICAL: "Implemented" does NOT mean approved or complete
+   * @param {string} fieldType - The field type string  
+   * @returns {boolean} True if field type is implemented (but not necessarily approved)
    */
   static isWorkingFieldType(fieldType) {
-    return WORKING_FIELD_TYPES.has(fieldType);
+    return IMPLEMENTED_FIELD_TYPES.has(fieldType);
   }
   
   /**

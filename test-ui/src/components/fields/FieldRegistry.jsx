@@ -103,16 +103,13 @@ const UnknownFieldType = ({ field }) => {
 
 // Define which field types are IMPLEMENTED (NOT necessarily approved/complete)
 // IMPORTANT: No field is "complete" until explicitly approved by user
+// TODO: This will be removed later it is only for development
 const IMPLEMENTED_FIELD_TYPES = new Set([
-  // Basic input fields - APPROVED ✅
   'text', 'password', 'number', 'textarea',
-  // Basic input fields - AWAITING APPROVAL ⏳ 
   'float', 'hidden',
-  // Selection fields - APPROVED ✅
   'check_box', 'dropdown',
-  // JSON field - APPROVED ✅
-  'json'
-  // Note: color field was deleted due to being broken
+  'json',
+  'color'
 ]);
 
 /**

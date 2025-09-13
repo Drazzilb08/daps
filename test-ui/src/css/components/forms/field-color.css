@@ -1,0 +1,82 @@
+/**
+ * Color Field Component Styles
+ * 
+ * Styles for color input field types with native color picker integration.
+ * Mobile-first design using DAPS design tokens.
+ * Follows "write once, use everywhere" philosophy.
+ */
+
+@layer components {
+  /* Color Field Styles - Mobile-first design with touch accessibility */
+  .color-field-input {
+    display: flex;
+    gap: var(--space-2);
+    align-items: stretch;
+  }
+
+  .color-field-picker {
+    /* Native color input on LEFT side */
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+    border: var(--input-border-width) solid var(--color-border);
+    border-radius: var(--radius-1);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    background: none;
+    padding: 0;
+  }
+
+  .color-field-picker:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    transform: translateY(calc(-1 * var(--space-1)));
+    box-shadow: var(--shadow-sm);
+  }
+
+  .color-field-picker:focus {
+    outline: var(--focus-ring-width) solid var(--color-primary);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  .color-field-picker:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  /* Native color input styling */
+  .color-field-picker::-webkit-color-swatch-wrapper {
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-1);
+  }
+
+  .color-field-picker::-webkit-color-swatch {
+    border: none;
+    border-radius: var(--radius-1);
+  }
+
+  /* Firefox color input styling */
+  .color-field-picker::-moz-color-swatch {
+    border: none;
+    border-radius: var(--radius-1);
+  }
+
+  .color-field-text {
+    /* Text input on RIGHT side */
+    flex: 1;
+    min-width: 0; /* Allow text input to shrink */
+    font-family: var(--font-family-mono);
+    letter-spacing: var(--letter-spacing-wide);
+  }
+
+  /* Mobile adjustments */
+  @media (max-width: var(--breakpoint-tablet)) {
+    .color-field-input {
+      gap: var(--space-1);
+    }
+    
+    .color-field-picker {
+      min-width: var(--touch-target-comfortable);
+      min-height: var(--touch-target-comfortable);
+    }
+  }
+}

@@ -12,6 +12,7 @@
 @import './field-select.css';
 @import './field-checkbox.css';
 @import './field-textarea.css';
+@import './field-color.css';
 @import './field-float.css';
 @import './field-color-list.css';
 @import './field-directory.css';

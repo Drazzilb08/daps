@@ -7,10 +7,10 @@
 
 // Working implementations
 export { JsonField } from './JsonField.jsx';
+export { ColorField } from './ColorField.jsx';
 
 // Placeholder implementations
 export {
-  ColorField,
   ColorListField,
   DirField,
   DirListField,

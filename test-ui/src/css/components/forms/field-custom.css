@@ -7,10 +7,6 @@
 
 @layer components {
   /* JSON Field Styles - Enhanced compositional approach */
-  .json-field {
-    /* Inherits styles from FieldWrapper primitive */
-  }
-
   .json-field-header {
     display: flex;
     justify-content: space-between;
@@ -81,7 +77,6 @@
     margin-top: var(--space-2);
   }
 
-
   .json-validation-indicator {
     position: absolute;
     top: var(--space-1);
@@ -104,34 +99,7 @@
     background: var(--color-error-bg, var(--color-surface-secondary));
   }
 
-  /* Color List Field Styles - now use list utilities */
-  .color-list-container {
-    /* Uses .list-container utility */
-  }
-
-  .color-list-items {
-    /* Uses .list-items utility */
-  }
-
-  .color-list-item {
-    /* Uses .list-item .list-item--color utilities */
-  }
-
-  /* Color preview - now uses .list-item__color-preview utility */
-  .color-list-preview {
-    /* Uses .list-item__color-preview utility */
-  }
-
-  /* Color input container - now uses .list-item__input-group utility */
-  .color-list-input-container {
-    /* Uses .list-item__input-group utility */
-  }
-
-  /* Color picker - now uses .list-item__color-picker utility */
-  .color-list-color-picker {
-    /* Uses .list-item__color-picker utility */
-  }
-
+  /* Color List Field Styles - webkit specific styling */
   .color-list-color-picker::-webkit-color-swatch-wrapper {
     padding: 2px;
   }
@@ -141,14 +109,7 @@
     border-radius: var(--radius-1);
   }
 
-  /* Color input - now uses .list-item__input utility */
-  .color-list-input {
-    /* Uses .list-item__input utility */
-  }
-
-  /* Color remove button - now uses .list-item__remove .list-item__remove--small utilities */
   .color-list-remove {
-    /* Uses .list-item__remove .list-item__remove--small utilities */
     transition: all 0.2s ease; /* Override DAPS no-hover for better UX */
   }
 
@@ -157,37 +118,8 @@
     color: var(--color-error);
   }
 
-  /* Color add button - now uses .btn utility */
-  .color-list-add {
-    /* Uses .btn utility */
-  }
-
-  /* Instance Management Field Styles - now use list utilities */
-  .instances-field-container {
-    /* Uses .list-container .list-container--lg utility */
-  }
-
-  .instances-list {
-    /* Uses .list-items utility */
-  }
-
-  .instance-item {
-    /* Uses .list-item .list-item--padded utility */
-  }
-
-  /* Instance item header - now uses .list-item__header utility */
-  .instance-item-header {
-    /* Uses .list-item__header utility */
-  }
-
-  /* Instance item title - now uses .list-item__title utility */
-  .instance-item-title {
-    /* Uses .list-item__title utility */
-  }
-
-  /* Instance remove button - now uses .list-item__remove .list-item__remove--small utilities */
+  /* Instance Management Field Styles */
   .instance-item-remove {
-    /* Uses .list-item__remove .list-item__remove--small utilities */
     background: transparent;
     transition: all 0.2s ease; /* Override DAPS no-hover for better UX */
   }
@@ -196,14 +128,6 @@
     background: var(--color-error-bg, var(--color-surface-hover));
     color: var(--color-error);
   }
-
-  /* Instance item fields - now uses .list-item__fields utility */
-  .instance-item-fields {
-    /* Uses .list-item__fields utility */
-  }
-
-  /* Instance add button - now uses .btn utility */
-  /* Instance add buttons now use unified button system (.btn .btn--primary .btn--small) */
 
   /* Placeholder Field Styles */
   .field-placeholder {
@@ -224,13 +148,8 @@
     font-size: var(--font-size-sm);
   }
 
-  /* Mobile adjustments - now handled by utility classes */
+  /* Mobile adjustments */
   @media (max-width: 640px) {
-    /* .list-item utilities handle mobile stacking */
-    /* .list-item__header utilities handle mobile header layout */
-    /* .list-item__fields utilities handle mobile grid layout */
-    
-    /* Component-specific mobile adjustments */
     .json-field-header {
       flex-direction: column;
       align-items: stretch;

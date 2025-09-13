@@ -80,6 +80,7 @@
 @import './components/forms/field-select.css';
 @import './components/forms/field-checkbox.css';
 @import './components/forms/field-textarea.css';
+@import './components/forms/field-color.css';
 @import './components/forms/field-directory.css';
 /* @import './components/forms/field-color-list.css'; */
 @import './components/forms/field-custom.css';

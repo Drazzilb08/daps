@@ -19,7 +19,7 @@ export const FieldError = ({
   return (
     <div 
       id={id}
-      className={`field-error ${className}`.trim()}
+      className={`field-error text-xs mt-1 flex items-center gap-1 ${className}`.trim()}
       role="alert"
       aria-live="polite"
     >

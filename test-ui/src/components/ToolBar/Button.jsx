@@ -39,6 +39,18 @@ const Button = ({
 
   const buttonClassName = [
     'page-toolbar-button',
+    'btn',
+    'inline-flex',
+    'items-center',
+    'justify-center',
+    'gap-2',
+    'touch-target',
+    'text-base',
+    'font-medium',
+    'border',
+    'rounded-md',
+    'cursor-pointer',
+    'transition',
     isDisabled && 'page-toolbar-button--disabled',
     isSpinning && 'page-toolbar-button--spinning'
   ].filter(Boolean).join(' ');

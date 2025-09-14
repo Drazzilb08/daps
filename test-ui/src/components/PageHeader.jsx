@@ -87,7 +87,7 @@ const PageHeader = React.memo(() => {
         {/* Brand/Logo Section with Hamburger */}
         <div className="page-header-brand">
           {/* DAPS Logo and Title - Clickable Link to Home */}
-          <Link to="/" className="page-header-logo-section">
+          <Link to="/" className="page-header-logo-section touch-target">
             <img 
               src="/img/favicon-32x32.png" 
               alt="DAPS Logo" 

@@ -15,33 +15,12 @@
      BASE BUTTON - Foundation for all button styles
      ============================================================================= */
   .btn {
-    /* Layout */
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-    
-    /* Sizing */
-    min-height: var(--touch-target-min);
-    padding: var(--space-2) var(--space-3);
-    
-    /* Typography */
+    /* Remaining component-specific styles after utility adoption */
     font-family: var(--font-family-sans);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
     line-height: 1;
     text-decoration: none;
     white-space: nowrap;
-    
-    /* Appearance */
     background: transparent;
-    color: var(--color-text-primary);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-2);
-    
-    /* Interaction */
-    cursor: pointer;
-    transition: all var(--transition-fast);
     user-select: none;
   }
 

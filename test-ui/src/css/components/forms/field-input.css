@@ -6,17 +6,13 @@
  */
 
 @layer components {
-  /* Base input styling */
+  /* Base input styling - utilities: w-full touch-target text-base rounded-md transition */
   .field-input {
-    width: 100%;
     min-height: var(--input-height);
     padding: var(--input-padding-y) var(--input-padding-x);
-    font-size: var(--font-size-base); /* 16px minimum to prevent mobile zoom */
     font-family: var(--font-family-sans);
     line-height: var(--line-height-normal);
     color: var(--color-input-text);
-    border-radius: var(--radius-2);
-    transition: all var(--transition-fast);
   }
 
   /* Light theme styling - consistent borders with checkbox pattern */

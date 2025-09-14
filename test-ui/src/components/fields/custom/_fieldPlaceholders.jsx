@@ -42,8 +42,8 @@ const UnavailableField = ({ field }) => {
 export const ColorField = React.memo((props) => <UnavailableField {...props} />);
 export const ColorListField = React.memo((props) => <UnavailableField {...props} />);
 
-export const DirField = React.memo((props) => <UnavailableField {...props} />);
 
+export const DirField = React.memo((props) => <UnavailableField {...props} />);
 export const DirListField = React.memo((props) => <UnavailableField {...props} />);
 export const InstanceDropdownField = React.memo((props) => <UnavailableField {...props} />);
 export const InstancesField = React.memo((props) => <UnavailableField {...props} />);

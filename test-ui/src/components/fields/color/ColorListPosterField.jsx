@@ -23,8 +23,27 @@ import { ColorPicker } from '../features/color/ColorPicker';
 import { AddButton, RemoveButton } from '../features/shared';
 import { postersAPI } from '../../../utils/api/posters';
 
-// Constants
-const BORDER_THICKNESS = 5;
+/**
+ * Get border thickness from CSS custom property
+ * Converts rem value to pixels for canvas operations
+ */
+const getBorderThickness = () => {
+  const remValue = parseFloat(getComputedStyle(document.documentElement)
+    .getPropertyValue('--poster-border-thickness'));
+  return remValue * 16; // Convert rem to pixels (assuming 16px = 1rem)
+};
+
+/**
+ * Get poster dimensions from CSS custom properties
+ * @returns {Object} Object with width and height properties
+ */
+const getPosterDimensions = () => {
+  const styles = getComputedStyle(document.documentElement);
+  return {
+    width: parseInt(styles.getPropertyValue('--poster-width-standard'), 10),
+    height: parseInt(styles.getPropertyValue('--poster-height-standard'), 10)
+  };
+};
 
 /**
  * Convert hex color to RGB object
@@ -51,7 +70,6 @@ function hexToRgb(hex) {
  */
 function getPosterByIndex(posterAssets, idx) {
   if (!posterAssets.length) return null;
-  // Use the /posters/ URL path served by FastAPI static mount
   return `/posters/${posterAssets[idx % posterAssets.length]}`;
 }
 
@@ -79,19 +97,18 @@ function getPosterPreviewUrl(imgUrl, borderColor, options = {}) {
         canvas.height = height;
         ctx.drawImage(img, 0, 0, width, height);
 
-        // === REMOVE BORDER ===
         if (!borderColor) {
-          // Hardcrop BORDER_THICKNESS px from all sides
-          const cropW = width - BORDER_THICKNESS * 2;
-          const cropH = height - BORDER_THICKNESS * 2;
+          const borderThickness = getBorderThickness();
+          const cropW = width - borderThickness * 2;
+          const cropH = height - borderThickness * 2;
           const cropCanvas = document.createElement('canvas');
           cropCanvas.width = cropW;
           cropCanvas.height = cropH;
           const cropCtx = cropCanvas.getContext('2d');
           cropCtx.drawImage(
             canvas,
-            BORDER_THICKNESS,
-            BORDER_THICKNESS,
+            borderThickness,
+            borderThickness,
             cropW,
             cropH,
             0,
@@ -103,8 +120,7 @@ function getPosterPreviewUrl(imgUrl, borderColor, options = {}) {
           return;
         }
 
-        // === COLORIZE BORDER ===
-        // Color the outer BORDER_THICKNESS px on each side
+        const borderThickness = getBorderThickness();
         const imgData = ctx.getImageData(0, 0, width, height);
         const data = imgData.data;
         const rgb = hexToRgb(borderColor);
@@ -112,10 +128,10 @@ function getPosterPreviewUrl(imgUrl, borderColor, options = {}) {
         for (let y = 0; y < height; ++y) {
           for (let x = 0; x < width; ++x) {
             const isBorder =
-              x < BORDER_THICKNESS ||
-              x >= width - BORDER_THICKNESS ||
-              y < BORDER_THICKNESS ||
-              y >= height - BORDER_THICKNESS;
+              x < borderThickness ||
+              x >= width - borderThickness ||
+              y < borderThickness ||
+              y >= height - borderThickness;
             if (isBorder) {
               const i = (y * width + x) * 4;
               data[i] = rgb.r;
@@ -259,13 +275,11 @@ export const ColorListPosterField = React.memo(({
               const poster = getPosterByIndex(posterAssets, i);
               if (!poster) continue;
               
+              const posterDimensions = getPosterDimensions();
               const previewUrl = await getPosterPreviewUrl(
                 poster,
                 colorsArray[i] || '#000000',
-                {
-                  width: 156,
-                  height: 234,
-                }
+                posterDimensions
               );
               
               if (!cancelled) {
@@ -283,10 +297,8 @@ export const ColorListPosterField = React.memo(({
           try {
             const poster = getPosterByIndex(posterAssets, 0);
             if (poster) {
-              const previewUrl = await getPosterPreviewUrl(poster, null, {
-                width: 156,
-                height: 234,
-              });
+              const posterDimensions = getPosterDimensions();
+              const previewUrl = await getPosterPreviewUrl(poster, null, posterDimensions);
               
               if (!cancelled) {
                 newPreviews[0] = previewUrl;
@@ -340,18 +352,14 @@ export const ColorListPosterField = React.memo(({
         required={field.required} 
       />
       
-      {/* Grid Layout for both states */}
       <div className="color-poster-grid">
         {colorsArray.length === 0 ? (
-          // No colors: show poster with border removed
           previews[0] && (
             <div className="color-poster-item">
               <div className="color-poster-preview">
                 <img
                   className="color-poster-image"
                   src={previews[0]}
-                  width={156}
-                  height={234}
                   alt="Poster preview with border removed"
                   loading="lazy"
                 />
@@ -364,21 +372,17 @@ export const ColorListPosterField = React.memo(({
             </div>
           )
         ) : (
-          // Colors exist: show poster + color picker pairs
           colorsArray.map((color, index) => {
             const previewUrl = previews[index];
             const poster = getPosterByIndex(posterAssets, index);
             
             return (
               <div key={index} className="color-poster-item">
-                {/* Poster Preview */}
                 <div className="color-poster-preview">
                   {previewUrl ? (
                     <img
                       className="color-poster-image"
                       src={previewUrl}
-                      width={156}
-                      height={234}
                       alt={`Poster preview ${index + 1} with ${color} border`}
                       loading="lazy"
                     />
@@ -391,7 +395,6 @@ export const ColorListPosterField = React.memo(({
                   )}
                 </div>
 
-                {/* Color Picker + Remove Button */}
                 <div className="color-poster-controls">
                   <ColorPicker
                     value={color}
@@ -400,6 +403,7 @@ export const ColorListPosterField = React.memo(({
                     invalid={highlightInvalid}
                     id={`${inputId}-color-${index}`}
                     aria-label={`Color ${index + 1} for ${poster ? `poster ${index + 1}` : 'poster'}`}
+                    className="border-none rounded cursor-pointer"
                   />
                   <RemoveButton
                     onClick={() => handleRemoveColor(index)}
@@ -416,7 +420,6 @@ export const ColorListPosterField = React.memo(({
         )}
       </div>
 
-      {/* Add Button and Controls - Always in same position */}
       <div className="color-poster-bottom-controls">
         <AddButton
           onClick={handleAddColor}
@@ -432,7 +435,7 @@ export const ColorListPosterField = React.memo(({
             <span className="color-poster-counter-text">
               {colorsArray.length} of {maxColors} colors
             </span>
-            {colorsArray.length >= maxColors * 0.8 && (
+            {colorsArray.length >= Math.ceil(maxColors * 0.8) && (
               <span className="color-poster-counter-warning">
                 (approaching limit)
               </span>
@@ -441,18 +444,17 @@ export const ColorListPosterField = React.memo(({
         )}
       </div>
 
-      {/* Status messages */}
       {(posterAssets.length === 0 || loadingPreviews) && (
         <div className="color-poster-status">
           {posterAssets.length === 0 && (
-            <div className="color-poster-warning">
+            <div className="color-poster-warning rounded">
               <span className="color-poster-warning-text">
                 No poster files found in /posters/ directory.
               </span>
             </div>
           )}
           {loadingPreviews && (
-            <div className="color-poster-loading">
+            <div className="color-poster-loading rounded">
               <span className="color-poster-loading-text">
                 Generating poster previews...
               </span>

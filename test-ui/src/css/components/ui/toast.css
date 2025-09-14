@@ -4,35 +4,22 @@
  */
 
 @layer components {
-  /* Toast container positioning */
+  /* Toast container positioning - utilities: fixed bottom-4 right-4 flex flex-col gap-2 */
   .toast-container {
-    position: fixed;
-    bottom: var(--space-4);
-    right: var(--space-4);
     z-index: var(--z-toast);
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
     pointer-events: none;
     max-width: 350px;
   }
 
-  /* Base toast styles */
+  /* Base toast styles - utilities: p-3 pl-4 pr-4 rounded-md text-base font-medium cursor-pointer relative overflow-hidden */
   .toast {
-    padding: var(--space-3) var(--space-4);
-    border-radius: var(--radius-2);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
     color: white;
     pointer-events: auto;
-    cursor: pointer;
     min-width: 280px;
     opacity: 0;
     transform: translateX(100%);
     transition: all 0.3s ease-out;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    position: relative;
-    overflow: hidden;
     /* Force solid backgrounds - NO TRANSPARENCY */
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -45,27 +32,27 @@
 
   /* Toast type colors - SOLID backgrounds only, no transparency */
   .toast.success {
-    background: #16a34a !important; /* Green 600 - solid */
-    border-left: var(--space-1) solid #15803d; /* Green 700 */
-    color: white !important;
+    background: var(--color-success); /* Green 600 - solid */
+    border-left: var(--space-1) solid var(--color-success-dark); /* Green 700 */
+    color: var(--color-success-text);
   }
 
   .toast.error {
-    background: #dc2626 !important; /* Red 600 - solid */
-    border-left: var(--space-1) solid #b91c1c; /* Red 700 */
-    color: white !important;
+    background: var(--color-error); /* Red 600 - solid */
+    border-left: var(--space-1) solid var(--color-error-dark); /* Red 700 */
+    color: var(--color-error-text);
   }
 
   .toast.warning {
-    background: #d97706 !important; /* Amber 600 - solid */
-    border-left: var(--space-1) solid #b45309; /* Amber 700 */
-    color: white !important;
+    background: var(--color-warning); /* Amber 600 - solid */
+    border-left: var(--space-1) solid var(--color-warning-dark); /* Amber 700 */
+    color: var(--color-warning-text);
   }
 
   .toast.info {
-    background: #2563eb !important; /* Blue 600 - solid */
-    border-left: var(--space-1) solid #1d4ed8; /* Blue 700 */
-    color: white !important;
+    background: var(--color-accent); /* Blue 600 - solid */
+    border-left: var(--space-1) solid var(--color-accent-dark); /* Blue 700 */
+    color: var(--color-accent-text);
   }
 
   /* Subtle progress bar */

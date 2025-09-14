@@ -15,11 +15,7 @@
      ============================================================================= */
   
   .field-wrapper {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
-    margin-bottom: var(--space-4);
-    width: 100%;
+    /* Layout handled by utility classes: flex flex-col gap-2 mb-4 w-full */
   }
   
   .field-wrapper--invalid {
@@ -29,12 +25,14 @@
   /* Mobile-first responsive adjustments */
   @media (max-width: 767px) {
     .field-wrapper {
+      /* Using utility class: mb-3 */
       margin-bottom: var(--space-3); /* Tighter spacing on mobile */
     }
   }
   
   @media (min-width: 768px) {
     .field-wrapper {
+      /* Using utility class: mb-5 */
       margin-bottom: var(--space-5); /* More generous spacing on larger screens */
     }
   }
@@ -44,17 +42,13 @@
      ============================================================================= */
   
   .field-label {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text-primary);
-    margin-bottom: var(--space-1);
+    /* Typography and spacing handled by utility classes */
     line-height: var(--line-height-tight);
   }
   
   .required-indicator {
+    /* Spacing and weight handled by utility classes: ml-1 font-semibold */
     color: var(--color-error);
-    margin-left: var(--space-1);
-    font-weight: var(--font-weight-semibold);
   }
   
   /* =============================================================================
@@ -62,27 +56,11 @@
      ============================================================================= */
   
   .field-input {
-    /* Touch-friendly sizing */
-    min-height: var(--touch-target-min); /* 44px minimum for touch */
+    /* Layout, typography, and base styles handled by utility classes */
     padding: var(--space-2) var(--space-3);
-    
-    /* Visual styling */
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-2);
-    font-size: var(--font-size-base); /* Minimum 16px to prevent mobile zoom */
     font-family: var(--font-family-sans);
     line-height: var(--line-height-normal);
-    
-    /* Theme colors */
     background: var(--color-surface);
-    color: var(--color-text-primary);
-    
-    /* Smooth interactions */
-    transition: border-color var(--transition-fast), 
-                box-shadow var(--transition-fast);
-    
-    /* Full width by default */
-    width: 100%;
     box-sizing: border-box;
   }
   
@@ -107,7 +85,6 @@
   .field-input:disabled {
     background: var(--color-surface-disabled);
     color: var(--color-text-disabled);
-    cursor: not-allowed;
     opacity: 0.6;
   }
   
@@ -116,19 +93,11 @@
      ============================================================================= */
   
   .field-textarea {
-    /* Inherit all input styles */
-    min-height: var(--touch-target-min);
+    /* Layout, typography, and base styles handled by utility classes */
     padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-2);
-    font-size: var(--font-size-base);
     font-family: var(--font-family-sans);
     line-height: var(--line-height-normal);
     background: var(--color-surface);
-    color: var(--color-text-primary);
-    transition: border-color var(--transition-fast), 
-                box-shadow var(--transition-fast);
-    width: 100%;
     box-sizing: border-box;
     
     /* Textarea-specific */
@@ -157,7 +126,6 @@
   .field-textarea:disabled {
     background: var(--color-surface-disabled);
     color: var(--color-text-disabled);
-    cursor: not-allowed;
     opacity: 0.6;
     resize: none;
   }
@@ -167,8 +135,7 @@
      ============================================================================= */
   
   .field-description {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
+    /* Typography handled by utility classes: text-sm text-secondary */
     line-height: var(--line-height-normal);
   }
   
@@ -177,9 +144,8 @@
      ============================================================================= */
   
   .field-error {
-    font-size: var(--font-size-sm);
+    /* Typography handled by utility classes: text-sm font-medium */
     color: var(--color-error);
-    font-weight: var(--font-weight-medium);
     line-height: var(--line-height-normal);
   }
   
@@ -191,6 +157,7 @@
   @media (max-width: 374px) {
     .field-input,
     .field-textarea {
+      /* Using utility class: p-2 */
       padding: var(--space-2); /* Reduce padding on very small screens */
     }
   }
@@ -199,6 +166,7 @@
   @media (min-width: 768px) {
     .field-input,
     .field-textarea {
+      /* Using utility classes: pt-3 pb-3 pl-4 pr-4 */
       padding: var(--space-3) var(--space-4); /* More generous padding */
     }
   }
@@ -240,11 +208,13 @@
   
   /* Compact field layout (for dense forms) */
   .field-wrapper--compact {
+    /* Using utility classes: mb-2 gap-1 */
     margin-bottom: var(--space-2);
     gap: var(--space-1);
   }
   
   .field-wrapper--compact .field-label {
+    /* Using utility classes: text-xs mb-0 */
     font-size: var(--font-size-xs);
     margin-bottom: 0;
   }

@@ -12,7 +12,6 @@
     gap: var(--space-4);
   }
 
-  /* Empty State Styles */
   .color-poster-empty-state {
     display: flex;
     flex-direction: column;
@@ -45,26 +44,21 @@
   }
 
   .color-poster-empty-add-button {
-    min-height: 44px; /* Touch-optimized */
+    min-height: var(--touch-target-min);
   }
 
-  /* Compact Grid Layout */
   .color-poster-grid {
     display: grid;
     gap: var(--space-3);
-    /* Mobile-first: single column */
     grid-template-columns: 1fr;
   }
 
-  /* Individual Poster-Color Item */
   .color-poster-item {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
-    /* No background - removing white boxes */
   }
 
-  /* Poster Preview Section */
   .color-poster-preview {
     display: flex;
     justify-content: center;
@@ -73,8 +67,8 @@
   }
 
   .color-poster-image {
-    width: 156px;
-    height: 234px;
+    width: var(--poster-width-standard);
+    height: var(--poster-height-standard);
     object-fit: cover;
     border-radius: var(--radius-2);
     box-shadow: var(--shadow-md);
@@ -87,8 +81,8 @@
   }
 
   .color-poster-placeholder {
-    width: 156px;
-    height: 234px;
+    width: var(--poster-width-standard);
+    height: var(--poster-height-standard);
     background: var(--color-surface-dim);
     border: 2px dashed var(--color-border);
     border-radius: var(--radius-2);
@@ -106,46 +100,39 @@
     font-weight: var(--font-weight-medium);
   }
 
-  /* Color Picker + Remove Button Row */
   .color-poster-controls {
     display: flex;
     align-items: center;
     gap: var(--space-2);
     justify-content: center;
-    /* No background or border - removing white containers */
   }
 
   .color-poster-controls .color-picker {
-    width: 44px; /* Touch-optimized */
-    height: 44px; /* Touch-optimized */
-    border: 2px solid var(--color-border);
-    border-radius: var(--radius-1);
-    cursor: pointer;
-    transition: border-color var(--transition-fast), transform var(--transition-fast);
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    transition: transform var(--transition-fast);
   }
 
   .color-poster-controls .color-picker:hover {
-    border-color: var(--color-primary);
     transform: scale(1.05);
   }
 
   .color-poster-controls .color-picker:focus {
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;
-    border-color: var(--color-primary);
   }
 
   .color-poster-controls .color-picker.invalid {
-    border-color: var(--color-error);
+    outline: 2px solid var(--color-error);
+    outline-offset: 2px;
   }
 
   .color-poster-remove-button {
-    min-width: 44px; /* Touch-optimized */
-    min-height: 44px; /* Touch-optimized */
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
     flex-shrink: 0;
   }
 
-  /* Status text for no-color state */
   .color-poster-status {
     display: flex;
     justify-content: center;
@@ -159,18 +146,16 @@
     text-align: center;
   }
 
-  /* Bottom Controls */
   .color-poster-bottom-controls {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-3);
     margin-top: var(--space-3);
-    /* No background or border - removing white containers */
   }
 
   .color-poster-add-button {
-    min-height: 44px; /* Touch-optimized */
+    min-height: var(--touch-target-min);
   }
 
   .color-poster-counter {
@@ -192,7 +177,6 @@
     font-style: italic;
   }
 
-  /* Status Messages */
   .color-poster-status {
     display: flex;
     flex-direction: column;
@@ -203,7 +187,6 @@
     padding: var(--space-2) var(--space-3);
     background: var(--color-warning-bg);
     border: 1px solid var(--color-warning);
-    border-radius: var(--radius-1);
   }
 
   .color-poster-warning-text {
@@ -216,7 +199,6 @@
     padding: var(--space-2) var(--space-3);
     background: var(--color-info-bg);
     border: 1px solid var(--color-info);
-    border-radius: var(--radius-1);
   }
 
   .color-poster-loading-text {
@@ -225,12 +207,11 @@
     font-style: italic;
   }
 
-  /* Mobile-First Responsive Grid Design */
-  @media (max-width: 480px) {
+  @media (max-width: var(--breakpoint-mobile-lg)) {
     .color-poster-image,
     .color-poster-placeholder {
-      width: 120px;
-      height: 180px;
+      width: var(--poster-width-mobile);
+      height: var(--poster-height-mobile);
     }
 
     .color-poster-controls {
@@ -251,33 +232,31 @@
 
   @media (min-width: 481px) and (max-width: 768px) {
     .color-poster-grid {
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(var(--poster-grid-min-width), 1fr));
       gap: var(--space-4);
     }
 
     .color-poster-image,
     .color-poster-placeholder {
-      width: 130px;
-      height: 195px;
+      width: var(--poster-width-tablet);
+      height: var(--poster-height-tablet);
     }
   }
 
   @media (min-width: 769px) {
     .color-poster-grid {
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(var(--poster-grid-min-width-lg), 1fr));
       gap: var(--space-4);
     }
   }
 
-  /* Large screens: allow 3 columns */
   @media (min-width: 1024px) {
     .color-poster-grid {
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(var(--poster-grid-min-width), 1fr));
       gap: var(--space-4);
     }
   }
 
-  /* Touch-Optimized Interactions */
   @media (hover: none) and (pointer: coarse) {
     .color-poster-image:hover {
       transform: none;
@@ -285,17 +264,14 @@
 
     .color-poster-controls .color-picker:hover {
       transform: none;
-      border-color: var(--color-border);
     }
 
-    /* Larger color pickers for touch */
     .color-poster-controls .color-picker {
-      width: 48px; /* Larger for touch */
-      height: 48px; /* Larger for touch */
+      width: var(--touch-target-comfortable);
+      height: var(--touch-target-comfortable);
     }
   }
 
-  /* Dark Theme Adjustments */
   [data-theme="dark"] .color-poster-empty-state {
     background: var(--color-surface-elevated-dark);
     border-color: var(--color-border-dark);
@@ -314,27 +290,15 @@
     border-color: var(--color-border-dark);
   }
 
-  [data-theme="dark"] .color-poster-controls .color-picker {
-    border-color: var(--color-border-dark);
-  }
 
-  [data-theme="dark"] .color-poster-controls .color-picker:hover {
-    border-color: var(--color-primary-dark);
-  }
-
-  /* High Contrast Mode */
   @media (prefers-contrast: high) {
     .color-poster-placeholder {
       border-width: 3px;
       border-style: solid;
     }
 
-    .color-poster-controls .color-picker {
-      border-width: 3px;
-    }
   }
 
-  /* Reduced Motion Preferences */
   @media (prefers-reduced-motion: reduce) {
     .color-poster-image,
     .color-poster-controls .color-picker {
@@ -347,7 +311,6 @@
     }
   }
 
-  /* Loading State */
   .color-poster-loading-text::after {
     content: "";
     display: inline-block;
@@ -365,20 +328,17 @@
     100% { transform: rotate(360deg); }
   }
 
-  /* Accessibility Improvements */
   .color-poster-item:focus-within {
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;
     border-radius: var(--radius-1);
   }
 
-  /* Focus indicators for keyboard navigation */
   .color-poster-image:focus {
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;
   }
 
-  /* Focus management for controls */
   .color-poster-controls:focus-within {
     outline: 1px solid var(--color-focus);
     outline-offset: 2px;

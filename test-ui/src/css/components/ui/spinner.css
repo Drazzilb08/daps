@@ -1,13 +1,13 @@
 /* Spinner Component Styles */
 @layer components {
   .spinner {
-    display: inline-block;
+    /* Layout: inline-block */
   }
 
   .spinner-circle {
     border: 2px solid var(--color-surface-variant);
     border-top-color: var(--color-primary);
-    border-radius: 50%;
+    /* Border: rounded-full */
     animation: spin 1s linear infinite;
   }
 
@@ -32,24 +32,17 @@
 
   /* Centered spinner for Suspense fallbacks */
   .spinner-center {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    /* Layout: flex items-center justify-center p-4 */
     min-height: 200px;
-    padding: var(--space-4);
   }
 
   .spinner-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: var(--space-3);
+    /* Layout: flex flex-col items-center gap-3 */
   }
 
   .spinner-text {
     color: var(--color-text-secondary);
-    font-size: var(--font-size-sm);
-    margin: 0;
+    /* Typography: text-sm m-0 */
   }
 
   /* Animation */

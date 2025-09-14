@@ -15,18 +15,18 @@ const Spinner = ({ size = 'medium', text, className = '', center = false }) => {
   const sizeClass = `spinner-${size}`;
   
   const spinnerElement = (
-    <div className={`spinner ${sizeClass} ${className}`.trim()}>
-      <div className="spinner-circle" />
+    <div className={`spinner inline-block ${sizeClass} ${className}`.trim()}>
+      <div className="spinner-circle rounded-full" />
     </div>
   );
   
   // If center is true, wrap in centered container (for Suspense fallbacks)
   if (center) {
     return (
-      <div className="spinner-center">
-        <div className="spinner-container">
+      <div className="spinner-center flex items-center justify-center p-4">
+        <div className="spinner-container flex flex-col items-center gap-3">
           {spinnerElement}
-          {text && <p className="spinner-text">{text}</p>}
+          {text && <p className="spinner-text text-sm m-0">{text}</p>}
         </div>
       </div>
     );
@@ -36,7 +36,7 @@ const Spinner = ({ size = 'medium', text, className = '', center = false }) => {
   return (
     <>
       {spinnerElement}
-      {text && <span className="spinner-text">{text}</span>}
+      {text && <span className="spinner-text text-sm m-0">{text}</span>}
     </>
   );
 };

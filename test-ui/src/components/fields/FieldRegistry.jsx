@@ -24,7 +24,7 @@ import * as ColorFields from './color';
  * - errorMessage: String error message to display
  */
 const FIELD_COMPONENTS = {
-  // Working implementations
+  // Basic
   text: BasicFields.TextField,
   password: BasicFields.PasswordField,
   number: BasicFields.NumberField,
@@ -34,26 +34,31 @@ const FIELD_COMPONENTS = {
   check_box: SelectFields.CheckboxField,
   dropdown: SelectFields.DropdownField,
   json: CustomFields.JsonField,
-  
-  // Placeholders from DAPS settings schema
-  dirlist: CustomFields.DirListField,
-  dirlist_dragdrop: CustomFields.DirListDragDropField,
-  dirlist_options: CustomFields.DirListOptionsField,
+
+  // Color
   color: ColorFields.ColorField,
   color_list: ColorFields.ColorListField,
   color_list_poster: ColorFields.ColorListPosterField,
+
+  // Dir
+  dir: CustomFields.DirField,
+  dirlist: CustomFields.DirListField,
+  dirlist_dragdrop: CustomFields.DirListDragDropField,
+  dirlist_options: CustomFields.DirListOptionsField,
+
+  
+  // Placeholders from DAPS settings schema
   holiday_schedule: CustomFields.HolidayScheduleField,
   holiday_presets: CustomFields.HolidayPresetsField,
+
   gdrive_custom: CustomFields.GDriveCustomField,
   gdrive_presets: CustomFields.GDrivePresetsField,
+  
   replacerr_custom: CustomFields.ReplacerCustomField,
   upgradinatorr_custom: CustomFields.UpgradinatorCustomField,
   labelarr_custom: CustomFields.LabelarrCustomField,
   instances: CustomFields.InstancesField,
   instance_dropdown: CustomFields.InstanceDropdownField,
-  dir: CustomFields.DirField,
-  
-  // Placeholders from original field vision
   schedule: CustomFields.ScheduleField,
   tag_select: CustomFields.TagSelectField,
   tag_display: CustomFields.TagDisplayField,

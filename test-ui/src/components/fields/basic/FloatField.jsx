@@ -16,8 +16,10 @@ export const FloatField = React.memo(({
   highlightInvalid = false,
   errorMessage = null
 }) => {
-  // Convert decimal (0-1) to percentage (0-100) for display
-  const percentageValue = value !== null && value !== undefined ? Number(value) * 100 : 0;
+  // Convert decimal (0-1) to percentage (0-100) for display with precision fix
+  const percentageValue = value !== null && value !== undefined 
+    ? Math.round(Number(value) * 100 * 1000) / 1000  // Round to 3 decimal places to avoid floating-point errors
+    : 0;
   const step = field.step || 1;
   const min = field.min !== undefined ? Number(field.min) : undefined;
   const max = field.max !== undefined ? Number(field.max) : undefined;
@@ -34,8 +36,8 @@ export const FloatField = React.memo(({
         const percentMax = max !== undefined ? max : 100;
         if (newPercentValue < percentMin) return;
         if (newPercentValue > percentMax) return;
-        // Convert percentage to decimal (0-1) for storage
-        onChange(newPercentValue / 100);
+        // Convert percentage to decimal (0-1) for storage with precision fix
+        onChange(Math.round(newPercentValue / 100 * 1000) / 1000);
       } else if (inputValue === '') {
         onChange(null);
       } else {
@@ -49,16 +51,16 @@ export const FloatField = React.memo(({
     const newPercentValue = percentageValue - step;
     const percentMin = min !== undefined ? min : 0;
     if (newPercentValue < percentMin) return;
-    // Convert percentage to decimal (0-1) for storage
-    onChange(newPercentValue / 100);
+    // Convert percentage to decimal (0-1) for storage with precision fix
+    onChange(Math.round(newPercentValue / 100 * 1000) / 1000);
   }, [percentageValue, step, min, onChange]);
 
   const handleIncrement = useCallback(() => {
     const newPercentValue = percentageValue + step;
     const percentMax = max !== undefined ? max : 100;
     if (newPercentValue > percentMax) return;
-    // Convert percentage to decimal (0-1) for storage
-    onChange(newPercentValue / 100);
+    // Convert percentage to decimal (0-1) for storage with precision fix
+    onChange(Math.round(newPercentValue / 100 * 1000) / 1000);
   }, [percentageValue, step, max, onChange]);
 
   const inputId = `field-${field.key}`;

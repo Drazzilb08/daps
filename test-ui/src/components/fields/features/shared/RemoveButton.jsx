@@ -64,6 +64,18 @@ export const RemoveButton = React.memo(({
 
   const buttonClasses = [
     'remove-button',
+    'btn',
+    'inline-flex',
+    'items-center',
+    'justify-center',
+    'gap-2',
+    'touch-target',
+    'text-base',
+    'font-medium',
+    'border',
+    'rounded-md',
+    'transition',
+    disabled ? 'cursor-not-allowed' : 'cursor-pointer',
     `remove-button--${variant}`,
     `remove-button--${size}`,
     iconOnly ? 'remove-button--icon-only' : 'remove-button--with-text',

@@ -47,7 +47,7 @@ function Toast({ id, message, type, onClose }) {
 
     return (
         <div 
-            className={`toast ${type} ${visible ? 'show' : ''}`}
+            className={`toast p-3 pl-4 pr-4 rounded-md text-base font-medium cursor-pointer relative overflow-hidden ${type} ${visible ? 'show' : ''}`}
             onClick={handleClick}
             role="alert"
             aria-live="assertive"
@@ -80,7 +80,7 @@ export function ToastProvider({ children }) {
     return (
         <ToastContext.Provider value={toastMethods}>
             {children}
-            <div className="toast-container">
+            <div className="toast-container fixed bottom-4 right-4 flex flex-col gap-2">
                 {toasts.map(toast => (
                     <Toast 
                         key={toast.id} 

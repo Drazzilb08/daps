@@ -52,7 +52,7 @@ export const AddButton = React.memo(({
   return (
     <button
       type="button"
-      className={`add-button ${className}`.trim()}
+      className={`add-button btn inline-flex items-center justify-center gap-2 touch-target text-base font-medium border rounded-md transition ${disabled ? 'cursor-not-allowed' : 'cursor-pointer'} ${className}`.trim()}
       onClick={handleClick}
       disabled={disabled}
       aria-label={`Add new ${itemType.toLowerCase()}`}

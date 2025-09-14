@@ -178,6 +178,20 @@
   --button-border-width: 1px;
 
   /* =============================================================================
+     MEDIA & POSTER ELEMENTS
+     Poster preview and media component sizing
+     ============================================================================= */
+  --poster-width-standard: 156px;      /* Standard poster preview width */
+  --poster-height-standard: 234px;     /* Standard poster preview height (3:2 ratio) */
+  --poster-width-mobile: 120px;        /* Mobile poster preview width */
+  --poster-height-mobile: 180px;       /* Mobile poster preview height */
+  --poster-width-tablet: 130px;        /* Tablet poster preview width */
+  --poster-height-tablet: 195px;       /* Tablet poster preview height */
+  --poster-border-thickness: 0.3125rem;  /* 5px - Poster border thickness */
+  --poster-grid-min-width: 180px;      /* Minimum column width for poster grid */
+  --poster-grid-min-width-lg: 200px;   /* Larger minimum column width for desktop */
+
+  /* =============================================================================
      CONTENT SPACING
      Consistent content spacing patterns
      ============================================================================= */

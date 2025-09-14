@@ -210,7 +210,7 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
           <div className="field-tester__config">
             <h4 className="config-title">Field Configuration</h4>
             <div className="config-controls">
-              <label className="config-control">
+              <label className="config-control touch-target">
                 <input
                   type="checkbox"
                   checked={testConfig.required}
@@ -218,7 +218,7 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
                 />
                 Required
               </label>
-              <label className="config-control">
+              <label className="config-control touch-target">
                 <input
                   type="checkbox"
                   checked={testConfig.disabled}
@@ -226,7 +226,7 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
                 />
                 Disabled
               </label>
-              <label className="config-control">
+              <label className="config-control touch-target">
                 <input
                   type="checkbox"
                   checked={showError}

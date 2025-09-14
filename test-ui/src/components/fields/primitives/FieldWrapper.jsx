@@ -16,6 +16,7 @@ export const FieldWrapper = ({
 }) => {
   const wrapperClasses = [
     'field-wrapper',
+    'flex', 'flex-col', 'gap-1', 'mb-4', 'w-full', // utility classes
     invalid ? 'field-wrapper--invalid' : '',
     className
   ].filter(Boolean).join(' ');

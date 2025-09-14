@@ -340,30 +340,32 @@ export const ColorListPosterField = React.memo(({
         required={field.required} 
       />
       
-      {colorsArray.length === 0 ? (
-        // Empty state with add button
-        <div className="color-poster-empty-state">
-          <div className="color-poster-empty-message">
-            <p className="color-poster-empty-title">
-              {field.empty_message || 'No poster colors added yet.'}
-            </p>
-            <p className="color-poster-empty-subtitle">
-              {field.empty_secondary_message || 'Add colors to see poster previews with custom borders.'}
-            </p>
-          </div>
-          <AddButton
-            onClick={handleAddColor}
-            disabled={!canAddColor}
-            text={field.add_button_text || 'Add Color'}
-            itemType="color"
-            disabledReason={`Maximum ${maxColors} colors allowed`}
-            className="color-poster-empty-add-button"
-          />
-        </div>
-      ) : (
-        // Compact Grid Layout
-        <div className="color-poster-grid">
-          {colorsArray.map((color, index) => {
+      {/* Grid Layout for both states */}
+      <div className="color-poster-grid">
+        {colorsArray.length === 0 ? (
+          // No colors: show poster with border removed
+          previews[0] && (
+            <div className="color-poster-item">
+              <div className="color-poster-preview">
+                <img
+                  className="color-poster-image"
+                  src={previews[0]}
+                  width={156}
+                  height={234}
+                  alt="Poster preview with border removed"
+                  loading="lazy"
+                />
+              </div>
+              <div className="color-poster-status">
+                <span className="color-poster-status-text">
+                  Border removed (no colors selected)
+                </span>
+              </div>
+            </div>
+          )
+        ) : (
+          // Colors exist: show poster + color picker pairs
+          colorsArray.map((color, index) => {
             const previewUrl = previews[index];
             const poster = getPosterByIndex(posterAssets, index);
             
@@ -389,60 +391,55 @@ export const ColorListPosterField = React.memo(({
                   )}
                 </div>
 
-                {/* Color Picker + Remove Button Row */}
+                {/* Color Picker + Remove Button */}
                 <div className="color-poster-controls">
                   <ColorPicker
-                    id={`${inputId}-color-${index}`}
                     value={color}
                     onChange={(newColor) => handleColorChange(index, newColor)}
                     disabled={disabled}
-                    ariaLabel={`Color picker for poster ${index + 1}`}
-                    title={`Select border color for poster ${index + 1}: ${color}`}
-                    className={highlightInvalid ? 'invalid' : ''}
+                    invalid={highlightInvalid}
+                    id={`${inputId}-color-${index}`}
+                    aria-label={`Color ${index + 1} for ${poster ? `poster ${index + 1}` : 'poster'}`}
                   />
                   <RemoveButton
                     onClick={() => handleRemoveColor(index)}
                     disabled={!canRemoveColor(index)}
-                    itemName={`poster color ${index + 1}`}
                     itemType="color"
-                    text="Remove"
-                    variant="default"
-                    size="medium"
+                    disabledReason={`Minimum ${minColors} colors required`}
                     className="color-poster-remove-button"
+                    aria-label={`Remove color ${index + 1}`}
                   />
                 </div>
               </div>
             );
-          })}
-        </div>
-      )}
+          })
+        )}
+      </div>
 
-      {/* Add Button and Controls */}
-      {colorsArray.length > 0 && (
-        <div className="color-poster-bottom-controls">
-          <AddButton
-            onClick={handleAddColor}
-            disabled={!canAddColor}
-            text={field.add_button_text || 'Add Color'}
-            itemType="color"
-            disabledReason={`Maximum ${maxColors} colors allowed`}
-            className="color-poster-add-button"
-          />
-          
-          {maxColors > 1 && (
-            <div className="color-poster-counter">
-              <span className="color-poster-counter-text">
-                {colorsArray.length} of {maxColors} colors
+      {/* Add Button and Controls - Always in same position */}
+      <div className="color-poster-bottom-controls">
+        <AddButton
+          onClick={handleAddColor}
+          disabled={!canAddColor}
+          text={field.add_button_text || 'Add Color'}
+          itemType="color"
+          disabledReason={`Maximum ${maxColors} colors allowed`}
+          className="color-poster-add-button"
+        />
+        
+        {maxColors > 1 && colorsArray.length > 0 && (
+          <div className="color-poster-counter">
+            <span className="color-poster-counter-text">
+              {colorsArray.length} of {maxColors} colors
+            </span>
+            {colorsArray.length >= maxColors * 0.8 && (
+              <span className="color-poster-counter-warning">
+                (approaching limit)
               </span>
-              {colorsArray.length >= maxColors * 0.8 && (
-                <span className="color-poster-counter-warning">
-                  (approaching limit)
-                </span>
-              )}
-            </div>
-          )}
-        </div>
-      )}
+            )}
+          </div>
+        )}
+      </div>
 
       {/* Status messages */}
       {(posterAssets.length === 0 || loadingPreviews) && (

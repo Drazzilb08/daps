@@ -145,6 +145,20 @@
     flex-shrink: 0;
   }
 
+  /* Status text for no-color state */
+  .color-poster-status {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-2);
+  }
+
+  .color-poster-status-text {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    font-style: italic;
+    text-align: center;
+  }
+
   /* Bottom Controls */
   .color-poster-bottom-controls {
     display: flex;

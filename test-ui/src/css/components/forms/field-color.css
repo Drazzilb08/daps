@@ -1,82 +1,374 @@
 /**
- * Color Field Component Styles
+ * Color Field Primitive Styles
  * 
- * Styles for color input field types with native color picker integration.
+ * Styles for color input primitives used across color field types.
  * Mobile-first design using DAPS design tokens.
  * Follows "write once, use everywhere" philosophy.
  */
 
 @layer components {
-  /* Color Field Styles - Mobile-first design with touch accessibility */
-  .color-field-input {
-    display: flex;
-    gap: var(--space-2);
-    align-items: stretch;
-  }
-
-  .color-field-picker {
-    /* Native color input on LEFT side */
+  
+  /* =============================================================================
+     COLOR PICKER PRIMITIVE - Native color input styling
+     ============================================================================= */
+  
+  .color-picker {
+    /* Touch-optimized sizing */
     min-width: var(--touch-target-min);
     min-height: var(--touch-target-min);
+    
+    /* Visual styling */
     border: var(--input-border-width) solid var(--color-border);
     border-radius: var(--radius-1);
     cursor: pointer;
     transition: all var(--transition-fast);
     background: none;
     padding: 0;
+    
+    /* Remove default browser styling */
+    -webkit-appearance: none;
+    appearance: none;
   }
 
-  .color-field-picker:hover:not(:disabled) {
+  .color-picker:hover:not(:disabled) {
     border-color: var(--color-primary);
     transform: translateY(calc(-1 * var(--space-1)));
     box-shadow: var(--shadow-sm);
   }
 
-  .color-field-picker:focus {
-    outline: var(--focus-ring-width) solid var(--color-primary);
+  .color-picker:focus {
+    outline: var(--focus-ring-width) solid var(--color-focus);
     outline-offset: var(--focus-ring-offset);
+    border-color: var(--color-primary);
   }
 
-  .color-field-picker:disabled {
+  .color-picker:disabled {
     cursor: not-allowed;
     opacity: 0.5;
   }
 
-  /* Native color input styling */
-  .color-field-picker::-webkit-color-swatch-wrapper {
+  .color-picker.invalid {
+    border-color: var(--color-error);
+  }
+
+  /* Native color input browser-specific styling */
+  .color-picker::-webkit-color-swatch-wrapper {
     padding: 0;
     border: none;
     border-radius: var(--radius-1);
   }
 
-  .color-field-picker::-webkit-color-swatch {
+  .color-picker::-webkit-color-swatch {
     border: none;
     border-radius: var(--radius-1);
   }
 
-  /* Firefox color input styling */
-  .color-field-picker::-moz-color-swatch {
+  .color-picker::-moz-color-swatch {
     border: none;
     border-radius: var(--radius-1);
   }
-
-  .color-field-text {
-    /* Text input on RIGHT side */
-    flex: 1;
-    min-width: 0; /* Allow text input to shrink */
+  
+  /* =============================================================================
+     COLOR TEXT INPUT PRIMITIVE - Hex text input styling
+     ============================================================================= */
+  
+  .color-text-input {
+    /* Monospace font for hex editing */
     font-family: var(--font-family-mono);
     letter-spacing: var(--letter-spacing-wide);
+    text-transform: uppercase;
+  }
+  
+  /* =============================================================================
+     COLOR INPUT PAIR PRIMITIVE - Synchronized picker + text
+     ============================================================================= */
+  
+  .color-input-pair {
+    display: flex;
+    gap: var(--space-2);
+    align-items: stretch;
   }
 
-  /* Mobile adjustments */
-  @media (max-width: var(--breakpoint-tablet)) {
-    .color-field-input {
+  .color-input-pair .color-picker {
+    /* Color picker on left */
+    flex-shrink: 0;
+  }
+
+  .color-input-pair .color-text-input {
+    /* Text input on right, takes remaining space */
+    flex: 1;
+    min-width: 0; /* Allow input to shrink */
+  }
+  
+  /* =============================================================================
+     COLOR LIST PRIMITIVE - Multiple color management
+     ============================================================================= */
+  
+  .color-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+  }
+
+  .color-array-items {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .color-array-item {
+    display: flex;
+    gap: var(--space-2);
+    align-items: center;
+  }
+
+  .color-array-item-input {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* =============================================================================
+     BUTTON CLASSES USED BY COMPONENTS - Touch-optimized styling
+     ============================================================================= */
+
+  /* AddButton component styling */
+  .add-button {
+    /* Touch-optimized add button */
+    min-height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    
+    /* Visual styling */
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-2);
+    padding: var(--space-2) var(--space-3);
+    cursor: pointer;
+    transition: none;
+    
+    /* Typography */
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    font-family: var(--font-family-sans);
+  }
+
+  .add-button:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+  }
+
+  .add-button:focus {
+    outline: var(--focus-ring-width) solid var(--color-focus);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  .add-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    background: var(--color-surface-disabled);
+    color: var(--color-text-disabled);
+    border-color: var(--color-border);
+  }
+
+  /* RemoveButton component styling */
+  .remove-button {
+    /* Touch-optimized remove button */
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Visual styling */
+    background: var(--color-error-bg);
+    color: var(--color-error);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-1);
+    cursor: pointer;
+    transition: none;
+    padding: var(--space-2);
+    
+    /* Typography */
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    font-family: var(--font-family-sans);
+    line-height: 1;
+  }
+
+  .remove-button:hover:not(:disabled) {
+    background: var(--color-error);
+    color: var(--color-error-text);
+  }
+
+  .remove-button:focus {
+    outline: var(--focus-ring-width) solid var(--color-focus);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  .remove-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  /* Icon styling within buttons */
+  .add-button-icon,
+  .remove-button-icon {
+    display: block;
+    font-size: inherit;
+    line-height: 1;
+  }
+
+  .add-button-text {
+    font-size: inherit;
+  }
+
+  .color-list-remove-button {
+    /* Touch-optimized remove button */
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* Visual styling */
+    background: var(--color-error-bg);
+    color: var(--color-error);
+    border: 1px solid var(--color-error);
+    border-radius: var(--radius-1);
+    cursor: pointer;
+    transition: none;
+    
+    /* Typography */
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    line-height: 1;
+  }
+
+  .color-list-remove-button:hover:not(:disabled) {
+    background: var(--color-error);
+    color: var(--color-error-text);
+  }
+
+  .color-list-remove-button:focus {
+    outline: var(--focus-ring-width) solid var(--color-focus);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  .color-list-remove-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .color-list-remove-icon {
+    display: block;
+  }
+
+  .color-array-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding-top: var(--space-5);
+    border-top: 1px solid var(--color-border);
+    margin-top: var(--space-2);
+  }
+
+  .color-list-add-button {
+    /* Touch-optimized add button */
+    min-height: var(--touch-target-min);
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    
+    /* Visual styling */
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+    border: 1px solid var(--color-primary);
+    border-radius: var(--radius-2);
+    padding: var(--space-2) var(--space-3);
+    cursor: pointer;
+    transition: none;
+    
+    /* Typography */
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+  }
+
+  .color-list-add-button:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+  }
+
+  .color-list-add-button:focus {
+    outline: var(--focus-ring-width) solid var(--color-focus);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  .color-list-add-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+    background: var(--color-surface-disabled);
+    color: var(--color-text-disabled);
+    border-color: var(--color-border);
+  }
+
+  .color-list-add-icon {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-bold);
+  }
+
+  .color-list-count {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+  }
+
+  .color-list-empty {
+    padding: var(--space-6) var(--space-4);
+    text-align: center;
+    background: var(--color-surface);
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-2);
+  }
+
+  .color-list-empty-text {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+  }
+  
+  /* =============================================================================
+     RESPONSIVE BEHAVIOR - Mobile-first adjustments
+     ============================================================================= */
+
+  /* Mobile optimizations */
+  @media (max-width: 767px) {
+    .color-input-pair {
       gap: var(--space-1);
     }
     
-    .color-field-picker {
+    .color-picker {
       min-width: var(--touch-target-comfortable);
       min-height: var(--touch-target-comfortable);
+    }
+    
+    .color-list-item {
+      gap: var(--space-1);
+    }
+    
+    .color-list-controls {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--space-2);
+    }
+    
+    .color-list-add-button {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  /* Large tablet and desktop */
+  @media (min-width: 768px) {
+    .color-list-controls {
+      justify-content: space-between;
     }
   }
 }

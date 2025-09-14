@@ -140,6 +140,12 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
       baseConfig.description = 'Testing dropdown field with sample options (mix of objects and strings)';
     }
     
+    // Enable poster preview for color_list fields
+    if (fieldType === 'color_list') {
+      baseConfig.preview = 'true';
+      baseConfig.description = 'Testing color_list field with poster preview functionality';
+    }
+    
     setTestConfig(baseConfig);
   }, [fieldType]);
   

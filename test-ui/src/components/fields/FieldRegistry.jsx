@@ -9,6 +9,7 @@
 import * as BasicFields from './basic';
 import * as SelectFields from './select';
 import * as CustomFields from './custom';
+import * as ColorFields from './color';
 
 
 /**
@@ -38,9 +39,9 @@ const FIELD_COMPONENTS = {
   dirlist: CustomFields.DirListField,
   dirlist_dragdrop: CustomFields.DirListDragDropField,
   dirlist_options: CustomFields.DirListOptionsField,
-  color: CustomFields.ColorField,
-  color_list: CustomFields.ColorListField,
-  color_list_poster: CustomFields.ColorListField,
+  color: ColorFields.ColorField,
+  color_list: ColorFields.ColorListField,
+  color_list_poster: ColorFields.ColorListPosterField,
   holiday_schedule: CustomFields.HolidayScheduleField,
   holiday_presets: CustomFields.HolidayPresetsField,
   gdrive_custom: CustomFields.GDriveCustomField,
@@ -109,7 +110,7 @@ const IMPLEMENTED_FIELD_TYPES = new Set([
   'float', 'hidden',
   'check_box', 'dropdown',
   'json',
-  'color'
+  'color', 'color_list', 'color_list_poster'
 ]);
 
 /**

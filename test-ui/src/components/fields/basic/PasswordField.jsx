@@ -48,7 +48,7 @@ export const PasswordField = React.memo(({
         required={field.required} 
       />
       
-      <div className="field-input-group">
+      <div className="field-input-group field-input-base">
         <InputBase
           id={inputId}
           type={showPassword ? 'text' : 'password'}

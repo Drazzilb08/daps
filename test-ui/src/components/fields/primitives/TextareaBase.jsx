@@ -53,7 +53,7 @@ export const TextareaBase = ({
       maxLength={maxLength}
       minLength={minLength}
       spellCheck={spellCheck}
-      className={`field-textarea touch-target w-full ${invalid ? 'is-invalid' : ''} ${disabled ? 'cursor-not-allowed' : ''} ${className}`.trim()}
+      className={`field-textarea field-input-base touch-target w-full ${invalid ? 'is-invalid' : ''} ${disabled ? 'cursor-not-allowed' : ''} ${className}`.trim()}
       aria-describedby={ariaDescribedby}
       aria-invalid={ariaInvalid}
       {...textareaProps}

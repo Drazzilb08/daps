@@ -1,89 +1,67 @@
 /**
- * Base Field Styles
+ * Field Base Styles
  * 
- * Foundation styles shared by all field components.
- * Defines consistent field wrapper, label, and error patterns.
+ * Shared styling patterns for all form field components.
+ * Consolidates theme-specific border and background styling to eliminate duplication.
  */
 
 @layer components {
-  /* Field wrapper - component-specific styles only (utilities handled in JSX) */
-  .field-wrapper {
-    /* All layout styles moved to utility classes in components */
+  /* Base field input styling - shared across input, select, textarea, checkbox */
+  .field-input-base {
+    background: var(--color-input-bg);
   }
 
-  .field-wrapper.field-wrapper--inline {
-    /* All layout styles moved to utility classes in components */
+  /* Light theme styling - consistent borders and shadows */
+  [data-theme="light"] .field-input-base {
+    border: 1px solid var(--color-text-secondary);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
 
-  /* Field labels - component-specific styles only */
-  .field-label {
-    line-height: var(--line-height-tight);
-    color: var(--color-primary);
+  /* Dark theme styling - consistent borders and shadows */
+  [data-theme="dark"] .field-input-base {
+    border: none;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 
-  .field-label--inline {
-    min-width: 120px;
+  /* Focus state override for base class - maintains theme-specific focus styling */
+  .field-input-base:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background: var(--color-input-bg-focus);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
   }
 
-  .field-label .required-indicator {
-    color: var(--color-error);
+  /* Focus-within for container elements that use base styling */
+  .field-input-base:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
   }
 
-  /* Field descriptions/help text - component-specific styles only */
-  .field-description {
-    color: var(--color-text-secondary);
-    line-height: var(--line-height-normal);
+  /* Validation states - base invalid styling */
+  .field-input-base.is-invalid {
+    border-color: var(--color-error);
   }
 
-  /* Field error messages - component-specific styles only */
-  .field-error {
-    color: var(--color-error);
+  .field-input-base.is-invalid:focus,
+  .field-input-base.is-invalid:focus-within {
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
   }
 
-  .field-error::before {
-    content: "⚠";
+  /* Validation states - base valid styling */
+  .field-input-base.is-valid {
+    border-color: var(--color-success);
   }
 
-  /* Field validation states */
-  .field-wrapper--invalid .field-label {
-    color: var(--color-error);
+  .field-input-base.is-valid:focus,
+  .field-input-base.is-valid:focus-within {
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
   }
 
-  .field-wrapper--valid .field-label {
-    color: var(--color-success);
-  }
-
-  /* Disabled state */
-  .field-wrapper--disabled {
-    opacity: 0.6;
-    pointer-events: none;
-  }
-
-  .field-wrapper--disabled .field-label {
-    color: var(--color-text-disabled);
-  }
-
-  /* Focus management for nested interactive elements */
-  .field-wrapper:focus-within .field-label {
-    color: var(--color-primary);
-  }
-
-  /* Responsive field layout */
-  @media (min-width: 768px) {
-    .field-row {
-      display: grid;
-      grid-template-columns: 200px 1fr;
-      gap: var(--space-3);
-      align-items: start;
-    }
-
-    .field-row .field-wrapper {
-      margin-bottom: var(--space-3);
-    }
-
-    .field-row .field-label {
-      margin-bottom: 0;
-      padding-top: var(--space-2);
-    }
+  /* Disabled state for base styling */
+  .field-input-base:disabled {
+    background: var(--color-input-bg-disabled);
+    color: var(--color-input-text-disabled);
+    border-color: var(--color-input-border-disabled);
+    cursor: not-allowed;
   }
 }

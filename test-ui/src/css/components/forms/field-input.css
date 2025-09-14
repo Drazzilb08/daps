@@ -6,27 +6,13 @@
  */
 
 @layer components {
-  /* Base input styling - utilities: w-full touch-target text-base rounded-md transition */
+  /* Base input styling - compose with field-input-base for theme handling */
   .field-input {
     min-height: var(--input-height);
     padding: var(--input-padding-y) var(--input-padding-x);
     font-family: var(--font-family-sans);
     line-height: var(--line-height-normal);
     color: var(--color-input-text);
-  }
-
-  /* Light theme styling - consistent borders with checkbox pattern */
-  [data-theme="light"] .field-input {
-    background: var(--color-input-bg);
-    border: 1px solid var(--color-text-secondary);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  }
-
-  /* Dark theme styling - consistent borders with checkbox pattern */
-  [data-theme="dark"] .field-input {
-    background: var(--color-input-bg);
-    border: none;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 
   /* Focus state */
@@ -46,14 +32,6 @@
   }
 
   /* Validation states now handled by .is-invalid and .is-valid utilities */
-  /* Component-specific validation styling if needed */
-  .field-input.is-invalid {
-    /* Additional input-specific invalid styling can go here */
-  }
-
-  .field-input.is-valid {
-    /* Additional input-specific valid styling can go here */
-  }
 
   /* Disabled state */
   .field-input:disabled {
@@ -81,14 +59,6 @@
   }
 
   /* Size variants now handled by .input-sm and .input-lg utilities */
-  /* Component-specific size adjustments if needed */
-  .field-input.input-sm {
-    /* Additional small input styling can go here */
-  }
-
-  .field-input.input-lg {
-    /* Additional large input styling can go here */
-  }
 
   /* Input groups now use .field-group utility classes */
   /* Component-specific input group styling */
@@ -109,13 +79,12 @@
     cursor: pointer;
   }
 
-  /* Light theme styling for addon - matches checkbox pattern */
+  /* Addon-specific theme styling - uses field-input-base for consistency */
   [data-theme="light"] .field-input-addon {
     border: 1px solid var(--color-primary);
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   }
 
-  /* Dark theme styling for addon - matches checkbox pattern */
   [data-theme="dark"] .field-input-addon {
     border: none;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
@@ -130,19 +99,7 @@
     transition: all var(--transition-fast);
   }
 
-  /* Light theme styling for input group - consistent borders with checkbox pattern */
-  [data-theme="light"] .field-input-group {
-    background: var(--color-input-bg);
-    border: 1px solid var(--color-text-secondary);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  }
-
-  /* Dark theme styling for input group - consistent borders with checkbox pattern */
-  [data-theme="dark"] .field-input-group {
-    background: var(--color-input-bg);
-    border: none;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  }
+  /* Input group now uses field-input-base for consistent theme styling */
 
   .field-input-group:focus-within {
     border-color: var(--color-primary);
@@ -163,7 +120,7 @@
 
   /* Password toggle button - now uses btn utility base */
   .field-input-toggle {
-    background: transparent;
+    background: var(--color-input-addon-bg);
     border: none;
     border-radius: 0;
     padding: var(--input-padding-y) var(--input-padding-x);
@@ -171,14 +128,12 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    min-width: 44px;
+    min-width: var(--touch-target-min);
+    min-height: var(--touch-target-min);
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
     height: var(--input-height);
     transition: all var(--transition-fast);
-  }
-
-  .field-input-toggle:focus {
-    outline: none;
-    background: var(--color-surface-hover);
   }
 
   .field-input-toggle:disabled {
@@ -236,19 +191,7 @@
     transition: all var(--transition-fast);
   }
 
-  /* Light theme styling for number field container - consistent borders with checkbox pattern */
-  [data-theme="light"] .number-field-container {
-    background: var(--color-input-bg);
-    border: 1px solid var(--color-text-secondary);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  }
-
-  /* Dark theme styling for number field container - consistent borders with checkbox pattern */
-  [data-theme="dark"] .number-field-container {
-    background: var(--color-input-bg);
-    border: none;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-  }
+  /* Number field container now uses field-input-base for consistent theme styling */
 
   .number-field-container:focus-within {
     border-color: var(--color-primary);
@@ -257,46 +200,8 @@
 
   /* No hover states for number field container */
 
-  /* Number field buttons - now use .btn .btn--icon utility base */
-  /* Number field buttons now use unified button system (.btn .btn--secondary .btn--small) */
-  
-  /* Number field increment/decrement button styling */
-  .number-field-decrement,
-  .number-field-increment,
-  .number-field-button {
-    background: var(--color-surface-elevated) !important;
-    border: none !important;
-    color: var(--color-primary) !important;
-    box-shadow: none !important;
-    min-width: calc(var(--touch-target-min) + var(--space-2)) !important;
-    padding: var(--space-2) var(--space-3) !important;
-  }
-  
-  /* Left button (decrement) gets left border radius */
-  .number-field-decrement {
-    border-radius: var(--radius-2) 0 0 var(--radius-2) !important;
-  }
-  
-  /* Right button (increment) gets right border radius */
-  .number-field-increment,
-  .number-field-button.number-field-increment {
-    border-radius: 0 var(--radius-2) var(--radius-2) 0 !important;
-  }
-  
-  /* Generic number-field-button gets no radius by default (for middle position) */
-  .number-field-button {
-    border-radius: 0 !important;
-  }
-  
-  /* Hover state for number field buttons */
-  .number-field-decrement:hover:not(:disabled),
-  .number-field-increment:hover:not(:disabled),
-  .number-field-button:hover:not(:disabled) {
-    background: var(--color-surface-hover) !important;
-    border: none !important;
-    color: var(--color-primary) !important;
-    box-shadow: none !important;
-  }
+  /* Number field buttons now use unified button system */
+  /* Use: .btn .btn--number-field .btn--number-field-left/.btn--number-field-right */
 
   .number-field-display {
     flex: 1;
@@ -348,8 +253,7 @@
   /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {
     .field-input,
-    .number-field-container,
-    .number-field-button {
+    .number-field-container {
       transition: none;
     }
     

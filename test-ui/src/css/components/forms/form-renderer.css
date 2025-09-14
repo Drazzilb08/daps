@@ -202,54 +202,9 @@
     border-top: 1px solid var(--color-border);
   }
 
-  .form-actions button {
-    min-height: 44px; /* Touch target */
-    padding: var(--space-2) var(--space-4);
-    border-radius: var(--radius-2);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    cursor: pointer;
-    transition: all var(--transition-fast) ease-in-out;
-    border: 1px solid transparent;
-  }
-
-  .form-submit-button {
-    background: var(--color-primary);
-    color: var(--color-primary-text);
-    border-color: var(--color-primary);
-  }
-
-  .form-submit-button:hover:not(:disabled) {
-    background: var(--color-primary-hover);
-    border-color: var(--color-primary-hover);
-    transform: translateY(-1px);
-    box-shadow: var(--shadow-md);
-  }
-
-  .form-submit-button:active:not(:disabled) {
-    transform: translateY(0);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .form-submit-button:disabled {
-    background: var(--color-border);
-    color: var(--color-text-disabled);
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-  }
-
-  .form-cancel-button {
-    background: var(--color-surface);
-    color: var(--color-text-secondary);
-    border-color: var(--color-border);
-  }
-
-  .form-cancel-button:hover:not(:disabled) {
-    background: var(--color-surface-hover);
-    color: var(--color-text-primary);
-    border-color: var(--color-border-hover);
-  }
+  /* Form buttons now use unified button system */
+  /* Submit: .btn .btn--primary */
+  /* Cancel: .btn .btn--secondary */
 
   /* Submit error display */
   .form-submit-error {
@@ -299,7 +254,7 @@
       align-items: stretch;
     }
 
-    .form-actions button {
+    .form-actions .btn {
       width: 100%;
       justify-content: center;
     }
@@ -345,7 +300,7 @@
       border: 1px solid;
     }
 
-    .form-actions button {
+    .form-actions .btn {
       border-width: 2px;
     }
   }
@@ -354,7 +309,7 @@
   @media (prefers-reduced-motion: reduce) {
     .form-progress-fill,
     .form-section-toggle-icon,
-    .form-actions button {
+    .form-actions .btn {
       transition: none;
     }
   }

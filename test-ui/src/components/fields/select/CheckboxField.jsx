@@ -53,7 +53,7 @@ export const CheckboxField = React.memo(({
             tabIndex={-1} // Use wrapper for keyboard navigation
             aria-hidden="true" // Screen readers use the wrapper
           />
-          <div className="checkbox-field__indicator" aria-hidden="true">
+          <div className="checkbox-field__indicator field-input-base" aria-hidden="true">
             {isChecked && (
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                 <polyline points="20,6 9,17 4,12"/>

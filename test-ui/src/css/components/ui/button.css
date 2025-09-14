@@ -261,6 +261,36 @@
   }
 
   /* =============================================================================
+     NUMBER FIELD BUTTON MODIFIERS - For input field controls
+     ============================================================================= */
+  
+  /* Number field button styling - elevated surface for input controls */
+  .btn--number-field {
+    background: var(--color-surface-elevated);
+    color: var(--color-primary);
+    border-color: transparent;
+    min-width: calc(var(--touch-target-min) + var(--space-2));
+    padding: var(--space-2) var(--space-3);
+    box-shadow: none;
+  }
+
+  .btn--number-field:hover:not(:disabled) {
+    background: var(--color-surface-hover);
+    color: var(--color-primary);
+    border-color: transparent;
+    box-shadow: none;
+  }
+
+  /* Position modifiers for attached number field buttons */
+  .btn--number-field-left {
+    border-radius: var(--radius-2) 0 0 var(--radius-2);
+  }
+
+  .btn--number-field-right {
+    border-radius: 0 var(--radius-2) var(--radius-2) 0;
+  }
+
+  /* =============================================================================
      MOBILE OPTIMIZATIONS
      ============================================================================= */
   

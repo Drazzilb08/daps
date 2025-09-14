@@ -50,7 +50,7 @@ export const DropdownField = React.memo(({
           disabled={disabled}
           required={field.required}
           onChange={handleChange}
-          className={`field-select w-full touch-target ${highlightInvalid ? 'is-invalid' : ''} ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
+          className={`field-select field-input-base w-full touch-target ${highlightInvalid ? 'is-invalid' : ''} ${disabled ? 'opacity-60 cursor-not-allowed' : ''}`}
           aria-describedby={
             (field.description || errorMessage) 
               ? `${inputId}-desc ${inputId}-error`.trim() 

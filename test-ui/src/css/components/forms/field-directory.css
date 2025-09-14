@@ -21,42 +21,8 @@
     flex: 1;
   }
 
-  /* Directory browse button */
-  .dir-field-browse-btn {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    min-height: var(--touch-target-min);
-    padding: var(--space-2) var(--space-3);
-    background: var(--color-secondary);
-    color: var(--color-secondary-text);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-2);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .dir-field-browse-btn:hover:not(:disabled) {
-    background: var(--color-secondary-hover);
-    border-color: var(--color-secondary);
-    transform: translateY(-1px);
-  }
-
-  .dir-field-browse-btn:focus {
-    outline: var(--focus-ring-width) solid var(--color-secondary);
-    outline-offset: var(--focus-ring-offset);
-  }
-
-  .dir-field-browse-btn:disabled {
-    background: var(--color-border);
-    color: var(--color-text-muted);
-    cursor: not-allowed;
-    transform: none;
-  }
+  /* Directory browse button - use unified button system */
+  /* When implemented: .btn .btn--secondary */
 
   .dir-field-browse-icon,
   .dir-field-loading {
@@ -98,64 +64,11 @@
     flex: 1;
   }
 
-  /* Directory remove button */
-  .dir-list-remove-btn {
-    min-height: var(--touch-target-min);
-    min-width: var(--touch-target-min);
-    padding: var(--space-1);
-    background: var(--color-error);
-    color: var(--color-error-text);
-    border: none;
-    border-radius: var(--radius-1);
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-    flex-shrink: 0;
-  }
+  /* Directory remove button - use unified button system */
+  /* When implemented: .btn .btn--remove .btn--icon-only */
 
-  .dir-list-remove-btn:hover:not(:disabled) {
-    background: var(--color-error-hover);
-    transform: scale(1.05);
-  }
-
-  .dir-list-remove-btn:focus {
-    outline: var(--focus-ring-width) solid var(--color-error);
-    outline-offset: var(--focus-ring-offset);
-  }
-
-  /* Directory add button */
-  .dir-list-add-btn {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    min-height: var(--touch-target-min);
-    padding: var(--space-3) var(--space-4);
-    background: var(--color-primary);
-    color: var(--color-primary-text);
-    border: none;
-    border-radius: var(--radius-2);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-  }
-
-  .dir-list-add-btn:hover:not(:disabled) {
-    background: var(--color-primary-hover);
-    transform: translateY(-1px);
-  }
-
-  .dir-list-add-btn:focus {
-    outline: var(--focus-ring-width) solid var(--color-primary);
-    outline-offset: var(--focus-ring-offset);
-  }
-
-  .dir-list-add-btn:disabled {
-    background: var(--color-border);
-    color: var(--color-text-muted);
-    cursor: not-allowed;
-  }
+  /* Directory add button - use unified button system */
+  /* When implemented: .btn .btn--add */
 
   .dir-list-add-icon {
     font-size: var(--font-size-lg);

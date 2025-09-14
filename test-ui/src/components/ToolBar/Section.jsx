@@ -4,10 +4,9 @@ import Button from './Button.jsx';
 import OverflowMenuItem from './OverflowMenuItem.jsx';
 
 /**
- * Section - Generic toolbar section component with intelligent overflow management
+ * Responsive toolbar section component
  * 
- * Professional architecture for responsive toolbar sections.
- * Dynamically calculates which buttons fit and moves overflow to menu.
+ * Calculates which buttons fit and moves overflow to menu.
  * 
  * @param {Object} props - Component props
  * @param {React.ReactNode} props.children - Toolbar buttons and separators
@@ -117,9 +116,18 @@ const Section = ({
     setIsOverflowOpen(false);
   };
 
+  const getJustifyClass = () => {
+    switch (alignContent) {
+      case 'left': return 'justify-start flex-1';
+      case 'center': return 'justify-center flex-1';  
+      case 'right': return 'justify-end';
+      default: return 'justify-start flex-1';
+    }
+  };
+
   const sectionClassName = [
     'page-toolbar-section',
-    `page-toolbar-section--${alignContent}`,
+    getJustifyClass(),
     isOverflowOpen && 'page-toolbar-section--overflow-open'
   ].filter(Boolean).join(' ');
 

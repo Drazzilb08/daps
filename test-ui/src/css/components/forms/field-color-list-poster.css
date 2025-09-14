@@ -272,23 +272,7 @@
     }
   }
 
-  [data-theme="dark"] .color-poster-empty-state {
-    background: var(--color-surface-elevated-dark);
-    border-color: var(--color-border-dark);
-  }
-
-  [data-theme="dark"] .color-poster-image {
-    box-shadow: var(--shadow-dark-md);
-  }
-
-  [data-theme="dark"] .color-poster-image:hover {
-    box-shadow: var(--shadow-dark-lg);
-  }
-
-  [data-theme="dark"] .color-poster-placeholder {
-    background: var(--color-surface-dim-dark);
-    border-color: var(--color-border-dark);
-  }
+  /* Theme styling handled by standard CSS variables - no theme-specific overrides needed */
 
 
   @media (prefers-contrast: high) {

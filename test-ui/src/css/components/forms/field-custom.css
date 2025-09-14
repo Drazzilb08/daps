@@ -1,174 +1,32 @@
 /**
- * Custom Field Component Styles
+ * Remaining Custom Field Styles
  * 
- * Styles for specialized field types like JSON, directory, color lists, etc.
- * Mobile-first design using DAPS design tokens.
+ * General custom field styles not specific to any particular field type.
+ * Specific field types now have their own dedicated CSS files.
  */
 
 @layer components {
-  /* JSON Field Styles - Enhanced compositional approach */
-  .json-field-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: var(--space-2);
-    gap: var(--space-2);
-  }
-
-  .json-field-controls {
-    display: flex;
-    gap: var(--space-1);
-    flex-shrink: 0;
-  }
-
-  /* JSON control buttons - 44px minimum for touch accessibility */
-  .json-field-btn {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1);
-    min-height: 44px;
-    padding: var(--space-2) var(--space-3);
-    background: var(--color-secondary);
-    color: var(--color-secondary-text);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-1);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-  }
-
-  .json-field-btn:hover:not(:disabled) {
-    background: var(--color-secondary-hover);
-    border-color: var(--color-secondary);
-    transform: translateY(-1px);
-  }
-
-  .json-field-btn:focus {
-    outline: var(--focus-ring-width) solid var(--color-secondary);
-    outline-offset: var(--focus-ring-offset);
-  }
-
-  .json-field-btn:disabled {
-    background: var(--color-border);
-    color: var(--color-text-muted);
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  .json-field-btn-icon {
-    font-size: var(--font-size-base);
-  }
-
-  .json-field-container {
-    position: relative;
-  }
-
-  .json-field-textarea {
-    font-family: var(--font-family-mono);
-    font-size: var(--font-size-sm);
-    line-height: 1.4;
-    tab-size: 2;
-    white-space: pre;
-    resize: vertical;
-  }
-
-  .json-field-status {
-    margin-top: var(--space-2);
-  }
-
-  .json-validation-indicator {
-    position: absolute;
-    top: var(--space-1);
-    right: var(--space-2);
-    font-size: var(--font-size-xs);
-    padding: var(--space-1);
-    border-radius: var(--radius-1);
-    background: var(--color-surface-secondary);
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  .json-validation-indicator--valid {
-    color: var(--color-success);
-    background: var(--color-success-bg, var(--color-surface-secondary));
-  }
-
-  .json-validation-indicator--error {
-    color: var(--color-error);
-    background: var(--color-error-bg, var(--color-surface-secondary));
-  }
-
-  /* Color List Field Styles - webkit specific styling */
-  .color-list-color-picker::-webkit-color-swatch-wrapper {
-    padding: 2px;
-  }
-
-  .color-list-color-picker::-webkit-color-swatch {
-    border: none;
-    border-radius: var(--radius-1);
-  }
-
-  .color-list-remove {
-    transition: all 0.2s ease; /* Override DAPS no-hover for better UX */
-  }
-
-  .color-list-remove:hover {
-    background: var(--color-error-bg, var(--color-surface-hover));
-    color: var(--color-error);
-  }
-
-  /* Instance Management Field Styles */
-  .instance-item-remove {
-    background: transparent;
-    transition: all 0.2s ease; /* Override DAPS no-hover for better UX */
-  }
-
-  .instance-item-remove:hover {
-    background: var(--color-error-bg, var(--color-surface-hover));
-    color: var(--color-error);
-  }
-
-  /* Placeholder Field Styles */
-  .field-placeholder {
-    padding: var(--space-4);
-    border: 2px dashed var(--color-border);
-    border-radius: var(--radius-2);
-    text-align: center;
-    color: var(--color-text-secondary);
-    font-style: italic;
-    background: var(--color-surface-secondary);
-  }
-
-  .field-placeholder code {
-    font-family: var(--font-family-mono);
-    background: var(--color-surface);
-    padding: var(--space-1) var(--space-2);
-    border-radius: var(--radius-1);
-    font-size: var(--font-size-sm);
-  }
-
-  /* Mobile adjustments */
+  /* General Mobile adjustments for all custom fields */
   @media (max-width: 640px) {
-    .json-field-header {
+    .custom-field-header {
       flex-direction: column;
       align-items: stretch;
     }
 
-    .json-field-controls {
+    .custom-field-controls {
       justify-content: flex-end;
     }
   }
 
-  /* Larger screens */
+  /* Larger screens adjustments */
   @media (min-width: 768px) {
-    .instance-item-fields {
+    .custom-field-grid {
       grid-template-columns: repeat(2, 1fr);
     }
   }
 
   @media (min-width: 1024px) {
-    .instance-item-fields {
+    .custom-field-grid {
       grid-template-columns: repeat(3, 1fr);
     }
   }

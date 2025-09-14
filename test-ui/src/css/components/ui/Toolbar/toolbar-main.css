@@ -25,20 +25,11 @@
     overflow: hidden; /* Prevent content from breaking out */
   }
 
-  .page-toolbar-section--left {
-    justify-content: flex-start;
-    flex: 1; /* Take available space */
-  }
-
-  .page-toolbar-section--center {
-    justify-content: center;
-    flex: 1; /* Take available space */
-  }
-
-  .page-toolbar-section--right {
-    justify-content: flex-end;
-    flex: 0 0 auto; /* Don't grow, stay compact */
-  }
+  /* page-toolbar-section alignment classes replaced with utility classes:
+     - left: justify-start flex-1
+     - center: justify-center flex-1  
+     - right: justify-end (no flex growth)
+  */
 
   .page-toolbar-section-buttons {
     display: flex;

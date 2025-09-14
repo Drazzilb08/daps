@@ -12,6 +12,9 @@
  * - Layout (display, position, dimensions)
  * - Border and styling (borders, border-radius, shadows)
  * - Interactive (cursor states, transitions)
+ * - Image and icon utilities (sizing, display, placeholders, status)
+ * - Form field utilities (standardized input/select styling)
+ * - Responsive image/icon utilities (mobile-first, accessibility)
  * - Development helpers (debugging utilities)
  * 
  * Usage Guidelines:
@@ -177,28 +180,71 @@
   /* Flexbox utilities */
   .flex-col { flex-direction: column; }
   .flex-row { flex-direction: row; }
+  .flex-wrap { flex-wrap: wrap; }
+  .flex-nowrap { flex-wrap: nowrap; }
   .items-center { align-items: center; }
   .items-start { align-items: flex-start; }
   .items-end { align-items: flex-end; }
+  .items-stretch { align-items: stretch; }
   .justify-center { justify-content: center; }
   .justify-start { justify-content: flex-start; }
   .justify-end { justify-content: flex-end; }
   .justify-between { justify-content: space-between; }
+  .justify-around { justify-content: space-around; }
+  .justify-evenly { justify-content: space-evenly; }
   .flex-1 { flex: 1; }
+  
+  /* Common flex combinations */
+  .flex-items-center { 
+    display: flex; 
+    align-items: center; 
+  }
   
   /* Gap utilities */
   .gap-0 { gap: 0; }
   .gap-1 { gap: var(--space-1); }
   .gap-2 { gap: var(--space-2); }
   .gap-3 { gap: var(--space-3); }
-  .gap-4 { gap: var(--space-4); }
-  .gap-5 { gap: var(--space-5); }
+
+  /* Grid utilities */
+  .grid { display: grid; }
+  .inline-grid { display: inline-grid; }
+  .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+  .grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+  .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .grid-cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .grid-cols-auto { grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-width-xs), 1fr)); }
+  .grid-cols-auto-sm { grid-template-columns: repeat(auto-fit, minmax(var(--min-width-input), 1fr)); }
+  .grid-cols-auto-lg { grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-width-sm), 1fr)); }
 
   /* Position utilities */
   .relative { position: relative; }
   .absolute { position: absolute; }
   .fixed { position: fixed; }
   .sticky { position: sticky; }
+  
+  /* Position coordinates */
+  .top-0 { top: 0; }
+  .top-1 { top: var(--space-1); }
+  .top-2 { top: var(--space-2); }
+  .top-3 { top: var(--space-3); }
+  .top-4 { top: var(--space-4); }
+  .right-0 { right: 0; }
+  .right-1 { right: var(--space-1); }
+  .right-2 { right: var(--space-2); }
+  .right-3 { right: var(--space-3); }
+  .right-4 { right: var(--space-4); }
+  .bottom-0 { bottom: 0; }
+  .bottom-1 { bottom: var(--space-1); }
+  .bottom-2 { bottom: var(--space-2); }
+  .bottom-3 { bottom: var(--space-3); }
+  .bottom-4 { bottom: var(--space-4); }
+  .left-0 { left: 0; }
+  .left-1 { left: var(--space-1); }
+  .left-2 { left: var(--space-2); }
+  .left-3 { left: var(--space-3); }
+  .left-4 { left: var(--space-4); }
+  .inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
 
   /* Width and height utilities */
   .w-full { width: 100%; }
@@ -221,10 +267,6 @@
   
   /* Border utilities */
   .border { border: var(--input-border-width) solid var(--color-border); }
-  .border-t { border-top: var(--input-border-width) solid var(--color-border); }
-  .border-r { border-right: var(--input-border-width) solid var(--color-border); }
-  .border-b { border-bottom: var(--input-border-width) solid var(--color-border); }
-  .border-l { border-left: var(--input-border-width) solid var(--color-border); }
   
   .border-none { border: none; }
   
@@ -258,6 +300,164 @@
   .transition-slow { transition: all var(--transition-slow); }
   
   /* ==========================================================================
+     IMAGE AND ICON UTILITIES
+     Reusable classes for common image and icon patterns
+     ========================================================================== */
+  
+  /* Icon sizing utilities */
+  .icon-xs { 
+    width: var(--size-icon-xs); 
+    height: var(--size-icon-xs); 
+  }
+  .icon-sm { 
+    width: var(--size-icon-sm); 
+    height: var(--size-icon-sm); 
+  }
+  .icon-md { 
+    width: var(--size-icon-md); 
+    height: var(--size-icon-md); 
+  }
+  .icon-lg { 
+    width: var(--size-icon-lg); 
+    height: var(--size-icon-lg); 
+  }
+  .icon-xl { 
+    width: var(--size-icon-xl); 
+    height: var(--size-icon-xl); 
+  }
+  .icon-2xl { 
+    width: var(--size-icon-2xl); 
+    height: var(--size-icon-2xl); 
+  }
+  
+  /* Image display utilities */
+  .img-cover { object-fit: cover; }
+  .img-contain { object-fit: contain; }
+  .img-fill { object-fit: fill; }
+  .img-scale-down { object-fit: scale-down; }
+  .img-none { object-fit: none; }
+  
+  
+  /* Image responsive utilities */
+  .img-responsive {
+    max-width: 100%;
+    height: auto;
+  }
+  
+  .img-fluid {
+    max-width: 100%;
+    height: auto;
+    object-fit: cover;
+  }
+  
+  /* Image placeholder utilities */
+  .img-placeholder {
+    background: var(--color-surface-dim);
+    border: 2px dashed var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    text-align: center;
+  }
+  
+  .img-loading {
+    background: var(--color-surface-dim);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .img-loading::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg, 
+      transparent, 
+      var(--color-surface-elevated), 
+      transparent
+    );
+    animation: shimmer 2s infinite;
+  }
+  
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+  
+  /* Poster-specific utilities */
+  .poster-standard {
+    width: var(--poster-width-standard);
+    height: var(--poster-height-standard);
+  }
+  
+  .poster-mobile {
+    width: var(--poster-width-mobile);
+    height: var(--poster-height-mobile);
+  }
+  
+  .poster-tablet {
+    width: var(--poster-width-tablet);
+    height: var(--poster-height-tablet);
+  }
+  
+  /* Image enhancement utilities */
+  .img-hover-scale {
+    transition: transform var(--transition-fast);
+  }
+  
+  .img-hover-scale:hover {
+    transform: scale(1.02);
+  }
+  
+  .img-shadow {
+    box-shadow: var(--shadow-md);
+  }
+  
+  .img-shadow-hover {
+    transition: box-shadow var(--transition-fast);
+  }
+  
+  .img-shadow-hover:hover {
+    box-shadow: var(--shadow-lg);
+  }
+  
+  /* Icon positioning utilities */
+  .icon-inline {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  
+  .icon-block {
+    display: block;
+  }
+  
+  /* Status icon utilities */
+  .icon-success {
+    color: var(--color-success);
+  }
+  
+  .icon-warning {
+    color: var(--color-warning);
+  }
+  
+  .icon-error {
+    color: var(--color-error);
+  }
+  
+  .icon-info {
+    color: var(--color-accent);
+  }
+  
+  .icon-muted {
+    color: var(--color-text-muted);
+  }
+  
+  /* ==========================================================================
      FORM FIELD UTILITIES
      Utility-first form field styling classes to replace hardcoded CSS
      ========================================================================== */
@@ -272,7 +472,7 @@
     line-height: var(--line-height-normal);
     color: var(--color-input-text);
     background: var(--color-input-bg);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
     border-radius: var(--radius-2);
     transition: all var(--transition-fast);
   }
@@ -301,7 +501,7 @@
     line-height: var(--line-height-normal);
     color: var(--color-input-text);
     background: var(--color-input-bg);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
     border-radius: var(--radius-2);
     appearance: none;
     cursor: pointer;
@@ -321,6 +521,86 @@
     cursor: not-allowed;
     opacity: 0.6;
   }
+  
+  /* ==========================================================================
+     RESPONSIVE IMAGE/ICON UTILITIES
+     Media query variations for mobile-first responsive images
+     ========================================================================== */
+  
+  /* Mobile optimizations */
+  @media (max-width: 768px) {
+    .poster-responsive {
+      width: var(--poster-width-mobile);
+      height: var(--poster-height-mobile);
+    }
+    
+    /* Larger touch targets on mobile */
+    .icon-touch-mobile {
+      min-width: var(--touch-target-comfortable);
+      min-height: var(--touch-target-comfortable);
+    }
+  }
+  
+  /* Tablet optimizations */
+  @media (min-width: 481px) and (max-width: 768px) {
+    .poster-responsive {
+      width: var(--poster-width-tablet);
+      height: var(--poster-height-tablet);
+    }
+  }
+  
+  /* Desktop and larger */
+  @media (min-width: 769px) {
+    .poster-responsive {
+      width: var(--poster-width-standard);
+      height: var(--poster-height-standard);
+    }
+  }
+  
+  /* Accessibility enhancements */
+  @media (prefers-reduced-motion: reduce) {
+    .img-hover-scale:hover,
+    .img-shadow-hover:hover {
+      transform: none;
+      box-shadow: var(--shadow-md);
+    }
+    
+    .img-loading::after {
+      animation: none;
+    }
+  }
+  
+  @media (prefers-contrast: high) {
+    .img-placeholder {
+      border-width: 3px;
+      border-style: solid;
+    }
+    
+    .icon-success,
+    .icon-warning,
+    .icon-error,
+    .icon-info {
+      filter: contrast(1.2);
+    }
+  }
+  
+  /* Touch device optimizations */
+  @media (hover: none) and (pointer: coarse) {
+    .img-hover-scale:hover,
+    .img-shadow-hover:hover {
+      transform: none;
+      box-shadow: var(--shadow-md);
+    }
+    
+    /* Ensure icons are touch-friendly */
+    .icon-xs,
+    .icon-sm {
+      min-width: var(--touch-target-min);
+      min-height: var(--touch-target-min);
+      padding: calc((var(--touch-target-min) - var(--size-icon-sm)) / 2);
+      box-sizing: border-box;
+    }
+  }
 }
 
 /* =============================================================================
@@ -331,14 +611,14 @@
   /* Grid visualization helper */
   .debug-grid {
     background-image: 
-      linear-gradient(rgba(255, 0, 0, 0.1) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(255, 0, 0, 0.1) 1px, transparent 1px);
+      linear-gradient(rgba(255, 0, 0, 0.1) var(--border-width-thin), transparent var(--border-width-thin)),
+      linear-gradient(90deg, rgba(255, 0, 0, 0.1) var(--border-width-thin), transparent var(--border-width-thin));
     background-size: var(--space-2) var(--space-2);
   }
 
   /* Outline all elements for layout debugging */
   .debug-layout * {
-    outline: 1px solid rgba(255, 0, 0, 0.2);
+    outline: var(--border-width-thin) solid rgba(255, 0, 0, 0.2);
   }
 
   /* Focus debugging */

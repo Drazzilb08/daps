@@ -226,13 +226,4 @@
   }
 }
 
-/* Light theme specific adjustments */
-[data-theme="light"] {
-  .search-toolbar {
-    --local-surface-elevated: var(--color-background);
-  }
-  
-  .search-toolbar__overflow-menu {
-    box-shadow: var(--shadow-md);
-  }
-}
+/* Theme adjustments handled by CSS variables in theme files */

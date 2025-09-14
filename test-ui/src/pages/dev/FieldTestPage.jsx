@@ -30,7 +30,7 @@ const FieldStatusOverview = React.memo(() => {
     <div className="field-status-overview">
       <h2 className="field-status-overview__title">Field Implementation Status</h2>
       
-      <div className="status-summary">
+      <div className="grid grid-cols-auto gap-3 mb-4">
         <div className="status-metric status-metric--working">
           <div className="metric-number">{workingCount}</div>
           <div className="metric-label">Working Fields</div>
@@ -256,7 +256,7 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
               {isApproved ? (
                 <button
                   onClick={handleDisapprove}
-                  className="approval-btn approval-btn--unapprove"
+                  className="btn btn--warning"
                 >
                   Unapprove
                 </button>
@@ -270,7 +270,7 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
               )}
               <button
                 onClick={handleDisapprove}
-                className="approval-btn approval-btn--disapprove"
+                className="btn btn--error"
               >
                 Needs Work
               </button>

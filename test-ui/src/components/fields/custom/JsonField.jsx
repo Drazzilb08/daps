@@ -6,26 +6,15 @@ import { FieldError } from '../primitives/FieldError';
 import { TextareaBase } from '../primitives/TextareaBase';
 
 /**
- * JsonField Component - Advanced JSON editor with validation and formatting
- * 
- * Enhanced composition using primitive components for consistent styling and behavior.
- * Provides real-time validation, format/minify buttons, and clear error messaging.
- * Follows mobile-first design with touch-optimized controls.
+ * JSON editor with validation and formatting
  * 
  * @param {Object} props - Component props
- * @param {Object} props.field - Field configuration object
- * @param {string} props.field.key - Unique field identifier
- * @param {string} props.field.label - Display label for the field
- * @param {string} [props.field.description] - Help text description
- * @param {boolean} [props.field.required=false] - Whether field is required
- * @param {string} [props.field.placeholder] - Input placeholder text
- * @param {number} [props.field.minRows=8] - Minimum textarea rows
- * @param {number} [props.field.maxRows=20] - Maximum textarea rows
- * @param {string|Object} props.value - Current JSON value (string or object)
- * @param {Function} props.onChange - Value change handler, receives JSON string
- * @param {boolean} [props.disabled=false] - Disable input
- * @param {boolean} [props.highlightInvalid=false] - Whether to show validation errors
- * @param {string} [props.errorMessage] - Validation error message to display
+ * @param {Object} props.field - Field configuration
+ * @param {string|Object} props.value - Current JSON value
+ * @param {Function} props.onChange - Change handler
+ * @param {boolean} [props.disabled=false] - Disabled state
+ * @param {boolean} [props.highlightInvalid=false] - Show validation errors
+ * @param {string} [props.errorMessage] - Error message
  */
 export const JsonField = ({
   field,

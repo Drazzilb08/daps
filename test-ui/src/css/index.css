@@ -90,6 +90,8 @@
 @import './components/forms/field-color-list.css';
 @import './components/forms/field-color-list-poster.css';
 @import './components/forms/field-custom.css';
+@import './components/forms/field-json.css';
+@import './components/forms/field-placeholder.css';
 @import './components/forms/form-layout.css';
 @import './components/forms/form-renderer.css';  /* Schema-driven form renderer */
 
@@ -107,7 +109,6 @@
 @import './pages/dev/api-test.css';
 @import './pages/dev/form-test.css';
 @import './pages/dev/field-test.css';
-@import './pages/dev/primitives-test.css';  /* Form primitives demonstration page */
 @import './pages/dev/error-test.css';
 
 

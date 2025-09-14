@@ -11,8 +11,8 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(4px);
+    background-color: var(--overlay-strong);
+    backdrop-filter: blur(var(--space-1));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -22,10 +22,10 @@
 
   /* Error modal */
   .global-error-modal {
-    max-width: 500px;
+    max-width: var(--grid-min-width-2xl);
     width: 100%;
     border-radius: var(--radius-3);
-    border: 2px solid;
+    border: var(--border-width-medium) solid;
     box-shadow: var(--shadow-2xl);
     animation: errorModalIn 0.3s ease-out;
   }
@@ -36,7 +36,7 @@
     align-items: center;
     gap: var(--space-3);
     padding: var(--space-4);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    border-bottom: var(--border-width-thin) solid rgba(255, 255, 255, var(--opacity-20));
   }
 
   /* Error icon */
@@ -63,21 +63,21 @@
     padding: var(--space-1);
     border-radius: var(--radius-1);
     transition: background-color 0.2s ease;
-    width: 32px;
-    height: 32px;
+    width: var(--size-icon-xl);
+    height: var(--size-icon-xl);
     display: flex;
     align-items: center;
     justify-content: center;
   }
 
   .global-error-close:hover {
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, var(--opacity-20));
   }
 
   .global-error-close:focus {
     outline: none;
-    background-color: rgba(255, 255, 255, 0.3);
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, var(--opacity-30));
+    box-shadow: 0 0 0 var(--border-width-medium) rgba(255, 255, 255, var(--opacity-50));
   }
 
   /* Modal content */
@@ -96,7 +96,7 @@
   /* Technical details (dev only) */
   .global-error-details {
     margin-top: var(--space-3);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: var(--border-width-thin) solid rgba(255, 255, 255, var(--opacity-30));
     border-radius: var(--radius-2);
   }
 
@@ -104,13 +104,13 @@
     padding: var(--space-2);
     cursor: pointer;
     font-size: var(--font-size-sm);
-    color: rgba(255, 255, 255, 0.8);
-    background-color: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, var(--opacity-80));
+    background-color: rgba(255, 255, 255, var(--opacity-10));
     border-radius: var(--radius-2);
   }
 
   .global-error-details summary:hover {
-    background-color: rgba(255, 255, 255, 0.15);
+    background-color: rgba(255, 255, 255, var(--opacity-15));
   }
 
   .global-error-stack {
@@ -118,12 +118,12 @@
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     font-size: var(--font-size-xs);
     line-height: var(--line-height-normal);
-    color: rgba(255, 255, 255, 0.9);
-    background-color: rgba(0, 0, 0, 0.3);
+    color: rgba(255, 255, 255, var(--opacity-90));
+    background-color: rgba(0, 0, 0, var(--opacity-30));
     margin: 0;
     border-radius: 0 0 var(--radius-2) var(--radius-2);
     overflow-x: auto;
-    max-height: 200px;
+    max-height: var(--grid-min-width-sm);
     overflow-y: auto;
   }
 
@@ -132,7 +132,7 @@
     display: flex;
     gap: var(--space-3);
     padding: var(--space-4);
-    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    border-top: var(--border-width-thin) solid rgba(255, 255, 255, var(--opacity-20));
     justify-content: flex-end;
   }
 
@@ -150,13 +150,13 @@
   }
 
   .global-error-retry {
-    background-color: rgba(255, 255, 255, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    background-color: rgba(255, 255, 255, var(--opacity-20));
+    border: var(--border-width-thin) solid rgba(255, 255, 255, var(--opacity-40));
     color: white;
   }
 
   .global-error-retry:hover:not(:disabled) {
-    background-color: rgba(255, 255, 255, 0.3);
+    background-color: rgba(255, 255, 255, var(--opacity-30));
   }
 
   .global-error-retry:disabled {
@@ -166,12 +166,12 @@
 
   .global-error-dismiss {
     background-color: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    border: var(--border-width-thin) solid rgba(255, 255, 255, var(--opacity-60));
     color: white;
   }
 
   .global-error-dismiss:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, var(--opacity-10));
   }
 
   /* Error boundary fallback */

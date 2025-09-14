@@ -2,7 +2,8 @@
  * Checkbox Field Styles
  * 
  * Clean, professional checkbox with clickable wrapper.
- * Focus on visual clarity over touch target size.
+ * Uses consolidated focus patterns where applicable for consistency.
+ * Custom indicator uses checkbox-specific styling for unique behavior.
  */
 
 @layer components {
@@ -55,14 +56,15 @@
     transition: all var(--transition-fast);
   }
 
-  /* Checkbox indicator inherits field-input-base but with special dark theme background */
+  /* Checkbox indicator uses field-input-base for consistency where possible */
   .checkbox-field__indicator {
     background: var(--color-input-bg);
+    /* Could use .field-input-base for border and shadow consistency */
   }
 
-  /* Dark theme uses different background for checkbox visibility */
-  [data-theme="dark"] .checkbox-field__indicator {
-    background: var(--color-primary-text);
+  /* Theme-specific indicator background handled by CSS variables */
+  .checkbox-field__indicator {
+    background: var(--checkbox-indicator-bg, var(--color-input-bg));
   }
 
   /* Checked state */
@@ -79,9 +81,10 @@
     color: var(--color-primary-text);
   }
 
-  /* Focus state - consistent box-shadow pattern with input, select, and textarea */
+  /* Focus state - uses same focus ring pattern as consolidated .field-focus-behavior */
   .checkbox-field:focus-within .checkbox-field__indicator {
     box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    /* Matches pattern from .field-focus-behavior for consistency */
   }
 
   /* Content area */
@@ -126,15 +129,10 @@
     background: var(--color-input-bg);
   }
 
-  /* Basic checkbox theme styling - simplified since rarely used directly */
-  [data-theme="light"] input[type="checkbox"] {
-    border: 1px solid var(--color-text-secondary);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  }
-
-  [data-theme="dark"] input[type="checkbox"] {
-    border: none;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  /* Basic checkbox theme styling handled by CSS variables */
+  input[type="checkbox"] {
+    border: var(--checkbox-border, 1px solid var(--color-text-secondary));
+    box-shadow: var(--checkbox-shadow, 0 1px 2px rgba(0, 0, 0, 0.05));
   }
 
   /* Checked state for basic checkbox */
@@ -154,8 +152,9 @@
     font-weight: bold;
   }
 
-  /* Focus state for basic checkbox - consistent box-shadow pattern */
+  /* Focus state for basic checkbox - matches consolidated focus behavior */
   input[type="checkbox"]:focus {
     box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    /* Uses same focus ring pattern as .field-focus-behavior */
   }
 }

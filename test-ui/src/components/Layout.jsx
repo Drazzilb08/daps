@@ -8,31 +8,9 @@ import SearchToolbar from './Search/SearchToolbar.jsx';
 import useSearchPageDetection from '../hooks/useSearchPageDetection.js';
 
 /**
- * Layout - Main layout component for DAPS application
+ * Main layout with responsive sidebar and toolbar
  * 
- * Professional responsive layout implementing context-aware interface design
- * with dynamic toolbar display and mobile-first architecture.
- * 
- * Features:
- * - Fixed header with context-aware search interface integration
- * - Collapsible sidebar with hierarchical navigation
- * - Context-aware toolbar display (only on search pages)
- * - Responsive design with mobile breakpoints
- * - Scrollable main content area with proper overflow handling
- * - Touch-optimized mobile interface with overlay sidebar
- * - Professional flexbox layout with proper semantic HTML
- * 
- * Layout Structure:
- * - Header: Fixed position with PageHeader and SearchInterface
- * - Main: Flexbox container with sidebar and content area
- * - Sidebar: Collapsible navigation with mobile overlay
- * - Toolbar: Context-aware SearchToolbar (search pages only)
- * - Content: Scrollable main content area using React Router Outlet
- * 
- * Context Behavior:
- * - Search pages (/media/search, /posters/search/*): Show SearchToolbar
- * - Non-search pages: Clean layout without toolbar
- * - Mobile: Overlay sidebar with backdrop and touch gestures
+ * Shows SearchToolbar on search pages only. Sidebar collapses to overlay on mobile.
  * 
  * @param {Object} props - Component props
  * @param {React.ReactNode} [props.children] - Optional children (overrides Outlet if provided)
@@ -42,14 +20,11 @@ const Layout = ({ children }) => {
   const { isSearchPage, searchPageType, searchSubtype } = useSearchPageDetection();
   
   /**
-   * Handle toolbar action from SearchToolbar component
+   * Handle toolbar actions (refresh, scan, export, etc.)
    * 
-   * Processes toolbar actions and delegates to appropriate handlers
-   * based on action type and current search context.
-   * 
-   * @param {string} action - The action type (refresh, scan, export, etc.)
-   * @param {Object} tool - Tool data including action and context information
-   * @param {Event} _event - DOM event that triggered the action (currently unused)
+   * @param {string} action - The action type
+   * @param {Object} tool - Tool data
+   * @param {Event} _event - DOM event (unused)
    */
   const handleToolAction = React.useCallback((action, tool, _event) => {
     console.log('Toolbar action:', { action, tool, searchPageType, searchSubtype });

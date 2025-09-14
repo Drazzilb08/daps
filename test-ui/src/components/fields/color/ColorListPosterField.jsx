@@ -1,15 +1,8 @@
 /**
  * ColorListPosterField Component
  * 
- * Integrated multiple color input field with poster preview functionality.
- * Features direct poster-color picker pairs for improved UX.
- * 
- * Architecture:
- * - FieldWrapper provides consistent field structure
- * - Direct poster-color picker integration (no separate ColorArray)
- * - Canvas-based poster border manipulation with immediate visual feedback
- * - Fetches poster list from backend API and applies colors as borders
- * - Mobile-first responsive design with touch-optimized color pickers
+ * Multiple color input field with poster preview.
+ * Shows poster previews with color borders applied via canvas.
  */
 
 import React, { useCallback, useMemo, useState, useEffect } from 'react';
@@ -158,18 +151,15 @@ function getPosterPreviewUrl(imgUrl, borderColor, options = {}) {
 }
 
 /**
- * ColorListPosterField component with integrated poster-color picker pairs
- * 
- * Each poster preview has its own color picker directly below/beside it for 
- * immediate visual feedback and improved UX. No separate text inputs.
+ * Color field with poster previews showing border colors
  * 
  * @param {Object} props - Component props
- * @param {Object} props.field - Field configuration object
- * @param {string[]|string} props.value - Current field value (array of hex colors or comma-separated string)
- * @param {Function} props.onChange - Value change handler
- * @param {boolean} props.disabled - Field disabled state
- * @param {boolean} props.highlightInvalid - Show validation error state
- * @param {string} props.errorMessage - Error message to display
+ * @param {Object} props.field - Field configuration
+ * @param {string[]|string} props.value - Array of hex colors or comma-separated string
+ * @param {Function} props.onChange - Change handler
+ * @param {boolean} props.disabled - Disabled state
+ * @param {boolean} props.highlightInvalid - Show validation errors
+ * @param {string} props.errorMessage - Error message
  */
 export const ColorListPosterField = React.memo(({
   field,

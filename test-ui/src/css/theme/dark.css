@@ -40,6 +40,7 @@
   --sidebar-hover: #262a30;     /* Sidebar hover state */
   --header-bg: #191b1f;         /* Header background */
   --overlay: rgba(24, 25, 31, 0.64); /* Modal overlays */
+  --overlay-strong: rgba(0, 0, 0, 0.8); /* Critical modal overlays */
 
   /* =============================================================================
      SEMANTIC COLOR SYSTEM
@@ -120,6 +121,19 @@
   --color-input-text-disabled: var(--text-disabled);
   --color-input-placeholder: var(--text-tertiary);
   --color-input-addon-bg: var(--surface-alt);   /* Input addon background */
+  
+  /* Input addon theme styling */
+  --input-addon-border: none;
+  --input-addon-shadow: 0 1px 3px rgba(var(--shadow-color), var(--shadow-opacity-medium));
+  
+  /* Checkbox theme styling */
+  --checkbox-indicator-bg: var(--color-primary-text);
+  --checkbox-border: none;
+  --checkbox-shadow: 0 1px 3px rgba(var(--shadow-color), var(--shadow-opacity-medium));
+  
+  /* Field base theme styling */
+  --field-base-border: none;
+  --field-base-shadow: 0 1px 3px rgba(var(--shadow-color), var(--shadow-opacity-medium));
 
   /* Focus system (8 total uses) */
   --color-focus-ring: var(--focus);              /* 7 uses */
@@ -140,4 +154,17 @@
   --shadow-opacity-light: 0.3;
   --shadow-opacity-medium: 0.4;
   --shadow-opacity-heavy: 0.5;
+}
+
+/* =============================================================================
+   HIGH CONTRAST MODE SUPPORT
+   Enhanced contrast for accessibility compliance
+   ============================================================================= */
+@media (prefers-contrast: high) {
+  :root,
+  [data-theme="dark"] {
+    --color-border: #ffffff;
+    --color-text-primary: #ffffff;
+    --color-background: #000000;
+  }
 }

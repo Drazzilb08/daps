@@ -1,10 +1,10 @@
 import React from 'react';
 
 /**
- * PosterStatistics - Poster collection statistics and analytics
+ * Poster collection statistics and analytics
  * 
- * Display comprehensive statistics about poster collection including
- * coverage rates, quality distributions, and source analytics.
+ * Shows statistics about poster collection including coverage rates,
+ * quality distributions, and source analytics.
  * 
  * @returns {JSX.Element} Poster statistics page component
  */

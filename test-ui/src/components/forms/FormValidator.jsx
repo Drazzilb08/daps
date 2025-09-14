@@ -1,8 +1,8 @@
 /**
- * FormValidator - Comprehensive validation engine for schema-driven forms
+ * FormValidator - Validation engine for schema-driven forms
  * 
  * Provides field-level and form-level validation with real-time feedback.
- * Integrates with the compositional field system and error primitives.
+ * Integrates with field system and error primitives.
  */
 
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';

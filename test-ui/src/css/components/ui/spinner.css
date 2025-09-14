@@ -51,9 +51,5 @@
     100% { transform: rotate(360deg); }
   }
 
-  /* Theme support */
-  [data-theme="dark"] .spinner-circle {
-    border-color: var(--color-surface-variant);
-    border-top-color: var(--color-primary);
-  }
+  /* Theme support handled by CSS variables - no theme-specific overrides needed */
 }

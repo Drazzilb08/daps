@@ -149,10 +149,4 @@
   }
 }
 
-/* Light theme overrides (activated via data-theme="light") */
-[data-theme="light"] {
-  .tool-button {
-    --local-surface: var(--color-background);
-    --local-hover: var(--color-surface);
-  }
-}
+/* Theme overrides handled by CSS variables in theme files */

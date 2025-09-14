@@ -1,101 +1,10 @@
 /**
- * Directory Field Components - Directory picker and directory list management
+ * Directory Field Components - Placeholder for future implementation
  * 
- * Styles for DirField and DirListField components built through composition.
- * Mobile-first design using DAPS design tokens with 44px touch targets.
+ * Currently contains no styles as the directory field components
+ * are not yet implemented and use UnavailableField placeholders.
  */
 
 @layer components {
-  /* Directory Field Styles */
-  .dir-field {
-    /* Inherits styles from FieldWrapper primitive */
-  }
-
-  .dir-field-container {
-    display: flex;
-    align-items: stretch;
-    gap: var(--space-2);
-  }
-
-  .dir-field-input {
-    flex: 1;
-  }
-
-  /* Directory browse button - use unified button system */
-  /* When implemented: .btn .btn--secondary */
-
-  .dir-field-browse-icon,
-  .dir-field-loading {
-    font-size: var(--font-size-lg);
-  }
-
-  /* Directory List Field Styles */
-  .dir-list-field {
-    /* Inherits styles from FieldWrapper primitive */
-  }
-
-  .dir-list-container {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-3);
-  }
-
-  .dir-list-empty {
-    padding: var(--space-4);
-    text-align: center;
-    color: var(--color-text-muted);
-    font-style: italic;
-    background: var(--color-surface-elevated);
-    border: 1px dashed var(--color-border);
-    border-radius: var(--radius-2);
-  }
-
-  .dir-list-item {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--space-2);
-    padding: var(--space-3);
-    background: var(--color-surface-elevated);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-2);
-  }
-
-  .dir-list-item-field {
-    flex: 1;
-  }
-
-  /* Directory remove button - use unified button system */
-  /* When implemented: .btn .btn--remove .btn--icon-only */
-
-  /* Directory add button - use unified button system */
-  /* When implemented: .btn .btn--add */
-
-  .dir-list-add-icon {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
-  }
-
-  /* Status and limits */
-  .dir-list-limits {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-muted);
-    text-align: center;
-    padding: var(--space-1) var(--space-2);
-    background: var(--color-surface-elevated);
-    border-radius: var(--radius-1);
-  }
-
-  /* Mobile adjustments */
-  @media (max-width: 640px) {
-    .dir-field-container {
-      flex-direction: column;
-      gap: var(--space-3);
-    }
-    
-    .dir-list-item {
-      flex-direction: column;
-      align-items: stretch;
-      gap: var(--space-3);
-    }
-  }
+  /* Directory field styles will be implemented when components are ready */
 }

@@ -50,10 +50,6 @@
     text-align: center;
   }
 
-  .color-list-status {
-    margin-top: var(--space-2);
-    font-size: var(--font-size-sm);
-  }
 
   .no-colors-message {
     color: var(--color-text-muted);
@@ -92,12 +88,5 @@
     }
   }
 
-  /* Dark theme adjustments */
-  [data-theme="dark"] .poster-preview-image {
-    box-shadow: var(--shadow-dark);
-  }
-
-  [data-theme="dark"] .poster-preview-image:hover {
-    box-shadow: var(--shadow-dark-lg);
-  }
+  /* Theme styling handled by standard CSS variables - no theme-specific overrides needed */
 }

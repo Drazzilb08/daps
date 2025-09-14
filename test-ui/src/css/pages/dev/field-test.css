@@ -89,13 +89,7 @@
     text-align: center;
   }
   
-  /* Status summary metrics */
-  .status-summary {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: var(--space-3);
-    margin-bottom: var(--space-4);
-  }
+  /* Status summary metrics - replaced with utility classes */
   
   .status-metric {
     background: var(--color-surface);
@@ -528,57 +522,6 @@
     text-align: center;
   }
 
-  .analysis-grid {
-    display: grid;
-    gap: var(--space-4);
-  }
-
-  @media (min-width: 768px) {
-    .analysis-grid {
-      grid-template-columns: 1fr 1fr;
-    }
-  }
-
-  .analysis-card {
-    background: var(--color-surface);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-2);
-    padding: var(--space-3);
-  }
-
-  .analysis-card--problem {
-    border-color: var(--color-error);
-  }
-
-  .analysis-card--solution {
-    border-color: var(--color-success);
-  }
-
-  .card-title {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    margin-bottom: var(--space-3);
-  }
-
-  .analysis-card--problem .card-title {
-    color: var(--color-error-text, var(--color-text-primary));
-  }
-
-  .analysis-card--solution .card-title {
-    color: var(--color-success-text, var(--color-text-primary));
-  }
-
-  .issue-list,
-  .benefit-list {
-    margin: 0 0 var(--space-3) var(--space-4);
-  }
-
-  .issue-list li,
-  .benefit-list li {
-    margin-bottom: var(--space-1);
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-  }
 
   .impact {
     font-size: var(--font-size-sm);
@@ -678,34 +621,7 @@
     margin: 0 auto;
   }
 
-  /* Control button styling (using composable pattern) */
-  .control-button {
-    min-height: var(--touch-target-min);
-    padding: var(--space-2) var(--space-3);
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-1);
-    background: var(--color-surface);
-    color: var(--color-text-primary);
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    cursor: pointer;
-    transition: all var(--transition-fast);
-  }
-
-  .control-button:hover {
-    background: var(--color-surface-hover, var(--color-surface-elevated));
-    border-color: var(--color-border-hover, var(--color-border));
-  }
-
-  .control-button.secondary {
-    background: var(--color-secondary, var(--color-surface));
-    color: var(--color-secondary-text, var(--color-text-primary));
-    border-color: var(--color-secondary, var(--color-border));
-  }
-
-  .control-button.secondary:hover {
-    background: var(--color-secondary-hover, var(--color-surface-elevated));
-  }
+  /* Control buttons - use central .btn system with .btn and .btn--secondary */
 }
 
 /* Mobile-first responsive adjustments */
@@ -719,10 +635,7 @@
     align-items: center;
   }
   
-  .control-button {
-    width: 100%;
-    max-width: 200px;
-  }
+  /* Button responsive styling handled by central .btn system */
 
   .settings-section__header {
     padding: var(--space-2) var(--space-3);
@@ -1262,56 +1175,7 @@
   flex-wrap: wrap;
 }
 
-.approval-btn {
-  min-height: var(--touch-target-min);
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid;
-  border-radius: var(--radius-1);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.approval-btn--approve {
-  border-color: var(--color-success);
-  background: var(--color-success);
-  color: var(--color-success-text, white);
-}
-
-.approval-btn--approve:hover:not(:disabled) {
-  background: var(--color-success-hover, var(--color-success));
-}
-
-.approval-btn--approve.active {
-  background: var(--color-success-subtle, var(--color-surface));
-  color: var(--color-success-text, var(--color-text-primary));
-}
-
-.approval-btn--disapprove {
-  border-color: var(--color-warning);
-  background: var(--color-warning);
-  color: var(--color-warning-text, white);
-}
-
-.approval-btn--disapprove:hover:not(:disabled) {
-  background: var(--color-warning-hover, var(--color-warning));
-}
-
-.approval-btn--unapprove {
-  border-color: var(--color-error);
-  background: var(--color-error);
-  color: var(--color-error-text, white);
-}
-
-.approval-btn--unapprove:hover:not(:disabled) {
-  background: var(--color-error-hover, var(--color-error));
-}
-
-.approval-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
+/* Approval buttons - use central .btn system with .btn--success, .btn--warning, .btn--error */
 
 /* Placeholder Field Display */
 .field-tester__placeholder {
@@ -1344,47 +1208,4 @@
   flex-wrap: wrap;
 }
 
-.quick-action-btn {
-  min-height: var(--touch-target-min);
-  padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-1);
-  background: var(--color-surface);
-  color: var(--color-text-primary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-medium);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.quick-action-btn:hover {
-  background: var(--color-surface-hover, var(--color-surface-elevated));
-  border-color: var(--color-border-hover, var(--color-border));
-}
-
-.quick-action-btn--approve-all {
-  border-color: var(--color-success);
-  color: var(--color-success-text, var(--color-text-primary));
-}
-
-.quick-action-btn--approve-all:hover {
-  background: var(--color-success-subtle, var(--color-surface-elevated));
-}
-
-.quick-action-btn--reset {
-  border-color: var(--color-error);
-  color: var(--color-error-text, var(--color-text-primary));
-}
-
-.quick-action-btn--reset:hover {
-  background: var(--color-error-subtle, var(--color-surface-elevated));
-}
-
-.quick-action-btn--show-unapproved {
-  border-color: var(--color-warning);
-  color: var(--color-warning-text, var(--color-text-primary));
-}
-
-.quick-action-btn--show-unapproved:hover {
-  background: var(--color-warning-subtle, var(--color-surface-elevated));
-}
+/* Quick action buttons - use central .btn system with appropriate variants */

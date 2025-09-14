@@ -1,10 +1,9 @@
 import React from 'react';
 
 /**
- * Dashboard Page - Test page for layout demonstration
+ * Dashboard test page
  * 
- * Provides a sample dashboard interface to test the layout structure.
- * Shows how content scrolls within the layout while header and sidebar remain fixed.
+ * Sample dashboard to test layout and scrolling behavior.
  */
 const DashboardPage = () => {
   return (
@@ -87,8 +86,8 @@ const DashboardPage = () => {
               <p>
                 This is test content block {i + 1}. It demonstrates that the layout properly handles 
                 scrolling content while keeping the header and sidebar in a fixed position. 
-                The professional layout ensures that users can always access navigation 
-                and branding elements while browsing through large amounts of content.
+                The layout keeps navigation and branding elements accessible while 
+                browsing through large amounts of content.
               </p>
               <p>
                 Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor 

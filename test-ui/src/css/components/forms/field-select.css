@@ -6,17 +6,20 @@
 
 @layer components {
   .field-select {
-    width: 100%;
-    min-height: var(--input-height);
+    /* Basic layout and sizing now handled by base classes */
+    /* Typography handled by base class - .field-input-typography */
+    /* Sizing handled by base class - .field-input-sizing (with override for right padding) */
+    /* Layout handled by base class - .field-input-layout */
+    /* Transitions handled by base class - .field-transition-behavior */
+    
+    /* Select-specific styling */
     padding: var(--input-padding-y) calc(var(--input-padding-x) + var(--space-6)) var(--input-padding-y) var(--input-padding-x);
-    font-size: var(--font-size-base);
-    font-family: var(--font-family-sans);
-    line-height: var(--line-height-normal);
-    color: var(--color-input-text);
-    border-radius: var(--radius-2);
     appearance: none;
     cursor: pointer;
-    transition: all var(--transition-fast);
+    
+    /* NOTE: Apply base classes in component:
+     * field-select field-input-base field-input-typography field-input-layout field-focus-behavior field-disabled-state field-transition-behavior
+     */
   }
 
   /* Theme styling now handled by field-input-base class composition */
@@ -53,21 +56,15 @@
     transition: background-color var(--transition-fast);
   }
 
-  .field-select:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    background-color: var(--color-input-bg-focus);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
-  }
+  /* Focus state now handled by base class:
+   * - .field-focus-behavior
+   */
 
   /* No hover states - removed per requirements to match input and textarea fields */
 
   .field-select:disabled {
-    background-color: var(--color-input-bg-disabled);
-    color: var(--color-input-text-disabled);
-    border-color: var(--color-input-border-disabled);
-    cursor: not-allowed;
-    opacity: 0.6;
+    /* Base disabled styling handled by .field-disabled-state */
+    opacity: 0.6; /* Select-specific disabled enhancement */
   }
 
   /* Validation states now handled by .is-invalid and .is-valid utilities */

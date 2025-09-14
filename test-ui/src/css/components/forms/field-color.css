@@ -141,23 +141,6 @@
   }
 
 
-  .color-list-count {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-  }
-
-  .color-list-empty {
-    padding: var(--space-6) var(--space-4);
-    text-align: center;
-    background: var(--color-surface);
-    border: 2px dashed var(--color-border);
-    border-radius: var(--radius-2);
-  }
-
-  .color-list-empty-text {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-  }
   
   /* =============================================================================
      RESPONSIVE BEHAVIOR - Mobile-first adjustments
@@ -174,26 +157,6 @@
       min-height: var(--touch-target-comfortable);
     }
     
-    .color-list-item {
-      gap: var(--space-1);
-    }
-    
-    .color-list-controls {
-      flex-direction: column;
-      align-items: stretch;
-      gap: var(--space-2);
-    }
-    
-    .color-list-add-button {
-      width: 100%;
-      justify-content: center;
-    }
   }
 
-  /* Large tablet and desktop */
-  @media (min-width: 768px) {
-    .color-list-controls {
-      justify-content: space-between;
-    }
-  }
 }

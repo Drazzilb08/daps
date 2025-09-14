@@ -199,4 +199,83 @@
   --content-gap-mobile: var(--space-4);
   --paragraph-spacing: var(--space-4);
   --list-spacing: var(--space-2);
+
+  /* =============================================================================
+     BORDER WIDTHS
+     Consistent border thickness values
+     ============================================================================= */
+  --border-width-thin: 1px;        /* Standard border thickness */
+  --border-width-medium: 2px;      /* Emphasis borders */
+  --border-width-thick: 3px;       /* Strong emphasis */
+
+  /* =============================================================================
+     COMPONENT DIMENSIONS
+     Common component sizing patterns
+     ============================================================================= */
+  --size-icon-xs: 12px;            /* Extra small icons */
+  --size-icon-sm: 16px;            /* Small icons */
+  --size-icon-md: 20px;            /* Medium icons */
+  --size-icon-lg: 24px;            /* Large icons */
+  --size-icon-xl: 32px;            /* Extra large icons */
+  --size-icon-2xl: 40px;           /* 2x extra large icons */
+
+  --size-avatar-sm: 32px;          /* Small avatar */
+  --size-avatar-md: 40px;          /* Medium avatar */
+  --size-avatar-lg: 56px;          /* Large avatar */
+  --size-avatar-xl: 64px;          /* Extra large avatar */
+
+  /* Component minimum widths */
+  --min-width-button: 80px;        /* Minimum button width */
+  --min-width-input: 120px;        /* Minimum input width */
+  --min-width-select: 140px;       /* Minimum select width */
+
+  /* Component maximum heights */
+  --max-height-dropdown: 300px;    /* Maximum dropdown height */
+  --max-height-textarea: 400px;    /* Maximum textarea height */
+  --max-height-modal: 80vh;        /* Maximum modal height */
+
+  /* Grid and layout minimum sizes */
+  --grid-min-width-xs: 160px;      /* Extra small grid column minimum */
+  --grid-min-width-sm: 200px;      /* Small grid column minimum */
+  --grid-min-width-md: 280px;      /* Medium grid column minimum */
+  --grid-min-width-lg: 320px;      /* Large grid column minimum */
+  --grid-min-width-xl: 400px;      /* Extra large grid column minimum */
+  --grid-min-width-2xl: 500px;     /* 2x extra large grid column minimum */
+
+  /* Large container dimensions */
+  --container-width-xl: 1400px;    /* Extra large container */
+  --container-width-2xl: 1600px;   /* 2x extra large container */
+  --container-width-3xl: 1800px;   /* 3x extra large container */
+
+  /* =============================================================================
+     TRANSFORM VALUES
+     Consistent transform offset values
+     ============================================================================= */
+  --transform-offset-xs: -1px;     /* Micro movement */
+  --transform-offset-sm: -2px;     /* Small movement */
+  --transform-offset-md: -4px;     /* Medium movement */
+  --transform-offset-lg: -6px;     /* Large movement */
+  --transform-offset-xl: -8px;     /* Extra large movement */
+
+  /* Positive transforms */
+  --transform-lift-xs: 1px;        /* Micro lift */
+  --transform-lift-sm: 2px;        /* Small lift */
+  --transform-lift-md: 4px;        /* Medium lift */
+  --transform-lift-lg: 6px;        /* Large lift */
+  --transform-lift-xl: 8px;        /* Extra large lift */
+
+  /* =============================================================================
+     OPACITY VALUES
+     Consistent opacity levels for UI elements
+     ============================================================================= */
+  --opacity-10: 0.1;               /* Subtle transparency */
+  --opacity-15: 0.15;              /* Light transparency */
+  --opacity-20: 0.2;               /* Mild transparency */
+  --opacity-30: 0.3;               /* Moderate transparency */
+  --opacity-40: 0.4;               /* Medium transparency */
+  --opacity-50: 0.5;               /* Half transparency */
+  --opacity-60: 0.6;               /* Strong transparency */
+  --opacity-75: 0.75;              /* Very strong transparency */
+  --opacity-80: 0.8;               /* Heavy transparency */
+  --opacity-90: 0.9;               /* Almost transparent */
 }

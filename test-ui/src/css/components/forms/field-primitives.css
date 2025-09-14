@@ -52,83 +52,60 @@
   }
   
   /* =============================================================================
-     INPUT BASE - Universal input styling for ALL input-based fields
+     INPUT BASE - References consolidated field-base.css patterns
      ============================================================================= */
   
   .field-input {
-    /* Layout, typography, and base styles handled by utility classes */
+    /* CONSOLIDATED PATTERNS: Use field-base.css classes instead:
+     * - .field-input-typography (font-family, line-height)
+     * - .field-input-sizing (padding)
+     * - .field-input-layout (box-sizing)
+     * - .field-input-base (background)
+     * - .field-focus-behavior (focus states)
+     * - .field-validation-invalid (invalid states)
+     * - .field-disabled-state (disabled states)
+     * - .field-placeholder-styling (placeholder)
+     */
+    
+    /* Primitive-specific overrides only */
     padding: var(--space-2) var(--space-3);
-    font-family: var(--font-family-sans);
-    line-height: var(--line-height-normal);
     background: var(--color-surface);
     box-sizing: border-box;
   }
   
-  .field-input::placeholder {
-    color: var(--color-text-tertiary);
-  }
-  
-  /* Focus state - WCAG compliance */
-  .field-input:focus {
-    outline: var(--focus-ring-width) solid var(--color-focus);
-    outline-offset: var(--focus-ring-offset);
-    border-color: var(--color-primary);
-  }
-  
-  /* Invalid/error state */
-  .field-input:invalid,
-  .field-wrapper--invalid .field-input {
-    border-color: var(--color-error);
-  }
-  
-  /* Disabled state */
-  .field-input:disabled {
-    background: var(--color-surface-disabled);
-    color: var(--color-text-disabled);
-    opacity: 0.6;
-  }
+  /* NOTE: Placeholder, focus, validation, and disabled states now consolidated in field-base.css */
+  /* Apply consolidated classes: .field-placeholder-styling .field-focus-behavior .field-validation-invalid .field-disabled-state */
   
   /* =============================================================================
-     TEXTAREA BASE - Universal textarea styling for ALL textarea-based fields
+     TEXTAREA BASE - References consolidated field-base.css patterns
      ============================================================================= */
   
   .field-textarea {
-    /* Layout, typography, and base styles handled by utility classes */
+    /* CONSOLIDATED PATTERNS: Use field-base.css classes instead:
+     * - .field-input-typography (font-family, line-height)
+     * - .field-input-base (background)
+     * - .field-input-layout (box-sizing)
+     * - .field-focus-behavior (focus states)
+     * - .field-validation-invalid (invalid states)
+     * - .field-disabled-state (disabled states)
+     * - .field-placeholder-styling (placeholder)
+     */
+    
+    /* Primitive-specific and textarea-specific styling */
     padding: var(--space-2) var(--space-3);
-    font-family: var(--font-family-sans);
-    line-height: var(--line-height-normal);
     background: var(--color-surface);
     box-sizing: border-box;
-    
-    /* Textarea-specific */
     resize: vertical;
     min-height: calc(var(--touch-target-min) * 2); /* Minimum 2 lines visible */
   }
   
-  .field-textarea::placeholder {
-    color: var(--color-text-tertiary);
-  }
-  
-  /* Focus state - WCAG compliance */
-  .field-textarea:focus {
-    outline: var(--focus-ring-width) solid var(--color-focus);
-    outline-offset: var(--focus-ring-offset);
-    border-color: var(--color-primary);
-  }
-  
-  /* Invalid/error state */
-  .field-textarea:invalid,
-  .field-wrapper--invalid .field-textarea {
-    border-color: var(--color-error);
-  }
-  
-  /* Disabled state */
   .field-textarea:disabled {
-    background: var(--color-surface-disabled);
-    color: var(--color-text-disabled);
-    opacity: 0.6;
+    /* Base disabled styles from .field-disabled-state, plus textarea-specific */
     resize: none;
   }
+  
+  /* NOTE: Placeholder, focus, validation states now consolidated in field-base.css */
+  /* Apply consolidated classes: .field-placeholder-styling .field-focus-behavior .field-validation-invalid .field-disabled-state */
   
   /* =============================================================================
      FIELD DESCRIPTION - Universal help text for ALL field types

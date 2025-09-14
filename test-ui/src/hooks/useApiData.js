@@ -1,13 +1,7 @@
 /**
- * useApiData Hook - React Hook for API Data Management
+ * Hook for API calls with loading/error states
  * 
- * Provides declarative API data fetching with:
- * - Automatic loading state management
- * - Integrated error handling with toast notifications
- * - Retry capability
- * - Data transformation
- * - Request cancellation
- * - Manual execution control
+ * Features: automatic loading states, error toasts, retry, cancellation
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -15,19 +9,11 @@ import { useToast } from '../contexts/ToastContext.jsx';
 import { APIError } from '../utils/api/core.js';
 
 /**
- * Custom hook for API data management with comprehensive state handling
+ * Hook for API calls with loading/error states
  * 
  * @param {Object} config - Hook configuration
- * @param {Function} config.apiFunction - Function that returns a promise (API call)
- * @param {Object} config.options - Hook options
- * @param {boolean} config.options.immediate - Execute on mount (default: true)
- * @param {boolean} config.options.showErrorToast - Show error toast notifications (default: true)
- * @param {boolean} config.options.showSuccessToast - Show success toast notifications (default: false)
- * @param {string} config.options.successMessage - Custom success message
- * @param {Function} config.options.transform - Data transformation function
- * @param {number} config.options.retryAttempts - Number of retry attempts (default: 0)
- * @param {number} config.options.retryDelay - Delay between retries in ms (default: 1000)
- * @param {Function} config.options.shouldRetry - Function to determine if retry should happen
+ * @param {Function} config.apiFunction - API call function
+ * @param {Object} config.options - Options (immediate, showErrorToast, transform, retry settings)
  * @param {Array} config.dependencies - Dependencies for re-execution
  * @returns {Object} Hook state and methods
  */
@@ -90,7 +76,7 @@ export const useApiData = ({
     return err.name === 'TypeError' || err.message.includes('fetch');
   }, [retryAttempts, shouldRetry]);
 
-  // Execute API function with comprehensive error handling
+  // Execute API function with error handling
   const executeRequest = useCallback(async (retryAttempt = 0) => {
     // Clean up previous request
     cleanup();
@@ -256,11 +242,11 @@ export const useApiData = ({
 };
 
 /**
- * Simplified hook for basic API data fetching
+ * Simple API data fetching hook
  * 
  * @param {Function} apiFunction - API function to execute
  * @param {Array} dependencies - Dependencies for re-execution
- * @returns {Object} Basic hook state
+ * @returns {Object} Hook state
  */
 export const useApiCall = (apiFunction, dependencies = []) => {
   return useApiData({
@@ -274,7 +260,7 @@ export const useApiCall = (apiFunction, dependencies = []) => {
 };
 
 /**
- * Hook for manual API operations (like form submissions)
+ * Hook for manual API operations (form submissions, etc.)
  * 
  * @param {Function} apiFunction - API function to execute
  * @param {Object} options - Hook options

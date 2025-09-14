@@ -8,7 +8,7 @@
 @layer pages {
   /* Main page container */
   .form-test-page {
-    max-width: var(--content-max-width, 1200px);
+    max-width: var(--content-max-width);
     margin: 0 auto;
     padding: var(--space-4);
   }
@@ -18,7 +18,7 @@
     margin-bottom: var(--space-6);
     padding: var(--space-4);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
     border-radius: var(--radius-2);
   }
 
@@ -36,7 +36,7 @@
     grid-template-columns: 1fr;
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: var(--breakpoint-tablet)) {
     .form-overview-grid {
       grid-template-columns: 1fr 1fr;
     }
@@ -44,7 +44,7 @@
 
   .field-category {
     background: var(--color-surface-elevated);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
     border-radius: var(--radius-1);
     padding: var(--space-3);
   }
@@ -90,7 +90,7 @@
     margin-bottom: var(--space-6);
     padding: var(--space-4);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
     border-radius: var(--radius-2);
   }
 
@@ -118,7 +118,7 @@
   .form-values-display {
     margin-bottom: var(--space-4);
     background: var(--color-surface-elevated);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
     border-radius: var(--radius-1);
     padding: var(--space-3);
   }
@@ -132,7 +132,7 @@
 
   .form-values-code {
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
     border-radius: var(--radius-1);
     padding: var(--space-3);
     font-family: var(--font-mono);
@@ -146,7 +146,7 @@
   /* Form demo container */
   .form-demo-container {
     background: var(--color-surface-elevated);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
     border-radius: var(--radius-1);
     padding: var(--space-4);
   }
@@ -156,7 +156,7 @@
     margin-bottom: var(--space-6);
     padding: var(--space-4);
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
     border-radius: var(--radius-2);
   }
 
@@ -181,7 +181,7 @@
     grid-template-columns: 1fr;
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: var(--breakpoint-tablet)) {
     .field-reference-grid {
       grid-template-columns: repeat(3, 1fr);
     }
@@ -224,7 +224,7 @@
   }
 
   /* Mobile responsive */
-  @media (max-width: 767px) {
+  @media (max-width: calc(var(--breakpoint-tablet) - 1px)) {
     .form-test-page {
       padding: var(--space-3);
     }

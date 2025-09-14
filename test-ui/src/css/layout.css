@@ -1,21 +1,11 @@
 /**
- * DAPS Layout System
+ * Layout System
  * 
- * Responsive layout patterns and components for DAPS frontend.
- * Implements mobile-first design with progressive enhancement.
- * 
- * Layout Components:
- * 1. Container system
- * 2. Grid layouts
- * 3. Flexbox utilities
- * 4. Responsive patterns
- * 5. Media-specific layouts
+ * Responsive layout components with mobile-first design.
+ * Container system, grids, responsive patterns, cards, modals.
  */
 
-/* =============================================================================
-   CONTAINER SYSTEM
-   Responsive container system with max-width constraints and padding
-   ============================================================================= */
+/* Container System */
 @layer components {
   .container {
     width: 100%;
@@ -26,14 +16,14 @@
   }
 
   /* Progressive enhancement for larger screens */
-  @media (min-width: 768px) {
+  @media (min-width: var(--breakpoint-tablet)) {
     .container {
       padding-left: var(--container-padding);
       padding-right: var(--container-padding);
     }
   }
 
-  @media (min-width: 1024px) {
+  @media (min-width: var(--breakpoint-desktop)) {
     .container {
       max-width: var(--content-max-width);
     }
@@ -44,25 +34,9 @@
     max-width: var(--form-max-width);
   }
 
-  .container-modal {
-    max-width: var(--modal-max-width);
-  }
-
-  .container-card {
-    max-width: var(--card-max-width);
-  }
-
-  /* Full width container */
-  .container-fluid {
-    width: 100%;
-    max-width: none;
-  }
 }
 
-/* =============================================================================
-   GRID SYSTEM
-   CSS Grid layouts for media management and content organization
-   ============================================================================= */
+/* Grid System */
 @layer components {
   /* Base grid */
   .grid {
@@ -70,7 +44,7 @@
     gap: var(--content-gap-mobile);
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: var(--breakpoint-tablet)) {
     .grid {
       gap: var(--content-gap);
     }
@@ -84,26 +58,26 @@
   }
 
   /* Progressive enhancement for media grid */
-  @media (min-width: 480px) {
+  @media (min-width: var(--breakpoint-mobile-lg)) {
     .media-grid {
       grid-template-columns: repeat(2, 1fr);
     }
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: var(--breakpoint-tablet)) {
     .media-grid {
       grid-template-columns: repeat(3, 1fr);
       gap: var(--space-6);
     }
   }
 
-  @media (min-width: 1024px) {
+  @media (min-width: var(--breakpoint-desktop)) {
     .media-grid {
       grid-template-columns: repeat(4, 1fr);
     }
   }
 
-  @media (min-width: 1440px) {
+  @media (min-width: var(--breakpoint-desktop-xl)) {
     .media-grid {
       grid-template-columns: repeat(5, 1fr);
     }
@@ -116,7 +90,7 @@
     grid-template-columns: 1fr;
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: var(--breakpoint-tablet)) {
     .form-grid {
       grid-template-columns: repeat(2, 1fr);
     }
@@ -129,13 +103,13 @@
     grid-template-columns: 1fr;
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: var(--breakpoint-tablet)) {
     .dashboard-grid {
       grid-template-columns: repeat(2, 1fr);
     }
   }
 
-  @media (min-width: 1024px) {
+  @media (min-width: var(--breakpoint-desktop)) {
     .dashboard-grid {
       grid-template-columns: repeat(3, 1fr);
     }
@@ -144,191 +118,22 @@
   /* Auto-fit grid for flexible layouts */
   .grid-auto-fit {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-width-md), 1fr));
     gap: var(--space-6);
   }
 
   /* Auto-fill grid for consistent sizing */
   .grid-auto-fill {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(var(--grid-min-width-md), 1fr));
     gap: var(--space-6);
   }
 }
 
-/* =============================================================================
-   FLEXBOX UTILITIES
-   Flexible layout utilities for various UI patterns
-   ============================================================================= */
-@layer utilities {
-  /* Basic flex containers */
-  .flex {
-    display: flex;
-  }
+/* Flexbox utilities are in utilities.css */
 
-  .flex-col {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .flex-wrap {
-    flex-wrap: wrap;
-  }
-
-  .flex-nowrap {
-    flex-wrap: nowrap;
-  }
-
-  /* Flex alignment */
-  .justify-start {
-    justify-content: flex-start;
-  }
-
-  .justify-center {
-    justify-content: center;
-  }
-
-  .justify-end {
-    justify-content: flex-end;
-  }
-
-  .justify-between {
-    justify-content: space-between;
-  }
-
-  .justify-around {
-    justify-content: space-around;
-  }
-
-  .justify-evenly {
-    justify-content: space-evenly;
-  }
-
-  .items-start {
-    align-items: flex-start;
-  }
-
-  .items-center {
-    align-items: center;
-  }
-
-  .items-end {
-    align-items: flex-end;
-  }
-
-  .items-baseline {
-    align-items: baseline;
-  }
-
-  .items-stretch {
-    align-items: stretch;
-  }
-
-  /* Flex grow and shrink */
-  .flex-1 {
-    flex: 1 1 0%;
-  }
-
-  .flex-auto {
-    flex: 1 1 auto;
-  }
-
-  .flex-initial {
-    flex: 0 1 auto;
-  }
-
-  .flex-none {
-    flex: none;
-  }
-
-  .flex-grow {
-    flex-grow: 1;
-  }
-
-  .flex-shrink {
-    flex-shrink: 1;
-  }
-
-  .flex-shrink-0 {
-    flex-shrink: 0;
-  }
-}
-
-/* =============================================================================
-   RESPONSIVE LAYOUT PATTERNS
-   Common layout patterns optimized for DAPS use cases
-   ============================================================================= */
+/* Responsive Layout Patterns */
 @layer components {
-  /* Main application layout */
-  .app-layout {
-    display: grid;
-    grid-template-areas: 
-      "sidebar header"
-      "sidebar main"
-      "sidebar footer";
-    grid-template-columns: var(--sidebar-collapsed) 1fr;
-    grid-template-rows: var(--header-height) 1fr var(--footer-height);
-    min-height: 100vh;
-    min-height: 100dvh;
-  }
-
-  @media (min-width: 768px) {
-    .app-layout {
-      grid-template-columns: var(--sidebar-width) 1fr;
-    }
-  }
-
-  .app-layout.sidebar-collapsed {
-    grid-template-columns: var(--sidebar-collapsed) 1fr;
-  }
-
-  /* Mobile-first responsive layout (no sidebar on small screens) */
-  @media (max-width: 767px) {
-    .app-layout {
-      grid-template-areas: 
-        "header"
-        "main"
-        "footer";
-      grid-template-columns: 1fr;
-    }
-    
-    .app-sidebar {
-      display: none;
-    }
-  }
-
-  /* Layout areas */
-  .app-header {
-    grid-area: header;
-    background: var(--color-header-bg);
-    border-bottom: 1px solid var(--color-header-border);
-    display: flex;
-    align-items: center;
-    padding: 0 var(--space-4);
-  }
-
-  .app-sidebar {
-    grid-area: sidebar;
-    background: var(--color-sidebar-bg);
-    border-right: 1px solid var(--color-sidebar-border);
-    overflow-y: auto;
-  }
-
-  .app-main {
-    grid-area: main;
-    overflow-y: auto;
-    padding: var(--space-6) var(--space-4);
-  }
-
-  .app-footer {
-    grid-area: footer;
-    background: var(--color-header-bg);
-    border-top: 1px solid var(--color-header-border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0 var(--space-4);
-  }
 
   /* Content layout patterns */
   .content-layout {
@@ -337,7 +142,7 @@
     max-width: 100%;
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: var(--breakpoint-tablet)) {
     .content-layout {
       gap: var(--section-spacing);
     }
@@ -350,7 +155,7 @@
     grid-template-columns: 1fr;
   }
 
-  @media (min-width: 1024px) {
+  @media (min-width: var(--breakpoint-desktop)) {
     .content-two-column {
       grid-template-columns: 2fr 1fr;
     }
@@ -363,35 +168,26 @@
     grid-template-columns: 1fr;
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: var(--breakpoint-tablet)) {
     .content-three-column {
       grid-template-columns: repeat(2, 1fr);
     }
   }
 
-  @media (min-width: 1024px) {
+  @media (min-width: var(--breakpoint-desktop)) {
     .content-three-column {
       grid-template-columns: repeat(3, 1fr);
     }
   }
 }
 
-/* =============================================================================
-   MODAL AND OVERLAY LAYOUTS
-   Layout patterns for modal dialogs and overlays
-   ============================================================================= */
+/* Modal and Overlay Layouts */
 @layer components {
-  /* Modal backdrop */
+  /* Modal backdrop - use: fixed inset-0 flex-center p-4 + background/z-index */
   .modal-backdrop {
-    position: fixed;
-    inset: 0;
     background: var(--color-overlay);
-    backdrop-filter: blur(4px);
+    backdrop-filter: blur(var(--space-1));
     z-index: var(--z-modal-backdrop);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: var(--space-4);
   }
 
   /* Modal container */
@@ -406,13 +202,10 @@
     z-index: var(--z-modal);
   }
 
-  /* Modal header */
+  /* Modal header - use: flex-between border-b + padding/border-color */
   .modal-header {
     padding: var(--space-6) var(--space-6) var(--space-3) var(--space-6);
-    border-bottom: 1px solid var(--color-border);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    border-bottom: var(--border-width-thin) solid var(--color-border);
   }
 
   /* Modal body */
@@ -431,15 +224,12 @@
   }
 }
 
-/* =============================================================================
-   CARD LAYOUTS
-   Reusable card layouts for media and content display
-   ============================================================================= */
+/* Card Layouts */
 @layer components {
   /* Base card */
   .card {
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
     border-radius: var(--radius-2);
     overflow: hidden;
     transition: 
@@ -451,13 +241,13 @@
   .card:hover {
     border-color: var(--color-border-hover);
     box-shadow: var(--shadow-md);
-    transform: translateY(-1px);
+    transform: translateY(var(--transform-offset-xs));
   }
 
   /* Card header */
   .card-header {
     padding: var(--space-4) var(--space-4) var(--space-3) var(--space-4);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: var(--border-width-thin) solid var(--color-border);
   }
 
   /* Card body */
@@ -500,17 +290,14 @@
   }
 }
 
-/* =============================================================================
-   RESPONSIVE UTILITIES
-   Responsive visibility and display utilities
-   ============================================================================= */
+/* Responsive Utilities */
 @layer utilities {
   /* Hide on mobile */
   .hidden-mobile {
     display: none;
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: var(--breakpoint-tablet)) {
     .hidden-mobile {
       display: initial;
     }
@@ -521,7 +308,7 @@
     display: initial;
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: var(--breakpoint-tablet)) {
     .hidden-tablet-up {
       display: none;
     }
@@ -532,7 +319,7 @@
     display: initial;
   }
 
-  @media (min-width: 1024px) {
+  @media (min-width: var(--breakpoint-desktop)) {
     .hidden-desktop-up {
       display: none;
     }
@@ -543,7 +330,7 @@
     display: initial;
   }
 
-  @media (min-width: 768px) {
+  @media (min-width: var(--breakpoint-tablet)) {
     .mobile-only {
       display: none;
     }
@@ -554,7 +341,7 @@
     display: none;
   }
 
-  @media (min-width: 768px) and (max-width: 1023px) {
+  @media (min-width: var(--breakpoint-tablet)) and (max-width: calc(var(--breakpoint-desktop) - 1px)) {
     .tablet-only {
       display: initial;
     }
@@ -565,7 +352,7 @@
     display: none;
   }
 
-  @media (min-width: 1024px) {
+  @media (min-width: var(--breakpoint-desktop)) {
     .desktop-only {
       display: initial;
     }

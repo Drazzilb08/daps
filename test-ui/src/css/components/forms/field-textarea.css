@@ -6,54 +6,56 @@
  */
 
 @layer components {
-  /* Base textarea styling */
+  /* Base textarea styling - now uses consolidated base classes */
   .field-textarea {
-    width: 100%;
+    /* Base styling handled by consolidated classes:
+     * - .field-input-base (background, border, box-shadow)
+     * - .field-input-typography (font-family, font-size, line-height, color)
+     * - .field-input-layout (width, box-sizing)
+     * - .field-focus-behavior (focus states)
+     * - .field-disabled-state (disabled states)
+     * - .field-readonly-state (readonly states)
+     * - .field-placeholder-styling (placeholder styling)
+     */
+    
+    /* Textarea-specific styling */
     min-height: calc(var(--input-height) * 2);
     padding: var(--input-padding-y) var(--input-padding-x);
-    font-size: var(--font-size-base);
-    font-family: var(--font-family-sans);
-    line-height: var(--line-height-normal);
-    color: var(--color-input-text);
     border-radius: var(--radius-2);
     resize: vertical;
-    transition: none;
+    transition: none; /* Textarea uses different transition behavior */
+    
+    /* NOTE: Apply base classes in component:
+     * field-textarea field-input-base field-input-typography field-input-layout field-focus-behavior field-disabled-state field-readonly-state field-placeholder-styling
+     */
   }
 
   /* Theme styling now handled by field-input-base class composition */
 
-  /* Focus state */
+  /* Focus state now handled by base class:
+   * - .field-focus-behavior (with custom transition override for textarea)
+   */
+  
   .field-textarea:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    background: var(--color-input-bg-focus);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    /* Custom transition behavior for textarea */
     transition: border-color var(--transition-fast), background-color var(--transition-fast), box-shadow var(--transition-fast);
   }
 
 
-  /* Placeholder styling */
-  .field-textarea::placeholder {
-    color: var(--color-input-placeholder);
-    opacity: 1;
-  }
+  /* Placeholder styling now handled by base class:
+   * - .field-placeholder-styling
+   */
 
   /* Validation states now handled by .is-invalid and .is-valid utilities */
 
-  /* Disabled state */
   .field-textarea:disabled {
-    background: var(--color-input-bg-disabled);
-    color: var(--color-input-text-disabled);
-    border-color: var(--color-input-border-disabled);
-    cursor: not-allowed;
-    resize: none;
+    /* Base disabled styling handled by .field-disabled-state */
+    resize: none; /* Textarea-specific disabled enhancement */
   }
 
-  /* Read-only state */
   .field-textarea:read-only {
-    background: var(--color-input-bg-readonly);
-    cursor: default;
-    resize: none;
+    /* Base readonly styling handled by .field-readonly-state */
+    resize: none; /* Textarea-specific readonly enhancement */
   }
 
   /* Size variants now handled by .input-sm and .input-lg utilities */

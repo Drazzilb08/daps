@@ -11,7 +11,6 @@ import Splash from './pages/Splash.jsx';
 import ErrorTestPage from './pages/dev/ErrorTestPage.jsx';
 import FieldTestPage from './pages/dev/FieldTestPage.jsx';
 import ApiTestPage from './pages/dev/ApiTestPage.jsx';
-import PrimitivesTestPage from './pages/dev/PrimitivesTestPage.jsx';
 
 /**
  * DAPS Application Root - Phase 4 Ready
@@ -111,11 +110,6 @@ const App = () => {
                       <Route path="dev/api" element={
                         <PageErrorBoundary pageName="API Test" pageDescription="API Testing">
                           <ApiTestPage />
-                        </PageErrorBoundary>
-                      } />
-                      <Route path="dev/primitive" element={
-                        <PageErrorBoundary pageName="Form Primitives Test" pageDescription="Testing individual form primitive components">
-                          <PrimitivesTestPage />
                         </PageErrorBoundary>
                       } />
                     </Route>

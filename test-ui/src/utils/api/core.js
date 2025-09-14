@@ -179,7 +179,7 @@ const apiCore = {
   },
 
   /**
-   * Make HTTP request with comprehensive error handling
+   * Make HTTP request with error handling
    * @param {string} url - Request URL
    * @param {Object} options - Fetch options
    * @returns {Promise<*>} Response data

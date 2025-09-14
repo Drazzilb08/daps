@@ -1,10 +1,10 @@
 import React from 'react';
 
 /**
- * MediaStatistics - Media library statistics and analytics
+ * Media library statistics and analytics
  * 
- * Display comprehensive statistics about media collection including
- * file types, quality distributions, and growth trends.
+ * Shows statistics about media collection including file types,
+ * quality distributions, and growth trends.
  * 
  * @returns {JSX.Element} Media statistics page component
  */

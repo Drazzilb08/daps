@@ -63,16 +63,16 @@ const ErrorTestPage = () => {
         <p className="error-demo-section__description"><strong>What it is:</strong> Small popup notifications that appear briefly</p>
         <p className="error-demo-section__description"><strong>When to use:</strong> Success confirmations, alerts, quick feedback</p>
         <div className="toast-buttons">
-          <button onClick={() => showToast('success')} className="toast-btn toast-btn--success">
+          <button onClick={() => showToast('success')} className="btn btn--success">
             Success Toast
           </button>
-          <button onClick={() => showToast('error')} className="toast-btn toast-btn--error">
+          <button onClick={() => showToast('error')} className="btn btn--error">
             Error Toast
           </button>
-          <button onClick={() => showToast('warning')} className="toast-btn toast-btn--warning">
+          <button onClick={() => showToast('warning')} className="btn btn--warning">
             Warning Toast
           </button>
-          <button onClick={() => showToast('info')} className="toast-btn toast-btn--info">
+          <button onClick={() => showToast('info')} className="btn btn--info">
             Info Toast
           </button>
         </div>
@@ -83,7 +83,7 @@ const ErrorTestPage = () => {
         <h2 className="error-demo-section__title">🌐 Global Error Handling</h2>
         <p className="error-demo-section__description"><strong>What it is:</strong> Centralized error handling for the entire app</p>
         <p className="error-demo-section__description"><strong>When to use:</strong> Network failures, authentication issues, server errors</p>
-        <button onClick={showGlobalError} className="global-error-btn">
+        <button onClick={showGlobalError} className="btn btn--primary">
           Trigger Global Error
         </button>
       </section>
@@ -97,7 +97,7 @@ const ErrorTestPage = () => {
         
         <button 
           onClick={() => triggerCrash('critical')} 
-          className="error-trigger-btn error-trigger-btn--critical"
+          className="btn btn--danger"
         >
           Trigger Critical Error
         </button>
@@ -113,7 +113,7 @@ const ErrorTestPage = () => {
         {crashes.critical && (
           <button 
             onClick={() => resetCrash('critical')} 
-            className="error-reset-btn"
+            className="btn btn--secondary"
           >
             Reset
           </button>
@@ -129,7 +129,7 @@ const ErrorTestPage = () => {
         
         <button 
           onClick={() => triggerCrash('page')} 
-          className="error-trigger-btn error-trigger-btn--page"
+          className="btn btn--danger"
         >
           Trigger Page Error
         </button>
@@ -141,7 +141,7 @@ const ErrorTestPage = () => {
         {crashes.page && (
           <button 
             onClick={() => resetCrash('page')} 
-            className="error-reset-btn"
+            className="btn btn--secondary"
           >
             Reset
           </button>
@@ -157,7 +157,7 @@ const ErrorTestPage = () => {
         
         <button 
           onClick={() => triggerCrash('feature')} 
-          className="error-trigger-btn error-trigger-btn--feature"
+          className="btn btn--danger"
         >
           Trigger Feature Error
         </button>
@@ -172,7 +172,7 @@ const ErrorTestPage = () => {
         {crashes.feature && (
           <button 
             onClick={() => resetCrash('feature')} 
-            className="error-reset-btn"
+            className="btn btn--secondary"
           >
             Reset
           </button>

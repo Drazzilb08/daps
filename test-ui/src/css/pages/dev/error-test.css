@@ -70,103 +70,16 @@
     margin-top: var(--space-3);
   }
 
-  .toast-btn {
-    min-height: var(--touch-target-min);
-    padding: var(--space-2) var(--space-3);
-    color: white;
-    border: none;
-    border-radius: var(--radius-1);
-    cursor: pointer;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    transition: opacity var(--transition-fast);
-  }
+  /* Global error demo - uses central button system */
 
-  .toast-btn:hover {
-    opacity: 0.9;
-  }
-
-  .toast-btn--success {
-    background: var(--color-success, #10b981);
-  }
-
-  .toast-btn--error {
-    background: var(--color-error, #ef4444);
-  }
-
-  .toast-btn--warning {
-    background: var(--color-warning, #f59e0b);
-  }
-
-  .toast-btn--info {
-    background: var(--color-info, #3b82f6);
-  }
-
-  /* Global error demo */
-  .global-error-btn {
-    min-height: var(--touch-target-min);
-    padding: var(--space-2) var(--space-3);
-    background: var(--color-secondary, #8b5cf6);
-    color: white;
-    border: none;
-    border-radius: var(--radius-1);
-    cursor: pointer;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
-    transition: opacity var(--transition-fast);
-  }
-
-  .global-error-btn:hover {
-    opacity: 0.9;
-  }
-
-  /* Error trigger buttons */
+  /* Error trigger buttons - specific styles for page layout only */
   .error-trigger-btn {
-    min-height: var(--touch-target-min);
-    padding: var(--space-2) var(--space-3);
-    color: white;
-    border: none;
-    border-radius: var(--radius-1);
-    cursor: pointer;
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-medium);
     margin-bottom: var(--space-2);
-    transition: opacity var(--transition-fast);
   }
 
-  .error-trigger-btn:hover {
-    opacity: 0.9;
-  }
-
-  .error-trigger-btn--critical {
-    background: #991b1b; /* Dark red for critical errors */
-  }
-
-  .error-trigger-btn--page {
-    background: #ea580c; /* Dark orange for page errors */
-  }
-
-  .error-trigger-btn--feature {
-    background: #1e40af; /* Dark blue for feature errors */
-  }
-
-  /* Reset buttons */
+  /* Reset buttons - specific styles for page layout only */
   .error-reset-btn {
-    min-height: var(--touch-target-min);
-    padding: calc(var(--space-1) + 2px) var(--space-2);
-    background: var(--color-text-tertiary, #6b7280);
-    color: white;
-    border: none;
-    border-radius: var(--radius-1);
-    cursor: pointer;
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-medium);
     margin-top: var(--space-2);
-    transition: opacity var(--transition-fast);
-  }
-
-  .error-reset-btn:hover {
-    opacity: 0.9;
   }
 
   /* Working component demo */
@@ -210,10 +123,7 @@
 
 /* Ensure proper touch targets on all interactive elements */
 @media (hover: none) and (pointer: coarse) {
-  .toast-btn,
-  .global-error-btn,
-  .error-trigger-btn,
-  .error-reset-btn {
+  .btn {
     min-height: var(--touch-target-comfortable);
     min-width: var(--touch-target-comfortable);
   }

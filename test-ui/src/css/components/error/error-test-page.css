@@ -15,7 +15,7 @@
     padding: var(--space-4);
     background: var(--color-surface);
     border-radius: var(--radius-3);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
   }
 
   .error-test-page-header .header-content h1 {
@@ -38,7 +38,7 @@
 
   .error-test-page-header .stat {
     text-align: center;
-    min-width: 80px;
+    min-width: var(--min-width-button);
   }
 
   .error-test-page-header .stat-value {
@@ -58,23 +58,23 @@
   /* Test Grid Layout */
   .error-test-page .test-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-width-2xl), 1fr));
     gap: var(--space-4);
-    max-width: 1600px;
+    max-width: var(--container-width-2xl);
     margin: 0 auto;
   }
 
   .error-test-page .grid-item {
     background: var(--color-surface);
     border-radius: var(--radius-3);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
     overflow: hidden;
     transition: all 0.2s ease;
   }
 
   .error-test-page .grid-item:hover {
     border-color: var(--color-primary);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow-lg);
   }
 
   .error-test-page .grid-item.full-width {
@@ -111,8 +111,8 @@
     position: absolute;
     top: var(--space-3);
     right: var(--space-3);
-    width: 12px;
-    height: 12px;
+    width: var(--size-icon-xs);
+    height: var(--size-icon-xs);
     border-radius: 50%;
     background: var(--color-success);
   }
@@ -176,7 +176,7 @@
     text-align: center;
     padding: var(--space-3);
     border-radius: var(--radius-2);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
   }
 
   .stat-card.total {
@@ -210,7 +210,7 @@
   /* Results Timeline */
   .results-timeline {
     padding: var(--space-4);
-    max-height: 300px;
+    max-height: var(--max-height-dropdown);
     overflow-y: auto;
   }
 
@@ -233,10 +233,10 @@
   .timeline::before {
     content: '';
     position: absolute;
-    left: 20px;
+    left: var(--space-5);
     top: 0;
     bottom: 0;
-    width: 2px;
+    width: var(--border-width-medium);
     background: var(--color-border);
   }
 
@@ -247,20 +247,20 @@
     padding: var(--space-3);
     background: var(--color-surface);
     border-radius: var(--radius-2);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
     position: relative;
   }
 
   .timeline-marker {
-    width: 40px;
-    height: 40px;
+    width: var(--size-icon-2xl);
+    height: var(--size-icon-2xl);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: var(--font-size-lg);
     background: var(--color-surface);
-    border: 2px solid var(--color-border);
+    border: var(--border-width-medium) solid var(--color-border);
     flex-shrink: 0;
   }
 
@@ -323,13 +323,13 @@
   .toast-demo-card {
     padding: var(--space-3);
     border-radius: var(--radius-2);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
     transition: all 0.2s ease;
   }
 
   .toast-demo-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transform: translateY(var(--transform-offset-sm));
+    box-shadow: var(--shadow-md);
   }
 
   .toast-demo-card.green {
@@ -360,7 +360,7 @@
     padding: var(--space-2);
     background: var(--color-surface);
     border-radius: var(--radius-1);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
   }
 
   .toast-icon {
@@ -431,7 +431,7 @@
   /* Error Scenarios Grid */
   .scenarios-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-width-sm), 1fr));
     gap: var(--space-3);
   }
 
@@ -440,7 +440,7 @@
     flex-direction: column;
     padding: var(--space-3);
     background: var(--color-surface);
-    border: 2px solid var(--color-border);
+    border: var(--border-width-medium) solid var(--color-border);
     border-radius: var(--radius-2);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -449,8 +449,8 @@
   }
 
   .scenario-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(var(--transform-offset-sm));
+    box-shadow: var(--shadow-lg);
   }
 
   .scenario-card.high {
@@ -513,7 +513,7 @@
     padding: var(--space-4);
     background: var(--color-surface-alt);
     border-radius: var(--radius-2);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
   }
 
   .component-header {
@@ -564,7 +564,7 @@
 
   .crash-button:hover:not(:disabled) {
     background: var(--color-danger-hover);
-    transform: translateY(-1px);
+    transform: translateY(var(--transform-offset-xs));
   }
 
   .crash-button:disabled {
@@ -595,7 +595,7 @@
     padding: var(--space-3);
     background: var(--color-surface-alt);
     border-radius: var(--radius-2);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
   }
 
   .demo-button {
@@ -620,7 +620,7 @@
 
   .demo-button--critical:hover {
     background: var(--color-danger-hover);
-    transform: translateY(-1px);
+    transform: translateY(var(--transform-offset-xs));
   }
 
   .demo-button--page {
@@ -630,7 +630,7 @@
 
   .demo-button--page:hover {
     background: var(--color-warning-hover);
-    transform: translateY(-1px);
+    transform: translateY(var(--transform-offset-xs));
   }
 
   .demo-hint {
@@ -643,7 +643,7 @@
   /* Section Explanations */
   .section-explanation {
     background: var(--color-surface);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
     border-radius: var(--radius-2);
     padding: var(--space-3);
     margin-bottom: var(--space-4);
@@ -685,7 +685,7 @@
   .crash-button.copy:not(:disabled) {
     background: var(--color-secondary);
     color: var(--color-text-primary);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
   }
 
   .crash-button.copy:hover:not(:disabled) {
@@ -710,7 +710,7 @@
     padding: var(--space-3);
     background: var(--color-surface-alt);
     border-radius: var(--radius-2);
-    border: 1px solid var(--color-border);
+    border: var(--border-width-thin) solid var(--color-border);
   }
 
   .status-item.healthy {
@@ -736,7 +736,7 @@
   }
 
   /* Mobile Responsiveness */
-  @media (max-width: 768px) {
+  @media (max-width: calc(var(--breakpoint-tablet) - 1px)) {
     .error-test-page {
       padding: var(--space-2);
     }

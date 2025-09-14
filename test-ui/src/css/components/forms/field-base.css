@@ -1,29 +1,138 @@
 /**
  * Field Base Styles
  * 
- * Shared styling patterns for all form field components.
- * Consolidates theme-specific border and background styling to eliminate duplication.
+ * Consolidated styling patterns for all form field components.
+ * Eliminates duplication by providing reusable base classes for common field patterns.
+ * Follows "write once, use everywhere" philosophy.
  */
 
 @layer components {
-  /* Base field input styling - shared across input, select, textarea, checkbox */
+  /* =============================================================================
+     BASE FIELD INPUT STYLING - Core visual and interaction patterns
+     ============================================================================= */
+  
   .field-input-base {
     background: var(--color-input-bg);
+    border: var(--field-base-border, 1px solid var(--color-text-secondary));
+    box-shadow: var(--field-base-shadow, 0 1px 2px rgba(0, 0, 0, 0.05));
   }
 
-  /* Light theme styling - consistent borders and shadows */
-  [data-theme="light"] .field-input-base {
-    border: 1px solid var(--color-text-secondary);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  /* =============================================================================
+     CONSOLIDATED TYPOGRAPHY AND SIZING - Common text input patterns
+     ============================================================================= */
+  
+  .field-input-typography {
+    font-family: var(--font-family-sans);
+    font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
+    color: var(--color-input-text);
+  }
+  
+  .field-input-sizing {
+    min-height: var(--input-height);
+    padding: var(--input-padding-y) var(--input-padding-x);
+    border-radius: var(--radius-2);
+  }
+  
+  .field-input-layout {
+    width: 100%;
+    box-sizing: border-box;
   }
 
-  /* Dark theme styling - consistent borders and shadows */
-  [data-theme="dark"] .field-input-base {
-    border: none;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  /* =============================================================================
+     CONSOLIDATED FOCUS STATES - Unified focus behavior across all inputs
+     ============================================================================= */
+  
+  .field-focus-behavior:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background: var(--color-input-bg-focus);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
   }
 
-  /* Focus state override for base class - maintains theme-specific focus styling */
+  /* Focus-within for container elements */
+  .field-focus-behavior:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+  }
+
+  /* =============================================================================
+     CONSOLIDATED VALIDATION STATES - Unified error/success styling
+     ============================================================================= */
+  
+  .field-validation-invalid {
+    border-color: var(--color-error);
+  }
+
+  .field-validation-invalid:focus,
+  .field-validation-invalid:focus-within {
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
+  }
+
+  .field-validation-valid {
+    border-color: var(--color-success);
+  }
+
+  .field-validation-valid:focus,
+  .field-validation-valid:focus-within {
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
+  }
+
+  /* =============================================================================
+     CONSOLIDATED DISABLED STATES - Unified disabled behavior
+     ============================================================================= */
+  
+  .field-disabled-state:disabled {
+    background: var(--color-input-bg-disabled);
+    color: var(--color-input-text-disabled);
+    border-color: var(--color-input-border-disabled);
+    cursor: not-allowed;
+  }
+  
+  /* =============================================================================
+     CONSOLIDATED READ-ONLY STATES - Unified read-only behavior
+     ============================================================================= */
+  
+  .field-readonly-state:read-only {
+    background: var(--color-input-bg-readonly);
+    cursor: default;
+  }
+
+  /* =============================================================================
+     CONSOLIDATED PLACEHOLDER STYLING - Unified placeholder appearance
+     ============================================================================= */
+  
+  .field-placeholder-styling::placeholder {
+    color: var(--color-input-placeholder);
+    opacity: 1;
+  }
+
+  /* =============================================================================
+     CONSOLIDATED TRANSITIONS - Unified animation behavior
+     ============================================================================= */
+  
+  .field-transition-behavior {
+    transition: all var(--transition-fast);
+  }
+  
+  /* =============================================================================
+     COMPOSITE CLASSES - Pre-configured combinations for common use cases
+     ============================================================================= */
+  
+  /* 
+   * Complete standard input styling - combines all common patterns
+   * Usage: Apply .field-input-typography, .field-input-sizing, .field-input-layout,
+   * .field-focus-behavior, .field-disabled-state as needed
+   * 
+   * Standard input with focus and validation capability
+   * Usage: Designed to be extended by specific field types through composition
+   */
+
+  /* =============================================================================
+     LEGACY COMPATIBILITY - Maintain existing class behavior
+     ============================================================================= */
+
+  /* Legacy focus state override for base class */
   .field-input-base:focus {
     outline: none;
     border-color: var(--color-primary);
@@ -31,13 +140,13 @@
     box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
   }
 
-  /* Focus-within for container elements that use base styling */
+  /* Legacy focus-within for container elements */
   .field-input-base:focus-within {
     border-color: var(--color-primary);
     box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
   }
 
-  /* Validation states - base invalid styling */
+  /* Legacy validation states - maintain existing .is-invalid and .is-valid behavior */
   .field-input-base.is-invalid {
     border-color: var(--color-error);
   }
@@ -47,7 +156,6 @@
     box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
   }
 
-  /* Validation states - base valid styling */
   .field-input-base.is-valid {
     border-color: var(--color-success);
   }
@@ -57,7 +165,7 @@
     box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
   }
 
-  /* Disabled state for base styling */
+  /* Legacy disabled state */
   .field-input-base:disabled {
     background: var(--color-input-bg-disabled);
     color: var(--color-input-text-disabled);

@@ -1,22 +1,8 @@
 /**
  * SearchInterface Component Styles
  * 
- * Professional search interface with context-aware styling following DAPS design system.
- * Implements mobile-first responsive design with touch-optimized interaction targets.
- * 
- * Features:
- * - Responsive search input with icon and clear button
- * - Focus states with design token colors
- * - Touch-optimized clear button (32px minimum)
- * - Proper z-index layering for icon positioning
- * - WCAG 2.1 AA compliant contrast and sizing
- * - Smooth transitions using design token timing
- * 
- * Design System Integration:
- * - Uses spacing tokens (--space-*) for consistent padding/margins
- * - Uses color tokens (--color-*) for theming and accessibility
- * - Uses radius tokens (--radius-*) for consistent border-radius
- * - Uses transition tokens (--transition-*) for smooth animations
+ * Search interface with responsive design and touch targets.
+ * Uses design tokens for consistent spacing, colors, and transitions.
  */
 
 @layer components {

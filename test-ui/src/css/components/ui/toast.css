@@ -8,18 +8,18 @@
   .toast-container {
     z-index: var(--z-toast);
     pointer-events: none;
-    max-width: 350px;
+    max-width: calc(var(--grid-min-width-lg) + var(--space-8));
   }
 
   /* Base toast styles - utilities: p-3 pl-4 pr-4 rounded-md text-base font-medium cursor-pointer relative overflow-hidden */
   .toast {
     color: white;
     pointer-events: auto;
-    min-width: 280px;
+    min-width: var(--grid-min-width-md);
     opacity: 0;
     transform: translateX(100%);
     transition: all 0.3s ease-out;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    box-shadow: var(--shadow-lg);
     /* Force solid backgrounds - NO TRANSPARENCY */
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -63,7 +63,7 @@
     left: 0;
     height: 3px;
     width: 0;
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(255, 255, 255, var(--opacity-50));
     transition: width 3s linear;
   }
 
@@ -74,7 +74,7 @@
   /* Hover effects */
   .toast:hover {
     transform: translateX(-4px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-xl);
   }
 
   /* Mobile responsive */

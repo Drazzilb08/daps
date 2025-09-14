@@ -1,8 +1,7 @@
 /**
- * FormRenderer - Schema-driven form generation system
+ * FormRenderer - Renders forms from JSON schema
  * 
- * Dynamically creates forms from JSON schemas using the compositional field architecture.
- * Provides comprehensive form state management, validation, and conditional rendering.
+ * Creates forms from JSON schemas with validation and state management.
  */
 
 import React, { useState, useCallback, useEffect, useMemo } from 'react';
@@ -16,13 +15,13 @@ import {
 } from '../../utils/forms/schemaUtils';
 
 /**
- * Individual field renderer that connects schema field to registered component
+ * Renders individual field from schema
  * 
  * @param {Object} props - Component props
- * @param {Object} props.field - Normalized field schema
- * @param {*} props.value - Current field value
- * @param {Function} props.onChange - Value change handler
- * @param {boolean} props.disabled - Field disabled state
+ * @param {Object} props.field - Field schema
+ * @param {*} props.value - Current value
+ * @param {Function} props.onChange - Change handler
+ * @param {boolean} props.disabled - Disabled state
  */
 const FieldRenderer = React.memo(({ field, value, onChange, disabled }) => {
   const { error, hasError, markTouched } = useFieldValidation(field.key);
@@ -57,13 +56,13 @@ const FieldRenderer = React.memo(({ field, value, onChange, disabled }) => {
 FieldRenderer.displayName = 'FieldRenderer';
 
 /**
- * Form section renderer for grouped field layout
+ * Renders form section with grouped fields
  * 
  * @param {Object} props - Component props
- * @param {Object} props.section - Section configuration
- * @param {Object} props.formData - Current form data
- * @param {Function} props.onFieldChange - Field change handler
- * @param {boolean} props.disabled - Form disabled state
+ * @param {Object} props.section - Section config
+ * @param {Object} props.formData - Form data
+ * @param {Function} props.onFieldChange - Change handler
+ * @param {boolean} props.disabled - Disabled state
  */
 const FormSection = React.memo(({ section, formData, onFieldChange, disabled }) => {
   const [collapsed, setCollapsed] = useState(section.collapsed || false);
@@ -149,21 +148,18 @@ const FormProgress = React.memo(({ totalFields, completedFields, isValid }) => {
 FormProgress.displayName = 'FormProgress';
 
 /**
- * FormRenderer - Main schema-driven form component
+ * Main form component that renders from schema
  * 
  * @param {Object} props - Component props
- * @param {Object} props.schema - Form schema object
- * @param {Object} props.initialData - Initial form data
- * @param {Function} props.onSubmit - Form submission handler
- * @param {Function} props.onFieldChange - Individual field change handler
- * @param {Function} props.onValidationChange - Validation state change handler
+ * @param {Object} props.schema - Form schema
+ * @param {Object} props.initialData - Initial data
+ * @param {Function} props.onSubmit - Submit handler
+ * @param {Function} props.onFieldChange - Field change handler
+ * @param {Function} props.onValidationChange - Validation change handler
  * @param {Object} props.validation - Custom validation rules
- * @param {boolean} props.disabled - Disable entire form
- * @param {Object} props.options - Form rendering options
- * @param {boolean} props.options.showProgress - Show progress indicator
- * @param {boolean} props.options.validateOnChange - Enable real-time validation
- * @param {boolean} props.options.mobileOptimized - Enable mobile optimizations
- * @param {string} props.className - Additional CSS classes
+ * @param {boolean} props.disabled - Disable form
+ * @param {Object} props.options - Rendering options
+ * @param {string} props.className - CSS classes
  */
 export const FormRenderer = React.memo(({
   schema: rawSchema,
@@ -381,10 +377,10 @@ export const FormRenderer = React.memo(({
 FormRenderer.displayName = 'FormRenderer';
 
 /**
- * Hook for managing form state with schema
+ * Hook for form state management
  * 
  * @param {Object} schema - Form schema
- * @param {Object} initialData - Initial form data
+ * @param {Object} initialData - Initial data
  * @returns {Object} Form state and handlers
  */
 export const useFormRenderer = (schema, initialData = {}) => {

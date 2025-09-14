@@ -15,13 +15,22 @@
      BASE BUTTON - Foundation for all button styles
      ============================================================================= */
   .btn {
-    /* Remaining component-specific styles after utility adoption */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: var(--touch-target-min);
+    padding: var(--space-2) var(--space-3);
     font-family: var(--font-family-sans);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
     line-height: 1;
     text-decoration: none;
     white-space: nowrap;
-    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-2);
+    cursor: pointer;
     user-select: none;
+    transition: all var(--transition-fast);
   }
 
   /* Focus state - accessible */
@@ -131,6 +140,30 @@
     background: var(--color-surface-hover);
   }
 
+  /* Remove button - color utility only */
+  .btn--remove {
+    background: transparent;
+    color: var(--color-error);
+    border-color: var(--color-error);
+  }
+
+  .btn--remove:hover:not(:disabled) {
+    background: var(--color-error);
+    color: var(--color-error-text);
+  }
+
+  /* Add button - color utility only */
+  .btn--add {
+    background: var(--color-primary);
+    color: var(--color-primary-text);
+    border-color: var(--color-primary);
+  }
+
+  .btn--add:hover:not(:disabled) {
+    background: var(--color-primary-hover);
+    border-color: var(--color-primary-hover);
+  }
+
   /* =============================================================================
      BUTTON SIZES - Composable size variations
      ============================================================================= */
@@ -166,7 +199,14 @@
   /* Icon-only button */
   .btn--icon-only {
     min-width: var(--touch-target-min);
-    padding: var(--space-2);
+    width: var(--touch-target-min);
+    height: var(--touch-target-min);
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
     aspect-ratio: 1;
   }
 

@@ -76,9 +76,7 @@
 @import './components/ui/Toolbar/toolbar.css';
 @import './components/ui/tool-button.css';
 
-/* Form system utilities - imported before components for proper cascade */
-@import './utilities/form-utilities.css';
-@import './utilities/list-utilities.css';
+/* Form system utilities removed - using unified button system in button.css */
 
 /* Form system styles */
 @import './components/forms/field-primitives.css';  /* Base primitive components */

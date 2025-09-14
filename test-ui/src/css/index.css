@@ -1,74 +1,41 @@
 /**
  * DAPS CSS Entry Point
- * 
- * Main CSS file that imports all design system components in the correct order.
- * This file establishes the complete design system foundation for DAPS frontend.
- * 
- * Import Order (Critical for CSS cascade):
- * 1. Design tokens (CSS custom properties)
- * 2. Base styles (reset, typography, accessibility) 
- * 3. Layout system (containers, grids, responsive patterns)
- * 4. Theme colors (default: dark theme)
- * 
- * Theme switching is handled by the data-theme attribute on the document root.
- * Light theme CSS is already loaded and will activate when data-theme="light".
+ * Import Order: tokens, base, layout, themes, utilities, components, pages
  */
 
-/* =============================================================================
-   DESIGN TOKENS
-   CSS custom properties for spacing, typography, measurements, and animations.
-   These tokens should be used throughout the design system - no hardcoded values.
-   ============================================================================= */
+/* Design tokens */
 @import './tokens.css';
 
-/* =============================================================================
-   BASE STYLES  
-   CSS reset, normalize, base typography, and accessibility features.
-   Establishes the foundation for all components and layouts.
-   ============================================================================= */
+/* Base styles */
 @import './base.css';
 
-/* =============================================================================
-   LAYOUT SYSTEM
-   Responsive layout patterns, grid systems, containers, and utility classes.
-   Mobile-first approach with progressive enhancement.
-   ============================================================================= */
+/* Layout system */
 @import './layout.css';
 
-/* =============================================================================
-   THEME COLORS
-   Complete color definitions for dark and light themes.
-   Dark theme is loaded by default, light theme is activated via data-theme.
-   ============================================================================= */
+/* Theme colors */
 @import './theme/dark.css';  /* Default theme */
 @import './theme/light.css'; /* Alternative theme via data-theme="light" */
 
-/* =============================================================================
-   UTILITY CLASSES
-   Comprehensive utility system for common styling patterns.
-   Implements "write once, use everywhere" philosophy with design tokens.
-   ============================================================================= */
+/* Utility classes */
 @import './utilities.css';
 
-/* =============================================================================
-   COMPONENT STYLES
-   Individual component styles for context providers and UI elements.
-   ============================================================================= */
-/* UI Components - reusable interface elements */
-@import './components/ui/button.css';         /* Reusable button system */
-@import './components/ui/spinner.css';        /* Loading spinners */
-@import './components/ui/toast.css';          /* Toast notifications */
+/* Component styles */
 
-/* Layout Components - page structure and containers */
-@import './components/layout/layout.css';     /* Composable layout patterns */
-@import './components/layout/page-layout.css'; /* Page-specific layouts */
+/* UI Components */
+@import './components/ui/button.css';
+@import './components/ui/spinner.css';
+@import './components/ui/toast.css';
 
-/* Search Components - search interface elements */
-@import './components/search/search-interface.css'; /* Main search interface */
-@import './components/search/search-toolbar.css';   /* Search toolbar */
+/* Layout Components */
+@import './components/layout/layout.css';
+@import './components/layout/page-layout.css';
+
+/* Search Components */
+@import './components/search/search-interface.css';
+@import './components/search/search-toolbar.css';
 
 /* Error & Testing Components */
-@import './components/error/error-boundary.css';  /* Error boundary styles */
+@import './components/error/error-boundary.css';
 @import './components/error/error-test-page.css';
 @import './components/error/global-error.css';
 
@@ -76,10 +43,8 @@
 @import './components/ui/Toolbar/toolbar.css';
 @import './components/ui/tool-button.css';
 
-/* Form system utilities removed - using unified button system in button.css */
-
 /* Form system styles */
-@import './components/forms/field-primitives.css';  /* Base primitive components */
+@import './components/forms/field-primitives.css';
 @import './components/forms/field-base.css';
 @import './components/forms/field-input.css';
 @import './components/forms/field-select.css';
@@ -93,19 +58,9 @@
 @import './components/forms/field-json.css';
 @import './components/forms/field-placeholder.css';
 @import './components/forms/form-layout.css';
-@import './components/forms/form-renderer.css';  /* Schema-driven form renderer */
+@import './components/forms/form-renderer.css';
 
-/* =============================================================================
-   PAGE STYLES
-   Page-specific styling for individual pages and views.
-   ============================================================================= */
-
-
-
-/* =============================================================================
-   DEV PAGE STYLES
-   Page-specific styling for individual pages and views.
-   ============================================================================= */
+/* Dev page styles */
 @import './pages/dev/api-test.css';
 @import './pages/dev/form-test.css';
 @import './pages/dev/field-test.css';

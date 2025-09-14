@@ -1,13 +1,6 @@
 /**
  * ColorListField Component
- * 
  * Multiple color input field component for simple color lists.
- * Composed from reusable features following "write once, use everywhere" philosophy.
- * 
- * Architecture:
- * - FieldWrapper provides consistent field structure
- * - ColorArray feature handles all color management logic
- * - No poster preview (that's only for color_list_poster field)
  */
 
 import React, { useCallback, useMemo } from 'react';

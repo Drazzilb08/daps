@@ -1,23 +1,18 @@
 /**
  * Field Registry - Central registry for all form field components
- * 
- * Maps field type strings to React components. Follows the registry pattern
- * used in the main DAPS UI for extensible field system.
+ * Maps field type strings to React components.
  */
 
-// Import field components from categorized directories
 import * as BasicFields from './basic';
 import * as SelectFields from './select';
 import * as CustomFields from './custom';
 import * as ColorFields from './color';
 
-
 /**
  * Field type to component mapping
- * 
  * Each field component must implement the standard interface:
  * - field: Field configuration object
- * - value: Current field value
+ * - value: Current field value  
  * - onChange: Value change handler (value) => void
  * - disabled: Boolean disabled state
  * - highlightInvalid: Boolean validation error state
@@ -107,9 +102,7 @@ const UnknownFieldType = ({ field }) => {
   );
 };
 
-// Define which field types are IMPLEMENTED (NOT necessarily approved/complete)
-// IMPORTANT: No field is "complete" until explicitly approved by user
-// TODO: This will be removed later it is only for development
+// Define which field types are IMPLEMENTED
 const IMPLEMENTED_FIELD_TYPES = new Set([
   'text', 'password', 'number', 'textarea',
   'float', 'hidden',
@@ -167,8 +160,7 @@ export class FieldRegistry {
   
   /**
    * Get only implemented field types (excludes placeholders)
-   * CRITICAL: "Implemented" does NOT mean approved or complete - requires user approval
-   * @returns {string[]} Array of implemented (but not necessarily approved) field type strings
+   * @returns {string[]} Array of implemented field type strings
    */
   static getWorkingFieldTypes() {
     return Array.from(IMPLEMENTED_FIELD_TYPES);
@@ -184,9 +176,8 @@ export class FieldRegistry {
   
   /**
    * Check if a field type is implemented (not a placeholder)
-   * CRITICAL: "Implemented" does NOT mean approved or complete
    * @param {string} fieldType - The field type string  
-   * @returns {boolean} True if field type is implemented (but not necessarily approved)
+   * @returns {boolean} True if field type is implemented
    */
   static isWorkingFieldType(fieldType) {
     return IMPLEMENTED_FIELD_TYPES.has(fieldType);

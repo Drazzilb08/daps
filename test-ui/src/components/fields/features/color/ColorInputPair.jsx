@@ -1,17 +1,6 @@
 /**
  * ColorInputPair Primitive Component
- * 
- * Synchronized pair of ColorPicker + ColorTextInput with bidirectional value sync.
- * Implements the core color input pattern used across DAPS color fields.
- * Follows "write once, use everywhere" philosophy for maximum reusability.
- * 
- * Features:
- * - Bidirectional synchronization between picker and text input
- * - Automatic hex format normalization and validation
- * - Touch-optimized layout (picker on left, text on right)
- * - Accessibility support (proper ARIA relationships)
- * - Mobile-first responsive design
- * - Error state handling for both inputs
+ * Synchronized color picker and text input with bidirectional value sync.
  */
 
 import React, { useCallback, useMemo } from 'react';

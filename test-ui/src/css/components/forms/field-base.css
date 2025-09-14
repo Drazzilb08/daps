@@ -1,26 +1,17 @@
 /**
  * Field Base Styles
- * 
  * Consolidated styling patterns for all form field components.
- * Eliminates duplication by providing reusable base classes for common field patterns.
- * Follows "write once, use everywhere" philosophy.
  */
 
 @layer components {
-  /* =============================================================================
-     BASE FIELD INPUT STYLING - Core visual and interaction patterns
-     ============================================================================= */
-  
+  /* Base field input styling */
   .field-input-base {
     background: var(--color-input-bg);
     border: var(--field-base-border, 1px solid var(--color-text-secondary));
     box-shadow: var(--field-base-shadow, 0 1px 2px rgba(0, 0, 0, 0.05));
   }
 
-  /* =============================================================================
-     CONSOLIDATED TYPOGRAPHY AND SIZING - Common text input patterns
-     ============================================================================= */
-  
+  /* Typography and sizing */
   .field-input-typography {
     font-family: var(--font-family-sans);
     font-size: var(--font-size-base);
@@ -39,10 +30,7 @@
     box-sizing: border-box;
   }
 
-  /* =============================================================================
-     CONSOLIDATED FOCUS STATES - Unified focus behavior across all inputs
-     ============================================================================= */
-  
+  /* Focus states */
   .field-focus-behavior:focus {
     outline: none;
     border-color: var(--color-primary);
@@ -56,10 +44,7 @@
     box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
   }
 
-  /* =============================================================================
-     CONSOLIDATED VALIDATION STATES - Unified error/success styling
-     ============================================================================= */
-  
+  /* Validation states */
   .field-validation-invalid {
     border-color: var(--color-error);
   }
@@ -78,10 +63,7 @@
     box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
   }
 
-  /* =============================================================================
-     CONSOLIDATED DISABLED STATES - Unified disabled behavior
-     ============================================================================= */
-  
+  /* Disabled states */
   .field-disabled-state:disabled {
     background: var(--color-input-bg-disabled);
     color: var(--color-input-text-disabled);
@@ -89,48 +71,24 @@
     cursor: not-allowed;
   }
   
-  /* =============================================================================
-     CONSOLIDATED READ-ONLY STATES - Unified read-only behavior
-     ============================================================================= */
-  
+  /* Read-only states */
   .field-readonly-state:read-only {
     background: var(--color-input-bg-readonly);
     cursor: default;
   }
 
-  /* =============================================================================
-     CONSOLIDATED PLACEHOLDER STYLING - Unified placeholder appearance
-     ============================================================================= */
-  
+  /* Placeholder styling */
   .field-placeholder-styling::placeholder {
     color: var(--color-input-placeholder);
     opacity: 1;
   }
 
-  /* =============================================================================
-     CONSOLIDATED TRANSITIONS - Unified animation behavior
-     ============================================================================= */
-  
+  /* Transitions */
   .field-transition-behavior {
     transition: all var(--transition-fast);
   }
-  
-  /* =============================================================================
-     COMPOSITE CLASSES - Pre-configured combinations for common use cases
-     ============================================================================= */
-  
-  /* 
-   * Complete standard input styling - combines all common patterns
-   * Usage: Apply .field-input-typography, .field-input-sizing, .field-input-layout,
-   * .field-focus-behavior, .field-disabled-state as needed
-   * 
-   * Standard input with focus and validation capability
-   * Usage: Designed to be extended by specific field types through composition
-   */
 
-  /* =============================================================================
-     LEGACY COMPATIBILITY - Maintain existing class behavior
-     ============================================================================= */
+  /* Legacy compatibility - maintain existing class behavior */
 
   /* Legacy focus state override for base class */
   .field-input-base:focus {

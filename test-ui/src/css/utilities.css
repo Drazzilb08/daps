@@ -1,34 +1,11 @@
 /**
  * DAPS Utility Classes
- * 
- * Comprehensive utility class system following mobile-first, accessibility-focused design.
- * These utilities implement the "write once, use everywhere" philosophy by providing
- * reusable classes for common styling patterns.
- * 
- * Organization:
- * - Touch targets (accessibility compliance)
- * - Spacing (margin, padding with design tokens)
- * - Typography (text alignment, sizing, weight, colors)
- * - Layout (display, position, dimensions)
- * - Border and styling (borders, border-radius, shadows)
- * - Interactive (cursor states, transitions)
- * - Image and icon utilities (sizing, display, placeholders, status)
- * - Form field utilities (standardized input/select styling)
- * - Responsive image/icon utilities (mobile-first, accessibility)
- * - Development helpers (debugging utilities)
- * 
- * Usage Guidelines:
- * - Always use these utilities instead of writing bespoke CSS
- * - All measurements use design tokens (--space-*, --font-size-*, etc.)
- * - All colors use theme variables (--color-*)
- * - Touch targets ensure WCAG 2.1 AA compliance
+ * Mobile-first, accessibility-focused utility class system.
+ * All measurements use design tokens, all colors use theme variables.
  */
 
 @layer utilities {
-  /* ==========================================================================
-     TOUCH TARGET UTILITIES
-     Accessibility compliance for interactive elements
-     ========================================================================== */
+  /* Touch target utilities */
   
   .touch-target {
     min-height: var(--touch-target-min);
@@ -40,10 +17,7 @@
     min-width: var(--touch-target-comfortable);
   }
 
-  /* ==========================================================================
-     SPACING UTILITIES
-     Margin and padding classes using design tokens
-     ========================================================================== */
+  /* Spacing utilities */
   
   /* Margin utilities */
   .m-0 { margin: 0; }
@@ -132,10 +106,7 @@
   .pr-6 { padding-right: var(--space-6); }
   .pr-8 { padding-right: var(--space-8); }
 
-  /* ==========================================================================
-     TYPOGRAPHY UTILITIES
-     Text alignment, sizing, weight, and color classes
-     ========================================================================== */
+  /* Typography utilities */
   
   /* Text alignment */
   .text-center { text-align: center; }
@@ -164,10 +135,7 @@
   .text-muted { color: var(--color-text-muted); }
   .text-disabled { color: var(--color-text-disabled); }
 
-  /* ==========================================================================
-     LAYOUT UTILITIES
-     Display, position, and dimension classes
-     ========================================================================== */
+  /* Layout utilities */
   
   /* Display utilities */
   .hidden { display: none; }
@@ -260,10 +228,7 @@
   .overflow-scroll { overflow: scroll; }
   .overflow-visible { overflow: visible; }
 
-  /* ==========================================================================
-     BORDER AND STYLING UTILITIES
-     Border, border-radius, and shadow classes
-     ========================================================================== */
+  /* Border and styling utilities */
   
   /* Border utilities */
   .border { border: var(--input-border-width) solid var(--color-border); }
@@ -284,10 +249,7 @@
   .shadow-xl { box-shadow: var(--shadow-xl); }
   .shadow-none { box-shadow: none; }
 
-  /* ==========================================================================
-     INTERACTIVE UTILITIES
-     Cursor states and transition classes
-     ========================================================================== */
+  /* Interactive utilities */
   
   /* Cursor utilities */
   .cursor-pointer { cursor: pointer; }
@@ -299,10 +261,7 @@
   .transition { transition: all var(--transition-normal); }
   .transition-slow { transition: all var(--transition-slow); }
   
-  /* ==========================================================================
-     IMAGE AND ICON UTILITIES
-     Reusable classes for common image and icon patterns
-     ========================================================================== */
+  /* Image and icon utilities */
   
   /* Icon sizing utilities */
   .icon-xs { 
@@ -457,10 +416,7 @@
     color: var(--color-text-muted);
   }
   
-  /* ==========================================================================
-     FORM FIELD UTILITIES
-     Utility-first form field styling classes to replace hardcoded CSS
-     ========================================================================== */
+  /* Form field utilities */
   
   /* Basic input styling utility */
   .input {
@@ -522,10 +478,7 @@
     opacity: 0.6;
   }
   
-  /* ==========================================================================
-     RESPONSIVE IMAGE/ICON UTILITIES
-     Media query variations for mobile-first responsive images
-     ========================================================================== */
+  /* Responsive image/icon utilities */
   
   /* Mobile optimizations */
   @media (max-width: 768px) {
@@ -603,10 +556,7 @@
   }
 }
 
-/* =============================================================================
-   DEVELOPMENT HELPERS
-   Utilities for development and debugging (remove in production)
-   ============================================================================= */
+/* Development helpers */
 @layer utilities {
   /* Grid visualization helper */
   .debug-grid {

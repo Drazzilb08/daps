@@ -1,19 +1,11 @@
 /**
- * Composable Button System - DAPS Design System
- * 
+ * Composable Button System
  * Reusable button components using React composition principles.
- * Use multiple classes together instead of creating bespoke button variants.
- * 
- * Usage Examples:
- * - Primary button: <button class="btn btn--primary">
- * - Small secondary: <button class="btn btn--secondary btn--small">
- * - Large danger: <button class="btn btn--danger btn--large">
+ * Usage: <button class="btn btn--primary"> or <button class="btn btn--secondary btn--small">
  */
 
 @layer components {
-  /* =============================================================================
-     BASE BUTTON - Foundation for all button styles
-     ============================================================================= */
+  /* Base button */
   .btn {
     display: inline-flex;
     align-items: center;

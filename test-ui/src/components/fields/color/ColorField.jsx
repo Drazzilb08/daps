@@ -1,9 +1,6 @@
 /**
  * ColorField Component
- * 
- * Color input field component using color primitive composition.
- * Now uses ColorInputPair primitive for consistent behavior across all color fields.
- * Follows "write once, use everywhere" philosophy.
+ * Color input field with synchronized color picker and hex text input.
  */
 
 import React, { useCallback } from 'react';
@@ -12,10 +9,6 @@ import { ColorInputPair } from '../features/color/ColorInputPair';
 
 /**
  * ColorField component for single color selection
- * 
- * Refactored to use ColorInputPair primitive for consistent color input behavior.
- * Provides synchronized color picker and hex text input with full accessibility support.
- * 
  * @param {Object} props - Component props
  * @param {Object} props.field - Field configuration object
  * @param {string} props.value - Current field value (hex color)

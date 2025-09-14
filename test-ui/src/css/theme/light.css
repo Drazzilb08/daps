@@ -1,15 +1,10 @@
 /**
- * DAPS Light Theme - Clean & Minimal
- * 
- * Streamlined color system with only variables actually used in components.
- * Optimized for bright environments with WCAG AA contrast compliance.
+ * DAPS Light Theme
+ * WCAG AA contrast compliant light theme for bright environments
  */
 
 [data-theme="light"] {
-  /* =============================================================================
-     BASE COLOR PALETTE
-     Core colors - single source of truth
-     ============================================================================= */
+  /* Base color palette */
   --primary: #ff7300;           /* Orange - main brand color */
   --accent: #246ddb;            /* Blue - secondary actions */
   --success: #1cab40;           /* Green - success states */
@@ -41,19 +36,16 @@
   --overlay: rgba(0, 0, 0, 0.1); /* Modal overlays */
   --overlay-strong: rgba(0, 0, 0, 0.75); /* Critical modal overlays */
 
-  /* =============================================================================
-     SEMANTIC COLOR SYSTEM
-     Organized by usage - only variables actually used in components
-     ============================================================================= */
+  /* Semantic color system */
 
-  /* Primary colors (15 uses) */
+  /* Primary colors */
   --color-primary: var(--primary);
   --color-primary-hover: var(--focus);
   --color-primary-text: #ffffff;
   --color-primary-opacity-10: rgba(255, 115, 0, 0.1);
   --color-primary-opacity-20: rgba(255, 115, 0, 0.2);
 
-  /* Accent colors (2 uses) */
+  /* Accent colors */
   --color-accent: var(--accent);
   --color-accent-text: #ffffff;
 
@@ -68,14 +60,14 @@
   --color-error-text: #ffffff;
   --color-error-opacity-20: rgba(225, 30, 57, 0.2);
 
-  /* Text hierarchy (30 total uses) */
+  /* Text hierarchy */
   --color-text-primary: var(--text-primary);     /* 16 uses */
   --color-text-secondary: var(--text-secondary); /* 11 uses */
   --color-text-tertiary: var(--text-tertiary);   /* 2 uses */
   --color-text-disabled: var(--text-disabled);   /* 1 use */
   --color-text-muted: var(--text-tertiary);      /* 1 use */
 
-  /* Surface system (20 total uses) */
+  /* Surface system */
   --color-background: var(--bg);                 /* 2 uses */
   --color-background-alt: var(--surface-alt);    /* 2 uses */
   --color-surface: var(--surface);               /* 8 uses */
@@ -83,19 +75,19 @@
   --color-surface-active: var(--border-light);   /* 1 use */
   --color-surface-elevated: var(--surface-elevated); /* 2 uses */
 
-  /* Border system (20 total uses) */
+  /* Border system */
   --color-border: var(--border);                 /* 15 uses */
   --color-border-light: var(--border-light);     /* 2 uses */
   --color-border-hover: var(--border-light);     /* 3 uses */
 
-  /* Sidebar system (10 total uses) */
+  /* Sidebar system */
   --color-sidebar-bg: var(--sidebar-bg);         /* 2 uses */
   --color-sidebar-hover: var(--sidebar-hover);   /* 2 uses */
   --color-sidebar-border: var(--sidebar-border); /* 3 uses */
   --color-sidebar-text: var(--text-secondary);   /* 3 uses */
   --color-sidebar-text-secondary: #737378;       /* 1 use */
 
-  /* Header system (6 total uses) */
+  /* Header system */
   --color-header-bg: var(--header-bg);           /* 3 uses */
   --color-header-border: var(--sidebar-border);  /* 2 uses */
 
@@ -132,31 +124,25 @@
   --field-base-border: 1px solid var(--color-text-secondary);
   --field-base-shadow: 0 1px 2px rgba(var(--shadow-color), var(--shadow-opacity-light));
 
-  /* Focus system (8 total uses) */
+  /* Focus system */
   --color-focus-ring: var(--focus);              /* 7 uses */
   --color-focus-ring-offset: var(--bg);          /* 1 use */
 
-  /* Button system (2 total uses) */
+  /* Button system */
   --color-button-primary: var(--primary);        /* 1 use */
   --color-button-primary-text: #ffffff;          /* 1 use */
 
   /* Utility colors */
   --color-overlay: var(--overlay);               /* 1 use */
 
-  /* =============================================================================
-     SHADOW SYSTEM
-     Light theme optimized shadows
-     ============================================================================= */
+  /* Shadow system */
   --shadow-color: 0, 0, 0;
   --shadow-opacity-light: 0.1;
   --shadow-opacity-medium: 0.15;
   --shadow-opacity-heavy: 0.25;
 }
 
-/* =============================================================================
-   HIGH CONTRAST MODE SUPPORT
-   Enhanced contrast for accessibility compliance
-   ============================================================================= */
+/* High contrast mode support */
 @media (prefers-contrast: high) {
   [data-theme="light"] {
     --color-border: #000000;

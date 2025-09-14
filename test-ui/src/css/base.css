@@ -1,21 +1,9 @@
 /**
  * DAPS Base Styles
- * 
- * Foundation styles including CSS reset, layer definitions, base typography,
- * and accessibility features. This file establishes the core styling foundation.
- * 
- * Order of operations:
- * 1. CSS Layers definition
- * 2. CSS Reset/Normalize
- * 3. Base typography
- * 4. Accessibility features
- * 5. Focus management
+ * Foundation styles including CSS reset, base typography, and accessibility features.
  */
 
-/* =============================================================================
-   CSS LAYERS DEFINITION
-   Defines cascade layers for proper CSS organization and specificity management
-   ============================================================================= */
+/* CSS layers definition */
 @layer reset, base, components, utilities, pages;
 
 /* =============================================================================

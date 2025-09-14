@@ -1,19 +1,11 @@
 /**
  * DAPS Design Token System
- * 
- * This file defines the complete design token system for DAPS frontend.
- * All measurements, spacing, typography, and layout values are centralized here.
- * 
  * Usage: var(--token-name)
  * DO NOT use hardcoded values - always reference tokens
  */
 
 :root {
-  /* =============================================================================
-     SPACING SCALE
-     Progressive spacing scale in 0.25rem (4px) increments
-     Base: 1rem = 16px, so --space-1 = 4px, --space-2 = 8px, etc.
-     ============================================================================= */
+  /* Spacing scale - Progressive spacing in 0.25rem (4px) increments */
   --space-0: 0;
   --space-1: 0.25rem;    /* 4px */
   --space-2: 0.5rem;     /* 8px */
@@ -32,10 +24,7 @@
   --space-24: 6rem;      /* 96px */
   --space-32: 8rem;      /* 128px */
 
-  /* =============================================================================
-     LAYOUT MEASUREMENTS
-     Specific measurements for DAPS UI components
-     ============================================================================= */
+  /* Layout measurements */
   --sidebar-width: 210px;
   --sidebar-collapsed: 72px;
   --header-height: 64px;
@@ -45,11 +34,7 @@
   --modal-max-width: 800px;
   --card-max-width: 400px;
 
-  /* =============================================================================
-     TYPOGRAPHY SCALE
-     Progressive font sizes with consistent scaling ratio (~1.25)
-     Base: 16px minimum for accessibility
-     ============================================================================= */
+  /* Typography scale - Progressive font sizes with consistent scaling ratio (~1.25) */
   --font-size-xs: 0.75rem;    /* 12px */
   --font-size-sm: 0.875rem;   /* 14px */
   --font-size-base: 1rem;     /* 16px - MINIMUM for accessibility */
@@ -83,20 +68,14 @@
   --letter-spacing-normal: 0;
   --letter-spacing-wide: 0.025em;
 
-  /* =============================================================================
-     BORDER RADII
-     Consistent border radius values for components
-     ============================================================================= */
+  /* Border radii */
   --radius-none: 0;
   --radius-1: 0.25rem;   /* 4px - Small elements */
   --radius-2: 0.5rem;    /* 8px - Cards, buttons */
   --radius-3: 0.75rem;   /* 12px - Larger components */
   --radius-full: 9999px; /* Pills, badges */
 
-  /* =============================================================================
-     RESPONSIVE BREAKPOINTS
-     Mobile-first breakpoint system
-     ============================================================================= */
+  /* Responsive breakpoints - Mobile-first breakpoint system */
   --breakpoint-mobile: 375px;   /* Small phones */
   --breakpoint-mobile-lg: 425px; /* Large phones */
   --breakpoint-tablet: 768px;   /* Tablets */
@@ -104,29 +83,20 @@
   --breakpoint-desktop-lg: 1200px; /* Large desktops */
   --breakpoint-desktop-xl: 1440px; /* Extra large screens */
 
-  /* =============================================================================
-     TOUCH TARGETS & ACCESSIBILITY
-     Minimum sizes for touch-friendly interaction
-     ============================================================================= */
+  /* Touch targets & accessibility */
   --touch-target-min: 44px;    /* WCAG minimum touch target */
   --touch-target-comfortable: 48px; /* Comfortable touch target */
   --focus-ring-width: 2px;     /* Focus indicator width */
   --focus-ring-offset: 2px;    /* Focus indicator offset */
 
-  /* =============================================================================
-     SHADOWS & ELEVATION
-     Consistent shadow system for depth perception
-     ============================================================================= */
+  /* Shadows & elevation */
   --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 
-  /* =============================================================================
-     ANIMATION & TRANSITIONS
-     Consistent timing and easing for smooth interactions
-     ============================================================================= */
+  /* Animation & transitions */
   --transition-fast: 150ms ease-in-out;
   --transition-normal: 250ms ease-in-out;
   --transition-slow: 350ms ease-in-out;
@@ -140,10 +110,7 @@
   --ease-out: cubic-bezier(0, 0, 0.2, 1);
   --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 
-  /* =============================================================================
-     Z-INDEX SCALE
-     Consistent layering system to prevent z-index conflicts
-     ============================================================================= */
+  /* Z-index scale */
   --z-dropdown: 1000;
   --z-sticky: 1020;
   --z-fixed: 1030;
@@ -153,20 +120,14 @@
   --z-tooltip: 1070;
   --z-toast: 1080;
 
-  /* =============================================================================
-     GRID & LAYOUT
-     Consistent grid and layout values
-     ============================================================================= */
+  /* Grid & layout */
   --grid-columns: 12;
   --container-padding: var(--space-4);
   --container-padding-mobile: var(--space-3);
   --section-spacing: var(--space-16);
   --section-spacing-mobile: var(--space-12);
 
-  /* =============================================================================
-     FORM ELEMENTS
-     Consistent form element sizing
-     ============================================================================= */
+  /* Form elements */
   --input-height: var(--touch-target-min);
   --input-padding-x: var(--space-3);
   --input-padding-y: var(--space-2);
@@ -177,10 +138,7 @@
   --button-padding-y: var(--space-2);
   --button-border-width: 1px;
 
-  /* =============================================================================
-     MEDIA & POSTER ELEMENTS
-     Poster preview and media component sizing
-     ============================================================================= */
+  /* Media & poster elements */
   --poster-width-standard: 156px;      /* Standard poster preview width */
   --poster-height-standard: 234px;     /* Standard poster preview height (3:2 ratio) */
   --poster-width-mobile: 120px;        /* Mobile poster preview width */
@@ -191,27 +149,18 @@
   --poster-grid-min-width: 180px;      /* Minimum column width for poster grid */
   --poster-grid-min-width-lg: 200px;   /* Larger minimum column width for desktop */
 
-  /* =============================================================================
-     CONTENT SPACING
-     Consistent content spacing patterns
-     ============================================================================= */
+  /* Content spacing */
   --content-gap: var(--space-6);
   --content-gap-mobile: var(--space-4);
   --paragraph-spacing: var(--space-4);
   --list-spacing: var(--space-2);
 
-  /* =============================================================================
-     BORDER WIDTHS
-     Consistent border thickness values
-     ============================================================================= */
+  /* Border widths */
   --border-width-thin: 1px;        /* Standard border thickness */
   --border-width-medium: 2px;      /* Emphasis borders */
   --border-width-thick: 3px;       /* Strong emphasis */
 
-  /* =============================================================================
-     COMPONENT DIMENSIONS
-     Common component sizing patterns
-     ============================================================================= */
+  /* Component dimensions */
   --size-icon-xs: 12px;            /* Extra small icons */
   --size-icon-sm: 16px;            /* Small icons */
   --size-icon-md: 20px;            /* Medium icons */
@@ -247,10 +196,7 @@
   --container-width-2xl: 1600px;   /* 2x extra large container */
   --container-width-3xl: 1800px;   /* 3x extra large container */
 
-  /* =============================================================================
-     TRANSFORM VALUES
-     Consistent transform offset values
-     ============================================================================= */
+  /* Transform values */
   --transform-offset-xs: -1px;     /* Micro movement */
   --transform-offset-sm: -2px;     /* Small movement */
   --transform-offset-md: -4px;     /* Medium movement */
@@ -264,10 +210,7 @@
   --transform-lift-lg: 6px;        /* Large lift */
   --transform-lift-xl: 8px;        /* Extra large lift */
 
-  /* =============================================================================
-     OPACITY VALUES
-     Consistent opacity levels for UI elements
-     ============================================================================= */
+  /* Opacity values */
   --opacity-10: 0.1;               /* Subtle transparency */
   --opacity-15: 0.15;              /* Light transparency */
   --opacity-20: 0.2;               /* Mild transparency */

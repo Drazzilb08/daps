@@ -13,7 +13,7 @@ import {
   FieldDescription
 } from '../primitives';
 import { ColorPicker } from '../features/color/ColorPicker';
-import { AddButton, RemoveButton } from '../features/shared';
+import { AddButton, RemoveButton, ItemCounter } from '../features/shared';
 import { postersAPI } from '../../../utils/api/posters';
 
 /**
@@ -421,16 +421,13 @@ export const ColorListPosterField = React.memo(({
         />
         
         {maxColors > 1 && colorsArray.length > 0 && (
-          <div className="color-poster-counter">
-            <span className="color-poster-counter-text">
-              {colorsArray.length} of {maxColors} colors
-            </span>
-            {colorsArray.length >= Math.ceil(maxColors * 0.8) && (
-              <span className="color-poster-counter-warning">
-                (approaching limit)
-              </span>
-            )}
-          </div>
+          <ItemCounter
+            current={colorsArray.length}
+            total={maxColors}
+            itemType="color"
+            warningThreshold={0.8}
+            className="color-poster-counter"
+          />
         )}
       </div>
 

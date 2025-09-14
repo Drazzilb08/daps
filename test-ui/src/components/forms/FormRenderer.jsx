@@ -119,33 +119,6 @@ const FormSection = React.memo(({ section, formData, onFieldChange, disabled }) 
 
 FormSection.displayName = 'FormSection';
 
-/**
- * Form progress indicator
- * 
- * @param {Object} props - Component props
- * @param {number} props.totalFields - Total number of fields
- * @param {number} props.completedFields - Number of completed fields
- * @param {boolean} props.isValid - Form validation state
- */
-const FormProgress = React.memo(({ totalFields, completedFields, isValid }) => {
-  const percentage = totalFields > 0 ? Math.round((completedFields / totalFields) * 100) : 0;
-  
-  return (
-    <div className="form-progress">
-      <div className="form-progress-bar">
-        <div 
-          className={`form-progress-fill ${isValid ? 'valid' : 'invalid'}`}
-          style={{ width: `${percentage}%` }}
-        />
-      </div>
-      <div className="form-progress-text">
-        {completedFields} of {totalFields} fields completed ({percentage}%)
-      </div>
-    </div>
-  );
-});
-
-FormProgress.displayName = 'FormProgress';
 
 /**
  * Main form component that renders from schema
@@ -201,7 +174,6 @@ export const FormRenderer = React.memo(({
 
   // Form options with defaults
   const formOptions = {
-    showProgress: false,
     validateOnChange: true,
     mobileOptimized: true,
     ...options
@@ -242,26 +214,6 @@ export const FormRenderer = React.memo(({
     }
   }, [formData, onSubmit, disabled, isSubmitting]);
 
-  // Calculate form progress
-  const progressData = useMemo(() => {
-    const fields = Object.values(schema.fields || {});
-    const totalFields = fields.length;
-    const completedFields = fields.filter(field => {
-      const value = formData[field.key];
-      
-      // Consider field completed if it has a non-empty value or is not required
-      if (!field.required) return true;
-      if (value === null || value === undefined) return false;
-      if (typeof value === 'string') return value.trim().length > 0;
-      if (Array.isArray(value)) return value.length > 0;
-      if (typeof value === 'boolean') return true; // Booleans are always "complete"
-      if (typeof value === 'number') return !isNaN(value);
-      
-      return Boolean(value);
-    }).length;
-    
-    return { totalFields, completedFields };
-  }, [schema.fields, formData]);
 
   // Group fields by sections
   const sections = useMemo(() => {
@@ -312,14 +264,6 @@ export const FormRenderer = React.memo(({
           </div>
         )}
 
-        {/* Progress indicator */}
-        {formOptions.showProgress && (
-          <FormProgress
-            totalFields={progressData.totalFields}
-            completedFields={progressData.completedFields}
-            isValid={!submitError}
-          />
-        )}
 
         {/* Form sections and fields */}
         <div className="form-content">

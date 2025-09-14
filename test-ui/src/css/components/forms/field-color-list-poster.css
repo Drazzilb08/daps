@@ -1,0 +1,373 @@
+/**
+ * Color List Poster Field Styles
+ * 
+ * Integrated layout styles for ColorListPosterField with direct poster-color picker pairs.
+ * Features mobile-first responsive design with touch-optimized color pickers.
+ */
+
+@layer components {
+  .color-list-poster-field {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  /* Empty State Styles */
+  .color-poster-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-4);
+    padding: var(--space-6) var(--space-4);
+    background: var(--color-surface-elevated);
+    border: 1px dashed var(--color-border);
+    border-radius: var(--radius-2);
+    text-align: center;
+  }
+
+  .color-poster-empty-message {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .color-poster-empty-title {
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    margin: 0;
+  }
+
+  .color-poster-empty-subtitle {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    margin: 0;
+  }
+
+  .color-poster-empty-add-button {
+    min-height: 44px; /* Touch-optimized */
+  }
+
+  /* Compact Grid Layout */
+  .color-poster-grid {
+    display: grid;
+    gap: var(--space-3);
+    /* Mobile-first: single column */
+    grid-template-columns: 1fr;
+  }
+
+  /* Individual Poster-Color Item */
+  .color-poster-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    /* No background - removing white boxes */
+  }
+
+  /* Poster Preview Section */
+  .color-poster-preview {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .color-poster-image {
+    width: 156px;
+    height: 234px;
+    object-fit: cover;
+    border-radius: var(--radius-2);
+    box-shadow: var(--shadow-md);
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  }
+
+  .color-poster-image:hover {
+    transform: scale(1.02);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .color-poster-placeholder {
+    width: 156px;
+    height: 234px;
+    background: var(--color-surface-dim);
+    border: 2px dashed var(--color-border);
+    border-radius: var(--radius-2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .color-poster-placeholder-text {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-muted);
+    text-align: center;
+    font-weight: var(--font-weight-medium);
+  }
+
+  /* Color Picker + Remove Button Row */
+  .color-poster-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    justify-content: center;
+    /* No background or border - removing white containers */
+  }
+
+  .color-poster-controls .color-picker {
+    width: 44px; /* Touch-optimized */
+    height: 44px; /* Touch-optimized */
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-1);
+    cursor: pointer;
+    transition: border-color var(--transition-fast), transform var(--transition-fast);
+  }
+
+  .color-poster-controls .color-picker:hover {
+    border-color: var(--color-primary);
+    transform: scale(1.05);
+  }
+
+  .color-poster-controls .color-picker:focus {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-color: var(--color-primary);
+  }
+
+  .color-poster-controls .color-picker.invalid {
+    border-color: var(--color-error);
+  }
+
+  .color-poster-remove-button {
+    min-width: 44px; /* Touch-optimized */
+    min-height: 44px; /* Touch-optimized */
+    flex-shrink: 0;
+  }
+
+  /* Bottom Controls */
+  .color-poster-bottom-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-top: var(--space-3);
+    /* No background or border - removing white containers */
+  }
+
+  .color-poster-add-button {
+    min-height: 44px; /* Touch-optimized */
+  }
+
+  .color-poster-counter {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-1);
+  }
+
+  .color-poster-counter-text {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-medium);
+  }
+
+  .color-poster-counter-warning {
+    font-size: var(--font-size-xs);
+    color: var(--color-warning-text);
+    font-style: italic;
+  }
+
+  /* Status Messages */
+  .color-poster-status {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+
+  .color-poster-warning {
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-warning-bg);
+    border: 1px solid var(--color-warning);
+    border-radius: var(--radius-1);
+  }
+
+  .color-poster-warning-text {
+    font-size: var(--font-size-sm);
+    color: var(--color-warning-text);
+    font-style: italic;
+  }
+
+  .color-poster-loading {
+    padding: var(--space-2) var(--space-3);
+    background: var(--color-info-bg);
+    border: 1px solid var(--color-info);
+    border-radius: var(--radius-1);
+  }
+
+  .color-poster-loading-text {
+    font-size: var(--font-size-sm);
+    color: var(--color-info-text);
+    font-style: italic;
+  }
+
+  /* Mobile-First Responsive Grid Design */
+  @media (max-width: 480px) {
+    .color-poster-image,
+    .color-poster-placeholder {
+      width: 120px;
+      height: 180px;
+    }
+
+    .color-poster-controls {
+      gap: var(--space-1);
+    }
+
+    .color-poster-bottom-controls {
+      flex-direction: column;
+      align-items: stretch;
+      gap: var(--space-3);
+    }
+
+    .color-poster-counter {
+      align-items: center;
+      text-align: center;
+    }
+  }
+
+  @media (min-width: 481px) and (max-width: 768px) {
+    .color-poster-grid {
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--space-4);
+    }
+
+    .color-poster-image,
+    .color-poster-placeholder {
+      width: 130px;
+      height: 195px;
+    }
+  }
+
+  @media (min-width: 769px) {
+    .color-poster-grid {
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: var(--space-4);
+    }
+  }
+
+  /* Large screens: allow 3 columns */
+  @media (min-width: 1024px) {
+    .color-poster-grid {
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: var(--space-4);
+    }
+  }
+
+  /* Touch-Optimized Interactions */
+  @media (hover: none) and (pointer: coarse) {
+    .color-poster-image:hover {
+      transform: none;
+    }
+
+    .color-poster-controls .color-picker:hover {
+      transform: none;
+      border-color: var(--color-border);
+    }
+
+    /* Larger color pickers for touch */
+    .color-poster-controls .color-picker {
+      width: 48px; /* Larger for touch */
+      height: 48px; /* Larger for touch */
+    }
+  }
+
+  /* Dark Theme Adjustments */
+  [data-theme="dark"] .color-poster-empty-state {
+    background: var(--color-surface-elevated-dark);
+    border-color: var(--color-border-dark);
+  }
+
+  [data-theme="dark"] .color-poster-image {
+    box-shadow: var(--shadow-dark-md);
+  }
+
+  [data-theme="dark"] .color-poster-image:hover {
+    box-shadow: var(--shadow-dark-lg);
+  }
+
+  [data-theme="dark"] .color-poster-placeholder {
+    background: var(--color-surface-dim-dark);
+    border-color: var(--color-border-dark);
+  }
+
+  [data-theme="dark"] .color-poster-controls .color-picker {
+    border-color: var(--color-border-dark);
+  }
+
+  [data-theme="dark"] .color-poster-controls .color-picker:hover {
+    border-color: var(--color-primary-dark);
+  }
+
+  /* High Contrast Mode */
+  @media (prefers-contrast: high) {
+    .color-poster-placeholder {
+      border-width: 3px;
+      border-style: solid;
+    }
+
+    .color-poster-controls .color-picker {
+      border-width: 3px;
+    }
+  }
+
+  /* Reduced Motion Preferences */
+  @media (prefers-reduced-motion: reduce) {
+    .color-poster-image,
+    .color-poster-controls .color-picker {
+      transition: none;
+    }
+
+    .color-poster-image:hover,
+    .color-poster-controls .color-picker:hover {
+      transform: none;
+    }
+  }
+
+  /* Loading State */
+  .color-poster-loading-text::after {
+    content: "";
+    display: inline-block;
+    width: var(--space-2);
+    height: var(--space-2);
+    margin-left: var(--space-1);
+    border: 2px solid var(--color-info-text);
+    border-top: 2px solid transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Accessibility Improvements */
+  .color-poster-item:focus-within {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-1);
+  }
+
+  /* Focus indicators for keyboard navigation */
+  .color-poster-image:focus {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+
+  /* Focus management for controls */
+  .color-poster-controls:focus-within {
+    outline: 1px solid var(--color-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-1);
+  }
+}

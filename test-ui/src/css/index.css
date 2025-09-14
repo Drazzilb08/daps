@@ -82,7 +82,8 @@
 @import './components/forms/field-textarea.css';
 @import './components/forms/field-color.css';
 @import './components/forms/field-directory.css';
-/* @import './components/forms/field-color-list.css'; */
+@import './components/forms/field-color-list.css';
+@import './components/forms/field-color-list-poster.css';
 @import './components/forms/field-custom.css';
 @import './components/forms/form-layout.css';
 @import './components/forms/form-renderer.css';  /* Schema-driven form renderer */

@@ -110,7 +110,7 @@ const IMPLEMENTED_FIELD_TYPES = new Set([
   'float', 'hidden',
   'check_box', 'dropdown',
   'json',
-  'color', 'color_list'
+  'color', 'color_list', 'color_list_poster'
 ]);
 
 /**

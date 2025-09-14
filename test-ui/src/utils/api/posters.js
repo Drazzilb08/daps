@@ -294,5 +294,26 @@ export const postersAPI = {
   syncMetadata: (posterId = null, options = {}) => {
     const url = posterId ? `/posters/${posterId}/sync-metadata` : '/posters/sync-metadata';
     return apiCore.post(url, options);
+  },
+
+  /**
+   * Fetch list of poster files
+   * @param {boolean} forceRefresh - Force refresh cache
+   * @returns {Promise<Array>} Array of poster file names
+   */
+  fetchPosterFileList: (forceRefresh = false) => {
+    return apiCore.get('/posters/list', {
+      useCache: !forceRefresh,
+      cacheTTL: 5 * 60 * 1000 // 5 minutes cache
+    }).then(response => {
+      // Extract files array from response
+      if (response && response.data && Array.isArray(response.data.files)) {
+        return response.data.files;
+      }
+      return [];
+    }).catch(error => {
+      console.error('Failed to fetch poster file list:', error);
+      return [];
+    });
   }
 };

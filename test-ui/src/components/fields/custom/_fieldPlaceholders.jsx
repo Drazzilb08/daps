@@ -66,3 +66,4 @@ export const MediaInfoDisplayField = React.memo((props) => <UnavailableField {..
 export const MediaDisplayField = React.memo((props) => <UnavailableField {...props} />);
 export const DirPickerField = React.memo((props) => <UnavailableField {...props} />);
 export const PosterField = React.memo((props) => <UnavailableField {...props} />);
+export const ColorListPosterField = React.memo((props) => <UnavailableField {...props} />);

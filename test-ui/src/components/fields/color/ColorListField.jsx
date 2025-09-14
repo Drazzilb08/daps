@@ -22,7 +22,7 @@ import { ColorArray } from '../features/color/ColorArray';
 /**
  * ColorListField component for multiple color selection
  * 
- * Simple color list field without poster preview functionality.
+ * Simple color list field.
  * Uses the ColorArray feature component for consistent color management.
  * 
  * @param {Object} props - Component props

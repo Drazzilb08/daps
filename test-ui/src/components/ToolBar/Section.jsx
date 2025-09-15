@@ -1,6 +1,8 @@
 import React, { useMemo, useRef, useState, useLayoutEffect } from 'react';
 import PropTypes from 'prop-types';
 import Button from './Button.jsx';
+import OverflowMenu from './OverflowMenu.jsx';
+import OverflowMenuItem from './OverflowMenuItem.jsx';
 
 /**
  * Responsive toolbar section component
@@ -18,9 +20,19 @@ const Section = ({
   collapseButtons = true
 }) => {
   const sectionRef = useRef(null);
+  const moreButtonRef = useRef(null);
   const [sectionWidth, setSectionWidth] = useState(0);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const isMeasured = sectionWidth > 0;
+
+  const handleMenuToggle = () => {
+    setIsMenuOpen(!isMenuOpen);
+  };
+
+  const handleMenuClose = () => {
+    setIsMenuOpen(false);
+  };
 
   // Measure section width
   useLayoutEffect(() => {
@@ -195,10 +207,30 @@ const Section = ({
       <div className="page-toolbar-section-buttons">
         {visibleButtons}
         {overflowItems.length > 0 && (
-          <Button 
-            label={`More (${overflowItems.length})`}
-            iconName="more_horiz"
-          />
+          <div style={{ position: 'relative' }}>
+            <Button
+              ref={moreButtonRef}
+              label={`More (${overflowItems.length})`}
+              iconName="more_horiz"
+              onPress={handleMenuToggle}
+            />
+            <OverflowMenu
+              isOpen={isMenuOpen}
+              onClose={handleMenuClose}
+              anchorRef={moreButtonRef}
+            >
+              {overflowItems.map((item, index) => (
+                <OverflowMenuItem
+                  key={`overflow-${index}`}
+                  label={item.label}
+                  iconName={item.iconName}
+                  onPress={item.onPress}
+                  isDisabled={item.isDisabled}
+                  onClose={handleMenuClose}
+                />
+              ))}
+            </OverflowMenu>
+          </div>
         )}
       </div>
     </div>

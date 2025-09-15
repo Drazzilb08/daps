@@ -17,7 +17,7 @@ import PropTypes from 'prop-types';
  * @param {Function} [props.onPress] - Click handler
  * @param {React.ComponentType} [props.overflowComponent] - Overflow menu component
  */
-const Button = ({
+const Button = React.forwardRef(({
   label,
   iconName,
   spinningName,
@@ -26,7 +26,7 @@ const Button = ({
   onPress,
   overflowComponent: OverflowComponent,
   ...otherProps
-}) => {
+}, ref) => {
   const handleClick = (event) => {
     if (isDisabled || isSpinning) {
       event.preventDefault();
@@ -58,6 +58,7 @@ const Button = ({
 
   return (
     <button
+      ref={ref}
       className={buttonClassName}
       onClick={handleClick}
       disabled={isDisabled || isSpinning}
@@ -75,7 +76,9 @@ const Button = ({
       {OverflowComponent && <OverflowComponent />}
     </button>
   );
-};
+});
+
+Button.displayName = 'Button';
 
 Button.propTypes = {
   label: PropTypes.string.isRequired,

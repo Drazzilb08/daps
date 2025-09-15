@@ -2,56 +2,54 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 /**
- * OverflowMenuItem - Generic overflow menu item component
- * 
- * Menu item for toolbar overflow dropdown with professional styling.
- * Renders as a menu item with icon and label.
- * 
+ * Individual menu item for toolbar overflow
+ *
  * @param {Object} props - Component props
- * @param {string} props.iconName - Material icon name
- * @param {string} props.label - Menu item label
- * @param {boolean} [props.isDisabled=false] - Disabled state
- * @param {boolean} [props.isSpinning=false] - Loading state
- * @param {Function} [props.onPress] - Click handler
+ * @param {string} props.label - Item label text
+ * @param {string} [props.iconName] - Icon name for the item
+ * @param {Function} [props.onPress] - Click handler for the item
+ * @param {boolean} [props.isDisabled] - Whether item is disabled
+ * @param {Function} props.onClose - Callback to close the menu
  */
 const OverflowMenuItem = ({
-  iconName,
   label,
-  isDisabled = false,
-  isSpinning = false,
+  iconName,
   onPress,
+  isDisabled = false,
+  onClose,
   ...otherProps
 }) => {
   const handleClick = (event) => {
     event.preventDefault();
-    
-    if (isDisabled || isSpinning) {
-      return;
-    }
-    
-    if (onPress) {
-      onPress(event);
+    if (!isDisabled && onPress) {
+      onPress();
+      onClose(); // Close menu after action
     }
   };
 
-  const itemClassName = [
-    'page-toolbar-overflow-menu-item',
-    isDisabled && 'page-toolbar-overflow-menu-item--disabled',
-    isSpinning && 'page-toolbar-overflow-menu-item--spinning'
-  ].filter(Boolean).join(' ');
+  const handleKeyDown = (event) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      handleClick(event);
+    }
+  };
 
   return (
-    <div 
-      className={itemClassName}
-      onClick={handleClick}
+    <div
+      className={`toolbar-overflow-menu-item ${isDisabled ? 'disabled' : ''}`}
       role="menuitem"
       tabIndex={isDisabled ? -1 : 0}
+      onClick={handleClick}
+      onKeyDown={handleKeyDown}
+      aria-disabled={isDisabled}
       {...otherProps}
     >
-      <span className={`page-toolbar-overflow-menu-item-icon material-symbols-outlined ${isSpinning ? 'spinning' : ''}`}>
-        {iconName}
-      </span>
-      <span className="page-toolbar-overflow-menu-item-label">
+      {iconName && (
+        <span className="toolbar-overflow-menu-item-icon material-symbols-outlined" aria-hidden="true">
+          {iconName}
+        </span>
+      )}
+      <span className="toolbar-overflow-menu-item-label">
         {label}
       </span>
     </div>
@@ -59,11 +57,11 @@ const OverflowMenuItem = ({
 };
 
 OverflowMenuItem.propTypes = {
-  iconName: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
+  iconName: PropTypes.string,
+  onPress: PropTypes.func,
   isDisabled: PropTypes.bool,
-  isSpinning: PropTypes.bool,
-  onPress: PropTypes.func
+  onClose: PropTypes.func.isRequired
 };
 
 export default OverflowMenuItem;

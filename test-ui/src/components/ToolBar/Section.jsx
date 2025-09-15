@@ -208,7 +208,7 @@ const Section = ({
       <div className="page-toolbar-section-buttons">
         {visibleButtons}
         {overflowItems.length > 0 && (
-          <div style={{ position: 'relative' }}>
+          <>
             <Button
               ref={moreButtonRef}
               label={`More (${overflowItems.length})`}
@@ -235,7 +235,7 @@ const Section = ({
                 ))}
               </Menu>
             </Dropdown>
-          </div>
+          </>
         )}
       </div>
     </div>

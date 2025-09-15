@@ -79,7 +79,7 @@
   }
 
   /* Responsive adjustments */
-  @media (min-width: 768px) {
+  @media (min-width: var(--breakpoint-tablet)) {
     .menu-item {
       font-size: var(--font-size-base);
     }

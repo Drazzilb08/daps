@@ -103,7 +103,7 @@ const PageHeader = React.memo(() => {
 
           {/* Hamburger Menu Button */}
           <button
-            className={`hamburger menu${mobileMenuOpen ? ' opened' : ''}`}
+            className={`hamburger hamburger-menu${mobileMenuOpen ? ' opened' : ''}`}
             aria-label="Main Menu"
             aria-expanded={mobileMenuOpen}
             onClick={handleHamburgerClick}

@@ -13,15 +13,15 @@
     border-radius: var(--radius-2);
     box-shadow: var(--shadow-lg);
     padding: var(--space-1);
-    min-width: 120px;
-    max-width: 160px;
+    min-width: var(--dropdown-width-min);
+    max-width: var(--dropdown-width-max);
     width: max-content;
   }
 
   /* Responsive adjustments */
-  @media (min-width: 768px) {
+  @media (min-width: var(--breakpoint-tablet)) {
     .dropdown {
-      max-width: 320px;
+      max-width: var(--dropdown-width-desktop);
     }
   }
 

@@ -42,13 +42,13 @@
 
   /* Toolbar-specific dropdown adjustments */
   .toolbar-overflow-dropdown {
-    max-width: 160px;
+    max-width: var(--dropdown-width-max);
   }
 
 
 
   /* Mobile responsive adjustments */
-  @media (max-width: 767px) {
+  @media (max-width: calc(var(--breakpoint-tablet) - 1px)) {
     .page-toolbar {
       padding: 0 var(--space-2);
     }

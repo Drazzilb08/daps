@@ -178,6 +178,11 @@
   --min-width-input: 120px;        /* Minimum input width */
   --min-width-select: 140px;       /* Minimum select width */
 
+  /* Dropdown dimensions */
+  --dropdown-width-min: 7.5rem;    /* 120px - Minimum dropdown width */
+  --dropdown-width-max: 10rem;     /* 160px - Maximum dropdown width mobile */
+  --dropdown-width-desktop: 20rem; /* 320px - Maximum dropdown width desktop */
+
   /* Component maximum heights */
   --max-height-dropdown: 300px;    /* Maximum dropdown height */
   --max-height-textarea: 400px;    /* Maximum textarea height */

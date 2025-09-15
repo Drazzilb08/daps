@@ -91,6 +91,62 @@ const ToolbarTestPage = () => {
           <li>The buttons should maintain their proper size and not have truncated text</li>
           <li>Expand the window again - buttons should move back out of the overflow menu</li>
         </ol>
+
+        <h2>Dropdown Scroll Position Test:</h2>
+        <p><strong>Critical Test:</strong> This page is designed to be scrollable to test dropdown positioning.</p>
+        <ol>
+          <li>Narrow the browser window to trigger the "More" dropdown</li>
+          <li>Click the "More" button to open the dropdown</li>
+          <li>Scroll the page up and down</li>
+          <li><strong>Expected behavior:</strong> Dropdown should stay fixed to its anchor button, not scroll with the page</li>
+          <li><strong>Bug behavior:</strong> Dropdown would move away from button when scrolling</li>
+        </ol>
+      </div>
+
+      {/* Add substantial content to make page scrollable */}
+      <div style={{ marginTop: '40px' }}>
+        <h2>Scrollable Test Content</h2>
+        <p>This content makes the page scrollable so we can test dropdown positioning during scroll.</p>
+
+        {Array.from({ length: 20 }, (_, i) => (
+          <div key={i} style={{
+            margin: '20px 0',
+            padding: '20px',
+            background: `linear-gradient(135deg, rgba(255,115,0,0.1), rgba(62,123,250,0.1))`,
+            borderRadius: '8px',
+            border: '1px solid rgba(255,115,0,0.2)'
+          }}>
+            <h3>Test Section {i + 1}</h3>
+            <p>
+              This is test content section {i + 1}. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+              Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+              quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+            </p>
+            <p>
+              Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla
+              pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt
+              mollit anim id est laborum.
+            </p>
+            <ul>
+              <li>Test item A for section {i + 1}</li>
+              <li>Test item B for section {i + 1}</li>
+              <li>Test item C for section {i + 1}</li>
+            </ul>
+          </div>
+        ))}
+
+        <div style={{
+          margin: '40px 0',
+          padding: '30px',
+          background: 'rgba(255,115,0,0.15)',
+          borderRadius: '12px',
+          border: '2px solid rgba(255,115,0,0.3)',
+          textAlign: 'center'
+        }}>
+          <h3>🎯 End of Scrollable Content</h3>
+          <p>If you can see this, the page is properly scrollable for testing dropdown positioning.</p>
+          <p><strong>Now scroll back up and test the dropdown behavior!</strong></p>
+        </div>
       </div>
     </div>
   );

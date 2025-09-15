@@ -12,6 +12,7 @@
     justify-content: center;
     min-width: 56px;
     width: auto;
+    flex-shrink: 0; /* Prevent button from shrinking below min-width */
     padding: var(--space-1) var(--space-2);
     background: transparent;
     border: none;

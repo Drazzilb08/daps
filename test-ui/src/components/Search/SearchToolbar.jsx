@@ -149,11 +149,9 @@ const SearchToolbar = React.memo(({
         ))}
       </Section>
 
-      {/* Visual separator between sections */}
-      <Separator />
-
-      {/* Right section: Constant tools always visible */}
+      {/* Right section: Constant tools always visible with separator */}
       <Section alignContent="right" collapseButtons={false}>
+        <Separator />
         {constantTools.map((tool) => (
           <Button
             key={tool.key}

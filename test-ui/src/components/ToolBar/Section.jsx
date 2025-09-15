@@ -1,8 +1,9 @@
 import React, { useMemo, useRef, useState, useLayoutEffect } from 'react';
 import PropTypes from 'prop-types';
 import Button from './Button.jsx';
-import OverflowMenu from './OverflowMenu.jsx';
-import OverflowMenuItem from './OverflowMenuItem.jsx';
+import Dropdown from '../ui/Dropdown.jsx';
+import Menu from '../ui/Menu.jsx';
+import MenuItem from '../ui/MenuItem.jsx';
 
 /**
  * Responsive toolbar section component
@@ -214,22 +215,26 @@ const Section = ({
               iconName="more_horiz"
               onPress={handleMenuToggle}
             />
-            <OverflowMenu
+            <Dropdown
               isOpen={isMenuOpen}
               onClose={handleMenuClose}
               anchorRef={moreButtonRef}
+              placement="bottom-right"
+              className="toolbar-overflow-dropdown"
             >
-              {overflowItems.map((item, index) => (
-                <OverflowMenuItem
-                  key={`overflow-${index}`}
-                  label={item.label}
-                  iconName={item.iconName}
-                  onPress={item.onPress}
-                  isDisabled={item.isDisabled}
-                  onClose={handleMenuClose}
-                />
-              ))}
-            </OverflowMenu>
+              <Menu ariaLabel="More actions">
+                {overflowItems.map((item, index) => (
+                  <MenuItem
+                    key={`overflow-${index}`}
+                    label={item.label}
+                    iconName={item.iconName}
+                    onPress={item.onPress}
+                    isDisabled={item.isDisabled}
+                    onClose={handleMenuClose}
+                  />
+                ))}
+              </Menu>
+            </Dropdown>
           </div>
         )}
       </div>

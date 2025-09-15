@@ -38,7 +38,9 @@
 @import './components/error/error-test-page.css';
 @import './components/error/global-error.css';
 
-/* UI Components - toolbar and tool buttons */
+/* UI Components - reusable UI elements */
+@import './components/ui/dropdown.css';
+@import './components/ui/menu.css';
 @import './components/ui/Toolbar/toolbar.css';
 @import './components/ui/tool-button.css';
 

@@ -1,25 +1,20 @@
 /**
- * Toolbar Overflow Menu CSS
+ * Reusable Menu Component CSS
  *
- * Styles for dropdown menu that appears when toolbar buttons overflow
- * Mobile-first design with touch-friendly interactions
+ * Generic menu and menu item styling that can be used
+ * throughout the application for any menu needs.
  */
 
 @layer components {
-  /* Overflow menu container */
-  .toolbar-overflow-menu {
-    /* Position handled by React component via inline styles */
-    min-width: var(--min-width-input);
-    max-width: var(--min-width-select);
-    width: max-content; /* Size to content */
-    background: var(--color-surface-elevated);
-    border-radius: var(--radius-2);
-    box-shadow: var(--shadow-lg);
-    padding: var(--space-1);
+  /* Menu container */
+  .menu {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
   }
 
   /* Individual menu item */
-  .toolbar-overflow-menu-item {
+  .menu-item {
     display: flex;
     align-items: center;
     gap: var(--space-2);
@@ -34,38 +29,38 @@
     transition: color var(--transition-fast);
     width: 100%;
     text-align: left;
+    white-space: nowrap;
   }
 
-  .toolbar-overflow-menu-item:hover {
+  .menu-item:hover {
     color: var(--color-primary);
   }
 
-  .toolbar-overflow-menu-item:focus {
-    outline: var(--focus-ring-width) solid var(--color-focus-ring);
-    outline-offset: var(--focus-ring-offset);
+  .menu-item:focus {
+    outline: none;
+    background: var(--color-surface-hover);
     color: var(--color-primary);
   }
 
-  .toolbar-overflow-menu-item:active {
+  .menu-item:active {
     color: var(--color-primary-active);
   }
 
   /* Disabled state */
-  .toolbar-overflow-menu-item.disabled {
+  .menu-item--disabled {
     color: var(--color-text-disabled);
     cursor: not-allowed;
-    background: transparent;
   }
 
-  .toolbar-overflow-menu-item.disabled:hover,
-  .toolbar-overflow-menu-item.disabled:focus,
-  .toolbar-overflow-menu-item.disabled:active {
-    background: transparent;
+  .menu-item--disabled:hover,
+  .menu-item--disabled:focus,
+  .menu-item--disabled:active {
+    color: var(--color-text-disabled);
     outline: none;
   }
 
   /* Menu item icon */
-  .toolbar-overflow-menu-item-icon {
+  .menu-item__icon {
     flex-shrink: 0;
     width: var(--size-icon-md);
     height: var(--size-icon-md);
@@ -76,35 +71,30 @@
   }
 
   /* Menu item label */
-  .toolbar-overflow-menu-item-label {
+  .menu-item__label {
     flex: 1;
     min-width: 0;
     overflow: hidden;
     text-overflow: ellipsis;
-    white-space: nowrap;
   }
 
   /* Responsive adjustments */
   @media (min-width: 768px) {
-    .toolbar-overflow-menu {
-      min-width: var(--space-56);
-    }
-
-    .toolbar-overflow-menu-item {
+    .menu-item {
       font-size: var(--font-size-base);
     }
   }
 
   /* High contrast mode support */
   @media (prefers-contrast: high) {
-    .toolbar-overflow-menu-item:focus {
-      outline-width: 3px;
+    .menu-item:focus {
+      background: var(--color-surface-active);
     }
   }
 
   /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {
-    .toolbar-overflow-menu-item {
+    .menu-item {
       transition: none;
     }
   }

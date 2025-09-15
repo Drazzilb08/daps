@@ -1,0 +1,35 @@
+/**
+ * Reusable Dropdown Component CSS
+ *
+ * Generic dropdown positioning and styling that can be used
+ * throughout the application for any dropdown needs.
+ */
+
+@layer components {
+  /* Base dropdown container */
+  .dropdown {
+    /* Position handled by React component via inline styles */
+    background: var(--color-surface-elevated);
+    border-radius: var(--radius-2);
+    box-shadow: var(--shadow-lg);
+    padding: var(--space-1);
+    min-width: 120px;
+    max-width: 160px;
+    width: max-content;
+  }
+
+  /* Responsive adjustments */
+  @media (min-width: 768px) {
+    .dropdown {
+      max-width: 320px;
+    }
+  }
+
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    .dropdown {
+      border: 2px solid var(--color-border);
+    }
+  }
+
+}

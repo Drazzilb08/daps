@@ -2,28 +2,35 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 /**
- * Individual menu item for toolbar overflow
+ * Reusable menu item component
+ *
+ * Individual menu item with icon, label, and click handling.
+ * Can be used in any menu context throughout the app.
  *
  * @param {Object} props - Component props
  * @param {string} props.label - Item label text
- * @param {string} [props.iconName] - Icon name for the item
+ * @param {string} [props.iconName] - Material Symbol icon name
  * @param {Function} [props.onPress] - Click handler for the item
  * @param {boolean} [props.isDisabled] - Whether item is disabled
- * @param {Function} props.onClose - Callback to close the menu
+ * @param {Function} [props.onClose] - Callback to close parent menu/dropdown
+ * @param {string} [props.className] - Additional CSS classes
  */
-const OverflowMenuItem = ({
+const MenuItem = ({
   label,
   iconName,
   onPress,
   isDisabled = false,
   onClose,
+  className = '',
   ...otherProps
 }) => {
   const handleClick = (event) => {
     event.preventDefault();
     if (!isDisabled && onPress) {
       onPress();
-      onClose(); // Close menu after action
+      if (onClose) {
+        onClose(); // Close parent menu after action
+      }
     }
   };
 
@@ -34,9 +41,15 @@ const OverflowMenuItem = ({
     }
   };
 
+  const itemClassName = [
+    'menu-item',
+    isDisabled && 'menu-item--disabled',
+    className
+  ].filter(Boolean).join(' ');
+
   return (
     <div
-      className={`toolbar-overflow-menu-item ${isDisabled ? 'disabled' : ''}`}
+      className={itemClassName}
       role="menuitem"
       tabIndex={isDisabled ? -1 : 0}
       onClick={handleClick}
@@ -45,23 +58,24 @@ const OverflowMenuItem = ({
       {...otherProps}
     >
       {iconName && (
-        <span className="toolbar-overflow-menu-item-icon material-symbols-outlined" aria-hidden="true">
+        <span className="menu-item__icon material-symbols-outlined" aria-hidden="true">
           {iconName}
         </span>
       )}
-      <span className="toolbar-overflow-menu-item-label">
+      <span className="menu-item__label">
         {label}
       </span>
     </div>
   );
 };
 
-OverflowMenuItem.propTypes = {
+MenuItem.propTypes = {
   label: PropTypes.string.isRequired,
   iconName: PropTypes.string,
   onPress: PropTypes.func,
   isDisabled: PropTypes.bool,
-  onClose: PropTypes.func.isRequired
+  onClose: PropTypes.func,
+  className: PropTypes.string
 };
 
-export default OverflowMenuItem;
+export default MenuItem;

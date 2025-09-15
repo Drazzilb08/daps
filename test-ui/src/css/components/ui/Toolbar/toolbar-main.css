@@ -40,6 +40,11 @@
     overflow: hidden; /* Clip content that exceeds container */
   }
 
+  /* Toolbar-specific dropdown adjustments */
+  .toolbar-overflow-dropdown {
+    max-width: 160px;
+  }
+
 
 
   /* Mobile responsive adjustments */

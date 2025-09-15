@@ -215,14 +215,14 @@
     width: 100%;
     height: 4px;
     background: var(--color-border);
-    border-radius: 2px;
+    border-radius: var(--radius-1);
     overflow: hidden;
   }
 
   .form-progress__fill {
     height: 100%;
     background: var(--color-primary);
-    border-radius: 2px;
+    border-radius: var(--radius-1);
     transition: width var(--transition-normal);
   }
 

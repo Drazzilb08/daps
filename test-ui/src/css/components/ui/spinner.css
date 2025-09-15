@@ -11,24 +11,6 @@
     animation: spin 1s linear infinite;
   }
 
-  /* Size variations */
-  .spinner-small .spinner-circle {
-    width: 16px;
-    height: 16px;
-    border-width: 2px;
-  }
-
-  .spinner-medium .spinner-circle {
-    width: 24px;
-    height: 24px;
-    border-width: 2px;
-  }
-
-  .spinner-large .spinner-circle {
-    width: 32px;
-    height: 32px;
-    border-width: 3px;
-  }
 
   /* Centered spinner for Suspense fallbacks */
   .spinner-center {

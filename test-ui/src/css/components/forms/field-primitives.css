@@ -171,17 +171,6 @@
     flex: 1;
   }
   
-  /* Inline field layout (for small inputs in groups) */
-  .field-wrapper--inline {
-    flex-direction: row;
-    align-items: center;
-    gap: var(--space-2);
-    margin-bottom: var(--space-2);
-  }
-  
-  .field-wrapper--inline .field-input {
-    flex: 1;
-  }
   
   /* Compact field layout (for dense forms) */
   .field-wrapper--compact {

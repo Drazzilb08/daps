@@ -43,7 +43,6 @@ const Button = ({
     'inline-flex',
     'items-center',
     'justify-center',
-    'gap-2',
     'touch-target',
     'text-base',
     'font-medium',

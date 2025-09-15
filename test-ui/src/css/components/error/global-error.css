@@ -115,7 +115,7 @@
 
   .global-error-stack {
     padding: var(--space-3);
-    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-family: var(--font-family-mono);
     font-size: var(--font-size-xs);
     line-height: var(--line-height-normal);
     color: rgba(255, 255, 255, var(--opacity-90));

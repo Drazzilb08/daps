@@ -174,8 +174,8 @@
 
   .page-header-logo-image {
     flex-shrink: 0;
-    width: 32px;
-    height: 32px;
+    width: var(--size-icon-xl);
+    height: var(--size-icon-xl);
   }
 
   .page-header-title {

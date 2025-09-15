@@ -1,6 +1,6 @@
 /**
  * Toolbar CSS Entry Point
- * 
+ *
  * Main CSS file for the generic Toolbar component system
  * Imports all toolbar-related styles in the correct cascade order
  */
@@ -8,7 +8,7 @@
 /* Main toolbar container styles */
 @import './toolbar-main.css';
 
-/* Toolbar button styles */  
+/* Toolbar button styles */
 @import './toolbar-button.css';
 
 /* Toolbar separator styles */

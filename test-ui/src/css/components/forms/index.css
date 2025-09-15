@@ -1,21 +1,23 @@
 /**
  * Forms Components Index CSS
- * 
+ *
  * Central import file for all form-related CSS components.
  * This file consolidates all form styles for easy inclusion.
  */
 
-/* Import all form component styles */
-@import './field-primitives.css';
-@import './field-base.css';
-@import './field-input.css';
-@import './field-select.css';
-@import './field-checkbox.css';
-@import './field-textarea.css';
-@import './field-color.css';
-@import './field-float.css';
-@import './field-color-list.css';
-@import './field-color-list-poster.css';
-@import './field-directory.css';
-@import './field-custom.css';
-@import './form-layout.css';
+@layer components {
+  /* Import all form component styles */
+  @import './field-primitives.css';
+  @import './field-base.css';
+  @import './field-input.css';
+  @import './field-select.css';
+  @import './field-checkbox.css';
+  @import './field-textarea.css';
+  @import './field-color.css';
+  @import './field-float.css';
+  @import './field-color-list.css';
+  @import './field-color-list-poster.css';
+  @import './field-directory.css';
+  @import './field-custom.css';
+  @import './form-layout.css';
+}

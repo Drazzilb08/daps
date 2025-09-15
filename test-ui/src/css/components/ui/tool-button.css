@@ -23,7 +23,7 @@
     padding: var(--space-2) var(--space-3);
     
     /* Typography */
-    font-family: var(--font-family-base);
+    font-family: var(--font-family-sans);
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     line-height: 1;

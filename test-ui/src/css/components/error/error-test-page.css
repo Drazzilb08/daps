@@ -481,7 +481,7 @@
     font-size: var(--font-size-xs);
     color: var(--color-text-secondary);
     margin: 0 0 var(--space-2) 0;
-    line-height: 1.4;
+    line-height: var(--line-height-normal);
   }
 
   .severity-badge {
@@ -677,7 +677,7 @@
     background: var(--color-surface-alt);
     padding: var(--space-1);
     border-radius: var(--radius-1);
-    font-family: monospace;
+    font-family: var(--font-family-mono);
     font-size: var(--font-size-xs);
     color: var(--color-text-primary);
   }

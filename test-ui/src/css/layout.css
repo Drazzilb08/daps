@@ -292,38 +292,6 @@
 
 /* Responsive Utilities */
 @layer utilities {
-  /* Hide on mobile */
-  .hidden-mobile {
-    display: none;
-  }
-
-  @media (min-width: var(--breakpoint-tablet)) {
-    .hidden-mobile {
-      display: initial;
-    }
-  }
-
-  /* Hide on tablet and up */
-  .hidden-tablet-up {
-    display: initial;
-  }
-
-  @media (min-width: var(--breakpoint-tablet)) {
-    .hidden-tablet-up {
-      display: none;
-    }
-  }
-
-  /* Hide on desktop and up */
-  .hidden-desktop-up {
-    display: initial;
-  }
-
-  @media (min-width: var(--breakpoint-desktop)) {
-    .hidden-desktop-up {
-      display: none;
-    }
-  }
 
   /* Show only on mobile */
   .mobile-only {

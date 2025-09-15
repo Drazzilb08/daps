@@ -139,11 +139,7 @@
   
   /* Display utilities */
   .hidden { display: none; }
-  .block { display: block; }
   .inline { display: inline; }
-  .inline-block { display: inline-block; }
-  .flex { display: flex; }
-  .inline-flex { display: inline-flex; }
   
   /* Flexbox utilities */
   .flex-col { flex-direction: column; }
@@ -160,12 +156,33 @@
   .justify-between { justify-content: space-between; }
   .justify-around { justify-content: space-around; }
   .justify-evenly { justify-content: space-evenly; }
-  .flex-1 { flex: 1; }
   
   /* Common flex combinations */
-  .flex-items-center { 
-    display: flex; 
-    align-items: center; 
+  .flex-center {
+    display: flex;
+    align-items: center;
+  }
+
+  .flex-justify-center {
+    display: flex;
+    justify-content: center;
+  }
+
+  .flex-center-both {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .flex-between {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* Legacy alias for backwards compatibility */
+  .flex-items-center {
+    display: flex;
+    align-items: center;
   }
   
   /* Gap utilities */
@@ -186,9 +203,6 @@
   .grid-cols-auto-lg { grid-template-columns: repeat(auto-fit, minmax(var(--grid-min-width-sm), 1fr)); }
 
   /* Position utilities */
-  .relative { position: relative; }
-  .absolute { position: absolute; }
-  .fixed { position: fixed; }
   .sticky { position: sticky; }
   
   /* Position coordinates */
@@ -202,9 +216,6 @@
   .right-2 { right: var(--space-2); }
   .right-3 { right: var(--space-3); }
   .right-4 { right: var(--space-4); }
-  .bottom-0 { bottom: 0; }
-  .bottom-1 { bottom: var(--space-1); }
-  .bottom-2 { bottom: var(--space-2); }
   .bottom-3 { bottom: var(--space-3); }
   .bottom-4 { bottom: var(--space-4); }
   .left-0 { left: 0; }

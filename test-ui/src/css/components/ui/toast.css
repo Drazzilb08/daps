@@ -101,18 +101,7 @@
     }
   }
 
-  /* Exit animation */
-  .toast.exit {
-    opacity: 0;
-    transform: translateX(100%);
-    transition: all 0.2s ease-in;
-  }
 
-  @media (max-width: 768px) {
-    .toast.exit {
-      transform: translateY(100%);
-    }
-  }
 
   /* Reduced motion support */
   @media (prefers-reduced-motion: reduce) {

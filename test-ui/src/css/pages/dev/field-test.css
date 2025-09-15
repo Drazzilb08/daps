@@ -164,7 +164,7 @@
     padding: var(--space-1) var(--space-2);
     border-radius: var(--radius-1);
     font-size: var(--font-size-sm);
-    font-family: var(--font-mono);
+    font-family: var(--font-family-mono);
     border: 1px solid;
   }
   
@@ -187,22 +187,6 @@
     font-style: italic;
   }
   
-  /* Field completion status section (legacy) */
-  .field-completion-status {
-    background: var(--color-surface-elevated);
-    border-radius: var(--radius-2);
-    padding: var(--space-4);
-    margin-bottom: var(--space-6);
-    border: 1px solid var(--color-border);
-  }
-
-  .field-completion-status__title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-    margin-bottom: var(--space-3);
-    text-align: center;
-  }
 
   /* Implementation summary grid */
   .implementation-summary {
@@ -306,7 +290,7 @@
   }
 
   .field-type-name {
-    font-family: var(--font-mono);
+    font-family: var(--font-family-mono);
   }
 
   .field-type-count {
@@ -1067,7 +1051,7 @@
   font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
   margin: 0;
-  font-family: var(--font-mono);
+  font-family: var(--font-family-mono);
 }
 
 .field-tester__status {

@@ -183,10 +183,6 @@
     width: 100%;
   }
 
-  /* Compact button - reduced padding */
-  .btn--compact {
-    padding: var(--space-1) var(--space-2);
-  }
 
   /* Icon-only button */
   .btn--icon-only {
@@ -211,8 +207,8 @@
   .btn--loading::after {
     content: "";
     position: absolute;
-    width: 16px;
-    height: 16px;
+    width: var(--size-icon-sm);
+    height: var(--size-icon-sm);
     border: 2px solid transparent;
     border-top: 2px solid currentColor;
     border-radius: 50%;

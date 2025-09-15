@@ -6,12 +6,6 @@
  */
 
 @layer pages {
-  /* Main page container */
-  .form-test-page {
-    max-width: var(--content-max-width);
-    margin: 0 auto;
-    padding: var(--space-4);
-  }
 
   /* Form system overview section */
   .form-system-overview {
@@ -68,7 +62,7 @@
   }
 
   .field-type-code {
-    font-family: var(--font-mono);
+    font-family: var(--font-family-mono);
     font-weight: var(--font-weight-medium);
   }
 
@@ -135,7 +129,7 @@
     border: var(--border-width-thin) solid var(--color-border);
     border-radius: var(--radius-1);
     padding: var(--space-3);
-    font-family: var(--font-mono);
+    font-family: var(--font-family-mono);
     font-size: var(--font-size-sm);
     color: var(--color-text-primary);
     overflow-x: auto;
@@ -197,7 +191,7 @@
     padding: var(--space-1) 0;
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
-    font-family: var(--font-mono);
+    font-family: var(--font-family-mono);
   }
 
   /* Mobile testing section */
@@ -225,9 +219,6 @@
 
   /* Mobile responsive */
   @media (max-width: calc(var(--breakpoint-tablet) - 1px)) {
-    .form-test-page {
-      padding: var(--space-3);
-    }
 
     .form-demo-section,
     .form-system-overview,

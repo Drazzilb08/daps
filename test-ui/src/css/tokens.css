@@ -47,7 +47,7 @@
   --font-size-6xl: 3.75rem;   /* 60px */
 
   /* Font families */
-  --font-family-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-family-sans: 'Roboto', 'Open Sans', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
   --font-family-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, monospace;
   --font-family-serif: Georgia, 'Times New Roman', serif;
 

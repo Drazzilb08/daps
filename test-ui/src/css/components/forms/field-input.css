@@ -6,49 +6,6 @@
  */
 
 @layer components {
-  /* Base input styling - now uses consolidated base classes from field-base.css
-   * Typography, sizing, layout, focus, disabled, readonly, placeholder, transitions all handled by base classes
-   */
-  
-  /* Typography and sizing now handled by base classes:
-   * - .field-input-typography
-   * - .field-input-sizing  
-   * - .field-input-layout
-   */
-   
-  /* Focus state now handled by base class:
-   * - .field-focus-behavior
-   */
-  
-  /* NOTE: For components using field-input, apply base classes:
-   * Example: <input class="field-input field-input-base field-input-typography field-input-sizing field-input-layout field-focus-behavior field-disabled-state field-readonly-state field-placeholder-styling field-transition-behavior" />
-   */
-
-  /* No hover states - removed per requirements */
-
-  /* Placeholder styling now handled by base class:
-   * - .field-placeholder-styling
-   */
-
-  /* Validation states now handled by .is-invalid and .is-valid utilities */
-
-  /* Disabled state now handled by base class:
-   * - .field-disabled-state
-   */
-
-  /* Read-only state now handled by base class:
-   * - .field-readonly-state
-   */
-
-  /* Password field specific styling */
-  .field-input--password {
-    letter-spacing: 0.1em;
-  }
-
-  /* Number field specific styling */
-  .field-input--number {
-    text-align: right;
-  }
 
   /* Size variants now handled by .input-sm and .input-lg utilities */
 
@@ -58,24 +15,6 @@
     border-radius: var(--radius-2) 0 0 var(--radius-2);
   }
 
-  .field-input-addon {
-    background: var(--color-primary);
-    border-left: none;
-    border-radius: 0 var(--radius-2) var(--radius-2) 0;
-    padding: var(--input-padding-y) var(--input-padding-x);
-    display: flex;
-    align-items: center;
-    white-space: nowrap;
-    color: var(--color-primary-text);
-    font-size: var(--font-size-sm);
-    cursor: pointer;
-  }
-
-  /* Addon theme styling now handled by theme-specific variables */
-  .field-input-addon {
-    border: var(--input-addon-border, var(--border-width-thin) solid var(--color-primary));
-    box-shadow: var(--input-addon-shadow, var(--shadow-xs));
-  }
 
   /* Password input group container */
   .field-input-group {
@@ -133,29 +72,7 @@
     position: relative;
   }
 
-  .field-input-icon {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--color-text-tertiary);
-    pointer-events: none;
-  }
 
-  .field-input-icon--left {
-    left: var(--space-3);
-  }
-
-  .field-input-icon--right {
-    right: var(--space-3);
-  }
-
-  .field-input--with-left-icon {
-    padding-left: calc(var(--space-8) + var(--space-2));
-  }
-
-  .field-input--with-right-icon {
-    padding-right: calc(var(--space-8) + var(--space-2));
-  }
 
   /* High contrast mode support */
   @media (prefers-contrast: high) {
@@ -206,14 +123,6 @@
     box-shadow: none;
   }
 
-  /* Invalid state for number field container */
-  .number-field-container:has(.field-input--invalid) {
-    border-color: var(--color-error);
-  }
-
-  .number-field-container:has(.field-input--invalid):focus-within {
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
-  }
 
   /* Percentage field support - wrapper for input with suffix */
   .number-field-input-wrapper {

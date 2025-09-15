@@ -186,8 +186,8 @@
   }
 
   .loading-spinner {
-    width: 16px;
-    height: 16px;
+    width: var(--size-icon-sm);
+    height: var(--size-icon-sm);
     border: 2px solid var(--color-border);
     border-top: 2px solid var(--color-primary);
     border-radius: 50%;

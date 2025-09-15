@@ -19,30 +19,7 @@
     color: var(--color-input-text);
   }
   
-  .field-input-sizing {
-    min-height: var(--input-height);
-    padding: var(--input-padding-y) var(--input-padding-x);
-    border-radius: var(--radius-2);
-  }
-  
-  .field-input-layout {
-    width: 100%;
-    box-sizing: border-box;
-  }
 
-  /* Focus states */
-  .field-focus-behavior:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    background: var(--color-input-bg-focus);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
-  }
-
-  /* Focus-within for container elements */
-  .field-focus-behavior:focus-within {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
-  }
 
   /* Validation states */
   .field-validation-invalid {
@@ -63,13 +40,6 @@
     box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
   }
 
-  /* Disabled states */
-  .field-disabled-state:disabled {
-    background: var(--color-input-bg-disabled);
-    color: var(--color-input-text-disabled);
-    border-color: var(--color-input-border-disabled);
-    cursor: not-allowed;
-  }
   
   /* Read-only states */
   .field-readonly-state:read-only {

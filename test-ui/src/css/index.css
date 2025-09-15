@@ -32,7 +32,6 @@
 
 /* Search Components */
 @import './components/search/search-interface.css';
-@import './components/search/search-toolbar.css';
 
 /* Error & Testing Components */
 @import './components/error/error-boundary.css';

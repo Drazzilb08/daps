@@ -1,8 +1,5 @@
 import React from 'react';
-import ToolBar from '../../components/ToolBar/ToolBar.jsx';
-import Section from '../../components/ToolBar/Section.jsx';
-import Button from '../../components/ToolBar/Button.jsx';
-import Separator from '../../components/ToolBar/Separator.jsx';
+import { ToolBar, Section, Button, Separator } from '../../components/ToolBar';
 
 /**
  * Toolbar Test Page - Demonstrates overflow behavior

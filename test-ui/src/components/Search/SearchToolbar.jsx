@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
-import { ToolBar, Section, Button, Separator } from '../Toolbar';
+import { ToolBar, Section, Button, Separator } from '../ToolBar';
 
 /**
  * Context-aware search toolbar with overflow management

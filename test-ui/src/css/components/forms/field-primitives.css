@@ -14,13 +14,8 @@
      FIELD WRAPPER - Universal container for ALL field types
      ============================================================================= */
   
-  .field-wrapper {
-    /* Layout handled by utility classes: flex flex-col gap-2 mb-4 w-full */
-  }
-  
-  .field-wrapper--invalid {
-    /* Error state applies to entire field wrapper */
-  }
+  /* Field wrapper styling handled by utility classes: flex flex-col gap-2 mb-4 w-full */
+  /* Invalid state handled by component-specific classes */
   
   /* Mobile-first responsive adjustments */
   @media (max-width: 767px) {
@@ -42,7 +37,6 @@
      ============================================================================= */
   
   .field-label {
-    /* Typography and spacing handled by utility classes */
     line-height: var(--line-height-tight);
   }
   
@@ -112,7 +106,6 @@
      ============================================================================= */
   
   .field-description {
-    /* Typography handled by utility classes: text-sm text-secondary */
     line-height: var(--line-height-normal);
   }
   

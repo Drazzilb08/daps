@@ -9,11 +9,7 @@
 
   /* Size variants now handled by .input-sm and .input-lg utilities */
 
-  /* Input groups now use .field-group utility classes */
-  /* Component-specific input group styling */
-  .field-group .field-input {
-    border-radius: var(--radius-2) 0 0 var(--radius-2);
-  }
+  /* Component-specific input group styling handled by field-input-group */
 
 
   /* Password input group container */

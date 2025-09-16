@@ -178,11 +178,6 @@
      BUTTON MODIFIERS - Additional behavior classes
      ============================================================================= */
   
-  /* Full width button */
-  .btn--full {
-    width: 100%;
-  }
-
 
   /* Icon-only button */
   .btn--icon-only {
@@ -196,56 +191,6 @@
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-bold);
     aspect-ratio: 1;
-  }
-
-  /* Loading state */
-  .btn--loading {
-    pointer-events: none;
-    position: relative;
-  }
-
-  .btn--loading::after {
-    content: "";
-    position: absolute;
-    width: var(--size-icon-sm);
-    height: var(--size-icon-sm);
-    border: 2px solid transparent;
-    border-top: 2px solid currentColor;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
-  /* =============================================================================
-     BUTTON GROUPS - For related actions
-     ============================================================================= */
-  
-  .btn-group {
-    display: flex;
-    gap: var(--space-2);
-  }
-
-  .btn-group--attached .btn {
-    border-radius: 0;
-    border-right: none;
-  }
-
-  .btn-group--attached .btn:first-child {
-    border-radius: var(--radius-2) 0 0 var(--radius-2);
-  }
-
-  .btn-group--attached .btn:last-child {
-    border-radius: 0 var(--radius-2) var(--radius-2) 0;
-    border-right: 1px solid var(--color-border);
-  }
-
-  .btn-group--attached .btn:only-child {
-    border-radius: var(--radius-2);
-    border-right: 1px solid var(--color-border);
   }
 
   /* =============================================================================

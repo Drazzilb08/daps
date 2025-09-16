@@ -78,9 +78,6 @@
   }
 
   /* Test buttons - uses unified .btn system */
-  .test-button {
-    /* Additional specific styling if needed */
-  }
 
   /* Form selects in test controls */
   .domain-select, 
@@ -173,7 +170,6 @@
       align-items: stretch;
     }
 
-    .test-button,
     .domain-select,
     .error-type-select {
       width: 100%;

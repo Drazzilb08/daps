@@ -76,45 +76,4 @@
     white-space: nowrap;
   }
 
-  /* Overflow menu item styles */
-  .page-toolbar-overflow-menu-item {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    width: 100%;
-    padding: var(--space-2);
-    background: transparent;
-    border: none;
-    color: var(--color-text-primary);
-    cursor: pointer;
-    border-radius: var(--radius-1);
-    transition: background var(--transition-fast);
-    min-height: var(--touch-target-min);
-  }
-
-  .page-toolbar-overflow-menu-item:hover {
-    background: var(--color-surface-hover);
-  }
-
-  .page-toolbar-overflow-menu-item--disabled {
-    color: var(--color-text-disabled);
-    cursor: not-allowed;
-    pointer-events: none;
-  }
-
-  .page-toolbar-overflow-menu-item-icon {
-    font-size: var(--icon-size-sm);
-    flex-shrink: 0;
-  }
-
-  .page-toolbar-overflow-menu-item-icon.spinning {
-    animation: spin 1s linear infinite;
-  }
-
-  .page-toolbar-overflow-menu-item-label {
-    font-size: var(--font-size-sm);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
 }

@@ -57,25 +57,7 @@
     line-height: var(--line-height-normal);
   }
 
-  /* Fieldset styling */
-  .form-fieldset {
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-2);
-    padding: var(--space-4);
-    margin-bottom: var(--space-6);
-  }
-
-  .form-fieldset:last-child {
-    margin-bottom: 0;
-  }
-
-  .form-fieldset__legend {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
-    color: var(--color-text-primary);
-    padding: 0 var(--space-2);
-    margin-left: -var(--space-2);
-  }
+  /* Fieldset styling removed - not used in current forms */
 
   /* Form groups */
   .form-group {
@@ -94,39 +76,9 @@
     margin-bottom: var(--space-8);
   }
 
-  /* Form rows for multi-column layouts */
-  .form-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-4);
-    margin-bottom: var(--space-4);
-  }
+  /* Multi-column form layouts removed - not implemented */
 
-  .form-row:last-child {
-    margin-bottom: 0;
-  }
-
-  .form-row .field-wrapper {
-    margin-bottom: 0;
-  }
-
-  .form-col {
-    flex: 1;
-    min-width: 0; /* Prevent flex overflow */
-  }
-
-  .form-col--1 { flex: 0 0 calc(8.333% - var(--space-4)); }
-  .form-col--2 { flex: 0 0 calc(16.666% - var(--space-4)); }
-  .form-col--3 { flex: 0 0 calc(25% - var(--space-4)); }
-  .form-col--4 { flex: 0 0 calc(33.333% - var(--space-4)); }
-  .form-col--5 { flex: 0 0 calc(41.666% - var(--space-4)); }
-  .form-col--6 { flex: 0 0 calc(50% - var(--space-4)); }
-  .form-col--7 { flex: 0 0 calc(58.333% - var(--space-4)); }
-  .form-col--8 { flex: 0 0 calc(66.666% - var(--space-4)); }
-  .form-col--9 { flex: 0 0 calc(75% - var(--space-4)); }
-  .form-col--10 { flex: 0 0 calc(83.333% - var(--space-4)); }
-  .form-col--11 { flex: 0 0 calc(91.666% - var(--space-4)); }
-  .form-col--12 { flex: 0 0 calc(100% - var(--space-4)); }
+  /* 12-column grid system removed - not implemented in current form renderer */
 
   /* Form actions */
   .form-actions {
@@ -154,10 +106,7 @@
     flex-wrap: wrap;
   }
 
-  /* Form buttons - uses unified .btn system */
-  .form-button {
-    /* Additional specific styling if needed */
-  }
+  /* Form buttons use unified .btn system - no additional styling needed */
 
   /* Loading state */
   .form--loading {
@@ -206,32 +155,7 @@
     margin-right: var(--space-1);
   }
 
-  /* Progress indicator */
-  .form-progress {
-    margin-bottom: var(--space-6);
-  }
-
-  .form-progress__bar {
-    width: 100%;
-    height: 4px;
-    background: var(--color-border);
-    border-radius: var(--radius-1);
-    overflow: hidden;
-  }
-
-  .form-progress__fill {
-    height: 100%;
-    background: var(--color-primary);
-    border-radius: var(--radius-1);
-    transition: width var(--transition-normal);
-  }
-
-  .form-progress__text {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-secondary);
-    margin-top: var(--space-1);
-    text-align: center;
-  }
+  /* Progress indicator moved to form-renderer.css with updated naming */
 
   /* Responsive behavior */
   @media (max-width: 767px) {
@@ -239,31 +163,7 @@
       padding: 0 var(--container-padding-mobile);
     }
     
-    .form-row {
-      flex-direction: column;
-      gap: 0;
-    }
-    
-    .form-row .field-wrapper {
-      margin-bottom: var(--space-4);
-    }
-    
-    .form-col,
-    .form-col--1,
-    .form-col--2,
-    .form-col--3,
-    .form-col--4,
-    .form-col--5,
-    .form-col--6,
-    .form-col--7,
-    .form-col--8,
-    .form-col--9,
-    .form-col--10,
-    .form-col--11,
-    .form-col--12 {
-      flex: none;
-      width: 100%;
-    }
+    /* Form row/column responsive removed with grid system */
     
     .form-actions {
       flex-direction: column;
@@ -281,20 +181,10 @@
     }
   }
 
-  @media (min-width: 768px) and (max-width: 1023px) {
-    .form-col--1,
-    .form-col--2,
-    .form-col--3 {
-      flex: 0 0 calc(50% - var(--space-2));
-    }
-  }
+  /* Tablet form-col responsive rules removed with grid system */
 
   /* Dark theme adjustments */
   @media (prefers-color-scheme: dark) {
-    .form-fieldset {
-      border-color: var(--color-border-dark);
-    }
-    
     .form-section__header {
       border-bottom-color: var(--color-border-dark);
     }

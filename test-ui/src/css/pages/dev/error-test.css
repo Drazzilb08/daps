@@ -113,8 +113,6 @@
     align-items: stretch;
   }
 
-  .toast-btn,
-  .global-error-btn,
   .error-trigger-btn {
     width: 100%;
     justify-self: stretch;

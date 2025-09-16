@@ -21,24 +21,7 @@
   
 
 
-  /* Validation states */
-  .field-validation-invalid {
-    border-color: var(--color-error);
-  }
-
-  .field-validation-invalid:focus,
-  .field-validation-invalid:focus-within {
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
-  }
-
-  .field-validation-valid {
-    border-color: var(--color-success);
-  }
-
-  .field-validation-valid:focus,
-  .field-validation-valid:focus-within {
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
-  }
+  /* Validation states consolidated into legacy .is-invalid/.is-valid patterns below */
 
   
   /* Read-only states */

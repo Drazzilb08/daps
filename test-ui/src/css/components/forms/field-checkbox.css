@@ -24,11 +24,7 @@
     cursor: not-allowed;
   }
 
-  /* Invalid state */
-  .checkbox-field.is-invalid {
-    background: var(--color-error-bg);
-    border: 1px solid var(--color-error);
-  }
+  /* Invalid state handled by component-specific classes */
 
   /* Checkbox input container */
   .checkbox-field__input {
@@ -56,15 +52,10 @@
     transition: all var(--transition-fast);
   }
 
-  /* Checkbox indicator uses field-input-base for consistency where possible */
-  .checkbox-field__indicator {
-    background: var(--color-input-bg);
-    /* Could use .field-input-base for border and shadow consistency */
-  }
-
   /* Theme-specific indicator background handled by CSS variables */
   .checkbox-field__indicator {
     background: var(--checkbox-indicator-bg, var(--color-input-bg));
+    /* Could use .field-input-base for border and shadow consistency */
   }
 
   /* Checked state */

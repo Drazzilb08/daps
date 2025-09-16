@@ -620,6 +620,67 @@
       box-sizing: border-box;
     }
   }
+
+  /* =============================================================================
+     SEMANTIC STATE UTILITIES - Single source of truth for component states
+     ============================================================================= */
+
+  /* Flex grow utilities */
+  .flex-1 { flex: 1; }
+  .flex-auto { flex: auto; }
+  .flex-none { flex: none; }
+
+  /* Global disabled state - ONE definition for all components */
+  .state-disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  /* Global hover state - ONE definition for all components */
+  .state-hover-dim {
+    transition: opacity var(--transition-fast);
+  }
+  .state-hover-dim:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  /* Global focus state - ONE definition for all focusable elements */
+  .state-focus-ring:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+  }
+
+  .state-focus-ring:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+  }
+
+  /* Global active state - ONE definition for interactive elements */
+  .state-active:active:not(:disabled) {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+
+  /* Validation state utilities - standardized error/success states */
+  .state-invalid {
+    border-color: var(--color-error);
+  }
+
+  .state-invalid:focus,
+  .state-invalid:focus-within {
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
+  }
+
+  .state-valid {
+    border-color: var(--color-success);
+  }
+
+  .state-valid:focus,
+  .state-valid:focus-within {
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
+  }
 }
 
 /* Development helpers */

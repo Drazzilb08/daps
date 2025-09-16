@@ -83,20 +83,19 @@ export const ColorArray = React.memo(({
 
   return (
     <div
-      className={`color-array flex flex-col gap-3 ${className}`.trim()}
+      className={`flex flex-col gap-3 ${className}`.trim()}
       role="group"
       aria-label={`${label} list`}
       {...props}
     >
       {/* Color Items */}
-      <div className="color-array-items flex flex-col gap-4">
+      <div className="flex flex-col gap-4">
         {colors.length === 0 ? (
-          <EmptyState 
+          <EmptyState
             message={emptyMessage}
             secondaryMessage={emptySecondaryMessage}
             variant="subtle"
             size="small"
-            className="color-array-empty"
           >
             <AddButton
               onClick={handleAddColor}
@@ -104,13 +103,12 @@ export const ColorArray = React.memo(({
               text={addButtonText}
               itemType="color"
               disabledReason={`Maximum ${maxColors} colors allowed`}
-              className="color-array-empty-add-button"
             />
           </EmptyState>
         ) : (
           colors.map((color, index) => (
-            <div key={index} className="color-array-item flex gap-2 items-center">
-              <div className="color-array-item-input">
+            <div key={index} className="flex gap-2 items-center">
+              <div className="flex-1">
                 <ColorInputPair
                   value={color}
                   onChange={(newColor) => handleColorChange(index, newColor)}
@@ -129,7 +127,6 @@ export const ColorArray = React.memo(({
                 text={removeButtonText}
                 variant="default"
                 size="medium"
-                className="color-array-remove-button"
               />
             </div>
           ))
@@ -138,14 +135,13 @@ export const ColorArray = React.memo(({
 
       {/* Add Button & Counter (only show if we have items or can add) */}
       {colors.length > 0 && (
-        <div className="color-array-controls">
+        <div className="flex items-center gap-3">
           <AddButton
             onClick={handleAddColor}
             disabled={!canAddColor}
             text={addButtonText}
             itemType="color"
             disabledReason={`Maximum ${maxColors} colors allowed`}
-            className="color-array-add-button"
           />
           
           {maxColors && (
@@ -157,7 +153,6 @@ export const ColorArray = React.memo(({
               format="fraction"
               showWarning={true}
               warningThreshold={0.8}
-              className="color-array-counter"
             />
           )}
         </div>

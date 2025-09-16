@@ -19,7 +19,7 @@
   }
 
   .field-input-base .field-input {
-    flex: 1;
+    /* REPLACED: flex: 1 → USE .flex-1 utility class in React component */
     border: none;
     background: transparent;
     /* Border radius inherited from .field-input-base */
@@ -33,12 +33,14 @@
   /* Password toggle button styling */
   .field-input-toggle {
     background: var(--color-input-addon-bg);
-    padding: var(--input-padding-y) var(--input-padding-x);
+    /* REPLACED: padding → USE .py-2 .px-3 utility classes in React component */
     width: var(--touch-target-min);
     height: var(--input-height);
   }
 
+  /* REPLACED: Use .state-disabled utility class instead of component-specific disabled styles */
   .field-input-toggle:disabled {
+    /* USE: .state-disabled utility class for consistent disabled state */
     opacity: 0.5;
     cursor: not-allowed;
   }
@@ -70,10 +72,10 @@
   /* Use: .btn .btn--number-field .btn--number-field-left/.btn--number-field-right */
 
   .number-field-display {
-    flex: 1;
+    /* REPLACED: flex: 1 → USE .flex-1 utility class in React component */
     border: none;
     background: transparent;
-    text-align: center;
+    /* REPLACED: text-align: center → USE .text-center utility class in React component */
     font-variant-numeric: tabular-nums;
     cursor: default;
     /* Border radius inherited from .field-input-base */
@@ -89,7 +91,9 @@
   /* Number field wrapper and suffix styling now uses utility classes in React components */
 
   .number-field-input-wrapper .number-field-display {
-    padding-right: var(--space-6); /* Space for % suffix - keep for specific styling */
+    /* REPLACED: padding-right → USE .pr-6 utility class in React component */
+    /* Keep only if this is component-specific styling that can't be done with utilities */
+    padding-right: var(--space-6); /* Space for % suffix - component-specific */
   }
 
   /* Reduced motion support */

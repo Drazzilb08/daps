@@ -80,7 +80,6 @@ export const CheckboxField = React.memo(({
           <FieldError
             id={`${inputId}-error`}
             message={errorMessage}
-            className="checkbox-field__error"
           />
         </div>
       </div>

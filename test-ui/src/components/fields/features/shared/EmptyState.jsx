@@ -54,16 +54,11 @@ export const EmptyState = React.memo(({
   ariaProps = {},
   ...props
 }) => {
-  // CSS classes
-  const emptyStateClasses = [
-    'empty-state',
-    `empty-state--${variant}`,
-    `empty-state--${size}`,
-    `empty-state--text-${textAlign}`,
-    showIcon && icon && `empty-state--with-icon`,
-    showIcon && icon && `empty-state--icon-${iconPosition}`,
-    className
-  ].filter(Boolean).join(' ');
+  // Use utility classes instead of phantom classes
+  const baseClasses = `flex flex-col items-center p-4 rounded-md text-${textAlign}`;
+  const sizeClasses = size === 'small' ? 'gap-2' : 'gap-4';
+  const variantClasses = variant === 'subtle' ? 'text-secondary' : 'text-primary';
+  const emptyStateClasses = `${baseClasses} ${sizeClasses} ${variantClasses} ${className}`.trim();
 
   return (
     <div
@@ -74,28 +69,28 @@ export const EmptyState = React.memo(({
       {...props}
     >
       {showIcon && icon && iconPosition !== 'none' && (
-        <div className="empty-state-icon" aria-hidden="true">
+        <div className="text-lg opacity-60" aria-hidden="true">
           {typeof icon === 'string' ? (
-            <span className="empty-state-icon-text">{icon}</span>
+            <span>{icon}</span>
           ) : (
             icon
           )}
         </div>
       )}
-      
-      <div className="empty-state-content">
-        <div className="empty-state-message">
+
+      <div className="text-center">
+        <div className="font-medium text-primary">
           {message}
         </div>
-        
+
         {secondaryMessage && (
-          <div className="empty-state-secondary">
+          <div className="text-sm text-secondary mt-1">
             {secondaryMessage}
           </div>
         )}
-        
+
         {children && (
-          <div className="empty-state-actions">
+          <div className="mt-3">
             {children}
           </div>
         )}

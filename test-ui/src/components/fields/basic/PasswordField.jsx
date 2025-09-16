@@ -60,7 +60,6 @@ export const PasswordField = React.memo(({
           maxLength={field.maxLength}
           minLength={field.minLength}
           onChange={handleChange}
-          className="field-input--password"
           invalid={highlightInvalid}
           autoComplete="current-password"
           aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}

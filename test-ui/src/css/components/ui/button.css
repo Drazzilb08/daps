@@ -39,8 +39,9 @@
     transition: transform 0.1s ease !important;
   }
 
-  /* Disabled state */
+  /* REPLACED: Use .state-disabled utility class for consistent disabled state */
   .btn:disabled {
+    /* USE: Apply .state-disabled utility class in React component instead */
     opacity: 0.6;
     cursor: not-allowed;
     pointer-events: none;
@@ -69,7 +70,9 @@
     border-color: var(--color-accent);
   }
 
+  /* REPLACED: Use .state-hover-dim utility class for consistent hover behavior */
   .btn--secondary:hover:not(:disabled) {
+    /* USE: Apply .state-hover-dim utility class in React component instead */
     opacity: 0.9;
   }
 
@@ -80,7 +83,9 @@
     border-color: var(--color-success);
   }
 
+  /* REPLACED: Use .state-hover-dim utility class for consistent hover behavior */
   .btn--success:hover:not(:disabled) {
+    /* USE: Apply .state-hover-dim utility class in React component instead */
     opacity: 0.9;
   }
 
@@ -91,7 +96,9 @@
     border-color: var(--color-warning);
   }
 
+  /* REPLACED: Use .state-hover-dim utility class for consistent hover behavior */
   .btn--warning:hover:not(:disabled) {
+    /* USE: Apply .state-hover-dim utility class in React component instead */
     opacity: 0.9;
   }
 
@@ -103,8 +110,10 @@
     border-color: var(--color-error);
   }
 
+  /* REPLACED: Use .state-hover-dim utility class for consistent hover behavior */
   .btn--danger:hover:not(:disabled),
   .btn--error:hover:not(:disabled) {
+    /* USE: Apply .state-hover-dim utility class in React component instead */
     opacity: 0.9;
   }
 
@@ -115,7 +124,9 @@
     border-color: var(--color-accent);
   }
 
+  /* REPLACED: Use .state-hover-dim utility class for consistent hover behavior */
   .btn--info:hover:not(:disabled) {
+    /* USE: Apply .state-hover-dim utility class in React component instead */
     opacity: 0.9;
   }
 

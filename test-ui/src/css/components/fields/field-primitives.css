@@ -17,29 +17,20 @@
   /* Field wrapper styling handled by utility classes: flex flex-col gap-2 mb-4 w-full */
   /* Invalid state handled by component-specific classes */
   
-  /* Mobile-first responsive adjustments */
-  @media (max-width: 767px) {
-    .field-wrapper {
-      /* Using utility class: mb-3 */
-      margin-bottom: var(--space-3); /* Tighter spacing on mobile */
-    }
-  }
-  
-  @media (min-width: 768px) {
-    .field-wrapper {
-      /* Using utility class: mb-5 */
-      margin-bottom: var(--space-5); /* More generous spacing on larger screens */
-    }
-  }
+  /* REMOVED: Responsive field wrapper spacing handled by utility classes in React components:
+   * Mobile (< 768px): .mb-3
+   * Tablet+ (768px+): .mb-5
+   */
   
   /* =============================================================================
      FIELD LABEL - Universal labeling for ALL field types
      ============================================================================= */
-  
+
   .field-label {
-    line-height: var(--line-height-tight);
+    /* REMOVED: line-height - inherits from body */
+    /* USE: Add .leading-tight utility class to component if different line-height needed */
   }
-  
+
   .required-indicator {
     /* Spacing and weight handled by utility classes: ml-1 font-semibold */
     color: var(--color-error);
@@ -60,11 +51,11 @@
      * - .field-disabled-state (disabled states)
      * - .field-placeholder-styling (placeholder)
      */
-    
-    /* Primitive-specific overrides only */
-    padding: var(--space-2) var(--space-3);
+
+    /* REMOVED: padding - USE utility classes .py-2 .px-3 in React component */
+    /* REMOVED: box-sizing - handled by global CSS reset */
     background: var(--color-surface);
-    box-sizing: border-box;
+    /* ALL typography properties inherit from body automatically */
   }
   
   /* NOTE: Placeholder, focus, validation, and disabled states now consolidated in field-base.css */
@@ -84,13 +75,13 @@
      * - .field-disabled-state (disabled states)
      * - .field-placeholder-styling (placeholder)
      */
-    
-    /* Primitive-specific and textarea-specific styling */
-    padding: var(--space-2) var(--space-3);
+
+    /* REMOVED: padding - USE utility classes .py-2 .px-3 in React component */
+    /* REMOVED: box-sizing - handled by global CSS reset */
     background: var(--color-surface);
-    box-sizing: border-box;
     resize: vertical;
     min-height: calc(var(--touch-target-min) * 2); /* Minimum 2 lines visible */
+    /* ALL typography properties inherit from body automatically */
   }
   
   .field-textarea:disabled {
@@ -106,7 +97,8 @@
      ============================================================================= */
   
   .field-description {
-    line-height: var(--line-height-normal);
+    /* REMOVED: line-height - inherits from body (already var(--line-height-normal)) */
+    /* USE: Add utility class if different line-height needed */
   }
   
   /* =============================================================================
@@ -116,30 +108,18 @@
   .field-error {
     /* Typography handled by utility classes: text-sm font-medium */
     color: var(--color-error);
-    line-height: var(--line-height-normal);
+    /* REMOVED: line-height - inherits from body (already var(--line-height-normal)) */
   }
   
   /* =============================================================================
      RESPONSIVE BEHAVIOR - Mobile-first progressive enhancement
      ============================================================================= */
   
-  /* Small mobile devices */
-  @media (max-width: 374px) {
-    .field-input,
-    .field-textarea {
-      /* Using utility class: p-2 */
-      padding: var(--space-2); /* Reduce padding on very small screens */
-    }
-  }
-  
-  /* Large mobile and tablet */
-  @media (min-width: 768px) {
-    .field-input,
-    .field-textarea {
-      /* Using utility classes: pt-3 pb-3 pl-4 pr-4 */
-      padding: var(--space-3) var(--space-4); /* More generous padding */
-    }
-  }
+  /* REMOVED: Responsive padding handled by utility classes in React components:
+   * Mobile: .p-2 (for < 375px)
+   * Default: .py-2 .px-3 (375px - 767px)
+   * Tablet+: .py-3 .px-4 (768px+)
+   */
   
   /* Desktop */
   @media (min-width: 1024px) {
@@ -154,27 +134,29 @@
   
   /* Horizontal field layout (for checkboxes, radio buttons) */
   .field-wrapper--horizontal {
-    flex-direction: row;
-    align-items: flex-start;
-    gap: var(--space-3);
+    /* REPLACED: Use utility classes .flex-row .items-start .gap-3 in React component */
+    /* flex-direction: row → USE .flex-row */
+    /* align-items: flex-start → USE .items-start */
+    /* gap: var(--space-3) → USE .gap-3 */
   }
-  
+
   .field-wrapper--horizontal .field-label {
-    margin-bottom: 0;
-    flex: 1;
+    /* REPLACED: Use utility classes .mb-0 .flex-1 in React component */
+    /* margin-bottom: 0 → USE .mb-0 */
+    /* flex: 1 → USE .flex-1 */
   }
   
   
   /* Compact field layout (for dense forms) */
   .field-wrapper--compact {
-    /* Using utility classes: mb-2 gap-1 */
-    margin-bottom: var(--space-2);
-    gap: var(--space-1);
+    /* REPLACED: Use utility classes .mb-2 .gap-1 in React component */
+    /* margin-bottom: var(--space-2) → USE .mb-2 */
+    /* gap: var(--space-1) → USE .gap-1 */
   }
-  
+
   .field-wrapper--compact .field-label {
-    /* Using utility classes: text-xs mb-0 */
-    font-size: var(--font-size-xs);
-    margin-bottom: 0;
+    /* REPLACED: Use utility classes .text-xs .mb-0 in React component */
+    /* font-size: var(--font-size-xs) → USE .text-xs */
+    /* margin-bottom: 0 → USE .mb-0 */
   }
 }

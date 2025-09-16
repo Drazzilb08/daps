@@ -66,8 +66,8 @@ export const AddButton = React.memo(({
       {...ariaProps}
       {...props}
     >
-      <span className="add-button-icon" aria-hidden="true">{icon}</span>
-      <span className="add-button-text">{text}</span>
+      <span className="inline-block mr-1" aria-hidden="true">{icon}</span>
+      <span className="inline-block">{text}</span>
     </button>
   );
 });

@@ -138,7 +138,7 @@ const ErrorPage = ({
                         {showHome && (
                             <Link
                                 to="/"
-                                className="btn btn--primary"
+                                className="btn btn--primary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
                             >
                                 <span className="page-error-boundary__button-icon">🏠</span>
                                 Go Home
@@ -148,7 +148,7 @@ const ErrorPage = ({
                         {showBack && (
                             <button
                                 onClick={handleBack}
-                                className="btn btn--secondary"
+                                className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
                                 type="button"
                             >
                                 <span className="page-error-boundary__button-icon">←</span>
@@ -159,7 +159,7 @@ const ErrorPage = ({
                         {showRefresh && (
                             <button
                                 onClick={handleRefresh}
-                                className="btn btn--ghost"
+                                className="btn btn--ghost inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
                                 type="button"
                             >
                                 <span className="page-error-boundary__button-icon">🔄</span>

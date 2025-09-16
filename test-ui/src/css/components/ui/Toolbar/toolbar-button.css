@@ -6,6 +6,7 @@
 
 @layer components {
   .page-toolbar-button {
+    /* Utilities: .flex .flex-col .items-center .justify-center .min-w-14 .w-auto .flex-shrink-0 .py-1 .px-2 .bg-transparent .border-none .text-primary .text-center .cursor-pointer .rounded-sm .transition-fast .touch-target */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -25,32 +26,38 @@
   }
 
   .page-toolbar-button:hover {
+    /* Utilities: hover:text-primary hover:bg-surface-hover (need hover utilities) */
     color: var(--color-primary);
     background: var(--color-surface-hover);
   }
 
   .page-toolbar-button:focus-visible {
+    /* Utilities: focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 */
     outline: 2px solid var(--color-focus);
     outline-offset: 2px;
   }
 
   .page-toolbar-button--disabled {
+    /* Utilities: .text-disabled .cursor-not-allowed .pointer-events-none (need pointer-events) */
     color: var(--color-text-disabled);
     cursor: not-allowed;
     pointer-events: none;
   }
 
   .page-toolbar-button--spinning {
+    /* Utilities: .pointer-events-none */
     pointer-events: none;
   }
 
   .page-toolbar-button-icon {
+    /* Utilities: .text-base .leading-none .mb-1 (need icon-size utility) */
     font-size: var(--icon-size-base);
     line-height: 1;
     margin-bottom: var(--space-1);
   }
 
   .page-toolbar-button-icon.spinning {
+    /* Custom animation - keep unique */
     animation: spin 1s linear infinite;
   }
 
@@ -60,6 +67,7 @@
   }
 
   .page-toolbar-button-label-container {
+    /* Utilities: .flex .items-center .justify-center .overflow-hidden .h-5 .w-full */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -69,6 +77,7 @@
   }
 
   .page-toolbar-button-label {
+    /* Utilities: .px-1 .py-0 .text-inherit .text-xs .leading-none .whitespace-nowrap */
     padding: 0 var(--space-1);
     color: inherit;
     font-size: var(--font-size-xs);

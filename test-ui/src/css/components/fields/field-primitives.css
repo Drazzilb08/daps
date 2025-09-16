@@ -1,61 +1,52 @@
 /**
  * Field Primitives CSS - Compositional Architecture
- * 
- * Base styling for all primitive components that get composed into field types.
+ *
+ * REFACTORED: Base styling for all primitive components that get composed into field types.
+ * MIGRATION: Most patterns moved to utility classes for better reusability.
  * Uses design tokens exclusively - NO hardcoded values.
- * Follows mobile-first responsive design principles.
- * 
- * Architecture: Base styles + compositional patterns for field construction
  */
 
 @layer components {
-  
   /* =============================================================================
      FIELD WRAPPER - Universal container for ALL field types
      ============================================================================= */
-  
-  /* Field wrapper styling handled by utility classes: flex flex-col gap-2 mb-4 w-full */
-  /* Invalid state handled by component-specific classes */
-  
-  /* REMOVED: Responsive field wrapper spacing handled by utility classes in React components:
-   * Mobile (< 768px): .mb-3
-   * Tablet+ (768px+): .mb-5
-   */
+
+  /* UTILITY MIGRATION: Field wrapper styling moved to utility classes */
+  /* Use: .field-wrapper-standard, .field-wrapper-form-section, etc. */
+  /* Invalid state handled by .field-wrapper--invalid component class */
+
+  /* UTILITY MIGRATION: Responsive spacing handled by utility classes */
+  /* Mobile: .mb-3, Tablet+: .mb-5 */
+
+  .field-wrapper {
+    /* Base wrapper class - composition handled by utilities */
+  }
   
   /* =============================================================================
      FIELD LABEL - Universal labeling for ALL field types
      ============================================================================= */
 
   .field-label {
-    /* REMOVED: line-height - inherits from body */
-    /* USE: Add .leading-tight utility class to component if different line-height needed */
+    /* UTILITY MIGRATION: Typography handled by utility classes */
+    /* Use: .leading-tight if different line-height needed */
   }
 
   .required-indicator {
-    /* Spacing and weight handled by utility classes: ml-1 font-semibold */
-    color: var(--color-error);
+    /* UTILITY MIGRATION: Spacing and weight moved to utilities (.ml-1 .font-semibold) */
+    color: var(--color-error); /* Component-specific color */
   }
   
   /* =============================================================================
      INPUT BASE - References consolidated field-base.css patterns
      ============================================================================= */
-  
-  .field-input {
-    /* CONSOLIDATED PATTERNS: Use field-base.css classes instead:
-     * - .field-input-typography (font-family, line-height)
-     * - .field-input-sizing (padding)
-     * - .field-input-layout (box-sizing)
-     * - .field-input-base (background)
-     * - .field-focus-behavior (focus states)
-     * - .field-validation-invalid (invalid states)
-     * - .field-disabled-state (disabled states)
-     * - .field-placeholder-styling (placeholder)
-     */
 
-    /* REMOVED: padding - USE utility classes .py-2 .px-3 in React component */
-    /* REMOVED: box-sizing - handled by global CSS reset */
-    background: var(--color-surface);
-    /* ALL typography properties inherit from body automatically */
+  .field-input {
+    /* UTILITY MIGRATION: Core styling moved to .field-base utility class */
+    /* Use: .field-base .w-full .touch-target for complete input styling */
+    /* Components should combine utilities instead of this class */
+
+    /* LEGACY OVERRIDE: Background for specific field contexts */
+    background: var(--color-surface); /* May differ from standard input background */
   }
   
   /* NOTE: Placeholder, focus, validation, and disabled states now consolidated in field-base.css */
@@ -64,29 +55,20 @@
   /* =============================================================================
      TEXTAREA BASE - References consolidated field-base.css patterns
      ============================================================================= */
-  
-  .field-textarea {
-    /* CONSOLIDATED PATTERNS: Use field-base.css classes instead:
-     * - .field-input-typography (font-family, line-height)
-     * - .field-input-base (background)
-     * - .field-input-layout (box-sizing)
-     * - .field-focus-behavior (focus states)
-     * - .field-validation-invalid (invalid states)
-     * - .field-disabled-state (disabled states)
-     * - .field-placeholder-styling (placeholder)
-     */
 
-    /* REMOVED: padding - USE utility classes .py-2 .px-3 in React component */
-    /* REMOVED: box-sizing - handled by global CSS reset */
-    background: var(--color-surface);
-    resize: vertical;
+  .field-textarea {
+    /* UTILITY MIGRATION: Core styling moved to .field-base utility class */
+    /* Use: .field-base .w-full .touch-target for complete textarea styling */
+
+    /* COMPONENT-SPECIFIC: Textarea-only properties */
+    background: var(--color-surface); /* May differ from standard input background */
+    resize: vertical; /* Textarea-specific behavior */
     min-height: calc(var(--touch-target-min) * 2); /* Minimum 2 lines visible */
-    /* ALL typography properties inherit from body automatically */
   }
-  
+
   .field-textarea:disabled {
-    /* Base disabled styles from .field-disabled-state, plus textarea-specific */
-    resize: none;
+    /* COMPONENT-SPECIFIC: Textarea disabled state */
+    resize: none; /* Disable resize when disabled */
   }
   
   /* NOTE: Placeholder, focus, validation states now consolidated in field-base.css */
@@ -95,20 +77,19 @@
   /* =============================================================================
      FIELD DESCRIPTION - Universal help text for ALL field types
      ============================================================================= */
-  
+
   .field-description {
-    /* REMOVED: line-height - inherits from body (already var(--line-height-normal)) */
-    /* USE: Add utility class if different line-height needed */
+    /* UTILITY MIGRATION: Typography handled by utility classes */
+    /* Use: .leading-normal if different line-height needed */
   }
-  
+
   /* =============================================================================
      FIELD ERROR - Universal error display for ALL field types
      ============================================================================= */
-  
+
   .field-error {
-    /* Typography handled by utility classes: text-sm font-medium */
-    color: var(--color-error);
-    /* REMOVED: line-height - inherits from body (already var(--line-height-normal)) */
+    /* UTILITY MIGRATION: Typography moved to utilities (.text-sm .font-medium) */
+    color: var(--color-error); /* Component-specific error color */
   }
   
   /* =============================================================================
@@ -131,32 +112,27 @@
   /* =============================================================================
      COMPOSITION PATTERNS - Reusable patterns for complex field types
      ============================================================================= */
-  
-  /* Horizontal field layout (for checkboxes, radio buttons) */
+
+  /* UTILITY MIGRATION: Horizontal field layout moved to utilities */
   .field-wrapper--horizontal {
-    /* REPLACED: Use utility classes .flex-row .items-start .gap-3 in React component */
-    /* flex-direction: row → USE .flex-row */
-    /* align-items: flex-start → USE .items-start */
-    /* gap: var(--space-3) → USE .gap-3 */
+    /* MOVED TO UTILITY: Use .flex-row .items-start .gap-3 utility classes */
   }
 
   .field-wrapper--horizontal .field-label {
-    /* REPLACED: Use utility classes .mb-0 .flex-1 in React component */
-    /* margin-bottom: 0 → USE .mb-0 */
-    /* flex: 1 → USE .flex-1 */
+    /* MOVED TO UTILITY: Use .mb-0 .flex-1 utility classes */
   }
-  
-  
-  /* Compact field layout (for dense forms) */
+
+  /* UTILITY MIGRATION: Compact field layout moved to utilities */
   .field-wrapper--compact {
-    /* REPLACED: Use utility classes .mb-2 .gap-1 in React component */
-    /* margin-bottom: var(--space-2) → USE .mb-2 */
-    /* gap: var(--space-1) → USE .gap-1 */
+    /* MOVED TO UTILITY: Use .mb-2 .gap-1 utility classes */
   }
 
   .field-wrapper--compact .field-label {
-    /* REPLACED: Use utility classes .text-xs .mb-0 in React component */
-    /* font-size: var(--font-size-xs) → USE .text-xs */
-    /* margin-bottom: 0 → USE .mb-0 */
+    /* MOVED TO UTILITY: Use .text-xs .mb-0 utility classes */
+  }
+
+  /* Component-specific state class preserved */
+  .field-wrapper--invalid {
+    /* Component-specific invalid state styling if needed */
   }
 }

@@ -2,25 +2,27 @@
  * Composable Button System
  * Reusable button components using React composition principles.
  * Usage: <button class="btn btn--primary"> or <button class="btn btn--secondary btn--small">
+ *
+ * UTILITY INTEGRATION:
+ * Base button: "inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast btn"
+ * Small: "py-1 px-2 text-sm btn btn--small"
+ * Large: "py-3 px-4 text-lg btn btn--large"
+ * Icon-only: "flex-center-both text-lg font-bold btn btn--icon-only"
+ * States: Add "state-disabled" when disabled, "state-hover-dim" for secondary variants
  */
 
 @layer components {
   /* Base button */
   .btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    /* USE UTILITIES IN REACT: inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast */
+
+    /* Component-specific styling that cannot be utilities */
     min-height: var(--touch-target-min);
-    padding: var(--space-2) var(--space-3);
-    /* Font styling inherited from base typography */
     line-height: 1;
     text-decoration: none;
     white-space: nowrap;
     border: 1px solid transparent;
-    border-radius: var(--radius-2);
-    cursor: pointer;
     user-select: none;
-    transition: all var(--transition-fast);
   }
 
   /* Focus state - accessible */
@@ -39,13 +41,8 @@
     transition: transform 0.1s ease !important;
   }
 
-  /* REPLACED: Use .state-disabled utility class for consistent disabled state */
-  .btn:disabled {
-    /* USE: Apply .state-disabled utility class in React component instead */
-    opacity: 0.6;
-    cursor: not-allowed;
-    pointer-events: none;
-  }
+  /* Disabled state handled by .state-disabled utility class */
+  /* USE IN REACT: Add "state-disabled" class when button is disabled */
 
   /* =============================================================================
      BUTTON VARIANTS - Semantic color variations
@@ -70,11 +67,7 @@
     border-color: var(--color-accent);
   }
 
-  /* REPLACED: Use .state-hover-dim utility class for consistent hover behavior */
-  .btn--secondary:hover:not(:disabled) {
-    /* USE: Apply .state-hover-dim utility class in React component instead */
-    opacity: 0.9;
-  }
+  /* USE IN REACT: Add "state-hover-dim" class for hover behavior */
 
   /* Success button - confirmation actions */
   .btn--success {
@@ -83,23 +76,11 @@
     border-color: var(--color-success);
   }
 
-  /* REPLACED: Use .state-hover-dim utility class for consistent hover behavior */
-  .btn--success:hover:not(:disabled) {
-    /* USE: Apply .state-hover-dim utility class in React component instead */
-    opacity: 0.9;
-  }
-
   /* Warning button - caution actions */
   .btn--warning {
     background: var(--color-warning);
     color: var(--color-warning-text);
     border-color: var(--color-warning);
-  }
-
-  /* REPLACED: Use .state-hover-dim utility class for consistent hover behavior */
-  .btn--warning:hover:not(:disabled) {
-    /* USE: Apply .state-hover-dim utility class in React component instead */
-    opacity: 0.9;
   }
 
   /* Danger/Error button - destructive actions */
@@ -110,24 +91,14 @@
     border-color: var(--color-error);
   }
 
-  /* REPLACED: Use .state-hover-dim utility class for consistent hover behavior */
-  .btn--danger:hover:not(:disabled),
-  .btn--error:hover:not(:disabled) {
-    /* USE: Apply .state-hover-dim utility class in React component instead */
-    opacity: 0.9;
-  }
+  /* NOTE: All secondary, success, warning, and danger/error variants use .state-hover-dim */
+  /* USE IN REACT: Add "state-hover-dim" class for hover behavior on these variants */
 
   /* Info button - informational actions */
   .btn--info {
     background: var(--color-accent);
     color: var(--color-accent-text);
     border-color: var(--color-accent);
-  }
-
-  /* REPLACED: Use .state-hover-dim utility class for consistent hover behavior */
-  .btn--info:hover:not(:disabled) {
-    /* USE: Apply .state-hover-dim utility class in React component instead */
-    opacity: 0.9;
   }
 
   /* Ghost button - subtle actions */
@@ -171,16 +142,14 @@
   
   /* Small button */
   .btn--small {
+    /* USE UTILITIES IN REACT: py-1 px-2 text-sm */
     min-height: var(--touch-target-min);
-    padding: var(--space-1) var(--space-2);
-    font-size: var(--font-size-sm);
   }
 
   /* Large button */
   .btn--large {
+    /* USE UTILITIES IN REACT: py-3 px-4 text-lg */
     min-height: var(--touch-target-comfortable);
-    padding: var(--space-3) var(--space-4);
-    font-size: var(--font-size-lg);
   }
 
   /* =============================================================================
@@ -190,15 +159,12 @@
 
   /* Icon-only button */
   .btn--icon-only {
+    /* USE UTILITIES IN REACT: flex-center-both text-lg font-bold p-0 */
+
+    /* Component-specific sizing for icon buttons */
     min-width: var(--touch-target-min);
     width: var(--touch-target-min);
     height: var(--touch-target-min);
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-bold);
     aspect-ratio: 1;
   }
 
@@ -208,11 +174,13 @@
   
   /* Number field button styling - elevated surface for input controls */
   .btn--number-field {
+    /* USE UTILITIES IN REACT: py-2 px-3 */
+
+    /* Component-specific styling for number field integration */
     background: var(--color-surface-elevated);
     color: var(--color-primary);
     border-color: transparent;
     min-width: calc(var(--touch-target-min) + var(--space-2));
-    padding: var(--space-2) var(--space-3);
     box-shadow: none;
   }
 
@@ -239,8 +207,8 @@
   @media (max-width: 768px) {
     /* Larger touch targets on mobile */
     .btn {
+      /* USE UTILITIES IN REACT: py-3 px-4 (on mobile) */
       min-height: var(--touch-target-comfortable);
-      padding: var(--space-3) var(--space-4);
     }
 
     .btn--small {
@@ -249,12 +217,11 @@
 
     /* Stack button groups vertically on mobile */
     .btn-group {
-      flex-direction: column;
-      width: 100%;
+      /* USE UTILITIES IN REACT: flex-col w-full (on mobile) */
     }
 
     .btn-group .btn {
-      width: 100%;
+      /* USE UTILITIES IN REACT: w-full (on mobile) */
     }
   }
 

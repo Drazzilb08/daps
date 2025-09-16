@@ -27,13 +27,13 @@ export const FieldWrapper = ({
   // Base classes always applied
   const baseClasses = ['field-wrapper'];
 
-  // Variant-specific utility classes
+  // Variant-specific utility classes - using new field-wrapper utilities
   const variantClasses = {
-    standard: ['flex', 'flex-col', 'gap-1', 'mb-4', 'w-full'],
-    'form-section': ['flex', 'flex-col', 'gap-4', 'mb-4', 'w-full'],
-    checkbox: ['mb-4', 'w-full'], // Minimal wrapper, inner content handles layout
-    inline: ['flex', 'items-center', 'gap-2', 'mb-4', 'w-full'],
-    minimal: ['w-full'] // Just width, no spacing
+    standard: ['field-wrapper-standard'],
+    'form-section': ['field-wrapper-form-section'],
+    checkbox: ['field-wrapper-checkbox'],
+    inline: ['field-wrapper-inline'],
+    minimal: ['field-wrapper-minimal']
   };
 
   const wrapperClasses = [

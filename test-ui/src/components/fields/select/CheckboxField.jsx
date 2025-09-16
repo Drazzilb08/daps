@@ -38,10 +38,10 @@ export const CheckboxField = React.memo(({
   return (
     <FieldWrapper variant="checkbox" invalid={highlightInvalid}>
       <div
-        className={`flex items-start gap-3 p-3 rounded-2 checkbox-field ${disabled ? 'checkbox-field--disabled' : ''} ${highlightInvalid ? 'checkbox-field--invalid' : ''}`}
+        className={`checkbox-field flex items-start gap-3 p-3 rounded min-h-touch-comfortable ${disabled ? 'checkbox-field--disabled' : ''} ${highlightInvalid ? 'checkbox-field--invalid' : ''}`}
         onClick={handleClick}
       >
-        <div className="checkbox-field__input">
+        <div className="checkbox-field__input relative flex-shrink-0">
           <input
             id={inputId}
             type="checkbox"
@@ -52,8 +52,9 @@ export const CheckboxField = React.memo(({
             onChange={() => {}} // Controlled by wrapper click
             tabIndex={-1} // Use wrapper for keyboard navigation
             aria-hidden="true" // Screen readers use the wrapper
+            className="absolute opacity-0 w-0 h-0"
           />
-          <div className="checkbox-field__indicator field-input-base" aria-hidden="true">
+          <div className="checkbox-field__indicator field-base" aria-hidden="true">
             {isChecked && (
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
                 <polyline points="20,6 9,17 4,12"/>
@@ -62,7 +63,7 @@ export const CheckboxField = React.memo(({
           </div>
         </div>
 
-        <div className="checkbox-field__content">
+        <div className="checkbox-field__content flex-1 min-w-0">
           <FieldLabel
             htmlFor={inputId}
             label={field.label}

@@ -52,6 +52,13 @@ export const AddButton = React.memo(({
   const buttonClasses = [
     'btn',
     'btn--add',
+    'inline-flex-center-both',
+    'py-2',
+    'px-3',
+    'rounded-md',
+    'cursor-pointer',
+    'transition-fast',
+    disabled && 'state-disabled',
     className
   ].filter(Boolean).join(' ');
 

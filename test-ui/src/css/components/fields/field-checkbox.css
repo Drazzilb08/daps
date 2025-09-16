@@ -9,10 +9,9 @@
 @layer components {
   /* Checkbox field wrapper - provides the clickable area */
   .checkbox-field {
-    /* Layout handled by utilities: flex items-start gap-3 p-3 rounded-2 */
     cursor: pointer;
-    min-height: var(--touch-target-comfortable);
     transition: all var(--transition-fast);
+    /* Use utilities: flex items-start gap-3 p-3 rounded min-h-touch-comfortable */
   }
 
   .checkbox-field--disabled {
@@ -24,28 +23,21 @@
 
   /* Checkbox input container */
   .checkbox-field__input {
-    position: relative;
-    flex-shrink: 0;
     margin-top: 2px;
+    /* Use utilities: relative flex-shrink-0 */
   }
 
   /* Hide the actual checkbox */
   .checkbox-field__input input[type="checkbox"] {
-    position: absolute;
-    opacity: 0;
-    width: 0;
-    height: 0;
+    /* Use utilities: absolute opacity-0 w-0 h-0 */
   }
 
   /* Custom checkbox indicator */
   .checkbox-field__indicator {
     width: 18px;
     height: 18px;
-    border-radius: var(--radius-1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
     transition: all var(--transition-fast);
+    /* Use utilities: rounded-sm flex items-center justify-center */
   }
 
   /* Theme-specific indicator background handled by CSS variables */
@@ -76,17 +68,13 @@
 
   /* Content area */
   .checkbox-field__content {
-    flex: 1;
-    min-width: 0;
+    /* Use utilities: flex-1 min-w-0 */
   }
 
   /* Label */
   .checkbox-field__label {
-    display: block;
-    color: var(--color-primary);
-    line-height: var(--line-height-normal);
-    margin-bottom: var(--space-1);
     cursor: inherit;
+    /* Use utilities: block text-primary leading-normal mb-1 */
     /* Font styling inherited from .field-input-typography */
   }
 
@@ -96,9 +84,7 @@
 
   /* Description */
   .checkbox-field__description {
-    color: var(--color-text-secondary);
-    line-height: var(--line-height-relaxed);
-    margin-top: var(--space-1);
+    /* Use utilities: text-secondary leading-relaxed mt-1 */
     /* Font sizing handled by .field-input-typography base */
   }
 

@@ -63,16 +63,16 @@ const ErrorTestPage = () => {
         <p className="error-demo-section__description"><strong>What it is:</strong> Small popup notifications that appear briefly</p>
         <p className="error-demo-section__description"><strong>When to use:</strong> Success confirmations, alerts, quick feedback</p>
         <div className="toast-buttons">
-          <button onClick={() => showToast('success')} className="btn btn--success">
+          <button onClick={() => showToast('success')} className="btn btn--success inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim">
             Success Toast
           </button>
-          <button onClick={() => showToast('error')} className="btn btn--error">
+          <button onClick={() => showToast('error')} className="btn btn--error inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim">
             Error Toast
           </button>
-          <button onClick={() => showToast('warning')} className="btn btn--warning">
+          <button onClick={() => showToast('warning')} className="btn btn--warning inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim">
             Warning Toast
           </button>
-          <button onClick={() => showToast('info')} className="btn btn--info">
+          <button onClick={() => showToast('info')} className="btn btn--info inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim">
             Info Toast
           </button>
         </div>
@@ -83,7 +83,7 @@ const ErrorTestPage = () => {
         <h2 className="error-demo-section__title">🌐 Global Error Handling</h2>
         <p className="error-demo-section__description"><strong>What it is:</strong> Centralized error handling for the entire app</p>
         <p className="error-demo-section__description"><strong>When to use:</strong> Network failures, authentication issues, server errors</p>
-        <button onClick={showGlobalError} className="btn btn--primary">
+        <button onClick={showGlobalError} className="btn btn--primary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast">
           Trigger Global Error
         </button>
       </section>
@@ -97,7 +97,7 @@ const ErrorTestPage = () => {
         
         <button 
           onClick={() => triggerCrash('critical')} 
-          className="btn btn--danger"
+          className="btn btn--danger inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
         >
           Trigger Critical Error
         </button>
@@ -113,7 +113,7 @@ const ErrorTestPage = () => {
         {crashes.critical && (
           <button 
             onClick={() => resetCrash('critical')} 
-            className="btn btn--secondary"
+            className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
           >
             Reset
           </button>
@@ -129,7 +129,7 @@ const ErrorTestPage = () => {
         
         <button 
           onClick={() => triggerCrash('page')} 
-          className="btn btn--danger"
+          className="btn btn--danger inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
         >
           Trigger Page Error
         </button>
@@ -141,7 +141,7 @@ const ErrorTestPage = () => {
         {crashes.page && (
           <button 
             onClick={() => resetCrash('page')} 
-            className="btn btn--secondary"
+            className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
           >
             Reset
           </button>
@@ -157,7 +157,7 @@ const ErrorTestPage = () => {
         
         <button 
           onClick={() => triggerCrash('feature')} 
-          className="btn btn--danger"
+          className="btn btn--danger inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
         >
           Trigger Feature Error
         </button>
@@ -172,7 +172,7 @@ const ErrorTestPage = () => {
         {crashes.feature && (
           <button 
             onClick={() => resetCrash('feature')} 
-            className="btn btn--secondary"
+            className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
           >
             Reset
           </button>

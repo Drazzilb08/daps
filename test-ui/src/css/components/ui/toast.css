@@ -4,30 +4,24 @@
  */
 
 @layer components {
-  /* Toast container positioning - utilities: fixed bottom-4 right-4 flex flex-col gap-2 */
+  /* Toast container positioning */
   .toast-container {
-    z-index: var(--z-toast);
     pointer-events: none;
-    max-width: calc(var(--grid-min-width-lg) + var(--space-8));
+    /* Use utilities: fixed bottom-4 right-4 flex flex-col gap-2 z-toast max-w-toast */
   }
 
-  /* Base toast styles - utilities: p-3 pl-4 pr-4 rounded-md text-base font-medium cursor-pointer relative overflow-hidden */
+  /* Base toast styles */
   .toast {
     color: white;
     pointer-events: auto;
-    min-width: var(--grid-min-width-md);
     opacity: 0;
-    transform: translateX(100%);
     transition: all 0.3s ease-out;
-    box-shadow: var(--shadow-lg);
-    /* Force solid backgrounds - NO TRANSPARENCY */
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+    /* Use utilities: p-3 px-4 rounded-md text-base font-medium cursor-pointer relative overflow-hidden min-w-toast shadow-lg translate-x-full backdrop-filter-none */
   }
 
   .toast.show {
     opacity: 1;
-    transform: translateX(0);
+    /* Use utilities: translate-x-0 */
   }
 
   /* Toast type colors - SOLID backgrounds only, no transparency */
@@ -73,31 +67,28 @@
 
   /* Hover effects */
   .toast:hover {
-    transform: translateX(-4px);
-    box-shadow: var(--shadow-xl);
+    /* Use utilities: translate-x-negative-1 shadow-xl */
   }
 
   /* Mobile responsive */
   @media (max-width: 768px) {
     .toast-container {
       top: auto;
-      bottom: var(--space-4);
-      left: var(--space-3);
-      right: var(--space-3);
       max-width: none;
+      /* Use utilities: bottom-4 left-3 right-3 */
     }
 
     .toast {
       min-width: auto;
-      transform: translateY(100%);
+      /* Use utilities: translate-y-full */
     }
 
     .toast.show {
-      transform: translateY(0);
+      /* Use utilities: translate-y-0 */
     }
 
     .toast:hover {
-      transform: translateY(-4px);
+      /* Use utilities: translate-y-negative-1 */
     }
   }
 

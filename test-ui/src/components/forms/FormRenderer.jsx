@@ -290,7 +290,7 @@ export const FormRenderer = React.memo(({
           {onSubmit && (
             <button
               type="submit"
-              className="btn btn--primary"
+              className="btn btn--primary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
               disabled={disabled || isSubmitting}
             >
               {isSubmitting ? 'Submitting...' : (schema.submitLabel || 'Submit')}
@@ -300,7 +300,7 @@ export const FormRenderer = React.memo(({
           {schema.cancelLabel && (
             <button
               type="button"
-              className="btn btn--secondary"
+              className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
               disabled={isSubmitting}
               onClick={() => {
                 // Reset to initial data

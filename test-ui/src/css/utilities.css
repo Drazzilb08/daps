@@ -30,6 +30,9 @@
   
   /* Additional margin utilities for more complete coverage */
   .m-5 { margin: var(--space-5); }
+  .m-auto { margin: auto; }
+  .mx-auto { margin-left: auto; margin-right: auto; }
+  .my-auto { margin-top: auto; margin-bottom: auto; }
 
   .mt-0 { margin-top: 0; }
   .mt-1 { margin-top: var(--space-1); }
@@ -106,6 +109,24 @@
   .pr-6 { padding-right: var(--space-6); }
   .pr-8 { padding-right: var(--space-8); }
 
+  /* Padding shortcuts - y-axis (top + bottom) */
+  .py-0 { padding-top: 0; padding-bottom: 0; }
+  .py-1 { padding-top: var(--space-1); padding-bottom: var(--space-1); }
+  .py-2 { padding-top: var(--space-2); padding-bottom: var(--space-2); }
+  .py-3 { padding-top: var(--space-3); padding-bottom: var(--space-3); }
+  .py-4 { padding-top: var(--space-4); padding-bottom: var(--space-4); }
+  .py-6 { padding-top: var(--space-6); padding-bottom: var(--space-6); }
+  .py-8 { padding-top: var(--space-8); padding-bottom: var(--space-8); }
+
+  /* Padding shortcuts - x-axis (left + right) */
+  .px-0 { padding-left: 0; padding-right: 0; }
+  .px-1 { padding-left: var(--space-1); padding-right: var(--space-1); }
+  .px-2 { padding-left: var(--space-2); padding-right: var(--space-2); }
+  .px-3 { padding-left: var(--space-3); padding-right: var(--space-3); }
+  .px-4 { padding-left: var(--space-4); padding-right: var(--space-4); }
+  .px-6 { padding-left: var(--space-6); padding-right: var(--space-6); }
+  .px-8 { padding-left: var(--space-8); padding-right: var(--space-8); }
+
   /* Typography utilities */
   
   /* Text alignment */
@@ -128,12 +149,53 @@
   .font-semibold { font-weight: var(--font-weight-semibold); }
   .font-bold { font-weight: var(--font-weight-bold); }
 
+  /* Font style utilities */
+  .italic { font-style: italic; }
+  .not-italic { font-style: normal; }
+
+  /* Line height utilities */
+  .leading-none { line-height: 1; }
+  .leading-tight { line-height: var(--line-height-tight); }
+  .leading-normal { line-height: var(--line-height-normal); }
+  .leading-relaxed { line-height: var(--line-height-relaxed); }
+  .leading-loose { line-height: var(--line-height-loose); }
+
+  /* Font family utilities */
+  .font-sans { font-family: var(--font-family-sans); }
+  .font-mono { font-family: var(--font-family-mono); }
+
   /* Text color utilities */
   .text-primary { color: var(--color-text-primary); }
   .text-secondary { color: var(--color-text-secondary); }
   .text-tertiary { color: var(--color-text-tertiary); }
   .text-muted { color: var(--color-text-muted); }
   .text-disabled { color: var(--color-text-disabled); }
+  .text-inherit { color: inherit; }
+
+  /* Background color utilities */
+  .bg-surface { background: var(--color-surface); }
+  .bg-surface-elevated { background: var(--color-surface-elevated); }
+  .bg-surface-dim { background: var(--color-surface-dim); }
+  .bg-surface-hover { background: var(--color-surface-hover); }
+  .bg-surface-active { background: var(--color-surface-active); }
+  .bg-surface-variant { background: var(--color-surface-variant); }
+  .bg-surface-alt { background: var(--color-surface-alt); }
+  .bg-surface-secondary { background: var(--color-surface-secondary); }
+
+  /* State background utilities */
+  .bg-success { background: var(--color-success); }
+  .bg-success-subtle { background: var(--color-success-subtle, var(--color-surface)); }
+  .bg-success-surface { background: var(--color-success-opacity-20); }
+  .bg-warning { background: var(--color-warning); }
+  .bg-warning-subtle { background: var(--color-warning-subtle, var(--color-surface)); }
+  .bg-warning-surface { background: var(--color-warning-opacity-20); }
+  .bg-error { background: var(--color-error); }
+  .bg-error-subtle { background: var(--color-error-subtle, var(--color-surface)); }
+  .bg-danger-surface { background: var(--color-danger-surface); }
+  .bg-primary { background: var(--color-primary); }
+  .bg-primary-subtle { background: var(--color-primary-subtle, var(--color-surface)); }
+  .bg-primary-surface { background: var(--color-primary-opacity-10); }
+  .bg-transparent { background: transparent; }
 
   /* Layout utilities */
 
@@ -178,6 +240,12 @@
     justify-content: center;
   }
 
+  .inline-flex-center-both {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
   .flex-between {
     display: flex;
     justify-content: space-between;
@@ -197,6 +265,7 @@
   .gap-4 { gap: var(--space-4); }
   .gap-5 { gap: var(--space-5); }
   .gap-6 { gap: var(--space-6); }
+  .gap-8 { gap: var(--space-8); }
 
   /* Column and row gap utilities */
   .gap-x-1 { column-gap: var(--space-1); }
@@ -254,6 +323,8 @@
   .w-fit { width: fit-content; }
   .w-min { width: min-content; }
   .w-max { width: max-content; }
+  .w-4 { width: 16px; }
+  .w-5 { width: 20px; }
 
   .h-auto { height: auto; }
   .h-full { height: 100%; }
@@ -261,30 +332,70 @@
   .h-fit { height: fit-content; }
   .h-min { height: min-content; }
   .h-max { height: max-content; }
+  .h-4 { height: 16px; }
+  .h-5 { height: 18px; } /* For toolbar button label container */
 
   .min-w-0 { min-width: 0; }
   .min-w-full { min-width: 100%; }
+  .min-w-14 { min-width: 56px; } /* For toolbar buttons */
+  .min-w-5 { min-width: 20px; } /* For badges */
+  .min-w-50 { min-width: 200px; } /* For selects */
   .max-w-none { max-width: none; }
   .max-w-full { max-width: 100%; }
+  .max-w-content { max-width: var(--content-max-width); }
+  .max-w-form { max-width: var(--form-max-width); }
+  .max-w-60ch { max-width: 60ch; }
+  .max-w-75ch { max-width: 75ch; }
 
   .min-h-0 { min-height: 0; }
   .min-h-full { min-height: 100%; }
   .min-h-screen { min-height: 100vh; }
   .max-h-full { max-height: 100%; }
   .max-h-screen { max-height: 100vh; }
+  .max-h-72 { max-height: 300px; } /* For code display */
 
   /* Overflow utilities */
   .overflow-hidden { overflow: hidden; }
   .overflow-auto { overflow: auto; }
   .overflow-scroll { overflow: scroll; }
   .overflow-visible { overflow: visible; }
+  .overflow-x-auto { overflow-x: auto; }
+  .overflow-y-auto { overflow-y: auto; }
+
+  /* White space utilities */
+  .whitespace-normal { white-space: normal; }
+  .whitespace-nowrap { white-space: nowrap; }
+  .whitespace-pre { white-space: pre; }
+  .whitespace-pre-wrap { white-space: pre-wrap; }
+  .whitespace-pre-line { white-space: pre-line; }
+
+  /* Word break utilities */
+  .break-normal { word-break: normal; }
+  .break-words { word-break: break-word; }
+  .break-all { word-break: break-all; }
 
   /* Border and styling utilities */
   
   /* Border utilities */
   .border { border: var(--input-border-width) solid var(--color-border); }
-  
+  .border-dashed { border-style: dashed; }
   .border-none { border: none; }
+  .border-b { border-bottom: 1px solid var(--color-border); }
+  .border-l { border-left: 1px solid var(--color-border); }
+  .border-t { border-top: 1px solid var(--color-border); }
+  .border-r { border-right: 1px solid var(--color-border); }
+
+  /* Border color utilities */
+  .border-success { border-color: var(--color-success); }
+  .border-error { border-color: var(--color-error); }
+  .border-warning { border-color: var(--color-warning); }
+  .border-primary { border-color: var(--color-primary); }
+
+  /* Opacity utilities */
+  .opacity-70 { opacity: 0.7; }
+  .opacity-80 { opacity: 0.8; }
+  .opacity-90 { opacity: 0.9; }
+  .opacity-100 { opacity: 1; }
   
   /* Border radius utilities */
   .rounded-none { border-radius: 0; }
@@ -321,6 +432,10 @@
   .cursor-pointer { cursor: pointer; }
   .cursor-default { cursor: default; }
   .cursor-not-allowed { cursor: not-allowed; }
+
+  /* Pointer events utilities */
+  .pointer-events-none { pointer-events: none; }
+  .pointer-events-auto { pointer-events: auto; }
 
   /* Transition utilities */
   .transition-fast { transition: all var(--transition-fast); }
@@ -483,7 +598,73 @@
   }
   
   /* Form field utilities */
-  
+
+  /* =============================================================================
+     FIELD COMPOSITION UTILITIES - Evidence-based utilities for field system
+     ============================================================================= */
+
+  /* Input group container - Used in PasswordField, NumberField, and other compound inputs */
+  .input-group {
+    display: flex;
+    align-items: stretch;
+    border-radius: var(--radius-2);
+    overflow: hidden;
+    background: var(--color-input-bg);
+    border: var(--field-base-border, 1px solid var(--color-text-secondary));
+    box-shadow: var(--field-base-shadow, 0 1px 2px rgba(0, 0, 0, 0.05));
+    transition: all var(--transition-fast);
+  }
+
+  .input-group:focus-within {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+  }
+
+  .input-group.state-invalid {
+    border-color: var(--color-error);
+  }
+
+  .input-group.state-invalid:focus-within {
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
+  }
+
+  .input-group.state-valid {
+    border-color: var(--color-success);
+  }
+
+  .input-group.state-valid:focus-within {
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
+  }
+
+  /* Input group child - for inputs inside compound groups */
+  .input-group-child {
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .input-group-child:focus {
+    border-color: transparent;
+    box-shadow: none;
+  }
+
+  /* Input addon - for buttons/icons attached to inputs */
+  .input-addon {
+    background: var(--color-input-addon-bg);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: var(--touch-target-min);
+    transition: all var(--transition-fast);
+  }
+
+  .input-addon:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
   /* Basic input styling utility */
   .input {
     width: 100%;
@@ -622,6 +803,75 @@
   }
 
   /* =============================================================================
+     FIELD STATE COMPOSITION UTILITIES - Field-specific state combinations
+     ============================================================================= */
+
+  /* Field base styling - combines background, border, padding, and transitions */
+  .field-base {
+    background: var(--color-input-bg);
+    border: var(--field-base-border, 1px solid var(--color-text-secondary));
+    box-shadow: var(--field-base-shadow, 0 1px 2px rgba(0, 0, 0, 0.05));
+    border-radius: var(--radius-2);
+    transition: all var(--transition-fast);
+    min-height: var(--input-height);
+    padding: var(--input-padding-y) var(--input-padding-x);
+    box-sizing: border-box;
+  }
+
+  .field-base:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background: var(--color-input-bg-focus);
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+  }
+
+  .field-base:read-only {
+    background: var(--color-input-bg-readonly);
+    cursor: default;
+  }
+
+  .field-base:disabled {
+    background: var(--color-input-bg-disabled);
+    color: var(--color-input-text-disabled);
+    border-color: var(--color-input-border-disabled);
+    cursor: not-allowed;
+  }
+
+  .field-base::placeholder {
+    color: var(--color-input-placeholder);
+    opacity: 1;
+  }
+
+  /* Field base with validation states */
+  .field-base.state-invalid {
+    border-color: var(--color-error);
+  }
+
+  .field-base.state-invalid:focus {
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
+  }
+
+  .field-base.state-valid {
+    border-color: var(--color-success);
+  }
+
+  .field-base.state-valid:focus {
+    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
+  }
+
+  /* Number field display utility - for read-only number displays */
+  .number-field-display {
+    text-align: center;
+    font-variant-numeric: tabular-nums;
+    cursor: default;
+  }
+
+  .number-field-display:focus {
+    outline: none;
+    box-shadow: none;
+  }
+
+  /* =============================================================================
      SEMANTIC STATE UTILITIES - Single source of truth for component states
      ============================================================================= */
 
@@ -629,6 +879,69 @@
   .flex-1 { flex: 1; }
   .flex-auto { flex: auto; }
   .flex-none { flex: none; }
+  .flex-shrink-0 { flex-shrink: 0; }
+
+  /* Z-index utilities for layering */
+  .z-toast { z-index: var(--z-toast); }
+  .z-dropdown { z-index: var(--z-dropdown); }
+  .z-modal { z-index: var(--z-modal); }
+  .z-tooltip { z-index: var(--z-tooltip); }
+
+  /* Animation utilities */
+  .animate-spin {
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Transform utilities */
+  .transform { transform: var(--transform, none); }
+  .transform-none { transform: none; }
+  .scale-98 { transform: scale(0.98); }
+  .translate-x-full { transform: translateX(100%); }
+  .translate-x-0 { transform: translateX(0); }
+  .translate-y-full { transform: translateY(100%); }
+  .translate-y-0 { transform: translateY(0); }
+  .translate-x-negative-1 { transform: translateX(-4px); }
+  .translate-y-negative-1 { transform: translateY(-4px); }
+
+  /* Appearance utilities */
+  .appearance-none { appearance: none; }
+
+  /* Specific sizing utilities for components */
+  .min-w-dropdown { min-width: var(--dropdown-width-min); }
+  .max-w-dropdown { max-width: var(--dropdown-width-max); }
+  .min-w-toast { min-width: var(--grid-min-width-md); }
+  .max-w-toast { max-width: calc(var(--grid-min-width-lg) + var(--space-8)); }
+
+  /* Layout combinations for specific component patterns */
+  .w-max-content { width: max-content; }
+  .min-h-touch-comfortable { min-height: var(--touch-target-comfortable); }
+  .min-h-input-3x { min-height: calc(var(--input-height) * 3); }
+  .min-h-input-2x { min-height: calc(var(--input-height) * 2); }
+
+  /* Input-specific padding utilities */
+  .py-input { padding-top: var(--input-padding-y); padding-bottom: var(--input-padding-y); }
+  .px-input { padding-left: var(--input-padding-x); padding-right: var(--input-padding-x); }
+
+  /* Position utilities for absolute positioning */
+  .top-1\/2 { top: 50%; }
+
+  /* Text utilities */
+  .text-ellipsis {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* Backdrop filter utilities */
+  .backdrop-filter-none {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
 
   /* Global disabled state - ONE definition for all components */
   .state-disabled {
@@ -643,6 +956,15 @@
   }
   .state-hover-dim:hover:not(:disabled) {
     opacity: 0.9;
+  }
+
+  /* Toolbar button hover state */
+  .state-hover-toolbar {
+    transition: color var(--transition-fast), background var(--transition-fast);
+  }
+  .state-hover-toolbar:hover:not(:disabled) {
+    color: var(--color-primary);
+    background: var(--color-surface-hover);
   }
 
   /* Global focus state - ONE definition for all focusable elements */
@@ -680,6 +1002,40 @@
   .state-valid:focus,
   .state-valid:focus-within {
     box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
+  }
+
+  /* Field wrapper variant utilities */
+  .field-wrapper-standard {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+    margin-bottom: var(--space-4);
+    width: 100%;
+  }
+
+  .field-wrapper-form-section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-bottom: var(--space-4);
+    width: 100%;
+  }
+
+  .field-wrapper-checkbox {
+    margin-bottom: var(--space-4);
+    width: 100%;
+  }
+
+  .field-wrapper-inline {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+    width: 100%;
+  }
+
+  .field-wrapper-minimal {
+    width: 100%;
   }
 }
 

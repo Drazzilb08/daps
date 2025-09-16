@@ -264,7 +264,7 @@ export const FormRenderer = React.memo(({
         <div className="form-actions">
           <button
             type="submit"
-            className="btn btn--primary"
+            className="btn btn--primary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
             disabled={disabled || loading}
           >
             {loading ? 'Saving...' : submitText}

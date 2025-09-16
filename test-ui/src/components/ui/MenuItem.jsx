@@ -43,6 +43,7 @@ const MenuItem = ({
 
   const itemClassName = [
     'menu-item',
+    'flex items-center gap-2 py-2 px-3 touch-target bg-transparent text-secondary border-none rounded-sm cursor-pointer text-sm w-full text-left whitespace-nowrap',
     isDisabled && 'menu-item--disabled',
     className
   ].filter(Boolean).join(' ');
@@ -58,11 +59,11 @@ const MenuItem = ({
       {...otherProps}
     >
       {iconName && (
-        <span className="menu-item__icon material-symbols-outlined" aria-hidden="true">
+        <span className="menu-item__icon material-symbols-outlined flex-shrink-0 icon-md flex items-center justify-center" aria-hidden="true">
           {iconName}
         </span>
       )}
-      <span className="menu-item__label">
+      <span className="menu-item__label flex-1 min-w-0 text-ellipsis">
         {label}
       </span>
     </div>

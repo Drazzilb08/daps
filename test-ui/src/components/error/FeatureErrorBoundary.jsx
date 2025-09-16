@@ -214,7 +214,7 @@ class FeatureErrorBoundaryBase extends Component {
                         </span>
                         <button
                             onClick={this.handleRetry}
-                            className="btn btn--ghost btn--small"
+                            className="btn btn--ghost btn--small inline-flex-center-both py-1 px-2 text-sm rounded-md cursor-pointer transition-fast"
                             type="button"
                             title="Try to load this feature again"
                         >
@@ -256,7 +256,7 @@ class FeatureErrorBoundaryBase extends Component {
                                 <div className="feature-error-boundary__overlay-actions">
                                     <button
                                         onClick={this.handleRetry}
-                                        className="btn btn--primary"
+                                        className="btn btn--primary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
                                         type="button"
                                     >
                                         <span className="feature-error-boundary__button-icon">🔄</span>
@@ -266,7 +266,7 @@ class FeatureErrorBoundaryBase extends Component {
                                         onClick={this.handleCopyError}
                                         className={`btn ${
                                             this.state.copySuccess ? 'btn--success' : 
-                                            this.state.copyError ? 'btn--error' : 'btn--info'
+                                            this.state.copyError ? 'btn--error state-hover-dim' : 'btn--info state-hover-dim'
                                         }`}
                                         type="button"
                                         disabled={this.state.copying}
@@ -282,7 +282,7 @@ class FeatureErrorBoundaryBase extends Component {
                                     </button>
                                     <button
                                         onClick={this.handleReload}
-                                        className="btn btn--secondary"
+                                        className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
                                         type="button"
                                     >
                                         <span className="feature-error-boundary__button-icon">🔄</span>
@@ -352,7 +352,7 @@ class FeatureErrorBoundaryBase extends Component {
                                 <div className="feature-error-boundary__actions">
                                     <button
                                         onClick={this.handleRetry}
-                                        className="btn btn--primary btn--small"
+                                        className="btn btn--primary btn--small inline-flex-center-both py-1 px-2 text-sm rounded-md cursor-pointer transition-fast"
                                         type="button"
                                     >
                                         <span className="feature-error-boundary__button-icon">
@@ -364,7 +364,7 @@ class FeatureErrorBoundaryBase extends Component {
                                     {!critical && (
                                         <button
                                             onClick={this.handleSkip}
-                                            className="btn btn--secondary btn--small"
+                                            className="btn btn--secondary btn--small inline-flex-center-both py-1 px-2 text-sm rounded-md cursor-pointer transition-fast state-hover-dim"
                                             type="button"
                                         >
                                             <span className="feature-error-boundary__button-icon">
@@ -376,9 +376,9 @@ class FeatureErrorBoundaryBase extends Component {
 
                                     <button
                                         onClick={this.handleCopyError}
-                                        className={`btn btn--small ${
-                                            this.state.copySuccess ? 'btn--success' : 
-                                            this.state.copyError ? 'btn--error' : 'btn--info'
+                                        className={`btn btn--small inline-flex-center-both py-1 px-2 text-sm rounded-md cursor-pointer transition-fast ${
+                                            this.state.copySuccess ? 'btn--success state-hover-dim' : 
+                                            this.state.copyError ? 'btn--error state-hover-dim' : 'btn--info state-hover-dim'
                                         }`}
                                         type="button"
                                         disabled={this.state.copying}
@@ -395,7 +395,7 @@ class FeatureErrorBoundaryBase extends Component {
 
                                     <button
                                         onClick={this.handleReload}
-                                        className="btn btn--ghost btn--small"
+                                        className="btn btn--ghost btn--small inline-flex-center-both py-1 px-2 text-sm rounded-md cursor-pointer transition-fast"
                                         type="button"
                                     >
                                         <span className="feature-error-boundary__button-icon">
@@ -412,7 +412,7 @@ class FeatureErrorBoundaryBase extends Component {
                                             <p>This feature has failed multiple times. Consider reloading the application.</p>
                                             <button
                                                 onClick={this.handleReload}
-                                                className="btn btn--primary btn--small"
+                                                className="btn btn--primary btn--small inline-flex-center-both py-1 px-2 text-sm rounded-md cursor-pointer transition-fast"
                                                 type="button"
                                             >
                                                 Reload Application

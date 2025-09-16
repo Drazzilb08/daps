@@ -66,7 +66,15 @@ export const RemoveButton = React.memo(({
     'btn',
     'btn--remove',
     'btn--icon-only',
-    size === 'small' ? 'btn--small' : size === 'large' ? 'btn--large' : '',
+    'flex-center-both', // Icon-only buttons use flex-center-both
+    'text-lg',
+    'font-bold',
+    'p-0',
+    'rounded-md',
+    'cursor-pointer',
+    'transition-fast',
+    size === 'small' ? 'btn--small py-1 px-2 text-sm' : size === 'large' ? 'btn--large py-3 px-4 text-lg' : 'py-2 px-3',
+    disabled && 'state-disabled',
     className
   ].filter(Boolean).join(' ');
 

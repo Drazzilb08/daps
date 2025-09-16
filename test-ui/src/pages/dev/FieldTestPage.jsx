@@ -27,46 +27,46 @@ const FieldStatusOverview = React.memo(() => {
   const completionPercentage = Math.round((workingCount / totalTypes) * 100);
   
   return (
-    <div className="field-status-overview">
-      <h2 className="field-status-overview__title">Field Implementation Status</h2>
-      
+    <div className="bg-surface-elevated rounded p-4 mb-6 border">
+      <h2 className="text-lg font-semibold text-primary mb-3 text-center">Field Implementation Status</h2>
+
       <div className="grid grid-cols-auto gap-3 mb-4">
-        <div className="status-metric status-metric--working">
-          <div className="metric-number">{workingCount}</div>
-          <div className="metric-label">Working Fields</div>
+        <div className="bg-surface border rounded-sm p-3 text-center border-success bg-success-subtle">
+          <div className="text-xl font-bold text-primary mb-1">{workingCount}</div>
+          <div className="text-sm text-secondary">Working Fields</div>
         </div>
-        <div className="status-metric status-metric--placeholder">
-          <div className="metric-number">{placeholderCount}</div>
-          <div className="metric-label">Placeholder Fields</div>
+        <div className="bg-surface border rounded-sm p-3 text-center border-error bg-error-subtle">
+          <div className="text-xl font-bold text-primary mb-1">{placeholderCount}</div>
+          <div className="text-sm text-secondary">Placeholder Fields</div>
         </div>
-        <div className="status-metric status-metric--progress">
-          <div className="metric-number">{completionPercentage}%</div>
-          <div className="metric-label">Completion Rate</div>
+        <div className="bg-surface border rounded-sm p-3 text-center border-primary bg-primary-subtle">
+          <div className="text-xl font-bold text-primary mb-1">{completionPercentage}%</div>
+          <div className="text-sm text-secondary">Completion Rate</div>
         </div>
       </div>
       
-      <div className="field-type-lists">
-        <div className="field-type-group">
-          <h3 className="group-title">✅ Working Fields</h3>
-          <div className="field-type-badges">
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="bg-surface border rounded-sm p-3">
+          <h3 className="text-base font-medium text-primary mb-2">✅ Working Fields</h3>
+          <div className="flex flex-wrap gap-1">
             {workingTypes.map(type => (
-              <span key={type} className="field-badge field-badge--working">
+              <span key={type} className="inline-flex items-center py-1 px-2 rounded-sm text-sm border border-success bg-success-subtle">
                 {type}
               </span>
             ))}
           </div>
         </div>
-        
-        <div className="field-type-group">
-          <h3 className="group-title">❌ Placeholder Fields</h3>
-          <div className="field-type-badges">
+
+        <div className="bg-surface border rounded-sm p-3">
+          <h3 className="text-base font-medium text-primary mb-2">❌ Placeholder Fields</h3>
+          <div className="flex flex-wrap gap-1">
             {placeholderTypes.slice(0, 12).map(type => (
-              <span key={type} className="field-badge field-badge--placeholder">
+              <span key={type} className="inline-flex items-center py-1 px-2 rounded-sm text-sm border border-error bg-error-subtle">
                 {type}
               </span>
             ))}
             {placeholderCount > 12 && (
-              <span className="field-badge field-badge--more">
+              <span className="inline-flex items-center py-1 px-2 rounded-sm text-sm border border-surface-elevated bg-surface-elevated text-secondary italic">
                 +{placeholderCount - 12} more
               </span>
             )}
@@ -256,7 +256,7 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
               {isApproved ? (
                 <button
                   onClick={handleDisapprove}
-                  className="btn btn--warning"
+                  className="btn btn--warning inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
                 >
                   Unapprove
                 </button>
@@ -270,7 +270,7 @@ const FieldTester = React.memo(({ fieldType, onApprove, onDisapprove, isApproved
               )}
               <button
                 onClick={handleDisapprove}
-                className="btn btn--error"
+                className="btn btn--error inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
               >
                 Needs Work
               </button>
@@ -376,10 +376,10 @@ const FieldTestPage = () => {
   }, [workingFieldTypes, approvedFields]);
   
   return (
-    <div className="field-test-page">
-      <div className="field-test-page__header">
-        <h1 className="page-title">Field Development Testing</h1>
-        <p className="page-description">
+    <div className="max-w-content mx-auto p-4">
+      <div className="text-center mb-6 pb-4 border-b">
+        <h1 className="text-2xl font-bold text-primary mb-2">Field Development Testing</h1>
+        <p className="text-base text-secondary max-w-60ch mx-auto mb-4">
           Development interface for testing and approving field implementations.
           Focus on working field types and approval workflow.
         </p>

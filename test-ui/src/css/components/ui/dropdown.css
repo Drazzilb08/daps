@@ -9,16 +9,10 @@
   /* Base dropdown container */
   .dropdown {
     /* Position handled by React component via inline styles */
-    background: var(--color-surface-elevated);
-    border-radius: var(--radius-2);
-    box-shadow: var(--shadow-lg);
-    padding: var(--space-1);
-    min-width: var(--dropdown-width-min);
-    max-width: var(--dropdown-width-max);
-    width: max-content;
+    /* Use utilities: bg-surface-elevated rounded-md shadow-lg p-1 min-w-dropdown max-w-dropdown w-max-content */
   }
 
-  /* Responsive adjustments */
+  /* Responsive adjustments - handled by responsive utilities */
   @media (min-width: var(--breakpoint-tablet)) {
     .dropdown {
       max-width: var(--dropdown-width-desktop);

@@ -1,53 +1,47 @@
 /**
  * Input Field Styles
- * 
+ *
  * Styles for text, password, number, and other input-based fields.
- * Includes focus states, validation, and accessibility features.
+ * REFACTORED: Core patterns moved to utilities, input group patterns centralized.
  */
 
 @layer components {
+  /* UTILITY MIGRATION: Size variants handled by utility classes */
+  /* Use: .input-sm .input-lg utilities for different sizes */
 
-  /* Size variants now handled by .input-sm and .input-lg utilities */
+  /* UTILITY MIGRATION: Input group styling now uses .input-group utility */
+  /* Use: .input-group for compound input containers */
 
-  /* Component-specific input group styling handled by field-input-group */
-
-
-  /* Input group focus states - applied when using .flex utility classes */
   .field-input-base:focus-within {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    /* MOVED TO UTILITY: Focus-within styling now in .input-group utility */
   }
 
   .field-input-base .field-input {
-    /* REPLACED: flex: 1 → USE .flex-1 utility class in React component */
-    border: none;
-    background: transparent;
-    /* Border radius inherited from .field-input-base */
+    /* UTILITY MIGRATION: Use .input-group-child .flex-1 utility classes in React component */
+    /* Transparent styling moved to .input-group-child utility */
   }
 
   .field-input-base .field-input:focus {
-    box-shadow: none;
-    border-color: transparent;
+    /* MOVED TO UTILITY: Focus clearing now in .input-group-child utility */
   }
 
-  /* Password toggle button styling */
+  /* UTILITY MIGRATION: Password toggle styling moved to .input-addon utility */
   .field-input-toggle {
-    background: var(--color-input-addon-bg);
-    /* REPLACED: padding → USE .py-2 .px-3 utility classes in React component */
-    width: var(--touch-target-min);
-    height: var(--input-height);
+    /* MOVED TO UTILITY: Use .input-addon utility class which includes:
+     * - background: var(--color-input-addon-bg)
+     * - min-width: var(--touch-target-min)
+     * - proper flex centering
+     * - transition effects
+     */
   }
 
-  /* REPLACED: Use .state-disabled utility class instead of component-specific disabled styles */
   .field-input-toggle:disabled {
-    /* USE: .state-disabled utility class for consistent disabled state */
-    opacity: 0.5;
-    cursor: not-allowed;
+    /* MOVED TO UTILITY: Use .input-addon (includes disabled styling) */
   }
 
-  /* Input with icon - now uses .field-wrapper utility */
+  /* UTILITY MIGRATION: Input wrapper positioning */
   .field-input-wrapper {
-    position: relative;
+    /* UTILITY MIGRATION: Use .relative utility class instead */
   }
 
 
@@ -72,28 +66,21 @@
   /* Use: .btn .btn--number-field .btn--number-field-left/.btn--number-field-right */
 
   .number-field-display {
-    /* REPLACED: flex: 1 → USE .flex-1 utility class in React component */
-    border: none;
-    background: transparent;
-    /* REPLACED: text-align: center → USE .text-center utility class in React component */
-    font-variant-numeric: tabular-nums;
-    cursor: default;
-    /* Border radius inherited from .field-input-base */
-    /* Font styling inherited from .field-input-typography */
+    /* UTILITY MIGRATION: Use .input-group-child .flex-1 .number-field-display utility classes */
+    /* Transparent input styling moved to .input-group-child utility */
+    /* Text centering moved to .number-field-display utility */
   }
 
   .number-field-display:focus {
-    outline: none;
-    box-shadow: none;
+    /* MOVED TO UTILITY: Focus behavior now in .number-field-display utility */
   }
 
 
   /* Number field wrapper and suffix styling now uses utility classes in React components */
 
   .number-field-input-wrapper .number-field-display {
-    /* REPLACED: padding-right → USE .pr-6 utility class in React component */
-    /* Keep only if this is component-specific styling that can't be done with utilities */
-    padding-right: var(--space-6); /* Space for % suffix - component-specific */
+    /* COMPONENT-SPECIFIC: Keep padding for % suffix display */
+    padding-right: var(--space-6); /* Space for % suffix - component-specific, cannot be utility */
   }
 
   /* Reduced motion support */

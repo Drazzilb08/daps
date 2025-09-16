@@ -6,29 +6,18 @@
 @layer components {
     /* ========== GENERIC ERROR BOUNDARY ========== */
     .error-boundary {
-        display: flex;
-        align-items: center;
-        justify-content: center;
         min-height: 200px;
-        padding: var(--space-4);
         font-family: var(--font-family, system-ui, -apple-system, sans-serif);
+        /* Use utilities: flex items-center justify-center p-4 */
     }
 
     .error-boundary__container {
         max-width: 500px;
-        width: 100%;
-        background: var(--color-surface);
-        border: 2px solid var(--color-error);
-        border-radius: var(--radius-3);
-        padding: var(--space-5);
-        box-shadow: var(--shadow-lg);
+        /* Use utilities: w-full bg-surface border-error rounded-lg p-5 shadow-lg */
     }
 
     .error-boundary__header {
-        display: flex;
-        align-items: center;
-        gap: var(--space-3);
-        margin-bottom: var(--space-4);
+        /* Use utilities: flex items-center gap-3 mb-4 */
     }
 
     .error-boundary__icon {
@@ -62,10 +51,7 @@
     }
 
     .error-boundary__actions {
-        display: flex;
-        gap: var(--space-3);
-        flex-wrap: wrap;
-        justify-content: center;
+        /* Use utilities: flex gap-3 flex-wrap justify-center */
     }
 
     /* Error boundary buttons use unified button system */

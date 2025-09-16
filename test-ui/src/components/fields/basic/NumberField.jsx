@@ -65,12 +65,12 @@ export const NumberField = React.memo(({
         required={field.required} 
       />
       
-      <div className="flex items-stretch rounded overflow-hidden transition-fast field-input-base">
+      <div className="input-group">
         <button
           type="button"
           onClick={handleDecrement}
           disabled={decrementDisabled}
-          className="btn btn--number-field btn--number-field-left btn--small"
+          className="input-addon cursor-pointer"
           aria-label={`Decrease ${field.label}`}
           tabIndex={disabled ? -1 : 0}
         >
@@ -87,7 +87,7 @@ export const NumberField = React.memo(({
           required={field.required}
           placeholder={field.placeholder}
           invalid={highlightInvalid}
-          className="number-field-display"
+          className="input-group-child flex-1 number-field-display"
           aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
           aria-invalid={highlightInvalid}
         />
@@ -96,7 +96,7 @@ export const NumberField = React.memo(({
           type="button"
           onClick={handleIncrement}
           disabled={incrementDisabled}
-          className="btn btn--number-field btn--number-field-right btn--small"
+          className="input-addon cursor-pointer"
           aria-label={`Increase ${field.label}`}
           tabIndex={disabled ? -1 : 0}
         >

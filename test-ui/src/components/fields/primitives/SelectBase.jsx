@@ -39,14 +39,11 @@ export const SelectBase = React.memo(({
 
   const selectClasses = [
     'field-select',
-    'field-input-base',
-    'field-input-layout',
-    'field-focus-behavior',
-    'field-transition-behavior',
+    'field-base',
     'w-full',
     'touch-target',
-    disabled ? 'field-disabled-state' : '',
-    invalid ? 'is-invalid' : '',
+    disabled ? 'state-disabled' : '',
+    invalid ? 'state-invalid' : '',
     className
   ].filter(Boolean).join(' ');
 

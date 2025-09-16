@@ -17,6 +17,7 @@
   
   /* Standard page container - replaces page-specific containers */
   .page-container {
+    /* Utilities: .p-4 .max-w-content .mx-auto .w-full */
     padding: var(--space-4);
     max-width: var(--content-max-width);
     margin: 0 auto;
@@ -24,10 +25,12 @@
   }
 
   .page-container--narrow {
+    /* Utilities: .max-w-form */
     max-width: var(--form-max-width);
   }
 
   .page-container--wide {
+    /* Utilities: .max-w-none .px-6 */
     max-width: none;
     padding-left: var(--space-6);
     padding-right: var(--space-6);
@@ -39,6 +42,7 @@
   
   /* Standard content section - replaces api-test-section pattern */
   .content-section {
+    /* Utilities: .bg-surface .border .rounded .p-4 .shadow-sm .mb-6 */
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-2);
@@ -48,15 +52,18 @@
   }
 
   .content-section:last-child {
+    /* Utilities: .mb-0 */
     margin-bottom: 0;
   }
 
   /* Section header pattern */
   .section-header {
+    /* Utilities: .mb-4 */
     margin-bottom: var(--space-4);
   }
 
   .section-title {
+    /* Utilities: .text-lg .font-semibold .text-primary .mb-2 */
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
     color: var(--color-text-primary);
@@ -64,6 +71,7 @@
   }
 
   .section-description {
+    /* Utilities: .text-sm .text-secondary .leading-relaxed .m-0 */
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
     line-height: var(--line-height-relaxed);
@@ -72,6 +80,7 @@
 
   /* Section content with consistent spacing */
   .section-content {
+    /* Utilities: .flex .flex-col .gap-4 */
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
@@ -83,6 +92,7 @@
   
   /* Base card - lighter than content-section */
   .card {
+    /* Utilities: .bg-surface .border .rounded .p-3 */
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-2);
@@ -96,26 +106,31 @@
   
   /* Stack - vertical arrangement with consistent gaps */
   .stack {
+    /* Utilities: .flex .flex-col .gap-4 */
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
   }
 
   .stack--tight {
+    /* Utilities: .gap-2 */
     gap: var(--space-2);
   }
 
   .stack--loose {
+    /* Utilities: .gap-6 */
     gap: var(--space-6);
   }
 
   .stack--xl {
+    /* Utilities: .gap-8 (note: need to add .gap-8 utility) */
     gap: var(--space-8);
   }
 
 
   /* Split - two-column responsive layout */
   .split {
+    /* Utilities: .flex .flex-col .gap-4 */
     display: flex;
     flex-direction: column;
     gap: var(--space-4);
@@ -123,25 +138,30 @@
 
   @media (min-width: 768px) {
     .split {
+      /* Utilities: .md:flex-row .md:items-start (need responsive utilities) */
       flex-direction: row;
       align-items: start;
     }
 
     .split > * {
+      /* Utilities: .md:flex-1 */
       flex: 1;
     }
 
     .split--uneven > :first-child {
+      /* Utilities: .md:flex-2 (need to add) */
       flex: 2;
     }
 
     .split--uneven > :last-child {
+      /* Utilities: .md:flex-1 */
       flex: 1;
     }
   }
 
   /* Grid - responsive grid layout */
   .grid {
+    /* Utilities: .grid .gap-4 .grid-cols-1 */
     display: grid;
     gap: var(--space-4);
     grid-template-columns: 1fr;
@@ -177,6 +197,7 @@
   
   /* Loading state component */
   .loading-display {
+    /* Utilities: .flex .items-center .gap-2 .text-secondary .text-sm .p-3 */
     display: flex;
     align-items: center;
     gap: var(--space-2);
@@ -186,6 +207,7 @@
   }
 
   .loading-spinner {
+    /* Utilities: .icon-sm .rounded-full + custom border animation (keep unique) */
     width: var(--size-icon-sm);
     height: var(--size-icon-sm);
     border: 2px solid var(--color-border);
@@ -196,6 +218,7 @@
 
   /* Error state component */
   .error-display {
+    /* Utilities: .bg-danger-surface .border .rounded .p-3 + custom error border/text */
     background: var(--color-danger-surface);
     border: 1px solid var(--color-error);
     border-radius: var(--radius-2);
@@ -204,12 +227,14 @@
   }
 
   .error-title {
+    /* Utilities: .text-sm .font-semibold .m-0 .mb-1 */
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-semibold);
     margin: 0 0 var(--space-1) 0;
   }
 
   .error-message {
+    /* Utilities: .text-xs .m-0 .text-primary */
     font-size: var(--font-size-xs);
     margin: 0;
     color: var(--color-text-primary);
@@ -217,6 +242,7 @@
 
   /* Success state component */
   .success-display {
+    /* Utilities: .bg-success-surface .border .rounded .p-3 + custom success colors */
     background: var(--color-success-opacity-20);
     border: 1px solid var(--color-success);
     border-radius: var(--radius-2);
@@ -226,6 +252,7 @@
 
   /* Info state component */
   .info-display {
+    /* Utilities: .bg-primary-surface .border .rounded .p-3 + custom primary colors */
     background: var(--color-primary-opacity-10);
     border: 1px solid var(--color-primary);
     border-radius: var(--radius-2);
@@ -239,6 +266,7 @@
   
   /* Code/JSON display */
   .code-display {
+    /* Utilities: .bg-surface-elevated .text-primary .p-3 .rounded .text-xs .font-mono .overflow-x-auto .whitespace-pre-wrap .break-all .max-h-72 .overflow-y-auto .border */
     background: var(--color-surface-elevated);
     color: var(--color-text-primary);
     padding: var(--space-3);
@@ -255,6 +283,7 @@
 
   /* Statistics/metrics display */
   .stats-grid {
+    /* Utilities: .grid .gap-3 .grid-cols-1 */
     display: grid;
     gap: var(--space-3);
     grid-template-columns: 1fr;
@@ -262,11 +291,13 @@
 
   @media (min-width: 768px) {
     .stats-grid {
+      /* Utilities: .md:grid-cols-auto (with 200px minmax - need custom) */
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     }
   }
 
   .stat-item {
+    /* Utilities: .flex .justify-between .items-center .p-3 .bg-surface .border .rounded .text-sm */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -278,11 +309,13 @@
   }
 
   .stat-label {
+    /* Utilities: .text-secondary .m-0 */
     color: var(--color-text-secondary);
     margin: 0;
   }
 
   .stat-value {
+    /* Utilities: .text-primary .font-medium .m-0 */
     color: var(--color-text-primary);
     font-weight: var(--font-weight-medium);
     margin: 0;
@@ -294,19 +327,20 @@
   
   @media (max-width: 768px) {
     .page-container {
+      /* Utilities: .p-3 (mobile override) */
       padding: var(--space-3);
     }
 
     .content-section {
+      /* Utilities: .p-3 .mb-4 (mobile override) */
       padding: var(--space-3);
       margin-bottom: var(--space-4);
     }
 
     .section-title {
+      /* Utilities: .text-base (mobile override) */
       font-size: var(--font-size-base);
     }
-
-
   }
 
   /* =============================================================================

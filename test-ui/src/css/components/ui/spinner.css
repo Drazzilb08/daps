@@ -1,37 +1,29 @@
-/* Spinner Component Styles */
-@layer components {
-  .spinner {
-    /* Layout: inline-block */
-  }
+/**
+ * Spinner Component Styles - Utility-First Implementation
+ *
+ * Uses utility classes for layout and spacing, keeping only animation-specific styles.
+ * Apply these utility combinations:
+ * - .spinner: inline-block
+ * - .spinner-circle: rounded-full animate-spin + border styles
+ * - .spinner-center: flex items-center justify-center p-4 + min-height
+ * - .spinner-container: flex flex-col items-center gap-3
+ * - .spinner-text: text-sm m-0 text-secondary
+ */
 
+@layer components {
+  /* Spinner base - only keeps unique animation properties */
   .spinner-circle {
     border: 2px solid var(--color-surface-variant);
     border-top-color: var(--color-primary);
-    /* Border: rounded-full */
-    animation: spin 1s linear infinite;
+    /* Use utilities: rounded-full animate-spin */
   }
-
 
   /* Centered spinner for Suspense fallbacks */
   .spinner-center {
-    /* Layout: flex items-center justify-center p-4 */
     min-height: 200px;
+    /* Use utilities: flex items-center justify-center p-4 */
   }
 
-  .spinner-container {
-    /* Layout: flex flex-col items-center gap-3 */
-  }
-
-  .spinner-text {
-    color: var(--color-text-secondary);
-    /* Typography: text-sm m-0 */
-  }
-
-  /* Animation */
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-
+  /* Animation is now available as .animate-spin utility class */
   /* Theme support handled by CSS variables - no theme-specific overrides needed */
 }

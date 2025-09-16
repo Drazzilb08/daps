@@ -8,38 +8,22 @@
 @layer components {
   /* Menu container */
   .menu {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
+    /* Use utilities: flex flex-col gap-0 */
   }
 
   /* Individual menu item */
   .menu-item {
-    display: flex;
-    align-items: center;
-    gap: var(--space-2);
-    padding: var(--space-2) var(--space-3);
-    min-height: var(--touch-target-min);
-    background: transparent;
-    color: var(--color-text-secondary);
-    border: none;
-    border-radius: var(--radius-1);
-    cursor: pointer;
-    font-size: var(--font-size-sm);
     transition: color var(--transition-fast);
-    width: 100%;
-    text-align: left;
-    white-space: nowrap;
+    /* Use utilities: flex items-center gap-2 py-2 px-3 touch-target bg-transparent text-secondary border-none rounded-sm cursor-pointer text-sm w-full text-left whitespace-nowrap */
   }
 
   .menu-item:hover {
-    color: var(--color-primary);
+    /* Use utilities: text-primary */
   }
 
   .menu-item:focus {
     outline: none;
-    background: var(--color-surface-hover);
-    color: var(--color-primary);
+    /* Use utilities: bg-surface-hover text-primary */
   }
 
   .menu-item:active {
@@ -61,21 +45,13 @@
 
   /* Menu item icon */
   .menu-item__icon {
-    flex-shrink: 0;
-    width: var(--size-icon-md);
-    height: var(--size-icon-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
     font-size: var(--size-icon-md);
+    /* Use utilities: flex-shrink-0 icon-md flex items-center justify-center */
   }
 
   /* Menu item label */
   .menu-item__label {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    /* Use utilities: flex-1 min-w-0 text-ellipsis */
   }
 
   /* Responsive adjustments */

@@ -1,91 +1,71 @@
 /**
  * Field Base Styles
  * Consolidated styling patterns for all form field components.
+ * REFACTORED: Core styling moved to .field-base utility class.
  */
 
 @layer components {
-  /* Base field input styling */
+  /* UTILITY MIGRATION: Use .field-base utility class for core styling */
   .field-input-base {
-    background: var(--color-input-bg);
-    border: var(--field-base-border, 1px solid var(--color-text-secondary));
-    box-shadow: var(--field-base-shadow, 0 1px 2px rgba(0, 0, 0, 0.05));
-    border-radius: var(--radius-2); /* Consistent 8px radius for all field inputs */
+    /* MOVED TO UTILITY: Core field styling now handled by .field-base utility class */
+    /* Components should use: class="field-base w-full touch-target" */
   }
 
-  /* Typography inheritance: font-family, font-size, line-height inherited from body */
-  /* color handled by theme variables on specific elements */
-
-  /* Layout and sizing */
+  /* UTILITY MIGRATION: Layout patterns moved to utilities */
   .field-input-layout {
-    /* width: 100% removed - use .w-full utility class instead */
-    min-height: var(--input-height);
-    padding: var(--input-padding-y) var(--input-padding-x);
-    box-sizing: border-box;
+    /* MOVED TO UTILITY: Use .field-base utility class which includes:
+     * - min-height: var(--input-height)
+     * - padding: var(--input-padding-y) var(--input-padding-x)
+     * - box-sizing: border-box
+     */
   }
-  
-
-
-  /* Validation states consolidated into legacy .is-invalid/.is-valid patterns below */
-
-  
-  /* Read-only states */
+  /* UTILITY MIGRATION: Read-only, placeholder, and transitions moved to .field-base utility */
   .field-readonly-state:read-only {
-    background: var(--color-input-bg-readonly);
-    cursor: default;
+    /* MOVED TO UTILITY: Read-only styling now in .field-base utility */
   }
 
-  /* Placeholder styling - consolidated for all inputs */
   .field-input-base::placeholder {
-    color: var(--color-input-placeholder);
-    opacity: 1;
-    /* Font styling inherited from .field-input-typography */
+    /* MOVED TO UTILITY: Placeholder styling now in .field-base utility */
   }
 
-  /* Transitions */
   .field-transition-behavior {
-    transition: all var(--transition-fast);
+    /* MOVED TO UTILITY: Transitions now in .field-base utility */
   }
 
-  /* Legacy compatibility - maintain existing class behavior */
+  /* COMPATIBILITY LAYER: Legacy class names for backward compatibility */
+  /* MIGRATE TO: .field-base .state-invalid and .field-base .state-valid utilities */
 
-  /* Legacy focus state override for base class */
   .field-input-base:focus {
-    outline: none;
-    border-color: var(--color-primary);
-    background: var(--color-input-bg-focus);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    /* MOVED TO UTILITY: Focus styling now in .field-base utility */
   }
 
-  /* Legacy focus-within for container elements */
   .field-input-base:focus-within {
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 var(--focus-ring-width) var(--color-primary-opacity-20);
+    /* MOVED TO UTILITY: Focus-within styling now in .input-group utility */
   }
 
-  /* Legacy validation states - maintain existing .is-invalid and .is-valid behavior */
   .field-input-base.is-invalid {
+    /* MOVED TO UTILITY: Use .field-base.state-invalid instead */
     border-color: var(--color-error);
   }
 
   .field-input-base.is-invalid:focus,
   .field-input-base.is-invalid:focus-within {
+    /* MOVED TO UTILITY: Use .field-base.state-invalid instead */
     box-shadow: 0 0 0 var(--focus-ring-width) var(--color-error-opacity-20);
   }
 
   .field-input-base.is-valid {
+    /* MOVED TO UTILITY: Use .field-base.state-valid instead */
     border-color: var(--color-success);
   }
 
   .field-input-base.is-valid:focus,
   .field-input-base.is-valid:focus-within {
+    /* MOVED TO UTILITY: Use .field-base.state-valid instead */
     box-shadow: 0 0 0 var(--focus-ring-width) var(--color-success-opacity-20);
   }
 
-  /* Legacy disabled state */
   .field-input-base:disabled {
-    background: var(--color-input-bg-disabled);
-    color: var(--color-input-text-disabled);
-    border-color: var(--color-input-border-disabled);
-    cursor: not-allowed;
+    /* MOVED TO UTILITY: Disabled styling now in .field-base utility */
   }
 }

@@ -59,7 +59,7 @@ export const CheckboxBase = React.memo(({
 
       {/* Custom checkbox indicator */}
       <div className={checkboxClasses}>
-        <div className="checkbox-field__indicator field-input-base">
+        <div className="checkbox-field__indicator field-base">
           {checked && (
             <svg
               width="12"

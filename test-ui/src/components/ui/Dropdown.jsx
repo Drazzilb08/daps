@@ -198,6 +198,7 @@ const Dropdown = ({
 
   const dropdownClassName = [
     'dropdown',
+    'bg-surface-elevated rounded-md shadow-lg p-1 min-w-dropdown max-w-dropdown w-max-content',
     className
   ].filter(Boolean).join(' ');
 

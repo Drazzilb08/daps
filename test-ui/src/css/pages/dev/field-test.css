@@ -11,6 +11,7 @@
 @layer pages {
   /* Main page container */
   .field-test-page {
+    /* Utilities: .max-w-content .mx-auto .p-4 */
     max-width: var(--content-max-width, 1200px);
     margin: 0 auto;
     padding: var(--space-4);
@@ -18,6 +19,7 @@
 
   /* Page header section */
   .field-test-page__header {
+    /* Utilities: .text-center .mb-6 .pb-4 .border-b */
     text-align: center;
     margin-bottom: var(--space-6);
     padding-bottom: var(--space-4);
@@ -25,6 +27,7 @@
   }
 
   .page-title {
+    /* Utilities: .text-2xl .font-bold .text-primary .mb-2 */
     font-size: var(--font-size-2xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-text-primary);
@@ -32,6 +35,7 @@
   }
 
   .page-description {
+    /* Utilities: .text-base .text-secondary .max-w-60ch .mx-auto .mb-4 */
     font-size: var(--font-size-base);
     color: var(--color-text-secondary);
     max-width: 60ch;
@@ -40,14 +44,16 @@
 
   /* Field status overview section */
   .field-status-overview {
+    /* Utilities: .bg-surface-elevated .rounded .p-4 .mb-6 .border */
     background: var(--color-surface-elevated);
     border-radius: var(--radius-2);
     padding: var(--space-4);
     margin-bottom: var(--space-6);
     border: 1px solid var(--color-border);
   }
-  
+
   .field-status-overview__title {
+    /* Utilities: .text-lg .font-semibold .text-primary .mb-3 .text-center */
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
     color: var(--color-text-primary);
@@ -58,73 +64,85 @@
   /* Status summary metrics - replaced with utility classes */
   
   .status-metric {
+    /* Utilities: .bg-surface .border .rounded-sm .p-3 .text-center */
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-1);
     padding: var(--space-3);
     text-align: center;
   }
-  
+
   .status-metric--working {
+    /* Utilities: .border-success .bg-success-subtle (need border color utilities) */
     border-color: var(--color-success);
     background: var(--color-success-subtle, var(--color-surface));
   }
-  
+
   .status-metric--placeholder {
+    /* Utilities: .border-error .bg-error-subtle */
     border-color: var(--color-error);
     background: var(--color-error-subtle, var(--color-surface));
   }
-  
+
   .status-metric--progress {
+    /* Utilities: .border-primary .bg-primary-subtle */
     border-color: var(--color-primary);
     background: var(--color-primary-subtle, var(--color-surface));
   }
-  
+
   .metric-number {
+    /* Utilities: .text-xl .font-bold .text-primary .mb-1 */
     font-size: var(--font-size-xl);
     font-weight: var(--font-weight-bold);
     color: var(--color-text-primary);
     margin-bottom: var(--space-1);
   }
-  
+
   .metric-label {
+    /* Utilities: .text-sm .text-secondary */
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
   }
   
   /* Field type lists */
   .field-type-lists {
+    /* Utilities: .grid .gap-4 .md:grid-cols-2 */
     display: grid;
     gap: var(--space-4);
   }
-  
+
   @media (min-width: 768px) {
     .field-type-lists {
+      /* Utilities: .md:grid-cols-2 */
       grid-template-columns: 1fr 1fr;
     }
   }
-  
+
   .field-type-group {
+    /* Utilities: .bg-surface .border .rounded-sm .p-3 */
     background: var(--color-surface);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-1);
     padding: var(--space-3);
   }
-  
+
   .group-title {
+    /* Utilities: .text-base .font-medium .text-primary .mb-2 */
     font-size: var(--font-size-base);
     font-weight: var(--font-weight-medium);
     color: var(--color-text-primary);
     margin-bottom: var(--space-2);
   }
-  
+
   .field-type-badges {
+    /* Utilities: .flex .flex-wrap .gap-1 */
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-1);
   }
   
   .field-badge {
+    /* Utilities: .inline-flex .items-center .py-1 .px-2 .rounded-sm .text-sm .border */
     display: inline-flex;
     align-items: center;
     padding: var(--space-1) var(--space-2);
@@ -133,14 +151,16 @@
     /* Font styling inherited from base typography */
     border: 1px solid;
   }
-  
+
   .field-badge--working {
+    /* Utilities: .border-success .bg-success-subtle (+ custom color fallbacks) */
     border-color: var(--color-success);
     background: var(--color-success-subtle, var(--color-surface));
     color: var(--color-success-text, var(--color-text-primary));
   }
-  
+
   .field-badge--placeholder {
+    /* Utilities: .border-error .bg-error-subtle (+ custom color fallbacks) */
     border-color: var(--color-error);
     background: var(--color-error-subtle, var(--color-surface));
     color: var(--color-error-text, var(--color-text-primary));
@@ -362,6 +382,7 @@
 
 /* Field Testing Section */
 .field-testing-section {
+  /* Utilities: .bg-surface-elevated .rounded .p-4 .mb-6 .border */
   background: var(--color-surface-elevated);
   border-radius: var(--radius-2);
   padding: var(--space-4);
@@ -370,6 +391,7 @@
 }
 
 .testing-header {
+  /* Utilities: .flex .justify-between .items-center .mb-4 .flex-wrap .gap-2 */
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -379,6 +401,7 @@
 }
 
 .testing-title {
+  /* Utilities: .text-lg .font-semibold .text-primary .m-0 */
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-semibold);
   color: var(--color-text-primary);

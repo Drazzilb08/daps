@@ -77,12 +77,12 @@ export const FloatField = React.memo(({
         required={field.required} 
       />
       
-      <div className="flex items-stretch rounded overflow-hidden transition-fast field-input-base">
+      <div className="input-group">
         <button
           type="button"
           onClick={handleDecrement}
           disabled={decrementDisabled}
-          className="btn btn--number-field btn--number-field-left btn--small"
+          className="btn btn--number-field btn--number-field-left btn--small inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
           aria-label={`Decrease ${field.label}`}
           tabIndex={disabled ? -1 : 0}
         >
@@ -108,7 +108,7 @@ export const FloatField = React.memo(({
           type="button"
           onClick={handleIncrement}
           disabled={incrementDisabled}
-          className="btn btn--number-field btn--number-field-right btn--small"
+          className="btn btn--number-field btn--number-field-right btn--small inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
           aria-label={`Increase ${field.label}`}
           tabIndex={disabled ? -1 : 0}
         >

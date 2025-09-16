@@ -53,7 +53,7 @@ export const InputBase = ({
       maxLength={maxLength}
       minLength={minLength}
       pattern={pattern}
-      className={`field-input field-input-base field-input-layout w-full touch-target ${invalid ? 'is-invalid' : ''} ${disabled ? 'opacity-60 cursor-not-allowed' : ''} ${className}`.trim()}
+      className={`field-base w-full touch-target ${invalid ? 'state-invalid' : ''} ${disabled ? 'state-disabled' : ''} ${className}`.trim()}
       aria-describedby={ariaDescribedby}
       aria-invalid={ariaInvalid}
       {...inputProps}

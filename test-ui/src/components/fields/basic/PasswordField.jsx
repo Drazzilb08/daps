@@ -48,7 +48,7 @@ export const PasswordField = React.memo(({
         required={field.required} 
       />
       
-      <div className="flex items-stretch rounded overflow-hidden transition-fast field-input-base">
+      <div className="input-group">
         <InputBase
           id={inputId}
           type={showPassword ? 'text' : 'password'}
@@ -64,13 +64,14 @@ export const PasswordField = React.memo(({
           autoComplete="current-password"
           aria-describedby={`${inputId}-desc ${inputId}-error`.trim()}
           aria-invalid={highlightInvalid}
+          className="input-group-child flex-1"
         />
         
         <button
           type="button"
           onClick={togglePasswordVisibility}
           disabled={disabled}
-          className="field-input-toggle flex items-center justify-center cursor-pointer touch-target rounded-none border-none transition-fast"
+          className="input-addon cursor-pointer"
           aria-label={showPassword ? 'Hide password' : 'Show password'}
           tabIndex={0}
         >

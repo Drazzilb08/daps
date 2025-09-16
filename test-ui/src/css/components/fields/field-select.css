@@ -27,21 +27,17 @@
 
   /* Select wrapper for custom arrow */
   .field-select-wrapper {
-    position: relative;
-    display: inline-block;
-    width: 100%;
+    /* Use utilities: relative inline-block w-full */
   }
 
   /* Remove default arrow background from select */
   .field-select {
-    width: 100%;
+    /* Use utilities: w-full */
   }
 
   /* Custom arrow using pseudo-element with mask */
   .field-select-wrapper::after {
     content: '';
-    position: absolute;
-    top: 50%;
     right: var(--input-padding-x);
     width: var(--size-icon-sm);
     height: 12px;
@@ -52,9 +48,9 @@
     -webkit-mask-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='black' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
     -webkit-mask-repeat: no-repeat;
     -webkit-mask-size: contain;
-    pointer-events: none;
     transform: translateY(-50%);
     transition: background-color var(--transition-fast);
+    /* Use utilities: absolute top-1/2 pointer-events-none */
   }
 
   /* Focus state now handled by base class:
@@ -73,7 +69,7 @@
   .field-select option {
     background: var(--color-input-bg);
     color: var(--color-input-text);
-    /* Padding handled by utilities: p-2 */
+    /* Use utilities: p-2 */
   }
 
   .field-select option:disabled {
@@ -82,13 +78,12 @@
 
   /* Multiple select */
   .field-select[multiple] {
-    /* Padding handled by utilities: p-2 */
-    min-height: calc(var(--input-height) * 3);
     background-image: none;
+    /* Use utilities: p-2 min-h-input-3x */
   }
 
   .field-select[multiple] option {
-    /* Padding and spacing handled by utilities: py-1 px-2 rounded mb-1 */
+    /* Use utilities: py-1 px-2 rounded mb-1 */
   }
 
   .field-select[multiple] option:checked {

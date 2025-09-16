@@ -7,7 +7,6 @@ import { UIStateProvider } from './contexts/UIStateContext.jsx';
 import { SearchCoordinatorProvider } from './contexts/SearchCoordinatorContext.jsx';
 import { PageErrorBoundary } from './components/error';
 import Layout from './components/Layout.jsx';
-import Splash from './pages/Splash.jsx';
 import ErrorTestPage from './pages/dev/ErrorTestPage.jsx';
 import FieldTestPage from './pages/dev/FieldTestPage.jsx';
 import ApiTestPage from './pages/dev/ApiTestPage.jsx';
@@ -71,7 +70,6 @@ const App = () => {
                       <Route index element={<Navigate to="/dashboard" replace />} />
                       <Route path="dashboard" element={
                         <PageErrorBoundary pageName="Dashboard" pageDescription="Main dashboard overview">
-                          <Splash />
                         </PageErrorBoundary>
                       } />
                       

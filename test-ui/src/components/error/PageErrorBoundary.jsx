@@ -248,7 +248,7 @@ class PageErrorBoundaryBase extends Component {
                                 {showRetry && (
                                     <button
                                         onClick={this.handleRetry}
-                                        className="btn btn--primary"
+                                        className="btn btn--primary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
                                         type="button"
                                     >
                                         <span className="page-error-boundary__button-icon">🔄</span>
@@ -260,7 +260,7 @@ class PageErrorBoundaryBase extends Component {
                                     <>
                                         <button
                                             onClick={this.handleNavigateHome}
-                                            className="btn btn--secondary"
+                                            className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
                                             type="button"
                                         >
                                             <span className="page-error-boundary__button-icon">
@@ -271,7 +271,7 @@ class PageErrorBoundaryBase extends Component {
 
                                         <button
                                             onClick={this.handleNavigateBack}
-                                            className="btn btn--secondary"
+                                            className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
                                             type="button"
                                         >
                                             <span className="page-error-boundary__button-icon">
@@ -284,9 +284,9 @@ class PageErrorBoundaryBase extends Component {
 
                                 <button
                                     onClick={this.handleCopyError}
-                                    className={`btn ${
-                                        this.state.copySuccess ? 'btn--success' : 
-                                        this.state.copyError ? 'btn--error' : 'btn--info'
+                                    className={`btn inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast ${
+                                        this.state.copySuccess ? 'btn--success state-hover-dim' : 
+                                        this.state.copyError ? 'btn--error state-hover-dim' : 'btn--info state-hover-dim'
                                     }`}
                                     type="button"
                                     disabled={this.state.copying}
@@ -303,7 +303,7 @@ class PageErrorBoundaryBase extends Component {
 
                                 <button
                                     onClick={this.handleRefresh}
-                                    className="btn btn--ghost"
+                                    className="btn btn--ghost inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
                                     type="button"
                                 >
                                     <span className="page-error-boundary__button-icon">🔄</span>

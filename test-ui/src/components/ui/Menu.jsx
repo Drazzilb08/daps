@@ -19,6 +19,7 @@ const Menu = ({
 }) => {
   const menuClassName = [
     'menu',
+    'flex flex-col gap-0',
     className
   ].filter(Boolean).join(' ');
 

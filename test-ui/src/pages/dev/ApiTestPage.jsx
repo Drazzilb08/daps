@@ -79,7 +79,7 @@ const VersionTestComponent = React.memo(() => {
         <button 
           onClick={execute} 
           disabled={isLoading}
-          className="btn btn--primary"
+          className="btn btn--primary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
         >
           {isLoading ? 'Loading...' : 'Get Version'}
         </button>
@@ -140,7 +140,7 @@ const ConfigTestComponent = React.memo(() => {
         <button 
           onClick={execute} 
           disabled={isLoading}
-          className="btn btn--primary"
+          className="btn btn--primary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
         >
           {isLoading ? 'Loading...' : 'Get Config'}
         </button>
@@ -185,7 +185,7 @@ const JobStatsTestComponent = React.memo(() => {
         <button 
           onClick={execute} 
           disabled={isLoading}
-          className="btn btn--primary"
+          className="btn btn--primary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast"
         >
           {isLoading ? 'Loading...' : 'Get Job Stats'}
         </button>
@@ -254,7 +254,7 @@ const ErrorTestComponent = React.memo(() => {
         <button 
           onClick={execute} 
           disabled={isLoading}
-          className="btn btn--danger"
+          className="btn btn--danger inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim"
         >
           {isLoading ? 'Testing...' : 'Test Error'}
         </button>
@@ -297,19 +297,19 @@ const ToastTestComponent = React.memo(() => {
   return (
     <div className="toast-test">
       <div className="test-controls">
-        <button onClick={testToasts} className="btn btn--info">
+        <button onClick={testToasts} className="btn btn--info inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim">
           Test All Toasts
         </button>
-        <button onClick={() => toast.success('Success toast!')} className="btn btn--primary">
+        <button onClick={() => toast.success('Success toast!')} className="btn btn--primary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast">
           Success
         </button>
-        <button onClick={() => toast.error('Error toast!')} className="btn btn--danger">
+        <button onClick={() => toast.error('Error toast!')} className="btn btn--danger inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim">
           Error
         </button>
-        <button onClick={() => toast.warning('Warning toast!')} className="btn btn--warning">
+        <button onClick={() => toast.warning('Warning toast!')} className="btn btn--warning inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim">
           Warning
         </button>
-        <button onClick={() => toast.info('Info toast!')} className="btn btn--secondary">
+        <button onClick={() => toast.info('Info toast!')} className="btn btn--secondary inline-flex-center-both py-2 px-3 rounded-md cursor-pointer transition-fast state-hover-dim">
           Info
         </button>
       </div>
